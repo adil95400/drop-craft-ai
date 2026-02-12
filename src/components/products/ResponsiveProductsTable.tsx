@@ -5,6 +5,8 @@ import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Progress } from '@/components/ui/progress';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { 
   DropdownMenu, 
   DropdownMenuContent, 
@@ -21,7 +23,10 @@ import {
   Copy, 
   ExternalLink,
   Package,
-  ImageIcon
+  ImageIcon,
+  ArrowUp,
+  ArrowDown,
+  ArrowUpDown
 } from 'lucide-react';
 import { useMediaQuery } from '@/hooks/use-media-query';
 import { cn } from '@/lib/utils';
@@ -37,7 +42,14 @@ interface Product {
   category?: string;
   image_url?: string;
   source?: string;
+  description?: string;
+  seo_title?: string;
+  seo_description?: string;
+  images?: string[];
 }
+
+type SortField = 'name' | 'price' | 'stock_quantity' | 'margin' | 'created_at';
+type SortDirection = 'asc' | 'desc';
 
 interface ResponsiveProductsTableProps {
   products: Product[];
@@ -49,6 +61,28 @@ interface ResponsiveProductsTableProps {
   onDelete?: (id: string) => void;
   onView?: (product: Product) => void;
   onDuplicate?: (product: Product) => void;
+  sortField?: SortField;
+  sortDirection?: SortDirection;
+  onSort?: (field: SortField) => void;
+}
+
+// Helper: compute margin
+function getMargin(product: Product): number | null {
+  if (!product.cost_price || !product.price || product.price <= 0) return null;
+  return ((product.price - product.cost_price) / product.price) * 100;
+}
+
+// Helper: compute health score (0-100)
+function getHealthScore(product: Product): number {
+  let score = 0;
+  const total = 6;
+  if (product.name && product.name.length >= 10) score++;
+  if (product.description && product.description.length >= 50) score++;
+  if (product.image_url || (product.images && product.images.length > 0)) score++;
+  if (product.sku) score++;
+  if (product.category) score++;
+  if (product.price && product.price > 0) score++;
+  return Math.round((score / total) * 100);
 }
 
 // Composant Image avec lazy loading
@@ -87,59 +121,80 @@ function LazyProductImage({ src, alt, className }: { src?: string; alt: string; 
   );
 }
 
-// Menu contextuel pour les actions
-function ProductActionMenu({ 
-  product, 
-  onEdit, 
-  onDelete, 
-  onView, 
-  onDuplicate 
+// Sortable header component
+function SortableHeader({ 
+  label, field, currentField, direction, onSort, className 
 }: { 
-  product: Product;
-  onEdit?: (product: Product) => void;
-  onDelete?: (id: string) => void;
-  onView?: (product: Product) => void;
-  onDuplicate?: (product: Product) => void;
+  label: string; 
+  field: SortField; 
+  currentField?: SortField; 
+  direction?: SortDirection; 
+  onSort?: (field: SortField) => void;
+  className?: string;
 }) {
+  const isActive = currentField === field;
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-          <MoreHorizontal className="h-4 w-4" />
-          <span className="sr-only">Menu actions</span>
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-48">
-        <DropdownMenuItem onClick={() => onView?.(product)}>
-          <Eye className="h-4 w-4 mr-2" />
-          Voir détails
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => onEdit?.(product)}>
-          <Edit className="h-4 w-4 mr-2" />
-          Modifier
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => onDuplicate?.(product)}>
-          <Copy className="h-4 w-4 mr-2" />
-          Dupliquer
-        </DropdownMenuItem>
-        {product.source === 'shopify' && (
-          <DropdownMenuItem asChild>
-            <a href="#" target="_blank" rel="noopener noreferrer">
-              <ExternalLink className="h-4 w-4 mr-2" />
-              Voir sur Shopify
-            </a>
-          </DropdownMenuItem>
+    <TableHead 
+      className={cn("cursor-pointer select-none hover:text-foreground transition-colors", className)}
+      onClick={() => onSort?.(field)}
+    >
+      <div className="flex items-center gap-1">
+        {label}
+        {isActive ? (
+          direction === 'asc' ? <ArrowUp className="h-3 w-3" /> : <ArrowDown className="h-3 w-3" />
+        ) : (
+          <ArrowUpDown className="h-3 w-3 opacity-30" />
         )}
-        <DropdownMenuSeparator />
-        <DropdownMenuItem 
-          onClick={() => onDelete?.(product.id)}
-          className="text-destructive focus:text-destructive"
-        >
-          <Trash2 className="h-4 w-4 mr-2" />
-          Supprimer
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
+      </div>
+    </TableHead>
+  );
+}
+
+// Margin badge component
+function MarginBadge({ product }: { product: Product }) {
+  const margin = getMargin(product);
+  if (margin === null) return <span className="text-xs text-muted-foreground">—</span>;
+  
+  const variant = margin >= 30 ? 'success' : margin >= 15 ? 'warning' : 'destructive';
+  const profit = (product.price || 0) - (product.cost_price || 0);
+  
+  return (
+    <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Badge variant={variant} className="text-xs font-medium">
+            {margin.toFixed(0)}%
+          </Badge>
+        </TooltipTrigger>
+        <TooltipContent>
+          <p>Profit: {profit.toFixed(2)} € / vente</p>
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
+  );
+}
+
+// Health score mini indicator
+function HealthIndicator({ product }: { product: Product }) {
+  const score = getHealthScore(product);
+  const color = score >= 80 ? 'bg-emerald-500' : score >= 50 ? 'bg-amber-500' : 'bg-red-500';
+  
+  return (
+    <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <div className="flex items-center gap-1.5">
+            <div className="w-8">
+              <Progress value={score} className="h-1.5" />
+            </div>
+            <span className="text-[10px] text-muted-foreground font-medium">{score}</span>
+          </div>
+        </TooltipTrigger>
+        <TooltipContent>
+          <p>Complétude: {score}%</p>
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
   );
 }
 
@@ -197,7 +252,7 @@ function MobileCardView({
   onDelete,
   onView,
   onDuplicate
-}: Omit<ResponsiveProductsTableProps, 'isLoading' | 'onBulkPublish'>) {
+}: Omit<ResponsiveProductsTableProps, 'isLoading' | 'onBulkPublish' | 'sortField' | 'sortDirection' | 'onSort'>) {
   const handleToggleSelect = (id: string) => {
     if (!onSelectionChange) return;
     
@@ -221,85 +276,84 @@ function MobileCardView({
 
   return (
     <div className="space-y-3">
-      {products.map((product) => (
-        <Card 
-          key={product.id}
-          className={cn(
-            "transition-all duration-200",
-            selectedProducts.includes(product.id) && "ring-2 ring-primary bg-primary/5"
-          )}
-        >
-          <CardContent className="p-3">
-            <div className="flex gap-3">
-              {/* Checkbox et Image */}
-              <div className="flex items-start gap-2">
-                <Checkbox
-                  checked={selectedProducts.includes(product.id)}
-                  onCheckedChange={() => handleToggleSelect(product.id)}
-                  className="mt-1"
-                />
-                <LazyProductImage
-                  src={product.image_url}
-                  alt={product.name}
-                  className="h-16 w-16 flex-shrink-0"
-                />
-              </div>
-
-              {/* Infos produit */}
-              <div className="flex-1 min-w-0">
-                <div className="flex items-start justify-between gap-2">
-                  <div className="min-w-0">
-                    <h4 className="font-medium text-sm truncate">{product.name}</h4>
-                    {product.sku && (
-                      <p className="text-xs text-muted-foreground truncate">SKU: {product.sku}</p>
-                    )}
-                  </div>
-                  <ProductActionMenu
-                    product={product}
-                    onEdit={onEdit}
-                    onDelete={onDelete}
-                    onView={onView}
-                    onDuplicate={onDuplicate}
+      {products.map((product) => {
+        const margin = getMargin(product);
+        return (
+          <Card 
+            key={product.id}
+            className={cn(
+              "transition-all duration-200",
+              selectedProducts.includes(product.id) && "ring-2 ring-primary bg-primary/5"
+            )}
+          >
+            <CardContent className="p-3">
+              <div className="flex gap-3">
+                {/* Checkbox et Image */}
+                <div className="flex items-start gap-2">
+                  <Checkbox
+                    checked={selectedProducts.includes(product.id)}
+                    onCheckedChange={() => handleToggleSelect(product.id)}
+                    className="mt-1"
+                  />
+                  <LazyProductImage
+                    src={product.image_url}
+                    alt={product.name}
+                    className="h-16 w-16 flex-shrink-0"
                   />
                 </div>
 
-                {/* Prix et Stock */}
-                <div className="flex flex-wrap items-center gap-2 mt-2">
-                  <span className="font-semibold text-sm">
-                    {product.price?.toFixed(2) ?? '0.00'} €
-                  </span>
-                  {product.cost_price && (
-                    <span className="text-xs text-muted-foreground">
-                      (Coût: {product.cost_price.toFixed(2)} €)
-                    </span>
-                  )}
-                </div>
+                {/* Infos produit */}
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0">
+                      <h4 className="font-medium text-sm truncate">{product.name}</h4>
+                      {product.sku && (
+                        <p className="text-xs text-muted-foreground truncate">SKU: {product.sku}</p>
+                      )}
+                    </div>
+                    {/* Quick Actions Inline */}
+                    <div className="flex items-center gap-1">
+                      <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={() => onView?.(product)}>
+                        <Eye className="h-3.5 w-3.5" />
+                      </Button>
+                      <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={() => onEdit?.(product)}>
+                        <Edit className="h-3.5 w-3.5" />
+                      </Button>
+                    </div>
+                  </div>
 
-                {/* Badges */}
-                <div className="flex flex-wrap items-center gap-1.5 mt-2">
-                  <Badge 
-                    variant={(product.stock_quantity ?? 0) < 10 ? 'destructive' : 'secondary'}
-                    className="text-xs"
-                  >
-                    Stock: {product.stock_quantity ?? 0}
-                  </Badge>
-                  <Badge 
-                    variant={product.status === 'active' ? 'default' : 'outline'}
-                    className="text-xs"
-                  >
-                    {product.status === 'active' ? 'Actif' : 'Inactif'}
-                  </Badge>
-                  {product.category && (
-                    <Badge variant="outline" className="text-xs">
-                      {product.category}
+                  {/* Prix, Marge et Stock */}
+                  <div className="flex flex-wrap items-center gap-2 mt-2">
+                    <span className="font-semibold text-sm">
+                      {product.price?.toFixed(2) ?? '0.00'} €
+                    </span>
+                    {margin !== null && (
+                      <MarginBadge product={product} />
+                    )}
+                  </div>
+
+                  {/* Badges */}
+                  <div className="flex flex-wrap items-center gap-1.5 mt-2">
+                    <Badge 
+                      variant={(product.stock_quantity ?? 0) < 10 ? 'destructive' : 'secondary'}
+                      className="text-xs"
+                    >
+                      Stock: {product.stock_quantity ?? 0}
                     </Badge>
-                  )}
+                    <Badge 
+                      variant={product.status === 'active' ? 'default' : 'outline'}
+                      className="text-xs"
+                    >
+                      {product.status === 'active' ? 'Actif' : 'Inactif'}
+                    </Badge>
+                    <HealthIndicator product={product} />
+                  </div>
                 </div>
               </div>
-            </div>
-          </CardContent>
-        </Card>
-      ))}
+            </CardContent>
+          </Card>
+        );
+      })}
     </div>
   );
 }
@@ -312,7 +366,10 @@ function DesktopTableView({
   onEdit,
   onDelete,
   onView,
-  onDuplicate
+  onDuplicate,
+  sortField,
+  sortDirection,
+  onSort
 }: Omit<ResponsiveProductsTableProps, 'isLoading' | 'onBulkPublish'>) {
   const handleSelectAll = () => {
     if (!onSelectionChange) return;
@@ -345,12 +402,14 @@ function DesktopTableView({
                 onCheckedChange={handleSelectAll}
               />
             </TableHead>
-            <TableHead>Produit</TableHead>
-            <TableHead className="text-right">Prix</TableHead>
-            <TableHead className="text-center">Stock</TableHead>
+            <SortableHeader label="Produit" field="name" currentField={sortField} direction={sortDirection} onSort={onSort} />
+            <SortableHeader label="Prix" field="price" currentField={sortField} direction={sortDirection} onSort={onSort} className="text-right" />
+            <SortableHeader label="Marge" field="margin" currentField={sortField} direction={sortDirection} onSort={onSort} className="text-center" />
+            <SortableHeader label="Stock" field="stock_quantity" currentField={sortField} direction={sortDirection} onSort={onSort} className="text-center" />
             <TableHead className="text-center">Statut</TableHead>
+            <TableHead className="text-center">Santé</TableHead>
             <TableHead>Catégorie</TableHead>
-            <TableHead className="w-12"></TableHead>
+            <TableHead className="w-28 text-right">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -358,7 +417,7 @@ function DesktopTableView({
             <TableRow 
               key={product.id}
               className={cn(
-                "transition-colors",
+                "transition-colors group",
                 selectedProducts.includes(product.id) && "bg-primary/5"
               )}
             >
@@ -393,6 +452,10 @@ function DesktopTableView({
                   )}
                 </div>
               </TableCell>
+              {/* Feature #1: Margin Column */}
+              <TableCell className="text-center">
+                <MarginBadge product={product} />
+              </TableCell>
               <TableCell className="text-center">
                 <Badge variant={(product.stock_quantity ?? 0) < 10 ? 'destructive' : 'secondary'}>
                   {product.stock_quantity ?? 0}
@@ -403,25 +466,77 @@ function DesktopTableView({
                   {product.status === 'active' ? 'Actif' : 'Inactif'}
                 </Badge>
               </TableCell>
+              {/* Feature #5: Health Score */}
+              <TableCell className="text-center">
+                <HealthIndicator product={product} />
+              </TableCell>
               <TableCell>
                 <span className="text-sm text-muted-foreground">
                   {product.category || '-'}
                 </span>
               </TableCell>
+              {/* Feature #7: Inline Quick Actions + menu */}
               <TableCell>
-                <ProductActionMenu
-                  product={product}
-                  onEdit={onEdit}
-                  onDelete={onDelete}
-                  onView={onView}
-                  onDuplicate={onDuplicate}
-                />
+                <div className="flex items-center justify-end gap-1">
+                  <Button 
+                    variant="ghost" size="sm" 
+                    className="h-7 w-7 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                    onClick={() => onView?.(product)}
+                  >
+                    <Eye className="h-3.5 w-3.5" />
+                  </Button>
+                  <Button 
+                    variant="ghost" size="sm" 
+                    className="h-7 w-7 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                    onClick={() => onEdit?.(product)}
+                  >
+                    <Edit className="h-3.5 w-3.5" />
+                  </Button>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                        <MoreHorizontal className="h-4 w-4" />
+                        <span className="sr-only">Menu actions</span>
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-48">
+                      <DropdownMenuItem onClick={() => onView?.(product)}>
+                        <Eye className="h-4 w-4 mr-2" />
+                        Voir détails
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => onEdit?.(product)}>
+                        <Edit className="h-4 w-4 mr-2" />
+                        Modifier
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => onDuplicate?.(product)}>
+                        <Copy className="h-4 w-4 mr-2" />
+                        Dupliquer
+                      </DropdownMenuItem>
+                      {product.source === 'shopify' && (
+                        <DropdownMenuItem asChild>
+                          <a href="#" target="_blank" rel="noopener noreferrer">
+                            <ExternalLink className="h-4 w-4 mr-2" />
+                            Voir sur Shopify
+                          </a>
+                        </DropdownMenuItem>
+                      )}
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem 
+                        onClick={() => onDelete?.(product.id)}
+                        className="text-destructive focus:text-destructive"
+                      >
+                        <Trash2 className="h-4 w-4 mr-2" />
+                        Supprimer
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
               </TableCell>
             </TableRow>
           ))}
           {products.length === 0 && (
             <TableRow>
-              <TableCell colSpan={7} className="text-center py-12">
+              <TableCell colSpan={9} className="text-center py-12">
                 <Package className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
                 <p className="text-muted-foreground">Aucun produit trouvé</p>
               </TableCell>
@@ -442,7 +557,10 @@ export function ResponsiveProductsTable({
   onEdit,
   onDelete,
   onView,
-  onDuplicate
+  onDuplicate,
+  sortField,
+  sortDirection,
+  onSort
 }: ResponsiveProductsTableProps) {
   const isMobile = useMediaQuery('(max-width: 768px)');
 
@@ -497,6 +615,9 @@ export function ResponsiveProductsTable({
           onDelete={onDelete}
           onView={onView}
           onDuplicate={onDuplicate}
+          sortField={sortField}
+          sortDirection={sortDirection}
+          onSort={onSort}
         />
       )}
     </div>

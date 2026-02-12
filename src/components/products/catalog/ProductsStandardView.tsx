@@ -120,8 +120,6 @@ export function ProductsStandardView({
             onView={onView}
             selectedProducts={selectedProducts}
             onSelectionChange={onSelectionChange}
-            viewMode={viewMode}
-            productBadges={productBadges}
           />
         </CardContent>
       </Card>
