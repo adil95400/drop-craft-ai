@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
+import { marketingApi } from '@/services/api/client';
 
 export interface MarketingCampaign {
   id: string; name: string; type: 'email' | 'sms' | 'social' | 'ads' | 'retargeting';
@@ -18,16 +18,12 @@ export const useRealMarketing = () => {
   const { data: campaigns = [], isLoading: isLoadingCampaigns, error } = useQuery({
     queryKey: ['marketing-campaigns', user?.id],
     queryFn: async (): Promise<MarketingCampaign[]> => {
-      if (!user?.id) return [];
-      const { data, error } = await supabase.from('marketing_campaigns')
-        .select('*').eq('user_id', user.id).order('created_at', { ascending: false });
-      if (error) throw error;
-      return (data || []) as MarketingCampaign[];
+      const res = await marketingApi.listCampaigns({ per_page: 100 });
+      return (res.items || []) as MarketingCampaign[];
     },
     enabled: !!user?.id,
   });
 
-  // Integration mutations — throw proper errors instead of fake toasts
   const integrationNotConfigured = useMutation({
     mutationFn: async (_: any) => {
       throw new Error('Integration non configurée. Configurez vos identifiants dans Paramètres > Intégrations.');
@@ -39,11 +35,7 @@ export const useRealMarketing = () => {
 
   const createEmailCampaign = useMutation({
     mutationFn: async (campaignData: any) => {
-      if (!user?.id) throw new Error('Not authenticated');
-      const { data, error } = await supabase.from('marketing_campaigns')
-        .insert({ name: campaignData.name, user_id: user.id, status: 'draft' }).select().single();
-      if (error) throw error;
-      return data;
+      return await marketingApi.createCampaign({ name: campaignData.name, status: 'draft' });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['marketing-campaigns'] });

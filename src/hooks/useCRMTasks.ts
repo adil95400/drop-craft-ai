@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
+import { crmApi } from '@/services/api/client';
 
 export interface CRMTask {
   id: string; user_id: string; title: string; description?: string;
@@ -19,42 +19,25 @@ export function useCRMTasks() {
   const { data: tasks = [], isLoading } = useQuery({
     queryKey: ['crm-tasks', user?.id],
     queryFn: async () => {
-      if (!user?.id) return [];
-      const { data, error } = await (supabase.from('crm_tasks') as any)
-        .select('*').eq('user_id', user.id).order('created_at', { ascending: false });
-      if (error) throw error;
-      return (data || []) as CRMTask[];
+      const res = await crmApi.listTasks();
+      return (res.items || []) as CRMTask[];
     },
     enabled: !!user?.id,
   });
 
   const createTask = useMutation({
-    mutationFn: async (taskData: Partial<CRMTask>) => {
-      if (!user?.id) throw new Error('Not authenticated');
-      const { data, error } = await (supabase.from('crm_tasks') as any)
-        .insert({ ...taskData, user_id: user.id }).select().single();
-      if (error) throw error;
-      return data;
-    },
+    mutationFn: async (taskData: Partial<CRMTask>) => crmApi.createTask(taskData),
     onSuccess: () => { toast.success('Tâche créée'); queryClient.invalidateQueries({ queryKey: ['crm-tasks'] }); },
     onError: () => toast.error('Erreur lors de la création'),
   });
 
   const updateTask = useMutation({
-    mutationFn: async ({ id, ...updates }: Partial<CRMTask> & { id: string }) => {
-      const { data, error } = await (supabase.from('crm_tasks') as any)
-        .update({ ...updates, updated_at: new Date().toISOString() }).eq('id', id).select().single();
-      if (error) throw error;
-      return data;
-    },
+    mutationFn: async ({ id, ...updates }: Partial<CRMTask> & { id: string }) => crmApi.updateTask(id, updates),
     onSuccess: () => { toast.success('Tâche mise à jour'); queryClient.invalidateQueries({ queryKey: ['crm-tasks'] }); },
   });
 
   const deleteTask = useMutation({
-    mutationFn: async (id: string) => {
-      const { error } = await (supabase.from('crm_tasks') as any).delete().eq('id', id);
-      if (error) throw error;
-    },
+    mutationFn: async (id: string) => crmApi.deleteTask(id),
     onSuccess: () => { toast.success('Tâche supprimée'); queryClient.invalidateQueries({ queryKey: ['crm-tasks'] }); },
   });
 
