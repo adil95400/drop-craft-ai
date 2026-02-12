@@ -165,6 +165,19 @@ export const productsApi = {
 
   stats: () =>
     api.get<ProductStats>('/products/stats'),
+
+  // ── Product sub-resources ──
+  seo: (id: string) =>
+    api.get<any>(`/products/${id}/seo`),
+
+  optimize: (id: string, options?: { language?: string; tone?: string; targets?: string[] }) =>
+    api.post<{ job_id: string; status: string; product_id: string }>(`/products/${id}/optimize`, options),
+
+  metrics: (id: string, params?: { period?: string; limit?: number }) =>
+    api.get<any>(`/products/${id}/metrics`, params as any),
+
+  stockHistory: (id: string, params?: { type?: string; limit?: number }) =>
+    api.get<any>(`/products/${id}/stock-history`, params as any),
 }
 
 // ── Import Jobs ─────────────────────────────────────────────────────────────

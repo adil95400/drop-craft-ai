@@ -1111,6 +1111,137 @@ async function getProductStats(auth: NonNullable<Awaited<ReturnType<typeof authe
   }, 200, reqId);
 }
 
+// ── Product SEO / Metrics / Stock Endpoints ──────────────────────────────────
+
+async function getProductSeo(productId: string, auth: NonNullable<Awaited<ReturnType<typeof authenticate>>>, reqId: string) {
+  const admin = serviceClient();
+  const { data: product, error } = await admin
+    .from("products")
+    .select("id, title, description, seo_title, seo_description, images, tags, sku, brand, category, barcode, weight, status")
+    .eq("id", productId).eq("user_id", auth.user.id).single();
+  if (error || !product) return errorResponse("NOT_FOUND", "Product not found", 404, reqId);
+
+  const scored = scoreProduct(product);
+
+  // Fetch latest audit if exists
+  const { data: latestAudit } = await admin.from("seo_scores")
+    .select("*").eq("product_id", productId).eq("user_id", auth.user.id)
+    .order("created_at", { ascending: false }).limit(1).maybeSingle();
+
+  // Fetch history count
+  const { count: historyCount } = await admin.from("seo_history_snapshots")
+    .select("*", { count: "exact", head: true }).eq("product_id", productId).eq("user_id", auth.user.id);
+
+  return json({
+    ...scored,
+    latest_audit: latestAudit ?? null,
+    history_count: historyCount ?? 0,
+  }, 200, reqId);
+}
+
+async function optimizeProduct(productId: string, req: Request, auth: NonNullable<Awaited<ReturnType<typeof authenticate>>>, reqId: string) {
+  const body = await req.json().catch(() => ({}));
+  const admin = serviceClient();
+
+  // Verify ownership
+  const { data: product } = await admin.from("products")
+    .select("id, title, description, tags, seo_title, seo_description, sku, brand, category")
+    .eq("id", productId).eq("user_id", auth.user.id).single();
+  if (!product) return errorResponse("NOT_FOUND", "Product not found", 404, reqId);
+
+  // Snapshot before optimization
+  await admin.from("seo_history_snapshots").insert({
+    product_id: productId,
+    user_id: auth.user.id,
+    snapshot_type: "before_optimization",
+    score_data: scoreProduct(product).score,
+    seo_data: { seo_title: product.seo_title, seo_description: product.seo_description, tags: product.tags },
+  });
+
+  // Create AI enrichment job for this single product
+  const { data: job, error } = await admin.from("background_jobs").insert({
+    user_id: auth.user.id,
+    job_type: "ai_enrichment",
+    job_subtype: "product_optimize",
+    status: "queued",
+    name: `Optimize: ${product.title ?? product.id}`,
+    input_data: {
+      product_ids: [productId],
+      language: body.language ?? "fr",
+      tone: body.tone ?? "premium",
+      targets: body.targets ?? ["seo_title", "meta_description", "tags"],
+    },
+    items_total: 1, items_processed: 0, items_succeeded: 0, items_failed: 0, progress_percent: 0,
+  }).select("id, status").single();
+
+  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
+
+  // Fire-and-forget
+  processAiEnrichments(job.id, auth.user.id, {
+    product_ids: [productId],
+    language: body.language ?? "fr",
+    tone: body.tone ?? "premium",
+    targets: body.targets ?? ["seo_title", "meta_description", "tags"],
+  }).catch(console.error);
+
+  return json({ job_id: job.id, status: "queued", product_id: productId }, 202, reqId);
+}
+
+async function getProductMetrics(productId: string, url: URL, auth: NonNullable<Awaited<ReturnType<typeof authenticate>>>, reqId: string) {
+  const admin = serviceClient();
+  const periodType = url.searchParams.get("period") ?? "daily";
+  const limit = Math.min(100, parseInt(url.searchParams.get("limit") ?? "30", 10));
+
+  // Verify ownership
+  const { data: product } = await admin.from("products").select("id").eq("id", productId).eq("user_id", auth.user.id).single();
+  if (!product) return errorResponse("NOT_FOUND", "Product not found", 404, reqId);
+
+  const { data: metrics, error } = await admin.from("product_metrics")
+    .select("*")
+    .eq("product_id", productId).eq("user_id", auth.user.id).eq("period_type", periodType)
+    .order("period_start", { ascending: false })
+    .limit(limit);
+
+  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
+
+  // Summary
+  const totalRevenue = (metrics ?? []).reduce((s: number, m: any) => s + (m.revenue ?? 0), 0);
+  const totalOrders = (metrics ?? []).reduce((s: number, m: any) => s + (m.orders ?? 0), 0);
+  const totalViews = (metrics ?? []).reduce((s: number, m: any) => s + (m.views ?? 0), 0);
+  const avgConversion = totalViews > 0 ? totalOrders / totalViews : 0;
+
+  return json({
+    product_id: productId,
+    period_type: periodType,
+    summary: {
+      total_revenue: Math.round(totalRevenue * 100) / 100,
+      total_orders: totalOrders,
+      total_views: totalViews,
+      avg_conversion_rate: Math.round(avgConversion * 10000) / 100,
+    },
+    data_points: (metrics ?? []).reverse(),
+  }, 200, reqId);
+}
+
+async function getProductStockHistory(productId: string, url: URL, auth: NonNullable<Awaited<ReturnType<typeof authenticate>>>, reqId: string) {
+  const admin = serviceClient();
+  const limit = Math.min(100, parseInt(url.searchParams.get("limit") ?? "30", 10));
+  const snapshotType = url.searchParams.get("type") ?? "daily";
+
+  const { data: product } = await admin.from("products").select("id").eq("id", productId).eq("user_id", auth.user.id).single();
+  if (!product) return errorResponse("NOT_FOUND", "Product not found", 404, reqId);
+
+  const { data, error } = await admin.from("stock_snapshots")
+    .select("*")
+    .eq("product_id", productId).eq("user_id", auth.user.id).eq("snapshot_type", snapshotType)
+    .order("recorded_at", { ascending: false })
+    .limit(limit);
+
+  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
+
+  return json({ product_id: productId, snapshots: (data ?? []).reverse() }, 200, reqId);
+}
+
 // ── SEO Handlers ─────────────────────────────────────────────────────────────
 
 async function createSeoAudit(req: Request, auth: NonNullable<Awaited<ReturnType<typeof authenticate>>>, reqId: string) {
@@ -1806,6 +1937,19 @@ Deno.serve(async (req) => {
     if (req.method === "GET" && matchRoute("/v1/products", apiPath)) return await listProducts(url, auth, reqId);
     if (req.method === "POST" && matchRoute("/v1/products", apiPath)) return await createProduct(req, auth, reqId);
     if (req.method === "POST" && matchRoute("/v1/products/bulk", apiPath)) return await bulkUpdateProducts(req, auth, reqId);
+
+    // ── Product sub-resources (must be before generic :productId) ──
+    const productSeoMatch = matchRoute("/v1/products/:productId/seo", apiPath);
+    if (req.method === "GET" && productSeoMatch) return await getProductSeo(productSeoMatch.params.productId, auth, reqId);
+
+    const productOptimizeMatch = matchRoute("/v1/products/:productId/optimize", apiPath);
+    if (req.method === "POST" && productOptimizeMatch) return await optimizeProduct(productOptimizeMatch.params.productId, req, auth, reqId);
+
+    const productMetricsMatch = matchRoute("/v1/products/:productId/metrics", apiPath);
+    if (req.method === "GET" && productMetricsMatch) return await getProductMetrics(productMetricsMatch.params.productId, url, auth, reqId);
+
+    const productStockMatch = matchRoute("/v1/products/:productId/stock-history", apiPath);
+    if (req.method === "GET" && productStockMatch) return await getProductStockHistory(productStockMatch.params.productId, url, auth, reqId);
 
     const productMatch = matchRoute("/v1/products/:productId", apiPath);
     if (productMatch && productMatch.params.productId !== "drafts" && productMatch.params.productId !== "stats" && productMatch.params.productId !== "bulk") {
