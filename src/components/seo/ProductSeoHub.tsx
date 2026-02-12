@@ -231,6 +231,9 @@ export function ProductSeoHub() {
   const seoAuditsQuota = getQuotaInfo('seo_audits')
   const seoGensQuota = getQuotaInfo('seo_generations')
   const seoAppliesQuota = getQuotaInfo('seo_applies')
+  const seoCatAuditsQuota = getQuotaInfo('seo_category_audits')
+  const seoSiteAuditsQuota = getQuotaInfo('seo_site_audits')
+  const seoBulkQuota = getQuotaInfo('seo_bulk_limit')
 
   const items = data?.items ?? []
   const stats = data?.stats ?? { avg_score: 0, critical: 0, needs_work: 0, optimized: 0, total: 0 }
@@ -249,11 +252,13 @@ export function ProductSeoHub() {
   }, [generateMutation])
 
   const handleBulkGenerate = useCallback(() => {
+    const bulkMax = seoBulkQuota.isUnlimited ? 50 : Math.min(seoBulkQuota.limit, 50)
+    if (bulkMax <= 0) return
     const ids = statusFilter === 'all' 
-      ? items.filter(p => p.status !== 'optimized').slice(0, 20).map(p => p.product_id)
-      : items.slice(0, 20).map(p => p.product_id)
+      ? items.filter(p => p.status !== 'optimized').slice(0, bulkMax).map(p => p.product_id)
+      : items.slice(0, bulkMax).map(p => p.product_id)
     ids.forEach(id => generateMutation.mutate({ productId: id }))
-  }, [items, generateMutation, statusFilter])
+  }, [items, generateMutation, statusFilter, seoBulkQuota])
 
   return (
     <div className="space-y-6">
@@ -271,20 +276,23 @@ export function ProductSeoHub() {
               </Button>
             )}
           </div>
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
             {[
-              { label: 'Audits', quota: seoAuditsQuota, icon: Search },
+              { label: 'Audits produits', quota: seoAuditsQuota, icon: Search },
+              { label: 'Audits catégories', quota: seoCatAuditsQuota, icon: Search },
+              { label: 'Audits site', quota: seoSiteAuditsQuota, icon: Search },
               { label: 'Générations IA', quota: seoGensQuota, icon: Sparkles },
               { label: 'Applications', quota: seoAppliesQuota, icon: CheckCircle2 },
+              { label: 'Bulk', quota: seoBulkQuota, icon: Target },
             ].map(({ label, quota, icon: Icon }) => (
               <div key={label} className="space-y-1.5">
                 <div className="flex items-center justify-between text-xs">
                   <span className="flex items-center gap-1 text-muted-foreground"><Icon className="h-3 w-3" />{label}</span>
                   <span className="font-medium">
-                    {quota.isUnlimited ? '∞' : `${quota.current}/${quota.limit}`}
+                    {quota.isUnlimited ? '∞' : quota.limit === 0 ? '—' : `${quota.current}/${quota.limit}`}
                   </span>
                 </div>
-                {!quota.isUnlimited && (
+                {!quota.isUnlimited && quota.limit > 0 && (
                   <Progress 
                     value={quota.percentage} 
                     className={cn('h-1.5', 
@@ -292,6 +300,9 @@ export function ProductSeoHub() {
                       quota.percentage >= 80 && quota.percentage < 100 && '[&>div]:bg-yellow-500'
                     )} 
                   />
+                )}
+                {quota.limit === 0 && !quota.isUnlimited && (
+                  <span className="text-[10px] text-muted-foreground">Non inclus</span>
                 )}
               </div>
             ))}
@@ -376,7 +387,7 @@ export function ProductSeoHub() {
           <Button 
             variant="outline" size="sm" 
             onClick={handleBulkGenerate} 
-            disabled={generateMutation.isPending || items.filter(p => p.status !== 'optimized').length === 0 || !canPerformAction('seo_generations')}
+            disabled={generateMutation.isPending || items.filter(p => p.status !== 'optimized').length === 0 || !canPerformAction('seo_generations') || (!seoBulkQuota.isUnlimited && seoBulkQuota.limit === 0)}
           >
             <Sparkles className="h-4 w-4 mr-1.5" />
             {generateMutation.isPending ? 'Génération...' : 'Bulk Optimiser IA'}

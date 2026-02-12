@@ -18,7 +18,12 @@ export type QuotaKey =
   | 'storage_mb'
   | 'seo_audits'
   | 'seo_generations'
-  | 'seo_applies';
+  | 'seo_applies'
+  | 'seo_category_audits'
+  | 'seo_site_audits'
+  | 'seo_languages'
+  | 'seo_bulk_limit'
+  | 'seo_history_days';
 
 export type PlanName = 'free' | 'standard' | 'pro' | 'ultra_pro';
 
@@ -46,9 +51,14 @@ const QUOTA_LABELS: Record<QuotaKey, string> = {
   suppliers: 'Fournisseurs',
   workflows: 'Workflows',
   storage_mb: 'Stockage (Mo)',
-  seo_audits: 'Audits SEO',
-  seo_generations: 'Générations SEO',
+  seo_audits: 'Audits SEO produits',
+  seo_generations: 'Générations SEO IA',
   seo_applies: 'Applications SEO',
+  seo_category_audits: 'Audits catégories',
+  seo_site_audits: 'Audits site',
+  seo_languages: 'Langues SEO',
+  seo_bulk_limit: 'Bulk SEO',
+  seo_history_days: 'Historique SEO (jours)',
 };
 
 export function useUnifiedQuotas() {
