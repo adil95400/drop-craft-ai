@@ -180,7 +180,61 @@ export const productsApi = {
     api.get<any>(`/products/${id}/stock-history`, params as any),
 }
 
+// ── Inventory ───────────────────────────────────────────────────────────────
+
+export const inventoryApi = {
+  locations: () =>
+    api.get<{ items: any[] }>('/inventory/locations'),
+
+  levels: (params?: { variant_id?: string; location_id?: string }) =>
+    api.get<{ items: any[] }>('/inventory/levels', params as any),
+
+  upsertLevel: (body: any) =>
+    api.post<any>('/inventory/levels', body),
+}
+
+// ── Product Prices ──────────────────────────────────────────────────────────
+
+export const pricesApi = {
+  list: (params?: { variant_id?: string; store_id?: string }) =>
+    api.get<{ items: any[] }>('/prices', params as any),
+
+  upsert: (body: any) =>
+    api.post<any>('/prices', body),
+}
+
+// ── Product Events ──────────────────────────────────────────────────────────
+
+export const eventsApi = {
+  list: (params?: { product_id?: string; limit?: number }) =>
+    api.get<{ items: any[] }>('/events', params as any),
+}
+
+// ── Product SEO CRUD ────────────────────────────────────────────────────────
+
+export const productSeoApi = {
+  get: (params: { product_id: string; store_id?: string; language?: string }) =>
+    api.get<{ seo: any }>('/product-seo', params as any),
+
+  upsert: (body: any) =>
+    api.post<any>('/product-seo', body),
+
+  versions: (params: { product_id: string }) =>
+    api.get<{ items: any[] }>('/product-seo/versions', params as any),
+}
+
+// ── Store Products ──────────────────────────────────────────────────────────
+
+export const storeProductsApi = {
+  list: (params?: PaginationParams & { store_id?: string; status?: string }) =>
+    api.get<PaginatedResponse<any>>('/store-products', params as any),
+
+  upsert: (body: any) =>
+    api.post<any>('/store-products', body),
+}
+
 // ── Import Jobs ─────────────────────────────────────────────────────────────
+
 
 export const importJobsApi = {
   create: (body: any, idempotencyKey?: string) =>
