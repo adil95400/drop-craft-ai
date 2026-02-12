@@ -44,21 +44,21 @@ export interface PlanLimit {
 }
 
 const QUOTA_LABELS: Record<QuotaKey, string> = {
-  products: 'Produits',
-  imports_monthly: 'Imports mensuels',
-  ai_generations: 'Générations IA',
-  stores: 'Boutiques',
-  suppliers: 'Fournisseurs',
+  products: 'Products',
+  imports_monthly: 'Monthly imports',
+  ai_generations: 'AI generations',
+  stores: 'Connected stores',
+  suppliers: 'Suppliers',
   workflows: 'Workflows',
-  storage_mb: 'Stockage (Mo)',
-  seo_audits: 'Audits SEO produits',
-  seo_generations: 'Générations SEO IA',
-  seo_applies: 'Applications SEO',
-  seo_category_audits: 'Audits catégories',
-  seo_site_audits: 'Audits site',
-  seo_languages: 'Langues SEO',
-  seo_bulk_limit: 'Bulk SEO',
-  seo_history_days: 'Historique SEO (jours)',
+  storage_mb: 'Storage (MB)',
+  seo_audits: 'SEO audits (products)',
+  seo_generations: 'AI generations (SEO)',
+  seo_applies: 'Applied optimizations',
+  seo_category_audits: 'SEO audits (categories)',
+  seo_site_audits: 'SEO audits (site-wide)',
+  seo_languages: 'Languages supported',
+  seo_bulk_limit: 'Bulk optimizations',
+  seo_history_days: 'Historical data retention',
 };
 
 export function useUnifiedQuotas() {

@@ -12487,6 +12487,134 @@ export type Database = {
           },
         ]
       }
+      seo_generation_logs: {
+        Row: {
+          actions: string[] | null
+          applied_at: string | null
+          cost_usd: number | null
+          created_at: string
+          duration_ms: number | null
+          id: string
+          input_data: Json | null
+          job_id: string | null
+          language: string | null
+          model: string | null
+          output_data: Json | null
+          product_id: string | null
+          prompt_hash: string | null
+          provider: string | null
+          status: string | null
+          tokens_in: number | null
+          tokens_out: number | null
+          tone: string | null
+          user_id: string
+        }
+        Insert: {
+          actions?: string[] | null
+          applied_at?: string | null
+          cost_usd?: number | null
+          created_at?: string
+          duration_ms?: number | null
+          id?: string
+          input_data?: Json | null
+          job_id?: string | null
+          language?: string | null
+          model?: string | null
+          output_data?: Json | null
+          product_id?: string | null
+          prompt_hash?: string | null
+          provider?: string | null
+          status?: string | null
+          tokens_in?: number | null
+          tokens_out?: number | null
+          tone?: string | null
+          user_id: string
+        }
+        Update: {
+          actions?: string[] | null
+          applied_at?: string | null
+          cost_usd?: number | null
+          created_at?: string
+          duration_ms?: number | null
+          id?: string
+          input_data?: Json | null
+          job_id?: string | null
+          language?: string | null
+          model?: string | null
+          output_data?: Json | null
+          product_id?: string | null
+          prompt_hash?: string | null
+          provider?: string | null
+          status?: string | null
+          tokens_in?: number | null
+          tokens_out?: number | null
+          tone?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      seo_history_snapshots: {
+        Row: {
+          audit_id: string | null
+          change_source: string | null
+          created_at: string
+          fields_after: Json | null
+          fields_before: Json | null
+          id: string
+          product_id: string
+          score_global: number | null
+          score_keywords: number | null
+          score_meta: number | null
+          score_structure: number | null
+          score_title: number | null
+          scores_detail: Json | null
+          user_id: string
+          version: number
+        }
+        Insert: {
+          audit_id?: string | null
+          change_source?: string | null
+          created_at?: string
+          fields_after?: Json | null
+          fields_before?: Json | null
+          id?: string
+          product_id: string
+          score_global?: number | null
+          score_keywords?: number | null
+          score_meta?: number | null
+          score_structure?: number | null
+          score_title?: number | null
+          scores_detail?: Json | null
+          user_id: string
+          version?: number
+        }
+        Update: {
+          audit_id?: string | null
+          change_source?: string | null
+          created_at?: string
+          fields_after?: Json | null
+          fields_before?: Json | null
+          id?: string
+          product_id?: string
+          score_global?: number | null
+          score_keywords?: number | null
+          score_meta?: number | null
+          score_structure?: number | null
+          score_title?: number | null
+          scores_detail?: Json | null
+          user_id?: string
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "seo_history_snapshots_audit_id_fkey"
+            columns: ["audit_id"]
+            isOneToOne: false
+            referencedRelation: "seo_audits"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       seo_issues: {
         Row: {
           audit_id: string
@@ -12626,6 +12754,143 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      seo_quota_usage: {
+        Row: {
+          ai_cost_usd: number | null
+          ai_tokens_used: number | null
+          id: string
+          month: string
+          seo_applies_used: number | null
+          seo_audits_used: number | null
+          seo_bulk_used: number | null
+          seo_category_audits_used: number | null
+          seo_generations_used: number | null
+          seo_site_audits_used: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          ai_cost_usd?: number | null
+          ai_tokens_used?: number | null
+          id?: string
+          month: string
+          seo_applies_used?: number | null
+          seo_audits_used?: number | null
+          seo_bulk_used?: number | null
+          seo_category_audits_used?: number | null
+          seo_generations_used?: number | null
+          seo_site_audits_used?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          ai_cost_usd?: number | null
+          ai_tokens_used?: number | null
+          id?: string
+          month?: string
+          seo_applies_used?: number | null
+          seo_audits_used?: number | null
+          seo_bulk_used?: number | null
+          seo_category_audits_used?: number | null
+          seo_generations_used?: number | null
+          seo_site_audits_used?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      seo_scores: {
+        Row: {
+          created_at: string
+          critical_count: number | null
+          estimated_conversion_gain: number | null
+          estimated_ctr: number | null
+          estimated_ranking_potential: string | null
+          estimated_traffic_gain: number | null
+          id: string
+          issues_count: number | null
+          last_audit_at: string | null
+          last_audit_id: string | null
+          priority: string | null
+          product_id: string
+          product_name: string | null
+          score_ai_readiness: number | null
+          score_content: number | null
+          score_global: number | null
+          score_images: number | null
+          score_keywords: number | null
+          score_meta: number | null
+          score_structure: number | null
+          score_title: number | null
+          status: string | null
+          updated_at: string
+          user_id: string
+          warning_count: number | null
+        }
+        Insert: {
+          created_at?: string
+          critical_count?: number | null
+          estimated_conversion_gain?: number | null
+          estimated_ctr?: number | null
+          estimated_ranking_potential?: string | null
+          estimated_traffic_gain?: number | null
+          id?: string
+          issues_count?: number | null
+          last_audit_at?: string | null
+          last_audit_id?: string | null
+          priority?: string | null
+          product_id: string
+          product_name?: string | null
+          score_ai_readiness?: number | null
+          score_content?: number | null
+          score_global?: number | null
+          score_images?: number | null
+          score_keywords?: number | null
+          score_meta?: number | null
+          score_structure?: number | null
+          score_title?: number | null
+          status?: string | null
+          updated_at?: string
+          user_id: string
+          warning_count?: number | null
+        }
+        Update: {
+          created_at?: string
+          critical_count?: number | null
+          estimated_conversion_gain?: number | null
+          estimated_ctr?: number | null
+          estimated_ranking_potential?: string | null
+          estimated_traffic_gain?: number | null
+          id?: string
+          issues_count?: number | null
+          last_audit_at?: string | null
+          last_audit_id?: string | null
+          priority?: string | null
+          product_id?: string
+          product_name?: string | null
+          score_ai_readiness?: number | null
+          score_content?: number | null
+          score_global?: number | null
+          score_images?: number | null
+          score_keywords?: number | null
+          score_meta?: number | null
+          score_structure?: number | null
+          score_title?: number | null
+          status?: string | null
+          updated_at?: string
+          user_id?: string
+          warning_count?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "seo_scores_last_audit_id_fkey"
+            columns: ["last_audit_id"]
+            isOneToOne: false
+            referencedRelation: "seo_audits"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       seo_templates: {
         Row: {
