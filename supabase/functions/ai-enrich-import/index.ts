@@ -13,6 +13,7 @@ const MODEL = "gpt-4.1-mini";
 const SYSTEM_PROMPT = `Tu es un expert en e-commerce et SEO. Tu enrichis les fiches produits pour maximiser les conversions et le référencement naturel. Tu retournes uniquement du JSON valide structuré.`;
 
 function buildUserPrompt(product: any, language: string, tone: string): string {
+  const imageCount = Array.isArray(product.images) ? product.images.length : 0;
   return `Enrichis ce produit pour le rendre attractif et SEO-optimisé.
 
 Produit actuel:
@@ -20,6 +21,7 @@ Produit actuel:
 - Description: ${product.description || "N/A"}
 - Catégorie: ${product.category || "N/A"}
 - Prix: ${product.price || "N/A"}
+- Nombre d'images: ${imageCount}
 
 Langue cible: ${language}
 Ton de marque: ${tone}
@@ -30,7 +32,8 @@ Génère un JSON avec:
 - category: catégorie suggérée si manquante ou améliorée
 - seo_title: balise title SEO (max 60 caractères)
 - seo_description: meta description (max 160 caractères)
-- tags: tableau de 5-8 tags pertinents`;
+- tags: tableau de 5-8 tags pertinents
+- image_alt_texts: tableau de ${Math.max(1, imageCount)} textes alternatifs SEO pour les images (descriptifs, incluant le nom du produit et des mots-clés, max 125 caractères chacun)`;
 }
 
 const OPENAI_TOOL = {
@@ -47,6 +50,7 @@ const OPENAI_TOOL = {
         seo_title: { type: "string" },
         seo_description: { type: "string" },
         tags: { type: "array", items: { type: "string" } },
+        image_alt_texts: { type: "array", items: { type: "string" }, description: "SEO alt texts for product images" },
       },
       required: ["title", "description"],
       additionalProperties: false,
@@ -239,6 +243,18 @@ Deno.serve(async (req) => {
           if (enriched.seo_title) updateData.seo_title = enriched.seo_title;
           if (enriched.seo_description) updateData.seo_description = enriched.seo_description;
           if (enriched.tags) updateData.tags = enriched.tags;
+
+          // Apply alt texts to images array
+          if (enriched.image_alt_texts && Array.isArray(product.images) && product.images.length > 0) {
+            const updatedImages = product.images.map((img: any, idx: number) => {
+              const altText = enriched.image_alt_texts[idx] || enriched.image_alt_texts[0] || enriched.title;
+              if (typeof img === "string") {
+                return { url: img, alt: altText };
+              }
+              return { ...img, alt: altText };
+            });
+            updateData.images = updatedImages;
+          }
 
           if (Object.keys(updateData).length > 0) {
             await supabase
