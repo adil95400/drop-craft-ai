@@ -349,7 +349,7 @@ export default function ProductDetailsPage() {
                     {product.cost_price && product.price && (
                       <div>
                         <p className="text-xs text-muted-foreground mb-1">Marge</p>
-                        <p className="text-xl font-semibold text-green-600">
+                        <p className="text-xl font-semibold text-success">
                           {((product.price - product.cost_price) / product.price * 100).toFixed(0)}%
                         </p>
                       </div>
@@ -372,14 +372,14 @@ export default function ProductDetailsPage() {
                         <Eye className="h-4 w-4" />
                         <span className="text-xs">Vues (30j)</span>
                       </div>
-                      <p className="text-lg font-semibold">{product.view_count || Math.floor(Math.random() * 500)}</p>
+                      <p className="text-lg font-semibold">{product.view_count || 0}</p>
                     </div>
                     <div className="p-3 rounded-lg bg-muted/50">
                       <div className="flex items-center gap-2 text-muted-foreground mb-1">
                         <ShoppingCart className="h-4 w-4" />
                         <span className="text-xs">Ventes</span>
                       </div>
-                      <p className="text-lg font-semibold">{Math.floor(Math.random() * 50)}</p>
+                      <p className="text-lg font-semibold">{(product as any).sales_count || 0}</p>
                     </div>
                     <div className="p-3 rounded-lg bg-muted/50">
                       <div className="flex items-center gap-2 text-muted-foreground mb-1">
