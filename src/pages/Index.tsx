@@ -54,7 +54,7 @@ const HeroSection = memo(() => {
                 height={64}
                 loading="eager"
               />
-              <Badge className="px-5 py-2.5 text-sm bg-gradient-to-r from-primary/15 to-primary/5 text-primary border-primary/25 shadow-sm inline-flex items-center gap-2">
+              <Badge className="px-5 py-2.5 text-sm bg-primary/20 text-foreground border-primary/30 shadow-sm inline-flex items-center gap-2 backdrop-blur-sm">
                 <Sparkles className="h-4 w-4" />
                 La plateforme n°1 du dropshipping intelligent
               </Badge>
@@ -111,7 +111,7 @@ const HeroSection = memo(() => {
           </div>
           
           {/* Right Image - Enhanced with better shadows and floating elements */}
-          <div className="relative lg:order-last order-first">
+          <div className="relative order-last">
             <div className="relative rounded-2xl overflow-hidden shadow-2xl shadow-primary/10 border border-border/50 bg-gradient-to-br from-background to-secondary/20">
               <img 
                 src={heroImageSm} 
@@ -122,7 +122,7 @@ const HeroSection = memo(() => {
                 height={360}
                 loading="eager"
                 decoding="async"
-                fetchPriority="high"
+                {...({ fetchpriority: "high" } as React.ImgHTMLAttributes<HTMLImageElement>)}
                 sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 640px"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-background/30 via-transparent to-transparent" />
@@ -362,7 +362,7 @@ const BenefitsSection = () => {
     <section className="py-12 sm:py-16 lg:py-20 bg-secondary/30">
       <div className="container mx-auto px-4 sm:px-6">
         <div className="text-center space-y-3 sm:space-y-4 mb-12 sm:mb-16">
-          <Badge className="px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm bg-success/15 text-green-800 dark:text-success border-success/30">
+          <Badge className="px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm bg-success/15 text-success border-success/30">
             Avantages
           </Badge>
           <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold">Pourquoi ShopOpti+ ?</h2>
@@ -606,7 +606,7 @@ const TestimonialsSection = () => {
     <section className="py-20">
       <div className="container mx-auto px-4 sm:px-6">
         <div className="text-center space-y-4 mb-16">
-          <Badge className="px-4 py-2 bg-warning/15 text-amber-800 dark:text-warning border-warning/30">
+          <Badge className="px-4 py-2 bg-warning/15 text-warning border-warning/30">
             Témoignages
           </Badge>
           <h2 className="text-3xl md:text-4xl font-bold">Ils nous font confiance</h2>
