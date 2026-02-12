@@ -1494,6 +1494,249 @@ async function getSeoGeneration(jobId: string, auth: NonNullable<Awaited<ReturnT
   }, 200, reqId);
 }
 
+// ── SEO Product Audit Handlers ───────────────────────────────────────────────
+
+async function auditProductSeo(req: Request, auth: NonNullable<Awaited<ReturnType<typeof authenticate>>>, reqId: string) {
+  const body = await req.json();
+  const productIds: string[] = body.product_ids ?? (body.product_id ? [body.product_id] : []);
+  if (productIds.length === 0) return errorResponse("VALIDATION_ERROR", "product_ids or product_id is required", 400, reqId);
+  if (productIds.length > 50) return errorResponse("VALIDATION_ERROR", "Maximum 50 products per audit", 400, reqId);
+
+  const admin = serviceClient();
+  const { data: products, error } = await admin
+    .from("products")
+    .select("id, title, description, seo_title, seo_description, images, tags, sku, brand, category, barcode, weight, status")
+    .eq("user_id", auth.user.id)
+    .in("id", productIds);
+
+  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
+  if (!products || products.length === 0) return errorResponse("NOT_FOUND", "No products found", 404, reqId);
+
+  const results = products.map((p: any) => scoreProduct(p));
+
+  // Store scores in product_seo table and create version snapshots
+  for (const result of results) {
+    const seoData = {
+      user_id: auth.user.id,
+      product_id: result.product_id,
+      language: body.language ?? "fr",
+      seo_score: result.score.global,
+      score_details: result.score,
+      issues: result.issues,
+      strengths: result.strengths,
+      business_impact: result.business_impact,
+      last_audited_at: new Date().toISOString(),
+    };
+
+    // Upsert score
+    await admin.from("product_seo").upsert(seoData, { onConflict: "user_id,product_id,language" }).select();
+
+    // Create version snapshot
+    await admin.from("product_seo_versions").insert({
+      user_id: auth.user.id,
+      product_id: result.product_id,
+      language: body.language ?? "fr",
+      version: Date.now(),
+      fields_json: {
+        seo_title: result.current.seo_title,
+        meta_description: result.current.seo_description,
+        score: result.score,
+        issues_count: result.issues.length,
+      },
+      source: "audit",
+    });
+  }
+
+  return json({ products: results, total: results.length, audited_at: new Date().toISOString() }, 200, reqId);
+}
+
+function scoreProduct(product: any) {
+  const issues: Array<{ id: string; severity: string; category: string; message: string; field?: string; recommendation?: string }> = [];
+  const strengths: string[] = [];
+
+  // ── Title scoring ──
+  let titleScore = 0;
+  const title = product.seo_title || product.title || "";
+  if (!title) {
+    issues.push({ id: "no_title", severity: "critical", category: "seo", message: "Titre manquant", field: "title", recommendation: "Ajoutez un titre produit optimisé de 20-70 caractères" });
+  } else {
+    if (title.length < 20) issues.push({ id: "title_short", severity: "warning", category: "seo", message: `Titre trop court (${title.length} car.)`, field: "title", recommendation: "Allongez le titre à minimum 20 caractères avec des mots-clés" });
+    else if (title.length > 70) issues.push({ id: "title_long", severity: "warning", category: "seo", message: `Titre trop long (${title.length} car.)`, field: "title", recommendation: "Raccourcissez le titre à maximum 70 caractères" });
+    else { titleScore = 100; strengths.push("Titre de longueur optimale"); }
+    if (title.length >= 10) titleScore = Math.max(titleScore, 50);
+  }
+
+  // ── Meta description scoring ──
+  let metaScore = 0;
+  const meta = product.seo_description || "";
+  if (!meta) {
+    issues.push({ id: "no_meta", severity: "critical", category: "seo", message: "Meta description manquante", field: "seo_description", recommendation: "Ajoutez une meta description de 120-160 caractères" });
+  } else {
+    if (meta.length < 120) issues.push({ id: "meta_short", severity: "warning", category: "seo", message: `Meta description courte (${meta.length} car.)`, field: "seo_description", recommendation: "Allongez à 120-160 caractères" });
+    else if (meta.length > 160) issues.push({ id: "meta_long", severity: "info", category: "seo", message: `Meta description longue (${meta.length} car.)`, field: "seo_description", recommendation: "Raccourcissez à max 160 caractères" });
+    else { metaScore = 100; strengths.push("Meta description optimale"); }
+    if (meta.length >= 50) metaScore = Math.max(metaScore, 50);
+  }
+
+  // ── Content scoring ──
+  let contentScore = 0;
+  const desc = product.description || "";
+  if (!desc) {
+    issues.push({ id: "no_desc", severity: "critical", category: "content", message: "Description produit manquante", field: "description", recommendation: "Ajoutez une description riche de minimum 100 caractères" });
+  } else {
+    if (desc.length < 100) issues.push({ id: "desc_short", severity: "warning", category: "content", message: `Description courte (${desc.length} car.)`, field: "description", recommendation: "Enrichissez la description (min 100 caractères)" });
+    else { contentScore = 80; strengths.push("Description produit présente"); }
+    if (desc.length >= 300) { contentScore = 100; strengths.push("Description riche et détaillée"); }
+    else if (desc.length >= 50) contentScore = Math.max(contentScore, 40);
+  }
+
+  // ── Images scoring ──
+  let imageScore = 0;
+  const images = Array.isArray(product.images) ? product.images : [];
+  if (images.length === 0) {
+    issues.push({ id: "no_images", severity: "critical", category: "images", message: "Aucune image produit", field: "images", recommendation: "Ajoutez au moins 2 images de qualité" });
+  } else if (images.length < 2) {
+    imageScore = 50;
+    issues.push({ id: "few_images", severity: "warning", category: "images", message: "Une seule image", field: "images", recommendation: "Ajoutez plus d'images (recommandé: 3+)" });
+  } else {
+    imageScore = Math.min(100, images.length * 25);
+    strengths.push(`${images.length} images produit`);
+  }
+  // Check alt texts
+  const imagesWithAlt = images.filter((img: any) => typeof img === "object" && img.alt);
+  if (images.length > 0 && imagesWithAlt.length < images.length) {
+    issues.push({ id: "missing_alt", severity: "warning", category: "images", message: `${images.length - imagesWithAlt.length} image(s) sans texte alt`, field: "images", recommendation: "Ajoutez des textes alternatifs SEO pour chaque image" });
+    imageScore = Math.max(0, imageScore - 20);
+  }
+
+  // ── Data completeness ──
+  let dataScore = 0;
+  const fields = { sku: product.sku, brand: product.brand, category: product.category, barcode: product.barcode, weight: product.weight };
+  const filledCount = Object.values(fields).filter(v => v !== null && v !== undefined && v !== "").length;
+  dataScore = Math.round((filledCount / Object.keys(fields).length) * 100);
+  if (!product.sku) issues.push({ id: "no_sku", severity: "warning", category: "data", message: "SKU manquant", field: "sku", recommendation: "Ajoutez un SKU unique" });
+  if (!product.brand) issues.push({ id: "no_brand", severity: "info", category: "data", message: "Marque non renseignée", field: "brand", recommendation: "Renseignez la marque pour le Google Shopping" });
+  if (!product.category) issues.push({ id: "no_category", severity: "warning", category: "data", message: "Catégorie manquante", field: "category", recommendation: "Catégorisez le produit" });
+  if (filledCount >= 4) strengths.push("Données produit bien renseignées");
+
+  // ── AI readiness ──
+  let aiScore = 0;
+  const tags = Array.isArray(product.tags) ? product.tags : [];
+  if (tags.length >= 3) { aiScore += 40; strengths.push(`${tags.length} tags produit`); }
+  else issues.push({ id: "few_tags", severity: "info", category: "ai", message: `Peu de tags (${tags.length})`, field: "tags", recommendation: "Ajoutez 5+ tags pour le Google Shopping et IA" });
+  if (product.brand) aiScore += 20;
+  if (product.category) aiScore += 20;
+  if (desc.length >= 100) aiScore += 20;
+
+  // ── Global score ──
+  const globalScore = Math.round(titleScore * 0.25 + metaScore * 0.2 + contentScore * 0.2 + imageScore * 0.15 + dataScore * 0.1 + aiScore * 0.1);
+
+  // ── Business impact estimation ──
+  const criticalCount = issues.filter(i => i.severity === "critical").length;
+  const warningCount = issues.filter(i => i.severity === "warning").length;
+  const trafficImpact = criticalCount > 2 ? "high" : criticalCount > 0 ? "medium" : warningCount > 2 ? "low" : "minimal";
+  const conversionImpact = (!desc || desc.length < 50) ? "high" : images.length < 2 ? "medium" : "low";
+  const estimatedTrafficGain = Math.min(50, criticalCount * 15 + warningCount * 5);
+  const estimatedConversionGain = Math.min(30, (100 - globalScore) * 0.3);
+
+  return {
+    product_id: product.id,
+    product_name: product.title || product.seo_title || "Sans nom",
+    current: { seo_title: product.seo_title, seo_description: product.seo_description, title: product.title, description: product.description },
+    score: { global: globalScore, seo: Math.round((titleScore + metaScore) / 2), content: contentScore, images: imageScore, data: dataScore, ai_readiness: aiScore },
+    status: globalScore >= 70 ? "optimized" : globalScore >= 40 ? "needs_work" : "critical",
+    issues,
+    strengths,
+    business_impact: {
+      traffic_impact: trafficImpact,
+      conversion_impact: conversionImpact,
+      estimated_traffic_gain_percent: estimatedTrafficGain,
+      estimated_conversion_gain_percent: estimatedConversionGain,
+      priority: criticalCount > 0 ? "urgent" : warningCount > 2 ? "high" : "normal",
+    },
+  };
+}
+
+async function listProductSeoScores(url: URL, auth: NonNullable<Awaited<ReturnType<typeof authenticate>>>, reqId: string) {
+  const { page, perPage, from, to } = parsePagination(url);
+  const admin = serviceClient();
+  const statusFilter = url.searchParams.get("status"); // optimized | needs_work | critical
+  const minScore = url.searchParams.get("min_score");
+  const maxScore = url.searchParams.get("max_score");
+  const sort = url.searchParams.get("sort") ?? "score_asc";
+
+  // Fetch products with their SEO data
+  let query = admin.from("products").select("id, title, description, seo_title, seo_description, images, tags, sku, brand, category, barcode, weight, status", { count: "exact" }).eq("user_id", auth.user.id);
+
+  const ascending = sort === "score_asc";
+  query = query.order("updated_at", { ascending }).range(from, to);
+
+  const { data: products, count, error } = await query;
+  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
+
+  let scored = (products ?? []).map((p: any) => scoreProduct(p));
+
+  // Apply filters
+  if (statusFilter) scored = scored.filter((s: any) => s.status === statusFilter);
+  if (minScore) scored = scored.filter((s: any) => s.score.global >= parseInt(minScore));
+  if (maxScore) scored = scored.filter((s: any) => s.score.global <= parseInt(maxScore));
+
+  // Sort
+  scored.sort((a: any, b: any) => ascending ? a.score.global - b.score.global : b.score.global - a.score.global);
+
+  // Stats
+  const avgScore = scored.length > 0 ? Math.round(scored.reduce((s: number, p: any) => s + p.score.global, 0) / scored.length) : 0;
+  const criticalCount = scored.filter((s: any) => s.status === "critical").length;
+  const needsWorkCount = scored.filter((s: any) => s.status === "needs_work").length;
+  const optimizedCount = scored.filter((s: any) => s.status === "optimized").length;
+
+  return json({
+    items: scored,
+    stats: { avg_score: avgScore, critical: criticalCount, needs_work: needsWorkCount, optimized: optimizedCount, total: count ?? 0 },
+    meta: { page, per_page: perPage, total: count ?? 0 },
+  }, 200, reqId);
+}
+
+async function getProductSeoScore(productId: string, auth: NonNullable<Awaited<ReturnType<typeof authenticate>>>, reqId: string) {
+  const admin = serviceClient();
+  const { data: product, error } = await admin
+    .from("products")
+    .select("id, title, description, seo_title, seo_description, images, tags, sku, brand, category, barcode, weight, status")
+    .eq("id", productId)
+    .eq("user_id", auth.user.id)
+    .single();
+
+  if (error || !product) return errorResponse("NOT_FOUND", "Product not found", 404, reqId);
+
+  return json(scoreProduct(product), 200, reqId);
+}
+
+async function getProductSeoHistory(productId: string, url: URL, auth: NonNullable<Awaited<ReturnType<typeof authenticate>>>, reqId: string) {
+  const admin = serviceClient();
+  const { page, perPage, from, to } = parsePagination(url);
+
+  const { data, count, error } = await admin
+    .from("product_seo_versions")
+    .select("*", { count: "exact" })
+    .eq("user_id", auth.user.id)
+    .eq("product_id", productId)
+    .order("created_at", { ascending: false })
+    .range(from, to);
+
+  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
+
+  return json({
+    items: (data ?? []).map((v: any) => ({
+      id: v.id,
+      version: v.version,
+      source: v.source,
+      fields: v.fields_json,
+      created_at: v.created_at,
+    })),
+    meta: { page, per_page: perPage, total: count ?? 0 },
+  }, 200, reqId);
+}
+
 // ── Router ───────────────────────────────────────────────────────────────────
 
 Deno.serve(async (req) => {
@@ -1592,6 +1835,16 @@ Deno.serve(async (req) => {
     if (req.method === "GET" && seoGenMatch) return await getSeoGeneration(seoGenMatch.params.jobId, auth, reqId);
 
     if (req.method === "POST" && matchRoute("/v1/seo/apply", apiPath)) return await applySeoContent(req, auth, reqId);
+
+    // ── SEO Product Audit ──────────────────────────────────────
+    if (req.method === "POST" && matchRoute("/v1/seo/products/audit", apiPath)) return await auditProductSeo(req, auth, reqId);
+    if (req.method === "GET" && matchRoute("/v1/seo/products/scores", apiPath)) return await listProductSeoScores(url, auth, reqId);
+
+    const seoProductMatch = matchRoute("/v1/seo/products/:productId/score", apiPath);
+    if (req.method === "GET" && seoProductMatch) return await getProductSeoScore(seoProductMatch.params.productId, auth, reqId);
+
+    const seoHistoryMatch = matchRoute("/v1/seo/products/:productId/history", apiPath);
+    if (req.method === "GET" && seoHistoryMatch) return await getProductSeoHistory(seoHistoryMatch.params.productId, url, auth, reqId);
 
     return errorResponse("NOT_FOUND", `Route ${req.method} ${apiPath} not found`, 404, reqId);
   } catch (err) {
