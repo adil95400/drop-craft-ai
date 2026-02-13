@@ -22,6 +22,8 @@ interface ProductInfo {
   category: string | null;
   brand: string | null;
   source_url: string | null;
+  supplier_url: string | null;
+  supplier_product_id: string | null;
   created_at: string;
 }
 
@@ -91,7 +93,7 @@ Deno.serve(async (req) => {
 
       const { data: products, error: productsError } = await supabase
         .from("products")
-        .select("id, title, sku, price, images, category, brand, source_url, created_at")
+        .select("id, title, sku, price, images, category, brand, source_url, supplier_url, supplier_product_id, created_at")
         .eq("user_id", user.id)
         .order("created_at", { ascending: true });
 
@@ -130,6 +132,37 @@ Deno.serve(async (req) => {
           groupId: `dup-${++groupCounter}`, primary,
           duplicates: prods.slice(1).map((p) => { processed.add(p.id); return { ...p, similarity: 1.0, reasons: ["SKU identique"] }; }),
           matchType: "exact_sku",
+        });
+      }
+
+      // Phase 1b: URL source matches (same supplier_url or source_url)
+      function normalizeUrl(url: string): string {
+        if (!url) return "";
+        try {
+          const u = new URL(url);
+          // Remove tracking params, keep path
+          return `${u.hostname}${u.pathname}`.toLowerCase().replace(/\/+$/, "");
+        } catch { return url.toLowerCase().trim(); }
+      }
+
+      const urlMap = new Map<string, ProductInfo[]>();
+      for (const p of products) {
+        if (processed.has(p.id)) continue;
+        const url = (p as ProductInfo).supplier_url || (p as ProductInfo).source_url;
+        if (url) {
+          const key = normalizeUrl(url);
+          if (!urlMap.has(key)) urlMap.set(key, []);
+          urlMap.get(key)!.push(p as ProductInfo);
+        }
+      }
+      for (const [, prods] of urlMap) {
+        if (prods.length < 2) continue;
+        const primary = prods[0];
+        processed.add(primary.id);
+        groups.push({
+          groupId: `dup-${++groupCounter}`, primary,
+          duplicates: prods.slice(1).map((p) => { processed.add(p.id); return { ...p, similarity: 1.0, reasons: ["URL source identique"] }; }),
+          matchType: "exact_sku", // reuse type for exact matches
         });
       }
 

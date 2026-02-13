@@ -265,6 +265,145 @@ async function cancelJob(jobId: string, auth: NonNullable<Awaited<ReturnType<typ
   return json({ job_id: jobId, status: "cancelled" }, 200, reqId);
 }
 
+async function resumeJob(jobId: string, auth: NonNullable<Awaited<ReturnType<typeof authenticate>>>, reqId: string) {
+  const admin = serviceClient();
+  const { data: job } = await admin
+    .from("background_jobs")
+    .select("id, status, items_total, items_processed")
+    .eq("id", jobId)
+    .eq("user_id", auth.user.id)
+    .single();
+
+  if (!job) return errorResponse("NOT_FOUND", "Job not found", 404, reqId);
+  if (job.status !== "cancelled" && job.status !== "paused" && job.status !== "failed") {
+    return errorResponse("INVALID_STATE", `Cannot resume job in ${job.status} state`, 409, reqId);
+  }
+
+  // Reset pending items to allow re-processing
+  await admin
+    .from("import_job_items")
+    .update({ status: "pending", updated_at: new Date().toISOString() })
+    .eq("job_id", jobId)
+    .in("status", ["cancelled", "paused"]);
+
+  await admin
+    .from("background_jobs")
+    .update({ status: "queued", updated_at: new Date().toISOString(), completed_at: null })
+    .eq("id", jobId);
+
+  return json({ job_id: jobId, status: "queued", remaining: (job.items_total ?? 0) - (job.items_processed ?? 0) }, 200, reqId);
+}
+
+async function replayJob(jobId: string, auth: NonNullable<Awaited<ReturnType<typeof authenticate>>>, reqId: string) {
+  const admin = serviceClient();
+  const { data: originalJob } = await admin
+    .from("background_jobs")
+    .select("*")
+    .eq("id", jobId)
+    .eq("user_id", auth.user.id)
+    .single();
+
+  if (!originalJob) return errorResponse("NOT_FOUND", "Job not found", 404, reqId);
+
+  // Create a new job with the same input data
+  const { data: newJob, error } = await admin
+    .from("background_jobs")
+    .insert({
+      user_id: auth.user.id,
+      job_type: originalJob.job_type,
+      job_subtype: originalJob.job_subtype,
+      status: "queued",
+      name: `Replay: ${originalJob.name || originalJob.job_subtype}`,
+      input_data: originalJob.input_data,
+      metadata: { ...((originalJob.metadata as any) || {}), replayed_from: jobId },
+      items_total: 0,
+      items_processed: 0,
+      items_succeeded: 0,
+      items_failed: 0,
+      progress_percent: 0,
+    })
+    .select("id, status")
+    .single();
+
+  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
+  return json({ job_id: newJob.id, status: newJob.status, replayed_from: jobId }, 201, reqId);
+}
+
+async function deduplicateScan(req: Request, auth: NonNullable<Awaited<ReturnType<typeof authenticate>>>, reqId: string) {
+  const body = await req.json().catch(() => ({}));
+  
+  // Proxy to detect-duplicates edge function
+  const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+  const resp = await fetch(`${supabaseUrl}/functions/v1/detect-duplicates`, {
+    method: "POST",
+    headers: {
+      "Authorization": req.headers.get("authorization") || "",
+      "Content-Type": "application/json",
+      "apikey": Deno.env.get("SUPABASE_ANON_KEY")!,
+    },
+    body: JSON.stringify({ action: "scan", threshold: body.threshold ?? 0.75 }),
+  });
+  
+  const data = await resp.json();
+  return json(data, resp.status, reqId);
+}
+
+async function deduplicateMerge(req: Request, auth: NonNullable<Awaited<ReturnType<typeof authenticate>>>, reqId: string) {
+  const body = await req.json();
+  
+  const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+  const resp = await fetch(`${supabaseUrl}/functions/v1/detect-duplicates`, {
+    method: "POST",
+    headers: {
+      "Authorization": req.headers.get("authorization") || "",
+      "Content-Type": "application/json",
+      "apikey": Deno.env.get("SUPABASE_ANON_KEY")!,
+    },
+    body: JSON.stringify({ action: "merge", keepId: body.keep_id, removeIds: body.remove_ids }),
+  });
+  
+  const data = await resp.json();
+  return json(data, resp.status, reqId);
+}
+
+async function postImportEnrich(req: Request, auth: NonNullable<Awaited<ReturnType<typeof authenticate>>>, reqId: string) {
+  const body = await req.json();
+  const { job_id, language, tone } = body;
+  
+  if (!job_id) return errorResponse("VALIDATION_ERROR", "job_id is required", 400, reqId);
+
+  const admin = serviceClient();
+  
+  // Get products from this import job
+  const { data: items } = await admin
+    .from("import_job_items")
+    .select("product_id")
+    .eq("job_id", job_id)
+    .eq("status", "success")
+    .not("product_id", "is", null);
+
+  const productIds = (items || []).map((i: any) => i.product_id).filter(Boolean);
+  
+  if (productIds.length === 0) {
+    return json({ success: true, message: "No products to enrich", enriched: 0 }, 200, reqId);
+  }
+
+  // Trigger ai-enrich-import
+  const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+  const resp = await fetch(`${supabaseUrl}/functions/v1/ai-enrich-import`, {
+    method: "POST",
+    headers: {
+      "Authorization": req.headers.get("authorization") || "",
+      "Content-Type": "application/json",
+      "apikey": Deno.env.get("SUPABASE_ANON_KEY")!,
+    },
+    body: JSON.stringify({ product_ids: productIds, language: language ?? "fr", tone: tone ?? "professionnel" }),
+  });
+  
+  const data = await resp.json();
+  return json({ ...data, products_count: productIds.length }, resp.status, reqId);
+}
+
 // ── Mappers ──────────────────────────────────────────────────────────────────
 
 function mapJobRow(row: any) {
@@ -3258,6 +3397,19 @@ Deno.serve(async (req) => {
 
     const cancelMatch = matchRoute("/v1/import/jobs/:jobId/cancel", apiPath);
     if (req.method === "POST" && cancelMatch) return await cancelJob(cancelMatch.params.jobId, auth, reqId);
+
+    const resumeMatch = matchRoute("/v1/import/jobs/:jobId/resume", apiPath);
+    if (req.method === "POST" && resumeMatch) return await resumeJob(resumeMatch.params.jobId, auth, reqId);
+
+    const replayMatch = matchRoute("/v1/import/jobs/:jobId/replay", apiPath);
+    if (req.method === "POST" && replayMatch) return await replayJob(replayMatch.params.jobId, auth, reqId);
+
+    // ── Deduplication ──────────────────────────────────────────
+    if (req.method === "POST" && matchRoute("/v1/import/deduplicate/scan", apiPath)) return await deduplicateScan(req, auth, reqId);
+    if (req.method === "POST" && matchRoute("/v1/import/deduplicate/merge", apiPath)) return await deduplicateMerge(req, auth, reqId);
+
+    // ── Post-import enrichment ──────────────────────────────────
+    if (req.method === "POST" && matchRoute("/v1/import/jobs/enrich", apiPath)) return await postImportEnrich(req, auth, reqId);
 
     // ── Presets ─────────────────────────────────────────────────
     if (req.method === "POST" && matchRoute("/v1/import/presets/import", apiPath)) return await importPreset(req, auth, reqId);

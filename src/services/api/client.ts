@@ -254,6 +254,25 @@ export const importJobsApi = {
 
   cancel: (jobId: string) =>
     api.post<{ job_id: string; status: string }>(`/import/jobs/${jobId}/cancel`),
+
+  resume: (jobId: string) =>
+    api.post<{ job_id: string; status: string; remaining: number }>(`/import/jobs/${jobId}/resume`),
+
+  replay: (jobId: string) =>
+    api.post<{ job_id: string; status: string; replayed_from: string }>(`/import/jobs/${jobId}/replay`),
+
+  enrich: (jobId: string, options?: { language?: string; tone?: string }) =>
+    api.post<{ success: boolean; job_id?: string; products_count: number }>('/import/jobs/enrich', { job_id: jobId, ...options }),
+}
+
+// ── Deduplication ───────────────────────────────────────────────────────────
+
+export const deduplicationApi = {
+  scan: (threshold?: number) =>
+    api.post<{ success: boolean; groups: any[]; stats: any }>('/import/deduplicate/scan', { threshold: threshold ?? 0.75 }),
+
+  merge: (keepId: string, removeIds: string[]) =>
+    api.post<{ success: boolean; merged: number; keptId: string }>('/import/deduplicate/merge', { keep_id: keepId, remove_ids: removeIds }),
 }
 
 export const presetsApi = {
