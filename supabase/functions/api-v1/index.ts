@@ -30,6 +30,70 @@ function parsePagination(url: URL) {
   return { page, perPage, from: (page - 1) * perPage, to: page * perPage - 1 };
 }
 
+// ── Input Sanitization ──────────────────────────────────────────────────────
+
+function sanitizeString(input: string, maxLength = 1000): string {
+  if (typeof input !== "string") return "";
+  return input.slice(0, maxLength).replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, "").trim();
+}
+
+function validateRequiredFields(body: Record<string, unknown>, fields: string[]): string | null {
+  for (const field of fields) {
+    if (body[field] === undefined || body[field] === null || body[field] === "") {
+      return `Missing required field: ${field}`;
+    }
+  }
+  return null;
+}
+
+// ── Rate Limiting (in-memory per-isolate) ───────────────────────────────────
+
+const rateLimitStore = new Map<string, { count: number; resetAt: number }>();
+
+function checkRateLimit(userId: string, endpoint: string, maxRequests = 60, windowMs = 60000): boolean {
+  const key = `${userId}:${endpoint}`;
+  const now = Date.now();
+  const entry = rateLimitStore.get(key);
+
+  if (!entry || now >= entry.resetAt) {
+    rateLimitStore.set(key, { count: 1, resetAt: now + windowMs });
+    return true;
+  }
+
+  entry.count++;
+  if (entry.count > maxRequests) return false;
+  return true;
+}
+
+function rateLimitResponse(reqId: string) {
+  return errorResponse("RATE_LIMITED", "Too many requests. Please retry later.", 429, reqId);
+}
+
+// ── Circuit Breaker (per-service) ───────────────────────────────────────────
+
+const circuitBreakers = new Map<string, { failures: number; openUntil: number }>();
+
+function isCircuitOpen(service: string): boolean {
+  const cb = circuitBreakers.get(service);
+  if (!cb) return false;
+  if (Date.now() >= cb.openUntil) {
+    circuitBreakers.delete(service);
+    return false;
+  }
+  return cb.failures >= 5;
+}
+
+function recordFailure(service: string) {
+  const cb = circuitBreakers.get(service) || { failures: 0, openUntil: 0 };
+  cb.failures++;
+  if (cb.failures >= 5) cb.openUntil = Date.now() + 30000; // 30s cooldown
+  circuitBreakers.set(service, cb);
+}
+
+function recordSuccess(service: string) {
+  circuitBreakers.delete(service);
+}
+
 async function authenticate(req: Request) {
   const authHeader = req.headers.get("authorization");
   if (!authHeader) return null;
@@ -3771,6 +3835,12 @@ Deno.serve(async (req) => {
 
     const auth = await authenticate(req);
     if (!auth) return errorResponse("UNAUTHORIZED", "Valid Bearer token required", 401, reqId);
+
+    // ── Rate Limiting ─────────────────────────────────────────────
+    const rateLimitEndpoint = apiPath.split("/").slice(0, 3).join("/");
+    if (!checkRateLimit(auth.user.id, rateLimitEndpoint)) {
+      return rateLimitResponse(reqId);
+    }
 
     // ── Products CRUD ──────────────────────────────────────────
     if (req.method === "GET" && matchRoute("/v1/products/stats", apiPath)) return await getProductStats(auth, reqId);
