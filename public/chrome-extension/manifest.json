@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "ShopOpti+ - Dropshipping Pro",
-  "version": "5.8.1",
+  "version": "5.9.0",
   "description": "Extension Dropshipping Pro - Import 1-clic, IA optimisation, monitoring prix. 45+ plateformes supportées.",
   
   "permissions": [
@@ -63,7 +63,9 @@
     "*://*.wayfair.com/*",
     "*://*.zalando.fr/*",
     "*://*.asos.com/*",
-    "*://*.myshopify.com/*"
+    "*://*.myshopify.com/*",
+    "*://*.shop.tiktok.com/*",
+    "*://*.tiktok.com/*"
   ],
   
   "content_scripts": [
@@ -87,7 +89,20 @@
         "*://*.temu.com/*",
         "*://*.shein.com/*",
         "*://*.shein.fr/*",
-        "*://*.etsy.com/*"
+        "*://*.etsy.com/*",
+        "*://*.walmart.com/*",
+        "*://*.wish.com/*",
+        "*://*.banggood.com/*",
+        "*://*.dhgate.com/*",
+        "*://*.cjdropshipping.com/*",
+        "*://*.cdiscount.com/*",
+        "*://*.fnac.com/*",
+        "*://*.rakuten.fr/*",
+        "*://*.rakuten.com/*",
+        "*://*.homedepot.com/*",
+        "*://*.lowes.com/*",
+        "*://*.costco.com/*",
+        "*://*.myshopify.com/*"
       ],
       "js": [
         "lib/logger.js",
@@ -107,6 +122,54 @@
         "lib/backend-first-import.js",
         "lib/unified-button-injector.js",
         "lib/feedback-system.js",
+        "extractors/core-extractor.js",
+        "extractors/aliexpress-extractor.js",
+        "extractors/amazon-extractor.js",
+        "extractors/ebay-extractor.js",
+        "extractors/temu-extractor.js",
+        "extractors/shein-extractor.js",
+        "extractors/etsy-extractor.js",
+        "extractors/walmart-extractor.js",
+        "extractors/wish-extractor.js",
+        "extractors/banggood-extractor.js",
+        "extractors/dhgate-extractor.js",
+        "extractors/cjdropshipping-extractor.js",
+        "extractors/cdiscount-extractor.js",
+        "extractors/fnac-extractor.js",
+        "extractors/rakuten-extractor.js",
+        "extractors/homedepot-extractor.js",
+        "extractors/shopify-extractor.js",
+        "extractors/extractor-registry.js",
+        "content-script.js"
+      ],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": [
+        "*://*.shop.tiktok.com/*",
+        "*://*.tiktok.com/shop/*"
+      ],
+      "js": [
+        "lib/logger.js",
+        "lib/gateway-client.js",
+        "lib/action-logger.js",
+        "lib/deep-links.js",
+        "lib/feature-flags.js",
+        "lib/storage-manager.js",
+        "lib/secure-dom-builder.js",
+        "lib/offline-queue.js",
+        "lib/encrypted-storage.js",
+        "lib/security.js",
+        "lib/onboarding-system.js",
+        "lib/platform-detector.js",
+        "lib/backend-import-client.js",
+        "lib/import-response-handler.js",
+        "lib/backend-first-import.js",
+        "lib/unified-button-injector.js",
+        "lib/feedback-system.js",
+        "extractors/core-extractor.js",
+        "extractors/tiktok-extractor.js",
+        "extractors/extractor-registry.js",
         "content-script.js"
       ],
       "run_at": "document_idle"
@@ -167,6 +230,20 @@
         "*://*.shein.com/*",
         "*://*.shein.fr/*",
         "*://*.etsy.com/*",
+        "*://*.walmart.com/*",
+        "*://*.wish.com/*",
+        "*://*.banggood.com/*",
+        "*://*.dhgate.com/*",
+        "*://*.cjdropshipping.com/*",
+        "*://*.cdiscount.com/*",
+        "*://*.fnac.com/*",
+        "*://*.rakuten.fr/*",
+        "*://*.rakuten.com/*",
+        "*://*.homedepot.com/*",
+        "*://*.lowes.com/*",
+        "*://*.costco.com/*",
+        "*://*.myshopify.com/*",
+        "*://*.shop.tiktok.com/*",
         "*://*.shopopti.io/*"
       ]
     }
