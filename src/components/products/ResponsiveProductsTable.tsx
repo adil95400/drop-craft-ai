@@ -46,6 +46,8 @@ interface Product {
   seo_title?: string;
   seo_description?: string;
   images?: string[];
+  brand?: string;
+  variants?: any[];
 }
 
 type SortField = 'name' | 'price' | 'stock_quantity' | 'margin' | 'created_at';
@@ -177,7 +179,7 @@ function MarginBadge({ product }: { product: Product }) {
 // Health score mini indicator
 function HealthIndicator({ product }: { product: Product }) {
   const score = getHealthScore(product);
-  const color = score >= 80 ? 'bg-emerald-500' : score >= 50 ? 'bg-amber-500' : 'bg-red-500';
+  const color = score >= 80 ? 'bg-primary' : score >= 50 ? 'bg-accent-foreground' : 'bg-destructive';
   
   return (
     <TooltipProvider>
@@ -407,8 +409,9 @@ function DesktopTableView({
             <SortableHeader label="Marge" field="margin" currentField={sortField} direction={sortDirection} onSort={onSort} className="text-center" />
             <SortableHeader label="Stock" field="stock_quantity" currentField={sortField} direction={sortDirection} onSort={onSort} className="text-center" />
             <TableHead className="text-center">Statut</TableHead>
+            <TableHead className="text-center">Variantes</TableHead>
             <TableHead className="text-center">Santé</TableHead>
-            <TableHead>Catégorie</TableHead>
+            <TableHead>Source</TableHead>
             <TableHead className="w-28 text-right">Actions</TableHead>
           </TableRow>
         </TableHeader>
@@ -462,18 +465,32 @@ function DesktopTableView({
                 </Badge>
               </TableCell>
               <TableCell className="text-center">
-                <Badge variant={product.status === 'active' ? 'default' : 'outline'}>
-                  {product.status === 'active' ? 'Actif' : 'Inactif'}
+                <Badge variant={
+                  product.status === 'active' ? 'default' : 
+                  product.status === 'draft' ? 'secondary' : 
+                  product.status === 'archived' ? 'outline' : 'outline'
+                }>
+                  {product.status === 'active' ? 'Actif' : 
+                   product.status === 'draft' ? 'Brouillon' : 
+                   product.status === 'archived' ? 'Archivé' : 'Inactif'}
                 </Badge>
               </TableCell>
-              {/* Feature #5: Health Score */}
+              {/* Variants count */}
+              <TableCell className="text-center">
+                <span className="text-sm text-muted-foreground">
+                  {product.variants?.length || 0}
+                </span>
+              </TableCell>
+              {/* Health Score */}
               <TableCell className="text-center">
                 <HealthIndicator product={product} />
               </TableCell>
               <TableCell>
-                <span className="text-sm text-muted-foreground">
-                  {product.category || '-'}
-                </span>
+                {product.source ? (
+                  <Badge variant="outline" className="text-xs capitalize">{product.source}</Badge>
+                ) : (
+                  <span className="text-sm text-muted-foreground">—</span>
+                )}
               </TableCell>
               {/* Feature #7: Inline Quick Actions + menu */}
               <TableCell>
@@ -536,9 +553,10 @@ function DesktopTableView({
           ))}
           {products.length === 0 && (
             <TableRow>
-              <TableCell colSpan={9} className="text-center py-12">
+              <TableCell colSpan={10} className="text-center py-12">
                 <Package className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-                <p className="text-muted-foreground">Aucun produit trouvé</p>
+                <p className="text-muted-foreground font-medium">Aucun produit trouvé</p>
+                <p className="text-sm text-muted-foreground mt-1">Importez vos premiers produits ou ajustez vos filtres</p>
               </TableCell>
             </TableRow>
           )}
