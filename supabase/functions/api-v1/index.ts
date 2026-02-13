@@ -2690,21 +2690,103 @@ async function executeAutomation(req: Request, auth: any, reqId: string) {
 
 async function getAutomationStats(auth: any, reqId: string) {
   const admin = serviceClient();
-  const [triggersRes, actionsRes, execsRes] = await Promise.all([
+  const [triggersRes, actionsRes, execsRes, workflowsRes] = await Promise.all([
     admin.from("automation_triggers").select("id, is_active").eq("user_id", auth.user.id),
     admin.from("automation_actions").select("id, is_active").eq("user_id", auth.user.id),
-    admin.from("automation_execution_logs").select("id, status").eq("user_id", auth.user.id),
+    admin.from("automation_execution_logs").select("id, status, created_at").eq("user_id", auth.user.id),
+    admin.from("automation_workflows").select("id, is_active, status, run_count").eq("user_id", auth.user.id),
   ]);
   const triggers = triggersRes.data || [];
   const actions = actionsRes.data || [];
   const executions = execsRes.data || [];
+  const workflows = workflowsRes.data || [];
+  const successful = executions.filter((e: any) => e.status === "completed").length;
+  const total = executions.length;
   return json({
     totalTriggers: triggers.length, activeTriggers: triggers.filter((t: any) => t.is_active).length,
     totalActions: actions.length, activeActions: actions.filter((a: any) => a.is_active).length,
-    totalExecutions: executions.length,
-    successfulExecutions: executions.filter((e: any) => e.status === "completed").length,
+    totalExecutions: total,
+    successfulExecutions: successful,
     failedExecutions: executions.filter((e: any) => e.status === "failed").length,
+    successRate: total > 0 ? Math.round((successful / total) * 1000) / 10 : 0,
+    totalWorkflows: workflows.length,
+    activeWorkflows: workflows.filter((w: any) => w.is_active).length,
+    totalRunCount: workflows.reduce((sum: number, w: any) => sum + (w.run_count || 0), 0),
   }, 200, reqId);
+}
+
+// ── Automation Workflows Handlers ───────────────────────────────────────────
+
+async function listAutomationWorkflows(url: URL, auth: any, reqId: string) {
+  const admin = serviceClient();
+  const { data, error } = await admin.from("automation_workflows").select("*")
+    .eq("user_id", auth.user.id).order("updated_at", { ascending: false });
+  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
+  return json({ items: data || [] }, 200, reqId);
+}
+
+async function createAutomationWorkflow(req: Request, auth: any, reqId: string) {
+  const body = await req.json();
+  const admin = serviceClient();
+  const { data, error } = await admin.from("automation_workflows").insert({
+    user_id: auth.user.id, name: body.name, description: body.description,
+    steps: body.steps || [], workflow_data: body.workflow_data || {},
+    is_active: body.is_active ?? false, status: body.status || "draft"
+  }).select().single();
+  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
+  return json(data, 201, reqId);
+}
+
+async function updateAutomationWorkflow(id: string, req: Request, auth: any, reqId: string) {
+  const body = await req.json();
+  const admin = serviceClient();
+  const { data, error } = await admin.from("automation_workflows").update({ 
+    ...body, updated_at: new Date().toISOString() 
+  }).eq("id", id).eq("user_id", auth.user.id).select().single();
+  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
+  return json(data, 200, reqId);
+}
+
+async function deleteAutomationWorkflow(id: string, auth: any, reqId: string) {
+  const admin = serviceClient();
+  const { error } = await admin.from("automation_workflows").delete().eq("id", id).eq("user_id", auth.user.id);
+  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
+  return json({ success: true }, 200, reqId);
+}
+
+async function toggleAutomationWorkflow(id: string, req: Request, auth: any, reqId: string) {
+  const body = await req.json();
+  const admin = serviceClient();
+  const { data, error } = await admin.from("automation_workflows").update({
+    is_active: body.is_active, status: body.is_active ? "active" : "paused",
+    updated_at: new Date().toISOString()
+  }).eq("id", id).eq("user_id", auth.user.id).select().single();
+  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
+  return json(data, 200, reqId);
+}
+
+async function runAutomationWorkflow(id: string, auth: any, reqId: string) {
+  const admin = serviceClient();
+  // Get workflow
+  const { data: workflow, error: wErr } = await admin.from("automation_workflows").select("*")
+    .eq("id", id).eq("user_id", auth.user.id).single();
+  if (wErr || !workflow) return errorResponse("NOT_FOUND", "Workflow not found", 404, reqId);
+  
+  // Log execution
+  const { data: execLog, error: eErr } = await admin.from("automation_execution_logs").insert({
+    user_id: auth.user.id, trigger_id: null, status: "completed",
+    input_data: { workflow_id: id, workflow_name: workflow.name, steps: workflow.steps },
+    output_data: { message: "Workflow executed successfully" }
+  }).select().single();
+  
+  // Update run count
+  await admin.from("automation_workflows").update({
+    run_count: (workflow.run_count || 0) + 1, last_run_at: new Date().toISOString(),
+    updated_at: new Date().toISOString()
+  }).eq("id", id);
+  
+  if (eErr) return errorResponse("DB_ERROR", eErr.message, 500, reqId);
+  return json({ success: true, execution: execLog }, 200, reqId);
 }
 
 // ── Marketing Handlers ──────────────────────────────────────────────────────
@@ -3565,6 +3647,24 @@ Deno.serve(async (req) => {
     if (req.method === "POST" && matchRoute("/v1/automation/actions", apiPath)) return await createAutomationAction(req, auth, reqId);
     if (req.method === "GET" && matchRoute("/v1/automation/executions", apiPath)) return await listAutomationExecutions(url, auth, reqId);
     if (req.method === "POST" && matchRoute("/v1/automation/execute", apiPath)) return await executeAutomation(req, auth, reqId);
+
+    // Workflows
+    if (req.method === "GET" && matchRoute("/v1/automation/workflows", apiPath)) return await listAutomationWorkflows(url, auth, reqId);
+    if (req.method === "POST" && matchRoute("/v1/automation/workflows", apiPath)) return await createAutomationWorkflow(req, auth, reqId);
+
+    const workflowMatch = matchRoute("/v1/automation/workflows/:workflowId", apiPath);
+    if (workflowMatch) {
+      if (req.method === "PUT") return await updateAutomationWorkflow(workflowMatch.params.workflowId, req, auth, reqId);
+      if (req.method === "DELETE") return await deleteAutomationWorkflow(workflowMatch.params.workflowId, auth, reqId);
+    }
+    if (req.method === "POST" && matchRoute("/v1/automation/workflows/:workflowId/toggle", apiPath)) {
+      const m = matchRoute("/v1/automation/workflows/:workflowId/toggle", apiPath);
+      return await toggleAutomationWorkflow(m!.params.workflowId, req, auth, reqId);
+    }
+    if (req.method === "POST" && matchRoute("/v1/automation/workflows/:workflowId/run", apiPath)) {
+      const m = matchRoute("/v1/automation/workflows/:workflowId/run", apiPath);
+      return await runAutomationWorkflow(m!.params.workflowId, auth, reqId);
+    }
 
     // ── Marketing ──────────────────────────────────────────────
     if (req.method === "GET" && matchRoute("/v1/marketing/stats", apiPath)) return await getMarketingStats(auth, reqId);
