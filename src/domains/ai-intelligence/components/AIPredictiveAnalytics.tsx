@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, lazy, Suspense } from 'react'
 import { useAuthOptimized } from '@/shared/hooks/useAuthOptimized'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -44,6 +44,7 @@ import {
   Scatter,
   ZAxis
 } from 'recharts'
+import { AIBusinessDashboard as AIBusinessDashboardInline } from './AIBusinessDashboard'
 
 interface Prediction {
   metric: string
@@ -191,8 +192,8 @@ export const AIPredictiveAnalytics = () => {
             Analytics avancées et prédictions ML pour optimiser votre business
           </p>
         </div>
-        <Badge variant="secondary" className="text-lg px-4 py-2 bg-gradient-to-r from-purple-500/10 to-pink-500/10">
-          PHASE 5 - AI
+        <Badge variant="secondary" className="text-lg px-4 py-2 bg-gradient-to-r from-primary/10 to-primary/5">
+          PHASE 6 - AI
         </Badge>
       </div>
 
@@ -226,14 +227,19 @@ export const AIPredictiveAnalytics = () => {
         ))}
       </div>
 
-      <Tabs defaultValue="predictions" className="w-full">
-        <TabsList className="grid grid-cols-5 w-full">
+      <Tabs defaultValue="business-ai" className="w-full">
+        <TabsList className="grid grid-cols-6 w-full">
+          <TabsTrigger value="business-ai">🧠 Business AI</TabsTrigger>
           <TabsTrigger value="predictions">Prédictions</TabsTrigger>
           <TabsTrigger value="insights">Insights IA</TabsTrigger>
           <TabsTrigger value="behavior">Comportement</TabsTrigger>
           <TabsTrigger value="trends">Tendances</TabsTrigger>
           <TabsTrigger value="optimization">Optimisation</TabsTrigger>
         </TabsList>
+
+        <TabsContent value="business-ai" className="space-y-4">
+          <AIBusinessDashboardInline />
+        </TabsContent>
 
         <TabsContent value="predictions" className="space-y-4">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
