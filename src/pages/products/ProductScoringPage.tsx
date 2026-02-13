@@ -1,16 +1,20 @@
-import { ProductScoringDashboard } from '@/components/product-scoring';
+/**
+ * Page Scoring & SEO Produits — Hub unifié
+ * 100% connecté API V1, scores structurés, impact business, quotas, historique
+ */
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
-import { Sparkles } from 'lucide-react';
+import { ProductSeoHub } from '@/components/seo/ProductSeoHub';
+import { Search } from 'lucide-react';
 
 export default function ProductScoringPage() {
   return (
     <ChannablePageWrapper
-      title="Scoring Produits"
-      description="Analysez et améliorez le score de qualité de vos fiches produits"
-      heroImage="products"
-      badge={{ label: 'Scoring', icon: Sparkles }}
+      title="SEO & Scoring Produits"
+      description="Moteur de scoring structuré avec impact business, historique et optimisation IA"
+      heroImage="analytics"
+      badge={{ label: 'SEO Engine', icon: Search }}
     >
-      <ProductScoringDashboard />
+      <ProductSeoHub />
     </ChannablePageWrapper>
   );
 }
