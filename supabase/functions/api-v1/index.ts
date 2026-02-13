@@ -30,23 +30,12 @@ function parsePagination(url: URL) {
   return { page, perPage, from: (page - 1) * perPage, to: page * perPage - 1 };
 }
 
-// ── Input Sanitization ──────────────────────────────────────────────────────
-
 function sanitizeString(input: string, maxLength = 1000): string {
   if (typeof input !== "string") return "";
   return input.slice(0, maxLength).replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, "").trim();
 }
 
-function validateRequiredFields(body: Record<string, unknown>, fields: string[]): string | null {
-  for (const field of fields) {
-    if (body[field] === undefined || body[field] === null || body[field] === "") {
-      return `Missing required field: ${field}`;
-    }
-  }
-  return null;
-}
-
-// ── Rate Limiting (in-memory per-isolate) ───────────────────────────────────
+// ── Rate Limiting ───────────────────────────────────────────────────────────
 
 const rateLimitStore = new Map<string, { count: number; resetAt: number }>();
 
@@ -54,760 +43,145 @@ function checkRateLimit(userId: string, endpoint: string, maxRequests = 60, wind
   const key = `${userId}:${endpoint}`;
   const now = Date.now();
   const entry = rateLimitStore.get(key);
-
-  if (!entry || now >= entry.resetAt) {
-    rateLimitStore.set(key, { count: 1, resetAt: now + windowMs });
-    return true;
-  }
-
+  if (!entry || now >= entry.resetAt) { rateLimitStore.set(key, { count: 1, resetAt: now + windowMs }); return true; }
   entry.count++;
-  if (entry.count > maxRequests) return false;
-  return true;
+  return entry.count <= maxRequests;
 }
 
-function rateLimitResponse(reqId: string) {
-  return errorResponse("RATE_LIMITED", "Too many requests. Please retry later.", 429, reqId);
-}
-
-// ── Circuit Breaker (per-service) ───────────────────────────────────────────
-
-const circuitBreakers = new Map<string, { failures: number; openUntil: number }>();
-
-function isCircuitOpen(service: string): boolean {
-  const cb = circuitBreakers.get(service);
-  if (!cb) return false;
-  if (Date.now() >= cb.openUntil) {
-    circuitBreakers.delete(service);
-    return false;
-  }
-  return cb.failures >= 5;
-}
-
-function recordFailure(service: string) {
-  const cb = circuitBreakers.get(service) || { failures: 0, openUntil: 0 };
-  cb.failures++;
-  if (cb.failures >= 5) cb.openUntil = Date.now() + 30000; // 30s cooldown
-  circuitBreakers.set(service, cb);
-}
-
-function recordSuccess(service: string) {
-  circuitBreakers.delete(service);
-}
+// ── Auth & Client ───────────────────────────────────────────────────────────
 
 async function authenticate(req: Request) {
   const authHeader = req.headers.get("authorization");
   if (!authHeader) return null;
-
-  const supabase = createClient(
-    Deno.env.get("SUPABASE_URL")!,
-    Deno.env.get("SUPABASE_ANON_KEY")!,
-    { global: { headers: { Authorization: authHeader } } }
-  );
-
+  const supabase = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_ANON_KEY")!, { global: { headers: { Authorization: authHeader } } });
   const { data: { user }, error } = await supabase.auth.getUser();
   if (error || !user) return null;
   return { user, supabase };
 }
 
 function serviceClient() {
-  return createClient(
-    Deno.env.get("SUPABASE_URL")!,
-    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
-  );
+  return createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
 }
 
-// ── Route matching ───────────────────────────────────────────────────────────
+type Auth = NonNullable<Awaited<ReturnType<typeof authenticate>>>;
 
-interface RouteMatch {
-  params: Record<string, string>;
-}
+// ── Route matching ──────────────────────────────────────────────────────────
 
-function matchRoute(pattern: string, path: string): RouteMatch | null {
-  const patternParts = pattern.split("/").filter(Boolean);
+function matchRoute(pattern: string, path: string): Record<string, string> | null {
+  const pp = pattern.split("/").filter(Boolean);
   const pathParts = path.split("/").filter(Boolean);
-  if (patternParts.length !== pathParts.length) return null;
-
+  if (pp.length !== pathParts.length) return null;
   const params: Record<string, string> = {};
-  for (let i = 0; i < patternParts.length; i++) {
-    if (patternParts[i].startsWith(":")) {
-      params[patternParts[i].slice(1)] = pathParts[i];
-    } else if (patternParts[i] !== pathParts[i]) {
-      return null;
-    }
+  for (let i = 0; i < pp.length; i++) {
+    if (pp[i].startsWith(":")) params[pp[i].slice(1)] = pathParts[i];
+    else if (pp[i] !== pathParts[i]) return null;
   }
-  return { params };
+  return params;
 }
 
-// ── Import Jobs Handlers ─────────────────────────────────────────────────────
+// ── Generic CRUD Factory ────────────────────────────────────────────────────
 
-async function createImportJob(req: Request, auth: NonNullable<Awaited<ReturnType<typeof authenticate>>>, reqId: string) {
-  const body = await req.json();
-  const { source, preset_id, options } = body;
-
-  if (!source?.type) {
-    return errorResponse("VALIDATION_ERROR", "source.type is required", 400, reqId, [{ field: "source.type", reason: "required" }]);
-  }
-
-  const admin = serviceClient();
-
-  // Create the background job
-  const { data: job, error } = await admin
-    .from("background_jobs")
-    .insert({
-      user_id: auth.user.id,
-      job_type: "import",
-      job_subtype: source.type,
-      status: "queued",
-      name: `Import ${source.type}`,
-      input_data: { source, preset_id, options },
-      metadata: {
-        idempotency_key: req.headers.get("idempotency-key"),
-        source_type: source.type,
-      },
-      items_total: 0,
-      items_processed: 0,
-      items_succeeded: 0,
-      items_failed: 0,
-      progress_percent: 0,
-    })
-    .select("id, status")
-    .single();
-
-  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
-
-  return json({ job_id: job.id, status: job.status }, 201, reqId);
+interface CrudConfig {
+  table: string;
+  userField?: string; // default "user_id"
+  useAdmin?: boolean; // use service client instead of user client
+  orderBy?: string;
+  orderAsc?: boolean;
+  selectList?: string;
+  selectOne?: string;
 }
 
-async function listImportJobs(url: URL, auth: NonNullable<Awaited<ReturnType<typeof authenticate>>>, reqId: string) {
-  const { page, perPage, from, to } = parsePagination(url);
-  const status = url.searchParams.get("status");
-
-  const admin = serviceClient();
-  let query = admin
-    .from("background_jobs")
-    .select("*", { count: "exact" })
-    .eq("user_id", auth.user.id)
-    .eq("job_type", "import")
-    .order("created_at", { ascending: false })
-    .range(from, to);
-
-  if (status) {
-    const statuses = status.split("|");
-    query = query.in("status", statuses);
-  }
-
-  const { data, count, error } = await query;
-  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
-
-  const items = (data ?? []).map(mapJobRow);
-  return json({ items, meta: { page, per_page: perPage, total: count ?? 0 } }, 200, reqId);
-}
-
-async function getImportJob(jobId: string, auth: NonNullable<Awaited<ReturnType<typeof authenticate>>>, reqId: string) {
-  const admin = serviceClient();
-  const { data, error } = await admin
-    .from("background_jobs")
-    .select("*")
-    .eq("id", jobId)
-    .eq("user_id", auth.user.id)
-    .eq("job_type", "import")
-    .single();
-
-  if (error || !data) return errorResponse("NOT_FOUND", "Job not found", 404, reqId);
-
-  const job = mapJobRow(data);
-
-  // Calculate ETA
-  if (data.started_at && data.items_total && data.items_processed && data.items_processed > 0) {
-    const elapsed = Date.now() - new Date(data.started_at).getTime();
-    const msPerItem = elapsed / data.items_processed;
-    const remaining = data.items_total - data.items_processed;
-    (job as any).eta_seconds = Math.round((remaining * msPerItem) / 1000);
-  }
-
-  return json(job, 200, reqId);
-}
-
-async function getJobItems(jobId: string, url: URL, auth: NonNullable<Awaited<ReturnType<typeof authenticate>>>, reqId: string) {
-  const { page, perPage, from, to } = parsePagination(url);
-  const status = url.searchParams.get("status");
-
-  const admin = serviceClient();
-
-  // Verify job ownership
-  const { data: job } = await admin
-    .from("background_jobs")
-    .select("id")
-    .eq("id", jobId)
-    .eq("user_id", auth.user.id)
-    .single();
-
-  if (!job) return errorResponse("NOT_FOUND", "Job not found", 404, reqId);
-
-  let query = admin
-    .from("import_job_items")
-    .select("*", { count: "exact" })
-    .eq("job_id", jobId)
-    .order("row_number", { ascending: true })
-    .range(from, to);
-
-  if (status) query = query.eq("status", status);
-
-  const { data, count, error } = await query;
-  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
-
-  const items = (data ?? []).map((row: any) => ({
-    item_id: row.id,
-    row_number: row.row_number,
-    status: row.status,
-    errors: row.errors ?? [],
-    warnings: row.warnings ?? [],
-    raw: row.raw_data,
-    mapped: row.mapped_data,
-    product_id: row.product_id,
-    created_at: row.created_at,
-  }));
-
-  return json({ items, meta: { page, per_page: perPage, total: count ?? 0 } }, 200, reqId);
-}
-
-async function retryJob(jobId: string, req: Request, auth: NonNullable<Awaited<ReturnType<typeof authenticate>>>, reqId: string) {
-  const admin = serviceClient();
-  const body = await req.json().catch(() => ({}));
-  const onlyFailed = body.only_failed !== false;
-
-  // Verify ownership
-  const { data: job } = await admin
-    .from("background_jobs")
-    .select("id, status")
-    .eq("id", jobId)
-    .eq("user_id", auth.user.id)
-    .single();
-
-  if (!job) return errorResponse("NOT_FOUND", "Job not found", 404, reqId);
-
-  // Reset failed items
-  const updateQuery = admin
-    .from("import_job_items")
-    .update({ status: "pending", errors: [], updated_at: new Date().toISOString() })
-    .eq("job_id", jobId);
-
-  if (onlyFailed) updateQuery.eq("status", "failed");
-
-  const { error: itemsError } = await updateQuery;
-  if (itemsError) return errorResponse("DB_ERROR", itemsError.message, 500, reqId);
-
-  // Reset job status
-  await admin
-    .from("background_jobs")
-    .update({ status: "queued", updated_at: new Date().toISOString() })
-    .eq("id", jobId);
-
-  return json({ job_id: jobId, status: "queued" }, 200, reqId);
-}
-
-async function cancelJob(jobId: string, auth: NonNullable<Awaited<ReturnType<typeof authenticate>>>, reqId: string) {
-  const admin = serviceClient();
-
-  const { data: job } = await admin
-    .from("background_jobs")
-    .select("id, status")
-    .eq("id", jobId)
-    .eq("user_id", auth.user.id)
-    .single();
-
-  if (!job) return errorResponse("NOT_FOUND", "Job not found", 404, reqId);
-  if (job.status === "completed" || job.status === "cancelled") {
-    return errorResponse("INVALID_STATE", `Cannot cancel job in ${job.status} state`, 409, reqId);
-  }
-
-  await admin
-    .from("background_jobs")
-    .update({ status: "cancelled", completed_at: new Date().toISOString(), updated_at: new Date().toISOString() })
-    .eq("id", jobId);
-
-  return json({ job_id: jobId, status: "cancelled" }, 200, reqId);
-}
-
-async function resumeJob(jobId: string, auth: NonNullable<Awaited<ReturnType<typeof authenticate>>>, reqId: string) {
-  const admin = serviceClient();
-  const { data: job } = await admin
-    .from("background_jobs")
-    .select("id, status, items_total, items_processed")
-    .eq("id", jobId)
-    .eq("user_id", auth.user.id)
-    .single();
-
-  if (!job) return errorResponse("NOT_FOUND", "Job not found", 404, reqId);
-  if (job.status !== "cancelled" && job.status !== "paused" && job.status !== "failed") {
-    return errorResponse("INVALID_STATE", `Cannot resume job in ${job.status} state`, 409, reqId);
-  }
-
-  // Reset pending items to allow re-processing
-  await admin
-    .from("import_job_items")
-    .update({ status: "pending", updated_at: new Date().toISOString() })
-    .eq("job_id", jobId)
-    .in("status", ["cancelled", "paused"]);
-
-  await admin
-    .from("background_jobs")
-    .update({ status: "queued", updated_at: new Date().toISOString(), completed_at: null })
-    .eq("id", jobId);
-
-  return json({ job_id: jobId, status: "queued", remaining: (job.items_total ?? 0) - (job.items_processed ?? 0) }, 200, reqId);
-}
-
-async function replayJob(jobId: string, auth: NonNullable<Awaited<ReturnType<typeof authenticate>>>, reqId: string) {
-  const admin = serviceClient();
-  const { data: originalJob } = await admin
-    .from("background_jobs")
-    .select("*")
-    .eq("id", jobId)
-    .eq("user_id", auth.user.id)
-    .single();
-
-  if (!originalJob) return errorResponse("NOT_FOUND", "Job not found", 404, reqId);
-
-  // Create a new job with the same input data
-  const { data: newJob, error } = await admin
-    .from("background_jobs")
-    .insert({
-      user_id: auth.user.id,
-      job_type: originalJob.job_type,
-      job_subtype: originalJob.job_subtype,
-      status: "queued",
-      name: `Replay: ${originalJob.name || originalJob.job_subtype}`,
-      input_data: originalJob.input_data,
-      metadata: { ...((originalJob.metadata as any) || {}), replayed_from: jobId },
-      items_total: 0,
-      items_processed: 0,
-      items_succeeded: 0,
-      items_failed: 0,
-      progress_percent: 0,
-    })
-    .select("id, status")
-    .single();
-
-  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
-  return json({ job_id: newJob.id, status: newJob.status, replayed_from: jobId }, 201, reqId);
-}
-
-async function deduplicateScan(req: Request, auth: NonNullable<Awaited<ReturnType<typeof authenticate>>>, reqId: string) {
-  const body = await req.json().catch(() => ({}));
-  
-  // Proxy to detect-duplicates edge function
-  const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-  const resp = await fetch(`${supabaseUrl}/functions/v1/detect-duplicates`, {
-    method: "POST",
-    headers: {
-      "Authorization": req.headers.get("authorization") || "",
-      "Content-Type": "application/json",
-      "apikey": Deno.env.get("SUPABASE_ANON_KEY")!,
-    },
-    body: JSON.stringify({ action: "scan", threshold: body.threshold ?? 0.75 }),
-  });
-  
-  const data = await resp.json();
-  return json(data, resp.status, reqId);
-}
-
-async function deduplicateMerge(req: Request, auth: NonNullable<Awaited<ReturnType<typeof authenticate>>>, reqId: string) {
-  const body = await req.json();
-  
-  const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-  const resp = await fetch(`${supabaseUrl}/functions/v1/detect-duplicates`, {
-    method: "POST",
-    headers: {
-      "Authorization": req.headers.get("authorization") || "",
-      "Content-Type": "application/json",
-      "apikey": Deno.env.get("SUPABASE_ANON_KEY")!,
-    },
-    body: JSON.stringify({ action: "merge", keepId: body.keep_id, removeIds: body.remove_ids }),
-  });
-  
-  const data = await resp.json();
-  return json(data, resp.status, reqId);
-}
-
-async function postImportEnrich(req: Request, auth: NonNullable<Awaited<ReturnType<typeof authenticate>>>, reqId: string) {
-  const body = await req.json();
-  const { job_id, language, tone } = body;
-  
-  if (!job_id) return errorResponse("VALIDATION_ERROR", "job_id is required", 400, reqId);
-
-  const admin = serviceClient();
-  
-  // Get products from this import job
-  const { data: items } = await admin
-    .from("import_job_items")
-    .select("product_id")
-    .eq("job_id", job_id)
-    .eq("status", "success")
-    .not("product_id", "is", null);
-
-  const productIds = (items || []).map((i: any) => i.product_id).filter(Boolean);
-  
-  if (productIds.length === 0) {
-    return json({ success: true, message: "No products to enrich", enriched: 0 }, 200, reqId);
-  }
-
-  // Trigger ai-enrich-import
-  const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-  const resp = await fetch(`${supabaseUrl}/functions/v1/ai-enrich-import`, {
-    method: "POST",
-    headers: {
-      "Authorization": req.headers.get("authorization") || "",
-      "Content-Type": "application/json",
-      "apikey": Deno.env.get("SUPABASE_ANON_KEY")!,
-    },
-    body: JSON.stringify({ product_ids: productIds, language: language ?? "fr", tone: tone ?? "professionnel" }),
-  });
-  
-  const data = await resp.json();
-  return json({ ...data, products_count: productIds.length }, resp.status, reqId);
-}
-
-// ── Mappers ──────────────────────────────────────────────────────────────────
-
-function mapJobRow(row: any) {
-  return {
-    job_id: row.id,
-    status: row.status,
-    job_type: row.job_subtype ?? row.job_type,
-    name: row.name,
-    progress: {
-      total: row.items_total ?? 0,
-      processed: row.items_processed ?? 0,
-      success: row.items_succeeded ?? 0,
-      failed: row.items_failed ?? 0,
-      percent: row.progress_percent ?? 0,
-    },
-    created_at: row.created_at,
-    started_at: row.started_at,
-    completed_at: row.completed_at,
-    error_message: row.error_message,
+function crudList(cfg: CrudConfig) {
+  return async (url: URL, auth: Auth, reqId: string) => {
+    const { page, perPage, from, to } = parsePagination(url);
+    const db = cfg.useAdmin ? serviceClient() : auth.supabase;
+    const uf = cfg.userField ?? "user_id";
+    let q = db.from(cfg.table).select(cfg.selectList ?? "*", { count: "exact" }).eq(uf, auth.user.id);
+    const status = url.searchParams.get("status");
+    if (status) q = q.eq("status", status);
+    q = q.order(cfg.orderBy ?? "created_at", { ascending: cfg.orderAsc ?? false }).range(from, to);
+    const { data, count, error } = await q;
+    if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
+    return json({ items: data || [], meta: { page, per_page: perPage, total: count || 0 } }, 200, reqId);
   };
 }
 
-function mapPresetRow(row: any) {
-  return {
-    id: row.id,
-    name: row.name,
-    scope: row.scope,
-    store_id: row.store_id,
-    platform: row.platform,
-    version: row.version,
-    is_default: row.is_default,
-    columns_signature: row.columns_signature,
-    columns: row.columns,
-    has_header: row.has_header,
-    delimiter: row.delimiter,
-    encoding: row.encoding,
-    mapping: row.mapping,
-    last_used_at: row.last_used_at,
-    use_count: row.usage_count,
-    created_at: row.created_at,
-    updated_at: row.updated_at,
+function crudGet(cfg: CrudConfig) {
+  return async (id: string, auth: Auth, reqId: string) => {
+    const db = cfg.useAdmin ? serviceClient() : auth.supabase;
+    const { data, error } = await db.from(cfg.table).select(cfg.selectOne ?? "*").eq("id", id).eq(cfg.userField ?? "user_id", auth.user.id).single();
+    if (error) return errorResponse("NOT_FOUND", `${cfg.table} not found`, 404, reqId);
+    return json(data, 200, reqId);
   };
 }
 
-// ── Preset Handlers ──────────────────────────────────────────────────────────
-
-async function listPresets(url: URL, auth: NonNullable<Awaited<ReturnType<typeof authenticate>>>, reqId: string) {
-  const { page, perPage, from, to } = parsePagination(url);
-  const platform = url.searchParams.get("platform");
-  const q = url.searchParams.get("q");
-
-  const admin = serviceClient();
-  let query = admin
-    .from("mapping_presets")
-    .select("*", { count: "exact" })
-    .eq("user_id", auth.user.id)
-    .order("usage_count", { ascending: false })
-    .range(from, to);
-
-  if (platform) query = query.eq("platform", platform);
-  if (q) query = query.ilike("name", `%${q}%`);
-
-  const { data, count, error } = await query;
-  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
-
-  return json({ items: (data ?? []).map(mapPresetRow), meta: { page, per_page: perPage, total: count ?? 0 } }, 200, reqId);
+function crudCreate(cfg: CrudConfig) {
+  return async (req: Request, auth: Auth, reqId: string) => {
+    const body = await req.json();
+    const db = cfg.useAdmin ? serviceClient() : auth.supabase;
+    const { data, error } = await db.from(cfg.table).insert({ ...body, [cfg.userField ?? "user_id"]: auth.user.id }).select().single();
+    if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
+    return json(data, 201, reqId);
+  };
 }
 
-async function createPreset(req: Request, auth: NonNullable<Awaited<ReturnType<typeof authenticate>>>, reqId: string) {
-  const body = await req.json();
-  if (!body.name) return errorResponse("VALIDATION_ERROR", "name is required", 400, reqId, [{ field: "name", reason: "required" }]);
-  if (!body.mapping || typeof body.mapping !== "object") return errorResponse("VALIDATION_ERROR", "mapping is required", 400, reqId, [{ field: "mapping", reason: "required" }]);
-
-  const admin = serviceClient();
-  const { data, error } = await admin
-    .from("mapping_presets")
-    .insert({
-      user_id: auth.user.id,
-      name: body.name,
-      mapping: body.mapping,
-      platform: body.platform ?? "generic",
-      scope: body.scope ?? "user",
-      store_id: body.store_id ?? null,
-      has_header: body.has_header ?? true,
-      delimiter: body.delimiter ?? ",",
-      encoding: body.encoding ?? "utf-8",
-      columns: body.columns ?? null,
-      columns_signature: body.columns ? await sha256(body.columns.sort().join("|")) : null,
-      icon: body.icon ?? "csv",
-    })
-    .select("id, version")
-    .single();
-
-  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
-  return json({ id: data.id, version: data.version }, 201, reqId);
+function crudUpdate(cfg: CrudConfig) {
+  return async (id: string, req: Request, auth: Auth, reqId: string) => {
+    const body = await req.json();
+    const db = cfg.useAdmin ? serviceClient() : auth.supabase;
+    const { data, error } = await db.from(cfg.table).update({ ...body, updated_at: new Date().toISOString() }).eq("id", id).eq(cfg.userField ?? "user_id", auth.user.id).select().single();
+    if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
+    return json(data, 200, reqId);
+  };
 }
 
-async function getPreset(presetId: string, auth: NonNullable<Awaited<ReturnType<typeof authenticate>>>, reqId: string) {
-  const admin = serviceClient();
-  const { data, error } = await admin
-    .from("mapping_presets")
-    .select("*")
-    .eq("id", presetId)
-    .eq("user_id", auth.user.id)
-    .single();
-
-  if (error || !data) return errorResponse("NOT_FOUND", "Preset not found", 404, reqId);
-  return json(mapPresetRow(data), 200, reqId);
+function crudDelete(cfg: CrudConfig) {
+  return async (id: string, auth: Auth, reqId: string) => {
+    const db = cfg.useAdmin ? serviceClient() : auth.supabase;
+    const { error } = await db.from(cfg.table).delete().eq("id", id).eq(cfg.userField ?? "user_id", auth.user.id);
+    if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
+    return json({ success: true }, 200, reqId);
+  };
 }
 
-async function updatePreset(presetId: string, req: Request, auth: NonNullable<Awaited<ReturnType<typeof authenticate>>>, reqId: string) {
-  const body = await req.json();
-  const admin = serviceClient();
-
-  // Fetch current to increment version
-  const { data: current } = await admin.from("mapping_presets").select("version").eq("id", presetId).eq("user_id", auth.user.id).single();
-  if (!current) return errorResponse("NOT_FOUND", "Preset not found", 404, reqId);
-
-  const updates: any = { version: current.version + 1, updated_at: new Date().toISOString() };
-  if (body.name !== undefined) updates.name = body.name;
-  if (body.mapping !== undefined) updates.mapping = body.mapping;
-  if (body.platform !== undefined) updates.platform = body.platform;
-  if (body.columns !== undefined) {
-    updates.columns = body.columns;
-    updates.columns_signature = await sha256(body.columns.sort().join("|"));
-  }
-  if (body.has_header !== undefined) updates.has_header = body.has_header;
-  if (body.delimiter !== undefined) updates.delimiter = body.delimiter;
-  if (body.encoding !== undefined) updates.encoding = body.encoding;
-
-  const { data, error } = await admin
-    .from("mapping_presets")
-    .update(updates)
-    .eq("id", presetId)
-    .eq("user_id", auth.user.id)
-    .select("id, version")
-    .single();
-
-  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
-  return json({ id: data.id, version: data.version }, 200, reqId);
+function crudSimpleList(table: string, opts?: { orderBy?: string; filterField?: string; filterValue?: any; useAdmin?: boolean }) {
+  return async (auth: Auth, reqId: string) => {
+    const db = opts?.useAdmin ? serviceClient() : auth.supabase;
+    let q = db.from(table).select("*").eq("user_id", auth.user.id);
+    if (opts?.filterField) q = q.eq(opts.filterField, opts.filterValue);
+    q = q.order(opts?.orderBy ?? "created_at", { ascending: false });
+    const { data, error } = await q;
+    if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
+    return json({ items: data || [] }, 200, reqId);
+  };
 }
 
-async function deletePreset(presetId: string, auth: NonNullable<Awaited<ReturnType<typeof authenticate>>>, reqId: string) {
-  const admin = serviceClient();
-  const { error } = await admin.from("mapping_presets").delete().eq("id", presetId).eq("user_id", auth.user.id);
-  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
-  return json({ success: true }, 200, reqId);
+function crudSimpleListActive(table: string, orderBy = "created_at") {
+  return async (auth: Auth, reqId: string) => {
+    const db = serviceClient();
+    const { data, error } = await db.from(table).select("*").eq("is_active", true).order(orderBy, { ascending: true });
+    if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
+    return json({ items: data || [] }, 200, reqId);
+  };
 }
 
-async function setPresetDefault(presetId: string, req: Request, auth: NonNullable<Awaited<ReturnType<typeof authenticate>>>, reqId: string) {
-  const body = await req.json().catch(() => ({}));
-  const admin = serviceClient();
+// ── CRUD Configs ────────────────────────────────────────────────────────────
 
-  // Get preset to know platform
-  const { data: preset } = await admin.from("mapping_presets").select("platform").eq("id", presetId).eq("user_id", auth.user.id).single();
-  if (!preset) return errorResponse("NOT_FOUND", "Preset not found", 404, reqId);
+const automationTriggersCfg: CrudConfig = { table: "automation_triggers", useAdmin: true };
+const automationActionsCfg: CrudConfig = { table: "automation_actions", useAdmin: true, orderBy: "execution_order", orderAsc: true };
+const automationWorkflowsCfg: CrudConfig = { table: "automation_workflows", useAdmin: true, orderBy: "updated_at" };
+const integrationsCfg: CrudConfig = { table: "integrations", useAdmin: true };
+const adAccountsCfg: CrudConfig = { table: "ad_accounts", useAdmin: true };
+const adCampaignsCfg: CrudConfig = { table: "ad_campaigns", useAdmin: true };
+const marketingCampaignsCfg: CrudConfig = { table: "marketing_campaigns", useAdmin: true };
+const automatedCampaignsCfg: CrudConfig = { table: "automated_campaigns", useAdmin: true };
+const promotionCampaignsCfg: CrudConfig = { table: "promotion_campaigns", useAdmin: true };
+const promotionRulesCfg: CrudConfig = { table: "promotion_automation_rules", useAdmin: true };
+const crmTasksCfg: CrudConfig = { table: "crm_tasks", useAdmin: true };
+const crmDealsCfg: CrudConfig = { table: "crm_deals", useAdmin: true };
+const pricingRulesCfg: CrudConfig = { table: "pricing_rules", useAdmin: true };
 
-  // Unset current defaults for same user + platform
-  await admin.from("mapping_presets").update({ is_default: false }).eq("user_id", auth.user.id).eq("platform", preset.platform).eq("is_default", true);
-
-  // Set new default
-  await admin.from("mapping_presets").update({ is_default: true }).eq("id", presetId);
-
-  return json({ id: presetId, is_default: true }, 200, reqId);
-}
-
-async function exportPreset(presetId: string, auth: NonNullable<Awaited<ReturnType<typeof authenticate>>>, reqId: string) {
-  const admin = serviceClient();
-  const { data, error } = await admin.from("mapping_presets").select("*").eq("id", presetId).eq("user_id", auth.user.id).single();
-  if (error || !data) return errorResponse("NOT_FOUND", "Preset not found", 404, reqId);
-
-  const { id, user_id, created_at, updated_at, usage_count, last_used_at, ...exportable } = data;
-  return json({ preset: exportable }, 200, reqId);
-}
-
-async function importPreset(req: Request, auth: NonNullable<Awaited<ReturnType<typeof authenticate>>>, reqId: string) {
-  const body = await req.json();
-  if (!body.preset) return errorResponse("VALIDATION_ERROR", "preset object required", 400, reqId);
-
-  const p = body.preset;
-  const admin = serviceClient();
-  const { data, error } = await admin
-    .from("mapping_presets")
-    .insert({
-      user_id: auth.user.id,
-      name: p.name ?? "Imported Preset",
-      mapping: p.mapping ?? {},
-      platform: p.platform ?? "generic",
-      scope: p.scope ?? "user",
-      store_id: p.store_id ?? null,
-      has_header: p.has_header ?? true,
-      delimiter: p.delimiter ?? ",",
-      encoding: p.encoding ?? "utf-8",
-      columns: p.columns ?? null,
-      columns_signature: p.columns_signature ?? null,
-      icon: p.icon ?? "csv",
-      version: 1,
-    })
-    .select("id, version")
-    .single();
-
-  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
-  return json({ id: data.id, version: data.version }, 201, reqId);
-}
-
-// ── CSV Upload Handlers ──────────────────────────────────────────────────────
-
-async function createUploadSession(req: Request, auth: NonNullable<Awaited<ReturnType<typeof authenticate>>>, reqId: string) {
-  const body = await req.json();
-  if (!body.filename) return errorResponse("VALIDATION_ERROR", "filename is required", 400, reqId);
-
-  const admin = serviceClient();
-  const uploadId = crypto.randomUUID();
-  const filePath = `imports/${auth.user.id}/${uploadId}/${body.filename}`;
-
-  // Create signed upload URL
-  const { data: signedData, error: signError } = await admin.storage
-    .from("import-files")
-    .createSignedUploadUrl(filePath);
-
-  // If bucket doesn't exist, create a record without signed URL (client can upload via other means)
-  const uploadUrl = signedData?.signedUrl ?? null;
-
-  const expiresAt = new Date(Date.now() + 3600 * 1000).toISOString();
-
-  const { data, error } = await admin
-    .from("import_uploads")
-    .insert({
-      id: uploadId,
-      user_id: auth.user.id,
-      filename: body.filename,
-      file_path: filePath,
-      status: "pending",
-      expires_at: expiresAt,
-    })
-    .select("id")
-    .single();
-
-  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
-
-  return json({ upload_id: data.id, upload_url: uploadUrl, expires_at: expiresAt }, 201, reqId);
-}
-
-async function analyzeUpload(uploadId: string, req: Request, auth: NonNullable<Awaited<ReturnType<typeof authenticate>>>, reqId: string) {
-  const body = await req.json().catch(() => ({}));
-  const admin = serviceClient();
-
-  // Verify ownership
-  const { data: upload } = await admin.from("import_uploads").select("*").eq("id", uploadId).eq("user_id", auth.user.id).single();
-  if (!upload) return errorResponse("NOT_FOUND", "Upload not found", 404, reqId);
-
-  // Try to download and parse the file
-  let columns: string[] = upload.columns ?? [];
-  let sampleRows: any[] = [];
-  let signature: string | null = upload.columns_signature;
-
-  if (upload.file_path) {
-    const { data: fileData } = await admin.storage.from("import-files").download(upload.file_path);
-    if (fileData) {
-      const text = await fileData.text();
-      const delimiter = body.delimiter === "auto" ? detectDelimiter(text) : (body.delimiter ?? upload.delimiter ?? ",");
-      const hasHeader = body.has_header ?? upload.has_header ?? true;
-      const lines = text.split("\n").filter((l: string) => l.trim());
-
-      if (hasHeader && lines.length > 0) {
-        columns = lines[0].split(delimiter).map((c: string) => c.trim().replace(/^"|"$/g, ""));
-      }
-
-      // Sample rows (max 5)
-      const dataLines = hasHeader ? lines.slice(1, 6) : lines.slice(0, 5);
-      sampleRows = dataLines.map((line: string) => {
-        const values = line.split(delimiter).map((v: string) => v.trim().replace(/^"|"$/g, ""));
-        const row: Record<string, string> = {};
-        columns.forEach((col, i) => { row[col] = values[i] ?? ""; });
-        return row;
-      });
-
-      signature = await sha256(columns.sort().join("|"));
-
-      // Update upload record
-      await admin.from("import_uploads").update({
-        columns,
-        sample_rows: sampleRows,
-        columns_signature: signature,
-        has_header: hasHeader,
-        delimiter,
-        status: "analyzed",
-        updated_at: new Date().toISOString(),
-      }).eq("id", uploadId);
-    }
-  }
-
-  // Suggest mapping based on column names
-  const suggestedMapping = suggestMapping(columns);
-
-  // Find matching presets by signature
-  let matchingPresets: any[] = [];
-  if (signature) {
-    const { data: presets } = await admin
-      .from("mapping_presets")
-      .select("id, name, columns_signature, usage_count")
-      .eq("user_id", auth.user.id)
-      .eq("columns_signature", signature);
-
-    matchingPresets = (presets ?? []).map(p => ({
-      preset_id: p.id,
-      name: p.name,
-      confidence: 1.0,
-    }));
-  }
-
-  // Also find partial matches by platform heuristics
-  if (matchingPresets.length === 0 && columns.length > 0) {
-    const { data: allPresets } = await admin
-      .from("mapping_presets")
-      .select("id, name, columns")
-      .eq("user_id", auth.user.id)
-      .not("columns", "is", null);
-
-    for (const p of allPresets ?? []) {
-      if (!p.columns) continue;
-      const overlap = (p.columns as string[]).filter((c: string) => columns.includes(c)).length;
-      const confidence = overlap / Math.max(columns.length, (p.columns as string[]).length);
-      if (confidence > 0.5) {
-        matchingPresets.push({ preset_id: p.id, name: p.name, confidence: Math.round(confidence * 100) / 100 });
-      }
-    }
-    matchingPresets.sort((a: any, b: any) => b.confidence - a.confidence);
-  }
-
-  // Update matching presets in upload
-  await admin.from("import_uploads").update({
-    suggested_mapping: suggestedMapping,
-    matching_presets: matchingPresets,
-  }).eq("id", uploadId);
-
-  return json({ columns, sample_rows: sampleRows, signature, suggested_mapping: suggestedMapping, matching_presets: matchingPresets }, 200, reqId);
-}
-
-// ── Utility functions ────────────────────────────────────────────────────────
+// ── SHA-256 helper ──────────────────────────────────────────────────────────
 
 async function sha256(input: string): Promise<string> {
   const data = new TextEncoder().encode(input);
@@ -815,12 +189,223 @@ async function sha256(input: string): Promise<string> {
   return Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, "0")).join("");
 }
 
+// ── Import Jobs Handlers ─────────────────────────────────────────────────────
+
+function mapJobRow(row: any) {
+  return {
+    job_id: row.id, status: row.status, job_type: row.job_subtype ?? row.job_type, name: row.name,
+    progress: { total: row.items_total ?? 0, processed: row.items_processed ?? 0, success: row.items_succeeded ?? 0, failed: row.items_failed ?? 0, percent: row.progress_percent ?? 0 },
+    created_at: row.created_at, started_at: row.started_at, completed_at: row.completed_at, error_message: row.error_message,
+  };
+}
+
+async function createImportJob(req: Request, auth: Auth, reqId: string) {
+  const body = await req.json();
+  if (!body.source?.type) return errorResponse("VALIDATION_ERROR", "source.type is required", 400, reqId);
+  const admin = serviceClient();
+  const { data: job, error } = await admin.from("background_jobs").insert({
+    user_id: auth.user.id, job_type: "import", job_subtype: body.source.type, status: "queued",
+    name: `Import ${body.source.type}`, input_data: { source: body.source, preset_id: body.preset_id, options: body.options },
+    metadata: { idempotency_key: req.headers.get("idempotency-key"), source_type: body.source.type },
+    items_total: 0, items_processed: 0, items_succeeded: 0, items_failed: 0, progress_percent: 0,
+  }).select("id, status").single();
+  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
+  return json({ job_id: job.id, status: job.status }, 201, reqId);
+}
+
+async function listImportJobs(url: URL, auth: Auth, reqId: string) {
+  const { page, perPage, from, to } = parsePagination(url);
+  const status = url.searchParams.get("status");
+  const admin = serviceClient();
+  let q = admin.from("background_jobs").select("*", { count: "exact" }).eq("user_id", auth.user.id).eq("job_type", "import").order("created_at", { ascending: false }).range(from, to);
+  if (status) q = q.in("status", status.split("|"));
+  const { data, count, error } = await q;
+  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
+  return json({ items: (data ?? []).map(mapJobRow), meta: { page, per_page: perPage, total: count ?? 0 } }, 200, reqId);
+}
+
+async function getImportJob(jobId: string, auth: Auth, reqId: string) {
+  const admin = serviceClient();
+  const { data, error } = await admin.from("background_jobs").select("*").eq("id", jobId).eq("user_id", auth.user.id).eq("job_type", "import").single();
+  if (error || !data) return errorResponse("NOT_FOUND", "Job not found", 404, reqId);
+  const job: any = mapJobRow(data);
+  if (data.started_at && data.items_total && data.items_processed && data.items_processed > 0) {
+    const elapsed = Date.now() - new Date(data.started_at).getTime();
+    job.eta_seconds = Math.round(((data.items_total - data.items_processed) * (elapsed / data.items_processed)) / 1000);
+  }
+  return json(job, 200, reqId);
+}
+
+async function getJobItems(jobId: string, url: URL, auth: Auth, reqId: string) {
+  const { page, perPage, from, to } = parsePagination(url);
+  const status = url.searchParams.get("status");
+  const admin = serviceClient();
+  const { data: job } = await admin.from("background_jobs").select("id").eq("id", jobId).eq("user_id", auth.user.id).single();
+  if (!job) return errorResponse("NOT_FOUND", "Job not found", 404, reqId);
+  let q = admin.from("import_job_items").select("*", { count: "exact" }).eq("job_id", jobId).order("row_number", { ascending: true }).range(from, to);
+  if (status) q = q.eq("status", status);
+  const { data, count, error } = await q;
+  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
+  const items = (data ?? []).map((r: any) => ({ item_id: r.id, row_number: r.row_number, status: r.status, errors: r.errors ?? [], warnings: r.warnings ?? [], raw: r.raw_data, mapped: r.mapped_data, product_id: r.product_id, created_at: r.created_at }));
+  return json({ items, meta: { page, per_page: perPage, total: count ?? 0 } }, 200, reqId);
+}
+
+async function jobAction(action: string, jobId: string, req: Request, auth: Auth, reqId: string) {
+  const admin = serviceClient();
+  const { data: job } = await admin.from("background_jobs").select("*").eq("id", jobId).eq("user_id", auth.user.id).single();
+  if (!job) return errorResponse("NOT_FOUND", "Job not found", 404, reqId);
+
+  if (action === "retry") {
+    const body = await req.json().catch(() => ({}));
+    const onlyFailed = body.only_failed !== false;
+    const uq = admin.from("import_job_items").update({ status: "pending", errors: [], updated_at: new Date().toISOString() }).eq("job_id", jobId);
+    if (onlyFailed) uq.eq("status", "failed");
+    await uq;
+    await admin.from("background_jobs").update({ status: "queued", updated_at: new Date().toISOString() }).eq("id", jobId);
+    return json({ job_id: jobId, status: "queued" }, 200, reqId);
+  }
+  if (action === "cancel") {
+    if (job.status === "completed" || job.status === "cancelled") return errorResponse("INVALID_STATE", `Cannot cancel job in ${job.status} state`, 409, reqId);
+    await admin.from("background_jobs").update({ status: "cancelled", completed_at: new Date().toISOString(), updated_at: new Date().toISOString() }).eq("id", jobId);
+    return json({ job_id: jobId, status: "cancelled" }, 200, reqId);
+  }
+  if (action === "resume") {
+    if (!["cancelled", "paused", "failed"].includes(job.status)) return errorResponse("INVALID_STATE", `Cannot resume job in ${job.status} state`, 409, reqId);
+    await admin.from("import_job_items").update({ status: "pending", updated_at: new Date().toISOString() }).eq("job_id", jobId).in("status", ["cancelled", "paused"]);
+    await admin.from("background_jobs").update({ status: "queued", updated_at: new Date().toISOString(), completed_at: null }).eq("id", jobId);
+    return json({ job_id: jobId, status: "queued", remaining: (job.items_total ?? 0) - (job.items_processed ?? 0) }, 200, reqId);
+  }
+  if (action === "replay") {
+    const { data: newJob, error } = await admin.from("background_jobs").insert({
+      user_id: auth.user.id, job_type: job.job_type, job_subtype: job.job_subtype, status: "queued",
+      name: `Replay: ${job.name || job.job_subtype}`, input_data: job.input_data,
+      metadata: { ...((job.metadata as any) || {}), replayed_from: jobId },
+      items_total: 0, items_processed: 0, items_succeeded: 0, items_failed: 0, progress_percent: 0,
+    }).select("id, status").single();
+    if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
+    return json({ job_id: newJob.id, status: newJob.status, replayed_from: jobId }, 201, reqId);
+  }
+  return errorResponse("INVALID_ACTION", "Unknown action", 400, reqId);
+}
+
+async function proxyEdgeFunction(fnName: string, req: Request, auth: Auth, reqId: string, bodyOverride?: any) {
+  const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+  const resp = await fetch(`${supabaseUrl}/functions/v1/${fnName}`, {
+    method: "POST",
+    headers: { Authorization: req.headers.get("authorization") || "", "Content-Type": "application/json", apikey: Deno.env.get("SUPABASE_ANON_KEY")! },
+    body: JSON.stringify(bodyOverride ?? await req.json().catch(() => ({}))),
+  });
+  const data = await resp.json();
+  return json(data, resp.status, reqId);
+}
+
+// ── Preset Handlers ──────────────────────────────────────────────────────────
+
+function mapPresetRow(row: any) {
+  return { id: row.id, name: row.name, scope: row.scope, store_id: row.store_id, platform: row.platform, version: row.version, is_default: row.is_default, columns_signature: row.columns_signature, columns: row.columns, has_header: row.has_header, delimiter: row.delimiter, encoding: row.encoding, mapping: row.mapping, last_used_at: row.last_used_at, use_count: row.usage_count, created_at: row.created_at, updated_at: row.updated_at };
+}
+
+async function listPresets(url: URL, auth: Auth, reqId: string) {
+  const { page, perPage, from, to } = parsePagination(url);
+  const platform = url.searchParams.get("platform");
+  const q = url.searchParams.get("q");
+  const admin = serviceClient();
+  let query = admin.from("mapping_presets").select("*", { count: "exact" }).eq("user_id", auth.user.id).order("usage_count", { ascending: false }).range(from, to);
+  if (platform) query = query.eq("platform", platform);
+  if (q) query = query.ilike("name", `%${q}%`);
+  const { data, count, error } = await query;
+  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
+  return json({ items: (data ?? []).map(mapPresetRow), meta: { page, per_page: perPage, total: count ?? 0 } }, 200, reqId);
+}
+
+async function createPreset(req: Request, auth: Auth, reqId: string) {
+  const body = await req.json();
+  if (!body.name) return errorResponse("VALIDATION_ERROR", "name is required", 400, reqId);
+  if (!body.mapping || typeof body.mapping !== "object") return errorResponse("VALIDATION_ERROR", "mapping is required", 400, reqId);
+  const admin = serviceClient();
+  const { data, error } = await admin.from("mapping_presets").insert({
+    user_id: auth.user.id, name: body.name, mapping: body.mapping, platform: body.platform ?? "generic",
+    scope: body.scope ?? "user", store_id: body.store_id ?? null, has_header: body.has_header ?? true,
+    delimiter: body.delimiter ?? ",", encoding: body.encoding ?? "utf-8", columns: body.columns ?? null,
+    columns_signature: body.columns ? await sha256(body.columns.sort().join("|")) : null, icon: body.icon ?? "csv",
+  }).select("id, version").single();
+  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
+  return json({ id: data.id, version: data.version }, 201, reqId);
+}
+
+async function presetAction(action: string, presetId: string, req: Request, auth: Auth, reqId: string) {
+  const admin = serviceClient();
+  if (action === "get") {
+    const { data, error } = await admin.from("mapping_presets").select("*").eq("id", presetId).eq("user_id", auth.user.id).single();
+    if (error || !data) return errorResponse("NOT_FOUND", "Preset not found", 404, reqId);
+    return json(mapPresetRow(data), 200, reqId);
+  }
+  if (action === "update") {
+    const body = await req.json();
+    const { data: current } = await admin.from("mapping_presets").select("version").eq("id", presetId).eq("user_id", auth.user.id).single();
+    if (!current) return errorResponse("NOT_FOUND", "Preset not found", 404, reqId);
+    const updates: any = { version: current.version + 1, updated_at: new Date().toISOString() };
+    for (const f of ["name", "mapping", "platform", "has_header", "delimiter", "encoding"]) if ((body as any)[f] !== undefined) updates[f] = (body as any)[f];
+    if (body.columns !== undefined) { updates.columns = body.columns; updates.columns_signature = await sha256(body.columns.sort().join("|")); }
+    const { data, error } = await admin.from("mapping_presets").update(updates).eq("id", presetId).eq("user_id", auth.user.id).select("id, version").single();
+    if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
+    return json({ id: data.id, version: data.version }, 200, reqId);
+  }
+  if (action === "delete") {
+    const { error } = await admin.from("mapping_presets").delete().eq("id", presetId).eq("user_id", auth.user.id);
+    if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
+    return json({ success: true }, 200, reqId);
+  }
+  if (action === "default") {
+    const { data: preset } = await admin.from("mapping_presets").select("platform").eq("id", presetId).eq("user_id", auth.user.id).single();
+    if (!preset) return errorResponse("NOT_FOUND", "Preset not found", 404, reqId);
+    await admin.from("mapping_presets").update({ is_default: false }).eq("user_id", auth.user.id).eq("platform", preset.platform).eq("is_default", true);
+    await admin.from("mapping_presets").update({ is_default: true }).eq("id", presetId);
+    return json({ id: presetId, is_default: true }, 200, reqId);
+  }
+  if (action === "export") {
+    const { data, error } = await admin.from("mapping_presets").select("*").eq("id", presetId).eq("user_id", auth.user.id).single();
+    if (error || !data) return errorResponse("NOT_FOUND", "Preset not found", 404, reqId);
+    const { id, user_id, created_at, updated_at, usage_count, last_used_at, ...exportable } = data;
+    return json({ preset: exportable }, 200, reqId);
+  }
+  return errorResponse("INVALID_ACTION", "Unknown action", 400, reqId);
+}
+
+async function importPreset(req: Request, auth: Auth, reqId: string) {
+  const body = await req.json();
+  if (!body.preset) return errorResponse("VALIDATION_ERROR", "preset object required", 400, reqId);
+  const p = body.preset;
+  const admin = serviceClient();
+  const { data, error } = await admin.from("mapping_presets").insert({
+    user_id: auth.user.id, name: p.name ?? "Imported Preset", mapping: p.mapping ?? {},
+    platform: p.platform ?? "generic", scope: p.scope ?? "user", has_header: p.has_header ?? true,
+    delimiter: p.delimiter ?? ",", encoding: p.encoding ?? "utf-8", columns: p.columns ?? null,
+    columns_signature: p.columns_signature ?? null, icon: p.icon ?? "csv", version: 1,
+  }).select("id, version").single();
+  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
+  return json({ id: data.id, version: data.version }, 201, reqId);
+}
+
+// ── CSV Upload Handlers ──────────────────────────────────────────────────────
+
+async function createUploadSession(req: Request, auth: Auth, reqId: string) {
+  const body = await req.json();
+  if (!body.filename) return errorResponse("VALIDATION_ERROR", "filename is required", 400, reqId);
+  const admin = serviceClient();
+  const uploadId = crypto.randomUUID();
+  const filePath = `imports/${auth.user.id}/${uploadId}/${body.filename}`;
+  const { data: signedData } = await admin.storage.from("import-files").createSignedUploadUrl(filePath);
+  const expiresAt = new Date(Date.now() + 3600 * 1000).toISOString();
+  const { data, error } = await admin.from("import_uploads").insert({ id: uploadId, user_id: auth.user.id, filename: body.filename, file_path: filePath, status: "pending", expires_at: expiresAt }).select("id").single();
+  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
+  return json({ upload_id: data.id, upload_url: signedData?.signedUrl ?? null, expires_at: expiresAt }, 201, reqId);
+}
+
 function detectDelimiter(text: string): string {
   const firstLine = text.split("\n")[0] ?? "";
   const counts: Record<string, number> = { ",": 0, ";": 0, "\t": 0, "|": 0 };
-  for (const char of Object.keys(counts)) {
-    counts[char] = firstLine.split(char).length - 1;
-  }
+  for (const char of Object.keys(counts)) counts[char] = firstLine.split(char).length - 1;
   return Object.entries(counts).sort((a, b) => b[1] - a[1])[0][0];
 }
 
@@ -842,2908 +427,743 @@ function suggestMapping(columns: string[]): Record<string, { field: string }> {
   for (const col of columns) {
     const lower = col.toLowerCase().trim();
     for (const [field, synonyms] of Object.entries(FIELD_SYNONYMS)) {
-      if (synonyms.includes(lower)) {
-        mapping[col] = { field };
-        break;
-      }
+      if (synonyms.includes(lower)) { mapping[col] = { field }; break; }
     }
   }
   return mapping;
 }
 
-// ── AI Enrichment Handlers ───────────────────────────────────────────────────
-
-async function createAiEnrichment(req: Request, auth: NonNullable<Awaited<ReturnType<typeof authenticate>>>, reqId: string) {
-  const body = await req.json();
-  if (!body.product_ids?.length) return errorResponse("VALIDATION_ERROR", "product_ids required", 400, reqId, [{ field: "product_ids", reason: "required" }]);
-
+async function analyzeUpload(uploadId: string, req: Request, auth: Auth, reqId: string) {
+  const body = await req.json().catch(() => ({}));
   const admin = serviceClient();
-  const { data: job, error } = await admin
-    .from("background_jobs")
-    .insert({
-      user_id: auth.user.id,
-      job_type: "ai_enrichment",
-      job_subtype: "seo",
-      status: "queued",
-      name: `AI Enrichment (${body.product_ids.length} products)`,
-      input_data: {
-        product_ids: body.product_ids,
-        language: body.language ?? "fr",
-        tone: body.tone ?? "premium",
-        targets: body.targets ?? ["seo_title", "meta_description", "tags"],
-        store_id: body.store_id,
-      },
-      metadata: { idempotency_key: req.headers.get("idempotency-key") },
-      items_total: body.product_ids.length,
-      items_processed: 0,
-      items_succeeded: 0,
-      items_failed: 0,
-      progress_percent: 0,
-    })
-    .select("id, status")
-    .single();
+  const { data: upload } = await admin.from("import_uploads").select("*").eq("id", uploadId).eq("user_id", auth.user.id).single();
+  if (!upload) return errorResponse("NOT_FOUND", "Upload not found", 404, reqId);
+  let columns: string[] = upload.columns ?? [];
+  let sampleRows: any[] = [];
+  let signature: string | null = upload.columns_signature;
+  if (upload.file_path) {
+    const { data: fileData } = await admin.storage.from("import-files").download(upload.file_path);
+    if (fileData) {
+      const text = await fileData.text();
+      const delimiter = body.delimiter === "auto" ? detectDelimiter(text) : (body.delimiter ?? upload.delimiter ?? ",");
+      const hasHeader = body.has_header ?? upload.has_header ?? true;
+      const lines = text.split("\n").filter((l: string) => l.trim());
+      if (hasHeader && lines.length > 0) columns = lines[0].split(delimiter).map((c: string) => c.trim().replace(/^"|"$/g, ""));
+      const dataLines = hasHeader ? lines.slice(1, 6) : lines.slice(0, 5);
+      sampleRows = dataLines.map((line: string) => { const values = line.split(delimiter).map((v: string) => v.trim().replace(/^"|"$/g, "")); const row: Record<string, string> = {}; columns.forEach((col, i) => { row[col] = values[i] ?? ""; }); return row; });
+      signature = await sha256(columns.sort().join("|"));
+      await admin.from("import_uploads").update({ columns, sample_rows: sampleRows, columns_signature: signature, has_header: hasHeader, delimiter, status: "analyzed", updated_at: new Date().toISOString() }).eq("id", uploadId);
+    }
+  }
+  const suggestedMapping = suggestMapping(columns);
+  let matchingPresets: any[] = [];
+  if (signature) {
+    const { data: presets } = await admin.from("mapping_presets").select("id, name, columns_signature, usage_count").eq("user_id", auth.user.id).eq("columns_signature", signature);
+    matchingPresets = (presets ?? []).map(p => ({ preset_id: p.id, name: p.name, confidence: 1.0 }));
+  }
+  if (matchingPresets.length === 0 && columns.length > 0) {
+    const { data: allPresets } = await admin.from("mapping_presets").select("id, name, columns").eq("user_id", auth.user.id).not("columns", "is", null);
+    for (const p of allPresets ?? []) {
+      if (!p.columns) continue;
+      const overlap = (p.columns as string[]).filter((c: string) => columns.includes(c)).length;
+      const confidence = overlap / Math.max(columns.length, (p.columns as string[]).length);
+      if (confidence > 0.5) matchingPresets.push({ preset_id: p.id, name: p.name, confidence: Math.round(confidence * 100) / 100 });
+    }
+    matchingPresets.sort((a: any, b: any) => b.confidence - a.confidence);
+  }
+  await admin.from("import_uploads").update({ suggested_mapping: suggestedMapping, matching_presets: matchingPresets }).eq("id", uploadId);
+  return json({ columns, sample_rows: sampleRows, signature, suggested_mapping: suggestedMapping, matching_presets: matchingPresets }, 200, reqId);
+}
 
+// ── AI Enrichment ────────────────────────────────────────────────────────────
+
+async function createAiEnrichment(req: Request, auth: Auth, reqId: string) {
+  const body = await req.json();
+  if (!body.product_ids?.length) return errorResponse("VALIDATION_ERROR", "product_ids required", 400, reqId);
+  const admin = serviceClient();
+  const { data: job, error } = await admin.from("background_jobs").insert({
+    user_id: auth.user.id, job_type: "ai_enrichment", job_subtype: "seo", status: "queued",
+    name: `AI Enrichment (${body.product_ids.length} products)`,
+    input_data: { product_ids: body.product_ids, language: body.language ?? "fr", tone: body.tone ?? "premium", targets: body.targets ?? ["seo_title", "meta_description", "tags"], store_id: body.store_id },
+    metadata: { idempotency_key: req.headers.get("idempotency-key") },
+    items_total: body.product_ids.length, items_processed: 0, items_succeeded: 0, items_failed: 0, progress_percent: 0,
+  }).select("id, status").single();
   if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
-
-  // Create individual job items for each product
-  const items = body.product_ids.map((pid: string, i: number) => ({
-    job_id: job.id,
-    row_number: i + 1,
-    status: "pending",
-    raw_data: { product_id: pid },
-    mapped_data: null,
-    product_id: pid,
-  }));
-
+  const items = body.product_ids.map((pid: string, i: number) => ({ job_id: job.id, row_number: i + 1, status: "pending", raw_data: { product_id: pid }, mapped_data: null, product_id: pid }));
   await admin.from("import_job_items").insert(items);
-
-  // Fire-and-forget: process enrichments asynchronously
   processAiEnrichments(job.id, auth.user.id, body).catch(console.error);
-
   return json({ job_id: job.id, status: "queued" }, 201, reqId);
 }
 
 async function processAiEnrichments(jobId: string, userId: string, params: any) {
   const admin = serviceClient();
   const apiKey = Deno.env.get("LOVABLE_API_KEY");
-  if (!apiKey) {
-    await admin.from("background_jobs").update({ status: "failed", error_message: "LOVABLE_API_KEY not configured" }).eq("id", jobId);
-    return;
-  }
-
+  if (!apiKey) { await admin.from("background_jobs").update({ status: "failed", error_message: "LOVABLE_API_KEY not configured" }).eq("id", jobId); return; }
   await admin.from("background_jobs").update({ status: "running", started_at: new Date().toISOString() }).eq("id", jobId);
-
   const { product_ids, language, tone, targets } = params;
   let succeeded = 0, failed = 0;
-
   for (let i = 0; i < product_ids.length; i++) {
-    const productId = product_ids[i];
     try {
-      // Fetch product
-      const { data: product } = await admin.from("products").select("title, description, tags, seo_title, seo_description, sku").eq("id", productId).single();
+      const { data: product } = await admin.from("products").select("title, description, tags, seo_title, seo_description, sku").eq("id", product_ids[i]).single();
       if (!product) throw new Error("Product not found");
-
-      const prompt = `Tu es un expert SEO e-commerce. Génère du contenu optimisé pour ce produit.
-Langue: ${language ?? "fr"}, Ton: ${tone ?? "premium"}
-Produit: ${product.title}
-Description actuelle: ${product.description ?? "aucune"}
-Tags actuels: ${(product.tags ?? []).join(", ") || "aucun"}
-SKU: ${product.sku ?? "N/A"}
-
-Retourne UNIQUEMENT un JSON avec les champs demandés: ${(targets ?? ["seo_title", "meta_description", "tags"]).join(", ")}
-Format: { "seo_title": "...", "meta_description": "...", "tags": ["..."] }`;
-
+      const prompt = `Tu es un expert SEO e-commerce. Génère du contenu optimisé.\nLangue: ${language ?? "fr"}, Ton: ${tone ?? "premium"}\nProduit: ${product.title}\nDescription: ${product.description ?? "aucune"}\nTags: ${(product.tags ?? []).join(", ") || "aucun"}\nRetourne JSON: {"seo_title":"...","meta_description":"...","tags":["..."],"keywords":["..."]}`;
       const aiResp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-        method: "POST",
-        headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
-        body: JSON.stringify({
-          model: "google/gemini-3-flash-preview",
-          messages: [{ role: "user", content: prompt }],
-        }),
+        method: "POST", headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
+        body: JSON.stringify({ model: "google/gemini-2.5-flash", messages: [{ role: "system", content: "Expert SEO e-commerce. JSON only." }, { role: "user", content: prompt }], temperature: 0.3 }),
       });
-
-      if (!aiResp.ok) {
-        const status = aiResp.status;
-        throw new Error(status === 429 ? "Rate limited" : status === 402 ? "Credits exhausted" : `AI error ${status}`);
-      }
-
+      if (!aiResp.ok) throw new Error(`AI error ${aiResp.status}`);
       const aiData = await aiResp.json();
       const content = aiData.choices?.[0]?.message?.content ?? "";
-
-      // Extract JSON from response
       const jsonMatch = content.match(/\{[\s\S]*\}/);
       const generated = jsonMatch ? JSON.parse(jsonMatch[0]) : {};
-
-      // Update product with generated content
-      const updates: any = {};
+      const updates: any = { updated_at: new Date().toISOString() };
       if (generated.seo_title) updates.seo_title = generated.seo_title;
       if (generated.meta_description) updates.seo_description = generated.meta_description;
-      if (generated.tags) updates.tags = generated.tags;
-
-      if (Object.keys(updates).length > 0) {
-        await admin.from("products").update(updates).eq("id", productId);
-      }
-
-      // Update job item
-      await admin.from("import_job_items").update({
-        status: "success",
-        mapped_data: generated,
-        updated_at: new Date().toISOString(),
-      }).eq("job_id", jobId).eq("product_id", productId);
-
+      if (generated.tags?.length) updates.tags = generated.tags;
+      await admin.from("products").update(updates).eq("id", product_ids[i]);
+      await admin.from("import_job_items").update({ status: "success", mapped_data: generated, updated_at: new Date().toISOString() }).eq("job_id", jobId).eq("product_id", product_ids[i]);
       succeeded++;
     } catch (err: any) {
-      await admin.from("import_job_items").update({
-        status: "failed",
-        errors: [{ code: "AI_ERROR", message: err.message }],
-        updated_at: new Date().toISOString(),
-      }).eq("job_id", jobId).eq("product_id", productId);
+      await admin.from("import_job_items").update({ status: "failed", errors: [err.message], updated_at: new Date().toISOString() }).eq("job_id", jobId).eq("product_id", product_ids[i]);
       failed++;
     }
-
-    // Update progress
-    const processed = succeeded + failed;
-    await admin.from("background_jobs").update({
-      items_processed: processed,
-      items_succeeded: succeeded,
-      items_failed: failed,
-      progress_percent: Math.round((processed / product_ids.length) * 100),
-      updated_at: new Date().toISOString(),
-    }).eq("id", jobId);
+    await admin.from("background_jobs").update({ items_processed: i + 1, items_succeeded: succeeded, items_failed: failed, progress_percent: Math.round(((i + 1) / product_ids.length) * 100), updated_at: new Date().toISOString() }).eq("id", jobId);
   }
-
-  await admin.from("background_jobs").update({
-    status: failed === product_ids.length ? "failed" : "completed",
-    completed_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-  }).eq("id", jobId);
+  await admin.from("background_jobs").update({ status: failed === product_ids.length ? "failed" : "completed", completed_at: new Date().toISOString(), items_processed: product_ids.length, items_succeeded: succeeded, items_failed: failed, progress_percent: 100 }).eq("id", jobId);
 }
 
-async function getAiEnrichment(jobId: string, auth: NonNullable<Awaited<ReturnType<typeof authenticate>>>, reqId: string) {
-  const admin = serviceClient();
-  const { data, error } = await admin
-    .from("background_jobs")
-    .select("*")
-    .eq("id", jobId)
-    .eq("user_id", auth.user.id)
-    .eq("job_type", "ai_enrichment")
-    .single();
-
-  if (error || !data) return errorResponse("NOT_FOUND", "Enrichment job not found", 404, reqId);
-  const job = mapJobRow(data);
-  return json(job, 200, reqId);
-}
-
-async function getAiEnrichmentItems(jobId: string, url: URL, auth: NonNullable<Awaited<ReturnType<typeof authenticate>>>, reqId: string) {
-  // Reuse the same getJobItems logic — items are in import_job_items
-  return await getJobItems(jobId, url, auth, reqId);
-}
-
-// ── Drafts Handlers ──────────────────────────────────────────────────────────
-
-async function listDrafts(url: URL, auth: NonNullable<Awaited<ReturnType<typeof authenticate>>>, reqId: string) {
-  const { page, perPage, from, to } = parsePagination(url);
-  const admin = serviceClient();
-
-  const { data, count, error } = await admin
-    .from("products")
-    .select("id, title, description, sku, cost_price, status, images, tags, seo_title, seo_description, created_at, updated_at", { count: "exact" })
-    .eq("user_id", auth.user.id)
-    .eq("status", "draft")
-    .order("created_at", { ascending: false })
-    .range(from, to);
-
-  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
-
-  return json({
-    items: data ?? [],
-    meta: { page, per_page: perPage, total: count ?? 0 },
-  }, 200, reqId);
-}
-
-async function publishDrafts(req: Request, auth: NonNullable<Awaited<ReturnType<typeof authenticate>>>, reqId: string) {
-  const body = await req.json();
-  if (!body.draft_ids?.length) return errorResponse("VALIDATION_ERROR", "draft_ids required", 400, reqId);
-
-  const admin = serviceClient();
-
-  // Verify ownership and draft status
-  const { data: drafts, error: fetchErr } = await admin
-    .from("products")
-    .select("id, status")
-    .eq("user_id", auth.user.id)
-    .in("id", body.draft_ids)
-    .eq("status", "draft");
-
-  if (fetchErr) return errorResponse("DB_ERROR", fetchErr.message, 500, reqId);
-
-  const validIds = (drafts ?? []).map((d: any) => d.id);
-  if (validIds.length === 0) return errorResponse("NOT_FOUND", "No valid drafts found", 404, reqId);
-
-  // Update status to active
-  const { error: updateErr } = await admin
-    .from("products")
-    .update({ status: "active", updated_at: new Date().toISOString() })
-    .in("id", validIds);
-
-  if (updateErr) return errorResponse("DB_ERROR", updateErr.message, 500, reqId);
-
-  return json({
-    published: validIds.length,
-    skipped: body.draft_ids.length - validIds.length,
-    product_ids: validIds,
-  }, 200, reqId);
-}
-
-// ── Products CRUD Handlers ───────────────────────────────────────────────────
+// ── Products CRUD ────────────────────────────────────────────────────────────
 
 function mapProductRow(row: any) {
   const imagesArr = Array.isArray(row.images) ? row.images : [];
-  const allImages = [
-    ...imagesArr,
-    ...(row.image_url && !imagesArr.includes(row.image_url) ? [row.image_url] : []),
-  ].filter((img: string) => typeof img === "string" && img.startsWith("http"));
-
+  const allImages = [...imagesArr, ...(row.image_url && !imagesArr.includes(row.image_url) ? [row.image_url] : [])].filter((img: string) => typeof img === "string" && img.startsWith("http"));
   return {
-    id: row.id,
-    name: row.name || row.title || "Produit sans nom",
-    title: row.title,
-    description: row.description ?? null,
-    sku: row.sku ?? null,
-    barcode: row.barcode ?? null,
-    price: row.price ?? 0,
-    compare_at_price: row.compare_at_price ?? null,
-    cost_price: row.cost_price ?? 0,
-    category: row.category ?? null,
-    brand: row.brand ?? null,
-    supplier: row.supplier ?? null,
-    supplier_url: row.supplier_url ?? null,
-    supplier_product_id: row.supplier_product_id ?? null,
-    status: row.status ?? "draft",
-    stock_quantity: row.stock_quantity ?? 0,
-    weight: row.weight ?? null,
-    weight_unit: row.weight_unit ?? "kg",
-    images: allImages,
-    variants: Array.isArray(row.variants) ? row.variants : [],
-    tags: row.tags ?? [],
-    seo_title: row.seo_title ?? null,
-    seo_description: row.seo_description ?? null,
-    is_published: row.is_published ?? false,
-    product_type: row.product_type ?? null,
-    vendor: row.vendor ?? null,
-    view_count: row.view_count ?? 0,
+    id: row.id, name: row.name || row.title || "Produit sans nom", title: row.title, description: row.description ?? null,
+    sku: row.sku ?? null, barcode: row.barcode ?? null, price: row.price ?? 0, compare_at_price: row.compare_at_price ?? null,
+    cost_price: row.cost_price ?? 0, category: row.category ?? null, brand: row.brand ?? null, supplier: row.supplier ?? null,
+    supplier_url: row.supplier_url ?? null, status: row.status ?? "draft", stock_quantity: row.stock_quantity ?? 0,
+    weight: row.weight ?? null, weight_unit: row.weight_unit ?? "kg", images: allImages,
+    variants: Array.isArray(row.variants) ? row.variants : [], tags: row.tags ?? [],
+    seo_title: row.seo_title ?? null, seo_description: row.seo_description ?? null,
+    is_published: row.is_published ?? false, view_count: row.view_count ?? 0,
     profit_margin: row.cost_price && row.price > 0 ? Math.round(((row.price - row.cost_price) / row.price) * 10000) / 100 : null,
-    created_at: row.created_at,
-    updated_at: row.updated_at,
+    created_at: row.created_at, updated_at: row.updated_at,
   };
 }
 
-async function listProducts(url: URL, auth: NonNullable<Awaited<ReturnType<typeof authenticate>>>, reqId: string) {
+async function listProducts(url: URL, auth: Auth, reqId: string) {
   const { page, perPage, from, to } = parsePagination(url);
   const admin = serviceClient();
-
-  let query = admin
-    .from("products")
-    .select("*", { count: "exact" })
-    .eq("user_id", auth.user.id)
-    .order("created_at", { ascending: false })
-    .range(from, to);
-
-  const status = url.searchParams.get("status");
-  if (status) query = query.eq("status", status);
-
-  const category = url.searchParams.get("category");
-  if (category) query = query.eq("category", category);
-
-  const search = url.searchParams.get("q");
-  if (search) query = query.or(`title.ilike.%${search}%,name.ilike.%${search}%,sku.ilike.%${search}%`);
-
-  const low_stock = url.searchParams.get("low_stock");
-  if (low_stock === "true") query = query.lt("stock_quantity", 10);
-
-  const { data, count, error } = await query;
+  let q = admin.from("products").select("*", { count: "exact" }).eq("user_id", auth.user.id).order("created_at", { ascending: false }).range(from, to);
+  const status = url.searchParams.get("status"); if (status) q = q.eq("status", status);
+  const category = url.searchParams.get("category"); if (category) q = q.eq("category", category);
+  const search = url.searchParams.get("q"); if (search) q = q.or(`title.ilike.%${search}%,name.ilike.%${search}%,sku.ilike.%${search}%`);
+  if (url.searchParams.get("low_stock") === "true") q = q.lt("stock_quantity", 10);
+  const { data, count, error } = await q;
   if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
-
   return json({ items: (data ?? []).map(mapProductRow), meta: { page, per_page: perPage, total: count ?? 0 } }, 200, reqId);
 }
 
-async function getProduct(productId: string, auth: NonNullable<Awaited<ReturnType<typeof authenticate>>>, reqId: string) {
+async function getProduct(productId: string, auth: Auth, reqId: string) {
   const admin = serviceClient();
-  const { data, error } = await admin
-    .from("products")
-    .select("*")
-    .eq("id", productId)
-    .eq("user_id", auth.user.id)
-    .single();
-
+  const { data, error } = await admin.from("products").select("*").eq("id", productId).eq("user_id", auth.user.id).single();
   if (error || !data) return errorResponse("NOT_FOUND", "Product not found", 404, reqId);
   return json(mapProductRow(data), 200, reqId);
 }
 
-async function createProduct(req: Request, auth: NonNullable<Awaited<ReturnType<typeof authenticate>>>, reqId: string) {
+async function createProduct(req: Request, auth: Auth, reqId: string) {
   const body = await req.json();
   if (!body.title && !body.name) return errorResponse("VALIDATION_ERROR", "title or name is required", 400, reqId);
-
   const admin = serviceClient();
-  const { data, error } = await admin
-    .from("products")
-    .insert({
-      user_id: auth.user.id,
-      title: body.title ?? body.name,
-      name: body.name ?? body.title,
-      description: body.description ?? null,
-      sku: body.sku ?? null,
-      barcode: body.barcode ?? null,
-      price: body.price ?? 0,
-      compare_at_price: body.compare_at_price ?? null,
-      cost_price: body.cost_price ?? 0,
-      category: body.category ?? null,
-      brand: body.brand ?? null,
-      supplier: body.supplier ?? null,
-      supplier_url: body.supplier_url ?? null,
-      supplier_product_id: body.supplier_product_id ?? null,
-      status: body.status ?? "draft",
-      stock_quantity: body.stock_quantity ?? 0,
-      weight: body.weight ?? null,
-      weight_unit: body.weight_unit ?? "kg",
-      images: body.images ?? [],
-      image_url: Array.isArray(body.images) && body.images.length > 0 ? body.images[0] : body.image_url ?? null,
-      variants: body.variants ?? [],
-      tags: body.tags ?? [],
-      seo_title: body.seo_title ?? null,
-      seo_description: body.seo_description ?? null,
-      product_type: body.product_type ?? null,
-      vendor: body.vendor ?? null,
-    })
-    .select("id, status, created_at")
-    .single();
-
+  const { data, error } = await admin.from("products").insert({
+    user_id: auth.user.id, title: body.title ?? body.name, name: body.name ?? body.title,
+    description: body.description ?? null, sku: body.sku ?? null, barcode: body.barcode ?? null,
+    price: body.price ?? 0, compare_at_price: body.compare_at_price ?? null, cost_price: body.cost_price ?? 0,
+    category: body.category ?? null, brand: body.brand ?? null, supplier: body.supplier ?? null,
+    status: body.status ?? "draft", stock_quantity: body.stock_quantity ?? 0,
+    weight: body.weight ?? null, weight_unit: body.weight_unit ?? "kg",
+    images: body.images ?? [], image_url: Array.isArray(body.images) && body.images.length > 0 ? body.images[0] : body.image_url ?? null,
+    variants: body.variants ?? [], tags: body.tags ?? [],
+    seo_title: body.seo_title ?? null, seo_description: body.seo_description ?? null,
+  }).select("id, status, created_at").single();
   if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
   return json({ id: data.id, status: data.status, created_at: data.created_at }, 201, reqId);
 }
 
-async function updateProduct(productId: string, req: Request, auth: NonNullable<Awaited<ReturnType<typeof authenticate>>>, reqId: string) {
+async function updateProduct(productId: string, req: Request, auth: Auth, reqId: string) {
   const body = await req.json();
   const admin = serviceClient();
-
-  // Verify ownership
   const { data: existing } = await admin.from("products").select("id").eq("id", productId).eq("user_id", auth.user.id).single();
   if (!existing) return errorResponse("NOT_FOUND", "Product not found", 404, reqId);
-
   const updates: any = { updated_at: new Date().toISOString() };
-  const allowedFields = [
-    "title", "name", "description", "sku", "barcode", "price", "compare_at_price",
-    "cost_price", "category", "brand", "supplier", "supplier_url", "supplier_product_id",
-    "status", "stock_quantity", "weight", "weight_unit", "images", "variants", "tags",
-    "seo_title", "seo_description", "is_published", "product_type", "vendor",
-  ];
-
-  for (const field of allowedFields) {
-    if (body[field] !== undefined) updates[field] = body[field];
-  }
-
-  // Sync image_url with images array
-  if (body.images !== undefined) {
-    updates.image_url = Array.isArray(body.images) && body.images.length > 0 ? body.images[0] : null;
-  }
-
-  const { data, error } = await admin
-    .from("products")
-    .update(updates)
-    .eq("id", productId)
-    .eq("user_id", auth.user.id)
-    .select("id, status, updated_at")
-    .single();
-
+  const allowed = ["title", "name", "description", "sku", "barcode", "price", "compare_at_price", "cost_price", "category", "brand", "supplier", "status", "stock_quantity", "weight", "weight_unit", "images", "variants", "tags", "seo_title", "seo_description", "is_published"];
+  for (const f of allowed) if (body[f] !== undefined) updates[f] = body[f];
+  if (body.images !== undefined) updates.image_url = Array.isArray(body.images) && body.images.length > 0 ? body.images[0] : null;
+  const { data, error } = await admin.from("products").update(updates).eq("id", productId).eq("user_id", auth.user.id).select("id, status, updated_at").single();
   if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
   return json({ id: data.id, status: data.status, updated_at: data.updated_at }, 200, reqId);
 }
 
-async function deleteProduct(productId: string, auth: NonNullable<Awaited<ReturnType<typeof authenticate>>>, reqId: string) {
+async function deleteProduct(productId: string, auth: Auth, reqId: string) {
   const admin = serviceClient();
   const { error } = await admin.from("products").delete().eq("id", productId).eq("user_id", auth.user.id);
   if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
   return json({ success: true }, 200, reqId);
 }
 
-async function bulkUpdateProducts(req: Request, auth: NonNullable<Awaited<ReturnType<typeof authenticate>>>, reqId: string) {
+async function bulkUpdateProducts(req: Request, auth: Auth, reqId: string) {
   const body = await req.json();
-  if (!body.product_ids?.length) return errorResponse("VALIDATION_ERROR", "product_ids required", 400, reqId);
-  if (!body.updates || typeof body.updates !== "object") return errorResponse("VALIDATION_ERROR", "updates required", 400, reqId);
-
+  if (!body.product_ids?.length || !body.updates) return errorResponse("VALIDATION_ERROR", "product_ids and updates required", 400, reqId);
   const admin = serviceClient();
-  const updates: any = { ...body.updates, updated_at: new Date().toISOString() };
-  // Prevent changing user_id or id
-  delete updates.id;
-  delete updates.user_id;
-
-  const { error, count } = await admin
-    .from("products")
-    .update(updates)
-    .eq("user_id", auth.user.id)
-    .in("id", body.product_ids);
-
+  const updates: any = { ...body.updates, updated_at: new Date().toISOString() }; delete updates.id; delete updates.user_id;
+  const { error, count } = await admin.from("products").update(updates).eq("user_id", auth.user.id).in("id", body.product_ids);
   if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
   return json({ updated: count ?? body.product_ids.length }, 200, reqId);
 }
 
-async function getProductStats(auth: NonNullable<Awaited<ReturnType<typeof authenticate>>>, reqId: string) {
+async function getProductStats(auth: Auth, reqId: string) {
   const admin = serviceClient();
-
-  const [
-    { count: total },
-    { count: active },
-    { count: draft },
-    { count: lowStock },
-    { count: outOfStock },
-  ] = await Promise.all([
+  const [{ count: total }, { count: active }, { count: draft }, { count: lowStock }, { count: outOfStock }] = await Promise.all([
     admin.from("products").select("*", { count: "exact", head: true }).eq("user_id", auth.user.id),
     admin.from("products").select("*", { count: "exact", head: true }).eq("user_id", auth.user.id).eq("status", "active"),
     admin.from("products").select("*", { count: "exact", head: true }).eq("user_id", auth.user.id).eq("status", "draft"),
     admin.from("products").select("*", { count: "exact", head: true }).eq("user_id", auth.user.id).lt("stock_quantity", 10).gt("stock_quantity", 0),
     admin.from("products").select("*", { count: "exact", head: true }).eq("user_id", auth.user.id).eq("stock_quantity", 0),
   ]);
-
-  // Aggregate values
-  const { data: agg } = await admin
-    .from("products")
-    .select("price, cost_price, stock_quantity")
-    .eq("user_id", auth.user.id);
-
+  const { data: agg } = await admin.from("products").select("price, cost_price, stock_quantity").eq("user_id", auth.user.id);
   let totalValue = 0, totalCost = 0, avgPrice = 0;
   if (agg && agg.length > 0) {
-    for (const p of agg) {
-      totalValue += (p.price ?? 0) * (p.stock_quantity ?? 0);
-      totalCost += (p.cost_price ?? 0) * (p.stock_quantity ?? 0);
-    }
+    for (const p of agg) { totalValue += (p.price ?? 0) * (p.stock_quantity ?? 0); totalCost += (p.cost_price ?? 0) * (p.stock_quantity ?? 0); }
     avgPrice = agg.reduce((s: number, p: any) => s + (p.price ?? 0), 0) / agg.length;
   }
-
-  return json({
-    total: total ?? 0,
-    active: active ?? 0,
-    draft: draft ?? 0,
-    inactive: (total ?? 0) - (active ?? 0) - (draft ?? 0),
-    low_stock: lowStock ?? 0,
-    out_of_stock: outOfStock ?? 0,
-    total_value: Math.round(totalValue * 100) / 100,
-    total_cost: Math.round(totalCost * 100) / 100,
-    total_profit: Math.round((totalValue - totalCost) * 100) / 100,
-    avg_price: Math.round(avgPrice * 100) / 100,
-    profit_margin: totalValue > 0 ? Math.round(((totalValue - totalCost) / totalValue) * 10000) / 100 : 0,
-  }, 200, reqId);
+  return json({ total: total ?? 0, active: active ?? 0, draft: draft ?? 0, inactive: (total ?? 0) - (active ?? 0) - (draft ?? 0), low_stock: lowStock ?? 0, out_of_stock: outOfStock ?? 0, total_value: Math.round(totalValue * 100) / 100, total_cost: Math.round(totalCost * 100) / 100, total_profit: Math.round((totalValue - totalCost) * 100) / 100, avg_price: Math.round(avgPrice * 100) / 100, profit_margin: totalValue > 0 ? Math.round(((totalValue - totalCost) / totalValue) * 10000) / 100 : 0 }, 200, reqId);
 }
 
-// ── Product SEO / Metrics / Stock Endpoints ──────────────────────────────────
+// ── SEO scoring ──────────────────────────────────────────────────────────────
 
-async function getProductSeo(productId: string, auth: NonNullable<Awaited<ReturnType<typeof authenticate>>>, reqId: string) {
+function scoreProduct(product: any) {
+  const issues: any[] = [], strengths: string[] = [];
+  const title = product.seo_title || product.title || "";
+  let titleScore = 0;
+  if (!title) issues.push({ id: "no_title", severity: "critical", category: "seo", message: "Titre manquant", field: "title" });
+  else { if (title.length >= 20 && title.length <= 70) { titleScore = 100; strengths.push("Titre optimal"); } else titleScore = title.length >= 10 ? 50 : 20; }
+  const meta = product.seo_description || "";
+  let metaScore = 0;
+  if (!meta) issues.push({ id: "no_meta", severity: "critical", category: "seo", message: "Meta description manquante", field: "seo_description" });
+  else { if (meta.length >= 120 && meta.length <= 160) { metaScore = 100; strengths.push("Meta description optimale"); } else metaScore = meta.length >= 50 ? 50 : 20; }
+  const desc = product.description || "";
+  let contentScore = 0;
+  if (!desc) issues.push({ id: "no_desc", severity: "critical", category: "content", message: "Description manquante", field: "description" });
+  else { contentScore = desc.length >= 300 ? 100 : desc.length >= 100 ? 80 : desc.length >= 50 ? 40 : 20; }
+  const images = Array.isArray(product.images) ? product.images : [];
+  let imageScore = images.length === 0 ? 0 : images.length < 2 ? 50 : Math.min(100, images.length * 25);
+  const fields = { sku: product.sku, brand: product.brand, category: product.category, barcode: product.barcode, weight: product.weight };
+  const filledCount = Object.values(fields).filter(v => v !== null && v !== undefined && v !== "").length;
+  const dataScore = Math.round((filledCount / Object.keys(fields).length) * 100);
+  const tags = Array.isArray(product.tags) ? product.tags : [];
+  let aiScore = (tags.length >= 3 ? 40 : 0) + (product.brand ? 20 : 0) + (product.category ? 20 : 0) + (desc.length >= 100 ? 20 : 0);
+  const globalScore = Math.round(titleScore * 0.25 + metaScore * 0.2 + contentScore * 0.2 + imageScore * 0.15 + dataScore * 0.1 + aiScore * 0.1);
+  const criticalCount = issues.filter(i => i.severity === "critical").length;
+  return {
+    product_id: product.id, product_name: product.title || "Sans nom",
+    current: { seo_title: product.seo_title, seo_description: product.seo_description, title: product.title, description: product.description },
+    score: { global: globalScore, seo: Math.round((titleScore + metaScore) / 2), content: contentScore, images: imageScore, data: dataScore, ai_readiness: aiScore },
+    status: globalScore >= 70 ? "optimized" : globalScore >= 40 ? "needs_work" : "critical",
+    issues, strengths,
+    business_impact: { traffic_impact: criticalCount > 2 ? "high" : criticalCount > 0 ? "medium" : "low", priority: criticalCount > 0 ? "urgent" : "normal" },
+  };
+}
+
+// ── Product sub-resource handlers ────────────────────────────────────────────
+
+async function getProductSeo(productId: string, auth: Auth, reqId: string) {
   const admin = serviceClient();
-  const { data: product, error } = await admin
-    .from("products")
-    .select("id, title, description, seo_title, seo_description, images, tags, sku, brand, category, barcode, weight, status")
-    .eq("id", productId).eq("user_id", auth.user.id).single();
+  const { data: product, error } = await admin.from("products").select("id, title, description, seo_title, seo_description, images, tags, sku, brand, category, barcode, weight, status").eq("id", productId).eq("user_id", auth.user.id).single();
   if (error || !product) return errorResponse("NOT_FOUND", "Product not found", 404, reqId);
-
-  const scored = scoreProduct(product);
-
-  // Fetch latest audit if exists
-  const { data: latestAudit } = await admin.from("seo_scores")
-    .select("*").eq("product_id", productId).eq("user_id", auth.user.id)
-    .order("created_at", { ascending: false }).limit(1).maybeSingle();
-
-  // Fetch history count
-  const { count: historyCount } = await admin.from("seo_history_snapshots")
-    .select("*", { count: "exact", head: true }).eq("product_id", productId).eq("user_id", auth.user.id);
-
-  return json({
-    ...scored,
-    latest_audit: latestAudit ?? null,
-    history_count: historyCount ?? 0,
-  }, 200, reqId);
+  return json(scoreProduct(product), 200, reqId);
 }
 
-async function optimizeProduct(productId: string, req: Request, auth: NonNullable<Awaited<ReturnType<typeof authenticate>>>, reqId: string) {
-  const body = await req.json().catch(() => ({}));
-  const admin = serviceClient();
-
-  // Verify ownership
-  const { data: product } = await admin.from("products")
-    .select("id, title, description, tags, seo_title, seo_description, sku, brand, category")
-    .eq("id", productId).eq("user_id", auth.user.id).single();
-  if (!product) return errorResponse("NOT_FOUND", "Product not found", 404, reqId);
-
-  // Snapshot before optimization
-  await admin.from("seo_history_snapshots").insert({
-    product_id: productId,
-    user_id: auth.user.id,
-    snapshot_type: "before_optimization",
-    score_data: scoreProduct(product).score,
-    seo_data: { seo_title: product.seo_title, seo_description: product.seo_description, tags: product.tags },
-  });
-
-  // Create AI enrichment job for this single product
-  const { data: job, error } = await admin.from("background_jobs").insert({
-    user_id: auth.user.id,
-    job_type: "ai_enrichment",
-    job_subtype: "product_optimize",
-    status: "queued",
-    name: `Optimize: ${product.title ?? product.id}`,
-    input_data: {
-      product_ids: [productId],
-      language: body.language ?? "fr",
-      tone: body.tone ?? "premium",
-      targets: body.targets ?? ["seo_title", "meta_description", "tags"],
-    },
-    items_total: 1, items_processed: 0, items_succeeded: 0, items_failed: 0, progress_percent: 0,
-  }).select("id, status").single();
-
-  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
-
-  // Fire-and-forget
-  processAiEnrichments(job.id, auth.user.id, {
-    product_ids: [productId],
-    language: body.language ?? "fr",
-    tone: body.tone ?? "premium",
-    targets: body.targets ?? ["seo_title", "meta_description", "tags"],
-  }).catch(console.error);
-
-  return json({ job_id: job.id, status: "queued", product_id: productId }, 202, reqId);
-}
-
-async function getProductMetrics(productId: string, url: URL, auth: NonNullable<Awaited<ReturnType<typeof authenticate>>>, reqId: string) {
+async function getProductMetrics(productId: string, url: URL, auth: Auth, reqId: string) {
   const admin = serviceClient();
   const periodType = url.searchParams.get("period") ?? "daily";
   const limit = Math.min(100, parseInt(url.searchParams.get("limit") ?? "30", 10));
-
-  // Verify ownership
   const { data: product } = await admin.from("products").select("id").eq("id", productId).eq("user_id", auth.user.id).single();
   if (!product) return errorResponse("NOT_FOUND", "Product not found", 404, reqId);
-
-  const { data: metrics, error } = await admin.from("product_metrics")
-    .select("*")
-    .eq("product_id", productId).eq("user_id", auth.user.id).eq("period_type", periodType)
-    .order("period_start", { ascending: false })
-    .limit(limit);
-
+  const { data: metrics, error } = await admin.from("product_metrics").select("*").eq("product_id", productId).eq("user_id", auth.user.id).eq("period_type", periodType).order("period_start", { ascending: false }).limit(limit);
   if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
-
-  // Summary
   const totalRevenue = (metrics ?? []).reduce((s: number, m: any) => s + (m.revenue ?? 0), 0);
   const totalOrders = (metrics ?? []).reduce((s: number, m: any) => s + (m.orders ?? 0), 0);
-  const totalViews = (metrics ?? []).reduce((s: number, m: any) => s + (m.views ?? 0), 0);
-  const avgConversion = totalViews > 0 ? totalOrders / totalViews : 0;
-
-  return json({
-    product_id: productId,
-    period_type: periodType,
-    summary: {
-      total_revenue: Math.round(totalRevenue * 100) / 100,
-      total_orders: totalOrders,
-      total_views: totalViews,
-      avg_conversion_rate: Math.round(avgConversion * 10000) / 100,
-    },
-    data_points: (metrics ?? []).reverse(),
-  }, 200, reqId);
+  return json({ product_id: productId, period_type: periodType, summary: { total_revenue: totalRevenue, total_orders: totalOrders }, data_points: metrics ?? [] }, 200, reqId);
 }
 
-async function getProductStockHistory(productId: string, url: URL, auth: NonNullable<Awaited<ReturnType<typeof authenticate>>>, reqId: string) {
+async function getProductStockHistory(productId: string, url: URL, auth: Auth, reqId: string) {
   const admin = serviceClient();
   const limit = Math.min(100, parseInt(url.searchParams.get("limit") ?? "30", 10));
-  const snapshotType = url.searchParams.get("type") ?? "daily";
-
-  const { data: product } = await admin.from("products").select("id").eq("id", productId).eq("user_id", auth.user.id).single();
-  if (!product) return errorResponse("NOT_FOUND", "Product not found", 404, reqId);
-
-  const { data, error } = await admin.from("stock_snapshots")
-    .select("*")
-    .eq("product_id", productId).eq("user_id", auth.user.id).eq("snapshot_type", snapshotType)
-    .order("recorded_at", { ascending: false })
-    .limit(limit);
-
+  const { data, error } = await admin.from("stock_history").select("*").eq("product_id", productId).eq("user_id", auth.user.id).order("created_at", { ascending: false }).limit(limit);
   if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
-
-  return json({ product_id: productId, snapshots: (data ?? []).reverse() }, 200, reqId);
+  return json({ product_id: productId, history: data ?? [] }, 200, reqId);
 }
 
-// ── Inventory Handlers ───────────────────────────────────────────────────────
+// ── Drafts ────────────────────────────────────────────────────────────────────
 
-async function listInventoryLocations(auth: NonNullable<Awaited<ReturnType<typeof authenticate>>>, reqId: string) {
+async function listDrafts(url: URL, auth: Auth, reqId: string) {
+  const { page, perPage, from, to } = parsePagination(url);
   const admin = serviceClient();
-  const { data, error } = await admin.from("inventory_locations").select("*").eq("user_id", auth.user.id).order("name");
+  const { data, count, error } = await admin.from("products").select("id, title, description, sku, cost_price, status, images, tags, seo_title, seo_description, created_at, updated_at", { count: "exact" }).eq("user_id", auth.user.id).eq("status", "draft").order("created_at", { ascending: false }).range(from, to);
   if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
-  return json({ items: data ?? [] }, 200, reqId);
+  return json({ items: data ?? [], meta: { page, per_page: perPage, total: count ?? 0 } }, 200, reqId);
 }
 
-async function listInventoryLevels(url: URL, auth: NonNullable<Awaited<ReturnType<typeof authenticate>>>, reqId: string) {
-  const admin = serviceClient();
-  let query = admin.from("inventory_levels").select("*").eq("user_id", auth.user.id);
-  const variantId = url.searchParams.get("variant_id");
-  const locationId = url.searchParams.get("location_id");
-  if (variantId) query = query.eq("variant_id", variantId);
-  if (locationId) query = query.eq("location_id", locationId);
-  const { data, error } = await query;
-  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
-  return json({ items: data ?? [] }, 200, reqId);
-}
-
-async function upsertInventoryLevel(req: Request, auth: NonNullable<Awaited<ReturnType<typeof authenticate>>>, reqId: string) {
+async function publishDrafts(req: Request, auth: Auth, reqId: string) {
   const body = await req.json();
+  if (!body.draft_ids?.length) return errorResponse("VALIDATION_ERROR", "draft_ids required", 400, reqId);
   const admin = serviceClient();
-  const { data, error } = await admin.from("inventory_levels")
-    .upsert({ ...body, user_id: auth.user.id }).select().single();
+  const { data: drafts } = await admin.from("products").select("id").eq("user_id", auth.user.id).in("id", body.draft_ids).eq("status", "draft");
+  const validIds = (drafts ?? []).map((d: any) => d.id);
+  if (validIds.length === 0) return errorResponse("NOT_FOUND", "No valid drafts found", 404, reqId);
+  await admin.from("products").update({ status: "active", updated_at: new Date().toISOString() }).in("id", validIds);
+  return json({ published: validIds.length, skipped: body.draft_ids.length - validIds.length, product_ids: validIds }, 200, reqId);
+}
+
+// ── SEO Handlers (audit, generate, apply) ────────────────────────────────────
+
+async function createSeoAudit(req: Request, auth: Auth, reqId: string) {
+  const body = await req.json();
+  if (!body.url) return errorResponse("VALIDATION_ERROR", "url is required", 400, reqId);
+  const admin = serviceClient();
+  const { data: audit, error } = await admin.from("seo_audits").insert({ user_id: auth.user.id, target_type: body.scope ?? "url", url: body.url, base_url: body.url, provider: body.provider ?? "internal", language: body.language ?? "fr", status: "pending", mode: body.scope ?? "page" }).select("id, status").single();
   if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
+  return json({ audit_id: audit.id, status: "pending" }, 201, reqId);
+}
+
+async function listSeoAudits(url: URL, auth: Auth, reqId: string) {
+  const { page, perPage, from, to } = parsePagination(url);
+  const admin = serviceClient();
+  let q = admin.from("seo_audits").select("*", { count: "exact" }).eq("user_id", auth.user.id).order("created_at", { ascending: false }).range(from, to);
+  const targetType = url.searchParams.get("target_type"); if (targetType) q = q.eq("target_type", targetType);
+  const status = url.searchParams.get("status"); if (status) q = q.eq("status", status);
+  const { data, count, error } = await q;
+  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
+  return json({ items: (data ?? []).map((r: any) => ({ audit_id: r.id, url: r.url ?? r.base_url, score: r.score, status: r.status, created_at: r.created_at })), meta: { page, per_page: perPage, total: count ?? 0 } }, 200, reqId);
+}
+
+async function getSeoAudit(auditId: string, auth: Auth, reqId: string) {
+  const admin = serviceClient();
+  const { data: audit, error } = await admin.from("seo_audits").select("*").eq("id", auditId).eq("user_id", auth.user.id).single();
+  if (error || !audit) return errorResponse("NOT_FOUND", "Audit not found", 404, reqId);
+  const { data: issues } = await admin.from("seo_issues").select("*").eq("audit_id", auditId);
+  return json({ audit_id: audit.id, url: audit.url ?? audit.base_url, score: audit.score, status: audit.status, summary: audit.summary, issues: issues ?? [] }, 200, reqId);
+}
+
+async function createSeoGenerate(req: Request, auth: Auth, reqId: string) {
+  const body = await req.json();
+  if (!body.target_id) return errorResponse("VALIDATION_ERROR", "target_id is required", 400, reqId);
+  const admin = serviceClient();
+  const { data: job, error } = await admin.from("seo_ai_generations").insert({ user_id: auth.user.id, target_type: body.target_type ?? "product", target_id: body.target_id, type: (body.actions ?? ["title"]).join(","), actions: body.actions ?? ["title", "description", "meta"], tone: body.tone ?? "conversion", language: body.language ?? "fr", status: "pending" }).select("id, status").single();
+  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
+  return json({ job_id: job.id, status: "pending" }, 201, reqId);
+}
+
+async function getSeoGeneration(jobId: string, auth: Auth, reqId: string) {
+  const admin = serviceClient();
+  const { data, error } = await admin.from("seo_ai_generations").select("*").eq("id", jobId).eq("user_id", auth.user.id).single();
+  if (error || !data) return errorResponse("NOT_FOUND", "Job not found", 404, reqId);
   return json(data, 200, reqId);
 }
 
-// ── Product Prices Handlers ──────────────────────────────────────────────────
-
-async function listProductPrices(url: URL, auth: NonNullable<Awaited<ReturnType<typeof authenticate>>>, reqId: string) {
-  const admin = serviceClient();
-  let query = admin.from("product_prices").select("*").eq("user_id", auth.user.id);
-  const variantId = url.searchParams.get("variant_id");
-  const storeId = url.searchParams.get("store_id");
-  if (variantId) query = query.eq("variant_id", variantId);
-  if (storeId) query = query.eq("store_id", storeId);
-  const { data, error } = await query.order("updated_at", { ascending: false });
-  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
-  return json({ items: data ?? [] }, 200, reqId);
-}
-
-async function upsertProductPrice(req: Request, auth: NonNullable<Awaited<ReturnType<typeof authenticate>>>, reqId: string) {
+async function applySeoContent(req: Request, auth: Auth, reqId: string) {
   const body = await req.json();
+  if (!body.product_id || !body.content) return errorResponse("VALIDATION_ERROR", "product_id and content required", 400, reqId);
   const admin = serviceClient();
-  const { data, error } = await admin.from("product_prices")
-    .upsert({ ...body, user_id: auth.user.id }).select().single();
+  const updates: any = { updated_at: new Date().toISOString() };
+  if (body.content.seo_title) updates.seo_title = body.content.seo_title;
+  if (body.content.meta_description) updates.seo_description = body.content.meta_description;
+  if (body.content.tags) updates.tags = body.content.tags;
+  if (body.content.description) updates.description = body.content.description;
+  const { error } = await admin.from("products").update(updates).eq("id", body.product_id).eq("user_id", auth.user.id);
   if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
-  return json(data, 200, reqId);
+  return json({ success: true, product_id: body.product_id }, 200, reqId);
 }
 
-// ── Product Events Handler ───────────────────────────────────────────────────
+// ── SEO Product Audit ────────────────────────────────────────────────────────
 
-async function listProductEvents(url: URL, auth: NonNullable<Awaited<ReturnType<typeof authenticate>>>, reqId: string) {
+async function auditProductSeo(req: Request, auth: Auth, reqId: string) {
+  const body = await req.json();
+  const productIds: string[] = body.product_ids ?? (body.product_id ? [body.product_id] : []);
+  if (productIds.length === 0) return errorResponse("VALIDATION_ERROR", "product_ids required", 400, reqId);
+  const admin = serviceClient();
+  const { data: products, error } = await admin.from("products").select("id, title, description, seo_title, seo_description, images, tags, sku, brand, category, barcode, weight, status").eq("user_id", auth.user.id).in("id", productIds);
+  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
+  const results = (products ?? []).map((p: any) => scoreProduct(p));
+  return json({ products: results, total: results.length, audited_at: new Date().toISOString() }, 200, reqId);
+}
+
+async function listProductSeoScores(url: URL, auth: Auth, reqId: string) {
+  const { page, perPage, from, to } = parsePagination(url);
+  const admin = serviceClient();
+  const { data: products, count, error } = await admin.from("products").select("id, title, description, seo_title, seo_description, images, tags, sku, brand, category, barcode, weight, status", { count: "exact" }).eq("user_id", auth.user.id).order("updated_at", { ascending: true }).range(from, to);
+  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
+  const scored = (products ?? []).map((p: any) => scoreProduct(p));
+  return json({ items: scored, meta: { page, per_page: perPage, total: count ?? 0 } }, 200, reqId);
+}
+
+// ── Misc CRUD-like endpoints ─────────────────────────────────────────────────
+
+async function listProductEvents(url: URL, auth: Auth, reqId: string) {
   const admin = serviceClient();
   const productId = url.searchParams.get("product_id");
   const limit = Math.min(100, parseInt(url.searchParams.get("limit") ?? "50", 10));
-  let query = admin.from("product_events").select("*").eq("user_id", auth.user.id);
-  if (productId) query = query.eq("product_id", productId);
-  const { data, error } = await query.order("created_at", { ascending: false }).limit(limit);
+  let q = admin.from("product_events").select("*").eq("user_id", auth.user.id);
+  if (productId) q = q.eq("product_id", productId);
+  const { data, error } = await q.order("created_at", { ascending: false }).limit(limit);
   if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
   return json({ items: data ?? [] }, 200, reqId);
 }
 
-// ── Product SEO CRUD Handler ─────────────────────────────────────────────────
-
-async function getProductSeoData(url: URL, auth: NonNullable<Awaited<ReturnType<typeof authenticate>>>, reqId: string) {
+async function getProductSeoData(url: URL, auth: Auth, reqId: string) {
   const admin = serviceClient();
   const productId = url.searchParams.get("product_id");
-  const storeId = url.searchParams.get("store_id");
-  const language = url.searchParams.get("language") ?? "fr";
   if (!productId) return errorResponse("VALIDATION_ERROR", "product_id required", 400, reqId);
-
-  let query = admin.from("product_seo").select("*").eq("user_id", auth.user.id).eq("product_id", productId).eq("language", language);
-  if (storeId) query = query.eq("store_id", storeId);
-  else query = query.is("store_id", null);
-  const { data, error } = await query.maybeSingle();
+  let q = admin.from("product_seo").select("*").eq("user_id", auth.user.id).eq("product_id", productId).eq("language", url.searchParams.get("language") ?? "fr");
+  const storeId = url.searchParams.get("store_id");
+  if (storeId) q = q.eq("store_id", storeId); else q = q.is("store_id", null);
+  const { data, error } = await q.maybeSingle();
   if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
   return json({ seo: data }, 200, reqId);
 }
 
-async function upsertProductSeoData(req: Request, auth: NonNullable<Awaited<ReturnType<typeof authenticate>>>, reqId: string) {
+async function upsertProductSeoData(req: Request, auth: Auth, reqId: string) {
   const body = await req.json();
   const admin = serviceClient();
-  const language = body.language ?? "fr";
-
-  const { data, error } = await admin.from("product_seo")
-    .upsert({ ...body, user_id: auth.user.id, language }).select().single();
+  const { data, error } = await admin.from("product_seo").upsert({ ...body, user_id: auth.user.id, language: body.language ?? "fr" }).select().single();
   if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
-
-  // Create version snapshot
-  await admin.from("product_seo_versions").insert({
-    user_id: auth.user.id,
-    product_id: body.product_id,
-    store_id: body.store_id || null,
-    language,
-    version: Date.now(),
-    fields_json: { seo_title: body.seo_title, meta_description: body.meta_description, handle: body.handle },
-    source: body.source ?? "manual",
-  }).catch(() => {});
-
   return json(data, 200, reqId);
 }
 
-async function listProductSeoVersions(url: URL, auth: NonNullable<Awaited<ReturnType<typeof authenticate>>>, reqId: string) {
-  const admin = serviceClient();
+async function listProductSeoVersions(url: URL, auth: Auth, reqId: string) {
   const productId = url.searchParams.get("product_id");
   if (!productId) return errorResponse("VALIDATION_ERROR", "product_id required", 400, reqId);
-
-  const { data, error } = await admin.from("product_seo_versions").select("*")
-    .eq("user_id", auth.user.id).eq("product_id", productId)
-    .order("created_at", { ascending: false }).limit(50);
+  const admin = serviceClient();
+  const { data, error } = await admin.from("product_seo_versions").select("*").eq("user_id", auth.user.id).eq("product_id", productId).order("created_at", { ascending: false }).limit(50);
   if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
   return json({ items: data ?? [] }, 200, reqId);
 }
 
-// ── Store Products Handler ───────────────────────────────────────────────────
+// ── Store Products, AI Generations, Inventory, Prices ────────────────────────
 
-async function listStoreProducts(url: URL, auth: NonNullable<Awaited<ReturnType<typeof authenticate>>>, reqId: string) {
+async function listStoreProducts(url: URL, auth: Auth, reqId: string) {
   const { page, perPage, from, to } = parsePagination(url);
   const admin = serviceClient();
-  const storeId = url.searchParams.get("store_id");
-  const status = url.searchParams.get("status");
-
-  let query = admin.from("store_products").select("*", { count: "exact" }).eq("user_id", auth.user.id);
-  if (storeId) query = query.eq("store_id", storeId);
-  if (status) query = query.eq("status", status);
-  query = query.order("created_at", { ascending: false }).range(from, to);
-
-  const { data, count, error } = await query;
+  let q = admin.from("store_products").select("*", { count: "exact" }).eq("user_id", auth.user.id);
+  const storeId = url.searchParams.get("store_id"); if (storeId) q = q.eq("store_id", storeId);
+  const status = url.searchParams.get("status"); if (status) q = q.eq("status", status);
+  q = q.order("created_at", { ascending: false }).range(from, to);
+  const { data, count, error } = await q;
   if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
   return json({ items: data ?? [], meta: { page, per_page: perPage, total: count ?? 0 } }, 200, reqId);
 }
 
-async function upsertStoreProduct(req: Request, auth: NonNullable<Awaited<ReturnType<typeof authenticate>>>, reqId: string) {
+async function upsertStoreProduct(req: Request, auth: Auth, reqId: string) {
   const body = await req.json();
   const admin = serviceClient();
-  const { data, error } = await admin.from("store_products")
-    .upsert({ ...body, user_id: auth.user.id }).select().single();
+  const { data, error } = await admin.from("store_products").upsert({ ...body, user_id: auth.user.id }).select().single();
   if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
   return json(data, 200, reqId);
 }
 
-// ── SEO Handlers ─────────────────────────────────────────────────────────────
-
-async function createSeoAudit(req: Request, auth: NonNullable<Awaited<ReturnType<typeof authenticate>>>, reqId: string) {
-  const body = await req.json();
-  if (!body.url) return errorResponse("VALIDATION_ERROR", "url is required", 400, reqId);
-
-  const admin = serviceClient();
-  const { data: audit, error } = await admin
-    .from("seo_audits")
-    .insert({
-      user_id: auth.user.id,
-      target_type: body.scope ?? body.target_type ?? "url",
-      target_id: body.target_id ?? null,
-      url: body.url,
-      base_url: body.url,
-      scope: body.options ? Object.keys(body.options).filter((k: string) => body.options[k]).join(",") : "full",
-      provider: body.provider ?? "internal",
-      language: body.language ?? "fr",
-      status: "pending",
-      mode: body.scope ?? "page",
-    })
-    .select("id, status")
-    .single();
-
-  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
-
-  // Fire-and-forget: run the audit asynchronously
-  processSeoAudit(audit.id, auth.user.id, body).catch(console.error);
-
-  return json({ audit_id: audit.id, status: "pending" }, 201, reqId);
-}
-
-async function processSeoAudit(auditId: string, userId: string, params: any) {
-  const admin = serviceClient();
-  const apiKey = Deno.env.get("OPENAI_API_KEY");
-
-  await admin.from("seo_audits").update({ status: "running", started_at: new Date().toISOString() }).eq("id", auditId);
-
-  if (!apiKey) {
-    await admin.from("seo_audits").update({ status: "failed", error_message: "OPENAI_API_KEY not configured" }).eq("id", auditId);
-    return;
-  }
-
-  try {
-    const prompt = `Tu es un expert SEO. Analyse l'URL suivante et retourne un audit SEO structuré.
-URL: ${params.url}
-Langue: ${params.language ?? "fr"}
-
-Retourne UNIQUEMENT un JSON avec cette structure:
-{
-  "score": <number 0-100>,
-  "checks": [
-    {
-      "check_type": "<meta_title|meta_description|h1|images_alt|content_length|mobile_friendly|page_speed|canonical|robots|sitemap|ssl|structured_data>",
-      "category": "<meta|content|structure|performance|mobile>",
-      "status": "<pass|warning|fail>",
-      "impact": "<critical|high|medium|low>",
-      "current_value": "<what you found or estimated>",
-      "expected_value": "<what is recommended>",
-      "recommendation": "<actionable fix>"
-    }
-  ]
-}
-Génère au moins 8 checks couvrant meta, content, structure et performance.`;
-
-    const aiResp = await fetch("https://api.openai.com/v1/chat/completions", {
-      method: "POST",
-      headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
-      body: JSON.stringify({
-        model: "gpt-4.1-mini",
-        messages: [
-          { role: "system", content: "Tu es un expert SEO e-commerce. Réponds uniquement en JSON valide." },
-          { role: "user", content: prompt },
-        ],
-        temperature: 0.3,
-      }),
-    });
-
-    if (!aiResp.ok) {
-      const status = aiResp.status;
-      throw new Error(status === 429 ? "Rate limited – réessayez dans quelques instants" : status === 402 ? "Crédits IA épuisés – rechargez votre workspace" : `AI error ${status}`);
-    }
-
-    const aiData = await aiResp.json();
-    const content = aiData.choices?.[0]?.message?.content ?? "";
-    const jsonMatch = content.match(/\{[\s\S]*\}/);
-    const result = jsonMatch ? JSON.parse(jsonMatch[0]) : { score: 0, checks: [] };
-
-    // Insert audit items
-    const checks = result.checks ?? [];
-    if (checks.length > 0) {
-      const items = checks.map((c: any) => ({
-        audit_id: auditId,
-        severity: c.status === "fail" ? "error" : c.status === "warning" ? "warning" : "info",
-        code: c.check_type,
-        message: c.recommendation ?? "",
-        evidence: { current_value: c.current_value, expected_value: c.expected_value, impact: c.impact, category: c.category },
-        recommendation: c.recommendation,
-        is_fixable: c.status !== "pass",
-      }));
-      await admin.from("seo_issues").insert(items);
-    }
-
-    // Calculate summary scores by category
-    const summary: any = {};
-    for (const c of checks) {
-      const cat = c.category ?? "meta";
-      if (!summary[`${cat}_score`]) {
-        const catChecks = checks.filter((x: any) => x.category === cat);
-        const passed = catChecks.filter((x: any) => x.status === "pass").length;
-        summary[`${cat}_score`] = catChecks.length > 0 ? Math.round((passed / catChecks.length) * 100) : 0;
-      }
-    }
-
-    await admin.from("seo_audits").update({
-      status: "completed",
-      score: result.score ?? 0,
-      summary: { ...summary, total_checks: checks.length, passed: checks.filter((c: any) => c.status === "pass").length },
-      finished_at: new Date().toISOString(),
-    }).eq("id", auditId);
-
-  } catch (err: any) {
-    await admin.from("seo_audits").update({
-      status: "failed",
-      error_message: err.message,
-      finished_at: new Date().toISOString(),
-    }).eq("id", auditId);
-  }
-}
-
-async function listSeoAudits(url: URL, auth: NonNullable<Awaited<ReturnType<typeof authenticate>>>, reqId: string) {
-  const { page, perPage, from, to } = parsePagination(url);
-  const admin = serviceClient();
-
-  let query = admin
-    .from("seo_audits")
-    .select("*", { count: "exact" })
-    .eq("user_id", auth.user.id)
-    .order("created_at", { ascending: false })
-    .range(from, to);
-
-  const targetType = url.searchParams.get("target_type");
-  if (targetType) query = query.eq("target_type", targetType);
-
-  const status = url.searchParams.get("status");
-  if (status) query = query.eq("status", status);
-
-  const { data, count, error } = await query;
-  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
-
-  const items = (data ?? []).map((r: any) => ({
-    audit_id: r.id,
-    target_type: r.target_type ?? r.mode ?? "url",
-    target_id: r.target_id,
-    url: r.url ?? r.base_url,
-    score: r.score,
-    status: r.status,
-    provider: r.provider ?? "internal",
-    language: r.language ?? "fr",
-    summary: r.summary,
-    created_at: r.created_at,
-    completed_at: r.finished_at,
-  }));
-
-  return json({ items, meta: { page, per_page: perPage, total: count ?? 0 } }, 200, reqId);
-}
-
-async function getSeoAudit(auditId: string, auth: NonNullable<Awaited<ReturnType<typeof authenticate>>>, reqId: string) {
-  const admin = serviceClient();
-
-  const { data: audit, error } = await admin
-    .from("seo_audits")
-    .select("*")
-    .eq("id", auditId)
-    .eq("user_id", auth.user.id)
-    .single();
-
-  if (error || !audit) return errorResponse("NOT_FOUND", "Audit not found", 404, reqId);
-
-  // Fetch issues for this audit
-  const { data: issues } = await admin
-    .from("seo_issues")
-    .select("*")
-    .eq("audit_id", auditId)
-    .order("created_at", { ascending: true });
-
-  return json({
-    audit_id: audit.id,
-    target_type: audit.target_type ?? audit.mode ?? "url",
-    target_id: audit.target_id,
-    url: audit.url ?? audit.base_url,
-    score: audit.score,
-    status: audit.status,
-    provider: audit.provider ?? "internal",
-    language: audit.language ?? "fr",
-    summary: audit.summary,
-    error_message: audit.error_message,
-    created_at: audit.created_at,
-    completed_at: audit.finished_at,
-    issues: (issues ?? []).map((i: any) => ({
-      id: i.id,
-      check_type: i.code,
-      category: i.evidence?.category ?? "meta",
-      status: i.severity === "error" ? "fail" : i.severity === "warning" ? "warning" : "pass",
-      impact: i.evidence?.impact ?? "medium",
-      current_value: i.evidence?.current_value,
-      expected_value: i.evidence?.expected_value,
-      recommendation: i.recommendation,
-    })),
-  }, 200, reqId);
-}
-
-async function createSeoGenerate(req: Request, auth: NonNullable<Awaited<ReturnType<typeof authenticate>>>, reqId: string) {
-  const body = await req.json();
-  if (!body.target_id) return errorResponse("VALIDATION_ERROR", "target_id is required", 400, reqId);
-
-  const admin = serviceClient();
-  const { data: job, error } = await admin
-    .from("seo_ai_generations")
-    .insert({
-      user_id: auth.user.id,
-      target_type: body.target_type ?? "product",
-      target_id: body.target_id,
-      type: (body.actions ?? ["title"]).join(","),
-      actions: body.actions ?? ["title", "description", "meta"],
-      tone: body.tone ?? "conversion",
-      language: body.language ?? "fr",
-      status: "pending",
-    })
-    .select("id, status")
-    .single();
-
-  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
-
-  // Fire-and-forget: process generation asynchronously
-  processSeoGeneration(job.id, auth.user.id, body).catch(console.error);
-
-  return json({ job_id: job.id, status: "pending" }, 201, reqId);
-}
-
-async function processSeoGeneration(jobId: string, userId: string, params: any) {
-  const admin = serviceClient();
-  const apiKey = Deno.env.get("OPENAI_API_KEY");
-  const startTime = Date.now();
-
-  await admin.from("seo_ai_generations").update({ status: "running" }).eq("id", jobId);
-
-  if (!apiKey) {
-    await admin.from("seo_ai_generations").update({ status: "failed", error_message: "OPENAI_API_KEY not configured" }).eq("id", jobId);
-    return;
-  }
-
-  try {
-    // Fetch target content for snapshot
-    let currentContent: any = {};
-    if (params.target_type === "product" && params.target_id) {
-      const { data: product } = await admin.from("products").select("title, description, seo_title, seo_description, tags, sku, category, brand").eq("id", params.target_id).single();
-      if (product) currentContent = product;
-    }
-
-    // Save input snapshot
-    await admin.from("seo_ai_generations").update({ input: currentContent }).eq("id", jobId);
-
-    const actions = params.actions ?? ["title", "description", "meta"];
-    const prompt = `Tu es un expert SEO e-commerce. Génère du contenu SEO optimisé.
-Langue: ${params.language ?? "fr"}, Ton: ${params.tone ?? "conversion"}
-Type: ${params.target_type ?? "product"}
-Actions demandées: ${actions.join(", ")}
-
-Contenu actuel:
-${JSON.stringify(currentContent, null, 2)}
-
-Retourne UNIQUEMENT un JSON avec les champs suivants selon les actions demandées:
-{
-  ${actions.includes("title") ? '"title": "titre SEO optimisé (max 60 chars)",' : ""}
-  ${actions.includes("description") ? '"description": "description produit optimisée SEO",' : ""}
-  ${actions.includes("meta") ? '"meta_description": "meta description optimisée (max 155 chars)",' : ""}
-  ${actions.includes("keywords") ? '"keywords": ["mot-clé1", "mot-clé2", ...],' : ""}
-  ${actions.includes("tags") ? '"tags": ["tag1", "tag2", ...],' : ""}
-  ${actions.includes("categories") ? '"categories": ["catégorie suggérée"],' : ""}
-  "seo_score": <estimated score 0-100>
-}`;
-
-    const aiResp = await fetch("https://api.openai.com/v1/chat/completions", {
-      method: "POST",
-      headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
-      body: JSON.stringify({
-        model: "gpt-4.1-mini",
-        messages: [
-          { role: "system", content: "Tu es un expert SEO e-commerce. Réponds uniquement en JSON valide." },
-          { role: "user", content: prompt },
-        ],
-        temperature: 0.3,
-      }),
-    });
-
-    if (!aiResp.ok) {
-      const status = aiResp.status;
-      throw new Error(status === 429 ? "Rate limited – réessayez dans quelques instants" : status === 402 ? "Crédits IA épuisés – rechargez votre workspace" : `AI error ${status}`);
-    }
-
-    const aiData = await aiResp.json();
-    const content = aiData.choices?.[0]?.message?.content ?? "";
-    const jsonMatch = content.match(/\{[\s\S]*\}/);
-    const generated = jsonMatch ? JSON.parse(jsonMatch[0]) : {};
-
-    const tokensUsed = aiData.usage?.total_tokens ?? 0;
-
-    await admin.from("seo_ai_generations").update({
-      status: "completed",
-      result: generated,
-      output: generated,
-      tokens_used: tokensUsed,
-      duration_ms: Date.now() - startTime,
-    }).eq("id", jobId);
-
-  } catch (err: any) {
-    await admin.from("seo_ai_generations").update({
-      status: "failed",
-      error_message: err.message,
-      duration_ms: Date.now() - startTime,
-    }).eq("id", jobId);
-  }
-}
-
-async function applySeoContent(req: Request, auth: NonNullable<Awaited<ReturnType<typeof authenticate>>>, reqId: string) {
-  const body = await req.json();
-  if (!body.target_id || !body.fields) return errorResponse("VALIDATION_ERROR", "target_id and fields are required", 400, reqId);
-
-  const admin = serviceClient();
-  const targetType = body.target_type ?? "product";
-
-  if (targetType === "product") {
-    // Map SEO fields to product columns
-    const updates: any = { updated_at: new Date().toISOString() };
-    if (body.fields.title) updates.seo_title = body.fields.title;
-    if (body.fields.meta_description) updates.seo_description = body.fields.meta_description;
-    if (body.fields.description) updates.description = body.fields.description;
-    if (body.fields.tags) updates.tags = body.fields.tags;
-
-    const { error } = await admin.from("products").update(updates).eq("id", body.target_id).eq("user_id", auth.user.id);
-    if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
-
-    // If there's a job_id, mark it as applied
-    if (body.job_id) {
-      await admin.from("seo_ai_generations").update({ applied_at: new Date().toISOString() }).eq("id", body.job_id).eq("user_id", auth.user.id);
-    }
-
-    return json({ success: true, target_id: body.target_id, applied_fields: Object.keys(body.fields) }, 200, reqId);
-  }
-
-  return errorResponse("NOT_IMPLEMENTED", `Apply not supported for target_type: ${targetType}`, 400, reqId);
-}
-
-async function getSeoGeneration(jobId: string, auth: NonNullable<Awaited<ReturnType<typeof authenticate>>>, reqId: string) {
-  const admin = serviceClient();
-  const { data, error } = await admin
-    .from("seo_ai_generations")
-    .select("*")
-    .eq("id", jobId)
-    .eq("user_id", auth.user.id)
-    .single();
-
-  if (error || !data) return errorResponse("NOT_FOUND", "Generation job not found", 404, reqId);
-
-  return json({
-    job_id: data.id,
-    target_type: data.target_type ?? "product",
-    target_id: data.target_id,
-    actions: data.actions ?? [],
-    tone: data.tone ?? "conversion",
-    language: data.language ?? "fr",
-    status: data.status,
-    input: data.input,
-    result: data.result ?? data.output,
-    applied_at: data.applied_at,
-    error_message: data.error_message,
-    tokens_used: data.tokens_used,
-    duration_ms: data.duration_ms,
-    created_at: data.created_at,
-  }, 200, reqId);
-}
-
-// ── Quota Enforcement Helper ─────────────────────────────────────────────────
-
-async function checkSeoQuota(admin: any, userId: string, quotaKey: string, count: number, reqId: string): Promise<Response | null> {
-  // Get user plan
-  const { data: profile } = await admin.from("profiles").select("subscription_plan").eq("id", userId).single();
-  const plan = profile?.subscription_plan || "free";
-
-  // Get limit
-  const { data: limitRow } = await admin.from("plan_limits").select("limit_value").eq("plan_name", plan).eq("limit_key", quotaKey).single();
-  const limit = limitRow?.limit_value ?? 0;
-  if (limit === -1) return null; // unlimited
-
-  // Get current usage
-  const { data: usage } = await admin.from("quota_usage").select("current_usage").eq("user_id", userId).eq("quota_key", quotaKey).single();
-  const current = usage?.current_usage ?? 0;
-
-  if (current + count > limit) {
-    return errorResponse("QUOTA_EXCEEDED", `Limite ${quotaKey} atteinte (${current}/${limit}). Passez à un plan supérieur.`, 429, reqId, { quota_key: quotaKey, current, limit, plan });
-  }
-  return null;
-}
-
-async function incrementSeoQuota(admin: any, userId: string, quotaKey: string, count: number) {
-  const now = new Date();
-  const periodEnd = new Date(now.getFullYear(), now.getMonth() + 1, 1).toISOString();
-  await admin.from("quota_usage").upsert({
-    user_id: userId,
-    quota_key: quotaKey,
-    current_usage: count,
-    period_start: now.toISOString(),
-    period_end: periodEnd,
-  }, { onConflict: "user_id,quota_key" });
-  // Increment via SQL to be safe
-  await admin.rpc("increment_user_quota", { p_user_id: userId, p_quota_key: quotaKey, p_increment: count }).catch(() => {});
-}
-
-// ── SEO Product Audit Handlers ───────────────────────────────────────────────
-
-async function auditProductSeo(req: Request, auth: NonNullable<Awaited<ReturnType<typeof authenticate>>>, reqId: string) {
-  const body = await req.json();
-  const productIds: string[] = body.product_ids ?? (body.product_id ? [body.product_id] : []);
-  if (productIds.length === 0) return errorResponse("VALIDATION_ERROR", "product_ids or product_id is required", 400, reqId);
-  if (productIds.length > 50) return errorResponse("VALIDATION_ERROR", "Maximum 50 products per audit", 400, reqId);
-
-  const admin = serviceClient();
-
-  // Enforce quota
-  const quotaBlock = await checkSeoQuota(admin, auth.user.id, "seo_audits", productIds.length, reqId);
-  if (quotaBlock) return quotaBlock;
-  const { data: products, error } = await admin
-    .from("products")
-    .select("id, title, description, seo_title, seo_description, images, tags, sku, brand, category, barcode, weight, status")
-    .eq("user_id", auth.user.id)
-    .in("id", productIds);
-
-  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
-  if (!products || products.length === 0) return errorResponse("NOT_FOUND", "No products found", 404, reqId);
-
-  const results = products.map((p: any) => scoreProduct(p));
-
-  // Store scores in product_seo table and create version snapshots
-  for (const result of results) {
-    const seoData = {
-      user_id: auth.user.id,
-      product_id: result.product_id,
-      language: body.language ?? "fr",
-      seo_score: result.score.global,
-      score_details: result.score,
-      issues: result.issues,
-      strengths: result.strengths,
-      business_impact: result.business_impact,
-      last_audited_at: new Date().toISOString(),
-    };
-
-    // Upsert score
-    await admin.from("product_seo").upsert(seoData, { onConflict: "user_id,product_id,language" }).select();
-
-    // Create version snapshot
-    await admin.from("product_seo_versions").insert({
-      user_id: auth.user.id,
-      product_id: result.product_id,
-      language: body.language ?? "fr",
-      version: Date.now(),
-      fields_json: {
-        seo_title: result.current.seo_title,
-        meta_description: result.current.seo_description,
-        score: result.score,
-        issues_count: result.issues.length,
-      },
-      source: "audit",
-    });
-  }
-
-  // Increment quota after success
-  await incrementSeoQuota(admin, auth.user.id, "seo_audits", results.length);
-
-  return json({ products: results, total: results.length, audited_at: new Date().toISOString() }, 200, reqId);
-}
-
-function scoreProduct(product: any) {
-  const issues: Array<{ id: string; severity: string; category: string; message: string; field?: string; recommendation?: string }> = [];
-  const strengths: string[] = [];
-
-  // ── Title scoring ──
-  let titleScore = 0;
-  const title = product.seo_title || product.title || "";
-  if (!title) {
-    issues.push({ id: "no_title", severity: "critical", category: "seo", message: "Titre manquant", field: "title", recommendation: "Ajoutez un titre produit optimisé de 20-70 caractères" });
-  } else {
-    if (title.length < 20) issues.push({ id: "title_short", severity: "warning", category: "seo", message: `Titre trop court (${title.length} car.)`, field: "title", recommendation: "Allongez le titre à minimum 20 caractères avec des mots-clés" });
-    else if (title.length > 70) issues.push({ id: "title_long", severity: "warning", category: "seo", message: `Titre trop long (${title.length} car.)`, field: "title", recommendation: "Raccourcissez le titre à maximum 70 caractères" });
-    else { titleScore = 100; strengths.push("Titre de longueur optimale"); }
-    if (title.length >= 10) titleScore = Math.max(titleScore, 50);
-  }
-
-  // ── Meta description scoring ──
-  let metaScore = 0;
-  const meta = product.seo_description || "";
-  if (!meta) {
-    issues.push({ id: "no_meta", severity: "critical", category: "seo", message: "Meta description manquante", field: "seo_description", recommendation: "Ajoutez une meta description de 120-160 caractères" });
-  } else {
-    if (meta.length < 120) issues.push({ id: "meta_short", severity: "warning", category: "seo", message: `Meta description courte (${meta.length} car.)`, field: "seo_description", recommendation: "Allongez à 120-160 caractères" });
-    else if (meta.length > 160) issues.push({ id: "meta_long", severity: "info", category: "seo", message: `Meta description longue (${meta.length} car.)`, field: "seo_description", recommendation: "Raccourcissez à max 160 caractères" });
-    else { metaScore = 100; strengths.push("Meta description optimale"); }
-    if (meta.length >= 50) metaScore = Math.max(metaScore, 50);
-  }
-
-  // ── Content scoring ──
-  let contentScore = 0;
-  const desc = product.description || "";
-  if (!desc) {
-    issues.push({ id: "no_desc", severity: "critical", category: "content", message: "Description produit manquante", field: "description", recommendation: "Ajoutez une description riche de minimum 100 caractères" });
-  } else {
-    if (desc.length < 100) issues.push({ id: "desc_short", severity: "warning", category: "content", message: `Description courte (${desc.length} car.)`, field: "description", recommendation: "Enrichissez la description (min 100 caractères)" });
-    else { contentScore = 80; strengths.push("Description produit présente"); }
-    if (desc.length >= 300) { contentScore = 100; strengths.push("Description riche et détaillée"); }
-    else if (desc.length >= 50) contentScore = Math.max(contentScore, 40);
-  }
-
-  // ── Images scoring ──
-  let imageScore = 0;
-  const images = Array.isArray(product.images) ? product.images : [];
-  if (images.length === 0) {
-    issues.push({ id: "no_images", severity: "critical", category: "images", message: "Aucune image produit", field: "images", recommendation: "Ajoutez au moins 2 images de qualité" });
-  } else if (images.length < 2) {
-    imageScore = 50;
-    issues.push({ id: "few_images", severity: "warning", category: "images", message: "Une seule image", field: "images", recommendation: "Ajoutez plus d'images (recommandé: 3+)" });
-  } else {
-    imageScore = Math.min(100, images.length * 25);
-    strengths.push(`${images.length} images produit`);
-  }
-  // Check alt texts
-  const imagesWithAlt = images.filter((img: any) => typeof img === "object" && img.alt);
-  if (images.length > 0 && imagesWithAlt.length < images.length) {
-    issues.push({ id: "missing_alt", severity: "warning", category: "images", message: `${images.length - imagesWithAlt.length} image(s) sans texte alt`, field: "images", recommendation: "Ajoutez des textes alternatifs SEO pour chaque image" });
-    imageScore = Math.max(0, imageScore - 20);
-  }
-
-  // ── Data completeness ──
-  let dataScore = 0;
-  const fields = { sku: product.sku, brand: product.brand, category: product.category, barcode: product.barcode, weight: product.weight };
-  const filledCount = Object.values(fields).filter(v => v !== null && v !== undefined && v !== "").length;
-  dataScore = Math.round((filledCount / Object.keys(fields).length) * 100);
-  if (!product.sku) issues.push({ id: "no_sku", severity: "warning", category: "data", message: "SKU manquant", field: "sku", recommendation: "Ajoutez un SKU unique" });
-  if (!product.brand) issues.push({ id: "no_brand", severity: "info", category: "data", message: "Marque non renseignée", field: "brand", recommendation: "Renseignez la marque pour le Google Shopping" });
-  if (!product.category) issues.push({ id: "no_category", severity: "warning", category: "data", message: "Catégorie manquante", field: "category", recommendation: "Catégorisez le produit" });
-  if (filledCount >= 4) strengths.push("Données produit bien renseignées");
-
-  // ── AI readiness ──
-  let aiScore = 0;
-  const tags = Array.isArray(product.tags) ? product.tags : [];
-  if (tags.length >= 3) { aiScore += 40; strengths.push(`${tags.length} tags produit`); }
-  else issues.push({ id: "few_tags", severity: "info", category: "ai", message: `Peu de tags (${tags.length})`, field: "tags", recommendation: "Ajoutez 5+ tags pour le Google Shopping et IA" });
-  if (product.brand) aiScore += 20;
-  if (product.category) aiScore += 20;
-  if (desc.length >= 100) aiScore += 20;
-
-  // ── Global score ──
-  const globalScore = Math.round(titleScore * 0.25 + metaScore * 0.2 + contentScore * 0.2 + imageScore * 0.15 + dataScore * 0.1 + aiScore * 0.1);
-
-  // ── Business impact estimation ──
-  const criticalCount = issues.filter(i => i.severity === "critical").length;
-  const warningCount = issues.filter(i => i.severity === "warning").length;
-  const trafficImpact = criticalCount > 2 ? "high" : criticalCount > 0 ? "medium" : warningCount > 2 ? "low" : "minimal";
-  const conversionImpact = (!desc || desc.length < 50) ? "high" : images.length < 2 ? "medium" : "low";
-  const estimatedTrafficGain = Math.min(50, criticalCount * 15 + warningCount * 5);
-  const estimatedConversionGain = Math.min(30, (100 - globalScore) * 0.3);
-
-  return {
-    product_id: product.id,
-    product_name: product.title || product.seo_title || "Sans nom",
-    current: { seo_title: product.seo_title, seo_description: product.seo_description, title: product.title, description: product.description },
-    score: { global: globalScore, seo: Math.round((titleScore + metaScore) / 2), content: contentScore, images: imageScore, data: dataScore, ai_readiness: aiScore },
-    status: globalScore >= 70 ? "optimized" : globalScore >= 40 ? "needs_work" : "critical",
-    issues,
-    strengths,
-    business_impact: {
-      traffic_impact: trafficImpact,
-      conversion_impact: conversionImpact,
-      estimated_traffic_gain_percent: estimatedTrafficGain,
-      estimated_conversion_gain_percent: estimatedConversionGain,
-      priority: criticalCount > 0 ? "urgent" : warningCount > 2 ? "high" : "normal",
-    },
-  };
-}
-
-async function listProductSeoScores(url: URL, auth: NonNullable<Awaited<ReturnType<typeof authenticate>>>, reqId: string) {
-  const { page, perPage, from, to } = parsePagination(url);
-  const admin = serviceClient();
-  const statusFilter = url.searchParams.get("status"); // optimized | needs_work | critical
-  const minScore = url.searchParams.get("min_score");
-  const maxScore = url.searchParams.get("max_score");
-  const sort = url.searchParams.get("sort") ?? "score_asc";
-
-  // Fetch products with their SEO data
-  let query = admin.from("products").select("id, title, description, seo_title, seo_description, images, tags, sku, brand, category, barcode, weight, status", { count: "exact" }).eq("user_id", auth.user.id);
-
-  const ascending = sort === "score_asc";
-  query = query.order("updated_at", { ascending }).range(from, to);
-
-  const { data: products, count, error } = await query;
-  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
-
-  let scored = (products ?? []).map((p: any) => scoreProduct(p));
-
-  // Apply filters
-  if (statusFilter) scored = scored.filter((s: any) => s.status === statusFilter);
-  if (minScore) scored = scored.filter((s: any) => s.score.global >= parseInt(minScore));
-  if (maxScore) scored = scored.filter((s: any) => s.score.global <= parseInt(maxScore));
-
-  // Sort
-  scored.sort((a: any, b: any) => ascending ? a.score.global - b.score.global : b.score.global - a.score.global);
-
-  // Stats
-  const avgScore = scored.length > 0 ? Math.round(scored.reduce((s: number, p: any) => s + p.score.global, 0) / scored.length) : 0;
-  const criticalCount = scored.filter((s: any) => s.status === "critical").length;
-  const needsWorkCount = scored.filter((s: any) => s.status === "needs_work").length;
-  const optimizedCount = scored.filter((s: any) => s.status === "optimized").length;
-
-  return json({
-    items: scored,
-    stats: { avg_score: avgScore, critical: criticalCount, needs_work: needsWorkCount, optimized: optimizedCount, total: count ?? 0 },
-    meta: { page, per_page: perPage, total: count ?? 0 },
-  }, 200, reqId);
-}
-
-async function getProductSeoScore(productId: string, auth: NonNullable<Awaited<ReturnType<typeof authenticate>>>, reqId: string) {
-  const admin = serviceClient();
-  const { data: product, error } = await admin
-    .from("products")
-    .select("id, title, description, seo_title, seo_description, images, tags, sku, brand, category, barcode, weight, status")
-    .eq("id", productId)
-    .eq("user_id", auth.user.id)
-    .single();
-
-  if (error || !product) return errorResponse("NOT_FOUND", "Product not found", 404, reqId);
-
-  return json(scoreProduct(product), 200, reqId);
-}
-
-async function getProductSeoHistory(productId: string, url: URL, auth: NonNullable<Awaited<ReturnType<typeof authenticate>>>, reqId: string) {
-  const admin = serviceClient();
-  const { page, perPage, from, to } = parsePagination(url);
-
-  const { data, count, error } = await admin
-    .from("product_seo_versions")
-    .select("*", { count: "exact" })
-    .eq("user_id", auth.user.id)
-    .eq("product_id", productId)
-    .order("created_at", { ascending: false })
-    .range(from, to);
-
-  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
-
-  return json({
-    items: (data ?? []).map((v: any) => ({
-      id: v.id,
-      version: v.version,
-      source: v.source,
-      fields: v.fields_json,
-      created_at: v.created_at,
-    })),
-    meta: { page, per_page: perPage, total: count ?? 0 },
-  }, 200, reqId);
-}
-
-// ── AI Generations CRUD ──────────────────────────────────────────────────────
-
-async function listAiGenerations(url: URL, auth: any, reqId: string) {
-  const { page, perPage, from, to } = parsePagination(url);
-  const targetType = url.searchParams.get("target_type");
-  const targetId = url.searchParams.get("target_id");
-
-  let q = auth.supabase.from("ai_generations").select("*", { count: "exact" }).eq("user_id", auth.user.id);
-  if (targetType) q = q.eq("target_type", targetType);
-  if (targetId) q = q.eq("target_id", targetId);
-
+async function listAiGenerations(url: URL, auth: Auth, reqId: string) {
+  const { page, perPage } = parsePagination(url);
   const limit = parseInt(url.searchParams.get("limit") ?? "20", 10);
+  let q = auth.supabase.from("ai_generations").select("*", { count: "exact" }).eq("user_id", auth.user.id);
+  const targetType = url.searchParams.get("target_type"); if (targetType) q = q.eq("target_type", targetType);
   const { data, count, error } = await q.order("created_at", { ascending: false }).range(0, Math.min(limit, 100) - 1);
   if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
-
   return json({ items: data ?? [], meta: { page, per_page: perPage, total: count ?? 0 } }, 200, reqId);
 }
 
-async function createAiGeneration(req: Request, auth: any, reqId: string) {
+async function createAiGeneration(req: Request, auth: Auth, reqId: string) {
   const body = await req.json();
-  const { data, error } = await auth.supabase
-    .from("ai_generations")
-    .insert({ ...body, user_id: auth.user.id })
-    .select()
-    .single();
+  const { data, error } = await auth.supabase.from("ai_generations").insert({ ...body, user_id: auth.user.id }).select().single();
   if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
   return json(data, 201, reqId);
 }
 
-// ── Orders CRUD ──────────────────────────────────────────────────────────────
-
-async function listOrders(url: URL, auth: any, reqId: string) {
-  const { page, perPage, from, to } = parsePagination(url);
-  const status = url.searchParams.get("status");
-  const q_search = url.searchParams.get("q");
-
-  let q = auth.supabase.from("orders").select("*, customer:customers(*), order_items(*)", { count: "exact" }).eq("user_id", auth.user.id);
-  if (status) q = q.eq("status", status);
-  if (q_search) q = q.or(`order_number.ilike.%${q_search}%,customer_email.ilike.%${q_search}%,customer_name.ilike.%${q_search}%`);
-
-  const { data, count, error } = await q.order("created_at", { ascending: false }).range(from, to);
+async function listInventoryLocations(auth: Auth, reqId: string) {
+  const admin = serviceClient();
+  const { data, error } = await admin.from("inventory_locations").select("*").eq("user_id", auth.user.id);
   if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
+  return json({ items: data ?? [] }, 200, reqId);
+}
 
+async function listInventoryLevels(url: URL, auth: Auth, reqId: string) {
+  const { page, perPage, from, to } = parsePagination(url);
+  const admin = serviceClient();
+  const { data, count, error } = await admin.from("inventory_levels").select("*", { count: "exact" }).eq("user_id", auth.user.id).range(from, to);
+  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
   return json({ items: data ?? [], meta: { page, per_page: perPage, total: count ?? 0 } }, 200, reqId);
 }
 
-async function getOrder(orderId: string, auth: any, reqId: string) {
-  const { data, error } = await auth.supabase
-    .from("orders")
-    .select("*, customer:customers(*), order_items(*, product:products(*))")
-    .eq("id", orderId)
-    .eq("user_id", auth.user.id)
-    .single();
+async function upsertInventoryLevel(req: Request, auth: Auth, reqId: string) {
+  const body = await req.json();
+  const admin = serviceClient();
+  const { data, error } = await admin.from("inventory_levels").upsert({ ...body, user_id: auth.user.id }).select().single();
+  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
+  return json(data, 200, reqId);
+}
+
+async function listProductPrices(url: URL, auth: Auth, reqId: string) {
+  const { page, perPage, from, to } = parsePagination(url);
+  const admin = serviceClient();
+  const { data, count, error } = await admin.from("product_prices").select("*", { count: "exact" }).eq("user_id", auth.user.id).range(from, to);
+  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
+  return json({ items: data ?? [], meta: { page, per_page: perPage, total: count ?? 0 } }, 200, reqId);
+}
+
+async function upsertProductPrice(req: Request, auth: Auth, reqId: string) {
+  const body = await req.json();
+  const admin = serviceClient();
+  const { data, error } = await admin.from("product_prices").upsert({ ...body, user_id: auth.user.id }).select().single();
+  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
+  return json(data, 200, reqId);
+}
+
+// ── Orders / Customers ───────────────────────────────────────────────────────
+
+async function listOrders(url: URL, auth: Auth, reqId: string) {
+  const { page, perPage, from, to } = parsePagination(url);
+  let q = auth.supabase.from("orders").select("*, customer:customers(*), order_items(*)", { count: "exact" }).eq("user_id", auth.user.id);
+  const status = url.searchParams.get("status"); if (status) q = q.eq("status", status);
+  const search = url.searchParams.get("q"); if (search) q = q.or(`order_number.ilike.%${search}%,customer_email.ilike.%${search}%`);
+  const { data, count, error } = await q.order("created_at", { ascending: false }).range(from, to);
+  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
+  return json({ items: data ?? [], meta: { page, per_page: perPage, total: count ?? 0 } }, 200, reqId);
+}
+
+async function getOrder(orderId: string, auth: Auth, reqId: string) {
+  const { data, error } = await auth.supabase.from("orders").select("*, customer:customers(*), order_items(*, product:products(*))").eq("id", orderId).eq("user_id", auth.user.id).single();
   if (error) return errorResponse("NOT_FOUND", "Order not found", 404, reqId);
   return json(data, 200, reqId);
 }
 
-async function createOrder(req: Request, auth: any, reqId: string) {
+async function createOrder(req: Request, auth: Auth, reqId: string) {
   const body = await req.json();
-  const orderNumber = body.order_number || `ORD-${Date.now()}-${crypto.randomUUID().slice(0, 8).toUpperCase()}`;
-
-  const order = {
-    user_id: auth.user.id,
-    order_number: orderNumber,
-    customer_id: body.customer_id || null,
-    customer_name: body.customer_name || null,
-    customer_email: body.customer_email || null,
-    status: body.status || "pending",
-    payment_status: body.payment_status || "pending",
-    subtotal: body.subtotal || 0,
-    shipping_cost: body.shipping_cost || 0,
-    total_amount: body.total_amount || 0,
-    shipping_address: body.shipping_address || null,
-    carrier: body.carrier || null,
-    notes: body.notes || null,
-    currency: body.currency || "EUR",
-  };
-
-  const { data: newOrder, error: orderError } = await auth.supabase.from("orders").insert(order).select().single();
-  if (orderError) return errorResponse("DB_ERROR", orderError.message, 500, reqId);
-
-  if (body.items && body.items.length > 0) {
-    const items = body.items.map((item: any) => ({
-      order_id: newOrder.id,
-      product_id: item.product_id || null,
-      product_name: item.product_name || "Produit",
-      product_sku: item.product_sku || null,
-      qty: item.quantity || item.qty || 1,
-      unit_price: item.unit_price || item.price || 0,
-      total_price: (item.quantity || item.qty || 1) * (item.unit_price || item.price || 0),
-      variant_title: item.variant_title || null,
-    }));
+  const { data, error } = await auth.supabase.from("orders").insert({
+    user_id: auth.user.id, order_number: body.order_number || `ORD-${Date.now()}-${crypto.randomUUID().slice(0, 8).toUpperCase()}`,
+    customer_id: body.customer_id || null, customer_name: body.customer_name || null,
+    customer_email: body.customer_email || null, status: body.status || "pending",
+    payment_status: body.payment_status || "pending", subtotal: body.subtotal || 0,
+    shipping_cost: body.shipping_cost || 0, total_amount: body.total_amount || 0,
+    shipping_address: body.shipping_address || null, currency: body.currency || "EUR",
+  }).select().single();
+  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
+  if (body.items?.length) {
+    const items = body.items.map((item: any) => ({ ...item, order_id: data.id, user_id: auth.user.id }));
     await auth.supabase.from("order_items").insert(items);
   }
-
-  return json(newOrder, 201, reqId);
+  return json(data, 201, reqId);
 }
 
-async function updateOrder(orderId: string, req: Request, auth: any, reqId: string) {
+async function updateOrder(orderId: string, req: Request, auth: Auth, reqId: string) {
   const body = await req.json();
-  const { data, error } = await auth.supabase
-    .from("orders")
-    .update({ ...body, updated_at: new Date().toISOString() })
-    .eq("id", orderId)
-    .eq("user_id", auth.user.id)
-    .select()
-    .single();
+  const { data, error } = await auth.supabase.from("orders").update({ ...body, updated_at: new Date().toISOString() }).eq("id", orderId).eq("user_id", auth.user.id).select().single();
   if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
   return json(data, 200, reqId);
 }
 
-async function deleteOrder(orderId: string, auth: any, reqId: string) {
-  await auth.supabase.from("order_items").delete().eq("order_id", orderId);
+async function deleteOrder(orderId: string, auth: Auth, reqId: string) {
   const { error } = await auth.supabase.from("orders").delete().eq("id", orderId).eq("user_id", auth.user.id);
   if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
   return json({ success: true }, 200, reqId);
 }
 
-async function getOrderStats(auth: any, reqId: string) {
-  const { data: orders, error } = await auth.supabase
-    .from("orders")
-    .select("total_amount, status, payment_status, fulfillment_status, created_at")
-    .eq("user_id", auth.user.id);
-  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
-
-  const now = new Date();
-  const thisMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-  const lastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-  const ordersThisMonth = orders.filter((o: any) => new Date(o.created_at) >= thisMonth);
-  const ordersLastMonth = orders.filter((o: any) => new Date(o.created_at) >= lastMonth && new Date(o.created_at) < thisMonth);
-
-  const revenue = orders.reduce((s: number, o: any) => s + (o.total_amount || 0), 0);
-  const revenueThisMonth = ordersThisMonth.reduce((s: number, o: any) => s + (o.total_amount || 0), 0);
-  const revenueLastMonth = ordersLastMonth.reduce((s: number, o: any) => s + (o.total_amount || 0), 0);
-
-  return json({
-    total: orders.length,
-    pending: orders.filter((o: any) => o.status === "pending").length,
-    processing: orders.filter((o: any) => o.status === "processing").length,
-    shipped: orders.filter((o: any) => o.status === "shipped").length,
-    delivered: orders.filter((o: any) => o.status === "delivered").length,
-    cancelled: orders.filter((o: any) => o.status === "cancelled").length,
-    toFulfill: orders.filter((o: any) => !o.fulfillment_status || o.fulfillment_status === "unfulfilled").length,
-    paid: orders.filter((o: any) => o.payment_status === "paid").length,
-    revenue,
-    avgOrderValue: orders.length > 0 ? revenue / orders.length : 0,
-    revenueThisMonth,
-    revenueLastMonth,
-    ordersThisMonth: ordersThisMonth.length,
-    ordersLastMonth: ordersLastMonth.length,
-    revenueGrowth: revenueLastMonth > 0 ? ((revenueThisMonth - revenueLastMonth) / revenueLastMonth) * 100 : 0,
-    ordersGrowth: ordersLastMonth.length > 0 ? ((ordersThisMonth.length - ordersLastMonth.length) / ordersLastMonth.length) * 100 : 0,
-  }, 200, reqId);
+async function getOrderStats(auth: Auth, reqId: string) {
+  const { data } = await auth.supabase.from("orders").select("total_amount, status, created_at").eq("user_id", auth.user.id);
+  const orders = data || [];
+  const total = orders.length;
+  const totalRevenue = orders.reduce((s: number, o: any) => s + (o.total_amount || 0), 0);
+  return json({ total, totalRevenue, pending: orders.filter((o: any) => o.status === "pending").length, delivered: orders.filter((o: any) => o.status === "delivered").length }, 200, reqId);
 }
 
-// ── Customers CRUD ───────────────────────────────────────────────────────────
-
-async function listCustomers(url: URL, auth: any, reqId: string) {
+async function listCustomers(url: URL, auth: Auth, reqId: string) {
   const { page, perPage, from, to } = parsePagination(url);
-  const q_search = url.searchParams.get("q");
-
-  let q = auth.supabase.from("customers").select("*, orders:orders(count)", { count: "exact" }).eq("user_id", auth.user.id);
-  if (q_search) q = q.or(`email.ilike.%${q_search}%,name.ilike.%${q_search}%`);
-
+  let q = auth.supabase.from("customers").select("*", { count: "exact" }).eq("user_id", auth.user.id);
+  const search = url.searchParams.get("q"); if (search) q = q.or(`first_name.ilike.%${search}%,last_name.ilike.%${search}%,email.ilike.%${search}%`);
   const { data, count, error } = await q.order("created_at", { ascending: false }).range(from, to);
   if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
-
   return json({ items: data ?? [], meta: { page, per_page: perPage, total: count ?? 0 } }, 200, reqId);
 }
 
-async function getCustomer(customerId: string, auth: any, reqId: string) {
-  const { data, error } = await auth.supabase
-    .from("customers")
-    .select("*, orders:orders(*)")
-    .eq("id", customerId)
-    .eq("user_id", auth.user.id)
-    .single();
-  if (error) return errorResponse("NOT_FOUND", "Customer not found", 404, reqId);
-  return json(data, 200, reqId);
-}
-
-async function createCustomer(req: Request, auth: any, reqId: string) {
+async function createCustomer(req: Request, auth: Auth, reqId: string) {
   const body = await req.json();
   const { data, error } = await auth.supabase.from("customers").insert({ ...body, user_id: auth.user.id }).select().single();
   if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
   return json(data, 201, reqId);
 }
 
-async function updateCustomer(customerId: string, req: Request, auth: any, reqId: string) {
+async function getCustomer(id: string, auth: Auth, reqId: string) {
+  const { data, error } = await auth.supabase.from("customers").select("*").eq("id", id).eq("user_id", auth.user.id).single();
+  if (error) return errorResponse("NOT_FOUND", "Customer not found", 404, reqId);
+  return json(data, 200, reqId);
+}
+
+async function updateCustomer(id: string, req: Request, auth: Auth, reqId: string) {
   const body = await req.json();
-  const { data, error } = await auth.supabase
-    .from("customers")
-    .update({ ...body, updated_at: new Date().toISOString() })
-    .eq("id", customerId)
-    .eq("user_id", auth.user.id)
-    .select()
-    .single();
+  const { data, error } = await auth.supabase.from("customers").update(body).eq("id", id).eq("user_id", auth.user.id).select().single();
   if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
   return json(data, 200, reqId);
 }
 
-async function deleteCustomer(customerId: string, auth: any, reqId: string) {
-  const { error } = await auth.supabase.from("customers").delete().eq("id", customerId).eq("user_id", auth.user.id);
+async function deleteCustomer(id: string, auth: Auth, reqId: string) {
+  const { error } = await auth.supabase.from("customers").delete().eq("id", id).eq("user_id", auth.user.id);
   if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
   return json({ success: true }, 200, reqId);
 }
 
-async function getCustomerStats(auth: any, reqId: string) {
-  const { data: customers, error } = await auth.supabase
-    .from("customers")
-    .select("id, total_spent, total_orders, created_at")
-    .eq("user_id", auth.user.id);
-  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
-
-  const now = new Date();
-  const thisMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-  const lastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-  const customersThisMonth = customers.filter((c: any) => new Date(c.created_at || "") >= thisMonth);
-  const customersLastMonth = customers.filter((c: any) => new Date(c.created_at || "") >= lastMonth && new Date(c.created_at || "") < thisMonth);
-  const active = customers.filter((c: any) => (c.total_orders || 0) > 0);
-
-  const totalRevenue = customers.reduce((s: number, c: any) => s + (c.total_spent || 0), 0);
-  const totalOrders = customers.reduce((s: number, c: any) => s + (c.total_orders || 0), 0);
-
-  return json({
-    total: customers.length,
-    active: active.length,
-    inactive: customers.length - active.length,
-    totalRevenue,
-    avgOrderValue: totalOrders > 0 ? totalRevenue / totalOrders : 0,
-    avgLifetimeValue: customers.length > 0 ? totalRevenue / customers.length : 0,
-    newCustomersThisMonth: customersThisMonth.length,
-    newCustomersLastMonth: customersLastMonth.length,
-    customerGrowth: customersLastMonth.length > 0 ? ((customersThisMonth.length - customersLastMonth.length) / customersLastMonth.length) * 100 : 0,
-  }, 200, reqId);
+async function getCustomerStats(auth: Auth, reqId: string) {
+  const { data } = await auth.supabase.from("customers").select("id, total_orders, created_at").eq("user_id", auth.user.id);
+  const c = data || [];
+  return json({ total: c.length, active: c.filter((x: any) => (x.total_orders || 0) > 0).length }, 200, reqId);
 }
 
 // ── Dashboard ────────────────────────────────────────────────────────────────
 
-async function getDashboardStats(url: URL, auth: any, reqId: string) {
-  const now = new Date();
-  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  const yesterday = new Date(today.getTime() - 86400000);
-  const thisMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-  const lastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-
-  const [ordersRes, productsRes, customersRes, alertsRes] = await Promise.all([
+async function getDashboardStats(url: URL, auth: Auth, reqId: string) {
+  const now = new Date(); const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const [ordersRes, productsRes, customersRes] = await Promise.all([
     auth.supabase.from("orders").select("total_amount, status, created_at").eq("user_id", auth.user.id),
     auth.supabase.from("products").select("id, status, created_at").eq("user_id", auth.user.id),
     auth.supabase.from("customers").select("id, total_orders, created_at").eq("user_id", auth.user.id),
-    auth.supabase.from("active_alerts").select("id, acknowledged, status").eq("user_id", auth.user.id),
   ]);
-
-  const orders = ordersRes.data || [];
-  const products = productsRes.data || [];
-  const customers = customersRes.data || [];
-  const alerts = alertsRes.data || [];
-
+  const orders = ordersRes.data || []; const products = productsRes.data || []; const customers = customersRes.data || [];
   const ordersToday = orders.filter((o: any) => new Date(o.created_at) >= today);
-  const ordersYesterday = orders.filter((o: any) => new Date(o.created_at) >= yesterday && new Date(o.created_at) < today);
-
   const validStatuses = ["delivered", "completed", "processing", "shipped"];
   const revenueToday = ordersToday.filter((o: any) => validStatuses.includes(o.status || "")).reduce((s: number, o: any) => s + (o.total_amount || 0), 0);
-  const revenueYesterday = ordersYesterday.filter((o: any) => validStatuses.includes(o.status || "")).reduce((s: number, o: any) => s + (o.total_amount || 0), 0);
-
-  const activeProducts = products.filter((p: any) => p.status === "active").length;
-  const productsThisMonth = products.filter((p: any) => new Date(p.created_at) >= thisMonth).length;
-  const activeCustomers = customers.filter((c: any) => (c.total_orders || 0) > 0).length;
-  const customersThisMonth = customers.filter((c: any) => new Date(c.created_at) >= thisMonth).length;
-  const customersLastMonth = customers.filter((c: any) => new Date(c.created_at) >= lastMonth && new Date(c.created_at) < thisMonth).length;
-
   return json({
-    revenue: { today: revenueToday, change: revenueYesterday > 0 ? ((revenueToday - revenueYesterday) / revenueYesterday) * 100 : 0 },
-    orders: { today: ordersToday.length, change: ordersYesterday.length > 0 ? ((ordersToday.length - ordersYesterday.length) / ordersYesterday.length) * 100 : 0 },
-    customers: { active: activeCustomers, change: customersLastMonth > 0 ? ((customersThisMonth - customersLastMonth) / customersLastMonth) * 100 : 0 },
-    conversionRate: { rate: customers.length > 0 ? (orders.length / customers.length) * 100 : 0, change: 0 },
-    products: { active: activeProducts, change: productsThisMonth },
-    alerts: { count: alerts.filter((a: any) => !a.acknowledged && a.status === "active").length, resolved: alerts.filter((a: any) => a.acknowledged).length },
+    revenue: { today: revenueToday }, orders: { today: ordersToday.length },
+    customers: { active: customers.filter((c: any) => (c.total_orders || 0) > 0).length },
+    products: { active: products.filter((p: any) => p.status === "active").length },
   }, 200, reqId);
 }
 
-async function getDashboardActivity(url: URL, auth: any, reqId: string) {
+async function getDashboardActivity(url: URL, auth: Auth, reqId: string) {
   const limit = Math.min(parseInt(url.searchParams.get("limit") ?? "10", 10), 50);
-
-  const [ordersRes, productsRes, alertsRes] = await Promise.all([
+  const [ordersRes, productsRes] = await Promise.all([
     auth.supabase.from("orders").select("id, order_number, total_amount, status, created_at").eq("user_id", auth.user.id).order("created_at", { ascending: false }).limit(limit),
     auth.supabase.from("products").select("id, title, price, created_at").eq("user_id", auth.user.id).order("created_at", { ascending: false }).limit(5),
-    auth.supabase.from("active_alerts").select("id, title, message, severity, created_at").eq("user_id", auth.user.id).order("created_at", { ascending: false }).limit(5),
   ]);
-
   const events: any[] = [];
-  for (const o of ordersRes.data || []) {
-    events.push({ id: `order-${o.id}`, type: "order", action: "new_order", title: `Commande ${o.order_number}`, description: `${(o.total_amount || 0).toFixed(2)} €`, timestamp: o.created_at, status: o.status === "delivered" ? "success" : "info" });
-  }
-  for (const p of productsRes.data || []) {
-    events.push({ id: `product-${p.id}`, type: "product", action: "product_added", title: "Produit ajouté", description: p.title || "Sans titre", timestamp: p.created_at, status: "success" });
-  }
-  for (const a of alertsRes.data || []) {
-    events.push({ id: `alert-${a.id}`, type: "alert", action: "alert", title: a.title, description: a.message, timestamp: a.created_at, status: a.severity === "critical" ? "error" : "warning" });
-  }
-
+  for (const o of ordersRes.data || []) events.push({ id: `order-${o.id}`, type: "order", title: `Commande ${o.order_number}`, description: `${(o.total_amount || 0).toFixed(2)} €`, timestamp: o.created_at });
+  for (const p of productsRes.data || []) events.push({ id: `product-${p.id}`, type: "product", title: "Produit ajouté", description: p.title, timestamp: p.created_at });
   events.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
   return json({ items: events.slice(0, limit) }, 200, reqId);
 }
 
-// ── Integrations Handlers ────────────────────────────────────────────────────
+// ── Stats helpers (use generic pattern) ──────────────────────────────────────
 
-async function listIntegrations(url: URL, auth: any, reqId: string) {
-  const { page, perPage, from, to } = parsePagination(url);
-  const admin = serviceClient();
-  const { data, error, count } = await admin.from("integrations").select("*", { count: "exact" })
-    .eq("user_id", auth.user.id).order("created_at", { ascending: false }).range(from, to);
-  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
-  return json({ items: data || [], meta: { page, per_page: perPage, total: count || 0 } }, 200, reqId);
-}
-
-async function getIntegration(id: string, auth: any, reqId: string) {
-  const admin = serviceClient();
-  const { data, error } = await admin.from("integrations").select("*").eq("id", id).eq("user_id", auth.user.id).single();
-  if (error) return errorResponse("NOT_FOUND", "Integration not found", 404, reqId);
-  return json(data, 200, reqId);
-}
-
-async function createIntegration(req: Request, auth: any, reqId: string) {
-  const body = await req.json();
-  const admin = serviceClient();
-  const { data, error } = await admin.from("integrations").insert({
-    user_id: auth.user.id, platform: body.platform, platform_name: body.platform_name || body.platform,
-    connection_status: body.connection_status || "disconnected", is_active: body.is_active ?? false,
-    sync_frequency: body.sync_frequency || "daily", store_url: body.store_url, store_id: body.store_id,
-    config: body.config, sync_settings: body.sync_settings
-  }).select().single();
-  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
-  return json(data, 201, reqId);
-}
-
-async function updateIntegration(id: string, req: Request, auth: any, reqId: string) {
-  const body = await req.json();
-  const admin = serviceClient();
-  const { data, error } = await admin.from("integrations").update(body)
-    .eq("id", id).eq("user_id", auth.user.id).select().single();
-  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
-  return json(data, 200, reqId);
-}
-
-async function deleteIntegration(id: string, auth: any, reqId: string) {
-  const admin = serviceClient();
-  const { error } = await admin.from("integrations").delete().eq("id", id).eq("user_id", auth.user.id);
-  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
-  return json({ success: true }, 200, reqId);
-}
-
-async function getIntegrationStats(auth: any, reqId: string) {
+async function getIntegrationStats(auth: Auth, reqId: string) {
   const admin = serviceClient();
   const { data } = await admin.from("integrations").select("connection_status, is_active, last_sync_at").eq("user_id", auth.user.id);
   const items = data || [];
-  return json({
-    total: items.length, active: items.filter((i: any) => i.is_active).length,
-    connected: items.filter((i: any) => i.connection_status === "connected").length,
-    disconnected: items.filter((i: any) => i.connection_status === "disconnected").length,
-    error: items.filter((i: any) => i.connection_status === "error").length,
-    lastSync: items.reduce((latest: string | null, i: any) => !i.last_sync_at ? latest : (!latest || i.last_sync_at > latest ? i.last_sync_at : latest), null)
-  }, 200, reqId);
+  return json({ total: items.length, active: items.filter((i: any) => i.is_active).length, connected: items.filter((i: any) => i.connection_status === "connected").length }, 200, reqId);
 }
 
-async function syncIntegration(id: string, req: Request, auth: any, reqId: string) {
-  const body = await req.json().catch(() => ({}));
+async function syncIntegration(id: string, req: Request, auth: Auth, reqId: string) {
   const admin = serviceClient();
   await admin.from("integrations").update({ last_sync_at: new Date().toISOString() }).eq("id", id).eq("user_id", auth.user.id);
-  return json({ success: true, message: "Sync initiated", integration_id: id, sync_type: body.sync_type || "full" }, 200, reqId);
+  return json({ success: true, integration_id: id }, 200, reqId);
 }
 
-async function testIntegration(id: string, auth: any, reqId: string) {
+async function testIntegration(id: string, auth: Auth, reqId: string) {
   const admin = serviceClient();
-  const { data } = await admin.from("integrations").select("*").eq("id", id).eq("user_id", auth.user.id).single();
+  const { data } = await admin.from("integrations").select("id").eq("id", id).eq("user_id", auth.user.id).single();
   if (!data) return errorResponse("NOT_FOUND", "Integration not found", 404, reqId);
-  return json({ success: true, message: "Connection test passed", integration_id: id }, 200, reqId);
+  return json({ success: true, integration_id: id }, 200, reqId);
 }
 
-// ── Suppliers Handlers ──────────────────────────────────────────────────────
-
-async function listSuppliers(url: URL, auth: any, reqId: string) {
-  const { page, perPage, from, to } = parsePagination(url);
-  const q = url.searchParams.get("q") || "";
-  const category = url.searchParams.get("category") || "";
+async function getSupplierStats(auth: Auth, reqId: string) {
   const admin = serviceClient();
-  let query = admin.from("premium_suppliers").select("*", { count: "exact" }).order("name").range(from, to);
-  if (q) query = query.ilike("name", `%${q}%`);
-  if (category) query = query.eq("category", category);
-  const { data, error, count } = await query;
+  const { data } = await admin.from("premium_suppliers").select("id, is_verified, is_featured, category, rating");
+  const items = data || [];
+  return json({ total: items.length, verified: items.filter((s: any) => s.is_verified).length, featured: items.filter((s: any) => s.is_featured).length, avgRating: items.length > 0 ? items.reduce((sum: number, s: any) => sum + (s.rating || 0), 0) / items.length : 0 }, 200, reqId);
+}
+
+async function listSuppliers(url: URL, auth: Auth, reqId: string) {
+  const { page, perPage, from, to } = parsePagination(url);
+  const admin = serviceClient();
+  let q = admin.from("premium_suppliers").select("*", { count: "exact" }).order("name").range(from, to);
+  const qSearch = url.searchParams.get("q"); if (qSearch) q = q.ilike("name", `%${qSearch}%`);
+  const category = url.searchParams.get("category"); if (category) q = q.eq("category", category);
+  const { data, error, count } = await q;
   if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
   return json({ items: data || [], meta: { page, per_page: perPage, total: count || 0 } }, 200, reqId);
 }
 
-async function getSupplier(id: string, auth: any, reqId: string) {
+async function getSupplier(id: string, auth: Auth, reqId: string) {
   const admin = serviceClient();
   const { data, error } = await admin.from("premium_suppliers").select("*").eq("id", id).single();
   if (error) return errorResponse("NOT_FOUND", "Supplier not found", 404, reqId);
   return json(data, 200, reqId);
 }
 
-async function getSupplierStats(auth: any, reqId: string) {
+async function getAutomationStats(auth: Auth, reqId: string) {
   const admin = serviceClient();
-  const { data } = await admin.from("premium_suppliers").select("id, is_verified, is_featured, category, rating");
-  const items = data || [];
-  return json({
-    total: items.length, verified: items.filter((s: any) => s.is_verified).length,
-    featured: items.filter((s: any) => s.is_featured).length,
-    avgRating: items.length > 0 ? items.reduce((sum: number, s: any) => sum + (s.rating || 0), 0) / items.length : 0,
-    categories: [...new Set(items.map((s: any) => s.category).filter(Boolean))]
-  }, 200, reqId);
-}
-
-// ── Automation Handlers ─────────────────────────────────────────────────────
-
-async function listAutomationTriggers(url: URL, auth: any, reqId: string) {
-  const admin = serviceClient();
-  const { data, error } = await admin.from("automation_triggers").select("*")
-    .eq("user_id", auth.user.id).order("created_at", { ascending: false });
-  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
-  return json({ items: data || [] }, 200, reqId);
-}
-
-async function createAutomationTrigger(req: Request, auth: any, reqId: string) {
-  const body = await req.json();
-  const admin = serviceClient();
-  const { data, error } = await admin.from("automation_triggers").insert({
-    user_id: auth.user.id, name: body.name, description: body.description,
-    trigger_type: body.trigger_type, conditions: body.conditions, is_active: body.is_active ?? true
-  }).select().single();
-  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
-  return json(data, 201, reqId);
-}
-
-async function updateAutomationTrigger(id: string, req: Request, auth: any, reqId: string) {
-  const body = await req.json();
-  const admin = serviceClient();
-  const { data, error } = await admin.from("automation_triggers").update({ ...body, updated_at: new Date().toISOString() })
-    .eq("id", id).eq("user_id", auth.user.id).select().single();
-  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
-  return json(data, 200, reqId);
-}
-
-async function deleteAutomationTrigger(id: string, auth: any, reqId: string) {
-  const admin = serviceClient();
-  const { error } = await admin.from("automation_triggers").delete().eq("id", id).eq("user_id", auth.user.id);
-  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
-  return json({ success: true }, 200, reqId);
-}
-
-async function listAutomationActions(url: URL, auth: any, reqId: string) {
-  const admin = serviceClient();
-  const { data, error } = await admin.from("automation_actions").select("*")
-    .eq("user_id", auth.user.id).order("execution_order", { ascending: true });
-  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
-  return json({ items: data || [] }, 200, reqId);
-}
-
-async function createAutomationAction(req: Request, auth: any, reqId: string) {
-  const body = await req.json();
-  const admin = serviceClient();
-  const { data, error } = await admin.from("automation_actions").insert({
-    user_id: auth.user.id, name: body.name || body.action_type,
-    action_type: body.action_type, config: body.config || body.action_config,
-    trigger_id: body.trigger_id, execution_order: body.execution_order, is_active: body.is_active ?? true
-  }).select().single();
-  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
-  return json(data, 201, reqId);
-}
-
-async function listAutomationExecutions(url: URL, auth: any, reqId: string) {
-  const limit = Math.min(parseInt(url.searchParams.get("limit") ?? "100", 10), 500);
-  const status = url.searchParams.get("status");
-  const admin = serviceClient();
-  let query = admin.from("automation_execution_logs").select("*")
-    .eq("user_id", auth.user.id).order("created_at", { ascending: false }).limit(limit);
-  if (status) query = query.eq("status", status);
-  const { data, error } = await query;
-  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
-  return json({ items: data || [] }, 200, reqId);
-}
-
-async function executeAutomation(req: Request, auth: any, reqId: string) {
-  const body = await req.json();
-  const admin = serviceClient();
-  const { data, error } = await admin.from("automation_execution_logs").insert({
-    user_id: auth.user.id, trigger_id: body.trigger_id, status: "completed",
-    input_data: body.context_data || {}
-  }).select().single();
-  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
-  return json(data, 201, reqId);
-}
-
-async function getAutomationStats(auth: any, reqId: string) {
-  const admin = serviceClient();
-  const [triggersRes, actionsRes, execsRes, workflowsRes] = await Promise.all([
+  const [t, a, e, w] = await Promise.all([
     admin.from("automation_triggers").select("id, is_active").eq("user_id", auth.user.id),
     admin.from("automation_actions").select("id, is_active").eq("user_id", auth.user.id),
-    admin.from("automation_execution_logs").select("id, status, created_at").eq("user_id", auth.user.id),
-    admin.from("automation_workflows").select("id, is_active, status, run_count").eq("user_id", auth.user.id),
+    admin.from("automation_execution_logs").select("id, status").eq("user_id", auth.user.id),
+    admin.from("automation_workflows").select("id, is_active, run_count").eq("user_id", auth.user.id),
   ]);
-  const triggers = triggersRes.data || [];
-  const actions = actionsRes.data || [];
-  const executions = execsRes.data || [];
-  const workflows = workflowsRes.data || [];
-  const successful = executions.filter((e: any) => e.status === "completed").length;
-  const total = executions.length;
-  return json({
-    totalTriggers: triggers.length, activeTriggers: triggers.filter((t: any) => t.is_active).length,
-    totalActions: actions.length, activeActions: actions.filter((a: any) => a.is_active).length,
-    totalExecutions: total,
-    successfulExecutions: successful,
-    failedExecutions: executions.filter((e: any) => e.status === "failed").length,
-    successRate: total > 0 ? Math.round((successful / total) * 1000) / 10 : 0,
-    totalWorkflows: workflows.length,
-    activeWorkflows: workflows.filter((w: any) => w.is_active).length,
-    totalRunCount: workflows.reduce((sum: number, w: any) => sum + (w.run_count || 0), 0),
-  }, 200, reqId);
+  const triggers = t.data || []; const actions = a.data || []; const execs = e.data || []; const workflows = w.data || [];
+  const successful = execs.filter((x: any) => x.status === "completed").length;
+  return json({ totalTriggers: triggers.length, activeTriggers: triggers.filter((x: any) => x.is_active).length, totalActions: actions.length, totalExecutions: execs.length, successfulExecutions: successful, totalWorkflows: workflows.length, activeWorkflows: workflows.filter((x: any) => x.is_active).length }, 200, reqId);
 }
 
-// ── Automation Workflows Handlers ───────────────────────────────────────────
-
-async function listAutomationWorkflows(url: URL, auth: any, reqId: string) {
-  const admin = serviceClient();
-  const { data, error } = await admin.from("automation_workflows").select("*")
-    .eq("user_id", auth.user.id).order("updated_at", { ascending: false });
-  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
-  return json({ items: data || [] }, 200, reqId);
-}
-
-async function createAutomationWorkflow(req: Request, auth: any, reqId: string) {
+async function executeAutomation(req: Request, auth: Auth, reqId: string) {
   const body = await req.json();
   const admin = serviceClient();
-  const { data, error } = await admin.from("automation_workflows").insert({
-    user_id: auth.user.id, name: body.name, description: body.description,
-    steps: body.steps || [], workflow_data: body.workflow_data || {},
-    is_active: body.is_active ?? false, status: body.status || "draft"
-  }).select().single();
+  const { data, error } = await admin.from("automation_execution_logs").insert({ user_id: auth.user.id, trigger_id: body.trigger_id, status: "completed", input_data: body.context_data || {} }).select().single();
   if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
   return json(data, 201, reqId);
 }
 
-async function updateAutomationWorkflow(id: string, req: Request, auth: any, reqId: string) {
+async function toggleAutomationWorkflow(id: string, req: Request, auth: Auth, reqId: string) {
   const body = await req.json();
   const admin = serviceClient();
-  const { data, error } = await admin.from("automation_workflows").update({ 
-    ...body, updated_at: new Date().toISOString() 
-  }).eq("id", id).eq("user_id", auth.user.id).select().single();
-  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
-  return json(data, 200, reqId);
-}
-
-async function deleteAutomationWorkflow(id: string, auth: any, reqId: string) {
-  const admin = serviceClient();
-  const { error } = await admin.from("automation_workflows").delete().eq("id", id).eq("user_id", auth.user.id);
+  const { error } = await admin.from("automation_workflows").update({ is_active: body.is_active, updated_at: new Date().toISOString() }).eq("id", id).eq("user_id", auth.user.id);
   if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
   return json({ success: true }, 200, reqId);
 }
 
-async function toggleAutomationWorkflow(id: string, req: Request, auth: any, reqId: string) {
-  const body = await req.json();
+async function runAutomationWorkflow(id: string, auth: Auth, reqId: string) {
   const admin = serviceClient();
-  const { data, error } = await admin.from("automation_workflows").update({
-    is_active: body.is_active, status: body.is_active ? "active" : "paused",
-    updated_at: new Date().toISOString()
-  }).eq("id", id).eq("user_id", auth.user.id).select().single();
-  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
-  return json(data, 200, reqId);
+  await admin.from("automation_workflows").update({ last_run_at: new Date().toISOString(), run_count: 1 }).eq("id", id).eq("user_id", auth.user.id);
+  return json({ success: true, workflow_id: id }, 200, reqId);
 }
 
-async function runAutomationWorkflow(id: string, auth: any, reqId: string) {
-  const admin = serviceClient();
-  // Get workflow
-  const { data: workflow, error: wErr } = await admin.from("automation_workflows").select("*")
-    .eq("id", id).eq("user_id", auth.user.id).single();
-  if (wErr || !workflow) return errorResponse("NOT_FOUND", "Workflow not found", 404, reqId);
-  
-  // Log execution
-  const { data: execLog, error: eErr } = await admin.from("automation_execution_logs").insert({
-    user_id: auth.user.id, trigger_id: null, status: "completed",
-    input_data: { workflow_id: id, workflow_name: workflow.name, steps: workflow.steps },
-    output_data: { message: "Workflow executed successfully" }
-  }).select().single();
-  
-  // Update run count
-  await admin.from("automation_workflows").update({
-    run_count: (workflow.run_count || 0) + 1, last_run_at: new Date().toISOString(),
-    updated_at: new Date().toISOString()
-  }).eq("id", id);
-  
-  if (eErr) return errorResponse("DB_ERROR", eErr.message, 500, reqId);
-  return json({ success: true, execution: execLog }, 200, reqId);
-}
+// ── Marketing ────────────────────────────────────────────────────────────────
 
-// ── Marketing Handlers ──────────────────────────────────────────────────────
-
-async function listMarketingCampaigns(url: URL, auth: any, reqId: string) {
-  const { page, perPage, from, to } = parsePagination(url);
-  const admin = serviceClient();
-  const { data, error, count } = await admin.from("marketing_campaigns").select("*", { count: "exact" })
-    .eq("user_id", auth.user.id).order("created_at", { ascending: false }).range(from, to);
-  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
-  return json({ items: data || [], meta: { page, per_page: perPage, total: count || 0 } }, 200, reqId);
-}
-
-async function createMarketingCampaign(req: Request, auth: any, reqId: string) {
-  const body = await req.json();
-  const admin = serviceClient();
-  const { data, error } = await admin.from("marketing_campaigns").insert({
-    user_id: auth.user.id, name: body.name, status: body.status || "draft",
-    ...(body.type && { type: body.type }), ...(body.budget && { budget: body.budget })
-  }).select().single();
-  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
-  return json(data, 201, reqId);
-}
-
-async function getMarketingStats(auth: any, reqId: string) {
+async function getMarketingStats(auth: Auth, reqId: string) {
   const admin = serviceClient();
   const { data } = await admin.from("marketing_campaigns").select("*").eq("user_id", auth.user.id);
   const c = data || [];
-  return json({
-    totalCampaigns: c.length,
-    activeCampaigns: c.filter((x: any) => x.status === "active").length,
-    totalConversions: c.reduce((s: number, x: any) => s + (x.conversions || 0), 0),
-    totalSpend: c.reduce((s: number, x: any) => s + (x.spent || 0), 0),
-    conversionRate: c.length > 0 ? c.reduce((s: number, x: any) => s + (x.conversions || 0), 0) / Math.max(c.reduce((s: number, x: any) => s + (x.clicks || 1), 0), 1) * 100 : 0,
-  }, 200, reqId);
+  return json({ totalCampaigns: c.length, activeCampaigns: c.filter((x: any) => x.status === "active").length, totalRevenue: c.reduce((s: number, x: any) => s + (x.revenue || 0), 0) }, 200, reqId);
 }
 
-// ── CRM Handlers ────────────────────────────────────────────────────────────
-
-async function listCRMTasks(url: URL, auth: any, reqId: string) {
+async function getMarketingDashboardStats(auth: Auth, reqId: string) {
   const admin = serviceClient();
-  const { data, error } = await admin.from("crm_tasks").select("*")
-    .eq("user_id", auth.user.id).order("created_at", { ascending: false });
-  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
-  return json({ items: data || [] }, 200, reqId);
+  const [cRes, aRes] = await Promise.all([
+    admin.from("marketing_campaigns").select("*").eq("user_id", auth.user.id),
+    admin.from("automated_campaigns").select("id, is_active").eq("user_id", auth.user.id),
+  ]);
+  const c = cRes.data || []; const a = aRes.data || [];
+  return json({ activeCampaigns: c.filter((x: any) => x.status === "active").length, totalCampaigns: c.length, automationsActive: a.filter((x: any) => x.is_active).length, totalRevenue: c.reduce((s: number, x: any) => s + (x.revenue || 0), 0) }, 200, reqId);
 }
 
-async function createCRMTask(req: Request, auth: any, reqId: string) {
-  const body = await req.json();
-  const admin = serviceClient();
-  const { data, error } = await admin.from("crm_tasks").insert({ ...body, user_id: auth.user.id }).select().single();
-  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
-  return json(data, 201, reqId);
+async function listMarketingCampaigns(url: URL, auth: Auth, reqId: string) {
+  return crudList(marketingCampaignsCfg)(url, auth, reqId);
 }
 
-async function updateCRMTask(id: string, req: Request, auth: any, reqId: string) {
-  const body = await req.json();
-  const admin = serviceClient();
-  const { data, error } = await admin.from("crm_tasks").update({ ...body, updated_at: new Date().toISOString() })
-    .eq("id", id).eq("user_id", auth.user.id).select().single();
-  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
-  return json(data, 200, reqId);
-}
-
-async function deleteCRMTask(id: string, auth: any, reqId: string) {
-  const admin = serviceClient();
-  const { error } = await admin.from("crm_tasks").delete().eq("id", id).eq("user_id", auth.user.id);
-  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
-  return json({ success: true }, 200, reqId);
-}
-
-async function listCRMDeals(url: URL, auth: any, reqId: string) {
-  const admin = serviceClient();
-  const { data, error } = await admin.from("crm_deals").select("*")
-    .eq("user_id", auth.user.id).order("created_at", { ascending: false });
-  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
-  return json({ items: data || [] }, 200, reqId);
-}
-
-async function createCRMDeal(req: Request, auth: any, reqId: string) {
-  const body = await req.json();
-  const admin = serviceClient();
-  const { data, error } = await admin.from("crm_deals").insert({ ...body, user_id: auth.user.id }).select().single();
-  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
-  return json(data, 201, reqId);
-}
-
-async function updateCRMDeal(id: string, req: Request, auth: any, reqId: string) {
-  const body = await req.json();
-  const admin = serviceClient();
-  const { data, error } = await admin.from("crm_deals").update({ ...body, updated_at: new Date().toISOString() })
-    .eq("id", id).eq("user_id", auth.user.id).select().single();
-  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
-  return json(data, 200, reqId);
-}
-
-async function deleteCRMDeal(id: string, auth: any, reqId: string) {
-  const admin = serviceClient();
-  const { error } = await admin.from("crm_deals").delete().eq("id", id).eq("user_id", auth.user.id);
-  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
-  return json({ success: true }, 200, reqId);
-}
-
-// ── Pricing Handlers ────────────────────────────────────────────────────────
-
-async function listPricingRules(url: URL, auth: any, reqId: string) {
-  const admin = serviceClient();
-  const { data, error } = await admin.from("pricing_rules").select("*").eq("user_id", auth.user.id);
-  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
-  return json({ items: data || [] }, 200, reqId);
-}
-
-async function createPricingRule(req: Request, auth: any, reqId: string) {
-  const body = await req.json();
-  const admin = serviceClient();
-  const { data, error } = await admin.from("pricing_rules").insert({ ...body, user_id: auth.user.id }).select().single();
-  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
-  return json(data, 201, reqId);
-}
-
-async function updatePricingRule(id: string, req: Request, auth: any, reqId: string) {
-  const body = await req.json();
-  const admin = serviceClient();
-  const { data, error } = await admin.from("pricing_rules").update({ ...body, updated_at: new Date().toISOString() })
-    .eq("id", id).eq("user_id", auth.user.id).select().single();
-  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
-  return json(data, 200, reqId);
-}
-
-async function deletePricingRule(id: string, auth: any, reqId: string) {
-  const admin = serviceClient();
-  const { error } = await admin.from("pricing_rules").delete().eq("id", id).eq("user_id", auth.user.id);
-  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
-  return json({ success: true }, 200, reqId);
-}
-
-// ── Finance Handlers ────────────────────────────────────────────────────────
-
-async function getFinanceStats(auth: any, reqId: string) {
-  const admin = serviceClient();
-  const { data: orders } = await admin.from("orders").select("total_amount, created_at").eq("user_id", auth.user.id);
-  const allOrders = orders || [];
-  const totalRevenue = allOrders.reduce((s: number, o: any) => s + (o.total_amount || 0), 0);
-  const totalExpenses = totalRevenue * 0.65;
-  const grossProfit = totalRevenue * 0.35;
-  const netProfit = totalRevenue * 0.20;
-
-  const monthlyRevenue = Array.from({ length: 6 }, (_, i) => {
-    const m = new Date(); m.setMonth(m.getMonth() - (5 - i));
-    const mStr = m.toLocaleDateString("fr-FR", { month: "short" });
-    const monthOrders = allOrders.filter((o: any) => new Date(o.created_at).getMonth() === m.getMonth());
-    return { month: mStr, amount: monthOrders.reduce((s: number, o: any) => s + (o.total_amount || 0), 0) };
-  });
-
-  return json({
-    revenue: { total: totalRevenue, growth: totalRevenue > 0 ? 12.5 : 0, target: totalRevenue * 1.10, monthly: monthlyRevenue },
-    expenses: { total: totalExpenses, growth: totalRevenue > 0 ? 8.2 : 0, categories: [
-      { name: "Coût des marchandises", amount: totalRevenue * 0.40, percentage: 61.5 },
-      { name: "Marketing", amount: totalRevenue * 0.10, percentage: 15.4 },
-      { name: "Personnel", amount: totalRevenue * 0.08, percentage: 12.3 },
-      { name: "Logistique", amount: totalRevenue * 0.05, percentage: 7.7 },
-      { name: "Autres", amount: totalRevenue * 0.02, percentage: 3.1 }
-    ]},
-    profit: { gross: grossProfit, net: netProfit, margin: totalRevenue > 0 ? (netProfit / totalRevenue) * 100 : 0 },
-    cashFlow: { current: netProfit * 2, incoming: totalRevenue * 0.3, outgoing: totalExpenses * 0.4, projection: netProfit * 3 },
-    accounts: [
-      { name: "Compte Principal", balance: netProfit * 1.5, type: "checking", growth: 5.2 },
-      { name: "Épargne", balance: netProfit * 0.5, type: "savings", growth: 2.1 },
-      { name: "Investissements", balance: netProfit * 0.3, type: "investment", growth: -1.5 }
-    ],
-    invoices: { pending: totalRevenue * 0.15, overdue: totalRevenue * 0.03, paid: totalRevenue * 0.80, draft: totalRevenue * 0.02 }
-  }, 200, reqId);
-}
-
-// ── Conversion Handlers ─────────────────────────────────────────────────────
-
-async function listConversionBundles(auth: any, reqId: string) {
-  const admin = serviceClient();
-  const { data, error } = await admin.from("product_bundles").select("*").eq("is_active", true).order("priority", { ascending: true });
-  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
-  return json({ items: data || [] }, 200, reqId);
-}
-
-async function createConversionBundle(req: Request, auth: any, reqId: string) {
-  const body = await req.json();
-  const admin = serviceClient();
-  const { data, error } = await admin.from("product_bundles").insert({ ...body, user_id: auth.user.id }).select().single();
-  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
-  return json(data, 201, reqId);
-}
-
-async function listUpsellRules(auth: any, reqId: string) {
-  const admin = serviceClient();
-  const { data, error } = await admin.from("upsell_rules").select("*").eq("is_active", true).order("priority", { ascending: true });
-  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
-  return json({ items: data || [] }, 200, reqId);
-}
-
-async function createUpsellRule(req: Request, auth: any, reqId: string) {
-  const body = await req.json();
-  const admin = serviceClient();
-  const { data, error } = await admin.from("upsell_rules").insert({ ...body, user_id: auth.user.id }).select().single();
-  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
-  return json(data, 201, reqId);
-}
-
-async function listDynamicDiscounts(auth: any, reqId: string) {
-  const admin = serviceClient();
-  const { data, error } = await admin.from("dynamic_discounts").select("*").eq("is_active", true).order("priority", { ascending: true });
-  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
-  return json({ items: data || [] }, 200, reqId);
-}
-
-async function createDynamicDiscount(req: Request, auth: any, reqId: string) {
-  const body = await req.json();
-  const admin = serviceClient();
-  const { data, error } = await admin.from("dynamic_discounts").insert({ ...body, user_id: auth.user.id }).select().single();
-  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
-  return json(data, 201, reqId);
-}
-
-async function listScarcityTimers(auth: any, reqId: string) {
-  const admin = serviceClient();
-  const { data, error } = await admin.from("scarcity_timers").select("*").eq("is_active", true);
-  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
-  return json({ items: data || [] }, 200, reqId);
-}
-
-async function createScarcityTimer(req: Request, auth: any, reqId: string) {
-  const body = await req.json();
-  const admin = serviceClient();
-  const { data, error } = await admin.from("scarcity_timers").insert({ ...body, user_id: auth.user.id }).select().single();
-  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
-  return json(data, 201, reqId);
-}
-
-async function listSocialProofWidgets(auth: any, reqId: string) {
-  const admin = serviceClient();
-  const { data, error } = await admin.from("social_proof_widgets").select("*").eq("is_active", true);
-  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
-  return json({ items: data || [] }, 200, reqId);
-}
-
-async function createSocialProofWidget(req: Request, auth: any, reqId: string) {
-  const body = await req.json();
-  const admin = serviceClient();
-  const { data, error } = await admin.from("social_proof_widgets").insert({ ...body, user_id: auth.user.id }).select().single();
-  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
-  return json(data, 201, reqId);
-}
-
-async function trackConversionEvent(req: Request, auth: any, reqId: string) {
-  const body = await req.json();
-  const admin = serviceClient();
-  const { data, error } = await admin.from("conversion_events").insert({ ...body, user_id: auth.user.id }).select().single();
-  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
-  return json(data, 201, reqId);
-}
-
-async function getConversionAnalytics(auth: any, reqId: string) {
-  const admin = serviceClient();
-  const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
-  const { data: events } = await admin.from("conversion_events").select("*").eq("user_id", auth.user.id).gte("created_at", thirtyDaysAgo);
-  const totalEvents = events?.length || 0;
-  const totalValue = events?.reduce((s: number, e: any) => s + (e.conversion_value || 0), 0) || 0;
-  const byType = (events || []).reduce((acc: any, e: any) => { acc[e.event_type] = (acc[e.event_type] || 0) + 1; return acc; }, {});
-  return json({ total_events: totalEvents, total_conversion_value: totalValue, average_value: totalEvents > 0 ? totalValue / totalEvents : 0, events_by_type: byType }, 200, reqId);
-}
-
-// ── Advanced Analytics Handlers ─────────────────────────────────────────────
-
-async function listPerformanceMetrics(auth: any, reqId: string) {
-  const admin = serviceClient();
-  const { data, error } = await admin.from("analytics_insights").select("id, metric_name, metric_value, metric_type, recorded_at").eq("user_id", auth.user.id).order("recorded_at", { ascending: false }).limit(20);
-  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
-  return json({ items: (data || []).map((d: any) => ({ id: d.id, metric_name: d.metric_name, metric_value: Number(d.metric_value) || 0, metric_type: d.metric_type, recorded_at: d.recorded_at })) }, 200, reqId);
-}
-
-async function listAdvancedReports(auth: any, reqId: string) {
-  const admin = serviceClient();
-  const { data, error } = await admin.from("advanced_reports").select("id, report_name, report_type, status, last_generated_at, report_data").eq("user_id", auth.user.id).order("last_generated_at", { ascending: false }).limit(20);
-  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
-  return json({ items: (data || []).map((d: any) => ({ id: d.id, report_name: d.report_name, report_type: d.report_type, status: d.status, generated_at: d.last_generated_at, report_data: d.report_data })) }, 200, reqId);
-}
-
-async function generateAdvancedReport(req: Request, auth: any, reqId: string) {
-  const body = await req.json();
-  const admin = serviceClient();
-  const { data, error } = await admin.from("advanced_reports").insert({ user_id: auth.user.id, report_name: `Rapport ${body.reportType}`, report_type: body.reportType, status: "generating", report_data: body.config }).select().single();
-  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
-  return json(data, 201, reqId);
-}
-
-async function listPredictiveAnalytics(auth: any, reqId: string) {
-  const admin = serviceClient();
-  const { data, error } = await admin.from("analytics_insights").select("id, prediction_type, confidence_score, predictions").eq("user_id", auth.user.id).not("prediction_type", "is", null).order("created_at", { ascending: false }).limit(10);
-  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
-  return json({ items: (data || []).map((d: any) => ({ id: d.id, prediction_type: d.prediction_type || "general", confidence_score: Number(d.confidence_score) || 0.8, predictions: d.predictions || {} })) }, 200, reqId);
-}
-
-async function runPredictiveAnalysis(auth: any, reqId: string) {
-  const admin = serviceClient();
-  const { data, error } = await admin.from("analytics_insights").insert({ user_id: auth.user.id, metric_name: "predictive_analysis", metric_value: Math.random() * 100, prediction_type: "revenue_forecast", confidence_score: 0.85, predictions: { next_week: Math.random() * 10000, next_month: Math.random() * 50000, trend: "increasing" } }).select().single();
-  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
-  return json(data, 201, reqId);
-}
-
-async function listABTests(auth: any, reqId: string) {
-  const admin = serviceClient();
-  const { data, error } = await admin.from("ab_test_variants").select("id, test_name, variant_name, is_winner, performance_data, traffic_allocation").eq("user_id", auth.user.id).order("created_at", { ascending: false }).limit(20);
-  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
-  const testsMap = new Map();
-  (data || []).forEach((d: any) => {
-    if (!testsMap.has(d.test_name)) {
-      testsMap.set(d.test_name, { id: d.id, experiment_name: d.test_name, experiment_type: "conversion", hypothesis: `Test ${d.test_name}`, status: d.is_winner ? "completed" : "running", statistical_significance: d.is_winner ? 0.95 : 0.5 });
-    }
-  });
-  return json({ items: Array.from(testsMap.values()) }, 200, reqId);
-}
-
-async function createABTest(req: Request, auth: any, reqId: string) {
-  const body = await req.json();
-  const admin = serviceClient();
-  const { data, error } = await admin.from("ab_test_variants").insert({ user_id: auth.user.id, test_name: body.experimentName, variant_name: "control", traffic_allocation: 50, ad_creative: body.controlVariant, performance_data: {} }).select().single();
-  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
-  return json(data, 201, reqId);
-}
-
-// ── Promotion Handlers ──────────────────────────────────────────────────────
-
-async function listPromotionCampaigns(url: URL, auth: any, reqId: string) {
-  const admin = serviceClient();
-  let query = admin.from("promotion_campaigns").select("*").eq("user_id", auth.user.id).order("created_at", { ascending: false });
-  const status = url.searchParams.get("status");
-  if (status) query = query.eq("status", status);
-  const { data, error } = await query;
-  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
-  return json({ items: data || [] }, 200, reqId);
-}
-
-async function createPromotionCampaign(req: Request, auth: any, reqId: string) {
-  const body = await req.json();
-  const admin = serviceClient();
-  const { data, error } = await admin.from("promotion_campaigns").insert({ ...body, user_id: auth.user.id }).select().single();
-  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
-  return json(data, 201, reqId);
-}
-
-async function updatePromotionCampaign(id: string, req: Request, auth: any, reqId: string) {
-  const body = await req.json();
-  const admin = serviceClient();
-  const { data, error } = await admin.from("promotion_campaigns").update(body).eq("id", id).eq("user_id", auth.user.id).select().single();
-  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
-  return json(data, 200, reqId);
-}
-
-async function deletePromotionCampaign(id: string, auth: any, reqId: string) {
-  const admin = serviceClient();
-  const { error } = await admin.from("promotion_campaigns").delete().eq("id", id).eq("user_id", auth.user.id);
-  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
-  return json({ success: true }, 200, reqId);
-}
-
-async function listPromotionRules(auth: any, reqId: string) {
-  const admin = serviceClient();
-  const { data, error } = await admin.from("promotion_automation_rules").select("*").eq("user_id", auth.user.id).order("created_at", { ascending: false });
-  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
-  return json({ items: data || [] }, 200, reqId);
-}
-
-async function createPromotionRule(req: Request, auth: any, reqId: string) {
-  const body = await req.json();
-  const admin = serviceClient();
-  const { data, error } = await admin.from("promotion_automation_rules").insert({ ...body, user_id: auth.user.id }).select().single();
-  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
-  return json(data, 201, reqId);
-}
-
-async function togglePromotionRule(id: string, req: Request, auth: any, reqId: string) {
-  const body = await req.json();
-  const admin = serviceClient();
-  const { error } = await admin.from("promotion_automation_rules").update({ is_active: body.is_active }).eq("id", id).eq("user_id", auth.user.id);
-  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
-  return json({ success: true }, 200, reqId);
-}
-
-async function deletePromotionRule(id: string, auth: any, reqId: string) {
-  const admin = serviceClient();
-  const { error } = await admin.from("promotion_automation_rules").delete().eq("id", id).eq("user_id", auth.user.id);
-  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
-  return json({ success: true }, 200, reqId);
-}
-
-async function getPromotionStats(auth: any, reqId: string) {
-  const admin = serviceClient();
-  const { data: campaigns } = await admin.from("promotion_campaigns").select("*").eq("user_id", auth.user.id);
-  const { data: rules } = await admin.from("promotion_automation_rules").select("*").eq("user_id", auth.user.id);
-  const c = campaigns || [];
-  const r = rules || [];
-  return json({
-    active_campaigns: c.filter((x: any) => x.status === "active").length,
-    automation_rules: r.filter((x: any) => x.is_active).length,
-    scheduled_campaigns: c.filter((x: any) => x.status === "scheduled").length,
-    revenue_this_month: c.reduce((s: number, x: any) => s + (x.revenue_generated || 0), 0),
-  }, 200, reqId);
-}
-
-// ── Customer Behavior Handlers ──────────────────────────────────────────────
-
-async function listBehaviorHistory(auth: any, reqId: string) {
-  const admin = serviceClient();
-  const { data, error } = await admin.from("customer_behavior_analytics").select("*").eq("user_id", auth.user.id).order("created_at", { ascending: false });
-  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
-  return json({ items: data || [] }, 200, reqId);
-}
-
-async function analyzeBehavior(req: Request, auth: any, reqId: string) {
-  const body = await req.json();
-  // Delegate to the edge function
-  const admin = serviceClient();
-  const { data, error } = await admin.functions.invoke("customer-intelligence", { body: { customerData: body } });
-  if (error) return errorResponse("FUNCTION_ERROR", error.message, 500, reqId);
-  return json(data, 200, reqId);
-}
-
-async function getBehaviorById(id: string, auth: any, reqId: string) {
-  const admin = serviceClient();
-  const { data, error } = await admin.from("customer_behavior_analytics").select("*").eq("id", id).single();
-  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
-  return json(data, 200, reqId);
-}
-
-async function deleteBehaviorAnalysis(id: string, auth: any, reqId: string) {
-  const admin = serviceClient();
-  const { error } = await admin.from("customer_behavior_analytics").delete().eq("id", id);
-  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
-  return json({ success: true }, 200, reqId);
-}
-
-// ── Product Tracking Handlers ───────────────────────────────────────────────
-
-async function trackProductView(req: Request, auth: any, reqId: string) {
-  const body = await req.json();
-  const admin = serviceClient();
-  const { data, error } = await admin.from("product_events").insert({ user_id: auth.user.id, product_id: body.productId, event_type: "view", metadata: { source: body.source || "catalog" } }).select().single();
-  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
-  return json(data, 201, reqId);
-}
-
-async function compareSupplierPrices(req: Request, auth: any, reqId: string) {
-  const body = await req.json();
-  const admin = serviceClient();
-  // Fetch product and its suppliers for comparison
-  const { data: product } = await admin.from("products").select("*").eq("id", body.productId).single();
-  const { data: suppliers } = await admin.from("suppliers").select("*").limit(10);
-  return json({ product, suppliers: suppliers || [], comparison: [] }, 200, reqId);
-}
-
-// ── Advanced AI Handlers ────────────────────────────────────────────────────
-
-async function aiCallGateway(systemPrompt: string, userPrompt: string) {
-  const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-  if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY not configured");
-
-  const resp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-    method: "POST",
-    headers: { Authorization: `Bearer ${LOVABLE_API_KEY}`, "Content-Type": "application/json" },
-    body: JSON.stringify({
-      model: "google/gemini-2.5-flash",
-      messages: [
-        { role: "system", content: systemPrompt },
-        { role: "user", content: userPrompt },
-      ],
-      temperature: 0.4,
-      max_tokens: 3000,
-    }),
-  });
-
-  if (!resp.ok) {
-    if (resp.status === 429) throw new Error("RATE_LIMIT");
-    if (resp.status === 402) throw new Error("PAYMENT_REQUIRED");
-    throw new Error(`AI gateway error: ${resp.status}`);
-  }
-
-  const data = await resp.json();
-  const content = data.choices?.[0]?.message?.content;
-  if (!content) throw new Error("No AI content");
-
-  const jsonMatch = content.match(/\{[\s\S]*\}/);
-  if (!jsonMatch) throw new Error("No JSON in AI response");
-  return JSON.parse(jsonMatch[0]);
-}
-
-async function aiPricingSuggestions(req: Request, auth: any, reqId: string) {
-  try {
-    const body = await req.json();
-    const admin = serviceClient();
-    let query = admin.from("products").select("id, name, price, cost_price, category, stock_quantity").eq("user_id", auth.user.id).limit(20);
-    if (body.product_ids?.length) query = query.in("id", body.product_ids);
-    const { data: products } = await query;
-    if (!products?.length) return json({ items: [] }, 200, reqId);
-
-    const result = await aiCallGateway(
-      "Tu es un expert en pricing e-commerce. Analyse les produits et suggère des ajustements de prix optimaux. Réponds UNIQUEMENT en JSON valide.",
-      `Analyse ces produits et suggère des prix optimisés selon la stratégie "${body.strategy || 'competitive'}":
-${JSON.stringify(products, null, 2)}
-Format JSON: { "suggestions": [{ "product_id": "id", "product_name": "nom", "current_price": number, "suggested_price": number, "reason": "raison courte", "confidence": number, "potential_revenue_change": number }] }`
-    );
-    return json({ items: result.suggestions || [] }, 200, reqId);
-  } catch (e: any) {
-    if (e.message === "RATE_LIMIT") return errorResponse("RATE_LIMIT", "Too many requests", 429, reqId);
-    if (e.message === "PAYMENT_REQUIRED") return errorResponse("PAYMENT_REQUIRED", "Credits exhausted", 402, reqId);
-    console.error("aiPricingSuggestions error:", e);
-    return errorResponse("AI_ERROR", e.message, 500, reqId);
-  }
-}
-
-async function aiTrendingProducts(url: URL, auth: any, reqId: string) {
-  try {
-    const admin = serviceClient();
-    const limit = Math.min(50, parseInt(url.searchParams.get("limit") || "10", 10));
-    const { data: orders } = await admin.from("orders").select("id, total_amount, created_at, order_items(product_id, quantity, unit_price)").eq("user_id", auth.user.id).gte("created_at", new Date(Date.now() - 30 * 86400000).toISOString()).order("created_at", { ascending: false }).limit(100);
-    const { data: products } = await admin.from("products").select("id, name, category, price, stock_quantity").eq("user_id", auth.user.id).limit(100);
-    if (!products?.length) return json({ items: [] }, 200, reqId);
-
-    const salesMap: Record<string, { sales_7d: number; sales_30d: number }> = {};
-    const now = Date.now();
-    for (const order of orders || []) {
-      for (const item of (order as any).order_items || []) {
-        if (!salesMap[item.product_id]) salesMap[item.product_id] = { sales_7d: 0, sales_30d: 0 };
-        salesMap[item.product_id].sales_30d += item.quantity;
-        if (new Date(order.created_at).getTime() > now - 7 * 86400000) salesMap[item.product_id].sales_7d += item.quantity;
-      }
-    }
-
-    const trending = products.map((p: any) => {
-      const sales = salesMap[p.id] || { sales_7d: 0, sales_30d: 0 };
-      const velocity = sales.sales_7d > sales.sales_30d / 4 ? "rising" : sales.sales_7d < sales.sales_30d / 6 ? "declining" : "stable";
-      const trend_score = Math.min(100, Math.round((sales.sales_7d * 4 / Math.max(1, sales.sales_30d)) * 50 + (sales.sales_30d > 0 ? 30 : 0) + (p.stock_quantity > 0 ? 20 : 0)));
-      return { product_id: p.id, product_name: p.name, trend_score, velocity, category: p.category || "Non classé", sales_7d: sales.sales_7d, sales_30d: sales.sales_30d };
-    }).sort((a: any, b: any) => b.trend_score - a.trend_score).slice(0, limit);
-    return json({ items: trending }, 200, reqId);
-  } catch (e: any) {
-    console.error("aiTrendingProducts error:", e);
-    return errorResponse("AI_ERROR", e.message, 500, reqId);
-  }
-}
-
-async function aiPerformanceAnalysis(req: Request, auth: any, reqId: string) {
-  try {
-    const body = await req.json();
-    const admin = serviceClient();
-    const { data: products } = await admin.from("products").select("id, name, price, cost_price, stock_quantity, category").eq("user_id", auth.user.id).limit(50);
-    const { data: orders } = await admin.from("orders").select("id, total_amount, status, created_at").eq("user_id", auth.user.id).gte("created_at", new Date(Date.now() - 30 * 86400000).toISOString());
-    const { data: customers } = await admin.from("customers").select("id").eq("user_id", auth.user.id);
-
-    const totalRevenue = (orders || []).reduce((sum: number, o: any) => sum + (o.total_amount || 0), 0);
-    const avgOrderValue = orders?.length ? totalRevenue / orders.length : 0;
-
-    const result = await aiCallGateway(
-      "Tu es un consultant e-commerce expert. Analyse la performance business et fournis un rapport structuré. Réponds UNIQUEMENT en JSON valide.",
-      `Analyse cette performance business (${body.time_range || '30 jours'}, focus: ${body.focus || 'global'}):
-Produits: ${products?.length || 0} | Commandes: ${orders?.length || 0} | Clients: ${customers?.length || 0}
-CA total: ${totalRevenue.toFixed(2)}€ | Panier moyen: ${avgOrderValue.toFixed(2)}€
-Format JSON: { "summary": "résumé en 2 phrases", "score": number, "strengths": ["..."], "weaknesses": ["..."], "actions": [{ "priority": "high|medium|low", "action": "...", "impact": "..." }] }`
-    );
-    return json(result, 200, reqId);
-  } catch (e: any) {
-    if (e.message === "RATE_LIMIT") return errorResponse("RATE_LIMIT", "Too many requests", 429, reqId);
-    if (e.message === "PAYMENT_REQUIRED") return errorResponse("PAYMENT_REQUIRED", "Credits exhausted", 402, reqId);
-    console.error("aiPerformanceAnalysis error:", e);
-    return errorResponse("AI_ERROR", e.message, 500, reqId);
-  }
-}
-
-async function aiBusinessSummary(auth: any, reqId: string) {
-  try {
-    const admin = serviceClient();
-    const thirtyDaysAgo = new Date(Date.now() - 30 * 86400000).toISOString();
-    const sixtyDaysAgo = new Date(Date.now() - 60 * 86400000).toISOString();
-
-    const { data: recentOrders } = await admin.from("orders").select("total_amount").eq("user_id", auth.user.id).gte("created_at", thirtyDaysAgo);
-    const { data: prevOrders } = await admin.from("orders").select("total_amount").eq("user_id", auth.user.id).gte("created_at", sixtyDaysAgo).lt("created_at", thirtyDaysAgo);
-
-    const recentRevenue = (recentOrders || []).reduce((s: number, o: any) => s + (o.total_amount || 0), 0);
-    const prevRevenue = (prevOrders || []).reduce((s: number, o: any) => s + (o.total_amount || 0), 0);
-    const revenueChange = prevRevenue > 0 ? ((recentRevenue - prevRevenue) / prevRevenue) * 100 : 0;
-
-    const { data: products } = await admin.from("products").select("category, price, cost_price, stock_quantity").eq("user_id", auth.user.id);
-
-    const categories: Record<string, number> = {};
-    const riskAlerts: string[] = [];
-    let healthScore = 70;
-
-    for (const p of products || []) {
-      const cat = (p as any).category || "Non classé";
-      categories[cat] = (categories[cat] || 0) + 1;
-      if ((p as any).stock_quantity === 0) riskAlerts.push("Rupture de stock détectée");
-      if ((p as any).cost_price && (p as any).price && (p as any).price < (p as any).cost_price * 1.1) riskAlerts.push("Marge critique sur certains produits");
-    }
-
-    const topCategory = Object.entries(categories).sort((a, b) => b[1] - a[1])[0]?.[0] || "N/A";
-    const uniqueAlerts = [...new Set(riskAlerts)].slice(0, 3);
-    if (recentRevenue > prevRevenue) healthScore += 10;
-    if (uniqueAlerts.length === 0) healthScore += 10;
-    if ((products || []).length > 10) healthScore += 5;
-    healthScore = Math.min(100, healthScore);
-
-    return json({
-      revenue_trend: { direction: revenueChange >= 0 ? "up" : "down", percent: Math.abs(Math.round(revenueChange * 10) / 10) },
-      top_category: topCategory,
-      risk_alerts: uniqueAlerts,
-      ai_recommendations: [
-        revenueChange < 0 ? "Relancer les campagnes marketing pour inverser la tendance" : "Maintenir la dynamique de croissance actuelle",
-        uniqueAlerts.length > 0 ? "Résoudre les alertes de stock en priorité" : "Diversifier le catalogue pour sécuriser les revenus",
-        "Optimiser les fiches produits SEO pour augmenter le trafic organique",
-      ],
-      health_score: healthScore,
-    }, 200, reqId);
-  } catch (e: any) {
-    console.error("aiBusinessSummary error:", e);
-    return errorResponse("AI_ERROR", e.message, 500, reqId);
-  }
-}
-
-// ── Monetization Handlers ───────────────────────────────────────────────────
-
-const PLAN_QUOTA_MAP: Record<string, Record<string, number>> = {
-  free: { products: 100, imports_monthly: 10, ai_generations: 10, stores: 1, suppliers: 3, workflows: 1, storage_mb: 100, seo_audits: 5 },
-  standard: { products: 1000, imports_monthly: 100, ai_generations: 100, stores: 3, suppliers: 10, workflows: 5, storage_mb: 1000, seo_audits: 50 },
-  pro: { products: 10000, imports_monthly: 500, ai_generations: 500, stores: 10, suppliers: 50, workflows: 20, storage_mb: 5000, seo_audits: 200 },
-  ultra_pro: { products: -1, imports_monthly: -1, ai_generations: -1, stores: -1, suppliers: -1, workflows: -1, storage_mb: -1, seo_audits: -1 },
-};
-
-async function getMonetizationPlan(auth: any, reqId: string) {
-  try {
-    const admin = serviceClient();
-    const { data: profile } = await admin.from("profiles").select("subscription_plan, stripe_customer_id").eq("user_id", auth.user.id).maybeSingle();
-    const plan = profile?.subscription_plan || "free";
-    const limits = PLAN_QUOTA_MAP[plan] || PLAN_QUOTA_MAP.free;
-
-    return json({
-      current_plan: plan,
-      limits,
-      is_unlimited: plan === "ultra_pro",
-      stripe_customer_id: profile?.stripe_customer_id || null,
-    }, 200, reqId);
-  } catch (e: any) {
-    return errorResponse("DB_ERROR", e.message, 500, reqId);
-  }
-}
-
-async function getMonetizationUsage(auth: any, reqId: string) {
-  try {
-    const admin = serviceClient();
-
-    const [products, imports, aiGens, stores, workflows] = await Promise.all([
-      admin.from("products").select("*", { count: "exact", head: true }).eq("user_id", auth.user.id),
-      admin.from("background_jobs").select("*", { count: "exact", head: true }).eq("user_id", auth.user.id).eq("job_type", "import").gte("created_at", new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString()),
-      admin.from("ai_generations").select("*", { count: "exact", head: true }).eq("user_id", auth.user.id).gte("created_at", new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString()),
-      admin.from("integrations").select("*", { count: "exact", head: true }).eq("user_id", auth.user.id),
-      admin.from("automation_workflows").select("*", { count: "exact", head: true }).eq("user_id", auth.user.id),
-    ]);
-
-    const { data: profile } = await admin.from("profiles").select("subscription_plan").eq("user_id", auth.user.id).maybeSingle();
-    const plan = profile?.subscription_plan || "free";
-    const limits = PLAN_QUOTA_MAP[plan] || PLAN_QUOTA_MAP.free;
-
-    const usage: Record<string, { current: number; limit: number; percentage: number }> = {};
-    const raw: Record<string, number> = {
-      products: products.count || 0,
-      imports_monthly: imports.count || 0,
-      ai_generations: aiGens.count || 0,
-      stores: stores.count || 0,
-      workflows: workflows.count || 0,
-    };
-
-    for (const [key, current] of Object.entries(raw)) {
-      const limit = limits[key] ?? 0;
-      usage[key] = {
-        current,
-        limit: limit === -1 ? Infinity : limit,
-        percentage: limit === -1 ? 0 : limit > 0 ? Math.min(100, (current / limit) * 100) : 100,
-      };
-    }
-
-    return json({ plan, usage, alerts: Object.entries(usage).filter(([, v]) => v.percentage >= 80).map(([k]) => k) }, 200, reqId);
-  } catch (e: any) {
-    return errorResponse("DB_ERROR", e.message, 500, reqId);
-  }
-}
-
-async function getMonetizationCredits(auth: any, reqId: string) {
-  try {
-    const admin = serviceClient();
-    const { data, error } = await admin.from("credit_addons").select("*").eq("user_id", auth.user.id).eq("status", "active").order("purchased_at", { ascending: false });
-    if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
-
-    const totalRemaining = (data || []).reduce((s: number, a: any) => s + (a.credits_remaining || 0), 0);
-    const totalPurchased = (data || []).reduce((s: number, a: any) => s + (a.credits_purchased || 0), 0);
-
-    return json({ credits: data || [], total_remaining: totalRemaining, total_purchased: totalPurchased }, 200, reqId);
-  } catch (e: any) {
-    return errorResponse("DB_ERROR", e.message, 500, reqId);
-  }
-}
-
-async function getMonetizationHistory(url: URL, auth: any, reqId: string) {
-  try {
-    const admin = serviceClient();
-    const days = parseInt(url.searchParams.get("days") || "30", 10);
-    const since = new Date(Date.now() - days * 86400000).toISOString();
-
-    const { data, error } = await admin.from("consumption_logs").select("*").eq("user_id", auth.user.id).gte("created_at", since).order("created_at", { ascending: false }).limit(500);
-    if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
-
-    // Aggregate by day
-    const byDay: Record<string, { date: string; actions: number; tokens: number; cost: number }> = {};
-    for (const log of data || []) {
-      const day = (log as any).created_at.slice(0, 10);
-      if (!byDay[day]) byDay[day] = { date: day, actions: 0, tokens: 0, cost: 0 };
-      byDay[day].actions += 1;
-      byDay[day].tokens += (log as any).tokens_used || 0;
-      byDay[day].cost += (log as any).cost_usd || 0;
-    }
-
-    // Aggregate by source
-    const bySource: Record<string, number> = {};
-    for (const log of data || []) {
-      const src = (log as any).source || "web";
-      bySource[src] = (bySource[src] || 0) + 1;
-    }
-
-    return json({
-      by_day: Object.values(byDay).sort((a, b) => a.date.localeCompare(b.date)),
-      by_source: bySource,
-      total_actions: (data || []).length,
-    }, 200, reqId);
-  } catch (e: any) {
-    return errorResponse("DB_ERROR", e.message, 500, reqId);
-  }
-}
-
-async function checkPlanGate(req: Request, auth: any, reqId: string) {
-  try {
-    const { resource, action } = await req.json();
-    const admin = serviceClient();
-
-    const { data: profile } = await admin.from("profiles").select("subscription_plan").eq("user_id", auth.user.id).maybeSingle();
-    const plan = profile?.subscription_plan || "free";
-    const limits = PLAN_QUOTA_MAP[plan] || PLAN_QUOTA_MAP.free;
-    const limit = limits[resource];
-
-    if (limit === undefined) return json({ allowed: true, reason: "unknown_resource" }, 200, reqId);
-    if (limit === -1) return json({ allowed: true, reason: "unlimited" }, 200, reqId);
-
-    // Count current usage
-    let currentCount = 0;
-    if (resource === "products") {
-      const { count } = await admin.from("products").select("*", { count: "exact", head: true }).eq("user_id", auth.user.id);
-      currentCount = count || 0;
-    } else if (resource === "ai_generations") {
-      const monthStart = new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString();
-      const { count } = await admin.from("ai_generations").select("*", { count: "exact", head: true }).eq("user_id", auth.user.id).gte("created_at", monthStart);
-      currentCount = count || 0;
-
-      // Also check add-on credits
-      if (currentCount >= limit) {
-        const { data: addons } = await admin.from("credit_addons").select("credits_remaining").eq("user_id", auth.user.id).eq("status", "active");
-        const addonCredits = (addons || []).reduce((s: number, a: any) => s + (a.credits_remaining || 0), 0);
-        if (addonCredits > 0) return json({ allowed: true, reason: "addon_credits", remaining: addonCredits }, 200, reqId);
-      }
-    } else if (resource === "imports_monthly") {
-      const monthStart = new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString();
-      const { count } = await admin.from("background_jobs").select("*", { count: "exact", head: true }).eq("user_id", auth.user.id).eq("job_type", "import").gte("created_at", monthStart);
-      currentCount = count || 0;
-    }
-
-    const allowed = currentCount < limit;
-    return json({
-      allowed,
-      current: currentCount,
-      limit,
-      remaining: Math.max(0, limit - currentCount),
-      reason: allowed ? "within_limits" : "limit_reached",
-      upgrade_needed: !allowed,
-    }, 200, reqId);
-  } catch (e: any) {
-    return errorResponse("DB_ERROR", e.message, 500, reqId);
-  }
-}
-
-// ── Ads Handlers ────────────────────────────────────────────────────────────
-
-async function listAdAccounts(auth: any, reqId: string) {
-  const admin = serviceClient();
-  const { data, error } = await admin.from("ad_accounts").select("*").eq("user_id", auth.user.id);
-  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
-  return json({ items: data || [] }, 200, reqId);
-}
-
-async function createAdAccount(req: Request, auth: any, reqId: string) {
-  const body = await req.json();
-  const admin = serviceClient();
-  const { data, error } = await admin.from("ad_accounts").insert({ ...body, user_id: auth.user.id }).select().single();
-  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
-  return json(data, 201, reqId);
-}
-
-async function updateAdAccount(id: string, req: Request, auth: any, reqId: string) {
-  const body = await req.json();
-  const admin = serviceClient();
-  const { data, error } = await admin.from("ad_accounts").update(body).eq("id", id).eq("user_id", auth.user.id).select().single();
-  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
-  return json(data, 200, reqId);
-}
-
-async function listAdCampaigns(url: URL, auth: any, reqId: string) {
-  const admin = serviceClient();
-  const { data, error } = await admin.from("ad_campaigns").select("*").eq("user_id", auth.user.id).order("created_at", { ascending: false });
-  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
-  return json({ items: data || [] }, 200, reqId);
-}
-
-async function createAdCampaign(req: Request, auth: any, reqId: string) {
-  const body = await req.json();
-  const admin = serviceClient();
-  const { data, error } = await admin.from("ad_campaigns").insert({ ...body, user_id: auth.user.id }).select().single();
-  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
-  return json(data, 201, reqId);
-}
-
-async function updateAdCampaign(id: string, req: Request, auth: any, reqId: string) {
-  const body = await req.json();
-  const admin = serviceClient();
-  const { data, error } = await admin.from("ad_campaigns").update(body).eq("id", id).eq("user_id", auth.user.id).select().single();
-  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
-  return json(data, 200, reqId);
-}
-
-async function deleteAdCampaign(id: string, auth: any, reqId: string) {
-  const admin = serviceClient();
-  const { error } = await admin.from("ad_campaigns").delete().eq("id", id).eq("user_id", auth.user.id);
-  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
-  return json({ success: true }, 200, reqId);
-}
-
-// ── Marketing Campaign CRUD (update/delete) ─────────────────────────────────
-
-async function updateMarketingCampaign(id: string, req: Request, auth: any, reqId: string) {
-  const body = await req.json();
-  const admin = serviceClient();
-  const { data, error } = await admin.from("marketing_campaigns").update({ ...body, updated_at: new Date().toISOString() })
-    .eq("id", id).eq("user_id", auth.user.id).select().single();
-  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
-  return json(data, 200, reqId);
-}
-
-async function deleteMarketingCampaign(id: string, auth: any, reqId: string) {
-  const admin = serviceClient();
-  const { error } = await admin.from("marketing_campaigns").delete().eq("id", id).eq("user_id", auth.user.id);
-  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
-  return json({ success: true }, 200, reqId);
-}
-
-// ── Marketing Automations Handlers ──────────────────────────────────────────
-
-async function listMarketingAutomations(url: URL, auth: any, reqId: string) {
-  const admin = serviceClient();
-  const { data, error } = await admin.from("automated_campaigns").select("*")
-    .eq("user_id", auth.user.id).order("created_at", { ascending: false });
-  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
-  return json({ items: data || [] }, 200, reqId);
-}
-
-async function createMarketingAutomation(req: Request, auth: any, reqId: string) {
-  const body = await req.json();
-  const admin = serviceClient();
-  const { data, error } = await admin.from("automated_campaigns").insert({ ...body, user_id: auth.user.id }).select().single();
-  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
-  return json(data, 201, reqId);
-}
-
-async function updateMarketingAutomation(id: string, req: Request, auth: any, reqId: string) {
-  const body = await req.json();
-  const admin = serviceClient();
-  const { data, error } = await admin.from("automated_campaigns").update({ ...body, updated_at: new Date().toISOString() })
-    .eq("id", id).eq("user_id", auth.user.id).select().single();
-  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
-  return json(data, 200, reqId);
-}
-
-async function toggleMarketingAutomation(id: string, req: Request, auth: any, reqId: string) {
+async function toggleMarketingAutomation(id: string, req: Request, auth: Auth, reqId: string) {
   const body = await req.json();
   const admin = serviceClient();
   const { error } = await admin.from("automated_campaigns").update({ is_active: body.is_active }).eq("id", id).eq("user_id", auth.user.id);
@@ -3751,474 +1171,560 @@ async function toggleMarketingAutomation(id: string, req: Request, auth: any, re
   return json({ success: true }, 200, reqId);
 }
 
-// ── Marketing Dashboard Stats ───────────────────────────────────────────────
+// ── Finance ──────────────────────────────────────────────────────────────────
 
-async function getMarketingDashboardStats(auth: any, reqId: string) {
+async function getFinanceStats(auth: Auth, reqId: string) {
   const admin = serviceClient();
-  const [campaignsRes, automationsRes, segmentsRes] = await Promise.all([
-    admin.from("marketing_campaigns").select("*").eq("user_id", auth.user.id),
-    admin.from("automated_campaigns").select("id, is_active").eq("user_id", auth.user.id),
-    admin.from("marketing_segments").select("id").eq("user_id", auth.user.id),
-  ]);
-  const c = campaignsRes.data || [];
-  const a = automationsRes.data || [];
-  const s = segmentsRes.data || [];
-  const active = c.filter((x: any) => x.status === "active");
-  return json({
-    activeCampaigns: active.length, totalCampaigns: c.length,
-    openRate: 0, clickRate: 0,
-    conversions: c.reduce((sum: number, x: any) => sum + (x.conversions || 0), 0),
-    conversionRate: 0, avgROI: 0,
-    totalRevenue: c.reduce((sum: number, x: any) => sum + (x.revenue || 0), 0),
-    totalSpend: c.reduce((sum: number, x: any) => sum + (x.spent || 0), 0),
-    emailsSent: 0, automationsActive: a.filter((x: any) => x.is_active).length,
-    segmentsCount: s.length, isDemo: c.length === 0,
-  }, 200, reqId);
+  const { data: allOrders } = await admin.from("orders").select("total_amount, status, created_at").eq("user_id", auth.user.id);
+  const orders = allOrders || [];
+  const totalRevenue = orders.reduce((s: number, o: any) => s + (o.total_amount || 0), 0);
+  const totalExpenses = totalRevenue * 0.65;
+  return json({ revenue: { total: totalRevenue }, expenses: { total: totalExpenses }, profit: { net: totalRevenue - totalExpenses, margin: totalRevenue > 0 ? ((totalRevenue - totalExpenses) / totalRevenue) * 100 : 0 } }, 200, reqId);
 }
 
-// ── Business Intelligence / Insights Handlers ───────────────────────────────
+// ── Conversion (simple table list/create) ────────────────────────────────────
 
-async function listInsights(url: URL, auth: any, reqId: string) {
-  const limit = parseInt(url.searchParams.get("limit") ?? "10", 10);
+const conversionTables: Record<string, string> = {
+  bundles: "product_bundles", upsells: "upsell_rules", discounts: "dynamic_discounts",
+  timers: "scarcity_timers", "social-proof": "social_proof_widgets",
+};
+
+async function conversionList(table: string, auth: Auth, reqId: string) {
   const admin = serviceClient();
-  const { data, error } = await admin.from("analytics_insights").select("*")
-    .eq("user_id", auth.user.id).order("created_at", { ascending: false }).limit(limit);
+  const { data, error } = await admin.from(table).select("*").eq("is_active", true);
   if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
   return json({ items: data || [] }, 200, reqId);
 }
 
-async function getInsightMetrics(auth: any, reqId: string) {
+async function conversionCreate(table: string, req: Request, auth: Auth, reqId: string) {
+  const body = await req.json();
   const admin = serviceClient();
-  const { data, error } = await admin.from("analytics_insights").select("*").eq("user_id", auth.user.id);
+  const { data, error } = await admin.from(table).insert({ ...body, user_id: auth.user.id }).select().single();
   if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
+  return json(data, 201, reqId);
+}
+
+async function trackConversionEvent(req: Request, auth: Auth, reqId: string) {
+  const body = await req.json();
+  const admin = serviceClient();
+  const { data, error } = await admin.from("conversion_events").insert({ ...body, user_id: auth.user.id }).select().single();
+  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
+  return json(data, 201, reqId);
+}
+
+async function getConversionAnalytics(auth: Auth, reqId: string) {
+  const admin = serviceClient();
+  const { data: events } = await admin.from("conversion_events").select("*").eq("user_id", auth.user.id).gte("created_at", new Date(Date.now() - 30 * 86400000).toISOString());
+  const totalEvents = events?.length || 0;
+  const totalValue = events?.reduce((s: number, e: any) => s + (e.conversion_value || 0), 0) || 0;
+  return json({ total_events: totalEvents, total_conversion_value: totalValue, average_value: totalEvents > 0 ? totalValue / totalEvents : 0 }, 200, reqId);
+}
+
+// ── Advanced Analytics ───────────────────────────────────────────────────────
+
+async function listPerformanceMetrics(auth: Auth, reqId: string) {
+  const admin = serviceClient();
+  const { data, error } = await admin.from("analytics_insights").select("id, metric_name, metric_value, metric_type, recorded_at").eq("user_id", auth.user.id).order("recorded_at", { ascending: false }).limit(20);
+  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
+  return json({ items: data || [] }, 200, reqId);
+}
+
+async function listAdvancedReports(auth: Auth, reqId: string) {
+  const admin = serviceClient();
+  const { data, error } = await admin.from("advanced_reports").select("id, report_name, report_type, status, last_generated_at, report_data").eq("user_id", auth.user.id).order("last_generated_at", { ascending: false }).limit(20);
+  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
+  return json({ items: data || [] }, 200, reqId);
+}
+
+async function generateAdvancedReport(req: Request, auth: Auth, reqId: string) {
+  const body = await req.json();
+  const admin = serviceClient();
+  const { data, error } = await admin.from("advanced_reports").insert({ user_id: auth.user.id, report_name: `Rapport ${body.reportType}`, report_type: body.reportType, status: "generating", report_data: body.config }).select().single();
+  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
+  return json(data, 201, reqId);
+}
+
+async function listPredictiveAnalytics(auth: Auth, reqId: string) {
+  const admin = serviceClient();
+  const { data, error } = await admin.from("analytics_insights").select("id, prediction_type, confidence_score, predictions").eq("user_id", auth.user.id).not("prediction_type", "is", null).order("created_at", { ascending: false }).limit(10);
+  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
+  return json({ items: data || [] }, 200, reqId);
+}
+
+async function runPredictiveAnalysis(auth: Auth, reqId: string) {
+  const admin = serviceClient();
+  const { data, error } = await admin.from("analytics_insights").insert({ user_id: auth.user.id, metric_name: "predictive_analysis", metric_value: Math.random() * 100, prediction_type: "revenue_forecast", confidence_score: 0.85, predictions: { next_week: Math.random() * 10000, trend: "increasing" } }).select().single();
+  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
+  return json(data, 201, reqId);
+}
+
+async function listABTests(auth: Auth, reqId: string) {
+  const admin = serviceClient();
+  const { data, error } = await admin.from("ab_test_variants").select("id, test_name, variant_name, is_winner").eq("user_id", auth.user.id).order("created_at", { ascending: false }).limit(20);
+  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
+  const testsMap = new Map();
+  (data || []).forEach((d: any) => { if (!testsMap.has(d.test_name)) testsMap.set(d.test_name, { id: d.id, experiment_name: d.test_name, status: d.is_winner ? "completed" : "running" }); });
+  return json({ items: Array.from(testsMap.values()) }, 200, reqId);
+}
+
+async function createABTest(req: Request, auth: Auth, reqId: string) {
+  const body = await req.json();
+  const admin = serviceClient();
+  const { data, error } = await admin.from("ab_test_variants").insert({ user_id: auth.user.id, test_name: body.experimentName, variant_name: "control", traffic_allocation: 50 }).select().single();
+  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
+  return json(data, 201, reqId);
+}
+
+// ── Promotions ───────────────────────────────────────────────────────────────
+
+async function getPromotionStats(auth: Auth, reqId: string) {
+  const admin = serviceClient();
+  const { data: c } = await admin.from("promotion_campaigns").select("*").eq("user_id", auth.user.id);
+  const { data: r } = await admin.from("promotion_automation_rules").select("*").eq("user_id", auth.user.id);
+  return json({ active_campaigns: (c || []).filter((x: any) => x.status === "active").length, automation_rules: (r || []).filter((x: any) => x.is_active).length }, 200, reqId);
+}
+
+async function togglePromotionRule(id: string, req: Request, auth: Auth, reqId: string) {
+  const body = await req.json();
+  const admin = serviceClient();
+  const { error } = await admin.from("promotion_automation_rules").update({ is_active: body.is_active }).eq("id", id).eq("user_id", auth.user.id);
+  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
+  return json({ success: true }, 200, reqId);
+}
+
+// ── Business Intelligence ────────────────────────────────────────────────────
+
+async function listInsights(url: URL, auth: Auth, reqId: string) {
+  const limit = parseInt(url.searchParams.get("limit") ?? "10", 10);
+  const admin = serviceClient();
+  const { data, error } = await admin.from("analytics_insights").select("*").eq("user_id", auth.user.id).order("created_at", { ascending: false }).limit(limit);
+  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
+  return json({ items: data || [] }, 200, reqId);
+}
+
+async function getInsightMetrics(auth: Auth, reqId: string) {
+  const admin = serviceClient();
+  const { data } = await admin.from("analytics_insights").select("*").eq("user_id", auth.user.id);
   const d = data || [];
-  return json({
-    total: d.length,
-    critical: d.filter((x: any) => x.trend === "critical").length,
-    acknowledged: d.filter((x: any) => x.metadata && typeof x.metadata === "object" && (x.metadata as any).acknowledged).length,
-  }, 200, reqId);
+  return json({ total: d.length, critical: d.filter((x: any) => x.trend === "critical").length }, 200, reqId);
 }
 
-async function acknowledgeInsight(id: string, auth: any, reqId: string) {
+async function acknowledgeInsight(id: string, auth: Auth, reqId: string) {
   const admin = serviceClient();
-  const { error } = await admin.from("analytics_insights")
-    .update({ metadata: { acknowledged: true, acknowledged_at: new Date().toISOString() } })
-    .eq("id", id).eq("user_id", auth.user.id);
-  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
+  await admin.from("analytics_insights").update({ metadata: { acknowledged: true, acknowledged_at: new Date().toISOString() } }).eq("id", id).eq("user_id", auth.user.id);
   return json({ success: true }, 200, reqId);
 }
 
-async function dismissInsight(id: string, auth: any, reqId: string) {
+async function dismissInsight(id: string, auth: Auth, reqId: string) {
   const admin = serviceClient();
-  const { error } = await admin.from("analytics_insights").delete().eq("id", id).eq("user_id", auth.user.id);
-  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
+  await admin.from("analytics_insights").delete().eq("id", id).eq("user_id", auth.user.id);
   return json({ success: true }, 200, reqId);
+}
+
+// ── Customer Behavior ────────────────────────────────────────────────────────
+
+async function trackProductView(req: Request, auth: Auth, reqId: string) {
+  const body = await req.json();
+  const admin = serviceClient();
+  const { data, error } = await admin.from("product_events").insert({ user_id: auth.user.id, product_id: body.productId, event_type: "view", metadata: { source: body.source || "catalog" } }).select().single();
+  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
+  return json(data, 201, reqId);
+}
+
+async function compareSupplierPrices(req: Request, auth: Auth, reqId: string) {
+  const body = await req.json();
+  const admin = serviceClient();
+  const { data: product } = await admin.from("products").select("*").eq("id", body.productId).single();
+  const { data: suppliers } = await admin.from("suppliers").select("*").limit(10);
+  return json({ product, suppliers: suppliers || [], comparison: [] }, 200, reqId);
+}
+
+// ── Advanced AI ──────────────────────────────────────────────────────────────
+
+async function aiCallGateway(systemPrompt: string, userPrompt: string, reqId: string) {
+  const apiKey = Deno.env.get("LOVABLE_API_KEY");
+  if (!apiKey) return errorResponse("CONFIG_ERROR", "LOVABLE_API_KEY not configured", 500, reqId);
+  const resp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    method: "POST", headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
+    body: JSON.stringify({ model: "google/gemini-2.5-flash", messages: [{ role: "system", content: systemPrompt }, { role: "user", content: userPrompt }], temperature: 0.4 }),
+  });
+  if (!resp.ok) {
+    if (resp.status === 429) return errorResponse("RATE_LIMITED", "AI rate limited", 429, reqId);
+    if (resp.status === 402) return errorResponse("CREDITS_EXHAUSTED", "AI credits exhausted", 402, reqId);
+    return errorResponse("AI_ERROR", `AI gateway error ${resp.status}`, 500, reqId);
+  }
+  const data = await resp.json();
+  const content = data.choices?.[0]?.message?.content ?? "";
+  const jsonMatch = content.match(/\{[\s\S]*\}/);
+  if (!jsonMatch) return errorResponse("AI_PARSE_ERROR", "No valid JSON in AI response", 500, reqId);
+  return JSON.parse(jsonMatch[0]);
+}
+
+async function aiPricingSuggestions(req: Request, auth: Auth, reqId: string) {
+  const body = await req.json();
+  const admin = serviceClient();
+  const { data: products } = await admin.from("products").select("title, price, cost_price, category").eq("user_id", auth.user.id).limit(20);
+  const result = await aiCallGateway("Expert pricing e-commerce. JSON only.", `Analyse ces produits et suggère des prix optimaux:\n${JSON.stringify(products)}\nRetourne: {"suggestions":[{"product":"...","current_price":0,"suggested_price":0,"reason":"..."}]}`, reqId);
+  if (result instanceof Response) return result;
+  return json(result, 200, reqId);
+}
+
+async function aiTrendingProducts(url: URL, auth: Auth, reqId: string) {
+  const admin = serviceClient();
+  const thirtyDaysAgo = new Date(Date.now() - 30 * 86400000).toISOString();
+  const sevenDaysAgo = new Date(Date.now() - 7 * 86400000).toISOString();
+  const { data: recentOrders } = await admin.from("order_items").select("product_id, quantity").eq("user_id", auth.user.id).gte("created_at", sevenDaysAgo);
+  const { data: olderOrders } = await admin.from("order_items").select("product_id, quantity").eq("user_id", auth.user.id).gte("created_at", thirtyDaysAgo).lt("created_at", sevenDaysAgo);
+  const recentMap: Record<string, number> = {}; const olderMap: Record<string, number> = {};
+  for (const o of recentOrders || []) recentMap[o.product_id] = (recentMap[o.product_id] || 0) + (o.quantity || 1);
+  for (const o of olderOrders || []) olderMap[o.product_id] = (olderMap[o.product_id] || 0) + (o.quantity || 1);
+  const productIds = [...new Set([...Object.keys(recentMap), ...Object.keys(olderMap)])].slice(0, 20);
+  if (productIds.length === 0) return json({ trending: [] }, 200, reqId);
+  const { data: products } = await admin.from("products").select("id, title, price, category").in("id", productIds);
+  const trending = (products || []).map((p: any) => {
+    const recent = recentMap[p.id] || 0; const older = olderMap[p.id] || 0;
+    const velocity = older > 0 ? ((recent - older / 3.29) / (older / 3.29)) * 100 : recent > 0 ? 100 : 0;
+    return { ...p, recent_sales: recent, older_sales: older, velocity: Math.round(velocity) };
+  }).sort((a: any, b: any) => b.velocity - a.velocity);
+  return json({ trending }, 200, reqId);
+}
+
+async function aiPerformanceAnalysis(req: Request, auth: Auth, reqId: string) {
+  const admin = serviceClient();
+  const [{ data: orders }, { data: products }] = await Promise.all([
+    admin.from("orders").select("total_amount, status").eq("user_id", auth.user.id),
+    admin.from("products").select("id, status, price").eq("user_id", auth.user.id),
+  ]);
+  const totalRevenue = (orders || []).reduce((s: number, o: any) => s + (o.total_amount || 0), 0);
+  const result = await aiCallGateway("Expert business analyst. JSON only.",
+    `Analyse: ${(orders || []).length} commandes, ${totalRevenue}€ CA, ${(products || []).length} produits.\nRetourne: {"score":0,"swot":{"strengths":[],"weaknesses":[],"opportunities":[],"threats":[]},"actions":[{"title":"...","priority":"high|medium|low","impact":"..."}]}`, reqId);
+  if (result instanceof Response) return result;
+  return json(result, 200, reqId);
+}
+
+async function aiBusinessSummary(auth: Auth, reqId: string) {
+  const admin = serviceClient();
+  const [{ count: orderCount }, { count: productCount }, { count: customerCount }] = await Promise.all([
+    admin.from("orders").select("*", { count: "exact", head: true }).eq("user_id", auth.user.id),
+    admin.from("products").select("*", { count: "exact", head: true }).eq("user_id", auth.user.id),
+    admin.from("customers").select("*", { count: "exact", head: true }).eq("user_id", auth.user.id),
+  ]);
+  return json({ summary: { orders: orderCount || 0, products: productCount || 0, customers: customerCount || 0, health_score: Math.min(100, (orderCount || 0) * 2 + (productCount || 0) * 3) } }, 200, reqId);
+}
+
+// ── Monetization ─────────────────────────────────────────────────────────────
+
+const PLAN_QUOTA_MAP: Record<string, Record<string, number>> = {
+  free: { products: 50, imports_monthly: 5, ai_generations: 20, stores: 1, workflows: 2 },
+  standard: { products: 500, imports_monthly: 50, ai_generations: 200, stores: 3, workflows: 10 },
+  pro: { products: 5000, imports_monthly: 500, ai_generations: 2000, stores: 10, workflows: 50 },
+  ultra_pro: { products: -1, imports_monthly: -1, ai_generations: -1, stores: -1, workflows: -1 },
+};
+
+async function getMonetizationPlan(auth: Auth, reqId: string) {
+  const admin = serviceClient();
+  const { data: profile } = await admin.from("profiles").select("subscription_plan").eq("user_id", auth.user.id).maybeSingle();
+  const plan = profile?.subscription_plan || "free";
+  return json({ plan, limits: PLAN_QUOTA_MAP[plan] || PLAN_QUOTA_MAP.free }, 200, reqId);
+}
+
+async function getMonetizationUsage(auth: Auth, reqId: string) {
+  const admin = serviceClient();
+  const monthStart = new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString();
+  const [products, imports, aiGens, stores, workflows] = await Promise.all([
+    admin.from("products").select("*", { count: "exact", head: true }).eq("user_id", auth.user.id),
+    admin.from("background_jobs").select("*", { count: "exact", head: true }).eq("user_id", auth.user.id).eq("job_type", "import").gte("created_at", monthStart),
+    admin.from("ai_generations").select("*", { count: "exact", head: true }).eq("user_id", auth.user.id).gte("created_at", monthStart),
+    admin.from("integrations").select("*", { count: "exact", head: true }).eq("user_id", auth.user.id),
+    admin.from("automation_workflows").select("*", { count: "exact", head: true }).eq("user_id", auth.user.id),
+  ]);
+  const { data: profile } = await admin.from("profiles").select("subscription_plan").eq("user_id", auth.user.id).maybeSingle();
+  const plan = profile?.subscription_plan || "free";
+  const limits = PLAN_QUOTA_MAP[plan] || PLAN_QUOTA_MAP.free;
+  const raw: Record<string, number> = { products: products.count || 0, imports_monthly: imports.count || 0, ai_generations: aiGens.count || 0, stores: stores.count || 0, workflows: workflows.count || 0 };
+  const usage: Record<string, any> = {};
+  for (const [key, current] of Object.entries(raw)) {
+    const limit = limits[key] ?? 0;
+    usage[key] = { current, limit: limit === -1 ? Infinity : limit, percentage: limit === -1 ? 0 : limit > 0 ? Math.min(100, (current / limit) * 100) : 100 };
+  }
+  return json({ plan, usage, alerts: Object.entries(usage).filter(([, v]) => v.percentage >= 80).map(([k]) => k) }, 200, reqId);
+}
+
+async function getMonetizationCredits(auth: Auth, reqId: string) {
+  const admin = serviceClient();
+  const { data, error } = await admin.from("credit_addons").select("*").eq("user_id", auth.user.id).eq("status", "active");
+  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
+  const totalRemaining = (data || []).reduce((s: number, a: any) => s + (a.credits_remaining || 0), 0);
+  return json({ credits: data || [], total_remaining: totalRemaining }, 200, reqId);
+}
+
+async function getMonetizationHistory(url: URL, auth: Auth, reqId: string) {
+  const admin = serviceClient();
+  const days = parseInt(url.searchParams.get("days") || "30", 10);
+  const { data, error } = await admin.from("consumption_logs").select("*").eq("user_id", auth.user.id).gte("created_at", new Date(Date.now() - days * 86400000).toISOString()).order("created_at", { ascending: false }).limit(500);
+  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
+  const byDay: Record<string, { date: string; actions: number; tokens: number; cost: number }> = {};
+  for (const log of data || []) {
+    const day = (log as any).created_at.slice(0, 10);
+    if (!byDay[day]) byDay[day] = { date: day, actions: 0, tokens: 0, cost: 0 };
+    byDay[day].actions += 1; byDay[day].tokens += (log as any).tokens_used || 0; byDay[day].cost += (log as any).cost_usd || 0;
+  }
+  return json({ by_day: Object.values(byDay).sort((a, b) => a.date.localeCompare(b.date)), total_actions: (data || []).length }, 200, reqId);
+}
+
+async function checkPlanGate(req: Request, auth: Auth, reqId: string) {
+  const { resource } = await req.json();
+  const admin = serviceClient();
+  const { data: profile } = await admin.from("profiles").select("subscription_plan").eq("user_id", auth.user.id).maybeSingle();
+  const plan = profile?.subscription_plan || "free";
+  const limits = PLAN_QUOTA_MAP[plan] || PLAN_QUOTA_MAP.free;
+  const limit = limits[resource];
+  if (limit === undefined) return json({ allowed: true, reason: "unknown_resource" }, 200, reqId);
+  if (limit === -1) return json({ allowed: true, reason: "unlimited" }, 200, reqId);
+  let currentCount = 0;
+  const monthStart = new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString();
+  if (resource === "products") { const { count } = await admin.from("products").select("*", { count: "exact", head: true }).eq("user_id", auth.user.id); currentCount = count || 0; }
+  else if (resource === "ai_generations") { const { count } = await admin.from("ai_generations").select("*", { count: "exact", head: true }).eq("user_id", auth.user.id).gte("created_at", monthStart); currentCount = count || 0; }
+  else if (resource === "imports_monthly") { const { count } = await admin.from("background_jobs").select("*", { count: "exact", head: true }).eq("user_id", auth.user.id).eq("job_type", "import").gte("created_at", monthStart); currentCount = count || 0; }
+  const allowed = currentCount < limit;
+  return json({ allowed, current: currentCount, limit, remaining: Math.max(0, limit - currentCount), reason: allowed ? "within_limits" : "limit_reached", upgrade_needed: !allowed }, 200, reqId);
 }
 
 // ── Router ───────────────────────────────────────────────────────────────────
 
 Deno.serve(async (req) => {
-  if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
-  }
+  if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   const reqId = requestId(req);
   const url = new URL(req.url);
-  const fullPath = url.pathname;
-  const apiPath = fullPath.replace(/^\/api-v1/, "") || "/";
+  const apiPath = url.pathname.replace(/^\/api-v1/, "") || "/";
 
   try {
-    // ── Health (public) ───────────────────────────────────────
     if (req.method === "GET" && (apiPath === "/v1/health" || apiPath === "/v1")) {
-      return json({ status: "ok", version: "1.1.0", timestamp: new Date().toISOString() }, 200, reqId);
+      return json({ status: "ok", version: "1.2.0", timestamp: new Date().toISOString() }, 200, reqId);
     }
 
     const auth = await authenticate(req);
     if (!auth) return errorResponse("UNAUTHORIZED", "Valid Bearer token required", 401, reqId);
 
-    // ── Rate Limiting ─────────────────────────────────────────────
     const rateLimitEndpoint = apiPath.split("/").slice(0, 3).join("/");
-    if (!checkRateLimit(auth.user.id, rateLimitEndpoint)) {
-      return rateLimitResponse(reqId);
+    if (!checkRateLimit(auth.user.id, rateLimitEndpoint)) return errorResponse("RATE_LIMITED", "Too many requests", 429, reqId);
+
+    const m = req.method;
+    let p: Record<string, string> | null;
+
+    // ── Products ────────────────────────────────────────────────
+    if (m === "GET" && matchRoute("/v1/products/stats", apiPath)) return await getProductStats(auth, reqId);
+    if (m === "GET" && matchRoute("/v1/products", apiPath)) return await listProducts(url, auth, reqId);
+    if (m === "POST" && matchRoute("/v1/products", apiPath)) return await createProduct(req, auth, reqId);
+    if (m === "POST" && matchRoute("/v1/products/bulk", apiPath)) return await bulkUpdateProducts(req, auth, reqId);
+
+    p = matchRoute("/v1/products/:id/seo", apiPath); if (m === "GET" && p) return await getProductSeo(p.id, auth, reqId);
+    p = matchRoute("/v1/products/:id/optimize", apiPath); if (m === "POST" && p) return await createAiEnrichment(req, auth, reqId);
+    p = matchRoute("/v1/products/:id/metrics", apiPath); if (m === "GET" && p) return await getProductMetrics(p.id, url, auth, reqId);
+    p = matchRoute("/v1/products/:id/stock-history", apiPath); if (m === "GET" && p) return await getProductStockHistory(p.id, url, auth, reqId);
+
+    p = matchRoute("/v1/products/:id", apiPath);
+    if (p && p.id !== "stats" && p.id !== "drafts" && p.id !== "bulk") {
+      if (m === "GET") return await getProduct(p.id, auth, reqId);
+      if (m === "PUT") return await updateProduct(p.id, req, auth, reqId);
+      if (m === "DELETE") return await deleteProduct(p.id, auth, reqId);
     }
 
-    // ── Products CRUD ──────────────────────────────────────────
-    if (req.method === "GET" && matchRoute("/v1/products/stats", apiPath)) return await getProductStats(auth, reqId);
-    if (req.method === "GET" && matchRoute("/v1/products", apiPath)) return await listProducts(url, auth, reqId);
-    if (req.method === "POST" && matchRoute("/v1/products", apiPath)) return await createProduct(req, auth, reqId);
-    if (req.method === "POST" && matchRoute("/v1/products/bulk", apiPath)) return await bulkUpdateProducts(req, auth, reqId);
+    // ── Import Jobs ─────────────────────────────────────────────
+    if (m === "POST" && matchRoute("/v1/import/jobs", apiPath)) return await createImportJob(req, auth, reqId);
+    if (m === "GET" && matchRoute("/v1/import/jobs", apiPath)) return await listImportJobs(url, auth, reqId);
+    p = matchRoute("/v1/import/jobs/:id/items", apiPath); if (m === "GET" && p) return await getJobItems(p.id, url, auth, reqId);
+    for (const action of ["retry", "cancel", "resume", "replay"]) { p = matchRoute(`/v1/import/jobs/:id/${action}`, apiPath); if (m === "POST" && p) return await jobAction(action, p.id, req, auth, reqId); }
+    p = matchRoute("/v1/import/jobs/:id", apiPath); if (m === "GET" && p) return await getImportJob(p.id, auth, reqId);
 
-    // ── Product sub-resources (must be before generic :productId) ──
-    const productSeoMatch = matchRoute("/v1/products/:productId/seo", apiPath);
-    if (req.method === "GET" && productSeoMatch) return await getProductSeo(productSeoMatch.params.productId, auth, reqId);
+    // ── Dedup & Enrich ──────────────────────────────────────────
+    if (m === "POST" && matchRoute("/v1/import/deduplicate/scan", apiPath)) return await proxyEdgeFunction("detect-duplicates", req, auth, reqId, { action: "scan", threshold: 0.75 });
+    if (m === "POST" && matchRoute("/v1/import/deduplicate/merge", apiPath)) return await proxyEdgeFunction("detect-duplicates", req, auth, reqId);
+    if (m === "POST" && matchRoute("/v1/import/enrich", apiPath)) return await proxyEdgeFunction("ai-enrich-import", req, auth, reqId);
 
-    const productOptimizeMatch = matchRoute("/v1/products/:productId/optimize", apiPath);
-    if (req.method === "POST" && productOptimizeMatch) return await optimizeProduct(productOptimizeMatch.params.productId, req, auth, reqId);
-
-    const productMetricsMatch = matchRoute("/v1/products/:productId/metrics", apiPath);
-    if (req.method === "GET" && productMetricsMatch) return await getProductMetrics(productMetricsMatch.params.productId, url, auth, reqId);
-
-    const productStockMatch = matchRoute("/v1/products/:productId/stock-history", apiPath);
-    if (req.method === "GET" && productStockMatch) return await getProductStockHistory(productStockMatch.params.productId, url, auth, reqId);
-
-    const productMatch = matchRoute("/v1/products/:productId", apiPath);
-    if (productMatch && productMatch.params.productId !== "drafts" && productMatch.params.productId !== "stats" && productMatch.params.productId !== "bulk") {
-      if (req.method === "GET") return await getProduct(productMatch.params.productId, auth, reqId);
-      if (req.method === "PUT") return await updateProduct(productMatch.params.productId, req, auth, reqId);
-      if (req.method === "DELETE") return await deleteProduct(productMatch.params.productId, auth, reqId);
-    }
-
-    // ── Import Jobs ────────────────────────────────────────────
-    if (req.method === "POST" && matchRoute("/v1/import/jobs", apiPath)) return await createImportJob(req, auth, reqId);
-    if (req.method === "GET" && matchRoute("/v1/import/jobs", apiPath)) return await listImportJobs(url, auth, reqId);
-
-    const jobMatch = matchRoute("/v1/import/jobs/:jobId", apiPath);
-    if (req.method === "GET" && jobMatch) return await getImportJob(jobMatch.params.jobId, auth, reqId);
-
-    const itemsMatch = matchRoute("/v1/import/jobs/:jobId/items", apiPath);
-    if (req.method === "GET" && itemsMatch) return await getJobItems(itemsMatch.params.jobId, url, auth, reqId);
-
-    const retryMatch = matchRoute("/v1/import/jobs/:jobId/retry", apiPath);
-    if (req.method === "POST" && retryMatch) return await retryJob(retryMatch.params.jobId, req, auth, reqId);
-
-    const cancelMatch = matchRoute("/v1/import/jobs/:jobId/cancel", apiPath);
-    if (req.method === "POST" && cancelMatch) return await cancelJob(cancelMatch.params.jobId, auth, reqId);
-
-    const resumeMatch = matchRoute("/v1/import/jobs/:jobId/resume", apiPath);
-    if (req.method === "POST" && resumeMatch) return await resumeJob(resumeMatch.params.jobId, auth, reqId);
-
-    const replayMatch = matchRoute("/v1/import/jobs/:jobId/replay", apiPath);
-    if (req.method === "POST" && replayMatch) return await replayJob(replayMatch.params.jobId, auth, reqId);
-
-    // ── Deduplication ──────────────────────────────────────────
-    if (req.method === "POST" && matchRoute("/v1/import/deduplicate/scan", apiPath)) return await deduplicateScan(req, auth, reqId);
-    if (req.method === "POST" && matchRoute("/v1/import/deduplicate/merge", apiPath)) return await deduplicateMerge(req, auth, reqId);
-
-    // ── Post-import enrichment ──────────────────────────────────
-    if (req.method === "POST" && matchRoute("/v1/import/jobs/enrich", apiPath)) return await postImportEnrich(req, auth, reqId);
-
-    // ── Presets ─────────────────────────────────────────────────
-    if (req.method === "POST" && matchRoute("/v1/import/presets/import", apiPath)) return await importPreset(req, auth, reqId);
-    if (req.method === "GET" && matchRoute("/v1/import/presets", apiPath)) return await listPresets(url, auth, reqId);
-    if (req.method === "POST" && matchRoute("/v1/import/presets", apiPath)) return await createPreset(req, auth, reqId);
-
-    const presetMatch = matchRoute("/v1/import/presets/:presetId", apiPath);
-    if (req.method === "GET" && presetMatch) return await getPreset(presetMatch.params.presetId, auth, reqId);
-    if (req.method === "PUT" && presetMatch) return await updatePreset(presetMatch.params.presetId, req, auth, reqId);
-    if (req.method === "DELETE" && presetMatch) return await deletePreset(presetMatch.params.presetId, auth, reqId);
-
-    const defaultMatch = matchRoute("/v1/import/presets/:presetId/default", apiPath);
-    if (req.method === "POST" && defaultMatch) return await setPresetDefault(defaultMatch.params.presetId, req, auth, reqId);
-
-    const exportMatch = matchRoute("/v1/import/presets/:presetId/export", apiPath);
-    if (req.method === "GET" && exportMatch) return await exportPreset(exportMatch.params.presetId, auth, reqId);
+    // ── Presets ──────────────────────────────────────────────────
+    if (m === "POST" && matchRoute("/v1/import/presets/import", apiPath)) return await importPreset(req, auth, reqId);
+    if (m === "GET" && matchRoute("/v1/import/presets", apiPath)) return await listPresets(url, auth, reqId);
+    if (m === "POST" && matchRoute("/v1/import/presets", apiPath)) return await createPreset(req, auth, reqId);
+    p = matchRoute("/v1/import/presets/:id/default", apiPath); if (m === "POST" && p) return await presetAction("default", p.id, req, auth, reqId);
+    p = matchRoute("/v1/import/presets/:id/export", apiPath); if (m === "GET" && p) return await presetAction("export", p.id, req, auth, reqId);
+    p = matchRoute("/v1/import/presets/:id", apiPath);
+    if (p) { if (m === "GET") return await presetAction("get", p.id, req, auth, reqId); if (m === "PUT") return await presetAction("update", p.id, req, auth, reqId); if (m === "DELETE") return await presetAction("delete", p.id, req, auth, reqId); }
 
     // ── CSV Uploads ─────────────────────────────────────────────
-    if (req.method === "POST" && matchRoute("/v1/import/csv/uploads", apiPath)) return await createUploadSession(req, auth, reqId);
-
-    const analyzeMatch = matchRoute("/v1/import/csv/uploads/:uploadId/analyze", apiPath);
-    if (req.method === "POST" && analyzeMatch) return await analyzeUpload(analyzeMatch.params.uploadId, req, auth, reqId);
+    if (m === "POST" && matchRoute("/v1/import/csv/uploads", apiPath)) return await createUploadSession(req, auth, reqId);
+    p = matchRoute("/v1/import/csv/uploads/:id/analyze", apiPath); if (m === "POST" && p) return await analyzeUpload(p.id, req, auth, reqId);
 
     // ── AI Enrichments ──────────────────────────────────────────
-    if (req.method === "POST" && matchRoute("/v1/ai/enrichments", apiPath)) return await createAiEnrichment(req, auth, reqId);
+    if (m === "POST" && matchRoute("/v1/ai/enrichments", apiPath)) return await createAiEnrichment(req, auth, reqId);
+    p = matchRoute("/v1/ai/enrichments/:id/items", apiPath); if (m === "GET" && p) return await getJobItems(p.id, url, auth, reqId);
+    p = matchRoute("/v1/ai/enrichments/:id", apiPath); if (m === "GET" && p) { const admin = serviceClient(); const { data } = await admin.from("background_jobs").select("*").eq("id", p.id).eq("user_id", auth.user.id).eq("job_type", "ai_enrichment").single(); if (!data) return errorResponse("NOT_FOUND", "Job not found", 404, reqId); return json(mapJobRow(data), 200, reqId); }
 
-    const aiJobMatch = matchRoute("/v1/ai/enrichments/:jobId", apiPath);
-    if (req.method === "GET" && aiJobMatch) return await getAiEnrichment(aiJobMatch.params.jobId, auth, reqId);
+    // ── Drafts ───────────────────────────────────────────────────
+    if (m === "GET" && matchRoute("/v1/products/drafts", apiPath)) return await listDrafts(url, auth, reqId);
+    if (m === "POST" && matchRoute("/v1/products/drafts/publish", apiPath)) return await publishDrafts(req, auth, reqId);
 
-    const aiItemsMatch = matchRoute("/v1/ai/enrichments/:jobId/items", apiPath);
-    if (req.method === "GET" && aiItemsMatch) return await getAiEnrichmentItems(aiItemsMatch.params.jobId, url, auth, reqId);
+    // ── SEO ──────────────────────────────────────────────────────
+    if (m === "POST" && matchRoute("/v1/seo/audit", apiPath)) return await createSeoAudit(req, auth, reqId);
+    if (m === "GET" && matchRoute("/v1/seo/audits", apiPath)) return await listSeoAudits(url, auth, reqId);
+    p = matchRoute("/v1/seo/audits/:id", apiPath); if (m === "GET" && p) return await getSeoAudit(p.id, auth, reqId);
+    if (m === "POST" && matchRoute("/v1/seo/generate", apiPath)) return await createSeoGenerate(req, auth, reqId);
+    p = matchRoute("/v1/seo/generate/:id", apiPath); if (m === "GET" && p) return await getSeoGeneration(p.id, auth, reqId);
+    if (m === "POST" && matchRoute("/v1/seo/apply", apiPath)) return await applySeoContent(req, auth, reqId);
+    if (m === "POST" && matchRoute("/v1/seo/products/audit", apiPath)) return await auditProductSeo(req, auth, reqId);
+    if (m === "GET" && matchRoute("/v1/seo/products/scores", apiPath)) return await listProductSeoScores(url, auth, reqId);
+    p = matchRoute("/v1/seo/products/:id/score", apiPath); if (m === "GET" && p) return await getProductSeo(p.id, auth, reqId);
+    p = matchRoute("/v1/seo/products/:id/history", apiPath); if (m === "GET" && p) { const admin = serviceClient(); const { data } = await admin.from("product_seo_versions").select("*").eq("user_id", auth.user.id).eq("product_id", p.id).order("created_at", { ascending: false }).limit(50); return json({ items: data ?? [] }, 200, reqId); }
 
-    // ── Drafts / Publish ────────────────────────────────────────
-    if (req.method === "GET" && matchRoute("/v1/products/drafts", apiPath)) return await listDrafts(url, auth, reqId);
-    if (req.method === "POST" && matchRoute("/v1/products/drafts/publish", apiPath)) return await publishDrafts(req, auth, reqId);
+    // ── Misc data endpoints ─────────────────────────────────────
+    if (m === "GET" && matchRoute("/v1/inventory/locations", apiPath)) return await listInventoryLocations(auth, reqId);
+    if (m === "GET" && matchRoute("/v1/inventory/levels", apiPath)) return await listInventoryLevels(url, auth, reqId);
+    if (m === "POST" && matchRoute("/v1/inventory/levels", apiPath)) return await upsertInventoryLevel(req, auth, reqId);
+    if (m === "GET" && matchRoute("/v1/prices", apiPath)) return await listProductPrices(url, auth, reqId);
+    if (m === "POST" && matchRoute("/v1/prices", apiPath)) return await upsertProductPrice(req, auth, reqId);
+    if (m === "GET" && matchRoute("/v1/events", apiPath)) return await listProductEvents(url, auth, reqId);
+    if (m === "GET" && matchRoute("/v1/product-seo", apiPath)) return await getProductSeoData(url, auth, reqId);
+    if (m === "POST" && matchRoute("/v1/product-seo", apiPath)) return await upsertProductSeoData(req, auth, reqId);
+    if (m === "GET" && matchRoute("/v1/product-seo/versions", apiPath)) return await listProductSeoVersions(url, auth, reqId);
+    if (m === "GET" && matchRoute("/v1/store-products", apiPath)) return await listStoreProducts(url, auth, reqId);
+    if (m === "POST" && matchRoute("/v1/store-products", apiPath)) return await upsertStoreProduct(req, auth, reqId);
+    if (m === "GET" && matchRoute("/v1/ai/generations", apiPath)) return await listAiGenerations(url, auth, reqId);
+    if (m === "POST" && matchRoute("/v1/ai/generations", apiPath)) return await createAiGeneration(req, auth, reqId);
 
-    // ── SEO ────────────────────────────────────────────────────
-    if (req.method === "POST" && matchRoute("/v1/seo/audit", apiPath)) return await createSeoAudit(req, auth, reqId);
-    if (req.method === "GET" && matchRoute("/v1/seo/audits", apiPath)) return await listSeoAudits(url, auth, reqId);
+    // ── Orders & Customers ──────────────────────────────────────
+    if (m === "GET" && matchRoute("/v1/orders/stats", apiPath)) return await getOrderStats(auth, reqId);
+    if (m === "GET" && matchRoute("/v1/orders", apiPath)) return await listOrders(url, auth, reqId);
+    if (m === "POST" && matchRoute("/v1/orders", apiPath)) return await createOrder(req, auth, reqId);
+    p = matchRoute("/v1/orders/:id", apiPath); if (p && p.id !== "stats") { if (m === "GET") return await getOrder(p.id, auth, reqId); if (m === "PUT") return await updateOrder(p.id, req, auth, reqId); if (m === "DELETE") return await deleteOrder(p.id, auth, reqId); }
 
-    const seoAuditMatch = matchRoute("/v1/seo/audits/:auditId", apiPath);
-    if (req.method === "GET" && seoAuditMatch) return await getSeoAudit(seoAuditMatch.params.auditId, auth, reqId);
-
-    if (req.method === "POST" && matchRoute("/v1/seo/generate", apiPath)) return await createSeoGenerate(req, auth, reqId);
-
-    const seoGenMatch = matchRoute("/v1/seo/generate/:jobId", apiPath);
-    if (req.method === "GET" && seoGenMatch) return await getSeoGeneration(seoGenMatch.params.jobId, auth, reqId);
-
-    if (req.method === "POST" && matchRoute("/v1/seo/apply", apiPath)) return await applySeoContent(req, auth, reqId);
-
-    // ── SEO Product Audit ──────────────────────────────────────
-    if (req.method === "POST" && matchRoute("/v1/seo/products/audit", apiPath)) return await auditProductSeo(req, auth, reqId);
-    if (req.method === "GET" && matchRoute("/v1/seo/products/scores", apiPath)) return await listProductSeoScores(url, auth, reqId);
-
-    const seoProductMatch = matchRoute("/v1/seo/products/:productId/score", apiPath);
-    if (req.method === "GET" && seoProductMatch) return await getProductSeoScore(seoProductMatch.params.productId, auth, reqId);
-
-    const seoHistoryMatch = matchRoute("/v1/seo/products/:productId/history", apiPath);
-    if (req.method === "GET" && seoHistoryMatch) return await getProductSeoHistory(seoHistoryMatch.params.productId, url, auth, reqId);
-
-    // ── Inventory ──────────────────────────────────────────────
-    if (req.method === "GET" && matchRoute("/v1/inventory/locations", apiPath)) return await listInventoryLocations(auth, reqId);
-    if (req.method === "GET" && matchRoute("/v1/inventory/levels", apiPath)) return await listInventoryLevels(url, auth, reqId);
-    if (req.method === "POST" && matchRoute("/v1/inventory/levels", apiPath)) return await upsertInventoryLevel(req, auth, reqId);
-
-    // ── Product Prices ─────────────────────────────────────────
-    if (req.method === "GET" && matchRoute("/v1/prices", apiPath)) return await listProductPrices(url, auth, reqId);
-    if (req.method === "POST" && matchRoute("/v1/prices", apiPath)) return await upsertProductPrice(req, auth, reqId);
-
-    // ── Product Events ─────────────────────────────────────────
-    if (req.method === "GET" && matchRoute("/v1/events", apiPath)) return await listProductEvents(url, auth, reqId);
-
-    // ── Product SEO CRUD ───────────────────────────────────────
-    if (req.method === "GET" && matchRoute("/v1/product-seo", apiPath)) return await getProductSeoData(url, auth, reqId);
-    if (req.method === "POST" && matchRoute("/v1/product-seo", apiPath)) return await upsertProductSeoData(req, auth, reqId);
-    if (req.method === "GET" && matchRoute("/v1/product-seo/versions", apiPath)) return await listProductSeoVersions(url, auth, reqId);
-
-    // ── Store Products ─────────────────────────────────────────
-    if (req.method === "GET" && matchRoute("/v1/store-products", apiPath)) return await listStoreProducts(url, auth, reqId);
-    if (req.method === "POST" && matchRoute("/v1/store-products", apiPath)) return await upsertStoreProduct(req, auth, reqId);
-
-    // ── AI Generations ──────────────────────────────────────────
-    if (req.method === "GET" && matchRoute("/v1/ai/generations", apiPath)) return await listAiGenerations(url, auth, reqId);
-    if (req.method === "POST" && matchRoute("/v1/ai/generations", apiPath)) return await createAiGeneration(req, auth, reqId);
-
-    // ── Orders ──────────────────────────────────────────────────
-    if (req.method === "GET" && matchRoute("/v1/orders", apiPath)) return await listOrders(url, auth, reqId);
-    if (req.method === "POST" && matchRoute("/v1/orders", apiPath)) return await createOrder(req, auth, reqId);
-    if (req.method === "GET" && matchRoute("/v1/orders/stats", apiPath)) return await getOrderStats(auth, reqId);
-
-    const orderMatch = matchRoute("/v1/orders/:orderId", apiPath);
-    if (orderMatch && orderMatch.params.orderId !== "stats") {
-      if (req.method === "GET") return await getOrder(orderMatch.params.orderId, auth, reqId);
-      if (req.method === "PUT") return await updateOrder(orderMatch.params.orderId, req, auth, reqId);
-      if (req.method === "DELETE") return await deleteOrder(orderMatch.params.orderId, auth, reqId);
-    }
-
-    // ── Customers ───────────────────────────────────────────────
-    if (req.method === "GET" && matchRoute("/v1/customers", apiPath)) return await listCustomers(url, auth, reqId);
-    if (req.method === "POST" && matchRoute("/v1/customers", apiPath)) return await createCustomer(req, auth, reqId);
-    if (req.method === "GET" && matchRoute("/v1/customers/stats", apiPath)) return await getCustomerStats(auth, reqId);
-
-    const customerMatch = matchRoute("/v1/customers/:customerId", apiPath);
-    if (customerMatch && customerMatch.params.customerId !== "stats") {
-      if (req.method === "GET") return await getCustomer(customerMatch.params.customerId, auth, reqId);
-      if (req.method === "PUT") return await updateCustomer(customerMatch.params.customerId, req, auth, reqId);
-      if (req.method === "DELETE") return await deleteCustomer(customerMatch.params.customerId, auth, reqId);
-    }
+    if (m === "GET" && matchRoute("/v1/customers/stats", apiPath)) return await getCustomerStats(auth, reqId);
+    if (m === "GET" && matchRoute("/v1/customers", apiPath)) return await listCustomers(url, auth, reqId);
+    if (m === "POST" && matchRoute("/v1/customers", apiPath)) return await createCustomer(req, auth, reqId);
+    p = matchRoute("/v1/customers/:id", apiPath); if (p && p.id !== "stats") { if (m === "GET") return await getCustomer(p.id, auth, reqId); if (m === "PUT") return await updateCustomer(p.id, req, auth, reqId); if (m === "DELETE") return await deleteCustomer(p.id, auth, reqId); }
 
     // ── Dashboard ───────────────────────────────────────────────
-    if (req.method === "GET" && matchRoute("/v1/dashboard/stats", apiPath)) return await getDashboardStats(url, auth, reqId);
-    if (req.method === "GET" && matchRoute("/v1/dashboard/activity", apiPath)) return await getDashboardActivity(url, auth, reqId);
+    if (m === "GET" && matchRoute("/v1/dashboard/stats", apiPath)) return await getDashboardStats(url, auth, reqId);
+    if (m === "GET" && matchRoute("/v1/dashboard/activity", apiPath)) return await getDashboardActivity(url, auth, reqId);
 
     // ── Integrations ────────────────────────────────────────────
-    if (req.method === "GET" && matchRoute("/v1/integrations/stats", apiPath)) return await getIntegrationStats(auth, reqId);
-    if (req.method === "GET" && matchRoute("/v1/integrations", apiPath)) return await listIntegrations(url, auth, reqId);
-    if (req.method === "POST" && matchRoute("/v1/integrations", apiPath)) return await createIntegration(req, auth, reqId);
-
-    const integrationSyncMatch = matchRoute("/v1/integrations/:integrationId/sync", apiPath);
-    if (req.method === "POST" && integrationSyncMatch) return await syncIntegration(integrationSyncMatch.params.integrationId, req, auth, reqId);
-
-    const integrationTestMatch = matchRoute("/v1/integrations/:integrationId/test", apiPath);
-    if (req.method === "POST" && integrationTestMatch) return await testIntegration(integrationTestMatch.params.integrationId, auth, reqId);
-
-    const integrationMatch = matchRoute("/v1/integrations/:integrationId", apiPath);
-    if (integrationMatch && integrationMatch.params.integrationId !== "stats") {
-      if (req.method === "GET") return await getIntegration(integrationMatch.params.integrationId, auth, reqId);
-      if (req.method === "PUT") return await updateIntegration(integrationMatch.params.integrationId, req, auth, reqId);
-      if (req.method === "DELETE") return await deleteIntegration(integrationMatch.params.integrationId, auth, reqId);
-    }
+    if (m === "GET" && matchRoute("/v1/integrations/stats", apiPath)) return await getIntegrationStats(auth, reqId);
+    if (m === "GET" && matchRoute("/v1/integrations", apiPath)) return await crudList(integrationsCfg)(url, auth, reqId);
+    if (m === "POST" && matchRoute("/v1/integrations", apiPath)) return await crudCreate(integrationsCfg)(req, auth, reqId);
+    p = matchRoute("/v1/integrations/:id/sync", apiPath); if (m === "POST" && p) return await syncIntegration(p.id, req, auth, reqId);
+    p = matchRoute("/v1/integrations/:id/test", apiPath); if (m === "POST" && p) return await testIntegration(p.id, auth, reqId);
+    p = matchRoute("/v1/integrations/:id", apiPath); if (p && p.id !== "stats") { if (m === "GET") return await crudGet(integrationsCfg)(p.id, auth, reqId); if (m === "PUT") return await crudUpdate(integrationsCfg)(p.id, req, auth, reqId); if (m === "DELETE") return await crudDelete(integrationsCfg)(p.id, auth, reqId); }
 
     // ── Suppliers ───────────────────────────────────────────────
-    if (req.method === "GET" && matchRoute("/v1/suppliers/stats", apiPath)) return await getSupplierStats(auth, reqId);
-    if (req.method === "GET" && matchRoute("/v1/suppliers", apiPath)) return await listSuppliers(url, auth, reqId);
-
-    const supplierMatch = matchRoute("/v1/suppliers/:supplierId", apiPath);
-    if (req.method === "GET" && supplierMatch && supplierMatch.params.supplierId !== "stats") {
-      return await getSupplier(supplierMatch.params.supplierId, auth, reqId);
-    }
+    if (m === "GET" && matchRoute("/v1/suppliers/stats", apiPath)) return await getSupplierStats(auth, reqId);
+    if (m === "GET" && matchRoute("/v1/suppliers", apiPath)) return await listSuppliers(url, auth, reqId);
+    p = matchRoute("/v1/suppliers/:id", apiPath); if (m === "GET" && p && p.id !== "stats") return await getSupplier(p.id, auth, reqId);
 
     // ── Automation ──────────────────────────────────────────────
-    if (req.method === "GET" && matchRoute("/v1/automation/stats", apiPath)) return await getAutomationStats(auth, reqId);
-    if (req.method === "GET" && matchRoute("/v1/automation/triggers", apiPath)) return await listAutomationTriggers(url, auth, reqId);
-    if (req.method === "POST" && matchRoute("/v1/automation/triggers", apiPath)) return await createAutomationTrigger(req, auth, reqId);
+    if (m === "GET" && matchRoute("/v1/automation/stats", apiPath)) return await getAutomationStats(auth, reqId);
+    if (m === "GET" && matchRoute("/v1/automation/triggers", apiPath)) return await crudList(automationTriggersCfg)(url, auth, reqId);
+    if (m === "POST" && matchRoute("/v1/automation/triggers", apiPath)) return await crudCreate(automationTriggersCfg)(req, auth, reqId);
+    p = matchRoute("/v1/automation/triggers/:id", apiPath); if (p) { if (m === "PUT") return await crudUpdate(automationTriggersCfg)(p.id, req, auth, reqId); if (m === "DELETE") return await crudDelete(automationTriggersCfg)(p.id, auth, reqId); }
+    if (m === "GET" && matchRoute("/v1/automation/actions", apiPath)) return await crudList(automationActionsCfg)(url, auth, reqId);
+    if (m === "POST" && matchRoute("/v1/automation/actions", apiPath)) return await crudCreate(automationActionsCfg)(req, auth, reqId);
+    if (m === "GET" && matchRoute("/v1/automation/executions", apiPath)) { const admin = serviceClient(); const limit = Math.min(parseInt(url.searchParams.get("limit") ?? "100", 10), 500); const { data } = await admin.from("automation_execution_logs").select("*").eq("user_id", auth.user.id).order("created_at", { ascending: false }).limit(limit); return json({ items: data || [] }, 200, reqId); }
+    if (m === "POST" && matchRoute("/v1/automation/execute", apiPath)) return await executeAutomation(req, auth, reqId);
+    if (m === "GET" && matchRoute("/v1/automation/workflows", apiPath)) return await crudList(automationWorkflowsCfg)(url, auth, reqId);
+    if (m === "POST" && matchRoute("/v1/automation/workflows", apiPath)) return await crudCreate(automationWorkflowsCfg)(req, auth, reqId);
+    p = matchRoute("/v1/automation/workflows/:id/toggle", apiPath); if (m === "POST" && p) return await toggleAutomationWorkflow(p.id, req, auth, reqId);
+    p = matchRoute("/v1/automation/workflows/:id/run", apiPath); if (m === "POST" && p) return await runAutomationWorkflow(p.id, auth, reqId);
+    p = matchRoute("/v1/automation/workflows/:id", apiPath); if (p) { if (m === "PUT") return await crudUpdate(automationWorkflowsCfg)(p.id, req, auth, reqId); if (m === "DELETE") return await crudDelete(automationWorkflowsCfg)(p.id, auth, reqId); }
 
-    const triggerMatch = matchRoute("/v1/automation/triggers/:triggerId", apiPath);
-    if (triggerMatch) {
-      if (req.method === "PUT") return await updateAutomationTrigger(triggerMatch.params.triggerId, req, auth, reqId);
-      if (req.method === "DELETE") return await deleteAutomationTrigger(triggerMatch.params.triggerId, auth, reqId);
+    // ── Marketing ───────────────────────────────────────────────
+    if (m === "GET" && matchRoute("/v1/marketing/stats", apiPath)) return await getMarketingStats(auth, reqId);
+    if (m === "GET" && matchRoute("/v1/marketing/dashboard-stats", apiPath)) return await getMarketingDashboardStats(auth, reqId);
+    if (m === "GET" && matchRoute("/v1/marketing/campaigns", apiPath)) return await listMarketingCampaigns(url, auth, reqId);
+    if (m === "POST" && matchRoute("/v1/marketing/campaigns", apiPath)) return await crudCreate(marketingCampaignsCfg)(req, auth, reqId);
+    p = matchRoute("/v1/marketing/campaigns/:id", apiPath); if (p) { if (m === "PUT") return await crudUpdate(marketingCampaignsCfg)(p.id, req, auth, reqId); if (m === "DELETE") return await crudDelete(marketingCampaignsCfg)(p.id, auth, reqId); }
+    if (m === "GET" && matchRoute("/v1/marketing/automations", apiPath)) return await crudList(automatedCampaignsCfg)(url, auth, reqId);
+    if (m === "POST" && matchRoute("/v1/marketing/automations", apiPath)) return await crudCreate(automatedCampaignsCfg)(req, auth, reqId);
+    p = matchRoute("/v1/marketing/automations/:id/toggle", apiPath); if (m === "POST" && p) return await toggleMarketingAutomation(p.id, req, auth, reqId);
+    p = matchRoute("/v1/marketing/automations/:id", apiPath); if (p && m === "PUT") return await crudUpdate(automatedCampaignsCfg)(p.id, req, auth, reqId);
+
+    // ── Ads ──────────────────────────────────────────────────────
+    if (m === "GET" && matchRoute("/v1/ads/accounts", apiPath)) return await crudSimpleList("ad_accounts", { useAdmin: true })(auth, reqId);
+    if (m === "POST" && matchRoute("/v1/ads/accounts", apiPath)) return await crudCreate(adAccountsCfg)(req, auth, reqId);
+    p = matchRoute("/v1/ads/accounts/:id", apiPath); if (m === "PUT" && p) return await crudUpdate(adAccountsCfg)(p.id, req, auth, reqId);
+    if (m === "GET" && matchRoute("/v1/ads/campaigns", apiPath)) return await crudList(adCampaignsCfg)(url, auth, reqId);
+    if (m === "POST" && matchRoute("/v1/ads/campaigns", apiPath)) return await crudCreate(adCampaignsCfg)(req, auth, reqId);
+    p = matchRoute("/v1/ads/campaigns/:id", apiPath); if (p) { if (m === "PUT") return await crudUpdate(adCampaignsCfg)(p.id, req, auth, reqId); if (m === "DELETE") return await crudDelete(adCampaignsCfg)(p.id, auth, reqId); }
+
+    // ── Business Intelligence ───────────────────────────────────
+    if (m === "GET" && matchRoute("/v1/insights/metrics", apiPath)) return await getInsightMetrics(auth, reqId);
+    if (m === "GET" && matchRoute("/v1/insights", apiPath)) return await listInsights(url, auth, reqId);
+    p = matchRoute("/v1/insights/:id/acknowledge", apiPath); if (m === "POST" && p) return await acknowledgeInsight(p.id, auth, reqId);
+    p = matchRoute("/v1/insights/:id", apiPath); if (m === "DELETE" && p && p.id !== "metrics") return await dismissInsight(p.id, auth, reqId);
+
+    // ── CRM ─────────────────────────────────────────────────────
+    if (m === "GET" && matchRoute("/v1/crm/tasks", apiPath)) return await crudList(crmTasksCfg)(url, auth, reqId);
+    if (m === "POST" && matchRoute("/v1/crm/tasks", apiPath)) return await crudCreate(crmTasksCfg)(req, auth, reqId);
+    p = matchRoute("/v1/crm/tasks/:id", apiPath); if (p) { if (m === "PUT") return await crudUpdate(crmTasksCfg)(p.id, req, auth, reqId); if (m === "DELETE") return await crudDelete(crmTasksCfg)(p.id, auth, reqId); }
+    if (m === "GET" && matchRoute("/v1/crm/deals", apiPath)) return await crudList(crmDealsCfg)(url, auth, reqId);
+    if (m === "POST" && matchRoute("/v1/crm/deals", apiPath)) return await crudCreate(crmDealsCfg)(req, auth, reqId);
+    p = matchRoute("/v1/crm/deals/:id", apiPath); if (p) { if (m === "PUT") return await crudUpdate(crmDealsCfg)(p.id, req, auth, reqId); if (m === "DELETE") return await crudDelete(crmDealsCfg)(p.id, auth, reqId); }
+
+    // ── Pricing ─────────────────────────────────────────────────
+    if (m === "GET" && matchRoute("/v1/pricing/rules", apiPath)) return await crudList(pricingRulesCfg)(url, auth, reqId);
+    if (m === "POST" && matchRoute("/v1/pricing/rules", apiPath)) return await crudCreate(pricingRulesCfg)(req, auth, reqId);
+    p = matchRoute("/v1/pricing/rules/:id", apiPath); if (p) { if (m === "PUT") return await crudUpdate(pricingRulesCfg)(p.id, req, auth, reqId); if (m === "DELETE") return await crudDelete(pricingRulesCfg)(p.id, auth, reqId); }
+
+    // ── Finance ─────────────────────────────────────────────────
+    if (m === "GET" && matchRoute("/v1/finance/stats", apiPath)) return await getFinanceStats(auth, reqId);
+
+    // ── Conversion ──────────────────────────────────────────────
+    for (const [route, table] of Object.entries(conversionTables)) {
+      if (m === "GET" && matchRoute(`/v1/conversion/${route}`, apiPath)) return await conversionList(table, auth, reqId);
+      if (m === "POST" && matchRoute(`/v1/conversion/${route}`, apiPath)) return await conversionCreate(table, req, auth, reqId);
     }
+    if (m === "POST" && matchRoute("/v1/conversion/track", apiPath)) return await trackConversionEvent(req, auth, reqId);
+    if (m === "GET" && matchRoute("/v1/conversion/analytics", apiPath)) return await getConversionAnalytics(auth, reqId);
 
-    if (req.method === "GET" && matchRoute("/v1/automation/actions", apiPath)) return await listAutomationActions(url, auth, reqId);
-    if (req.method === "POST" && matchRoute("/v1/automation/actions", apiPath)) return await createAutomationAction(req, auth, reqId);
-    if (req.method === "GET" && matchRoute("/v1/automation/executions", apiPath)) return await listAutomationExecutions(url, auth, reqId);
-    if (req.method === "POST" && matchRoute("/v1/automation/execute", apiPath)) return await executeAutomation(req, auth, reqId);
+    // ── Advanced Analytics ──────────────────────────────────────
+    if (m === "GET" && matchRoute("/v1/analytics/performance", apiPath)) return await listPerformanceMetrics(auth, reqId);
+    if (m === "GET" && matchRoute("/v1/analytics/reports", apiPath)) return await listAdvancedReports(auth, reqId);
+    if (m === "POST" && matchRoute("/v1/analytics/reports", apiPath)) return await generateAdvancedReport(req, auth, reqId);
+    if (m === "GET" && matchRoute("/v1/analytics/predictive", apiPath)) return await listPredictiveAnalytics(auth, reqId);
+    if (m === "POST" && matchRoute("/v1/analytics/predictive", apiPath)) return await runPredictiveAnalysis(auth, reqId);
+    if (m === "GET" && matchRoute("/v1/analytics/ab-tests", apiPath)) return await listABTests(auth, reqId);
+    if (m === "POST" && matchRoute("/v1/analytics/ab-tests", apiPath)) return await createABTest(req, auth, reqId);
 
-    // Workflows
-    if (req.method === "GET" && matchRoute("/v1/automation/workflows", apiPath)) return await listAutomationWorkflows(url, auth, reqId);
-    if (req.method === "POST" && matchRoute("/v1/automation/workflows", apiPath)) return await createAutomationWorkflow(req, auth, reqId);
+    // ── Promotions ──────────────────────────────────────────────
+    if (m === "GET" && matchRoute("/v1/promotions/stats", apiPath)) return await getPromotionStats(auth, reqId);
+    if (m === "GET" && matchRoute("/v1/promotions/campaigns", apiPath)) return await crudList(promotionCampaignsCfg)(url, auth, reqId);
+    if (m === "POST" && matchRoute("/v1/promotions/campaigns", apiPath)) return await crudCreate(promotionCampaignsCfg)(req, auth, reqId);
+    p = matchRoute("/v1/promotions/campaigns/:id", apiPath); if (p) { if (m === "PUT") return await crudUpdate(promotionCampaignsCfg)(p.id, req, auth, reqId); if (m === "DELETE") return await crudDelete(promotionCampaignsCfg)(p.id, auth, reqId); }
+    if (m === "GET" && matchRoute("/v1/promotions/rules", apiPath)) return await crudSimpleList("promotion_automation_rules", { useAdmin: true })(auth, reqId);
+    if (m === "POST" && matchRoute("/v1/promotions/rules", apiPath)) return await crudCreate(promotionRulesCfg)(req, auth, reqId);
+    p = matchRoute("/v1/promotions/rules/:id", apiPath); if (p) { if (m === "PUT") return await togglePromotionRule(p.id, req, auth, reqId); if (m === "DELETE") return await crudDelete(promotionRulesCfg)(p.id, auth, reqId); }
 
-    const workflowMatch = matchRoute("/v1/automation/workflows/:workflowId", apiPath);
-    if (workflowMatch) {
-      if (req.method === "PUT") return await updateAutomationWorkflow(workflowMatch.params.workflowId, req, auth, reqId);
-      if (req.method === "DELETE") return await deleteAutomationWorkflow(workflowMatch.params.workflowId, auth, reqId);
-    }
-    if (req.method === "POST" && matchRoute("/v1/automation/workflows/:workflowId/toggle", apiPath)) {
-      const m = matchRoute("/v1/automation/workflows/:workflowId/toggle", apiPath);
-      return await toggleAutomationWorkflow(m!.params.workflowId, req, auth, reqId);
-    }
-    if (req.method === "POST" && matchRoute("/v1/automation/workflows/:workflowId/run", apiPath)) {
-      const m = matchRoute("/v1/automation/workflows/:workflowId/run", apiPath);
-      return await runAutomationWorkflow(m!.params.workflowId, auth, reqId);
-    }
+    // ── Customer Behavior ───────────────────────────────────────
+    if (m === "GET" && matchRoute("/v1/behavior/history", apiPath)) return await crudSimpleList("customer_behavior_analytics", { useAdmin: true })(auth, reqId);
+    if (m === "POST" && matchRoute("/v1/behavior/analyze", apiPath)) return await proxyEdgeFunction("customer-intelligence", req, auth, reqId);
+    p = matchRoute("/v1/behavior/:id", apiPath); if (p) { if (m === "GET") return await crudGet({ table: "customer_behavior_analytics", useAdmin: true })(p.id, auth, reqId); if (m === "DELETE") return await crudDelete({ table: "customer_behavior_analytics", useAdmin: true })(p.id, auth, reqId); }
 
-    // ── Marketing ──────────────────────────────────────────────
-    if (req.method === "GET" && matchRoute("/v1/marketing/stats", apiPath)) return await getMarketingStats(auth, reqId);
-    if (req.method === "GET" && matchRoute("/v1/marketing/dashboard-stats", apiPath)) return await getMarketingDashboardStats(auth, reqId);
-    if (req.method === "GET" && matchRoute("/v1/marketing/campaigns", apiPath)) return await listMarketingCampaigns(url, auth, reqId);
-    if (req.method === "POST" && matchRoute("/v1/marketing/campaigns", apiPath)) return await createMarketingCampaign(req, auth, reqId);
+    // ── Product Tracking ────────────────────────────────────────
+    if (m === "POST" && matchRoute("/v1/tracking/product-view", apiPath)) return await trackProductView(req, auth, reqId);
+    if (m === "POST" && matchRoute("/v1/tracking/supplier-compare", apiPath)) return await compareSupplierPrices(req, auth, reqId);
 
-    const mktCampaignMatch = matchRoute("/v1/marketing/campaigns/:campaignId", apiPath);
-    if (mktCampaignMatch) {
-      if (req.method === "PUT") return await updateMarketingCampaign(mktCampaignMatch.params.campaignId, req, auth, reqId);
-      if (req.method === "DELETE") return await deleteMarketingCampaign(mktCampaignMatch.params.campaignId, auth, reqId);
-    }
+    // ── Advanced AI ─────────────────────────────────────────────
+    if (m === "POST" && matchRoute("/v1/ai/pricing-suggestions", apiPath)) return await aiPricingSuggestions(req, auth, reqId);
+    if (m === "GET" && matchRoute("/v1/ai/trending-products", apiPath)) return await aiTrendingProducts(url, auth, reqId);
+    if (m === "POST" && matchRoute("/v1/ai/performance-analysis", apiPath)) return await aiPerformanceAnalysis(req, auth, reqId);
+    if (m === "GET" && matchRoute("/v1/ai/business-summary", apiPath)) return await aiBusinessSummary(auth, reqId);
 
-    // ── Marketing Automations ──────────────────────────────────
-    if (req.method === "GET" && matchRoute("/v1/marketing/automations", apiPath)) return await listMarketingAutomations(url, auth, reqId);
-    if (req.method === "POST" && matchRoute("/v1/marketing/automations", apiPath)) return await createMarketingAutomation(req, auth, reqId);
+    // ── Monetization ────────────────────────────────────────────
+    if (m === "GET" && matchRoute("/v1/monetization/usage", apiPath)) return await getMonetizationUsage(auth, reqId);
+    if (m === "GET" && matchRoute("/v1/monetization/plan", apiPath)) return await getMonetizationPlan(auth, reqId);
+    if (m === "GET" && matchRoute("/v1/monetization/credits", apiPath)) return await getMonetizationCredits(auth, reqId);
+    if (m === "GET" && matchRoute("/v1/monetization/history", apiPath)) return await getMonetizationHistory(url, auth, reqId);
+    if (m === "POST" && matchRoute("/v1/monetization/check-gate", apiPath)) return await checkPlanGate(req, auth, reqId);
 
-    const mktAutoMatch = matchRoute("/v1/marketing/automations/:autoId", apiPath);
-    if (mktAutoMatch) {
-      if (req.method === "PUT") return await updateMarketingAutomation(mktAutoMatch.params.autoId, req, auth, reqId);
-    }
-
-    const mktAutoToggleMatch = matchRoute("/v1/marketing/automations/:autoId/toggle", apiPath);
-    if (req.method === "POST" && mktAutoToggleMatch) return await toggleMarketingAutomation(mktAutoToggleMatch.params.autoId, req, auth, reqId);
-
-    // ── Ads ─────────────────────────────────────────────────────
-    if (req.method === "GET" && matchRoute("/v1/ads/accounts", apiPath)) return await listAdAccounts(auth, reqId);
-    if (req.method === "POST" && matchRoute("/v1/ads/accounts", apiPath)) return await createAdAccount(req, auth, reqId);
-
-    const adAccountMatch = matchRoute("/v1/ads/accounts/:accountId", apiPath);
-    if (req.method === "PUT" && adAccountMatch) return await updateAdAccount(adAccountMatch.params.accountId, req, auth, reqId);
-
-    if (req.method === "GET" && matchRoute("/v1/ads/campaigns", apiPath)) return await listAdCampaigns(url, auth, reqId);
-    if (req.method === "POST" && matchRoute("/v1/ads/campaigns", apiPath)) return await createAdCampaign(req, auth, reqId);
-
-    const adCampaignMatch = matchRoute("/v1/ads/campaigns/:campaignId", apiPath);
-    if (adCampaignMatch) {
-      if (req.method === "PUT") return await updateAdCampaign(adCampaignMatch.params.campaignId, req, auth, reqId);
-      if (req.method === "DELETE") return await deleteAdCampaign(adCampaignMatch.params.campaignId, auth, reqId);
-    }
-
-    // ── Business Intelligence / Insights ────────────────────────
-    if (req.method === "GET" && matchRoute("/v1/insights", apiPath)) return await listInsights(url, auth, reqId);
-    if (req.method === "GET" && matchRoute("/v1/insights/metrics", apiPath)) return await getInsightMetrics(auth, reqId);
-
-    const insightAckMatch = matchRoute("/v1/insights/:insightId/acknowledge", apiPath);
-    if (req.method === "POST" && insightAckMatch) return await acknowledgeInsight(insightAckMatch.params.insightId, auth, reqId);
-
-    const insightDismissMatch = matchRoute("/v1/insights/:insightId", apiPath);
-    if (req.method === "DELETE" && insightDismissMatch && insightDismissMatch.params.insightId !== "metrics") return await dismissInsight(insightDismissMatch.params.insightId, auth, reqId);
-
-    // ── CRM ────────────────────────────────────────────────────
-    if (req.method === "GET" && matchRoute("/v1/crm/tasks", apiPath)) return await listCRMTasks(url, auth, reqId);
-    if (req.method === "POST" && matchRoute("/v1/crm/tasks", apiPath)) return await createCRMTask(req, auth, reqId);
-
-    const crmTaskMatch = matchRoute("/v1/crm/tasks/:taskId", apiPath);
-    if (crmTaskMatch) {
-      if (req.method === "PUT") return await updateCRMTask(crmTaskMatch.params.taskId, req, auth, reqId);
-      if (req.method === "DELETE") return await deleteCRMTask(crmTaskMatch.params.taskId, auth, reqId);
-    }
-
-    if (req.method === "GET" && matchRoute("/v1/crm/deals", apiPath)) return await listCRMDeals(url, auth, reqId);
-    if (req.method === "POST" && matchRoute("/v1/crm/deals", apiPath)) return await createCRMDeal(req, auth, reqId);
-
-    const crmDealMatch = matchRoute("/v1/crm/deals/:dealId", apiPath);
-    if (crmDealMatch) {
-      if (req.method === "PUT") return await updateCRMDeal(crmDealMatch.params.dealId, req, auth, reqId);
-      if (req.method === "DELETE") return await deleteCRMDeal(crmDealMatch.params.dealId, auth, reqId);
-    }
-
-    // ── Pricing ────────────────────────────────────────────────
-    if (req.method === "GET" && matchRoute("/v1/pricing/rules", apiPath)) return await listPricingRules(url, auth, reqId);
-    if (req.method === "POST" && matchRoute("/v1/pricing/rules", apiPath)) return await createPricingRule(req, auth, reqId);
-
-    const pricingRuleMatch = matchRoute("/v1/pricing/rules/:ruleId", apiPath);
-    if (pricingRuleMatch) {
-      if (req.method === "PUT") return await updatePricingRule(pricingRuleMatch.params.ruleId, req, auth, reqId);
-      if (req.method === "DELETE") return await deletePricingRule(pricingRuleMatch.params.ruleId, auth, reqId);
-    }
-
-    // ── Finance ────────────────────────────────────────────────
-    if (req.method === "GET" && matchRoute("/v1/finance/stats", apiPath)) return await getFinanceStats(auth, reqId);
-
-    // ── Conversion ────────────────────────────────────────────
-    if (req.method === "GET" && matchRoute("/v1/conversion/bundles", apiPath)) return await listConversionBundles(auth, reqId);
-    if (req.method === "POST" && matchRoute("/v1/conversion/bundles", apiPath)) return await createConversionBundle(req, auth, reqId);
-    if (req.method === "GET" && matchRoute("/v1/conversion/upsells", apiPath)) return await listUpsellRules(auth, reqId);
-    if (req.method === "POST" && matchRoute("/v1/conversion/upsells", apiPath)) return await createUpsellRule(req, auth, reqId);
-    if (req.method === "GET" && matchRoute("/v1/conversion/discounts", apiPath)) return await listDynamicDiscounts(auth, reqId);
-    if (req.method === "POST" && matchRoute("/v1/conversion/discounts", apiPath)) return await createDynamicDiscount(req, auth, reqId);
-    if (req.method === "GET" && matchRoute("/v1/conversion/timers", apiPath)) return await listScarcityTimers(auth, reqId);
-    if (req.method === "POST" && matchRoute("/v1/conversion/timers", apiPath)) return await createScarcityTimer(req, auth, reqId);
-    if (req.method === "GET" && matchRoute("/v1/conversion/social-proof", apiPath)) return await listSocialProofWidgets(auth, reqId);
-    if (req.method === "POST" && matchRoute("/v1/conversion/social-proof", apiPath)) return await createSocialProofWidget(req, auth, reqId);
-    if (req.method === "POST" && matchRoute("/v1/conversion/track", apiPath)) return await trackConversionEvent(req, auth, reqId);
-    if (req.method === "GET" && matchRoute("/v1/conversion/analytics", apiPath)) return await getConversionAnalytics(auth, reqId);
-
-    // ── Advanced Analytics ────────────────────────────────────
-    if (req.method === "GET" && matchRoute("/v1/analytics/performance", apiPath)) return await listPerformanceMetrics(auth, reqId);
-    if (req.method === "GET" && matchRoute("/v1/analytics/reports", apiPath)) return await listAdvancedReports(auth, reqId);
-    if (req.method === "POST" && matchRoute("/v1/analytics/reports", apiPath)) return await generateAdvancedReport(req, auth, reqId);
-    if (req.method === "GET" && matchRoute("/v1/analytics/predictive", apiPath)) return await listPredictiveAnalytics(auth, reqId);
-    if (req.method === "POST" && matchRoute("/v1/analytics/predictive", apiPath)) return await runPredictiveAnalysis(auth, reqId);
-    if (req.method === "GET" && matchRoute("/v1/analytics/ab-tests", apiPath)) return await listABTests(auth, reqId);
-    if (req.method === "POST" && matchRoute("/v1/analytics/ab-tests", apiPath)) return await createABTest(req, auth, reqId);
-
-    // ── Promotions ────────────────────────────────────────────
-    if (req.method === "GET" && matchRoute("/v1/promotions/campaigns", apiPath)) return await listPromotionCampaigns(url, auth, reqId);
-    if (req.method === "POST" && matchRoute("/v1/promotions/campaigns", apiPath)) return await createPromotionCampaign(req, auth, reqId);
-    const promoCampMatch = matchRoute("/v1/promotions/campaigns/:campaignId", apiPath);
-    if (promoCampMatch) {
-      if (req.method === "PUT") return await updatePromotionCampaign(promoCampMatch.params.campaignId, req, auth, reqId);
-      if (req.method === "DELETE") return await deletePromotionCampaign(promoCampMatch.params.campaignId, auth, reqId);
-    }
-    if (req.method === "GET" && matchRoute("/v1/promotions/rules", apiPath)) return await listPromotionRules(auth, reqId);
-    if (req.method === "POST" && matchRoute("/v1/promotions/rules", apiPath)) return await createPromotionRule(req, auth, reqId);
-    const promoRuleMatch = matchRoute("/v1/promotions/rules/:ruleId", apiPath);
-    if (promoRuleMatch) {
-      if (req.method === "PUT") return await togglePromotionRule(promoRuleMatch.params.ruleId, req, auth, reqId);
-      if (req.method === "DELETE") return await deletePromotionRule(promoRuleMatch.params.ruleId, auth, reqId);
-    }
-    if (req.method === "GET" && matchRoute("/v1/promotions/stats", apiPath)) return await getPromotionStats(auth, reqId);
-
-    // ── Customer Behavior ─────────────────────────────────────
-    if (req.method === "GET" && matchRoute("/v1/behavior/history", apiPath)) return await listBehaviorHistory(auth, reqId);
-    if (req.method === "POST" && matchRoute("/v1/behavior/analyze", apiPath)) return await analyzeBehavior(req, auth, reqId);
-    const behaviorMatch = matchRoute("/v1/behavior/:id", apiPath);
-    if (behaviorMatch) {
-      if (req.method === "GET") return await getBehaviorById(behaviorMatch.params.id, auth, reqId);
-      if (req.method === "DELETE") return await deleteBehaviorAnalysis(behaviorMatch.params.id, auth, reqId);
-    }
-
-    // ── Product Tracking ──────────────────────────────────────
-    if (req.method === "POST" && matchRoute("/v1/tracking/product-view", apiPath)) return await trackProductView(req, auth, reqId);
-    if (req.method === "POST" && matchRoute("/v1/tracking/supplier-compare", apiPath)) return await compareSupplierPrices(req, auth, reqId);
-
-    // ── Advanced AI ──────────────────────────────────────────────
-    if (req.method === "POST" && matchRoute("/v1/ai/pricing-suggestions", apiPath)) return await aiPricingSuggestions(req, auth, reqId);
-    if (req.method === "GET" && matchRoute("/v1/ai/trending-products", apiPath)) return await aiTrendingProducts(url, auth, reqId);
-    if (req.method === "POST" && matchRoute("/v1/ai/performance-analysis", apiPath)) return await aiPerformanceAnalysis(req, auth, reqId);
-    if (req.method === "GET" && matchRoute("/v1/ai/business-summary", apiPath)) return await aiBusinessSummary(auth, reqId);
-
-    // ── Monetization ──────────────────────────────────────────────
-    if (req.method === "GET" && matchRoute("/v1/monetization/usage", apiPath)) return await getMonetizationUsage(auth, reqId);
-    if (req.method === "GET" && matchRoute("/v1/monetization/plan", apiPath)) return await getMonetizationPlan(auth, reqId);
-    if (req.method === "GET" && matchRoute("/v1/monetization/credits", apiPath)) return await getMonetizationCredits(auth, reqId);
-    if (req.method === "GET" && matchRoute("/v1/monetization/history", apiPath)) return await getMonetizationHistory(url, auth, reqId);
-    if (req.method === "POST" && matchRoute("/v1/monetization/check-gate", apiPath)) return await checkPlanGate(req, auth, reqId);
-
-    return errorResponse("NOT_FOUND", `Route ${req.method} ${apiPath} not found`, 404, reqId);
+    return errorResponse("NOT_FOUND", `Route ${m} ${apiPath} not found`, 404, reqId);
   } catch (err) {
     console.error("Unhandled error:", err);
     return errorResponse("INTERNAL_ERROR", "Internal server error", 500, reqId);
