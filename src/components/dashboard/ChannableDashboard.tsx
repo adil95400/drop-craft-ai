@@ -121,9 +121,9 @@ function QuickStatCard({
   
   const colorClasses = {
     primary: 'from-primary/20 to-primary/5 border-primary/30 text-primary',
-    success: 'from-emerald-500/20 to-emerald-500/5 border-emerald-500/30 text-emerald-500',
-    warning: 'from-amber-500/20 to-amber-500/5 border-amber-500/30 text-amber-500',
-    info: 'from-blue-500/20 to-blue-500/5 border-blue-500/30 text-blue-500',
+    success: 'from-accent/20 to-accent/5 border-accent/30 text-accent-foreground',
+    warning: 'from-destructive/10 to-destructive/5 border-destructive/20 text-destructive',
+    info: 'from-secondary/30 to-secondary/10 border-secondary/50 text-secondary-foreground',
   };
 
   const motionProps = prefersReducedMotion 
@@ -152,9 +152,9 @@ function QuickStatCard({
             variant="outline" 
             className={cn(
               "text-[10px] px-1.5 py-0.5",
-              changeType === 'positive' && 'text-emerald-600 border-emerald-300 bg-emerald-50 dark:bg-emerald-950/50 dark:border-emerald-700',
-              changeType === 'negative' && 'text-red-600 border-red-300 bg-red-50 dark:bg-red-950/50 dark:border-red-700',
-              changeType === 'neutral' && 'text-gray-600 border-gray-300 bg-gray-50 dark:bg-gray-800 dark:border-gray-600'
+              changeType === 'positive' && 'text-accent-foreground border-accent bg-accent/10',
+              changeType === 'negative' && 'text-destructive border-destructive/30 bg-destructive/10',
+              changeType === 'neutral' && 'text-muted-foreground border-border bg-muted/50'
             )}
             aria-label={`Variation: ${change}`}
           >
