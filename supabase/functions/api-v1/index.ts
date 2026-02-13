@@ -3412,6 +3412,173 @@ async function aiBusinessSummary(auth: any, reqId: string) {
   }
 }
 
+// ── Monetization Handlers ───────────────────────────────────────────────────
+
+const PLAN_QUOTA_MAP: Record<string, Record<string, number>> = {
+  free: { products: 100, imports_monthly: 10, ai_generations: 10, stores: 1, suppliers: 3, workflows: 1, storage_mb: 100, seo_audits: 5 },
+  standard: { products: 1000, imports_monthly: 100, ai_generations: 100, stores: 3, suppliers: 10, workflows: 5, storage_mb: 1000, seo_audits: 50 },
+  pro: { products: 10000, imports_monthly: 500, ai_generations: 500, stores: 10, suppliers: 50, workflows: 20, storage_mb: 5000, seo_audits: 200 },
+  ultra_pro: { products: -1, imports_monthly: -1, ai_generations: -1, stores: -1, suppliers: -1, workflows: -1, storage_mb: -1, seo_audits: -1 },
+};
+
+async function getMonetizationPlan(auth: any, reqId: string) {
+  try {
+    const admin = serviceClient();
+    const { data: profile } = await admin.from("profiles").select("subscription_plan, stripe_customer_id").eq("user_id", auth.user.id).maybeSingle();
+    const plan = profile?.subscription_plan || "free";
+    const limits = PLAN_QUOTA_MAP[plan] || PLAN_QUOTA_MAP.free;
+
+    return json({
+      current_plan: plan,
+      limits,
+      is_unlimited: plan === "ultra_pro",
+      stripe_customer_id: profile?.stripe_customer_id || null,
+    }, 200, reqId);
+  } catch (e: any) {
+    return errorResponse("DB_ERROR", e.message, 500, reqId);
+  }
+}
+
+async function getMonetizationUsage(auth: any, reqId: string) {
+  try {
+    const admin = serviceClient();
+
+    const [products, imports, aiGens, stores, workflows] = await Promise.all([
+      admin.from("products").select("*", { count: "exact", head: true }).eq("user_id", auth.user.id),
+      admin.from("background_jobs").select("*", { count: "exact", head: true }).eq("user_id", auth.user.id).eq("job_type", "import").gte("created_at", new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString()),
+      admin.from("ai_generations").select("*", { count: "exact", head: true }).eq("user_id", auth.user.id).gte("created_at", new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString()),
+      admin.from("integrations").select("*", { count: "exact", head: true }).eq("user_id", auth.user.id),
+      admin.from("automation_workflows").select("*", { count: "exact", head: true }).eq("user_id", auth.user.id),
+    ]);
+
+    const { data: profile } = await admin.from("profiles").select("subscription_plan").eq("user_id", auth.user.id).maybeSingle();
+    const plan = profile?.subscription_plan || "free";
+    const limits = PLAN_QUOTA_MAP[plan] || PLAN_QUOTA_MAP.free;
+
+    const usage: Record<string, { current: number; limit: number; percentage: number }> = {};
+    const raw: Record<string, number> = {
+      products: products.count || 0,
+      imports_monthly: imports.count || 0,
+      ai_generations: aiGens.count || 0,
+      stores: stores.count || 0,
+      workflows: workflows.count || 0,
+    };
+
+    for (const [key, current] of Object.entries(raw)) {
+      const limit = limits[key] ?? 0;
+      usage[key] = {
+        current,
+        limit: limit === -1 ? Infinity : limit,
+        percentage: limit === -1 ? 0 : limit > 0 ? Math.min(100, (current / limit) * 100) : 100,
+      };
+    }
+
+    return json({ plan, usage, alerts: Object.entries(usage).filter(([, v]) => v.percentage >= 80).map(([k]) => k) }, 200, reqId);
+  } catch (e: any) {
+    return errorResponse("DB_ERROR", e.message, 500, reqId);
+  }
+}
+
+async function getMonetizationCredits(auth: any, reqId: string) {
+  try {
+    const admin = serviceClient();
+    const { data, error } = await admin.from("credit_addons").select("*").eq("user_id", auth.user.id).eq("status", "active").order("purchased_at", { ascending: false });
+    if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
+
+    const totalRemaining = (data || []).reduce((s: number, a: any) => s + (a.credits_remaining || 0), 0);
+    const totalPurchased = (data || []).reduce((s: number, a: any) => s + (a.credits_purchased || 0), 0);
+
+    return json({ credits: data || [], total_remaining: totalRemaining, total_purchased: totalPurchased }, 200, reqId);
+  } catch (e: any) {
+    return errorResponse("DB_ERROR", e.message, 500, reqId);
+  }
+}
+
+async function getMonetizationHistory(url: URL, auth: any, reqId: string) {
+  try {
+    const admin = serviceClient();
+    const days = parseInt(url.searchParams.get("days") || "30", 10);
+    const since = new Date(Date.now() - days * 86400000).toISOString();
+
+    const { data, error } = await admin.from("consumption_logs").select("*").eq("user_id", auth.user.id).gte("created_at", since).order("created_at", { ascending: false }).limit(500);
+    if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
+
+    // Aggregate by day
+    const byDay: Record<string, { date: string; actions: number; tokens: number; cost: number }> = {};
+    for (const log of data || []) {
+      const day = (log as any).created_at.slice(0, 10);
+      if (!byDay[day]) byDay[day] = { date: day, actions: 0, tokens: 0, cost: 0 };
+      byDay[day].actions += 1;
+      byDay[day].tokens += (log as any).tokens_used || 0;
+      byDay[day].cost += (log as any).cost_usd || 0;
+    }
+
+    // Aggregate by source
+    const bySource: Record<string, number> = {};
+    for (const log of data || []) {
+      const src = (log as any).source || "web";
+      bySource[src] = (bySource[src] || 0) + 1;
+    }
+
+    return json({
+      by_day: Object.values(byDay).sort((a, b) => a.date.localeCompare(b.date)),
+      by_source: bySource,
+      total_actions: (data || []).length,
+    }, 200, reqId);
+  } catch (e: any) {
+    return errorResponse("DB_ERROR", e.message, 500, reqId);
+  }
+}
+
+async function checkPlanGate(req: Request, auth: any, reqId: string) {
+  try {
+    const { resource, action } = await req.json();
+    const admin = serviceClient();
+
+    const { data: profile } = await admin.from("profiles").select("subscription_plan").eq("user_id", auth.user.id).maybeSingle();
+    const plan = profile?.subscription_plan || "free";
+    const limits = PLAN_QUOTA_MAP[plan] || PLAN_QUOTA_MAP.free;
+    const limit = limits[resource];
+
+    if (limit === undefined) return json({ allowed: true, reason: "unknown_resource" }, 200, reqId);
+    if (limit === -1) return json({ allowed: true, reason: "unlimited" }, 200, reqId);
+
+    // Count current usage
+    let currentCount = 0;
+    if (resource === "products") {
+      const { count } = await admin.from("products").select("*", { count: "exact", head: true }).eq("user_id", auth.user.id);
+      currentCount = count || 0;
+    } else if (resource === "ai_generations") {
+      const monthStart = new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString();
+      const { count } = await admin.from("ai_generations").select("*", { count: "exact", head: true }).eq("user_id", auth.user.id).gte("created_at", monthStart);
+      currentCount = count || 0;
+
+      // Also check add-on credits
+      if (currentCount >= limit) {
+        const { data: addons } = await admin.from("credit_addons").select("credits_remaining").eq("user_id", auth.user.id).eq("status", "active");
+        const addonCredits = (addons || []).reduce((s: number, a: any) => s + (a.credits_remaining || 0), 0);
+        if (addonCredits > 0) return json({ allowed: true, reason: "addon_credits", remaining: addonCredits }, 200, reqId);
+      }
+    } else if (resource === "imports_monthly") {
+      const monthStart = new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString();
+      const { count } = await admin.from("background_jobs").select("*", { count: "exact", head: true }).eq("user_id", auth.user.id).eq("job_type", "import").gte("created_at", monthStart);
+      currentCount = count || 0;
+    }
+
+    const allowed = currentCount < limit;
+    return json({
+      allowed,
+      current: currentCount,
+      limit,
+      remaining: Math.max(0, limit - currentCount),
+      reason: allowed ? "within_limits" : "limit_reached",
+      upgrade_needed: !allowed,
+    }, 200, reqId);
+  } catch (e: any) {
+    return errorResponse("DB_ERROR", e.message, 500, reqId);
+  }
+}
+
 // ── Ads Handlers ────────────────────────────────────────────────────────────
 
 async function listAdAccounts(auth: any, reqId: string) {
@@ -3973,6 +4140,13 @@ Deno.serve(async (req) => {
     if (req.method === "GET" && matchRoute("/v1/ai/trending-products", apiPath)) return await aiTrendingProducts(url, auth, reqId);
     if (req.method === "POST" && matchRoute("/v1/ai/performance-analysis", apiPath)) return await aiPerformanceAnalysis(req, auth, reqId);
     if (req.method === "GET" && matchRoute("/v1/ai/business-summary", apiPath)) return await aiBusinessSummary(auth, reqId);
+
+    // ── Monetization ──────────────────────────────────────────────
+    if (req.method === "GET" && matchRoute("/v1/monetization/usage", apiPath)) return await getMonetizationUsage(auth, reqId);
+    if (req.method === "GET" && matchRoute("/v1/monetization/plan", apiPath)) return await getMonetizationPlan(auth, reqId);
+    if (req.method === "GET" && matchRoute("/v1/monetization/credits", apiPath)) return await getMonetizationCredits(auth, reqId);
+    if (req.method === "GET" && matchRoute("/v1/monetization/history", apiPath)) return await getMonetizationHistory(url, auth, reqId);
+    if (req.method === "POST" && matchRoute("/v1/monetization/check-gate", apiPath)) return await checkPlanGate(req, auth, reqId);
 
     return errorResponse("NOT_FOUND", `Route ${req.method} ${apiPath} not found`, 404, reqId);
   } catch (err) {
