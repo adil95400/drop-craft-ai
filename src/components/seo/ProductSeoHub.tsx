@@ -23,6 +23,7 @@ import {
   useProductSeoHistory
 } from '@/hooks/useProductSeoScoring'
 import type { ProductSeoResult, ProductSeoHistoryItem } from '@/services/api/seoApi'
+import { SeoScoreEvolutionChart } from './SeoScoreEvolutionChart'
 import { formatDistanceToNow } from 'date-fns'
 import { fr } from 'date-fns/locale'
 import { useUnifiedQuotas } from '@/hooks/useUnifiedQuotas'
@@ -244,42 +245,46 @@ function HistoryDialog({ productId, productName, open, onOpenChange }: {
             <History className="h-5 w-5" />SEO History — {productName}
           </DialogTitle>
         </DialogHeader>
-        <ScrollArea className="max-h-[400px]">
+        <ScrollArea className="max-h-[500px]">
           {items.length === 0 ? (
             <p className="text-center text-muted-foreground py-8">No history available yet</p>
           ) : (
-            <div className="relative pl-6">
-              {/* Timeline line */}
-              <div className="absolute left-2 top-2 bottom-2 w-px bg-border" />
-              <div className="space-y-4">
-                {items.map((item, idx) => (
-                  <div key={item.id} className="relative">
-                    {/* Timeline dot */}
-                    <div className={cn(
-                      'absolute -left-4 top-1 w-3 h-3 rounded-full border-2',
-                      idx === 0 ? 'bg-primary border-primary' : 'bg-background border-muted-foreground/30'
-                    )} />
-                    <div className="p-3 border rounded-lg bg-card">
-                      <div className="flex items-center justify-between mb-2">
-                        <Badge variant="outline" className="text-[10px]">{item.source}</Badge>
-                        <span className="text-[10px] text-muted-foreground">
-                          v{item.version} • {formatDistanceToNow(new Date(item.created_at), { addSuffix: true, locale: fr })}
-                        </span>
-                      </div>
-                      {item.fields?.score && (
-                        <div className="grid grid-cols-4 gap-2 text-xs">
-                          <div>Global: <span className="font-semibold">{item.fields.score.global}</span></div>
-                          <div>SEO: <span className="font-semibold">{item.fields.score.seo}</span></div>
-                          <div>Content: <span className="font-semibold">{item.fields.score.content}</span></div>
-                          <div>Issues: <span className="font-semibold">{item.fields.issues_count ?? '—'}</span></div>
+            <div className="space-y-4">
+              {/* Score Evolution Chart */}
+              <SeoScoreEvolutionChart items={items} productName={productName} />
+
+              {/* Timeline */}
+              <div className="relative pl-6">
+                <div className="absolute left-2 top-2 bottom-2 w-px bg-border" />
+                <div className="space-y-4">
+                  {items.map((item, idx) => (
+                    <div key={item.id} className="relative">
+                      <div className={cn(
+                        'absolute -left-4 top-1 w-3 h-3 rounded-full border-2',
+                        idx === 0 ? 'bg-primary border-primary' : 'bg-background border-muted-foreground/30'
+                      )} />
+                      <div className="p-3 border rounded-lg bg-card">
+                        <div className="flex items-center justify-between mb-2">
+                          <Badge variant="outline" className="text-[10px]">{item.source}</Badge>
+                          <span className="text-[10px] text-muted-foreground">
+                            v{item.version} • {formatDistanceToNow(new Date(item.created_at), { addSuffix: true, locale: fr })}
+                          </span>
                         </div>
-                      )}
-                      {item.fields?.seo_title && (
-                        <p className="text-xs text-muted-foreground mt-1 truncate">Title: {item.fields.seo_title}</p>
-                      )}
+                        {item.fields?.score && (
+                          <div className="grid grid-cols-4 gap-2 text-xs">
+                            <div>Global: <span className="font-semibold">{item.fields.score.global}</span></div>
+                            <div>SEO: <span className="font-semibold">{item.fields.score.seo}</span></div>
+                            <div>Content: <span className="font-semibold">{item.fields.score.content}</span></div>
+                            <div>Issues: <span className="font-semibold">{item.fields.issues_count ?? '—'}</span></div>
+                          </div>
+                        )}
+                        {item.fields?.seo_title && (
+                          <p className="text-xs text-muted-foreground mt-1 truncate">Title: {item.fields.seo_title}</p>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
             </div>
           )}
