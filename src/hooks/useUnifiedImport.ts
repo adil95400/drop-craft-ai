@@ -93,7 +93,7 @@ export const useUnifiedImport = () => {
     }
   })
 
-  // Fetch import history via API V1
+  // Fetch import history via API V1, with fallback to background_jobs
   const { 
     data: importHistory = [], 
     isLoading: isLoadingHistory,
@@ -103,8 +103,38 @@ export const useUnifiedImport = () => {
     queryFn: async () => {
       try {
         const resp = await importJobsApi.list({ per_page: 50 })
-        return resp.items || []
-      } catch { return [] }
+        return (resp.items || []).map((job: any) => ({
+          id: job.job_id || job.id,
+          platform: job.name || job.job_type || 'Import',
+          source_url: job.source_url || '',
+          status: job.status,
+          products_imported: job.progress?.success ?? 0,
+          products_failed: job.progress?.failed ?? 0,
+          error_message: job.error_message || '',
+          created_at: job.created_at,
+        }))
+      } catch {
+        // Fallback: query background_jobs directly
+        const { data: { user } } = await supabase.auth.getUser()
+        if (!user) return []
+        const { data } = await supabase
+          .from('background_jobs')
+          .select('*')
+          .eq('user_id', user.id)
+          .in('job_type', ['import', 'csv_import', 'url_import', 'feed_import', 'bulk_import'])
+          .order('created_at', { ascending: false })
+          .limit(50)
+        return (data || []).map((job: any) => ({
+          id: job.id,
+          platform: job.name || job.job_subtype || job.job_type || 'Import',
+          source_url: job.input_data?.url || job.input_data?.source_url || '',
+          status: job.status,
+          products_imported: job.items_succeeded || 0,
+          products_failed: job.items_failed || 0,
+          error_message: job.error_message || '',
+          created_at: job.created_at,
+        }))
+      }
     }
   })
 

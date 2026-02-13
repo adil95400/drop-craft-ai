@@ -3,7 +3,7 @@
  * Style Channable complet avec BulkImportUltraPro amélioré
  */
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { 
@@ -16,9 +16,10 @@ import { BulkZipImport } from '@/components/import/BulkZipImport'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { supabase } from '@/integrations/supabase/client'
 import { useUnifiedAuth } from '@/contexts/UnifiedAuthContext'
 import { cn } from '@/lib/utils'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { importJobsApi } from '@/services/api/client'
 
 // Hook pour préférences réduites
 const useReducedMotion = () => {
@@ -41,31 +42,35 @@ export default function BulkImportPage() {
   const navigate = useNavigate()
   const { user } = useUnifiedAuth()
   const prefersReducedMotion = useReducedMotion()
-  
-  const [jobs, setJobs] = useState<ImportJob[]>([])
-  const [isLoading, setIsLoading] = useState(true)
+  const queryClient = useQueryClient()
 
-  const loadJobs = useCallback(async () => {
-    if (!user) return
-
-    setIsLoading(true)
-    const { data, error } = await supabase
-      .from('import_jobs')
-      .select('*')
-      .eq('user_id', user.id)
-      .in('job_type', ['bulk', 'bulk_url', 'url'])
-      .order('created_at', { ascending: false })
-      .limit(10)
-
-    if (!error && data) {
-      setJobs(data as ImportJob[])
-    }
-    setIsLoading(false)
-  }, [user])
-
-  useEffect(() => {
-    loadJobs()
-  }, [loadJobs])
+  const { data: jobs = [], isLoading, refetch: loadJobs } = useQuery({
+    queryKey: ['bulk-import-jobs', user?.id],
+    queryFn: async (): Promise<ImportJob[]> => {
+      if (!user?.id) return []
+      try {
+        const resp = await importJobsApi.list({ per_page: 10 })
+        return (resp.items || []).map((job: any) => ({
+          id: job.job_id || job.id,
+          job_type: job.job_type || 'bulk',
+          status: job.status,
+          total_products: job.progress?.total ?? 0,
+          successful_imports: job.progress?.success ?? 0,
+          failed_imports: job.progress?.failed ?? 0,
+          created_at: job.created_at,
+          source_platform: job.name || job.job_type || 'Import en masse',
+        }))
+      } catch {
+        // API V1 unavailable — no fallback needed, just return empty
+        return []
+      }
+    },
+    enabled: !!user?.id,
+    refetchInterval: (query) => {
+      const data = query.state.data || []
+      return data.some(j => j.status === 'processing' || j.status === 'pending') ? 3000 : false
+    },
+  })
 
   const getStatusConfig = (status: string) => {
     const configs: Record<string, { icon: any; color: string; bgColor: string; label: string }> = {
@@ -147,7 +152,7 @@ export default function BulkImportPage() {
             </CardTitle>
             <CardDescription>Vos 10 derniers imports en masse</CardDescription>
           </div>
-          <Button variant="outline" size="sm" onClick={loadJobs} disabled={isLoading}>
+          <Button variant="outline" size="sm" onClick={() => loadJobs()} disabled={isLoading}>
             <RefreshCw className={cn("w-4 h-4 mr-2", isLoading && "animate-spin")} />
             Actualiser
           </Button>
