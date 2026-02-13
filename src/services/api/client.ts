@@ -729,3 +729,47 @@ export const advancedAIApi = {
   businessSummary: () =>
     api.get<AIBusinessSummary>('/ai/business-summary'),
 }
+
+// ── Monetization ────────────────────────────────────────────────────────────
+
+export interface MonetizationPlan {
+  current_plan: string
+  limits: Record<string, number>
+  is_unlimited: boolean
+  stripe_customer_id: string | null
+}
+
+export interface MonetizationUsage {
+  plan: string
+  usage: Record<string, { current: number; limit: number; percentage: number }>
+  alerts: string[]
+}
+
+export interface MonetizationCredits {
+  credits: any[]
+  total_remaining: number
+  total_purchased: number
+}
+
+export interface MonetizationHistory {
+  by_day: { date: string; actions: number; tokens: number; cost: number }[]
+  by_source: Record<string, number>
+  total_actions: number
+}
+
+export interface PlanGateResult {
+  allowed: boolean
+  current?: number
+  limit?: number
+  remaining?: number
+  reason: string
+  upgrade_needed?: boolean
+}
+
+export const monetizationApi = {
+  getPlan: () => api.get<MonetizationPlan>('/monetization/plan'),
+  getUsage: () => api.get<MonetizationUsage>('/monetization/usage'),
+  getCredits: () => api.get<MonetizationCredits>('/monetization/credits'),
+  getHistory: (days?: number) => api.get<MonetizationHistory>('/monetization/history', days ? { days } : undefined),
+  checkGate: (resource: string, action?: string) => api.post<PlanGateResult>('/monetization/check-gate', { resource, action }),
+}

@@ -25,7 +25,7 @@ import {
   BarChart3
 } from 'lucide-react';
 import { useUnifiedQuotas, QuotaKey } from '@/hooks/useUnifiedQuotas';
-import { useConsumptionTracking } from '@/hooks/useConsumptionTracking';
+import { useMonetization } from '@/hooks/useMonetization';
 import { useNavigate } from 'react-router-dom';
 import { CreditPurchaseCard } from './CreditPurchaseCard';
 import { cn } from '@/lib/utils';
@@ -141,11 +141,17 @@ function QuotaCard({ quotaKey, label, current, limit, percentage, isUnlimited }:
 export function UserConsumptionDashboard() {
   const navigate = useNavigate();
   const { currentPlan, getAllQuotas, isLoading: quotasLoading } = useUnifiedQuotas();
-  const { stats, alerts, isLoading: statsLoading } = useConsumptionTracking();
+  const { history, isLoading: monetizationLoading } = useMonetization();
   
   const quotas = getAllQuotas();
   const planInfo = PLAN_LABELS[currentPlan] || PLAN_LABELS.free;
-  const isLoading = quotasLoading || statsLoading;
+  const isLoading = quotasLoading || monetizationLoading;
+
+  const stats = history ? {
+    by_day: history.by_day,
+    by_source: history.by_source as Record<string, number>,
+    by_quota_key: {} as Record<string, { total_actions: number; total_tokens: number }>,
+  } : null;
 
   // Check for near-limit quotas
   const nearLimitQuotas = quotas.filter(q => !q.isUnlimited && q.percentage >= 80);
@@ -321,8 +327,8 @@ export function UserConsumptionDashboard() {
                 {stats?.by_source && Object.keys(stats.by_source).length > 0 ? (
                   <div className="space-y-3">
                     {Object.entries(stats.by_source).map(([source, count]) => {
-                      const total = Object.values(stats.by_source).reduce((a, b) => a + b, 0);
-                      const percentage = (count / total) * 100;
+                      const total = Object.values(stats.by_source).reduce((a: number, b: number) => a + b, 0);
+                      const percentage = ((count as number) / total) * 100;
                       const labels: Record<string, string> = {
                         web: 'Application Web',
                         api: 'API',
@@ -333,7 +339,7 @@ export function UserConsumptionDashboard() {
                         <div key={source} className="space-y-1">
                           <div className="flex justify-between text-sm">
                             <span>{labels[source] || source}</span>
-                            <span className="font-medium">{count} actions</span>
+                            <span className="font-medium">{count as number} actions</span>
                           </div>
                           <Progress value={percentage} className="h-2" />
                         </div>
@@ -356,20 +362,23 @@ export function UserConsumptionDashboard() {
               <CardContent>
                 {stats?.by_quota_key && Object.keys(stats.by_quota_key).length > 0 ? (
                   <div className="space-y-3">
-                    {Object.entries(stats.by_quota_key).map(([key, data]) => (
+                    {Object.entries(stats.by_quota_key).map(([key, data]) => {
+                      const d = data as { total_actions: number; total_tokens: number };
+                      return (
                       <div key={key} className="flex items-center justify-between p-2 rounded-lg bg-muted/50">
                         <div className="flex items-center gap-2">
                           {QUOTA_ICONS[key as QuotaKey]}
                           <span className="text-sm font-medium">{key}</span>
                         </div>
                         <div className="text-right text-sm">
-                          <div className="font-medium">{data.total_actions} actions</div>
+                          <div className="font-medium">{d.total_actions} actions</div>
                           <div className="text-muted-foreground text-xs">
-                            {data.total_tokens} tokens
+                            {d.total_tokens} tokens
                           </div>
                         </div>
                       </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 ) : (
                   <div className="text-center text-muted-foreground py-8">
