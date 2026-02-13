@@ -4,7 +4,7 @@
  * Jobs/Job_items affichés via ActiveJobsBanner + JobTrackerPanel
  */
 
-import { useState, useCallback, useMemo } from 'react'
+import { useState, useCallback, useMemo, useEffect, useRef } from 'react'
 import { cn } from '@/lib/utils'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { useNavigate } from 'react-router-dom'
@@ -77,9 +77,17 @@ export default function CatalogProductsPage() {
 
   // === FILTERS ===
   const [search, setSearch] = useState('')
+  const [debouncedSearch, setDebouncedSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all')
   const [categoryFilter, setCategoryFilter] = useState('all')
   const [sourceFilter, setSourceFilter] = useState('all')
+
+  // Debounce search for performance
+  const searchTimerRef = useRef<ReturnType<typeof setTimeout>>()
+  useEffect(() => {
+    searchTimerRef.current = setTimeout(() => setDebouncedSearch(search), 300)
+    return () => clearTimeout(searchTimerRef.current)
+  }, [search])
   
   // === VIEW & SORT STATE ===
   const [viewMode, setViewMode] = useState<ViewMode>('table')
@@ -139,12 +147,13 @@ export default function CatalogProductsPage() {
 
   const filteredProducts = useMemo(() => {
     let result = [...products]
-    if (search) {
-      const q = search.toLowerCase()
+    if (debouncedSearch) {
+      const q = debouncedSearch.toLowerCase()
       result = result.filter(p =>
         p.name.toLowerCase().includes(q) ||
         p.sku?.toLowerCase().includes(q) ||
-        p.category?.toLowerCase().includes(q)
+        p.category?.toLowerCase().includes(q) ||
+        p.brand?.toLowerCase().includes(q)
       )
     }
     if (statusFilter !== 'all') {
@@ -191,7 +200,7 @@ export default function CatalogProductsPage() {
     })
 
     return result
-  }, [products, search, statusFilter, categoryFilter, sourceFilter, sortField, sortDirection])
+  }, [products, debouncedSearch, statusFilter, categoryFilter, sourceFilter, sortField, sortDirection])
 
   const totalPages = Math.ceil(filteredProducts.length / itemsPerPage)
   const paginatedProducts = useMemo(() => {
@@ -341,7 +350,7 @@ export default function CatalogProductsPage() {
 
         {/* === KPI STAT CARDS === */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-          <Card className="border-border/50">
+          <Card className="border-border/50 cursor-pointer hover:border-primary/30 transition-colors" onClick={() => navigate('/products?status=active')}>
             <CardContent className="p-4 flex items-center gap-3">
               <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
                 <Package className="h-5 w-5 text-primary" />
@@ -352,10 +361,10 @@ export default function CatalogProductsPage() {
               </div>
             </CardContent>
           </Card>
-          <Card className="border-border/50">
+          <Card className="border-border/50 cursor-pointer hover:border-primary/30 transition-colors" onClick={() => { setStatusFilter('all'); setSearch(''); }}>
             <CardContent className="p-4 flex items-center gap-3">
-              <div className="h-10 w-10 rounded-lg bg-blue-500/10 flex items-center justify-center shrink-0">
-                <BarChart3 className="h-5 w-5 text-blue-500" />
+              <div className="h-10 w-10 rounded-lg bg-accent/50 flex items-center justify-center shrink-0">
+                <BarChart3 className="h-5 w-5 text-accent-foreground" />
               </div>
               <div className="min-w-0">
                 <p className="text-2xl font-bold leading-none">{kpis.totalStock.toLocaleString()}</p>
@@ -363,10 +372,10 @@ export default function CatalogProductsPage() {
               </div>
             </CardContent>
           </Card>
-          <Card className="border-border/50">
+          <Card className="border-border/50 cursor-pointer hover:border-primary/30 transition-colors" onClick={() => navigate('/analytics')}>
             <CardContent className="p-4 flex items-center gap-3">
-              <div className="h-10 w-10 rounded-lg bg-emerald-500/10 flex items-center justify-center shrink-0">
-                <DollarSign className="h-5 w-5 text-emerald-500" />
+              <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                <DollarSign className="h-5 w-5 text-primary" />
               </div>
               <div className="min-w-0">
                 <p className="text-2xl font-bold leading-none">{kpis.totalValue.toLocaleString('fr-FR', { maximumFractionDigits: 0 })} €</p>
@@ -374,15 +383,15 @@ export default function CatalogProductsPage() {
               </div>
             </CardContent>
           </Card>
-          <Card className="border-border/50">
+          <Card className="border-border/50 cursor-pointer hover:border-primary/30 transition-colors" onClick={() => navigate('/products/scoring')}>
             <CardContent className="p-4 flex items-center gap-3">
               <div className={cn(
                 "h-10 w-10 rounded-lg flex items-center justify-center shrink-0",
-                kpis.avgMargin >= 30 ? 'bg-emerald-500/10' : kpis.avgMargin >= 15 ? 'bg-amber-500/10' : 'bg-destructive/10'
+                kpis.avgMargin >= 30 ? 'bg-primary/10' : kpis.avgMargin >= 15 ? 'bg-accent/50' : 'bg-destructive/10'
               )}>
                 <TrendingUp className={cn(
                   "h-5 w-5",
-                  kpis.avgMargin >= 30 ? 'text-emerald-500' : kpis.avgMargin >= 15 ? 'text-amber-500' : 'text-destructive'
+                  kpis.avgMargin >= 30 ? 'text-primary' : kpis.avgMargin >= 15 ? 'text-accent-foreground' : 'text-destructive'
                 )} />
               </div>
               <div className="min-w-0">
@@ -607,30 +616,55 @@ export default function CatalogProductsPage() {
           </motion.div>
         )}
 
-        {/* === TABLE OR GRID === */}
-        {viewMode === 'table' ? (
-          <ResponsiveProductsTable
-            products={paginatedProducts}
-            isLoading={isLoading}
-            selectedProducts={selectedProducts}
-            onSelectionChange={setSelectedProducts}
-            onEdit={handleEdit}
-            onDelete={handleDelete}
-            onView={handleView}
-            onDuplicate={handleDuplicate}
-            sortField={sortField}
-            sortDirection={sortDirection}
-            onSort={handleSort}
-          />
+        {/* === EMPTY STATE (no products at all) === */}
+        {!isLoading && products.length === 0 && !hasActiveFilters ? (
+          <Card className="border-dashed border-2">
+            <CardContent className="py-16 text-center">
+              <Package className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
+              <h3 className="text-lg font-semibold mb-2">Aucun produit dans votre catalogue</h3>
+              <p className="text-muted-foreground mb-6 max-w-md mx-auto">
+                Commencez par importer des produits depuis AliExpress, Amazon, ou ajoutez-les manuellement.
+              </p>
+              <div className="flex flex-wrap justify-center gap-3">
+                <Button onClick={() => navigate('/import/quick')} className="gap-2">
+                  <Upload className="h-4 w-4" />
+                  Importer des produits
+                </Button>
+                <Button variant="outline" onClick={() => navigate('/products/create')} className="gap-2">
+                  <Plus className="h-4 w-4" />
+                  Créer manuellement
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
         ) : (
-          <ProductsGridView
-            products={paginatedProducts}
-            onEdit={handleEdit}
-            onDelete={handleDelete}
-            onView={handleView}
-            selectedProducts={selectedProducts}
-            onSelectionChange={setSelectedProducts}
-          />
+          <>
+            {/* === TABLE OR GRID === */}
+            {viewMode === 'table' ? (
+              <ResponsiveProductsTable
+                products={paginatedProducts}
+                isLoading={isLoading}
+                selectedProducts={selectedProducts}
+                onSelectionChange={setSelectedProducts}
+                onEdit={handleEdit}
+                onDelete={handleDelete}
+                onView={handleView}
+                onDuplicate={handleDuplicate}
+                sortField={sortField}
+                sortDirection={sortDirection}
+                onSort={handleSort}
+              />
+            ) : (
+              <ProductsGridView
+                products={paginatedProducts}
+                onEdit={handleEdit}
+                onDelete={handleDelete}
+                onView={handleView}
+                selectedProducts={selectedProducts}
+                onSelectionChange={setSelectedProducts}
+              />
+            )}
+          </>
         )}
 
         {/* === PAGINATION === */}
