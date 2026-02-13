@@ -680,3 +680,52 @@ export const trackingApi = {
   trackView: (body: { productId: string; source?: string }) => api.post<any>('/tracking/product-view', body),
   compareSuppliers: (body: { productId: string }) => api.post<any>('/tracking/supplier-compare', body),
 }
+
+// ── Advanced AI ─────────────────────────────────────────────────────────────
+
+export interface AIPricingSuggestion {
+  product_id: string
+  product_name: string
+  current_price: number
+  suggested_price: number
+  reason: string
+  confidence: number
+  potential_revenue_change: number
+}
+
+export interface AITrendingProduct {
+  product_id: string
+  product_name: string
+  trend_score: number
+  velocity: 'rising' | 'stable' | 'declining'
+  category: string
+  sales_7d: number
+  sales_30d: number
+}
+
+export interface AIPerformanceReport {
+  summary: string
+  score: number
+  strengths: string[]
+  weaknesses: string[]
+  actions: { priority: 'high' | 'medium' | 'low'; action: string; impact: string }[]
+}
+
+export interface AIBusinessSummary {
+  revenue_trend: { direction: string; percent: number }
+  top_category: string
+  risk_alerts: string[]
+  ai_recommendations: string[]
+  health_score: number
+}
+
+export const advancedAIApi = {
+  pricingSuggestions: (body: { product_ids?: string[]; strategy?: string }) =>
+    api.post<{ items: AIPricingSuggestion[] }>('/ai/pricing-suggestions', body),
+  trendingProducts: (limit?: number) =>
+    api.get<{ items: AITrendingProduct[] }>('/ai/trending-products', limit ? { limit } : undefined),
+  performanceAnalysis: (body: { time_range?: string; focus?: string }) =>
+    api.post<AIPerformanceReport>('/ai/performance-analysis', body),
+  businessSummary: () =>
+    api.get<AIBusinessSummary>('/ai/business-summary'),
+}

@@ -3245,6 +3245,173 @@ async function compareSupplierPrices(req: Request, auth: any, reqId: string) {
   return json({ product, suppliers: suppliers || [], comparison: [] }, 200, reqId);
 }
 
+// ── Advanced AI Handlers ────────────────────────────────────────────────────
+
+async function aiCallGateway(systemPrompt: string, userPrompt: string) {
+  const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+  if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY not configured");
+
+  const resp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    method: "POST",
+    headers: { Authorization: `Bearer ${LOVABLE_API_KEY}`, "Content-Type": "application/json" },
+    body: JSON.stringify({
+      model: "google/gemini-2.5-flash",
+      messages: [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: userPrompt },
+      ],
+      temperature: 0.4,
+      max_tokens: 3000,
+    }),
+  });
+
+  if (!resp.ok) {
+    if (resp.status === 429) throw new Error("RATE_LIMIT");
+    if (resp.status === 402) throw new Error("PAYMENT_REQUIRED");
+    throw new Error(`AI gateway error: ${resp.status}`);
+  }
+
+  const data = await resp.json();
+  const content = data.choices?.[0]?.message?.content;
+  if (!content) throw new Error("No AI content");
+
+  const jsonMatch = content.match(/\{[\s\S]*\}/);
+  if (!jsonMatch) throw new Error("No JSON in AI response");
+  return JSON.parse(jsonMatch[0]);
+}
+
+async function aiPricingSuggestions(req: Request, auth: any, reqId: string) {
+  try {
+    const body = await req.json();
+    const admin = serviceClient();
+    let query = admin.from("products").select("id, name, price, cost_price, category, stock_quantity").eq("user_id", auth.user.id).limit(20);
+    if (body.product_ids?.length) query = query.in("id", body.product_ids);
+    const { data: products } = await query;
+    if (!products?.length) return json({ items: [] }, 200, reqId);
+
+    const result = await aiCallGateway(
+      "Tu es un expert en pricing e-commerce. Analyse les produits et suggère des ajustements de prix optimaux. Réponds UNIQUEMENT en JSON valide.",
+      `Analyse ces produits et suggère des prix optimisés selon la stratégie "${body.strategy || 'competitive'}":
+${JSON.stringify(products, null, 2)}
+Format JSON: { "suggestions": [{ "product_id": "id", "product_name": "nom", "current_price": number, "suggested_price": number, "reason": "raison courte", "confidence": number, "potential_revenue_change": number }] }`
+    );
+    return json({ items: result.suggestions || [] }, 200, reqId);
+  } catch (e: any) {
+    if (e.message === "RATE_LIMIT") return errorResponse("RATE_LIMIT", "Too many requests", 429, reqId);
+    if (e.message === "PAYMENT_REQUIRED") return errorResponse("PAYMENT_REQUIRED", "Credits exhausted", 402, reqId);
+    console.error("aiPricingSuggestions error:", e);
+    return errorResponse("AI_ERROR", e.message, 500, reqId);
+  }
+}
+
+async function aiTrendingProducts(url: URL, auth: any, reqId: string) {
+  try {
+    const admin = serviceClient();
+    const limit = Math.min(50, parseInt(url.searchParams.get("limit") || "10", 10));
+    const { data: orders } = await admin.from("orders").select("id, total_amount, created_at, order_items(product_id, quantity, unit_price)").eq("user_id", auth.user.id).gte("created_at", new Date(Date.now() - 30 * 86400000).toISOString()).order("created_at", { ascending: false }).limit(100);
+    const { data: products } = await admin.from("products").select("id, name, category, price, stock_quantity").eq("user_id", auth.user.id).limit(100);
+    if (!products?.length) return json({ items: [] }, 200, reqId);
+
+    const salesMap: Record<string, { sales_7d: number; sales_30d: number }> = {};
+    const now = Date.now();
+    for (const order of orders || []) {
+      for (const item of (order as any).order_items || []) {
+        if (!salesMap[item.product_id]) salesMap[item.product_id] = { sales_7d: 0, sales_30d: 0 };
+        salesMap[item.product_id].sales_30d += item.quantity;
+        if (new Date(order.created_at).getTime() > now - 7 * 86400000) salesMap[item.product_id].sales_7d += item.quantity;
+      }
+    }
+
+    const trending = products.map((p: any) => {
+      const sales = salesMap[p.id] || { sales_7d: 0, sales_30d: 0 };
+      const velocity = sales.sales_7d > sales.sales_30d / 4 ? "rising" : sales.sales_7d < sales.sales_30d / 6 ? "declining" : "stable";
+      const trend_score = Math.min(100, Math.round((sales.sales_7d * 4 / Math.max(1, sales.sales_30d)) * 50 + (sales.sales_30d > 0 ? 30 : 0) + (p.stock_quantity > 0 ? 20 : 0)));
+      return { product_id: p.id, product_name: p.name, trend_score, velocity, category: p.category || "Non classé", sales_7d: sales.sales_7d, sales_30d: sales.sales_30d };
+    }).sort((a: any, b: any) => b.trend_score - a.trend_score).slice(0, limit);
+    return json({ items: trending }, 200, reqId);
+  } catch (e: any) {
+    console.error("aiTrendingProducts error:", e);
+    return errorResponse("AI_ERROR", e.message, 500, reqId);
+  }
+}
+
+async function aiPerformanceAnalysis(req: Request, auth: any, reqId: string) {
+  try {
+    const body = await req.json();
+    const admin = serviceClient();
+    const { data: products } = await admin.from("products").select("id, name, price, cost_price, stock_quantity, category").eq("user_id", auth.user.id).limit(50);
+    const { data: orders } = await admin.from("orders").select("id, total_amount, status, created_at").eq("user_id", auth.user.id).gte("created_at", new Date(Date.now() - 30 * 86400000).toISOString());
+    const { data: customers } = await admin.from("customers").select("id").eq("user_id", auth.user.id);
+
+    const totalRevenue = (orders || []).reduce((sum: number, o: any) => sum + (o.total_amount || 0), 0);
+    const avgOrderValue = orders?.length ? totalRevenue / orders.length : 0;
+
+    const result = await aiCallGateway(
+      "Tu es un consultant e-commerce expert. Analyse la performance business et fournis un rapport structuré. Réponds UNIQUEMENT en JSON valide.",
+      `Analyse cette performance business (${body.time_range || '30 jours'}, focus: ${body.focus || 'global'}):
+Produits: ${products?.length || 0} | Commandes: ${orders?.length || 0} | Clients: ${customers?.length || 0}
+CA total: ${totalRevenue.toFixed(2)}€ | Panier moyen: ${avgOrderValue.toFixed(2)}€
+Format JSON: { "summary": "résumé en 2 phrases", "score": number, "strengths": ["..."], "weaknesses": ["..."], "actions": [{ "priority": "high|medium|low", "action": "...", "impact": "..." }] }`
+    );
+    return json(result, 200, reqId);
+  } catch (e: any) {
+    if (e.message === "RATE_LIMIT") return errorResponse("RATE_LIMIT", "Too many requests", 429, reqId);
+    if (e.message === "PAYMENT_REQUIRED") return errorResponse("PAYMENT_REQUIRED", "Credits exhausted", 402, reqId);
+    console.error("aiPerformanceAnalysis error:", e);
+    return errorResponse("AI_ERROR", e.message, 500, reqId);
+  }
+}
+
+async function aiBusinessSummary(auth: any, reqId: string) {
+  try {
+    const admin = serviceClient();
+    const thirtyDaysAgo = new Date(Date.now() - 30 * 86400000).toISOString();
+    const sixtyDaysAgo = new Date(Date.now() - 60 * 86400000).toISOString();
+
+    const { data: recentOrders } = await admin.from("orders").select("total_amount").eq("user_id", auth.user.id).gte("created_at", thirtyDaysAgo);
+    const { data: prevOrders } = await admin.from("orders").select("total_amount").eq("user_id", auth.user.id).gte("created_at", sixtyDaysAgo).lt("created_at", thirtyDaysAgo);
+
+    const recentRevenue = (recentOrders || []).reduce((s: number, o: any) => s + (o.total_amount || 0), 0);
+    const prevRevenue = (prevOrders || []).reduce((s: number, o: any) => s + (o.total_amount || 0), 0);
+    const revenueChange = prevRevenue > 0 ? ((recentRevenue - prevRevenue) / prevRevenue) * 100 : 0;
+
+    const { data: products } = await admin.from("products").select("category, price, cost_price, stock_quantity").eq("user_id", auth.user.id);
+
+    const categories: Record<string, number> = {};
+    const riskAlerts: string[] = [];
+    let healthScore = 70;
+
+    for (const p of products || []) {
+      const cat = (p as any).category || "Non classé";
+      categories[cat] = (categories[cat] || 0) + 1;
+      if ((p as any).stock_quantity === 0) riskAlerts.push("Rupture de stock détectée");
+      if ((p as any).cost_price && (p as any).price && (p as any).price < (p as any).cost_price * 1.1) riskAlerts.push("Marge critique sur certains produits");
+    }
+
+    const topCategory = Object.entries(categories).sort((a, b) => b[1] - a[1])[0]?.[0] || "N/A";
+    const uniqueAlerts = [...new Set(riskAlerts)].slice(0, 3);
+    if (recentRevenue > prevRevenue) healthScore += 10;
+    if (uniqueAlerts.length === 0) healthScore += 10;
+    if ((products || []).length > 10) healthScore += 5;
+    healthScore = Math.min(100, healthScore);
+
+    return json({
+      revenue_trend: { direction: revenueChange >= 0 ? "up" : "down", percent: Math.abs(Math.round(revenueChange * 10) / 10) },
+      top_category: topCategory,
+      risk_alerts: uniqueAlerts,
+      ai_recommendations: [
+        revenueChange < 0 ? "Relancer les campagnes marketing pour inverser la tendance" : "Maintenir la dynamique de croissance actuelle",
+        uniqueAlerts.length > 0 ? "Résoudre les alertes de stock en priorité" : "Diversifier le catalogue pour sécuriser les revenus",
+        "Optimiser les fiches produits SEO pour augmenter le trafic organique",
+      ],
+      health_score: healthScore,
+    }, 200, reqId);
+  } catch (e: any) {
+    console.error("aiBusinessSummary error:", e);
+    return errorResponse("AI_ERROR", e.message, 500, reqId);
+  }
+}
+
 // ── Ads Handlers ────────────────────────────────────────────────────────────
 
 async function listAdAccounts(auth: any, reqId: string) {
@@ -3800,6 +3967,12 @@ Deno.serve(async (req) => {
     // ── Product Tracking ──────────────────────────────────────
     if (req.method === "POST" && matchRoute("/v1/tracking/product-view", apiPath)) return await trackProductView(req, auth, reqId);
     if (req.method === "POST" && matchRoute("/v1/tracking/supplier-compare", apiPath)) return await compareSupplierPrices(req, auth, reqId);
+
+    // ── Advanced AI ──────────────────────────────────────────────
+    if (req.method === "POST" && matchRoute("/v1/ai/pricing-suggestions", apiPath)) return await aiPricingSuggestions(req, auth, reqId);
+    if (req.method === "GET" && matchRoute("/v1/ai/trending-products", apiPath)) return await aiTrendingProducts(url, auth, reqId);
+    if (req.method === "POST" && matchRoute("/v1/ai/performance-analysis", apiPath)) return await aiPerformanceAnalysis(req, auth, reqId);
+    if (req.method === "GET" && matchRoute("/v1/ai/business-summary", apiPath)) return await aiBusinessSummary(auth, reqId);
 
     return errorResponse("NOT_FOUND", `Route ${req.method} ${apiPath} not found`, 404, reqId);
   } catch (err) {
