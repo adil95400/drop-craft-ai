@@ -413,6 +413,10 @@ export default function CatalogProductsPage() {
           {/* Row 1: Actions principales */}
           <div className="flex flex-wrap items-center gap-2 justify-between">
             <div className="flex flex-wrap items-center gap-2">
+              <Button variant="outline" size="sm" className="gap-2" onClick={() => navigate('/products/cockpit')}>
+                <BarChart3 className="h-4 w-4" />
+                Cockpit
+              </Button>
               <Button onClick={() => navigate('/products/create')} size="sm" className="gap-2">
                 <Plus className="h-4 w-4" />
                 Nouveau produit
