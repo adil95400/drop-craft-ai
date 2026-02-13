@@ -1,9 +1,10 @@
 /**
- * useApiProducts - Hook pour les opérations produits via Supabase direct
+ * useApiProducts - Hook pour les opérations produits via API V1
+ * Zéro lecture directe Supabase — tout passe par le routeur REST unifié.
  */
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useToast } from '@/hooks/use-toast'
-import { supabase } from '@/integrations/supabase/client'
+import { productsApi } from '@/services/api/client'
 
 export function useApiProducts() {
   const { toast } = useToast()
@@ -13,6 +14,7 @@ export function useApiProducts() {
     queryClient.invalidateQueries({ queryKey: ['products-unified'] })
     queryClient.invalidateQueries({ queryKey: ['products'] })
     queryClient.invalidateQueries({ queryKey: ['product-stats'] })
+    queryClient.invalidateQueries({ queryKey: ['imported-products'] })
   }
 
   const createProduct = useMutation({
@@ -27,28 +29,19 @@ export function useApiProducts() {
       supplierId?: string
       images?: string[]
     }) => {
-      const { data: userData } = await supabase.auth.getUser()
-      if (!userData.user) throw new Error('Non authentifié')
-
-      const { data, error } = await (supabase
-        .from('products') as any)
-        .insert({
-          user_id: userData.user.id,
-          name: product.title,
-          description: product.description,
-          sku: product.sku,
-          cost_price: product.costPrice,
-          price: product.salePrice,
-          stock_quantity: product.stock || 0,
-          category: product.categoryId,
-          image_url: product.images?.[0],
-          status: 'draft',
-        })
-        .select()
-        .single()
-
-      if (error) throw error
-      return { success: true, data }
+      const resp = await productsApi.create({
+        title: product.title,
+        name: product.title,
+        description: product.description,
+        sku: product.sku,
+        cost_price: product.costPrice ?? 0,
+        price: product.salePrice,
+        stock_quantity: product.stock ?? 0,
+        category: product.categoryId ?? null,
+        images: product.images ?? [],
+        status: 'draft',
+      })
+      return { success: true, data: resp }
     },
     onSuccess: () => {
       invalidate()
@@ -59,20 +52,15 @@ export function useApiProducts() {
 
   const updateProduct = useMutation({
     mutationFn: async ({ id, updates }: { id: string; updates: Partial<{ title: string; description: string; costPrice: number; salePrice: number; stock: number; status: string }> }) => {
-      const updateData: Record<string, any> = {}
-      if (updates.title) updateData.name = updates.title
-      if (updates.description) updateData.description = updates.description
-      if (updates.costPrice !== undefined) updateData.cost_price = updates.costPrice
-      if (updates.salePrice !== undefined) updateData.price = updates.salePrice
-      if (updates.stock !== undefined) updateData.stock_quantity = updates.stock
-      if (updates.status) updateData.status = updates.status
+      const apiUpdates: Record<string, any> = {}
+      if (updates.title) { apiUpdates.title = updates.title; apiUpdates.name = updates.title }
+      if (updates.description) apiUpdates.description = updates.description
+      if (updates.costPrice !== undefined) apiUpdates.cost_price = updates.costPrice
+      if (updates.salePrice !== undefined) apiUpdates.price = updates.salePrice
+      if (updates.stock !== undefined) apiUpdates.stock_quantity = updates.stock
+      if (updates.status) apiUpdates.status = updates.status
 
-      const { error } = await supabase
-        .from('products')
-        .update(updateData)
-        .eq('id', id)
-
-      if (error) throw error
+      await productsApi.update(id, apiUpdates as any)
       return { success: true }
     },
     onSuccess: () => {
@@ -84,11 +72,7 @@ export function useApiProducts() {
 
   const deleteProduct = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase
-        .from('products')
-        .delete()
-        .eq('id', id)
-      if (error) throw error
+      await productsApi.delete(id)
       return { success: true }
     },
     onSuccess: () => {
@@ -104,25 +88,18 @@ export function useApiProducts() {
       adjustmentType: 'percentage' | 'fixed'
       adjustmentValue: number
     }) => {
-      // Get current prices
-      const { data: products, error: fetchError } = await supabase
-        .from('products')
-        .select('id, price')
-        .in('id', productIds)
+      // Fetch current prices via API
+      const resp = await productsApi.list({ per_page: 100 })
+      const products = (resp.items ?? []).filter(p => productIds.includes(p.id))
 
-      if (fetchError) throw fetchError
-
-      // Update each product
-      for (const product of (products || [])) {
+      // Update each product via API
+      for (const product of products) {
         const currentPrice = Number(product.price) || 0
         const newPrice = adjustmentType === 'percentage'
           ? currentPrice * (1 + adjustmentValue / 100)
           : currentPrice + adjustmentValue
 
-        await supabase
-          .from('products')
-          .update({ price: Math.max(0, newPrice) })
-          .eq('id', product.id)
+        await productsApi.update(product.id, { price: Math.max(0, newPrice) } as any)
       }
 
       return { success: true }
