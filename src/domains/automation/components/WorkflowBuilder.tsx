@@ -37,6 +37,7 @@ import {
 import { motion, AnimatePresence } from 'framer-motion'
 import { useToast } from '@/hooks/use-toast'
 import { cn } from '@/lib/utils'
+import { useRealAutomation } from '@/hooks/useRealAutomation'
 
 // Types pour les blocs de workflow
 interface WorkflowBlock {
@@ -401,7 +402,9 @@ function BlockConfigPanel({
 
 export const WorkflowBuilder: React.FC = () => {
   const { toast } = useToast()
+  const { createWorkflow, isCreating } = useRealAutomation()
   const [workflowName, setWorkflowName] = useState('Mon workflow')
+  const [workflowDescription, setWorkflowDescription] = useState('')
   const [blocks, setBlocks] = useState<WorkflowBlock[]>([])
   const [selectedBlockId, setSelectedBlockId] = useState<string | null>(null)
   const [activeId, setActiveId] = useState<string | null>(null)
@@ -474,10 +477,20 @@ export const WorkflowBuilder: React.FC = () => {
       })
       return
     }
-    // TODO: Sauvegarder via WorkflowService
-    toast({ 
-      title: "Workflow sauvegardé", 
-      description: `"${workflowName}" enregistré avec ${blocks.length} blocs` 
+    
+    const triggerBlock = blocks.find(b => b.type === 'trigger')
+    const steps = blocks.map((b, i) => ({
+      order: i, type: b.type, blockType: b.blockType,
+      name: b.name, config: b.config
+    }))
+
+    createWorkflow({
+      name: workflowName,
+      description: workflowDescription,
+      trigger_type: triggerBlock?.blockType || 'manual',
+      trigger_config: triggerBlock?.config || {},
+      steps,
+      status: 'draft' as const,
     })
   }
 
@@ -516,9 +529,9 @@ export const WorkflowBuilder: React.FC = () => {
             <Eye className="h-4 w-4 mr-2" />
             Tester
           </Button>
-          <Button onClick={handleSave}>
+          <Button onClick={handleSave} disabled={isCreating}>
             <Save className="h-4 w-4 mr-2" />
-            Sauvegarder
+            {isCreating ? 'Sauvegarde...' : 'Sauvegarder'}
           </Button>
         </div>
       </div>

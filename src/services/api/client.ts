@@ -474,6 +474,25 @@ export const automationApi = {
 
   stats: () =>
     api.get<any>('/automation/stats'),
+
+  // Workflows
+  listWorkflows: () =>
+    api.get<{ items: any[] }>('/automation/workflows'),
+
+  createWorkflow: (body: any) =>
+    api.post<any>('/automation/workflows', body, crypto.randomUUID()),
+
+  updateWorkflow: (id: string, body: any) =>
+    api.put<any>(`/automation/workflows/${id}`, body),
+
+  deleteWorkflow: (id: string) =>
+    api.delete<{ success: boolean }>(`/automation/workflows/${id}`),
+
+  toggleWorkflow: (id: string, isActive: boolean) =>
+    api.post<any>(`/automation/workflows/${id}/toggle`, { is_active: isActive }),
+
+  runWorkflow: (id: string) =>
+    api.post<any>(`/automation/workflows/${id}/run`, {}),
 }
 
 // ── Marketing ───────────────────────────────────────────────────────────────

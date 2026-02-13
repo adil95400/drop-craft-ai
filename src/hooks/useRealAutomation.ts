@@ -1,6 +1,9 @@
+/**
+ * useRealAutomation — Unified automation hook migrated to API V1
+ */
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useToast } from '@/hooks/use-toast'
-import { supabase } from '@/integrations/supabase/client'
+import { automationApi } from '@/services/api/client'
 
 export interface AutomationWorkflow {
   id: string
@@ -17,12 +20,14 @@ export interface AutomationWorkflow {
   user_id: string
   created_at: string
   updated_at: string
+  is_active?: boolean
+  run_count?: number
 }
 
 export interface AutomationExecution {
   id: string
   workflow_id: string
-  status: 'running' | 'success' | 'error' | 'cancelled'
+  status: 'running' | 'success' | 'error' | 'cancelled' | 'completed'
   started_at: string
   completed_at?: string
   input_data?: any
@@ -31,6 +36,7 @@ export interface AutomationExecution {
   error_message?: string
   execution_time_ms?: number
   user_id: string
+  created_at?: string
 }
 
 export const useRealAutomation = () => {
@@ -40,29 +46,24 @@ export const useRealAutomation = () => {
   const { data: workflows = [], isLoading: isLoadingWorkflows } = useQuery({
     queryKey: ['automation-workflows'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('automation_workflows')
-        .select('*')
-        .order('created_at', { ascending: false })
-
-      if (error) throw error
-      
-      // Map to expected interface with defaults
-      return (data || []).map((row: any) => ({
+      const res = await automationApi.listWorkflows()
+      return (res.items || []).map((row: any) => ({
         id: row.id,
         name: row.name,
         description: row.description,
         trigger_type: row.workflow_data?.trigger_type || 'manual',
         trigger_config: row.workflow_data?.trigger_config || {},
         steps: row.steps || [],
-        status: row.status as 'draft' | 'active' | 'paused',
+        status: (row.status || 'draft') as 'draft' | 'active' | 'paused',
         execution_count: row.execution_count || 0,
         success_count: row.run_count || 0,
         failure_count: 0,
         last_executed_at: row.last_run_at,
         user_id: row.user_id,
         created_at: row.created_at,
-        updated_at: row.updated_at
+        updated_at: row.updated_at,
+        is_active: row.is_active,
+        run_count: row.run_count,
       })) as AutomationWorkflow[]
     },
   })
@@ -70,142 +71,121 @@ export const useRealAutomation = () => {
   const { data: executions = [], isLoading: isLoadingExecutions } = useQuery({
     queryKey: ['automation-executions'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('automation_execution_logs')
-        .select('*')
-        .order('executed_at', { ascending: false })
-        .limit(50)
-
-      if (error) throw error
-      
-      // Map to expected interface
-      return (data || []).map((row: any) => ({
+      const res = await automationApi.listExecutions({ limit: 50 })
+      return (res.items || []).map((row: any) => ({
         id: row.id,
         workflow_id: row.trigger_id || '',
-        status: row.status as 'running' | 'success' | 'error' | 'cancelled',
-        started_at: row.executed_at,
-        completed_at: row.executed_at,
+        status: row.status as any,
+        started_at: row.executed_at || row.created_at,
+        completed_at: row.executed_at || row.created_at,
         input_data: row.input_data,
         output_data: row.output_data,
         error_message: row.error_message,
         execution_time_ms: row.duration_ms,
-        user_id: row.user_id
+        user_id: row.user_id,
+        created_at: row.created_at,
       })) as AutomationExecution[]
     },
   })
 
   const createWorkflow = useMutation({
-    mutationFn: async (workflow: Omit<AutomationWorkflow, 'id' | 'created_at' | 'updated_at' | 'user_id' | 'execution_count' | 'success_count' | 'failure_count'>) => {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) throw new Error('Non authentifié')
-
-      const { data, error } = await supabase
-        .from('automation_workflows')
-        .insert([{ 
-          name: workflow.name,
-          description: workflow.description,
-          steps: workflow.steps,
-          status: workflow.status,
-          workflow_data: {
-            trigger_type: workflow.trigger_type,
-            trigger_config: workflow.trigger_config
-          },
-          user_id: user.id 
-        }])
-        .select()
-        .single()
-
-      if (error) throw error
-      return data
+    mutationFn: async (workflow: Partial<AutomationWorkflow>) => {
+      return await automationApi.createWorkflow({
+        name: workflow.name,
+        description: workflow.description,
+        steps: workflow.steps || [],
+        status: workflow.status || 'draft',
+        workflow_data: {
+          trigger_type: workflow.trigger_type || 'manual',
+          trigger_config: workflow.trigger_config || {}
+        },
+      })
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['automation-workflows'] })
-      toast({
-        title: "Workflow créé",
-        description: "Le workflow d'automatisation a été créé avec succès",
-      })
+      queryClient.invalidateQueries({ queryKey: ['automation-stats'] })
+      toast({ title: "Workflow créé" })
     }
   })
 
   const updateWorkflow = useMutation({
     mutationFn: async ({ id, updates }: { id: string; updates: Partial<AutomationWorkflow> }) => {
-      const updateData: any = {}
-      if (updates.name) updateData.name = updates.name
-      if (updates.description) updateData.description = updates.description
-      if (updates.steps) updateData.steps = updates.steps
-      if (updates.status) updateData.status = updates.status
+      const body: any = {}
+      if (updates.name) body.name = updates.name
+      if (updates.description !== undefined) body.description = updates.description
+      if (updates.steps) body.steps = updates.steps
+      if (updates.status) body.status = updates.status
+      if (updates.is_active !== undefined) body.is_active = updates.is_active
       if (updates.trigger_type || updates.trigger_config) {
-        updateData.workflow_data = {
-          trigger_type: updates.trigger_type,
-          trigger_config: updates.trigger_config
-        }
+        body.workflow_data = { trigger_type: updates.trigger_type, trigger_config: updates.trigger_config }
       }
-
-      const { data, error } = await supabase
-        .from('automation_workflows')
-        .update(updateData)
-        .eq('id', id)
-        .select()
-        .single()
-
-      if (error) throw error
-      return data
+      return await automationApi.updateWorkflow(id, body)
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['automation-workflows'] })
-      toast({
-        title: "Workflow mis à jour",
-        description: "Le workflow a été mis à jour avec succès",
-      })
+      queryClient.invalidateQueries({ queryKey: ['automation-stats'] })
+      toast({ title: "Workflow mis à jour" })
+    }
+  })
+
+  const toggleWorkflow = useMutation({
+    mutationFn: async ({ id, isActive }: { id: string; isActive: boolean }) => {
+      return await automationApi.toggleWorkflow(id, isActive)
+    },
+    onSuccess: (_, vars) => {
+      queryClient.invalidateQueries({ queryKey: ['automation-workflows'] })
+      queryClient.invalidateQueries({ queryKey: ['automation-stats'] })
+      toast({ title: vars.isActive ? 'Workflow activé' : 'Workflow mis en pause' })
+    }
+  })
+
+  const deleteWorkflow = useMutation({
+    mutationFn: async (id: string) => {
+      return await automationApi.deleteWorkflow(id)
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['automation-workflows'] })
+      queryClient.invalidateQueries({ queryKey: ['automation-stats'] })
+      toast({ title: "Workflow supprimé" })
     }
   })
 
   const executeWorkflow = useMutation({
-    mutationFn: async ({ workflowId, inputData }: { workflowId: string; inputData?: any }) => {
-      const response = await supabase.functions.invoke('automation-engine', {
-        body: {
-          action: 'execute_workflow',
-          workflow_id: workflowId,
-          input_data: inputData
-        },
-      })
-
-      if (response.error) {
-        throw new Error('Erreur lors de l\'exécution du workflow')
-      }
-
-      return response.data
+    mutationFn: async ({ workflowId }: { workflowId: string; inputData?: any }) => {
+      return await automationApi.runWorkflow(workflowId)
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['automation-executions'] })
-      toast({
-        title: "Workflow exécuté",
-        description: "Le workflow a été lancé avec succès",
-      })
+      queryClient.invalidateQueries({ queryKey: ['automation-workflows'] })
+      queryClient.invalidateQueries({ queryKey: ['automation-stats'] })
+      toast({ title: "Workflow exécuté" })
     }
   })
 
   const stats = {
     totalWorkflows: workflows.length,
-    activeWorkflows: workflows.filter(w => w.status === 'active').length,
-    active: workflows.filter(w => w.status === 'active').length, // backward compatibility
+    activeWorkflows: workflows.filter(w => w.status === 'active' || w.is_active).length,
+    active: workflows.filter(w => w.status === 'active' || w.is_active).length,
     totalExecutions: workflows.reduce((sum, w) => sum + w.execution_count, 0),
-    successRate: workflows.length > 0 
-      ? (workflows.reduce((sum, w) => sum + w.success_count, 0) / Math.max(workflows.reduce((sum, w) => sum + w.execution_count, 0), 1)) * 100
+    successRate: workflows.length > 0
+      ? Math.round((workflows.reduce((sum, w) => sum + w.success_count, 0) / Math.max(workflows.reduce((sum, w) => sum + w.execution_count, 0), 1)) * 1000) / 10
       : 0
   }
 
   return {
-    workflows,
-    executions,
-    automations: workflows, // backward compatibility
+    workflows, executions,
+    automations: workflows,
     stats,
     isLoading: isLoadingWorkflows || isLoadingExecutions,
     createWorkflow: createWorkflow.mutate,
     updateWorkflow: updateWorkflow.mutate,
+    toggleWorkflow: toggleWorkflow.mutate,
+    deleteWorkflow: deleteWorkflow.mutate,
     executeWorkflow: executeWorkflow.mutate,
     isCreating: createWorkflow.isPending,
     isUpdating: updateWorkflow.isPending,
-    isExecuting: executeWorkflow.isPending
+    isExecuting: executeWorkflow.isPending,
+    isToggling: toggleWorkflow.isPending,
+    isDeleting: deleteWorkflow.isPending,
   }
 }
