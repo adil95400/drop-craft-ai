@@ -2,11 +2,11 @@ export type LogoKey =
   // E-commerce platforms
   | "shopify" | "shopify-text" | "woocommerce" | "prestashop" | "magento" | "magento-text"
   | "bigcommerce" | "bigcommerce-text" | "bigcommerce-icon" | "squarespace" | "squarespace-text"
-  | "wix" | "wix-text"
+  | "wix" | "wix-text" | "ecwid" | "opencart"
   // Marketplaces
   | "amazon" | "amazon-text" | "ebay" | "ebay-text" | "ebay-icon" | "etsy" | "etsy-text"
   | "cdiscount" | "cdiscount-text" | "rakuten" | "rakuten-text" | "zalando" | "zalando-text"
-  | "fnac" | "fnac-text" | "asos" | "costco" | "aliexpress" | "tiktok-shop"
+  | "fnac" | "fnac-text" | "asos" | "costco" | "aliexpress" | "tiktok-shop" | "walmart"
   // Social & Ads
   | "facebook" | "facebook-text" | "facebook-circle" | "instagram" | "instagram-color"
   | "tiktok" | "tiktok-color" | "tiktok-full" | "meta-ads" | "meta-color"
@@ -34,6 +34,8 @@ export const LOGOS: Record<LogoKey, { src: string; alt: string; cdn?: string }> 
   "squarespace-text": { src: "/logos/squarespace-text.svg", alt: "Squarespace" },
   wix: { src: "/logos/wix.svg", alt: "Wix", cdn: "https://cdn.simpleicons.org/wix" },
   "wix-text": { src: "/logos/wix-text.svg", alt: "Wix" },
+  ecwid: { src: "/logos/ecwid.svg", alt: "Ecwid" },
+  opencart: { src: "/logos/opencart.svg", alt: "OpenCart" },
 
   // Marketplaces
   amazon: { src: "/logos/amazon.svg", alt: "Amazon", cdn: "https://cdn.simpleicons.org/amazon" },
@@ -55,6 +57,7 @@ export const LOGOS: Record<LogoKey, { src: string; alt: string; cdn?: string }> 
   costco: { src: "/logos/costco.svg", alt: "Costco" },
   aliexpress: { src: "/logos/aliexpress.svg", alt: "AliExpress", cdn: "https://cdn.simpleicons.org/aliexpress" },
   "tiktok-shop": { src: "/logos/tiktok-shop.svg", alt: "TikTok Shop", cdn: "https://cdn.simpleicons.org/tiktok" },
+  walmart: { src: "/logos/walmart.svg", alt: "Walmart" },
 
   // Social & Ads
   facebook: { src: "/logos/facebook.svg", alt: "Facebook", cdn: "https://cdn.simpleicons.org/facebook" },

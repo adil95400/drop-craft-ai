@@ -7,6 +7,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Skeleton } from '@/components/ui/skeleton';
 import { formatDistanceToNow } from 'date-fns';
 import { fr } from 'date-fns/locale';
+import { getPlatformLogo } from '@/utils/platformLogos';
 
 interface ConnectedStoresWidgetProps {
   timeRange: string;
@@ -14,14 +15,6 @@ interface ConnectedStoresWidgetProps {
     showDetails?: boolean;
   };
 }
-
-const platformIcons: Record<string, string> = {
-  shopify: '🛒',
-  woocommerce: '🔧',
-  prestashop: '🏪',
-  magento: '🧲',
-  bigcommerce: '📦',
-};
 
 export function ConnectedStoresWidget({ settings }: ConnectedStoresWidgetProps) {
   const showDetails = settings?.showDetails ?? true;
@@ -101,7 +94,17 @@ export function ConnectedStoresWidget({ settings }: ConnectedStoresWidgetProps) 
                 className="flex items-center justify-between p-2 bg-muted/30 rounded-lg"
               >
                 <div className="flex items-center gap-2">
-                  <span className="text-lg">{platformIcons[store.platform] || '🏪'}</span>
+                  <div className="w-8 h-8 rounded bg-muted/50 flex items-center justify-center p-1 overflow-hidden">
+                    {getPlatformLogo(store.platform) ? (
+                      <img 
+                        src={getPlatformLogo(store.platform)!}
+                        alt={store.platform_name || store.platform}
+                        className="w-full h-full object-contain"
+                      />
+                    ) : (
+                      <Store className="h-4 w-4 text-muted-foreground" />
+                    )}
+                  </div>
                   <div>
                     <p className="text-sm font-medium capitalize">{store.platform_name || store.platform}</p>
                     {store.store_url && (
