@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Zap, List, Activity, Plus, Play, Pause, Trash2, RefreshCw, CheckCircle2, XCircle, Clock, FlaskConical, LayoutTemplate } from 'lucide-react';
+import { Zap, List, Activity, Plus, Play, Pause, Trash2, RefreshCw, CheckCircle2, XCircle, Clock, FlaskConical, LayoutTemplate, GitBranch, BarChart3, Terminal, Calendar } from 'lucide-react';
 import { useAutomationWorkflows, useAutomationStats } from '@/hooks/useAutomationRealData';
 import { formatDistanceToNow } from 'date-fns';
 import { fr } from 'date-fns/locale';
@@ -20,6 +20,14 @@ import { useQueryClient } from '@tanstack/react-query';
 // Lazy load enterprise components
 const WorkflowSandbox = lazy(() => import('@/components/automation/WorkflowSandbox').then(m => ({ default: m.WorkflowSandbox })));
 const WorkflowTemplates = lazy(() => import('@/components/automation/WorkflowTemplates').then(m => ({ default: m.WorkflowTemplates })));
+
+// Lazy load engine components
+const AutomationFlowCanvas = lazy(() => import('@/components/automation/engine/AutomationFlowCanvas').then(m => ({ default: m.AutomationFlowCanvas })));
+const AutomationExecutionTimeline = lazy(() => import('@/components/automation/engine/AutomationExecutionTimeline').then(m => ({ default: m.AutomationExecutionTimeline })));
+const AutomationConditionBuilder = lazy(() => import('@/components/automation/engine/AutomationConditionBuilder').then(m => ({ default: m.AutomationConditionBuilder })));
+const AutomationMetricsDashboard = lazy(() => import('@/components/automation/engine/AutomationMetricsDashboard').then(m => ({ default: m.AutomationMetricsDashboard })));
+const AutomationEventLog = lazy(() => import('@/components/automation/engine/AutomationEventLog').then(m => ({ default: m.AutomationEventLog })));
+const AutomationScheduler = lazy(() => import('@/components/automation/engine/AutomationScheduler').then(m => ({ default: m.AutomationScheduler })));
 
 export default function AutomationPage() {
   const [activeTab, setActiveTab] = useState('list');
@@ -86,11 +94,13 @@ export default function AutomationPage() {
     }
   };
 
+  const LazyFallback = <Skeleton className="h-[400px] w-full rounded-xl" />;
+
   return (
     <ChannablePageWrapper
-      title="Automation"
-      subtitle="Workflows"
-      description="Automatisez vos tâches et workflows pour gagner du temps"
+      title="Automation Engine"
+      subtitle="Workflows & Rules"
+      description="Automatisez vos tâches avec un moteur de règles intelligent"
       heroImage="ai"
       badge={{ label: "AI Powered", icon: Zap }}
       actions={
@@ -157,29 +167,50 @@ export default function AutomationPage() {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4 sm:space-y-6">
-          <TabsList className="w-full max-w-2xl grid grid-cols-5 h-auto">
-            <TabsTrigger value="list" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm px-2 py-1.5 sm:px-3 sm:py-2">
-              <List className="h-3 w-3 sm:h-4 sm:w-4" />
-              <span className="hidden sm:inline">Automations</span>
+          <TabsList className="w-full max-w-4xl grid grid-cols-5 lg:grid-cols-10 h-auto">
+            <TabsTrigger value="list" className="flex items-center gap-1 text-xs px-2 py-1.5">
+              <List className="h-3 w-3" />
+              <span className="hidden sm:inline">Workflows</span>
             </TabsTrigger>
-            <TabsTrigger value="templates" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm px-2 py-1.5 sm:px-3 sm:py-2">
-              <LayoutTemplate className="h-3 w-3 sm:h-4 sm:w-4" />
+            <TabsTrigger value="flow" className="flex items-center gap-1 text-xs px-2 py-1.5">
+              <GitBranch className="h-3 w-3" />
+              <span className="hidden sm:inline">Flow</span>
+            </TabsTrigger>
+            <TabsTrigger value="conditions" className="flex items-center gap-1 text-xs px-2 py-1.5">
+              <Zap className="h-3 w-3" />
+              <span className="hidden sm:inline">Règles</span>
+            </TabsTrigger>
+            <TabsTrigger value="scheduler" className="flex items-center gap-1 text-xs px-2 py-1.5">
+              <Calendar className="h-3 w-3" />
+              <span className="hidden sm:inline">Planning</span>
+            </TabsTrigger>
+            <TabsTrigger value="templates" className="flex items-center gap-1 text-xs px-2 py-1.5">
+              <LayoutTemplate className="h-3 w-3" />
               <span className="hidden sm:inline">Templates</span>
             </TabsTrigger>
-            <TabsTrigger value="builder" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm px-2 py-1.5 sm:px-3 sm:py-2">
-              <Zap className="h-3 w-3 sm:h-4 sm:w-4" />
-              <span className="hidden sm:inline">Créer</span>
+            <TabsTrigger value="timeline" className="flex items-center gap-1 text-xs px-2 py-1.5">
+              <Clock className="h-3 w-3" />
+              <span className="hidden sm:inline">Timeline</span>
             </TabsTrigger>
-            <TabsTrigger value="sandbox" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm px-2 py-1.5 sm:px-3 sm:py-2">
-              <FlaskConical className="h-3 w-3 sm:h-4 sm:w-4" />
+            <TabsTrigger value="metrics" className="flex items-center gap-1 text-xs px-2 py-1.5">
+              <BarChart3 className="h-3 w-3" />
+              <span className="hidden sm:inline">Métriques</span>
+            </TabsTrigger>
+            <TabsTrigger value="logs" className="flex items-center gap-1 text-xs px-2 py-1.5">
+              <Terminal className="h-3 w-3" />
+              <span className="hidden sm:inline">Logs</span>
+            </TabsTrigger>
+            <TabsTrigger value="sandbox" className="flex items-center gap-1 text-xs px-2 py-1.5">
+              <FlaskConical className="h-3 w-3" />
               <span className="hidden sm:inline">Sandbox</span>
             </TabsTrigger>
-            <TabsTrigger value="activity" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm px-2 py-1.5 sm:px-3 sm:py-2">
-              <Activity className="h-3 w-3 sm:h-4 sm:w-4" />
+            <TabsTrigger value="activity" className="flex items-center gap-1 text-xs px-2 py-1.5">
+              <Activity className="h-3 w-3" />
               <span className="hidden sm:inline">Activité</span>
             </TabsTrigger>
           </TabsList>
 
+          {/* Workflows List */}
           <TabsContent value="list" className="space-y-4">
             {isLoading ? (
               <div className="space-y-4">
@@ -201,9 +232,9 @@ export default function AutomationPage() {
                   <CardDescription className="mb-4">
                     Créez votre première automation pour automatiser vos workflows
                   </CardDescription>
-                  <Button onClick={() => setActiveTab('builder')}>
+                  <Button onClick={() => setActiveTab('templates')}>
                     <Plus className="h-4 w-4 mr-2" />
-                    Créer une automation
+                    Parcourir les templates
                   </Button>
                 </CardContent>
               </Card>
@@ -223,30 +254,13 @@ export default function AutomationPage() {
                           <CardDescription>{workflow.description}</CardDescription>
                         </div>
                         <div className="flex gap-2">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => runWorkflow(workflow.id)}
-                            disabled={!workflow.is_active}
-                          >
+                          <Button variant="outline" size="sm" onClick={() => runWorkflow(workflow.id)} disabled={!workflow.is_active}>
                             <Play className="h-4 w-4" />
                           </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => toggleWorkflow(workflow.id, workflow.is_active)}
-                          >
-                            {workflow.is_active ? (
-                              <Pause className="h-4 w-4" />
-                            ) : (
-                              <Play className="h-4 w-4" />
-                            )}
+                          <Button variant="outline" size="sm" onClick={() => toggleWorkflow(workflow.id, workflow.is_active)}>
+                            {workflow.is_active ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
                           </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => setDeleteWorkflowId(workflow.id)}
-                          >
+                          <Button variant="outline" size="sm" onClick={() => setDeleteWorkflowId(workflow.id)}>
                             <Trash2 className="h-4 w-4" />
                           </Button>
                         </div>
@@ -262,9 +276,7 @@ export default function AutomationPage() {
                           <Activity className="h-4 w-4" />
                           {Array.isArray(workflow.steps) ? workflow.steps.length : 0} étape{(Array.isArray(workflow.steps) ? workflow.steps.length : 0) !== 1 ? 's' : ''}
                         </div>
-                        <div>
-                          Exécuté {workflow.execution_count} fois
-                        </div>
+                        <div>Exécuté {workflow.execution_count} fois</div>
                         {workflow.last_run_at && (
                           <div className="ml-auto text-xs">
                             Dernière exécution: {formatDistanceToNow(new Date(workflow.last_run_at), { addSuffix: true, locale: fr })}
@@ -278,54 +290,63 @@ export default function AutomationPage() {
             )}
           </TabsContent>
 
-          <TabsContent value="templates" className="space-y-6">
-            <Suspense fallback={<Skeleton className="h-[400px] w-full" />}>
+          {/* Flow Canvas */}
+          <TabsContent value="flow">
+            <Suspense fallback={LazyFallback}>
+              <AutomationFlowCanvas />
+            </Suspense>
+          </TabsContent>
+
+          {/* Condition Builder */}
+          <TabsContent value="conditions">
+            <Suspense fallback={LazyFallback}>
+              <AutomationConditionBuilder />
+            </Suspense>
+          </TabsContent>
+
+          {/* Scheduler */}
+          <TabsContent value="scheduler">
+            <Suspense fallback={LazyFallback}>
+              <AutomationScheduler />
+            </Suspense>
+          </TabsContent>
+
+          {/* Templates */}
+          <TabsContent value="templates">
+            <Suspense fallback={LazyFallback}>
               <WorkflowTemplates />
             </Suspense>
           </TabsContent>
 
-          <TabsContent value="builder" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Créer une nouvelle automation</CardTitle>
-                <CardDescription>
-                  Configurez les déclencheurs et actions de votre workflow
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="grid sm:grid-cols-3 gap-4">
-                  {[
-                    { type: 'schedule', icon: Clock, label: 'Planifié', desc: 'Exécution automatique à intervalle régulier' },
-                    { type: 'event', icon: Zap, label: 'Événement', desc: 'Déclenché par une action utilisateur' },
-                    { type: 'webhook', icon: Activity, label: 'Webhook', desc: 'Déclenché par un appel externe' }
-                  ].map((trigger) => (
-                    <Card 
-                      key={trigger.type} 
-                      className="cursor-pointer hover:border-primary/50 hover:shadow-md transition-all p-4"
-                    >
-                      <div className="flex flex-col items-center text-center gap-2">
-                        <div className="p-3 bg-primary/10 rounded-lg">
-                          <trigger.icon className="h-6 w-6 text-primary" />
-                        </div>
-                        <h4 className="font-medium">{trigger.label}</h4>
-                        <p className="text-xs text-muted-foreground">{trigger.desc}</p>
-                      </div>
-                    </Card>
-                  ))}
-                </div>
-                <div className="text-center text-sm text-muted-foreground">
-                  Sélectionnez un type de déclencheur pour commencer
-                </div>
-              </CardContent>
-            </Card>
+          {/* Execution Timeline */}
+          <TabsContent value="timeline">
+            <Suspense fallback={LazyFallback}>
+              <AutomationExecutionTimeline />
+            </Suspense>
           </TabsContent>
 
-          <TabsContent value="sandbox" className="space-y-6">
-            <Suspense fallback={<Skeleton className="h-[400px] w-full" />}>
+          {/* Metrics Dashboard */}
+          <TabsContent value="metrics">
+            <Suspense fallback={LazyFallback}>
+              <AutomationMetricsDashboard />
+            </Suspense>
+          </TabsContent>
+
+          {/* Event Logs */}
+          <TabsContent value="logs">
+            <Suspense fallback={LazyFallback}>
+              <AutomationEventLog />
+            </Suspense>
+          </TabsContent>
+
+          {/* Sandbox */}
+          <TabsContent value="sandbox">
+            <Suspense fallback={LazyFallback}>
               <WorkflowSandbox />
             </Suspense>
           </TabsContent>
 
+          {/* Activity */}
           <TabsContent value="activity" className="space-y-6">
             <Card>
               <CardHeader>
