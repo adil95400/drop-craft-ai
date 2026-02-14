@@ -156,7 +156,7 @@ export function PlatformCardCompact({ platform, onClick }: Omit<PlatformCardProp
         <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
         
         <CardContent className="p-3 relative z-[1]">
-          <div className="flex flex-col items-center gap-2 text-center">
+          <div className="flex flex-col items-center text-center gap-[8px]">
             <div className="rounded-xl bg-white shadow-sm flex items-center justify-center p-2 w-12 h-12 group-hover:shadow-md transition-shadow relative">
               <div
                 className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-30 transition-opacity blur-md"
