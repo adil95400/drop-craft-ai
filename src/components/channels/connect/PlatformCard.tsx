@@ -91,14 +91,14 @@ export function PlatformCard({ platform, compact, selected, onClick }: PlatformC
 
 
 
-                {platform.popular && !compact &&
-                <Badge
-                  variant="secondary"
-                  className="text-[10px] px-1.5 py-0 bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20">
+                {platform.popular && !compact
 
-                    <Sparkles className="h-2.5 w-2.5 mr-0.5" />
-                    Top
-                  </Badge>
+
+
+
+
+
+
                 }
               </div>
               {!compact &&
