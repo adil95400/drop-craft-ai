@@ -8,6 +8,8 @@ export const platformLogos: Record<string, string> = {
   bigcommerce: '/logos/bigcommerce.svg',
   squarespace: '/logos/squarespace.svg',
   wix: '/logos/wix.svg',
+  ecwid: '/logos/ecwid.svg',
+  opencart: '/logos/opencart.svg',
   
   // Marketplaces
   amazon: '/logos/amazon.svg',
@@ -21,6 +23,7 @@ export const platformLogos: Record<string, string> = {
   asos: '/logos/asos.svg',
   costco: '/logos/costco.svg',
   'tiktok-shop': '/logos/tiktok-shop.svg',
+  walmart: '/logos/walmart.svg',
   
   // Social & Ads
   facebook: '/logos/facebook.svg',
@@ -64,6 +67,9 @@ export const platformNames: Record<string, string> = {
   bigcommerce: 'BigCommerce',
   squarespace: 'Squarespace',
   wix: 'Wix',
+  ecwid: 'Ecwid',
+  opencart: 'OpenCart',
+  walmart: 'Walmart',
   amazon: 'Amazon',
   ebay: 'eBay',
   etsy: 'Etsy',
@@ -107,6 +113,9 @@ export const platformColors: Record<string, string> = {
   bigcommerce: 'bg-[#34313F] text-white',
   squarespace: 'bg-[#1A1918] text-white',
   wix: 'bg-[#0C6EFC] text-white',
+  ecwid: 'bg-[#0087CD] text-white',
+  opencart: 'bg-[#04B6F0] text-white',
+  walmart: 'bg-[#0071DC] text-white',
   amazon: 'bg-[#FF9900] text-black',
   ebay: 'bg-[#E53238] text-white',
   etsy: 'bg-[#F56400] text-white',

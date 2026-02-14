@@ -1,13 +1,12 @@
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Check } from 'lucide-react'
+import { getPlatformLogo } from '@/utils/platformLogos'
 
 interface Platform {
   id: 'shopify' | 'woocommerce' | 'prestashop' | 'magento'
   name: string
   description: string
-  logo: string
-  color: string
   features: string[]
   popular?: boolean
 }
@@ -22,8 +21,6 @@ const platforms: Platform[] = [
     id: 'shopify',
     name: 'Shopify',
     description: 'La plateforme e-commerce leader mondial',
-    logo: 'https://via.placeholder.com/48x48/10b981/ffffff?text=SH',
-    color: 'bg-green-500',
     features: ['Facile à utiliser', 'Plus de 6000 apps', 'Hébergement inclus', 'Thèmes responsive'],
     popular: true
   },
@@ -31,24 +28,18 @@ const platforms: Platform[] = [
     id: 'woocommerce',
     name: 'WooCommerce',
     description: 'Solution e-commerce pour WordPress',
-    logo: 'https://via.placeholder.com/48x48/7c3aed/ffffff?text=WC',
-    color: 'bg-purple-500',
     features: ['Open source', 'Très flexible', 'Grande communauté', 'Extensions nombreuses']
   },
   {
     id: 'prestashop',
     name: 'PrestaShop',
     description: 'Solution française open source',
-    logo: 'https://via.placeholder.com/48x48/3b82f6/ffffff?text=PS',
-    color: 'bg-blue-500',
     features: ['Gratuit', 'Multilingue', 'Modules nombreux', 'Support français']
   },
   {
     id: 'magento',
     name: 'Magento',
     description: 'Plateforme enterprise robuste',
-    logo: 'https://via.placeholder.com/48x48/f97316/ffffff?text=MG',
-    color: 'bg-orange-500',
     features: ['Très puissant', 'Multi-boutiques', 'B2B et B2C', 'Haute performance']
   }
 ]
@@ -69,11 +60,11 @@ export function PlatformSelector({ selectedPlatform, onSelect }: PlatformSelecto
           <CardContent className="p-6">
             <div className="flex items-start justify-between mb-4">
               <div className="flex items-center space-x-3">
-                <div className={`w-12 h-12 rounded-lg ${platform.color} flex items-center justify-center`}>
+                <div className="w-12 h-12 rounded-lg bg-muted/50 flex items-center justify-center p-1 overflow-hidden">
                   <img 
-                    src={platform.logo} 
+                    src={getPlatformLogo(platform.id) || ''}
                     alt={platform.name}
-                    className="w-8 h-8 object-contain"
+                    className="w-full h-full object-contain"
                   />
                 </div>
                 <div>
