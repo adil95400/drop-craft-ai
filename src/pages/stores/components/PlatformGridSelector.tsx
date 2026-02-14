@@ -62,12 +62,12 @@ export function PlatformGridSelector({ onSelect }: PlatformGridSelectorProps) {
             >
               <CardContent className="p-6 flex flex-col justify-between h-full gap-4">
                 <div>
-                  <div className="h-10 mb-4 flex items-center">
+                  <div className="h-12 mb-4 flex items-center">
                     {logo ? (
                       <img 
                         src={logo} 
                         alt={platform.name} 
-                        className="h-8 max-w-[160px] object-contain object-left"
+                        className="h-10 max-w-[200px] object-contain object-left"
                       />
                     ) : (
                       <span className="text-lg font-bold text-muted-foreground">
