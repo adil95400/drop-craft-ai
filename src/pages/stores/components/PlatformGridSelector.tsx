@@ -5,6 +5,8 @@ import { getPlatformLogo } from '@/utils/platformLogos'
 interface Platform {
   id: string
   name: string
+  subtitle: string
+  description: string
   disabled?: boolean
 }
 
@@ -13,30 +15,30 @@ interface PlatformGridSelectorProps {
 }
 
 const platforms: Platform[] = [
-  { id: 'shopify', name: 'Shopify' },
-  { id: 'woocommerce', name: 'WooCommerce' },
-  { id: 'prestashop', name: 'PrestaShop' },
-  { id: 'magento', name: 'Magento' },
-  { id: 'bigcommerce', name: 'BigCommerce' },
-  { id: 'opencart', name: 'OpenCart' },
-  { id: 'squarespace', name: 'Squarespace' },
-  { id: 'etsy', name: 'Etsy' },
-  { id: 'ecwid', name: 'Ecwid' },
-  { id: 'wix', name: 'Wix eCommerce' },
-  { id: 'amazon', name: 'Amazon Seller' },
-  { id: 'ebay', name: 'eBay' },
-  { id: 'cdiscount', name: 'Cdiscount Pro' },
-  { id: 'facebook', name: 'Facebook Shop' },
-  { id: 'rakuten', name: 'Rakuten France' },
-  { id: 'fnac', name: 'Fnac Marketplace' },
-  { id: 'aliexpress', name: 'AliExpress' },
-  { id: 'zalando', name: 'Zalando Partner' },
-  { id: 'walmart', name: 'Walmart' },
+  { id: 'shopify', name: 'Shopify', subtitle: 'La plateforme e-commerce du moment', description: 'Créer votre propre site web de commerce électronique n\'a jamais été aussi simple, rapide et évolutif.' },
+  { id: 'woocommerce', name: 'WooCommerce', subtitle: 'La solution e-commerce open source n°1', description: 'Une plateforme de commerce électronique basée sur WordPress, vous permettant de créer une boutique en quelques minutes.' },
+  { id: 'wix', name: 'Wix', subtitle: 'Un créateur de sites web de classe mondiale', description: 'La liberté de créer, concevoir, gérer et développer une boutique en ligne unique.' },
+  { id: 'prestashop', name: 'PrestaShop', subtitle: 'La solution e-commerce française', description: 'Une plateforme open source puissante pour créer et gérer votre boutique en ligne professionnelle.' },
+  { id: 'magento', name: 'Magento', subtitle: 'La plateforme e-commerce enterprise', description: 'Une solution robuste et flexible pour les entreprises ayant des besoins e-commerce avancés.' },
+  { id: 'bigcommerce', name: 'BigCommerce', subtitle: 'Le commerce sans limites', description: 'Une plateforme SaaS complète pour développer votre activité en ligne à grande échelle.' },
+  { id: 'squarespace', name: 'Squarespace', subtitle: 'Design et commerce réunis', description: 'Des templates élégants et des outils e-commerce intégrés pour une boutique au design soigné.' },
+  { id: 'opencart', name: 'OpenCart', subtitle: 'E-commerce open source gratuit', description: 'Une solution légère et personnalisable pour lancer rapidement votre boutique en ligne.' },
+  { id: 'ecwid', name: 'Ecwid', subtitle: 'Le e-commerce pour les petites entreprises', description: 'Des solutions e-commerce gratuites pour libérer le potentiel de votre boutique en quelques minutes.' },
+  { id: 'amazon', name: 'Amazon Seller', subtitle: 'La marketplace mondiale n°1', description: 'Accédez à des millions de clients à travers le monde grâce à la plus grande place de marché.' },
+  { id: 'ebay', name: 'eBay', subtitle: 'Le marché en ligne mondial', description: 'Créez facilement une boutique qui raconte une histoire et représente votre marque.' },
+  { id: 'walmart', name: 'Walmart', subtitle: 'Le géant américain du retail', description: 'Le plus grand réseau omnicanal au monde, avec de grandes ambitions et un avenir prometteur.' },
+  { id: 'etsy', name: 'Etsy', subtitle: 'La marketplace du fait-main', description: 'Vendez vos créations uniques et artisanales à une communauté de passionnés.' },
+  { id: 'cdiscount', name: 'Cdiscount Pro', subtitle: 'La marketplace française', description: 'Touchez des millions d\'acheteurs français sur l\'une des plus grandes places de marché hexagonales.' },
+  { id: 'facebook', name: 'Facebook Shop', subtitle: 'Le commerce social', description: 'Vendez directement sur Facebook et Instagram pour atteindre vos clients là où ils se trouvent.' },
+  { id: 'rakuten', name: 'Rakuten France', subtitle: 'La marketplace cashback', description: 'Profitez d\'un programme de fidélité unique pour attirer et fidéliser vos clients.' },
+  { id: 'fnac', name: 'Fnac Marketplace', subtitle: 'Culture, tech et plus', description: 'Accédez à une audience qualifiée et passionnée de culture, tech et loisirs.' },
+  { id: 'aliexpress', name: 'AliExpress', subtitle: 'Le sourcing international', description: 'Connectez-vous à des fournisseurs du monde entier pour diversifier votre catalogue.' },
+  { id: 'zalando', name: 'Zalando Partner', subtitle: 'La mode en ligne européenne', description: 'Rejoignez la première plateforme de mode en Europe et développez vos ventes.' },
 ]
 
 export function PlatformGridSelector({ onSelect }: PlatformGridSelectorProps) {
   return (
-    <div className="max-w-4xl mx-auto">
+    <div className="max-w-6xl mx-auto">
       <div className="text-center mb-8">
         <h1 className="text-4xl font-bold text-foreground mb-2">
           Sélectionnez votre canal de vente
@@ -46,31 +48,50 @@ export function PlatformGridSelector({ onSelect }: PlatformGridSelectorProps) {
         </p>
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 mb-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 mb-8">
         {platforms.map((platform) => {
           const logo = getPlatformLogo(platform.id)
           return (
             <Card 
               key={platform.id}
-              className={`cursor-pointer transition-all hover:shadow-lg border ${
+              className={`transition-all border ${
                 platform.disabled 
                   ? 'opacity-50 cursor-not-allowed' 
-                  : 'hover:scale-105 hover:border-primary/40'
+                  : 'hover:shadow-lg hover:border-primary/30'
               }`}
-              onClick={() => !platform.disabled && onSelect(platform.id)}
             >
-              <CardContent className="p-6 flex items-center justify-center aspect-square">
-                {logo ? (
-                  <img 
-                    src={logo} 
-                    alt={platform.name} 
-                    className="w-20 h-20 object-contain"
-                  />
-                ) : (
-                  <span className="text-sm font-bold text-muted-foreground">
-                    {platform.name.substring(0, 2).toUpperCase()}
-                  </span>
-                )}
+              <CardContent className="p-6 flex flex-col justify-between h-full gap-4">
+                <div>
+                  <div className="h-10 mb-4 flex items-center">
+                    {logo ? (
+                      <img 
+                        src={logo} 
+                        alt={platform.name} 
+                        className="h-8 max-w-[160px] object-contain object-left"
+                      />
+                    ) : (
+                      <span className="text-lg font-bold text-muted-foreground">
+                        {platform.name}
+                      </span>
+                    )}
+                  </div>
+                  <h3 className="text-sm font-semibold text-foreground mb-1">
+                    {platform.subtitle}
+                  </h3>
+                  <p className="text-xs text-muted-foreground leading-relaxed">
+                    {platform.description}
+                  </p>
+                </div>
+                <div>
+                  <Button 
+                    size="sm"
+                    className="uppercase text-xs tracking-wide"
+                    onClick={() => !platform.disabled && onSelect(platform.id)}
+                    disabled={platform.disabled}
+                  >
+                    Magasin Connect
+                  </Button>
+                </div>
               </CardContent>
             </Card>
           )
