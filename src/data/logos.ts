@@ -2,7 +2,7 @@ export type LogoKey =
   // E-commerce platforms
   | "shopify" | "shopify-text" | "woocommerce" | "prestashop" | "magento" | "magento-text"
   | "bigcommerce" | "bigcommerce-text" | "bigcommerce-icon" | "squarespace" | "squarespace-text"
-  | "wix" | "wix-text" | "ecwid" | "opencart"
+  | "wix" | "wix-text" | "ecwid" | "opencart" | "volusion" | "3dcart"
   // Marketplaces
   | "amazon" | "amazon-text" | "ebay" | "ebay-text" | "ebay-icon" | "etsy" | "etsy-text"
   | "cdiscount" | "cdiscount-text" | "rakuten" | "rakuten-text" | "zalando" | "zalando-text"
@@ -36,6 +36,8 @@ export const LOGOS: Record<LogoKey, { src: string; alt: string; cdn?: string }> 
   "wix-text": { src: "/logos/wix-text.svg", alt: "Wix" },
   ecwid: { src: "/logos/ecwid.svg", alt: "Ecwid" },
   opencart: { src: "/logos/opencart.svg", alt: "OpenCart" },
+  volusion: { src: "/logos/volusion.svg", alt: "Volusion" },
+  "3dcart": { src: "/logos/3dcart.svg", alt: "3dcart" },
 
   // Marketplaces
   amazon: { src: "/logos/amazon.svg", alt: "Amazon", cdn: "https://cdn.simpleicons.org/amazon" },

@@ -10,6 +10,8 @@ export const platformLogos: Record<string, string> = {
   wix: '/logos/wix.svg',
   ecwid: '/logos/ecwid.svg',
   opencart: '/logos/opencart.svg',
+  volusion: '/logos/volusion.svg',
+  '3dcart': '/logos/3dcart.svg',
   
   // Marketplaces
   amazon: '/logos/amazon.svg',
@@ -70,6 +72,8 @@ export const platformNames: Record<string, string> = {
   ecwid: 'Ecwid',
   opencart: 'OpenCart',
   walmart: 'Walmart',
+  volusion: 'Volusion',
+  '3dcart': '3dcart',
   amazon: 'Amazon',
   ebay: 'eBay',
   etsy: 'Etsy',
@@ -116,6 +120,8 @@ export const platformColors: Record<string, string> = {
   ecwid: 'bg-[#0087CD] text-white',
   opencart: 'bg-[#04B6F0] text-white',
   walmart: 'bg-[#0071DC] text-white',
+  volusion: 'bg-[#8759F2] text-white',
+  '3dcart': 'bg-[#242727] text-white',
   amazon: 'bg-[#FF9900] text-black',
   ebay: 'bg-[#E53238] text-white',
   etsy: 'bg-[#F56400] text-white',
