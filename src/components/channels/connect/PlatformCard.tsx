@@ -164,7 +164,7 @@ export function PlatformCardCompact({ platform, onClick }: Omit<PlatformCardProp
 
               <PlatformLogo platform={platform.id} size="lg" />
             </div>
-            <span className="text-xs font-medium truncate w-full">{platform.name}</span>
+            
           </div>
         </CardContent>
       </Card>
