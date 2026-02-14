@@ -45,6 +45,9 @@ import { ImportModeProvider, ImportModeToggle, useImportMode, ExpertOnly } from 
 import { ImportOnboardingModal, useImportOnboarding } from '@/components/import/onboarding/ImportOnboardingModal';
 import { ImportCostAnalysis } from '@/components/import/cost/ImportCostAnalysis';
 
+// Engine components - AutoDS-superior
+import { ImportPerformancePanel, ImportChunkVisualizer, ImportDetailedLogs, ImportAIMergePanel } from '@/components/import/engine';
+
 const AliExpressConnectorLazy = lazy(() => import('@/components/import/AliExpressConnector').then(m => ({ default: m.AliExpressConnector })));
 const CJConnectorLazy = lazy(() => import('@/components/import/CJConnector').then(m => ({ default: m.CJConnector })));
 const AmazonConnectorLazy = lazy(() => import('@/components/import/AmazonConnector').then(m => ({ default: m.AmazonConnector })));
@@ -436,40 +439,13 @@ function ImportHubContent() {
           ))}
         </div>
 
-        {/* Statistiques */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-          {[
-            { label: 'Total Imports', value: stats.totalMethods, icon: Package, color: 'blue', trend: 'Tous les temps' },
-            { label: 'Réussis', value: stats.successfulJobs, icon: CheckCircle, color: 'green', trend: `${stats.totalMethods > 0 ? Math.round(stats.successfulJobs / stats.totalMethods * 100) : 0}% succès` },
-            { label: 'En cours', value: stats.pendingJobs, icon: Clock, color: 'amber', trend: activeImports.length > 0 ? 'Traitement...' : '' },
-            { label: 'Échoués', value: stats.failedJobs, icon: XCircle, color: 'red', trend: stats.failedJobs > 0 ? 'Voir erreurs' : '' },
-          ].map((stat, index) => (
-            <motion.div key={stat.label} {...getMotionProps(prefersReducedMotion, { initial: { opacity: 0, y: 20 }, animate: { opacity: 1, y: 0 }, transition: { delay: index * 0.1 } })}>
-              <Card className={cn("border-none shadow-sm hover:shadow-md transition-shadow", `bg-gradient-to-br from-${stat.color}-500/10 to-${stat.color}-500/5`)}>
-                <CardContent className="p-5">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-medium text-muted-foreground">{stat.label}</p>
-                      <p className={cn("text-3xl font-bold mt-1", stat.color !== 'blue' && `text-${stat.color}-600`)}>
-                        {stat.value}
-                      </p>
-                      {stat.trend && (
-                        <p className={cn("text-xs mt-1 flex items-center", `text-${stat.color}-600`)}>
-                          {stat.label === 'Réussis' && <TrendingUp className="w-3 h-3 mr-1" />}
-                          {stat.label === 'En cours' && activeImports.length > 0 && <Loader2 className={cn("w-3 h-3 mr-1", !prefersReducedMotion && "animate-spin")} />}
-                          {stat.trend}
-                        </p>
-                      )}
-                    </div>
-                    <div className={cn("p-3 rounded-xl", `bg-${stat.color}-500/20`)}>
-                      <stat.icon className={cn("w-6 h-6", `text-${stat.color}-500`)} />
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </motion.div>
-          ))}
-        </div>
+        {/* Performance KPIs — AutoDS-superior */}
+        <ImportPerformancePanel stats={stats} activeImports={activeImports} className="mb-6" />
+
+        {/* Chunk Pipeline — Visualisation parallèle */}
+        {activeImports.length > 0 && (
+          <ImportChunkVisualizer activeImports={activeImports} className="mb-6" />
+        )}
 
         {/* Imports actifs */}
         <AnimatePresence>
@@ -756,6 +732,9 @@ function ImportHubContent() {
                 </div>
               </CardContent>
             </Card>
+
+            {/* AI Merge Suggestions */}
+            <ImportAIMergePanel />
           </TabsContent>
 
           {/* Onglet Méthodes */}
@@ -1006,6 +985,8 @@ function ImportHubContent() {
 
           {/* Onglet Historique */}
           <TabsContent value="historique" className="space-y-6 mt-0">
+            {/* Logs enrichis */}
+            <ImportDetailedLogs imports={importMethods} />
             <Card>
               <CardHeader>
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
