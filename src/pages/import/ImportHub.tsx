@@ -443,6 +443,7 @@ function ImportHubContent() {
         </div>
 
         {/* Performance KPIs — AutoDS-superior */}
+        {/* Performance KPIs + Score qualité — 6 colonnes */}
         <ImportPerformancePanel stats={stats} activeImports={activeImports} className="mb-6" />
 
         {/* Chunk Pipeline — Visualisation parallèle */}
@@ -1018,7 +1019,9 @@ function ImportHubContent() {
           {/* Onglet Historique */}
           <TabsContent value="historique" className="space-y-6 mt-0">
             {/* Logs enrichis */}
-            <ImportDetailedLogs imports={importMethods} />
+            <ImportDetailedLogs imports={importMethods} onRetryItem={(jobId, itemId) => {
+              handleRetryImport(jobId);
+            }} />
             <Card>
               <CardHeader>
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
