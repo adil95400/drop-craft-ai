@@ -46,42 +46,30 @@ export function PlatformGridSelector({ onSelect }: PlatformGridSelectorProps) {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 mb-8">
         {platforms.map((platform) => {
           const logo = getPlatformLogo(platform.id)
           return (
             <Card 
               key={platform.id}
-              className={`cursor-pointer transition-all hover:shadow-lg ${
+              className={`cursor-pointer transition-all hover:shadow-lg border ${
                 platform.disabled 
                   ? 'opacity-50 cursor-not-allowed' 
-                  : 'hover:scale-105'
+                  : 'hover:scale-105 hover:border-primary/40'
               }`}
               onClick={() => !platform.disabled && onSelect(platform.id)}
             >
-              <CardContent className="p-8 text-center">
-                <div className="w-16 h-16 mx-auto mb-4 rounded-lg bg-muted/50 flex items-center justify-center p-2">
-                  {logo ? (
-                    <img 
-                      src={logo} 
-                      alt={platform.name} 
-                      className="w-full h-full object-contain"
-                    />
-                  ) : (
-                    <span className="text-xs font-bold text-muted-foreground">
-                      {platform.name.substring(0, 2).toUpperCase()}
-                    </span>
-                  )}
-                </div>
-                
-                <h3 className="text-lg font-semibold text-foreground mb-2">
-                  {platform.name}
-                </h3>
-                
-                {platform.disabled && (
-                  <div className="text-sm text-muted-foreground">
-                    Bientôt disponible
-                  </div>
+              <CardContent className="p-6 flex items-center justify-center aspect-square">
+                {logo ? (
+                  <img 
+                    src={logo} 
+                    alt={platform.name} 
+                    className="w-20 h-20 object-contain"
+                  />
+                ) : (
+                  <span className="text-sm font-bold text-muted-foreground">
+                    {platform.name.substring(0, 2).toUpperCase()}
+                  </span>
                 )}
               </CardContent>
             </Card>
