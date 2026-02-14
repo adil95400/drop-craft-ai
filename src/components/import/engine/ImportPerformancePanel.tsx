@@ -1,15 +1,14 @@
 /**
- * ImportPerformancePanel — KPIs temps réel du moteur d'import
- * Taux de succès, vitesse, throughput, tendances
+ * ImportPerformancePanel — KPIs temps réel + Score qualité import
+ * Taux de succès, vitesse, throughput, qualité, tendances
  */
 import { useMemo } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
 import { Badge } from '@/components/ui/badge'
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import {
-  Zap, TrendingUp, Shield, Clock, Activity, Gauge,
-  CheckCircle2, XCircle, ArrowUpRight, ArrowDownRight
+  Zap, Shield, Clock, Activity, Gauge,
+  XCircle, ArrowUpRight, ArrowDownRight, Star
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -32,7 +31,6 @@ export function ImportPerformancePanel({ stats, activeImports, className }: Impo
     const successRate = Math.round((stats.successfulJobs / total) * 100)
     const failRate = Math.round((stats.failedJobs / total) * 100)
     
-    // Simulated avg speed based on active imports
     const avgSpeed = activeImports.length > 0
       ? activeImports.reduce((sum, imp) => {
           const processed = imp.items_processed || imp.processed_rows || 0
@@ -41,6 +39,9 @@ export function ImportPerformancePanel({ stats, activeImports, className }: Impo
         }, 0) / activeImports.length
       : 0
 
+    // Quality score: weighted combination of success rate, completeness, and error rate
+    const qualityScore = computeQualityScore(stats, activeImports)
+
     return {
       successRate,
       failRate,
@@ -48,6 +49,8 @@ export function ImportPerformancePanel({ stats, activeImports, className }: Impo
       throughput: stats.successfulJobs,
       activeCount: activeImports.length,
       healthScore: successRate >= 95 ? 'excellent' : successRate >= 80 ? 'good' : successRate >= 60 ? 'fair' : 'poor',
+      qualityScore,
+      qualityLabel: qualityScore >= 90 ? 'Excellent' : qualityScore >= 70 ? 'Bon' : qualityScore >= 50 ? 'Moyen' : 'Faible',
     }
   }, [stats, activeImports])
 
@@ -59,9 +62,15 @@ export function ImportPerformancePanel({ stats, activeImports, className }: Impo
   }
 
   const health = healthColors[metrics.healthScore]
+  const qualityColor = metrics.qualityScore >= 90 ? 'text-emerald-600' :
+    metrics.qualityScore >= 70 ? 'text-blue-600' :
+    metrics.qualityScore >= 50 ? 'text-amber-600' : 'text-red-600'
+  const qualityBg = metrics.qualityScore >= 90 ? 'bg-emerald-500/10 border-emerald-500/30' :
+    metrics.qualityScore >= 70 ? 'bg-blue-500/10 border-blue-500/30' :
+    metrics.qualityScore >= 50 ? 'bg-amber-500/10 border-amber-500/30' : 'bg-red-500/10 border-red-500/30'
 
   return (
-    <div className={cn('grid grid-cols-2 lg:grid-cols-5 gap-3', className)}>
+    <div className={cn('grid grid-cols-2 lg:grid-cols-6 gap-3', className)}>
       {/* Health Score */}
       <Card className={cn('border-2', health.border)}>
         <CardContent className="p-4">
@@ -74,6 +83,21 @@ export function ImportPerformancePanel({ stats, activeImports, className }: Impo
           <p className={cn('text-2xl font-bold', health.text)}>{metrics.successRate}%</p>
           <p className="text-xs text-muted-foreground mt-0.5">Taux de succès</p>
           <Progress value={metrics.successRate} className="h-1 mt-2" />
+        </CardContent>
+      </Card>
+
+      {/* Quality Score */}
+      <Card className={cn('border-2', qualityBg)}>
+        <CardContent className="p-4">
+          <div className="flex items-center justify-between mb-2">
+            <Star className={cn('w-5 h-5', qualityColor)} />
+            <Badge variant="outline" className={cn('text-[10px]', qualityBg, qualityColor)}>
+              {metrics.qualityLabel}
+            </Badge>
+          </div>
+          <p className={cn('text-2xl font-bold', qualityColor)}>{metrics.qualityScore}</p>
+          <p className="text-xs text-muted-foreground mt-0.5">Score qualité</p>
+          <Progress value={metrics.qualityScore} className="h-1 mt-2" />
         </CardContent>
       </Card>
 
@@ -132,4 +156,30 @@ export function ImportPerformancePanel({ stats, activeImports, className }: Impo
       </Card>
     </div>
   )
+}
+
+/** Compute quality score (0-100) based on multiple factors */
+function computeQualityScore(stats: ImportStats, activeImports: any[]): number {
+  const total = stats.totalMethods || 1
+  const successRate = (stats.successfulJobs / total) * 100
+  
+  // Base score from success rate (weight: 60%)
+  let score = successRate * 0.6
+  
+  // Error rate penalty (weight: 20%)
+  const errorRate = (stats.failedJobs / total) * 100
+  score += Math.max(0, (100 - errorRate * 2)) * 0.2
+  
+  // Active job health bonus (weight: 10%)
+  const stuckJobs = activeImports.filter(imp => {
+    const elapsed = (Date.now() - new Date(imp.created_at).getTime()) / 1000 / 60
+    return elapsed > 30 // jobs > 30 min
+  }).length
+  score += (stuckJobs === 0 ? 100 : Math.max(0, 100 - stuckJobs * 25)) * 0.1
+  
+  // Volume bonus (weight: 10%)
+  const volumeScore = Math.min(100, stats.successfulJobs * 5)
+  score += volumeScore * 0.1
+  
+  return Math.min(100, Math.round(score))
 }
