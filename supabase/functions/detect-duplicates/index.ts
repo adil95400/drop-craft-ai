@@ -1,4 +1,5 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
+import { logConsumption } from '../_shared/consumption.ts';
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -83,13 +84,16 @@ Deno.serve(async (req) => {
       const startTime = Date.now();
 
       const { data: job } = await supabase
-        .from("background_jobs")
+        .from("jobs")
         .insert({
           user_id: user.id, job_type: "deduplication", status: "running",
           name: "Scan de doublons", started_at: new Date().toISOString(),
         })
         .select("id")
         .single();
+
+      // Track consumption
+      await logConsumption(supabase, { userId: user.id, action: 'deduplication', metadata: { job_id: job?.id } });
 
       const { data: products, error: productsError } = await supabase
         .from("products")
@@ -100,9 +104,9 @@ Deno.serve(async (req) => {
       if (productsError) throw productsError;
       if (!products || products.length < 2) {
         if (job) {
-          await supabase.from("background_jobs").update({
+          await supabase.from("jobs").update({
             status: "completed", completed_at: new Date().toISOString(),
-            items_total: products?.length || 0, progress_percent: 100,
+            total_items: products?.length || 0, progress_percent: 100,
             progress_message: "Pas assez de produits",
           }).eq("id", job.id);
         }
@@ -206,7 +210,7 @@ Deno.serve(async (req) => {
         }
 
         if (job && i % 50 === 0) {
-          await supabase.from("background_jobs").update({
+          await supabase.from("jobs").update({
             progress_percent: Math.round((i / remaining.length) * 100),
             progress_message: `${i}/${remaining.length} produits comparés`,
           }).eq("id", job.id);
@@ -215,12 +219,12 @@ Deno.serve(async (req) => {
 
       const totalDuplicates = groups.reduce((sum, g) => sum + g.duplicates.length, 0);
       if (job) {
-        await supabase.from("background_jobs").update({
+        await supabase.from("jobs").update({
           status: "completed", completed_at: new Date().toISOString(),
-          items_total: products.length, items_processed: products.length,
-          items_succeeded: totalDuplicates, progress_percent: 100,
+          total_items: products.length, processed_items: products.length,
+          progress_percent: 100,
           progress_message: `${totalDuplicates} doublons dans ${groups.length} groupes`,
-          output_data: { groups_count: groups.length, duplicates_count: totalDuplicates },
+          metadata: { groups_count: groups.length, duplicates_count: totalDuplicates },
         }).eq("id", job.id);
       }
 

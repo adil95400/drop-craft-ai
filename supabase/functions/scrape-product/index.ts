@@ -1,4 +1,5 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3'
+import { logConsumption } from '../_shared/consumption.ts'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -97,6 +98,9 @@ Deno.serve(async (req) => {
     }
 
     await supabase.from('jobs').update({ status: 'completed', processed_items: 1, progress_percent: 100, completed_at: new Date().toISOString() }).eq('id', importJob.id)
+
+    // Track consumption
+    await logConsumption(supabase, { userId, action: 'scraping', metadata: { job_id: importJob.id, source_url: url } })
 
     return new Response(
       JSON.stringify({ success: true, product, jobId: importJob.id }),

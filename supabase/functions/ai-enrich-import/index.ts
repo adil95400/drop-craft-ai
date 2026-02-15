@@ -1,4 +1,5 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
+import { logConsumption } from '../_shared/consumption.ts';
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -103,26 +104,28 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Create background job
+    // Create job in unified `jobs` table
     const { data: job, error: jobError } = await supabase
-      .from("background_jobs")
+      .from("jobs")
       .insert({
         user_id: user.id,
         job_type: "ai_enrich",
         status: "running",
-        items_total: product_ids.length,
-        items_processed: 0,
-        items_succeeded: 0,
-        items_failed: 0,
+        total_items: product_ids.length,
+        processed_items: 0,
+        failed_items: 0,
         progress_percent: 0,
         name: `Enrichissement IA OpenAI (${product_ids.length} produits)`,
         started_at: new Date().toISOString(),
-        metadata: { prompt_version: PROMPT_VERSION, model: MODEL, language, tone },
+        metadata: { prompt_version: PROMPT_VERSION, model: MODEL, language, tone, items_succeeded: 0 },
       })
       .select("id")
       .single();
 
     if (jobError) throw jobError;
+
+    // Track consumption
+    await logConsumption(supabase, { userId: user.id, action: 'ai_enrichment', quantity: product_ids.length, metadata: { job_id: job.id, model: MODEL } });
 
     // ── Background processing ──────────────────────────────────────────
     const processProducts = async () => {
@@ -285,19 +288,19 @@ Deno.serve(async (req) => {
         const processed = i + 1;
         const progress = Math.round((processed / product_ids.length) * 100);
         await supabase
-          .from("background_jobs")
+          .from("jobs")
           .update({
-            items_processed: processed,
-            items_succeeded: succeeded,
-            items_failed: failed,
+            processed_items: processed,
+            failed_items: failed,
             progress_percent: progress,
             progress_message: `${processed}/${product_ids.length} produits traités`,
+            metadata: { prompt_version: PROMPT_VERSION, model: MODEL, language, tone, items_succeeded: succeeded },
           })
           .eq("id", job.id);
       }
 
       await supabase
-        .from("background_jobs")
+        .from("jobs")
         .update({
           status: failed === product_ids.length ? "failed" : "completed",
           completed_at: new Date().toISOString(),

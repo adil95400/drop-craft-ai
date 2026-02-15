@@ -8,6 +8,7 @@ import { createClient } from "npm:@supabase/supabase-js@2";
 import { getSecureCorsHeaders, handleCorsPreflightSecure } from '../_shared/cors.ts';
 import { withErrorHandler, ValidationError } from '../_shared/error-handler.ts';
 import { parseJsonValidated, z } from '../_shared/validators.ts';
+import { logConsumption } from '../_shared/consumption.ts';
 
 const CreateAuditSchema = z.object({
   mode: z.enum(['single_url', 'sitemap', 'crawl']),
@@ -69,8 +70,8 @@ serve(
 
       if (error) throw error;
 
-      // Create background job
-      const { data: job } = await supabase.from('background_jobs').insert({
+      // Create job in unified `jobs` table
+      const { data: job } = await supabase.from('jobs').insert({
         user_id: user.id,
         job_type: 'seo_audit',
         job_subtype: body.mode,
@@ -81,6 +82,9 @@ serve(
       }).select('id').single();
 
       console.log(`[SEO-AUDIT] Created audit ${audit.id} for user ${user.id}`);
+
+      // Track consumption
+      await logConsumption(supabase, { userId: user.id, action: 'seo_audit', metadata: { audit_id: audit.id, mode: body.mode } });
 
       return new Response(JSON.stringify({
         audit_id: audit.id,

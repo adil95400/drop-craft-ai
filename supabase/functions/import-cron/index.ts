@@ -1,4 +1,5 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
+import { logConsumption } from '../_shared/consumption.ts';
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -37,9 +38,9 @@ Deno.serve(async (req) => {
 
     for (const schedule of schedules) {
       try {
-        // Create a background job for tracking
+        // Create job in unified `jobs` table
         const { data: job } = await supabase
-          .from("background_jobs")
+          .from("jobs")
           .insert({
             user_id: schedule.user_id,
             job_type: "scheduled_import",
@@ -54,6 +55,9 @@ Deno.serve(async (req) => {
           })
           .select("id")
           .single();
+
+        // Track consumption
+        await logConsumption(supabase, { userId: schedule.user_id, action: 'scheduled_import', metadata: { schedule_id: schedule.id, job_id: job?.id } });
 
         // Trigger the actual import via the appropriate edge function
         let importFnName = "quick-import-url";
@@ -117,7 +121,7 @@ Deno.serve(async (req) => {
         // Update background job
         if (job?.id) {
           await supabase
-            .from("background_jobs")
+            .from("jobs")
             .update({
               status: success ? "completed" : "failed",
               completed_at: new Date().toISOString(),
