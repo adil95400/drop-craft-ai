@@ -6,6 +6,7 @@ Aligned with unified DB schema (jobs, job_items, product_store_links, pricing_ru
 from fastapi import APIRouter
 
 from app.api.v1.endpoints import (
+    auth,
     suppliers,
     products,
     orders,
@@ -19,6 +20,13 @@ from app.api.v1.endpoints import (
 )
 
 api_router = APIRouter()
+
+# Auth & Profiles
+api_router.include_router(
+    auth.router,
+    prefix="/auth",
+    tags=["Auth & Profiles"]
+)
 
 # Product management (CRUD, bulk, export, stats)
 api_router.include_router(
