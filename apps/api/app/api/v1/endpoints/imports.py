@@ -2,6 +2,7 @@
 Import endpoints — CSV/URL/feed import with async job tracking
 Every import creates a job then enqueues Celery for async processing.
 Endpoints return HTTP 202 with job_id immediately.
+Pre-flight validation ensures fail-fast before enqueue.
 """
 
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
@@ -13,6 +14,7 @@ import logging
 from app.core.security import get_current_user_id
 from app.core.database import get_supabase
 from app.core.quota import require_quota, QuotaGuard
+from app.core.validators import validate_import_file, validate_import_url
 from app.queue.tasks import import_csv_products, import_xml_feed
 
 logger = logging.getLogger(__name__)
@@ -39,16 +41,15 @@ async def import_csv(
     user_id: str = Depends(get_current_user_id),
     quota: QuotaGuard = Depends(require_quota("imports:csv")),
 ):
-    """Import products from CSV file — enqueues Celery task, returns job_id"""
+    """Import products from CSV file — validates then enqueues Celery task"""
     try:
-        if file.content_type not in ["text/csv", "application/vnd.ms-excel",
-                                      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"]:
-            raise HTTPException(status_code=400, detail="File must be CSV or Excel")
+        # Pre-flight validation (fail-fast)
+        file_meta = await validate_import_file(file)
 
         content = await file.read()
-        is_excel = "spreadsheet" in (file.content_type or "")
+        is_excel = file_meta.get("is_excel", False)
 
-        # Enqueue Celery task — it creates/updates the job record itself
+        # Enqueue Celery task
         result = import_csv_products.delay(
             user_id=user_id,
             file_content=content if is_excel else content.decode("utf-8"),
@@ -56,13 +57,13 @@ async def import_csv(
             is_excel=is_excel,
         )
 
-        # Consume quota on successful enqueue
         await quota.consume(1)
 
         return {
             "success": True,
             "job_id": str(result.id),
             "message": f"File {file.filename} queued for import",
+            "validation": file_meta,
         }
 
     except HTTPException:
@@ -78,8 +79,11 @@ async def import_from_url(
     user_id: str = Depends(get_current_user_id),
     quota: QuotaGuard = Depends(require_quota("imports:url")),
 ):
-    """Import products from URL (CSV/XML/JSON feed) — enqueues Celery task"""
+    """Import products from URL (CSV/XML/JSON feed) — validates URL then enqueues"""
     try:
+        # Pre-flight: check URL reachability
+        url_meta = await validate_import_url(str(request.url), request.format)
+
         if request.format in ("xml",):
             result = import_xml_feed.delay(
                 user_id=user_id,
@@ -95,13 +99,13 @@ async def import_from_url(
                 update_existing=request.update_existing,
             )
 
-        # Consume quota on successful enqueue
         await quota.consume(1)
 
         return {
             "success": True,
             "job_id": str(result.id),
             "message": f"{request.format.upper()} import queued from URL",
+            "validation": url_meta,
         }
 
     except HTTPException:

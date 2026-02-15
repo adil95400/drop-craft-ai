@@ -13,6 +13,8 @@ from datetime import datetime, timedelta
 import logging
 import asyncio
 
+from app.core.error_recovery import ResilientTask, classify_error
+
 logger = logging.getLogger(__name__)
 
 
@@ -69,7 +71,7 @@ def _fail_job(supabase, job_id: str, error_message: str):
 # SUPPLIER SYNC TASKS
 # ==========================================
 
-@shared_task(bind=True, max_retries=3, default_retry_delay=60)
+@shared_task(bind=True, base=ResilientTask, max_retries=3, default_retry_delay=60)
 def sync_supplier_products(
     self,
     user_id: str,
@@ -120,7 +122,7 @@ def sync_supplier_products(
             _fail_job(supabase, job_id, str(exc))
         except Exception:
             pass
-        raise self.retry(exc=exc)
+        self.retry_with_backoff(exc)
 
 
 @shared_task(bind=True, max_retries=3)
@@ -302,7 +304,7 @@ def scrape_store_catalog(
 # IMPORT TASKS
 # ==========================================
 
-@shared_task(bind=True, max_retries=2)
+@shared_task(bind=True, base=ResilientTask, max_retries=2)
 def import_csv_products(
     self,
     user_id: str,
@@ -361,10 +363,10 @@ def import_csv_products(
             _fail_job(supabase, job_id, str(exc))
         except Exception:
             pass
-        raise self.retry(exc=exc)
+        self.retry_with_backoff(exc)
 
 
-@shared_task(bind=True, max_retries=2)
+@shared_task(bind=True, base=ResilientTask, max_retries=2)
 def import_xml_feed(
     self,
     user_id: str,
@@ -421,7 +423,7 @@ def import_xml_feed(
             _fail_job(supabase, job_id, str(exc))
         except Exception:
             pass
-        raise self.retry(exc=exc)
+        self.retry_with_backoff(exc)
 
 
 # ==========================================
