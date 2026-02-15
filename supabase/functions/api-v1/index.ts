@@ -22,7 +22,7 @@ function parsePagination(url: URL) {
 }
 function sanitizeString(input: string, maxLength = 1000): string {
   if (typeof input !== "string") return "";
-  return input.slice(0, maxLength).replace(/<script\\b[^<]*(?:(?!<\\/script>)<[^<]*)*<\\/script>/gi, "").trim();
+  return input.slice(0, maxLength).replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, "").trim();
 }
 
 // ── Rate Limiting ───────────────────────────────────────────────────────────
