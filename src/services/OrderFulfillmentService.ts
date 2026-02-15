@@ -91,8 +91,8 @@ export class OrderFulfillmentService {
     status?: string;
     limit?: number;
   }) {
-    let query = supabase
-      .from('automation_execution_logs')
+    let query = (supabase
+      .from('activity_logs') as any)
       .select('*')
       .eq('user_id', userId)
       .order('created_at', { ascending: false });

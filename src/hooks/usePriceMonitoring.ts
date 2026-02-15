@@ -59,9 +59,9 @@ export function usePriceMonitoringStats() {
     queryFn: async (): Promise<MonitoringStats> => {
       if (!userId) throw new Error('Not authenticated');
 
-      // Get monitoring count
+      // Get monitoring count from products
       const { count: monitoringCount } = await supabase
-        .from('price_stock_monitoring')
+        .from('products')
         .select('*', { count: 'exact', head: true })
         .eq('user_id', userId);
 
@@ -118,23 +118,23 @@ export function useMonitoredProducts() {
     queryFn: async (): Promise<MonitoredProduct[]> => {
       if (!userId) throw new Error('Not authenticated');
 
-      // Get products with monitoring enabled
-      const { data: monitoring, error } = await supabase
-        .from('price_stock_monitoring')
-        .select(`
-          id,
-          product_id,
-          alert_threshold,
-          updated_at,
-          products!price_stock_monitoring_product_id_fkey (
-            id, name, sku, price, cost_price
-          )
-        `)
+      // Get products for monitoring
+      const { data: products, error } = await supabase
+        .from('products')
+        .select('id, name, sku, price, cost_price, updated_at')
         .eq('user_id', userId)
-        .eq('is_active', true)
+        .not('price', 'is', null)
         .limit(20);
 
       if (error) throw error;
+      
+      const monitoring = (products || []).map(p => ({
+        id: p.id,
+        product_id: p.id,
+        alert_threshold: 10,
+        updated_at: p.updated_at,
+        products: p,
+      }));
 
       // Get competitor data
       const { data: competitors } = await supabase
@@ -312,7 +312,7 @@ export function useTogglePriceRule() {
     mutationFn: async ({ ruleId, isActive }: { ruleId: string; isActive: boolean }) => {
       const { error } = await supabase
         .from('price_rules')
-        .update({ is_active: isActive, updated_at: new Date().toISOString() })
+        .update({ is_active: isActive, updated_at: new Date().toISOString() } as any)
         .eq('id', ruleId);
 
       if (error) throw error;

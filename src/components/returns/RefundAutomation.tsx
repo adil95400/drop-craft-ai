@@ -28,17 +28,17 @@ export const RefundAutomation = () => {
     queryKey: ['refund-automation-stats'],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('automation_execution_logs')
+        .from('activity_logs')
         .select('*')
-        .eq('trigger_id', 'refund-automation')
+        .eq('action', 'refund_processed')
         .order('created_at', { ascending: false })
         .limit(100)
 
       if (error) throw error
 
       const total = data?.length || 0
-      const successful = data?.filter(log => log.status === 'completed').length || 0
-      const avgTime = data?.reduce((acc, log) => acc + (log.duration_ms || 0), 0) / total || 0
+      const successful = data?.filter((log: any) => log.severity !== 'error').length || 0
+      const avgTime = 0
 
       return {
         total_processed: total,

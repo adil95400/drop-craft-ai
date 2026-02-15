@@ -151,7 +151,7 @@ export function useToggleDynamicRule() {
     mutationFn: async ({ ruleId, isActive }: { ruleId: string; isActive: boolean }) => {
       const { error } = await supabase
         .from('price_rules')
-        .update({ is_active: isActive, updated_at: new Date().toISOString() })
+        .update({ is_active: isActive, updated_at: new Date().toISOString() } as any)
         .eq('id', ruleId);
 
       if (error) throw error;

@@ -1393,200 +1393,6 @@ export type Database = {
           },
         ]
       }
-      automation_execution_logs: {
-        Row: {
-          action_id: string | null
-          created_at: string | null
-          duration_ms: number | null
-          error_message: string | null
-          executed_at: string | null
-          id: string
-          input_data: Json | null
-          output_data: Json | null
-          status: string | null
-          trigger_id: string | null
-          user_id: string
-        }
-        Insert: {
-          action_id?: string | null
-          created_at?: string | null
-          duration_ms?: number | null
-          error_message?: string | null
-          executed_at?: string | null
-          id?: string
-          input_data?: Json | null
-          output_data?: Json | null
-          status?: string | null
-          trigger_id?: string | null
-          user_id: string
-        }
-        Update: {
-          action_id?: string | null
-          created_at?: string | null
-          duration_ms?: number | null
-          error_message?: string | null
-          executed_at?: string | null
-          id?: string
-          input_data?: Json | null
-          output_data?: Json | null
-          status?: string | null
-          trigger_id?: string | null
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "automation_execution_logs_action_id_fkey"
-            columns: ["action_id"]
-            isOneToOne: false
-            referencedRelation: "automation_actions"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "automation_execution_logs_trigger_id_fkey"
-            columns: ["trigger_id"]
-            isOneToOne: false
-            referencedRelation: "automation_triggers"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      automation_executions: {
-        Row: {
-          actions_log: Json | null
-          completed_at: string | null
-          contact_data: Json | null
-          contact_email: string
-          current_step: number | null
-          entered_at: string | null
-          flow_id: string
-          id: string
-          last_action_at: string | null
-          status: string | null
-        }
-        Insert: {
-          actions_log?: Json | null
-          completed_at?: string | null
-          contact_data?: Json | null
-          contact_email: string
-          current_step?: number | null
-          entered_at?: string | null
-          flow_id: string
-          id?: string
-          last_action_at?: string | null
-          status?: string | null
-        }
-        Update: {
-          actions_log?: Json | null
-          completed_at?: string | null
-          contact_data?: Json | null
-          contact_email?: string
-          current_step?: number | null
-          entered_at?: string | null
-          flow_id?: string
-          id?: string
-          last_action_at?: string | null
-          status?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "automation_executions_flow_id_fkey"
-            columns: ["flow_id"]
-            isOneToOne: false
-            referencedRelation: "automation_flows"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      automation_flows: {
-        Row: {
-          created_at: string | null
-          description: string | null
-          id: string
-          name: string
-          stats: Json | null
-          status: string | null
-          steps: Json | null
-          trigger_config: Json | null
-          trigger_type: string
-          updated_at: string | null
-          user_id: string
-        }
-        Insert: {
-          created_at?: string | null
-          description?: string | null
-          id?: string
-          name: string
-          stats?: Json | null
-          status?: string | null
-          steps?: Json | null
-          trigger_config?: Json | null
-          trigger_type: string
-          updated_at?: string | null
-          user_id: string
-        }
-        Update: {
-          created_at?: string | null
-          description?: string | null
-          id?: string
-          name?: string
-          stats?: Json | null
-          status?: string | null
-          steps?: Json | null
-          trigger_config?: Json | null
-          trigger_type?: string
-          updated_at?: string | null
-          user_id?: string
-        }
-        Relationships: []
-      }
-      automation_rules: {
-        Row: {
-          action_config: Json | null
-          action_type: string
-          created_at: string | null
-          description: string | null
-          id: string
-          is_active: boolean | null
-          last_triggered_at: string | null
-          name: string
-          trigger_config: Json | null
-          trigger_count: number | null
-          trigger_type: string
-          updated_at: string | null
-          user_id: string
-        }
-        Insert: {
-          action_config?: Json | null
-          action_type: string
-          created_at?: string | null
-          description?: string | null
-          id?: string
-          is_active?: boolean | null
-          last_triggered_at?: string | null
-          name: string
-          trigger_config?: Json | null
-          trigger_count?: number | null
-          trigger_type: string
-          updated_at?: string | null
-          user_id: string
-        }
-        Update: {
-          action_config?: Json | null
-          action_type?: string
-          created_at?: string | null
-          description?: string | null
-          id?: string
-          is_active?: boolean | null
-          last_triggered_at?: string | null
-          name?: string
-          trigger_config?: Json | null
-          trigger_count?: number | null
-          trigger_type?: string
-          updated_at?: string | null
-          user_id?: string
-        }
-        Relationships: []
-      }
       automation_triggers: {
         Row: {
           conditions: Json | null
@@ -1631,46 +1437,67 @@ export type Database = {
       }
       automation_workflows: {
         Row: {
+          action_config: Json | null
+          action_type: string | null
+          conditions: Json | null
           created_at: string | null
           description: string | null
           execution_count: number | null
           id: string
           is_active: boolean | null
           last_run_at: string | null
+          last_triggered_at: string | null
           name: string
           run_count: number | null
           status: string | null
           steps: Json | null
+          trigger_config: Json | null
+          trigger_count: number | null
+          trigger_type: string | null
           updated_at: string | null
           user_id: string
           workflow_data: Json | null
         }
         Insert: {
+          action_config?: Json | null
+          action_type?: string | null
+          conditions?: Json | null
           created_at?: string | null
           description?: string | null
           execution_count?: number | null
           id?: string
           is_active?: boolean | null
           last_run_at?: string | null
+          last_triggered_at?: string | null
           name: string
           run_count?: number | null
           status?: string | null
           steps?: Json | null
+          trigger_config?: Json | null
+          trigger_count?: number | null
+          trigger_type?: string | null
           updated_at?: string | null
           user_id: string
           workflow_data?: Json | null
         }
         Update: {
+          action_config?: Json | null
+          action_type?: string | null
+          conditions?: Json | null
           created_at?: string | null
           description?: string | null
           execution_count?: number | null
           id?: string
           is_active?: boolean | null
           last_run_at?: string | null
+          last_triggered_at?: string | null
           name?: string
           run_count?: number | null
           status?: string | null
           steps?: Json | null
+          trigger_config?: Json | null
+          trigger_count?: number | null
+          trigger_type?: string | null
           updated_at?: string | null
           user_id?: string
           workflow_data?: Json | null
@@ -9012,218 +8839,14 @@ export type Database = {
           total_price_change?: number | null
           user_id?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "price_rule_logs_rule_id_fkey"
-            columns: ["rule_id"]
-            isOneToOne: false
-            referencedRelation: "price_rules"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      price_rules: {
-        Row: {
-          apply_filter: Json | null
-          apply_to: string | null
-          calculation: Json
-          conditions: Json
-          created_at: string | null
-          description: string | null
-          id: string
-          is_active: boolean | null
-          last_applied_at: string | null
-          name: string
-          priority: number | null
-          products_affected: number | null
-          rule_type: string
-          updated_at: string | null
-          user_id: string
-        }
-        Insert: {
-          apply_filter?: Json | null
-          apply_to?: string | null
-          calculation?: Json
-          conditions?: Json
-          created_at?: string | null
-          description?: string | null
-          id?: string
-          is_active?: boolean | null
-          last_applied_at?: string | null
-          name: string
-          priority?: number | null
-          products_affected?: number | null
-          rule_type: string
-          updated_at?: string | null
-          user_id: string
-        }
-        Update: {
-          apply_filter?: Json | null
-          apply_to?: string | null
-          calculation?: Json
-          conditions?: Json
-          created_at?: string | null
-          description?: string | null
-          id?: string
-          is_active?: boolean | null
-          last_applied_at?: string | null
-          name?: string
-          priority?: number | null
-          products_affected?: number | null
-          rule_type?: string
-          updated_at?: string | null
-          user_id?: string
-        }
         Relationships: []
-      }
-      price_simulations: {
-        Row: {
-          completed_at: string | null
-          created_at: string | null
-          id: string
-          name: string
-          products_simulated: number | null
-          results_summary: Json | null
-          rules_applied: Json | null
-          sample_results: Json | null
-          status: string | null
-          user_id: string
-        }
-        Insert: {
-          completed_at?: string | null
-          created_at?: string | null
-          id?: string
-          name: string
-          products_simulated?: number | null
-          results_summary?: Json | null
-          rules_applied?: Json | null
-          sample_results?: Json | null
-          status?: string | null
-          user_id: string
-        }
-        Update: {
-          completed_at?: string | null
-          created_at?: string | null
-          id?: string
-          name?: string
-          products_simulated?: number | null
-          results_summary?: Json | null
-          rules_applied?: Json | null
-          sample_results?: Json | null
-          status?: string | null
-          user_id?: string
-        }
-        Relationships: []
-      }
-      price_stock_history: {
-        Row: {
-          change_percent: number | null
-          change_type: string
-          created_at: string
-          detected_at: string
-          id: string
-          metadata: Json | null
-          new_value: number | null
-          old_value: number | null
-          product_id: string | null
-          user_id: string
-        }
-        Insert: {
-          change_percent?: number | null
-          change_type: string
-          created_at?: string
-          detected_at?: string
-          id?: string
-          metadata?: Json | null
-          new_value?: number | null
-          old_value?: number | null
-          product_id?: string | null
-          user_id: string
-        }
-        Update: {
-          change_percent?: number | null
-          change_type?: string
-          created_at?: string
-          detected_at?: string
-          id?: string
-          metadata?: Json | null
-          new_value?: number | null
-          old_value?: number | null
-          product_id?: string | null
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "price_stock_history_product_id_fkey"
-            columns: ["product_id"]
-            isOneToOne: false
-            referencedRelation: "products"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      price_stock_monitoring: {
-        Row: {
-          alert_threshold: number | null
-          created_at: string | null
-          current_price: number | null
-          current_stock: number | null
-          id: string
-          is_active: boolean | null
-          last_checked_at: string | null
-          previous_price: number | null
-          previous_stock: number | null
-          price_change_percent: number | null
-          product_id: string | null
-          supplier_url: string | null
-          updated_at: string | null
-          user_id: string
-        }
-        Insert: {
-          alert_threshold?: number | null
-          created_at?: string | null
-          current_price?: number | null
-          current_stock?: number | null
-          id?: string
-          is_active?: boolean | null
-          last_checked_at?: string | null
-          previous_price?: number | null
-          previous_stock?: number | null
-          price_change_percent?: number | null
-          product_id?: string | null
-          supplier_url?: string | null
-          updated_at?: string | null
-          user_id: string
-        }
-        Update: {
-          alert_threshold?: number | null
-          created_at?: string | null
-          current_price?: number | null
-          current_stock?: number | null
-          id?: string
-          is_active?: boolean | null
-          last_checked_at?: string | null
-          previous_price?: number | null
-          previous_stock?: number | null
-          price_change_percent?: number | null
-          product_id?: string | null
-          supplier_url?: string | null
-          updated_at?: string | null
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "price_stock_monitoring_product_id_fkey"
-            columns: ["product_id"]
-            isOneToOne: false
-            referencedRelation: "products"
-            referencedColumns: ["id"]
-          },
-        ]
       }
       pricing_rules: {
         Row: {
           actions: Json | null
+          apply_filter: Json | null
+          apply_to: string | null
+          calculation: Json | null
           conditions: Json | null
           created_at: string | null
           description: string | null
@@ -9243,6 +8866,9 @@ export type Database = {
         }
         Insert: {
           actions?: Json | null
+          apply_filter?: Json | null
+          apply_to?: string | null
+          calculation?: Json | null
           conditions?: Json | null
           created_at?: string | null
           description?: string | null
@@ -9262,6 +8888,9 @@ export type Database = {
         }
         Update: {
           actions?: Json | null
+          apply_filter?: Json | null
+          apply_to?: string | null
+          calculation?: Json | null
           conditions?: Json | null
           created_at?: string | null
           description?: string | null
@@ -9280,44 +8909,6 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
-      }
-      pricing_rulesets: {
-        Row: {
-          created_at: string
-          id: string
-          is_default: boolean | null
-          name: string
-          rules_json: Json
-          store_id: string | null
-          user_id: string
-        }
-        Insert: {
-          created_at?: string
-          id?: string
-          is_default?: boolean | null
-          name: string
-          rules_json?: Json
-          store_id?: string | null
-          user_id: string
-        }
-        Update: {
-          created_at?: string
-          id?: string
-          is_default?: boolean | null
-          name?: string
-          rules_json?: Json
-          store_id?: string | null
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "pricing_rulesets_store_id_fkey"
-            columns: ["store_id"]
-            isOneToOne: false
-            referencedRelation: "stores"
-            referencedColumns: ["id"]
-          },
-        ]
       }
       product_ai_attributes: {
         Row: {
@@ -9914,178 +9505,6 @@ export type Database = {
             columns: ["product_id"]
             isOneToOne: false
             referencedRelation: "products"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      product_price_conversions: {
-        Row: {
-          conversion_type: string | null
-          converted_at: string
-          converted_currency: string
-          converted_price: number
-          created_at: string
-          exchange_rate_used: number
-          id: string
-          original_currency: string
-          original_price: number
-          product_id: string | null
-          user_id: string
-        }
-        Insert: {
-          conversion_type?: string | null
-          converted_at?: string
-          converted_currency: string
-          converted_price: number
-          created_at?: string
-          exchange_rate_used: number
-          id?: string
-          original_currency: string
-          original_price: number
-          product_id?: string | null
-          user_id: string
-        }
-        Update: {
-          conversion_type?: string | null
-          converted_at?: string
-          converted_currency?: string
-          converted_price?: number
-          created_at?: string
-          exchange_rate_used?: number
-          id?: string
-          original_currency?: string
-          original_price?: number
-          product_id?: string | null
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "product_price_conversions_product_id_fkey"
-            columns: ["product_id"]
-            isOneToOne: false
-            referencedRelation: "products"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      product_prices: {
-        Row: {
-          compare_at_amount: number | null
-          currency: string
-          id: string
-          price_amount: number
-          pricing_ruleset_id: string | null
-          store_id: string | null
-          updated_at: string
-          user_id: string
-          variant_id: string
-        }
-        Insert: {
-          compare_at_amount?: number | null
-          currency?: string
-          id?: string
-          price_amount?: number
-          pricing_ruleset_id?: string | null
-          store_id?: string | null
-          updated_at?: string
-          user_id: string
-          variant_id: string
-        }
-        Update: {
-          compare_at_amount?: number | null
-          currency?: string
-          id?: string
-          price_amount?: number
-          pricing_ruleset_id?: string | null
-          store_id?: string | null
-          updated_at?: string
-          user_id?: string
-          variant_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "product_prices_pricing_ruleset_id_fkey"
-            columns: ["pricing_ruleset_id"]
-            isOneToOne: false
-            referencedRelation: "pricing_rulesets"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "product_prices_store_id_fkey"
-            columns: ["store_id"]
-            isOneToOne: false
-            referencedRelation: "stores"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "product_prices_variant_id_fkey"
-            columns: ["variant_id"]
-            isOneToOne: false
-            referencedRelation: "product_variants"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      product_pricing_state: {
-        Row: {
-          base_cost: number | null
-          computed_price: number | null
-          created_at: string
-          id: string
-          last_applied_at: string | null
-          margin_amount: number | null
-          margin_percent: number | null
-          product_id: string
-          rule_id: string | null
-          updated_at: string
-          variant_id: string | null
-        }
-        Insert: {
-          base_cost?: number | null
-          computed_price?: number | null
-          created_at?: string
-          id?: string
-          last_applied_at?: string | null
-          margin_amount?: number | null
-          margin_percent?: number | null
-          product_id: string
-          rule_id?: string | null
-          updated_at?: string
-          variant_id?: string | null
-        }
-        Update: {
-          base_cost?: number | null
-          computed_price?: number | null
-          created_at?: string
-          id?: string
-          last_applied_at?: string | null
-          margin_amount?: number | null
-          margin_percent?: number | null
-          product_id?: string
-          rule_id?: string | null
-          updated_at?: string
-          variant_id?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "product_pricing_state_product_id_fkey"
-            columns: ["product_id"]
-            isOneToOne: false
-            referencedRelation: "products"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "product_pricing_state_rule_id_fkey"
-            columns: ["rule_id"]
-            isOneToOne: false
-            referencedRelation: "pricing_rules"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "product_pricing_state_variant_id_fkey"
-            columns: ["variant_id"]
-            isOneToOne: false
-            referencedRelation: "product_variants"
             referencedColumns: ["id"]
           },
         ]
@@ -15888,6 +15307,57 @@ export type Database = {
         }
         Relationships: []
       }
+      automation_rules: {
+        Row: {
+          action_config: Json | null
+          action_type: string | null
+          created_at: string | null
+          description: string | null
+          execution_count: number | null
+          id: string | null
+          is_active: boolean | null
+          last_triggered_at: string | null
+          name: string | null
+          trigger_config: Json | null
+          trigger_count: number | null
+          trigger_type: string | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          action_config?: Json | null
+          action_type?: never
+          created_at?: string | null
+          description?: string | null
+          execution_count?: never
+          id?: string | null
+          is_active?: never
+          last_triggered_at?: string | null
+          name?: string | null
+          trigger_config?: Json | null
+          trigger_count?: never
+          trigger_type?: never
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          action_config?: Json | null
+          action_type?: never
+          created_at?: string | null
+          description?: string | null
+          execution_count?: never
+          id?: string | null
+          is_active?: never
+          last_triggered_at?: string | null
+          name?: string | null
+          trigger_config?: Json | null
+          trigger_count?: never
+          trigger_type?: never
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       background_jobs: {
         Row: {
           completed_at: string | null
@@ -16159,6 +15629,60 @@ export type Database = {
           successful_imports?: never
           supplier_id?: never
           total_products?: number | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      price_rules: {
+        Row: {
+          apply_filter: Json | null
+          apply_to: string | null
+          calculation: Json | null
+          conditions: Json | null
+          created_at: string | null
+          description: string | null
+          id: string | null
+          is_active: boolean | null
+          last_applied_at: string | null
+          name: string | null
+          priority: number | null
+          products_affected: number | null
+          rule_type: string | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          apply_filter?: Json | null
+          apply_to?: never
+          calculation?: never
+          conditions?: never
+          created_at?: string | null
+          description?: string | null
+          id?: string | null
+          is_active?: never
+          last_applied_at?: string | null
+          name?: string | null
+          priority?: number | null
+          products_affected?: never
+          rule_type?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          apply_filter?: Json | null
+          apply_to?: never
+          calculation?: never
+          conditions?: never
+          created_at?: string | null
+          description?: string | null
+          id?: string | null
+          is_active?: never
+          last_applied_at?: string | null
+          name?: string | null
+          priority?: number | null
+          products_affected?: never
+          rule_type?: string | null
           updated_at?: string | null
           user_id?: string | null
         }

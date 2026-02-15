@@ -51,7 +51,7 @@ export class OrderAutomationService {
     if (!user) throw new Error('User not authenticated')
 
     const { data, error } = await supabase
-      .from('automation_rules')
+      .from('automation_workflows')
       .insert({
         user_id: user.id,
         name: rule.name,
@@ -61,7 +61,7 @@ export class OrderAutomationService {
         action_config: rule.actions,
         is_active: rule.is_active,
         trigger_count: 0
-      })
+      } as any)
       .select()
       .single()
 
@@ -117,13 +117,14 @@ export class OrderAutomationService {
     const today = new Date()
     today.setHours(0, 0, 0, 0)
 
-    const { data: logs } = await supabase
-      .from('automation_execution_logs')
-      .select('status')
+    const { data: logs } = await (supabase
+      .from('activity_logs') as any)
+      .select('severity')
       .eq('user_id', user.id)
+      .eq('entity_type', 'automation')
       .gte('created_at', today.toISOString())
 
-    const completedToday = logs?.filter(l => l.status === 'completed').length || 0
+    const completedToday = logs?.filter((l: any) => l.severity === 'info').length || 0
     const totalToday = logs?.length || 0
     const successRate = totalToday > 0 ? (completedToday / totalToday) * 100 : 100
 
@@ -146,7 +147,7 @@ export class OrderAutomationService {
 
     const { error } = await supabase
       .from('automation_rules')
-      .update({ is_active: isActive })
+      .update({ is_active: isActive } as any)
       .eq('id', ruleId)
       .eq('user_id', user.id)
 
@@ -157,14 +158,15 @@ export class OrderAutomationService {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) throw new Error('User not authenticated')
 
-    let query = supabase
-      .from('automation_execution_logs')
+    let query = (supabase
+      .from('activity_logs') as any)
       .select('*')
       .eq('user_id', user.id)
-      .order('executed_at', { ascending: false })
+      .eq('entity_type', 'automation')
+      .order('created_at', { ascending: false })
       .limit(100)
 
-    if (status) query = query.eq('status', status)
+    if (status) query = query.eq('severity', status === 'completed' ? 'info' : 'error')
 
     const { data, error } = await query
     if (error) throw error

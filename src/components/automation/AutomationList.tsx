@@ -55,9 +55,10 @@ export function AutomationList() {
       const automationsWithStats = await Promise.all(
         (triggers || []).map(async (trigger) => {
           const { count } = await supabase
-            .from('automation_execution_logs')
+            .from('activity_logs')
             .select('id', { count: 'exact', head: true })
-            .eq('trigger_id', trigger.id);
+            .eq('entity_id', trigger.id)
+            .eq('entity_type', 'automation');
 
           return {
             ...trigger,

@@ -292,7 +292,7 @@ export const PriceRulesService = {
         last_applied_at: new Date().toISOString(),
         products_affected: updatedCount,
         updated_at: new Date().toISOString(),
-      })
+      } as any)
       .eq('id', ruleId);
 
     return transformLog(data);

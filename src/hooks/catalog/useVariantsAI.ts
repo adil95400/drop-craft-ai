@@ -291,7 +291,7 @@ export function useApplyVariantRecommendation() {
       if (recommendation.suggestedRule) {
         // Create automation rule
         const { error } = await supabase
-          .from('automation_rules')
+          .from('automation_workflows')
           .insert({
             user_id: user.id,
             name: recommendation.suggestedRule.name,
@@ -301,7 +301,7 @@ export function useApplyVariantRecommendation() {
             action_config: recommendation.suggestedRule.actions,
             is_active: true,
             description: `Règle créée automatiquement: ${recommendation.title}`
-          })
+          } as any)
 
         if (error) throw error
 

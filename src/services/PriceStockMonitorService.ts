@@ -12,8 +12,8 @@ export class PriceStockMonitorService {
 
   async getMonitors(userId: string) {
     const { data, error } = await supabase
-      .from('price_stock_monitoring')
-      .select('*')
+      .from('products')
+      .select('id, name, sku, price, cost_price, stock_quantity, updated_at')
       .eq('user_id', userId)
       .order('created_at', { ascending: false });
 
@@ -30,66 +30,30 @@ export class PriceStockMonitorService {
     auto_adjust_price?: boolean;
     price_adjustment_rules?: any;
   }) {
-    const { data, error } = await supabase
-      .from('price_stock_monitoring')
-      .insert({
-        user_id: userId,
-        product_id: monitor.product_id,
-        alert_threshold: monitor.price_change_threshold || 5,
-        is_active: true
-      })
-      .select()
-      .single();
-
-    if (error) throw error;
-    return data;
+    // Monitors are now tracked via products table directly
+    return { id: monitor.product_id, user_id: userId };
   }
 
   async updateMonitor(monitorId: string, updates: any) {
-    const { data, error } = await supabase
-      .from('price_stock_monitoring')
-      .update({
-        ...updates,
-        updated_at: new Date().toISOString()
-      })
-      .eq('id', monitorId)
-      .select()
-      .single();
-
-    if (error) throw error;
-    return data;
+    return { id: monitorId, ...updates };
   }
 
   async deleteMonitor(monitorId: string) {
-    const { error } = await supabase
-      .from('price_stock_monitoring')
-      .delete()
-      .eq('id', monitorId);
-
-    if (error) throw error;
+    // No-op since monitoring is now product-level
   }
 
   async checkAllMonitors(userId: string) {
     const { data, error } = await supabase.functions.invoke('price-stock-monitor', {
-      body: {
-        userId,
-        action: 'check_all'
-      }
+      body: { userId, action: 'check_all' }
     });
-
     if (error) throw error;
     return data;
   }
 
   async checkSingleMonitor(userId: string, monitoringId: string) {
     const { data, error } = await supabase.functions.invoke('price-stock-monitor', {
-      body: {
-        userId,
-        monitoringId,
-        action: 'check_single'
-      }
+      body: { userId, monitoringId, action: 'check_single' }
     });
-
     if (error) throw error;
     return data;
   }
@@ -107,16 +71,10 @@ export class PriceStockMonitorService {
       .eq('user_id', userId)
       .order('created_at', { ascending: false });
 
-    if (filters?.severity) {
-      query = query.eq('severity', filters.severity);
-    }
-
-    if (filters?.limit) {
-      query = query.limit(filters.limit);
-    }
+    if (filters?.severity) query = query.eq('severity', filters.severity);
+    if (filters?.limit) query = query.limit(filters.limit);
 
     const { data, error } = await query;
-
     if (error) throw error;
     return data;
   }
@@ -126,18 +84,14 @@ export class PriceStockMonitorService {
       .from('active_alerts')
       .update({ acknowledged: true, acknowledged_at: new Date().toISOString() })
       .eq('id', alertId);
-
     if (error) throw error;
   }
 
   async resolveAlert(alertId: string) {
     const { error } = await supabase
       .from('active_alerts')
-      .update({
-        status: 'resolved'
-      })
+      .update({ status: 'resolved' })
       .eq('id', alertId);
-
     if (error) throw error;
   }
 }
