@@ -70,8 +70,8 @@ export const RealTimeStats: React.FC = () => {
         supabase.from('orders').select('*', { count: 'exact', head: true }),
         supabase.from('integrations').select('*', { count: 'exact', head: true })
           .eq('is_active', true),
-        supabase.from('background_jobs').select('id, status')
-          .in('status', ['pending', 'processing'])
+        supabase.from('jobs').select('id, status')
+          .in('status', ['pending', 'running'])
       ]);
 
       const responseTime = Date.now() - startTime;

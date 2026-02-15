@@ -62,7 +62,7 @@ export function ImportLiveTracker() {
     queryFn: async () => {
       if (!user?.id) return []
       const { data, error } = await supabase
-        .from('background_jobs')
+        .from('jobs')
         .select('*')
         .eq('user_id', user.id)
         .in('job_type', ['import', 'bulk_import', 'csv_import', 'url_import', 'ai_enrich'])
@@ -70,7 +70,13 @@ export function ImportLiveTracker() {
         .limit(10)
 
       if (error) return []
-      return data as ImportJob[]
+      return (data || []).map((j: any) => ({
+        ...j,
+        items_total: j.total_items,
+        items_processed: j.processed_items,
+        items_succeeded: (j.processed_items || 0) - (j.failed_items || 0),
+        items_failed: j.failed_items,
+      })) as ImportJob[]
     },
     enabled: !!user,
     refetchInterval: 5000,
@@ -87,7 +93,7 @@ export function ImportLiveTracker() {
         {
           event: '*',
           schema: 'public',
-          table: 'background_jobs',
+          table: 'jobs',
           filter: `user_id=eq.${user.id}`,
         },
         () => {

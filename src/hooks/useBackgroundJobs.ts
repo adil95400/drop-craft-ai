@@ -1,6 +1,6 @@
 /**
  * Hook for managing and monitoring jobs (unified system)
- * Uses `jobs` table as source of truth, with `background_jobs` as read-only fallback
+ * Uses `jobs` table as the single source of truth
  */
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -43,17 +43,6 @@ export interface JobStats {
   failed: number;
 }
 
-/** Normalize background_jobs row to BackgroundJob interface */
-function normalizeBgJob(j: any): BackgroundJob {
-  return {
-    ...j,
-    total_items: j.items_total ?? j.total_items ?? 0,
-    processed_items: j.items_processed ?? j.processed_items ?? 0,
-    failed_items: j.items_failed ?? j.failed_items ?? 0,
-    status: j.status === 'processing' ? 'running' : j.status,
-  };
-}
-
 export function useBackgroundJobs(options?: {
   status?: string;
   jobType?: string;
@@ -64,7 +53,6 @@ export function useBackgroundJobs(options?: {
   return useQuery({
     queryKey: ['background-jobs', status, jobType, limit],
     queryFn: async () => {
-      // Try jobs table first
       let query = supabase
         .from('jobs')
         .select('*')
@@ -75,23 +63,8 @@ export function useBackgroundJobs(options?: {
       if (jobType) query = query.eq('job_type', jobType);
 
       const { data, error } = await query;
-      if (!error && data && data.length > 0) {
-        return data as unknown as BackgroundJob[];
-      }
-
-      // Fallback to background_jobs
-      let bgQuery = supabase
-        .from('background_jobs')
-        .select('*')
-        .order('created_at', { ascending: false })
-        .limit(limit);
-
-      if (status) bgQuery = bgQuery.eq('status', status);
-      if (jobType) bgQuery = bgQuery.eq('job_type', jobType);
-
-      const { data: bgData, error: bgError } = await bgQuery;
-      if (bgError) throw bgError;
-      return (bgData || []).map(normalizeBgJob);
+      if (error) throw error;
+      return (data || []) as unknown as BackgroundJob[];
     },
     refetchInterval: 5000,
   });
@@ -101,19 +74,13 @@ export function useJobStats() {
   return useQuery({
     queryKey: ['job-stats'],
     queryFn: async () => {
-      // Try jobs first
       const { data } = await supabase.from('jobs').select('status');
-      let jobs: any[] = data || [];
-
-      if (jobs.length === 0) {
-        const { data: bgData } = await supabase.from('background_jobs').select('status');
-        jobs = bgData || [];
-      }
+      const jobs: any[] = data || [];
 
       const stats: JobStats = {
         total: jobs.length,
         pending: jobs.filter((j) => j.status === 'pending').length,
-        running: jobs.filter((j) => j.status === 'running' || j.status === 'processing').length,
+        running: jobs.filter((j) => j.status === 'running').length,
         completed: jobs.filter((j) => j.status === 'completed').length,
         failed: jobs.filter((j) => j.status === 'failed').length,
       };
@@ -132,19 +99,10 @@ export function useJobDetails(jobId: string) {
         .from('jobs')
         .select('*')
         .eq('id', jobId)
-        .maybeSingle();
-
-      if (!error && data) return data as unknown as BackgroundJob;
-
-      // Fallback
-      const { data: fallback, error: fbErr } = await supabase
-        .from('background_jobs')
-        .select('*')
-        .eq('id', jobId)
         .single();
 
-      if (fbErr) throw fbErr;
-      return normalizeBgJob(fallback);
+      if (error) throw error;
+      return data as unknown as BackgroundJob;
     },
     refetchInterval: (query) => {
       const job = query.state.data;
@@ -165,15 +123,7 @@ export function useCancelJob() {
         .from('jobs')
         .update({ status: 'cancelled' } as any)
         .eq('id', jobId);
-
-      if (error) {
-        const { error: bgErr } = await supabase
-          .from('background_jobs')
-          .update({ status: 'failed', error_message: 'Cancelled by user' })
-          .eq('id', jobId)
-          .eq('status', 'pending');
-        if (bgErr) throw bgErr;
-      }
+      if (error) throw error;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['background-jobs'] });
@@ -189,35 +139,18 @@ export function useRetryJob() {
 
   return useMutation({
     mutationFn: async (jobId: string) => {
-      const { data } = await supabase.from('jobs').select('*').eq('id', jobId).maybeSingle();
+      const { data } = await supabase.from('jobs').select('*').eq('id', jobId).single();
+      if (!data) throw new Error('Job not found');
+
       const job = data as any;
-
-      if (job) {
-        await supabase.from('jobs').insert({
-          user_id: job.user_id,
-          job_type: job.job_type,
-          job_subtype: job.job_subtype,
-          name: job.name,
-          input_data: job.input_data,
-          status: 'pending',
-        } as any);
-      } else {
-        const { data: bg, error: fbErr } = await supabase
-          .from('background_jobs')
-          .select('*')
-          .eq('id', jobId)
-          .single();
-        if (fbErr) throw fbErr;
-
-        await supabase.from('jobs').insert({
-          user_id: bg.user_id,
-          job_type: bg.job_type,
-          job_subtype: bg.job_subtype,
-          name: bg.name,
-          input_data: bg.input_data,
-          status: 'pending',
-        } as any);
-      }
+      await supabase.from('jobs').insert({
+        user_id: job.user_id,
+        job_type: job.job_type,
+        job_subtype: job.job_subtype,
+        name: job.name,
+        input_data: job.input_data,
+        status: 'pending',
+      } as any);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['background-jobs'] });

@@ -35,10 +35,10 @@ export const SyncLogsTable = () => {
     queryFn: async () => {
       if (!user) return []
 
-      // Query real background_jobs for sync-related jobs
+      // Query jobs table (unified source of truth)
       const { data: jobs, error } = await supabase
-        .from('background_jobs')
-        .select('id, job_type, job_subtype, status, items_processed, items_succeeded, items_failed, started_at, completed_at, error_message, metadata, name')
+        .from('jobs')
+        .select('id, job_type, job_subtype, status, processed_items, failed_items, started_at, completed_at, error_message, metadata, name')
         .eq('user_id', user.id)
         .in('job_type', ['sync', 'import', 'export'])
         .order('created_at', { ascending: false })
@@ -46,15 +46,15 @@ export const SyncLogsTable = () => {
 
       if (error || !jobs) return []
 
-      return jobs.map((job): SyncLog => ({
+      return jobs.map((job: any): SyncLog => ({
         id: job.id,
         integration_id: job.id,
         platform_name: job.name || job.job_subtype || job.job_type,
         sync_type: job.job_subtype || job.job_type,
         status: job.status === 'completed' ? 'success' : job.status === 'failed' ? 'error' : 'in_progress',
-        items_processed: job.items_processed || 0,
-        items_success: job.items_succeeded || 0,
-        items_error: job.items_failed || 0,
+        items_processed: job.processed_items || 0,
+        items_success: (job.processed_items || 0) - (job.failed_items || 0),
+        items_error: job.failed_items || 0,
         started_at: job.started_at || job.completed_at || new Date().toISOString(),
         completed_at: job.completed_at || undefined,
         error_message: job.error_message || undefined

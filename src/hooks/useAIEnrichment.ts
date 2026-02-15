@@ -10,10 +10,9 @@ export type EnrichTone = 'professionnel' | 'créatif' | 'luxe' | 'décontracté'
 export interface EnrichmentJob {
   id: string
   status: string
-  items_total: number | null
-  items_processed: number | null
-  items_succeeded: number | null
-  items_failed: number | null
+  total_items: number | null
+  processed_items: number | null
+  failed_items: number | null
   progress_percent: number | null
   progress_message: string | null
   created_at: string
@@ -31,7 +30,7 @@ export function useAIEnrichment() {
     queryFn: async () => {
       if (!user?.id) return []
       const { data, error } = await supabase
-        .from('background_jobs')
+        .from('jobs')
         .select('*')
         .eq('user_id', user.id)
         .eq('job_type', 'ai_enrich')

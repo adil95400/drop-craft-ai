@@ -7586,6 +7586,13 @@ export type Database = {
             foreignKeyName: "job_items_job_id_fkey"
             columns: ["job_id"]
             isOneToOne: false
+            referencedRelation: "background_jobs_compat"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "job_items_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
             referencedRelation: "jobs"
             referencedColumns: ["id"]
           },
@@ -16134,6 +16141,90 @@ export type Database = {
           log_date: string | null
           severity: string | null
           unique_users: number | null
+        }
+        Relationships: []
+      }
+      background_jobs_compat: {
+        Row: {
+          celery_task_id: string | null
+          completed_at: string | null
+          created_at: string | null
+          duration_ms: number | null
+          error_message: string | null
+          id: string | null
+          input_data: Json | null
+          items_failed: number | null
+          items_processed: number | null
+          items_succeeded: number | null
+          items_total: number | null
+          job_subtype: string | null
+          job_type: string | null
+          max_retries: number | null
+          metadata: Json | null
+          name: string | null
+          output_data: Json | null
+          priority: number | null
+          progress_message: string | null
+          progress_percent: number | null
+          retries: number | null
+          started_at: string | null
+          status: string | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          celery_task_id?: string | null
+          completed_at?: string | null
+          created_at?: string | null
+          duration_ms?: number | null
+          error_message?: string | null
+          id?: string | null
+          input_data?: Json | null
+          items_failed?: number | null
+          items_processed?: number | null
+          items_succeeded?: never
+          items_total?: number | null
+          job_subtype?: string | null
+          job_type?: string | null
+          max_retries?: number | null
+          metadata?: Json | null
+          name?: string | null
+          output_data?: Json | null
+          priority?: number | null
+          progress_message?: string | null
+          progress_percent?: number | null
+          retries?: number | null
+          started_at?: string | null
+          status?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          celery_task_id?: string | null
+          completed_at?: string | null
+          created_at?: string | null
+          duration_ms?: number | null
+          error_message?: string | null
+          id?: string | null
+          input_data?: Json | null
+          items_failed?: number | null
+          items_processed?: number | null
+          items_succeeded?: never
+          items_total?: number | null
+          job_subtype?: string | null
+          job_type?: string | null
+          max_retries?: number | null
+          metadata?: Json | null
+          name?: string | null
+          output_data?: Json | null
+          priority?: number | null
+          progress_message?: string | null
+          progress_percent?: number | null
+          retries?: number | null
+          started_at?: string | null
+          status?: string | null
+          updated_at?: string | null
+          user_id?: string | null
         }
         Relationships: []
       }

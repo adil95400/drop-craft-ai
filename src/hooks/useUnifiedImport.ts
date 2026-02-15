@@ -93,7 +93,7 @@ export const useUnifiedImport = () => {
     }
   })
 
-  // Fetch import history via API V1, with fallback to background_jobs
+  // Fetch import history via API V1, with fallback to jobs table
   const { 
     data: importHistory = [], 
     isLoading: isLoadingHistory,
@@ -114,11 +114,11 @@ export const useUnifiedImport = () => {
           created_at: job.created_at,
         }))
       } catch {
-        // Fallback: query background_jobs directly
+        // Fallback: query jobs table directly
         const { data: { user } } = await supabase.auth.getUser()
         if (!user) return []
         const { data } = await supabase
-          .from('background_jobs')
+          .from('jobs')
           .select('*')
           .eq('user_id', user.id)
           .in('job_type', ['import', 'csv_import', 'url_import', 'feed_import', 'bulk_import'])
@@ -129,8 +129,8 @@ export const useUnifiedImport = () => {
           platform: job.name || job.job_subtype || job.job_type || 'Import',
           source_url: job.input_data?.url || job.input_data?.source_url || '',
           status: job.status,
-          products_imported: job.items_succeeded || 0,
-          products_failed: job.items_failed || 0,
+          products_imported: (job.processed_items || 0) - (job.failed_items || 0),
+          products_failed: job.failed_items || 0,
           error_message: job.error_message || '',
           created_at: job.created_at,
         }))

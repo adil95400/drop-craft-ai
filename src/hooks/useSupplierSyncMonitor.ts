@@ -84,7 +84,7 @@ export function useSupplierSyncMonitor() {
     queryKey: ['supplier-sync-jobs'],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('background_jobs')
+        .from('jobs')
         .select('*')
         .eq('job_type', 'supplier_sync')
         .order('created_at', { ascending: false })
