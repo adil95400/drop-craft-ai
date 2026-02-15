@@ -7826,6 +7826,60 @@ export type Database = {
         }
         Relationships: []
       }
+      onboarding_progress: {
+        Row: {
+          business_name: string | null
+          business_type: string | null
+          completed_at: string | null
+          completed_steps: Json
+          created_at: string
+          current_step: number
+          id: string
+          import_method: string | null
+          onboarding_completed: boolean
+          products_imported: number
+          store_connected: boolean
+          store_platform: string | null
+          store_url: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          business_name?: string | null
+          business_type?: string | null
+          completed_at?: string | null
+          completed_steps?: Json
+          created_at?: string
+          current_step?: number
+          id?: string
+          import_method?: string | null
+          onboarding_completed?: boolean
+          products_imported?: number
+          store_connected?: boolean
+          store_platform?: string | null
+          store_url?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          business_name?: string | null
+          business_type?: string | null
+          completed_at?: string | null
+          completed_steps?: Json
+          created_at?: string
+          current_step?: number
+          id?: string
+          import_method?: string | null
+          onboarding_completed?: boolean
+          products_imported?: number
+          store_connected?: boolean
+          store_platform?: string | null
+          store_url?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       order_items: {
         Row: {
           created_at: string | null
