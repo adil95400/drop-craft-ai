@@ -2,6 +2,9 @@
 Celery tasks for async job processing
 All heavy operations run here, not in HTTP handlers
 Refactored to use Celery instead of custom Redis queue
+
+IMPORTANT: All tasks write to the `jobs` table (unified system).
+`background_jobs` is DEPRECATED and must not be used.
 """
 
 from celery import shared_task
@@ -21,6 +24,45 @@ def run_async(coro):
         loop = asyncio.new_event_loop()
         asyncio.set_event_loop(loop)
     return loop.run_until_complete(coro)
+
+
+def _upsert_job(supabase, job_id: str, user_id: str, job_type: str, job_subtype: str = None, **extra):
+    """Create or update a job record in the unified `jobs` table."""
+    record = {
+        "id": job_id,
+        "user_id": user_id,
+        "job_type": job_type,
+        "status": "running",
+        "started_at": datetime.utcnow().isoformat(),
+    }
+    if job_subtype:
+        record["job_subtype"] = job_subtype
+    record.update(extra)
+    supabase.table("jobs").upsert(record).execute()
+
+
+def _complete_job(supabase, job_id: str, output_data=None, processed=0, failed=0, total=0):
+    """Mark a job as completed in the unified `jobs` table."""
+    supabase.table("jobs").update({
+        "status": "completed",
+        "completed_at": datetime.utcnow().isoformat(),
+        "output_data": output_data,
+        "processed_items": processed,
+        "failed_items": failed,
+        "total_items": total or processed,
+    }).eq("id", job_id).execute()
+
+
+def _fail_job(supabase, job_id: str, error_message: str):
+    """Mark a job as failed in the unified `jobs` table."""
+    try:
+        supabase.table("jobs").update({
+            "status": "failed",
+            "error_message": str(error_message),
+            "completed_at": datetime.utcnow().isoformat(),
+        }).eq("id", job_id).execute()
+    except Exception:
+        logger.warning(f"Could not update job {job_id} to failed status")
 
 
 # ==========================================
@@ -46,23 +88,15 @@ def sync_supplier_products(
     try:
         supabase = get_supabase()
         
-        # Update job status
-        supabase.table("background_jobs").upsert({
-            "id": job_id,
-            "user_id": user_id,
-            "job_type": "supplier_sync",
-            "job_subtype": sync_type,
-            "status": "running",
-            "input_data": {
-                "supplier_id": supplier_id,
-                "sync_type": sync_type,
-                "limit": limit,
-                "category_filter": category_filter
-            },
-            "started_at": datetime.utcnow().isoformat()
-        }).execute()
+        _upsert_job(supabase, job_id, user_id, "sync", job_subtype=sync_type,
+                     name=f"Supplier sync: {sync_type}",
+                     input_data={
+                         "supplier_id": supplier_id,
+                         "sync_type": sync_type,
+                         "limit": limit,
+                         "category_filter": category_filter
+                     })
         
-        # Get supplier service and sync
         service = get_supplier_service(supplier_id)
         result = service.sync_products(
             user_id=user_id,
@@ -70,34 +104,22 @@ def sync_supplier_products(
             category_filter=category_filter
         )
         
-        # Update job as completed
-        supabase.table("background_jobs").update({
-            "status": "completed",
-            "completed_at": datetime.utcnow().isoformat(),
-            "output_data": result,
-            "items_processed": result.get("fetched", 0),
-            "items_succeeded": result.get("saved", 0),
-            "items_failed": len(result.get("errors", []))
-        }).eq("id", job_id).execute()
+        _complete_job(supabase, job_id,
+                      output_data=result,
+                      processed=result.get("fetched", 0),
+                      failed=len(result.get("errors", [])),
+                      total=result.get("fetched", 0))
         
         logger.info(f"Supplier sync completed: {result}")
         return result
         
     except Exception as exc:
         logger.error(f"Supplier sync failed: {exc}")
-        
-        # Update job as failed
         try:
             supabase = get_supabase()
-            supabase.table("background_jobs").update({
-                "status": "failed",
-                "error_message": str(exc),
-                "completed_at": datetime.utcnow().isoformat()
-            }).eq("id", job_id).execute()
-        except:
+            _fail_job(supabase, job_id, str(exc))
+        except Exception:
             pass
-        
-        # Retry if possible
         raise self.retry(exc=exc)
 
 
@@ -133,11 +155,7 @@ def full_catalog_sync(self, user_id: str, supplier_id: str, **options):
     logger.info(f"Starting full catalog sync for supplier {supplier_id}")
     
     service = get_supplier_service(supplier_id)
-    
-    # Sync products
     products_result = service.sync_products(user_id=user_id, **options)
-    
-    # Sync stock
     stock_result = service.sync_stock(user_id=user_id)
     
     return {
@@ -169,16 +187,9 @@ def scrape_product_url(
     try:
         supabase = get_supabase()
         
-        # Create job record
-        supabase.table("background_jobs").upsert({
-            "id": job_id,
-            "user_id": user_id,
-            "job_type": "scraping",
-            "job_subtype": "url",
-            "status": "running",
-            "input_data": {"url": url},
-            "started_at": datetime.utcnow().isoformat()
-        }).execute()
+        _upsert_job(supabase, job_id, user_id, "scraping", job_subtype="url",
+                     name=f"Scrape: {url[:60]}",
+                     input_data={"url": url})
         
         scraper = ScrapingService()
         product = scraper.scrape_product(
@@ -192,37 +203,31 @@ def scrape_product_url(
             ai = AIService()
             product = ai.enrich_product(product)
         
-        # Save to database
-        result = supabase.table("catalog_products").insert({
+        # Save to products table (unified, not catalog_products)
+        result = supabase.table("products").insert({
             **product,
             "user_id": user_id,
             "source_url": url,
             "import_source": "scraping",
+            "status": "draft",
             "created_at": datetime.utcnow().isoformat()
         }).execute()
         
-        # Update job
-        supabase.table("background_jobs").update({
-            "status": "completed",
-            "completed_at": datetime.utcnow().isoformat(),
-            "output_data": {"product_id": result.data[0]["id"] if result.data else None}
-        }).eq("id", job_id).execute()
+        product_id = result.data[0]["id"] if result.data else None
         
-        return {"success": True, "product_id": result.data[0]["id"] if result.data else None}
+        _complete_job(supabase, job_id,
+                      output_data={"product_id": product_id},
+                      processed=1, total=1)
+        
+        return {"success": True, "product_id": product_id}
         
     except Exception as exc:
         logger.error(f"URL scrape failed: {exc}")
-        
         try:
             supabase = get_supabase()
-            supabase.table("background_jobs").update({
-                "status": "failed",
-                "error_message": str(exc),
-                "completed_at": datetime.utcnow().isoformat()
-            }).eq("id", job_id).execute()
-        except:
+            _fail_job(supabase, job_id, str(exc))
+        except Exception:
             pass
-        
         raise self.retry(exc=exc)
 
 
@@ -238,7 +243,15 @@ def scrape_store_catalog(
     from app.services.scraping import ScrapingService
     from app.core.database import get_supabase
     
+    job_id = self.request.id
     logger.info(f"Scraping store catalog: {store_url}")
+    
+    supabase = get_supabase()
+    
+    _upsert_job(supabase, job_id, user_id, "scraping", job_subtype="store",
+                name=f"Store scrape: {store_url[:60]}",
+                input_data={"store_url": store_url, "max_products": max_products},
+                total_items=max_products)
     
     scraper = ScrapingService()
     products = scraper.scrape_store(
@@ -247,21 +260,40 @@ def scrape_store_catalog(
         category_filter=category_filter
     )
     
-    # Save products
-    supabase = get_supabase()
-    
     saved_count = 0
+    failed_count = 0
     for product in products:
         try:
-            supabase.table("catalog_products").insert({
+            prod_result = supabase.table("products").insert({
                 **product,
                 "user_id": user_id,
                 "import_source": "store_scrape",
+                "status": "draft",
                 "created_at": datetime.utcnow().isoformat()
+            }).execute()
+            
+            # Create job_item for granular tracking
+            supabase.table("job_items").insert({
+                "job_id": job_id,
+                "product_id": prod_result.data[0]["id"] if prod_result.data else None,
+                "status": "success",
+                "message": f"Scraped from {store_url}",
+                "processed_at": datetime.utcnow().isoformat(),
             }).execute()
             saved_count += 1
         except Exception as e:
             logger.warning(f"Failed to save product: {e}")
+            supabase.table("job_items").insert({
+                "job_id": job_id,
+                "status": "error",
+                "message": str(e),
+                "processed_at": datetime.utcnow().isoformat(),
+            }).execute()
+            failed_count += 1
+    
+    _complete_job(supabase, job_id,
+                  output_data={"scraped": len(products), "saved": saved_count},
+                  processed=saved_count, failed=failed_count, total=len(products))
     
     return {"scraped": len(products), "saved": saved_count}
 
@@ -291,14 +323,10 @@ def import_csv_products(
     try:
         supabase = get_supabase()
         
-        supabase.table("background_jobs").upsert({
-            "id": job_id,
-            "user_id": user_id,
-            "job_type": "import",
-            "job_subtype": "csv",
-            "status": "running",
-            "started_at": datetime.utcnow().isoformat()
-        }).execute()
+        _upsert_job(supabase, job_id, user_id, "import",
+                     job_subtype="excel" if is_excel else "csv",
+                     name=f"Import {filename or feed_url or 'CSV'}",
+                     input_data={"feed_url": feed_url, "filename": filename})
         
         importer = ImportService()
         
@@ -318,28 +346,21 @@ def import_csv_products(
                 mapping=mapping_config or {}
             )
         
-        supabase.table("background_jobs").update({
-            "status": "completed",
-            "completed_at": datetime.utcnow().isoformat(),
-            "output_data": result,
-            "items_processed": result.get("total", 0),
-            "items_succeeded": result.get("imported", 0)
-        }).eq("id", job_id).execute()
+        _complete_job(supabase, job_id,
+                      output_data=result,
+                      processed=result.get("imported", 0),
+                      failed=result.get("failed", 0),
+                      total=result.get("total", 0))
         
         return result
         
     except Exception as exc:
         logger.error(f"CSV import failed: {exc}")
-        
         try:
             supabase = get_supabase()
-            supabase.table("background_jobs").update({
-                "status": "failed",
-                "error_message": str(exc)
-            }).eq("id", job_id).execute()
-        except:
+            _fail_job(supabase, job_id, str(exc))
+        except Exception:
             pass
-        
         raise self.retry(exc=exc)
 
 
@@ -355,28 +376,52 @@ def import_xml_feed(
 ):
     """Import products from XML feed"""
     from app.services.import_service import ImportService
+    from app.core.database import get_supabase
     
+    job_id = self.request.id
     logger.info(f"Importing XML feed for user {user_id}")
     
-    importer = ImportService()
-    
-    if feed_url:
-        result = importer.import_from_url(
-            user_id=user_id,
-            url=feed_url,
-            format="xml",
-            mapping=mapping_config or {},
-            update_existing=update_existing
-        )
-    else:
-        result = importer.import_from_content(
-            user_id=user_id,
-            content=file_content,
-            format="xml",
-            mapping=mapping_config or {}
-        )
-    
-    return result
+    try:
+        supabase = get_supabase()
+        
+        _upsert_job(supabase, job_id, user_id, "import", job_subtype="xml",
+                     name=f"Import {filename or feed_url or 'XML'}",
+                     input_data={"feed_url": feed_url, "filename": filename})
+        
+        importer = ImportService()
+        
+        if feed_url:
+            result = importer.import_from_url(
+                user_id=user_id,
+                url=feed_url,
+                format="xml",
+                mapping=mapping_config or {},
+                update_existing=update_existing
+            )
+        else:
+            result = importer.import_from_content(
+                user_id=user_id,
+                content=file_content,
+                format="xml",
+                mapping=mapping_config or {}
+            )
+        
+        _complete_job(supabase, job_id,
+                      output_data=result,
+                      processed=result.get("imported", 0),
+                      failed=result.get("failed", 0),
+                      total=result.get("total", 0))
+        
+        return result
+        
+    except Exception as exc:
+        logger.error(f"XML import failed: {exc}")
+        try:
+            supabase = get_supabase()
+            _fail_job(supabase, job_id, str(exc))
+        except Exception:
+            pass
+        raise self.retry(exc=exc)
 
 
 # ==========================================
@@ -401,14 +446,9 @@ def process_order_fulfillment(
     try:
         supabase = get_supabase()
         
-        supabase.table("background_jobs").upsert({
-            "id": job_id,
-            "user_id": user_id,
-            "job_type": "fulfillment",
-            "status": "running",
-            "input_data": {"order_id": order_id, "supplier_id": supplier_id},
-            "started_at": datetime.utcnow().isoformat()
-        }).execute()
+        _upsert_job(supabase, job_id, user_id, "fulfillment",
+                     name=f"Fulfill order {order_id[:8]}",
+                     input_data={"order_id": order_id, "supplier_id": supplier_id})
         
         fulfillment = FulfillmentService()
         result = fulfillment.fulfill_order(
@@ -418,16 +458,17 @@ def process_order_fulfillment(
             auto_select=auto_select
         )
         
-        supabase.table("background_jobs").update({
-            "status": "completed",
-            "completed_at": datetime.utcnow().isoformat(),
-            "output_data": result
-        }).eq("id", job_id).execute()
+        _complete_job(supabase, job_id, output_data=result, processed=1, total=1)
         
         return result
         
     except Exception as exc:
         logger.error(f"Fulfillment failed: {exc}")
+        try:
+            supabase = get_supabase()
+            _fail_job(supabase, job_id, str(exc))
+        except Exception:
+            pass
         raise self.retry(exc=exc)
 
 
@@ -516,7 +557,6 @@ def bulk_ai_enrichment(
     
     supabase = get_supabase()
     
-    # Fetch products matching criteria
     query = supabase.table("products").select("id").eq("user_id", user_id)
     
     for key, value in filter_criteria.items():
@@ -525,7 +565,6 @@ def bulk_ai_enrichment(
     result = query.limit(limit).execute()
     product_ids = [p["id"] for p in result.data]
     
-    # Enrich each product
     ai = AIService()
     enriched = 0
     
@@ -552,7 +591,6 @@ def scheduled_stock_sync():
     
     supabase = get_supabase()
     
-    # Get all active supplier integrations with auto-sync enabled
     integrations = supabase.table("supplier_integrations")\
         .select("id, user_id")\
         .eq("is_active", True)\
@@ -573,7 +611,7 @@ def scheduled_stock_sync():
 
 @shared_task
 def cleanup_old_jobs():
-    """Clean up old completed jobs (daily)"""
+    """Clean up old completed jobs (daily) — uses unified `jobs` table"""
     from app.core.database import get_supabase
     
     logger.info("Cleaning up old jobs")
@@ -581,7 +619,7 @@ def cleanup_old_jobs():
     supabase = get_supabase()
     cutoff = (datetime.utcnow() - timedelta(days=7)).isoformat()
     
-    result = supabase.table("background_jobs")\
+    result = supabase.table("jobs")\
         .delete()\
         .in_("status", ["completed", "cancelled"])\
         .lt("completed_at", cutoff)\
@@ -601,7 +639,6 @@ def process_pending_fulfillments():
     
     supabase = get_supabase()
     
-    # Get pending orders with auto-fulfillment enabled
     orders = supabase.table("orders")\
         .select("id, user_id")\
         .eq("status", "pending")\
@@ -632,7 +669,6 @@ async def process_bulk_import(payload: Dict[str, Any]) -> Dict[str, Any]:
     supplier = payload.get('supplier')
     product_ids = payload.get('product_ids', [])
     
-    # Queue as Celery task
     job = sync_supplier_products.delay(
         user_id=user_id,
         supplier_id=supplier,
@@ -644,18 +680,11 @@ async def process_bulk_import(payload: Dict[str, Any]) -> Dict[str, Any]:
 
 async def sync_product_data(payload: Dict[str, Any]) -> Dict[str, Any]:
     """Legacy: Sync product data - now uses Celery"""
-    user_id = payload.get('user_id')
-    product_id = payload.get('product_id')
-    
-    # This would be handled by platform sync
     return {"status": "legacy_method", "message": "Use /api/v1/sync endpoints"}
 
 
 async def send_notification_email(payload: Dict[str, Any]) -> Dict[str, Any]:
     """Legacy: Send notification email"""
-    # This remains but could be migrated to Celery
-    from app.core.database import get_supabase
-    
     user_id = payload.get('user_id')
     template = payload.get('template')
     
