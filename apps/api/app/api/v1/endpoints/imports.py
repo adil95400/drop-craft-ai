@@ -1,21 +1,21 @@
 """
-Import endpoints — CSV/URL/feed import with job tracking
-Every import creates a job + job_items for per-product results
+Import endpoints — CSV/URL/feed import with async job tracking
+Every import creates a job then enqueues Celery for async processing.
+Endpoints return HTTP 202 with job_id immediately.
 """
 
-from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Query
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
 from pydantic import BaseModel, HttpUrl
-from typing import Optional, Dict, Any, List
+from typing import Optional, Dict
 from datetime import datetime
 import logging
 
 from app.core.security import get_current_user_id
 from app.core.database import get_supabase
-from app.services.import_service import ImportService
+from app.queue.tasks import import_csv_products, import_xml_feed
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
-import_service = ImportService()
 
 
 class UrlImportRequest(BaseModel):
@@ -32,67 +32,32 @@ class FeedImportRequest(BaseModel):
     update_existing: bool = True
 
 
-@router.post("/csv")
+@router.post("/csv", status_code=202)
 async def import_csv(
     file: UploadFile = File(...),
     user_id: str = Depends(get_current_user_id)
 ):
-    """Import products from CSV file — returns job_id"""
+    """Import products from CSV file — enqueues Celery task, returns job_id"""
     try:
-        supabase = get_supabase()
+        if file.content_type not in ["text/csv", "application/vnd.ms-excel",
+                                      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"]:
+            raise HTTPException(status_code=400, detail="File must be CSV or Excel")
 
-        # Validate
-        if file.content_type not in ["text/csv", "application/vnd.ms-excel"]:
-            raise HTTPException(status_code=400, detail="File must be CSV")
+        content = await file.read()
+        is_excel = "spreadsheet" in (file.content_type or "")
 
-        content = (await file.read()).decode("utf-8")
-
-        # Create job
-        job = supabase.table("jobs").insert({
-            "user_id": user_id,
-            "job_type": "import",
-            "status": "running",
-            "metadata": {"source": "csv", "filename": file.filename},
-            "started_at": datetime.utcnow().isoformat(),
-            "created_at": datetime.utcnow().isoformat(),
-            "updated_at": datetime.utcnow().isoformat(),
-        }).execute().data[0]
-
-        # Process
-        result = import_service.import_from_content(
+        # Enqueue Celery task — it creates/updates the job record itself
+        result = import_csv_products.delay(
             user_id=user_id,
-            content=content,
-            format="csv",
-            update_existing=True
+            file_content=content if is_excel else content.decode("utf-8"),
+            filename=file.filename,
+            is_excel=is_excel,
         )
-
-        # Create job_items for tracking
-        total = result["imported"] + result["updated"] + len(result["errors"])
-        supabase.table("jobs").update({
-            "status": "completed" if not result["errors"] else "completed",
-            "total_items": total,
-            "processed_items": result["imported"] + result["updated"],
-            "failed_items": len(result["errors"]),
-            "progress_percent": 100,
-            "metadata": {
-                "source": "csv",
-                "filename": file.filename,
-                "imported": result["imported"],
-                "updated": result["updated"],
-                "errors_count": len(result["errors"]),
-            },
-            "completed_at": datetime.utcnow().isoformat(),
-            "updated_at": datetime.utcnow().isoformat(),
-        }).eq("id", job["id"]).execute()
 
         return {
             "success": True,
-            "job_id": job["id"],
-            "results": {
-                "imported": result["imported"],
-                "updated": result["updated"],
-                "errors": result["errors"][:20],  # Limit error details
-            }
+            "job_id": str(result.id),
+            "message": f"File {file.filename} queued for import",
         }
 
     except HTTPException:
@@ -102,60 +67,32 @@ async def import_csv(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post("/url")
+@router.post("/url", status_code=202)
 async def import_from_url(
     request: UrlImportRequest,
     user_id: str = Depends(get_current_user_id)
 ):
-    """Import products from URL (CSV/XML/JSON feed) — returns job_id"""
+    """Import products from URL (CSV/XML/JSON feed) — enqueues Celery task"""
     try:
-        supabase = get_supabase()
-
-        # Create job
-        job = supabase.table("jobs").insert({
-            "user_id": user_id,
-            "job_type": "import",
-            "status": "running",
-            "metadata": {"source": "url", "url": str(request.url), "format": request.format},
-            "started_at": datetime.utcnow().isoformat(),
-            "created_at": datetime.utcnow().isoformat(),
-            "updated_at": datetime.utcnow().isoformat(),
-        }).execute().data[0]
-
-        # Process
-        result = import_service.import_from_url(
-            user_id=user_id,
-            url=str(request.url),
-            format=request.format,
-            mapping=request.mapping_config or None,
-            update_existing=request.update_existing
-        )
-
-        total = result["imported"] + result["updated"] + len(result["errors"])
-        supabase.table("jobs").update({
-            "status": "completed",
-            "total_items": total,
-            "processed_items": result["imported"] + result["updated"],
-            "failed_items": len(result["errors"]),
-            "progress_percent": 100,
-            "metadata": {
-                "source": "url",
-                "url": str(request.url),
-                "imported": result["imported"],
-                "updated": result["updated"],
-            },
-            "completed_at": datetime.utcnow().isoformat(),
-            "updated_at": datetime.utcnow().isoformat(),
-        }).eq("id", job["id"]).execute()
+        if request.format in ("xml",):
+            result = import_xml_feed.delay(
+                user_id=user_id,
+                feed_url=str(request.url),
+                mapping_config=request.mapping_config,
+                update_existing=request.update_existing,
+            )
+        else:
+            result = import_csv_products.delay(
+                user_id=user_id,
+                feed_url=str(request.url),
+                mapping_config=request.mapping_config,
+                update_existing=request.update_existing,
+            )
 
         return {
             "success": True,
-            "job_id": job["id"],
-            "results": {
-                "imported": result["imported"],
-                "updated": result["updated"],
-                "errors": result["errors"][:20],
-            }
+            "job_id": str(result.id),
+            "message": f"{request.format.upper()} import queued from URL",
         }
 
     except HTTPException:

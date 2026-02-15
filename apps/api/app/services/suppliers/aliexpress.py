@@ -118,21 +118,19 @@ class AliExpressService(BaseSupplierService):
                     try:
                         normalized = self.normalize_product(raw_product)
                         
-                        supabase.table("catalog_products").upsert({
+                        supabase.table("products").upsert({
                             "user_id": user_id,
-                            "supplier_type": "aliexpress",
+                            "supplier": "aliexpress",
                             "supplier_product_id": str(normalized["external_id"]),
-                            "name": normalized["title"],
+                            "title": normalized["title"],
                             "description": normalized["description"],
-                            "price": normalized["cost_price"],
-                            "currency": normalized["currency"],
+                            "cost_price": normalized["cost_price"],
                             "stock_quantity": normalized["stock_quantity"],
                             "images": normalized["images"],
                             "category": normalized["category"],
-                            "attributes": normalized["attributes"],
-                            "raw_data": normalized["raw_data"],
-                            "last_synced_at": datetime.utcnow().isoformat()
-                        }, on_conflict="supplier_type,supplier_product_id,user_id").execute()
+                            "status": "draft",
+                            "updated_at": datetime.utcnow().isoformat()
+                        }, on_conflict="supplier,supplier_product_id,user_id").execute()
                         
                         products_saved += 1
                         
