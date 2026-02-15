@@ -61,6 +61,10 @@ const PWAInstallPage = lazy(() => import('@/pages/PWAInstallPage'));
 // EnrichmentSettingsPage removed - functionality consolidated
 const AdvancedAnalyticsPage = lazy(() => import('@/pages/AdvancedAnalyticsPage'));
 const PerformanceMonitoringPage = lazy(() => import('@/pages/PerformanceMonitoringPage'));
+const GrowthDashboardPage = lazy(() => import('@/pages/GrowthDashboardPage'));
+const AIRecommendationsPage = lazy(() => import('@/pages/AIRecommendationsPage'));
+const PlatformOnboardingPage = lazy(() => import('@/pages/PlatformOnboardingPage'));
+const FreelanceMarketplacePage = lazy(() => import('@/pages/FreelanceMarketplacePage'));
 const GettingStartedPage = lazy(() => import('@/pages/guides/GettingStartedPage'));
 const AcademyHomePage = lazy(() => import('@/pages/academy/AcademyHomePage'));
 const SupportMainPage = lazy(() => import('@/pages/support/SupportMainPage'));
@@ -203,6 +207,10 @@ export function AppRoutes() {
           <Route path="/repricing" element={<Navigate to="/pricing-manager/repricing" replace />} />
           <Route path="/enrichment" element={<Navigate to="/catalog/attributes" replace />} />
           <Route path="/reports" element={<Protected><Reports /></Protected>} />
+          <Route path="/growth" element={<Protected><GrowthDashboardPage /></Protected>} />
+          <Route path="/ai-recommendations" element={<Protected><AIRecommendationsPage /></Protected>} />
+          <Route path="/onboarding/platform" element={<Protected><PlatformOnboardingPage /></Protected>} />
+          <Route path="/services" element={<Protected><FreelanceMarketplacePage /></Protected>} />
           
           {/* Profile & Subscription (Settings group) */}
           <Route path="/profile" element={<Protected><BillingPage /></Protected>} />

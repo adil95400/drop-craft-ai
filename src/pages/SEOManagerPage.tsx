@@ -1,7 +1,7 @@
 import { useState, useCallback, lazy, Suspense } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
-import { Plus, Play, Search, Target, Sparkles, Lightbulb, FileText, RefreshCw, BarChart3 } from 'lucide-react';
+import { Plus, Play, Search, Target, Sparkles, Lightbulb, FileText, RefreshCw, BarChart3, Swords } from 'lucide-react';
 import { Helmet } from 'react-helmet-async';
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
 import { useSEOAudits, useSEOAuditDetail, useSEOAuditPages, useSEOIssues, useSEOAIGenerate, useSEOFixApply, useSEOExport } from '@/hooks/useSEOAudits';
@@ -19,6 +19,7 @@ import { ProductSeoHub } from '@/components/seo/ProductSeoHub';
 
 const SEOContentGenerator = lazy(() => import('@/components/seo/SEOContentGenerator').then(m => ({ default: m.SEOContentGenerator })));
 const SEORecommendationsCard = lazy(() => import('@/components/seo/SEORecommendationsCard').then(m => ({ default: m.SEORecommendationsCard })));
+const CompetitiveAnalysisPanel = lazy(() => import('@/components/seo/CompetitiveAnalysisPanel').then(m => ({ default: m.CompetitiveAnalysisPanel })));
 
 export default function SEOManagerPage() {
   const [searchTerm, setSearchTerm] = useState('');
@@ -76,8 +77,9 @@ export default function SEOManagerPage() {
         <SEOStatsRow auditsCount={audits.length} averageScore={stats.averageScore} totalKeywords={stats.totalKeywords} trackingKeywords={stats.trackingKeywords} totalPages={stats.totalPages} />
 
         <Tabs defaultValue="products" className="space-y-4">
-          <TabsList className="grid w-full grid-cols-6 h-10">
+          <TabsList className="grid w-full grid-cols-7 h-10">
             <TabsTrigger value="products" className="gap-1.5 text-xs sm:text-sm"><BarChart3 className="h-3.5 w-3.5" /><span className="hidden sm:inline">Scoring</span></TabsTrigger>
+            <TabsTrigger value="competitive" className="gap-1.5 text-xs sm:text-sm"><Swords className="h-3.5 w-3.5" /><span className="hidden sm:inline">Concurrence</span></TabsTrigger>
             <TabsTrigger value="audits" className="gap-1.5 text-xs sm:text-sm"><Search className="h-3.5 w-3.5" /><span className="hidden sm:inline">Audits</span></TabsTrigger>
             <TabsTrigger value="pages" className="gap-1.5 text-xs sm:text-sm"><FileText className="h-3.5 w-3.5" /><span className="hidden sm:inline">Pages</span></TabsTrigger>
             <TabsTrigger value="keywords" className="gap-1.5 text-xs sm:text-sm"><Target className="h-3.5 w-3.5" /><span className="hidden sm:inline">Mots-clés</span></TabsTrigger>
@@ -85,6 +87,7 @@ export default function SEOManagerPage() {
             <TabsTrigger value="recommendations" className="gap-1.5 text-xs sm:text-sm"><Lightbulb className="h-3.5 w-3.5" /><span className="hidden sm:inline">Tips</span></TabsTrigger>
           </TabsList>
           <TabsContent value="products"><ProductSeoHub /></TabsContent>
+          <TabsContent value="competitive"><Suspense fallback={<div className="text-center py-12"><RefreshCw className="h-5 w-5 animate-spin mx-auto" /></div>}><CompetitiveAnalysisPanel /></Suspense></TabsContent>
           <TabsContent value="audits"><AuditsTab audits={audits} isLoading={isLoadingAudits} isExporting={isExporting} onNewAudit={() => setShowNewAuditModal(true)} onSelectAudit={handleSelectAudit} onExport={handleExport} /></TabsContent>
           <TabsContent value="pages"><PagesTab selectedAuditId={selectedAuditId} selectedAudit={selectedAudit} pages={pages} totalPages={totalPages} isLoading={isLoadingPages} currentPage={pagesPage} pageTypeFilter={pageTypeFilter} sortOrder={sortOrder} onPageChange={setPagesPage} onPageTypeChange={setPageTypeFilter} onSortChange={setSortOrder} onViewIssues={handleViewIssues} onGenerateAI={handleGenerateAI} /></TabsContent>
           <TabsContent value="keywords"><KeywordsTab keywords={keywords} isLoading={isLoadingKeywords} searchTerm={searchTerm} onSearchChange={setSearchTerm} onAddKeyword={() => setShowAddKeywordModal(true)} onToggleKeyword={handleToggleKeyword} /></TabsContent>
