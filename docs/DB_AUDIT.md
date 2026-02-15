@@ -1,6 +1,6 @@
 # Audit du Schéma Base de Données — Shopopti
 
-> Généré le 2026-02-15. Mis à jour après Phases 1 & 2.
+> Généré le 2026-02-15. Toutes les phases terminées.
 
 ## Résumé des actions réalisées
 
@@ -22,7 +22,7 @@ Tables supprimées et remplacées par des **vues de compatibilité** pointant ve
 | Table supprimée | Remplacée par | Mécanisme |
 |---|---|---|
 | `price_rules` | Vue `price_rules` → `pricing_rules` | INSTEAD OF triggers |
-| `pricing_rulesets` | Supprimée (aucune donnée, peu de refs) | — |
+| `pricing_rulesets` | Supprimée | — |
 | `price_simulations` | Supprimée | — |
 | `price_stock_monitoring` | Supprimée (remplacée par query `products`) | — |
 | `price_rule_logs` | Supprimée | — |
@@ -40,21 +40,58 @@ Tables supprimées et remplacées par des **vues de compatibilité** pointant ve
 | `automation_executions` | Supprimée | — |
 | `automation_execution_logs` | Supprimée (redirigé vers `activity_logs`) | — |
 
-**Table canonique** : `automation_workflows` (colonnes ajoutées pour trigger/action configs)
+**Table canonique** : `automation_workflows`
 
-Tables conservées : `automation_triggers`, `automation_actions`, `automated_campaigns` (référencées activement)
+Tables conservées : `automation_triggers`, `automation_actions`, `automated_campaigns`
+
+### ✅ Phase 3 — Nettoyage SEO (terminée)
+
+| Table supprimée | Raison |
+|---|---|
+| `seo_metadata` | Aucune ref code |
+| `seo_page_analysis` | Aucune ref code |
+| `seo_competitor_analysis` | Aucune ref code |
+| `seo_optimization_history` | Aucune ref code |
+| `seo_backlinks` | Aucune ref code |
+| `seo_reports` | Aucune ref code |
+| `seo_scores` | Aucune ref code (hors types.ts) |
+
+Tables SEO conservées : `seo_audits`, `seo_audit_pages`, `seo_issues`, `seo_keywords`, `product_seo`, `product_seo_versions`
+
+### ✅ Phase 4 — Nettoyage Import (terminée)
+
+| Table supprimée | Raison |
+|---|---|
+| `import_history` | Aucune ref code (code migré vers `activity_logs`) |
+| `import_uploads` | Aucune ref code |
+| `import_pipeline_logs` | Aucune ref code |
+
+Tables Import conservées : `imported_products` (160+ refs), `catalog_products` (hooks + edge functions), `import_job_items` (api-v1 edge fn)
+
+### ✅ Phase 5 — Nettoyage Divers (terminée)
+
+| Table supprimée | Raison |
+|---|---|
+| `request_replay_log` | Aucune ref code |
+| `gateway_logs` | Aucune ref code |
+| `idempotency_keys` | Aucune ref code |
+
+Tables conservées : `translation_cache`, `translation_usage` (edge functions translate/libretranslate-proxy)
 
 ---
 
-## Tables canoniques (Source de Vérité)
+## Tables canoniques (Source de Vérité — état final)
 
 | Table | Lignes | Rôle |
 |---|---|---|
-| `jobs` | 0+ | **Job tracking unifié** (remplace background_jobs, import_jobs, etc.) |
+| `jobs` | 0+ | **Job tracking unifié** |
 | `job_items` | 0+ | Résultats par item de job |
+| `import_job_items` | 0+ | Items d'import (api-v1) |
 | `products` | 25 | Source de vérité catalogue |
 | `product_variants` | 25 | Variantes produits |
 | `product_sources` | 25 | Sources des produits |
+| `imported_products` | 0+ | Produits importés (pré-catalogue) |
+| `catalog_products` | 0+ | Catalogue fournisseurs |
 | `pricing_rules` | 0+ | Règles de prix unifiées |
 | `automation_workflows` | 0+ | Workflows d'automatisation unifiés |
 | `activity_logs` | 7 216 | Journal d'activité principal |
@@ -62,53 +99,14 @@ Tables conservées : `automation_triggers`, `automation_actions`, `automated_cam
 | `user_roles` | ≥1 | Rôles utilisateurs |
 | `extension_analytics` | ~450 | Analytiques extension |
 | `extension_data` | ~300 | Données extension |
-
----
-
-## Phases restantes
-
-### Phase 3 — SEO (13 tables, toutes vides)
-
-| Table | Action recommandée |
-|---|---|
-| `seo_audits` | **Garder** — utilisée par `useSEOAudits.ts` |
-| `seo_scores` | **Garder** — utilisée par `ProductSEO.tsx` |
-| `seo_keywords` | **Garder** — utilisée par `useSEOAudits.ts` |
-| `seo_audit_pages` | **Garder** — utilisée par `useSEOAudits.ts` |
-| `seo_issues` | À évaluer (types seulement) |
-| `product_seo` | Candidat suppression |
-| `product_seo_versions` | Candidat suppression |
-| `seo_metadata` | Candidat suppression |
-| `seo_page_analysis` | Candidat suppression |
-| `seo_competitor_analysis` | Candidat suppression |
-| `seo_optimization_history` | Candidat suppression |
-| `seo_backlinks` | Candidat suppression |
-| `seo_reports` | Candidat suppression |
-
-### Phase 4 — Import (tables redondantes)
-
-| Table | Action recommandée |
-|---|---|
-| `imported_products` | **Garder** — utilisée par `ImportedProductsPage.tsx` |
-| `catalog_products` | **DEPRECATED** — redirigé vers `products` avec champ `supplier` |
-| `import_history` | Candidat suppression |
-| `import_uploads` | Candidat suppression |
-| `import_pipeline_logs` | Candidat suppression |
-
-### Phase 5 — Autres candidats à nettoyage
-
-| Table | Raison |
-|---|---|
-| `request_replay_log` | Aucune ref code |
-| `gateway_logs` | Aucune ref code |
-| `idempotency_keys` | Aucune ref code |
-| `translation_cache` | Aucune ref code |
-| `translation_usage` | Aucune ref code |
-| `import_job_items` | Doublon de `job_items` |
-
-> ⚠️ Vérifier les edge functions avant suppression de ces tables.
-
----
+| `seo_audits` | 0+ | Audits SEO |
+| `seo_audit_pages` | 0+ | Pages d'audit SEO |
+| `seo_issues` | 0+ | Problèmes SEO |
+| `seo_keywords` | 0+ | Mots-clés SEO |
+| `product_seo` | 0+ | SEO produit |
+| `product_seo_versions` | 0+ | Historique SEO produit |
+| `translation_cache` | 0+ | Cache traductions |
+| `translation_usage` | 0+ | Usage traductions |
 
 ## Vues de compatibilité actives
 
@@ -120,3 +118,13 @@ Tables conservées : `automation_triggers`, `automation_actions`, `automated_cam
 | `extension_jobs` | `jobs` | INSERT, UPDATE, DELETE |
 | `price_rules` | `pricing_rules` | INSERT, UPDATE, DELETE |
 | `automation_rules` | `automation_workflows` | INSERT, UPDATE, DELETE |
+
+## Tables supprimées au total : ~28
+
+Répartition :
+- Jobs : 4 (remplacées par vues)
+- Pricing : 7
+- Automation : 4 (dont 1 vue)
+- SEO : 7
+- Import : 3
+- Divers : 3

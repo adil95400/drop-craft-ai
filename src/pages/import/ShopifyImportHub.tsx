@@ -32,7 +32,7 @@ export default function ShopifyImportHub() {
   const stats = {
     totalMapped: mappings?.length || 0,
     activeJobs: importJobs?.filter(j => j.status === 'processing').length || 0,
-    successToday: importHistory?.filter(h => 
+    successToday: importHistory?.filter((h: any) => 
       h.status === 'success' && new Date(h.created_at).toDateString() === new Date().toDateString()
     ).length || 0
   };
