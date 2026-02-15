@@ -36,18 +36,25 @@ export function useShopifyImport() {
     }
   });
 
-  // Get import history
+  // Get import history (from activity_logs since import_history was dropped)
   const { data: importHistory } = useQuery({
     queryKey: ['shopify-import-history'],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('import_history')
+        .from('activity_logs')
         .select('*')
+        .eq('entity_type', 'shopify_import')
         .order('created_at', { ascending: false })
         .limit(100);
 
       if (error) throw error;
-      return data || [];
+      return (data || []).map((entry: any) => ({
+        id: entry.id,
+        status: entry.severity === 'error' ? 'failed' : 'success',
+        created_at: entry.created_at,
+        action_type: entry.action || 'import',
+        supplier_products: { name: entry.description || 'Import Shopify' },
+      }));
     }
   });
 
