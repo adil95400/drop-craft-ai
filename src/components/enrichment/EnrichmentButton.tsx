@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Sparkles, Loader2, Wand2, RefreshCw } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { edgeFunctionUrl } from '@/lib/supabase-env';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -47,7 +48,7 @@ export function EnrichmentButton({
       }
 
       const response = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/enrich-product`,
+        edgeFunctionUrl('enrich-product'),
         {
           method: 'POST',
           headers: {
@@ -98,7 +99,7 @@ export function EnrichmentButton({
       }
 
       const response = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/enrich-product-ai`,
+        edgeFunctionUrl('enrich-product-ai'),
         {
           method: 'POST',
           headers: {

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { edgeFunctionUrl } from '@/lib/supabase-env';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -177,7 +178,7 @@ export const ShopifyConnectionGuide = () => {
     }
   };
 
-  const webhookUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/shopify-webhook`;
+  const webhookUrl = edgeFunctionUrl('shopify-webhook');
 
   return (
     <Card className="w-full max-w-4xl mx-auto">

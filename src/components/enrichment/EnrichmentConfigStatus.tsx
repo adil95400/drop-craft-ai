@@ -33,7 +33,7 @@ export function EnrichmentConfigStatus() {
       if (!session) return;
 
       const response = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/enrich-product`,
+        (await import('@/lib/supabase-env')).edgeFunctionUrl('enrich-product'),
         {
           method: 'POST',
           headers: {

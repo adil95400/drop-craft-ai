@@ -1,6 +1,7 @@
 import { useState, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { edgeFunctionUrl } from '@/lib/supabase-env';
 import { useToast } from '@/hooks/use-toast';
 
 interface EnrichmentData {
@@ -58,7 +59,7 @@ export function useProductEnrichment(productId?: string) {
       if (!session) throw new Error('Not authenticated');
 
       const response = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/enrich-product`,
+        edgeFunctionUrl('enrich-product'),
         {
           method: 'POST',
           headers: {
@@ -100,7 +101,7 @@ export function useProductEnrichment(productId?: string) {
       if (!session) throw new Error('Not authenticated');
 
       const response = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/enrich-product-ai`,
+        edgeFunctionUrl('enrich-product-ai'),
         {
           method: 'POST',
           headers: {

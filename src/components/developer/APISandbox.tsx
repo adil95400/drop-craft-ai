@@ -59,7 +59,7 @@ export function APISandbox() {
         fetchOpts.body = body
       }
 
-      const url = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/api-v1${path.startsWith('/v1') ? path.slice(3) : path}`
+      const url = `${(await import('@/lib/supabase-env')).SUPABASE_URL}/functions/v1/api-v1${path.startsWith('/v1') ? path.slice(3) : path}`
       const resp = await fetch(url, fetchOpts)
       const duration = Math.round(performance.now() - start)
       const text = await resp.text()

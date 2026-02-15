@@ -248,7 +248,7 @@ export function useApplyMediaRecommendation() {
         const promises = batch.map(async (productId) => {
           try {
             const response = await fetch(
-              `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/enrich-product-images`,
+              (await import('@/lib/supabase-env')).edgeFunctionUrl('enrich-product-images'),
               {
                 method: 'POST',
                 headers: {
