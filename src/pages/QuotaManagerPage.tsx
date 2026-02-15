@@ -1,5 +1,5 @@
 import React from 'react';
-import { QuotaManager } from '@/components/quotas/QuotaManager';
+import { QuotaDashboard } from '@/components/quotas/QuotaDashboard';
 import { RequirePlan } from '@/components/plan/RequirePlan';
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
 import { Gauge } from 'lucide-react';
@@ -13,7 +13,7 @@ export default function QuotaManagerPage() {
         heroImage="settings"
         badge={{ label: 'Quotas', icon: Gauge }}
       >
-        <QuotaManager />
+        <QuotaDashboard />
       </ChannablePageWrapper>
     </RequirePlan>
   );
