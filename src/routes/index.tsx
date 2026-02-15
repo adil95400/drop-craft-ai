@@ -77,6 +77,7 @@ const NotificationsPage = lazy(() => import('@/pages/NotificationsPage'));
 const AlertCenterPage = lazy(() => import('@/pages/alerts/AlertCenterPage'));
 const Reports = lazy(() => import('@/pages/Reports'));
 const ReviewsPage = lazy(() => import('@/pages/reviews/ReviewsPage'));
+const CRMDashboardPage = lazy(() => import('@/pages/crm/CRMDashboardPage'));
 const Sitemap = lazy(() => import('@/pages/Sitemap'));
 const DocumentationPage = lazy(() => import('@/pages/documentation/DocumentationPage'));
 
@@ -168,7 +169,7 @@ export function AppRoutes() {
           {/* Marketing, SEO & CRM */}
           <Route path="/marketing/*" element={<Protected><MarketingRoutes /></Protected>} />
           <Route path="/seo/*" element={<Navigate to="/marketing/seo" replace />} />
-          <Route path="/crm/*" element={<Navigate to="/marketing/crm" replace />} />
+          <Route path="/crm" element={<Protected><CRMDashboardPage /></Protected>} />
           <Route path="/inventory/*" element={<Navigate to="/stock" replace />} />
           
           {/* Tools & Utilities */}
