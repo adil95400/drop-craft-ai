@@ -312,7 +312,6 @@ export function ChannableDashboard() {
 
   const renderWidget = (widget: typeof widgets[0]) => {
     const commonProps = {
-      key: widget.id,
       timeRange,
       settings: widget.settings,
       lastRefresh,
@@ -359,7 +358,7 @@ export function ChannableDashboard() {
     };
 
     return (
-      <Suspense fallback={<WidgetSkeleton />}>
+      <Suspense key={widget.id} fallback={<WidgetSkeleton />}>
         {getWidgetComponent()}
       </Suspense>
     );
