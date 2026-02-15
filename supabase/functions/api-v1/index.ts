@@ -182,6 +182,23 @@ async function jobAction(action: string, jobId: string, req: Request, auth: Auth
   return errorResponse("INVALID_ACTION", "Unknown action", 400, reqId);
 }
 
+// ── Proxy to api-v1-ext ─────────────────────────────────────────────────────
+async function proxyEdgeFunction(fnName: string, req: Request, auth: Auth, reqId: string) {
+  const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+  const targetUrl = `${supabaseUrl}/functions/v1/${fnName}${new URL(req.url).pathname.replace(/^\/api-v1/, "")}${new URL(req.url).search}`;
+  const headers = new Headers(req.headers);
+  headers.set("x-request-id", reqId);
+  const proxyReq = new Request(targetUrl, { method: req.method, headers, body: req.body, });
+  try {
+    const resp = await fetch(proxyReq);
+    const respHeaders = new Headers(resp.headers);
+    Object.entries(corsHeaders).forEach(([k, v]) => respHeaders.set(k, v));
+    return new Response(resp.body, { status: resp.status, headers: respHeaders });
+  } catch (err: any) {
+    return errorResponse("PROXY_ERROR", err.message ?? "Failed to proxy request", 502, reqId);
+  }
+}
+
 // ── Router ──────────────────────────────────────────────────────────────────
 const EXT_PREFIXES = ["/v1/automation", "/v1/marketing", "/v1/ads", "/v1/crm", "/v1/finance", "/v1/monetization", "/v1/ai", "/v1/bi"];
 
