@@ -1,80 +1,70 @@
+"""
+Test conftest — aligned with production security & database architecture
+Overrides auth dependency to simulate an authenticated user without real JWT.
+Uses mock Supabase client for isolated testing.
+"""
+
 import pytest
 import asyncio
 from fastapi.testclient import TestClient
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
-from unittest.mock import AsyncMock, MagicMock
+from unittest.mock import AsyncMock, MagicMock, patch
 
-from app.main import app
-from app.core.database import get_db
-from app.core.security import get_current_user
+from main import app
+from app.core.security import get_current_user_id, verify_supabase_jwt
 
-# Test database setup
-SQLALCHEMY_DATABASE_URL = "sqlite:///./test.db"
-engine = create_engine(SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False})
-TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+# ── Auth override ────────────────────────────────────────────────────────────
 
-def override_get_db():
-    try:
-        db = TestingSessionLocal()
-        yield db
-    finally:
-        db.close()
+TEST_USER_ID = "test-user-00000000-0000-0000-0000-000000000001"
+TEST_USER_EMAIL = "test@shopopti.io"
 
-def override_get_current_user():
+
+def override_get_current_user_id() -> str:
+    return TEST_USER_ID
+
+
+def override_verify_jwt():
     return {
-        "id": "test-user-id",
-        "email": "test@example.com",
-        "is_active": True,
-        "is_superuser": False
+        "user_id": TEST_USER_ID,
+        "email": TEST_USER_EMAIL,
+        "role": "authenticated",
+        "metadata": {},
     }
 
-app.dependency_overrides[get_db] = override_get_db
-app.dependency_overrides[get_current_user] = override_get_current_user
+
+app.dependency_overrides[get_current_user_id] = override_get_current_user_id
+app.dependency_overrides[verify_supabase_jwt] = override_verify_jwt
+
+
+# ── Fixtures ─────────────────────────────────────────────────────────────────
 
 @pytest.fixture(scope="session")
 def event_loop():
-    """Create an instance of the default event loop for the test session."""
     loop = asyncio.get_event_loop_policy().new_event_loop()
     yield loop
     loop.close()
+
 
 @pytest.fixture
 def client():
     with TestClient(app) as c:
         yield c
 
-@pytest.fixture
-def mock_supabase():
-    return MagicMock()
 
 @pytest.fixture
-def mock_redis():
-    mock = AsyncMock()
-    mock.get = AsyncMock(return_value=None)
-    mock.set = AsyncMock(return_value=True)
-    mock.delete = AsyncMock(return_value=True)
-    mock.exists = AsyncMock(return_value=False)
-    return mock
+def auth_headers():
+    """Headers simulating a valid Authorization bearer (override skips real JWT)"""
+    return {"Authorization": "Bearer fake-test-token"}
 
-@pytest.fixture
-def sample_user():
-    return {
-        "id": "test-user-id",
-        "email": "test@example.com",
-        "full_name": "Test User",
-        "is_active": True,
-        "is_superuser": False
-    }
 
 @pytest.fixture
 def sample_product():
     return {
-        "id": "test-product-id",
-        "title": "Test Product",
-        "description": "A test product",
+        "title": "Smoke Test Product",
+        "description": "Created by smoke test suite",
         "price": 29.99,
-        "sku": "TEST-SKU-001",
+        "cost_price": 12.50,
+        "sku": "SMOKE-TEST-001",
         "stock_quantity": 100,
-        "is_active": True
+        "status": "draft",
+        "currency": "EUR",
     }
