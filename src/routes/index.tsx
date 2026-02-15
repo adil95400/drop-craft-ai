@@ -74,6 +74,7 @@ const ABTestingPage = lazy(() => import('@/pages/ABTestingPage'));
 const PageBuilderPage = lazy(() => import('@/pages/PageBuilderPage'));
 const PageEditorPage = lazy(() => import('@/pages/PageEditorPage'));
 const NotificationsPage = lazy(() => import('@/pages/NotificationsPage'));
+const AlertCenterPage = lazy(() => import('@/pages/alerts/AlertCenterPage'));
 const Reports = lazy(() => import('@/pages/Reports'));
 const ReviewsPage = lazy(() => import('@/pages/reviews/ReviewsPage'));
 const Sitemap = lazy(() => import('@/pages/Sitemap'));
@@ -195,6 +196,7 @@ export function AppRoutes() {
           <Route path="/customers/create" element={<Protected><CreateCustomer /></Protected>} />
           <Route path="/notifications/create" element={<Protected><CreateNotification /></Protected>} />
           <Route path="/notifications" element={<Protected><NotificationsPage /></Protected>} />
+          <Route path="/alerts" element={<Protected><AlertCenterPage /></Protected>} />
           
           {/* Feature Pages */}
           <Route path="/sync-manager" element={<Protected><SyncManagerPage /></Protected>} />
