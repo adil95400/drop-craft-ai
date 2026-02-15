@@ -10,7 +10,7 @@ import { Progress } from '@/components/ui/progress';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
-import { useQuotas } from '@/hooks/useQuotas';
+import { useUnifiedQuotas } from '@/hooks/useUnifiedQuotas';
 import { supabase } from '@/integrations/supabase/client';
 import {
   Settings,

@@ -2,36 +2,17 @@ import React from 'react'
 import { Progress } from '@/components/ui/progress'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { useQuotas } from '@/hooks/useQuotas'
+import { useUnifiedQuotas } from '@/hooks/useUnifiedQuotas'
 import { AlertTriangle, CheckCircle, Clock } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useNavigate } from 'react-router-dom'
 
-const quotaLabels: Record<string, string> = {
-  products: 'Produits',
-  suppliers: 'Fournisseurs', 
-  orders: 'Commandes',
-  exports: 'Exports',
-  ai_analysis: 'Analyses IA',
-  automations: 'Automations',
-  white_label: 'White Label'
-}
-
-const quotaDescriptions: Record<string, string> = {
-  products: 'Nombre de produits que vous pouvez gérer',
-  suppliers: 'Nombre de fournisseurs connectés',
-  orders: 'Commandes mensuelles',
-  exports: 'Exports de données par mois',
-  ai_analysis: 'Analyses IA par mois',
-  automations: 'Workflows d\'automatisation actifs',
-  white_label: 'Personnalisation de la marque'
-}
-
 export function QuotaDisplay() {
-  const { quotas, loading, error } = useQuotas()
+  const { getAllQuotas, isLoading } = useUnifiedQuotas()
   const navigate = useNavigate()
+  const quotas = getAllQuotas()
 
-  if (loading) {
+  if (isLoading) {
     return (
       <Card>
         <CardHeader>
@@ -46,22 +27,6 @@ export function QuotaDisplay() {
               </div>
             ))}
           </div>
-        </CardContent>
-      </Card>
-    )
-  }
-
-  if (error) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-destructive">
-            <AlertTriangle className="w-5 h-5" />
-            Erreur de quotas
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-sm text-muted-foreground">{error}</p>
         </CardContent>
       </Card>
     )
@@ -88,19 +53,18 @@ export function QuotaDisplay() {
       <CardContent>
         <div className="space-y-6">
           {quotas.map((quota) => {
-            const isUnlimited = quota.limit_value === -1
-            const isNearLimit = !isUnlimited && Number(quota.percentage_used) >= 80
-            const isAtLimit = !isUnlimited && Number(quota.percentage_used) >= 100
+            const isNearLimit = !quota.isUnlimited && quota.percentage >= 80
+            const isAtLimit = !quota.isUnlimited && quota.percentage >= 100
             
             return (
-              <div key={quota.quota_key} className="space-y-2">
+              <div key={quota.key} className="space-y-2">
                 <div className="flex items-center justify-between">
                   <div className="space-y-1">
                     <div className="flex items-center gap-2">
                       <span className="font-medium">
-                        {quotaLabels[quota.quota_key] || quota.quota_key}
+                        {quota.label}
                       </span>
-                      {isUnlimited ? (
+                      {quota.isUnlimited ? (
                         <Badge variant="secondary" className="text-xs">
                           <CheckCircle className="w-3 h-3 mr-1" />
                           Illimité
@@ -117,33 +81,24 @@ export function QuotaDisplay() {
                         </Badge>
                       ) : null}
                     </div>
-                    <p className="text-xs text-muted-foreground">
-                      {quotaDescriptions[quota.quota_key] || 'Usage mensuel'}
-                    </p>
                   </div>
                   
                   <div className="text-right text-sm">
-                    {isUnlimited ? (
+                    {quota.isUnlimited ? (
                       <span className="text-muted-foreground">∞</span>
                     ) : (
                       <span className={isAtLimit ? 'text-destructive font-medium' : ''}>
-                        {quota.current_count} / {quota.limit_value}
+                        {quota.current} / {quota.limit}
                       </span>
                     )}
                   </div>
                 </div>
                 
-                {!isUnlimited && (
+                {!quota.isUnlimited && (
                   <Progress
-                    value={Math.min(Number(quota.percentage_used), 100)}
+                    value={Math.min(quota.percentage, 100)}
                     className="h-2"
                   />
-                )}
-                
-                {!isUnlimited && quota.reset_date && (
-                  <p className="text-xs text-muted-foreground">
-                    Réinitialisation : {new Date(quota.reset_date).toLocaleDateString('fr-FR')}
-                  </p>
                 )}
               </div>
             )
