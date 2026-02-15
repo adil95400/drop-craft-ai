@@ -252,7 +252,7 @@ async function bulkUpdateProducts(req: Request, auth: Auth, reqId: string) {
 async function listIntegrations(url: URL, auth: Auth, reqId: string) {
   const { page, perPage, from, to } = parsePagination(url);
   const admin = serviceClient();
-  const { data, count, error } = await admin.from("integrations").select("id, platform_type, shop_domain, status, created_at, updated_at", { count: "exact" }).eq("user_id", auth.user.id).order("created_at", { ascending: false }).range(from, to);
+  const { data, count, error } = await admin.from("integrations").select("id, platform, platform_name, store_url, connection_status, is_active, created_at, updated_at", { count: "exact" }).eq("user_id", auth.user.id).order("created_at", { ascending: false }).range(from, to);
   if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
   return json({ items: data ?? [], meta: { page, per_page: perPage, total: count ?? 0 } }, 200, reqId);
 }
