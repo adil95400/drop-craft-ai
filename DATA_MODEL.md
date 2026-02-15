@@ -14,8 +14,8 @@
 | `order_items` | Order line items | FastAPI / Edge Functions | |
 | `shops` | Connected stores | Edge Functions | Shopify, WooCommerce, etc. |
 | `suppliers` | Supplier integrations | FastAPI | BigBuy, AliExpress, etc. |
-| `jobs` | **Unified job tracking** | FastAPI (Celery) / Edge Functions | Replaces `background_jobs`. |
-| `job_items` | Per-product job results | FastAPI (Celery) / Edge Functions | Linked to `jobs.id`. |
+| `jobs` | **Unified job tracking** | FastAPI (Celery) / Edge Functions | Replaces `background_jobs`. All Celery tasks + SEO + AI write here. |
+| `job_items` | Per-product job results | FastAPI (Celery) / Edge Functions | Linked to `jobs.id`. Granular per-product tracking. |
 | `profiles` | User profiles | Supabase Auth trigger | Extended user info. |
 | `ai_generations` | AI generation logs | Edge Functions | Tracks cost, tokens, model. |
 | `seo_audits` | SEO audit results | Edge Functions | |
@@ -26,8 +26,8 @@
 
 | Table | Status | Migration Path |
 |---|---|---|
-| `background_jobs` | **DEPRECATED** | Use `jobs` + `job_items` instead. Will be removed in v2. Frontend fallback still reads it. |
-| `catalog_products` | **DEPRECATED** | Was used for supplier catalogs. Use `products` with `supplier` field instead. |
+| `background_jobs` | **DEPRECATED** — DO NOT USE | `background_jobs_compat` view exists for read-only fallback. All writes go to `jobs`. Will be dropped in v3. |
+| `catalog_products` | **DEPRECATED** — DO NOT USE | Supplier services (BigBuy, AliExpress) now write directly to `products` with `supplier` field. |
 
 ## Field Standardization
 
@@ -36,11 +36,13 @@
 |---|---|---|---|
 | `title` | TEXT NOT NULL | ✅ | Product title — primary field |
 | `name` | TEXT NULL | ❌ LEGACY | Do NOT use in new code |
-| `status` | TEXT | ✅ | Enum: `draft`, `active`, `paused`, `archived`, `error` |
+| `status` | TEXT | ✅ | CHECK: `draft`, `active`, `paused`, `archived`, `error` |
 | `stock_quantity` | INTEGER | ✅ | Aggregate stock at product level |
 | `price` | NUMERIC | ✅ | Selling price |
 | `cost_price` | NUMERIC | ✅ | Cost/purchase price |
 | `primary_image_url` | TEXT | ✅ | Denormalized primary image |
+| `supplier` | TEXT | ✅ | Supplier name (bigbuy, aliexpress, etc.) |
+| `supplier_product_id` | TEXT | ✅ | External product ID from supplier |
 
 ### product_variants
 | Field | Type | SoT | Notes |
@@ -69,6 +71,18 @@ draft → active → paused → archived
 - `paused`: Temporarily disabled
 - `archived`: Soft deleted
 - `error`: Import/sync error
+
+## Backend Write Targets (Post-Unification)
+
+| Operation | Target Table | Writer |
+|---|---|---|
+| Celery supplier sync | `products` | FastAPI worker |
+| Celery import (CSV/XML) | `products` | FastAPI worker |
+| Celery scraping | `products` + `job_items` | FastAPI worker |
+| SEO audit | `seo_audits` + `jobs` | FastAPI endpoint |
+| SEO AI generate | `seo_ai_generations` + `jobs` | FastAPI endpoint |
+| SEO fix apply | `seo_fix_applies` + `jobs` | FastAPI endpoint |
+| All job tracking | `jobs` + `job_items` | All backends |
 
 ## RLS Strategy
 

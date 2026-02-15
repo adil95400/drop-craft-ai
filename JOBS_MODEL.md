@@ -7,6 +7,19 @@
 **Single system: `jobs` + `job_items`** replaces all previous tracking mechanisms.
 
 `background_jobs` is **DEPRECATED** and will be removed. No new code should reference it.
+A compatibility view `background_jobs_compat` exists for read-only fallback during transition.
+
+## Migration Status (P0.2 — COMPLETED)
+
+| Component | Status | Notes |
+|---|---|---|
+| Celery tasks (`tasks.py`) | ✅ Migrated | All 6 task types write to `jobs` via helpers |
+| SEO endpoints (`seo.py`) | ✅ Migrated | audit, ai_generate, fix → `jobs` |
+| Import endpoints (`imports.py`) | ✅ Migrated | Async via Celery `.delay()`, HTTP 202 |
+| Scraping endpoints (`scraping.py`) | ✅ Already async | Uses `.delay()`, returns `job_id` |
+| Frontend hooks | ✅ Migrated | `useBackgroundJobs` reads `jobs` table |
+| Frontend realtime | ✅ Migrated | `useAIEnrichment` listens to `jobs` table |
+| Supplier services | ✅ Migrated | BigBuy/AliExpress write to `products` (not `catalog_products`) |
 
 ## Tables
 
@@ -17,7 +30,7 @@
 | `id` | UUID PK | Job identifier |
 | `user_id` | UUID NOT NULL | Owner (RLS enforced) |
 | `job_type` | TEXT NOT NULL | Category: `import`, `scraping`, `sync`, `seo_audit`, `ai_generation`, `pricing`, `publish`, `fulfillment` |
-| `job_subtype` | TEXT | Specific action: `csv`, `xml`, `url`, `store`, `bigbuy`, `aliexpress`, etc. |
+| `job_subtype` | TEXT | Specific action: `csv`, `xml`, `url`, `store`, `bigbuy`, `aliexpress`, `fix`, `seo`, etc. |
 | `name` | TEXT | Human-readable label (e.g., "Import products.csv") |
 | `status` | TEXT NOT NULL | `pending` → `running` → `completed` / `failed` / `cancelled` |
 | `total_items` | INTEGER | Expected item count |
@@ -67,10 +80,11 @@ pending → running → completed (all items done)
 | `job_type` | `job_subtype` | Description |
 |---|---|---|
 | `import` | `csv`, `xml`, `url`, `api`, `excel` | Product import |
-| `scraping` | `product`, `store`, `competitor` | Web scraping |
+| `scraping` | `url`, `store`, `competitor` | Web scraping |
 | `sync` | `stock`, `price`, `orders`, `full` | Supplier sync |
-| `seo_audit` | `full`, `quick`, `page` | SEO analysis |
+| `seo_audit` | `full`, `quick`, `page`, `fix` | SEO analysis + fixes |
 | `ai_generation` | `title`, `description`, `seo`, `bulk` | AI content generation |
+| `ai_enrich` | `bulk` | AI product enrichment |
 | `pricing` | `update`, `rule_apply`, `competitor_match` | Price adjustments |
 | `publish` | `shopify`, `woocommerce`, `bulk` | Store publishing |
 | `fulfillment` | `single`, `bulk`, `auto` | Order fulfillment |
@@ -78,24 +92,24 @@ pending → running → completed (all items done)
 ## Celery Integration
 
 ```python
-# In Celery task:
-from app.queue.tasks import celery_app
+# In Celery task — use helper functions:
+from app.queue.tasks import _upsert_job, _complete_job, _fail_job
 
-@celery_app.task(bind=True)
-def import_csv_products(self, user_id, file_content, **kwargs):
-    # 1. Create job in DB
-    job = create_job(user_id, "import", "csv", celery_task_id=self.request.id)
+@shared_task(bind=True)
+def my_task(self, user_id, **kwargs):
+    job_id = self.request.id
+    supabase = get_supabase()
     
-    # 2. Process items
-    for row in parse_csv(file_content):
-        try:
-            product = create_product(row)
-            create_job_item(job.id, product.id, "success")
-        except Exception as e:
-            create_job_item(job.id, None, "error", str(e))
+    _upsert_job(supabase, job_id, user_id, "import", job_subtype="csv",
+                name="Import products.csv")
     
-    # 3. Finalize job
-    update_job(job.id, status="completed")
+    try:
+        # Process items...
+        _complete_job(supabase, job_id, output_data=result,
+                      processed=10, failed=0, total=10)
+    except Exception as exc:
+        _fail_job(supabase, job_id, str(exc))
+        raise self.retry(exc=exc)
 ```
 
 ## Frontend Integration
@@ -114,24 +128,6 @@ const channel = supabase
   })
   .subscribe()
 ```
-
-## Migration from background_jobs
-
-| `background_jobs` field | `jobs` equivalent |
-|---|---|
-| `job_type` | `job_type` |
-| `status` | `status` (same values) |
-| `items_total` | `total_items` |
-| `items_processed` | `processed_items` |
-| `items_failed` | `failed_items` |
-| `progress_percent` | `progress_percent` |
-| `progress_message` | `progress_message` |
-| `error_message` | `error_message` |
-| `input_data` | `input_data` |
-| `output_data` | `output_data` |
-| `metadata` | `metadata` |
-
-Frontend hooks should query `jobs` first, with `background_jobs` as read-only fallback during transition.
 
 ## RLS
 
