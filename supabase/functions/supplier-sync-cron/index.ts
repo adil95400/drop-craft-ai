@@ -10,10 +10,7 @@ const corsHeaders = {
  * Cron-triggered edge function that monitors all active suppliers
  * for stock and price changes. Runs every 15 minutes via pg_cron.
  * 
- * For each user with active supplier connections, it:
- * 1. Checks stock levels → creates alerts for OOS / low stock
- * 2. Detects price changes → creates notifications for significant changes
- * 3. Logs sync activity in background_jobs for real-time tracking
+ * Logs sync activity in `jobs` table (unified) for real-time tracking.
  */
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -27,7 +24,6 @@ Deno.serve(async (req) => {
 
     console.log("[supplier-sync-cron] Starting scheduled supplier sync...");
 
-    // Get all active supplier connections across all users
     const { data: connections, error: connError } = await supabase
       .from("premium_supplier_connections")
       .select("id, user_id, premium_supplier_id, auto_sync_enabled, sync_interval_minutes, last_sync_at")
@@ -53,7 +49,6 @@ Deno.serve(async (req) => {
     const now = new Date();
 
     for (const conn of connections) {
-      // Check if sync is due based on interval
       if (conn.last_sync_at) {
         const lastSync = new Date(conn.last_sync_at);
         const intervalMs = (conn.sync_interval_minutes || 15) * 60 * 1000;
@@ -64,13 +59,13 @@ Deno.serve(async (req) => {
       }
 
       try {
-        // Create a background job for tracking
+        // Create job in unified `jobs` table
         const { data: job } = await supabase
-          .from("background_jobs")
+          .from("jobs")
           .insert({
             user_id: conn.user_id,
-            job_type: "supplier_sync",
-            job_subtype: "cron_auto",
+            job_type: "sync",
+            job_subtype: "stock",
             status: "running",
             name: `Sync auto fournisseur`,
             started_at: now.toISOString(),
@@ -149,17 +144,16 @@ Deno.serve(async (req) => {
           .update({ last_sync_at: now.toISOString() })
           .eq("id", conn.id);
 
-        // Complete the job
+        // Complete the job in unified `jobs` table
         if (job) {
           await supabase
-            .from("background_jobs")
+            .from("jobs")
             .update({
               status: "completed",
               completed_at: now.toISOString(),
-              items_total: checkedCount,
-              items_processed: checkedCount,
-              items_succeeded: checkedCount - outOfStockCount,
-              items_failed: 0,
+              total_items: checkedCount,
+              processed_items: checkedCount,
+              failed_items: 0,
               progress_percent: 100,
               progress_message: `${checkedCount} produits vérifiés — ${outOfStockCount} ruptures, ${lowStockCount} stocks bas, ${priceChanges} changements de prix`,
             })

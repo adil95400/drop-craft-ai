@@ -22,11 +22,9 @@ serve(async (req) => {
   try {
     const supabase = createClient(supabaseUrl, supabaseServiceKey)
     
-    // 1. Auth obligatoire - userId provient du token uniquement
     const { user } = await authenticateUser(req, supabase)
     const userId = user.id
     
-    // 2. Rate limiting: max 10 imports per hour
     const rateCheck = await checkRateLimit(supabase, userId, 'csv_import', 10, 60)
     if (!rateCheck) {
       return new Response(
@@ -37,31 +35,27 @@ serve(async (req) => {
     
     console.log('[CSV-IMPORT] Authenticated user:', { user_id: userId })
 
-    // 3. Parse input - IGNORING userId from body, using token only
     const { rows, csv_content, file_url, field_mapping = {}, columnMapping = {}, config = {} } = await req.json()
     
     if (!rows && !csv_content && !file_url) {
       throw new Error('CSV rows, content or file URL is required')
     }
 
-    console.log('[CSV-IMPORT] Starting CSV import', { 
-      user_id: userId, // SECURE: from token only
-      has_rows: !!rows,
-      has_content: !!csv_content,
-      has_url: !!file_url,
-      rows_count: rows?.length
-    })
-
-    // Create import job - SECURE: user_id from token only
+    // Create job in unified `jobs` table
     const { data: job, error: jobError } = await supabase
-      .from('import_jobs')
+      .from('jobs')
       .insert({
-        user_id: userId, // CRITICAL: from token only
-        source_type: 'csv',
-        source_url: file_url || null,
-        configuration: { field_mapping: columnMapping || field_mapping, ...config },
-        status: 'processing',
-        started_at: new Date().toISOString()
+        user_id: userId,
+        job_type: 'import',
+        job_subtype: 'csv',
+        status: 'running',
+        name: 'Import CSV',
+        started_at: new Date().toISOString(),
+        input_data: { source_url: file_url || null, field_mapping: columnMapping || field_mapping, ...config },
+        total_items: 0,
+        processed_items: 0,
+        failed_items: 0,
+        progress_percent: 0,
       })
       .select()
       .single()
@@ -75,7 +69,6 @@ serve(async (req) => {
 
     let records = rows || []
 
-    // If rows not provided, parse CSV content
     if (!records || records.length === 0) {
       let csvData = csv_content
       if (file_url && !csvData) {
@@ -88,30 +81,21 @@ serve(async (req) => {
 
       const delimiter = config.delimiter || detectDelimiter(csvData)
       
-      console.log('[CSV-IMPORT] Parsing CSV', { delimiter, size: csvData.length })
-
       records = parse(csvData, {
         skipFirstRow: config.skipFirstRow !== false,
         separator: delimiter,
         columns: config.columns || undefined
       })
-
-      console.log('[CSV-IMPORT] Parsed CSV', { records_count: records.length })
     }
 
-    // Update total rows if job exists
+    // Update total items
     if (jobId) {
       await supabase
-        .from('import_jobs')
-        .update({
-          total_rows: records.length,
-          updated_at: new Date().toISOString()
-        })
+        .from('jobs')
+        .update({ total_items: records.length, updated_at: new Date().toISOString() })
         .eq('id', jobId)
-        .eq('user_id', userId) // SECURE: scope to user
     }
 
-    // Map and insert products in batches
     const batchSize = config.batchSize || 500
     let successCount = 0
     let errorCount = 0
@@ -120,7 +104,6 @@ serve(async (req) => {
     const createdIds: string[] = []
     const mapping = columnMapping || field_mapping
 
-    // Get existing SKUs for duplicate checking - SCOPED to user
     const checkDuplicates = config.ignoreDuplicates || config.updateExisting
     let existingSkus = new Set<string>()
     
@@ -128,7 +111,7 @@ serve(async (req) => {
       const { data: existingProducts } = await supabase
         .from('imported_products')
         .select('sku')
-        .eq('user_id', userId) // CRITICAL: scope to user
+        .eq('user_id', userId)
       existingProducts?.forEach((p: any) => existingSkus.add(p.sku))
     }
 
@@ -142,7 +125,7 @@ serve(async (req) => {
         
         try {
           const product: any = {
-            user_id: userId, // CRITICAL: from token only
+            user_id: userId,
             status: config.status || 'draft',
             review_status: 'pending',
             source_url: 'csv_import'
@@ -152,14 +135,12 @@ serve(async (req) => {
             product.import_job_id = jobId
           }
 
-          // Apply field mapping
           for (const [csvField, productField] of Object.entries(mapping)) {
             if (record[csvField] !== undefined && record[csvField] !== null && record[csvField] !== '') {
               product[productField as string] = record[csvField]
             }
           }
 
-          // Fallback mappings
           product.name = product.name || record.name || record.title || record.product_name
           product.price = product.price !== undefined ? parseFloat(product.price) : (parseFloat(record.price || record.sale_price || '0') || 0)
           product.cost_price = product.cost_price !== undefined ? parseFloat(product.cost_price) : null
@@ -171,26 +152,14 @@ serve(async (req) => {
           product.stock_quantity = product.stock_quantity !== undefined ? parseInt(product.stock_quantity) : 0
           product.supplier_name = product.supplier_name || record.supplier || record.supplier_name || ''
 
-          // Validate required fields
           if (!product.name || !product.sku) {
-            errors.push({
-              row: rowNumber,
-              sku: product.sku,
-              field: !product.name ? 'name' : 'sku',
-              message: 'Champ requis manquant'
-            })
+            errors.push({ row: rowNumber, sku: product.sku, field: !product.name ? 'name' : 'sku', message: 'Champ requis manquant' })
             errorCount++
             return
           }
 
-          // Validate price
           if (isNaN(product.price) || product.price < 0) {
-            errors.push({
-              row: rowNumber,
-              sku: product.sku,
-              field: 'price',
-              message: 'Prix invalide'
-            })
+            errors.push({ row: rowNumber, sku: product.sku, field: 'price', message: 'Prix invalide' })
             errorCount++
             return
           }
@@ -202,7 +171,6 @@ serve(async (req) => {
             return
           }
 
-          // Handle metadata
           if (record.tags || record.weight || record.length || record.width || record.height) {
             product.metadata = {
               tags: record.tags ? record.tags.split(',').map((t: string) => t.trim()) : [],
@@ -225,26 +193,18 @@ serve(async (req) => {
           
         } catch (error) {
           console.error(`[CSV-IMPORT] Error processing row ${rowNumber}:`, error)
-          errors.push({
-            row: rowNumber,
-            sku: record.sku,
-            message: error instanceof Error ? error.message : 'Erreur inconnue'
-          })
+          errors.push({ row: rowNumber, sku: record.sku, message: error instanceof Error ? error.message : 'Erreur inconnue' })
           errorCount++
         }
       })
 
-      // Insert new products
       if (productsToInsert.length > 0) {
-        console.log('[CSV-IMPORT] Inserting batch', { start: i, count: productsToInsert.length })
-
         const { data: inserted, error: insertError } = await supabase
           .from('imported_products')
           .insert(productsToInsert)
           .select('id')
 
         if (insertError) {
-          console.error('[CSV-IMPORT] Batch insert error', insertError.message)
           errorCount += productsToInsert.length
           errors.push({ row: i, message: `Erreur d'insertion batch: ${insertError.message}` })
         } else {
@@ -253,15 +213,12 @@ serve(async (req) => {
         }
       }
 
-      // Update existing products - SCOPED to user
       if (productsToUpdate.length > 0) {
-        console.log('[CSV-IMPORT] Updating batch', { count: productsToUpdate.length })
-        
         for (const product of productsToUpdate) {
           const { error: updateError } = await supabase
             .from('imported_products')
             .update(product)
-            .eq('user_id', userId) // CRITICAL: scope to user
+            .eq('user_id', userId)
             .eq('sku', product.sku)
 
           if (updateError) {
@@ -273,90 +230,59 @@ serve(async (req) => {
         }
       }
 
-      // Update progress if job exists
+      // Update progress in unified `jobs` table
       if (jobId) {
         await supabase
-          .from('import_jobs')
+          .from('jobs')
           .update({
-            processed_rows: Math.min(i + batch.length, records.length),
-            success_rows: successCount,
-            error_rows: errorCount,
+            processed_items: Math.min(i + batch.length, records.length),
+            failed_items: errorCount,
+            progress_percent: Math.round((Math.min(i + batch.length, records.length) / records.length) * 100),
             updated_at: new Date().toISOString()
           })
           .eq('id', jobId)
-          .eq('user_id', userId) // SECURE: scope to user
       }
     }
 
     const duration = Date.now() - startTime
     const finalStatus = errorCount === records.length ? 'failed' : 'completed'
 
-    // Update job as completed if exists
+    // Update job as completed in unified `jobs` table
     if (jobId) {
       await supabase
-        .from('import_jobs')
+        .from('jobs')
         .update({
           status: finalStatus,
           completed_at: new Date().toISOString(),
-          total_rows: records.length,
-          processed_rows: records.length,
-          success_rows: successCount,
-          error_rows: errorCount,
-          errors: errors.length > 0 ? errors.map(e => JSON.stringify(e)) : null,
+          total_items: records.length,
+          processed_items: records.length,
+          failed_items: errorCount,
+          progress_percent: 100,
+          duration_ms: duration,
+          error_message: errors.length > 0 ? errors.slice(0, 5).map(e => e.message || JSON.stringify(e)).join('; ') : null,
+          output_data: { success_count: successCount, error_count: errorCount, skipped_count: skippedCount },
           updated_at: new Date().toISOString()
         })
         .eq('id', jobId)
-        .eq('user_id', userId) // SECURE: scope to user
     }
 
-    // Log activity and database operation
     await logDatabaseOperation(supabase, userId, 'insert', 'imported_products', successCount)
     
     await logSecurityEvent(supabase, userId, 'csv_import_completed', 'info', {
-      total_rows: records.length,
-      success_count: successCount,
-      error_count: errorCount,
-      skipped_count: skippedCount,
-      duration_ms: duration,
-      job_id: jobId
+      total_rows: records.length, success_count: successCount, error_count: errorCount,
+      skipped_count: skippedCount, duration_ms: duration, job_id: jobId
     })
     
     await supabase.from('activity_logs').insert({
-      user_id: userId, // CRITICAL: from token only
+      user_id: userId,
       action: 'product_import',
       description: `Import CSV: ${successCount} produits importés`,
       entity_type: 'product',
-      metadata: {
-        total_rows: records.length,
-        success_count: successCount,
-        error_count: errorCount,
-        skipped_count: skippedCount,
-        duration_ms: duration,
-        job_id: jobId
-      }
-    })
-
-    console.log('[CSV-IMPORT] Import completed', {
-      job_id: jobId,
-      total: records.length,
-      success: successCount,
-      errors: errorCount,
-      skipped: skippedCount,
-      duration_ms: duration
+      metadata: { total_rows: records.length, success_count: successCount, error_count: errorCount, skipped_count: skippedCount, duration_ms: duration, job_id: jobId }
     })
 
     return new Response(
-      JSON.stringify({
-        success: successCount > 0,
-        totalRows: records.length,
-        successCount,
-        errorCount,
-        skippedCount,
-        errors: errors.slice(0, 100),
-        duration,
-        createdIds,
-        job_id: jobId
-      }),
+      JSON.stringify({ success: successCount > 0, totalRows: records.length, successCount, errorCount, skippedCount, errors: errors.slice(0, 100), duration, createdIds, job_id: jobId }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
     )
 
@@ -368,13 +294,8 @@ serve(async (req) => {
       try {
         const supabase = createClient(supabaseUrl, supabaseServiceKey)
         await supabase
-          .from('import_jobs')
-          .update({
-            status: 'failed',
-            completed_at: new Date().toISOString(),
-            errors: [error.message],
-            updated_at: new Date().toISOString()
-          })
+          .from('jobs')
+          .update({ status: 'failed', completed_at: new Date().toISOString(), error_message: error.message, duration_ms: executionTime, updated_at: new Date().toISOString() })
           .eq('id', jobId)
       } catch (updateError) {
         console.error('[CSV-IMPORT] Failed to update job status', updateError)
@@ -382,12 +303,7 @@ serve(async (req) => {
     }
 
     return new Response(
-      JSON.stringify({
-        success: false,
-        error: error.message,
-        job_id: jobId,
-        execution_time_ms: executionTime
-      }),
+      JSON.stringify({ success: false, error: error.message, job_id: jobId, execution_time_ms: executionTime }),
       { headers: { ...getSecureCorsHeaders(req), 'Content-Type': 'application/json' }, status: 500 }
     )
   }
@@ -396,17 +312,11 @@ serve(async (req) => {
 function detectDelimiter(csv: string): string {
   const firstLine = csv.split('\n')[0]
   const delimiters = [',', ';', '\t', '|']
-  
   let maxCount = 0
   let detectedDelimiter = ','
-  
   for (const delimiter of delimiters) {
     const count = (firstLine.match(new RegExp(delimiter, 'g')) || []).length
-    if (count > maxCount) {
-      maxCount = count
-      detectedDelimiter = delimiter
-    }
+    if (count > maxCount) { maxCount = count; detectedDelimiter = delimiter }
   }
-  
   return detectedDelimiter
 }

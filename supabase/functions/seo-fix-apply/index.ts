@@ -2,6 +2,7 @@
  * SEO Fix Apply Edge Function
  * Applies SEO fixes (title, meta, h1, etc.) to stores via connectors
  * SECURITY: JWT auth + user scoping
+ * UNIFIED: Writes to `jobs` table (not background_jobs)
  */
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "npm:@supabase/supabase-js@2";
@@ -49,16 +50,16 @@ serve(
 
       if (error) throw error;
 
-      // Create background job
-      const { data: job } = await supabase.from('background_jobs').insert({
+      // Create job in unified `jobs` table
+      const { data: job } = await supabase.from('jobs').insert({
         user_id: user.id,
-        job_type: 'seo_fix',
-        status: 'queued',
+        job_type: 'seo_audit',
+        job_subtype: 'fix',
+        status: 'pending',
         name: `SEO Fix: ${body.action}`,
         input_data: { fix_id: fix.id },
       }).select('id').single();
 
-      // Link job to fix
       if (job) {
         await supabase.from('seo_fix_applies')
           .update({ job_id: job.id })
@@ -70,7 +71,7 @@ serve(
       return new Response(JSON.stringify({
         fix_id: fix.id,
         job_id: job?.id,
-        status: 'queued',
+        status: 'pending',
       }), { headers: { ...cors, 'Content-Type': 'application/json' } });
     }
 

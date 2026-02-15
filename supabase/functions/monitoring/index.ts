@@ -111,7 +111,7 @@ async function getMetrics(metricType: string, timeframe: string, supabase: any, 
 
 async function getImportMetrics(timeFilter: string, supabase: any, userId: string) {
   const { data: imports, error } = await supabase
-    .from('import_jobs')
+    .from('jobs')
     .select('status, created_at, total_rows, success_rows, error_rows')
     .eq('user_id', userId)
     .gte('created_at', timeFilter);
