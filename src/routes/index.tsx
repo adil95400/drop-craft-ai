@@ -64,6 +64,7 @@ const PerformanceMonitoringPage = lazy(() => import('@/pages/PerformanceMonitori
 const GrowthDashboardPage = lazy(() => import('@/pages/GrowthDashboardPage'));
 const AIRecommendationsPage = lazy(() => import('@/pages/AIRecommendationsPage'));
 const PlatformOnboardingPage = lazy(() => import('@/pages/PlatformOnboardingPage'));
+const OnboardingWizardPage = lazy(() => import('@/pages/OnboardingWizardPage'));
 const FreelanceMarketplacePage = lazy(() => import('@/pages/FreelanceMarketplacePage'));
 const GettingStartedPage = lazy(() => import('@/pages/guides/GettingStartedPage'));
 const AcademyHomePage = lazy(() => import('@/pages/academy/AcademyHomePage'));
@@ -210,6 +211,7 @@ export function AppRoutes() {
           <Route path="/growth" element={<Protected><GrowthDashboardPage /></Protected>} />
           <Route path="/ai-recommendations" element={<Protected><AIRecommendationsPage /></Protected>} />
           <Route path="/onboarding/platform" element={<Protected><PlatformOnboardingPage /></Protected>} />
+          <Route path="/onboarding/wizard" element={<ProtectedRoute><OnboardingWizardPage /></ProtectedRoute>} />
           <Route path="/services" element={<Protected><FreelanceMarketplacePage /></Protected>} />
           
           {/* Profile & Subscription (Settings group) */}
