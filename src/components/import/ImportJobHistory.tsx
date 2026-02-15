@@ -10,14 +10,19 @@ import {
   Clock, 
   Trash2,
   FileText,
-  Download
+  Download,
+  RotateCcw,
+  Play,
+  Sparkles,
 } from 'lucide-react'
 import { useImportJobsReal } from '@/hooks/useImportJobsReal'
+import { useJobActions } from '@/hooks/useJobActions'
 import { formatDistanceToNow } from 'date-fns'
 import { fr } from 'date-fns/locale'
 
 export function ImportJobHistory() {
   const { jobs, isLoading, deleteJob, isDeleting } = useImportJobsReal()
+  const { retryJob, isRetrying, resumeJob, isResuming, enrichJob, isEnriching } = useJobActions()
 
   if (isLoading) {
     return (
@@ -147,13 +152,51 @@ export function ImportJobHistory() {
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1 flex-wrap">
+                      {/* Retry — for failed/cancelled jobs */}
+                      {(job.status === 'failed' || job.status === 'cancelled') && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => retryJob(job.id)}
+                          disabled={isRetrying}
+                          title="Relancer le job"
+                        >
+                          <RotateCcw className="w-4 h-4" />
+                        </Button>
+                      )}
+
+                      {/* Resume — for failed/cancelled with partial progress */}
+                      {(job.status === 'failed' || job.status === 'cancelled') && job.failed_imports > 0 && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => resumeJob(job.id)}
+                          disabled={isResuming}
+                          title="Reprendre les éléments échoués"
+                        >
+                          <Play className="w-4 h-4" />
+                        </Button>
+                      )}
+
+                      {/* Enrich — for completed jobs */}
+                      {job.status === 'completed' && job.successful_imports > 0 && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => enrichJob(job.id)}
+                          disabled={isEnriching}
+                          title="Enrichir avec l'IA"
+                        >
+                          <Sparkles className="w-4 h-4" />
+                        </Button>
+                      )}
+
                       {job.import_settings && (
                         <Button
                           variant="ghost"
                           size="sm"
                           onClick={() => {
-                            // Download results
                             const dataStr = JSON.stringify(job.import_settings, null, 2)
                             const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr)
                             const exportFileDefaultName = `import-${job.id}.json`
