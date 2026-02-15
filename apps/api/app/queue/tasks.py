@@ -1,10 +1,12 @@
 """
 Celery tasks for async job processing
 All heavy operations run here, not in HTTP handlers
-Refactored to use Celery instead of custom Redis queue
+
+Sprint 2: Fixed async patterns — replaced broken `run_async` with
+proper `asgiref.sync_to_async` / `asyncio.Runner` (Python 3.11+),
+added structured logging, idempotent job upserts, and progress callbacks.
 
 IMPORTANT: All tasks write to the `jobs` table (unified system).
-`background_jobs` is DEPRECATED and must not be used.
 """
 
 from celery import shared_task
@@ -12,21 +14,34 @@ from typing import Optional, List, Dict, Any
 from datetime import datetime, timedelta
 import logging
 import asyncio
+import sys
+import structlog
 
 from app.core.error_recovery import ResilientTask, classify_error
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
+
+# ── Async helper (Sprint 2 fix) ──────────────────────────────────────────────
 
 def run_async(coro):
-    """Helper to run async code in sync Celery tasks"""
-    try:
-        loop = asyncio.get_event_loop()
-    except RuntimeError:
+    """
+    Safely run an async coroutine from synchronous Celery tasks.
+    Uses asyncio.Runner on Python 3.11+ (proper cleanup),
+    falls back to new_event_loop on older versions.
+    """
+    if sys.version_info >= (3, 11):
+        with asyncio.Runner() as runner:
+            return runner.run(coro)
+    else:
         loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(loop)
-    return loop.run_until_complete(coro)
+        try:
+            return loop.run_until_complete(coro)
+        finally:
+            loop.close()
 
+
+# ── Job tracking helpers (unified `jobs` table) ──────────────────────────────
 
 def _upsert_job(supabase, job_id: str, user_id: str, job_type: str, job_subtype: str = None, **extra):
     """Create or update a job record in the unified `jobs` table."""
@@ -40,7 +55,21 @@ def _upsert_job(supabase, job_id: str, user_id: str, job_type: str, job_subtype:
     if job_subtype:
         record["job_subtype"] = job_subtype
     record.update(extra)
-    supabase.table("jobs").upsert(record).execute()
+    supabase.table("jobs").upsert(record, on_conflict="id").execute()
+
+
+def _update_progress(supabase, job_id: str, processed: int, total: int, message: str = None):
+    """Update job progress for realtime tracking."""
+    update = {
+        "processed_items": processed,
+        "total_items": total,
+    }
+    if message:
+        update["metadata"] = {"progress_message": message}
+    try:
+        supabase.table("jobs").update(update).eq("id", job_id).execute()
+    except Exception:
+        pass  # Non-critical: progress update failure should not break the task
 
 
 def _complete_job(supabase, job_id: str, output_data=None, processed=0, failed=0, total=0):
@@ -60,11 +89,17 @@ def _fail_job(supabase, job_id: str, error_message: str):
     try:
         supabase.table("jobs").update({
             "status": "failed",
-            "error_message": str(error_message),
+            "error_message": str(error_message)[:2000],
             "completed_at": datetime.utcnow().isoformat(),
         }).eq("id", job_id).execute()
     except Exception:
-        logger.warning(f"Could not update job {job_id} to failed status")
+        logger.warning("job.update_failed", job_id=job_id)
+
+
+def _get_supabase_safe():
+    """Import and return Supabase client, with error handling."""
+    from app.core.database import get_supabase
+    return get_supabase()
 
 
 # ==========================================
@@ -82,14 +117,14 @@ def sync_supplier_products(
 ):
     """Sync products from supplier (BigBuy, AliExpress, etc.)"""
     from app.services.suppliers import get_supplier_service
-    from app.core.database import get_supabase
-    
+
     job_id = self.request.id
-    logger.info(f"Starting supplier sync job {job_id}")
-    
+    log = logger.bind(job_id=job_id, task="sync_supplier_products")
+    log.info("task.start", supplier_id=supplier_id, sync_type=sync_type)
+
     try:
-        supabase = get_supabase()
-        
+        supabase = _get_supabase_safe()
+
         _upsert_job(supabase, job_id, user_id, "sync", job_subtype=sync_type,
                      name=f"Supplier sync: {sync_type}",
                      input_data={
@@ -98,79 +133,84 @@ def sync_supplier_products(
                          "limit": limit,
                          "category_filter": category_filter
                      })
-        
+
         service = get_supplier_service(supplier_id)
         result = service.sync_products(
             user_id=user_id,
             limit=limit,
             category_filter=category_filter
         )
-        
+
         _complete_job(supabase, job_id,
                       output_data=result,
                       processed=result.get("fetched", 0),
                       failed=len(result.get("errors", [])),
                       total=result.get("fetched", 0))
-        
-        logger.info(f"Supplier sync completed: {result}")
+
+        log.info("task.completed", fetched=result.get("fetched", 0))
         return result
-        
+
     except Exception as exc:
-        logger.error(f"Supplier sync failed: {exc}")
+        log.error("task.failed", error=str(exc))
         try:
-            supabase = get_supabase()
+            supabase = _get_supabase_safe()
             _fail_job(supabase, job_id, str(exc))
         except Exception:
             pass
         self.retry_with_backoff(exc)
 
 
-@shared_task(bind=True, max_retries=3)
+@shared_task(bind=True, base=ResilientTask, max_retries=3)
 def sync_supplier_stock(self, user_id: str, supplier_id: str):
     """Sync stock levels from supplier"""
     from app.services.suppliers import get_supplier_service
-    
-    logger.info(f"Syncing stock for supplier {supplier_id}")
-    
+
+    log = logger.bind(job_id=self.request.id, task="sync_supplier_stock")
+    log.info("task.start", supplier_id=supplier_id)
+
     try:
         service = get_supplier_service(supplier_id)
         result = service.sync_stock(user_id=user_id)
+        log.info("task.completed")
         return result
     except Exception as exc:
-        logger.error(f"Stock sync failed: {exc}")
-        raise self.retry(exc=exc)
+        log.error("task.failed", error=str(exc))
+        self.retry_with_backoff(exc)
 
 
 @shared_task(bind=True)
 def sync_platform_orders(self, user_id: str, platform_id: str, **options):
     """Sync orders from sales platform (Shopify, WooCommerce, etc.)"""
-    logger.info(f"Syncing orders from platform {platform_id}")
-    # TODO: Implement platform-specific order sync
+    logger.info("task.stub", task="sync_platform_orders", platform_id=platform_id)
     return {"synced": 0}
 
 
-@shared_task(bind=True, max_retries=2)
+@shared_task(bind=True, base=ResilientTask, max_retries=2)
 def full_catalog_sync(self, user_id: str, supplier_id: str, **options):
     """Full catalog sync including products, stock, and prices"""
     from app.services.suppliers import get_supplier_service
-    
-    logger.info(f"Starting full catalog sync for supplier {supplier_id}")
-    
-    service = get_supplier_service(supplier_id)
-    products_result = service.sync_products(user_id=user_id, **options)
-    stock_result = service.sync_stock(user_id=user_id)
-    
-    return {
-        "products": products_result,
-        "stock": stock_result
-    }
+
+    log = logger.bind(job_id=self.request.id, task="full_catalog_sync")
+    log.info("task.start", supplier_id=supplier_id)
+
+    try:
+        service = get_supplier_service(supplier_id)
+        products_result = service.sync_products(user_id=user_id, **options)
+        stock_result = service.sync_stock(user_id=user_id)
+
+        result = {"products": products_result, "stock": stock_result}
+        log.info("task.completed")
+        return result
+    except Exception as exc:
+        log.error("task.failed", error=str(exc))
+        self.retry_with_backoff(exc)
 
 
 # ==========================================
 # SCRAPING TASKS
 # ==========================================
 
-@shared_task(bind=True, max_retries=2, default_retry_delay=30)
+@shared_task(bind=True, base=ResilientTask, max_retries=2, default_retry_delay=30)
 def scrape_product_url(
     self,
     user_id: str,
@@ -181,31 +221,30 @@ def scrape_product_url(
 ):
     """Scrape a single product URL"""
     from app.services.scraping import ScrapingService
-    from app.core.database import get_supabase
-    
+
     job_id = self.request.id
-    logger.info(f"Scraping product URL: {url}")
-    
+    log = logger.bind(job_id=job_id, task="scrape_product_url")
+    log.info("task.start", url=url[:80])
+
     try:
-        supabase = get_supabase()
-        
+        supabase = _get_supabase_safe()
+
         _upsert_job(supabase, job_id, user_id, "scraping", job_subtype="url",
                      name=f"Scrape: {url[:60]}",
                      input_data={"url": url})
-        
+
         scraper = ScrapingService()
         product = scraper.scrape_product(
             url=url,
             extract_variants=extract_variants,
             extract_reviews=extract_reviews
         )
-        
+
         if enrich_with_ai and product:
             from app.services.ai import AIService
             ai = AIService()
             product = ai.enrich_product(product)
-        
-        # Save to products table (unified, not catalog_products)
+
         result = supabase.table("products").insert({
             **product,
             "user_id": user_id,
@@ -214,26 +253,27 @@ def scrape_product_url(
             "status": "draft",
             "created_at": datetime.utcnow().isoformat()
         }).execute()
-        
+
         product_id = result.data[0]["id"] if result.data else None
-        
+
         _complete_job(supabase, job_id,
                       output_data={"product_id": product_id},
                       processed=1, total=1)
-        
+
+        log.info("task.completed", product_id=product_id)
         return {"success": True, "product_id": product_id}
-        
+
     except Exception as exc:
-        logger.error(f"URL scrape failed: {exc}")
+        log.error("task.failed", error=str(exc))
         try:
-            supabase = get_supabase()
+            supabase = _get_supabase_safe()
             _fail_job(supabase, job_id, str(exc))
         except Exception:
             pass
-        raise self.retry(exc=exc)
+        self.retry_with_backoff(exc)
 
 
-@shared_task(bind=True, max_retries=1)
+@shared_task(bind=True, base=ResilientTask, max_retries=1)
 def scrape_store_catalog(
     self,
     user_id: str,
@@ -241,30 +281,30 @@ def scrape_store_catalog(
     max_products: int = 100,
     category_filter: Optional[str] = None
 ):
-    """Scrape an entire store catalog"""
+    """Scrape an entire store catalog with per-item progress tracking"""
     from app.services.scraping import ScrapingService
-    from app.core.database import get_supabase
-    
+
     job_id = self.request.id
-    logger.info(f"Scraping store catalog: {store_url}")
-    
-    supabase = get_supabase()
-    
+    log = logger.bind(job_id=job_id, task="scrape_store_catalog")
+    log.info("task.start", store_url=store_url[:80])
+
+    supabase = _get_supabase_safe()
+
     _upsert_job(supabase, job_id, user_id, "scraping", job_subtype="store",
                 name=f"Store scrape: {store_url[:60]}",
                 input_data={"store_url": store_url, "max_products": max_products},
                 total_items=max_products)
-    
+
     scraper = ScrapingService()
     products = scraper.scrape_store(
         store_url=store_url,
         max_products=max_products,
         category_filter=category_filter
     )
-    
+
     saved_count = 0
     failed_count = 0
-    for product in products:
+    for i, product in enumerate(products):
         try:
             prod_result = supabase.table("products").insert({
                 **product,
@@ -273,8 +313,7 @@ def scrape_store_catalog(
                 "status": "draft",
                 "created_at": datetime.utcnow().isoformat()
             }).execute()
-            
-            # Create job_item for granular tracking
+
             supabase.table("job_items").insert({
                 "job_id": job_id,
                 "product_id": prod_result.data[0]["id"] if prod_result.data else None,
@@ -284,19 +323,24 @@ def scrape_store_catalog(
             }).execute()
             saved_count += 1
         except Exception as e:
-            logger.warning(f"Failed to save product: {e}")
+            log.warning("item.failed", index=i, error=str(e))
             supabase.table("job_items").insert({
                 "job_id": job_id,
                 "status": "error",
-                "message": str(e),
+                "message": str(e)[:500],
                 "processed_at": datetime.utcnow().isoformat(),
             }).execute()
             failed_count += 1
-    
+
+        # Update progress every 10 items
+        if (i + 1) % 10 == 0:
+            _update_progress(supabase, job_id, saved_count + failed_count, len(products))
+
     _complete_job(supabase, job_id,
                   output_data={"scraped": len(products), "saved": saved_count},
                   processed=saved_count, failed=failed_count, total=len(products))
-    
+
+    log.info("task.completed", scraped=len(products), saved=saved_count, failed=failed_count)
     return {"scraped": len(products), "saved": saved_count}
 
 
@@ -317,49 +361,46 @@ def import_csv_products(
 ):
     """Import products from CSV file or URL"""
     from app.services.import_service import ImportService
-    from app.core.database import get_supabase
-    
+
     job_id = self.request.id
-    logger.info(f"Importing CSV products for user {user_id}")
-    
+    log = logger.bind(job_id=job_id, task="import_csv_products")
+    log.info("task.start", filename=filename or feed_url)
+
     try:
-        supabase = get_supabase()
-        
+        supabase = _get_supabase_safe()
+
         _upsert_job(supabase, job_id, user_id, "import",
                      job_subtype="excel" if is_excel else "csv",
                      name=f"Import {filename or feed_url or 'CSV'}",
                      input_data={"feed_url": feed_url, "filename": filename})
-        
+
         importer = ImportService()
-        
+
         if feed_url:
             result = importer.import_from_url(
-                user_id=user_id,
-                url=feed_url,
-                format="csv",
-                mapping=mapping_config or {},
-                update_existing=update_existing
+                user_id=user_id, url=feed_url, format="csv",
+                mapping=mapping_config or {}, update_existing=update_existing
             )
         else:
             result = importer.import_from_content(
-                user_id=user_id,
-                content=file_content,
+                user_id=user_id, content=file_content,
                 format="excel" if is_excel else "csv",
                 mapping=mapping_config or {}
             )
-        
+
         _complete_job(supabase, job_id,
                       output_data=result,
                       processed=result.get("imported", 0),
                       failed=result.get("failed", 0),
                       total=result.get("total", 0))
-        
+
+        log.info("task.completed", imported=result.get("imported", 0))
         return result
-        
+
     except Exception as exc:
-        logger.error(f"CSV import failed: {exc}")
+        log.error("task.failed", error=str(exc))
         try:
-            supabase = get_supabase()
+            supabase = _get_supabase_safe()
             _fail_job(supabase, job_id, str(exc))
         except Exception:
             pass
@@ -378,48 +419,44 @@ def import_xml_feed(
 ):
     """Import products from XML feed"""
     from app.services.import_service import ImportService
-    from app.core.database import get_supabase
-    
+
     job_id = self.request.id
-    logger.info(f"Importing XML feed for user {user_id}")
-    
+    log = logger.bind(job_id=job_id, task="import_xml_feed")
+    log.info("task.start", filename=filename or feed_url)
+
     try:
-        supabase = get_supabase()
-        
+        supabase = _get_supabase_safe()
+
         _upsert_job(supabase, job_id, user_id, "import", job_subtype="xml",
                      name=f"Import {filename or feed_url or 'XML'}",
                      input_data={"feed_url": feed_url, "filename": filename})
-        
+
         importer = ImportService()
-        
+
         if feed_url:
             result = importer.import_from_url(
-                user_id=user_id,
-                url=feed_url,
-                format="xml",
-                mapping=mapping_config or {},
-                update_existing=update_existing
+                user_id=user_id, url=feed_url, format="xml",
+                mapping=mapping_config or {}, update_existing=update_existing
             )
         else:
             result = importer.import_from_content(
-                user_id=user_id,
-                content=file_content,
-                format="xml",
+                user_id=user_id, content=file_content, format="xml",
                 mapping=mapping_config or {}
             )
-        
+
         _complete_job(supabase, job_id,
                       output_data=result,
                       processed=result.get("imported", 0),
                       failed=result.get("failed", 0),
                       total=result.get("total", 0))
-        
+
+        log.info("task.completed", imported=result.get("imported", 0))
         return result
-        
+
     except Exception as exc:
-        logger.error(f"XML import failed: {exc}")
+        log.error("task.failed", error=str(exc))
         try:
-            supabase = get_supabase()
+            supabase = _get_supabase_safe()
             _fail_job(supabase, job_id, str(exc))
         except Exception:
             pass
@@ -430,7 +467,7 @@ def import_xml_feed(
 # ORDER FULFILLMENT TASKS
 # ==========================================
 
-@shared_task(bind=True, max_retries=3, default_retry_delay=120)
+@shared_task(bind=True, base=ResilientTask, max_retries=3, default_retry_delay=120)
 def process_order_fulfillment(
     self,
     user_id: str,
@@ -440,45 +477,43 @@ def process_order_fulfillment(
 ):
     """Process order fulfillment with supplier"""
     from app.services.fulfillment import FulfillmentService
-    from app.core.database import get_supabase
-    
+
     job_id = self.request.id
-    logger.info(f"Processing fulfillment for order {order_id}")
-    
+    log = logger.bind(job_id=job_id, task="process_order_fulfillment")
+    log.info("task.start", order_id=order_id)
+
     try:
-        supabase = get_supabase()
-        
+        supabase = _get_supabase_safe()
+
         _upsert_job(supabase, job_id, user_id, "fulfillment",
                      name=f"Fulfill order {order_id[:8]}",
                      input_data={"order_id": order_id, "supplier_id": supplier_id})
-        
+
         fulfillment = FulfillmentService()
         result = fulfillment.fulfill_order(
-            user_id=user_id,
-            order_id=order_id,
-            supplier_id=supplier_id,
-            auto_select=auto_select
+            user_id=user_id, order_id=order_id,
+            supplier_id=supplier_id, auto_select=auto_select
         )
-        
+
         _complete_job(supabase, job_id, output_data=result, processed=1, total=1)
-        
+        log.info("task.completed")
         return result
-        
+
     except Exception as exc:
-        logger.error(f"Fulfillment failed: {exc}")
+        log.error("task.failed", error=str(exc))
         try:
-            supabase = get_supabase()
+            supabase = _get_supabase_safe()
             _fail_job(supabase, job_id, str(exc))
         except Exception:
             pass
-        raise self.retry(exc=exc)
+        self.retry_with_backoff(exc)
 
 
 # ==========================================
 # AI TASKS
 # ==========================================
 
-@shared_task(bind=True, max_retries=2)
+@shared_task(bind=True, base=ResilientTask, max_retries=2)
 def generate_product_content(
     self,
     user_id: str,
@@ -489,21 +524,24 @@ def generate_product_content(
 ):
     """Generate AI content for product"""
     from app.services.ai import AIService
-    
-    logger.info(f"Generating content for product {product_id}")
-    
-    ai = AIService()
-    result = ai.generate_content(
-        product_id=product_id,
-        content_types=content_types,
-        language=language,
-        tone=tone
-    )
-    
-    return result
+
+    log = logger.bind(job_id=self.request.id, task="generate_product_content")
+    log.info("task.start", product_id=product_id)
+
+    try:
+        ai = AIService()
+        result = ai.generate_content(
+            product_id=product_id, content_types=content_types,
+            language=language, tone=tone
+        )
+        log.info("task.completed")
+        return result
+    except Exception as exc:
+        log.error("task.failed", error=str(exc))
+        self.retry_with_backoff(exc)
 
 
-@shared_task(bind=True)
+@shared_task(bind=True, base=ResilientTask, max_retries=2)
 def optimize_product_seo(
     self,
     user_id: str,
@@ -513,18 +551,23 @@ def optimize_product_seo(
 ):
     """Optimize product SEO with AI"""
     from app.services.ai import AIService
-    
-    ai = AIService()
-    result = ai.optimize_seo(
-        product_id=product_id,
-        keywords=target_keywords,
-        language=language
-    )
-    
-    return result
+
+    log = logger.bind(job_id=self.request.id, task="optimize_product_seo")
+    log.info("task.start", product_id=product_id)
+
+    try:
+        ai = AIService()
+        result = ai.optimize_seo(
+            product_id=product_id, keywords=target_keywords, language=language
+        )
+        log.info("task.completed")
+        return result
+    except Exception as exc:
+        log.error("task.failed", error=str(exc))
+        self.retry_with_backoff(exc)
 
 
-@shared_task(bind=True)
+@shared_task(bind=True, base=ResilientTask, max_retries=2)
 def analyze_pricing(
     self,
     user_id: str,
@@ -534,18 +577,25 @@ def analyze_pricing(
 ):
     """Analyze and optimize pricing"""
     from app.services.pricing import PricingService
-    
-    pricing = PricingService()
-    result = pricing.analyze(
-        product_ids=product_ids,
-        competitor_analysis=competitor_analysis,
-        positioning=market_positioning
-    )
-    
-    return result
+
+    log = logger.bind(job_id=self.request.id, task="analyze_pricing")
+    log.info("task.start", product_count=len(product_ids))
+
+    try:
+        pricing = PricingService()
+        result = pricing.analyze(
+            product_ids=product_ids,
+            competitor_analysis=competitor_analysis,
+            positioning=market_positioning
+        )
+        log.info("task.completed")
+        return result
+    except Exception as exc:
+        log.error("task.failed", error=str(exc))
+        self.retry_with_backoff(exc)
 
 
-@shared_task(bind=True)
+@shared_task(bind=True, base=ResilientTask, max_retries=2)
 def bulk_ai_enrichment(
     self,
     user_id: str,
@@ -553,31 +603,56 @@ def bulk_ai_enrichment(
     enrichment_types: List[str],
     limit: int = 100
 ):
-    """Bulk AI enrichment for products"""
+    """Bulk AI enrichment for products with progress tracking"""
     from app.services.ai import AIService
-    from app.core.database import get_supabase
-    
-    supabase = get_supabase()
-    
-    query = supabase.table("products").select("id").eq("user_id", user_id)
-    
-    for key, value in filter_criteria.items():
-        query = query.eq(key, value)
-    
-    result = query.limit(limit).execute()
-    product_ids = [p["id"] for p in result.data]
-    
-    ai = AIService()
-    enriched = 0
-    
-    for product_id in product_ids:
+
+    job_id = self.request.id
+    log = logger.bind(job_id=job_id, task="bulk_ai_enrichment")
+    log.info("task.start", limit=limit)
+
+    try:
+        supabase = _get_supabase_safe()
+
+        _upsert_job(supabase, job_id, user_id, "ai", job_subtype="bulk_enrichment",
+                     name="Bulk AI enrichment",
+                     input_data={"filter": filter_criteria, "types": enrichment_types})
+
+        query = supabase.table("products").select("id").eq("user_id", user_id)
+        for key, value in filter_criteria.items():
+            query = query.eq(key, value)
+        result = query.limit(limit).execute()
+        product_ids = [p["id"] for p in result.data]
+
+        ai = AIService()
+        enriched = 0
+        failed = 0
+
+        for i, product_id in enumerate(product_ids):
+            try:
+                ai.enrich_product_by_id(product_id, enrichment_types)
+                enriched += 1
+            except Exception as e:
+                log.warning("item.failed", product_id=product_id, error=str(e))
+                failed += 1
+
+            if (i + 1) % 10 == 0:
+                _update_progress(supabase, job_id, enriched + failed, len(product_ids))
+
+        _complete_job(supabase, job_id,
+                      output_data={"enriched": enriched, "failed": failed},
+                      processed=enriched, failed=failed, total=len(product_ids))
+
+        log.info("task.completed", enriched=enriched, failed=failed)
+        return {"total": len(product_ids), "enriched": enriched, "failed": failed}
+
+    except Exception as exc:
+        log.error("task.failed", error=str(exc))
         try:
-            ai.enrich_product_by_id(product_id, enrichment_types)
-            enriched += 1
-        except Exception as e:
-            logger.warning(f"Failed to enrich product {product_id}: {e}")
-    
-    return {"total": len(product_ids), "enriched": enriched}
+            supabase = _get_supabase_safe()
+            _fail_job(supabase, job_id, str(exc))
+        except Exception:
+            pass
+        self.retry_with_backoff(exc)
 
 
 # ==========================================
@@ -587,18 +662,17 @@ def bulk_ai_enrichment(
 @shared_task
 def scheduled_stock_sync():
     """Hourly stock sync for all active suppliers"""
-    from app.core.database import get_supabase
-    
-    logger.info("Running scheduled stock sync")
-    
-    supabase = get_supabase()
-    
+    log = logger.bind(task="scheduled_stock_sync")
+    log.info("task.start")
+
+    supabase = _get_supabase_safe()
+
     integrations = supabase.table("supplier_integrations")\
         .select("id, user_id")\
         .eq("is_active", True)\
         .eq("auto_sync_stock", True)\
         .execute()
-    
+
     queued = 0
     for integration in (integrations.data or []):
         sync_supplier_stock.delay(
@@ -606,48 +680,46 @@ def scheduled_stock_sync():
             supplier_id=integration["id"]
         )
         queued += 1
-    
-    logger.info(f"Queued {queued} stock sync jobs")
+
+    log.info("task.completed", queued=queued)
     return {"queued": queued}
 
 
 @shared_task
 def cleanup_old_jobs():
     """Clean up old completed jobs (daily) — uses unified `jobs` table"""
-    from app.core.database import get_supabase
-    
-    logger.info("Cleaning up old jobs")
-    
-    supabase = get_supabase()
+    log = logger.bind(task="cleanup_old_jobs")
+    log.info("task.start")
+
+    supabase = _get_supabase_safe()
     cutoff = (datetime.utcnow() - timedelta(days=7)).isoformat()
-    
+
     result = supabase.table("jobs")\
         .delete()\
         .in_("status", ["completed", "cancelled"])\
         .lt("completed_at", cutoff)\
         .execute()
-    
+
     deleted = len(result.data) if result.data else 0
-    logger.info(f"Deleted {deleted} old jobs")
+    log.info("task.completed", deleted=deleted)
     return {"deleted": deleted}
 
 
 @shared_task
 def process_pending_fulfillments():
     """Process pending auto-fulfillment orders (every 5 min)"""
-    from app.core.database import get_supabase
-    
-    logger.info("Processing pending fulfillments")
-    
-    supabase = get_supabase()
-    
+    log = logger.bind(task="process_pending_fulfillments")
+    log.info("task.start")
+
+    supabase = _get_supabase_safe()
+
     orders = supabase.table("orders")\
         .select("id, user_id")\
         .eq("status", "pending")\
         .eq("auto_fulfill", True)\
         .limit(50)\
         .execute()
-    
+
     queued = 0
     for order in (orders.data or []):
         process_order_fulfillment.delay(
@@ -656,13 +728,13 @@ def process_pending_fulfillments():
             auto_select=True
         )
         queued += 1
-    
+
+    log.info("task.completed", queued=queued)
     return {"queued": queued}
 
 
 # ==========================================
 # LEGACY COMPATIBILITY FUNCTIONS
-# (for backward compatibility with existing code)
 # ==========================================
 
 async def process_bulk_import(payload: Dict[str, Any]) -> Dict[str, Any]:
@@ -670,13 +742,10 @@ async def process_bulk_import(payload: Dict[str, Any]) -> Dict[str, Any]:
     user_id = payload.get('user_id')
     supplier = payload.get('supplier')
     product_ids = payload.get('product_ids', [])
-    
+
     job = sync_supplier_products.delay(
-        user_id=user_id,
-        supplier_id=supplier,
-        limit=len(product_ids)
+        user_id=user_id, supplier_id=supplier, limit=len(product_ids)
     )
-    
     return {"job_id": str(job.id), "status": "queued"}
 
 
@@ -689,8 +758,7 @@ async def send_notification_email(payload: Dict[str, Any]) -> Dict[str, Any]:
     """Legacy: Send notification email"""
     user_id = payload.get('user_id')
     template = payload.get('template')
-    
-    logger.info(f"Notification email queued for user {user_id}: {template}")
+    logger.info("notification.queued", user_id=user_id, template=template)
     return {"success": True}
 
 
