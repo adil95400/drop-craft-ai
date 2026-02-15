@@ -28,7 +28,7 @@ async def legacy_import_url(
     user_id: str = Depends(get_current_user_id)
 ):
     """Legacy URL import - redirects to v1 scraping"""
-    job_id = await scrape_product_url.delay(
+    result = scrape_product_url.delay(
         user_id=user_id,
         url=url,
         extract_variants=True,
@@ -38,7 +38,7 @@ async def legacy_import_url(
     return {
         "success": True,
         "message": f"Import from {url} started",
-        "job_id": str(job_id)
+        "job_id": str(result.id)
     }
 
 
@@ -54,7 +54,7 @@ async def legacy_import_csv(
     content = await file.read()
     mapping = json.loads(mapping_config) if mapping_config else {}
     
-    job_id = await import_csv_products.delay(
+    result = import_csv_products.delay(
         user_id=user_id,
         file_content=content.decode("utf-8"),
         filename=file.filename,
@@ -63,8 +63,8 @@ async def legacy_import_csv(
     
     return {
         "success": True,
-        "message": f"CSV import started",
-        "job_id": str(job_id)
+        "message": "CSV import started",
+        "job_id": str(result.id)
     }
 
 
@@ -75,7 +75,7 @@ async def legacy_import_xml(
     user_id: str = Depends(get_current_user_id)
 ):
     """Legacy XML import"""
-    job_id = await import_xml_feed.delay(
+    result = import_xml_feed.delay(
         user_id=user_id,
         feed_url=url,
         mapping_config=mapping_config or {}
@@ -84,7 +84,7 @@ async def legacy_import_xml(
     return {
         "success": True,
         "message": f"XML import from {url} started",
-        "job_id": str(job_id)
+        "job_id": str(result.id)
     }
 
 
@@ -97,10 +97,9 @@ async def legacy_bigbuy_sync(
     user_id: str = Depends(get_current_user_id)
 ):
     """Legacy BigBuy sync"""
-    # Note: In production, would create/update supplier integration first
-    job_id = await sync_supplier_products.delay(
+    result = sync_supplier_products.delay(
         user_id=user_id,
-        supplier_id="bigbuy",  # Would be actual supplier ID
+        supplier_id="bigbuy",
         limit=limit,
         category_filter=category_filter
     )
@@ -108,10 +107,11 @@ async def legacy_bigbuy_sync(
     return {
         "success": True,
         "message": "BigBuy catalog sync started",
-        "job_id": str(job_id)
+        "job_id": str(result.id)
     }
 
 
+# ... keep existing code (legacy data endpoints: products, orders, integrations)
 # Legacy data endpoints
 @router.get("/products")
 async def legacy_get_products(

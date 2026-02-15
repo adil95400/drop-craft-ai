@@ -87,7 +87,7 @@ async def trigger_supplier_sync(
     """Trigger async supplier synchronization"""
     try:
         # Create a background job for the sync
-        job_id = await sync_supplier_products.delay(
+        result = sync_supplier_products.delay(
             user_id=user_id,
             supplier_id=request.supplier_id,
             sync_type=request.sync_type,
@@ -98,7 +98,7 @@ async def trigger_supplier_sync(
         return SupplierResponse(
             success=True,
             message="Sync job queued successfully",
-            data={"job_id": str(job_id)}
+            data={"job_id": str(result.id)}
         )
         
     except Exception as e:

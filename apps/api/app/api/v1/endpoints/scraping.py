@@ -46,7 +46,7 @@ async def scrape_url(
 ):
     """Scrape a single product URL"""
     try:
-        job_id = await scrape_product_url.delay(
+        result = scrape_product_url.delay(
             user_id=user_id,
             url=str(request.url),
             extract_variants=request.extract_variants,
@@ -57,7 +57,7 @@ async def scrape_url(
         return {
             "success": True,
             "message": "Scraping job queued",
-            "job_id": str(job_id)
+            "job_id": str(result.id)
         }
         
     except Exception as e:
@@ -72,7 +72,7 @@ async def scrape_store(
 ):
     """Scrape an entire store catalog"""
     try:
-        job_id = await scrape_store_catalog.delay(
+        result = scrape_store_catalog.delay(
             user_id=user_id,
             store_url=str(request.store_url),
             max_products=request.max_products,
@@ -82,7 +82,7 @@ async def scrape_store(
         return {
             "success": True,
             "message": "Store scraping job queued",
-            "job_id": str(job_id)
+            "job_id": str(result.id)
         }
         
     except Exception as e:
@@ -98,14 +98,14 @@ async def import_feed(
     """Import products from XML/CSV feed"""
     try:
         if request.feed_type == "xml":
-            job_id = await import_xml_feed.delay(
+            result = import_xml_feed.delay(
                 user_id=user_id,
                 feed_url=str(request.feed_url),
                 mapping_config=request.mapping_config,
                 update_existing=request.update_existing
             )
         elif request.feed_type == "csv":
-            job_id = await import_csv_products.delay(
+            result = import_csv_products.delay(
                 user_id=user_id,
                 feed_url=str(request.feed_url),
                 mapping_config=request.mapping_config,
@@ -120,7 +120,7 @@ async def import_feed(
         return {
             "success": True,
             "message": f"{request.feed_type.upper()} feed import job queued",
-            "job_id": str(job_id)
+            "job_id": str(result.id)
         }
         
     except HTTPException:
@@ -152,20 +152,20 @@ async def upload_file_import(
         
         # Determine file type and queue appropriate job
         if "csv" in file.content_type:
-            job_id = await import_csv_products.delay(
+            result = import_csv_products.delay(
                 user_id=user_id,
                 file_content=content.decode("utf-8"),
                 filename=file.filename
             )
         elif "xml" in file.content_type:
-            job_id = await import_xml_feed.delay(
+            result = import_xml_feed.delay(
                 user_id=user_id,
                 file_content=content.decode("utf-8"),
                 filename=file.filename
             )
         else:
             # Excel handling
-            job_id = await import_csv_products.delay(
+            result = import_csv_products.delay(
                 user_id=user_id,
                 file_content=content,
                 filename=file.filename,
@@ -175,7 +175,7 @@ async def upload_file_import(
         return {
             "success": True,
             "message": f"File {file.filename} queued for import",
-            "job_id": str(job_id)
+            "job_id": str(result.id)
         }
         
     except HTTPException:
