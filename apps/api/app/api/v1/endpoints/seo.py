@@ -83,12 +83,12 @@ async def create_audit(
             "url_patterns_exclude": request.url_patterns_exclude,
         }).execute().data[0]
 
-        # Create background job for processing
-        job = supabase.table("background_jobs").insert({
+        # Create job in unified `jobs` table
+        job = supabase.table("jobs").insert({
             "user_id": user_id,
             "job_type": "seo_audit",
             "job_subtype": request.mode,
-            "status": "queued",
+            "status": "pending",
             "name": f"SEO Audit: {request.base_url}",
             "input_data": {"audit_id": audit["id"]},
             "metadata": {"base_url": request.base_url, "mode": request.mode},
@@ -319,11 +319,12 @@ async def ai_generate(
             },
         }).execute().data[0]
 
-        # Create background job
-        job = supabase.table("background_jobs").insert({
+        # Create job in unified `jobs` table
+        job = supabase.table("jobs").insert({
             "user_id": user_id,
-            "job_type": "seo_ai_generate",
-            "status": "queued",
+            "job_type": "ai_generation",
+            "job_subtype": "seo",
+            "status": "pending",
             "name": f"SEO AI: {request.type}",
             "input_data": {"generation_id": gen["id"]},
         }).execute().data[0]
@@ -386,10 +387,11 @@ async def apply_fix(
             "status": "queued",
         }).execute().data[0]
 
-        job = supabase.table("background_jobs").insert({
+        job = supabase.table("jobs").insert({
             "user_id": user_id,
-            "job_type": "seo_fix",
-            "status": "queued",
+            "job_type": "seo_audit",
+            "job_subtype": "fix",
+            "status": "pending",
             "name": f"SEO Fix: {request.action}",
             "input_data": {"fix_id": fix["id"]},
         }).execute().data[0]
