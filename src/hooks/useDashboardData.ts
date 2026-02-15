@@ -6,7 +6,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
 import { useUnifiedAuth } from '@/contexts/UnifiedAuthContext'
-import { dashboardApi } from '@/services/api/client'
+// dashboardApi removed — using direct Supabase queries for resilience
 import { supabase } from '@/integrations/supabase/client'
 import { ActivityEvent } from '@/components/channable/ChannableActivityFeed'
 import { SyncEvent } from '@/components/channable/ChannableSyncTimeline'

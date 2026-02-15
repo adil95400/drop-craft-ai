@@ -2,7 +2,8 @@
  * DashboardService — Pure API V1 delegate
  * All methods proxy to dashboardApi/ordersApi. No direct Supabase queries.
  */
-import { dashboardApi, ordersApi } from '@/services/api/client'
+import { ordersApi } from '@/services/api/client'
+import { supabase } from '@/integrations/supabase/client'
 import { ProductsService } from './products.service'
 import { OrdersService } from './orders.service'
 import { CustomersService } from './customers.service'
@@ -74,9 +75,14 @@ export class DashboardService {
     return []
   }
 
-  static async getRecentActivities(_userId: string, limit = 10) {
-    const resp = await dashboardApi.activity({ limit })
-    return resp.items ?? []
+  static async getRecentActivities(userId: string, limit = 10) {
+    const { data } = await supabase
+      .from('activity_logs')
+      .select('*')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false })
+      .limit(limit)
+    return data ?? []
   }
 
   static async getTopProducts(_userId: string, _limit = 5) {
