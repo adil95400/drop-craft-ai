@@ -106,13 +106,13 @@ export const FTPImporter = () => {
 
       // Create import job instead of import_connectors
       const { data: jobData, error: jobError } = await supabase
-        .from('import_jobs')
+        .from('jobs')
         .insert({
           user_id: user.id,
-          job_type: 'ftp',
-          source_platform: 'ftp',
-          source_url: config.url,
-          status: 'pending'
+          job_type: 'import',
+          job_subtype: 'ftp',
+          status: 'pending',
+          metadata: { source_platform: 'ftp', source_url: config.url }
         })
         .select()
         .single()

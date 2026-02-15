@@ -189,13 +189,13 @@ export const useExtensions = (category?: string) => {
       if (!user.data.user?.id) throw new Error('User not authenticated')
       
       const { data, error } = await supabase
-        .from('extension_jobs')
+        .from('jobs')
         .insert({
-          extension_id: jobConfig.extensionId,
-          job_type: jobConfig.jobType,
+          job_type: `extension_${jobConfig.jobType}`,
           input_data: jobConfig.inputData,
           user_id: user.data.user.id,
-          status: 'pending'
+          status: 'pending',
+          metadata: { extension_id: jobConfig.extensionId, source: 'extension' }
         })
         .select()
         .single()

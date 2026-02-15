@@ -63,21 +63,23 @@ class UnifiedImportService {
 
       // Create job in database
       const { data: job, error: jobError } = await supabase
-        .from('import_jobs')
+        .from('jobs')
         .insert({
           user_id: user.id,
-          job_type: config.source_type,
-          supplier_id: config.supplierId || config.source_url || null,
-          import_settings: {
-            ...config.configuration || {},
-            field_mapping: config.field_mapping || {},
-            supplierName: config.supplierName || null
-          },
+          job_type: 'import',
+          job_subtype: config.source_type,
           status: 'pending',
-          total_products: 0,
-          processed_products: 0,
-          successful_imports: 0,
-          failed_imports: 0
+          total_items: 0,
+          processed_items: 0,
+          failed_items: 0,
+          metadata: {
+            supplier_id: config.supplierId || config.source_url || null,
+            import_settings: {
+              ...config.configuration || {},
+              field_mapping: config.field_mapping || {},
+              supplierName: config.supplierName || null
+            }
+          }
         })
         .select()
         .single()
