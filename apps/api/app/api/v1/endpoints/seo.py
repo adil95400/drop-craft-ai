@@ -14,6 +14,7 @@ import io
 
 from app.core.security import get_current_user_id
 from app.core.database import get_supabase
+from app.core.quota import require_quota, QuotaGuard
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
@@ -60,6 +61,7 @@ class ApplyFixRequest(BaseModel):
 async def create_audit(
     request: CreateAuditRequest,
     user_id: str = Depends(get_current_user_id),
+    quota: QuotaGuard = Depends(require_quota("seo:audit")),
 ):
     """Launch an SEO audit — creates audit row + background job"""
     try:
@@ -93,6 +95,8 @@ async def create_audit(
             "input_data": {"audit_id": audit["id"]},
             "metadata": {"base_url": request.base_url, "mode": request.mode},
         }).execute().data[0]
+
+        await quota.consume(1)
 
         return {
             "audit_id": audit["id"],

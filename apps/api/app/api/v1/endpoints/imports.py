@@ -12,6 +12,7 @@ import logging
 
 from app.core.security import get_current_user_id
 from app.core.database import get_supabase
+from app.core.quota import require_quota, QuotaGuard
 from app.queue.tasks import import_csv_products, import_xml_feed
 
 logger = logging.getLogger(__name__)
@@ -35,7 +36,8 @@ class FeedImportRequest(BaseModel):
 @router.post("/csv", status_code=202)
 async def import_csv(
     file: UploadFile = File(...),
-    user_id: str = Depends(get_current_user_id)
+    user_id: str = Depends(get_current_user_id),
+    quota: QuotaGuard = Depends(require_quota("imports:csv")),
 ):
     """Import products from CSV file — enqueues Celery task, returns job_id"""
     try:
@@ -54,6 +56,9 @@ async def import_csv(
             is_excel=is_excel,
         )
 
+        # Consume quota on successful enqueue
+        await quota.consume(1)
+
         return {
             "success": True,
             "job_id": str(result.id),
@@ -70,7 +75,8 @@ async def import_csv(
 @router.post("/url", status_code=202)
 async def import_from_url(
     request: UrlImportRequest,
-    user_id: str = Depends(get_current_user_id)
+    user_id: str = Depends(get_current_user_id),
+    quota: QuotaGuard = Depends(require_quota("imports:url")),
 ):
     """Import products from URL (CSV/XML/JSON feed) — enqueues Celery task"""
     try:
@@ -88,6 +94,9 @@ async def import_from_url(
                 mapping_config=request.mapping_config,
                 update_existing=request.update_existing,
             )
+
+        # Consume quota on successful enqueue
+        await quota.consume(1)
 
         return {
             "success": True,
