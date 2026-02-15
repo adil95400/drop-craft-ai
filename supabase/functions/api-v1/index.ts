@@ -32,13 +32,33 @@ function checkRateLimit(userId: string, endpoint: string, maxRequests = 60, wind
   entry.count++; return entry.count <= maxRequests;
 }
 
-// ── Auth & Client ───────────────────────────────────────────────────────────
+// ── Auth & Client (with TTL cache) ──────────────────────────────────────────
+const authCache = new Map<string, { user: any; supabase: any; expiresAt: number }>();
+const AUTH_CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+
 async function authenticate(req: Request) {
   const authHeader = req.headers.get("authorization");
   if (!authHeader) return null;
+  const token = authHeader.replace("Bearer ", "");
+
+  // Check cache first — avoid network call
+  const cached = authCache.get(token);
+  if (cached && cached.expiresAt > Date.now()) {
+    return { user: cached.user, supabase: cached.supabase };
+  }
+
   const supabase = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_ANON_KEY")!, { global: { headers: { Authorization: authHeader } } });
   const { data: { user }, error } = await supabase.auth.getUser();
   if (error || !user) return null;
+
+  // Cache the result
+  authCache.set(token, { user, supabase, expiresAt: Date.now() + AUTH_CACHE_TTL });
+  // Evict stale entries periodically
+  if (authCache.size > 200) {
+    const now = Date.now();
+    for (const [k, v] of authCache) { if (v.expiresAt < now) authCache.delete(k); }
+  }
+
   return { user, supabase };
 }
 function serviceClient() { return createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!); }
