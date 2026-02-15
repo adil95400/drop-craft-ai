@@ -1,8 +1,6 @@
 /**
  * URL Import - Secure Edge Function
- * P0.4 FIX: Replaced CORS * with restrictive allowlist
- * P0.5 FIX: userId derived from JWT, not from body
- * P1: SSRF protection and input validation
+ * UNIFIED: Writes to `jobs` table (not import_jobs)
  */
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0"
@@ -133,16 +131,20 @@ serve(async (req) => {
     const validatedUrl = validateImportUrl(url);
     console.log('[URL-IMPORT] Validated URL:', validatedUrl.hostname);
 
-    // Create import job - SECURITY: user_id from token only
+    // Create job in unified `jobs` table
     const { data: job, error: jobError } = await supabase
-      .from('import_jobs')
+      .from('jobs')
       .insert({
-        user_id: userId, // CRITICAL: from token only
-        source_type: 'url',
-        source_url: validatedUrl.toString(),
-        configuration: config,
-        status: 'processing',
-        started_at: new Date().toISOString()
+        user_id: userId,
+        job_type: 'import',
+        job_subtype: 'url',
+        status: 'running',
+        name: `Import URL: ${validatedUrl.hostname}`,
+        started_at: new Date().toISOString(),
+        input_data: { source_url: validatedUrl.toString(), configuration: config },
+        total_items: 1,
+        processed_items: 0,
+        failed_items: 0,
       })
       .select()
       .single()
@@ -319,20 +321,19 @@ serve(async (req) => {
 
       const executionTime = Date.now() - startTime;
 
-      // Update job as completed - SCOPED to user
+      // Update job as completed in unified `jobs` table
       await supabase
-        .from('import_jobs')
+        .from('jobs')
         .update({
           status: 'completed',
           completed_at: new Date().toISOString(),
-          total_rows: 1,
-          processed_rows: 1,
-          success_rows: 1,
-          error_rows: 0,
+          processed_items: 1,
+          failed_items: 0,
+          progress_percent: 100,
+          duration_ms: executionTime,
           updated_at: new Date().toISOString()
         })
         .eq('id', jobId)
-        .eq('user_id', userId) // SECURE: scope to user
 
       console.log('[URL-IMPORT] Import completed, duration:', executionTime);
 
@@ -362,11 +363,12 @@ serve(async (req) => {
       try {
         const supabase = createClient(supabaseUrl, supabaseServiceKey);
         await supabase
-          .from('import_jobs')
+          .from('jobs')
           .update({
             status: 'failed',
             completed_at: new Date().toISOString(),
-            errors: [error.message],
+            error_message: error.message,
+            duration_ms: executionTime,
             updated_at: new Date().toISOString()
           })
           .eq('id', jobId);

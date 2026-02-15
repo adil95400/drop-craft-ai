@@ -340,7 +340,7 @@ async function getMonetizationUsage(auth: Auth, reqId: string) {
   const monthStart = new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString();
   const [products, imports, aiGens, stores, workflows] = await Promise.all([
     admin.from("products").select("*", { count: "exact", head: true }).eq("user_id", auth.user.id),
-    admin.from("background_jobs").select("*", { count: "exact", head: true }).eq("user_id", auth.user.id).eq("job_type", "import").gte("created_at", monthStart),
+    admin.from("jobs").select("*", { count: "exact", head: true }).eq("user_id", auth.user.id).eq("job_type", "import").gte("created_at", monthStart),
     admin.from("ai_generations").select("*", { count: "exact", head: true }).eq("user_id", auth.user.id).gte("created_at", monthStart),
     admin.from("integrations").select("*", { count: "exact", head: true }).eq("user_id", auth.user.id),
     admin.from("automation_workflows").select("*", { count: "exact", head: true }).eq("user_id", auth.user.id),
@@ -390,7 +390,7 @@ async function checkPlanGate(req: Request, auth: Auth, reqId: string) {
   const monthStart = new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString();
   if (resource === "products") { const { count } = await admin.from("products").select("*", { count: "exact", head: true }).eq("user_id", auth.user.id); currentCount = count || 0; }
   else if (resource === "ai_generations") { const { count } = await admin.from("ai_generations").select("*", { count: "exact", head: true }).eq("user_id", auth.user.id).gte("created_at", monthStart); currentCount = count || 0; }
-  else if (resource === "imports_monthly") { const { count } = await admin.from("background_jobs").select("*", { count: "exact", head: true }).eq("user_id", auth.user.id).eq("job_type", "import").gte("created_at", monthStart); currentCount = count || 0; }
+  else if (resource === "imports_monthly") { const { count } = await admin.from("jobs").select("*", { count: "exact", head: true }).eq("user_id", auth.user.id).eq("job_type", "import").gte("created_at", monthStart); currentCount = count || 0; }
   const allowed = currentCount < limit;
   return json({ allowed, current: currentCount, limit, remaining: Math.max(0, limit - currentCount), reason: allowed ? "within_limits" : "limit_reached", upgrade_needed: !allowed }, 200, reqId);
 }

@@ -7,210 +7,110 @@ const corsHeaders = {
 }
 
 serve(async (req) => {
-  if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
-  }
+  if (req.method === 'OPTIONS') return new Response(null, { headers: corsHeaders });
 
   try {
-    const supabaseClient = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-    )
-
+    const supabaseClient = createClient(Deno.env.get('SUPABASE_URL') ?? '', Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '')
     const authHeader = req.headers.get('Authorization')!
     const token = authHeader.replace('Bearer ', '')
     const { data: { user } } = await supabaseClient.auth.getUser(token)
-
-    if (!user) {
-      throw new Error('Unauthorized')
-    }
+    if (!user) throw new Error('Unauthorized')
 
     const { sourceUrl, sourceType, mapping = {}, config = {} } = await req.json()
 
-    console.log(`📥 Starting ${sourceType} import from:`, sourceUrl)
-
-    // Fetch the file
-    const response = await fetch(sourceUrl, {
-      headers: {
-        'Accept': 'application/json, application/xml, text/xml, */*',
-        'User-Agent': 'ShopOpti-Import/1.0'
-      }
-    })
-    
-    if (!response.ok) {
-      throw new Error(`Failed to fetch file: ${response.status} ${response.statusText}`)
-    }
+    const response = await fetch(sourceUrl, { headers: { 'Accept': 'application/json, application/xml, text/xml, */*', 'User-Agent': 'ShopOpti-Import/1.0' } })
+    if (!response.ok) throw new Error(`Failed to fetch file: ${response.status} ${response.statusText}`)
 
     const content = await response.text()
-    console.log(`📄 Fetched content, size: ${content.length} bytes`)
-    
     let products: any[] = []
     
-    if (sourceType === 'json') {
-      products = parseJSON(content, mapping)
-    } else if (sourceType === 'xml') {
-      products = parseXML(content, mapping)
-    } else {
-      // Auto-detect
-      if (content.trim().startsWith('{') || content.trim().startsWith('[')) {
-        products = parseJSON(content, mapping)
-      } else if (content.trim().startsWith('<')) {
-        products = parseXML(content, mapping)
-      } else {
-        throw new Error('Unable to detect file format. Please specify sourceType as "json" or "xml".')
-      }
+    if (sourceType === 'json') { products = parseJSON(content, mapping) }
+    else if (sourceType === 'xml') { products = parseXML(content, mapping) }
+    else {
+      if (content.trim().startsWith('{') || content.trim().startsWith('[')) { products = parseJSON(content, mapping) }
+      else if (content.trim().startsWith('<')) { products = parseXML(content, mapping) }
+      else throw new Error('Unable to detect file format.')
     }
-
-    console.log(`📦 Parsed ${products.length} products from ${sourceType}`)
 
     if (products.length === 0) {
-      return new Response(
-        JSON.stringify({
-          success: false,
-          error: 'No products found in file. Check the file structure and mapping.',
-          debug: {
-            content_preview: content.substring(0, 500),
-            detected_type: sourceType
-          }
-        }),
-        {
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-          status: 400,
-        }
-      )
+      return new Response(JSON.stringify({ success: false, error: 'No products found in file.', debug: { content_preview: content.substring(0, 500), detected_type: sourceType } }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 })
     }
 
-    // Create import job
+    // Create job in unified `jobs` table
     const { data: job } = await supabaseClient
-      .from('import_jobs')
+      .from('jobs')
       .insert({
         user_id: user.id,
-        source_type: sourceType,
-        source_url: sourceUrl,
-        status: 'processing',
-        total_rows: products.length,
-        started_at: new Date().toISOString()
+        job_type: 'import',
+        job_subtype: sourceType,
+        status: 'running',
+        name: `Import ${sourceType.toUpperCase()}: ${sourceUrl}`,
+        started_at: new Date().toISOString(),
+        input_data: { source_url: sourceUrl, source_type: sourceType },
+        total_items: products.length,
+        processed_items: 0,
+        failed_items: 0,
       })
       .select()
       .single()
 
     const jobId = job?.id
 
-    // Insert products in batches
-    let successCount = 0
-    let errorCount = 0
+    let successCount = 0, errorCount = 0
     const errors: string[] = []
     const batchSize = config.batchSize || 100
 
     for (let i = 0; i < products.length; i += batchSize) {
       const batch = products.slice(i, i + batchSize).map((product, idx) => ({
-        user_id: user.id,
-        name: product.name || `Produit ${sourceType.toUpperCase()} ${i + idx + 1}`,
-        description: cleanDescription(product.description || ''),
-        price: parseFloat(product.price) || 0,
+        user_id: user.id, name: product.name || `Produit ${sourceType.toUpperCase()} ${i + idx + 1}`,
+        description: cleanDescription(product.description || ''), price: parseFloat(product.price) || 0,
         cost_price: product.cost_price ? parseFloat(product.cost_price) : null,
         sku: product.sku || `${sourceType.toUpperCase()}-${Date.now()}-${i + idx}`,
-        category: product.category || `Import ${sourceType.toUpperCase()}`,
-        brand: product.brand || '',
-        image_url: product.image_url || '',
-        stock_quantity: parseInt(product.stock_quantity) || 0,
-        status: config.status || 'draft',
-        review_status: 'pending',
-        source_url: sourceUrl,
+        category: product.category || `Import ${sourceType.toUpperCase()}`, brand: product.brand || '',
+        image_url: product.image_url || '', stock_quantity: parseInt(product.stock_quantity) || 0,
+        status: config.status || 'draft', review_status: 'pending', source_url: sourceUrl,
         external_id: product.external_id || product.id || product.sku,
         supplier_name: product.supplier_name || config.supplierName || `Import ${sourceType.toUpperCase()}`,
-        import_job_id: jobId,
-        metadata: product.metadata || null
+        import_job_id: jobId, metadata: product.metadata || null
       }))
 
-      const { data, error } = await supabaseClient
-        .from('imported_products')
-        .insert(batch)
-        .select('id')
+      const { data, error } = await supabaseClient.from('imported_products').insert(batch).select('id')
+      if (error) { errorCount += batch.length; errors.push(`Batch ${Math.floor(i / batchSize) + 1}: ${error.message}`) }
+      else { successCount += data?.length || 0 }
 
-      if (error) {
-        errorCount += batch.length
-        errors.push(`Batch ${Math.floor(i / batchSize) + 1}: ${error.message}`)
-        console.error(`❌ Batch error:`, error.message)
-      } else {
-        successCount += data?.length || 0
-      }
-
-      // Update job progress
+      // Update progress in unified `jobs` table
       if (jobId) {
-        await supabaseClient
-          .from('import_jobs')
-          .update({
-            processed_rows: Math.min(i + batchSize, products.length),
-            success_rows: successCount,
-            error_rows: errorCount
-          })
-          .eq('id', jobId)
+        await supabaseClient.from('jobs').update({
+          processed_items: Math.min(i + batchSize, products.length),
+          failed_items: errorCount,
+          progress_percent: Math.round((Math.min(i + batchSize, products.length) / products.length) * 100),
+        }).eq('id', jobId)
       }
     }
 
-    // Update job as completed
+    // Complete job in unified `jobs` table
     if (jobId) {
-      await supabaseClient
-        .from('import_jobs')
-        .update({
-          status: errorCount === products.length ? 'failed' : 'completed',
-          completed_at: new Date().toISOString(),
-          processed_rows: products.length,
-          success_rows: successCount,
-          error_rows: errorCount,
-          errors: errors.length > 0 ? errors : null
-        })
-        .eq('id', jobId)
+      await supabaseClient.from('jobs').update({
+        status: errorCount === products.length ? 'failed' : 'completed',
+        completed_at: new Date().toISOString(),
+        processed_items: products.length,
+        failed_items: errorCount,
+        progress_percent: 100,
+        error_message: errors.length > 0 ? errors.slice(0, 5).join('; ') : null,
+        output_data: { success_count: successCount, error_count: errorCount },
+      }).eq('id', jobId)
     }
 
-    // Log activity
     await supabaseClient.from('activity_logs').insert({
-      user_id: user.id,
-      action: 'product_import',
+      user_id: user.id, action: 'product_import',
       description: `Import ${sourceType.toUpperCase()}: ${successCount} produits importés`,
-      entity_type: 'import',
-      metadata: {
-        source_type: sourceType,
-        source_url: sourceUrl,
-        success: successCount,
-        errors: errorCount,
-        job_id: jobId
-      }
+      entity_type: 'import', metadata: { source_type: sourceType, source_url: sourceUrl, success: successCount, errors: errorCount, job_id: jobId }
     })
 
-    console.log(`✅ Import completed: ${successCount} success, ${errorCount} errors`)
-
-    return new Response(
-      JSON.stringify({
-        success: successCount > 0,
-        message: `Import ${sourceType} réussi`,
-        data: {
-          products_imported: successCount,
-          total_processed: products.length,
-          errors: errorCount,
-          error_details: errors.slice(0, 10),
-          job_id: jobId
-        }
-      }),
-      {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 200,
-      }
-    )
+    return new Response(JSON.stringify({ success: successCount > 0, message: `Import ${sourceType} réussi`, data: { products_imported: successCount, total_processed: products.length, errors: errorCount, error_details: errors.slice(0, 10), job_id: jobId } }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 })
 
   } catch (error) {
-    console.error('❌ Import error:', error)
-    return new Response(
-      JSON.stringify({
-        success: false,
-        error: error.message
-      }),
-      {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 500,
-      }
-    )
+    return new Response(JSON.stringify({ success: false, error: error.message }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 })
   }
 })
 

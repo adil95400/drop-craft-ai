@@ -10,106 +10,61 @@ const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
 const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 
 serve(async (req) => {
-  if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
-  }
+  if (req.method === 'OPTIONS') return new Response(null, { headers: corsHeaders });
 
   const startTime = Date.now();
   let jobId: string | null = null;
   
   try {
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
-    
-    // Parse request body
     const body = await req.json();
     const { job_id, user_id, config } = body;
 
-    console.log('[API-IMPORT] Starting import', { job_id, user_id, has_config: !!config });
-
-    // Get or create import job
     let importJob: any;
     
     if (job_id) {
-      // Fetch existing job (called by cron)
-      const { data, error } = await supabase
-        .from('import_jobs')
-        .select('*')
-        .eq('id', job_id)
-        .single();
-      
-      if (error || !data) {
-        throw new Error(`Import job ${job_id} not found`);
-      }
-      
+      // Fetch existing job from unified `jobs` table
+      const { data, error } = await supabase.from('jobs').select('*').eq('id', job_id).single();
+      if (error || !data) throw new Error(`Job ${job_id} not found`);
       importJob = data;
       jobId = importJob.id;
-      
-      console.log('[API-IMPORT] Processing existing job', { 
-        job_id: importJob.id, 
-        source_type: importJob.source_type,
-        status: importJob.status 
-      });
 
-      // Update status to processing
-      await supabase
-        .from('import_jobs')
-        .update({ 
-          status: 'processing',
-          started_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', jobId);
+      // Update status to running
+      await supabase.from('jobs').update({ status: 'running', started_at: new Date().toISOString(), updated_at: new Date().toISOString() }).eq('id', jobId);
         
     } else {
-      // Create new job (manual API call)
       const authHeader = req.headers.get('authorization');
-      if (!authHeader) {
-        throw new Error('Authentication required');
-      }
-      
+      if (!authHeader) throw new Error('Authentication required');
       const token = authHeader.replace('Bearer ', '');
       const { data: { user }, error: userError } = await supabase.auth.getUser(token);
-      
-      if (userError || !user) {
-        throw new Error('User not found');
-      }
+      if (userError || !user) throw new Error('User not found');
+      if (!config || !config.url) throw new Error('API URL is required');
 
-      if (!config || !config.url) {
-        throw new Error('API URL is required');
-      }
-
-      const { data, error } = await supabase
-        .from('import_jobs')
-        .insert({
-          user_id: user.id,
-          source_type: 'api',
-          source_url: config.url,
-          configuration: config,
-          status: 'processing',
-          started_at: new Date().toISOString()
-        })
-        .select()
-        .single();
+      // Create new job in unified `jobs` table
+      const { data, error } = await supabase.from('jobs').insert({
+        user_id: user.id,
+        job_type: 'import',
+        job_subtype: 'api',
+        status: 'running',
+        name: `Import API: ${config.url}`,
+        started_at: new Date().toISOString(),
+        input_data: config,
+        total_items: 0,
+        processed_items: 0,
+        failed_items: 0,
+      }).select().single();
 
       if (error) throw error;
-      
       importJob = data;
       jobId = importJob.id;
-      
-      console.log('[API-IMPORT] Created new job', { job_id: importJob.id });
     }
 
     // Get config from job or from request
-    const importConfig = config || importJob.configuration;
-    if (!importConfig || !importConfig.url) {
-      throw new Error('Invalid import configuration');
-    }
+    const importConfig = config || importJob.input_data;
+    if (!importConfig || !importConfig.url) throw new Error('Invalid import configuration');
 
     // Build API request headers
-    const headers: Record<string, string> = { 
-      'Content-Type': 'application/json',
-      ...importConfig.headers 
-    };
+    const headers: Record<string, string> = { 'Content-Type': 'application/json', ...importConfig.headers };
     
     // Add authentication
     if (importConfig.authentication) {
@@ -213,10 +168,10 @@ serve(async (req) => {
 
       // Update progress
       await supabase
-        .from('import_jobs')
+        .from('jobs')
         .update({
-          total_rows: allProducts.length,
-          processed_rows: allProducts.length,
+          total_items: allProducts.length,
+          processed_items: allProducts.length,
           updated_at: new Date().toISOString()
         })
         .eq('id', jobId);
@@ -296,11 +251,11 @@ serve(async (req) => {
 
       // Update progress
       await supabase
-        .from('import_jobs')
+        .from('jobs')
         .update({
-          processed_rows: Math.min(i + batch.length, mappedProducts.length),
-          success_rows: successCount,
-          error_rows: errorCount,
+          processed_items: Math.min(i + batch.length, mappedProducts.length),
+          failed_items: errorCount,
+          progress_percent: Math.round((Math.min(i + batch.length, mappedProducts.length) / mappedProducts.length) * 100),
           updated_at: new Date().toISOString()
         })
         .eq('id', jobId);
@@ -320,15 +275,17 @@ serve(async (req) => {
     const finalStatus = errorCount === mappedProducts.length ? 'failed' : 'completed';
     
     await supabase
-      .from('import_jobs')
+      .from('jobs')
       .update({
         status: finalStatus,
         completed_at: new Date().toISOString(),
-        total_rows: allProducts.length,
-        processed_rows: mappedProducts.length,
-        success_rows: successCount,
-        error_rows: errorCount,
-        errors: errors.length > 0 ? errors : null,
+        total_items: allProducts.length,
+        processed_items: mappedProducts.length,
+        failed_items: errorCount,
+        progress_percent: 100,
+        duration_ms: executionTime,
+        error_message: errors.length > 0 ? errors.slice(0, 5).join('; ') : null,
+        output_data: { success_count: successCount, error_count: errorCount },
         updated_at: new Date().toISOString()
       })
       .eq('id', jobId);
@@ -362,11 +319,12 @@ serve(async (req) => {
       try {
         const supabase = createClient(supabaseUrl, supabaseServiceKey);
         await supabase
-          .from('import_jobs')
+          .from('jobs')
           .update({
             status: 'failed',
             completed_at: new Date().toISOString(),
-            errors: [error.message],
+            error_message: error.message,
+            duration_ms: executionTime,
             updated_at: new Date().toISOString()
           })
           .eq('id', jobId);

@@ -2,6 +2,7 @@
  * SEO AI Generate Edge Function
  * Generates SEO content (meta, title, h1, etc.) via Lovable AI
  * SECURITY: JWT auth + user scoping + quota tracking
+ * UNIFIED: Writes to `jobs` table (not background_jobs)
  */
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "npm:@supabase/supabase-js@2";
@@ -41,7 +42,6 @@ serve(
     if (req.method === 'POST') {
       const body = await parseJsonValidated(req, GenerateSchema);
 
-      // Resolve audit_id from page_id
       let audit_id: string | null = null;
       if (body.page_id) {
         const { data: page } = await supabase.from('seo_audit_pages')
@@ -62,11 +62,12 @@ serve(
 
       if (error) throw error;
 
-      // Create background job
-      const { data: job } = await supabase.from('background_jobs').insert({
+      // Create job in unified `jobs` table
+      const { data: job } = await supabase.from('jobs').insert({
         user_id: user.id,
-        job_type: 'seo_ai_generate',
-        status: 'queued',
+        job_type: 'ai_generation',
+        job_subtype: 'seo',
+        status: 'pending',
         name: `SEO AI: ${body.type}`,
         input_data: { generation_id: gen.id },
       }).select('id').single();
@@ -76,7 +77,7 @@ serve(
       return new Response(JSON.stringify({
         generation_id: gen.id,
         job_id: job?.id,
-        status: 'queued',
+        status: 'pending',
       }), { headers: { ...cors, 'Content-Type': 'application/json' } });
     }
 
@@ -94,7 +95,6 @@ serve(
       });
     }
 
-    // List generations
     const page = parseInt(urlObj.searchParams.get('page') || '1');
     const limit = Math.min(parseInt(urlObj.searchParams.get('limit') || '20'), 100);
     const offset = (page - 1) * limit;
