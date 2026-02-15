@@ -182,6 +182,81 @@ async function jobAction(action: string, jobId: string, req: Request, auth: Auth
   return errorResponse("INVALID_ACTION", "Unknown action", 400, reqId);
 }
 
+// ── Products ────────────────────────────────────────────────────────────────
+async function listProducts(url: URL, auth: Auth, reqId: string) {
+  const { page, perPage, from, to } = parsePagination(url);
+  const q_param = url.searchParams.get("q");
+  const status = url.searchParams.get("status");
+  const admin = serviceClient();
+  let q = admin.from("products").select("*", { count: "exact" }).eq("user_id", auth.user.id).order("created_at", { ascending: false }).range(from, to);
+  if (status) q = q.eq("status", status);
+  if (q_param) q = q.or(`title.ilike.%${q_param}%,sku.ilike.%${q_param}%`);
+  const { data, count, error } = await q;
+  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
+  return json({ items: data ?? [], meta: { page, per_page: perPage, total: count ?? 0 } }, 200, reqId);
+}
+
+async function getProduct(id: string, auth: Auth, reqId: string) {
+  const admin = serviceClient();
+  const { data, error } = await admin.from("products").select("*").eq("id", id).eq("user_id", auth.user.id).single();
+  if (error || !data) return errorResponse("NOT_FOUND", "Product not found", 404, reqId);
+  return json(data, 200, reqId);
+}
+
+async function createProduct(req: Request, auth: Auth, reqId: string) {
+  const body = await req.json();
+  const admin = serviceClient();
+  const { data, error } = await admin.from("products").insert({ ...body, user_id: auth.user.id }).select().single();
+  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
+  return json(data, 201, reqId);
+}
+
+async function updateProduct(id: string, req: Request, auth: Auth, reqId: string) {
+  const body = await req.json();
+  delete body.id; delete body.user_id;
+  const admin = serviceClient();
+  const { data, error } = await admin.from("products").update(body).eq("id", id).eq("user_id", auth.user.id).select().single();
+  if (error || !data) return errorResponse("NOT_FOUND", "Product not found or update failed", 404, reqId);
+  return json(data, 200, reqId);
+}
+
+async function deleteProduct(id: string, auth: Auth, reqId: string) {
+  const admin = serviceClient();
+  const { error } = await admin.from("products").delete().eq("id", id).eq("user_id", auth.user.id);
+  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
+  return json({ ok: true }, 200, reqId);
+}
+
+async function productStats(auth: Auth, reqId: string) {
+  const admin = serviceClient();
+  const { data, error } = await admin.from("products").select("status", { count: "exact" }).eq("user_id", auth.user.id);
+  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
+  const total = data?.length ?? 0;
+  const counts: Record<string, number> = {};
+  for (const row of data ?? []) { counts[row.status ?? "unknown"] = (counts[row.status ?? "unknown"] || 0) + 1; }
+  return json({ total, by_status: counts }, 200, reqId);
+}
+
+async function bulkUpdateProducts(req: Request, auth: Auth, reqId: string) {
+  const body = await req.json();
+  const { ids, ...updates } = body;
+  if (!Array.isArray(ids) || ids.length === 0) return errorResponse("VALIDATION_ERROR", "ids array required", 400, reqId);
+  delete updates.user_id;
+  const admin = serviceClient();
+  const { error } = await admin.from("products").update(updates).in("id", ids).eq("user_id", auth.user.id);
+  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
+  return json({ ok: true, updated: ids.length }, 200, reqId);
+}
+
+// ── Integrations ────────────────────────────────────────────────────────────
+async function listIntegrations(url: URL, auth: Auth, reqId: string) {
+  const { page, perPage, from, to } = parsePagination(url);
+  const admin = serviceClient();
+  const { data, count, error } = await admin.from("integrations").select("id, platform_type, shop_domain, status, created_at, updated_at", { count: "exact" }).eq("user_id", auth.user.id).order("created_at", { ascending: false }).range(from, to);
+  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
+  return json({ items: data ?? [], meta: { page, per_page: perPage, total: count ?? 0 } }, 200, reqId);
+}
+
 // ── Proxy to api-v1-ext ─────────────────────────────────────────────────────
 async function proxyEdgeFunction(fnName: string, req: Request, auth: Auth, reqId: string) {
   const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
@@ -228,10 +303,24 @@ Deno.serve(async (req) => {
 
     const m = req.method;
 
+    // ── Products
+    if (path === "/v1/products/stats" && m === "GET") return productStats(auth, reqId);
+    if (path === "/v1/products/bulk" && m === "PATCH") return bulkUpdateProducts(req, auth, reqId);
+    if (path === "/v1/products" && m === "GET") return listProducts(url, auth, reqId);
+    if (path === "/v1/products" && m === "POST") return createProduct(req, auth, reqId);
+    let params = matchRoute("/v1/products/:id", path);
+    if (params && m === "GET") return getProduct(params.id, auth, reqId);
+    if (params && m === "PUT") return updateProduct(params.id, req, auth, reqId);
+    if (params && m === "PATCH") return updateProduct(params.id, req, auth, reqId);
+    if (params && m === "DELETE") return deleteProduct(params.id, auth, reqId);
+
+    // ── Integrations
+    if (path === "/v1/integrations" && m === "GET") return listIntegrations(url, auth, reqId);
+
     // ── Import Jobs
     if (path === "/v1/imports/jobs" && m === "POST") return createImportJob(req, auth, reqId);
     if (path === "/v1/imports/jobs" && m === "GET") return listImportJobs(url, auth, reqId);
-    let params = matchRoute("/v1/imports/jobs/:id", path);
+    params = matchRoute("/v1/imports/jobs/:id", path);
     if (params && m === "GET") return getImportJob(params.id, auth, reqId);
     params = matchRoute("/v1/imports/jobs/:id/items", path);
     if (params && m === "GET") return getJobItems(params.id, url, auth, reqId);
