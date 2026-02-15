@@ -1,5 +1,5 @@
 /**
- * useApiJobs - Hook pour le suivi des jobs en arrière-plan via Supabase
+ * useApiJobs - Hook pour le suivi des jobs via la table `jobs` (source de vérité unique)
  */
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useEffect } from 'react'
@@ -38,7 +38,7 @@ export function useApiJobs(options?: {
     queryFn: async () => {
       if (!user?.id) return []
       let query = supabase
-        .from('background_jobs')
+        .from('jobs')
         .select('*')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false })
@@ -58,9 +58,9 @@ export function useApiJobs(options?: {
         user_id: j.user_id,
         job_type: j.job_type,
         status: j.status,
-        total_items: j.items_total || 0,
-        processed_items: j.items_processed || 0,
-        failed_items: j.items_failed || 0,
+        total_items: j.total_items || 0,
+        processed_items: j.processed_items || 0,
+        failed_items: j.failed_items || 0,
         progress_percent: j.progress_percent || 0,
         error_message: j.error_message,
         metadata: j.metadata,
@@ -77,13 +77,13 @@ export function useApiJobs(options?: {
     if (!user || !realtime) return
 
     const channel = supabase
-      .channel('jobs-realtime')
+      .channel('api-jobs-realtime')
       .on(
         'postgres_changes',
         {
           event: '*',
           schema: 'public',
-          table: 'background_jobs',
+          table: 'jobs',
           filter: `user_id=eq.${user.id}`,
         },
         (payload) => {
@@ -104,8 +104,8 @@ export function useApiJobs(options?: {
   const cancelJob = useMutation({
     mutationFn: async (jobId: string) => {
       const { error } = await supabase
-        .from('background_jobs')
-        .update({ status: 'cancelled' })
+        .from('jobs')
+        .update({ status: 'cancelled' } as any)
         .eq('id', jobId)
       if (error) throw error
     },
@@ -118,8 +118,8 @@ export function useApiJobs(options?: {
   const retryJob = useMutation({
     mutationFn: async (jobId: string) => {
       const { error } = await supabase
-        .from('background_jobs')
-        .update({ status: 'pending', error_message: null })
+        .from('jobs')
+        .update({ status: 'pending', error_message: null } as any)
         .eq('id', jobId)
       if (error) throw error
     },
@@ -156,7 +156,7 @@ export function useApiJobDetail(jobId: string | null) {
     queryFn: async () => {
       if (!jobId) return null
       const { data, error } = await supabase
-        .from('background_jobs')
+        .from('jobs')
         .select('*')
         .eq('id', jobId)
         .single()

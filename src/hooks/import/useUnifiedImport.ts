@@ -58,14 +58,15 @@ export function useUnifiedImport() {
     channelRef.current = supabase
       .channel(`import-job-${jobId}`)
       .on('postgres_changes', {
-        event: 'UPDATE', schema: 'public', table: 'background_jobs',
+        event: 'UPDATE', schema: 'public', table: 'jobs',
         filter: `id=eq.${jobId}`
       }, (payload) => {
         const job = payload.new as any
-        const processed = (job.items_succeeded || 0) + (job.items_failed || 0)
+        const processed = job.processed_items || 0
+        const failed = job.failed_items || 0
         setProgress(prev => ({
-          ...prev, processed, total: job.items_total || prev.total,
-          successful: job.items_succeeded || 0, failed: job.items_failed || 0,
+          ...prev, processed, total: job.total_items || prev.total,
+          successful: processed - failed, failed,
         }))
         if (job.status === 'completed') {
           setStatus('completed')
@@ -165,7 +166,7 @@ export function useUnifiedImport() {
 
   const cancelImport = useCallback(async () => {
     if (currentJobId) {
-      await supabase.from('background_jobs').update({ status: 'cancelled' }).eq('id', currentJobId)
+      await supabase.from('jobs').update({ status: 'cancelled' } as any).eq('id', currentJobId)
       toast({ title: t('import.cancelled', 'Import annulé') })
     }
     setStatus('idle')

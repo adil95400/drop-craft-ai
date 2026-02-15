@@ -131,7 +131,7 @@ export default function AIEnrichmentPanel({ selectedProductIds, onComplete }: AI
                 <div className="flex items-center gap-2">
                   {getStatusBadge(job.status)}
                   <span className="text-xs text-muted-foreground">
-                    {job.items_succeeded || 0}/{job.items_total || 0} enrichis
+                    {(job.processed_items || 0) - (job.failed_items || 0)}/{job.total_items || 0} enrichis
                   </span>
                 </div>
                 <span className="text-xs text-muted-foreground">

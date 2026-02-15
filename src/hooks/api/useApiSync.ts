@@ -42,7 +42,7 @@ export function useApiSync() {
     queryFn: async () => {
       if (!user?.id) return []
       const { data, error } = await supabase
-        .from('background_jobs')
+        .from('jobs')
         .select('*')
         .eq('user_id', user.id)
         .in('job_type', ['sync', 'product_sync', 'stock_sync'])
