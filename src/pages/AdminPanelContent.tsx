@@ -34,7 +34,7 @@ import {
 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { useUnifiedAuth } from '@/contexts/UnifiedAuthContext'
-import { useQuotaManager } from '@/hooks/useQuotaManager'
+import { useUnifiedQuotas } from '@/hooks/useUnifiedQuotas'
 import { usePlanSystem } from '@/lib/unified-plan-system'
 import { supabase } from '@/integrations/supabase/client'
 import { useToast } from '@/hooks/use-toast'
@@ -42,7 +42,8 @@ import { useToast } from '@/hooks/use-toast'
 const AdminPanelContent = () => {
   const { t } = useTranslation(['common', 'settings', 'navigation'])
   const { user } = useUnifiedAuth()
-  const { quotas, loading: quotasLoading, fetchQuotas } = useQuotaManager()
+  const { getAllQuotas, isLoading: quotasLoading } = useUnifiedQuotas()
+  const quotas = getAllQuotas()
   const { currentPlan, effectivePlan } = usePlanSystem()
   const { toast } = useToast()
   const navigate = useNavigate()
@@ -127,7 +128,6 @@ const AdminPanelContent = () => {
       switch (action) {
         case 'refresh-data':
           await loadRealDashboardData()
-          await fetchQuotas()
           break
         case 'backup':
           toast({
@@ -299,19 +299,19 @@ const AdminPanelContent = () => {
                 <CardContent>
                   <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                     {quotas.slice(0, 6).map((quota) => (
-                      <div key={quota.quota_key} className="flex items-center justify-between p-3 border rounded-lg">
+                      <div key={quota.key} className="flex items-center justify-between p-3 border rounded-lg">
                         <div>
-                          <div className="font-medium text-sm">{quota.quota_key.replace('_', ' ').toUpperCase()}</div>
+                          <div className="font-medium text-sm">{quota.label}</div>
                           <div className="text-xs text-muted-foreground">
-                            {quota.current_count} / {quota.is_unlimited ? '∞' : quota.limit_value}
+                            {quota.current} / {quota.isUnlimited ? '∞' : quota.limit}
                           </div>
                         </div>
                         <div className="text-right">
                           <div className={`text-sm font-medium ${
-                            quota.usage_percentage > 80 ? 'text-red-600' : 
-                            quota.usage_percentage > 60 ? 'text-yellow-600' : 'text-green-600'
+                            quota.percentage > 80 ? 'text-destructive' : 
+                            quota.percentage > 60 ? 'text-yellow-600' : 'text-green-600'
                           }`}>
-                            {quota.is_unlimited ? '∞' : `${Math.round(quota.usage_percentage)}%`}
+                            {quota.isUnlimited ? '∞' : `${Math.round(quota.percentage)}%`}
                           </div>
                         </div>
                       </div>
