@@ -7600,15 +7600,25 @@ export type Database = {
       }
       jobs: {
         Row: {
+          celery_task_id: string | null
           completed_at: string | null
           created_at: string
+          duration_ms: number | null
           error_message: string | null
           failed_items: number | null
           id: string
+          input_data: Json | null
+          job_subtype: string | null
           job_type: string
+          max_retries: number | null
           metadata: Json | null
+          name: string | null
+          output_data: Json | null
+          priority: number | null
           processed_items: number | null
+          progress_message: string | null
           progress_percent: number | null
+          retries: number | null
           started_at: string | null
           status: string
           total_items: number | null
@@ -7616,15 +7626,25 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          celery_task_id?: string | null
           completed_at?: string | null
           created_at?: string
+          duration_ms?: number | null
           error_message?: string | null
           failed_items?: number | null
           id?: string
+          input_data?: Json | null
+          job_subtype?: string | null
           job_type: string
+          max_retries?: number | null
           metadata?: Json | null
+          name?: string | null
+          output_data?: Json | null
+          priority?: number | null
           processed_items?: number | null
+          progress_message?: string | null
           progress_percent?: number | null
+          retries?: number | null
           started_at?: string | null
           status?: string
           total_items?: number | null
@@ -7632,15 +7652,25 @@ export type Database = {
           user_id: string
         }
         Update: {
+          celery_task_id?: string | null
           completed_at?: string | null
           created_at?: string
+          duration_ms?: number | null
           error_message?: string | null
           failed_items?: number | null
           id?: string
+          input_data?: Json | null
+          job_subtype?: string | null
           job_type?: string
+          max_retries?: number | null
           metadata?: Json | null
+          name?: string | null
+          output_data?: Json | null
+          priority?: number | null
           processed_items?: number | null
+          progress_message?: string | null
           progress_percent?: number | null
+          retries?: number | null
           started_at?: string | null
           status?: string
           total_items?: number | null

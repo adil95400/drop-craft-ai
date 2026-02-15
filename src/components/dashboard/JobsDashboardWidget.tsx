@@ -58,7 +58,7 @@ export function JobsDashboardWidget() {
   const { data: jobs, isLoading: jobsLoading } = useBackgroundJobs({ limit: 5 });
   const { data: stats, isLoading: statsLoading } = useJobStats();
 
-  const activeJobs = jobs?.filter(j => j.status === 'processing') || [];
+  const activeJobs = jobs?.filter(j => j.status === 'running' || (j.status as string) === 'processing') || [];
 
   return (
     <Card>
@@ -90,7 +90,7 @@ export function JobsDashboardWidget() {
               <div className="text-xs text-muted-foreground">En attente</div>
             </div>
             <div className="rounded-lg bg-primary/10 p-2">
-              <div className="text-lg font-semibold text-primary">{stats.processing}</div>
+              <div className="text-lg font-semibold text-primary">{stats.running}</div>
               <div className="text-xs text-muted-foreground">En cours</div>
             </div>
             <div className="rounded-lg bg-accent/50 p-2">

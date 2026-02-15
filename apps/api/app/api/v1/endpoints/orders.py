@@ -101,7 +101,7 @@ async def fulfill_order(
 ):
     """Trigger order fulfillment (async job)"""
     try:
-        job_id = await process_order_fulfillment.delay(
+        result = process_order_fulfillment.delay(
             user_id=user_id,
             order_id=request.order_id,
             supplier_id=request.supplier_id,
@@ -111,7 +111,7 @@ async def fulfill_order(
         return {
             "success": True,
             "message": "Fulfillment job queued",
-            "job_id": str(job_id)
+            "job_id": str(result.id)
         }
         
     except Exception as e:
@@ -129,13 +129,13 @@ async def bulk_fulfill_orders(
         job_ids = []
         
         for order_id in request.order_ids:
-            job_id = await process_order_fulfillment.delay(
+            result = process_order_fulfillment.delay(
                 user_id=user_id,
                 order_id=order_id,
                 supplier_id=request.supplier_preference,
                 auto_select=True
             )
-            job_ids.append(str(job_id))
+            job_ids.append(str(result.id))
         
         return {
             "success": True,

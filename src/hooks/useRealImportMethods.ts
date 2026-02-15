@@ -55,25 +55,40 @@ export const useRealImportMethods = () => {
           completed_at: job.completed_at,
         })) as ImportMethod[]
       } catch {
-        // Fallback to direct Supabase if API is unavailable
-        const { data } = await supabase
-          .from('background_jobs')
+        // Fallback to direct Supabase — try jobs table first, then background_jobs
+        let jobData: any[] = []
+        const { data: jobsData } = await supabase
+          .from('jobs')
           .select('*')
           .eq('user_id', user.id)
           .in('job_type', ['import', 'csv_import', 'url_import', 'feed_import'])
           .order('created_at', { ascending: false })
           .limit(100)
-        return (data || []).map((job: any) => ({
+        
+        if (jobsData && jobsData.length > 0) {
+          jobData = jobsData
+        } else {
+          const { data: bgData } = await supabase
+            .from('background_jobs')
+            .select('*')
+            .eq('user_id', user.id)
+            .in('job_type', ['import', 'csv_import', 'url_import', 'feed_import'])
+            .order('created_at', { ascending: false })
+            .limit(100)
+          jobData = bgData || []
+        }
+
+        return jobData.map((job: any) => ({
           id: job.id,
           user_id: job.user_id,
           source_type: job.job_subtype || job.job_type,
           method_name: job.name || job.job_type,
           configuration: job.input_data,
-          status: job.status,
-          total_rows: job.items_total || 0,
-          processed_rows: job.items_processed || 0,
-          success_rows: job.items_succeeded || 0,
-          error_rows: job.items_failed || 0,
+          status: job.status === 'processing' ? 'running' : job.status,
+          total_rows: job.items_total || job.total_items || 0,
+          processed_rows: job.items_processed || job.processed_items || 0,
+          success_rows: job.items_succeeded || (job.processed_items - (job.failed_items || 0)) || 0,
+          error_rows: job.items_failed || job.failed_items || 0,
           mapping_config: job.metadata,
           created_at: job.created_at,
           updated_at: job.updated_at,

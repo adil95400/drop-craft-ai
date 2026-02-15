@@ -1,5 +1,6 @@
 /**
  * Import Gateway - Routes all imports through Edge Functions / Supabase
+ * Uses `jobs` table as SoT, fallback to `background_jobs`
  */
 
 import { supabase } from '@/integrations/supabase/client'
@@ -31,7 +32,6 @@ export class ImportGateway {
       let res: any
 
       if (request.url) {
-        // URL import → Edge Function
         const { data, error } = await supabase.functions.invoke('url-import', {
           body: {
             url: request.url,
@@ -42,7 +42,6 @@ export class ImportGateway {
         if (error) throw error
         res = data
       } else if (request.data) {
-        // Data array → Edge Function bulk import
         const { data, error } = await supabase.functions.invoke('import-products', {
           body: {
             products: Array.isArray(request.data) ? request.data : [request.data],
@@ -128,42 +127,70 @@ export class ImportGateway {
     const { data: { session } } = await supabase.auth.getSession()
     if (!session?.user?.id) return []
 
-    const { data, error } = await supabase
-      .from('background_jobs')
+    // Try jobs table first (SoT)
+    const { data: jobsData } = await supabase
+      .from('jobs')
       .select('*')
       .eq('user_id', session.user.id)
       .in('job_type', ['import', 'csv_import', 'url_import', 'feed_import'])
       .order('created_at', { ascending: false })
       .limit(limit)
-    if (error) return []
 
-    return (data || []).map((job: any) => ({
+    let rawJobs: any[] = (jobsData as any[]) || []
+
+    // Fallback to background_jobs if jobs is empty
+    if (rawJobs.length === 0) {
+      const { data: bgData } = await supabase
+        .from('background_jobs')
+        .select('*')
+        .eq('user_id', session.user.id)
+        .in('job_type', ['import', 'csv_import', 'url_import', 'feed_import'])
+        .order('created_at', { ascending: false })
+        .limit(limit)
+      rawJobs = (bgData as any[]) || []
+    }
+
+    return rawJobs.map((job: any) => ({
       id: job.id,
       userId: job.user_id,
-      source: job.job_subtype || job.job_type as ImportSource,
-      status: job.status,
-      totalProducts: job.items_total,
-      successfulImports: job.items_succeeded,
-      failedImports: job.items_failed,
+      source: (job.job_subtype || job.job_type) as ImportSource,
+      status: job.status === 'processing' ? 'running' : job.status,
+      totalProducts: job.items_total ?? job.total_items,
+      successfulImports: job.items_succeeded ?? (job.processed_items - (job.failed_items || 0)),
+      failedImports: job.items_failed ?? job.failed_items,
       createdAt: new Date(job.created_at),
       completedAt: job.completed_at ? new Date(job.completed_at) : undefined
     }))
   }
 
   async cancelJob(jobId: string): Promise<boolean> {
+    // Try jobs table first
     const { error } = await supabase
+      .from('jobs')
+      .update({ status: 'cancelled' } as any)
+      .eq('id', jobId)
+    if (!error) return true
+
+    // Fallback
+    const { error: bgError } = await supabase
       .from('background_jobs')
       .update({ status: 'cancelled' })
       .eq('id', jobId)
-    return !error
+    return !bgError
   }
 
   async retryJob(jobId: string): Promise<boolean> {
     const { error } = await supabase
+      .from('jobs')
+      .update({ status: 'pending', retries: 0 } as any)
+      .eq('id', jobId)
+    if (!error) return true
+
+    const { error: bgError } = await supabase
       .from('background_jobs')
       .update({ status: 'pending', retries: 0 })
       .eq('id', jobId)
-    return !error
+    return !bgError
   }
 
   getSupportedSources(): ImportSource[] {
