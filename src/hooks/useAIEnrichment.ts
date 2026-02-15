@@ -54,13 +54,13 @@ export function useAIEnrichment() {
       .on('postgres_changes', {
         event: 'UPDATE',
         schema: 'public',
-        table: 'background_jobs',
+        table: 'jobs',
         filter: `id=eq.${activeJobId}`,
       }, (payload) => {
         queryClient.invalidateQueries({ queryKey: ['ai-enrich-jobs'] })
         const job = payload.new as any
         if (job.status === 'completed') {
-          toast.success(`Enrichissement terminé: ${job.items_succeeded} produits optimisés`)
+          toast.success(`Enrichissement terminé: ${job.processed_items - (job.failed_items || 0)} produits optimisés`)
           setActiveJobId(null)
           queryClient.invalidateQueries({ queryKey: ['products'] })
           queryClient.invalidateQueries({ queryKey: ['catalog-products'] })
