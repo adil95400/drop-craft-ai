@@ -81,7 +81,7 @@ export function BulkEnrichmentPanel({ productIds, onComplete }: BulkEnrichmentPa
         
         // Marketplace enrichment
         const response = await fetch(
-          `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/enrich-product`,
+          (await import('@/lib/supabase-env')).edgeFunctionUrl('enrich-product'),
           {
             method: 'POST',
             headers: {
@@ -109,7 +109,7 @@ export function BulkEnrichmentPanel({ productIds, onComplete }: BulkEnrichmentPa
           for (const productId of batch) {
             try {
               await fetch(
-                `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/enrich-product-ai`,
+                (await import('@/lib/supabase-env')).edgeFunctionUrl('enrich-product-ai'),
                 {
                   method: 'POST',
                   headers: {

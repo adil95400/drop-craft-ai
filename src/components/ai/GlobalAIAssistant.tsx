@@ -116,7 +116,7 @@ export function GlobalAIAssistant() {
 
       // Appeler l'edge function avec streaming
       const response = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/ai-chatbot-support`,
+        (await import('@/lib/supabase-env')).edgeFunctionUrl('ai-chatbot-support'),
         {
           method: 'POST',
           headers: {

@@ -3,8 +3,9 @@
  * Handles auth (JWT from Supabase session), error parsing, pagination.
  */
 import { supabase } from '@/integrations/supabase/client'
+import { SUPABASE_URL, SUPABASE_ANON_KEY } from '@/lib/supabase-env'
 
-const BASE_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/api-v1/v1`
+const BASE_URL = `${SUPABASE_URL}/functions/v1/api-v1/v1`
 
 export interface ApiError {
   code: string
@@ -26,7 +27,7 @@ async function getAuthHeaders(): Promise<Record<string, string>> {
   const { data: { session } } = await supabase.auth.getSession()
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
-    'apikey': import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+    'apikey': SUPABASE_ANON_KEY,
   }
   if (session?.access_token) {
     headers['Authorization'] = `Bearer ${session.access_token}`

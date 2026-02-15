@@ -153,7 +153,7 @@ export function useMediaAudit() {
       if (!session) throw new Error('Non authentifié')
 
       const response = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/enrich-product-images`,
+        (await import('@/lib/supabase-env')).edgeFunctionUrl('enrich-product-images'),
         {
           method: 'POST',
           headers: {
@@ -209,7 +209,7 @@ export function useMediaAudit() {
         const promises = batch.map(async (productId) => {
           try {
             const response = await fetch(
-              `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/enrich-product-images`,
+              (await import('@/lib/supabase-env')).edgeFunctionUrl('enrich-product-images'),
               {
                 method: 'POST',
                 headers: {

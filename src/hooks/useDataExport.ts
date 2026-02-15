@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { edgeFunctionUrl } from '@/lib/supabase-env';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -23,7 +24,7 @@ export function useDataExport() {
     setIsExporting(true);
     try {
       const response = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/export-data`,
+        edgeFunctionUrl('export-data'),
         {
           method: 'POST',
           headers: {

@@ -96,7 +96,7 @@ export function AdvancedLiveChat({ isOpen: externalIsOpen, onClose: externalOnCl
       abortControllerRef.current = new AbortController();
       
       const response = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/ai-chatbot-support`,
+        (await import('@/lib/supabase-env')).edgeFunctionUrl('ai-chatbot-support'),
         {
           method: 'POST',
           headers: {
