@@ -171,11 +171,50 @@ Deno.serve(async (req) => {
     const jobId = job.id
     console.log(`Created import job: ${jobId}`)
 
-    let succeeded = 0
-    let failed = 0
-    const errors: string[] = []
+    // P1.1: Return job_id immediately, process in background
+    // Use fire-and-forget pattern for async processing
+    const processPromise = processImportInBackground(supabase, userId, jobId, products, source, options)
+    processPromise.catch(err => console.error(`Background import ${jobId} failed:`, err))
 
-    // Process differently based on source type
+    return new Response(
+      JSON.stringify({
+        success: true,
+        job_id: jobId,
+        status: 'processing',
+        total: products.length,
+        message: `Import job queued with ${products.length} products`
+      }),
+      {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 202
+      }
+    )
+
+  } catch (error) {
+    console.error('Bulk import error:', error)
+    return new Response(
+      JSON.stringify({
+        success: false,
+        error: error.message || 'Unknown error occurred'
+      }),
+      {
+        headers: { ...getSecureCorsHeaders(req), 'Content-Type': 'application/json' },
+        status: 400
+      }
+    )
+  }
+})
+
+// ── Background Processing ───────────────────────────────────────────────────
+async function processImportInBackground(
+  supabase: any, userId: string, jobId: string,
+  products: any[], source: string, options: any
+) {
+  let succeeded = 0
+  let failed = 0
+  const errors: string[] = []
+
+  try {
     if (source === 'url') {
       console.log('🔗 Processing URL-based bulk import with full scraping')
       
@@ -297,7 +336,7 @@ Deno.serve(async (req) => {
         error_log: errors.length > 0 ? errors : null
       })
       .eq('id', jobId)
-      .eq('user_id', userId) // SECURE: scope to user
+      .eq('user_id', userId)
 
     // Log security event
     await logSecurityEvent(supabase, userId, 'bulk_import_completed', 'info', {
@@ -308,34 +347,18 @@ Deno.serve(async (req) => {
       failed
     })
 
-    console.log(`Bulk import completed: ${succeeded} succeeded, ${failed} failed`)
-
-    return new Response(
-      JSON.stringify({
-        success: true,
-        job_id: jobId,
-        total: products.length,
-        succeeded,
-        failed,
-        errors: errors.length > 0 ? errors.slice(0, 10) : null
-      }),
-      {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 200
-      }
-    )
+    console.log(`✅ Background import ${jobId} completed: ${succeeded} succeeded, ${failed} failed`)
 
   } catch (error) {
-    console.error('Bulk import error:', error)
-    return new Response(
-      JSON.stringify({
-        success: false,
-        error: error.message || 'Unknown error occurred'
-      }),
-      {
-        headers: { ...getSecureCorsHeaders(req), 'Content-Type': 'application/json' },
-        status: 400
-      }
-    )
+    console.error(`❌ Background import ${jobId} error:`, error)
+    await supabase
+      .from('import_jobs')
+      .update({
+        status: 'failed',
+        completed_at: new Date().toISOString(),
+        error_log: [error.message || 'Unknown error']
+      })
+      .eq('id', jobId)
+      .eq('user_id', userId)
   }
-})
+}
