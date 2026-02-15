@@ -1,135 +1,122 @@
 # Audit du Schéma Base de Données — Shopopti
 
-> Généré le 2026-02-15. ~230 tables, ~160 vides (0 lignes).
+> Généré le 2026-02-15. Mis à jour après Phases 1 & 2.
 
-## Résultat clé
+## Résumé des actions réalisées
 
-**Aucune table ne peut être supprimée en toute sécurité** : même les tables vides sont référencées dans le code frontend (hooks, services, composants). Un `DROP TABLE` casserait l'application.
+### ✅ Phase 1 — Unification Jobs (terminée)
+
+Tables supprimées et remplacées par des **vues de compatibilité** pointant vers `jobs` :
+
+| Table supprimée | Remplacée par | Mécanisme |
+|---|---|---|
+| `background_jobs` | Vue `background_jobs` → `jobs` | INSTEAD OF triggers |
+| `import_jobs` | Vue `import_jobs` → `jobs` | INSTEAD OF triggers (metadata JSONB) |
+| `product_import_jobs` | Vue `product_import_jobs` → `jobs` | INSTEAD OF triggers |
+| `extension_jobs` | Vue `extension_jobs` → `jobs` | INSTEAD OF triggers (metadata JSONB) |
+
+**Table canonique** : `jobs` + `job_items`
+
+### ✅ Phase 2a — Unification Pricing (terminée)
+
+| Table supprimée | Remplacée par | Mécanisme |
+|---|---|---|
+| `price_rules` | Vue `price_rules` → `pricing_rules` | INSTEAD OF triggers |
+| `pricing_rulesets` | Supprimée (aucune donnée, peu de refs) | — |
+| `price_simulations` | Supprimée | — |
+| `price_stock_monitoring` | Supprimée (remplacée par query `products`) | — |
+| `price_rule_logs` | Supprimée | — |
+| `product_pricing_state` | Supprimée | — |
+| `price_optimization_results` | Supprimée | — |
+
+**Table canonique** : `pricing_rules` (colonnes ajoutées : `calculation`, `apply_to`, `apply_filter`)
+
+### ✅ Phase 2b — Unification Automation (terminée)
+
+| Table supprimée | Remplacée par | Mécanisme |
+|---|---|---|
+| `automation_rules` | Vue `automation_rules` → `automation_workflows` | INSTEAD OF triggers |
+| `automation_flows` | Supprimée | — |
+| `automation_executions` | Supprimée | — |
+| `automation_execution_logs` | Supprimée (redirigé vers `activity_logs`) | — |
+
+**Table canonique** : `automation_workflows` (colonnes ajoutées pour trigger/action configs)
+
+Tables conservées : `automation_triggers`, `automation_actions`, `automated_campaigns` (référencées activement)
 
 ---
 
-## Tables avec données (actives)
+## Tables canoniques (Source de Vérité)
 
 | Table | Lignes | Rôle |
 |---|---|---|
-| `activity_logs` | 7 216 | Journal d'activité principal |
-| `extension_analytics` | ~450 | Analytiques extension navigateur |
-| `extension_data` | ~300 | Données extension |
-| `products` | 25 | **Source de vérité catalogue** |
+| `jobs` | 0+ | **Job tracking unifié** (remplace background_jobs, import_jobs, etc.) |
+| `job_items` | 0+ | Résultats par item de job |
+| `products` | 25 | Source de vérité catalogue |
 | `product_variants` | 25 | Variantes produits |
 | `product_sources` | 25 | Sources des produits |
+| `pricing_rules` | 0+ | Règles de prix unifiées |
+| `automation_workflows` | 0+ | Workflows d'automatisation unifiés |
+| `activity_logs` | 7 216 | Journal d'activité principal |
 | `profiles` | ≥1 | Profils utilisateurs |
 | `user_roles` | ≥1 | Rôles utilisateurs |
+| `extension_analytics` | ~450 | Analytiques extension |
+| `extension_data` | ~300 | Données extension |
 
 ---
 
-## Groupes de doublons identifiés
+## Phases restantes
 
-### 1. Jobs / Tâches asynchrones (6 tables, toutes vides)
+### Phase 3 — SEO (13 tables, toutes vides)
 
-| Table | Colonnes | Référencée dans |
+| Table | Action recommandée |
+|---|---|
+| `seo_audits` | **Garder** — utilisée par `useSEOAudits.ts` |
+| `seo_scores` | **Garder** — utilisée par `ProductSEO.tsx` |
+| `seo_keywords` | **Garder** — utilisée par `useSEOAudits.ts` |
+| `seo_audit_pages` | **Garder** — utilisée par `useSEOAudits.ts` |
+| `seo_issues` | À évaluer (types seulement) |
+| `product_seo` | Candidat suppression |
+| `product_seo_versions` | Candidat suppression |
+| `seo_metadata` | Candidat suppression |
+| `seo_page_analysis` | Candidat suppression |
+| `seo_competitor_analysis` | Candidat suppression |
+| `seo_optimization_history` | Candidat suppression |
+| `seo_backlinks` | Candidat suppression |
+| `seo_reports` | Candidat suppression |
+
+### Phase 4 — Import (tables redondantes)
+
+| Table | Action recommandée |
+|---|---|
+| `imported_products` | **Garder** — utilisée par `ImportedProductsPage.tsx` |
+| `catalog_products` | **DEPRECATED** — redirigé vers `products` avec champ `supplier` |
+| `import_history` | Candidat suppression |
+| `import_uploads` | Candidat suppression |
+| `import_pipeline_logs` | Candidat suppression |
+
+### Phase 5 — Autres candidats à nettoyage
+
+| Table | Raison |
+|---|---|
+| `request_replay_log` | Aucune ref code |
+| `gateway_logs` | Aucune ref code |
+| `idempotency_keys` | Aucune ref code |
+| `translation_cache` | Aucune ref code |
+| `translation_usage` | Aucune ref code |
+| `import_job_items` | Doublon de `job_items` |
+
+> ⚠️ Vérifier les edge functions avant suppression de ces tables.
+
+---
+
+## Vues de compatibilité actives
+
+| Vue | Table source | Triggers |
 |---|---|---|
-| `background_jobs` | 26 cols (la + complète) | `MonitoringDashboard.tsx`, services |
-| `jobs` | ~12 cols | `useUnifiedImport.ts`, `RealTimeStats.tsx` |
-| `import_jobs` | ~15 cols | `supabaseUnlimited.ts` |
-| `product_import_jobs` | ~20 cols | `MonitoringDashboard.tsx` |
-| `extension_jobs` | ~10 cols | `useExtensions.ts` |
-| `job_items` | ~10 cols | Pas de ref directe hors types |
-
-**Recommandation** : Unifier vers `background_jobs` (schéma le plus riche). Créer des vues `jobs`, `import_jobs`, `product_import_jobs` pointant vers `background_jobs`.
-
-### 2. Pricing / Règles de prix (5 tables, toutes vides)
-
-| Table | Référencée dans |
-|---|---|
-| `pricing_rules` | `usePricingRules.ts`, `PricingRulesEngine.tsx` |
-| `price_rules` | `PricingAutomationService.ts` |
-| `pricing_rulesets` | Certains services |
-| `price_rule_logs` | Services pricing |
-| `product_pricing_state` | Hooks pricing |
-
-**Recommandation** : Unifier vers `pricing_rules` + `product_pricing_state`. Supprimer `price_rules` et `pricing_rulesets` après migration du code.
-
-### 3. Automation / Workflows (6 tables, toutes vides)
-
-| Table | Référencée dans |
-|---|---|
-| `automation_workflows` | Hooks workflow |
-| `automation_flows` | `useAutomationFlows.ts` |
-| `automation_rules` | `UpsellManager.tsx` |
-| `automation_triggers` | Services automation |
-| `automation_actions` | Services automation |
-| `automation_execution_logs` | Services automation |
-| `automated_campaigns` | Marketing hooks |
-
-**Recommandation** : Unifier vers `automation_flows` (+ `automation_executions` qui a le FK). Les autres sont redondants.
-
-### 4. SEO (13 tables, toutes vides)
-
-| Table | Référencée dans |
-|---|---|
-| `seo_audits` | `useSEOAudits.ts` — **garder** |
-| `seo_scores` | `ProductSEO.tsx` — **garder** |
-| `seo_keywords` | `useSEOAudits.ts` — **garder** |
-| `seo_audit_pages` | `useSEOAudits.ts` — **garder** |
-| `seo_issues` | Types seulement |
-| `product_seo` | Services SEO |
-| `product_seo_versions` | Services SEO |
-| `seo_metadata` | Pas de ref directe |
-| `seo_page_analysis` | Pas de ref directe |
-| `seo_competitor_analysis` | Pas de ref directe |
-| `seo_optimization_history` | Pas de ref directe |
-| `seo_backlinks` | Pas de ref directe |
-| `seo_reports` | Pas de ref directe |
-
-**Recommandation** : Garder `seo_audits`, `seo_scores`, `seo_keywords`, `seo_audit_pages`. Les 9 autres sont candidates à suppression après vérification edge functions.
-
-### 5. Import (5 tables redondantes, toutes vides)
-
-| Table | Référencée dans |
-|---|---|
-| `imported_products` | `ImportedProductsPage.tsx` — **garder** |
-| `catalog_products` | `usePremiumSuppliers.ts` — **garder** |
-| `import_history` | Services |
-| `import_uploads` | Services |
-| `import_pipeline_logs` | Services |
-
-### 6. CRM (6 tables, toutes vides)
-
-Toutes référencées dans des hooks/services CRM. À conserver tant que les pages CRM existent.
-
-### 7. Extensions (10+ tables)
-
-Certaines ont des données (`extension_analytics`, `extension_data`). Le reste est vide mais référencé.
-
----
-
-## Plan d'action recommandé
-
-### Phase 1 — Vues de compatibilité (sans risque)
-Créer des vues SQL pour les tables doublons → le code continue de fonctionner.
-
-```sql
--- Exemple : vue `jobs` pointant vers `background_jobs`
-CREATE OR REPLACE VIEW public.jobs AS
-SELECT id, user_id AS tenant_id, job_type, status, ...
-FROM public.background_jobs;
-```
-
-### Phase 2 — Migration du code
-Mettre à jour les imports/hooks pour pointer vers la table unifiée.
-
-### Phase 3 — Suppression des tables orphelines
-Seulement après que le code ne référence plus les anciennes tables.
-
----
-
-## Tables sans aucune référence code (hors types.ts)
-
-À vérifier en profondeur, mais candidates probables :
-- `seo_metadata`, `seo_page_analysis`, `seo_competitor_analysis`, `seo_optimization_history`, `seo_backlinks`, `seo_reports`
-- `request_replay_log`, `gateway_logs`, `idempotency_keys`
-- `translation_cache`, `translation_usage`
-- `import_job_items` (doublon de `job_items`)
-
-> ⚠️ Ces tables peuvent être référencées dans des edge functions non auditées.
+| `background_jobs` | `jobs` | INSERT, UPDATE, DELETE |
+| `import_jobs` | `jobs` | INSERT, UPDATE, DELETE |
+| `product_import_jobs` | `jobs` | INSERT, UPDATE, DELETE |
+| `extension_jobs` | `jobs` | INSERT, UPDATE, DELETE |
+| `price_rules` | `pricing_rules` | INSERT, UPDATE, DELETE |
+| `automation_rules` | `automation_workflows` | INSERT, UPDATE, DELETE |
