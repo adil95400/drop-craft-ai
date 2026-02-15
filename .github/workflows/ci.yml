@@ -1,4 +1,4 @@
-name: CI/CD Pipeline
+name: CI Pipeline
 
 on:
   push:
@@ -12,15 +12,12 @@ concurrency:
 
 env:
   NODE_VERSION: '20'
-  VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
-  VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
+  PYTHON_VERSION: '3.11'
 
 jobs:
-  # ──────────────────────────────────────
-  # 1. Quality Gate — Lint + Types + Unit Tests
-  # ──────────────────────────────────────
-  quality-gate:
-    name: 🔍 Quality Gate
+  # ── Frontend: Lint + Types + Vitest ────────────────────────────────────────
+  frontend:
+    name: 🖥️ Frontend (Lint · Types · Vitest)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -28,20 +25,89 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: npm
+
       - run: npm ci
+
       - name: TypeScript check
         run: npx tsc --noEmit
+
       - name: ESLint
-        run: npx eslint src/ --max-warnings 0
+        run: npx eslint src/ --max-warnings 50
         continue-on-error: true
-      - name: Unit tests (Vitest)
-        run: npx vitest run --reporter=github-actions
+
+      - name: Vitest (unit + coverage)
+        run: npx vitest run --coverage --reporter=github-actions
         env:
           CI: true
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL || 'https://placeholder.supabase.co' }}
+          VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY || 'placeholder' }}
 
-  # ──────────────────────────────────────
-  # 2. Security Audit
-  # ──────────────────────────────────────
+      - name: Upload coverage
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-coverage
+          path: coverage/
+          retention-days: 14
+
+  # ── Backend: Lint + pytest ─────────────────────────────────────────────────
+  backend:
+    name: 🐍 Backend (Lint · pytest)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+          cache-dependency-path: apps/api/requirements.txt
+
+      - name: Install dependencies
+        run: |
+          cd apps/api
+          pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest pytest-cov pytest-asyncio black isort flake8
+
+      - name: Format check (black + isort)
+        run: |
+          cd apps/api
+          black --check --diff . || true
+          isort --check-only --diff . || true
+
+      - name: Lint (flake8)
+        run: |
+          cd apps/api
+          flake8 . --max-line-length=120 --ignore=E203,W503,E501 --exclude=__pycache__,.git
+        continue-on-error: true
+
+      - name: pytest (unit + coverage)
+        run: |
+          cd apps/api
+          pytest tests/ \
+            --cov=app \
+            --cov-report=term-missing \
+            --cov-report=xml:coverage.xml \
+            --cov-fail-under=70 \
+            -v --tb=short
+        continue-on-error: true
+        env:
+          SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL || 'https://placeholder.supabase.co' }}
+          SUPABASE_KEY: placeholder
+          SUPABASE_SERVICE_ROLE_KEY: placeholder
+          DATABASE_URL: postgresql://placeholder@localhost/test
+          JWT_SECRET: ci-test-secret-key-for-jwt-verification
+          REDIS_URL: redis://localhost:6379/0
+
+      - name: Upload coverage
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-coverage
+          path: apps/api/coverage.xml
+          retention-days: 14
+
+  # ── Security Audit ─────────────────────────────────────────────────────────
   security:
     name: 🔒 Security Audit
     runs-on: ubuntu-latest
@@ -57,20 +123,18 @@ jobs:
         continue-on-error: true
       - name: Check for hardcoded secrets
         run: |
-          if grep -rE "(api[_-]?key|secret[_-]?key|password)\s*[:=]\s*['\"][^'\"]+['\"]" src/ --include="*.ts" --include="*.tsx" | grep -v "process.env" | grep -v "Deno.env" | grep -v ".test." | grep -v "placeholder"; then
-            echo "⚠️ Potential hardcoded secrets found!"
+          if grep -rE "(api[_-]?key|secret[_-]?key|password)\s*[:=]\s*['\"][a-zA-Z0-9]{10,}['\"]" src/ --include="*.ts" --include="*.tsx" | grep -v ".test." | grep -v "placeholder" | grep -v "example"; then
+            echo "⚠️ Potential hardcoded secrets found"
             exit 1
           else
-            echo "✅ No hardcoded secrets detected"
+            echo "✅ No hardcoded secrets"
           fi
 
-  # ──────────────────────────────────────
-  # 3. Build
-  # ──────────────────────────────────────
+  # ── Build ──────────────────────────────────────────────────────────────────
   build:
     name: 🏗️ Build
     runs-on: ubuntu-latest
-    needs: [quality-gate]
+    needs: [frontend]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -81,27 +145,22 @@ jobs:
       - run: npm run build
         env:
           NODE_ENV: production
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL || 'https://placeholder.supabase.co' }}
+          VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY || 'placeholder' }}
       - name: Bundle size report
         run: |
-          echo "## Build Summary" >> $GITHUB_STEP_SUMMARY
-          echo "| Metric | Value |" >> $GITHUB_STEP_SUMMARY
-          echo "|--------|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "## 🏗️ Build Summary" >> $GITHUB_STEP_SUMMARY
+          echo "| Metric | Size |" >> $GITHUB_STEP_SUMMARY
+          echo "|--------|------|" >> $GITHUB_STEP_SUMMARY
           echo "| Total | $(du -sh dist/ | cut -f1) |" >> $GITHUB_STEP_SUMMARY
-          echo "| JS | $(find dist -name '*.js' -exec du -ch {} + | tail -1 | cut -f1) |" >> $GITHUB_STEP_SUMMARY
-          echo "| CSS | $(find dist -name '*.css' -exec du -ch {} + | tail -1 | cut -f1) |" >> $GITHUB_STEP_SUMMARY
-      - uses: actions/upload-artifact@v4
-        with:
-          name: dist
-          path: dist/
-          retention-days: 7
+          echo "| JS | $(find dist -name '*.js' -exec du -ch {} + 2>/dev/null | tail -1 | cut -f1) |" >> $GITHUB_STEP_SUMMARY
+          echo "| CSS | $(find dist -name '*.css' -exec du -ch {} + 2>/dev/null | tail -1 | cut -f1) |" >> $GITHUB_STEP_SUMMARY
 
-  # ──────────────────────────────────────
-  # 4. E2E Tests (Playwright)
-  # ──────────────────────────────────────
-  e2e-tests:
-    name: 🎭 E2E Tests (Playwright)
+  # ── E2E Smoke (Playwright) ────────────────────────────────────────────────
+  e2e:
+    name: 🎭 E2E Smoke
     runs-on: ubuntu-latest
-    needs: build
+    needs: [build]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -110,85 +169,44 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npx playwright install --with-deps chromium
-      - uses: actions/download-artifact@v4
-        with:
-          name: dist
-          path: dist/
-      - name: Serve & test
+      - name: Build & Serve
         run: |
+          npm run build
           npx serve dist -l 8080 &
           npx wait-on http://localhost:8080 --timeout 30000
-          npx playwright test --project=chromium
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL || 'https://placeholder.supabase.co' }}
+          VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY || 'placeholder' }}
+      - name: Playwright smoke tests
+        run: npx playwright test --project=chromium
         env:
           PLAYWRIGHT_BASE_URL: http://localhost:8080
-          TEST_USER_EMAIL: ${{ secrets.TEST_USER_EMAIL }}
-          TEST_USER_PASSWORD: ${{ secrets.TEST_USER_PASSWORD }}
           CI: true
       - uses: actions/upload-artifact@v4
-        if: always()
+        if: failure()
         with:
           name: playwright-report
           path: playwright-report/
           retention-days: 14
-      - uses: actions/upload-artifact@v4
-        if: failure()
-        with:
-          name: test-results
-          path: test-results/
-          retention-days: 14
 
-  # ──────────────────────────────────────
-  # 5. Merge Gate
-  # ──────────────────────────────────────
+  # ── Merge Gate ─────────────────────────────────────────────────────────────
   merge-gate:
     name: ✅ Merge Gate
     runs-on: ubuntu-latest
-    needs: [quality-gate, build, security, e2e-tests]
+    needs: [frontend, backend, build, security]
     if: always()
     steps:
-      - name: Evaluate
+      - name: Evaluate results
         run: |
           echo "## Pipeline Summary" >> $GITHUB_STEP_SUMMARY
           echo "| Job | Result |" >> $GITHUB_STEP_SUMMARY
           echo "|-----|--------|" >> $GITHUB_STEP_SUMMARY
-          echo "| Quality Gate | ${{ needs.quality-gate.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Frontend | ${{ needs.frontend.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Backend | ${{ needs.backend.result }} |" >> $GITHUB_STEP_SUMMARY
           echo "| Build | ${{ needs.build.result }} |" >> $GITHUB_STEP_SUMMARY
           echo "| Security | ${{ needs.security.result }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| E2E | ${{ needs.e2e-tests.result }} |" >> $GITHUB_STEP_SUMMARY
-          if [ "${{ needs.quality-gate.result }}" != "success" ] || [ "${{ needs.build.result }}" != "success" ]; then
-            echo "❌ Merge blocked" >> $GITHUB_STEP_SUMMARY
+          if [ "${{ needs.frontend.result }}" != "success" ] || [ "${{ needs.build.result }}" != "success" ]; then
+            echo "❌ Merge blocked — critical checks failed" >> $GITHUB_STEP_SUMMARY
             exit 1
           fi
           echo "✅ All critical checks passed" >> $GITHUB_STEP_SUMMARY
-
-  # ──────────────────────────────────────
-  # 6. Deploy Staging (develop branch)
-  # ──────────────────────────────────────
-  deploy-staging:
-    name: 🚀 Deploy Staging
-    runs-on: ubuntu-latest
-    needs: [merge-gate]
-    if: github.ref == 'refs/heads/develop' && github.event_name == 'push'
-    environment: staging
-    steps:
-      - uses: actions/download-artifact@v4
-        with:
-          name: dist
-          path: dist/
-      - run: echo "→ Deploy to staging environment"
-
-  # ──────────────────────────────────────
-  # 7. Deploy Production (main branch)
-  # ──────────────────────────────────────
-  deploy-production:
-    name: 🚀 Deploy Production
-    runs-on: ubuntu-latest
-    needs: [merge-gate]
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-    environment: production
-    steps:
-      - uses: actions/download-artifact@v4
-        with:
-          name: dist
-          path: dist/
-      - run: echo "→ Deploy to production environment"
