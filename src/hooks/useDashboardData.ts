@@ -86,12 +86,7 @@ export function useDashboardData() {
     queryKey: ['dashboard-real-stats', user?.id],
     queryFn: async (): Promise<DashboardStats> => {
       if (!user?.id) return getEmptyStats()
-      try {
-        return await dashboardApi.stats()
-      } catch {
-        // Fallback to direct Supabase queries
-        return fetchStatsFallback(user.id)
-      }
+      return fetchStatsFallback(user.id)
     },
     enabled: !!user?.id,
     staleTime: 2 * 60 * 1000,
@@ -101,12 +96,7 @@ export function useDashboardData() {
     queryKey: ['dashboard-activity', user?.id],
     queryFn: async (): Promise<ActivityEvent[]> => {
       if (!user?.id) return []
-      try {
-        const resp = await dashboardApi.activity({ limit: 10 })
-        return (resp.items ?? []) as ActivityEvent[]
-      } catch {
-        return fetchActivityFallback(user.id)
-      }
+      return fetchActivityFallback(user.id)
     },
     enabled: !!user?.id,
     staleTime: 1 * 60 * 1000,
