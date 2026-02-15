@@ -1677,93 +1677,6 @@ export type Database = {
         }
         Relationships: []
       }
-      background_jobs: {
-        Row: {
-          completed_at: string | null
-          created_at: string
-          duration_ms: number | null
-          error_details: Json | null
-          error_message: string | null
-          estimated_completion_at: string | null
-          id: string
-          input_data: Json | null
-          items_failed: number | null
-          items_processed: number | null
-          items_succeeded: number | null
-          items_total: number | null
-          job_subtype: string | null
-          job_type: string
-          max_retries: number | null
-          metadata: Json | null
-          name: string | null
-          output_data: Json | null
-          priority: number | null
-          progress_message: string | null
-          progress_percent: number | null
-          retries: number | null
-          started_at: string | null
-          status: string
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          completed_at?: string | null
-          created_at?: string
-          duration_ms?: number | null
-          error_details?: Json | null
-          error_message?: string | null
-          estimated_completion_at?: string | null
-          id?: string
-          input_data?: Json | null
-          items_failed?: number | null
-          items_processed?: number | null
-          items_succeeded?: number | null
-          items_total?: number | null
-          job_subtype?: string | null
-          job_type: string
-          max_retries?: number | null
-          metadata?: Json | null
-          name?: string | null
-          output_data?: Json | null
-          priority?: number | null
-          progress_message?: string | null
-          progress_percent?: number | null
-          retries?: number | null
-          started_at?: string | null
-          status?: string
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          completed_at?: string | null
-          created_at?: string
-          duration_ms?: number | null
-          error_details?: Json | null
-          error_message?: string | null
-          estimated_completion_at?: string | null
-          id?: string
-          input_data?: Json | null
-          items_failed?: number | null
-          items_processed?: number | null
-          items_succeeded?: number | null
-          items_total?: number | null
-          job_subtype?: string | null
-          job_type?: string
-          max_retries?: number | null
-          metadata?: Json | null
-          name?: string | null
-          output_data?: Json | null
-          priority?: number | null
-          progress_message?: string | null
-          progress_percent?: number | null
-          retries?: number | null
-          started_at?: string | null
-          status?: string
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: []
-      }
       blog_posts: {
         Row: {
           ai_generated: boolean | null
@@ -5492,56 +5405,6 @@ export type Database = {
           },
         ]
       }
-      extension_jobs: {
-        Row: {
-          completed_at: string | null
-          created_at: string | null
-          error_message: string | null
-          extension_id: string | null
-          id: string
-          input_data: Json | null
-          job_type: string
-          output_data: Json | null
-          started_at: string | null
-          status: string | null
-          user_id: string
-        }
-        Insert: {
-          completed_at?: string | null
-          created_at?: string | null
-          error_message?: string | null
-          extension_id?: string | null
-          id?: string
-          input_data?: Json | null
-          job_type: string
-          output_data?: Json | null
-          started_at?: string | null
-          status?: string | null
-          user_id: string
-        }
-        Update: {
-          completed_at?: string | null
-          created_at?: string | null
-          error_message?: string | null
-          extension_id?: string | null
-          id?: string
-          input_data?: Json | null
-          job_type?: string
-          output_data?: Json | null
-          started_at?: string | null
-          status?: string | null
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "extension_jobs_extension_id_fkey"
-            columns: ["extension_id"]
-            isOneToOne: false
-            referencedRelation: "extensions"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       extension_requests: {
         Row: {
           action: string
@@ -6776,15 +6639,7 @@ export type Database = {
           supplier_product_id?: string | null
           user_id?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "import_history_import_job_id_fkey"
-            columns: ["import_job_id"]
-            isOneToOne: false
-            referencedRelation: "import_jobs"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       import_job_items: {
         Row: {
@@ -6831,13 +6686,6 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "import_job_items_job_id_fkey"
-            columns: ["job_id"]
-            isOneToOne: false
-            referencedRelation: "background_jobs"
-            referencedColumns: ["id"]
-          },
-          {
             foreignKeyName: "import_job_items_product_id_fkey"
             columns: ["product_id"]
             isOneToOne: false
@@ -6845,57 +6693,6 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
-      }
-      import_jobs: {
-        Row: {
-          completed_at: string | null
-          created_at: string | null
-          error_log: Json | null
-          failed_imports: number | null
-          id: string
-          job_type: string
-          source_platform: string | null
-          source_url: string | null
-          started_at: string | null
-          status: string | null
-          successful_imports: number | null
-          total_products: number | null
-          updated_at: string | null
-          user_id: string
-        }
-        Insert: {
-          completed_at?: string | null
-          created_at?: string | null
-          error_log?: Json | null
-          failed_imports?: number | null
-          id?: string
-          job_type: string
-          source_platform?: string | null
-          source_url?: string | null
-          started_at?: string | null
-          status?: string | null
-          successful_imports?: number | null
-          total_products?: number | null
-          updated_at?: string | null
-          user_id: string
-        }
-        Update: {
-          completed_at?: string | null
-          created_at?: string | null
-          error_log?: Json | null
-          failed_imports?: number | null
-          id?: string
-          job_type?: string
-          source_platform?: string | null
-          source_url?: string | null
-          started_at?: string | null
-          status?: string | null
-          successful_imports?: number | null
-          total_products?: number | null
-          updated_at?: string | null
-          user_id?: string
-        }
-        Relationships: []
       }
       import_pipeline_logs: {
         Row: {
@@ -7172,20 +6969,6 @@ export type Database = {
           videos?: string[] | null
         }
         Relationships: [
-          {
-            foreignKeyName: "imported_products_import_job_id_fkey"
-            columns: ["import_job_id"]
-            isOneToOne: false
-            referencedRelation: "import_jobs"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "imported_products_job_id_fkey"
-            columns: ["job_id"]
-            isOneToOne: false
-            referencedRelation: "product_import_jobs"
-            referencedColumns: ["id"]
-          },
           {
             foreignKeyName: "imported_products_product_id_fkey"
             columns: ["product_id"]
@@ -7586,6 +7369,13 @@ export type Database = {
             foreignKeyName: "job_items_job_id_fkey"
             columns: ["job_id"]
             isOneToOne: false
+            referencedRelation: "background_jobs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "job_items_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
             referencedRelation: "background_jobs_compat"
             referencedColumns: ["id"]
           },
@@ -7593,7 +7383,28 @@ export type Database = {
             foreignKeyName: "job_items_job_id_fkey"
             columns: ["job_id"]
             isOneToOne: false
+            referencedRelation: "extension_jobs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "job_items_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "import_jobs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "job_items_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
             referencedRelation: "jobs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "job_items_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "product_import_jobs"
             referencedColumns: ["id"]
           },
           {
@@ -9639,13 +9450,6 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "product_ai_enrichments_job_id_fkey"
-            columns: ["job_id"]
-            isOneToOne: false
-            referencedRelation: "background_jobs"
-            referencedColumns: ["id"]
-          },
-          {
             foreignKeyName: "product_ai_enrichments_product_id_fkey"
             columns: ["product_id"]
             isOneToOne: false
@@ -10039,66 +9843,6 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
-      }
-      product_import_jobs: {
-        Row: {
-          completed_at: string | null
-          created_at: string
-          error_code: string | null
-          error_message: string | null
-          extraction_method: string | null
-          id: string
-          max_retries: number | null
-          metadata: Json | null
-          missing_fields: string[] | null
-          platform: string
-          progress_percent: number | null
-          retry_count: number | null
-          source_url: string
-          started_at: string | null
-          status: string
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          completed_at?: string | null
-          created_at?: string
-          error_code?: string | null
-          error_message?: string | null
-          extraction_method?: string | null
-          id?: string
-          max_retries?: number | null
-          metadata?: Json | null
-          missing_fields?: string[] | null
-          platform?: string
-          progress_percent?: number | null
-          retry_count?: number | null
-          source_url: string
-          started_at?: string | null
-          status?: string
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          completed_at?: string | null
-          created_at?: string
-          error_code?: string | null
-          error_message?: string | null
-          extraction_method?: string | null
-          id?: string
-          max_retries?: number | null
-          metadata?: Json | null
-          missing_fields?: string[] | null
-          platform?: string
-          progress_percent?: number | null
-          retry_count?: number | null
-          source_url?: string
-          started_at?: string | null
-          status?: string
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: []
       }
       product_metrics: {
         Row: {
@@ -16144,6 +15888,93 @@ export type Database = {
         }
         Relationships: []
       }
+      background_jobs: {
+        Row: {
+          completed_at: string | null
+          created_at: string | null
+          duration_ms: number | null
+          error_details_text: string | null
+          error_message: string | null
+          estimated_completion_at: string | null
+          id: string | null
+          input_data: Json | null
+          items_failed: number | null
+          items_processed: number | null
+          items_succeeded: number | null
+          items_total: number | null
+          job_subtype: string | null
+          job_type: string | null
+          max_retries: number | null
+          metadata: Json | null
+          name: string | null
+          output_data: Json | null
+          priority: number | null
+          progress_message: string | null
+          progress_percent: number | null
+          retries: number | null
+          started_at: string | null
+          status: string | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string | null
+          duration_ms?: number | null
+          error_details_text?: never
+          error_message?: string | null
+          estimated_completion_at?: never
+          id?: string | null
+          input_data?: Json | null
+          items_failed?: number | null
+          items_processed?: number | null
+          items_succeeded?: never
+          items_total?: number | null
+          job_subtype?: string | null
+          job_type?: string | null
+          max_retries?: number | null
+          metadata?: Json | null
+          name?: string | null
+          output_data?: Json | null
+          priority?: number | null
+          progress_message?: string | null
+          progress_percent?: never
+          retries?: number | null
+          started_at?: string | null
+          status?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string | null
+          duration_ms?: number | null
+          error_details_text?: never
+          error_message?: string | null
+          estimated_completion_at?: never
+          id?: string | null
+          input_data?: Json | null
+          items_failed?: number | null
+          items_processed?: number | null
+          items_succeeded?: never
+          items_total?: number | null
+          job_subtype?: string | null
+          job_type?: string | null
+          max_retries?: number | null
+          metadata?: Json | null
+          name?: string | null
+          output_data?: Json | null
+          priority?: number | null
+          progress_message?: string | null
+          progress_percent?: never
+          retries?: number | null
+          started_at?: string | null
+          status?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       background_jobs_compat: {
         Row: {
           celery_task_id: string | null
@@ -16221,6 +16052,171 @@ export type Database = {
           progress_message?: string | null
           progress_percent?: number | null
           retries?: number | null
+          started_at?: string | null
+          status?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      extension_jobs: {
+        Row: {
+          completed_at: string | null
+          created_at: string | null
+          error_message: string | null
+          extension_id: string | null
+          id: string | null
+          input_data: Json | null
+          job_type: string | null
+          output_data: Json | null
+          started_at: string | null
+          status: string | null
+          user_id: string | null
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string | null
+          error_message?: string | null
+          extension_id?: never
+          id?: string | null
+          input_data?: Json | null
+          job_type?: string | null
+          output_data?: Json | null
+          started_at?: string | null
+          status?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string | null
+          error_message?: string | null
+          extension_id?: never
+          id?: string | null
+          input_data?: Json | null
+          job_type?: string | null
+          output_data?: Json | null
+          started_at?: string | null
+          status?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      import_jobs: {
+        Row: {
+          completed_at: string | null
+          created_at: string | null
+          error_log: Json | null
+          failed_imports: number | null
+          id: string | null
+          import_settings: Json | null
+          job_type: string | null
+          mapping_config: Json | null
+          processed_products: number | null
+          source_platform: string | null
+          source_url: string | null
+          started_at: string | null
+          status: string | null
+          successful_imports: number | null
+          supplier_id: string | null
+          total_products: number | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string | null
+          error_log?: never
+          failed_imports?: number | null
+          id?: string | null
+          import_settings?: never
+          job_type?: string | null
+          mapping_config?: never
+          processed_products?: number | null
+          source_platform?: never
+          source_url?: never
+          started_at?: string | null
+          status?: string | null
+          successful_imports?: never
+          supplier_id?: never
+          total_products?: number | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string | null
+          error_log?: never
+          failed_imports?: number | null
+          id?: string | null
+          import_settings?: never
+          job_type?: string | null
+          mapping_config?: never
+          processed_products?: number | null
+          source_platform?: never
+          source_url?: never
+          started_at?: string | null
+          status?: string | null
+          successful_imports?: never
+          supplier_id?: never
+          total_products?: number | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      product_import_jobs: {
+        Row: {
+          completed_at: string | null
+          created_at: string | null
+          error_code: string | null
+          error_message: string | null
+          extraction_method: string | null
+          id: string | null
+          max_retries: number | null
+          metadata: Json | null
+          missing_fields: Json | null
+          platform: string | null
+          progress_percent: number | null
+          retry_count: number | null
+          source_url: string | null
+          started_at: string | null
+          status: string | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string | null
+          error_code?: never
+          error_message?: string | null
+          extraction_method?: never
+          id?: string | null
+          max_retries?: number | null
+          metadata?: Json | null
+          missing_fields?: never
+          platform?: never
+          progress_percent?: never
+          retry_count?: number | null
+          source_url?: never
+          started_at?: string | null
+          status?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string | null
+          error_code?: never
+          error_message?: string | null
+          extraction_method?: never
+          id?: string | null
+          max_retries?: number | null
+          metadata?: Json | null
+          missing_fields?: never
+          platform?: never
+          progress_percent?: never
+          retry_count?: number | null
+          source_url?: never
           started_at?: string | null
           status?: string | null
           updated_at?: string | null

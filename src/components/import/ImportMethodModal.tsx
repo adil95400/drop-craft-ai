@@ -85,7 +85,7 @@ export function ImportMethodModal({ method, isOpen, onClose, onImportStart }: Im
         'marketplace-feeds': 'shopify'
       }
       
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('import_jobs')
         .insert({
           user_id: user.id,

@@ -125,12 +125,12 @@ export const XMLFeedImporter = () => {
       if (config.autoSync) {
         const { data: { user } } = await supabase.auth.getUser()
         if (user) {
-          await supabase.from('import_jobs').insert({
+          await supabase.from('jobs').insert({
             user_id: user.id,
-            job_type: 'xml_feed',
-            source_platform: config.feedType,
-            source_url: config.url,
-            status: 'pending'
+            job_type: 'import',
+            job_subtype: 'xml_feed',
+            status: 'pending',
+            metadata: { source_platform: config.feedType, source_url: config.url }
           })
         }
       }

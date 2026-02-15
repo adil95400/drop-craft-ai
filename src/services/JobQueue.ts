@@ -223,7 +223,7 @@ export class JobQueueManager {
 
   private async saveJobToDatabase(job: ImportJob): Promise<void> {
     try {
-        const { error } = await supabase
+        const { error } = await (supabase as any)
           .from('import_jobs')
           .insert({
             id: job.id,

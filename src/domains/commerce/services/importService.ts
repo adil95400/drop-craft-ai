@@ -115,13 +115,13 @@ class ImportService {
 
       // Créer un job d'import
       const { data, error } = await supabase
-        .from('import_jobs')
+        .from('jobs')
         .insert([{
           user_id: user.user.id,
-          job_type: 'single',
-          source_url: url,
-          source_platform: 'url',
-          status: 'pending'
+          job_type: 'import',
+          job_subtype: 'single',
+          status: 'pending',
+          metadata: { source_url: url, source_platform: 'url' }
         }])
         .select()
         .maybeSingle()
@@ -141,12 +141,13 @@ class ImportService {
       if (!user.user) throw new Error('Non authentifié')
 
       const { data, error } = await supabase
-        .from('import_jobs')
+        .from('jobs')
         .insert([{
           user_id: user.user.id,
-          job_type: 'supplier',
-          source_platform: supplier,
-          status: 'pending'
+          job_type: 'import',
+          job_subtype: 'supplier',
+          status: 'pending',
+          metadata: { source_platform: supplier }
         }])
         .select()
         .maybeSingle()

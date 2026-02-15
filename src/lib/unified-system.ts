@@ -8,7 +8,7 @@ import { Database } from '@/integrations/supabase/types'
 
 // Types centralisés
 type ImportedProduct = Database['public']['Tables']['imported_products']['Row']
-type ImportJob = Database['public']['Tables']['import_jobs']['Row']
+type ImportJob = Database['public']['Tables']['jobs']['Row']
 type Order = Database['public']['Tables']['orders']['Row']
 type Customer = Database['public']['Tables']['customers']['Row']
 

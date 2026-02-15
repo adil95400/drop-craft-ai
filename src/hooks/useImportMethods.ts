@@ -7,6 +7,7 @@ export interface ImportMethod {
   id: string
   user_id: string
   job_type: string
+  job_subtype?: string | null
   supplier_id?: string
   status: string
   total_products: number
@@ -18,6 +19,11 @@ export interface ImportMethod {
   updated_at: string
   started_at?: string
   completed_at?: string
+  // mapped from jobs table
+  total_items?: number
+  processed_items?: number
+  failed_items?: number
+  metadata?: any
 }
 
 export interface ImportMethodTemplate {
@@ -47,13 +53,22 @@ export function useImportMethods() {
     try {
       setLoading(true)
       const { data, error } = await supabase
-        .from('import_jobs')
+        .from('jobs')
         .select('*')
         .eq('user_id', user?.id)
+        .in('job_type', ['import', 'csv_import', 'url_import', 'bulk_import'])
         .order('created_at', { ascending: false })
 
       if (error) throw error
-      setImportMethods((data || []).map((item: any) => ({ ...item, processed_products: item.processed_products || 0 })) as ImportMethod[])
+      setImportMethods((data || []).map((item: any) => ({
+        ...item,
+        processed_products: item.processed_items || 0,
+        total_products: item.total_items || 0,
+        successful_imports: (item.processed_items || 0) - (item.failed_items || 0),
+        failed_imports: item.failed_items || 0,
+        supplier_id: item.metadata?.supplier_id,
+        import_settings: item.metadata?.import_settings,
+      })) as ImportMethod[])
     } catch (error) {
       console.error('Error fetching import methods:', error)
       toast({
@@ -71,24 +86,23 @@ export function useImportMethods() {
 
     try {
       const { data, error } = await supabase
-        .from('import_jobs')
+        .from('jobs')
         .insert([{
           user_id: user.id,
-          job_type: template.category.toLowerCase(),
-          supplier_id: configuration.supplier || null,
+          job_type: 'import',
+          job_subtype: template.category.toLowerCase(),
           status: 'pending',
-          total_products: 0,
-          processed_products: 0,
-          successful_imports: 0,
-          failed_imports: 0,
-          import_settings: configuration
+          total_items: 0,
+          processed_items: 0,
+          failed_items: 0,
+          metadata: { supplier_id: configuration.supplier || null, import_settings: configuration }
         }])
         .select()
         .maybeSingle()
 
       if (error) throw error
 
-      setImportMethods(prev => [{ ...data, processed_products: 0 } as ImportMethod, ...prev])
+      setImportMethods(prev => [{ ...data, processed_products: 0, total_products: 0, successful_imports: 0, failed_imports: 0 } as unknown as ImportMethod, ...prev])
       toast({
         title: "Succès",
         description: `${template.title} configuré avec succès`
@@ -141,19 +155,18 @@ export function useImportMethods() {
       // Créer un job d'import dans la table import_jobs
       const totalProducts = Math.floor(Math.random() * 100) + 10
       const { error: jobError } = await supabase
-        .from('import_jobs')
+        .from('jobs')
         .insert([{
           user_id: user.id,
-          job_type: method.job_type,
-          supplier_id: method.supplier_id,
+          job_type: 'import',
+          job_subtype: method.job_type,
           status: 'completed',
-          total_products: totalProducts,
-          processed_products: totalProducts,
-          successful_imports: totalProducts,
-          failed_imports: 0,
-          import_settings: {
-            method_used: method.job_type,
-            imported_products: totalProducts
+          total_items: totalProducts,
+          processed_items: totalProducts,
+          failed_items: 0,
+          metadata: {
+            supplier_id: (method as any).supplier_id,
+            import_settings: { method_used: method.job_type, imported_products: totalProducts }
           },
           started_at: new Date().toISOString(),
           completed_at: new Date().toISOString()
@@ -193,7 +206,7 @@ export function useImportMethods() {
 
   const updateMethodConfiguration = async (methodId: string, configuration: any) => {
     try {
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('import_jobs')
         .update({
           mapping_config: configuration,

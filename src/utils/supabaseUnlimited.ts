@@ -150,7 +150,7 @@ export const unlimitedQueries = {
   orders: createUnlimitedQuery('orders'),
   customers: createUnlimitedQuery('customers'),
   suppliers: createUnlimitedQuery('suppliers'),
-  importJobs: createUnlimitedQuery('import_jobs'),
+  importJobs: createUnlimitedQuery('jobs'),
   importedProducts: createUnlimitedQuery('imported_products'),
   catalogProducts: createUnlimitedQuery('catalog_products'),
   priceHistory: createUnlimitedQuery('price_history'),

@@ -417,15 +417,15 @@ export class StockSyncService {
 
     // Create scheduled job
     // Create scheduled job
-    await supabase.from('import_jobs').insert({
+    await (supabase as any).from('jobs').insert({
       user_id: userId,
-      job_type: 'stock_sync',
+      job_type: 'import',
+      job_subtype: 'stock_sync',
       status: 'pending',
-      import_settings: config as any,
-      total_products: 0,
-      processed_products: 0,
-      successful_imports: 0,
-      failed_imports: 0
+      total_items: 0,
+      processed_items: 0,
+      failed_items: 0,
+      metadata: { import_settings: config, sync_frequency: config.sync_frequency }
     });
 
     console.log(`⏰ Stock sync scheduled for ${config.sync_frequency} intervals`);

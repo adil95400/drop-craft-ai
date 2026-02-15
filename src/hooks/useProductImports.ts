@@ -136,16 +136,16 @@ export const useProductImports = () => {
       if (!user.user) throw new Error('Non authentifié');
       
       const { data: newJob, error } = await supabase
-        .from('import_jobs')
+        .from('jobs')
         .insert([{
           user_id: user.user.id,
-          job_type: importData.import_type || 'url',
-          source_url: importData.source_url || null,
-          source_platform: importData.source_name || null,
+          job_type: 'import',
+          job_subtype: importData.import_type || 'url',
           status: 'pending',
-          total_products: 0,
-          successful_imports: 0,
-          failed_imports: 0
+          total_items: 0,
+          processed_items: 0,
+          failed_items: 0,
+          metadata: { source_url: importData.source_url || null, source_platform: importData.source_name || null }
         }])
         .select()
         .single();
@@ -154,9 +154,9 @@ export const useProductImports = () => {
 
       const newImport: ProductImport = {
         id: newJob.id,
-        import_type: newJob.job_type as any,
+        import_type: newJob.job_subtype as any || newJob.job_type,
         source_name: importData.source_name || newJob.job_type,
-        source_url: newJob.source_url || undefined,
+        source_url: (newJob.metadata as any)?.source_url || undefined,
         status: newJob.status as any,
         products_imported: 0,
         products_failed: 0,
