@@ -190,7 +190,7 @@ Deno.serve(async (req) => {
   const reqId = requestId(req);
   try {
     const url = new URL(req.url);
-    const path = url.pathname.replace(/^\\/api-v1/, "");
+    const path = url.pathname.replace(/^\/api-v1/, "");
 
     // Proxy to api-v1-ext for extension domains
     if (EXT_PREFIXES.some(p => path.startsWith(p))) {
