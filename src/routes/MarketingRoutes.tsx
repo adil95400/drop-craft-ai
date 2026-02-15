@@ -11,6 +11,7 @@ const PromotionsAutomationPage = lazy(() => import('@/pages/PromotionsAutomation
 
 // SEO - Use SEOManagerPage only
 const SEOManagerPage = lazy(() => import('@/pages/SEOManagerPage'));
+const SeoDashboardPage = lazy(() => import('@/pages/seo/SeoDashboardPage'));
 
 // Ads
 const AdsManagerPage = lazy(() => import('@/pages/AdsManagerPage'));
@@ -52,6 +53,7 @@ export function MarketingRoutes() {
       
       {/* SEO */}
       <Route path="seo" element={<SEOManagerPage />} />
+      <Route path="seo/dashboard" element={<SeoDashboardPage />} />
       <Route path="seo/tools" element={<SEOManagerPage />} />
       
       {/* Ads */}
