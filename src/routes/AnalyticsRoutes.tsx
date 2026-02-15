@@ -27,6 +27,9 @@ const RealDataAnalyticsPage = lazy(() => import('@/pages/analytics/RealDataAnaly
 // Revenue Forecasting
 const RevenueForecastingPage = lazy(() => import('@/pages/analytics/RevenueForecastingPage'));
 
+// Interactive Analytics (Sprint 10)
+const InteractiveAnalyticsPage = lazy(() => import('@/pages/analytics/InteractiveAnalyticsPage'));
+
 export function AnalyticsRoutes() {
   return (
     <Routes>
@@ -66,6 +69,9 @@ export function AnalyticsRoutes() {
       <Route path="forecasting" element={<RevenueForecastingPage />} />
       <Route path="revenue-forecast" element={<RevenueForecastingPage />} />
       <Route path="projections" element={<RevenueForecastingPage />} />
+      
+      {/* Interactive Analytics (Sprint 10) */}
+      <Route path="interactive" element={<InteractiveAnalyticsPage />} />
       
       {/* Legacy redirects */}
       <Route path="ultra-pro" element={<Navigate to="/analytics/advanced" replace />} />
