@@ -4163,6 +4163,75 @@ export type Database = {
         }
         Relationships: []
       }
+      customer_communications: {
+        Row: {
+          clicked_at: string | null
+          communication_type: string
+          content: string | null
+          created_at: string | null
+          customer_id: string | null
+          id: string
+          metadata: Json | null
+          opened_at: string | null
+          scheduled_at: string | null
+          segment_id: string | null
+          sent_at: string | null
+          status: string | null
+          subject: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          clicked_at?: string | null
+          communication_type?: string
+          content?: string | null
+          created_at?: string | null
+          customer_id?: string | null
+          id?: string
+          metadata?: Json | null
+          opened_at?: string | null
+          scheduled_at?: string | null
+          segment_id?: string | null
+          sent_at?: string | null
+          status?: string | null
+          subject: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          clicked_at?: string | null
+          communication_type?: string
+          content?: string | null
+          created_at?: string | null
+          customer_id?: string | null
+          id?: string
+          metadata?: Json | null
+          opened_at?: string | null
+          scheduled_at?: string | null
+          segment_id?: string | null
+          sent_at?: string | null
+          status?: string | null
+          subject?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "customer_communications_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "customer_communications_segment_id_fkey"
+            columns: ["segment_id"]
+            isOneToOne: false
+            referencedRelation: "customer_segments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       customer_loyalty: {
         Row: {
           available_points: number
@@ -4263,6 +4332,66 @@ export type Database = {
             columns: ["customer_id"]
             isOneToOne: false
             referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      customer_scores: {
+        Row: {
+          created_at: string | null
+          customer_id: string | null
+          engagement_score: number | null
+          frequency_score: number | null
+          id: string
+          last_calculated_at: string | null
+          monetary_score: number | null
+          recency_score: number | null
+          segment_id: string | null
+          total_score: number | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          customer_id?: string | null
+          engagement_score?: number | null
+          frequency_score?: number | null
+          id?: string
+          last_calculated_at?: string | null
+          monetary_score?: number | null
+          recency_score?: number | null
+          segment_id?: string | null
+          total_score?: number | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          customer_id?: string | null
+          engagement_score?: number | null
+          frequency_score?: number | null
+          id?: string
+          last_calculated_at?: string | null
+          monetary_score?: number | null
+          recency_score?: number | null
+          segment_id?: string | null
+          total_score?: number | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "customer_scores_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "customer_scores_segment_id_fkey"
+            columns: ["segment_id"]
+            isOneToOne: false
+            referencedRelation: "customer_segments"
             referencedColumns: ["id"]
           },
         ]
