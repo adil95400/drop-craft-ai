@@ -1,5 +1,6 @@
 /**
  * APIKeysManager — Gestion des clés API avec création, révocation, scopes
+ * Stores SHA-256 hash for secure validation by public-api edge function
  */
 import { useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -30,6 +31,14 @@ interface APIKeyDisplay {
   rate_limit: number
 }
 
+async function sha256(message: string): Promise<string> {
+  const msgBuffer = new TextEncoder().encode(message)
+  const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer)
+  return Array.from(new Uint8Array(hashBuffer))
+    .map(b => b.toString(16).padStart(2, '0'))
+    .join('')
+}
+
 export function APIKeysManager() {
   const { user } = useAuth()
   const queryClient = useQueryClient()
@@ -37,6 +46,7 @@ export function APIKeysManager() {
   const [newKeyName, setNewKeyName] = useState('')
   const [newKeyEnv, setNewKeyEnv] = useState<'test' | 'live'>('test')
   const [revealedKey, setRevealedKey] = useState<string | null>(null)
+  const [justCreatedKey, setJustCreatedKey] = useState<string | null>(null)
 
   const { data: keys = [], isLoading } = useQuery({
     queryKey: ['api-keys', user?.id],
@@ -56,24 +66,29 @@ export function APIKeysManager() {
     mutationFn: async () => {
       if (!user?.id || !newKeyName.trim()) throw new Error('Nom requis')
       const keyValue = `sk_${newKeyEnv}_${crypto.randomUUID().replace(/-/g, '').slice(0, 32)}`
+      const keyHash = await sha256(keyValue)
       const { error } = await supabase.from('api_keys').insert({
         user_id: user.id,
         name: newKeyName.trim(),
-        key: keyValue,
+        key: keyValue, // stored temporarily for display
         key_prefix: keyValue.slice(0, 12) + '...',
-        key_hash: keyValue,
+        key_hash: keyHash, // SHA-256 hash for secure validation
         environment: newKeyEnv,
-        scopes: ['products:read', 'orders:read'],
+        scopes: ['products:read', 'products:write', 'orders:read', 'stock:read', 'analytics:read'],
         is_active: true,
-        rate_limit: 60,
+        rate_limit: 1000,
       })
       if (error) throw error
       return keyValue
     },
     onSuccess: (key) => {
       queryClient.invalidateQueries({ queryKey: ['api-keys'] })
-      toast.success('Clé API créée', { description: 'Copiez-la maintenant, elle ne sera plus visible.' })
+      setJustCreatedKey(key)
       navigator.clipboard.writeText(key)
+      toast.success('Clé API créée et copiée !', { 
+        description: 'Conservez-la en lieu sûr, elle ne sera plus affichée.',
+        duration: 10000
+      })
       setShowCreate(false)
       setNewKeyName('')
     },
@@ -112,6 +127,24 @@ export function APIKeysManager() {
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">
+        {/* Just created key banner */}
+        {justCreatedKey && (
+          <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="p-3 border border-green-500/30 bg-green-500/10 rounded-lg space-y-2">
+            <div className="flex items-center gap-2">
+              <Shield className="h-4 w-4 text-green-600" />
+              <span className="text-sm font-semibold text-green-700">Nouvelle clé créée</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <code className="text-xs font-mono bg-background p-1.5 rounded flex-1 break-all">{justCreatedKey}</code>
+              <Button size="sm" variant="ghost" className="h-7 shrink-0" onClick={() => { navigator.clipboard.writeText(justCreatedKey); toast.success('Copié') }}>
+                <Copy className="h-3 w-3" />
+              </Button>
+            </div>
+            <p className="text-[10px] text-muted-foreground">⚠️ Cette clé ne sera plus affichée. Copiez-la maintenant.</p>
+            <Button size="sm" variant="outline" className="text-xs" onClick={() => setJustCreatedKey(null)}>Compris, fermer</Button>
+          </motion.div>
+        )}
+
         {/* Create form */}
         {showCreate ? (
           <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} className="p-3 border rounded-lg space-y-3 bg-muted/30">
@@ -163,7 +196,7 @@ export function APIKeysManager() {
                 </div>
                 <div className="flex items-center gap-3 text-[10px] text-muted-foreground">
                   <span className="flex items-center gap-0.5"><Clock className="h-2.5 w-2.5" /> {new Date(k.created_at).toLocaleDateString('fr-FR')}</span>
-                  <span className="flex items-center gap-0.5"><Activity className="h-2.5 w-2.5" /> {k.rate_limit}/min</span>
+                  <span className="flex items-center gap-0.5"><Activity className="h-2.5 w-2.5" /> {k.rate_limit}/h</span>
                   {k.last_used_at && <span>Dernier usage: {new Date(k.last_used_at).toLocaleDateString('fr-FR')}</span>}
                 </div>
               </div>
