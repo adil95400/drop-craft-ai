@@ -73,8 +73,8 @@ export class DynamicRepricingService {
    * Crée une nouvelle règle de repricing
    */
   async createRepricingRule(userId: string, rule: Partial<RepricingRule>): Promise<RepricingRule> {
-    const { data, error } = await supabase
-      .from('price_rules')
+    const { data, error } = await (supabase
+      .from('price_rules') as any)
       .insert({
         user_id: userId,
         name: rule.name || 'Nouvelle règle',
@@ -364,8 +364,8 @@ export class DynamicRepricingService {
       .eq('id', productId)
 
     // Mettre à jour le compteur de la règle
-    await supabase
-      .from('price_rules')
+    await (supabase
+      .from('price_rules') as any)
       .update({ 
         last_applied_at: new Date().toISOString(),
         products_affected: (rule.execution_count || 0) + 1

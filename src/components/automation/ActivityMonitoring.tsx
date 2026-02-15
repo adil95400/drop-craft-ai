@@ -37,21 +37,31 @@ export function ActivityMonitoring() {
       if (!user) return;
 
       let query = supabase
-        .from('automation_execution_logs')
-        .select('*')
+        .from('activity_logs')
+        .select('id, user_id, action, description, details, created_at, severity')
         .eq('user_id', user.id)
-        .order('executed_at', { ascending: false })
-        .limit(50);
+        .order('created_at', { ascending: false })
+        .limit(50) as any;
 
       if (filter === 'success') {
-        query = query.eq('status', 'success');
+        query = query.eq('severity', 'info');
       } else if (filter === 'failed') {
-        query = query.eq('status', 'failed');
+        query = query.eq('severity', 'error');
       }
 
       const { data, error } = await query;
       if (error) throw error;
-      setLogs(data || []);
+      setLogs((data || []).map((d: any) => ({
+        id: d.id,
+        trigger_id: null,
+        action_id: null,
+        status: d.severity === 'error' ? 'failed' : 'success',
+        executed_at: d.created_at,
+        duration_ms: null,
+        error_message: d.severity === 'error' ? d.description : null,
+        input_data: d.details,
+        output_data: null,
+      })));
     } catch (error) {
       console.error('Error fetching logs:', error);
     } finally {

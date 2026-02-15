@@ -38,7 +38,7 @@ export function useMarketingStoreSync() {
 
   const toggleRule = useMutation({
     mutationFn: async ({ ruleId, isActive }: { ruleId: string; isActive: boolean }) => {
-      const { error } = await supabase.from('automation_rules').update({ is_active: isActive }).eq('id', ruleId);
+      const { error } = await supabase.from('automation_rules').update({ is_active: isActive } as any).eq('id', ruleId);
       if (error) throw error;
     },
     onSuccess: () => {

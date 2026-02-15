@@ -25,12 +25,12 @@ export const useRealtimeActivity = () => {
       const allActivities: ActivityItem[] = []
 
       try {
-        // Fetch automation execution logs (this table exists)
+        // Fetch automation activity from activity_logs
         const { data: executions } = await (supabase
-          .from('automation_execution_logs')
+          .from('activity_logs')
           .select('*')
           .eq('user_id', user.id)
-          .order('executed_at', { ascending: false })
+          .order('created_at', { ascending: false })
           .limit(20) as any)
 
         if (executions) {

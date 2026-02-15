@@ -59,15 +59,28 @@ export function useRulesExecutionData(limit: number = 50) {
   const { data: executionsRaw = [], isLoading, refetch } = useQuery({
     queryKey: ['rules-execution-history', userId, limit],
     queryFn: async () => {
-      // Query automation_execution_logs for catalog/feed rules
-      const { data: automationLogs, error: automationError } = await supabase
-        .from('automation_execution_logs')
+      // Query activity_logs for catalog/feed rule executions
+      const { data: automationLogsRaw, error: automationError } = await supabase
+        .from('activity_logs')
         .select('*')
         .eq('user_id', userId)
-        .order('executed_at', { ascending: false })
+        .in('action', ['rule_executed', 'automation_executed', 'customer_updated'])
+        .order('created_at', { ascending: false })
         .limit(limit);
 
       if (automationError) throw automationError;
+      const automationLogs = (automationLogsRaw || []).map((log: any) => ({
+        id: log.id,
+        trigger_id: log.entity_id,
+        action_id: null,
+        input_data: log.details,
+        executed_at: log.created_at,
+        created_at: log.created_at,
+        status: log.severity === 'error' ? 'error' : 'success',
+        output_data: log.details,
+        duration_ms: 0,
+        error_message: log.severity === 'error' ? log.description : null,
+      }));
 
       // Query price_history for pricing rule executions
       const { data: priceLogs, error: priceError } = await supabase

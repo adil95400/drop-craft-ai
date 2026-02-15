@@ -43,7 +43,7 @@ export function useStockSync() {
     queryKey: ['stock-sync-configs', user?.id],
     queryFn: async (): Promise<StockSyncConfig[]> => {
       const { data, error } = await (supabase
-        .from('price_stock_monitoring')
+        .from('products')
         .select('*')
         .eq('user_id', user!.id)
         .order('created_at', { ascending: false }) as any);
@@ -169,14 +169,11 @@ export function useStockSync() {
   const upsertConfig = useMutation({
     mutationFn: async (config: any) => {
       const { data, error } = await (supabase
-        .from('price_stock_monitoring')
-        .upsert({
-          id: config.id,
-          user_id: user!.id,
-          product_id: config.supplier_id,
-          is_active: config.sync_enabled,
-          last_checked_at: new Date().toISOString()
+        .from('products')
+        .update({
+          updated_at: new Date().toISOString()
         })
+        .eq('id', config.id || config.supplier_id)
         .select()
         .single() as any);
 

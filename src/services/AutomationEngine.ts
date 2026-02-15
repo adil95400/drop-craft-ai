@@ -75,7 +75,7 @@ export class AutomationEngineService {
     if (!currentUser.user) throw new Error('Not authenticated');
 
     const { data, error } = await supabase
-      .from('automation_rules')
+      .from('automation_workflows')
       .insert({
         user_id: currentUser.user.id,
         name: ruleData.name,
@@ -86,7 +86,7 @@ export class AutomationEngineService {
         action_config: ruleData.actions || {},
         is_active: ruleData.is_active ?? true,
         trigger_count: 0
-      })
+      } as any)
       .select()
       .single();
 
@@ -144,10 +144,11 @@ export class AutomationEngineService {
 
   static async getExecutionHistory(ruleId: string) {
     const { data, error } = await (supabase
-      .from('automation_execution_logs') as any)
+      .from('activity_logs') as any)
       .select('*')
-      .eq('trigger_id', ruleId)
-      .order('executed_at', { ascending: false })
+      .eq('entity_id', ruleId)
+      .eq('entity_type', 'automation')
+      .order('created_at', { ascending: false })
       .limit(50);
 
     if (error) throw error;

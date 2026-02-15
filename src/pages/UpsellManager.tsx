@@ -41,7 +41,7 @@ export default function UpsellManager() {
       }
       
       // Créer la règle dans la base de données
-      const { error } = await supabase.from('automation_rules').insert({
+      const { error } = await supabase.from('automation_workflows').insert({
         user_id: user.id,
         name: `Règle upsell - ${triggerType}`,
         trigger_type: triggerType,
@@ -49,7 +49,7 @@ export default function UpsellManager() {
         trigger_config: { discount_percent: parseFloat(discountPercent) },
         action_config: { trigger: triggerType },
         is_active: true
-      })
+      } as any)
       
       if (error) throw error
       toast.success('Règle d\'upsell créée avec succès')

@@ -10,9 +10,9 @@ export function AutoOrders() {
     queryKey: ['auto-orders-monitors'],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('price_stock_monitoring')
-        .select('*, product:product_id(*)')
-        .eq('is_active', true)
+        .from('products')
+        .select('*')
+        .not('stock_quantity', 'is', null)
         .order('created_at', { ascending: false })
         .limit(20);
 
