@@ -1,5 +1,6 @@
 /**
- * Cockpit Business - Vue de pilotage stratégique
+ * Cockpit Business — Vue de pilotage stratégique complet
+ * KPIs prédictifs, Forecasting, SWOT, Alertes intelligentes, Comparaison périodes
  */
 import { useNavigate } from 'react-router-dom'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -14,6 +15,11 @@ import { AIPrioritiesCard } from '@/components/cockpit/AIPrioritiesCard'
 import { TopProductsCard } from '@/components/cockpit/TopProductsCard'
 import { MarginLossCard } from '@/components/cockpit/MarginLossCard'
 import { CategoryBreakdownChart } from '@/components/cockpit/CategoryBreakdownChart'
+import { PredictiveKPIPanel } from '@/components/cockpit/PredictiveKPIPanel'
+import { RevenueForecastChart } from '@/components/cockpit/RevenueForecastChart'
+import { SWOTAnalysisCard } from '@/components/cockpit/SWOTAnalysisCard'
+import { SmartAlertsPanel } from '@/components/cockpit/SmartAlertsPanel'
+import { PeriodComparisonWidget } from '@/components/cockpit/PeriodComparisonWidget'
 import { Package, DollarSign, TrendingUp, AlertTriangle, ShieldAlert, ArrowLeft } from 'lucide-react'
 
 const KPI_ICONS = [Package, DollarSign, TrendingUp, AlertTriangle, ShieldAlert, ShieldAlert] as const
@@ -32,19 +38,24 @@ export default function ProductCockpitPage() {
     isLoading,
   } = useCockpitData()
 
+  // Compute aggregate metrics for new widgets
+  const revenue = products.reduce((s, p) => s + p.price * (p.stock_quantity || 0), 0)
+  const orders = products.length // proxy
+  const customers = new Set(products.map(p => p.category).filter(Boolean)).size
+  const avgMargin = products.filter(p => p.profit_margin).length > 0
+    ? products.filter(p => p.profit_margin).reduce((s, p) => s + (p.profit_margin || 0), 0) / products.filter(p => p.profit_margin).length
+    : 0
+
   if (isLoading) {
     return (
-      <ChannablePageWrapper title="Cockpit Business" description="Chargement…" heroImage="analytics" badge={{ label: 'Cockpit', icon: TrendingUp }}>
+      <ChannablePageWrapper title="Cockpit Business" description="Chargement…" heroImage="analytics" badge={{ label: 'Cockpit BI', icon: TrendingUp }}>
         <div className="space-y-4">
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
-            {Array.from({ length: 6 }).map((_, i) => (
-              <Skeleton key={i} className="h-[90px] rounded-lg" />
-            ))}
+            {Array.from({ length: 6 }).map((_, i) => <Skeleton key={i} className="h-[90px] rounded-lg" />)}
           </div>
-          <div className="grid gap-4 md:grid-cols-3">
-            <Skeleton className="h-[300px]" />
-            <Skeleton className="h-[300px]" />
-            <Skeleton className="h-[300px]" />
+          <div className="grid gap-4 md:grid-cols-2">
+            <Skeleton className="h-[350px]" />
+            <Skeleton className="h-[350px]" />
           </div>
         </div>
       </ChannablePageWrapper>
@@ -54,20 +65,20 @@ export default function ProductCockpitPage() {
   return (
     <ChannablePageWrapper
       title="Cockpit Business"
-      description={`${products.length} produits — Analysez les performances et identifiez les opportunités`}
+      description={`${products.length} produits — Pilotage stratégique et intelligence prédictive`}
       heroImage="analytics"
-      badge={{ label: 'Cockpit', icon: TrendingUp }}
+      badge={{ label: 'Cockpit BI', icon: TrendingUp }}
     >
       <div className="space-y-6">
-        {/* Navigation croisée */}
+        {/* Navigation */}
         <div className="flex items-center gap-2">
           <Button variant="outline" size="sm" className="gap-2" onClick={() => navigate('/products')}>
             <ArrowLeft className="h-4 w-4" />
-            Catalogue Produits
+            Catalogue
           </Button>
         </div>
 
-        {/* KPIs principaux */}
+        {/* Row 0: KPIs classiques */}
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
           {mainKPIs.map((kpi: CockpitKPI, i: number) => (
             <StatCard
@@ -80,23 +91,56 @@ export default function ProductCockpitPage() {
           ))}
         </div>
 
-        {/* Row 1: Santé + ROI + Alertes stock */}
+        {/* Row 1: KPIs prédictifs */}
+        <PredictiveKPIPanel
+          revenue={revenue}
+          orders={orders}
+          customers={customers}
+          avgMargin={avgMargin}
+          products={products}
+        />
+
+        {/* Row 2: Forecasting + Comparaison */}
+        <div className="grid gap-4 md:grid-cols-2">
+          <RevenueForecastChart
+            currentRevenue={revenue}
+            orders={orders}
+            avgMargin={avgMargin}
+          />
+          <PeriodComparisonWidget
+            revenue={revenue}
+            orders={orders}
+            customers={customers}
+            avgMargin={avgMargin}
+            products={products}
+          />
+        </div>
+
+        {/* Row 3: SWOT */}
+        <SWOTAnalysisCard
+          products={products}
+          revenue={revenue}
+          orders={orders}
+        />
+
+        {/* Row 4: Alertes intelligentes */}
+        <SmartAlertsPanel products={products} revenue={revenue} />
+
+        {/* Row 5: Santé + ROI + Stock */}
         <div className="grid gap-4 md:grid-cols-3">
           <CatalogHealthCard health={catalogHealth} />
           <ROIAnalysisCard roi={roiAnalysis} />
           <StockAlertsCard alerts={criticalAlerts} stats={stockStats} />
         </div>
 
-        {/* Row 2: Top Produits + Pertes de marge */}
+        {/* Row 6: Top Produits + Pertes marge */}
         <div className="grid gap-4 md:grid-cols-2">
           <TopProductsCard products={products} />
           <MarginLossCard products={products} />
         </div>
 
-        {/* Row 3: Priorités IA */}
+        {/* Row 7: IA + Catégories */}
         <AIPrioritiesCard priorities={aiPriorities} />
-
-        {/* Row 4: Répartition catégories */}
         <div className="grid gap-4 md:grid-cols-2">
           <CategoryBreakdownChart products={products} />
         </div>
