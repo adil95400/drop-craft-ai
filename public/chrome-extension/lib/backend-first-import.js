@@ -114,13 +114,15 @@
 
         // Log to action logger if available
         if (window.ShopOptiActionLogger) {
-          window.ShopOptiActionLogger.log({
-            action: 'IMPORT_PROGRESSIVE',
-            url: url,
-            platform: window.BackendImportClient.detectPlatform(url),
-            success: response.ok,
-            job_id: response.job_id,
-            error_code: response.code,
+          window.ShopOptiActionLogger.logAction({
+            actionType: 'IMPORT_PROGRESSIVE',
+            productUrl: url,
+            platform: window.BackendImportClient?.detectPlatform?.(url),
+            status: response.ok ? 'success' : 'error',
+            metadata: {
+              job_id: response.job_id,
+              error_code: response.code,
+            }
           });
         }
 

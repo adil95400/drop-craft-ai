@@ -4,7 +4,7 @@
  */
 
 const ShopOptiActionLogger = {
-  VERSION: '5.8.1',
+  VERSION: '6.0.0',
   
   /**
    * Log an action to the SaaS backend
