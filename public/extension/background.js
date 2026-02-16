@@ -128,6 +128,92 @@ class ShopOptiAPI {
 // ============================================
 // Message Handlers
 // ============================================
+// ============================================
+// Security Module
+// ============================================
+const Security = {
+  ALLOWED_API_DOMAINS: [
+    'jsmwckzrmqecwwrswwrz.supabase.co',
+    'shopopti.io'
+  ],
+
+  ALLOWED_SCRAPING_DOMAINS: [
+    'aliexpress.com', 'amazon.com', 'amazon.fr', 'amazon.de', 'amazon.co.uk',
+    'amazon.es', 'amazon.it', 'amazon.ca', 'amazon.com.au',
+    'ebay.com', 'ebay.fr', 'ebay.de', 'ebay.co.uk', 'ebay.es', 'ebay.it',
+    'walmart.com', 'temu.com', 'shein.com', 'shein.fr', 'etsy.com',
+    'banggood.com', 'cjdropshipping.com', 'costco.com', 'homedepot.com'
+  ],
+
+  ALLOWED_MESSAGE_TYPES: [
+    'login', 'logout', 'check_auth', 'validate_token',
+    'import_product', 'bulk_import', 'quick_import',
+    'get_settings', 'save_settings', 'sync_settings',
+    'product_detected', 'ping'
+  ],
+
+  // Rate limiting
+  _rateLimits: new Map(),
+  RATE_LIMIT_MAX: 30,
+  RATE_LIMIT_WINDOW_MS: 60000,
+
+  isAllowedApiDomain(url) {
+    try {
+      const hostname = new URL(url).hostname;
+      return this.ALLOWED_API_DOMAINS.some(d => hostname.endsWith(d));
+    } catch { return false; }
+  },
+
+  isAllowedScrapingDomain(hostname) {
+    return this.ALLOWED_SCRAPING_DOMAINS.some(d => hostname.endsWith(d));
+  },
+
+  isAllowedMessageType(action) {
+    return this.ALLOWED_MESSAGE_TYPES.includes(action);
+  },
+
+  checkRateLimit(key) {
+    const now = Date.now();
+    const attempts = this._rateLimits.get(key) || [];
+    const recent = attempts.filter(t => now - t < this.RATE_LIMIT_WINDOW_MS);
+    if (recent.length >= this.RATE_LIMIT_MAX) {
+      console.warn(`[Security] Rate limit exceeded for ${key}`);
+      return false;
+    }
+    recent.push(now);
+    this._rateLimits.set(key, recent);
+    return true;
+  },
+
+  sanitizeText(text) {
+    if (!text || typeof text !== 'string') return '';
+    return text
+      .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+      .replace(/<iframe\b[^<]*(?:(?!<\/iframe>)<[^<]*)*<\/iframe>/gi, '')
+      .replace(/on\w+\s*=\s*["'][^"']*["']/gi, '')
+      .replace(/javascript:/gi, '')
+      .replace(/<[^>]*>/g, '')
+      .trim()
+      .substring(0, 5000);
+  },
+
+  sanitizeProductData(product) {
+    if (!product || typeof product !== 'object') return null;
+    return {
+      ...product,
+      title: this.sanitizeText(product.title),
+      description: this.sanitizeText(product.description),
+      brand: this.sanitizeText(product.brand),
+      category: this.sanitizeText(product.category),
+      url: product.url && typeof product.url === 'string' ? product.url.substring(0, 2048) : '',
+      images: Array.isArray(product.images)
+        ? product.images.filter(u => typeof u === 'string' && (u.startsWith('https://') || u.startsWith('http://'))).slice(0, 30)
+        : [],
+      price: typeof product.price === 'number' ? product.price : parseFloat(product.price) || 0,
+    };
+  }
+};
+
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   handleMessage(message, sender).then(sendResponse).catch((error) => {
     console.error('Message handler error:', error);
@@ -138,6 +224,17 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
 async function handleMessage(message, sender) {
   const { action, data } = message;
+
+  // Validate message type
+  if (!Security.isAllowedMessageType(action)) {
+    console.warn(`[Security] Blocked unknown action: ${action}`);
+    return { success: false, error: `Action non autorisée: ${action}` };
+  }
+
+  // Rate limit per action
+  if (!Security.checkRateLimit(action)) {
+    return { success: false, error: 'Trop de requêtes. Veuillez patienter.' };
+  }
 
   switch (action) {
     // Auth
@@ -324,13 +421,19 @@ async function importProduct(productData) {
   const extensionToken = await StorageManager.get('extension_token');
   
   if (!session?.access_token && !extensionToken) {
-    return { success: false, error: 'Non authentifié. Veuillez vous connecter.' };
+    return { success: false, error: 'Non authentifié. Veuillez vous connecter.', code: 'AUTH_REQUIRED' };
+  }
+
+  // Sanitize product data before processing
+  const sanitizedData = Security.sanitizeProductData(productData);
+  if (!sanitizedData || !sanitizedData.title) {
+    return { success: false, error: 'Données produit invalides ou incomplètes.', code: 'INVALID_DATA' };
   }
 
   try {
     // Apply pricing rules
     const settings = await StorageManager.getSettings();
-    const processedProduct = applyPricingRules(productData, settings);
+    const processedProduct = applyPricingRules(sanitizedData, settings);
 
     const result = await ShopOptiAPI.importProduct(
       processedProduct, 
@@ -342,7 +445,7 @@ async function importProduct(productData) {
         type: 'basic',
         iconUrl: 'icons/icon48.png',
         title: 'Produit importé ✓',
-        message: `${productData.title?.substring(0, 50)}...`
+        message: `${sanitizedData.title?.substring(0, 50)}...`
       });
     }
 
@@ -350,7 +453,20 @@ async function importProduct(productData) {
 
   } catch (error) {
     console.error('Import error:', error);
-    return { success: false, error: error.message };
+    // Enhanced error feedback
+    const errorMsg = error.message || 'Erreur inconnue';
+    const isNetworkError = errorMsg.includes('Failed to fetch') || errorMsg.includes('NetworkError');
+    
+    if (isNetworkError) {
+      return { 
+        success: false, 
+        error: 'Connexion au serveur impossible. Vérifiez votre connexion internet.',
+        code: 'NETWORK_ERROR',
+        canRetry: true
+      };
+    }
+
+    return { success: false, error: errorMsg, code: 'IMPORT_ERROR' };
   }
 }
 
@@ -359,12 +475,24 @@ async function bulkImport(products) {
   const extensionToken = await StorageManager.get('extension_token');
   
   if (!session?.access_token && !extensionToken) {
-    return { success: false, error: 'Non authentifié' };
+    return { success: false, error: 'Non authentifié', code: 'AUTH_REQUIRED' };
+  }
+
+  if (!Array.isArray(products) || products.length === 0) {
+    return { success: false, error: 'Aucun produit à importer', code: 'INVALID_DATA' };
+  }
+
+  // Limit bulk size to prevent abuse
+  if (products.length > 100) {
+    return { success: false, error: 'Maximum 100 produits par import en masse', code: 'BULK_LIMIT' };
   }
 
   try {
     const settings = await StorageManager.getSettings();
-    const processedProducts = products.map(p => applyPricingRules(p, settings));
+    const sanitizedProducts = products
+      .map(p => Security.sanitizeProductData(p))
+      .filter(p => p && p.title);
+    const processedProducts = sanitizedProducts.map(p => applyPricingRules(p, settings));
 
     const result = await ShopOptiAPI.bulkImport(
       processedProducts,
@@ -376,7 +504,7 @@ async function bulkImport(products) {
         type: 'basic',
         iconUrl: 'icons/icon48.png',
         title: 'Import en masse terminé ✓',
-        message: `${result.imported || products.length} produits importés`
+        message: `${result.imported || processedProducts.length} produits importés`
       });
     }
 
@@ -384,25 +512,58 @@ async function bulkImport(products) {
 
   } catch (error) {
     console.error('Bulk import error:', error);
-    return { success: false, error: error.message };
+    const isNetworkError = (error.message || '').includes('Failed to fetch');
+    return { 
+      success: false, 
+      error: isNetworkError ? 'Connexion impossible. Réessayez.' : error.message,
+      code: isNetworkError ? 'NETWORK_ERROR' : 'BULK_IMPORT_ERROR',
+      canRetry: isNetworkError
+    };
   }
 }
 
 async function quickImport(tabId) {
-  if (!tabId) return { success: false, error: 'No active tab' };
+  if (!tabId) return { success: false, error: 'Aucun onglet actif', code: 'NO_TAB' };
 
   try {
+    // Verify tab URL is on allowed domain
+    const tab = await chrome.tabs.get(tabId);
+    if (tab?.url) {
+      try {
+        const hostname = new URL(tab.url).hostname;
+        if (!Security.isAllowedScrapingDomain(hostname)) {
+          return { 
+            success: false, 
+            error: `Ce site (${hostname}) n'est pas supporté. Rendez-vous sur AliExpress, Amazon, eBay ou un autre marketplace supporté.`,
+            code: 'UNSUPPORTED_SITE'
+          };
+        }
+      } catch { /* URL parse error, continue */ }
+    }
+
     // Request product data from content script
     const response = await chrome.tabs.sendMessage(tabId, { action: 'extract_product' });
     
     if (!response?.success || !response.product) {
-      return { success: false, error: 'Impossible d\'extraire le produit' };
+      return { 
+        success: false, 
+        error: 'Impossible d\'extraire le produit. Vérifiez que vous êtes sur une page produit.',
+        code: 'EXTRACTION_FAILED'
+      };
     }
 
     return importProduct(response.product);
 
   } catch (error) {
-    return { success: false, error: error.message };
+    const msg = error.message || '';
+    if (msg.includes('Could not establish connection') || msg.includes('Receiving end does not exist')) {
+      return { 
+        success: false, 
+        error: 'Le script d\'extraction n\'est pas chargé sur cette page. Rechargez la page et réessayez.',
+        code: 'CONTENT_SCRIPT_NOT_LOADED'
+      };
+    }
+    return { success: false, error: msg, code: 'QUICK_IMPORT_ERROR' };
   }
 }
 
@@ -546,4 +707,4 @@ chrome.runtime.onMessageExternal.addListener((message, sender, sendResponse) => 
   return true;
 });
 
-console.log('ShopOpti+ Pro Background Service Worker v5.7.3 loaded');
+console.log('ShopOpti+ Pro Background Service Worker v5.9.0 loaded');
