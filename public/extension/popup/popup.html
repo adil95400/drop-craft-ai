@@ -30,7 +30,7 @@
           </svg>
           <span class="logo-text">ShopOpti+ Pro</span>
         </div>
-        <span class="version">v5.8.1</span>
+        <span class="version">v5.9.0</span>
       </div>
 
       <div class="login-form">
@@ -168,6 +168,13 @@
           </svg>
           Produits
         </button>
+        <button class="quick-action" id="debug-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/>
+            <path d="M12 8v4M12 16h.01"/>
+          </svg>
+          Debug
+        </button>
         <button class="quick-action" id="logout-btn">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/>
@@ -176,6 +183,20 @@
           </svg>
           Déconnexion
         </button>
+      </div>
+
+      <!-- Debug Panel -->
+      <div id="debug-panel" style="display: none;">
+        <div class="section-title" style="display:flex;justify-content:space-between;align-items:center;">
+          <span>🔍 Diagnostics</span>
+          <button id="debug-refresh" class="icon-btn" style="font-size:12px;padding:2px 8px;">↻</button>
+        </div>
+        <div id="debug-content" style="font-size:11px;background:#1a1a2e;color:#e0e0e0;padding:8px;border-radius:6px;max-height:200px;overflow-y:auto;font-family:monospace;white-space:pre-wrap;word-break:break-all;"></div>
+        <div style="margin-top:6px;display:flex;gap:4px;">
+          <button id="debug-logs" class="btn btn-secondary" style="font-size:10px;padding:4px 8px;flex:1;">Logs</button>
+          <button id="debug-errors" class="btn btn-secondary" style="font-size:10px;padding:4px 8px;flex:1;">Erreurs</button>
+          <button id="debug-api" class="btn btn-secondary" style="font-size:10px;padding:4px 8px;flex:1;">API</button>
+        </div>
       </div>
     </div>
 
