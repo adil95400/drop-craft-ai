@@ -18,15 +18,15 @@ export const ExtensionDownloadPage = () => {
     try {
       const { data, error } = await supabase.functions.invoke('extension-download', { body: {} });
       if (error) throw error;
-      if (!data || !data.success || !data.data) throw new Error('Invalid response from server');
-      const binaryString = atob(data.data);
+      if (!data || !data.success || !data.zipData) throw new Error('Invalid response from server');
+      const binaryString = atob(data.zipData);
       const bytes = new Uint8Array(binaryString.length);
       for (let i = 0; i < binaryString.length; i++) { bytes[i] = binaryString.charCodeAt(i); }
       const blob = new Blob([bytes], { type: 'application/zip' });
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      link.download = data.filename || 'shopopti-extension.zip';
+      link.download = data.fileName || 'shopopti-extension-v6.0.0.zip';
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
