@@ -15,7 +15,7 @@ POST /functions/v1/extension-gateway
 |--------|-------------|-------------|
 | `Authorization` | Bearer token JWT | Oui* |
 | `X-Extension-Id` | ID unique de l'extension | Oui |
-| `X-Extension-Version` | Version de l'extension (ex: 5.8.1) | Oui |
+| `X-Extension-Version` | Version de l'extension (ex: 6.0.0) | Oui |
 | `X-Request-Id` | UUID unique pour anti-replay | Oui |
 | `X-Idempotency-Key` | Clé pour opérations d'écriture | Pour write ops |
 | `Content-Type` | `application/json` | Oui |

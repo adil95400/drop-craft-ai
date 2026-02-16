@@ -36,7 +36,7 @@ import { cn } from '@/lib/utils';
 
 // Chrome Web Store URL - Replace [EXTENSION_ID] with actual ID after publication
 const CHROME_STORE_URL = 'https://chrome.google.com/webstore/detail/shopopti-dropshipping-pro/pending-publication';
-const EXTENSION_VERSION = '5.8.1';
+const EXTENSION_VERSION = '6.0.0';
 const IS_PUBLISHED = false; // Set to true after Chrome Web Store approval
 
 interface ExtensionSettings {
@@ -90,7 +90,7 @@ export default function ChromeExtensionPage() {
   
   // Handle extension install callback
   const isInstalled = searchParams.get('installed') === 'true';
-  const extensionVersion = searchParams.get('v') || '5.8.1';
+  const extensionVersion = searchParams.get('v') || '6.0.0';
   const [showWelcomeModal, setShowWelcomeModal] = useState(isInstalled);
 
   // Clear URL params after showing modal
@@ -373,7 +373,7 @@ export default function ChromeExtensionPage() {
           <div className="flex-1 space-y-4">
             <div className="flex items-center gap-2">
               <Badge className="bg-cyan-500">Extension Chrome</Badge>
-              <Badge variant="outline">v5.9.0</Badge>
+              <Badge variant="outline">v6.0.0</Badge>
               <Badge variant="outline" className="bg-green-500/10 text-green-600 border-green-500/30">
                 <RefreshCw className="h-3 w-3 mr-1" />
                 Sync SaaS
@@ -1148,7 +1148,7 @@ export default function ChromeExtensionPage() {
                     <h4 className="font-medium mb-2">Informations techniques</h4>
                     <div className="grid grid-cols-2 gap-2 text-sm">
                       <div className="text-muted-foreground">Version:</div>
-                      <div className="font-mono">5.8.1</div>
+                      <div className="font-mono">6.0.0</div>
                       <div className="text-muted-foreground">API Endpoint:</div>
                       <div className="font-mono text-xs truncate">jsmwckzrmqecwwrswwrz.supabase.co</div>
                       <div className="text-muted-foreground">Token Storage:</div>
