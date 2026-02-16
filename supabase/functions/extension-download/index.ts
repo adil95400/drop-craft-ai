@@ -11,7 +11,7 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
-const VERSION = '5.7.0'
+const VERSION = '6.0.0'
 const APP_URL = 'https://shopopti.io'
 
 // Complete file list for the extension v5.7.0
