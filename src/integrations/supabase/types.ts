@@ -12801,6 +12801,45 @@ export type Database = {
           },
         ]
       }
+      store_team_access: {
+        Row: {
+          can_edit: boolean | null
+          created_at: string
+          id: string
+          store_id: string
+          team_member_id: string
+        }
+        Insert: {
+          can_edit?: boolean | null
+          created_at?: string
+          id?: string
+          store_id: string
+          team_member_id: string
+        }
+        Update: {
+          can_edit?: boolean | null
+          created_at?: string
+          id?: string
+          store_id?: string
+          team_member_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "store_team_access_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "store_team_access_team_member_id_fkey"
+            columns: ["team_member_id"]
+            isOneToOne: false
+            referencedRelation: "team_members"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       store_variants: {
         Row: {
           external_inventory_item_id: string | null
@@ -14045,6 +14084,51 @@ export type Database = {
           service_name?: string
           status?: string | null
           updated_at?: string | null
+        }
+        Relationships: []
+      }
+      team_members: {
+        Row: {
+          accepted_at: string | null
+          created_at: string
+          id: string
+          invited_at: string
+          member_email: string
+          member_user_id: string | null
+          owner_user_id: string
+          permissions: Json | null
+          role: string
+          status: string
+          store_ids: string[] | null
+          updated_at: string
+        }
+        Insert: {
+          accepted_at?: string | null
+          created_at?: string
+          id?: string
+          invited_at?: string
+          member_email: string
+          member_user_id?: string | null
+          owner_user_id: string
+          permissions?: Json | null
+          role?: string
+          status?: string
+          store_ids?: string[] | null
+          updated_at?: string
+        }
+        Update: {
+          accepted_at?: string | null
+          created_at?: string
+          id?: string
+          invited_at?: string
+          member_email?: string
+          member_user_id?: string | null
+          owner_user_id?: string
+          permissions?: Json | null
+          role?: string
+          status?: string
+          store_ids?: string[] | null
+          updated_at?: string
         }
         Relationships: []
       }

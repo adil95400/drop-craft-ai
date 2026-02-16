@@ -14,12 +14,14 @@ const DomainRegistrationPage = lazy(() => import('@/pages/settings/DomainRegistr
 const WebhookManagementPage = lazy(() => import('@/pages/settings/WebhookManagementPage'));
 const DataExportCenterPage = lazy(() => import('@/pages/settings/DataExportCenterPage'));
 const NotificationPreferencesPage = lazy(() => import('@/pages/settings/NotificationPreferencesPage'));
+const TeamManagementPage = lazy(() => import('@/pages/settings/TeamManagementPage'));
 
 export function SettingsRoutes() {
   return (
     <Routes>
       <Route index element={<ChannableSettingsPage />} />
       <Route path="stores" element={<StoreDashboard />} />
+      <Route path="team" element={<TeamManagementPage />} />
       <Route path="api" element={<APIManagementPage />} />
       <Route path="billing" element={<BillingPage />} />
       <Route path="security" element={<SecurityDashboard />} />
