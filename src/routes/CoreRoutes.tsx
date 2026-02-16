@@ -29,6 +29,7 @@ const AcademyPage = lazy(() => import('@/pages/AcademyPage'));
 const SecurityDashboard = lazy(() => import('@/pages/SecurityDashboard'));
 const SubscriptionDashboard = lazy(() => import('@/pages/SubscriptionDashboard'));
 const OnboardingHubPage = lazy(() => import('@/pages/onboarding/OnboardingHubPage'));
+const OnboardingWizardPage = lazy(() => import('@/pages/onboarding/OnboardingWizardPage'));
 const ConsumptionPage = lazy(() => import('@/pages/ConsumptionPage'));
 
 export function CoreRoutes() {
@@ -56,6 +57,7 @@ export function CoreRoutes() {
       <Route path="academy" element={<AcademyPage />} />
       <Route path="security" element={<SecurityDashboard />} />
       <Route path="onboarding" element={<OnboardingHubPage />} />
+      <Route path="onboarding/wizard" element={<OnboardingWizardPage />} />
       <Route path="subscription" element={<SubscriptionDashboard />} />
       <Route path="consumption" element={<ConsumptionPage />} />
     </Routes>
