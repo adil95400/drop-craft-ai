@@ -33,6 +33,7 @@ const SubscriptionDashboard = lazy(() => import('@/pages/SubscriptionDashboard')
 const OnboardingHubPage = lazy(() => import('@/pages/onboarding/OnboardingHubPage'));
 const OnboardingWizardPage = lazy(() => import('@/pages/onboarding/OnboardingWizardPage'));
 const ConsumptionPage = lazy(() => import('@/pages/ConsumptionPage'));
+const PerformanceMonitoringPage = lazy(() => import('@/pages/monitoring/PerformanceMonitoringPage'));
 
 export function CoreRoutes() {
   return (
@@ -64,6 +65,7 @@ export function CoreRoutes() {
       <Route path="onboarding/wizard" element={<OnboardingWizardPage />} />
       <Route path="subscription" element={<SubscriptionDashboard />} />
       <Route path="consumption" element={<ConsumptionPage />} />
+      <Route path="monitoring" element={<PerformanceMonitoringPage />} />
     </Routes>
   );
 }
