@@ -41,6 +41,13 @@ const elements = {
   logoutBtn: document.getElementById('logout-btn'),
   openDashboard: document.getElementById('open-dashboard'),
   viewProducts: document.getElementById('view-products'),
+  debugBtn: document.getElementById('debug-btn'),
+  debugPanel: document.getElementById('debug-panel'),
+  debugContent: document.getElementById('debug-content'),
+  debugRefresh: document.getElementById('debug-refresh'),
+  debugLogs: document.getElementById('debug-logs'),
+  debugErrors: document.getElementById('debug-errors'),
+  debugApi: document.getElementById('debug-api'),
 
   backBtn: document.getElementById('back-btn'),
   settingAutoImport: document.getElementById('setting-auto-import'),
@@ -333,6 +340,87 @@ elements.syncSettingsBtn?.addEventListener('click', async () => {
     }, 2000);
   }
 });
+
+// ============================================
+// Debug Panel
+// ============================================
+let debugVisible = false;
+
+elements.debugBtn?.addEventListener('click', async () => {
+  debugVisible = !debugVisible;
+  if (elements.debugPanel) {
+    elements.debugPanel.style.display = debugVisible ? 'block' : 'none';
+  }
+  if (debugVisible) {
+    await loadDiagnostics();
+  }
+});
+
+elements.debugRefresh?.addEventListener('click', loadDiagnostics);
+
+elements.debugLogs?.addEventListener('click', async () => {
+  const result = await sendMessage('get_debug_logs', {});
+  if (result?.success && elements.debugContent) {
+    const lines = result.logs.slice(-30).map(l => `[${l.level}] ${l.timestamp.split('T')[1]?.split('.')[0] || ''} ${l.message}`).join('\n');
+    elements.debugContent.textContent = lines || 'Aucun log';
+  }
+});
+
+elements.debugErrors?.addEventListener('click', async () => {
+  const result = await sendMessage('get_debug_logs', { filter: 'ERROR' });
+  if (result?.success && elements.debugContent) {
+    const lines = result.logs.slice(-20).map(l => `[${l.timestamp.split('T')[1]?.split('.')[0] || ''}] ${l.message}`).join('\n');
+    elements.debugContent.textContent = lines || '✓ Aucune erreur';
+  }
+});
+
+elements.debugApi?.addEventListener('click', async () => {
+  const result = await sendMessage('get_debug_logs', { filter: 'API' });
+  if (result?.success && elements.debugContent) {
+    const lines = result.logs.slice(-20).map(l => `${l.timestamp.split('T')[1]?.split('.')[0] || ''} ${l.message}`).join('\n');
+    elements.debugContent.textContent = lines || 'Aucun appel API';
+  }
+});
+
+async function loadDiagnostics() {
+  if (!elements.debugContent) return;
+  elements.debugContent.textContent = 'Chargement...';
+  
+  const result = await sendMessage('get_diagnostics');
+  if (result?.success) {
+    const d = result.diagnostics;
+    const lines = [
+      `═══ ShopOpti+ v${d.version} ═══`,
+      `Heure: ${d.timestamp}`,
+      ``,
+      `── Auth ──`,
+      `Session: ${d.auth.hasSession ? '✓' : '✗'}`,
+      `Access Token: ${d.auth.hasAccessToken ? '✓' : '✗'}`,
+      `Refresh Token: ${d.auth.hasRefreshToken ? '✓' : '✗'}`,
+      `Extension Token: ${d.auth.hasExtensionToken ? '✓' : '✗'}`,
+      `Token Status: ${d.auth.tokenStatus}`,
+      `Token Expiry: ${d.auth.tokenExpiry || 'N/A'}`,
+      `Session Expiry: ${d.auth.sessionExpiresAt || 'N/A'}`,
+      `User ID: ${d.auth.tokenUser || 'N/A'}`,
+      ``,
+      `── API ──`,
+      `URL: ${d.api.baseUrl}`,
+      `Reachable: ${d.api.reachable ? '✓' : '✗'}`,
+      `Latency: ${d.api.latencyMs}ms`,
+      ``,
+      `── Settings ──`,
+      `Auto-Import: ${d.settings.autoImport}`,
+      `Marge: ${d.settings.priceMargin}%`,
+      `Debug Logs: ${d.settings.debugLogs}`,
+      ``,
+      `── Erreurs récentes (${d.recentErrors.length}) ──`,
+      ...d.recentErrors.map(e => `  ${e.timestamp.split('T')[1]?.split('.')[0] || ''} ${e.message.substring(0, 80)}`)
+    ];
+    elements.debugContent.textContent = lines.join('\n');
+  } else {
+    elements.debugContent.textContent = 'Erreur: impossible de charger les diagnostics';
+  }
+}
 
 // ============================================
 // Initialize

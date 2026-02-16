@@ -19,28 +19,54 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 // ============================================
 const Logger = {
   _enabled: true,
+  _history: [],
+  MAX_HISTORY: 200,
 
   _prefix(level) {
     return `[ShopOpti+ ${level}] ${new Date().toISOString()}`;
   },
 
+  _record(level, args) {
+    const entry = {
+      level,
+      timestamp: new Date().toISOString(),
+      message: args.map(a => typeof a === 'object' ? JSON.stringify(a) : String(a)).join(' ')
+    };
+    this._history.push(entry);
+    if (this._history.length > this.MAX_HISTORY) this._history.shift();
+  },
+
+  getHistory(filter) {
+    if (!filter) return [...this._history];
+    return this._history.filter(e => e.level === filter || e.message.toLowerCase().includes(filter.toLowerCase()));
+  },
+
+  clearHistory() {
+    this._history = [];
+  },
+
   info(...args) {
+    this._record('INFO', args);
     if (this._enabled) console.log(this._prefix('INFO'), ...args);
   },
 
   warn(...args) {
+    this._record('WARN', args);
     console.warn(this._prefix('WARN'), ...args);
   },
 
   error(...args) {
+    this._record('ERROR', args);
     console.error(this._prefix('ERROR'), ...args);
   },
 
   security(...args) {
+    this._record('SECURITY', args);
     console.warn(this._prefix('SECURITY'), ...args);
   },
 
   api(method, url, status, durationMs) {
+    this._record('API', [`${method} ${url} → ${status} (${durationMs}ms)`]);
     if (this._enabled) {
       console.log(this._prefix('API'), `${method} ${url} → ${status} (${durationMs}ms)`);
     }
@@ -97,6 +123,7 @@ class StorageManager {
 class ShopOptiAPI {
   static async callEdgeFunction(functionName, body, token) {
     const url = `${SUPABASE_URL}/functions/v1/${functionName}`;
+    const requestId = `ext-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
     const startTime = Date.now();
 
     // [MUST] Verify URL is on allowed API domain
@@ -105,64 +132,106 @@ class ShopOptiAPI {
       throw new Error('Domaine API non autorisé');
     }
 
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
-        'apikey': SUPABASE_ANON_KEY,
-        'x-extension-version': '5.9.0'
-      },
-      body: JSON.stringify(body)
-    });
+    // [MUST] Log exact payload for debugging
+    Logger.info(`[REQ ${requestId}] ${functionName}`, JSON.stringify(body).substring(0, 500));
+
+    let response;
+    try {
+      response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+          'apikey': SUPABASE_ANON_KEY,
+          'x-extension-version': '5.9.0',
+          'x-request-id': requestId
+        },
+        body: JSON.stringify(body)
+      });
+    } catch (networkErr) {
+      const durationMs = Date.now() - startTime;
+      Logger.error(`[REQ ${requestId}] Network failure after ${durationMs}ms:`, networkErr.message);
+      throw new Error(`NETWORK_ERROR: ${networkErr.message}`);
+    }
 
     const durationMs = Date.now() - startTime;
     Logger.api('POST', functionName, response.status, durationMs);
 
     if (!response.ok) {
-      const error = await response.text();
-      throw new Error(`API Error: ${response.status} - ${error}`);
+      let errorBody = '';
+      try { errorBody = await response.text(); } catch { errorBody = 'Unable to read response'; }
+      Logger.error(`[REQ ${requestId}] API ${response.status}:`, errorBody.substring(0, 500));
+      
+      const error = new Error(`API Error: ${response.status} - ${errorBody}`);
+      error.status = response.status;
+      error.requestId = requestId;
+      error.responseBody = errorBody;
+      throw error;
     }
 
-    return response.json();
+    const result = await response.json();
+    Logger.info(`[REQ ${requestId}] Success:`, JSON.stringify(result).substring(0, 200));
+    return { ...result, _requestId: requestId };
   }
 
-  // [MUST] Token validation with proper error handling
+  // [MUST] Token validation with proper error handling + diagnostics
   static async validateToken(token) {
+    Logger.info('[TOKEN] Validating token, length:', token?.length, 'prefix:', token?.substring(0, 20) + '...');
+
     if (!token || typeof token !== 'string' || token.length < 10) {
-      Logger.security('Invalid token format provided for validation');
+      Logger.security('Invalid token format:', { type: typeof token, length: token?.length });
       return { success: false, error: 'Format de token invalide', code: 'INVALID_TOKEN_FORMAT' };
+    }
+
+    // Check JWT structure (3 parts separated by dots)
+    const parts = token.split('.');
+    if (parts.length !== 3) {
+      Logger.security('Token is not a valid JWT (expected 3 parts, got', parts.length, ')');
+      return { success: false, error: 'Le token n\'est pas un JWT valide', code: 'INVALID_JWT_FORMAT' };
+    }
+
+    // Check JWT expiry locally first
+    try {
+      const payload = JSON.parse(atob(parts[1]));
+      const exp = payload.exp;
+      if (exp && exp * 1000 < Date.now()) {
+        Logger.security('[TOKEN] JWT expired at', new Date(exp * 1000).toISOString());
+        return { success: false, error: 'Token expiré localement', code: 'TOKEN_EXPIRED_LOCAL', expiredAt: new Date(exp * 1000).toISOString() };
+      }
+      Logger.info('[TOKEN] JWT valid until', new Date(exp * 1000).toISOString(), 'sub:', payload.sub);
+    } catch (e) {
+      Logger.warn('[TOKEN] Could not decode JWT payload:', e.message);
     }
 
     try {
       const startTime = Date.now();
-      const response = await fetch(`${SUPABASE_URL}/rest/v1/rpc/validate_extension_token`, {
-        method: 'POST',
+      const response = await fetch(`${SUPABASE_URL}/auth/v1/user`, {
+        method: 'GET',
         headers: {
-          'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`,
           'apikey': SUPABASE_ANON_KEY
-        },
-        body: JSON.stringify({ p_token: token })
+        }
       });
 
       const durationMs = Date.now() - startTime;
-      Logger.api('POST', 'validate_extension_token', response.status, durationMs);
+      Logger.api('GET', 'auth/v1/user', response.status, durationMs);
 
       if (response.status === 401) {
-        Logger.security('Token validation failed: 401 Unauthorized');
-        return { success: false, error: 'Token expiré ou invalide', code: 'TOKEN_EXPIRED' };
+        Logger.security('[TOKEN] Server rejected token: 401');
+        return { success: false, error: 'Token expiré ou invalide côté serveur', code: 'TOKEN_EXPIRED' };
       }
 
       if (!response.ok) {
-        Logger.warn('Token validation HTTP error:', response.status);
+        const body = await response.text();
+        Logger.warn('[TOKEN] Validation HTTP error:', response.status, body.substring(0, 200));
         return { success: false, error: `Erreur de validation (${response.status})`, code: 'VALIDATION_ERROR' };
       }
 
-      const data = await response.json();
-      return { success: true, data };
+      const user = await response.json();
+      Logger.info('[TOKEN] Valid for user:', user.email);
+      return { success: true, data: user };
     } catch (error) {
-      Logger.error('Token validation network error:', error.message);
+      Logger.error('[TOKEN] Network error:', error.message);
       return { success: false, error: 'Impossible de valider le token. Vérifiez votre connexion.', code: 'NETWORK_ERROR' };
     }
   }
@@ -218,7 +287,7 @@ const Security = {
     'login', 'logout', 'check_auth', 'validate_token',
     'import_product', 'bulk_import', 'quick_import',
     'get_settings', 'save_settings', 'sync_settings',
-    'product_detected', 'ping'
+    'product_detected', 'ping', 'get_debug_logs', 'get_diagnostics'
   ],
 
   // Rate limiting
@@ -379,6 +448,10 @@ async function handleMessage(message, sender) {
       return handleProductDetected(data, sender.tab);
     case 'ping':
       return { success: true, version: '5.9.0', timestamp: Date.now() };
+    case 'get_debug_logs':
+      return { success: true, logs: Logger.getHistory(data?.filter), total: Logger._history.length };
+    case 'get_diagnostics':
+      return getDiagnostics();
     default:
       return { success: false, error: `Unknown action: ${action}`, code: 'UNKNOWN_ACTION' };
   }
@@ -899,5 +972,74 @@ chrome.alarms.onAlarm.addListener(async (alarm) => {
     }
   }
 });
+
+// ============================================
+// Diagnostics endpoint — [MUST] Debug complet
+// ============================================
+async function getDiagnostics() {
+  const session = await StorageManager.getSession();
+  const extToken = await StorageManager.get('extension_token');
+  const settings = await StorageManager.getSettings();
+  
+  let tokenStatus = 'missing';
+  let tokenExpiry = null;
+  let tokenUser = null;
+
+  if (session?.access_token) {
+    try {
+      const parts = session.access_token.split('.');
+      if (parts.length === 3) {
+        const payload = JSON.parse(atob(parts[1]));
+        tokenExpiry = payload.exp ? new Date(payload.exp * 1000).toISOString() : null;
+        tokenUser = payload.sub || null;
+        tokenStatus = (payload.exp * 1000 > Date.now()) ? 'valid' : 'expired';
+      }
+    } catch { tokenStatus = 'malformed'; }
+  }
+
+  // Test API connectivity
+  let apiReachable = false;
+  let apiLatency = 0;
+  try {
+    const t0 = Date.now();
+    const resp = await fetch(`${SUPABASE_URL}/rest/v1/`, {
+      method: 'HEAD',
+      headers: { 'apikey': SUPABASE_ANON_KEY }
+    });
+    apiLatency = Date.now() - t0;
+    apiReachable = resp.ok || resp.status === 400; // 400 means API is reachable
+  } catch { apiReachable = false; }
+
+  return {
+    success: true,
+    diagnostics: {
+      version: '5.9.0',
+      timestamp: new Date().toISOString(),
+      auth: {
+        hasSession: !!session,
+        hasAccessToken: !!session?.access_token,
+        hasRefreshToken: !!session?.refresh_token,
+        hasExtensionToken: !!extToken,
+        tokenStatus,
+        tokenExpiry,
+        tokenUser,
+        sessionExpiresAt: session?.expires_at ? new Date(session.expires_at).toISOString() : null
+      },
+      api: {
+        baseUrl: SUPABASE_URL,
+        reachable: apiReachable,
+        latencyMs: apiLatency
+      },
+      settings: {
+        autoImport: settings.autoImport,
+        priceMargin: settings.priceMargin,
+        debugLogs: settings.debugLogs,
+        notifications: settings.notifications
+      },
+      recentErrors: Logger.getHistory('ERROR').slice(-10),
+      recentApiCalls: Logger.getHistory('API').slice(-10)
+    }
+  };
+}
 
 Logger.info('ShopOpti+ Pro Background Service Worker v5.9.0 loaded');
