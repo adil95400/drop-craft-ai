@@ -19,31 +19,31 @@ import { AdminRoute } from '@/components/auth/AdminRoute';
 // Centralized Legacy Redirect Handler
 import { LegacyRedirectHandler } from './LegacyRedirectsHandler';
 
-// Route modules
-import { PublicRoutes } from './PublicRoutes';
-import { CoreRoutes } from './CoreRoutes';
-import { ProductRoutes } from './ProductRoutes';
-import { CatalogRoutes } from './CatalogRoutes';
-import { OrderRoutes } from './OrderRoutes';
-import { CustomerRoutes } from './CustomerRoutes';
-import { AnalyticsRoutes } from './AnalyticsRoutes';
-import { AutomationRoutes } from './AutomationRoutes';
-import { MarketingRoutes } from './MarketingRoutes';
-import { IntegrationRoutes } from './IntegrationRoutes';
-import { EnterpriseRoutes } from './EnterpriseRoutes';
-import { SettingsRoutes } from './SettingsRoutes';
-import { ExtensionRoutes } from './ExtensionRoutes';
-import { AuditRoutes } from './AuditRoutes';
-import { StockRoutes } from './StockRoutes';
-import { ImportRoutes } from './ImportRoutes';
-import { FeedRoutes } from './FeedRoutes';
-import { AdminRoutes } from './AdminRoutes';
-import SupplierRoutes from './SupplierRoutes';
-import { ChannelRoutes } from './ChannelRoutes';
-import { PricingRoutes } from './PricingRoutes';
-import { AIRoutes } from './AIRoutes';
-import { ResearchRoutes } from './ResearchRoutes';
-import { ToolsRoutes } from './ToolsRoutes';
+// Route modules (lazy loaded for code splitting)
+const PublicRoutes = lazy(() => import('./PublicRoutes').then(m => ({ default: m.PublicRoutes })));
+const CoreRoutes = lazy(() => import('./CoreRoutes').then(m => ({ default: m.CoreRoutes })));
+const ProductRoutes = lazy(() => import('./ProductRoutes').then(m => ({ default: m.ProductRoutes })));
+const CatalogRoutes = lazy(() => import('./CatalogRoutes').then(m => ({ default: m.CatalogRoutes })));
+const OrderRoutes = lazy(() => import('./OrderRoutes').then(m => ({ default: m.OrderRoutes })));
+const CustomerRoutes = lazy(() => import('./CustomerRoutes').then(m => ({ default: m.CustomerRoutes })));
+const AnalyticsRoutes = lazy(() => import('./AnalyticsRoutes').then(m => ({ default: m.AnalyticsRoutes })));
+const AutomationRoutes = lazy(() => import('./AutomationRoutes').then(m => ({ default: m.AutomationRoutes })));
+const MarketingRoutes = lazy(() => import('./MarketingRoutes').then(m => ({ default: m.MarketingRoutes })));
+const IntegrationRoutes = lazy(() => import('./IntegrationRoutes').then(m => ({ default: m.IntegrationRoutes })));
+const EnterpriseRoutes = lazy(() => import('./EnterpriseRoutes').then(m => ({ default: m.EnterpriseRoutes })));
+const SettingsRoutes = lazy(() => import('./SettingsRoutes').then(m => ({ default: m.SettingsRoutes })));
+const ExtensionRoutes = lazy(() => import('./ExtensionRoutes').then(m => ({ default: m.ExtensionRoutes })));
+const AuditRoutes = lazy(() => import('./AuditRoutes').then(m => ({ default: m.AuditRoutes })));
+const StockRoutes = lazy(() => import('./StockRoutes').then(m => ({ default: m.StockRoutes })));
+const ImportRoutes = lazy(() => import('./ImportRoutes').then(m => ({ default: m.ImportRoutes })));
+const FeedRoutes = lazy(() => import('./FeedRoutes').then(m => ({ default: m.FeedRoutes })));
+const AdminRoutes = lazy(() => import('./AdminRoutes').then(m => ({ default: m.AdminRoutes })));
+const SupplierRoutes = lazy(() => import('./SupplierRoutes'));
+const ChannelRoutes = lazy(() => import('./ChannelRoutes').then(m => ({ default: m.ChannelRoutes })));
+const PricingRoutes = lazy(() => import('./PricingRoutes').then(m => ({ default: m.PricingRoutes })));
+const AIRoutes = lazy(() => import('./AIRoutes').then(m => ({ default: m.AIRoutes })));
+const ResearchRoutes = lazy(() => import('./ResearchRoutes').then(m => ({ default: m.ResearchRoutes })));
+const ToolsRoutes = lazy(() => import('./ToolsRoutes').then(m => ({ default: m.ToolsRoutes })));
 
 // Pages directes (lazy loaded)
 const NotFoundPage = lazy(() => import('@/pages/NotFoundPage'));

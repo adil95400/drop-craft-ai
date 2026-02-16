@@ -14,6 +14,7 @@ import { ThemeProvider } from 'next-themes';
 import { ModalContextProvider } from '@/hooks/useModalHelpers';
 import { AppRoutes } from '@/routes';
 import { useAutoTheme } from '@/hooks/useAutoTheme';
+import { usePerformanceMonitor } from '@/hooks/usePerformanceMonitor';
 import { OfflineIndicatorLite } from '@/components/offline/OfflineIndicatorLite';
 import { LightAuthProvider } from '@/contexts/LightAuthContext';
 
@@ -41,6 +42,7 @@ const initI18n = () => import('@/lib/i18n');
 
 const AppContent = memo(() => {
   useAutoTheme();
+  usePerformanceMonitor();
   
   useEffect(() => {
     // Initialize i18n lazily
