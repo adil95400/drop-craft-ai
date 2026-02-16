@@ -187,7 +187,7 @@ export default function ExtensionAuthPage() {
                     <div className="flex items-center justify-between">
                       <Label>Votre token d'extension</Label>
                       <span className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded">
-                        v5.7.1 • Expire dans 1 an
+                        v6.0.0 • Expire dans 1 an
                       </span>
                     </div>
                     <div className="flex gap-2">

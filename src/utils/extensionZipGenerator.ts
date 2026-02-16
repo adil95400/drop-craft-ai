@@ -2,7 +2,7 @@ import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
 import { toast } from 'sonner';
 
-const EXTENSION_VERSION = '5.9.0';
+const EXTENSION_VERSION = '6.0.0';
 
 // Required files that MUST be present for the extension to load in Chrome
 const REQUIRED_FILES = [
@@ -90,7 +90,7 @@ const EXTENSION_FILES = [
   'CHANGELOG.md',
   
   // ==========================================
-  // LIBRARY FILES v5.9.0 (Enterprise Gateway + Phase A/B/C + Security + AI)
+  // LIBRARY FILES v6.0.0 (Enterprise Gateway + Phase A/B/C + Security + AI)
   // IMPORTANT: Must match manifest.json references
   // ==========================================
   'lib/logger.js',
@@ -164,7 +164,7 @@ const EXTENSION_FILES = [
   'lib/variant-mapper.js',
 
   // ==========================================
-  // EXTRACTORS v5.9.0 (17+ platforms)
+  // EXTRACTORS v6.0.0 (17+ platforms)
   // ==========================================
   'extractors/core-extractor.js',
   'extractors/extractor-registry.js',

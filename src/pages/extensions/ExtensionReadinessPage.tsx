@@ -50,7 +50,7 @@ const extensionChecklist: ChecklistItem[] = [
   { id: 'manifest-version', category: 'manifest', label: 'Manifest V3', description: 'Utilisation du Manifest V3 (requis depuis 2024)', status: 'pass', details: 'manifest_version: 3' },
   { id: 'manifest-name', category: 'manifest', label: 'Nom de l\'extension', description: 'Nom clair et descriptif', status: 'pass', details: 'ShopOpti+ Pro' },
   { id: 'manifest-description', category: 'manifest', label: 'Description', description: 'Description complète des fonctionnalités', status: 'pass', details: '< 132 caractères' },
-  { id: 'manifest-version-number', category: 'manifest', label: 'Numéro de version', description: 'Format semver correct', status: 'pass', details: '5.8.1' },
+  { id: 'manifest-version-number', category: 'manifest', label: 'Numéro de version', description: 'Format semver correct', status: 'pass', details: '6.0.0' },
   { id: 'manifest-permissions', category: 'manifest', label: 'Permissions minimales', description: 'Seules les permissions nécessaires', status: 'pass', details: 'storage, activeTab, alarms, notifications' },
   
   // Assets
@@ -270,7 +270,7 @@ export default function ExtensionReadinessPage() {
                     </div>
                     <div>
                       <h3 className="font-bold text-lg">ShopOpti+ Pro</h3>
-                      <p className="text-sm text-muted-foreground">Version 5.8.1</p>
+                      <p className="text-sm text-muted-foreground">Version 6.0.0</p>
                       <div className="flex gap-1 mt-1">
                         <Badge variant="outline">Manifest V3</Badge>
                         <Badge className="bg-green-500">Prêt</Badge>

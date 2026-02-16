@@ -92,7 +92,7 @@ const EXTENSION_FILES = [
   'icons/icon128.png',
 ];
 
-const EXTENSION_VERSION = '5.7.0';
+const EXTENSION_VERSION = '6.0.0';
 
 export function ExtensionDownloader() {
   const [isDownloading, setIsDownloading] = useState(false);
