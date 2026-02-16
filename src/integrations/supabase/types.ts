@@ -14436,6 +14436,90 @@ export type Database = {
         }
         Relationships: []
       }
+      user_achievements: {
+        Row: {
+          achievement_id: string
+          id: string
+          metadata: Json | null
+          unlocked_at: string
+          user_id: string
+        }
+        Insert: {
+          achievement_id: string
+          id?: string
+          metadata?: Json | null
+          unlocked_at?: string
+          user_id: string
+        }
+        Update: {
+          achievement_id?: string
+          id?: string
+          metadata?: Json | null
+          unlocked_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_feature_discovery: {
+        Row: {
+          dismissed: boolean | null
+          feature_id: string
+          id: string
+          seen_at: string
+          user_id: string
+        }
+        Insert: {
+          dismissed?: boolean | null
+          feature_id: string
+          id?: string
+          seen_at?: string
+          user_id: string
+        }
+        Update: {
+          dismissed?: boolean | null
+          feature_id?: string
+          id?: string
+          seen_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_gamification: {
+        Row: {
+          created_at: string
+          id: string
+          last_active_date: string | null
+          level: number
+          streak_days: number
+          total_actions: number
+          updated_at: string
+          user_id: string
+          xp: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          last_active_date?: string | null
+          level?: number
+          streak_days?: number
+          total_actions?: number
+          updated_at?: string
+          user_id: string
+          xp?: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          last_active_date?: string | null
+          level?: number
+          streak_days?: number
+          total_actions?: number
+          updated_at?: string
+          user_id?: string
+          xp?: number
+        }
+        Relationships: []
+      }
       user_kpis: {
         Row: {
           created_at: string
