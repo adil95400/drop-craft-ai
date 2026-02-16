@@ -15,6 +15,7 @@ const WebhookManagementPage = lazy(() => import('@/pages/settings/WebhookManagem
 const DataExportCenterPage = lazy(() => import('@/pages/settings/DataExportCenterPage'));
 const NotificationPreferencesPage = lazy(() => import('@/pages/settings/NotificationPreferencesPage'));
 const TeamManagementPage = lazy(() => import('@/pages/settings/TeamManagementPage'));
+const OnboardingRetentionPage = lazy(() => import('@/pages/settings/OnboardingRetentionPage'));
 
 export function SettingsRoutes() {
   return (
@@ -30,6 +31,7 @@ export function SettingsRoutes() {
       <Route path="webhooks" element={<WebhookManagementPage />} />
       <Route path="export" element={<DataExportCenterPage />} />
       <Route path="notifications" element={<NotificationPreferencesPage />} />
+      <Route path="onboarding" element={<OnboardingRetentionPage />} />
     </Routes>
   );
 }
