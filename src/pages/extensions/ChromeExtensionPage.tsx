@@ -190,18 +190,28 @@ export default function ChromeExtensionPage() {
       if (user) {
         // Store settings in extension_data table
         const settingsToSave = JSON.parse(JSON.stringify(settings));
-        const { error } = await supabase
+        
+        // Check if settings row already exists
+        const { data: existing } = await supabase
           .from('extension_data')
-          .upsert([{
-            user_id: user.id,
-            data_type: 'extension_settings',
-            data: settingsToSave,
-            source_url: 'webapp',
-            status: 'active',
-            updated_at: new Date().toISOString()
-          }], {
-            onConflict: 'user_id,data_type'
-          });
+          .select('id')
+          .eq('user_id', user.id)
+          .eq('data_type', 'extension_settings')
+          .limit(1)
+          .maybeSingle();
+
+        const payload = {
+          user_id: user.id,
+          data_type: 'extension_settings',
+          data: settingsToSave,
+          source_url: 'webapp',
+          status: 'active',
+          updated_at: new Date().toISOString()
+        };
+
+        const { error } = existing?.id
+          ? await supabase.from('extension_data').update(payload).eq('id', existing.id)
+          : await supabase.from('extension_data').insert(payload);
         
         if (error) {
           console.error('Backend sync error:', error);
