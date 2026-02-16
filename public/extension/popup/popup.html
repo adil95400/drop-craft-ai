@@ -30,7 +30,7 @@
           </svg>
           <span class="logo-text">ShopOpti+ Pro</span>
         </div>
-        <span class="version">v5.9.0</span>
+        <span class="version">v6.0.0</span>
       </div>
 
       <div class="login-form">
@@ -42,14 +42,11 @@
             <label for="email">Email</label>
             <input type="email" id="email" placeholder="votre@email.com" required>
           </div>
-          
           <div class="input-group">
             <label for="password">Mot de passe</label>
             <input type="password" id="password" placeholder="••••••••" required>
           </div>
-
           <div id="login-error" class="error-message" style="display: none;"></div>
-          
           <button type="submit" class="btn btn-primary">
             <span id="login-text">Se connecter</span>
             <span id="login-loading" style="display: none;">Connexion...</span>
@@ -115,7 +112,7 @@
         </div>
       </div>
 
-      <!-- Current Product -->
+      <!-- Current Product (simple view) -->
       <div class="current-product" id="current-product" style="display: none;">
         <div class="section-title">Produit détecté</div>
         <div class="product-card">
@@ -128,12 +125,25 @@
             </div>
           </div>
         </div>
-        <button class="btn btn-primary btn-import" id="import-btn">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/>
-          </svg>
-          Importer ce produit
-        </button>
+        <!-- P3: Dedup badge -->
+        <div id="dedup-badge" class="dedup-badge" style="display:none;"></div>
+        
+        <!-- P3: Action buttons -->
+        <div class="product-actions">
+          <button class="btn btn-secondary btn-sm" id="preview-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+              <circle cx="12" cy="12" r="3"/>
+            </svg>
+            Preview Pro
+          </button>
+          <button class="btn btn-primary btn-sm" id="import-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+              <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/>
+            </svg>
+            Importer
+          </button>
+        </div>
       </div>
 
       <!-- No Product -->
@@ -152,44 +162,23 @@
       <!-- Quick Actions -->
       <div class="quick-actions">
         <button class="quick-action" id="open-dashboard">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <rect x="3" y="3" width="7" height="7"/>
-            <rect x="14" y="3" width="7" height="7"/>
-            <rect x="14" y="14" width="7" height="7"/>
-            <rect x="3" y="14" width="7" height="7"/>
-          </svg>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
           Dashboard
         </button>
         <button class="quick-action" id="view-products">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/>
-            <line x1="3" y1="6" x2="21" y2="6"/>
-            <path d="M16 10a4 4 0 01-8 0"/>
-          </svg>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
           Produits
         </button>
         <button class="quick-action" id="debug-btn">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/>
-            <path d="M12 8v4M12 16h.01"/>
-          </svg>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/><path d="M12 8v4M12 16h.01"/></svg>
           Debug
         </button>
         <button class="quick-action" id="import-logs-btn">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
-            <polyline points="14 2 14 8 20 8"/>
-            <line x1="16" y1="13" x2="8" y2="13"/>
-            <line x1="16" y1="17" x2="8" y2="17"/>
-          </svg>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
           Imports
         </button>
         <button class="quick-action" id="logout-btn">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/>
-            <polyline points="16 17 21 12 16 7"/>
-            <line x1="21" y1="12" x2="9" y2="12"/>
-          </svg>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
           Déconnexion
         </button>
       </div>
@@ -218,13 +207,92 @@
       </div>
     </div>
 
+    <!-- P3: Preview Pro Screen -->
+    <div id="preview-screen" class="screen" style="display: none;">
+      <div class="header">
+        <button id="preview-back-btn" class="icon-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+        </button>
+        <span class="header-title">📋 Import Preview Pro</span>
+        <div></div>
+      </div>
+
+      <div class="preview-content">
+        <!-- Dedup Status -->
+        <div id="preview-dedup-status" class="preview-dedup-status" style="display:none;"></div>
+
+        <!-- Images Gallery -->
+        <div class="preview-section">
+          <div class="section-title">Images</div>
+          <div id="preview-images" class="preview-images-grid"></div>
+        </div>
+
+        <!-- Title (editable) -->
+        <div class="preview-section">
+          <div class="section-title">Titre</div>
+          <textarea id="preview-title" class="preview-editable" rows="2"></textarea>
+        </div>
+
+        <!-- Price & Margin -->
+        <div class="preview-section">
+          <div class="section-title">Prix</div>
+          <div class="preview-price-row">
+            <div class="preview-price-item">
+              <span class="preview-price-label">Coût</span>
+              <span id="preview-cost" class="preview-price-value">0.00 €</span>
+            </div>
+            <div class="preview-price-item">
+              <span class="preview-price-label">Marge</span>
+              <span id="preview-margin" class="preview-price-value">30%</span>
+            </div>
+            <div class="preview-price-item">
+              <span class="preview-price-label">Prix vente</span>
+              <input id="preview-sell-price" type="number" step="0.01" class="preview-price-input">
+            </div>
+          </div>
+        </div>
+
+        <!-- Description (editable) -->
+        <div class="preview-section">
+          <div class="section-title">Description</div>
+          <textarea id="preview-description" class="preview-editable" rows="4"></textarea>
+        </div>
+
+        <!-- Variants -->
+        <div class="preview-section" id="preview-variants-section" style="display:none;">
+          <div class="section-title">Variantes <span id="preview-variant-count" class="badge">0</span></div>
+          <div id="preview-variants" class="preview-variants-list"></div>
+        </div>
+
+        <!-- Meta info -->
+        <div class="preview-section">
+          <div class="preview-meta-row">
+            <span class="preview-meta-tag" id="preview-platform-tag"></span>
+            <span class="preview-meta-tag" id="preview-brand-tag"></span>
+            <span class="preview-meta-tag" id="preview-category-tag"></span>
+          </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="preview-actions">
+          <button class="btn btn-secondary" id="preview-cancel-btn">Annuler</button>
+          <button class="btn btn-primary" id="preview-confirm-btn">✓ Confirmer l'import</button>
+        </div>
+
+        <!-- Merge Option (shown for duplicates) -->
+        <div id="preview-merge-section" class="preview-merge-section" style="display:none;">
+          <div class="section-title">🤖 Merge IA disponible</div>
+          <p class="preview-merge-text">Un produit similaire existe déjà. Voulez-vous fusionner intelligemment ?</p>
+          <button class="btn btn-warning" id="preview-merge-btn">🔀 Fusionner avec IA</button>
+        </div>
+      </div>
+    </div>
+
     <!-- Settings Screen -->
     <div id="settings-screen" class="screen" style="display: none;">
       <div class="header">
         <button id="back-btn" class="icon-btn">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M19 12H5M12 19l-7-7 7-7"/>
-          </svg>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
         </button>
         <span class="header-title">Paramètres</span>
         <div></div>
@@ -242,7 +310,6 @@
               <span class="slider"></span>
             </label>
           </div>
-
           <div class="setting-item">
             <div class="setting-info">
               <span class="setting-label">Marge de prix (%)</span>
@@ -250,7 +317,6 @@
             </div>
             <input type="number" id="setting-margin" class="setting-input" value="30" min="0" max="500">
           </div>
-
           <div class="setting-item">
             <div class="setting-info">
               <span class="setting-label">Arrondi de prix</span>
@@ -263,7 +329,6 @@
               <option value="floor">Arrondi inférieur</option>
             </select>
           </div>
-
           <div class="setting-item">
             <div class="setting-info">
               <span class="setting-label">Notifications</span>
@@ -276,13 +341,8 @@
           </div>
         </div>
 
-        <button class="btn btn-primary" id="save-settings">
-          Sauvegarder les paramètres
-        </button>
-
-        <button class="btn btn-secondary" id="sync-settings">
-          Synchroniser avec ShopOpti
-        </button>
+        <button class="btn btn-primary" id="save-settings">Sauvegarder les paramètres</button>
+        <button class="btn btn-secondary" id="sync-settings">Synchroniser avec ShopOpti</button>
       </div>
     </div>
   </div>
