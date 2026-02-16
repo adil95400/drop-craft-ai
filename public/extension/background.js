@@ -1,16 +1,51 @@
 /**
  * ShopOpti+ Pro - Background Service Worker
- * Version: 5.8.1
+ * Version: 5.9.0
  * 
- * Handles:
- * - Authentication via JWT tokens
- * - API calls to ShopOpti backend
- * - Message passing between content scripts and popup
- * - Notifications and alarms
+ * Security Hardened:
+ * - Strict domain whitelisting (API + scraping)
+ * - Rate limiting (30 req/min)
+ * - XSS sanitization on all extracted data
+ * - Structured error codes with user-facing messages
+ * - Debug logging (controlled via settings)
+ * - Token validation with expiry checks
  */
 
 const SUPABASE_URL = 'https://jsmwckzrmqecwwrswwrz.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpzbXdja3pybXFlY3d3cnN3d3J6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYxNjY0NDEsImV4cCI6MjA4MTc0MjQ0MX0.jhrwOY7-tKeNF54E3Ec6yRzjmTW8zJyKuE9R4rvi41I';
+
+// ============================================
+// Debug Logger — [SHOULD] Ticket: Ajouter logs de debug
+// ============================================
+const Logger = {
+  _enabled: true,
+
+  _prefix(level) {
+    return `[ShopOpti+ ${level}] ${new Date().toISOString()}`;
+  },
+
+  info(...args) {
+    if (this._enabled) console.log(this._prefix('INFO'), ...args);
+  },
+
+  warn(...args) {
+    console.warn(this._prefix('WARN'), ...args);
+  },
+
+  error(...args) {
+    console.error(this._prefix('ERROR'), ...args);
+  },
+
+  security(...args) {
+    console.warn(this._prefix('SECURITY'), ...args);
+  },
+
+  api(method, url, status, durationMs) {
+    if (this._enabled) {
+      console.log(this._prefix('API'), `${method} ${url} → ${status} (${durationMs}ms)`);
+    }
+  }
+};
 
 // ============================================
 // Storage Manager
@@ -50,25 +85,39 @@ class StorageManager {
       roundingRule: 'ceil_99',
       defaultSupplier: 'aliexpress',
       notifications: true,
-      language: 'fr'
+      language: 'fr',
+      debugLogs: false
     };
   }
 }
 
 // ============================================
-// API Client
+// API Client — with logging & timing
 // ============================================
 class ShopOptiAPI {
   static async callEdgeFunction(functionName, body, token) {
-    const response = await fetch(`${SUPABASE_URL}/functions/v1/${functionName}`, {
+    const url = `${SUPABASE_URL}/functions/v1/${functionName}`;
+    const startTime = Date.now();
+
+    // [MUST] Verify URL is on allowed API domain
+    if (!Security.isAllowedApiDomain(url)) {
+      Logger.security('Blocked API call to disallowed domain:', url);
+      throw new Error('Domaine API non autorisé');
+    }
+
+    const response = await fetch(url, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${token}`,
-        'apikey': SUPABASE_ANON_KEY
+        'apikey': SUPABASE_ANON_KEY,
+        'x-extension-version': '5.9.0'
       },
       body: JSON.stringify(body)
     });
+
+    const durationMs = Date.now() - startTime;
+    Logger.api('POST', functionName, response.status, durationMs);
 
     if (!response.ok) {
       const error = await response.text();
@@ -78,8 +127,15 @@ class ShopOptiAPI {
     return response.json();
   }
 
+  // [MUST] Token validation with proper error handling
   static async validateToken(token) {
+    if (!token || typeof token !== 'string' || token.length < 10) {
+      Logger.security('Invalid token format provided for validation');
+      return { success: false, error: 'Format de token invalide', code: 'INVALID_TOKEN_FORMAT' };
+    }
+
     try {
+      const startTime = Date.now();
       const response = await fetch(`${SUPABASE_URL}/rest/v1/rpc/validate_extension_token`, {
         method: 'POST',
         headers: {
@@ -90,10 +146,24 @@ class ShopOptiAPI {
         body: JSON.stringify({ p_token: token })
       });
 
-      return response.json();
+      const durationMs = Date.now() - startTime;
+      Logger.api('POST', 'validate_extension_token', response.status, durationMs);
+
+      if (response.status === 401) {
+        Logger.security('Token validation failed: 401 Unauthorized');
+        return { success: false, error: 'Token expiré ou invalide', code: 'TOKEN_EXPIRED' };
+      }
+
+      if (!response.ok) {
+        Logger.warn('Token validation HTTP error:', response.status);
+        return { success: false, error: `Erreur de validation (${response.status})`, code: 'VALIDATION_ERROR' };
+      }
+
+      const data = await response.json();
+      return { success: true, data };
     } catch (error) {
-      console.error('Token validation error:', error);
-      return { success: false, error: error.message };
+      Logger.error('Token validation network error:', error.message);
+      return { success: false, error: 'Impossible de valider le token. Vérifiez votre connexion.', code: 'NETWORK_ERROR' };
     }
   }
 
@@ -126,10 +196,7 @@ class ShopOptiAPI {
 }
 
 // ============================================
-// Message Handlers
-// ============================================
-// ============================================
-// Security Module
+// Security Module — [SHOULD] Audit XSS renforcé
 // ============================================
 const Security = {
   ALLOWED_API_DOMAINS: [
@@ -142,7 +209,9 @@ const Security = {
     'amazon.es', 'amazon.it', 'amazon.ca', 'amazon.com.au',
     'ebay.com', 'ebay.fr', 'ebay.de', 'ebay.co.uk', 'ebay.es', 'ebay.it',
     'walmart.com', 'temu.com', 'shein.com', 'shein.fr', 'etsy.com',
-    'banggood.com', 'cjdropshipping.com', 'costco.com', 'homedepot.com'
+    'banggood.com', 'cjdropshipping.com', 'costco.com', 'homedepot.com',
+    'cdiscount.com', 'fnac.com', 'rakuten.com', 'darty.com',
+    'manomano.fr', 'leroy-merlin.fr', 'boulanger.com'
   ],
 
   ALLOWED_MESSAGE_TYPES: [
@@ -161,15 +230,26 @@ const Security = {
     try {
       const hostname = new URL(url).hostname;
       return this.ALLOWED_API_DOMAINS.some(d => hostname.endsWith(d));
-    } catch { return false; }
+    } catch {
+      Logger.security('Failed to parse API URL:', url);
+      return false;
+    }
   },
 
   isAllowedScrapingDomain(hostname) {
-    return this.ALLOWED_SCRAPING_DOMAINS.some(d => hostname.endsWith(d));
+    const allowed = this.ALLOWED_SCRAPING_DOMAINS.some(d => hostname.endsWith(d));
+    if (!allowed) {
+      Logger.security('Blocked scraping on disallowed domain:', hostname);
+    }
+    return allowed;
   },
 
   isAllowedMessageType(action) {
-    return this.ALLOWED_MESSAGE_TYPES.includes(action);
+    const allowed = this.ALLOWED_MESSAGE_TYPES.includes(action);
+    if (!allowed) {
+      Logger.security('Blocked unknown message type:', action);
+    }
+    return allowed;
   },
 
   checkRateLimit(key) {
@@ -177,7 +257,7 @@ const Security = {
     const attempts = this._rateLimits.get(key) || [];
     const recent = attempts.filter(t => now - t < this.RATE_LIMIT_WINDOW_MS);
     if (recent.length >= this.RATE_LIMIT_MAX) {
-      console.warn(`[Security] Rate limit exceeded for ${key}`);
+      Logger.security('Rate limit exceeded for:', key, `(${recent.length}/${this.RATE_LIMIT_MAX})`);
       return false;
     }
     recent.push(now);
@@ -185,21 +265,37 @@ const Security = {
     return true;
   },
 
+  /**
+   * [SHOULD] Sanitize text — renforcé pour neutraliser toutes formes d'injection
+   * Utilise une approche whitelist : seul le texte brut est conservé.
+   */
   sanitizeText(text) {
     if (!text || typeof text !== 'string') return '';
     return text
-      .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
-      .replace(/<iframe\b[^<]*(?:(?!<\/iframe>)<[^<]*)*<\/iframe>/gi, '')
-      .replace(/on\w+\s*=\s*["'][^"']*["']/gi, '')
-      .replace(/javascript:/gi, '')
+      // Remove all HTML tags (not just script/iframe)
       .replace(/<[^>]*>/g, '')
+      // Remove event handlers
+      .replace(/on\w+\s*=\s*["'][^"']*["']/gi, '')
+      // Remove javascript: protocol
+      .replace(/javascript\s*:/gi, '')
+      // Remove data: protocol (potential XSS vector)
+      .replace(/data\s*:\s*text\/html/gi, '')
+      // Remove HTML entities that could be used for obfuscation
+      .replace(/&#x?[0-9a-f]+;?/gi, '')
+      // Remove expression() CSS attacks
+      .replace(/expression\s*\(/gi, '')
+      // Remove vbscript
+      .replace(/vbscript\s*:/gi, '')
+      // Normalize whitespace
+      .replace(/\s+/g, ' ')
       .trim()
       .substring(0, 5000);
   },
 
   sanitizeProductData(product) {
     if (!product || typeof product !== 'object') return null;
-    return {
+
+    const sanitized = {
       ...product,
       title: this.sanitizeText(product.title),
       description: this.sanitizeText(product.description),
@@ -207,19 +303,40 @@ const Security = {
       category: this.sanitizeText(product.category),
       url: product.url && typeof product.url === 'string' ? product.url.substring(0, 2048) : '',
       images: Array.isArray(product.images)
-        ? product.images.filter(u => typeof u === 'string' && (u.startsWith('https://') || u.startsWith('http://'))).slice(0, 30)
+        ? product.images
+            .filter(u => typeof u === 'string' && (u.startsWith('https://') || u.startsWith('http://')))
+            .map(u => u.substring(0, 2048))
+            .slice(0, 30)
         : [],
       price: typeof product.price === 'number' ? product.price : parseFloat(product.price) || 0,
     };
+
+    // Validate URL domain if present
+    if (sanitized.url) {
+      try {
+        const hostname = new URL(sanitized.url).hostname;
+        if (!this.isAllowedScrapingDomain(hostname)) {
+          Logger.security('Product URL from disallowed domain, clearing:', hostname);
+          sanitized.url = '';
+        }
+      } catch {
+        sanitized.url = '';
+      }
+    }
+
+    return sanitized;
   }
 };
 
+// ============================================
+// Message Routing
+// ============================================
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   handleMessage(message, sender).then(sendResponse).catch((error) => {
-    console.error('Message handler error:', error);
-    sendResponse({ success: false, error: error.message });
+    Logger.error('Message handler error:', error.message);
+    sendResponse({ success: false, error: error.message, code: 'INTERNAL_ERROR' });
   });
-  return true; // Keep channel open for async response
+  return true;
 });
 
 async function handleMessage(message, sender) {
@@ -227,59 +344,43 @@ async function handleMessage(message, sender) {
 
   // Validate message type
   if (!Security.isAllowedMessageType(action)) {
-    console.warn(`[Security] Blocked unknown action: ${action}`);
-    return { success: false, error: `Action non autorisée: ${action}` };
+    return { success: false, error: `Action non autorisée: ${action}`, code: 'BLOCKED_ACTION' };
   }
 
   // Rate limit per action
   if (!Security.checkRateLimit(action)) {
-    return { success: false, error: 'Trop de requêtes. Veuillez patienter.' };
+    return { success: false, error: 'Trop de requêtes. Veuillez patienter 1 minute.', code: 'RATE_LIMITED' };
   }
 
+  Logger.info(`Handling action: ${action}`);
+
   switch (action) {
-    // Auth
     case 'login':
       return handleLogin(data);
-    
     case 'logout':
       return handleLogout();
-    
     case 'check_auth':
       return checkAuth();
-    
     case 'validate_token':
-      return validateToken(data.token);
-
-    // Import
+      return validateToken(data?.token);
     case 'import_product':
       return importProduct(data);
-    
     case 'bulk_import':
-      return bulkImport(data.products);
-    
+      return bulkImport(data?.products);
     case 'quick_import':
       return quickImport(sender.tab?.id);
-
-    // Settings
     case 'get_settings':
       return StorageManager.getSettings();
-    
     case 'save_settings':
       return saveSettings(data);
-    
     case 'sync_settings':
       return syncSettingsWithServer();
-
-    // Product detection
     case 'product_detected':
       return handleProductDetected(data, sender.tab);
-
-    // Health check
     case 'ping':
-      return { success: true, version: '5.8.1', timestamp: Date.now() };
-
+      return { success: true, version: '5.9.0', timestamp: Date.now() };
     default:
-      return { success: false, error: `Unknown action: ${action}` };
+      return { success: false, error: `Unknown action: ${action}`, code: 'UNKNOWN_ACTION' };
   }
 }
 
@@ -287,6 +388,10 @@ async function handleMessage(message, sender) {
 // Auth Handlers
 // ============================================
 async function handleLogin(credentials) {
+  if (!credentials?.email || !credentials?.password) {
+    return { success: false, error: 'Email et mot de passe requis', code: 'MISSING_CREDENTIALS' };
+  }
+
   try {
     const response = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=password`, {
       method: 'POST',
@@ -303,10 +408,10 @@ async function handleLogin(credentials) {
     const data = await response.json();
 
     if (data.error) {
+      Logger.warn('Login failed:', data.error);
       throw new Error(data.error_description || data.error);
     }
 
-    // Store session
     await StorageManager.setSession({
       access_token: data.access_token,
       refresh_token: data.refresh_token,
@@ -315,20 +420,24 @@ async function handleLogin(credentials) {
     });
 
     // Generate extension token
-    const tokenResult = await ShopOptiAPI.callEdgeFunction('extension-auth', {
-      action: 'generate_token',
-      device_info: {
-        browser: 'chrome',
-        version: '5.8.1',
-        platform: navigator.platform
-      }
-    }, data.access_token);
+    try {
+      const tokenResult = await ShopOptiAPI.callEdgeFunction('extension-auth', {
+        action: 'generate_token',
+        device_info: {
+          browser: 'chrome',
+          version: '5.9.0',
+          platform: navigator.platform
+        }
+      }, data.access_token);
 
-    if (tokenResult.success && tokenResult.token) {
-      await StorageManager.set('extension_token', tokenResult.token);
+      if (tokenResult.success && tokenResult.token) {
+        await StorageManager.set('extension_token', tokenResult.token);
+        Logger.info('Extension token generated successfully');
+      }
+    } catch (tokenError) {
+      Logger.warn('Extension token generation failed (non-blocking):', tokenError.message);
     }
 
-    // Show success notification
     if ((await StorageManager.getSettings()).notifications) {
       chrome.notifications.create({
         type: 'basic',
@@ -338,11 +447,12 @@ async function handleLogin(credentials) {
       });
     }
 
+    Logger.info('Login successful for:', data.user.email);
     return { success: true, user: data.user };
 
   } catch (error) {
-    console.error('Login error:', error);
-    return { success: false, error: error.message };
+    Logger.error('Login error:', error.message);
+    return { success: false, error: error.message, code: 'LOGIN_FAILED' };
   }
 }
 
@@ -350,7 +460,8 @@ async function handleLogout() {
   try {
     await StorageManager.remove('shopopti_session');
     await StorageManager.remove('extension_token');
-    
+    await StorageManager.remove('current_product');
+
     chrome.notifications.create({
       type: 'basic',
       iconUrl: 'icons/icon48.png',
@@ -358,6 +469,7 @@ async function handleLogout() {
       message: 'Déconnecté avec succès'
     });
 
+    Logger.info('User logged out');
     return { success: true };
   } catch (error) {
     return { success: false, error: error.message };
@@ -366,14 +478,14 @@ async function handleLogout() {
 
 async function checkAuth() {
   const session = await StorageManager.getSession();
-  
+
   if (!session) {
     return { authenticated: false };
   }
 
   // Check if token expired
   if (session.expires_at && session.expires_at < Date.now()) {
-    // Try refresh
+    Logger.info('Session expired, attempting refresh...');
     try {
       const response = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=refresh_token`, {
         method: 'POST',
@@ -387,6 +499,7 @@ async function checkAuth() {
       const data = await response.json();
 
       if (data.error) {
+        Logger.warn('Token refresh failed:', data.error);
         await handleLogout();
         return { authenticated: false };
       }
@@ -398,9 +511,11 @@ async function checkAuth() {
         expires_at: Date.now() + (data.expires_in * 1000)
       });
 
+      Logger.info('Token refreshed successfully');
       return { authenticated: true, user: data.user };
 
     } catch (error) {
+      Logger.error('Token refresh network error:', error.message);
       await handleLogout();
       return { authenticated: false };
     }
@@ -409,38 +524,42 @@ async function checkAuth() {
   return { authenticated: true, user: session.user };
 }
 
+// [MUST] Token validation with proper 401 handling
 async function validateToken(token) {
+  if (!token) {
+    return { success: false, error: 'Aucun token fourni', code: 'NO_TOKEN' };
+  }
   return ShopOptiAPI.validateToken(token);
 }
 
 // ============================================
-// Import Handlers
+// Import Handlers — [MUST] Gestion erreurs scraping améliorée
 // ============================================
 async function importProduct(productData) {
   const session = await StorageManager.getSession();
   const extensionToken = await StorageManager.get('extension_token');
-  
+
   if (!session?.access_token && !extensionToken) {
     return { success: false, error: 'Non authentifié. Veuillez vous connecter.', code: 'AUTH_REQUIRED' };
   }
 
-  // Sanitize product data before processing
   const sanitizedData = Security.sanitizeProductData(productData);
   if (!sanitizedData || !sanitizedData.title) {
+    Logger.warn('Invalid product data rejected');
     return { success: false, error: 'Données produit invalides ou incomplètes.', code: 'INVALID_DATA' };
   }
 
   try {
-    // Apply pricing rules
     const settings = await StorageManager.getSettings();
     const processedProduct = applyPricingRules(sanitizedData, settings);
 
     const result = await ShopOptiAPI.importProduct(
-      processedProduct, 
+      processedProduct,
       session?.access_token || extensionToken
     );
 
     if (result.success) {
+      Logger.info('Product imported:', sanitizedData.title?.substring(0, 50));
       chrome.notifications.create({
         type: 'basic',
         iconUrl: 'icons/icon48.png',
@@ -452,14 +571,33 @@ async function importProduct(productData) {
     return result;
 
   } catch (error) {
-    console.error('Import error:', error);
-    // Enhanced error feedback
+    Logger.error('Import error:', error.message);
     const errorMsg = error.message || 'Erreur inconnue';
     const isNetworkError = errorMsg.includes('Failed to fetch') || errorMsg.includes('NetworkError');
-    
+    const isAuthError = errorMsg.includes('401') || errorMsg.includes('Unauthorized');
+    const isQuotaError = errorMsg.includes('402') || errorMsg.includes('quota');
+
+    if (isAuthError) {
+      return {
+        success: false,
+        error: 'Session expirée. Veuillez vous reconnecter.',
+        code: 'AUTH_EXPIRED',
+        canRetry: false
+      };
+    }
+
+    if (isQuotaError) {
+      return {
+        success: false,
+        error: 'Quota d\'import atteint. Mettez à niveau votre plan.',
+        code: 'QUOTA_EXCEEDED',
+        canRetry: false
+      };
+    }
+
     if (isNetworkError) {
-      return { 
-        success: false, 
+      return {
+        success: false,
         error: 'Connexion au serveur impossible. Vérifiez votre connexion internet.',
         code: 'NETWORK_ERROR',
         canRetry: true
@@ -473,7 +611,7 @@ async function importProduct(productData) {
 async function bulkImport(products) {
   const session = await StorageManager.getSession();
   const extensionToken = await StorageManager.get('extension_token');
-  
+
   if (!session?.access_token && !extensionToken) {
     return { success: false, error: 'Non authentifié', code: 'AUTH_REQUIRED' };
   }
@@ -482,7 +620,6 @@ async function bulkImport(products) {
     return { success: false, error: 'Aucun produit à importer', code: 'INVALID_DATA' };
   }
 
-  // Limit bulk size to prevent abuse
   if (products.length > 100) {
     return { success: false, error: 'Maximum 100 produits par import en masse', code: 'BULK_LIMIT' };
   }
@@ -493,6 +630,8 @@ async function bulkImport(products) {
       .map(p => Security.sanitizeProductData(p))
       .filter(p => p && p.title);
     const processedProducts = sanitizedProducts.map(p => applyPricingRules(p, settings));
+
+    Logger.info(`Bulk import: ${processedProducts.length} products`);
 
     const result = await ShopOptiAPI.bulkImport(
       processedProducts,
@@ -511,10 +650,10 @@ async function bulkImport(products) {
     return result;
 
   } catch (error) {
-    console.error('Bulk import error:', error);
+    Logger.error('Bulk import error:', error.message);
     const isNetworkError = (error.message || '').includes('Failed to fetch');
-    return { 
-      success: false, 
+    return {
+      success: false,
       error: isNetworkError ? 'Connexion impossible. Réessayez.' : error.message,
       code: isNetworkError ? 'NETWORK_ERROR' : 'BULK_IMPORT_ERROR',
       canRetry: isNetworkError
@@ -522,31 +661,53 @@ async function bulkImport(products) {
   }
 }
 
+// [MUST] Quick import with explicit error feedback (no silent fail)
 async function quickImport(tabId) {
-  if (!tabId) return { success: false, error: 'Aucun onglet actif', code: 'NO_TAB' };
+  if (!tabId) {
+    return { success: false, error: 'Aucun onglet actif', code: 'NO_TAB' };
+  }
 
   try {
-    // Verify tab URL is on allowed domain
     const tab = await chrome.tabs.get(tabId);
     if (tab?.url) {
       try {
         const hostname = new URL(tab.url).hostname;
         if (!Security.isAllowedScrapingDomain(hostname)) {
-          return { 
-            success: false, 
-            error: `Ce site (${hostname}) n'est pas supporté. Rendez-vous sur AliExpress, Amazon, eBay ou un autre marketplace supporté.`,
+          const errorMsg = `Ce site (${hostname}) n'est pas supporté. Sites supportés : AliExpress, Amazon, eBay, Walmart, Temu, Shein, Etsy, Cdiscount, Fnac...`;
+          Logger.warn('Quick import blocked — unsupported site:', hostname);
+
+          // [MUST] Show notification instead of silent fail
+          chrome.notifications.create({
+            type: 'basic',
+            iconUrl: 'icons/icon48.png',
+            title: 'Site non supporté',
+            message: `${hostname} n'est pas dans la liste des marketplaces supportés.`
+          });
+
+          return {
+            success: false,
+            error: errorMsg,
             code: 'UNSUPPORTED_SITE'
           };
         }
       } catch { /* URL parse error, continue */ }
     }
 
-    // Request product data from content script
     const response = await chrome.tabs.sendMessage(tabId, { action: 'extract_product' });
-    
+
     if (!response?.success || !response.product) {
-      return { 
-        success: false, 
+      Logger.warn('Product extraction failed on tab:', tabId);
+
+      // [MUST] Notify user of extraction failure
+      chrome.notifications.create({
+        type: 'basic',
+        iconUrl: 'icons/icon48.png',
+        title: 'Extraction impossible',
+        message: 'Impossible d\'extraire le produit. Assurez-vous d\'être sur une page produit.'
+      });
+
+      return {
+        success: false,
         error: 'Impossible d\'extraire le produit. Vérifiez que vous êtes sur une page produit.',
         code: 'EXTRACTION_FAILED'
       };
@@ -557,12 +718,22 @@ async function quickImport(tabId) {
   } catch (error) {
     const msg = error.message || '';
     if (msg.includes('Could not establish connection') || msg.includes('Receiving end does not exist')) {
-      return { 
-        success: false, 
+      // [MUST] Notify instead of silent fail
+      chrome.notifications.create({
+        type: 'basic',
+        iconUrl: 'icons/icon48.png',
+        title: 'Script non chargé',
+        message: 'Rechargez la page et réessayez l\'import.'
+      });
+
+      return {
+        success: false,
         error: 'Le script d\'extraction n\'est pas chargé sur cette page. Rechargez la page et réessayez.',
         code: 'CONTENT_SCRIPT_NOT_LOADED'
       };
     }
+
+    Logger.error('Quick import error:', msg);
     return { success: false, error: msg, code: 'QUICK_IMPORT_ERROR' };
   }
 }
@@ -573,10 +744,9 @@ async function quickImport(tabId) {
 function applyPricingRules(product, settings) {
   const margin = settings.priceMargin || 30;
   const basePrice = parseFloat(product.price) || 0;
-  
+
   let calculatedPrice = basePrice * (1 + margin / 100);
 
-  // Apply rounding rule
   switch (settings.roundingRule) {
     case 'ceil_99':
       calculatedPrice = Math.ceil(calculatedPrice) - 0.01;
@@ -608,6 +778,12 @@ function applyPricingRules(product, settings) {
 // ============================================
 async function saveSettings(settings) {
   await StorageManager.set('shopopti_settings', settings);
+
+  // Update logger state
+  if (typeof settings.debugLogs === 'boolean') {
+    Logger._enabled = settings.debugLogs;
+  }
+
   return { success: true };
 }
 
@@ -620,8 +796,10 @@ async function syncSettingsWithServer() {
   try {
     const localSettings = await StorageManager.getSettings();
     const result = await ShopOptiAPI.syncSettings(localSettings, session.access_token);
+    Logger.info('Settings synced with server');
     return result;
   } catch (error) {
+    Logger.error('Settings sync error:', error.message);
     return { success: false, error: error.message };
   }
 }
@@ -630,13 +808,11 @@ async function syncSettingsWithServer() {
 // Product Detection
 // ============================================
 async function handleProductDetected(productData, tab) {
-  // Update badge to show product is available for import
   if (tab?.id) {
     chrome.action.setBadgeText({ text: '1', tabId: tab.id });
     chrome.action.setBadgeBackgroundColor({ color: '#10B981', tabId: tab.id });
   }
 
-  // Store for quick access
   await StorageManager.set('current_product', {
     ...productData,
     detected_at: Date.now(),
@@ -661,12 +837,14 @@ chrome.runtime.onInstalled.addListener(() => {
     title: 'Analyser ce produit',
     contexts: ['page', 'link']
   });
+
+  Logger.info('Extension installed/updated — context menus created');
 });
 
 chrome.contextMenus.onClicked.addListener(async (info, tab) => {
   if (info.menuItemId === 'shopopti-import') {
     const response = await quickImport(tab?.id);
-    console.log('Context menu import result:', response);
+    Logger.info('Context menu import result:', response.success ? 'OK' : response.code);
   }
 });
 
@@ -678,7 +856,7 @@ chrome.commands.onCommand.addListener(async (command) => {
     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
     if (tab?.id) {
       const response = await quickImport(tab.id);
-      console.log('Quick import result:', response);
+      Logger.info('Keyboard shortcut import result:', response.success ? 'OK' : response.code);
     }
   }
 });
@@ -687,7 +865,6 @@ chrome.commands.onCommand.addListener(async (command) => {
 // External Messages (from SaaS)
 // ============================================
 chrome.runtime.onMessageExternal.addListener((message, sender, sendResponse) => {
-  // Verify sender is our SaaS
   const allowedOrigins = [
     'https://drop-craft-ai.lovable.app',
     /https:\/\/.*-preview--.*\.lovable\.app/
@@ -699,6 +876,7 @@ chrome.runtime.onMessageExternal.addListener((message, sender, sendResponse) => 
   });
 
   if (!isAllowed) {
+    Logger.security('Blocked external message from unauthorized origin:', sender.origin);
     sendResponse({ success: false, error: 'Unauthorized origin' });
     return;
   }
@@ -707,4 +885,19 @@ chrome.runtime.onMessageExternal.addListener((message, sender, sendResponse) => 
   return true;
 });
 
-console.log('ShopOpti+ Pro Background Service Worker v5.9.0 loaded');
+// ============================================
+// Periodic Sync (every 30 min)
+// ============================================
+chrome.alarms.create('sync-settings', { periodInMinutes: 30 });
+
+chrome.alarms.onAlarm.addListener(async (alarm) => {
+  if (alarm.name === 'sync-settings') {
+    const session = await StorageManager.getSession();
+    if (session?.access_token) {
+      Logger.info('Periodic sync triggered');
+      await syncSettingsWithServer();
+    }
+  }
+});
+
+Logger.info('ShopOpti+ Pro Background Service Worker v5.9.0 loaded');
