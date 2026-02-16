@@ -80,6 +80,7 @@ const ReviewsPage = lazy(() => import('@/pages/reviews/ReviewsPage'));
 const CRMDashboardPage = lazy(() => import('@/pages/crm/CRMDashboardPage'));
 const Sitemap = lazy(() => import('@/pages/Sitemap'));
 const DocumentationPage = lazy(() => import('@/pages/documentation/DocumentationPage'));
+const SEOContentHubPage = lazy(() => import('@/pages/seo/SEOContentHubPage'));
 
 // Profile & Subscription (Settings group)
 const SubscriptionDashboard = lazy(() => import('@/pages/SubscriptionDashboard'));
@@ -168,7 +169,8 @@ export function AppRoutes() {
           
           {/* Marketing, SEO & CRM */}
           <Route path="/marketing/*" element={<Protected><MarketingRoutes /></Protected>} />
-          <Route path="/seo/*" element={<Navigate to="/marketing/seo" replace />} />
+          <Route path="/seo/content-hub" element={<Protected><SEOContentHubPage /></Protected>} />
+          <Route path="/seo/*" element={<Navigate to="/seo/content-hub" replace />} />
           <Route path="/crm" element={<Protected><CRMDashboardPage /></Protected>} />
           <Route path="/inventory/*" element={<Navigate to="/stock" replace />} />
           
