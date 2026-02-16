@@ -13,6 +13,7 @@ const MarketplaceConnectorsPage = lazy(() => import('@/pages/integrations/Market
 
 // Marketplace (consolidated)
 const MarketplaceHubPage = lazy(() => import('@/pages/MarketplaceHubPage'));
+const MarketplaceIntegrationsPage = lazy(() => import('@/pages/marketplace/MarketplaceIntegrationsPage'));
 const FeedManagerPage = lazy(() => import('@/pages/FeedManagerPage'));
 
 // Extensions - Redirect to /extensions route
@@ -58,6 +59,7 @@ export function IntegrationRoutes() {
       <Route path="marketplace/integrations" element={<Navigate to="/integrations/marketplace" replace />} />
       <Route path="marketplace/integration-guides" element={<Navigate to="/integrations/marketplace" replace />} />
       <Route path="marketplace/feed-manager" element={<FeedManagerPage />} />
+      <Route path="marketplace/services" element={<MarketplaceIntegrationsPage />} />
       <Route path="marketplace/multi-store" element={<Navigate to="/stores-channels" replace />} />
       
       {/* Extensions */}
