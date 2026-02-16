@@ -2,7 +2,7 @@ import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
 import { toast } from 'sonner';
 
-const EXTENSION_VERSION = '5.8.1';
+const EXTENSION_VERSION = '5.9.0';
 
 // Required files that MUST be present for the extension to load in Chrome
 const REQUIRED_FILES = [
@@ -158,6 +158,9 @@ const EXTENSION_FILES = [
   'lib/tracking-sync.js',
   'lib/ui-enhancements.js',
   'lib/unified-button-injector.js',
+  'lib/import-response-handler.js',
+  'lib/backend-import-client.js',
+  'lib/backend-first-import.js',
   'lib/variant-mapper.js',
 
   // ==========================================
