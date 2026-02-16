@@ -90,7 +90,7 @@ const EXTENSION_FILES = [
   'CHANGELOG.md',
   
   // ==========================================
-  // LIBRARY FILES v5.8.1 (Enterprise Gateway + Phase A/B/C + Security + AI)
+  // LIBRARY FILES v5.9.0 (Enterprise Gateway + Phase A/B/C + Security + AI)
   // IMPORTANT: Must match manifest.json references
   // ==========================================
   'lib/logger.js',
@@ -161,7 +161,7 @@ const EXTENSION_FILES = [
   'lib/variant-mapper.js',
 
   // ==========================================
-  // EXTRACTORS v5.8.1 (17+ platforms)
+  // EXTRACTORS v5.9.0 (17+ platforms)
   // ==========================================
   'extractors/core-extractor.js',
   'extractors/extractor-registry.js',
