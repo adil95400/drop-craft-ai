@@ -27,10 +27,10 @@ export class DashboardService {
         customers: customerStats,
         kpis: {
           conversionRate,
-          avgBasket: orderStats.avgOrderValue,
+          avgBasket: orderStats.revenue / Math.max(orderStats.total, 1),
           customerLifetimeValue: customerStats.avgLifetimeValue,
-          revenueGrowth: orderStats.revenueGrowth,
-          ordersGrowth: orderStats.ordersGrowth,
+          revenueGrowth: 0,
+          ordersGrowth: 0,
           customerGrowth: customerStats.customerGrowth,
         },
       }
