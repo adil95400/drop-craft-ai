@@ -13,6 +13,8 @@ const SyncManagerPage = lazy(() => import('@/pages/sync/SyncManagerPage'));
 const StoreSyncDashboard = lazy(() => import('@/pages/StoreSyncDashboard'));
 const StoreDashboard = lazy(() => import('@/pages/stores/StoreDashboard'));
 const NotificationsPage = lazy(() => import('@/pages/NotificationsPage'));
+const EmailTemplatesPage = lazy(() => import('@/pages/notifications/EmailTemplatesPage'));
+const WebhooksOutgoingPage = lazy(() => import('@/pages/notifications/WebhooksOutgoingPage'));
 const AdvancedAnalyticsPage = lazy(() => import('@/pages/AdvancedAnalyticsPage'));
 const AIStoreBuilderHub = lazy(() => import('@/pages/store/AIStoreBuilderHub'));
 const BrandingInvoicesHub = lazy(() => import('@/pages/invoices/BrandingInvoicesHub'));
@@ -46,6 +48,8 @@ export function CoreRoutes() {
       <Route path="marketplace-sync" element={<StoreSyncDashboard />} />
       <Route path="multi-store" element={<StoreDashboard />} />
       <Route path="notifications" element={<NotificationsPage />} />
+      <Route path="notifications/email-templates" element={<EmailTemplatesPage />} />
+      <Route path="notifications/webhooks" element={<WebhooksOutgoingPage />} />
       <Route path="stock" element={<StockManagement />} />
       <Route path="reports" element={<ReportsPage />} />
       <Route path="analytics" element={<AdvancedAnalyticsPage />} />
