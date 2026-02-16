@@ -48,6 +48,10 @@ const elements = {
   debugLogs: document.getElementById('debug-logs'),
   debugErrors: document.getElementById('debug-errors'),
   debugApi: document.getElementById('debug-api'),
+  importLogsBtn: document.getElementById('import-logs-btn'),
+  importLogsPanel: document.getElementById('import-logs-panel'),
+  importLogsList: document.getElementById('import-logs-list'),
+  importLogsClear: document.getElementById('import-logs-clear'),
 
   backBtn: document.getElementById('back-btn'),
   settingAutoImport: document.getElementById('setting-auto-import'),
@@ -250,23 +254,44 @@ elements.importBtn?.addEventListener('click', async () => {
     });
     await loadStats();
 
+    // Show request ID briefly
+    if (result._requestId) {
+      setTimeout(() => {
+        safeSetText(elements.importBtn, `ID: ${result._requestId}`);
+      }, 1500);
+    }
+
     setTimeout(() => {
       elements.importBtn.disabled = false;
       safeSetText(elements.importBtn, '⬇ Importer ce produit');
       elements.importBtn.style.background = '';
-    }, 3000);
+    }, 4000);
 
   } else {
-    // [MUST] Show specific error to user, not silent fail
+    // [MUST] Show specific error + request ID
     const errorText = result?.error || 'Erreur inconnue';
-    safeSetText(elements.importBtn, `✗ ${errorText.substring(0, 40)}`);
+    const reqId = result?._requestId ? ` [${result._requestId}]` : '';
+    safeSetText(elements.importBtn, `✗ ${errorText.substring(0, 35)}`);
     elements.importBtn.style.background = '#EF4444';
-    elements.importBtn.disabled = false;
 
-    setTimeout(() => {
-      safeSetText(elements.importBtn, '⬇ Importer ce produit');
-      elements.importBtn.style.background = '';
-    }, 4000);
+    // Show retry button if retryable
+    if (result?.canRetry) {
+      setTimeout(() => {
+        elements.importBtn.disabled = false;
+        safeSetText(elements.importBtn, '↻ Réessayer l\'import');
+        elements.importBtn.style.background = '#F59E0B';
+      }, 2000);
+      setTimeout(() => {
+        safeSetText(elements.importBtn, '⬇ Importer ce produit');
+        elements.importBtn.style.background = '';
+      }, 8000);
+    } else {
+      elements.importBtn.disabled = false;
+      setTimeout(() => {
+        safeSetText(elements.importBtn, '⬇ Importer ce produit');
+        elements.importBtn.style.background = '';
+      }, 4000);
+    }
   }
 });
 
@@ -420,6 +445,73 @@ async function loadDiagnostics() {
   } else {
     elements.debugContent.textContent = 'Erreur: impossible de charger les diagnostics';
   }
+}
+
+// ============================================
+// Import Logs Panel
+// ============================================
+let importLogsVisible = false;
+
+elements.importLogsBtn?.addEventListener('click', async () => {
+  importLogsVisible = !importLogsVisible;
+  if (elements.importLogsPanel) {
+    elements.importLogsPanel.style.display = importLogsVisible ? 'block' : 'none';
+  }
+  // Hide debug panel when showing import logs
+  if (importLogsVisible && elements.debugPanel) {
+    elements.debugPanel.style.display = 'none';
+    debugVisible = false;
+  }
+  if (importLogsVisible) await loadImportLogs();
+});
+
+elements.importLogsClear?.addEventListener('click', async () => {
+  await sendMessage('clear_import_logs');
+  if (elements.importLogsList) elements.importLogsList.textContent = 'Historique vidé.';
+});
+
+async function loadImportLogs() {
+  if (!elements.importLogsList) return;
+  elements.importLogsList.textContent = 'Chargement...';
+
+  const result = await sendMessage('get_import_logs');
+  if (!result?.success || !result.logs?.length) {
+    elements.importLogsList.textContent = 'Aucun import enregistré.';
+    return;
+  }
+
+  // Clear and build DOM
+  elements.importLogsList.innerHTML = '';
+  result.logs.forEach(log => {
+    const entry = document.createElement('div');
+    entry.style.cssText = 'padding:4px 0;border-bottom:1px solid #2a2a4a;';
+
+    const statusIcon = log.status === 'success' ? '✅' : '❌';
+    const time = log.timestamp?.split('T')[1]?.split('.')[0] || '';
+
+    const line1 = document.createElement('div');
+    line1.textContent = `${statusIcon} ${time} — ${log.title || 'Sans titre'}`;
+    line1.style.cssText = 'font-weight:bold;color:#f0f0f0;';
+
+    const line2 = document.createElement('div');
+    line2.style.cssText = 'color:#888;font-size:10px;margin-top:2px;';
+    const parts = [`📍 ${log.platform || '?'}`];
+    if (log.requestId && log.requestId !== 'N/A') parts.push(`🔗 ${log.requestId}`);
+    if (log.code) parts.push(`⚙️ ${log.code}`);
+    line2.textContent = parts.join('  ');
+
+    entry.appendChild(line1);
+    entry.appendChild(line2);
+
+    if (log.error) {
+      const line3 = document.createElement('div');
+      line3.style.cssText = 'color:#f87171;font-size:10px;margin-top:1px;';
+      line3.textContent = `⚠ ${log.error}`;
+      entry.appendChild(line3);
+    }
+
+    elements.importLogsList.appendChild(entry);
+  });
 }
 
 // ============================================

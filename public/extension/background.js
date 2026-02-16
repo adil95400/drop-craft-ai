@@ -121,7 +121,34 @@ class StorageManager {
 // API Client — with logging & timing
 // ============================================
 class ShopOptiAPI {
-  static async callEdgeFunction(functionName, body, token) {
+  /**
+   * Retry wrapper with exponential backoff
+   * Retries on network errors and 5xx, NOT on 4xx (auth/validation errors)
+   */
+  static async withRetry(fn, { maxRetries = 3, baseDelayMs = 1000, label = 'API' } = {}) {
+    let lastError;
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        return await fn(attempt);
+      } catch (error) {
+        lastError = error;
+        const status = error.status || 0;
+        const isRetryable = !status || status >= 500 || error.message?.includes('NETWORK_ERROR');
+        
+        if (!isRetryable || attempt === maxRetries) {
+          Logger.error(`[${label}] Failed after ${attempt} attempt(s):`, error.message);
+          throw error;
+        }
+        
+        const delay = baseDelayMs * Math.pow(2, attempt - 1) + Math.random() * 500;
+        Logger.warn(`[${label}] Attempt ${attempt}/${maxRetries} failed, retrying in ${Math.round(delay)}ms...`);
+        await new Promise(r => setTimeout(r, delay));
+      }
+    }
+    throw lastError;
+  }
+
+  static async callEdgeFunction(functionName, body, token, { retry = true } = {}) {
     const url = `${SUPABASE_URL}/functions/v1/${functionName}`;
     const requestId = `ext-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
     const startTime = Date.now();
@@ -135,39 +162,52 @@ class ShopOptiAPI {
     // [MUST] Log exact payload for debugging
     Logger.info(`[REQ ${requestId}] ${functionName}`, JSON.stringify(body).substring(0, 500));
 
-    let response;
-    try {
-      response = await fetch(url, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-          'apikey': SUPABASE_ANON_KEY,
-          'x-extension-version': '5.9.0',
-          'x-request-id': requestId
-        },
-        body: JSON.stringify(body)
-      });
-    } catch (networkErr) {
-      const durationMs = Date.now() - startTime;
-      Logger.error(`[REQ ${requestId}] Network failure after ${durationMs}ms:`, networkErr.message);
-      throw new Error(`NETWORK_ERROR: ${networkErr.message}`);
-    }
-
-    const durationMs = Date.now() - startTime;
-    Logger.api('POST', functionName, response.status, durationMs);
-
-    if (!response.ok) {
-      let errorBody = '';
-      try { errorBody = await response.text(); } catch { errorBody = 'Unable to read response'; }
-      Logger.error(`[REQ ${requestId}] API ${response.status}:`, errorBody.substring(0, 500));
+    const doFetch = async (attempt) => {
+      if (attempt > 1) Logger.info(`[REQ ${requestId}] Retry attempt ${attempt}`);
       
-      const error = new Error(`API Error: ${response.status} - ${errorBody}`);
-      error.status = response.status;
-      error.requestId = requestId;
-      error.responseBody = errorBody;
-      throw error;
-    }
+      let response;
+      try {
+        response = await fetch(url, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+            'apikey': SUPABASE_ANON_KEY,
+            'x-extension-version': '5.9.0',
+            'x-request-id': requestId,
+            'x-retry-attempt': String(attempt)
+          },
+          body: JSON.stringify(body)
+        });
+      } catch (networkErr) {
+        const durationMs = Date.now() - startTime;
+        Logger.error(`[REQ ${requestId}] Network failure after ${durationMs}ms:`, networkErr.message);
+        const err = new Error(`NETWORK_ERROR: ${networkErr.message}`);
+        err.status = 0;
+        throw err;
+      }
+
+      const durationMs = Date.now() - startTime;
+      Logger.api('POST', functionName, response.status, durationMs);
+
+      if (!response.ok) {
+        let errorBody = '';
+        try { errorBody = await response.text(); } catch { errorBody = 'Unable to read response'; }
+        Logger.error(`[REQ ${requestId}] API ${response.status}:`, errorBody.substring(0, 500));
+        
+        const error = new Error(`API Error: ${response.status} - ${errorBody}`);
+        error.status = response.status;
+        error.requestId = requestId;
+        error.responseBody = errorBody;
+        throw error;
+      }
+
+      return response;
+    };
+
+    const response = retry
+      ? await this.withRetry(doFetch, { maxRetries: 3, label: `REQ ${requestId}` })
+      : await doFetch(1);
 
     const result = await response.json();
     Logger.info(`[REQ ${requestId}] Success:`, JSON.stringify(result).substring(0, 200));
@@ -287,7 +327,8 @@ const Security = {
     'login', 'logout', 'check_auth', 'validate_token',
     'import_product', 'bulk_import', 'quick_import',
     'get_settings', 'save_settings', 'sync_settings',
-    'product_detected', 'ping', 'get_debug_logs', 'get_diagnostics'
+    'product_detected', 'ping', 'get_debug_logs', 'get_diagnostics',
+    'get_import_logs', 'clear_import_logs'
   ],
 
   // Rate limiting
@@ -452,6 +493,10 @@ async function handleMessage(message, sender) {
       return { success: true, logs: Logger.getHistory(data?.filter), total: Logger._history.length };
     case 'get_diagnostics':
       return getDiagnostics();
+    case 'get_import_logs':
+      return getImportLogs();
+    case 'clear_import_logs':
+      return clearImportLogs();
     default:
       return { success: false, error: `Unknown action: ${action}`, code: 'UNKNOWN_ACTION' };
   }
@@ -641,43 +686,47 @@ async function importProduct(productData) {
       });
     }
 
+    // Record import log
+    await recordImportLog({
+      title: sanitizedData.title?.substring(0, 80),
+      platform: sanitizedData.platform || 'unknown',
+      status: result.success ? 'success' : 'error',
+      requestId: result._requestId || 'N/A',
+      error: result.success ? null : (result.error || 'Erreur inconnue'),
+      code: result.code || null
+    });
+
     return result;
 
   } catch (error) {
     Logger.error('Import error:', error.message);
     const errorMsg = error.message || 'Erreur inconnue';
-    const isNetworkError = errorMsg.includes('Failed to fetch') || errorMsg.includes('NetworkError');
+    const isNetworkError = errorMsg.includes('Failed to fetch') || errorMsg.includes('NetworkError') || errorMsg.includes('NETWORK_ERROR');
     const isAuthError = errorMsg.includes('401') || errorMsg.includes('Unauthorized');
     const isQuotaError = errorMsg.includes('402') || errorMsg.includes('quota');
 
+    let code = 'IMPORT_ERROR';
+    let userError = errorMsg;
+    let canRetry = false;
+
     if (isAuthError) {
-      return {
-        success: false,
-        error: 'Session expirée. Veuillez vous reconnecter.',
-        code: 'AUTH_EXPIRED',
-        canRetry: false
-      };
+      code = 'AUTH_EXPIRED'; userError = 'Session expirée. Veuillez vous reconnecter.';
+    } else if (isQuotaError) {
+      code = 'QUOTA_EXCEEDED'; userError = 'Quota d\'import atteint. Mettez à niveau votre plan.';
+    } else if (isNetworkError) {
+      code = 'NETWORK_ERROR'; userError = 'Connexion au serveur impossible. Vérifiez votre connexion internet.'; canRetry = true;
     }
 
-    if (isQuotaError) {
-      return {
-        success: false,
-        error: 'Quota d\'import atteint. Mettez à niveau votre plan.',
-        code: 'QUOTA_EXCEEDED',
-        canRetry: false
-      };
-    }
+    await recordImportLog({
+      title: sanitizedData.title?.substring(0, 80),
+      platform: sanitizedData.platform || 'unknown',
+      status: 'error',
+      requestId: error.requestId || 'N/A',
+      error: userError,
+      code
+    });
 
-    if (isNetworkError) {
-      return {
-        success: false,
-        error: 'Connexion au serveur impossible. Vérifiez votre connexion internet.',
-        code: 'NETWORK_ERROR',
-        canRetry: true
-      };
-    }
-
-    return { success: false, error: errorMsg, code: 'IMPORT_ERROR' };
+    return { success: false, error: userError, code, canRetry };
   }
 }
 
@@ -734,7 +783,7 @@ async function bulkImport(products) {
   }
 }
 
-// [MUST] Quick import with explicit error feedback (no silent fail)
+// [MUST] Quick import with DOM extraction retry + explicit error feedback
 async function quickImport(tabId) {
   if (!tabId) {
     return { success: false, error: 'Aucun onglet actif', code: 'NO_TAB' };
@@ -749,7 +798,6 @@ async function quickImport(tabId) {
           const errorMsg = `Ce site (${hostname}) n'est pas supporté. Sites supportés : AliExpress, Amazon, eBay, Walmart, Temu, Shein, Etsy, Cdiscount, Fnac...`;
           Logger.warn('Quick import blocked — unsupported site:', hostname);
 
-          // [MUST] Show notification instead of silent fail
           chrome.notifications.create({
             type: 'basic',
             iconUrl: 'icons/icon48.png',
@@ -757,16 +805,28 @@ async function quickImport(tabId) {
             message: `${hostname} n'est pas dans la liste des marketplaces supportés.`
           });
 
-          return {
-            success: false,
-            error: errorMsg,
-            code: 'UNSUPPORTED_SITE'
-          };
+          return { success: false, error: errorMsg, code: 'UNSUPPORTED_SITE' };
         }
       } catch { /* URL parse error, continue */ }
     }
 
-    const response = await chrome.tabs.sendMessage(tabId, { action: 'extract_product' });
+    // DOM extraction with retry (up to 3 attempts with increasing delay)
+    let response = null;
+    let extractionError = null;
+    for (let attempt = 1; attempt <= 3; attempt++) {
+      try {
+        response = await chrome.tabs.sendMessage(tabId, { action: 'extract_product' });
+        if (response?.success && response.product) break;
+        
+        Logger.warn(`[DOM] Extraction attempt ${attempt}/3: no product found`);
+        response = null;
+        if (attempt < 3) await new Promise(r => setTimeout(r, 800 * attempt));
+      } catch (err) {
+        extractionError = err;
+        Logger.warn(`[DOM] Extraction attempt ${attempt}/3 error:`, err.message);
+        if (attempt < 3) await new Promise(r => setTimeout(r, 800 * attempt));
+      }
+    }
 
     if (!response?.success || !response.product) {
       Logger.warn('Product extraction failed on tab:', tabId);
@@ -1040,6 +1100,31 @@ async function getDiagnostics() {
       recentApiCalls: Logger.getHistory('API').slice(-10)
     }
   };
+}
+
+// ============================================
+// Import Log History — persistent across sessions
+// ============================================
+const MAX_IMPORT_LOGS = 50;
+
+async function recordImportLog(entry) {
+  const logs = (await StorageManager.get('import_logs')) || [];
+  logs.unshift({
+    ...entry,
+    timestamp: new Date().toISOString()
+  });
+  if (logs.length > MAX_IMPORT_LOGS) logs.length = MAX_IMPORT_LOGS;
+  await StorageManager.set('import_logs', logs);
+}
+
+async function getImportLogs() {
+  const logs = (await StorageManager.get('import_logs')) || [];
+  return { success: true, logs };
+}
+
+async function clearImportLogs() {
+  await StorageManager.set('import_logs', []);
+  return { success: true };
 }
 
 Logger.info('ShopOpti+ Pro Background Service Worker v5.9.0 loaded');
