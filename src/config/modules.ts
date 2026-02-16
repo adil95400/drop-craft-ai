@@ -696,7 +696,11 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     description: 'APIs et connecteurs',
     category: 'integrations',
     order: 2,
-    groupId: 'config'
+    groupId: 'config',
+    subModules: [
+      { id: 'integrations-overview', name: 'Vue d\'ensemble', route: '/integrations', icon: 'Plug', description: 'Connecteurs et APIs', features: ['overview'], order: 1 },
+      { id: 'integrations-marketplace', name: 'Marketplace Services', route: '/integrations/marketplace/services', icon: 'Store', description: 'Hub de services tiers', features: ['marketplace'], order: 2 },
+    ]
   },
   
   academy: {
