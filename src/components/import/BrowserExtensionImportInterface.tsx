@@ -40,7 +40,7 @@ export const BrowserExtensionImportInterface = () => {
   const [autoSync, setAutoSync] = useState(false)
 
   const extensionId = 'shopopti-plus-extension'
-  const extensionVersion = '5.7.0'
+  const extensionVersion = '6.0.0'
   const supportedSites = [
     'aliexpress.com',
     'amazon.com',

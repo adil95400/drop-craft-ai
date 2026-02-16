@@ -1,5 +1,5 @@
 /**
- * ShopOpti+ Pro - Dynamic Loader v5.9.0
+ * ShopOpti+ Pro - Dynamic Loader v6.0.0
  * 
  * Enterprise-grade extraction with 2025-hardened selectors,
  * full variant/review/video support, and robust fallback strategies.
@@ -14,7 +14,7 @@
   if (window.__SHOPOPTI_LOADED__) return;
   window.__SHOPOPTI_LOADED__ = true;
 
-  const LOADER_VERSION = '5.9.0';
+  const LOADER_VERSION = '6.0.0';
 
   // ============================================
   // Platform Detection (2025 Updated)

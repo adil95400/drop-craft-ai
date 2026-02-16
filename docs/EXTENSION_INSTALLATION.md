@@ -161,5 +161,5 @@ Oui ! Activez l'option **SEO Automatique** pour générer des descriptions optim
 
 ---
 
-**Version actuelle** : 5.8.1  
+**Version actuelle** : 6.0.0  
 **Dernière mise à jour** : Février 2026
