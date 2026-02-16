@@ -30,6 +30,9 @@ const RevenueForecastingPage = lazy(() => import('@/pages/analytics/RevenueForec
 // Interactive Analytics (Sprint 10)
 const InteractiveAnalyticsPage = lazy(() => import('@/pages/analytics/InteractiveAnalyticsPage'));
 
+// BI Advanced (Sprint 17)
+const BIAdvancedDashboardPage = lazy(() => import('@/pages/analytics/BIAdvancedDashboardPage'));
+
 export function AnalyticsRoutes() {
   return (
     <Routes>
@@ -72,6 +75,11 @@ export function AnalyticsRoutes() {
       
       {/* Interactive Analytics (Sprint 10) */}
       <Route path="interactive" element={<InteractiveAnalyticsPage />} />
+      
+      {/* BI Advanced (Sprint 17) */}
+      <Route path="bi-advanced" element={<BIAdvancedDashboardPage />} />
+      <Route path="cohorts" element={<BIAdvancedDashboardPage />} />
+      <Route path="smart-alerts" element={<BIAdvancedDashboardPage />} />
       
       {/* Legacy redirects */}
       <Route path="ultra-pro" element={<Navigate to="/analytics/advanced" replace />} />
