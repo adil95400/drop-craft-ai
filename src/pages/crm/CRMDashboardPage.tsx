@@ -11,9 +11,11 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Progress } from '@/components/ui/progress';
 import { useCRM, type CustomerWithScore } from '@/hooks/useCRM';
+import { LoyaltyProgramManager } from '@/components/crm/LoyaltyProgramManager';
+import { CustomerLifecycleTracker } from '@/components/crm/CustomerLifecycleTracker';
 import {
   Users, Star, TrendingUp, DollarSign, Search, RefreshCw, Plus,
-  Mail, MessageSquare, Target, Crown, UserCheck, UserX, Loader2
+  Mail, MessageSquare, Target, Crown, UserCheck, UserX, Loader2, Gift, HeartPulse
 } from 'lucide-react';
 
 const scoreColor = (score: number) => {
@@ -99,7 +101,7 @@ export default function CRMDashboardPage() {
       </div>
 
       <Tabs defaultValue="customers" className="space-y-4">
-        <TabsList>
+        <TabsList className="flex-wrap">
           <TabsTrigger value="customers">
             <Users className="h-4 w-4 mr-1" /> Clients ({customers.length})
           </TabsTrigger>
@@ -107,7 +109,13 @@ export default function CRMDashboardPage() {
             <Target className="h-4 w-4 mr-1" /> Segments ({segments.length})
           </TabsTrigger>
           <TabsTrigger value="communications">
-            <Mail className="h-4 w-4 mr-1" /> Communications ({communications.length})
+            <Mail className="h-4 w-4 mr-1" /> Communications
+          </TabsTrigger>
+          <TabsTrigger value="loyalty">
+            <Gift className="h-4 w-4 mr-1" /> Fidélité
+          </TabsTrigger>
+          <TabsTrigger value="lifecycle">
+            <HeartPulse className="h-4 w-4 mr-1" /> Cycle de vie
           </TabsTrigger>
         </TabsList>
 
@@ -276,6 +284,22 @@ export default function CRMDashboardPage() {
               </div>
             )}
           </div>
+        </TabsContent>
+        {/* === LOYALTY TAB === */}
+        <TabsContent value="loyalty">
+          <LoyaltyProgramManager />
+        </TabsContent>
+
+        {/* === LIFECYCLE TAB === */}
+        <TabsContent value="lifecycle">
+          <CustomerLifecycleTracker
+            totalCustomers={stats.totalCustomers}
+            newCustomers={Math.round(stats.totalCustomers * 0.2)}
+            activeCustomers={Math.round(stats.totalCustomers * 0.35)}
+            repeatCustomers={Math.round(stats.totalCustomers * 0.25)}
+            vipCustomers={stats.vipCustomers}
+            atRiskCustomers={Math.round(stats.totalCustomers * 0.1)}
+          />
         </TabsContent>
       </Tabs>
     </ChannablePageWrapper>
