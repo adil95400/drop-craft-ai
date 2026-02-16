@@ -1,6 +1,8 @@
 /**
  * ShopOpti+ Pro - Popup Script
- * Version: 5.7.3
+ * Version: 5.9.0
+ * 
+ * [SHOULD] Audit XSS: All dynamic content uses textContent instead of innerHTML
  */
 
 // ============================================
@@ -14,7 +16,6 @@ const screens = {
 };
 
 const elements = {
-  // Login
   loginForm: document.getElementById('login-form'),
   emailInput: document.getElementById('email'),
   passwordInput: document.getElementById('password'),
@@ -22,7 +23,6 @@ const elements = {
   loginText: document.getElementById('login-text'),
   loginLoading: document.getElementById('login-loading'),
 
-  // Main
   userAvatar: document.getElementById('user-avatar'),
   userName: document.getElementById('user-name'),
   userEmail: document.getElementById('user-email'),
@@ -42,7 +42,6 @@ const elements = {
   openDashboard: document.getElementById('open-dashboard'),
   viewProducts: document.getElementById('view-products'),
 
-  // Settings
   backBtn: document.getElementById('back-btn'),
   settingAutoImport: document.getElementById('setting-auto-import'),
   settingMargin: document.getElementById('setting-margin'),
@@ -66,9 +65,9 @@ let state = {
 // ============================================
 function showScreen(screenName) {
   Object.values(screens).forEach(screen => {
-    screen.style.display = 'none';
+    if (screen) screen.style.display = 'none';
   });
-  screens[screenName].style.display = 'flex';
+  if (screens[screenName]) screens[screenName].style.display = 'flex';
 }
 
 function sendMessage(action, data = {}) {
@@ -81,6 +80,15 @@ function formatPrice(price, currency = '€') {
   return `${parseFloat(price).toFixed(2)} ${currency}`;
 }
 
+/**
+ * [SHOULD] Safely set text content — never use innerHTML for user data
+ */
+function safeSetText(element, text) {
+  if (element) {
+    element.textContent = text || '';
+  }
+}
+
 // ============================================
 // Initialization
 // ============================================
@@ -88,19 +96,16 @@ async function init() {
   showScreen('loading');
 
   try {
-    // Check authentication
     const authResult = await sendMessage('check_auth');
-    
-    if (authResult.authenticated && authResult.user) {
+
+    if (authResult?.authenticated && authResult.user) {
       state.user = authResult.user;
       await loadMainScreen();
     } else {
       showScreen('login');
     }
 
-    // Load settings
     state.settings = await sendMessage('get_settings');
-    
   } catch (error) {
     console.error('Init error:', error);
     showScreen('login');
@@ -108,47 +113,51 @@ async function init() {
 }
 
 // ============================================
-// Login
+// Login — [SHOULD] uses textContent for error display
 // ============================================
 elements.loginForm?.addEventListener('submit', async (e) => {
   e.preventDefault();
-  
-  const email = elements.emailInput.value.trim();
-  const password = elements.passwordInput.value;
+
+  const email = elements.emailInput?.value?.trim();
+  const password = elements.passwordInput?.value;
 
   if (!email || !password) {
     showError('Veuillez remplir tous les champs');
     return;
   }
 
-  // Show loading state
-  elements.loginText.style.display = 'none';
-  elements.loginLoading.style.display = 'inline';
-  elements.loginForm.querySelector('button').disabled = true;
+  if (elements.loginText) elements.loginText.style.display = 'none';
+  if (elements.loginLoading) elements.loginLoading.style.display = 'inline';
+  const btn = elements.loginForm.querySelector('button');
+  if (btn) btn.disabled = true;
   hideError();
 
   const result = await sendMessage('login', { email, password });
 
-  // Reset button
-  elements.loginText.style.display = 'inline';
-  elements.loginLoading.style.display = 'none';
-  elements.loginForm.querySelector('button').disabled = false;
+  if (elements.loginText) elements.loginText.style.display = 'inline';
+  if (elements.loginLoading) elements.loginLoading.style.display = 'none';
+  if (btn) btn.disabled = false;
 
-  if (result.success) {
+  if (result?.success) {
     state.user = result.user;
     await loadMainScreen();
   } else {
-    showError(result.error || 'Erreur de connexion');
+    showError(result?.error || 'Erreur de connexion');
   }
 });
 
 function showError(message) {
-  elements.loginError.textContent = message;
-  elements.loginError.style.display = 'block';
+  if (elements.loginError) {
+    // [SHOULD] textContent instead of innerHTML
+    elements.loginError.textContent = message;
+    elements.loginError.style.display = 'block';
+  }
 }
 
 function hideError() {
-  elements.loginError.style.display = 'none';
+  if (elements.loginError) {
+    elements.loginError.style.display = 'none';
+  }
 }
 
 // ============================================
@@ -157,38 +166,32 @@ function hideError() {
 async function loadMainScreen() {
   showScreen('main');
 
-  // Update user info
   if (state.user) {
     const initial = (state.user.email?.[0] || 'U').toUpperCase();
-    elements.userAvatar.textContent = initial;
-    elements.userName.textContent = state.user.user_metadata?.full_name || 'Utilisateur';
-    elements.userEmail.textContent = state.user.email;
-    elements.userPlan.textContent = state.user.user_metadata?.plan || 'Free';
+    safeSetText(elements.userAvatar, initial);
+    safeSetText(elements.userName, state.user.user_metadata?.full_name || 'Utilisateur');
+    safeSetText(elements.userEmail, state.user.email);
+    safeSetText(elements.userPlan, state.user.user_metadata?.plan || 'Free');
   }
 
-  // Load stats
   await loadStats();
-
-  // Check for current product
   await checkCurrentProduct();
 }
 
 async function loadStats() {
   const stats = await chrome.storage.local.get(['import_count', 'import_today', 'sync_count']);
-  
-  elements.statImported.textContent = stats.import_count || 0;
-  elements.statToday.textContent = stats.import_today || 0;
-  elements.statSynced.textContent = stats.sync_count || 0;
+  safeSetText(elements.statImported, String(stats.import_count || 0));
+  safeSetText(elements.statToday, String(stats.import_today || 0));
+  safeSetText(elements.statSynced, String(stats.sync_count || 0));
 }
 
 async function checkCurrentProduct() {
   const { current_product } = await chrome.storage.local.get(['current_product']);
-  
+
   if (current_product && current_product.title) {
     state.currentProduct = current_product;
     displayProduct(current_product);
   } else {
-    // Try to get from active tab
     try {
       const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
       if (tab?.id) {
@@ -199,36 +202,40 @@ async function checkCurrentProduct() {
         }
       }
     } catch (error) {
-      // Content script not loaded on this page
       console.log('No content script on this page');
     }
   }
 }
 
 function displayProduct(product) {
-  elements.noProduct.style.display = 'none';
-  elements.currentProduct.style.display = 'block';
+  if (elements.noProduct) elements.noProduct.style.display = 'none';
+  if (elements.currentProduct) elements.currentProduct.style.display = 'block';
 
-  elements.productImage.src = product.images?.[0] || 'icons/icon48.png';
-  elements.productTitle.textContent = product.title?.substring(0, 80) || 'Produit sans titre';
-  elements.productPrice.textContent = formatPrice(product.price || 0);
-  elements.productPlatform.textContent = product.platform || 'Unknown';
+  if (elements.productImage) {
+    elements.productImage.src = product.images?.[0] || 'icons/icon48.png';
+    elements.productImage.alt = 'Product image';
+  }
+  // [SHOULD] textContent for all user-sourced data
+  safeSetText(elements.productTitle, (product.title || 'Produit sans titre').substring(0, 80));
+  safeSetText(elements.productPrice, formatPrice(product.price || 0));
+  safeSetText(elements.productPlatform, product.platform || 'Unknown');
 }
 
-// Import button
+// ============================================
+// Import button — [MUST] clear error feedback
+// ============================================
 elements.importBtn?.addEventListener('click', async () => {
   if (!state.currentProduct) return;
 
   elements.importBtn.disabled = true;
-  elements.importBtn.innerHTML = '<span>Importation...</span>';
+  safeSetText(elements.importBtn, 'Importation...');
 
   const result = await sendMessage('import_product', state.currentProduct);
 
-  if (result.success) {
-    elements.importBtn.innerHTML = '<span>✓ Importé</span>';
+  if (result?.success) {
+    safeSetText(elements.importBtn, '✓ Importé');
     elements.importBtn.style.background = '#10B981';
 
-    // Update stats
     const stats = await chrome.storage.local.get(['import_count', 'import_today']);
     await chrome.storage.local.set({
       import_count: (stats.import_count || 0) + 1,
@@ -236,30 +243,23 @@ elements.importBtn?.addEventListener('click', async () => {
     });
     await loadStats();
 
-    // Reset after delay
     setTimeout(() => {
       elements.importBtn.disabled = false;
-      elements.importBtn.innerHTML = `
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/>
-        </svg>
-        Importer ce produit
-      `;
+      safeSetText(elements.importBtn, '⬇ Importer ce produit');
       elements.importBtn.style.background = '';
     }, 3000);
 
   } else {
-    elements.importBtn.innerHTML = `<span>Erreur: ${result.error}</span>`;
+    // [MUST] Show specific error to user, not silent fail
+    const errorText = result?.error || 'Erreur inconnue';
+    safeSetText(elements.importBtn, `✗ ${errorText.substring(0, 40)}`);
+    elements.importBtn.style.background = '#EF4444';
     elements.importBtn.disabled = false;
 
     setTimeout(() => {
-      elements.importBtn.innerHTML = `
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/>
-        </svg>
-        Importer ce produit
-      `;
-    }, 3000);
+      safeSetText(elements.importBtn, '⬇ Importer ce produit');
+      elements.importBtn.style.background = '';
+    }, 4000);
   }
 });
 
@@ -289,10 +289,10 @@ function loadSettingsScreen() {
   showScreen('settings');
 
   if (state.settings) {
-    elements.settingAutoImport.checked = state.settings.autoImport || false;
-    elements.settingMargin.value = state.settings.priceMargin || 30;
-    elements.settingRounding.value = state.settings.roundingRule || 'ceil_99';
-    elements.settingNotifications.checked = state.settings.notifications !== false;
+    if (elements.settingAutoImport) elements.settingAutoImport.checked = state.settings.autoImport || false;
+    if (elements.settingMargin) elements.settingMargin.value = state.settings.priceMargin || 30;
+    if (elements.settingRounding) elements.settingRounding.value = state.settings.roundingRule || 'ceil_99';
+    if (elements.settingNotifications) elements.settingNotifications.checked = state.settings.notifications !== false;
   }
 }
 
@@ -302,35 +302,36 @@ elements.backBtn?.addEventListener('click', () => {
 
 elements.saveSettingsBtn?.addEventListener('click', async () => {
   const settings = {
-    autoImport: elements.settingAutoImport.checked,
-    priceMargin: parseInt(elements.settingMargin.value) || 30,
-    roundingRule: elements.settingRounding.value,
-    notifications: elements.settingNotifications.checked
+    autoImport: elements.settingAutoImport?.checked || false,
+    priceMargin: parseInt(elements.settingMargin?.value) || 30,
+    roundingRule: elements.settingRounding?.value || 'ceil_99',
+    notifications: elements.settingNotifications?.checked !== false
   };
 
   await sendMessage('save_settings', settings);
   state.settings = settings;
 
-  elements.saveSettingsBtn.textContent = 'Sauvegardé ✓';
+  safeSetText(elements.saveSettingsBtn, 'Sauvegardé ✓');
   setTimeout(() => {
-    elements.saveSettingsBtn.textContent = 'Sauvegarder les paramètres';
+    safeSetText(elements.saveSettingsBtn, 'Sauvegarder les paramètres');
   }, 2000);
 });
 
 elements.syncSettingsBtn?.addEventListener('click', async () => {
-  elements.syncSettingsBtn.disabled = true;
-  elements.syncSettingsBtn.textContent = 'Synchronisation...';
+  if (elements.syncSettingsBtn) {
+    elements.syncSettingsBtn.disabled = true;
+    safeSetText(elements.syncSettingsBtn, 'Synchronisation...');
+  }
 
   const result = await sendMessage('sync_settings');
 
-  elements.syncSettingsBtn.disabled = false;
-  elements.syncSettingsBtn.textContent = result.success 
-    ? 'Synchronisé ✓' 
-    : 'Erreur de sync';
-
-  setTimeout(() => {
-    elements.syncSettingsBtn.textContent = 'Synchroniser avec ShopOpti';
-  }, 2000);
+  if (elements.syncSettingsBtn) {
+    elements.syncSettingsBtn.disabled = false;
+    safeSetText(elements.syncSettingsBtn, result?.success ? 'Synchronisé ✓' : 'Erreur de sync');
+    setTimeout(() => {
+      safeSetText(elements.syncSettingsBtn, 'Synchroniser avec ShopOpti');
+    }, 2000);
+  }
 });
 
 // ============================================
