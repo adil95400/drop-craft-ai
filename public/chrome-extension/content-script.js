@@ -14,8 +14,8 @@
   const VERSION = '6.0.0';
   const INJECTED_CLASS = 'shopopti-injected';
   const DEBOUNCE_MS = 300;
-  const MAX_REINJECT_ATTEMPTS = 8;
-  const INJECTION_RETRY_DELAY = 400;
+  const MAX_REINJECT_ATTEMPTS = 15;
+  const INJECTION_RETRY_DELAY = 600;
   const API_URL = 'https://jsmwckzrmqecwwrswwrz.supabase.co/functions/v1';
   const APP_URL = 'https://shopopti.io';
   
@@ -36,8 +36,8 @@
   
   const platformSelectors = {
     amazon: {
-      productButtons: ['#add-to-cart-button', '#buy-now-button', '#buybox', '#rightCol', '#desktop_buybox', '.a-button-stack', '#addToCart'],
-      cards: ['[data-asin]:not([data-shopopti-card])', '.s-result-item:not([data-shopopti-card])'],
+      productButtons: ['#addToCart', '#add-to-cart-button', '#desktop_buybox', '#buybox', '#rightCol', '#buy-now-button', '.a-button-stack', '#ppd', '#centerCol', '#productTitle'],
+      cards: ['[data-asin]:not([data-shopopti-card])', '.s-result-item:not([data-shopopti-card])', '[data-component-type="s-search-result"]:not([data-shopopti-card])'],
       urlPattern: /\/dp\/([A-Z0-9]+)/i,
       extractUrl: card => {
         const link = card.querySelector('a[href*="/dp/"]');
@@ -1080,6 +1080,17 @@
   // INJECTION LOGIC
   // ============================================
   
+  function isElementVisible(el) {
+    if (!el) return false;
+    // Accept elements that exist in the DOM, even if inside fixed/sticky containers
+    // offsetParent is null for position:fixed elements, so we check differently
+    const rect = el.getBoundingClientRect();
+    const style = window.getComputedStyle(el);
+    if (style.display === 'none' || style.visibility === 'hidden') return false;
+    // Element has dimensions or is in viewport
+    return rect.width > 0 || rect.height > 0 || el.offsetWidth > 0 || el.offsetHeight > 0;
+  }
+
   function injectProductPageButton(platform) {
     const selectors = platformSelectors[platform] || platformSelectors.shopify;
     const existingBtn = document.querySelector(`.shopopti-${platform}-btn`);
@@ -1087,18 +1098,33 @@
     if (existingBtn) return;
     
     let targetElement = null;
+    
+    // Phase 1: Try to find a visible target element
     for (const selector of selectors.productButtons) {
       const el = document.querySelector(selector);
-      if (el && el.offsetParent !== null) {
+      if (el && isElementVisible(el)) {
         targetElement = el;
         break;
+      }
+    }
+    
+    // Phase 2: If no visible element, accept any existing element
+    if (!targetElement) {
+      for (const selector of selectors.productButtons) {
+        const el = document.querySelector(selector);
+        if (el) {
+          targetElement = el;
+          break;
+        }
       }
     }
     
     if (!targetElement) {
       if (reinjectAttempts < MAX_REINJECT_ATTEMPTS) {
         reinjectAttempts++;
-        setTimeout(() => injectProductPageButton(platform), 500);
+        // Progressive delay: starts at 500ms, increases for later attempts
+        const delay = Math.min(500 + (reinjectAttempts * 200), 2000);
+        setTimeout(() => injectProductPageButton(platform), delay);
       } else {
         // All attempts failed - inject floating fallback button
         injectFloatingFallbackButton(platform);
@@ -1118,13 +1144,25 @@
     button.classList.add(`shopopti-${platform}-btn`);
     
     const wrapper = document.createElement('div');
-    wrapper.style.cssText = 'margin: 12px 0; display: flex;';
+    wrapper.style.cssText = 'margin: 12px 0; display: flex; width: 100%;';
     wrapper.appendChild(button);
     
-    if (targetElement.nextSibling) {
-      targetElement.parentNode.insertBefore(wrapper, targetElement.nextSibling);
-    } else {
-      targetElement.parentNode.appendChild(wrapper);
+    // Smart insertion: prefer inserting after the target element
+    try {
+      if (targetElement.nextSibling) {
+        targetElement.parentNode.insertBefore(wrapper, targetElement.nextSibling);
+      } else {
+        targetElement.parentNode.appendChild(wrapper);
+      }
+    } catch (e) {
+      // If insertion fails, try appending to parent
+      try {
+        targetElement.parentNode.appendChild(wrapper);
+      } catch (e2) {
+        console.warn(`[ShopOpti+] Could not insert button for ${platform}:`, e2);
+        injectFloatingFallbackButton(platform);
+        return;
+      }
     }
     
     console.log(`[ShopOpti+ v${VERSION}] Button injected for ${platform}`);
