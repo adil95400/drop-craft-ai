@@ -1,5 +1,5 @@
 /**
- * ShopOpti+ Unified Button Injector v5.7.0
+ * ShopOpti+ Unified Button Injector v6.0.0
  * Injects consistent import buttons across ALL supported platforms
  * Single design, single behavior, single position strategy
  */
@@ -207,13 +207,18 @@
     },
     amazon: {
       selectors: [
+        '#addToCart',
         '#add-to-cart-button',
-        '#buy-now-button',
+        '#desktop_buybox',
         '#buybox',
         '#rightCol',
-        '.a-button-stack'
+        '#buy-now-button',
+        '.a-button-stack',
+        '#ppd',
+        '#centerCol',
+        '#productTitle'
       ],
-      position: 'beforebegin',
+      position: 'afterend',
       context: 'product'
     },
     ebay: {
