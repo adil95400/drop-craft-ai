@@ -17,7 +17,7 @@ function getManifestVersion() {
   } catch (e) {
     console.warn('Could not read manifest version:', e);
   }
-  return '5.8.1'; // Fallback
+  return '6.0.0'; // Fallback
 }
 
 const VERSION = getManifestVersion();
