@@ -11,7 +11,7 @@
 (function() {
   'use strict';
   
-  const VERSION = '5.8.1';
+  const VERSION = '6.0.0';
   const INJECTED_CLASS = 'shopopti-injected';
   const DEBOUNCE_MS = 300;
   const MAX_REINJECT_ATTEMPTS = 8;

@@ -12,9 +12,9 @@ const corsHeaders = {
 }
 
 const VERSION = '6.0.0'
-const APP_URL = 'https://shopopti.io'
+const APP_URL = 'https://drop-craft-ai.lovable.app'
 
-// Complete file list for the extension v5.7.0
+// Complete file list for the extension v6.0.0
 const EXTENSION_FILES = [
   // Core files
   'manifest.json',
@@ -26,16 +26,15 @@ const EXTENSION_FILES = [
   'options.js',
   'content-script.js',
   'content.css',
-  'content.js',
   'auth.html',
   'auth.js',
   
   // Import system
   'import-overlay-v2.js',
   'bulk-import-v5.js',
+  'bulk-import-v5-secure.js',
   'bulk-selector.js',
   'grabber.js',
-  'injected.js',
   
   // Automation & fulfillment
   'auto-order.js',
@@ -86,12 +85,30 @@ const EXTENSION_FILES = [
   'CHANGELOG.md',
   
   // ==========================================
-  // LIBRARY FILES v5.7.0 (Phase A/B/C)
+  // LIBRARY FILES v6.0.0 — ALL files from lib/
   // ==========================================
+  'lib/logger.js',
+  'lib/gateway-client.js',
+  'lib/action-logger.js',
+  'lib/deep-links.js',
+  'lib/feature-flags.js',
+  'lib/storage-manager.js',
+  'lib/secure-dom-builder.js',
+  'lib/offline-queue.js',
+  'lib/encrypted-storage.js',
+  'lib/security.js',
+  'lib/onboarding-system.js',
+  'lib/platform-detector.js',
+  'lib/backend-import-client.js',
+  'lib/import-response-handler.js',
+  'lib/backend-first-import.js',
+  'lib/unified-button-injector.js',
+  'lib/feedback-system.js',
   'lib/api-client.js',
   'lib/auth.js',
   'lib/auto-order-helper.js',
   'lib/auto-translation-service.js',
+  'lib/ai-predictive-search.js',
   'lib/base-extractor.js',
   'lib/bulk-import-queue.js',
   'lib/bulk-import-state-machine.js',
@@ -100,6 +117,7 @@ const EXTENSION_FILES = [
   'lib/cost-calculator.js',
   'lib/csv-exporter.js',
   'lib/data-normalizer.js',
+  'lib/dynamic-loader.js',
   'lib/enhanced-preview.js',
   'lib/extraction-orchestrator.js',
   'lib/extractor-bridge.js',
@@ -113,7 +131,6 @@ const EXTENSION_FILES = [
   'lib/official-api-client.js',
   'lib/pagination-handler.js',
   'lib/performance-mode.js',
-  'lib/platform-detector.js',
   'lib/pre-import-dialog.js',
   'lib/price-rules.js',
   'lib/product-validator.js',
@@ -122,7 +139,6 @@ const EXTENSION_FILES = [
   'lib/remote-selectors.js',
   'lib/retry-manager.js',
   'lib/review-translator.js',
-  'lib/security.js',
   'lib/selectors-config.js',
   'lib/session-manager.js',
   'lib/shipping-extractor.js',
@@ -137,11 +153,10 @@ const EXTENSION_FILES = [
   'lib/token-refresh.js',
   'lib/tracking-sync.js',
   'lib/ui-enhancements.js',
-  'lib/unified-button-injector.js',
   'lib/variant-mapper.js',
   
   // ==========================================
-  // EXTRACTORS v5.7.0 (17 platforms)
+  // EXTRACTORS v6.0.0 (all platforms)
   // ==========================================
   'extractors/core-extractor.js',
   'extractors/extractor-registry.js',
@@ -165,7 +180,7 @@ const EXTENSION_FILES = [
   'extractors/walmart-extractor.js',
   'extractors/wish-extractor.js',
   
-  // Icons (binary)
+  // Icons
   'icons/icon16.png',
   'icons/icon32.png',
   'icons/icon48.png',

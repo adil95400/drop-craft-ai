@@ -20,7 +20,7 @@
   window.__shopoptiBackendImportClientLoaded = true;
 
   const EXTENSION_ID = 'shopopti-extension-chrome';
-  const EXTENSION_VERSION = '5.8.1';
+  const EXTENSION_VERSION = '6.0.0';
   const GATEWAY_URL = 'https://jsmwckzrmqecwwrswwrz.supabase.co/functions/v1/extension-gateway';
 
   // Response codes that require specific UI handling
