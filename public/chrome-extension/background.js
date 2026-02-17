@@ -6,7 +6,7 @@
 // ============================================
 
 const API_URL = 'https://jsmwckzrmqecwwrswwrz.supabase.co/functions/v1';
-const APP_URL = 'https://shopopti.io';
+const APP_URL = 'https://drop-craft-ai.lovable.app';
 
 // Get version dynamically from manifest.json
 function getManifestVersion() {

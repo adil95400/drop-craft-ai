@@ -23,7 +23,7 @@ class ShopOptiPopup {
   constructor() {
     this.VERSION = getManifestVersion();  // Dynamic version from manifest
     this.API_URL = 'https://jsmwckzrmqecwwrswwrz.supabase.co/functions/v1';
-    this.APP_URL = 'https://shopopti.io';
+    this.APP_URL = 'https://drop-craft-ai.lovable.app';
     
     // Chrome runtime detection
     this.chrome = typeof chrome !== 'undefined' && chrome?.runtime?.id ? chrome : null;

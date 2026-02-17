@@ -17,7 +17,7 @@
   const MAX_REINJECT_ATTEMPTS = 15;
   const INJECTION_RETRY_DELAY = 600;
   const API_URL = 'https://jsmwckzrmqecwwrswwrz.supabase.co/functions/v1';
-  const APP_URL = 'https://shopopti.io';
+  const APP_URL = 'https://drop-craft-ai.lovable.app';
   
   // State management
   let isInitialized = false;
