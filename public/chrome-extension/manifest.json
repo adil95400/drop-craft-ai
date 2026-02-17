@@ -12,7 +12,7 @@
   ],
   
   "host_permissions": [
-    "*://*.shopopti.io/*",
+    "*://*.drop-craft-ai.lovable.app/*",
     "*://*.supabase.co/*"
   ],
   
@@ -142,6 +142,7 @@
         "extractors/extractor-registry.js",
         "content-script.js"
       ],
+      "css": ["content.css"],
       "run_at": "document_idle"
     },
     {
@@ -172,12 +173,13 @@
         "extractors/extractor-registry.js",
         "content-script.js"
       ],
+      "css": ["content.css"],
       "run_at": "document_idle"
     }
   ],
   
   "content_security_policy": {
-    "extension_pages": "default-src 'self'; connect-src 'self' https://*.supabase.co https://shopopti.io https://*.shopopti.io; img-src 'self' data: https: blob:; style-src 'self' 'unsafe-inline'; font-src 'self' data:"
+    "extension_pages": "default-src 'self'; connect-src 'self' https://*.supabase.co https://drop-craft-ai.lovable.app https://*.lovable.app; img-src 'self' data: https: blob:; style-src 'self' 'unsafe-inline'; font-src 'self' data:"
   },
   
   "background": {
@@ -244,7 +246,7 @@
         "*://*.costco.com/*",
         "*://*.myshopify.com/*",
         "*://*.shop.tiktok.com/*",
-        "*://*.shopopti.io/*"
+        "*://*.lovable.app/*"
       ]
     }
   ]
