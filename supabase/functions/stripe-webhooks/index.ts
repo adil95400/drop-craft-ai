@@ -1,12 +1,12 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
+import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 
 const log = (step: string, details?: unknown) => {
   console.log(`[STRIPE-WEBHOOK] ${step}${details ? ` – ${JSON.stringify(details)}` : ""}`);
 };
 
-// Product → plan mapping (same as check-subscription)
+// Product → plan mapping
 const PRODUCT_TO_PLAN: Record<string, string> = {
   "prod_T3RS5DA7XYPWBP": "standard",
   "prod_T3RTReiXnCg9hy": "pro",
@@ -33,7 +33,7 @@ serve(async (req) => {
     { auth: { persistSession: false } }
   );
 
-  // 1. Verify signature
+  // 1. Verify Stripe signature
   const body = await req.text();
   const sig = req.headers.get("stripe-signature");
   if (!sig) return new Response("Missing signature", { status: 400 });
@@ -48,20 +48,8 @@ serve(async (req) => {
 
   log("Event received", { type: event.type, id: event.id });
 
-  // 2. Idempotence check via stripe_event_id
-  const { data: existing } = await supabase
-    .from("webhook_events")
-    .select("id")
-    .eq("stripe_event_id", event.id)
-    .maybeSingle();
-
-  if (existing) {
-    log("Duplicate event, skipping", { eventId: event.id });
-    return new Response(JSON.stringify({ received: true, duplicate: true }), { status: 200 });
-  }
-
-  // 3. Store event (using existing schema: platform is required)
-  await supabase.from("webhook_events").insert({
+  // 2. Race-condition-safe idempotence: try insert first, catch unique violation
+  const { error: insertError } = await supabase.from("webhook_events").insert({
     stripe_event_id: event.id,
     event_type: event.type,
     platform: "stripe",
@@ -69,8 +57,21 @@ serve(async (req) => {
     status: "processing",
   });
 
+  if (insertError) {
+    // Unique constraint violation = duplicate event
+    if (insertError.code === "23505") {
+      log("Duplicate event (race-safe), skipping", { eventId: event.id });
+      return new Response(JSON.stringify({ received: true, duplicate: true }), {
+        headers: { "Content-Type": "application/json" },
+        status: 200,
+      });
+    }
+    // Other insert errors: log but still try to process
+    log("Insert warning", { error: insertError.message });
+  }
+
   try {
-    // 4. Handle event
+    // 3. Route event to handler
     switch (event.type) {
       case "checkout.session.completed":
         await handleCheckoutCompleted(supabase, stripe, event.data.object as Stripe.Checkout.Session);
@@ -96,7 +97,7 @@ serve(async (req) => {
         log("Unhandled event type", { type: event.type });
     }
 
-    // 5. Mark as processed
+    // 4. Mark as processed
     await supabase
       .from("webhook_events")
       .update({ status: "processed", processed_at: new Date().toISOString() })
@@ -106,17 +107,44 @@ serve(async (req) => {
   } catch (err) {
     const errMsg = (err as Error).message;
     log("Processing error", { type: event.type, error: errMsg });
-    await supabase
-      .from("webhook_events")
-      .update({ status: "failed", error_message: errMsg })
-      .eq("stripe_event_id", event.id);
+
+    // Increment retry count and mark failed
+    await supabase.rpc("increment_webhook_retry", { p_stripe_event_id: event.id, p_error: errMsg });
   }
 
+  // Always return 200 to Stripe to prevent unnecessary retries on our side
+  // (we handle our own retry logic via status tracking)
   return new Response(JSON.stringify({ received: true }), {
     headers: { "Content-Type": "application/json" },
     status: 200,
   });
 });
+
+// ── Helper: find user by Stripe customer ID (scalable, no listUsers) ──
+
+async function findUserByStripeCustomer(
+  supabase: ReturnType<typeof createClient>,
+  stripeCustomerId: string
+): Promise<{ id: string } | null> {
+  const { data } = await supabase
+    .from("profiles")
+    .select("id")
+    .eq("stripe_customer_id", stripeCustomerId)
+    .maybeSingle();
+  return data;
+}
+
+async function findUserByEmail(
+  supabase: ReturnType<typeof createClient>,
+  email: string
+): Promise<{ id: string } | null> {
+  const { data } = await supabase
+    .from("profiles")
+    .select("id")
+    .eq("email", email)
+    .maybeSingle();
+  return data;
+}
 
 // ── Handlers ──────────────────────────────────────────────
 
@@ -125,21 +153,50 @@ async function handleCheckoutCompleted(
   stripe: Stripe,
   session: Stripe.Checkout.Session
 ) {
-  log("checkout.session.completed", { sessionId: session.id, customerId: session.customer });
+  log("checkout.session.completed", { sessionId: session.id, mode: session.mode });
 
-  if (session.mode !== "subscription") return;
-
+  const stripeCustomerId = session.customer as string;
   const customerEmail = session.customer_details?.email || session.customer_email;
-  if (!customerEmail) {
-    log("No customer email found in session");
+
+  // ── Credit pack purchase (one-time payment) ──
+  if (session.mode === "payment") {
+    const metadata = session.metadata || {};
+    if (metadata.pack_id && metadata.user_id && metadata.credits) {
+      log("Fulfilling credit purchase", { packId: metadata.pack_id, credits: metadata.credits });
+
+      const { error } = await supabase.from("credit_addons").insert({
+        user_id: metadata.user_id,
+        quota_key: "ai_generations",
+        credits_purchased: parseInt(metadata.credits, 10),
+        credits_remaining: parseInt(metadata.credits, 10),
+        price_paid: (session.amount_total || 0) / 100,
+        currency: session.currency?.toUpperCase() || "EUR",
+        status: "active",
+        stripe_session_id: session.id,
+        expires_at: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(),
+      });
+
+      if (error) {
+        log("Credit addon insert error", { error: error.message });
+        throw new Error(`Credit fulfillment failed: ${error.message}`);
+      }
+
+      log("Credits fulfilled", { userId: metadata.user_id, credits: metadata.credits });
+    }
     return;
   }
 
-  // Find user by email
-  const { data: users } = await supabase.auth.admin.listUsers();
-  const user = users?.users?.find((u: { email?: string }) => u.email === customerEmail);
+  // ── Subscription checkout ──
+  if (session.mode !== "subscription") return;
+
+  // Find user: try stripe_customer_id first, then email
+  let user = stripeCustomerId ? await findUserByStripeCustomer(supabase, stripeCustomerId) : null;
+  if (!user && customerEmail) {
+    user = await findUserByEmail(supabase, customerEmail);
+  }
+
   if (!user) {
-    log("No user found for email", { email: customerEmail });
+    log("No user found for checkout", { customerId: stripeCustomerId, email: customerEmail });
     return;
   }
 
@@ -155,7 +212,7 @@ async function handleCheckoutCompleted(
       plan,
       subscription_plan: plan,
       subscription_status: "active",
-      stripe_customer_id: session.customer as string,
+      stripe_customer_id: stripeCustomerId,
       updated_at: new Date().toISOString(),
     })
     .eq("id", user.id);
@@ -167,24 +224,17 @@ async function handleInvoicePaid(
   supabase: ReturnType<typeof createClient>,
   invoice: Stripe.Invoice
 ) {
-  log("invoice.paid", { invoiceId: invoice.id, customerId: invoice.customer });
-
   const customerId = invoice.customer as string;
   if (!customerId) return;
+  log("invoice.paid", { invoiceId: invoice.id, customerId });
 
-  // Update profile subscription_status to active
-  const { data } = await supabase
-    .from("profiles")
-    .select("id")
-    .eq("stripe_customer_id", customerId)
-    .maybeSingle();
-
-  if (data) {
+  const user = await findUserByStripeCustomer(supabase, customerId);
+  if (user) {
     await supabase
       .from("profiles")
       .update({ subscription_status: "active", updated_at: new Date().toISOString() })
-      .eq("id", data.id);
-    log("Profile marked active after invoice.paid", { userId: data.id });
+      .eq("id", user.id);
+    log("Profile marked active after invoice.paid", { userId: user.id });
   }
 }
 
@@ -192,36 +242,29 @@ async function handleInvoicePaymentFailed(
   supabase: ReturnType<typeof createClient>,
   invoice: Stripe.Invoice
 ) {
-  log("invoice.payment_failed", { invoiceId: invoice.id, customerId: invoice.customer });
-
   const customerId = invoice.customer as string;
   if (!customerId) return;
+  log("invoice.payment_failed", { invoiceId: invoice.id, customerId });
 
-  const { data } = await supabase
-    .from("profiles")
-    .select("id")
-    .eq("stripe_customer_id", customerId)
-    .maybeSingle();
-
-  if (data) {
+  const user = await findUserByStripeCustomer(supabase, customerId);
+  if (user) {
     await supabase
       .from("profiles")
       .update({ subscription_status: "past_due", updated_at: new Date().toISOString() })
-      .eq("id", data.id);
-    log("Profile marked past_due", { userId: data.id });
+      .eq("id", user.id);
+    log("Profile marked past_due", { userId: user.id });
   }
 }
 
 async function handleSubscriptionUpdated(
   supabase: ReturnType<typeof createClient>,
-  stripe: Stripe,
+  _stripe: Stripe,
   subscription: Stripe.Subscription
 ) {
-  log("subscription.updated", { subId: subscription.id, status: subscription.status });
-
   const customerId = subscription.customer as string;
   const productId = subscription.items.data[0]?.price?.product as string;
   const plan = PRODUCT_TO_PLAN[productId] || "standard";
+  log("subscription.updated", { subId: subscription.id, status: subscription.status, plan });
 
   const statusMap: Record<string, string> = {
     active: "active",
@@ -234,13 +277,8 @@ async function handleSubscriptionUpdated(
     paused: "inactive",
   };
 
-  const { data } = await supabase
-    .from("profiles")
-    .select("id")
-    .eq("stripe_customer_id", customerId)
-    .maybeSingle();
-
-  if (data) {
+  const user = await findUserByStripeCustomer(supabase, customerId);
+  if (user) {
     await supabase
       .from("profiles")
       .update({
@@ -249,8 +287,8 @@ async function handleSubscriptionUpdated(
         subscription_status: statusMap[subscription.status] || "inactive",
         updated_at: new Date().toISOString(),
       })
-      .eq("id", data.id);
-    log("Profile updated after subscription change", { userId: data.id, plan, status: subscription.status });
+      .eq("id", user.id);
+    log("Profile updated after subscription change", { userId: user.id, plan, status: subscription.status });
   }
 }
 
@@ -258,16 +296,11 @@ async function handleSubscriptionDeleted(
   supabase: ReturnType<typeof createClient>,
   subscription: Stripe.Subscription
 ) {
-  log("subscription.deleted", { subId: subscription.id });
-
   const customerId = subscription.customer as string;
-  const { data } = await supabase
-    .from("profiles")
-    .select("id")
-    .eq("stripe_customer_id", customerId)
-    .maybeSingle();
+  log("subscription.deleted", { subId: subscription.id, customerId });
 
-  if (data) {
+  const user = await findUserByStripeCustomer(supabase, customerId);
+  if (user) {
     await supabase
       .from("profiles")
       .update({
@@ -276,7 +309,7 @@ async function handleSubscriptionDeleted(
         subscription_status: "canceled",
         updated_at: new Date().toISOString(),
       })
-      .eq("id", data.id);
-    log("Profile downgraded to free after cancellation", { userId: data.id });
+      .eq("id", user.id);
+    log("Profile downgraded to free after cancellation", { userId: user.id });
   }
 }
