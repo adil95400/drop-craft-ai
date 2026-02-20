@@ -59,7 +59,7 @@ export function useMediaAudit() {
 
     // Non conformes (estimation basée sur URL patterns)
     const nonCompliant = products.filter(p => {
-      if (!p.image_url) return false
+      if (!p.image_url || typeof p.image_url !== 'string') return false
       const url = p.image_url.toLowerCase()
       return url.includes('placeholder') || 
              url.includes('no-image') || 
