@@ -9494,6 +9494,65 @@ export type Database = {
         }
         Relationships: []
       }
+      product_review_stats: {
+        Row: {
+          average_rating: number | null
+          id: string
+          last_review_at: string | null
+          product_id: string
+          rating_1: number | null
+          rating_2: number | null
+          rating_3: number | null
+          rating_4: number | null
+          rating_5: number | null
+          total_reviews: number | null
+          total_verified: number | null
+          total_with_images: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          average_rating?: number | null
+          id?: string
+          last_review_at?: string | null
+          product_id: string
+          rating_1?: number | null
+          rating_2?: number | null
+          rating_3?: number | null
+          rating_4?: number | null
+          rating_5?: number | null
+          total_reviews?: number | null
+          total_verified?: number | null
+          total_with_images?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          average_rating?: number | null
+          id?: string
+          last_review_at?: string | null
+          product_id?: string
+          rating_1?: number | null
+          rating_2?: number | null
+          rating_3?: number | null
+          rating_4?: number | null
+          rating_5?: number | null
+          total_reviews?: number | null
+          total_verified?: number | null
+          total_with_images?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_review_stats_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: true
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       product_reviews: {
         Row: {
           author: string
