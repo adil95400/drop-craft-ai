@@ -96,6 +96,23 @@ serve(async (req) => {
 
     console.log(`[trial-activate] Trial activated successfully for user ${user.id}`)
 
+    // Send confirmation email (fire-and-forget)
+    try {
+      const emailUrl = `${Deno.env.get('SUPABASE_URL')}/functions/v1/send-transactional-email`
+      fetch(emailUrl, {
+        method: 'POST',
+        headers: {
+          'Authorization': authHeader,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          template: 'trial_confirmation',
+          data: { plan, trialDays, endsAt: trialEndsAt.toISOString() }
+        }),
+      }).catch(e => console.error('[trial-activate] Email send failed:', e))
+    } catch (emailErr) {
+      console.error('[trial-activate] Email error:', emailErr)
+    }
     return new Response(JSON.stringify({
       success: true,
       trial: {
