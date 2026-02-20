@@ -434,7 +434,7 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
       { id: 'orders-all', name: 'Toutes les commandes', route: '/orders', icon: 'ShoppingCart', description: 'Liste complète', features: ['list'], order: 1 },
       { id: 'orders-create', name: 'Créer', route: '/orders/create', icon: 'Plus', description: 'Nouvelle commande', features: ['create'], order: 2 },
       { id: 'orders-bulk', name: 'Commandes en masse', route: '/orders/bulk', icon: 'Layers', description: 'Gestion par lot', features: ['bulk'], order: 3 },
-      { id: 'orders-fulfillment', name: 'Fulfillment', route: '/orders/fulfillment', icon: 'PackageCheck', description: 'Expédition, retours, suivi & automatisation', features: ['fulfillment', 'carriers', 'rules', 'returns', 'tracking', 'notifications'], order: 4 },
+      { id: 'orders-fulfillment', name: 'Exécution', route: '/orders/fulfillment', icon: 'PackageCheck', description: 'Expédition, retours, suivi & automatisation', features: ['fulfillment', 'carriers', 'rules', 'returns', 'tracking', 'notifications'], order: 4 },
     ]
   },
   
