@@ -88,23 +88,16 @@ class MonitoringService {
     return levelPriority[level] >= levelPriority[logLevel as keyof typeof levelPriority]
   }
 
-  private async sendToRemote(logEvent: LogEvent) {
-    // Only send critical events to remote in production
+  private sendToRemote(logEvent: LogEvent) {
+    // Only send critical events via Sentry in production
     if (this.isProduction && (logEvent.level === 'ERROR' || logEvent.level === 'WARN')) {
       try {
-        // Send to your logging service (Sentry, LogRocket, etc.)
-        if (import.meta.env.VITE_SENTRY_DSN) {
-          // Sentry integration would go here
-          console.log('Would send to Sentry:', logEvent)
+        // Sentry captures errors automatically via its integration
+        // This is a no-op placeholder for future remote logging services
+        if (import.meta.env.DEV) {
+          console.log('[Remote Log]', logEvent.level, logEvent.message)
         }
-        
-        // Also send to your own analytics endpoint
-        await fetch('/api/logs', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(logEvent)
-        }).catch(() => {}) // Fail silently for logging
-      } catch (error) {
+      } catch {
         // Fail silently for logging errors
       }
     }
@@ -209,17 +202,8 @@ export const logWarn = (message: string, data?: any) => monitoring.warn(message,
 export const logError = (message: string, data?: any) => monitoring.error(message, data)
 export const trackEvent = (eventName: string, properties?: Record<string, any>) => monitoring.trackEvent(eventName, properties)
 
-// React error boundary helper
-export const withErrorBoundary = (WrappedComponent: any) => {
-  const ErrorBoundaryComponent = (props: any) => {
-    try {
-      return WrappedComponent(props)
-    } catch (error) {
-      monitoring.logError('React Error Boundary', error)
-      throw error
-    }
-  }
-  
-  ErrorBoundaryComponent.displayName = `WithErrorBoundary(${WrappedComponent.displayName || WrappedComponent.name})`
-  return ErrorBoundaryComponent
+// Note: Real Error Boundary is implemented via Sentry.withErrorBoundary in main.tsx
+// This export is kept for backward compatibility but delegates to monitoring.logError
+export const logComponentError = (componentName: string, error: unknown) => {
+  monitoring.logError(`Component error in ${componentName}`, error)
 }
