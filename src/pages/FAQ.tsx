@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { BreadcrumbSchema } from '@/components/seo/StructuredData'
 import { HelpCircle, Search, Plus, ChevronDown, ChevronRight, MessageCircle, BookOpen, Video, Mail } from 'lucide-react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -243,13 +244,17 @@ export default function FAQ() {
         <title>FAQ & Centre d'Aide | ShopOpti+ - Questions Fréquentes</title>
         <meta name="description" content="Trouvez rapidement les réponses à vos questions sur ShopOpti+. Guide de démarrage, gestion produits, intégrations, commandes et plus." />
         <meta name="keywords" content="FAQ ShopOpti, aide dropshipping, support e-commerce, tutoriels, documentation" />
-        <link rel="canonical" href="https://www.shopopti.io/faq" />
+        <link rel="canonical" href="https://shopopti.io/faq" />
         <meta property="og:title" content="FAQ & Centre d'Aide | ShopOpti+" />
         <meta property="og:description" content="Trouvez rapidement les réponses à vos questions sur ShopOpti+." />
         <meta property="og:type" content="website" />
-        <meta property="og:url" content="https://www.shopopti.io/faq" />
+        <meta property="og:url" content="https://shopopti.io/faq" />
         <script type="application/ld+json">{JSON.stringify(faqSchema)}</script>
       </Helmet>
+      <BreadcrumbSchema items={[
+        { name: "Accueil", url: "https://shopopti.io" },
+        { name: "FAQ", url: "https://shopopti.io/faq" },
+      ]} />
       
       <div className="container mx-auto p-6 space-y-6">
         {/* Header */}

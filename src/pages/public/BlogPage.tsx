@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { PublicLayout } from "@/layouts/PublicLayout";
 import { Calendar, Clock, User, ArrowRight, Search, Tag, TrendingUp, BookOpen } from "lucide-react";
 import { useState } from "react";
+import { BreadcrumbSchema } from "@/components/seo/StructuredData";
 import { Link } from "react-router-dom";
 
 const blogPosts = [
@@ -148,6 +149,10 @@ const BlogPage = () => {
         
         <script type="application/ld+json">{JSON.stringify(jsonLd)}</script>
       </Helmet>
+      <BreadcrumbSchema items={[
+        { name: "Accueil", url: "https://shopopti.io" },
+        { name: "Blog", url: "https://shopopti.io/blog" },
+      ]} />
 
       {/* Hero Section */}
       <section className="py-16 md:py-24 bg-gradient-to-br from-primary/5 via-background to-secondary/5">
