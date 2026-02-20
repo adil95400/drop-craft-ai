@@ -108,7 +108,7 @@ serve(async (req) => {
       );
     }
 
-    // Create checkout session
+    // Create checkout session with promotion code support
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
       customer_email: customerId ? undefined : user.email,
@@ -120,6 +120,7 @@ serve(async (req) => {
         },
       ],
       mode: "subscription",
+      allow_promotion_codes: true, // Enable promo codes at checkout
       success_url: `${origin}/subscription?success=true`,
       cancel_url: `${origin}/subscription?canceled=true`,
       metadata: {
