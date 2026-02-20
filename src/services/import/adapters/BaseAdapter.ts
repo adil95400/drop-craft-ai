@@ -97,21 +97,32 @@ export abstract class BaseAdapter implements ImportAdapter {
 
     switch (source) {
       case 'amazon':
-        // Amazon: remplacer les suffixes de taille
+        // Amazon: force high-res SL1500
         return url
           .replace(/_S[XY]\d+_/g, '_SL1500_')
           .replace(/_AC_S[XY]\d+_/g, '_AC_SL1500_')
+          .replace(/\._[A-Z]{2}[\d_,]+_\./, '._AC_SL1500_.')
 
       case 'aliexpress':
       case 'temu':
-        // AliExpress/Temu: supprimer les suffixes de redimensionnement
+        // AliExpress/Temu: remove resize suffixes for full res
         return url
-          .replace(/_\d+x\d+\.jpg/g, '.jpg')
-          .replace(/\.jpg_\d+x\d+\.jpg/g, '.jpg')
+          .replace(/_\d+x\d+\.(jpg|png|webp)/gi, '.$1')
+          .replace(/\.(jpg|png|webp)_\d+x\d+\.\1/gi, '.$1')
 
       case 'shopify':
-        // Shopify: utiliser la taille maximale
+        // Shopify: remove size suffixes for max res
         return url.replace(/(_\d+x\d*|_\d*x\d+)\./, '.')
+
+      case 'ebay':
+        // eBay: replace s-l300/s-l500 with s-l1600
+        return url
+          .replace(/s-l\d+\./g, 's-l1600.')
+          .replace(/\/s-l\d+/g, '/s-l1600')
+
+      case 'etsy':
+        // Etsy: replace il_340x270 etc. with il_fullxfull
+        return url.replace(/il_\d+x\d+/g, 'il_fullxfull')
 
       default:
         return url
