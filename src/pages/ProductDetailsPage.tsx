@@ -7,6 +7,9 @@ import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { ProductTranslations, ProductReviews } from '@/components/products'
 import { ProductImageManager } from '@/components/products/ProductImageManager'
+import { ProductVariantEditor, type ProductVariantData, type VariantOption } from '@/components/products/ProductVariantEditor'
+import { ProductVideoPlayer } from '@/components/products/ProductVideoPlayer'
+import { ProductSuppliersPanel } from '@/components/products/ProductSuppliersPanel'
 import { ProductAuditBlock } from '@/components/products/ProductAuditBlock'
 import { ProductPerformanceMetrics } from '@/components/products/ProductPerformanceMetrics'
 import { OptimizationHistory } from '@/components/products/OptimizationHistory'
@@ -23,7 +26,7 @@ import {
   TrendingUp, History, Globe, Edit, ExternalLink, Copy, Sparkles,
   DollarSign, Tag, Box, BarChart3, Layers, ShoppingCart, Store,
   RefreshCw, Trash2, MoreVertical, CheckCircle2, AlertTriangle, 
-  Share2, Download, Eye, Clock, Zap, FileText
+  Share2, Download, Eye, Clock, Zap, FileText, Video, Truck
 } from 'lucide-react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useProduct } from '@/hooks/useUnifiedProducts'
@@ -449,10 +452,21 @@ export default function ProductDetailsPage() {
             <Card>
               <CardContent className="pt-6">
                 <Tabs defaultValue="audit" className="space-y-6">
-                  <TabsList className="grid w-full grid-cols-4 lg:grid-cols-7 gap-1 h-auto p-1">
+                  <TabsList className="flex flex-wrap w-full gap-1 h-auto p-1">
                     <TabsTrigger value="audit" className="gap-2 py-2">
                       <Target className="h-4 w-4" />
                       <span className="hidden sm:inline">Audit IA</span>
+                    </TabsTrigger>
+                    <TabsTrigger value="variants" className="gap-2 py-2">
+                      <Layers className="h-4 w-4" />
+                      <span className="hidden sm:inline">Variantes</span>
+                      {(product.variants?.length > 0) && (
+                        <Badge variant="secondary" className="text-[10px] h-4 px-1">{product.variants.length}</Badge>
+                      )}
+                    </TabsTrigger>
+                    <TabsTrigger value="suppliers" className="gap-2 py-2">
+                      <Truck className="h-4 w-4" />
+                      <span className="hidden sm:inline">Fournisseurs</span>
                     </TabsTrigger>
                     <TabsTrigger value="performance" className="gap-2 py-2">
                       <TrendingUp className="h-4 w-4" />
@@ -465,6 +479,13 @@ export default function ProductDetailsPage() {
                     <TabsTrigger value="gallery" className="gap-2 py-2">
                       <Images className="h-4 w-4" />
                       <span className="hidden sm:inline">Images</span>
+                    </TabsTrigger>
+                    <TabsTrigger value="videos" className="gap-2 py-2">
+                      <Video className="h-4 w-4" />
+                      <span className="hidden sm:inline">Vidéos</span>
+                      {(product.videos?.length > 0) && (
+                        <Badge variant="secondary" className="text-[10px] h-4 px-1">{product.videos.length}</Badge>
+                      )}
                     </TabsTrigger>
                     <TabsTrigger value="translations" className="gap-2 py-2">
                       <Languages className="h-4 w-4" />
@@ -487,6 +508,55 @@ export default function ProductDetailsPage() {
                     />
                   </TabsContent>
 
+                  <TabsContent value="variants">
+                    <ProductVariantEditor
+                      variants={(product.variants || []).map((v: any, i: number) => ({
+                        id: v.id || `v-${i}`,
+                        sku: v.sku || '',
+                        price: v.price ?? null,
+                        cost_price: v.cost_price ?? null,
+                        stock_quantity: v.stock_quantity ?? 0,
+                        weight: v.weight ?? null,
+                        barcode: v.barcode ?? null,
+                        is_active: v.is_active !== false,
+                        attributes: v.attributes || {},
+                        image_url: v.image_url,
+                      }))}
+                      options={(() => {
+                        // Derive options from variant attributes
+                        const optMap: Record<string, Set<string>> = {}
+                        ;(product.variants || []).forEach((v: any) => {
+                          if (v.attributes) {
+                            Object.entries(v.attributes).forEach(([k, val]) => {
+                              if (!optMap[k]) optMap[k] = new Set()
+                              optMap[k].add(val as string)
+                            })
+                          }
+                        })
+                        return Object.entries(optMap).map(([name, vals]) => ({
+                          name,
+                          values: Array.from(vals)
+                        }))
+                      })()}
+                      basePrice={product.price || 0}
+                      baseSku={product.sku}
+                      onVariantsChange={(newVariants) => {
+                        updateProduct.mutate({
+                          id: product.id,
+                          updates: { variants: newVariants } as any
+                        }, { onSuccess: () => refetch() })
+                      }}
+                      onOptionsChange={() => {/* Options are derived from variant attributes */}}
+                    />
+                  </TabsContent>
+
+                  <TabsContent value="suppliers">
+                    <ProductSuppliersPanel 
+                      productId={product.id}
+                      productPrice={product.price || 0}
+                    />
+                  </TabsContent>
+
                   <TabsContent value="performance">
                     <ProductPerformanceMetrics 
                       productId={product.id} 
@@ -500,6 +570,18 @@ export default function ProductDetailsPage() {
 
                   <TabsContent value="gallery">
                     <ProductImageManager productId={product.id} />
+                  </TabsContent>
+
+                  <TabsContent value="videos">
+                    <ProductVideoPlayer
+                      videos={product.videos || []}
+                      onVideosChange={(newVideos) => {
+                        updateProduct.mutate({
+                          id: product.id,
+                          updates: { videos: newVideos } as any
+                        }, { onSuccess: () => refetch() })
+                      }}
+                    />
                   </TabsContent>
 
                   <TabsContent value="translations">
