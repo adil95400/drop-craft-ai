@@ -26,8 +26,9 @@ import { CreateMappingDialog } from './CreateMappingDialog';
 import { VariantAttributeDetector } from './VariantAttributeDetector';
 import { VariantMatrix } from './VariantMatrix';
 import { VariantStockSync } from './VariantStockSync';
+import { VisualVariantMapper } from './VisualVariantMapper';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Scan, Grid3X3, ArrowRightLeft } from 'lucide-react';
+import { Scan, Grid3X3, ArrowRightLeft, MousePointerClick } from 'lucide-react';
 
 export function VariantMappingDashboard() {
   const [searchTerm, setSearchTerm] = useState('');
@@ -132,9 +133,13 @@ export function VariantMappingDashboard() {
       </div>
 
       {/* Main Content */}
-      <Tabs defaultValue="mappings" className="space-y-4">
+      <Tabs defaultValue="visual" className="space-y-4">
         <div className="flex flex-col lg:flex-row justify-between gap-4">
           <TabsList className="flex-wrap h-auto">
+            <TabsTrigger value="visual" className="gap-2">
+              <MousePointerClick className="h-4 w-4" />
+              Visuel D&D
+            </TabsTrigger>
             <TabsTrigger value="mappings" className="gap-2">
               <Layers className="h-4 w-4" />
               Mappings
@@ -176,6 +181,10 @@ export function VariantMappingDashboard() {
             </Button>
           </div>
         </div>
+
+        <TabsContent value="visual">
+          <VisualVariantMapper />
+        </TabsContent>
 
         <TabsContent value="mappings" className="space-y-4">
           {/* Filters */}
