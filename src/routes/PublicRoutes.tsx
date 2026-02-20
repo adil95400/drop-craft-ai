@@ -31,8 +31,11 @@ const Integrations = lazy(() => import('@/pages/integrations/ChannableStyleInteg
 // SEO SaaS pages
 const LogicielDropshippingPage = lazy(() => import('@/pages/public/LogicielDropshippingPage'));
 const AlternativeAutodsPage = lazy(() => import('@/pages/public/AlternativeAutodsPage'));
+const AlternativeDsersPage = lazy(() => import('@/pages/public/AlternativeDsersPage'));
 const OptimisationShopifyPage = lazy(() => import('@/pages/public/OptimisationShopifyPage'));
 const GestionCatalogueEcommercePage = lazy(() => import('@/pages/public/GestionCatalogueEcommercePage'));
+const ImportProduitsAliexpressPage = lazy(() => import('@/pages/public/ImportProduitsAliexpressPage'));
+const AutomatisationEcommercePage = lazy(() => import('@/pages/public/AutomatisationEcommercePage'));
 
 // Feature pages
 const AIOptimizationPage = lazy(() => import('@/pages/features/AIOptimizationPage'));
@@ -72,8 +75,11 @@ export function PublicRoutes() {
       {/* SEO SaaS Pages */}
       <Route path="logiciel-dropshipping" element={<LogicielDropshippingPage />} />
       <Route path="alternative-autods" element={<AlternativeAutodsPage />} />
+      <Route path="alternative-dsers" element={<AlternativeDsersPage />} />
       <Route path="optimisation-shopify" element={<OptimisationShopifyPage />} />
       <Route path="gestion-catalogue-ecommerce" element={<GestionCatalogueEcommercePage />} />
+      <Route path="import-produits-aliexpress" element={<ImportProduitsAliexpressPage />} />
+      <Route path="automatisation-ecommerce" element={<AutomatisationEcommercePage />} />
       
       {/* Support */}
       <Route path="contact" element={<Contact />} />
