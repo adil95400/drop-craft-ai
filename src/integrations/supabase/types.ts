@@ -10334,17 +10334,25 @@ export type Database = {
           applicable_categories: Json | null
           applicable_products: Json | null
           code: string
+          coupon_type: string | null
           created_at: string | null
+          currency: string | null
           current_uses: number | null
           description: string | null
           discount_type: string | null
           discount_value: number
+          duration: string | null
+          duration_in_months: number | null
           expires_at: string | null
           id: string
           is_active: boolean | null
+          max_redemptions: number | null
           max_uses: number | null
           min_purchase_amount: number | null
           starts_at: string | null
+          stripe_coupon_id: string | null
+          stripe_promotion_code_id: string | null
+          synced_to_stripe: boolean | null
           updated_at: string | null
           user_id: string
         }
@@ -10352,17 +10360,25 @@ export type Database = {
           applicable_categories?: Json | null
           applicable_products?: Json | null
           code: string
+          coupon_type?: string | null
           created_at?: string | null
+          currency?: string | null
           current_uses?: number | null
           description?: string | null
           discount_type?: string | null
           discount_value: number
+          duration?: string | null
+          duration_in_months?: number | null
           expires_at?: string | null
           id?: string
           is_active?: boolean | null
+          max_redemptions?: number | null
           max_uses?: number | null
           min_purchase_amount?: number | null
           starts_at?: string | null
+          stripe_coupon_id?: string | null
+          stripe_promotion_code_id?: string | null
+          synced_to_stripe?: boolean | null
           updated_at?: string | null
           user_id: string
         }
@@ -10370,17 +10386,25 @@ export type Database = {
           applicable_categories?: Json | null
           applicable_products?: Json | null
           code?: string
+          coupon_type?: string | null
           created_at?: string | null
+          currency?: string | null
           current_uses?: number | null
           description?: string | null
           discount_type?: string | null
           discount_value?: number
+          duration?: string | null
+          duration_in_months?: number | null
           expires_at?: string | null
           id?: string
           is_active?: boolean | null
+          max_redemptions?: number | null
           max_uses?: number | null
           min_purchase_amount?: number | null
           starts_at?: string | null
+          stripe_coupon_id?: string | null
+          stripe_promotion_code_id?: string | null
+          synced_to_stripe?: boolean | null
           updated_at?: string | null
           user_id?: string
         }
