@@ -149,18 +149,17 @@ async function generateAndStoreAltTexts(
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'google/gemini-2.5-flash',
+        model: 'openai/gpt-5-mini',
         messages: [
           {
             role: 'system',
-            content: `You are an SEO and accessibility specialist. Generate concise, descriptive alt text for product images.
-Rules:
-- Max 125 characters per alt text
-- Include the product name and key visual details
-- Naturally include SEO keywords (product type, color, material)
-- Be specific and descriptive, never generic ("image of product")
-- Language: French
-Always respond with a valid JSON array only, no markdown.`,
+            content: `Tu es un expert SEO et accessibilité web. Génère des textes alternatifs concis et descriptifs pour des images produit e-commerce.
+Règles :
+- Max 125 caractères par alt text
+- Inclure le nom du produit et les détails visuels clés
+- Intégrer naturellement les mots-clés SEO (type de produit, couleur, matière, usage)
+- Être spécifique et descriptif, jamais générique ("image de produit")
+- Langue : Français`,
           },
           {
             role: 'user',
@@ -168,30 +167,59 @@ Always respond with a valid JSON array only, no markdown.`,
 Nombre d'images : ${imageCount}
 Positions : ${images.map((img: any) => img.position ?? '?').join(', ')}
 
-Génère ${imageCount} textes alternatifs uniques, un par image. Pour la position 0 ou 1 montre le produit de face, les suivantes montrent des angles, détails ou mises en situation.
-
-Format JSON : [{"position": 0, "alt_text": "..."}, ...]`,
+Génère ${imageCount} textes alternatifs uniques, un par image. Pour la position 0 ou 1 montre le produit de face, les suivantes montrent des angles, détails ou mises en situation.`,
           },
         ],
+        tools: [
+          {
+            type: 'function',
+            function: {
+              name: 'set_alt_texts',
+              description: 'Store generated alt texts for product images',
+              parameters: {
+                type: 'object',
+                properties: {
+                  alt_texts: {
+                    type: 'array',
+                    items: {
+                      type: 'object',
+                      properties: {
+                        position: { type: 'number' },
+                        alt_text: { type: 'string', maxLength: 125 },
+                      },
+                      required: ['position', 'alt_text'],
+                      additionalProperties: false,
+                    },
+                  },
+                },
+                required: ['alt_texts'],
+                additionalProperties: false,
+              },
+            },
+          },
+        ],
+        tool_choice: { type: 'function', function: { name: 'set_alt_texts' } },
         temperature: 0.6,
-        max_tokens: 600,
       }),
     });
 
     if (!response.ok) {
-      console.error('[ALT-TEXT] AI gateway error:', response.status);
+      const status = response.status;
+      console.error('[ALT-TEXT] OpenAI gateway error:', status);
+      if (status === 429) console.error('[ALT-TEXT] Rate limit exceeded');
+      if (status === 402) console.error('[ALT-TEXT] Credits exhausted');
       return 0;
     }
 
     const aiData = await response.json();
-    const rawContent = aiData.choices?.[0]?.message?.content || '[]';
-    const cleaned = rawContent.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
     let altTexts: { position: number; alt_text: string }[];
 
     try {
-      altTexts = JSON.parse(cleaned);
+      const toolCall = aiData.choices?.[0]?.message?.tool_calls?.[0];
+      const args = JSON.parse(toolCall.function.arguments);
+      altTexts = args.alt_texts;
     } catch {
-      console.error('[ALT-TEXT] Failed to parse AI response');
+      console.error('[ALT-TEXT] Failed to parse OpenAI tool call response');
       return 0;
     }
 
