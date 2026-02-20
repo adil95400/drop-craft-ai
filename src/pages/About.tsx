@@ -20,7 +20,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import { SEO } from "@/components/SEO";
 import { PublicLayout } from "@/layouts/PublicLayout";
-import { OrganizationSchema } from "@/components/seo/StructuredData";
+import { OrganizationSchema, BreadcrumbSchema } from "@/components/seo/StructuredData";
 
 const About = () => {
   const navigate = useNavigate();
@@ -66,6 +66,10 @@ const About = () => {
         keywords="ShopOpti, plateforme dropshipping IA, automatisation e-commerce, startup française, SaaS e-commerce"
       />
       <OrganizationSchema />
+      <BreadcrumbSchema items={[
+        { name: "Accueil", url: "https://shopopti.io" },
+        { name: "À Propos", url: "https://shopopti.io/about" },
+      ]} />
 
       <div className="bg-background">
         {/* Hero Section */}

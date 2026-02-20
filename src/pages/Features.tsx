@@ -1,4 +1,5 @@
 import { Helmet } from 'react-helmet-async';
+import { BreadcrumbSchema } from '@/components/seo/StructuredData';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -111,6 +112,10 @@ const Features = () => {
         <meta property="og:url" content="https://shopopti.io/features" />
         <script type="application/ld+json">{JSON.stringify(jsonLd)}</script>
       </Helmet>
+      <BreadcrumbSchema items={[
+        { name: "Accueil", url: "https://shopopti.io" },
+        { name: "Fonctionnalités", url: "https://shopopti.io/features" },
+      ]} />
           {/* Hero Section */}
           <section className="py-20 bg-gradient-to-br from-primary/5 to-secondary/5">
             <div className="container mx-auto px-4 sm:px-6">

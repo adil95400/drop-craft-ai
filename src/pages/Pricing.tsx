@@ -1,4 +1,5 @@
 import React from 'react';
+import { BreadcrumbSchema } from '@/components/seo/StructuredData';
 import { Helmet } from 'react-helmet-async';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -76,13 +77,17 @@ const Pricing = () => {
         <title>Tarifs ShopOpti+ | Plans Standard, Pro, Ultra Pro - Essai Gratuit 14 Jours</title>
         <meta name="description" content="Découvrez nos plans tarifaires ShopOpti+ : Standard 29€/mois, Pro 49€/mois, Ultra Pro 99€/mois. 14 jours d'essai gratuit, sans engagement. Automatisez votre e-commerce." />
         <meta name="keywords" content="tarifs dropshipping, prix e-commerce, abonnement ShopOpti, plan automatisation, essai gratuit" />
-        <link rel="canonical" href="https://www.shopopti.io/pricing" />
+        <link rel="canonical" href="https://shopopti.io/pricing" />
         <meta property="og:title" content="Tarifs ShopOpti+ | Plans E-commerce" />
         <meta property="og:description" content="Plans tarifaires ShopOpti+ à partir de 29€/mois. Essai gratuit 14 jours." />
         <meta property="og:type" content="website" />
-        <meta property="og:url" content="https://www.shopopti.io/pricing" />
+        <meta property="og:url" content="https://shopopti.io/pricing" />
         <script type="application/ld+json">{JSON.stringify(jsonLd)}</script>
       </Helmet>
+      <BreadcrumbSchema items={[
+        { name: "Accueil", url: "https://shopopti.io" },
+        { name: "Tarifs", url: "https://shopopti.io/pricing" },
+      ]} />
 
       <div className="bg-background py-16">
         <div className="container mx-auto px-4">

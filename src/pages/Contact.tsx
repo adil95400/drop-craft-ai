@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { BreadcrumbSchema } from '@/components/seo/StructuredData'
 import { Helmet } from 'react-helmet-async'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -57,13 +58,17 @@ const Contact = () => {
         <title>Contact ShopOpti+ | Support Client et Assistance</title>
         <meta name="description" content="Contactez l'équipe ShopOpti+ pour toute question. Support réactif (réponse sous 2h), conseils personnalisés, assistance technique dédiée." />
         <meta name="keywords" content="contact ShopOpti, support e-commerce, assistance dropshipping, aide technique" />
-        <link rel="canonical" href="https://www.shopopti.io/contact" />
+        <link rel="canonical" href="https://shopopti.io/contact" />
         <meta property="og:title" content="Contact ShopOpti+ | Support" />
         <meta property="og:description" content="Notre équipe vous répond en moins de 2h." />
         <meta property="og:type" content="website" />
-        <meta property="og:url" content="https://www.shopopti.io/contact" />
+        <meta property="og:url" content="https://shopopti.io/contact" />
         <script type="application/ld+json">{JSON.stringify(jsonLd)}</script>
       </Helmet>
+      <BreadcrumbSchema items={[
+        { name: "Accueil", url: "https://shopopti.io" },
+        { name: "Contact", url: "https://shopopti.io/contact" },
+      ]} />
 
       <div className="bg-background py-16">
         <div className="container mx-auto px-4">
