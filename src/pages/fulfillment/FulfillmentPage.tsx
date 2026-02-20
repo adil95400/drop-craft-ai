@@ -24,7 +24,8 @@ import {
   FileText,
   Weight,
   Loader2,
-  Bell
+  Bell,
+  BarChart3
 } from 'lucide-react';
 import { useFulfillmentStats, useCarriers, useCreateCarrier } from '@/hooks/useFulfillment';
 import { CarriersManager } from '@/components/fulfillment/CarriersManager';
@@ -33,26 +34,28 @@ import { FulfillmentAutomation } from '@/components/fulfillment/FulfillmentAutom
 import { ReturnsHub } from '@/components/returns';
 import { TrackingDashboardContent } from '@/components/fulfillment/TrackingDashboardContent';
 import { NotificationsContent } from '@/components/fulfillment/NotificationsContent';
+import { FulfillmentProDashboard } from '@/components/fulfillment/FulfillmentProDashboard';
+import { FulfillmentOrdersEnhanced } from '@/components/fulfillment/FulfillmentOrdersEnhanced';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 export default function FulfillmentPage() {
   const [searchParams, setSearchParams] = useSearchParams();
-  const tabFromUrl = searchParams.get('tab') || 'overview';
+  const tabFromUrl = searchParams.get('tab') || 'dashboard';
   const [activeTab, setActiveTab] = useState(tabFromUrl);
   
   // Sync tab with URL
   useEffect(() => {
     const tab = searchParams.get('tab');
-    if (tab && ['overview', 'carriers', 'returns', 'tracking', 'notifications', 'automation'].includes(tab)) {
+    if (tab && ['dashboard', 'overview', 'carriers', 'returns', 'tracking', 'notifications', 'automation'].includes(tab)) {
       setActiveTab(tab);
     }
   }, [searchParams]);
   
   const handleTabChange = (value: string) => {
     setActiveTab(value);
-    if (value === 'overview') {
+    if (value === 'dashboard') {
       searchParams.delete('tab');
     } else {
       searchParams.set('tab', value);
@@ -276,11 +279,16 @@ export default function FulfillmentPage() {
       
       {/* Main Tabs */}
       <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-4">
-        <TabsList className="grid w-full grid-cols-3 md:grid-cols-6 h-auto bg-muted/50">
+        <TabsList className="grid w-full grid-cols-3 md:grid-cols-7 h-auto bg-muted/50">
+          <TabsTrigger value="dashboard" className="text-xs md:text-sm py-2 data-[state=active]:bg-background">
+            <BarChart3 className="h-4 w-4 mr-1 md:mr-2" />
+            <span className="hidden sm:inline">Dashboard</span>
+            <span className="sm:hidden">Dash</span>
+          </TabsTrigger>
           <TabsTrigger value="overview" className="text-xs md:text-sm py-2 data-[state=active]:bg-background">
             <Package className="h-4 w-4 mr-1 md:mr-2" />
-            <span className="hidden sm:inline">Expéditions</span>
-            <span className="sm:hidden">Expéd.</span>
+            <span className="hidden sm:inline">Commandes</span>
+            <span className="sm:hidden">Cmd</span>
           </TabsTrigger>
           <TabsTrigger value="carriers" className="text-xs md:text-sm py-2 data-[state=active]:bg-background">
             <Truck className="h-4 w-4 mr-1 md:mr-2" />
@@ -309,8 +317,12 @@ export default function FulfillmentPage() {
           </TabsTrigger>
         </TabsList>
         
+        <TabsContent value="dashboard">
+          <FulfillmentProDashboard />
+        </TabsContent>
+        
         <TabsContent value="overview">
-          <ShipmentsTable />
+          <FulfillmentOrdersEnhanced />
         </TabsContent>
         
         <TabsContent value="carriers">
