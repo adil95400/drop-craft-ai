@@ -1,8 +1,9 @@
-import { pipeline, env } from '@huggingface/transformers';
-
-// Configure transformers.js
-env.allowLocalModels = false;
-env.useBrowserCache = true;
+const loadTransformers = async () => {
+  const { pipeline, env } = await import('@huggingface/transformers');
+  env.allowLocalModels = false;
+  env.useBrowserCache = true;
+  return { pipeline, env };
+};
 
 const MAX_IMAGE_DIMENSION = 1024;
 
@@ -38,6 +39,8 @@ export const removeBackground = async (
   try {
     console.log('Starting background removal process...');
     onProgress?.(10);
+
+    const { pipeline } = await loadTransformers();
 
     const segmenter = await pipeline(
       'image-segmentation',

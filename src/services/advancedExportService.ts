@@ -1,6 +1,7 @@
 import Papa from 'papaparse'
-import * as XLSX from 'xlsx'
 import { Product } from '@/lib/supabase'
+
+const loadXLSX = () => import('xlsx');
 
 export type ExportFormat = 'csv' | 'csv-shopify' | 'excel'
 
@@ -202,7 +203,8 @@ class AdvancedExportService {
   /**
    * Export to Excel
    */
-  exportToExcel(products: Product[], columns: ExportColumn[], filename: string, format: 'standard' | 'shopify' = 'standard') {
+  async exportToExcel(products: Product[], columns: ExportColumn[], filename: string, format: 'standard' | 'shopify' = 'standard') {
+    const XLSX = await loadXLSX();
     let data: any[]
     
     if (format === 'shopify') {
@@ -232,7 +234,6 @@ class AdvancedExportService {
     const workbook = XLSX.utils.book_new()
     XLSX.utils.book_append_sheet(workbook, worksheet, 'Produits')
     
-    // Auto-size columns
     const maxWidth = 50
     const colWidths = Object.keys(data[0] || {}).map(key => ({
       wch: Math.min(

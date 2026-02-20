@@ -1,5 +1,6 @@
-import * as XLSX from 'xlsx';
 import { z } from 'zod';
+
+const loadXLSX = () => import('xlsx');
 
 // Schema de validation pour les produits importés
 export const ProductImportSchema = z.object({
@@ -90,6 +91,7 @@ export class FileParserService {
     const data: any[] = [];
 
     try {
+      const XLSX = await loadXLSX();
       const workbook = XLSX.read(arrayBuffer, { type: 'array' });
       const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
       const rawData = XLSX.utils.sheet_to_json(firstSheet);

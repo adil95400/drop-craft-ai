@@ -2,9 +2,15 @@
  * Sprint 10: Analytics Export Utility
  * CSV and PDF export for analytics data
  */
-import { jsPDF } from 'jspdf';
-import autoTable from 'jspdf-autotable';
 import type { TimeSeriesPoint, CategoryBreakdown, PlatformBreakdown } from '@/hooks/useAdvancedAnalyticsDashboard';
+
+const loadPdfLibs = async () => {
+  const [{ jsPDF }, { default: autoTable }] = await Promise.all([
+    import('jspdf'),
+    import('jspdf-autotable'),
+  ]);
+  return { jsPDF, autoTable };
+};
 
 export function exportTimeSeriesCSV(data: TimeSeriesPoint[], filename = 'analytics-timeseries.csv') {
   const header = 'Date,Revenue,Orders,Avg Order Value\n';
@@ -33,11 +39,12 @@ function downloadCSV(content: string, filename: string) {
   URL.revokeObjectURL(link.href);
 }
 
-export function exportAnalyticsPDF(
+export async function exportAnalyticsPDF(
   overview: { revenue: number; orders: number; avg_order_value: number },
   timeSeries: TimeSeriesPoint[],
   periodLabel: string
 ) {
+  const { jsPDF, autoTable } = await loadPdfLibs();
   const doc = new jsPDF();
 
   // Title

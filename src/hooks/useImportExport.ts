@@ -2,7 +2,8 @@ import { useState, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
-import * as XLSX from 'xlsx';
+
+const loadXLSX = () => import('xlsx');
 
 interface ImportOptions {
   format: 'csv' | 'json' | 'excel';
@@ -77,9 +78,10 @@ export function useImportExport() {
             break;
 
           case 'excel':
-            const workbook = XLSX.read(text, { type: 'string' });
+            const xlsxMod = await loadXLSX();
+            const workbook = xlsxMod.read(text, { type: 'string' });
             const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-            data = XLSX.utils.sheet_to_json(firstSheet);
+            data = xlsxMod.utils.sheet_to_json(firstSheet);
             break;
 
           default:
@@ -187,10 +189,11 @@ export function useImportExport() {
           break;
 
         case 'excel':
-          const ws = XLSX.utils.json_to_sheet(data);
-          const wb = XLSX.utils.book_new();
-          XLSX.utils.book_append_sheet(wb, ws, 'Data');
-          const excelBuffer = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+          const xlsxMod = await loadXLSX();
+          const ws = xlsxMod.utils.json_to_sheet(data);
+          const wb = xlsxMod.utils.book_new();
+          xlsxMod.utils.book_append_sheet(wb, ws, 'Data');
+          const excelBuffer = xlsxMod.write(wb, { bookType: 'xlsx', type: 'array' });
           blob = new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
           filename = `export-${tableName}-${Date.now()}.xlsx`;
           break;
