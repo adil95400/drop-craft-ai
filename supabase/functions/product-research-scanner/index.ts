@@ -112,6 +112,8 @@ Fournis des produits RÉELS et actuels avec des données plausibles.`;
   if (!response.ok) {
     const errorText = await response.text();
     console.error('AI API error:', response.status, errorText);
+    if (response.status === 429) throw new Error('Limite de requêtes atteinte, réessayez dans quelques instants');
+    if (response.status === 402) throw new Error('Crédits IA épuisés, veuillez recharger');
     throw new Error('Erreur lors de l\'analyse AI');
   }
 
@@ -188,6 +190,8 @@ Fournis des estimations réalistes basées sur le type de produit.`;
   });
 
   if (!response.ok) {
+    if (response.status === 429) throw new Error('Limite de requêtes atteinte, réessayez dans quelques instants');
+    if (response.status === 402) throw new Error('Crédits IA épuisés, veuillez recharger');
     throw new Error('Erreur lors de l\'analyse AI');
   }
 
@@ -268,6 +272,8 @@ Fournis une analyse réaliste du marché.`;
   });
 
   if (!response.ok) {
+    if (response.status === 429) throw new Error('Limite de requêtes atteinte, réessayez dans quelques instants');
+    if (response.status === 402) throw new Error('Crédits IA épuisés, veuillez recharger');
     throw new Error('Erreur lors de l\'analyse AI');
   }
 

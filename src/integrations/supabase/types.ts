@@ -9437,6 +9437,60 @@ export type Database = {
           },
         ]
       }
+      product_research_results: {
+        Row: {
+          category: string | null
+          created_at: string
+          id: string
+          is_favorite: boolean | null
+          product_name: string
+          profit_margin: number | null
+          raw_data: Json | null
+          saturation_level: string | null
+          search_volume: number | null
+          source_platform: string | null
+          source_url: string | null
+          trend_score: number | null
+          user_id: string
+          viral_score: number | null
+          winning_score: number | null
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string
+          id?: string
+          is_favorite?: boolean | null
+          product_name: string
+          profit_margin?: number | null
+          raw_data?: Json | null
+          saturation_level?: string | null
+          search_volume?: number | null
+          source_platform?: string | null
+          source_url?: string | null
+          trend_score?: number | null
+          user_id: string
+          viral_score?: number | null
+          winning_score?: number | null
+        }
+        Update: {
+          category?: string | null
+          created_at?: string
+          id?: string
+          is_favorite?: boolean | null
+          product_name?: string
+          profit_margin?: number | null
+          raw_data?: Json | null
+          saturation_level?: string | null
+          search_volume?: number | null
+          source_platform?: string | null
+          source_url?: string | null
+          trend_score?: number | null
+          user_id?: string
+          viral_score?: number | null
+          winning_score?: number | null
+        }
+        Relationships: []
+      }
       product_reviews: {
         Row: {
           author: string
