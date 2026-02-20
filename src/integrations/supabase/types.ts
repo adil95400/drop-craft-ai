@@ -10598,6 +10598,107 @@ export type Database = {
         }
         Relationships: []
       }
+      referral_codes: {
+        Row: {
+          code: string
+          created_at: string
+          current_uses: number
+          expires_at: string | null
+          id: string
+          is_active: boolean
+          max_uses: number | null
+          referee_reward_type: string
+          referee_reward_value: number
+          reward_type: string
+          reward_value: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          current_uses?: number
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean
+          max_uses?: number | null
+          referee_reward_type?: string
+          referee_reward_value?: number
+          reward_type?: string
+          reward_value?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          current_uses?: number
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean
+          max_uses?: number | null
+          referee_reward_type?: string
+          referee_reward_value?: number
+          reward_type?: string
+          reward_value?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      referrals: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          id: string
+          referee_id: string
+          referee_reward_amount: number | null
+          referee_reward_given: boolean
+          referral_code_id: string
+          referrer_id: string
+          referrer_reward_amount: number | null
+          referrer_reward_given: boolean
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          referee_id: string
+          referee_reward_amount?: number | null
+          referee_reward_given?: boolean
+          referral_code_id: string
+          referrer_id: string
+          referrer_reward_amount?: number | null
+          referrer_reward_given?: boolean
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          referee_id?: string
+          referee_reward_amount?: number | null
+          referee_reward_given?: boolean
+          referral_code_id?: string
+          referrer_id?: string
+          referrer_reward_amount?: number | null
+          referrer_reward_given?: boolean
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "referrals_referral_code_id_fkey"
+            columns: ["referral_code_id"]
+            isOneToOne: false
+            referencedRelation: "referral_codes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       reorder_suggestions: {
         Row: {
           approved_at: string | null
