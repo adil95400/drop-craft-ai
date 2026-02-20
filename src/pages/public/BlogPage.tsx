@@ -226,7 +226,10 @@ const BlogPage = () => {
                       src={post.image} 
                       alt={post.title}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      width={640}
+                      height={360}
                       loading="lazy"
+                      decoding="async"
                     />
                   </div>
                   <CardHeader>
@@ -285,7 +288,10 @@ const BlogPage = () => {
                       src={post.image} 
                       alt={post.title}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      width={640}
+                      height={360}
                       loading="lazy"
+                      decoding="async"
                     />
                   </div>
                   <CardHeader className="pb-2">
