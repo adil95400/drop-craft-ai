@@ -74,6 +74,35 @@ export default function ProductDetailsPage() {
     status: 'draft',
   })
 
+  // Action handlers (must be defined before useMemo that references them)
+  const handleOptimizeAI = () => {
+    if (!id) return
+    generateContent.mutate({
+      productId: id,
+      contentTypes: ['title', 'description', 'seo'],
+    })
+  }
+
+  const handleOptimizeSEO = () => {
+    if (!id) return
+    optimizeSeo.mutate({ productIds: [id] })
+  }
+
+  const openEditModal = () => {
+    if (!product) return
+    setEditForm({
+      name: product.name || '',
+      description: product.description || '',
+      price: product.price || 0,
+      cost_price: product.cost_price || 0,
+      stock_quantity: product.stock_quantity || 0,
+      sku: product.sku || '',
+      category: product.category || '',
+      status: product.status || 'draft',
+    })
+    setShowEditModal(true)
+  }
+
   // Calculate health score
   const healthScore = useMemo(() => {
     if (!product) return 0
@@ -121,7 +150,7 @@ export default function ProductDetailsPage() {
         description: 'Une description détaillée améliore le SEO et la conversion. Utilisez l\'IA pour en générer une optimisée.',
         action: 'Optimiser avec IA',
         priority: 'high',
-        onClick: handleOptimizeAI,
+        onClick: () => handleOptimizeAI(),
       })
     }
 
@@ -132,7 +161,7 @@ export default function ProductDetailsPage() {
         description: 'Ajoutez un titre et une description SEO pour améliorer le référencement de ce produit.',
         action: 'Lancer l\'optimisation SEO',
         priority: 'medium',
-        onClick: handleOptimizeSEO,
+        onClick: () => handleOptimizeSEO(),
       })
     }
 
@@ -170,7 +199,7 @@ export default function ProductDetailsPage() {
     }
 
     return items
-  }, [product])
+  }, [product, id])
 
   const getHealthColor = (score: number) => {
     if (score >= 80) return 'text-green-500'
@@ -208,33 +237,6 @@ export default function ProductDetailsPage() {
     triggerSync.mutate({ syncType: 'products', options: { productIds: [id] } })
   }
 
-  const handleOptimizeAI = () => {
-    if (!id) return
-    generateContent.mutate({
-      productId: id,
-      contentTypes: ['title', 'description', 'seo'],
-    })
-  }
-
-  const handleOptimizeSEO = () => {
-    if (!id) return
-    optimizeSeo.mutate({ productIds: [id] })
-  }
-
-  const openEditModal = () => {
-    if (!product) return
-    setEditForm({
-      name: product.name || '',
-      description: product.description || '',
-      price: product.price || 0,
-      cost_price: product.cost_price || 0,
-      stock_quantity: product.stock_quantity || 0,
-      sku: product.sku || '',
-      category: product.category || '',
-      status: product.status || 'draft',
-    })
-    setShowEditModal(true)
-  }
 
   const handleSaveEdit = () => {
     if (!id) return
