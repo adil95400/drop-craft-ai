@@ -5,6 +5,7 @@
 import React from 'react'
 import { ChannableLayout } from '@/components/channable/navigation'
 import { useJobRealtime } from '@/hooks/useJobRealtime'
+import { useRealtimeNotifications } from '@/hooks/useRealtimeNotifications'
 
 interface MainLayoutProps {
   children: React.ReactNode
@@ -12,5 +13,6 @@ interface MainLayoutProps {
 
 export function MainLayout({ children }: MainLayoutProps) {
   useJobRealtime()
+  useRealtimeNotifications()
   return <ChannableLayout>{children}</ChannableLayout>
 }
