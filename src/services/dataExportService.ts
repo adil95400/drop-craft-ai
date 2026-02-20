@@ -1,4 +1,4 @@
-import * as XLSX from 'xlsx';
+const loadXLSX = () => import('xlsx');
 
 export type ExportFormat = 'csv' | 'json' | 'excel';
 
@@ -47,9 +47,9 @@ export class DataExportService {
       throw new Error('Aucune donnée à exporter');
     }
 
+    const XLSX = await loadXLSX();
     const ws = XLSX.utils.json_to_sheet(data);
     
-    // Auto-ajuster la largeur des colonnes
     const cols = Object.keys(data[0]).map(key => ({
       wch: Math.max(
         key.length,

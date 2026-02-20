@@ -1,7 +1,13 @@
-import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
+
+const loadPdfLibs = async () => {
+  const [{ default: jsPDF }, { default: autoTable }] = await Promise.all([
+    import('jspdf'),
+    import('jspdf-autotable'),
+  ]);
+  return { jsPDF, autoTable };
+};
 
 interface ReportData {
   title: string;
@@ -38,7 +44,8 @@ const COLORS = {
   background: [248, 250, 252] as [number, number, number],
 };
 
-export function generatePDFReport(data: ReportData, options: PDFExportOptions = {}): jsPDF {
+export async function generatePDFReport(data: ReportData, options: PDFExportOptions = {}) {
+  const { jsPDF, autoTable } = await loadPdfLibs();
   const {
     includeCharts = true,
     includeTables = true,
@@ -235,8 +242,8 @@ export function generatePDFReport(data: ReportData, options: PDFExportOptions = 
   return doc;
 }
 
-export function downloadPDFReport(data: ReportData, options: PDFExportOptions = {}, filename?: string): void {
-  const doc = generatePDFReport(data, options);
+export async function downloadPDFReport(data: ReportData, options: PDFExportOptions = {}, filename?: string): Promise<void> {
+  const doc = await generatePDFReport(data, options);
   const defaultFilename = `rapport-${format(new Date(), 'yyyy-MM-dd-HHmm')}.pdf`;
   doc.save(filename || defaultFilename);
 }
