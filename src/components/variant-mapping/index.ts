@@ -6,3 +6,4 @@ export { CreateMappingDialog } from './CreateMappingDialog';
 export { VariantAttributeDetector } from './VariantAttributeDetector';
 export { VariantMatrix } from './VariantMatrix';
 export { VariantStockSync } from './VariantStockSync';
+export { VisualVariantMapper } from './VisualVariantMapper';
