@@ -3,7 +3,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
 };
 
 serve(async (req) => {
@@ -12,7 +12,7 @@ serve(async (req) => {
   }
 
   try {
-    const { productId, method, sourceUrl, existingImageUrl, productTitle, sku, marketplace } = await req.json();
+    const { productId, method, sourceUrl, existingImageUrl, productTitle, sku, marketplace, generateAltText = true } = await req.json();
 
     if (!productId) {
       throw new Error('productId is required');
@@ -37,55 +37,62 @@ serve(async (req) => {
         newImages = result.images;
         source = result.source;
         break;
+      case 'alt-text-only':
+        // Only generate alt texts for existing images, no new image fetching
+        break;
       case 'search':
         throw new Error('Search method not yet implemented');
       default:
         throw new Error('Invalid method');
     }
 
-    if (newImages.length === 0) {
-      return new Response(
-        JSON.stringify({ success: false, message: 'No new images found' }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    // Get existing images
+    // Get existing product data
     const { data: product } = await supabase
       .from('products')
-      .select('image_url, images')
+      .select('id, name, image_url, images, category')
       .eq('id', productId)
       .single();
 
-    // Combine existing and new images (max 10)
-    const existingImages = Array.isArray(product?.images) ? product.images : [];
-    const allImages = [...new Set([...existingImages, ...newImages])].slice(0, 10);
+    const title = productTitle || product?.name || 'Product';
 
-    // Update product
-    const { error: updateError } = await supabase
-      .from('products')
-      .update({ 
-        images: allImages,
-        updated_at: new Date().toISOString()
-      })
-      .eq('id', productId);
+    if (method !== 'alt-text-only') {
+      if (newImages.length === 0) {
+        return new Response(
+          JSON.stringify({ success: false, message: 'No new images found' }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
 
-    if (updateError) {
-      // Try imported_products table
-      await supabase
-        .from('imported_products')
-        .update({ 
-          images: allImages,
-          updated_at: new Date().toISOString()
-        })
+      // Combine existing and new images (max 10)
+      const existingImages = Array.isArray(product?.images) ? product.images : [];
+      const allImages = [...new Set([...existingImages, ...newImages])].slice(0, 10);
+
+      // Update product
+      const { error: updateError } = await supabase
+        .from('products')
+        .update({ images: allImages, updated_at: new Date().toISOString() })
         .eq('id', productId);
+
+      if (updateError) {
+        await supabase
+          .from('imported_products')
+          .update({ images: allImages, updated_at: new Date().toISOString() })
+          .eq('id', productId);
+      }
+    }
+
+    // ── Phase 5: Generate AI alt texts ──
+    let altTextsGenerated = 0;
+    if (generateAltText) {
+      altTextsGenerated = await generateAndStoreAltTexts(supabase, productId, title, product?.category);
     }
 
     return new Response(
       JSON.stringify({ 
         success: true, 
-        imagesAdded: newImages.length,
-        totalImages: allImages.length,
+        imagesAdded: method === 'alt-text-only' ? 0 : newImages.length,
+        totalImages: method === 'alt-text-only' ? 0 : newImages.length,
+        altTextsGenerated,
         source
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -100,7 +107,117 @@ serve(async (req) => {
   }
 });
 
-// Multi-source search with automatic fallback
+/**
+ * Generate descriptive alt texts for all product images missing one,
+ * then persist them in the product_images table.
+ */
+async function generateAndStoreAltTexts(
+  supabase: any,
+  productId: string,
+  productTitle: string,
+  category?: string | null
+): Promise<number> {
+  const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
+  if (!LOVABLE_API_KEY) {
+    console.warn('[ALT-TEXT] LOVABLE_API_KEY not configured, skipping');
+    return 0;
+  }
+
+  // Fetch images that have no alt_text yet
+  const { data: images } = await supabase
+    .from('product_images')
+    .select('id, url, position')
+    .eq('product_id', productId)
+    .or('alt_text.is.null,alt_text.eq.')
+    .order('position', { ascending: true })
+    .limit(10);
+
+  if (!images || images.length === 0) {
+    // Fallback: also update the main product image_url alt if product_images is empty
+    console.log('[ALT-TEXT] No product_images rows to update');
+    return 0;
+  }
+
+  const imageCount = images.length;
+  console.log(`[ALT-TEXT] Generating alt texts for ${imageCount} images of "${productTitle}"`);
+
+  try {
+    const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${LOVABLE_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'google/gemini-2.5-flash',
+        messages: [
+          {
+            role: 'system',
+            content: `You are an SEO and accessibility specialist. Generate concise, descriptive alt text for product images.
+Rules:
+- Max 125 characters per alt text
+- Include the product name and key visual details
+- Naturally include SEO keywords (product type, color, material)
+- Be specific and descriptive, never generic ("image of product")
+- Language: French
+Always respond with a valid JSON array only, no markdown.`,
+          },
+          {
+            role: 'user',
+            content: `Produit : "${productTitle}"${category ? `\nCatégorie : ${category}` : ''}
+Nombre d'images : ${imageCount}
+Positions : ${images.map((img: any) => img.position ?? '?').join(', ')}
+
+Génère ${imageCount} textes alternatifs uniques, un par image. Pour la position 0 ou 1 montre le produit de face, les suivantes montrent des angles, détails ou mises en situation.
+
+Format JSON : [{"position": 0, "alt_text": "..."}, ...]`,
+          },
+        ],
+        temperature: 0.6,
+        max_tokens: 600,
+      }),
+    });
+
+    if (!response.ok) {
+      console.error('[ALT-TEXT] AI gateway error:', response.status);
+      return 0;
+    }
+
+    const aiData = await response.json();
+    const rawContent = aiData.choices?.[0]?.message?.content || '[]';
+    const cleaned = rawContent.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+    let altTexts: { position: number; alt_text: string }[];
+
+    try {
+      altTexts = JSON.parse(cleaned);
+    } catch {
+      console.error('[ALT-TEXT] Failed to parse AI response');
+      return 0;
+    }
+
+    // Update each image row
+    let updated = 0;
+    for (const img of images) {
+      const match = altTexts.find((a) => a.position === img.position) || altTexts[updated];
+      if (match?.alt_text) {
+        const { error } = await supabase
+          .from('product_images')
+          .update({ alt_text: match.alt_text.substring(0, 125) })
+          .eq('id', img.id);
+        if (!error) updated++;
+      }
+    }
+
+    console.log(`[ALT-TEXT] Updated ${updated}/${imageCount} images`);
+    return updated;
+  } catch (err) {
+    console.error('[ALT-TEXT] Error:', err);
+    return 0;
+  }
+}
+
+// ── Existing helpers below (unchanged) ──
+
 async function multiSourceSearch(
   productTitle: string, 
   sku?: string, 
@@ -108,7 +225,6 @@ async function multiSourceSearch(
 ): Promise<{ images: string[], source: string }> {
   console.log('Starting multi-source search for:', productTitle);
   
-  // 1. Try Firecrawl search first
   try {
     const firecrawlImages = await searchImagesWithFirecrawl(productTitle, sku);
     if (firecrawlImages.length >= 2) {
@@ -119,13 +235,11 @@ async function multiSourceSearch(
     console.error('Firecrawl search failed:', error);
   }
 
-  // 2. Fallback to AI generation
   console.log('Falling back to AI generation');
   const aiImages = await generateImagesWithAI(productTitle, existingImageUrl);
   return { images: aiImages, source: 'ai' };
 }
 
-// Search images using Firecrawl
 async function searchImagesWithFirecrawl(productName: string, sku?: string): Promise<string[]> {
   const FIRECRAWL_API_KEY = Deno.env.get('FIRECRAWL_API_KEY') || Deno.env.get('FIRECRAWL_API_KEY_1');
   
@@ -138,8 +252,6 @@ async function searchImagesWithFirecrawl(productName: string, sku?: string): Pro
     ? `${productName} ${sku} product image high resolution`
     : `${productName} product image high resolution`;
 
-  console.log('Firecrawl search query:', query);
-
   try {
     const response = await fetch('https://api.firecrawl.dev/v1/search', {
       method: 'POST',
@@ -148,11 +260,9 @@ async function searchImagesWithFirecrawl(productName: string, sku?: string): Pro
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        query: query,
+        query,
         limit: 10,
-        scrapeOptions: { 
-          formats: ['markdown', 'links'] 
-        }
+        scrapeOptions: { formats: ['markdown', 'links'] }
       })
     });
 
@@ -162,8 +272,6 @@ async function searchImagesWithFirecrawl(productName: string, sku?: string): Pro
     }
 
     const data = await response.json();
-    console.log('Firecrawl response:', JSON.stringify(data).substring(0, 500));
-    
     return extractImageUrlsFromResults(data);
   } catch (error) {
     console.error('Firecrawl request failed:', error);
@@ -171,58 +279,38 @@ async function searchImagesWithFirecrawl(productName: string, sku?: string): Pro
   }
 }
 
-// Extract image URLs from Firecrawl search results
 function extractImageUrlsFromResults(data: any): string[] {
   const images: string[] = [];
   const results = data.data || data.results || [];
 
   for (const result of results) {
-    // Check markdown content for image URLs
     const markdown = result.markdown || result.content || '';
     const imgPattern = /!\[.*?\]\((https?:\/\/[^\s)]+\.(jpg|jpeg|png|webp)[^\s)]*)\)/gi;
     let match;
     while ((match = imgPattern.exec(markdown)) !== null) {
-      if (isValidProductImage(match[1])) {
-        images.push(match[1]);
-      }
+      if (isValidProductImage(match[1])) images.push(match[1]);
     }
 
-    // Check links array
     const links = result.links || [];
     for (const link of links) {
       const url = typeof link === 'string' ? link : link.url;
-      if (url && /\.(jpg|jpeg|png|webp)$/i.test(url) && isValidProductImage(url)) {
-        images.push(url);
-      }
+      if (url && /\.(jpg|jpeg|png|webp)$/i.test(url) && isValidProductImage(url)) images.push(url);
     }
 
-    // Check for og:image or other image metadata
     const metadata = result.metadata || {};
-    if (metadata.ogImage && isValidProductImage(metadata.ogImage)) {
-      images.push(metadata.ogImage);
-    }
+    if (metadata.ogImage && isValidProductImage(metadata.ogImage)) images.push(metadata.ogImage);
   }
 
-  // Return unique images, max 5
   return [...new Set(images)].slice(0, 5);
 }
 
-// Validate image URL
 function isValidProductImage(url: string): boolean {
-  // Filter out icons, logos, and small images
   const excludePatterns = [
     /icon/i, /logo/i, /favicon/i, /avatar/i, /badge/i,
     /thumbnail/i, /placeholder/i, /spinner/i, /loading/i,
-    /\d+x\d+/, // Size patterns like 50x50
+    /\d+x\d+/,
   ];
-
-  for (const pattern of excludePatterns) {
-    if (pattern.test(url)) {
-      return false;
-    }
-  }
-
-  return true;
+  return !excludePatterns.some(p => p.test(url));
 }
 
 async function scrapeImagesFromSource(sourceUrl: string): Promise<string[]> {
@@ -230,19 +318,14 @@ async function scrapeImagesFromSource(sourceUrl: string): Promise<string[]> {
 
   try {
     const response = await fetch(sourceUrl, {
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
-      }
+      headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' }
     });
-
     if (!response.ok) return [];
 
     const html = await response.text();
     const images: string[] = [];
 
-    // Extract images based on source type
     if (sourceUrl.includes('amazon')) {
-      // Amazon image patterns
       const amazonPatterns = [
         /data-old-hires="([^"]+)"/g,
         /data-a-dynamic-image="[^"]*"(https:\/\/[^"]+\.jpg)/g,
@@ -250,41 +333,27 @@ async function scrapeImagesFromSource(sourceUrl: string): Promise<string[]> {
         /"large":"(https:\/\/[^"]+)"/g,
         /https:\/\/m\.media-amazon\.com\/images\/I\/[A-Za-z0-9._%-]+\.jpg/g
       ];
-
       for (const pattern of amazonPatterns) {
         const matches = html.matchAll(pattern);
         for (const match of matches) {
           const url = match[1] || match[0];
-          if (url && url.startsWith('http') && !images.includes(url)) {
-            // Normalize Amazon URLs to get high-res versions
+          if (url?.startsWith('http') && !images.includes(url)) {
             const normalizedUrl = normalizeAmazonImageUrl(url);
-            if (!images.includes(normalizedUrl)) {
-              images.push(normalizedUrl);
-            }
+            if (!images.includes(normalizedUrl)) images.push(normalizedUrl);
           }
         }
       }
     } else {
-      // Generic image extraction
       const imgPattern = /<img[^>]+src="(https?:\/\/[^"]+\.(jpg|jpeg|png|webp)[^"]*)"/gi;
-      const matches = html.matchAll(imgPattern);
-      for (const match of matches) {
-        if (match[1] && !images.includes(match[1])) {
-          images.push(match[1]);
-        }
+      for (const match of html.matchAll(imgPattern)) {
+        if (match[1] && !images.includes(match[1])) images.push(match[1]);
       }
-
-      // Also check og:image meta tags
       const ogImagePattern = /<meta[^>]+property="og:image"[^>]+content="([^"]+)"/gi;
-      const ogMatches = html.matchAll(ogImagePattern);
-      for (const match of ogMatches) {
-        if (match[1] && !images.includes(match[1])) {
-          images.push(match[1]);
-        }
+      for (const match of html.matchAll(ogImagePattern)) {
+        if (match[1] && !images.includes(match[1])) images.push(match[1]);
       }
     }
 
-    // Return unique images, max 5 new ones
     return [...new Set(images)].slice(0, 5);
   } catch (error) {
     console.error('Error scraping images:', error);
@@ -293,19 +362,14 @@ async function scrapeImagesFromSource(sourceUrl: string): Promise<string[]> {
 }
 
 function normalizeAmazonImageUrl(url: string): string {
-  // Remove Amazon size modifiers to get original high-res image
   return url.replace(/\._[A-Z]{2}_[A-Z0-9,_]+_\./, '.');
 }
 
 async function generateImagesWithAI(productTitle: string, existingImageUrl: string | null): Promise<string[]> {
   const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
-  if (!LOVABLE_API_KEY) {
-    throw new Error('LOVABLE_API_KEY not configured');
-  }
+  if (!LOVABLE_API_KEY) throw new Error('LOVABLE_API_KEY not configured');
 
   const images: string[] = [];
-
-  // Generate 2 variations
   const prompts = [
     `Product photo of ${productTitle}, professional studio lighting, white background, high resolution, e-commerce style`,
     `Lifestyle product shot of ${productTitle}, natural lighting, modern interior setting, commercial photography`
@@ -321,27 +385,21 @@ async function generateImagesWithAI(productTitle: string, existingImageUrl: stri
         },
         body: JSON.stringify({
           model: 'google/gemini-2.5-flash-image-preview',
-          messages: [
-            {
-              role: 'user',
-              content: existingImageUrl ? [
-                { type: 'text', text: prompt },
-                { type: 'image_url', image_url: { url: existingImageUrl } }
-              ] : prompt
-            }
-          ],
+          messages: [{
+            role: 'user',
+            content: existingImageUrl ? [
+              { type: 'text', text: prompt },
+              { type: 'image_url', image_url: { url: existingImageUrl } }
+            ] : prompt
+          }],
           modalities: ['image', 'text']
         })
       });
 
       if (!response.ok) continue;
-
       const data = await response.json();
       const imageUrl = data.choices?.[0]?.message?.images?.[0]?.image_url?.url;
-      
-      if (imageUrl) {
-        images.push(imageUrl);
-      }
+      if (imageUrl) images.push(imageUrl);
     } catch (error) {
       console.error('Error generating AI image:', error);
     }
