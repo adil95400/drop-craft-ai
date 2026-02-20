@@ -10699,6 +10699,75 @@ export type Database = {
           },
         ]
       }
+      renewal_alert_preferences: {
+        Row: {
+          alert_1_day: boolean
+          alert_3_days: boolean
+          alert_30_days: boolean
+          alert_7_days: boolean
+          channel: string
+          created_at: string
+          id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          alert_1_day?: boolean
+          alert_3_days?: boolean
+          alert_30_days?: boolean
+          alert_7_days?: boolean
+          channel?: string
+          created_at?: string
+          id?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          alert_1_day?: boolean
+          alert_3_days?: boolean
+          alert_30_days?: boolean
+          alert_7_days?: boolean
+          channel?: string
+          created_at?: string
+          id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      renewal_alerts: {
+        Row: {
+          alert_type: string
+          channel: string
+          created_at: string
+          id: string
+          is_read: boolean
+          sent_at: string
+          subscription_end_date: string
+          user_id: string
+        }
+        Insert: {
+          alert_type: string
+          channel?: string
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          sent_at?: string
+          subscription_end_date: string
+          user_id: string
+        }
+        Update: {
+          alert_type?: string
+          channel?: string
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          sent_at?: string
+          subscription_end_date?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       reorder_suggestions: {
         Row: {
           approved_at: string | null
