@@ -4,108 +4,150 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter }
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { PublicLayout } from "@/layouts/PublicLayout";
-import { Calendar, Clock, User, ArrowRight, Search, Tag, TrendingUp, BookOpen } from "lucide-react";
+import { Calendar, Clock, User, ArrowRight, Search, TrendingUp, BookOpen, Loader2 } from "lucide-react";
 import { useState } from "react";
 import { BreadcrumbSchema } from "@/components/seo/StructuredData";
 import { Link } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
-const blogPosts = [
-  {
-    id: "1",
-    title: "10 Stratégies pour Augmenter vos Ventes en Dropshipping en 2024",
+const POSTS_PER_PAGE = 9;
+
+function slugify(text: string): string {
+  return text
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "");
+}
+
+// Fallback posts used when DB is empty
+const fallbackPosts = [
+  { created_at: null,
+    id: "1", title: "10 Stratégies pour Augmenter vos Ventes en Dropshipping en 2024",
     excerpt: "Découvrez les meilleures pratiques pour optimiser votre boutique et maximiser vos conversions cette année.",
-    category: "Stratégie",
-    author: "Sophie Martin",
-    date: "2024-12-05",
-    readTime: "8 min",
-    image: "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=800&auto=format&fit=crop",
-    featured: true,
-    tags: ["dropshipping", "e-commerce", "stratégie", "ventes"]
+    category: "Stratégie", author: "Sophie Martin", publish_date: "2024-12-05", readTime: "8 min",
+    image_url: "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=800&auto=format&fit=crop",
+    featured: true, tags: ["dropshipping", "e-commerce", "stratégie", "ventes"], content: "",
   },
-  {
-    id: "2",
-    title: "Guide Complet : Optimiser vos Fiches Produits avec l'IA",
+  { created_at: null,
+    id: "2", title: "Guide Complet : Optimiser vos Fiches Produits avec l'IA",
     excerpt: "L'intelligence artificielle révolutionne la création de contenu. Apprenez à l'utiliser efficacement.",
-    category: "IA & Automatisation",
-    author: "Marc Dupont",
-    date: "2024-12-03",
-    readTime: "12 min",
-    image: "https://images.unsplash.com/photo-1677442136019-21780ecad995?w=800&auto=format&fit=crop",
-    featured: true,
-    tags: ["IA", "optimisation", "produits", "SEO"]
+    category: "IA & Automatisation", author: "Marc Dupont", publish_date: "2024-12-03", readTime: "12 min",
+    image_url: "https://images.unsplash.com/photo-1677442136019-21780ecad995?w=800&auto=format&fit=crop",
+    featured: true, tags: ["IA", "optimisation", "produits", "SEO"], content: "",
   },
-  {
-    id: "3",
-    title: "Comment Choisir les Meilleurs Fournisseurs pour votre Business",
+  { created_at: null,
+    id: "3", title: "Comment Choisir les Meilleurs Fournisseurs pour votre Business",
     excerpt: "Critères essentiels et méthodes pour sélectionner des fournisseurs fiables et rentables.",
-    category: "Fournisseurs",
-    author: "Julie Chen",
-    date: "2024-12-01",
-    readTime: "10 min",
-    image: "https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=800&auto=format&fit=crop",
-    featured: false,
-    tags: ["fournisseurs", "sourcing", "qualité"]
+    category: "Fournisseurs", author: "Julie Chen", publish_date: "2024-12-01", readTime: "10 min",
+    image_url: "https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=800&auto=format&fit=crop",
+    featured: false, tags: ["fournisseurs", "sourcing", "qualité"], content: "",
   },
-  {
-    id: "4",
-    title: "Multi-Marketplace : Vendre sur Amazon, eBay et Etsy Simultanément",
+  { created_at: null,
+    id: "4", title: "Multi-Marketplace : Vendre sur Amazon, eBay et Etsy Simultanément",
     excerpt: "Stratégies pour gérer efficacement plusieurs canaux de vente depuis une seule plateforme.",
-    category: "Marketplaces",
-    author: "Pierre Lambert",
-    date: "2024-11-28",
-    readTime: "15 min",
-    image: "https://images.unsplash.com/photo-1563013544-824ae1b704d3?w=800&auto=format&fit=crop",
-    featured: false,
-    tags: ["marketplace", "Amazon", "eBay", "Etsy"]
+    category: "Marketplaces", author: "Pierre Lambert", publish_date: "2024-11-28", readTime: "15 min",
+    image_url: "https://images.unsplash.com/photo-1563013544-824ae1b704d3?w=800&auto=format&fit=crop",
+    featured: false, tags: ["marketplace", "Amazon", "eBay", "Etsy"], content: "",
   },
-  {
-    id: "5",
-    title: "SEO E-commerce : Techniques Avancées pour 2024",
+  { created_at: null,
+    id: "5", title: "SEO E-commerce : Techniques Avancées pour 2024",
     excerpt: "Boostez votre visibilité Google avec ces techniques SEO spécialement adaptées au e-commerce.",
-    category: "SEO",
-    author: "Emma Wilson",
-    date: "2024-11-25",
-    readTime: "11 min",
-    image: "https://images.unsplash.com/photo-1432888622747-4eb9a8efeb07?w=800&auto=format&fit=crop",
-    featured: false,
-    tags: ["SEO", "Google", "référencement", "trafic"]
+    category: "SEO", author: "Emma Wilson", publish_date: "2024-11-25", readTime: "11 min",
+    image_url: "https://images.unsplash.com/photo-1432888622747-4eb9a8efeb07?w=800&auto=format&fit=crop",
+    featured: false, tags: ["SEO", "Google", "référencement", "trafic"], content: "",
   },
-  {
-    id: "6",
-    title: "Automatiser vos Campagnes Marketing avec ShopOpti+",
+  { created_at: null,
+    id: "6", title: "Automatiser vos Campagnes Marketing avec ShopOpti+",
     excerpt: "Configurez des campagnes email et publicités automatisées pour gagner du temps et augmenter vos revenus.",
-    category: "Marketing",
-    author: "Thomas Bernard",
-    date: "2024-11-22",
-    readTime: "9 min",
-    image: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800&auto=format&fit=crop",
-    featured: false,
-    tags: ["marketing", "automatisation", "email", "publicité"]
-  }
+    category: "Marketing", author: "Thomas Bernard", publish_date: "2024-11-22", readTime: "9 min",
+    image_url: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800&auto=format&fit=crop",
+    featured: false, tags: ["marketing", "automatisation", "email", "publicité"], content: "",
+  },
 ];
 
-const categories = [
-  { name: "Tous", count: 24 },
-  { name: "Stratégie", count: 8 },
-  { name: "IA & Automatisation", count: 6 },
-  { name: "SEO", count: 5 },
-  { name: "Fournisseurs", count: 3 },
-  { name: "Marketing", count: 2 }
-];
+interface BlogPost {
+  id: string;
+  title: string;
+  excerpt: string | null;
+  category: string | null;
+  publish_date: string | null;
+  image_url: string | null;
+  tags: string[] | null;
+  content: string;
+  created_at: string | null;
+  ai_generated: boolean | null;
+  status: string | null;
+}
 
 const BlogPage = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("Tous");
+  const [page, setPage] = useState(1);
 
-  const featuredPosts = blogPosts.filter(post => post.featured);
-  const regularPosts = blogPosts.filter(post => !post.featured);
+  // Fetch published blog posts from DB
+  const { data: dbPosts, isLoading } = useQuery({
+    queryKey: ["blog-posts-public"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("blog_posts")
+        .select("id, title, excerpt, category, publish_date, image_url, tags, content, created_at, ai_generated, status")
+        .eq("status", "published")
+        .order("publish_date", { ascending: false });
+      if (error) throw error;
+      return data as BlogPost[];
+    },
+    staleTime: 5 * 60 * 1000,
+  });
 
-  const filteredPosts = blogPosts.filter(post => {
-    const matchesSearch = post.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                          post.excerpt.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory = selectedCategory === "Tous" || post.category === selectedCategory;
+  // Use DB posts if available, otherwise fallback
+  const allPosts = (dbPosts && dbPosts.length > 0) ? dbPosts : fallbackPosts;
+
+  // Derive categories from posts
+  const categoryMap = new Map<string, number>();
+  categoryMap.set("Tous", allPosts.length);
+  allPosts.forEach((p) => {
+    const cat = p.category || "Autre";
+    categoryMap.set(cat, (categoryMap.get(cat) || 0) + 1);
+  });
+  const categories = Array.from(categoryMap.entries()).map(([name, count]) => ({ name, count }));
+
+  // Helper: estimate read time
+  const getReadTime = (post: typeof allPosts[0]) => {
+    if ('readTime' in post && (post as any).readTime) return (post as any).readTime;
+    return `${Math.max(1, Math.ceil((post.content?.length || 0) / 1500))} min`;
+  };
+
+  // Helper: get author
+  const getAuthor = (post: typeof allPosts[0]) => {
+    if ('author' in post && (post as any).author) return (post as any).author;
+    return "ShopOpti+";
+  };
+
+  // Helper: is featured
+  const isFeatured = (post: typeof allPosts[0], index: number) => {
+    if ('featured' in post) return (post as any).featured;
+    return index < 2;
+  };
+
+  // Filter
+  const filteredPosts = allPosts.filter((post) => {
+    const matchesSearch =
+      post.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (post.excerpt || "").toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesCategory =
+      selectedCategory === "Tous" || (post.category || "Autre") === selectedCategory;
     return matchesSearch && matchesCategory;
   });
+
+  const featuredPosts = allPosts.filter((p, i) => isFeatured(p, i));
+
+  // Pagination
+  const totalPages = Math.ceil(filteredPosts.length / POSTS_PER_PAGE);
+  const paginatedPosts = filteredPosts.slice(0, page * POSTS_PER_PAGE);
+  const hasMore = page < totalPages;
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -116,22 +158,15 @@ const BlogPage = () => {
     "publisher": {
       "@type": "Organization",
       "name": "ShopOpti+",
-      "logo": {
-        "@type": "ImageObject",
-        "url": "https://shopopti.io/logo.png"
-      }
+      "logo": { "@type": "ImageObject", "url": "https://shopopti.io/logo.png" }
     },
-    "blogPost": blogPosts.map(post => ({
+    "blogPost": allPosts.slice(0, 10).map((post) => ({
       "@type": "BlogPosting",
       "headline": post.title,
       "description": post.excerpt,
-      "author": {
-        "@type": "Person",
-        "name": post.author
-      },
-      "datePublished": post.date,
-      "image": post.image
-    }))
+      "datePublished": post.publish_date || post.created_at,
+      "image": post.image_url,
+    })),
   };
 
   return (
@@ -141,12 +176,10 @@ const BlogPage = () => {
         <meta name="description" content="Découvrez nos guides, conseils et actualités sur le dropshipping, l'e-commerce et l'automatisation avec l'IA. Stratégies pour développer votre business en ligne." />
         <meta name="keywords" content="blog dropshipping, conseils e-commerce, guide IA, stratégie vente en ligne, optimisation boutique" />
         <link rel="canonical" href="https://shopopti.io/blog" />
-        
         <meta property="og:title" content="Blog E-commerce & Dropshipping | ShopOpti+" />
         <meta property="og:description" content="Guides, conseils et actualités sur le dropshipping et l'e-commerce avec IA." />
         <meta property="og:type" content="blog" />
         <meta property="og:url" content="https://shopopti.io/blog" />
-        
         <script type="application/ld+json">{JSON.stringify(jsonLd)}</script>
       </Helmet>
       <BreadcrumbSchema items={[
@@ -171,8 +204,6 @@ const BlogPage = () => {
             <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto">
               Guides pratiques, stratégies éprouvées et dernières tendances pour réussir dans le e-commerce.
             </p>
-            
-            {/* Search Bar */}
             <div className="relative max-w-xl mx-auto pt-4">
               <Search className="absolute left-4 top-1/2 h-5 w-5 text-muted-foreground" />
               <Input
@@ -180,7 +211,7 @@ const BlogPage = () => {
                 placeholder="Rechercher un article..."
                 className="pl-12 h-12 text-base"
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={(e) => { setSearchQuery(e.target.value); setPage(1); }}
                 aria-label="Rechercher dans le blog"
               />
             </div>
@@ -197,21 +228,27 @@ const BlogPage = () => {
                 key={cat.name}
                 variant={selectedCategory === cat.name ? "default" : "outline"}
                 size="sm"
-                onClick={() => setSelectedCategory(cat.name)}
+                onClick={() => { setSelectedCategory(cat.name); setPage(1); }}
                 className="whitespace-nowrap"
               >
                 {cat.name}
-                <Badge variant="secondary" className="ml-2 text-xs">
-                  {cat.count}
-                </Badge>
+                <Badge variant="secondary" className="ml-2 text-xs">{cat.count}</Badge>
               </Button>
             ))}
           </div>
         </div>
       </section>
 
+      {/* Loading */}
+      {isLoading && (
+        <div className="py-20 text-center">
+          <Loader2 className="h-8 w-8 animate-spin mx-auto text-primary" />
+          <p className="mt-4 text-muted-foreground">Chargement des articles...</p>
+        </div>
+      )}
+
       {/* Featured Articles */}
-      {selectedCategory === "Tous" && !searchQuery && (
+      {!isLoading && selectedCategory === "Tous" && !searchQuery && featuredPosts.length > 0 && (
         <section className="py-12 md:py-16">
           <div className="container mx-auto px-4 sm:px-6">
             <div className="flex items-center gap-2 mb-8">
@@ -219,46 +256,43 @@ const BlogPage = () => {
               <h2 className="text-2xl font-bold">Articles à la Une</h2>
             </div>
             <div className="grid md:grid-cols-2 gap-6">
-              {featuredPosts.map((post) => (
-                <Card key={post.id} className="group overflow-hidden border-2 hover:border-primary/50 transition-all duration-300">
-                  <div className="aspect-video overflow-hidden">
-                    <img 
-                      src={post.image} 
-                      alt={post.title}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                      width={640}
-                      height={360}
-                      loading="lazy"
-                      decoding="async"
-                    />
-                  </div>
-                  <CardHeader>
-                    <div className="flex items-center gap-2 mb-2">
-                      <Badge variant="secondary">{post.category}</Badge>
-                      <span className="text-sm text-muted-foreground flex items-center gap-1">
-                        <Clock className="h-3 w-3" /> {post.readTime}
+              {featuredPosts.slice(0, 2).map((post) => (
+                <Link key={post.id} to={`/blog/${slugify(post.title)}`} className="group">
+                  <Card className="overflow-hidden border-2 hover:border-primary/50 transition-all duration-300 h-full">
+                    <div className="aspect-video overflow-hidden">
+                      <img
+                        src={post.image_url || "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=800&auto=format&fit=crop"}
+                        alt={post.title}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                        width={640} height={360} loading="lazy" decoding="async"
+                      />
+                    </div>
+                    <CardHeader>
+                      <div className="flex items-center gap-2 mb-2">
+                        <Badge variant="secondary">{post.category || "Article"}</Badge>
+                        <span className="text-sm text-muted-foreground flex items-center gap-1">
+                          <Clock className="h-3 w-3" /> {getReadTime(post)}
+                        </span>
+                      </div>
+                      <CardTitle className="text-xl group-hover:text-primary transition-colors line-clamp-2">
+                        {post.title}
+                      </CardTitle>
+                      <CardDescription className="line-clamp-2">{post.excerpt}</CardDescription>
+                    </CardHeader>
+                    <CardFooter className="flex items-center justify-between">
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <User className="h-4 w-4" />
+                        <span>{getAuthor(post)}</span>
+                        <span>•</span>
+                        <Calendar className="h-4 w-4" />
+                        <span>{new Date(post.publish_date || post.created_at || "").toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })}</span>
+                      </div>
+                      <span className="text-primary text-sm font-medium flex items-center gap-1">
+                        Lire <ArrowRight className="h-4 w-4" />
                       </span>
-                    </div>
-                    <CardTitle className="text-xl group-hover:text-primary transition-colors line-clamp-2">
-                      {post.title}
-                    </CardTitle>
-                    <CardDescription className="line-clamp-2">{post.excerpt}</CardDescription>
-                  </CardHeader>
-                  <CardFooter className="flex items-center justify-between">
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <User className="h-4 w-4" />
-                      <span>{post.author}</span>
-                      <span>•</span>
-                      <Calendar className="h-4 w-4" />
-                      <span>{new Date(post.date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })}</span>
-                    </div>
-                    <Link to={`/blog/${post.title.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "")}`}>
-                      <Button variant="ghost" size="sm" className="group-hover:translate-x-1 transition-transform">
-                        Lire <ArrowRight className="h-4 w-4 ml-1" />
-                      </Button>
-                    </Link>
-                  </CardFooter>
-                </Card>
+                    </CardFooter>
+                  </Card>
+                </Link>
               ))}
             </div>
           </div>
@@ -266,92 +300,84 @@ const BlogPage = () => {
       )}
 
       {/* All Articles */}
-      <section className="py-12 md:py-16 bg-secondary/20">
-        <div className="container mx-auto px-4 sm:px-6">
-          <h2 className="text-2xl font-bold mb-8">
-            {searchQuery ? `Résultats pour "${searchQuery}"` : selectedCategory === "Tous" ? "Tous les articles" : selectedCategory}
-          </h2>
-          
-          {filteredPosts.length === 0 ? (
-            <div className="text-center py-12">
-              <p className="text-muted-foreground text-lg">Aucun article trouvé.</p>
-              <Button variant="outline" className="mt-4" onClick={() => { setSearchQuery(""); setSelectedCategory("Tous"); }}>
-                Réinitialiser les filtres
-              </Button>
-            </div>
-          ) : (
-            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredPosts.map((post) => (
-                <Card key={post.id} className="group overflow-hidden hover:shadow-lg transition-all duration-300">
-                  <div className="aspect-video overflow-hidden">
-                    <img 
-                      src={post.image} 
-                      alt={post.title}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                      width={640}
-                      height={360}
-                      loading="lazy"
-                      decoding="async"
-                    />
-                  </div>
-                  <CardHeader className="pb-2">
-                    <div className="flex items-center gap-2 mb-2">
-                      <Badge variant="outline" className="text-xs">{post.category}</Badge>
-                      <span className="text-xs text-muted-foreground">{post.readTime}</span>
-                    </div>
-                    <CardTitle className="text-lg line-clamp-2 group-hover:text-primary transition-colors">
-                      {post.title}
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="pt-0">
-                    <p className="text-sm text-muted-foreground line-clamp-2">{post.excerpt}</p>
-                  </CardContent>
-                  <CardFooter className="pt-0">
-                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                      <span>{post.author}</span>
-                      <span>•</span>
-                      <span>{new Date(post.date).toLocaleDateString('fr-FR')}</span>
-                    </div>
-                  </CardFooter>
-                </Card>
-              ))}
-            </div>
-          )}
-          
-          {/* Load More */}
-          <div className="text-center mt-12">
-            <Button variant="outline" size="lg">
-              Charger plus d'articles
-              <ArrowRight className="h-4 w-4 ml-2" />
-            </Button>
+      {!isLoading && (
+        <section className="py-12 md:py-16 bg-secondary/20">
+          <div className="container mx-auto px-4 sm:px-6">
+            <h2 className="text-2xl font-bold mb-8">
+              {searchQuery ? `Résultats pour "${searchQuery}"` : selectedCategory === "Tous" ? "Tous les articles" : selectedCategory}
+            </h2>
+
+            {filteredPosts.length === 0 ? (
+              <div className="text-center py-12">
+                <p className="text-muted-foreground text-lg">Aucun article trouvé.</p>
+                <Button variant="outline" className="mt-4" onClick={() => { setSearchQuery(""); setSelectedCategory("Tous"); }}>
+                  Réinitialiser les filtres
+                </Button>
+              </div>
+            ) : (
+              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                {paginatedPosts.map((post) => (
+                  <Link key={post.id} to={`/blog/${slugify(post.title)}`} className="group">
+                    <Card className="overflow-hidden hover:shadow-lg transition-all duration-300 h-full">
+                      <div className="aspect-video overflow-hidden">
+                        <img
+                          src={post.image_url || "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=800&auto=format&fit=crop"}
+                          alt={post.title}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                          width={640} height={360} loading="lazy" decoding="async"
+                        />
+                      </div>
+                      <CardHeader className="pb-2">
+                        <div className="flex items-center gap-2 mb-2">
+                          <Badge variant="outline" className="text-xs">{post.category || "Article"}</Badge>
+                          <span className="text-xs text-muted-foreground">{getReadTime(post)}</span>
+                        </div>
+                        <CardTitle className="text-lg line-clamp-2 group-hover:text-primary transition-colors">
+                          {post.title}
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="pt-0">
+                        <p className="text-sm text-muted-foreground line-clamp-2">{post.excerpt}</p>
+                      </CardContent>
+                      <CardFooter className="pt-0">
+                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                          <span>{getAuthor(post)}</span>
+                          <span>•</span>
+                          <span>{new Date(post.publish_date || post.created_at || "").toLocaleDateString('fr-FR')}</span>
+                        </div>
+                      </CardFooter>
+                    </Card>
+                  </Link>
+                ))}
+              </div>
+            )}
+
+            {/* Pagination */}
+            {hasMore && (
+              <div className="text-center mt-12">
+                <Button variant="outline" size="lg" onClick={() => setPage((p) => p + 1)}>
+                  Charger plus d'articles
+                  <ArrowRight className="h-4 w-4 ml-2" />
+                </Button>
+              </div>
+            )}
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* Newsletter CTA */}
       <section className="py-16 md:py-20 bg-gradient-to-r from-primary/10 via-background to-secondary/10">
         <div className="container mx-auto px-4 sm:px-6">
           <div className="max-w-2xl mx-auto text-center space-y-6">
-            <h2 className="text-3xl md:text-4xl font-bold">
-              Restez informé des dernières tendances
-            </h2>
+            <h2 className="text-3xl md:text-4xl font-bold">Restez informé des dernières tendances</h2>
             <p className="text-lg text-muted-foreground">
               Recevez nos meilleurs conseils e-commerce directement dans votre boîte mail.
             </p>
             <div className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto">
-              <Input 
-                type="email" 
-                placeholder="Votre email" 
-                className="h-12"
-                aria-label="Email pour la newsletter"
-              />
-              <Button size="lg" className="h-12">
-                S'inscrire
-              </Button>
+              <Input type="email" placeholder="Votre email" className="h-12" aria-label="Email pour la newsletter" />
+              <Button size="lg" className="h-12">S'inscrire</Button>
             </div>
-            <p className="text-xs text-muted-foreground">
-              Pas de spam. Désabonnement en un clic.
-            </p>
+            <p className="text-xs text-muted-foreground">Pas de spam. Désabonnement en un clic.</p>
           </div>
         </div>
       </section>
