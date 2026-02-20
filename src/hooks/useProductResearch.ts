@@ -115,24 +115,23 @@ export function useProductResearch() {
     try {
       const { data: session } = await supabase.auth.getSession();
       if (!session.session) return;
-      const { data, error } = await (supabase as any)
-        .from('ai_optimization_jobs')
+      const { data, error } = await supabase
+        .from('product_research_results')
         .select('*')
-        .eq('job_type', 'product_research')
         .order('created_at', { ascending: false })
         .limit(50);
       if (error) throw error;
       const mappedProducts: SavedProduct[] = (data || []).map((item: any) => ({
         id: item.id,
-        product_name: item.output_data?.product_name || 'Unknown',
-        category: item.output_data?.category || 'General',
-        winning_score: item.output_data?.winning_score || 0,
-        trend_score: item.output_data?.trend_score || 0,
-        viral_score: item.output_data?.viral_score,
-        profit_margin: item.output_data?.profit_margin,
-        search_volume: item.output_data?.search_volume,
-        saturation_level: item.output_data?.saturation_level,
-        source_platform: item.output_data?.source_platform,
+        product_name: item.product_name || 'Unknown',
+        category: item.category || 'General',
+        winning_score: item.winning_score || 0,
+        trend_score: item.trend_score || 0,
+        viral_score: item.viral_score,
+        profit_margin: item.profit_margin,
+        search_volume: item.search_volume,
+        saturation_level: item.saturation_level,
+        source_platform: item.source_platform,
         created_at: item.created_at
       }));
       setSavedProducts(mappedProducts);
