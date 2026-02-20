@@ -2,7 +2,7 @@
  * Sprint 9: Proactive Alerts Hook
  * Real-time notifications from user_notifications table with Supabase Realtime subscription
  */
-import { useEffect, useMemo } from 'react';
+import { useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useUnifiedAuth } from '@/contexts/UnifiedAuthContext';
@@ -49,37 +49,8 @@ export function useProactiveAlerts(filter: AlertFilter = 'all') {
     refetchInterval: 60_000,
   });
 
-  // Realtime subscription
-  useEffect(() => {
-    if (!user?.id) return;
-    const channel = supabase
-      .channel('proactive-alerts-realtime')
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'user_notifications',
-          filter: `user_id=eq.${user.id}`,
-        },
-        (payload) => {
-          const newAlert = payload.new as ProactiveAlert;
-          queryClient.setQueryData<ProactiveAlert[]>(
-            ['proactive-alerts', user.id],
-            (old = []) => [newAlert, ...old]
-          );
-          // Toast for high priority
-          if (newAlert.priority === 'critical' || newAlert.priority === 'high') {
-            toast.warning(newAlert.title, { description: newAlert.message || undefined });
-          }
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [user?.id, queryClient]);
+  // Realtime handled globally by useRealtimeNotifications in MainLayout
+  // This hook only needs to refetch when queries are invalidated
 
   // Mark as read
   const markAsRead = useMutation({
