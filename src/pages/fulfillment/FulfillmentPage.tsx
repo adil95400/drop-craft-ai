@@ -4,11 +4,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
+import { Switch } from '@/components/ui/switch';
+import { Separator } from '@/components/ui/separator';
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
 import { 
   Truck, 
@@ -25,7 +27,11 @@ import {
   Weight,
   Loader2,
   Bell,
-  BarChart3
+  BarChart3,
+  Clock,
+  Zap,
+  Shield,
+  Info
 } from 'lucide-react';
 import { useFulfillmentStats, useCarriers, useCreateCarrier } from '@/hooks/useFulfillment';
 import { CarriersManager } from '@/components/fulfillment/CarriersManager';
@@ -67,7 +73,10 @@ export default function FulfillmentPage() {
   const [settingsForm, setSettingsForm] = useState({
     processing_delay: '24h',
     notification_mode: 'shipped',
-    default_carrier: 'auto'
+    default_carrier: 'auto',
+    auto_fulfill: true,
+    insurance_enabled: false,
+    signature_required: false
   });
   const [isSavingSettings, setIsSavingSettings] = useState(false);
   const [shipmentForm, setShipmentForm] = useState({
@@ -350,79 +359,176 @@ export default function FulfillmentPage() {
         </TabsContent>
       </Tabs>
       
-      {/* Settings Dialog */}
       <Dialog open={settingsOpen} onOpenChange={setSettingsOpen}>
-        <DialogContent className="max-w-lg">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <Settings className="h-5 w-5 text-primary" />
-              Paramètres Logistique
-            </DialogTitle>
+        <DialogContent className="max-w-xl bg-background border-border shadow-2xl">
+          <DialogHeader className="pb-4 border-b border-border">
+            <div className="flex items-center gap-3">
+              <div className="p-2.5 rounded-xl bg-primary/10">
+                <Settings className="h-5 w-5 text-primary" />
+              </div>
+              <div>
+                <DialogTitle className="text-lg font-semibold">Paramètres Logistique</DialogTitle>
+                <DialogDescription className="text-sm text-muted-foreground">
+                  Configurez vos préférences d'expédition et de notifications
+                </DialogDescription>
+              </div>
+            </div>
           </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <Label>Délai de traitement par défaut</Label>
-              <Select 
-                value={settingsForm.processing_delay}
-                onValueChange={(v) => setSettingsForm(prev => ({ ...prev, processing_delay: v }))}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="12h">12 heures</SelectItem>
-                  <SelectItem value="24h">24 heures</SelectItem>
-                  <SelectItem value="48h">48 heures</SelectItem>
-                  <SelectItem value="72h">72 heures</SelectItem>
-                </SelectContent>
-              </Select>
+          
+          <div className="space-y-6 py-4">
+            {/* Section Traitement */}
+            <div className="space-y-4">
+              <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
+                <Clock className="h-4 w-4 text-primary" />
+                Traitement des commandes
+              </div>
+              
+              <div className="grid gap-4 pl-6">
+                <div className="space-y-1.5">
+                  <Label className="text-sm font-medium">Délai de traitement par défaut</Label>
+                  <p className="text-xs text-muted-foreground">Temps avant l'envoi automatique au transporteur</p>
+                  <Select 
+                    value={settingsForm.processing_delay}
+                    onValueChange={(v) => setSettingsForm(prev => ({ ...prev, processing_delay: v }))}
+                  >
+                    <SelectTrigger className="bg-background border-border">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent className="bg-popover border-border z-50">
+                      <SelectItem value="6h">6 heures — Express</SelectItem>
+                      <SelectItem value="12h">12 heures — Rapide</SelectItem>
+                      <SelectItem value="24h">24 heures — Standard</SelectItem>
+                      <SelectItem value="48h">48 heures — Économique</SelectItem>
+                      <SelectItem value="72h">72 heures — Différé</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <div className="flex items-center justify-between rounded-lg border border-border p-3 bg-muted/30">
+                  <div className="space-y-0.5">
+                    <Label className="text-sm font-medium">Fulfillment automatique</Label>
+                    <p className="text-xs text-muted-foreground">Envoyer les commandes automatiquement aux fournisseurs</p>
+                  </div>
+                  <Switch
+                    checked={settingsForm.auto_fulfill}
+                    onCheckedChange={(v) => setSettingsForm(prev => ({ ...prev, auto_fulfill: v }))}
+                  />
+                </div>
+              </div>
             </div>
-            <div className="space-y-2">
-              <Label>Notification client automatique</Label>
-              <Select 
-                value={settingsForm.notification_mode}
-                onValueChange={(v) => setSettingsForm(prev => ({ ...prev, notification_mode: v }))}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="none">Désactivé</SelectItem>
-                  <SelectItem value="shipped">À l'expédition</SelectItem>
-                  <SelectItem value="all">Toutes les étapes</SelectItem>
-                </SelectContent>
-              </Select>
+            
+            <Separator />
+            
+            {/* Section Notifications */}
+            <div className="space-y-4">
+              <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
+                <Bell className="h-4 w-4 text-primary" />
+                Notifications clients
+              </div>
+              
+              <div className="grid gap-4 pl-6">
+                <div className="space-y-1.5">
+                  <Label className="text-sm font-medium">Mode de notification</Label>
+                  <p className="text-xs text-muted-foreground">Quand notifier le client du statut de sa commande</p>
+                  <Select 
+                    value={settingsForm.notification_mode}
+                    onValueChange={(v) => setSettingsForm(prev => ({ ...prev, notification_mode: v }))}
+                  >
+                    <SelectTrigger className="bg-background border-border">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent className="bg-popover border-border z-50">
+                      <SelectItem value="none">Désactivé — Aucune notification</SelectItem>
+                      <SelectItem value="shipped">À l'expédition — Envoi du n° de suivi</SelectItem>
+                      <SelectItem value="all">Toutes les étapes — Suivi complet</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
             </div>
-            <div className="space-y-2">
-              <Label>Transporteur par défaut</Label>
-              <Select 
-                value={settingsForm.default_carrier}
-                onValueChange={(v) => setSettingsForm(prev => ({ ...prev, default_carrier: v }))}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="auto">Sélection automatique</SelectItem>
-                  {carriers.map((carrier: any) => (
-                    <SelectItem key={carrier.id} value={carrier.id}>
-                      {carrier.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+            
+            <Separator />
+            
+            {/* Section Transport */}
+            <div className="space-y-4">
+              <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
+                <Truck className="h-4 w-4 text-primary" />
+                Transport & Livraison
+              </div>
+              
+              <div className="grid gap-4 pl-6">
+                <div className="space-y-1.5">
+                  <Label className="text-sm font-medium">Transporteur par défaut</Label>
+                  <p className="text-xs text-muted-foreground">Utilisé quand aucun transporteur n'est spécifié</p>
+                  <Select 
+                    value={settingsForm.default_carrier}
+                    onValueChange={(v) => setSettingsForm(prev => ({ ...prev, default_carrier: v }))}
+                  >
+                    <SelectTrigger className="bg-background border-border">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent className="bg-popover border-border z-50">
+                      <SelectItem value="auto">
+                        <div className="flex items-center gap-2">
+                          <Zap className="h-3.5 w-3.5 text-primary" />
+                          Sélection automatique (meilleur prix/délai)
+                        </div>
+                      </SelectItem>
+                      {carriers.map((carrier: any) => (
+                        <SelectItem key={carrier.id} value={carrier.id}>
+                          {carrier.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="flex items-center justify-between rounded-lg border border-border p-3 bg-muted/30">
+                    <div className="space-y-0.5">
+                      <Label className="text-xs font-medium">Assurance colis</Label>
+                      <p className="text-[10px] text-muted-foreground">Protection automatique</p>
+                    </div>
+                    <Switch
+                      checked={settingsForm.insurance_enabled}
+                      onCheckedChange={(v) => setSettingsForm(prev => ({ ...prev, insurance_enabled: v }))}
+                    />
+                  </div>
+                  <div className="flex items-center justify-between rounded-lg border border-border p-3 bg-muted/30">
+                    <div className="space-y-0.5">
+                      <Label className="text-xs font-medium">Signature requise</Label>
+                      <p className="text-[10px] text-muted-foreground">À la livraison</p>
+                    </div>
+                    <Switch
+                      checked={settingsForm.signature_required}
+                      onCheckedChange={(v) => setSettingsForm(prev => ({ ...prev, signature_required: v }))}
+                    />
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
-          <div className="flex justify-end">
-            <Button onClick={handleSaveSettings} disabled={isSavingSettings}>
-              {isSavingSettings && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-              Sauvegarder
-            </Button>
+          
+          <Separator />
+          
+          <div className="flex items-center justify-between pt-2">
+            <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+              <Info className="h-3.5 w-3.5" />
+              Les changements s'appliquent aux nouvelles commandes
+            </div>
+            <div className="flex gap-2">
+              <Button variant="outline" onClick={() => setSettingsOpen(false)}>
+                Annuler
+              </Button>
+              <Button onClick={handleSaveSettings} disabled={isSavingSettings}>
+                {isSavingSettings && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                <Shield className="h-4 w-4 mr-2" />
+                Sauvegarder
+              </Button>
+            </div>
           </div>
         </DialogContent>
       </Dialog>
-      
-      {/* New Shipment Dialog */}
       <Dialog open={newShipmentOpen} onOpenChange={setNewShipmentOpen}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader className="pb-4 border-b border-border">
