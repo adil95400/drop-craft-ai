@@ -1,6 +1,6 @@
 /**
- * Product Details Page - Premium Redesign v3.0
- * All mutations via FastAPI (useApiProducts, useApiAI)
+ * Product Details Page - Premium Redesign v4.0
+ * All buttons functional + AI Suggestions panel
  */
 import { useState, useMemo } from 'react'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
@@ -15,39 +15,64 @@ import { ProductPerformanceMetrics } from '@/components/products/ProductPerforma
 import { OptimizationHistory } from '@/components/products/OptimizationHistory'
 import { MultiChannelReadiness } from '@/components/products/MultiChannelReadiness'
 import { MainLayout } from '@/components/layout/MainLayout'
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Progress } from '@/components/ui/progress'
 import { Separator } from '@/components/ui/separator'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
+import { Input } from '@/components/ui/input'
+import { Textarea } from '@/components/ui/textarea'
+import { Label } from '@/components/ui/label'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 import { 
   ArrowLeft, Package, Languages, MessageSquare, Images, Target, 
-  TrendingUp, History, Globe, Edit, ExternalLink, Copy, Sparkles,
-  DollarSign, Tag, Box, BarChart3, Layers, ShoppingCart, Store,
+  TrendingUp, History, Globe, Edit, Copy, Sparkles,
+  Tag, Box, BarChart3, Layers, ShoppingCart, Store,
   RefreshCw, Trash2, MoreVertical, CheckCircle2, AlertTriangle, 
-  Share2, Download, Eye, Clock, Zap, FileText, Video, Truck
+  Share2, Download, Eye, Clock, FileText, Video, Truck,
+  Lightbulb, AlertCircle, ImagePlus, DollarSign, FileSearch,
+  Loader2
 } from 'lucide-react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useProduct } from '@/hooks/useUnifiedProducts'
-import { Loader2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { motion } from 'framer-motion'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu'
 import { toast } from 'sonner'
 import { useApiProducts, useApiAI } from '@/hooks/api'
 import { useApiSync } from '@/hooks/api'
+import { supabase } from '@/integrations/supabase/client'
+import { useAuth } from '@/contexts/AuthContext'
 
 export default function ProductDetailsPage() {
   const navigate = useNavigate()
   const { id } = useParams<{ id: string }>()
   const { data: product, isLoading, refetch } = useProduct(id || '')
   const [selectedImageIndex, setSelectedImageIndex] = useState(0)
+  const { user } = useAuth()
 
   // FastAPI hooks for mutations
-  const { updateProduct, deleteProduct } = useApiProducts()
+  const { updateProduct, deleteProduct, createProduct } = useApiProducts()
   const { generateContent, optimizeSeo, isGenerating, isOptimizingSeo } = useApiAI()
   const { triggerSync } = useApiSync()
+
+  // UI state
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  const [showEditModal, setShowEditModal] = useState(false)
+  const [showDescriptionFull, setShowDescriptionFull] = useState(false)
+  const [activeTab, setActiveTab] = useState('audit')
+
+  // Edit form state
+  const [editForm, setEditForm] = useState({
+    name: '',
+    description: '',
+    price: 0,
+    cost_price: 0,
+    stock_quantity: 0,
+    sku: '',
+    category: '',
+    status: 'draft',
+  })
 
   // Calculate health score
   const healthScore = useMemo(() => {
@@ -62,6 +87,91 @@ export default function ProductDetailsPage() {
     return score
   }, [product])
 
+  // AI Suggestions based on product data
+  const suggestions = useMemo(() => {
+    if (!product) return []
+    const items: { icon: any; title: string; description: string; action: string; priority: 'high' | 'medium' | 'low'; onClick: () => void }[] = []
+
+    if (!product.images?.length && !product.image_url) {
+      items.push({
+        icon: ImagePlus,
+        title: 'Ajouter des images produit',
+        description: 'Les produits avec images ont 3x plus de conversions. Ajoutez au moins 3 photos de qualité.',
+        action: 'Gérer les images',
+        priority: 'high',
+        onClick: () => setActiveTab('gallery'),
+      })
+    }
+
+    if (!product.price || product.price <= 0) {
+      items.push({
+        icon: DollarSign,
+        title: 'Définir un prix de vente',
+        description: 'Ce produit n\'a pas de prix. Définissez un prix compétitif pour commencer à vendre.',
+        action: 'Modifier le produit',
+        priority: 'high',
+        onClick: () => openEditModal(),
+      })
+    }
+
+    if (!product.description || product.description.length < 50) {
+      items.push({
+        icon: FileText,
+        title: 'Enrichir la description',
+        description: 'Une description détaillée améliore le SEO et la conversion. Utilisez l\'IA pour en générer une optimisée.',
+        action: 'Optimiser avec IA',
+        priority: 'high',
+        onClick: handleOptimizeAI,
+      })
+    }
+
+    if (!product.seo_title && !product.seo_description) {
+      items.push({
+        icon: FileSearch,
+        title: 'Optimiser le SEO',
+        description: 'Ajoutez un titre et une description SEO pour améliorer le référencement de ce produit.',
+        action: 'Lancer l\'optimisation SEO',
+        priority: 'medium',
+        onClick: handleOptimizeSEO,
+      })
+    }
+
+    if (!product.category) {
+      items.push({
+        icon: Layers,
+        title: 'Assigner une catégorie',
+        description: 'Les produits catégorisés sont mieux référencés et plus faciles à trouver dans le catalogue.',
+        action: 'Modifier le produit',
+        priority: 'medium',
+        onClick: () => openEditModal(),
+      })
+    }
+
+    if (product.stock_quantity <= 0) {
+      items.push({
+        icon: Box,
+        title: 'Mettre à jour le stock',
+        description: 'Ce produit est en rupture de stock. Mettez à jour la quantité disponible.',
+        action: 'Modifier le stock',
+        priority: 'medium',
+        onClick: () => openEditModal(),
+      })
+    }
+
+    if (!product.variants?.length) {
+      items.push({
+        icon: Layers,
+        title: 'Ajouter des variantes',
+        description: 'Proposez des options (taille, couleur) pour augmenter les conversions et le panier moyen.',
+        action: 'Gérer les variantes',
+        priority: 'low',
+        onClick: () => setActiveTab('variants'),
+      })
+    }
+
+    return items
+  }, [product])
+
   const getHealthColor = (score: number) => {
     if (score >= 80) return 'text-green-500'
     if (score >= 50) return 'text-orange-500'
@@ -72,6 +182,18 @@ export default function ProductDetailsPage() {
     if (score >= 80) return { label: 'Excellent', variant: 'default' as const }
     if (score >= 50) return { label: 'À améliorer', variant: 'secondary' as const }
     return { label: 'Critique', variant: 'destructive' as const }
+  }
+
+  const getPriorityColor = (priority: string) => {
+    if (priority === 'high') return 'border-red-500/30 bg-red-500/5'
+    if (priority === 'medium') return 'border-orange-500/30 bg-orange-500/5'
+    return 'border-blue-500/30 bg-blue-500/5'
+  }
+
+  const getPriorityBadge = (priority: string) => {
+    if (priority === 'high') return 'destructive'
+    if (priority === 'medium') return 'secondary'
+    return 'outline'
   }
 
   const handleCopySku = () => {
@@ -99,7 +221,117 @@ export default function ProductDetailsPage() {
     optimizeSeo.mutate({ productIds: [id] })
   }
 
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  const openEditModal = () => {
+    if (!product) return
+    setEditForm({
+      name: product.name || '',
+      description: product.description || '',
+      price: product.price || 0,
+      cost_price: product.cost_price || 0,
+      stock_quantity: product.stock_quantity || 0,
+      sku: product.sku || '',
+      category: product.category || '',
+      status: product.status || 'draft',
+    })
+    setShowEditModal(true)
+  }
+
+  const handleSaveEdit = () => {
+    if (!id) return
+    updateProduct.mutate({
+      id,
+      updates: {
+        title: editForm.name,
+        description: editForm.description,
+        salePrice: editForm.price,
+        costPrice: editForm.cost_price,
+        stock: editForm.stock_quantity,
+        status: editForm.status,
+      },
+    }, {
+      onSuccess: () => {
+        setShowEditModal(false)
+        refetch()
+      },
+    })
+  }
+
+  const handleDuplicate = async () => {
+    if (!product || !user) return
+    try {
+      const { data, error } = await supabase
+        .from('products')
+        .insert({
+          user_id: user.id,
+          title: `${product.name} (copie)`,
+          name: `${product.name} (copie)`,
+          description: product.description,
+          sku: product.sku ? `${product.sku}-COPY` : null,
+          price: product.price,
+          cost_price: product.cost_price,
+          stock_quantity: product.stock_quantity,
+          category: product.category,
+          images: product.images as any,
+          image_url: product.image_url,
+          status: 'draft',
+          tags: product.tags,
+        })
+        .select('id')
+        .single()
+
+      if (error) throw error
+      toast.success('Produit dupliqué avec succès')
+      if (data?.id) navigate(`/products/${data.id}`)
+    } catch (err) {
+      toast.error('Erreur lors de la duplication')
+    }
+  }
+
+  const handleExport = () => {
+    if (!product) return
+    const exportData = {
+      name: product.name,
+      sku: product.sku,
+      description: product.description,
+      price: product.price,
+      cost_price: product.cost_price,
+      stock_quantity: product.stock_quantity,
+      category: product.category,
+      status: product.status,
+      images: product.images,
+      tags: product.tags,
+      variants: product.variants,
+      seo_title: product.seo_title,
+      seo_description: product.seo_description,
+    }
+    const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `product-${product.sku || product.id}.json`
+    a.click()
+    URL.revokeObjectURL(url)
+    toast.success('Produit exporté en JSON')
+  }
+
+  const handleShare = async () => {
+    if (!product) return
+    const shareUrl = `${window.location.origin}/products/${product.id}`
+    try {
+      await navigator.clipboard.writeText(shareUrl)
+      toast.success('Lien copié dans le presse-papier')
+    } catch {
+      toast.error('Impossible de copier le lien')
+    }
+  }
+
+  const handleEditImages = () => {
+    setActiveTab('gallery')
+    // Scroll to tabs
+    setTimeout(() => {
+      document.getElementById('product-tabs')?.scrollIntoView({ behavior: 'smooth' })
+    }, 100)
+  }
 
   const handleDelete = () => {
     if (!id) return
@@ -191,13 +423,13 @@ export default function ProductDetailsPage() {
                   </Tooltip>
                 </TooltipProvider>
 
-                <Button variant="outline" size="sm">
+                <Button variant="outline" size="sm" onClick={openEditModal}>
                   <Edit className="h-4 w-4 mr-2" />
                   Modifier
                 </Button>
 
-                <Button size="sm" onClick={handlePublish}>
-                  <Store className="h-4 w-4 mr-2" />
+                <Button size="sm" onClick={handlePublish} disabled={triggerSync.isPending}>
+                  {triggerSync.isPending ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Store className="h-4 w-4 mr-2" />}
                   Publier
                 </Button>
 
@@ -208,17 +440,17 @@ export default function ProductDetailsPage() {
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
-                    <DropdownMenuItem>
+                    <DropdownMenuItem onClick={handleDuplicate}>
                       <Copy className="h-4 w-4 mr-2" />
                       Dupliquer
                     </DropdownMenuItem>
-                    <DropdownMenuItem>
+                    <DropdownMenuItem onClick={handleExport}>
                       <Download className="h-4 w-4 mr-2" />
-                      Exporter
+                      Exporter (JSON)
                     </DropdownMenuItem>
-                    <DropdownMenuItem>
+                    <DropdownMenuItem onClick={handleShare}>
                       <Share2 className="h-4 w-4 mr-2" />
-                      Partager
+                      Copier le lien
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem className="text-destructive" onClick={handleDelete}>
@@ -233,6 +465,59 @@ export default function ProductDetailsPage() {
         </div>
 
         <div className="container py-6">
+          {/* AI Suggestions Banner */}
+          {suggestions.length > 0 && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mb-6"
+            >
+              <Card className="border-primary/20 bg-primary/5">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-base flex items-center gap-2">
+                    <Lightbulb className="h-5 w-5 text-primary" />
+                    Suggestions d'amélioration ({suggestions.length})
+                    <Badge variant="outline" className="ml-auto">
+                      Score : {healthScore}/100
+                    </Badge>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="pt-0">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    {suggestions.slice(0, 4).map((suggestion, idx) => (
+                      <div
+                        key={idx}
+                        className={cn(
+                          "flex items-start gap-3 p-3 rounded-lg border transition-colors",
+                          getPriorityColor(suggestion.priority)
+                        )}
+                      >
+                        <suggestion.icon className="h-5 w-5 mt-0.5 text-muted-foreground flex-shrink-0" />
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-1">
+                            <p className="text-sm font-medium">{suggestion.title}</p>
+                            <Badge variant={getPriorityBadge(suggestion.priority) as any} className="text-[10px] h-4 px-1.5">
+                              {suggestion.priority === 'high' ? 'Urgent' : suggestion.priority === 'medium' ? 'Moyen' : 'Bonus'}
+                            </Badge>
+                          </div>
+                          <p className="text-xs text-muted-foreground mb-2">{suggestion.description}</p>
+                          <Button variant="outline" size="sm" className="h-7 text-xs" onClick={suggestion.onClick}>
+                            {suggestion.action}
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  {suggestions.length > 4 && (
+                    <p className="text-xs text-muted-foreground mt-3 text-center">
+                      + {suggestions.length - 4} autres suggestions disponibles
+                    </p>
+                  )}
+                </CardContent>
+              </Card>
+            </motion.div>
+          )}
+
           {/* Hero Section */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
             {/* Product Image Gallery */}
@@ -243,23 +528,31 @@ export default function ProductDetailsPage() {
             >
               <Card className="overflow-hidden">
                 <CardContent className="p-0">
-                  {/* Main Image */}
                   <div className="relative aspect-square bg-muted">
-                    <img
-                      src={mainImage}
-                      alt={product.name}
-                      className="w-full h-full object-cover"
-                      onError={(e) => {
-                        (e.target as HTMLImageElement).src = '/placeholder.svg'
-                      }}
-                    />
-                    {/* Image counter */}
+                    {images.length > 0 ? (
+                      <img
+                        src={mainImage}
+                        alt={product.name}
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).src = '/placeholder.svg'
+                        }}
+                      />
+                    ) : (
+                      <div className="w-full h-full flex flex-col items-center justify-center gap-3">
+                        <Images className="h-12 w-12 text-muted-foreground/40" />
+                        <p className="text-sm text-muted-foreground">Aucune image</p>
+                        <Button variant="outline" size="sm" onClick={handleEditImages}>
+                          <ImagePlus className="h-4 w-4 mr-2" />
+                          Ajouter des images
+                        </Button>
+                      </div>
+                    )}
                     {images.length > 1 && (
                       <Badge className="absolute bottom-3 right-3 bg-black/50 backdrop-blur">
                         {selectedImageIndex + 1} / {images.length}
                       </Badge>
                     )}
-                    {/* Health score overlay */}
                     <div className="absolute top-3 left-3 flex items-center gap-2">
                       <Badge className={cn("gap-1", getHealthColor(healthScore))}>
                         <Sparkles className="h-3 w-3" />
@@ -268,7 +561,6 @@ export default function ProductDetailsPage() {
                     </div>
                   </div>
 
-                  {/* Thumbnail Gallery */}
                   {images.length > 1 && (
                     <div className="p-3 flex gap-2 overflow-x-auto">
                       {images.slice(0, 6).map((img, idx) => (
@@ -282,7 +574,7 @@ export default function ProductDetailsPage() {
                               : "border-transparent hover:border-muted-foreground/30"
                           )}
                         >
-                          <img src={img} alt="" className="w-full h-full object-cover" />
+                          <img src={img as string} alt="" className="w-full h-full object-cover" />
                         </button>
                       ))}
                       {images.length > 6 && (
@@ -303,7 +595,6 @@ export default function ProductDetailsPage() {
               transition={{ delay: 0.1 }}
               className="lg:col-span-2 space-y-4"
             >
-              {/* Title and Quick Info */}
               <Card>
                 <CardContent className="pt-6">
                   <div className="flex items-start justify-between gap-4 mb-4">
@@ -341,18 +632,22 @@ export default function ProductDetailsPage() {
                   <div className="flex items-end gap-6 mb-6">
                     <div>
                       <p className="text-xs text-muted-foreground mb-1">Prix de vente</p>
-                      <p className="text-3xl font-bold text-primary">{product.price?.toFixed(2) || '0.00'}€</p>
+                      <p className="text-3xl font-bold text-primary">
+                        {product.price > 0 ? `${product.price.toFixed(2)}€` : (
+                          <span className="text-destructive">Non défini</span>
+                        )}
+                      </p>
                     </div>
-                    {product.cost_price && (
+                    {product.cost_price > 0 && (
                       <div>
                         <p className="text-xs text-muted-foreground mb-1">Prix d'achat</p>
-                        <p className="text-xl font-semibold text-muted-foreground">{product.cost_price?.toFixed(2)}€</p>
+                        <p className="text-xl font-semibold text-muted-foreground">{product.cost_price.toFixed(2)}€</p>
                       </div>
                     )}
-                    {product.cost_price && product.price && (
+                    {product.cost_price > 0 && product.price > 0 && (
                       <div>
                         <p className="text-xs text-muted-foreground mb-1">Marge</p>
-                        <p className="text-xl font-semibold text-success">
+                        <p className="text-xl font-semibold text-primary">
                           {((product.price - product.cost_price) / product.price * 100).toFixed(0)}%
                         </p>
                       </div>
@@ -368,7 +663,9 @@ export default function ProductDetailsPage() {
                         <Box className="h-4 w-4" />
                         <span className="text-xs">Stock</span>
                       </div>
-                      <p className="text-lg font-semibold">{product.stock_quantity || 0}</p>
+                      <p className={cn("text-lg font-semibold", product.stock_quantity <= 0 && "text-destructive")}>
+                        {product.stock_quantity || 0}
+                      </p>
                     </div>
                     <div className="p-3 rounded-lg bg-muted/50">
                       <div className="flex items-center gap-2 text-muted-foreground mb-1">
@@ -408,7 +705,7 @@ export default function ProductDetailsPage() {
                         {isOptimizingSeo ? <Loader2 className="h-4 w-4 animate-spin" /> : <FileText className="h-4 w-4" />}
                         SEO
                       </Button>
-                      <Button variant="outline" size="sm" className="gap-2">
+                      <Button variant="outline" size="sm" className="gap-2" onClick={handleEditImages}>
                         <Images className="h-4 w-4" />
                         Éditer images
                       </Button>
@@ -430,13 +727,32 @@ export default function ProductDetailsPage() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-sm text-muted-foreground line-clamp-3">
-                    {product.description || 'Aucune description. Utilisez l\'optimisation IA pour en générer une automatiquement.'}
-                  </p>
-                  {product.description && product.description.length > 150 && (
-                    <Button variant="link" className="px-0 h-auto text-xs mt-1">
-                      Voir plus
-                    </Button>
+                  {product.description ? (
+                    <>
+                      <p className={cn("text-sm text-muted-foreground", !showDescriptionFull && "line-clamp-3")}>
+                        {product.description}
+                      </p>
+                      {product.description.length > 150 && (
+                        <Button 
+                          variant="link" 
+                          className="px-0 h-auto text-xs mt-1" 
+                          onClick={() => setShowDescriptionFull(!showDescriptionFull)}
+                        >
+                          {showDescriptionFull ? 'Voir moins' : 'Voir plus'}
+                        </Button>
+                      )}
+                    </>
+                  ) : (
+                    <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
+                      <AlertCircle className="h-5 w-5 text-destructive" />
+                      <div className="flex-1">
+                        <p className="text-sm text-muted-foreground">Aucune description disponible.</p>
+                      </div>
+                      <Button variant="outline" size="sm" onClick={handleOptimizeAI} disabled={isGenerating}>
+                        <Sparkles className="h-3 w-3 mr-1" />
+                        Générer avec IA
+                      </Button>
+                    </div>
                   )}
                 </CardContent>
               </Card>
@@ -448,10 +764,11 @@ export default function ProductDetailsPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
+            id="product-tabs"
           >
             <Card>
               <CardContent className="pt-6">
-                <Tabs defaultValue="audit" className="space-y-6">
+                <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
                   <TabsList className="flex flex-wrap w-full gap-1 h-auto p-1">
                     <TabsTrigger value="audit" className="gap-2 py-2">
                       <Target className="h-4 w-4" />
@@ -523,7 +840,6 @@ export default function ProductDetailsPage() {
                         image_url: v.image_url,
                       }))}
                       options={(() => {
-                        // Derive options from variant attributes
                         const optMap: Record<string, Set<string>> = {}
                         ;(product.variants || []).forEach((v: any) => {
                           if (v.attributes) {
@@ -546,7 +862,7 @@ export default function ProductDetailsPage() {
                           updates: { variants: newVariants } as any
                         }, { onSuccess: () => refetch() })
                       }}
-                      onOptionsChange={() => {/* Options are derived from variant attributes */}}
+                      onOptionsChange={() => {}}
                     />
                   </TabsContent>
 
@@ -604,6 +920,8 @@ export default function ProductDetailsPage() {
           </motion.div>
         </div>
       </div>
+
+      {/* Delete Confirmation */}
       <ConfirmDialog
         open={showDeleteConfirm}
         onOpenChange={setShowDeleteConfirm}
@@ -613,6 +931,85 @@ export default function ProductDetailsPage() {
         variant="destructive"
         onConfirm={confirmDelete}
       />
+
+      {/* Edit Modal */}
+      <Dialog open={showEditModal} onOpenChange={setShowEditModal}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Modifier le produit</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="edit-name">Nom du produit</Label>
+              <Input
+                id="edit-name"
+                value={editForm.name}
+                onChange={(e) => setEditForm(prev => ({ ...prev, name: e.target.value }))}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="edit-description">Description</Label>
+              <Textarea
+                id="edit-description"
+                value={editForm.description}
+                onChange={(e) => setEditForm(prev => ({ ...prev, description: e.target.value }))}
+                rows={4}
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="edit-price">Prix de vente (€)</Label>
+                <Input
+                  id="edit-price"
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  value={editForm.price}
+                  onChange={(e) => setEditForm(prev => ({ ...prev, price: parseFloat(e.target.value) || 0 }))}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit-cost">Prix d'achat (€)</Label>
+                <Input
+                  id="edit-cost"
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  value={editForm.cost_price}
+                  onChange={(e) => setEditForm(prev => ({ ...prev, cost_price: parseFloat(e.target.value) || 0 }))}
+                />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="edit-stock">Stock</Label>
+                <Input
+                  id="edit-stock"
+                  type="number"
+                  min="0"
+                  value={editForm.stock_quantity}
+                  onChange={(e) => setEditForm(prev => ({ ...prev, stock_quantity: parseInt(e.target.value) || 0 }))}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit-category">Catégorie</Label>
+                <Input
+                  id="edit-category"
+                  value={editForm.category}
+                  onChange={(e) => setEditForm(prev => ({ ...prev, category: e.target.value }))}
+                />
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowEditModal(false)}>Annuler</Button>
+            <Button onClick={handleSaveEdit} disabled={updateProduct.isPending}>
+              {updateProduct.isPending ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : null}
+              Enregistrer
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </MainLayout>
   )
 }
