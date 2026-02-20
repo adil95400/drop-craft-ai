@@ -3683,6 +3683,7 @@ export type Database = {
           quota_key: string
           status: string
           stripe_payment_id: string | null
+          stripe_session_id: string | null
           updated_at: string
           user_id: string
         }
@@ -3698,6 +3699,7 @@ export type Database = {
           quota_key?: string
           status?: string
           stripe_payment_id?: string | null
+          stripe_session_id?: string | null
           updated_at?: string
           user_id: string
         }
@@ -3713,6 +3715,7 @@ export type Database = {
           quota_key?: string
           status?: string
           stripe_payment_id?: string | null
+          stripe_session_id?: string | null
           updated_at?: string
           user_id?: string
         }
@@ -15147,6 +15150,7 @@ export type Database = {
           platform: string
           processed: boolean | null
           processed_at: string | null
+          retry_count: number | null
           status: string | null
           stripe_event_id: string | null
           user_id: string | null
@@ -15162,6 +15166,7 @@ export type Database = {
           platform: string
           processed?: boolean | null
           processed_at?: string | null
+          retry_count?: number | null
           status?: string | null
           stripe_event_id?: string | null
           user_id?: string | null
@@ -15177,6 +15182,7 @@ export type Database = {
           platform?: string
           processed?: boolean | null
           processed_at?: string | null
+          retry_count?: number | null
           status?: string | null
           stripe_event_id?: string | null
           user_id?: string | null
@@ -16045,6 +16051,10 @@ export type Database = {
       increment_user_quota: {
         Args: { p_increment?: number; p_quota_key: string; p_user_id: string }
         Returns: Json
+      }
+      increment_webhook_retry: {
+        Args: { p_error: string; p_stripe_event_id: string }
+        Returns: undefined
       }
       is_admin_secure: { Args: never; Returns: boolean }
       is_token_revoked: { Args: { token_id?: string }; Returns: boolean }
