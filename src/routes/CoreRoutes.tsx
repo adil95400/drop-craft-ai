@@ -36,6 +36,7 @@ const ConsumptionPage = lazy(() => import('@/pages/ConsumptionPage'));
 const PerformanceMonitoringPage = lazy(() => import('@/pages/monitoring/PerformanceMonitoringPage'));
 const CRMServicePage = lazy(() => import('@/pages/crm/CRMServicePage'));
 const RevenueAnalyticsPage = lazy(() => import('@/pages/RevenueAnalyticsPage'));
+const ReferralPage = lazy(() => import('@/pages/ReferralPage'));
 
 export function CoreRoutes() {
   return (
@@ -70,6 +71,7 @@ export function CoreRoutes() {
       <Route path="monitoring" element={<PerformanceMonitoringPage />} />
       <Route path="crm" element={<CRMServicePage />} />
       <Route path="revenue-analytics" element={<RevenueAnalyticsPage />} />
+      <Route path="referral" element={<ReferralPage />} />
     </Routes>
   );
 }
