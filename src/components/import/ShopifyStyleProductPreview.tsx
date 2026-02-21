@@ -149,12 +149,17 @@ export function ShopifyStyleProductPreview({
   const [subcategory, setSubcategory] = useState('')
   const [suggestedCategories, setSuggestedCategories] = useState<{category: string, subcategory: string, confidence: number}[]>([])
 
+  // Clean HTML entities from text fields
+  const cleanHtmlEntities = (text: string): string =>
+    text.replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/\s+/g, ' ').trim()
+
   useEffect(() => {
     if (product && open) {
       const originalCount = product.images?.length || 0
       const uniqueImages = deduplicateImages(product.images || [])
       setDuplicatesRemoved(originalCount - uniqueImages.length)
-      setEditedProduct({ ...product, images: uniqueImages })
+      const cleanedBrand = product.brand ? cleanHtmlEntities(product.brand) : ''
+      setEditedProduct({ ...product, images: uniqueImages, brand: cleanedBrand })
       setSelectedImages(new Set(uniqueImages.map((_, i) => i)))
       setMainImageIndex(0)
       setFailedImages(new Set())
@@ -510,8 +515,8 @@ export function ShopifyStyleProductPreview({
                         </Button>
                       </div>
                       {editedProduct.videos && editedProduct.videos.length > 0 ? (
-                        <ScrollArea className="max-h-[300px]">
-                          <div className="grid grid-cols-2 gap-2 pr-2">
+                        <ScrollArea className="max-h-[500px]">
+                          <div className="grid grid-cols-1 gap-2 pr-2">
                             {editedProduct.videos.map((video, i) => (
                               <div key={i} className="relative rounded-lg overflow-hidden border border-border/50 bg-muted/20 group">
                                 {(typeof video === 'string' ? video : '').includes('.m3u8') ? (
@@ -653,13 +658,30 @@ export function ShopifyStyleProductPreview({
                       ))}
                     </div>
                   ) : (
-                    <div className="flex items-center gap-2 p-4 rounded-lg border border-dashed border-border/50 bg-muted/10 text-muted-foreground">
-                      <MessageSquare className="h-4 w-4 opacity-40" />
-                      <span className="text-sm">
-                        {editedProduct.reviews?.rating
-                          ? `Note: ${editedProduct.reviews.rating.toFixed(1)}/5 (${editedProduct.reviews.count || 0} avis) — avis individuels non extraits`
-                          : 'Aucun avis détecté sur cette fiche'}
-                      </span>
+                    <div className="p-4 rounded-lg border border-dashed border-border/50 bg-muted/10 text-muted-foreground space-y-2">
+                      {editedProduct.reviews?.rating ? (
+                        <>
+                          <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-0.5">
+                              {Array.from({ length: 5 }).map((_, s) => (
+                                <Star key={s} className={cn("h-4 w-4", s < Math.round(editedProduct.reviews?.rating || 0) ? "fill-amber-500 text-amber-500" : "text-muted-foreground/20")} />
+                              ))}
+                            </div>
+                            <span className="text-sm font-semibold text-foreground">{editedProduct.reviews.rating.toFixed(1)}/5</span>
+                            {editedProduct.reviews.count != null && (
+                              <span className="text-xs">({editedProduct.reviews.count} avis sur le site source)</span>
+                            )}
+                          </div>
+                          <p className="text-xs text-muted-foreground">
+                            Les avis individuels n'ont pas pu être extraits (chargement dynamique). La note globale provient de la page source.
+                          </p>
+                        </>
+                      ) : (
+                        <div className="flex items-center gap-2">
+                          <MessageSquare className="h-4 w-4 opacity-40" />
+                          <span className="text-sm">Aucun avis détecté sur cette fiche</span>
+                        </div>
+                      )}
                     </div>
                   )}
                 </CollapsibleCard>
@@ -722,6 +744,10 @@ export function ShopifyStyleProductPreview({
                         value={editedProduct.price}
                         onChange={e => handleFieldChange('price', parseFloat(e.target.value) || 0)}
                       />
+                      <p className="text-[10px] text-muted-foreground/70 flex items-center gap-1">
+                        <AlertCircle className="h-3 w-3" />
+                        Prix détecté sur le site source — peut correspondre à une variante ou un accessoire. Vérifiez et corrigez manuellement si nécessaire.
+                      </p>
                     </div>
                     <div className="space-y-1.5">
                       <label className="text-xs text-muted-foreground">Prix de vente (€)</label>
