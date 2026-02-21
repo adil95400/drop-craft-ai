@@ -1,6 +1,6 @@
 /**
  * ShopOpti+ Pro - Background Service Worker
- * Version: 6.0.0
+ * Version: 7.0.0
  * 
  * Features:
  * - Import Preview Pro (preview before import)
@@ -141,7 +141,7 @@ class ShopOptiAPI {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${token}`,
             'apikey': SUPABASE_ANON_KEY,
-            'x-extension-version': '6.0.0',
+            'x-extension-version': '7.0.0',
             'x-request-id': requestId,
             'x-retry-attempt': String(attempt)
           },
@@ -293,6 +293,11 @@ const Security = {
     'get_settings', 'save_settings', 'sync_settings',
     'product_detected', 'ping', 'get_debug_logs', 'get_diagnostics',
     'get_import_logs', 'clear_import_logs',
+    'preview_product', 'check_duplicate', 'ai_merge', 'confirm_import',
+    'get_capabilities'
+    'get_settings', 'save_settings', 'sync_settings',
+    'product_detected', 'ping', 'get_debug_logs', 'get_diagnostics',
+    'get_import_logs', 'clear_import_logs',
     // P3: New message types
     'preview_product', 'check_duplicate', 'ai_merge', 'confirm_import'
   ],
@@ -403,7 +408,7 @@ async function handleMessage(message, sender) {
     case 'save_settings': return saveSettings(data);
     case 'sync_settings': return syncSettingsWithServer();
     case 'product_detected': return handleProductDetected(data, sender.tab);
-    case 'ping': return { success: true, version: '6.0.0', timestamp: Date.now() };
+    case 'ping': return { success: true, version: '7.0.0', timestamp: Date.now() };
     case 'get_debug_logs': return { success: true, logs: Logger.getHistory(data?.filter), total: Logger._history.length };
     case 'get_diagnostics': return getDiagnostics();
     case 'get_import_logs': return getImportLogs();
@@ -662,7 +667,7 @@ async function handleLogin(credentials) {
     try {
       const tokenResult = await ShopOptiAPI.callEdgeFunction('extension-auth', {
         action: 'generate_token',
-        device_info: { browser: 'chrome', version: '6.0.0', platform: navigator.platform }
+        device_info: { browser: 'chrome', version: '7.0.0', platform: navigator.platform }
       }, data.access_token);
       if (tokenResult.success && tokenResult.token) {
         await StorageManager.set('extension_token', tokenResult.token);
@@ -929,7 +934,7 @@ async function handleProductDetected(productData, tab) {
 chrome.runtime.onInstalled.addListener(() => {
   chrome.contextMenus.create({ id: 'shopopti-import', title: 'Importer avec ShopOpti+', contexts: ['page', 'link'] });
   chrome.contextMenus.create({ id: 'shopopti-analyze', title: 'Analyser ce produit', contexts: ['page', 'link'] });
-  Logger.info('Extension installed/updated — v6.0.0');
+  Logger.info('Extension installed/updated — v7.0.0');
 });
 
 chrome.contextMenus.onClicked.addListener(async (info, tab) => {
@@ -1013,7 +1018,7 @@ async function getDiagnostics() {
   return {
     success: true,
     diagnostics: {
-      version: '6.0.0', timestamp: new Date().toISOString(),
+      version: '7.0.0', timestamp: new Date().toISOString(),
       auth: {
         hasSession: !!session, hasAccessToken: !!session?.access_token,
         hasRefreshToken: !!session?.refresh_token, hasExtensionToken: !!extToken,
@@ -1049,4 +1054,4 @@ async function clearImportLogs() {
   return { success: true };
 }
 
-Logger.info('ShopOpti+ Pro Background Service Worker v6.0.0 loaded');
+Logger.info('ShopOpti+ Pro Background Service Worker v7.0.0 loaded');
