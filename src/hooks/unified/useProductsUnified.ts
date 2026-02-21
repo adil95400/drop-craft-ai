@@ -227,7 +227,7 @@ export function useProductsUnified(options: UseProductsUnifiedOptions = {}) {
   })
 
   const bulkDeleteMutation = useMutation({
-    mutationFn: (ids: string[]) => productsApi.bulkUpdate(ids, { status: 'deleted' } as any),
+    mutationFn: (ids: string[]) => productsApi.bulkUpdate(ids, { status: 'archived' } as any),
     onSuccess: () => {
       invalidateAll()
       toast({ title: 'Succès', description: 'Produits supprimés' })
