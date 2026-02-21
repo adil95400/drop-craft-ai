@@ -143,7 +143,11 @@ export function ShopifyStyleProductPreview({
   const [failedImages, setFailedImages] = useState<Set<number>>(new Set())
   const [isOptimizingTitle, setIsOptimizingTitle] = useState(false)
   const [isOptimizingDesc, setIsOptimizingDesc] = useState(false)
+  const [isOptimizingCategory, setIsOptimizingCategory] = useState(false)
   const [productStatus, setProductStatus] = useState('draft')
+  const [category, setCategory] = useState('')
+  const [subcategory, setSubcategory] = useState('')
+  const [suggestedCategories, setSuggestedCategories] = useState<{category: string, subcategory: string, confidence: number}[]>([])
 
   useEffect(() => {
     if (product && open) {
@@ -189,6 +193,40 @@ export function ShopifyStyleProductPreview({
       toast({ title: 'Erreur IA', description: err instanceof Error ? err.message : 'Erreur', variant: 'destructive' })
     } finally {
       setter(false)
+    }
+  }
+
+  const suggestCategoryWithAI = async () => {
+    setIsOptimizingCategory(true)
+    try {
+      const { data, error } = await supabase.functions.invoke('ai-product-optimizer', {
+        body: {
+          productId: 'preview',
+          optimizationType: 'category',
+          currentData: {
+            name: editedProduct.title,
+            description: editedProduct.description,
+            category: category || editedProduct.brand,
+            price: editedProduct.price,
+          }
+        }
+      })
+      if (error) throw error
+      if (data?.result) {
+        const suggestions = data.result.suggestions || [
+          { category: data.result.category || data.result.ai_category || '', subcategory: data.result.subcategory || data.result.ai_subcategory || '', confidence: data.result.confidence || 0.95 }
+        ]
+        setSuggestedCategories(suggestions.filter((s: any) => s.category))
+        if (suggestions[0]?.category) {
+          setCategory(suggestions[0].category)
+          setSubcategory(suggestions[0].subcategory || '')
+        }
+        toast({ title: '✨ Catégories suggérées par IA' })
+      }
+    } catch (err) {
+      toast({ title: 'Erreur IA', description: err instanceof Error ? err.message : 'Erreur', variant: 'destructive' })
+    } finally {
+      setIsOptimizingCategory(false)
     }
   }
 
@@ -451,16 +489,31 @@ export function ShopifyStyleProductPreview({
                     )}
 
                     {/* Videos section */}
-                    {editedProduct.videos && editedProduct.videos.length > 0 && (
-                      <>
-                        <Separator />
-                        <div className="space-y-2">
-                          <label className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
-                            <Film className="h-3.5 w-3.5" /> Vidéos ({editedProduct.videos.length})
-                          </label>
-                          <div className="grid grid-cols-2 gap-2">
+                    <Separator />
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <label className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
+                          <Film className="h-3.5 w-3.5" /> Vidéos ({editedProduct.videos?.length || 0})
+                        </label>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-7 text-xs gap-1 text-primary hover:text-primary hover:bg-primary/10"
+                          onClick={() => {
+                            const url = prompt("URL de la vidéo (MP4, YouTube, etc.):")
+                            if (url) {
+                              setEditedProduct(prev => prev ? { ...prev, videos: [...(prev.videos || []), url.trim()] } : null)
+                            }
+                          }}
+                        >
+                          <Plus className="h-3 w-3" /> Ajouter
+                        </Button>
+                      </div>
+                      {editedProduct.videos && editedProduct.videos.length > 0 ? (
+                        <ScrollArea className="max-h-[300px]">
+                          <div className="grid grid-cols-2 gap-2 pr-2">
                             {editedProduct.videos.map((video, i) => (
-                              <div key={i} className="rounded-lg overflow-hidden border border-border/50 bg-muted/20">
+                              <div key={i} className="relative rounded-lg overflow-hidden border border-border/50 bg-muted/20 group">
                                 {(typeof video === 'string' ? video : '').includes('.m3u8') ? (
                                   <div className="flex items-center gap-2.5 p-3">
                                     <div className="p-2 rounded-lg bg-primary/10">
@@ -479,12 +532,25 @@ export function ShopifyStyleProductPreview({
                                     className="w-full aspect-video object-cover"
                                   />
                                 )}
+                                <button
+                                  onClick={() => {
+                                    setEditedProduct(prev => prev ? { ...prev, videos: prev.videos?.filter((_, vi) => vi !== i) } : null)
+                                  }}
+                                  className="absolute top-1 right-1 w-6 h-6 rounded-full bg-destructive/80 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                                >
+                                  <X className="h-3 w-3" />
+                                </button>
                               </div>
                             ))}
                           </div>
+                        </ScrollArea>
+                      ) : (
+                        <div className="flex items-center gap-2 p-3 rounded-lg border border-dashed border-border/50 bg-muted/10 text-muted-foreground">
+                          <Film className="h-4 w-4 opacity-40" />
+                          <span className="text-xs">Aucune vidéo détectée</span>
                         </div>
-                      </>
-                    )}
+                      )}
+                    </div>
                   </div>
                 </CollapsibleCard>
 
@@ -689,6 +755,58 @@ export function ShopifyStyleProductPreview({
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="px-4 pb-4 pt-0 space-y-3">
+                    {/* Category with AI */}
+                    <div className="space-y-1.5">
+                      <div className="flex items-center justify-between">
+                        <label className="text-xs text-muted-foreground">Catégorie</label>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={suggestCategoryWithAI}
+                          disabled={isOptimizingCategory}
+                          className="h-6 gap-1 text-[10px] text-primary hover:text-primary hover:bg-primary/10"
+                        >
+                          {isOptimizingCategory ? <Loader2 className="h-3 w-3 animate-spin" /> : <Sparkles className="h-3 w-3" />}
+                          Suggestions IA
+                        </Button>
+                      </div>
+                      <Input
+                        value={category}
+                        onChange={e => setCategory(e.target.value)}
+                        placeholder="Ex: Chaussures, Électronique..."
+                      />
+                      {suggestedCategories.length > 0 && (
+                        <div className="space-y-1 pt-1">
+                          {suggestedCategories.map((s, i) => (
+                            <button
+                              key={i}
+                              onClick={() => { setCategory(s.category); setSubcategory(s.subcategory) }}
+                              className={cn(
+                                "w-full text-left px-2.5 py-1.5 rounded-md border text-xs transition-colors",
+                                category === s.category
+                                  ? "border-primary/40 bg-primary/10 text-primary"
+                                  : "border-border/40 hover:border-primary/30 hover:bg-primary/5"
+                              )}
+                            >
+                              <div className="flex items-center justify-between">
+                                <span className="font-medium">{s.category}</span>
+                                <Badge variant="outline" className="text-[10px] h-4 px-1">{(s.confidence * 100).toFixed(0)}%</Badge>
+                              </div>
+                              {s.subcategory && <p className="text-[10px] text-muted-foreground mt-0.5">{s.subcategory}</p>}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-xs text-muted-foreground">Sous-catégorie</label>
+                      <Input
+                        value={subcategory}
+                        onChange={e => setSubcategory(e.target.value)}
+                        placeholder="Ex: Sneakers, Smartphones..."
+                      />
+                    </div>
+                    <Separator />
                     <div className="space-y-1.5">
                       <label className="text-xs text-muted-foreground">Marque / Vendeur</label>
                       <Input
