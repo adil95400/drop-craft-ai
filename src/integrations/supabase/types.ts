@@ -12679,6 +12679,63 @@ export type Database = {
           },
         ]
       }
+      stock_history: {
+        Row: {
+          change_amount: number
+          change_reason: string
+          created_at: string
+          id: string
+          new_quantity: number
+          previous_quantity: number
+          product_id: string
+          product_source: string
+          supplier_id: string | null
+          sync_config_id: string | null
+          user_id: string
+        }
+        Insert: {
+          change_amount?: number
+          change_reason?: string
+          created_at?: string
+          id?: string
+          new_quantity?: number
+          previous_quantity?: number
+          product_id: string
+          product_source?: string
+          supplier_id?: string | null
+          sync_config_id?: string | null
+          user_id: string
+        }
+        Update: {
+          change_amount?: number
+          change_reason?: string
+          created_at?: string
+          id?: string
+          new_quantity?: number
+          previous_quantity?: number
+          product_id?: string
+          product_source?: string
+          supplier_id?: string | null
+          sync_config_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "stock_history_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "suppliers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "stock_history_sync_config_id_fkey"
+            columns: ["sync_config_id"]
+            isOneToOne: false
+            referencedRelation: "stock_sync_configs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       stock_levels: {
         Row: {
           available_quantity: number | null
@@ -12928,6 +12985,65 @@ export type Database = {
             columns: ["variant_id"]
             isOneToOne: false
             referencedRelation: "product_variants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      stock_sync_configs: {
+        Row: {
+          created_at: string
+          failed_syncs: number
+          id: string
+          last_error: string | null
+          last_sync_at: string | null
+          low_stock_threshold: number
+          next_sync_at: string | null
+          out_of_stock_action: string
+          supplier_id: string
+          sync_enabled: boolean
+          sync_frequency_minutes: number
+          total_syncs: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          failed_syncs?: number
+          id?: string
+          last_error?: string | null
+          last_sync_at?: string | null
+          low_stock_threshold?: number
+          next_sync_at?: string | null
+          out_of_stock_action?: string
+          supplier_id: string
+          sync_enabled?: boolean
+          sync_frequency_minutes?: number
+          total_syncs?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          failed_syncs?: number
+          id?: string
+          last_error?: string | null
+          last_sync_at?: string | null
+          low_stock_threshold?: number
+          next_sync_at?: string | null
+          out_of_stock_action?: string
+          supplier_id?: string
+          sync_enabled?: boolean
+          sync_frequency_minutes?: number
+          total_syncs?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "stock_sync_configs_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "suppliers"
             referencedColumns: ["id"]
           },
         ]

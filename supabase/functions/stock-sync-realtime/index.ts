@@ -12,17 +12,26 @@ const ALLOWED_ORIGINS = [
   'https://shopopti.io',
   'https://www.shopopti.io',
   'https://app.shopopti.io',
-  'https://drop-craft-ai.lovable.app'
+  'https://drop-craft-ai.lovable.app',
+  'https://id-preview--7af4654f-dfc7-42c6-900f-b9ac682ca5ec.lovable.app',
 ];
+
+// Also allow any *.lovable.app origin for dev previews
+function isAllowedOrigin(origin: string | null): boolean {
+  if (!origin) return false;
+  if (ALLOWED_ORIGINS.includes(origin)) return true;
+  if (origin.endsWith('.lovable.app')) return true;
+  return false;
+}
 
 function getSecureCorsHeaders(origin: string | null): Record<string, string> {
   const headers: Record<string, string> = {
     'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
   };
   
-  if (origin && ALLOWED_ORIGINS.includes(origin)) {
-    headers['Access-Control-Allow-Origin'] = origin;
+  if (isAllowedOrigin(origin)) {
+    headers['Access-Control-Allow-Origin'] = origin!;
   }
   
   return headers;
@@ -51,7 +60,7 @@ serve(async (req) => {
   const corsHeaders = getSecureCorsHeaders(origin);
   
   if (req.method === 'OPTIONS') {
-    if (!origin || !ALLOWED_ORIGINS.includes(origin)) {
+    if (!isAllowedOrigin(origin)) {
       return new Response(null, { status: 403 });
     }
     return new Response(null, { headers: corsHeaders });
@@ -74,16 +83,16 @@ serve(async (req) => {
     }
     
     const token = authHeader.replace('Bearer ', '');
-    const { data: claimsData, error: claimsError } = await supabaseClient.auth.getClaims(token);
+    const { data: { user: authUser }, error: authError } = await supabaseClient.auth.getUser(token);
     
-    if (claimsError || !claimsData?.claims?.sub) {
+    if (authError || !authUser?.id) {
       return new Response(
         JSON.stringify({ success: false, error: 'Invalid or expired token' }),
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    const userId = claimsData.claims.sub;
+    const userId = authUser.id;
     const body = await req.json();
     
     // SECURITY: Validate action
