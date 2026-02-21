@@ -8774,6 +8774,63 @@ export type Database = {
         }
         Relationships: []
       }
+      price_change_history: {
+        Row: {
+          change_percent: number | null
+          change_type: string
+          created_at: string | null
+          id: string
+          metadata: Json | null
+          new_price: number | null
+          old_price: number | null
+          product_id: string | null
+          source: string | null
+          supplier_product_id: string | null
+          user_id: string
+        }
+        Insert: {
+          change_percent?: number | null
+          change_type?: string
+          created_at?: string | null
+          id?: string
+          metadata?: Json | null
+          new_price?: number | null
+          old_price?: number | null
+          product_id?: string | null
+          source?: string | null
+          supplier_product_id?: string | null
+          user_id: string
+        }
+        Update: {
+          change_percent?: number | null
+          change_type?: string
+          created_at?: string | null
+          id?: string
+          metadata?: Json | null
+          new_price?: number | null
+          old_price?: number | null
+          product_id?: string | null
+          source?: string | null
+          supplier_product_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "price_change_history_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "price_change_history_supplier_product_id_fkey"
+            columns: ["supplier_product_id"]
+            isOneToOne: false
+            referencedRelation: "supplier_products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       price_history: {
         Row: {
           applied_at: string | null
@@ -8869,6 +8926,8 @@ export type Database = {
           apply_filter: Json | null
           apply_to: string | null
           calculation: Json | null
+          competitor_offset: number | null
+          competitor_strategy: string | null
           conditions: Json | null
           created_at: string | null
           description: string | null
@@ -8876,11 +8935,13 @@ export type Database = {
           id: string
           is_active: boolean | null
           last_executed_at: string | null
+          margin_protection: number | null
           max_price: number | null
           min_price: number | null
           name: string
           priority: number | null
           products_affected: number | null
+          rounding_strategy: string | null
           rule_type: string | null
           target_margin: number | null
           updated_at: string | null
@@ -8891,6 +8952,8 @@ export type Database = {
           apply_filter?: Json | null
           apply_to?: string | null
           calculation?: Json | null
+          competitor_offset?: number | null
+          competitor_strategy?: string | null
           conditions?: Json | null
           created_at?: string | null
           description?: string | null
@@ -8898,11 +8961,13 @@ export type Database = {
           id?: string
           is_active?: boolean | null
           last_executed_at?: string | null
+          margin_protection?: number | null
           max_price?: number | null
           min_price?: number | null
           name: string
           priority?: number | null
           products_affected?: number | null
+          rounding_strategy?: string | null
           rule_type?: string | null
           target_margin?: number | null
           updated_at?: string | null
@@ -8913,6 +8978,8 @@ export type Database = {
           apply_filter?: Json | null
           apply_to?: string | null
           calculation?: Json | null
+          competitor_offset?: number | null
+          competitor_strategy?: string | null
           conditions?: Json | null
           created_at?: string | null
           description?: string | null
@@ -8920,11 +8987,13 @@ export type Database = {
           id?: string
           is_active?: boolean | null
           last_executed_at?: string | null
+          margin_protection?: number | null
           max_price?: number | null
           min_price?: number | null
           name?: string
           priority?: number | null
           products_affected?: number | null
+          rounding_strategy?: string | null
           rule_type?: string | null
           target_margin?: number | null
           updated_at?: string | null
@@ -10324,6 +10393,7 @@ export type Database = {
           default_language: string | null
           description: string | null
           description_html: string | null
+          fallback_supplier_id: string | null
           google_product_id: string | null
           id: string
           image_url: string | null
@@ -10371,6 +10441,7 @@ export type Database = {
           default_language?: string | null
           description?: string | null
           description_html?: string | null
+          fallback_supplier_id?: string | null
           google_product_id?: string | null
           id?: string
           image_url?: string | null
@@ -10418,6 +10489,7 @@ export type Database = {
           default_language?: string | null
           description?: string | null
           description_html?: string | null
+          fallback_supplier_id?: string | null
           google_product_id?: string | null
           id?: string
           image_url?: string | null
@@ -10452,7 +10524,15 @@ export type Database = {
           weight?: number | null
           weight_unit?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "products_fallback_supplier_id_fkey"
+            columns: ["fallback_supplier_id"]
+            isOneToOne: false
+            referencedRelation: "suppliers"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profiles: {
         Row: {
@@ -13905,6 +13985,75 @@ export type Database = {
             columns: ["supplier_id"]
             isOneToOne: false
             referencedRelation: "suppliers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      supplier_fallback_rules: {
+        Row: {
+          auto_switch: boolean | null
+          created_at: string | null
+          fallback_suppliers: Json
+          id: string
+          is_active: boolean | null
+          last_switch_at: string | null
+          low_stock_threshold: number | null
+          notify_on_switch: boolean | null
+          price_increase_threshold: number | null
+          primary_supplier_id: string | null
+          product_id: string | null
+          switch_count: number | null
+          trigger_condition: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          auto_switch?: boolean | null
+          created_at?: string | null
+          fallback_suppliers?: Json
+          id?: string
+          is_active?: boolean | null
+          last_switch_at?: string | null
+          low_stock_threshold?: number | null
+          notify_on_switch?: boolean | null
+          price_increase_threshold?: number | null
+          primary_supplier_id?: string | null
+          product_id?: string | null
+          switch_count?: number | null
+          trigger_condition?: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          auto_switch?: boolean | null
+          created_at?: string | null
+          fallback_suppliers?: Json
+          id?: string
+          is_active?: boolean | null
+          last_switch_at?: string | null
+          low_stock_threshold?: number | null
+          notify_on_switch?: boolean | null
+          price_increase_threshold?: number | null
+          primary_supplier_id?: string | null
+          product_id?: string | null
+          switch_count?: number | null
+          trigger_condition?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "supplier_fallback_rules_primary_supplier_id_fkey"
+            columns: ["primary_supplier_id"]
+            isOneToOne: false
+            referencedRelation: "suppliers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "supplier_fallback_rules_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
             referencedColumns: ["id"]
           },
         ]
