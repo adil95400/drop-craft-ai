@@ -156,7 +156,7 @@ export default function FulfillmentPage() {
       if (!user) throw new Error('Non authentifié');
 
       // Store settings in user_settings table or local storage
-      const { error } = await supabase.from('user_settings').upsert({
+      const { error } = await (supabase.from('user_settings') as any).upsert({
         user_id: user.id,
         setting_key: 'fulfillment_settings',
         setting_value: settingsForm,

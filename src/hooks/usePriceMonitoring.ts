@@ -373,14 +373,14 @@ export function useSaveMonitoringSettings() {
       if (!user?.id) throw new Error('Not authenticated');
 
       // Save to user settings or a dedicated table
-      const { error } = await supabase
-        .from('user_settings')
+      const { error } = await (supabase
+        .from('user_settings') as any)
         .upsert({
           user_id: user.id,
           setting_key: 'price_monitoring',
           setting_value: settings,
           updated_at: new Date().toISOString(),
-        } as never);
+        }, { onConflict: 'user_id,setting_key' });
 
       if (error) {
         // If user_settings doesn't exist, just return success
