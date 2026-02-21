@@ -18,7 +18,7 @@ import {
 import { supabase } from '@/integrations/supabase/client'
 import { useAuth } from '@/contexts/AuthContext'
 import { toast } from 'sonner'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import { cn } from '@/lib/utils'
 import { PlatformLogo } from '@/components/ui/platform-logo'
 import { getPlatformColor, getPlatformName } from '@/utils/platformLogos'
@@ -26,7 +26,7 @@ import { useDropzone } from 'react-dropzone'
 import { motion } from 'framer-motion'
 import { ChannablePageLayout } from '@/components/channable/ChannablePageLayout'
 import { ChannableHeroSection } from '@/components/channable/ChannableHeroSection'
-import { ShopifyStyleProductPreview } from '@/components/import/ShopifyStyleProductPreview'
+// Product preview is now a separate page at /import/preview
 import { ProfitCalculator } from '@/components/import/ProfitCalculator'
 import { ImportSuccessAnimation } from '@/components/ui/import-success-animation'
 import { useImportSuccessAnimation } from '@/hooks/useImportSuccessAnimation'
@@ -78,6 +78,7 @@ const supportedPlatforms = ['aliexpress', 'amazon', 'ebay', 'temu', 'wish', 'cjd
 export default function AutoDSImportPage() {
   const { user } = useAuth()
   const navigate = useNavigate()
+  const location = useLocation()
   const reducedMotion = useReducedMotion()
 
   // Success Animation Hook
@@ -119,10 +120,21 @@ export default function AutoDSImportPage() {
   const [priceMultiplier, setPriceMultiplier] = useState(1.5)
   const [activeTab, setActiveTab] = useState('url')
   
-  // Preview Modal State
-  const [previewModalOpen, setPreviewModalOpen] = useState(false)
-  const [selectedProductForPreview, setSelectedProductForPreview] = useState<QueuedUrl | null>(null)
+  // Preview page return state
   const [isImportingFromModal, setIsImportingFromModal] = useState(false)
+
+  // Handle return from preview page with confirmed product
+  const locationState = (location as any).state as { confirmedProduct?: any; queuedItemId?: string } | undefined
+  React.useEffect(() => {
+    if (locationState?.confirmedProduct && locationState?.queuedItemId) {
+      const item = queuedUrls.find(q => q.id === locationState.queuedItemId)
+      if (item) {
+        importFromUrlWithData(item, locationState.confirmedProduct)
+      }
+      // Clear the state to prevent re-triggering
+      window.history.replaceState({}, '')
+    }
+  }, [locationState?.confirmedProduct]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Auto-process if URL came from query params
   const [autoProcessed, setAutoProcessed] = useState(false)
@@ -179,8 +191,13 @@ export default function AutoDSImportPage() {
 
   const openPreviewModal = (item: QueuedUrl) => {
     if (!item.preview) return
-    setSelectedProductForPreview(item)
-    setPreviewModalOpen(true)
+    navigate('/import/preview', {
+      state: {
+        product: item.preview,
+        returnTo: `/import/autods`,
+        queuedItemId: item.id
+      }
+    })
   }
 
   const importFromUrlWithData = async (item: QueuedUrl, editedProduct?: any) => {
@@ -208,8 +225,6 @@ export default function AutoDSImportPage() {
       if (error) throw error
       if (!data.success) throw new Error(data.error)
       setQueuedUrls(prev => prev.filter(q => q.id !== item.id))
-      setPreviewModalOpen(false)
-      setSelectedProductForPreview(null)
       toast.success(`"${productData.title?.slice(0, 50)}..." importé`)
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Erreur lors de l\'import')
@@ -221,11 +236,6 @@ export default function AutoDSImportPage() {
 
   const importFromUrl = async (item: QueuedUrl) => {
     await importFromUrlWithData(item)
-  }
-
-  const handleConfirmImportFromModal = async (editedProduct: any) => {
-    if (!selectedProductForPreview) return
-    await importFromUrlWithData(selectedProductForPreview, editedProduct)
   }
 
   const importAllUrls = async () => {
@@ -789,14 +799,7 @@ export default function AutoDSImportPage() {
         </TabsContent>
       </Tabs>
 
-      {/* Modal d'aperçu et modification */}
-      <ShopifyStyleProductPreview
-        open={previewModalOpen}
-        onOpenChange={setPreviewModalOpen}
-        product={selectedProductForPreview?.preview || null}
-        onConfirmImport={handleConfirmImportFromModal}
-        isImporting={isImportingFromModal}
-      />
+      {/* Product preview is now at /import/preview */}
 
       {/* Success Animation */}
       <ImportSuccessAnimation

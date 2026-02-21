@@ -21,6 +21,7 @@ const CdiscountImportPage = lazy(() => import('@/pages/import/platforms/Cdiscoun
 
 // Méthodes d'import
 const QuickImportPage = lazy(() => import('@/pages/import/quick/QuickImportPage'))
+const ProductPreviewPage = lazy(() => import('@/pages/import/ProductPreviewPage'))
 const UrlImportPage = lazy(() => import('@/pages/import/UrlImportPage'))
 const AutoDSImportPage = lazy(() => import('@/pages/import/AutoDSImportPage'))
 const FeedURLImportPage = lazy(() => import('@/pages/import/FeedURLImportPage'))
@@ -71,6 +72,7 @@ export function ImportRoutes() {
       
       {/* Méthodes d'import */}
       <Route path="quick" element={<QuickImportPage />} />
+      <Route path="preview" element={<ProductPreviewPage />} />
       <Route path="url" element={<UrlImportPage />} />
       <Route path="autods" element={<AutoDSImportPage />} />
       <Route path="feed-url" element={<FeedURLImportPage />} />
