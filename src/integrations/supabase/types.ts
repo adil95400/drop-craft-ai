@@ -457,6 +457,104 @@ export type Database = {
         }
         Relationships: []
       }
+      ai_auto_action_configs: {
+        Row: {
+          action_type: string
+          actions_today: number | null
+          config: Json | null
+          created_at: string
+          id: string
+          is_enabled: boolean | null
+          last_run_at: string | null
+          max_daily_actions: number | null
+          scope: string | null
+          threshold_score: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          action_type: string
+          actions_today?: number | null
+          config?: Json | null
+          created_at?: string
+          id?: string
+          is_enabled?: boolean | null
+          last_run_at?: string | null
+          max_daily_actions?: number | null
+          scope?: string | null
+          threshold_score?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          action_type?: string
+          actions_today?: number | null
+          config?: Json | null
+          created_at?: string
+          id?: string
+          is_enabled?: boolean | null
+          last_run_at?: string | null
+          max_daily_actions?: number | null
+          scope?: string | null
+          threshold_score?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      ai_auto_action_logs: {
+        Row: {
+          action_type: string
+          confidence_score: number | null
+          config_id: string | null
+          created_at: string
+          field_name: string | null
+          id: string
+          new_value: string | null
+          old_value: string | null
+          product_id: string | null
+          reverted_at: string | null
+          status: string | null
+          user_id: string
+        }
+        Insert: {
+          action_type: string
+          confidence_score?: number | null
+          config_id?: string | null
+          created_at?: string
+          field_name?: string | null
+          id?: string
+          new_value?: string | null
+          old_value?: string | null
+          product_id?: string | null
+          reverted_at?: string | null
+          status?: string | null
+          user_id: string
+        }
+        Update: {
+          action_type?: string
+          confidence_score?: number | null
+          config_id?: string | null
+          created_at?: string
+          field_name?: string | null
+          id?: string
+          new_value?: string | null
+          old_value?: string | null
+          product_id?: string | null
+          reverted_at?: string | null
+          status?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_auto_action_logs_config_id_fkey"
+            columns: ["config_id"]
+            isOneToOne: false
+            referencedRelation: "ai_auto_action_configs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ai_content_batches: {
         Row: {
           completed_at: string | null
@@ -5966,6 +6064,107 @@ export type Database = {
           name?: string
           rollout_percentage?: number | null
           updated_at?: string
+        }
+        Relationships: []
+      }
+      feed_diagnostic_items: {
+        Row: {
+          auto_fixable: boolean | null
+          created_at: string
+          current_value: string | null
+          expected_value: string | null
+          field_name: string | null
+          fixed: boolean | null
+          id: string
+          message: string
+          product_id: string | null
+          product_title: string | null
+          report_id: string
+          rule_code: string
+          severity: string
+          suggestion: string | null
+        }
+        Insert: {
+          auto_fixable?: boolean | null
+          created_at?: string
+          current_value?: string | null
+          expected_value?: string | null
+          field_name?: string | null
+          fixed?: boolean | null
+          id?: string
+          message: string
+          product_id?: string | null
+          product_title?: string | null
+          report_id: string
+          rule_code: string
+          severity?: string
+          suggestion?: string | null
+        }
+        Update: {
+          auto_fixable?: boolean | null
+          created_at?: string
+          current_value?: string | null
+          expected_value?: string | null
+          field_name?: string | null
+          fixed?: boolean | null
+          id?: string
+          message?: string
+          product_id?: string | null
+          product_title?: string | null
+          report_id?: string
+          rule_code?: string
+          severity?: string
+          suggestion?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "feed_diagnostic_items_report_id_fkey"
+            columns: ["report_id"]
+            isOneToOne: false
+            referencedRelation: "feed_diagnostic_reports"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      feed_diagnostic_reports: {
+        Row: {
+          channel: string
+          created_at: string
+          error_products: number | null
+          id: string
+          report_date: string
+          score: number | null
+          summary: Json | null
+          total_products: number | null
+          user_id: string
+          valid_products: number | null
+          warning_products: number | null
+        }
+        Insert: {
+          channel: string
+          created_at?: string
+          error_products?: number | null
+          id?: string
+          report_date?: string
+          score?: number | null
+          summary?: Json | null
+          total_products?: number | null
+          user_id: string
+          valid_products?: number | null
+          warning_products?: number | null
+        }
+        Update: {
+          channel?: string
+          created_at?: string
+          error_products?: number | null
+          id?: string
+          report_date?: string
+          score?: number | null
+          summary?: Json | null
+          total_products?: number | null
+          user_id?: string
+          valid_products?: number | null
+          warning_products?: number | null
         }
         Relationships: []
       }
@@ -11827,6 +12026,57 @@ export type Database = {
           id?: string
           is_default?: boolean | null
           name?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      saved_product_views: {
+        Row: {
+          color: string | null
+          columns: Json | null
+          created_at: string
+          description: string | null
+          filters: Json
+          icon: string | null
+          id: string
+          is_default: boolean | null
+          is_preset: boolean | null
+          name: string
+          product_count: number | null
+          sort_config: Json | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          color?: string | null
+          columns?: Json | null
+          created_at?: string
+          description?: string | null
+          filters?: Json
+          icon?: string | null
+          id?: string
+          is_default?: boolean | null
+          is_preset?: boolean | null
+          name: string
+          product_count?: number | null
+          sort_config?: Json | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          color?: string | null
+          columns?: Json | null
+          created_at?: string
+          description?: string | null
+          filters?: Json
+          icon?: string | null
+          id?: string
+          is_default?: boolean | null
+          is_preset?: boolean | null
+          name?: string
+          product_count?: number | null
+          sort_config?: Json | null
           updated_at?: string
           user_id?: string
         }

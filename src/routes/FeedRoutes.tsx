@@ -6,6 +6,7 @@ const FeedOptimizationPage = lazy(() => import('@/pages/feeds/FeedOptimizationPa
 const FeedRulesPage = lazy(() => import('@/pages/feeds/FeedRulesPage'))
 const PPCFeedLinkPage = lazy(() => import('@/pages/feeds/PPCFeedLinkPage'))
 const CategoryMappingPage = lazy(() => import('@/pages/feeds/CategoryMappingPage'))
+const FeedDiagnostics = lazy(() => import('@/pages/FeedDiagnostics'))
 
 export function FeedRoutes() {
   return (
@@ -15,6 +16,7 @@ export function FeedRoutes() {
       <Route path="rules" element={<FeedRulesPage />} />
       <Route path="ppc-link" element={<PPCFeedLinkPage />} />
       <Route path="categories" element={<CategoryMappingPage />} />
+      <Route path="diagnostics" element={<FeedDiagnostics />} />
     </Routes>
   )
 }
