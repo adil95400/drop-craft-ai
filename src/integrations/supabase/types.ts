@@ -4621,6 +4621,59 @@ export type Database = {
         }
         Relationships: []
       }
+      demand_forecasts: {
+        Row: {
+          confidence_score: number | null
+          created_at: string
+          forecast_date: string
+          id: string
+          input_data: Json | null
+          model_version: string | null
+          predicted_demand: number
+          product_id: string | null
+          scenario: string | null
+          seasonality_factor: number | null
+          trend_direction: string | null
+          user_id: string
+        }
+        Insert: {
+          confidence_score?: number | null
+          created_at?: string
+          forecast_date: string
+          id?: string
+          input_data?: Json | null
+          model_version?: string | null
+          predicted_demand?: number
+          product_id?: string | null
+          scenario?: string | null
+          seasonality_factor?: number | null
+          trend_direction?: string | null
+          user_id: string
+        }
+        Update: {
+          confidence_score?: number | null
+          created_at?: string
+          forecast_date?: string
+          id?: string
+          input_data?: Json | null
+          model_version?: string | null
+          predicted_demand?: number
+          product_id?: string | null
+          scenario?: string | null
+          seasonality_factor?: number | null
+          trend_direction?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "demand_forecasts_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       disputes: {
         Row: {
           attachments: Json | null
@@ -9650,6 +9703,65 @@ export type Database = {
           },
         ]
       }
+      product_opportunities: {
+        Row: {
+          ai_analysis: Json | null
+          competition_level: string | null
+          created_at: string
+          estimated_demand: number | null
+          estimated_margin: number | null
+          expires_at: string | null
+          id: string
+          opportunity_score: number | null
+          opportunity_type: string
+          product_id: string | null
+          reasoning: string | null
+          status: string | null
+          supplier_product_id: string | null
+          user_id: string
+        }
+        Insert: {
+          ai_analysis?: Json | null
+          competition_level?: string | null
+          created_at?: string
+          estimated_demand?: number | null
+          estimated_margin?: number | null
+          expires_at?: string | null
+          id?: string
+          opportunity_score?: number | null
+          opportunity_type?: string
+          product_id?: string | null
+          reasoning?: string | null
+          status?: string | null
+          supplier_product_id?: string | null
+          user_id: string
+        }
+        Update: {
+          ai_analysis?: Json | null
+          competition_level?: string | null
+          created_at?: string
+          estimated_demand?: number | null
+          estimated_margin?: number | null
+          expires_at?: string | null
+          id?: string
+          opportunity_score?: number | null
+          opportunity_type?: string
+          product_id?: string | null
+          reasoning?: string | null
+          status?: string | null
+          supplier_product_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_opportunities_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       product_research_results: {
         Row: {
           category: string | null
@@ -12679,6 +12791,72 @@ export type Database = {
         }
         Relationships: []
       }
+      smart_alerts: {
+        Row: {
+          actions: Json | null
+          alert_category: string
+          auto_resolved: boolean | null
+          created_at: string
+          entity_id: string | null
+          entity_type: string | null
+          expires_at: string | null
+          id: string
+          is_read: boolean | null
+          is_resolved: boolean | null
+          message: string | null
+          metadata: Json | null
+          priority_score: number | null
+          resolved_at: string | null
+          resolved_by: string | null
+          severity: string
+          source: string | null
+          title: string
+          user_id: string
+        }
+        Insert: {
+          actions?: Json | null
+          alert_category: string
+          auto_resolved?: boolean | null
+          created_at?: string
+          entity_id?: string | null
+          entity_type?: string | null
+          expires_at?: string | null
+          id?: string
+          is_read?: boolean | null
+          is_resolved?: boolean | null
+          message?: string | null
+          metadata?: Json | null
+          priority_score?: number | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          severity?: string
+          source?: string | null
+          title: string
+          user_id: string
+        }
+        Update: {
+          actions?: Json | null
+          alert_category?: string
+          auto_resolved?: boolean | null
+          created_at?: string
+          entity_id?: string | null
+          entity_type?: string | null
+          expires_at?: string | null
+          id?: string
+          is_read?: boolean | null
+          is_resolved?: boolean | null
+          message?: string | null
+          metadata?: Json | null
+          priority_score?: number | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          severity?: string
+          source?: string | null
+          title?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       social_accounts: {
         Row: {
           access_token_encrypted: string | null
@@ -14322,6 +14500,80 @@ export type Database = {
           },
           {
             foreignKeyName: "supplier_products_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "suppliers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      supplier_scores: {
+        Row: {
+          ai_insights: Json | null
+          avg_delivery_days: number | null
+          communication_score: number | null
+          created_at: string
+          delivery_score: number | null
+          id: string
+          last_evaluated_at: string | null
+          on_time_rate: number | null
+          overall_score: number | null
+          price_score: number | null
+          quality_score: number | null
+          recommendation: string | null
+          reliability_score: number | null
+          return_rate: number | null
+          supplier_id: string | null
+          total_issues: number | null
+          total_orders: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          ai_insights?: Json | null
+          avg_delivery_days?: number | null
+          communication_score?: number | null
+          created_at?: string
+          delivery_score?: number | null
+          id?: string
+          last_evaluated_at?: string | null
+          on_time_rate?: number | null
+          overall_score?: number | null
+          price_score?: number | null
+          quality_score?: number | null
+          recommendation?: string | null
+          reliability_score?: number | null
+          return_rate?: number | null
+          supplier_id?: string | null
+          total_issues?: number | null
+          total_orders?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          ai_insights?: Json | null
+          avg_delivery_days?: number | null
+          communication_score?: number | null
+          created_at?: string
+          delivery_score?: number | null
+          id?: string
+          last_evaluated_at?: string | null
+          on_time_rate?: number | null
+          overall_score?: number | null
+          price_score?: number | null
+          quality_score?: number | null
+          recommendation?: string | null
+          reliability_score?: number | null
+          return_rate?: number | null
+          supplier_id?: string | null
+          total_issues?: number | null
+          total_orders?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "supplier_scores_supplier_id_fkey"
             columns: ["supplier_id"]
             isOneToOne: false
             referencedRelation: "suppliers"

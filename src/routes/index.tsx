@@ -44,6 +44,7 @@ const PricingRoutes = lazy(() => import('./PricingRoutes').then(m => ({ default:
 const AIRoutes = lazy(() => import('./AIRoutes').then(m => ({ default: m.AIRoutes })));
 const ResearchRoutes = lazy(() => import('./ResearchRoutes').then(m => ({ default: m.ResearchRoutes })));
 const ToolsRoutes = lazy(() => import('./ToolsRoutes').then(m => ({ default: m.ToolsRoutes })));
+const IntelligenceHubPage = lazy(() => import('@/pages/intelligence/IntelligenceHubPage'));
 
 // Pages directes (lazy loaded)
 const NotFoundPage = lazy(() => import('@/pages/NotFoundPage'));
@@ -161,6 +162,7 @@ export function AppRoutes() {
           <Route path="/analytics/*" element={<Protected><AnalyticsRoutes /></Protected>} />
           <Route path="/audit/*" element={<Protected><AuditRoutes /></Protected>} />
           <Route path="/research/*" element={<Protected><ResearchRoutes /></Protected>} />
+          <Route path="/intelligence" element={<Protected><IntelligenceHubPage /></Protected>} />
           
           {/* Automation & AI */}
           <Route path="/automation/*" element={<Protected><AutomationRoutes /></Protected>} />
