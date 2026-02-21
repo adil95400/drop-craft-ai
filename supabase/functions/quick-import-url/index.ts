@@ -248,7 +248,18 @@ function extractHQImages(html: string, platform: string, markdown: string = ''):
 
     if (!cleanUrl.startsWith('http')) return
     if (seenUrls.has(cleanUrl)) return
+    // Filter out non-product images
     if (cleanUrl.includes('icon') || cleanUrl.includes('sprite')) return
+    if (platform === 'amazon') {
+      // Skip Amazon UI/nav/badge/logo images
+      if (/\/images\/G\//i.test(cleanUrl)) return  // Amazon global UI assets
+      if (/\/images\/S\//i.test(cleanUrl)) return  // Amazon static UI assets  
+      if (/prime[_-]?logo|badge|banner|award|certification|stamp|trust|guarantee/i.test(cleanUrl)) return
+      if (/loading|placeholder|transparent|pixel|spacer|blank/i.test(cleanUrl)) return
+      if (/nav[_-]|header[_-]|footer[_-]|sidebar/i.test(cleanUrl)) return
+      // Skip very small utility images (1x1, 2x2, etc.)
+      if (/[._]1x1[._]|[._]2x2[._]|[._]SR1,1[._]/i.test(cleanUrl)) return
+    }
 
     images.push(cleanUrl)
     seenUrls.add(cleanUrl)
@@ -298,30 +309,26 @@ function extractHQImages(html: string, platform: string, markdown: string = ''):
       }
     }
     
-    // Amazon image URLs with specific patterns
-    const amazonImgMatches = html.matchAll(/(https?:\/\/m\.media-amazon\.com\/images\/I\/[^"'\s]+\.(?:jpg|png|webp))/gi)
-    for (const m of amazonImgMatches) {
-      // Convert to high quality by replacing size indicators
-      let imgUrl = m[1]
-        .replace(/\._[A-Z]{2}\d+_\./, '.')
-        .replace(/\._S[LXSMXY]\d+_\./, '.')
-        .replace(/\._AC_[^.]+\./, '.')
-      addImage(imgUrl)
+    // Amazon image URLs from HTML — only from product-relevant sections
+    // Skip if we already have enough from colorImages/gallery (those are most accurate)
+    if (images.length < 5) {
+      const amazonImgMatches = html.matchAll(/(https?:\/\/m\.media-amazon\.com\/images\/I\/[^"'\s]+\.(?:jpg|png|webp))/gi)
+      for (const m of amazonImgMatches) {
+        let imgUrl = m[1]
+          .replace(/\._[A-Z]{2}\d+_\./, '.')
+          .replace(/\._S[LXSMXY]\d+_\./, '.')
+          .replace(/\._AC_[^.]+\./, '.')
+        addImage(imgUrl)
+      }
     }
     
-    // Fallback: extract from markdown (Firecrawl often puts images here)
-    if (markdown) {
+    // Markdown fallback — only if very few images found (avoid sponsored/related product images)
+    if (images.length < 3 && markdown) {
       const mdImgMatches = markdown.matchAll(/!\[[^\]]*\]\((https?:\/\/[^)]+\.(?:jpg|jpeg|png|webp)[^)]*)\)/gi)
       for (const m of mdImgMatches) {
-        if (m[1].includes('amazon') || m[1].includes('media-amazon')) {
+        if (m[1].includes('media-amazon') && m[1].includes('/images/I/')) {
           addImage(m[1])
         }
-      }
-      
-      // Also raw URLs
-      const rawUrlMatches = markdown.matchAll(/(https?:\/\/m\.media-amazon\.com\/images\/I\/[^\s"'\)]+\.(?:jpg|png|webp))/gi)
-      for (const m of rawUrlMatches) {
-        addImage(m[1])
       }
     }
   }
@@ -481,24 +488,27 @@ function extractHQImages(html: string, platform: string, markdown: string = ''):
   }
   
   // Generic high quality extraction
-  const ogImages = html.matchAll(/og:image"[^>]*content="([^"]+)"/gi)
-  for (const m of ogImages) {
-    const imgUrl = m[1]
-    if (!imgUrl.includes('logo')) {
-      addImage(imgUrl)
+  // Only use generic fallbacks if we don't already have enough images from platform-specific extraction
+  if (images.length < 3) {
+    const ogImages = html.matchAll(/og:image"[^>]*content="([^"]+)"/gi)
+    for (const m of ogImages) {
+      const imgUrl = m[1]
+      if (!imgUrl.includes('logo')) {
+        addImage(imgUrl)
+      }
     }
-  }
-  
-  // Data-src with high resolution
-  const dataSrcMatches = html.matchAll(/data-(?:src|original|zoom|large-src|big-src)="(https?:\/\/[^"]+\.(?:jpg|jpeg|png|webp)[^"]*)"/gi)
-  for (const m of dataSrcMatches) {
-    addImage(m[1])
-  }
-  
-  // Standard src with quality indicators
-  const srcMatches = html.matchAll(/src="(https?:\/\/[^"]*(?:product|goods|item|main|large|original|zoom)[^"]*\.(?:jpg|jpeg|png|webp)[^"]*)"/gi)
-  for (const m of srcMatches) {
-    addImage(m[1])
+    
+    // Data-src with high resolution
+    const dataSrcMatches = html.matchAll(/data-(?:src|original|zoom|large-src|big-src)="(https?:\/\/[^"]+\.(?:jpg|jpeg|png|webp)[^"]*)"/gi)
+    for (const m of dataSrcMatches) {
+      addImage(m[1])
+    }
+    
+    // Standard src with quality indicators
+    const srcMatches = html.matchAll(/src="(https?:\/\/[^"]*(?:product|goods|item|main|large|original|zoom)[^"]*\.(?:jpg|jpeg|png|webp)[^"]*)"/gi)
+    for (const m of srcMatches) {
+      addImage(m[1])
+    }
   }
   
   console.log(`📸 Extracted ${images.length} images`)
@@ -1396,6 +1406,76 @@ function extractAmazonTitle(html: string, markdown: string = ''): string {
   return 'Produit importé'
 }
 
+// Extract brand from product page (Amazon-optimized)
+function extractBrand(html: string, markdown: string, platform: string): string {
+  if (platform === 'amazon') {
+    // Strategy 1: bylineInfo — Amazon FR: "Visiter la boutique BRAND" or "Marque : BRAND"
+    // The link may contain inner spans, so grab the whole inner text
+    const bylineBlock = html.match(/id="bylineInfo"[^>]*>([\s\S]*?)<\/a>/i)
+    if (bylineBlock) {
+      // Strip inner HTML tags to get pure text
+      const text = bylineBlock[1].replace(/<[^>]+>/g, '').trim()
+      // Remove "Visiter la boutique" / "Visit the BRAND Store" prefix
+      const cleaned = text
+        .replace(/^Visiter\s*la\s*boutique\s*/i, '')
+        .replace(/^Visit\s*the\s*/i, '')
+        .replace(/\s*Store$/i, '')
+        .replace(/^Marque\s*:\s*/i, '')
+        .trim()
+      if (cleaned && cleaned.length > 1 && cleaned.length < 80) {
+        console.log(`✓ Brand from bylineInfo: ${cleaned}`)
+        return cleaned
+      }
+    }
+
+    // Strategy 2: "Marque" row in detail table
+    const marqueMatch = html.match(/>\s*Marque\s*<\/t[hd]>\s*<td[^>]*>([^<]+)/i) ||
+                        html.match(/>\s*Brand\s*<\/t[hd]>\s*<td[^>]*>([^<]+)/i)
+    if (marqueMatch) {
+      const brand = marqueMatch[1].trim()
+      if (brand.length > 1 && brand.length < 80) {
+        console.log(`✓ Brand from detail table: ${brand}`)
+        return brand
+      }
+    }
+
+    // Strategy 3: JSON-LD brand
+    const jsonLdBrand = html.match(/"brand"\s*:\s*\{\s*"@type"\s*:\s*"Brand"\s*,\s*"name"\s*:\s*"([^"]+)"/i) ||
+                        html.match(/"brand"\s*:\s*"([^"]+)"/i)
+    if (jsonLdBrand) {
+      const brand = jsonLdBrand[1].trim()
+      if (brand.length > 1 && brand.length < 80 && brand.toLowerCase() !== 'amazon') {
+        console.log(`✓ Brand from JSON-LD: ${brand}`)
+        return brand
+      }
+    }
+
+    // Strategy 4: Markdown
+    if (markdown) {
+      const mdBrand = markdown.match(/Marque\s*[:|]\s*([^\n|]+)/i) ||
+                      markdown.match(/Brand\s*[:|]\s*([^\n|]+)/i)
+      if (mdBrand) {
+        const brand = mdBrand[1].trim()
+        if (brand.length > 1 && brand.length < 80) {
+          console.log(`✓ Brand from markdown: ${brand}`)
+          return brand
+        }
+      }
+    }
+  }
+
+  // Generic extraction for other platforms
+  const genericBrand = html.match(/og:brand"[^>]*content="([^"]+)"/i) ||
+                       html.match(/"brand"\s*:\s*\{\s*"name"\s*:\s*"([^"]+)"/i) ||
+                       html.match(/"brand"\s*:\s*"([^"]+)"/i)
+  if (genericBrand) {
+    const brand = genericBrand[1].trim()
+    if (brand.length > 1 && brand.length < 80) return brand
+  }
+
+  return platform
+}
+
 // Extract price specifically for Amazon (with markdown fallback)
 function extractAmazonPrice(html: string, markdown?: string): { price: number; currency: string; originalPrice: number | null } {
   let price = 0
@@ -1433,28 +1513,31 @@ function extractAmazonPrice(html: string, markdown?: string): { price: number; c
 
   console.log('🔍 Searching for Amazon price...')
 
-  // Strategy 1: Look for display price text pattern (most reliable for Amazon FR)
-  // Pattern: "149,00€" or "149,00 €" or "€149.00"
-  const displayPriceMatch = html.match(/>(\d{1,4}[,\.]\d{2})\s*€</i) ||
-                            html.match(/>\s*€\s*(\d{1,4}[,\.]\d{2})</i) ||
-                            html.match(/class="[^"]*priceToPay[^"]*"[^>]*>[\s\S]*?(\d{1,4}[,\.]\d{2})\s*€/i)
-  if (displayPriceMatch) {
-    const extracted = parseMoney(displayPriceMatch[1])
-    if (extracted > 0) {
-      price = extracted
-      console.log(`✓ Found display price: ${price}`)
+  // Strategy 1: Display price — prioritize corePriceDisplay / priceToPay container
+  const coreBlock = html.match(/id="corePriceDisplay[^"]*"[\s\S]{0,2000}/i) ||
+                    html.match(/id="corePrice[^"]*"[\s\S]{0,2000}/i)
+  if (coreBlock) {
+    const corePriceMatch = coreBlock[0].match(/(\d{1,5})[,\.](\d{2})\s*€/) ||
+                           coreBlock[0].match(/class="[^"]*priceToPay[^"]*"[\s\S]*?(\d{1,5})[,\.](\d{2})/)
+    if (corePriceMatch) {
+      const whole = parseInt(corePriceMatch[1]) || 0
+      const fraction = parseInt(corePriceMatch[2]) || 0
+      if (whole > 0 && whole < 50000) {
+        price = whole + fraction / 100
+        console.log(`✓ Found core display price: ${price}`)
+      }
     }
   }
 
-  // Strategy 2: apex_desktop price (common container)
+  // Strategy 1b: priceToPay class directly
   if (price === 0) {
-    const apexMatch = html.match(/id="apex_desktop[^"]*"[\s\S]*?(\d{1,4})[,\.](\d{2})\s*€/i)
-    if (apexMatch) {
-      const whole = parseInt(apexMatch[1]) || 0
-      const fraction = parseInt(apexMatch[2]) || 0
-      if (whole > 0 && whole < 10000) {
+    const payMatch = html.match(/class="[^"]*priceToPay[^"]*"[^>]*>[\s\S]*?(\d{1,5})[,\.](\d{2})\s*€/i)
+    if (payMatch) {
+      const whole = parseInt(payMatch[1]) || 0
+      const fraction = parseInt(payMatch[2]) || 0
+      if (whole > 0 && whole < 50000) {
         price = whole + fraction / 100
-        console.log(`✓ Found apex price: ${price}`)
+        console.log(`✓ Found priceToPay: ${price}`)
       }
     }
   }
@@ -1860,13 +1943,8 @@ async function scrapeProductData(url: string, platform: string, externalProductI
       .replace(/&#39;/g, "'")
       .slice(0, 5000) || ''
     
-    // Brand
-    const brandMatch = html.match(/id="bylineInfo"[^>]*>([^<]+)</i) ||
-                       html.match(/Visiter\s*la\s*boutique\s*([^<]+)</i) ||
-                       html.match(/brand[^>]*>([^<]+)</i) ||
-                       html.match(/og:brand"[^>]*content="([^"]+)"/i) ||
-                       html.match(/"brand"\s*:\s*"([^"]+)"/i)
-    productData.brand = brandMatch?.[1]?.trim().replace(/^Visiter\s*la\s*boutique\s*/i, '').slice(0, 100) || platform
+    // Brand — improved extraction for Amazon FR/US
+    productData.brand = extractBrand(html, markdown, platform)
     
     // Extract HQ images
     productData.images = extractHQImages(html, platform, markdown)
