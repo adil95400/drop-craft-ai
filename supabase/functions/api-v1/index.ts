@@ -229,18 +229,46 @@ async function deleteProduct(id: string, auth: Auth, reqId: string) {
 
 async function productStats(auth: Auth, reqId: string) {
   const admin = serviceClient();
-  const { data, error } = await admin.from("products").select("status", { count: "exact" }).eq("user_id", auth.user.id);
+  const { data, error } = await admin.from("products").select("status, price, cost_price, stock_quantity").eq("user_id", auth.user.id);
   if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
-  const total = data?.length ?? 0;
+  const rows = data ?? [];
+  const total = rows.length;
   const counts: Record<string, number> = {};
-  for (const row of data ?? []) { counts[row.status ?? "unknown"] = (counts[row.status ?? "unknown"] || 0) + 1; }
-  return json({ total, by_status: counts }, 200, reqId);
+  let totalValue = 0, totalCost = 0, totalProfit = 0, priceSum = 0, lowStock = 0, outOfStock = 0;
+  for (const row of rows) {
+    counts[row.status ?? "unknown"] = (counts[row.status ?? "unknown"] || 0) + 1;
+    const price = Number(row.price) || 0;
+    const cost = Number(row.cost_price) || 0;
+    const stock = Number(row.stock_quantity) || 0;
+    totalValue += price * stock;
+    totalCost += cost * stock;
+    totalProfit += (price - cost) * stock;
+    priceSum += price;
+    if (stock > 0 && stock < 10) lowStock++;
+    if (stock === 0) outOfStock++;
+  }
+  return json({
+    total,
+    active: counts["active"] ?? 0,
+    draft: counts["draft"] ?? 0,
+    inactive: counts["inactive"] ?? 0,
+    archived: counts["archived"] ?? 0,
+    low_stock: lowStock,
+    out_of_stock: outOfStock,
+    total_value: Math.round(totalValue * 100) / 100,
+    total_cost: Math.round(totalCost * 100) / 100,
+    total_profit: Math.round(totalProfit * 100) / 100,
+    avg_price: total > 0 ? Math.round((priceSum / total) * 100) / 100 : 0,
+    profit_margin: totalValue > 0 ? Math.round(((totalValue - totalCost) / totalValue) * 10000) / 100 : 0,
+    by_status: counts,
+  }, 200, reqId);
 }
 
 async function bulkUpdateProducts(req: Request, auth: Auth, reqId: string) {
   const body = await req.json();
-  const { ids, ...updates } = body;
-  if (!Array.isArray(ids) || ids.length === 0) return errorResponse("VALIDATION_ERROR", "ids array required", 400, reqId);
+  const ids = body.ids || body.product_ids;
+  const updates = body.updates || {};
+  if (!Array.isArray(ids) || ids.length === 0) return errorResponse("VALIDATION_ERROR", "ids or product_ids array required", 400, reqId);
   delete updates.user_id;
   const admin = serviceClient();
   const { error } = await admin.from("products").update(updates).in("id", ids).eq("user_id", auth.user.id);
@@ -305,7 +333,7 @@ Deno.serve(async (req) => {
 
     // ── Products
     if (path === "/v1/products/stats" && m === "GET") return productStats(auth, reqId);
-    if (path === "/v1/products/bulk" && m === "PATCH") return bulkUpdateProducts(req, auth, reqId);
+    if (path === "/v1/products/bulk" && (m === "PATCH" || m === "POST")) return bulkUpdateProducts(req, auth, reqId);
     if (path === "/v1/products" && m === "GET") return listProducts(url, auth, reqId);
     if (path === "/v1/products" && m === "POST") return createProduct(req, auth, reqId);
     let params = matchRoute("/v1/products/:id", path);
@@ -318,14 +346,15 @@ Deno.serve(async (req) => {
     if (path === "/v1/integrations" && m === "GET") return listIntegrations(url, auth, reqId);
 
     // ── Import Jobs
-    if (path === "/v1/imports/jobs" && m === "POST") return createImportJob(req, auth, reqId);
-    if (path === "/v1/imports/jobs" && m === "GET") return listImportJobs(url, auth, reqId);
-    params = matchRoute("/v1/imports/jobs/:id", path);
+    // Support both /imports/jobs and /import/jobs paths
+    if ((path === "/v1/imports/jobs" || path === "/v1/import/jobs") && m === "POST") return createImportJob(req, auth, reqId);
+    if ((path === "/v1/imports/jobs" || path === "/v1/import/jobs") && m === "GET") return listImportJobs(url, auth, reqId);
+    params = matchRoute("/v1/imports/jobs/:id", path) ?? matchRoute("/v1/import/jobs/:id", path);
     if (params && m === "GET") return getImportJob(params.id, auth, reqId);
-    params = matchRoute("/v1/imports/jobs/:id/items", path);
+    params = matchRoute("/v1/imports/jobs/:id/items", path) ?? matchRoute("/v1/import/jobs/:id/items", path);
     if (params && m === "GET") return getJobItems(params.id, url, auth, reqId);
-    for (const action of ["retry", "cancel", "resume", "replay"]) {
-      params = matchRoute(`/v1/imports/jobs/:id/${action}`, path);
+    for (const action of ["retry", "cancel", "resume", "replay", "enrich"]) {
+      params = matchRoute(`/v1/imports/jobs/:id/${action}`, path) ?? matchRoute(`/v1/import/jobs/:id/${action}`, path);
       if (params && m === "POST") return jobAction(action, params.id, req, auth, reqId);
     }
 
