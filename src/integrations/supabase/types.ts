@@ -7701,6 +7701,54 @@ export type Database = {
         }
         Relationships: []
       }
+      marketplace_integrations: {
+        Row: {
+          created_at: string
+          credentials_encrypted: Json | null
+          id: string
+          last_sync_at: string | null
+          orders_count: number | null
+          platform: string
+          products_count: number | null
+          settings: Json | null
+          shop_name: string | null
+          status: string | null
+          sync_status: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          credentials_encrypted?: Json | null
+          id?: string
+          last_sync_at?: string | null
+          orders_count?: number | null
+          platform: string
+          products_count?: number | null
+          settings?: Json | null
+          shop_name?: string | null
+          status?: string | null
+          sync_status?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          credentials_encrypted?: Json | null
+          id?: string
+          last_sync_at?: string | null
+          orders_count?: number | null
+          platform?: string
+          products_count?: number | null
+          settings?: Json | null
+          shop_name?: string | null
+          status?: string | null
+          sync_status?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       marketplace_product_mappings: {
         Row: {
           connection_id: string | null
@@ -10468,6 +10516,59 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      published_products: {
+        Row: {
+          created_at: string
+          external_product_id: string | null
+          id: string
+          last_synced_at: string | null
+          marketplace_id: string | null
+          platform: string
+          product_id: string | null
+          published_at: string | null
+          status: string | null
+          sync_data: Json | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          external_product_id?: string | null
+          id?: string
+          last_synced_at?: string | null
+          marketplace_id?: string | null
+          platform: string
+          product_id?: string | null
+          published_at?: string | null
+          status?: string | null
+          sync_data?: Json | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          external_product_id?: string | null
+          id?: string
+          last_synced_at?: string | null
+          marketplace_id?: string | null
+          platform?: string
+          product_id?: string | null
+          published_at?: string | null
+          status?: string | null
+          sync_data?: Json | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "published_products_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       push_notification_logs: {
         Row: {
@@ -15009,6 +15110,8 @@ export type Database = {
           import_config: Json | null
           import_rules: Json | null
           notification_preferences: Json | null
+          setting_key: string | null
+          setting_value: Json | null
           updated_at: string | null
           user_id: string
         }
@@ -15019,6 +15122,8 @@ export type Database = {
           import_config?: Json | null
           import_rules?: Json | null
           notification_preferences?: Json | null
+          setting_key?: string | null
+          setting_value?: Json | null
           updated_at?: string | null
           user_id: string
         }
@@ -15029,6 +15134,8 @@ export type Database = {
           import_config?: Json | null
           import_rules?: Json | null
           notification_preferences?: Json | null
+          setting_key?: string | null
+          setting_value?: Json | null
           updated_at?: string | null
           user_id?: string
         }
