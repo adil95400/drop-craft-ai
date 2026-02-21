@@ -40,11 +40,15 @@ export interface ImportedProductData {
 }
 
 class ImportService {
+  /**
+   * Get import jobs from the unified `jobs` table (replaces import_jobs view)
+   */
   async getImportJobs(filters?: ImportFilters) {
     try {
-      let query = supabase
-        .from('import_jobs')
+      let query = (supabase
+        .from('jobs') as any)
         .select('*')
+        .eq('job_type', 'import')
         .order('created_at', { ascending: false })
         .limit(50)
 
@@ -56,9 +60,27 @@ class ImportService {
 
       if (error) throw error
 
+      // Map jobs fields to ImportJob interface
+      const jobs = (data || []).map((job: any) => ({
+        id: job.id,
+        user_id: job.user_id,
+        source_type: job.job_subtype || 'unknown',
+        source_url: job.metadata?.source_url || job.input_data?.source_url,
+        status: job.status,
+        total_rows: job.total_items || 0,
+        success_rows: (job.processed_items || 0) - (job.failed_items || 0),
+        error_rows: job.failed_items || 0,
+        started_at: job.started_at,
+        completed_at: job.completed_at,
+        result_data: job.output_data,
+        errors: job.error_message ? [job.error_message] : [],
+        created_at: job.created_at,
+        source_name: job.name
+      }))
+
       return {
-        jobs: data as any[],
-        total: count || data?.length || 0
+        jobs,
+        total: count || jobs.length
       }
     } catch (error) {
       console.error('Erreur récupération import jobs:', error)
@@ -81,7 +103,6 @@ class ImportService {
 
       if (error) throw error
 
-      // Map database fields to ImportedProductData interface
       return (data || []).map((item: any) => ({
         id: item.id,
         name: item.product_id ? `Product ${item.product_id}` : 'Imported Product',
@@ -113,21 +134,21 @@ class ImportService {
       const { data: user } = await supabase.auth.getUser()
       if (!user.user) throw new Error('Non authentifié')
 
-      // Créer un job d'import
-      const { data, error } = await supabase
-        .from('jobs')
+      const { data, error } = await (supabase
+        .from('jobs') as any)
         .insert([{
           user_id: user.user.id,
           job_type: 'import',
-          job_subtype: 'single',
+          job_subtype: 'url',
+          name: `Import URL: ${new URL(url).hostname}`,
           status: 'pending',
+          input_data: { source_url: url, ...config },
           metadata: { source_url: url, source_platform: 'url' }
         }])
         .select()
         .maybeSingle()
 
       if (error) throw error
-
       return data
     } catch (error) {
       console.error('Erreur démarrage import URL:', error)
@@ -140,20 +161,21 @@ class ImportService {
       const { data: user } = await supabase.auth.getUser()
       if (!user.user) throw new Error('Non authentifié')
 
-      const { data, error } = await supabase
-        .from('jobs')
+      const { data, error } = await (supabase
+        .from('jobs') as any)
         .insert([{
           user_id: user.user.id,
           job_type: 'import',
           job_subtype: 'supplier',
+          name: `Import fournisseur: ${supplier}`,
           status: 'pending',
+          input_data: { supplier },
           metadata: { source_platform: supplier }
         }])
         .select()
         .maybeSingle()
 
       if (error) throw error
-
       return data
     } catch (error) {
       console.error('Erreur démarrage import fournisseur:', error)
@@ -168,16 +190,13 @@ class ImportService {
 
       const { data, error } = await supabase
         .from('imported_products')
-        .update({
-          status: 'approved'
-        })
+        .update({ status: 'approved' })
         .eq('id', productId)
         .eq('user_id', user.user.id)
         .select()
         .single()
 
       if (error) throw error
-
       return data
     } catch (error) {
       console.error('Erreur approbation produit:', error)
@@ -190,7 +209,6 @@ class ImportService {
       const { data: user } = await supabase.auth.getUser()
       if (!user.user) throw new Error('Non authentifié')
 
-      // Récupérer le produit importé
       const { data: product, error: fetchError } = await supabase
         .from('imported_products')
         .select('*')
@@ -202,30 +220,36 @@ class ImportService {
 
       const importedProduct = product as any
 
-      // Publier vers la table products
-      const { data, error } = await supabase
-        .from('products')
+      // Promote to products table using canonical fields
+      const { data, error } = await (supabase
+        .from('products') as any)
         .insert([{
           user_id: user.user.id,
-          title: `Imported Product - ${importedProduct.id}`,
-          name: `Imported Product - ${importedProduct.id}`,
-          description: '',
+          title: importedProduct.title || `Imported Product - ${importedProduct.id}`,
+          description: importedProduct.description || '',
           price: importedProduct.price || 0,
-          cost_price: importedProduct.price ? importedProduct.price * 0.7 : 0,
+          cost_price: importedProduct.cost_price || (importedProduct.price ? importedProduct.price * 0.7 : 0),
           status: 'active',
-          stock_quantity: 100,
-          sku: `IMP-${Date.now()}`,
-          category: importedProduct.category
+          stock_quantity: importedProduct.stock_quantity || 100,
+          sku: importedProduct.sku || `IMP-${Date.now()}`,
+          category: importedProduct.category,
+          source_type: importedProduct.source_platform || 'import',
+          source_url: importedProduct.source_url,
+          supplier_name: importedProduct.source_platform
         }])
         .select()
         .single()
 
       if (error) throw error
 
-      // Marquer comme publié
+      // Mark as promoted with link to canonical product
       await supabase
         .from('imported_products')
-        .update({ status: 'published' })
+        .update({ 
+          status: 'published',
+          promoted_to_product_id: data.id,
+          promotion_status: 'promoted'
+        } as any)
         .eq('id', productId)
 
       return data
@@ -236,7 +260,6 @@ class ImportService {
   }
 
   clearCache() {
-    // Invalider le cache côté client si nécessaire
     console.log('Cache cleared')
   }
 }
