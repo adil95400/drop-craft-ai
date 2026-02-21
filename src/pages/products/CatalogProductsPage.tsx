@@ -60,7 +60,7 @@ import { ResponsiveProductsTable } from '@/components/products/ResponsiveProduct
 import { ProductsGridView } from '@/components/products/ProductsGridView'
 import { ProductsPagination } from '@/components/products/ProductsPagination'
 import { BulkEditPanel } from '@/components/products/BulkEditPanel'
-import { ProductViewModal } from '@/components/modals/ProductViewModal'
+
 import { PlatformExportDialog } from '@/components/products/export/PlatformExportDialog'
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper'
 
@@ -101,7 +101,7 @@ export default function CatalogProductsPage() {
   const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false)
   const [isBulkDeleting, setIsBulkDeleting] = useState(false)
   const [isExporting, setIsExporting] = useState(false)
-  const [viewModalProduct, setViewModalProduct] = useState<UnifiedProduct | null>(null)
+  
   const [currentPage, setCurrentPage] = useState(1)
   const [itemsPerPage, setItemsPerPage] = useState(50)
   const [showJobTracker, setShowJobTracker] = useState(false)
@@ -234,9 +234,8 @@ export default function CatalogProductsPage() {
   }, [navigate])
 
   const handleView = useCallback((product: any) => {
-    const unified = products.find(p => p.id === product.id)
-    if (unified) setViewModalProduct(unified)
-  }, [products])
+    navigate(`/products/${product.id}`)
+  }, [navigate])
 
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null)
 
@@ -730,15 +729,7 @@ export default function CatalogProductsPage() {
         </SheetContent>
       </Sheet>
 
-      {/* Product View Modal */}
-      <ProductViewModal
-        open={!!viewModalProduct}
-        onOpenChange={(open) => !open && setViewModalProduct(null)}
-        product={viewModalProduct}
-        onEdit={() => { if (viewModalProduct) { handleEdit(viewModalProduct); setViewModalProduct(null) } }}
-        onDelete={() => { if (viewModalProduct) { handleDelete(viewModalProduct.id); setViewModalProduct(null) } }}
-        onDuplicate={async () => { if (viewModalProduct) { await handleDuplicate(viewModalProduct); setViewModalProduct(null) } }}
-      />
+      {/* Product view now navigates to /products/:id page */}
 
       {/* Bulk Delete Dialog */}
       <AlertDialog open={bulkDeleteOpen} onOpenChange={setBulkDeleteOpen}>
