@@ -2,8 +2,8 @@
   "manifest_version": 3,
   "name": "ShopOpti+ Pro",
   "short_name": "ShopOpti+",
-  "version": "6.0.0",
-  "description": "Importez des produits depuis AliExpress, Amazon, eBay et 20+ marketplaces en 1 clic vers ShopOpti",
+  "version": "7.0.0",
+  "description": "Importez des produits depuis AliExpress, Amazon, TikTok Shop, eBay et 20+ marketplaces en 1 clic vers ShopOpti — avec vidéos, avis et multi-variantes",
   "author": "ShopOpti Team",
   "homepage_url": "https://drop-craft-ai.lovable.app",
 
@@ -49,6 +49,8 @@
     "https://*.cjdropshipping.com/*",
     "https://*.costco.com/*",
     "https://*.homedepot.com/*",
+    "https://*.tiktok.com/*",
+    "https://shop.tiktok.com/*",
     "https://*.drop-craft-ai.lovable.app/*",
     "https://jsmwckzrmqecwwrswwrz.supabase.co/*"
   ],
@@ -73,9 +75,19 @@
         "https://*.shein.com/*",
         "https://*.etsy.com/*",
         "https://*.banggood.com/*",
-        "https://*.cjdropshipping.com/*"
+        "https://*.cjdropshipping.com/*",
+        "https://*.tiktok.com/*",
+        "https://shop.tiktok.com/*"
       ],
-      "js": ["content/dynamic-loader.js"],
+      "js": [
+        "content/extractors/extractor-registry.js",
+        "content/extractors/amazon-extractor.js",
+        "content/extractors/aliexpress-extractor.js",
+        "content/extractors/tiktok-extractor.js",
+        "content/extractors/ebay-extractor.js",
+        "content/extractors/temu-extractor.js",
+        "content/dynamic-loader.js"
+      ],
       "css": ["content/shopopti-styles.css"],
       "run_at": "document_idle"
     },
@@ -98,7 +110,7 @@
       "32": "icons/icon32.png",
       "48": "icons/icon48.png"
     },
-    "default_title": "ShopOpti+ Pro"
+    "default_title": "ShopOpti+ Pro v7"
   },
 
   "options_ui": {
