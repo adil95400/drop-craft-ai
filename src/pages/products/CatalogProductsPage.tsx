@@ -23,6 +23,7 @@ import { productsApi } from '@/services/api/client'
 // Job tracking UI
 import { ActiveJobsBanner } from '@/components/jobs/ActiveJobsBanner'
 import { JobTrackerPanel } from '@/components/jobs/JobTrackerPanel'
+import { CatalogHealthBanner } from '@/components/catalog/CatalogHealthBanner'
 
 // UI Components
 import { Button } from '@/components/ui/button'
@@ -351,6 +352,7 @@ export default function CatalogProductsPage() {
       <div className="space-y-4">
         {/* === ACTIVE JOBS BANNER === */}
         <ActiveJobsBanner />
+        <CatalogHealthBanner />
 
         {/* === KPI STAT CARDS === */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
