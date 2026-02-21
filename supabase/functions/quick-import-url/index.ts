@@ -2152,33 +2152,45 @@ serve(async (req) => {
     
     // Import mode
     if (action === 'import') {
-      const suggestedPrice = Math.ceil(productData.price * price_multiplier * 100) / 100
+      const overrideData = body.override_data || {}
+      const finalTitle = overrideData.title || productData.title
+      const finalDescription = overrideData.description || productData.description
+      const finalImages = overrideData.images || productData.images
+      const finalBrand = overrideData.brand || productData.brand
+      const finalSku = overrideData.sku || productData.sku
+      const finalStatus = overrideData.status || 'draft'
+      const finalCategory = overrideData.category || 'Importé'
+      const finalVariants = overrideData.variants || productData.variants
+      const finalVideos = overrideData.videos || productData.videos
+      const suggestedPrice = overrideData.suggested_price || Math.ceil(productData.price * price_multiplier * 100) / 100
+      const costPrice = overrideData.price || productData.price
       const importReviews = productData.extracted_reviews?.length > 0
       
+      // 1) Insert into imported_products
       const { data: importedProduct, error: insertError } = await supabaseClient
         .from('imported_products')
         .insert({
           user_id,
           supplier_name: platform,
           supplier_product_id: productId || `${platform}-${Date.now()}`,
-          name: productData.title,
-          description: productData.description,
+          name: finalTitle,
+          description: finalDescription,
           price: suggestedPrice,
-          cost_price: productData.price,
+          cost_price: costPrice,
           currency: productData.currency === 'USD' ? 'EUR' : productData.currency,
           stock_quantity: 999,
-          category: 'Importé',
-          brand: productData.brand,
-          sku: productData.sku,
-          image_urls: productData.images,
+          category: finalCategory,
+          brand: finalBrand,
+          sku: finalSku,
+          image_urls: finalImages,
           original_images: productData.images,
-          video_urls: productData.videos,
-          variants: productData.variants,
+          video_urls: finalVideos,
+          variants: finalVariants,
           specifications: productData.specifications,
           shipping_info: productData.shipping,
           reviews_summary: productData.reviews,
           seller_info: productData.seller,
-          status: 'draft',
+          status: finalStatus,
           source_url: url,
           sync_status: 'synced',
           metadata: {
@@ -2187,12 +2199,12 @@ serve(async (req) => {
             original_currency: productData.currency,
             scraped_at: productData.scraped_at,
             price_multiplier,
-            has_variants: productData.variants?.length > 0,
-            has_videos: productData.videos?.length > 0,
+            has_variants: finalVariants?.length > 0,
+            has_videos: finalVideos?.length > 0,
             has_reviews: importReviews,
-            images_count: productData.images?.length || 0,
-            variants_count: productData.variants?.length || 0,
-            videos_count: productData.videos?.length || 0,
+            images_count: finalImages?.length || 0,
+            variants_count: finalVariants?.length || 0,
+            videos_count: finalVideos?.length || 0,
             reviews_count: productData.extracted_reviews?.length || 0
           }
         })
@@ -2201,7 +2213,38 @@ serve(async (req) => {
       
       if (insertError) throw insertError
       
-      console.log(`✅ Product imported: ${importedProduct.id}`)
+      console.log(`✅ Product imported to imported_products: ${importedProduct.id}`)
+
+      // 2) Mirror insert into products table so it appears in /products
+      const { error: productsInsertError } = await supabaseClient
+        .from('products')
+        .insert({
+          user_id,
+          title: finalTitle,
+          name: finalTitle,
+          description: finalDescription,
+          price: suggestedPrice,
+          cost_price: costPrice,
+          sku: finalSku,
+          brand: finalBrand,
+          category: finalCategory,
+          status: finalStatus,
+          stock_quantity: 999,
+          images: finalImages,
+          image_url: finalImages?.[0] || null,
+          primary_image_url: finalImages?.[0] || null,
+          variants: finalVariants || null,
+          supplier: platform,
+          supplier_url: url,
+          supplier_product_id: productId || null,
+          vendor: finalBrand || platform,
+        })
+
+      if (productsInsertError) {
+        console.error('⚠️ Mirror insert into products failed:', productsInsertError)
+      } else {
+        console.log(`✅ Product also inserted into products table`)
+      }
       
       // Import reviews if available
       let reviewsImported = 0
@@ -2211,8 +2254,8 @@ serve(async (req) => {
         const reviewsToInsert = productData.extracted_reviews.map((review: any) => ({
           user_id,
           imported_product_id: importedProduct.id,
-          product_name: productData.title,
-          product_sku: productData.sku,
+          product_name: finalTitle,
+          product_sku: finalSku,
           customer_name: review.customer_name || 'Client',
           rating: review.rating || 5,
           title: review.title || '',
@@ -2247,11 +2290,11 @@ serve(async (req) => {
           success: true,
           action: 'imported',
           data: importedProduct,
-          message: `Produit "${productData.title}" importé avec succès${reviewsImported > 0 ? ` avec ${reviewsImported} avis` : ''}`,
+          message: `Produit "${finalTitle}" importé avec succès${reviewsImported > 0 ? ` avec ${reviewsImported} avis` : ''}`,
           summary: {
-            images: productData.images?.length || 0,
-            videos: productData.videos?.length || 0,
-            variants: productData.variants?.length || 0,
+            images: finalImages?.length || 0,
+            videos: finalVideos?.length || 0,
+            variants: finalVariants?.length || 0,
             reviews: reviewsImported
           }
         }),
