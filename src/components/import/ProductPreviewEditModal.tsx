@@ -20,10 +20,12 @@ import { Separator } from '@/components/ui/separator'
 import { 
   ImageIcon, Trash2, Check, X, ShoppingCart, 
   Package, Eye, Copy, Plus, GripVertical, RotateCcw,
-  ZoomIn, Loader2, Tag, DollarSign, FileText, Film, Star, MessageSquare, Play
+  ZoomIn, Loader2, Tag, DollarSign, FileText, Film, Star, MessageSquare, Play,
+  Sparkles, ClipboardList, AlertCircle
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { toast } from '@/hooks/use-toast'
+import { supabase } from '@/integrations/supabase/client'
 
 // --- Types ---
 interface ProductPreviewData {
@@ -42,6 +44,7 @@ interface ProductPreviewData {
   videos?: string[]
   extracted_reviews?: any[]
   reviews?: { rating: number | null; count: number | null }
+  specifications?: Record<string, string>
 }
 
 interface ProductPreviewEditModalProps {
@@ -133,6 +136,8 @@ export function ProductPreviewEditModal({
   const [previewImage, setPreviewImage] = useState<string | null>(null)
   const [loadingImages, setLoadingImages] = useState<Set<number>>(new Set())
   const [failedImages, setFailedImages] = useState<Set<number>>(new Set())
+  const [isOptimizingTitle, setIsOptimizingTitle] = useState(false)
+  const [isOptimizingDesc, setIsOptimizingDesc] = useState(false)
 
   useEffect(() => {
     if (product && open) {
@@ -158,6 +163,43 @@ export function ProductPreviewEditModal({
   }, [])
 
   if (!editedProduct) return null
+
+  const optimizeWithAI = async (field: 'title' | 'description') => {
+    if (!editedProduct) return
+    const setter = field === 'title' ? setIsOptimizingTitle : setIsOptimizingDesc
+    setter(true)
+    try {
+      const { data, error } = await supabase.functions.invoke('ai-product-optimizer', {
+        body: {
+          productId: 'preview',
+          optimizationType: field === 'title' ? 'title' : 'description',
+          currentData: {
+            name: editedProduct.title,
+            description: editedProduct.description,
+            category: editedProduct.brand,
+            price: editedProduct.price,
+          }
+        }
+      })
+      if (error) throw error
+      if (data?.result) {
+        if (field === 'title' && data.result.optimized_title) {
+          handleFieldChange('title', data.result.optimized_title)
+          toast({ title: '✨ Titre optimisé par IA' })
+        } else if (field === 'description' && data.result.optimized_description) {
+          handleFieldChange('description', data.result.optimized_description)
+          toast({ title: '✨ Description optimisée par IA' })
+        } else {
+          toast({ title: 'Aucune suggestion', description: "L'IA n'a pas pu générer d'amélioration", variant: 'default' })
+        }
+      }
+    } catch (err) {
+      console.error('AI optimization error:', err)
+      toast({ title: 'Erreur IA', description: err instanceof Error ? err.message : 'Erreur inconnue', variant: 'destructive' })
+    } finally {
+      setter(false)
+    }
+  }
 
   const handleFieldChange = (field: keyof ProductPreviewData, value: any) => {
     setEditedProduct(prev => prev ? { ...prev, [field]: value } : null)
@@ -306,20 +348,44 @@ export function ProductPreviewEditModal({
               <ModalSection icon={FileText} title="Informations produit">
                 <div className="space-y-4">
                   <FormField label="Titre du produit">
-                    <Input
-                      value={editedProduct.title}
-                      onChange={e => handleFieldChange('title', e.target.value)}
-                      className="font-medium bg-background/60 border-border/60 focus:border-primary/50 transition-colors"
-                    />
+                    <div className="flex gap-2">
+                      <Input
+                        value={editedProduct.title}
+                        onChange={e => handleFieldChange('title', e.target.value)}
+                        className="flex-1 font-medium bg-background/60 border-border/60 focus:border-primary/50 transition-colors"
+                      />
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => optimizeWithAI('title')}
+                        disabled={isOptimizingTitle}
+                        className="shrink-0 gap-1.5 text-xs border-primary/30 hover:bg-primary/10 text-primary"
+                      >
+                        {isOptimizingTitle ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
+                        IA
+                      </Button>
+                    </div>
                   </FormField>
 
                   <FormField label="Description">
-                    <Textarea
-                      value={editedProduct.description || ''}
-                      onChange={e => handleFieldChange('description', e.target.value)}
-                      rows={3}
-                      className="bg-background/60 border-border/60 focus:border-primary/50 resize-none transition-colors"
-                    />
+                    <div className="space-y-2">
+                      <Textarea
+                        value={editedProduct.description || ''}
+                        onChange={e => handleFieldChange('description', e.target.value)}
+                        rows={3}
+                        className="bg-background/60 border-border/60 focus:border-primary/50 resize-none transition-colors"
+                      />
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => optimizeWithAI('description')}
+                        disabled={isOptimizingDesc}
+                        className="gap-1.5 text-xs border-primary/30 hover:bg-primary/10 text-primary"
+                      >
+                        {isOptimizingDesc ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
+                        Optimiser la description avec l'IA
+                      </Button>
+                    </div>
                   </FormField>
                 </div>
               </ModalSection>
@@ -519,144 +585,190 @@ export function ProductPreviewEditModal({
                 )}
               </ModalSection>
 
+              <Separator className="bg-border/40" />
+
               {/* ── Section: Variants ── */}
-              {editedProduct.variants && editedProduct.variants.length > 0 && (
-                <>
-                  <Separator className="bg-border/40" />
-                  <ModalSection icon={Package} title="Variantes"
-                    badge={<Badge variant="secondary" className="text-xs">{editedProduct.variants.length}</Badge>}>
-                    <div className="flex flex-wrap gap-1.5">
-                      {editedProduct.variants.slice(0, 10).map((v, i) => (
-                        <Badge key={i} variant="outline" className="bg-background/60">
-                          {v.title || v.name || `Variante ${i + 1}`}
-                        </Badge>
-                      ))}
-                      {editedProduct.variants.length > 10 && (
-                        <Badge variant="outline" className="text-muted-foreground">
-                          +{editedProduct.variants.length - 10} autres
-                        </Badge>
-                      )}
-                    </div>
-                  </ModalSection>
-                </>
-              )}
+              <ModalSection icon={Package} title="Variantes"
+                badge={<Badge variant="secondary" className="text-xs">{editedProduct.variants?.length || 0}</Badge>}>
+                {editedProduct.variants && editedProduct.variants.length > 0 ? (
+                  <div className="flex flex-wrap gap-1.5">
+                    {editedProduct.variants.slice(0, 10).map((v, i) => (
+                      <Badge key={i} variant="outline" className="bg-background/60">
+                        {v.title || v.name || `Variante ${i + 1}`}
+                      </Badge>
+                    ))}
+                    {editedProduct.variants.length > 10 && (
+                      <Badge variant="outline" className="text-muted-foreground">
+                        +{editedProduct.variants.length - 10} autres
+                      </Badge>
+                    )}
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2 p-3 rounded-xl border border-dashed border-border/50 bg-muted/20 text-muted-foreground">
+                    <AlertCircle className="h-4 w-4 opacity-40" />
+                    <span className="text-xs">Aucune variante détectée</span>
+                  </div>
+                )}
+              </ModalSection>
+
+              <Separator className="bg-border/40" />
 
               {/* ── Section: Videos ── */}
-              {editedProduct.videos && editedProduct.videos.length > 0 && (
-                <>
-                  <Separator className="bg-border/40" />
-                  <ModalSection icon={Film} title="Vidéos"
-                    badge={<Badge variant="secondary" className="text-xs">{editedProduct.videos.length}</Badge>}>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      {editedProduct.videos.map((video, i) => (
-                        <div key={i} className="relative rounded-xl overflow-hidden border border-border/50 bg-muted/30">
-                          {(typeof video === 'string' ? video : '').includes('.m3u8') ? (
-                            <div className="flex items-center gap-3 p-3">
-                              <div className="p-2 rounded-lg bg-primary/10">
-                                <Play className="h-4 w-4 text-primary" />
-                              </div>
-                              <div className="flex-1 min-w-0">
-                                <p className="text-xs font-medium truncate">Vidéo HLS #{i + 1}</p>
-                                <p className="text-[10px] text-muted-foreground truncate">{typeof video === 'string' ? video : ''}</p>
-                              </div>
+              <ModalSection icon={Film} title="Vidéos"
+                badge={<Badge variant="secondary" className="text-xs">{editedProduct.videos?.length || 0}</Badge>}>
+                {editedProduct.videos && editedProduct.videos.length > 0 ? (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {editedProduct.videos.map((video, i) => (
+                      <div key={i} className="relative rounded-xl overflow-hidden border border-border/50 bg-muted/30">
+                        {(typeof video === 'string' ? video : '').includes('.m3u8') ? (
+                          <div className="flex items-center gap-3 p-3">
+                            <div className="p-2 rounded-lg bg-primary/10">
+                              <Play className="h-4 w-4 text-primary" />
                             </div>
-                          ) : (
-                            <video
-                              src={typeof video === 'string' ? video : ''}
-                              controls
-                              preload="metadata"
-                              className="w-full aspect-video object-cover"
-                              onError={(e) => {
-                                const target = e.currentTarget
-                                target.style.display = 'none'
-                                const parent = target.parentElement
-                                if (parent) {
-                                  const fallback = document.createElement('div')
-                                  fallback.className = 'flex items-center gap-3 p-3'
-                                  fallback.innerHTML = `<div class="p-2 rounded-lg bg-primary/10"><svg class="h-4 w-4 text-primary" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="6 3 20 12 6 21 6 3"/></svg></div><span class="text-xs text-muted-foreground truncate">Vidéo #${i + 1}</span>`
-                                  parent.appendChild(fallback)
-                                }
-                              }}
-                            />
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  </ModalSection>
-                </>
-              )}
-
-              {/* ── Section: Reviews ── */}
-              {editedProduct.extracted_reviews && editedProduct.extracted_reviews.length > 0 && (
-                <>
-                  <Separator className="bg-border/40" />
-                  <ModalSection icon={MessageSquare} title="Avis clients"
-                    badge={
-                      <div className="flex items-center gap-1.5">
-                        <Badge variant="secondary" className="text-xs">{editedProduct.extracted_reviews.length}</Badge>
-                        {editedProduct.reviews?.rating && (
-                          <Badge variant="outline" className="text-xs flex items-center gap-1">
-                            <Star className="h-3 w-3 fill-amber-500 text-amber-500" />
-                            {editedProduct.reviews.rating.toFixed(1)}
-                          </Badge>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-xs font-medium truncate">Vidéo HLS #{i + 1}</p>
+                              <p className="text-[10px] text-muted-foreground truncate">{typeof video === 'string' ? video : ''}</p>
+                            </div>
+                          </div>
+                        ) : (
+                          <video
+                            src={typeof video === 'string' ? video : ''}
+                            controls
+                            preload="metadata"
+                            className="w-full aspect-video object-cover"
+                            onError={(e) => {
+                              const target = e.currentTarget
+                              target.style.display = 'none'
+                              const parent = target.parentElement
+                              if (parent) {
+                                const fallback = document.createElement('div')
+                                fallback.className = 'flex items-center gap-3 p-3'
+                                fallback.innerHTML = `<div class="p-2 rounded-lg bg-primary/10"><svg class="h-4 w-4 text-primary" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="6 3 20 12 6 21 6 3"/></svg></div><span class="text-xs text-muted-foreground truncate">Vidéo #${i + 1}</span>`
+                                parent.appendChild(fallback)
+                              }
+                            }}
+                          />
                         )}
                       </div>
-                    }
-                  >
-                    <div className="space-y-2.5 max-h-64 overflow-y-auto pr-1">
-                      {editedProduct.extracted_reviews.slice(0, 10).map((review: any, i: number) => (
-                        <motion.div
-                          key={i}
-                          initial={{ opacity: 0, x: -8 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          transition={{ delay: i * 0.03 }}
-                          className="p-3 rounded-xl border border-border/40 bg-background/60 space-y-1.5"
-                        >
-                          <div className="flex items-center justify-between gap-2">
-                            <span className="text-xs font-medium text-foreground">
-                              {review.customer_name || 'Client'}
-                            </span>
-                            <div className="flex items-center gap-0.5">
-                              {Array.from({ length: 5 }).map((_, s) => (
-                                <Star
-                                  key={s}
-                                  className={cn(
-                                    "h-3 w-3",
-                                    s < (review.rating || 0)
-                                      ? "fill-amber-500 text-amber-500"
-                                      : "text-muted-foreground/30"
-                                  )}
-                                />
-                              ))}
-                            </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2 p-3 rounded-xl border border-dashed border-border/50 bg-muted/20 text-muted-foreground">
+                    <Film className="h-4 w-4 opacity-40" />
+                    <span className="text-xs">Aucune vidéo détectée</span>
+                  </div>
+                )}
+              </ModalSection>
+
+              <Separator className="bg-border/40" />
+
+              {/* ── Section: Specifications ── */}
+              <ModalSection icon={ClipboardList} title="Caractéristiques"
+                badge={<Badge variant="secondary" className="text-xs">{Object.keys(editedProduct.specifications || {}).length}</Badge>}>
+                {editedProduct.specifications && Object.keys(editedProduct.specifications).length > 0 ? (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    {Object.entries(editedProduct.specifications).slice(0, 20).map(([key, value], i) => (
+                      <div key={i} className="flex items-start gap-2 p-2 rounded-lg border border-border/30 bg-background/60">
+                        <span className="text-[11px] font-medium text-muted-foreground min-w-[80px] shrink-0">{key}</span>
+                        <span className="text-[11px] text-foreground">{value}</span>
+                      </div>
+                    ))}
+                    {Object.keys(editedProduct.specifications).length > 20 && (
+                      <p className="text-xs text-muted-foreground col-span-2 text-center py-1">
+                        +{Object.keys(editedProduct.specifications).length - 20} autres caractéristiques
+                      </p>
+                    )}
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2 p-3 rounded-xl border border-dashed border-border/50 bg-muted/20 text-muted-foreground">
+                    <ClipboardList className="h-4 w-4 opacity-40" />
+                    <span className="text-xs">Aucune caractéristique détectée</span>
+                  </div>
+                )}
+              </ModalSection>
+
+              <Separator className="bg-border/40" />
+
+              {/* ── Section: Reviews ── */}
+              <ModalSection icon={MessageSquare} title="Avis clients"
+                badge={
+                  <div className="flex items-center gap-1.5">
+                    <Badge variant="secondary" className="text-xs">{editedProduct.extracted_reviews?.length || 0}</Badge>
+                    {editedProduct.reviews?.rating && (
+                      <Badge variant="outline" className="text-xs flex items-center gap-1">
+                        <Star className="h-3 w-3 fill-amber-500 text-amber-500" />
+                        {editedProduct.reviews.rating.toFixed(1)}
+                        {editedProduct.reviews.count && (
+                          <span className="text-muted-foreground">({editedProduct.reviews.count})</span>
+                        )}
+                      </Badge>
+                    )}
+                  </div>
+                }
+              >
+                {editedProduct.extracted_reviews && editedProduct.extracted_reviews.length > 0 ? (
+                  <div className="space-y-2.5 max-h-64 overflow-y-auto pr-1">
+                    {editedProduct.extracted_reviews.slice(0, 10).map((review: any, i: number) => (
+                      <motion.div
+                        key={i}
+                        initial={{ opacity: 0, x: -8 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: i * 0.03 }}
+                        className="p-3 rounded-xl border border-border/40 bg-background/60 space-y-1.5"
+                      >
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="text-xs font-medium text-foreground">
+                            {review.customer_name || 'Client'}
+                          </span>
+                          <div className="flex items-center gap-0.5">
+                            {Array.from({ length: 5 }).map((_, s) => (
+                              <Star
+                                key={s}
+                                className={cn(
+                                  "h-3 w-3",
+                                  s < (review.rating || 0)
+                                    ? "fill-amber-500 text-amber-500"
+                                    : "text-muted-foreground/30"
+                                )}
+                              />
+                            ))}
                           </div>
-                          {review.title && (
-                            <p className="text-xs font-medium text-foreground/90">{review.title}</p>
+                        </div>
+                        {review.title && (
+                          <p className="text-xs font-medium text-foreground/90">{review.title}</p>
+                        )}
+                        {review.comment && (
+                          <p className="text-xs text-muted-foreground line-clamp-3">{review.comment}</p>
+                        )}
+                        <div className="flex items-center gap-2 text-[10px] text-muted-foreground/60">
+                          {review.verified_purchase && (
+                            <Badge variant="outline" className="text-[10px] h-4 px-1.5 border-green-500/30 text-green-600">
+                              Achat vérifié
+                            </Badge>
                           )}
-                          {review.comment && (
-                            <p className="text-xs text-muted-foreground line-clamp-3">{review.comment}</p>
+                          {review.review_date && (
+                            <span>{new Date(review.review_date).toLocaleDateString('fr-FR')}</span>
                           )}
-                          <div className="flex items-center gap-2 text-[10px] text-muted-foreground/60">
-                            {review.verified_purchase && (
-                              <Badge variant="outline" className="text-[10px] h-4 px-1.5 border-green-500/30 text-green-600">
-                                Achat vérifié
-                              </Badge>
-                            )}
-                            {review.review_date && (
-                              <span>{new Date(review.review_date).toLocaleDateString('fr-FR')}</span>
-                            )}
-                          </div>
-                        </motion.div>
-                      ))}
-                      {editedProduct.extracted_reviews.length > 10 && (
-                        <p className="text-xs text-center text-muted-foreground py-2">
-                          +{editedProduct.extracted_reviews.length - 10} autres avis seront importés
-                        </p>
-                      )}
-                    </div>
-                  </ModalSection>
-                </>
-              )}
+                        </div>
+                      </motion.div>
+                    ))}
+                    {editedProduct.extracted_reviews.length > 10 && (
+                      <p className="text-xs text-center text-muted-foreground py-2">
+                        +{editedProduct.extracted_reviews.length - 10} autres avis seront importés
+                      </p>
+                    )}
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2 p-3 rounded-xl border border-dashed border-border/50 bg-muted/20 text-muted-foreground">
+                    <MessageSquare className="h-4 w-4 opacity-40" />
+                    <span className="text-xs">
+                      {editedProduct.reviews?.rating
+                        ? `Note moyenne: ${editedProduct.reviews.rating.toFixed(1)}/5 (${editedProduct.reviews.count || 0} avis) — avis individuels non extraits`
+                        : 'Aucun avis détecté'}
+                    </span>
+                  </div>
+                )}
+              </ModalSection>
             </motion.div>
           </ScrollArea>
 
