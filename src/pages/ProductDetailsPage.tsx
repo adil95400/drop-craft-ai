@@ -395,82 +395,76 @@ export default function ProductDetailsPage() {
 
   return (
     <MainLayout>
-      <div className="min-h-screen bg-gradient-to-b from-background to-muted/20">
-        {/* Header Navigation */}
-        <div className="sticky top-0 z-40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b">
-          <div className="container py-3">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <Button variant="ghost" size="sm" onClick={() => navigate(-1)}>
-                  <ArrowLeft className="h-4 w-4 mr-2" />
-                  Retour
+      <div className="min-h-screen">
+        {/* Action bar intégrée */}
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-3">
+            <Button variant="ghost" size="sm" onClick={() => navigate('/products')}>
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Catalogue
+            </Button>
+            <Separator orientation="vertical" className="h-6" />
+            <Badge variant="outline" className="gap-1">
+              <Box className="h-3 w-3" />
+              {product.source === 'products' ? 'Catalogue' : 'Importé'}
+            </Badge>
+            <Badge variant={['active', 'published'].includes(product.status) ? 'default' : 'secondary'}>
+              {['active', 'published'].includes(product.status) ? 'Publié' : product.status}
+            </Badge>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button variant="ghost" size="icon" onClick={() => refetch()}>
+                    <RefreshCw className="h-4 w-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Actualiser</TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+
+            <Button variant="outline" size="sm" onClick={openEditModal}>
+              <Edit className="h-4 w-4 mr-2" />
+              Modifier
+            </Button>
+
+            <Button size="sm" onClick={handlePublish} disabled={triggerSync.isPending}>
+              {triggerSync.isPending ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Store className="h-4 w-4 mr-2" />}
+              Publier
+            </Button>
+
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon">
+                  <MoreVertical className="h-4 w-4" />
                 </Button>
-                <Separator orientation="vertical" className="h-6" />
-                <div className="flex items-center gap-2">
-                  <Badge variant="outline" className="gap-1">
-                    <Box className="h-3 w-3" />
-                    {product.source === 'products' ? 'Catalogue' : 'Importé'}
-                  </Badge>
-                  <Badge variant={['active', 'published'].includes(product.status) ? 'default' : 'secondary'}>
-                    {['active', 'published'].includes(product.status) ? 'Publié' : product.status}
-                  </Badge>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-2">
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button variant="ghost" size="icon" onClick={() => refetch()}>
-                        <RefreshCw className="h-4 w-4" />
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>Actualiser</TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-
-                <Button variant="outline" size="sm" onClick={openEditModal}>
-                  <Edit className="h-4 w-4 mr-2" />
-                  Modifier
-                </Button>
-
-                <Button size="sm" onClick={handlePublish} disabled={triggerSync.isPending}>
-                  {triggerSync.isPending ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Store className="h-4 w-4 mr-2" />}
-                  Publier
-                </Button>
-
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon">
-                      <MoreVertical className="h-4 w-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem onClick={handleDuplicate}>
-                      <Copy className="h-4 w-4 mr-2" />
-                      Dupliquer
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={handleExport}>
-                      <Download className="h-4 w-4 mr-2" />
-                      Exporter (JSON)
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={handleShare}>
-                      <Share2 className="h-4 w-4 mr-2" />
-                      Copier le lien
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem className="text-destructive" onClick={handleDelete}>
-                      <Trash2 className="h-4 w-4 mr-2" />
-                      Supprimer
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
-            </div>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={handleDuplicate}>
+                  <Copy className="h-4 w-4 mr-2" />
+                  Dupliquer
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={handleExport}>
+                  <Download className="h-4 w-4 mr-2" />
+                  Exporter (JSON)
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={handleShare}>
+                  <Share2 className="h-4 w-4 mr-2" />
+                  Copier le lien
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem className="text-destructive" onClick={handleDelete}>
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Supprimer
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
 
-        <div className="container py-6">
+        <div className="py-2">
           {/* AI Suggestions Banner */}
           {suggestions.length > 0 && (
             <motion.div
