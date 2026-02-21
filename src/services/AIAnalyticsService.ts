@@ -38,7 +38,7 @@ export class AIAnalyticsService {
     try {
       // Get catalog products
       const { data: products, error } = await (supabase
-        .from('catalog_products') as any)
+        .from('products') as any)
         .select('id, title, category, price')
         .order('created_at', { ascending: false })
         .limit(limit)
@@ -69,7 +69,7 @@ export class AIAnalyticsService {
     try {
       // Analyze categories for opportunities
       const { data: products, error } = await (supabase
-        .from('catalog_products') as any)
+        .from('products') as any)
         .select('category, price')
 
       if (error) throw error
@@ -126,7 +126,7 @@ export class AIAnalyticsService {
   static async getOptimalMargins(userId: string, limit = 10): Promise<OptimalMargin[]> {
     try {
       const { data: products, error } = await (supabase
-        .from('catalog_products') as any)
+        .from('products') as any)
         .select('id, title, price')
         .order('created_at', { ascending: false })
         .limit(limit)

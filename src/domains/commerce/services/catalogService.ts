@@ -22,9 +22,9 @@ export class CatalogService {
     }
 
     try {
-      // Query catalog_products table directly
-      let query = supabase
-        .from('catalog_products')
+      // Query products table (canonical)
+      let query = (supabase
+        .from('products') as any)
         .select('*', { count: 'exact' })
 
       if (filters?.category) {
@@ -109,8 +109,8 @@ export class CatalogService {
     }
 
     try {
-      const { data: product, error } = await supabase
-        .from('catalog_products')
+      const { data: product, error } = await (supabase
+        .from('products') as any)
         .select('*')
         .eq('id', id)
         .single()
@@ -151,10 +151,10 @@ export class CatalogService {
 
   async getMarketplaceProducts(filters?: CommerceFilters): Promise<{ products: CatalogProduct[]; total: number }> {
     try {
-      let query = supabase
-        .from('catalog_products')
+      let query = (supabase
+        .from('products') as any)
         .select('*', { count: 'exact' })
-        .eq('status', 'available')
+        .eq('status', 'active')
 
       if (filters?.category) {
         query = query.eq('category', filters.category)

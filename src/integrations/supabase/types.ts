@@ -2397,60 +2397,6 @@ export type Database = {
         }
         Relationships: []
       }
-      catalog_products: {
-        Row: {
-          category: string | null
-          compare_at_price: number | null
-          created_at: string | null
-          description: string | null
-          id: string
-          image_urls: string[] | null
-          is_imported: boolean | null
-          price: number | null
-          source_platform: string | null
-          source_url: string | null
-          status: string | null
-          supplier_name: string | null
-          title: string
-          updated_at: string | null
-          user_id: string
-        }
-        Insert: {
-          category?: string | null
-          compare_at_price?: number | null
-          created_at?: string | null
-          description?: string | null
-          id?: string
-          image_urls?: string[] | null
-          is_imported?: boolean | null
-          price?: number | null
-          source_platform?: string | null
-          source_url?: string | null
-          status?: string | null
-          supplier_name?: string | null
-          title: string
-          updated_at?: string | null
-          user_id: string
-        }
-        Update: {
-          category?: string | null
-          compare_at_price?: number | null
-          created_at?: string | null
-          description?: string | null
-          id?: string
-          image_urls?: string[] | null
-          is_imported?: boolean | null
-          price?: number | null
-          source_platform?: string | null
-          source_url?: string | null
-          status?: string | null
-          supplier_name?: string | null
-          title?: string
-          updated_at?: string | null
-          user_id?: string
-        }
-        Relationships: []
-      }
       category_mapping_rules: {
         Row: {
           confidence_score: number | null
@@ -6628,6 +6574,9 @@ export type Database = {
           original_images: string[] | null
           price: number | null
           product_id: string | null
+          promoted_at: string | null
+          promoted_to_product_id: string | null
+          promotion_status: string | null
           reviews_summary: Json | null
           seller_info: Json | null
           shipping_info: Json | null
@@ -6674,6 +6623,9 @@ export type Database = {
           original_images?: string[] | null
           price?: number | null
           product_id?: string | null
+          promoted_at?: string | null
+          promoted_to_product_id?: string | null
+          promotion_status?: string | null
           reviews_summary?: Json | null
           seller_info?: Json | null
           shipping_info?: Json | null
@@ -6720,6 +6672,9 @@ export type Database = {
           original_images?: string[] | null
           price?: number | null
           product_id?: string | null
+          promoted_at?: string | null
+          promoted_to_product_id?: string | null
+          promotion_status?: string | null
           reviews_summary?: Json | null
           seller_info?: Json | null
           shipping_info?: Json | null
@@ -6745,6 +6700,13 @@ export type Database = {
           {
             foreignKeyName: "imported_products_product_id_fkey"
             columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "imported_products_promoted_to_product_id_fkey"
+            columns: ["promoted_to_product_id"]
             isOneToOne: false
             referencedRelation: "products"
             referencedColumns: ["id"]
@@ -7198,18 +7160,22 @@ export type Database = {
           error_message: string | null
           failed_items: number | null
           id: string
+          idempotency_key: string | null
           input_data: Json | null
           job_subtype: string | null
           job_type: string
+          last_error: string | null
           max_retries: number | null
           metadata: Json | null
           name: string | null
+          next_retry_at: string | null
           output_data: Json | null
           priority: number | null
           processed_items: number | null
           progress_message: string | null
           progress_percent: number | null
           retries: number | null
+          retry_count: number | null
           started_at: string | null
           status: string
           total_items: number | null
@@ -7224,18 +7190,22 @@ export type Database = {
           error_message?: string | null
           failed_items?: number | null
           id?: string
+          idempotency_key?: string | null
           input_data?: Json | null
           job_subtype?: string | null
           job_type: string
+          last_error?: string | null
           max_retries?: number | null
           metadata?: Json | null
           name?: string | null
+          next_retry_at?: string | null
           output_data?: Json | null
           priority?: number | null
           processed_items?: number | null
           progress_message?: string | null
           progress_percent?: number | null
           retries?: number | null
+          retry_count?: number | null
           started_at?: string | null
           status?: string
           total_items?: number | null
@@ -7250,18 +7220,22 @@ export type Database = {
           error_message?: string | null
           failed_items?: number | null
           id?: string
+          idempotency_key?: string | null
           input_data?: Json | null
           job_subtype?: string | null
           job_type?: string
+          last_error?: string | null
           max_retries?: number | null
           metadata?: Json | null
           name?: string | null
+          next_retry_at?: string | null
           output_data?: Json | null
           priority?: number | null
           processed_items?: number | null
           progress_message?: string | null
           progress_percent?: number | null
           retries?: number | null
+          retry_count?: number | null
           started_at?: string | null
           status?: string
           total_items?: number | null
@@ -9097,6 +9071,56 @@ export type Database = {
           },
         ]
       }
+      product_attributes: {
+        Row: {
+          confidence: number | null
+          created_at: string
+          id: string
+          key: string
+          namespace: string
+          product_id: string
+          source: string | null
+          updated_at: string
+          user_id: string
+          value: string | null
+          value_type: string | null
+        }
+        Insert: {
+          confidence?: number | null
+          created_at?: string
+          id?: string
+          key: string
+          namespace?: string
+          product_id: string
+          source?: string | null
+          updated_at?: string
+          user_id: string
+          value?: string | null
+          value_type?: string | null
+        }
+        Update: {
+          confidence?: number | null
+          created_at?: string
+          id?: string
+          key?: string
+          namespace?: string
+          product_id?: string
+          source?: string | null
+          updated_at?: string
+          user_id?: string
+          value?: string | null
+          value_type?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_attributes_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       product_channel_mappings: {
         Row: {
           channel_id: string | null
@@ -10290,10 +10314,13 @@ export type Database = {
         Row: {
           barcode: string | null
           brand: string | null
+          bullet_points: string[] | null
           category: string | null
+          collections: string[] | null
           compare_at_price: number | null
           cost_price: number | null
           created_at: string | null
+          currency: string | null
           default_language: string | null
           description: string | null
           description_html: string | null
@@ -10302,17 +10329,23 @@ export type Database = {
           image_url: string | null
           images: Json | null
           is_published: boolean | null
+          main_image_url: string | null
           name: string | null
           price: number | null
           primary_image_url: string | null
           product_type: string | null
+          profit_margin: number | null
           seo_description: string | null
           seo_title: string | null
           shopify_product_id: string | null
           sku: string | null
+          source_of_truth: string | null
+          source_type: string | null
+          source_url: string | null
           status: string | null
           stock_quantity: number | null
           supplier: string | null
+          supplier_name: string | null
           supplier_product_id: string | null
           supplier_url: string | null
           tags: string[] | null
@@ -10328,10 +10361,13 @@ export type Database = {
         Insert: {
           barcode?: string | null
           brand?: string | null
+          bullet_points?: string[] | null
           category?: string | null
+          collections?: string[] | null
           compare_at_price?: number | null
           cost_price?: number | null
           created_at?: string | null
+          currency?: string | null
           default_language?: string | null
           description?: string | null
           description_html?: string | null
@@ -10340,17 +10376,23 @@ export type Database = {
           image_url?: string | null
           images?: Json | null
           is_published?: boolean | null
+          main_image_url?: string | null
           name?: string | null
           price?: number | null
           primary_image_url?: string | null
           product_type?: string | null
+          profit_margin?: number | null
           seo_description?: string | null
           seo_title?: string | null
           shopify_product_id?: string | null
           sku?: string | null
+          source_of_truth?: string | null
+          source_type?: string | null
+          source_url?: string | null
           status?: string | null
           stock_quantity?: number | null
           supplier?: string | null
+          supplier_name?: string | null
           supplier_product_id?: string | null
           supplier_url?: string | null
           tags?: string[] | null
@@ -10366,10 +10408,13 @@ export type Database = {
         Update: {
           barcode?: string | null
           brand?: string | null
+          bullet_points?: string[] | null
           category?: string | null
+          collections?: string[] | null
           compare_at_price?: number | null
           cost_price?: number | null
           created_at?: string | null
+          currency?: string | null
           default_language?: string | null
           description?: string | null
           description_html?: string | null
@@ -10378,17 +10423,23 @@ export type Database = {
           image_url?: string | null
           images?: Json | null
           is_published?: boolean | null
+          main_image_url?: string | null
           name?: string | null
           price?: number | null
           primary_image_url?: string | null
           product_type?: string | null
+          profit_margin?: number | null
           seo_description?: string | null
           seo_title?: string | null
           shopify_product_id?: string | null
           sku?: string | null
+          source_of_truth?: string | null
+          source_type?: string | null
+          source_url?: string | null
           status?: string | null
           stock_quantity?: number | null
           supplier?: string | null
+          supplier_name?: string | null
           supplier_product_id?: string | null
           supplier_url?: string | null
           tags?: string[] | null

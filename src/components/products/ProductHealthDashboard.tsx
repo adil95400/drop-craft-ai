@@ -66,8 +66,8 @@ export function ProductHealthDashboard() {
     queryFn: async () => {
       if (!user) return [];
 
-      const { data, error } = await supabase
-        .from('catalog_products')
+      const { data, error } = await (supabase
+        .from('products') as any)
         .select('*')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false })

@@ -46,7 +46,7 @@ export function ExtensionSyncStatus() {
       const { getProductCount } = await import('@/services/api/productHelpers');
       const productCount = await getProductCount();
       const settingsRes = await supabase.from('extension_data').select('updated_at').eq('user_id', user.id).eq('data_type', 'extension_settings').maybeSingle();
-      const importsRes = await supabase.from('catalog_products').select('id, created_at', { count: 'exact' }).eq('user_id', user.id).order('created_at', { ascending: false }).limit(1);
+      const importsRes = await (supabase.from('products') as any).select('id, created_at', { count: 'exact' }).eq('user_id', user.id).order('created_at', { ascending: false }).limit(1);
       const integrationsRes = await supabase.from('integrations').select('id', { count: 'exact', head: true }).eq('user_id', user.id);
 
       return {

@@ -50,8 +50,8 @@ export default function ExtensionImportHistoryPage() {
     queryFn: async () => {
       if (!user) return [];
 
-      const { data, error } = await supabase
-        .from('catalog_products')
+      const { data, error } = await (supabase
+        .from('products') as any)
         .select('*')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false })
@@ -171,8 +171,8 @@ export default function ExtensionImportHistoryPage() {
     if (!deleteConfirmId) return;
 
     try {
-      const { error } = await supabase
-        .from('catalog_products')
+      const { error } = await (supabase
+        .from('products') as any)
         .delete()
         .eq('id', deleteConfirmId);
 

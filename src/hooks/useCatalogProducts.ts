@@ -40,9 +40,9 @@ export const useCatalogProducts = (filters: any = {}) => {
     queryFn: async () => {
       const { data: { user } } = await supabase.auth.getUser()
       
-      // Query catalog_products table directly
-      let query = supabase
-        .from('catalog_products')
+      // Query products table (canonical)
+      let query = (supabase
+        .from('products') as any)
         .select('*')
         .order('created_at', { ascending: false })
         .limit(1000)
@@ -101,8 +101,8 @@ export const useCatalogProducts = (filters: any = {}) => {
   const { data: categories = [] } = useQuery({
     queryKey: ['catalogCategories'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('catalog_products')
+      const { data, error } = await (supabase
+        .from('products') as any)
         .select('category')
         .limit(1000)
         
@@ -117,9 +117,9 @@ export const useCatalogProducts = (filters: any = {}) => {
   const { data: suppliers = [] } = useQuery({
     queryKey: ['catalogSuppliers'], 
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('catalog_products')
-        .select('supplier_name, source_platform')
+      const { data, error } = await (supabase
+        .from('products') as any)
+        .select('supplier_name, source_type')
         .limit(1000)
         
       if (error) throw error

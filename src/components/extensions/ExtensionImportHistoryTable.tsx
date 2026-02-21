@@ -69,9 +69,9 @@ export function ExtensionImportHistoryTable() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return [];
 
-      const { data, error } = await supabase
-        .from('catalog_products')
-        .select('id, title, source_platform, source_url, status, price, created_at')
+      const { data, error } = await (supabase
+        .from('products') as any)
+        .select('id, title, source_type, source_url, status, price, created_at')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false })
         .limit(500);

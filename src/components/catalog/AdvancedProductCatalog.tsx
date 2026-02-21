@@ -59,8 +59,8 @@ export function AdvancedProductCatalog() {
       const { data: { user } } = await supabase.auth.getUser()
       
       // Récupérer les produits du catalogue
-      const { data: catalogData, error: catalogError } = await supabase
-        .from('catalog_products')
+      const { data: catalogData, error: catalogError } = await (supabase
+        .from('products') as any)
         .select('*')
         .order('created_at', { ascending: false })
       
@@ -193,8 +193,8 @@ export function AdvancedProductCatalog() {
 
   const handleDeleteProduct = async (productId: string) => {
     try {
-      const { error } = await supabase
-        .from('catalog_products')
+      const { error } = await (supabase
+        .from('products') as any)
         .delete()
         .eq('id', productId)
       

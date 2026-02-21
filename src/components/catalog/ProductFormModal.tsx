@@ -102,8 +102,8 @@ export function ProductFormModal({ product, open, onClose }: ProductFormModalPro
 
       if (product) {
         // Update existing product
-        const { error } = await supabase
-          .from('catalog_products')
+        const { error } = await (supabase
+          .from('products') as any)
           .update(productData)
           .eq('id', product.id)
 
@@ -115,8 +115,8 @@ export function ProductFormModal({ product, open, onClose }: ProductFormModalPro
         })
       } else {
         // Create new product
-        const { error } = await supabase
-          .from('catalog_products')
+        const { error } = await (supabase
+          .from('products') as any)
           .insert([productData])
 
         if (error) throw error

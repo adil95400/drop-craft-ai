@@ -31,8 +31,8 @@ const CategoryPage: React.FC = () => {
   const loadProducts = async () => {
     try {
       setLoading(true);
-      const { data, error } = await supabase
-        .from('catalog_products')
+      const { data, error } = await (supabase
+        .from('products') as any)
         .select('*')
         .eq('category', category)
         .limit(50);
