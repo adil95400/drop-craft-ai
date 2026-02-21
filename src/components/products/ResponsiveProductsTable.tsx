@@ -412,6 +412,7 @@ function DesktopTableView({
             <SortableHeader label="Marge" field="margin" currentField={sortField} direction={sortDirection} onSort={onSort} className="text-center" />
             <SortableHeader label="Stock" field="stock_quantity" currentField={sortField} direction={sortDirection} onSort={onSort} className="text-center" />
             <TableHead className="text-center">Statut</TableHead>
+            <TableHead>Catégorie</TableHead>
             <TableHead>Marque</TableHead>
             <TableHead className="text-center">Variantes</TableHead>
             <TableHead className="text-center">Santé</TableHead>
@@ -480,6 +481,14 @@ function DesktopTableView({
                    product.status === 'paused' ? 'En pause' :
                    product.status === 'archived' ? 'Archivé' : 'Inactif'}
                 </Badge>
+              </TableCell>
+              {/* Category */}
+              <TableCell>
+                {product.category ? (
+                  <Badge variant="outline" className="text-xs">{product.category}</Badge>
+                ) : (
+                  <span className="text-sm text-muted-foreground">—</span>
+                )}
               </TableCell>
               {/* Brand */}
               <TableCell>
@@ -567,7 +576,7 @@ function DesktopTableView({
           ))}
           {products.length === 0 && (
             <TableRow>
-              <TableCell colSpan={11} className="text-center py-12">
+              <TableCell colSpan={12} className="text-center py-12">
                 <Package className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
                 <p className="text-muted-foreground font-medium">Aucun produit trouvé</p>
                 <p className="text-sm text-muted-foreground mt-1">Importez vos premiers produits ou ajustez vos filtres</p>
