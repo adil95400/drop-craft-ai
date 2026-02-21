@@ -13,7 +13,9 @@ import {
   Clock, 
   XCircle,
   Settings,
-  TrendingUp
+  TrendingUp,
+  RefreshCw,
+  Upload
 } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 import { useAutoFulfillment } from '@/hooks/useAutoFulfillment'
@@ -29,7 +31,15 @@ export default function AutoOrderSystem() {
     isLoadingOrders,
     connections,
     isLoadingConnections,
-    toggleAutoOrder 
+    toggleAutoOrder,
+    processOrder,
+    isProcessingOrder,
+    processPending,
+    isProcessingPending,
+    retryFailed,
+    isRetrying,
+    syncTracking,
+    isSyncingTracking,
   } = useAutoFulfillment()
   
   const [autoOrderEnabled, setAutoOrderEnabled] = useState(true)
@@ -45,15 +55,13 @@ export default function AutoOrderSystem() {
   }
 
   const pendingOrders = orders?.filter((o: any) => o.status === 'pending' || o.status === 'processing') || []
-  const automatedOrders = orders?.filter((o: any) => o.status === 'confirmed' || o.status === 'shipped') || []
+  const completedOrders = orders?.filter((o: any) => o.status === 'completed') || []
   const failedOrders = orders?.filter((o: any) => o.status === 'failed') || []
 
   const getStatusBadge = (status: string) => {
     switch (status) {
-      case 'confirmed':
-        return <Badge><CheckCircle className="h-3 w-3 mr-1" />Confirmée</Badge>
-      case 'shipped':
-        return <Badge className="bg-green-600"><CheckCircle className="h-3 w-3 mr-1" />Expédiée</Badge>
+      case 'completed':
+        return <Badge><CheckCircle className="h-3 w-3 mr-1" />Complétée</Badge>
       case 'pending':
         return <Badge variant="secondary"><Clock className="h-3 w-3 mr-1" />En attente</Badge>
       case 'processing':
@@ -68,64 +76,57 @@ export default function AutoOrderSystem() {
   return (
     <>
       <Helmet>
-        <title>Système de Commande Automatique - ShopOpti</title>
-        <meta name="description" content="Automatisez vos commandes fournisseurs et gagnez du temps" />
+        <title>Auto-Fulfillment - ShopOpti</title>
+        <meta name="description" content="Pipeline automatique commande → fournisseur → tracking → Shopify" />
       </Helmet>
 
       <div className="space-y-6">
-        <div className="flex justify-between items-center">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
             <h1 className="text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent">
-              Commandes Automatiques
+              Auto-Fulfillment
             </h1>
             <p className="text-muted-foreground mt-1">
-              Passez vos commandes fournisseurs automatiquement
+              Commande → Fournisseur → Tracking → Shopify
             </p>
           </div>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={() => syncTracking()}
+              disabled={isSyncingTracking}
+            >
+              <Upload className="h-4 w-4 mr-2" />
+              {isSyncingTracking ? 'Sync...' : 'Sync Shopify'}
+              {stats?.unsyncedTracking ? (
+                <Badge variant="secondary" className="ml-2">{stats.unsyncedTracking}</Badge>
+              ) : null}
+            </Button>
+            <Button 
+              size="sm"
+              onClick={() => processPending()}
+              disabled={isProcessingPending}
+            >
+              <Zap className="h-4 w-4 mr-2" />
+              {isProcessingPending ? 'Traitement...' : 'Traiter tout'}
+            </Button>
             <div className="flex items-center gap-2">
-              <Label htmlFor="auto-order">Activation</Label>
+              <Label htmlFor="auto-order" className="text-sm">Auto</Label>
               <Switch
                 id="auto-order"
                 checked={autoOrderEnabled}
                 onCheckedChange={handleToggleAutoOrder}
               />
             </div>
-            <Button variant="outline">
-              <Settings className="h-4 w-4 mr-2" />
-              Configuration
-            </Button>
           </div>
         </div>
 
-        {/* Alert */}
-        {autoOrderEnabled && (
-          <Card className="border-green-200 bg-green-50 dark:bg-green-950">
-            <CardContent className="p-4">
-              <div className="flex gap-2">
-                <CheckCircle className="h-5 w-5 text-green-600 flex-shrink-0" />
-                <div>
-                  <p className="font-medium text-green-900 dark:text-green-100">
-                    Système de commandes automatiques activé
-                  </p>
-                  <p className="text-sm text-green-800 dark:text-green-200">
-                    Les commandes payées seront automatiquement transmises à vos fournisseurs dans les 5 minutes
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
         {/* Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {isLoadingStats ? (
             Array.from({ length: 4 }).map((_, i) => (
-              <Card key={i}>
-                <CardContent className="p-4">
-                  <Skeleton className="h-16 w-full" />
-                </CardContent>
-              </Card>
+              <Card key={i}><CardContent className="p-4"><Skeleton className="h-16 w-full" /></CardContent></Card>
             ))
           ) : (
             <>
@@ -133,18 +134,16 @@ export default function AutoOrderSystem() {
                 <CardContent className="p-4 text-center">
                   <Zap className="h-6 w-6 text-primary mx-auto mb-2" />
                   <div className="text-2xl font-bold">{stats?.todayOrders || 0}</div>
-                  <div className="text-sm text-muted-foreground">Auto aujourd'hui</div>
+                  <div className="text-sm text-muted-foreground">Aujourd'hui</div>
                 </CardContent>
               </Card>
-
               <Card>
                 <CardContent className="p-4 text-center">
                   <CheckCircle className="h-6 w-6 text-green-600 mx-auto mb-2" />
                   <div className="text-2xl font-bold">{stats?.successRate || 0}%</div>
-                  <div className="text-sm text-muted-foreground">Taux de réussite</div>
+                  <div className="text-sm text-muted-foreground">Taux réussite</div>
                 </CardContent>
               </Card>
-
               <Card>
                 <CardContent className="p-4 text-center">
                   <Clock className="h-6 w-6 text-blue-600 mx-auto mb-2" />
@@ -152,7 +151,6 @@ export default function AutoOrderSystem() {
                   <div className="text-sm text-muted-foreground">Temps moyen</div>
                 </CardContent>
               </Card>
-
               <Card>
                 <CardContent className="p-4 text-center">
                   <TrendingUp className="h-6 w-6 text-purple-600 mx-auto mb-2" />
@@ -167,16 +165,16 @@ export default function AutoOrderSystem() {
         <Tabs defaultValue="pending" className="space-y-6">
           <TabsList>
             <TabsTrigger value="pending">En Attente ({pendingOrders.length})</TabsTrigger>
-            <TabsTrigger value="automated">Automatisées ({automatedOrders.length})</TabsTrigger>
+            <TabsTrigger value="completed">Complétées ({completedOrders.length})</TabsTrigger>
             <TabsTrigger value="failed">Échouées ({failedOrders.length})</TabsTrigger>
           </TabsList>
 
           <TabsContent value="pending" className="space-y-4">
             <Card>
               <CardHeader>
-                <CardTitle>Commandes en Attente de Traitement</CardTitle>
+                <CardTitle>Commandes en Attente</CardTitle>
                 <CardDescription>
-                  Ces commandes seront passées automatiquement une fois le paiement confirmé
+                  Commandes prêtes à être envoyées au fournisseur
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-3">
@@ -187,37 +185,41 @@ export default function AutoOrderSystem() {
                     <div key={order.id} className="p-4 border rounded-lg">
                       <div className="flex items-center justify-between mb-3">
                         <div>
-                          <h4 className="font-semibold">{order.shopify_order_id || order.id.slice(0, 8)}</h4>
+                          <h4 className="font-semibold">{order.shopify_order_id || order.order_id?.slice(0, 8)}</h4>
                           <p className="text-sm text-muted-foreground">
-                            {order.created_at 
-                              ? format(new Date(order.created_at), 'dd/MM/yyyy HH:mm', { locale: fr })
-                              : 'Date inconnue'}
+                            {order.created_at && format(new Date(order.created_at), 'dd/MM/yyyy HH:mm', { locale: fr })}
                           </p>
                         </div>
                         {getStatusBadge(order.status)}
                       </div>
-
                       <div className="grid grid-cols-3 gap-4 text-sm mb-3">
                         <div>
                           <p className="text-muted-foreground">Fournisseur</p>
                           <p className="font-medium">{order.supplier_name || 'Non défini'}</p>
                         </div>
                         <div>
+                          <p className="text-muted-foreground">Articles</p>
+                          <p className="font-medium">{order.items_count || 0}</p>
+                        </div>
+                        <div>
                           <p className="text-muted-foreground">Coût</p>
                           <p className="font-bold text-primary">{order.supplier_cost?.toFixed(2) || '0.00'}€</p>
                         </div>
-                        <div>
-                          <p className="text-muted-foreground">Erreur</p>
-                          <p className="font-medium text-red-600">{order.error_message || 'Aucune'}</p>
-                        </div>
                       </div>
-
-                      {order.status === 'pending' && autoOrderEnabled && (
-                        <Button size="sm" className="w-full">
-                          <Zap className="h-4 w-4 mr-2" />
-                          Passer Commande Maintenant
-                        </Button>
+                      {order.error_message && (
+                        <div className="text-xs text-destructive mb-2 bg-destructive/10 p-2 rounded">
+                          {order.error_message}
+                        </div>
                       )}
+                      <Button 
+                        size="sm" 
+                        className="w-full"
+                        disabled={isProcessingOrder}
+                        onClick={() => processOrder(order.order_id)}
+                      >
+                        <Zap className="h-4 w-4 mr-2" />
+                        Passer Commande Maintenant
+                      </Button>
                     </div>
                   ))
                 ) : (
@@ -229,61 +231,48 @@ export default function AutoOrderSystem() {
             </Card>
           </TabsContent>
 
-          <TabsContent value="automated" className="space-y-4">
+          <TabsContent value="completed" className="space-y-4">
             <Card>
               <CardHeader>
-                <CardTitle>Commandes Automatisées</CardTitle>
-                <CardDescription>
-                  Commandes passées automatiquement au fournisseur
-                </CardDescription>
+                <CardTitle>Commandes Complétées</CardTitle>
+                <CardDescription>Commandes envoyées au fournisseur avec succès</CardDescription>
               </CardHeader>
               <CardContent className="space-y-3">
-                {isLoadingOrders ? (
-                  <Skeleton className="h-32 w-full" />
-                ) : automatedOrders.length > 0 ? (
-                  automatedOrders.map((order: any) => (
+                {completedOrders.length > 0 ? (
+                  completedOrders.map((order: any) => (
                     <div key={order.id} className="p-4 border rounded-lg">
                       <div className="flex items-center justify-between mb-3">
                         <div>
-                          <h4 className="font-semibold">{order.shopify_order_id || order.id.slice(0, 8)}</h4>
+                          <h4 className="font-semibold">{order.shopify_order_id || order.order_id?.slice(0, 8)}</h4>
                           <p className="text-sm text-muted-foreground">
-                            {order.created_at 
-                              ? format(new Date(order.created_at), 'dd/MM/yyyy HH:mm', { locale: fr })
-                              : 'Date inconnue'}
+                            {order.processed_at && format(new Date(order.processed_at), 'dd/MM/yyyy HH:mm', { locale: fr })}
                           </p>
                         </div>
                         {getStatusBadge(order.status)}
                       </div>
-
-                      <div className="grid grid-cols-2 gap-4 text-sm mb-3">
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                         <div>
                           <p className="text-muted-foreground">Fournisseur</p>
-                          <p className="font-medium">{order.supplier_name || 'Non défini'}</p>
+                          <p className="font-medium">{order.supplier_name}</p>
                         </div>
                         <div>
                           <p className="text-muted-foreground">N° Fournisseur</p>
-                          <p className="font-medium font-mono text-xs">{order.supplier_order_id || 'N/A'}</p>
-                        </div>
-                        <div>
-                          <p className="text-muted-foreground">Coût</p>
-                          <p className="font-bold text-primary">{order.supplier_cost?.toFixed(2) || '0.00'}€</p>
+                          <p className="font-mono text-xs">{order.supplier_order_id || 'N/A'}</p>
                         </div>
                         <div>
                           <p className="text-muted-foreground">Tracking</p>
-                          <p className="font-medium font-mono text-xs">{order.tracking_number || 'En attente'}</p>
+                          <p className="font-mono text-xs">{order.tracking_number || 'En attente'}</p>
+                        </div>
+                        <div>
+                          <p className="text-muted-foreground">Coût</p>
+                          <p className="font-bold text-primary">{order.supplier_cost?.toFixed(2)}€</p>
                         </div>
                       </div>
-
-                      <p className="text-xs text-muted-foreground">
-                        Passée automatiquement le {order.processed_at 
-                          ? format(new Date(order.processed_at), 'dd/MM/yyyy HH:mm', { locale: fr })
-                          : format(new Date(order.created_at), 'dd/MM/yyyy HH:mm', { locale: fr })}
-                      </p>
                     </div>
                   ))
                 ) : (
                   <div className="text-center py-8 text-muted-foreground">
-                    Aucune commande automatisée
+                    Aucune commande complétée
                   </div>
                 )}
               </CardContent>
@@ -294,31 +283,44 @@ export default function AutoOrderSystem() {
             <Card>
               {failedOrders.length > 0 ? (
                 <>
-                  <CardHeader>
-                    <CardTitle>Commandes Échouées</CardTitle>
-                    <CardDescription>
-                      Ces commandes ont rencontré une erreur lors du traitement
-                    </CardDescription>
+                  <CardHeader className="flex flex-row items-center justify-between">
+                    <div>
+                      <CardTitle>Commandes Échouées</CardTitle>
+                      <CardDescription>Erreurs lors du traitement automatique</CardDescription>
+                    </div>
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => retryFailed(undefined as any)}
+                      disabled={isRetrying}
+                    >
+                      <RefreshCw className="h-4 w-4 mr-2" />
+                      {isRetrying ? 'Relance...' : 'Relancer tout'}
+                    </Button>
                   </CardHeader>
                   <CardContent className="space-y-3">
                     {failedOrders.map((order: any) => (
-                      <div key={order.id} className="p-4 border border-red-200 rounded-lg bg-red-50 dark:bg-red-950">
+                      <div key={order.id} className="p-4 border border-destructive/30 rounded-lg bg-destructive/5">
                         <div className="flex items-center justify-between mb-3">
                           <div>
-                            <h4 className="font-semibold">{order.shopify_order_id || order.id.slice(0, 8)}</h4>
+                            <h4 className="font-semibold">{order.shopify_order_id || order.order_id?.slice(0, 8)}</h4>
                             <p className="text-sm text-muted-foreground">
-                              {order.created_at 
-                                ? format(new Date(order.created_at), 'dd/MM/yyyy HH:mm', { locale: fr })
-                                : 'Date inconnue'}
+                              Tentatives: {order.retry_count}/{order.max_retries}
                             </p>
                           </div>
                           {getStatusBadge(order.status)}
                         </div>
-                        <div className="bg-red-100 dark:bg-red-900 p-2 rounded text-sm text-red-800 dark:text-red-200">
+                        <div className="bg-destructive/10 p-2 rounded text-sm text-destructive mb-3">
                           {order.error_message || 'Erreur inconnue'}
                         </div>
-                        <Button size="sm" variant="outline" className="mt-3 w-full">
-                          <Zap className="h-4 w-4 mr-2" />
+                        <Button 
+                          size="sm" 
+                          variant="outline" 
+                          className="w-full"
+                          onClick={() => retryFailed([order.id] as any)}
+                          disabled={isRetrying}
+                        >
+                          <RefreshCw className="h-4 w-4 mr-2" />
                           Réessayer
                         </Button>
                       </div>
@@ -330,7 +332,7 @@ export default function AutoOrderSystem() {
                   <CheckCircle className="h-12 w-12 text-green-600 mx-auto mb-4" />
                   <h3 className="text-lg font-semibold mb-2">Aucune commande échouée</h3>
                   <p className="text-muted-foreground">
-                    Toutes vos commandes automatiques ont été passées avec succès
+                    Toutes les commandes ont été traitées avec succès
                   </p>
                 </CardContent>
               )}
