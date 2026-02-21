@@ -14,7 +14,7 @@ import { ProductAuditBlock } from '@/components/products/ProductAuditBlock'
 import { ProductPerformanceMetrics } from '@/components/products/ProductPerformanceMetrics'
 import { OptimizationHistory } from '@/components/products/OptimizationHistory'
 import { MultiChannelReadiness } from '@/components/products/MultiChannelReadiness'
-import { MainLayout } from '@/components/layout/MainLayout'
+
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -357,20 +357,20 @@ export default function ProductDetailsPage() {
 
   if (isLoading) {
     return (
-      <MainLayout>
+      <>
         <div className="flex items-center justify-center min-h-[400px]">
           <div className="text-center">
             <Loader2 className="h-10 w-10 animate-spin mx-auto text-primary" />
             <p className="mt-4 text-muted-foreground">Chargement du produit...</p>
           </div>
         </div>
-      </MainLayout>
+      </>
     )
   }
 
   if (!product) {
     return (
-      <MainLayout>
+      <>
         <div className="flex flex-col items-center justify-center min-h-[400px] gap-4">
           <div className="w-20 h-20 bg-muted rounded-2xl flex items-center justify-center">
             <Package className="h-10 w-10 text-muted-foreground" />
@@ -386,7 +386,7 @@ export default function ProductDetailsPage() {
             </Button>
           </div>
         </div>
-      </MainLayout>
+      </>
     )
   }
 
@@ -394,7 +394,7 @@ export default function ProductDetailsPage() {
   const mainImage = images[selectedImageIndex] || '/placeholder.svg'
 
   return (
-    <MainLayout>
+    <>
       <div className="min-h-screen">
         {/* Action bar intégrée */}
         <div className="flex items-center justify-between mb-4">
@@ -1010,6 +1010,6 @@ export default function ProductDetailsPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </MainLayout>
+    </>
   )
 }
