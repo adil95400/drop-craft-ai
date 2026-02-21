@@ -4,6 +4,7 @@
  */
 
 import { supabase } from '@/integrations/supabase/client';
+import { fromTable } from '@/integrations/supabase/typedClient';
 
 export interface ProductMetrics {
   // Ventes
@@ -200,8 +201,7 @@ export class ProductAnalyticsService {
     userId: string
   ): Promise<Array<{ date: string; count: number }>> {
     try {
-      const { data, error } = await (supabase as any)
-        .from('product_views')
+      const { data, error } = await fromTable('product_views')
         .select('viewed_at')
         .eq('product_id', productId)
         .gte('viewed_at', new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString())
@@ -235,8 +235,7 @@ export class ProductAnalyticsService {
     date: string;
   }>> {
     try {
-      const { data, error } = await (supabase as any)
-        .from('product_reviews')
+      const { data, error } = await fromTable('product_reviews')
         .select('*')
         .eq('product_id', productId)
         .order('created_at', { ascending: false })

@@ -206,9 +206,9 @@ export function useAutoOrderSettings() {
     mutationFn: async (newSettings: Record<string, unknown>) => {
       if (!user) throw new Error('Not authenticated');
 
-      // Direct insert/update using any to bypass strict typing
+      // Direct insert/update
       const { error } = await (supabase
-        .from('user_settings') as any)
+        .from('user_settings') as unknown as ReturnType<typeof supabase.from>)
         .upsert({
           user_id: user.id,
           updated_at: new Date().toISOString()

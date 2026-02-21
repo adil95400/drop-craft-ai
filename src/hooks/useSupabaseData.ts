@@ -85,8 +85,8 @@ export const useOrders = () => {
       const formattedOrders = data?.map(order => ({
         ...order,
         customer: order.customers ? {
-          name: `${(order.customers as any).first_name || ''} ${(order.customers as any).last_name || ''}`.trim() || 'Client',
-          email: (order.customers as any).email || ''
+          name: `${(order.customers as Record<string, string>).first_name || ''} ${(order.customers as Record<string, string>).last_name || ''}`.trim() || 'Client',
+          email: (order.customers as Record<string, string>).email || ''
         } : undefined,
         items: [
           {
