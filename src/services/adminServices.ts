@@ -649,9 +649,9 @@ export const AdminService = {
           entity_type: 'system',
           severity: 'info',
           description: `Action admin: ${action}`,
-          details: details as any,
+          details: details,
           source: 'admin_panel'
-        } as any);
+        });
       }
     } catch (error) {
       console.error('Error logging admin action:', error);

@@ -72,7 +72,7 @@ export function useAutomationStats() {
 
       if (error) throw error;
       const workflows = data || [];
-      const totalExec = workflows.reduce((sum, w) => sum + ((w as any).execution_count || (w as any).run_count || 0), 0);
+      const totalExec = workflows.reduce((sum, w) => sum + (w.execution_count || w.run_count || 0), 0);
 
       return {
         totalWorkflows: workflows.length,

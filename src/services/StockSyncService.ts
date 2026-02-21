@@ -1,4 +1,5 @@
 import { supabase } from '@/integrations/supabase/client';
+import { fromTable } from '@/integrations/supabase/typedClient';
 import { deduplicationService } from './DeduplicationService';
 
 export interface StockSyncConfig {
@@ -103,8 +104,7 @@ export class StockSyncService {
           const thresholdDate = new Date();
           thresholdDate.setHours(thresholdDate.getHours() - (config.sync_frequency === 'hourly' ? 1 : 24));
 
-          const { data: products, error: productsError } = await (supabase as any)
-            .from('products')
+          const { data: products, error: productsError } = await fromTable('products')
             .select('*')
             .eq('user_id', userId)
             .eq('supplier', supplier.name)
@@ -114,13 +114,12 @@ export class StockSyncService {
 
           // Simulate supplier API calls (replace with real connector logic)
           for (const product of products || []) {
-            const p = product as any;
+            const p = product as Record<string, unknown>;
             const updatedStock = await this.fetchSupplierStock(supplier, p);
             const updatedPrice = await this.fetchSupplierPrice(supplier, p);
 
             // Update local inventory
-            const { error: updateError } = await (supabase as any)
-              .from('products')
+            const { error: updateError } = await fromTable('products')
               .update({
                 stock_quantity: updatedStock,
                 price: updatedPrice,
@@ -164,14 +163,13 @@ export class StockSyncService {
       console.log(`🛍️ Syncing to ${integrations?.length || 0} platforms`);
 
       for (const integration of integrations || []) {
-        const int = integration as any;
-        const platformType = int.platform || int.platform_name || 'unknown';
+        const int = integration as Record<string, unknown>;
+        const platformType = (int.platform || int.platform_name || 'unknown') as string;
         try {
           console.log(`📤 Syncing to ${platformType}`);
 
           // Get products that have been updated locally
-          const { data: products, error: productsError } = await (supabase as any)
-            .from('products')
+          const { data: products, error: productsError } = await fromTable('products')
             .select('*')
             .eq('user_id', userId)
             .eq('status', 'active')
@@ -196,7 +194,7 @@ export class StockSyncService {
           await supabase
             .from('integrations')
             .update({ last_sync_at: new Date().toISOString() })
-            .eq('id', int.id);
+            .eq('id', int.id as string);
 
         } catch (error: any) {
           errors.push(`Platform sync error (${platformType}): ${error?.message || 'Unknown error'}`);

@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import { fromTable } from "@/integrations/supabase/typedClient";
 
 export class OrderFulfillmentService {
   private static instance: OrderFulfillmentService;
@@ -91,8 +92,7 @@ export class OrderFulfillmentService {
     status?: string;
     limit?: number;
   }) {
-    let query = (supabase
-      .from('activity_logs') as any)
+    let query = fromTable('activity_logs')
       .select('*')
       .eq('user_id', userId)
       .order('created_at', { ascending: false });

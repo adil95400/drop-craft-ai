@@ -1,4 +1,5 @@
 import { supabase } from '@/integrations/supabase/client'
+import { fromTable } from '@/integrations/supabase/typedClient'
 
 export interface TikTokShopProduct {
   product_id: string
@@ -149,14 +150,12 @@ export class TikTokShopService {
 
   async getIntegrationStats(integrationId: string) {
     try {
-      const { data: published } = await (supabase as any)
-        .from('published_products')
+      const { data: published } = await fromTable('published_products')
         .select('*')
         .eq('marketplace_id', integrationId)
         .eq('platform', 'tiktok_shop')
 
-      const { data: orders } = await (supabase as any)
-        .from('orders')
+      const { data: orders } = await fromTable('orders')
         .select('*')
         .eq('platform', 'tiktok_shop')
         .gte('order_date', new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString())
