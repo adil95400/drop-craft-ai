@@ -291,20 +291,25 @@ export default function CatalogProductsPage() {
     setIsExporting(true)
     try {
       const items = products || []
-      const headers = ['Nom', 'SKU', 'Prix', 'Coût', 'Marge %', 'Stock', 'Statut', 'Catégorie', 'Source']
+      const headers = ['Nom', 'SKU', 'Prix', 'Coût', 'Marge %', 'Stock', 'Statut', 'Catégorie', 'Marque', 'Source']
+      const esc = (v: string | number | null | undefined) => {
+        const s = String(v ?? '')
+        return s.includes(',') || s.includes('"') || s.includes('\n') ? `"${s.replace(/"/g, '""')}"` : s
+      }
       const rows = items.map(p => {
         const margin = getMargin(p)
-        return [p.name || '', p.sku || '', p.price || 0, p.cost_price || '', margin !== null ? margin.toFixed(1) : '', p.stock_quantity || 0, p.status || '', p.category || '', p.source || '']
+        return [esc(p.name), esc(p.sku), p.price || 0, p.cost_price || '', margin !== null ? margin.toFixed(1) : '', p.stock_quantity || 0, p.status || '', esc(p.category), esc(p.brand), p.source || '']
       })
-      const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n')
-      const blob = new Blob([csv], { type: 'text/csv' })
+      const bom = '\uFEFF'
+      const csv = bom + [headers.join(','), ...rows.map(r => r.join(','))].join('\n')
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' })
       const url = window.URL.createObjectURL(blob)
       const a = document.createElement('a')
       a.href = url
-      a.download = `produits-export-${Date.now()}.csv`
+      a.download = `produits-export-${new Date().toISOString().slice(0, 10)}.csv`
       a.click()
       window.URL.revokeObjectURL(url)
-      toast({ title: 'Export terminé' })
+      toast({ title: 'Export terminé', description: `${items.length} produit(s) exporté(s)` })
     } catch {
       toast({ title: 'Erreur d\'export', variant: 'destructive' })
     } finally {
@@ -639,6 +644,20 @@ export default function CatalogProductsPage() {
                   Créer manuellement
                 </Button>
               </div>
+            </CardContent>
+          </Card>
+        ) : !isLoading && filteredProducts.length === 0 && hasActiveFilters ? (
+          <Card className="border-dashed border-2">
+            <CardContent className="py-12 text-center">
+              <Filter className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+              <h3 className="text-lg font-semibold mb-2">Aucun résultat</h3>
+              <p className="text-muted-foreground mb-4">
+                Aucun produit ne correspond à vos filtres actuels.
+              </p>
+              <Button variant="outline" onClick={resetFilters} className="gap-2">
+                <X className="h-4 w-4" />
+                Réinitialiser les filtres
+              </Button>
             </CardContent>
           </Card>
         ) : (
