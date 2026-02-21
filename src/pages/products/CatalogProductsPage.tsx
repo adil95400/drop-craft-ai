@@ -271,7 +271,7 @@ export default function CatalogProductsPage() {
     if (selectedProducts.length === 0) return
     setIsBulkDeleting(true)
     try {
-      await productsApi.bulkUpdate(selectedProducts, { status: 'deleted' } as any)
+      await productsApi.bulkUpdate(selectedProducts, { status: 'archived' } as any)
       toast({ 
         title: 'Produits supprimés', 
         description: `${selectedProducts.length} produit(s) supprimé(s)` 

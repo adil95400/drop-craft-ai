@@ -56,7 +56,7 @@ export class ProductsService {
   }
 
   static async bulkDelete(ids: string[], _userId: string) {
-    return productsApi.bulkUpdate(ids, { status: 'deleted' } as any)
+    return productsApi.bulkUpdate(ids, { status: 'archived' } as any)
   }
 
   static async bulkUpdateStatus(ids: string[], _userId: string, status: string) {
