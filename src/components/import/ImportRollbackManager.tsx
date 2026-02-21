@@ -96,8 +96,8 @@ export function ImportRollbackManager() {
 
       // Delete products from this import
       if (job.productIds.length > 0) {
-        const { error: deleteError } = await supabase
-          .from('catalog_products')
+        const { error: deleteError } = await (supabase
+          .from('products') as any)
           .delete()
           .in('id', job.productIds);
 

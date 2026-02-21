@@ -123,17 +123,17 @@ export default function ChromeExtensionPage() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return { totalImports: 0, todayImports: 0, successRate: 100, activeTokens: 0 };
 
-      // Count imports from catalog_products
-      const { count: totalImports } = await supabase
-        .from('catalog_products')
+      // Count imports from products
+      const { count: totalImports } = await (supabase
+        .from('products') as any)
         .select('*', { count: 'exact', head: true })
         .eq('user_id', user.id);
 
       const today = new Date();
       today.setHours(0, 0, 0, 0);
 
-      const { count: todayImports } = await supabase
-        .from('catalog_products')
+      const { count: todayImports } = await (supabase
+        .from('products') as any)
         .select('*', { count: 'exact', head: true })
         .eq('user_id', user.id)
         .gte('created_at', today.toISOString());
@@ -160,9 +160,9 @@ export default function ChromeExtensionPage() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return [];
 
-      const { data } = await supabase
-        .from('catalog_products')
-        .select('id, title, source_platform, source_url, created_at, status')
+      const { data } = await (supabase
+        .from('products') as any)
+        .select('id, title, source_type, source_url, created_at, status')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false })
         .limit(10);

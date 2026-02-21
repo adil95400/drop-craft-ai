@@ -26,8 +26,8 @@ export function useProductSourcing() {
   const { data: catalogProducts, isLoading: isLoadingCatalog } = useQuery({
     queryKey: ['catalog-products'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('catalog_products')
+      const { data, error } = await (supabase
+        .from('products') as any)
         .select('*')
         .order('created_at', { ascending: false })
         .limit(50);
@@ -73,10 +73,10 @@ export function useProductSourcing() {
   const { data: favorites, isLoading: isLoadingFavorites } = useQuery({
     queryKey: ['favorite-products'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('catalog_products')
+      const { data, error } = await (supabase
+        .from('products') as any)
         .select('*')
-        .eq('status', 'favorite')
+        .eq('status', 'draft')
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -93,9 +93,9 @@ export function useProductSourcing() {
   // Import product to store
   const importProductMutation = useMutation({
     mutationFn: async (productId: string) => {
-      const { error } = await supabase
-        .from('catalog_products')
-        .update({ is_imported: true })
+      const { error } = await (supabase
+        .from('products') as any)
+        .update({ status: 'active' })
         .eq('id', productId);
 
       if (error) throw error;
@@ -119,9 +119,9 @@ export function useProductSourcing() {
   // Add to favorites
   const addToFavoritesMutation = useMutation({
     mutationFn: async (productId: string) => {
-      const { error } = await supabase
-        .from('catalog_products')
-        .update({ status: 'favorite' })
+      const { error } = await (supabase
+        .from('products') as any)
+        .update({ status: 'draft' })
         .eq('id', productId);
 
       if (error) throw error;
@@ -140,8 +140,8 @@ export function useProductSourcing() {
   const searchProducts = async (query: string) => {
     if (!query.trim()) return catalogProducts;
     
-    const { data, error } = await supabase
-      .from('catalog_products')
+    const { data, error } = await (supabase
+      .from('products') as any)
       .select('*')
       .ilike('title', `%${query}%`)
       .order('created_at', { ascending: false })

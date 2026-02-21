@@ -48,12 +48,12 @@ export function usePremiumSuppliers() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) return []
 
-      // Use catalog_products which exists in the schema
-      const { data, error } = await supabase
-        .from('catalog_products')
+      // Use products (canonical table)
+      const { data, error } = await (supabase
+        .from('products') as any)
         .select('*')
         .eq('user_id', user.id)
-        .eq('status', 'available')
+        .eq('status', 'active')
         .limit(100)
 
       if (error) throw error

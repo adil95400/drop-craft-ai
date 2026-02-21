@@ -54,9 +54,9 @@ export const useRealWinners = (filters?: {
   } = useQuery({
     queryKey: ['real-winners', filters],
     queryFn: async (): Promise<WinningProduct[]> => {
-      // Query catalog_products for trending items
-      const { data, error } = await supabase
-        .from('catalog_products')
+      // Query products for trending items
+      const { data, error } = await (supabase
+        .from('products') as any)
         .select('*')
         .order('created_at', { ascending: false })
         .limit(50)
@@ -134,8 +134,8 @@ export const useRealWinners = (filters?: {
   // Analyze new winners with AI - real query to catalog
   const analyzeWinners = useMutation({
     mutationFn: async () => {
-      const { count } = await supabase
-        .from('catalog_products')
+      const { count } = await (supabase
+        .from('products') as any)
         .select('*', { count: 'exact', head: true })
       
       return {

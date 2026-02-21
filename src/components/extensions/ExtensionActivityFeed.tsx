@@ -38,10 +38,10 @@ export function ExtensionActivityFeed() {
     queryFn: async () => {
       if (!user) return [];
 
-      // Get from catalog_products (imports via extension)
-      const { data: imports } = await supabase
-        .from('catalog_products')
-        .select('id, title, source_platform, source_url, created_at, status')
+      // Get from products (imports via extension)
+      const { data: imports } = await (supabase
+        .from('products') as any)
+        .select('id, title, source_type, source_url, created_at, status')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false })
         .limit(30);

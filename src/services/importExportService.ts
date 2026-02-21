@@ -223,7 +223,7 @@ class ImportExportService {
       
       // Compter et logger les résultats
       let totalDeleted = 0
-      const tableNames = ['products', 'imported_products', 'catalog_products']
+      const tableNames = ['products', 'imported_products']
       
       results.forEach((result, index) => {
         if (result.status === 'fulfilled' && !result.value.error) {
@@ -410,8 +410,8 @@ class ImportExportService {
   async importFromCatalog(productIds: string[], userId: string): Promise<{ success: boolean; imported: number; errors: string[] }> {
     try {
       // Récupérer les produits du catalogue
-      const { data: catalogProducts, error: fetchError } = await supabase
-        .from('catalog_products')
+      const { data: catalogProducts, error: fetchError } = await (supabase
+        .from('products') as any)
         .select('*')
         .in('id', productIds)
       
