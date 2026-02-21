@@ -20,7 +20,7 @@ import { Separator } from '@/components/ui/separator'
 import { 
   ImageIcon, Trash2, Check, X, ShoppingCart, 
   Package, Eye, Copy, Plus, GripVertical, RotateCcw,
-  ZoomIn, Loader2, Tag, DollarSign, FileText, Film
+  ZoomIn, Loader2, Tag, DollarSign, FileText, Film, Star, MessageSquare, Play
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { toast } from '@/hooks/use-toast'
@@ -40,6 +40,8 @@ interface ProductPreviewData {
   source_url: string
   variants?: any[]
   videos?: string[]
+  extracted_reviews?: any[]
+  reviews?: { rating: number | null; count: number | null }
 }
 
 interface ProductPreviewEditModalProps {
@@ -545,9 +547,113 @@ export function ProductPreviewEditModal({
                   <Separator className="bg-border/40" />
                   <ModalSection icon={Film} title="Vidéos"
                     badge={<Badge variant="secondary" className="text-xs">{editedProduct.videos.length}</Badge>}>
-                    <p className="text-sm text-muted-foreground">
-                      Les vidéos seront importées avec le produit
-                    </p>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      {editedProduct.videos.map((video, i) => (
+                        <div key={i} className="relative rounded-xl overflow-hidden border border-border/50 bg-muted/30">
+                          {(typeof video === 'string' ? video : '').includes('.m3u8') ? (
+                            <div className="flex items-center gap-3 p-3">
+                              <div className="p-2 rounded-lg bg-primary/10">
+                                <Play className="h-4 w-4 text-primary" />
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <p className="text-xs font-medium truncate">Vidéo HLS #{i + 1}</p>
+                                <p className="text-[10px] text-muted-foreground truncate">{typeof video === 'string' ? video : ''}</p>
+                              </div>
+                            </div>
+                          ) : (
+                            <video
+                              src={typeof video === 'string' ? video : ''}
+                              controls
+                              preload="metadata"
+                              className="w-full aspect-video object-cover"
+                              onError={(e) => {
+                                const target = e.currentTarget
+                                target.style.display = 'none'
+                                const parent = target.parentElement
+                                if (parent) {
+                                  const fallback = document.createElement('div')
+                                  fallback.className = 'flex items-center gap-3 p-3'
+                                  fallback.innerHTML = `<div class="p-2 rounded-lg bg-primary/10"><svg class="h-4 w-4 text-primary" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="6 3 20 12 6 21 6 3"/></svg></div><span class="text-xs text-muted-foreground truncate">Vidéo #${i + 1}</span>`
+                                  parent.appendChild(fallback)
+                                }
+                              }}
+                            />
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </ModalSection>
+                </>
+              )}
+
+              {/* ── Section: Reviews ── */}
+              {editedProduct.extracted_reviews && editedProduct.extracted_reviews.length > 0 && (
+                <>
+                  <Separator className="bg-border/40" />
+                  <ModalSection icon={MessageSquare} title="Avis clients"
+                    badge={
+                      <div className="flex items-center gap-1.5">
+                        <Badge variant="secondary" className="text-xs">{editedProduct.extracted_reviews.length}</Badge>
+                        {editedProduct.reviews?.rating && (
+                          <Badge variant="outline" className="text-xs flex items-center gap-1">
+                            <Star className="h-3 w-3 fill-amber-500 text-amber-500" />
+                            {editedProduct.reviews.rating.toFixed(1)}
+                          </Badge>
+                        )}
+                      </div>
+                    }
+                  >
+                    <div className="space-y-2.5 max-h-64 overflow-y-auto pr-1">
+                      {editedProduct.extracted_reviews.slice(0, 10).map((review: any, i: number) => (
+                        <motion.div
+                          key={i}
+                          initial={{ opacity: 0, x: -8 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: i * 0.03 }}
+                          className="p-3 rounded-xl border border-border/40 bg-background/60 space-y-1.5"
+                        >
+                          <div className="flex items-center justify-between gap-2">
+                            <span className="text-xs font-medium text-foreground">
+                              {review.customer_name || 'Client'}
+                            </span>
+                            <div className="flex items-center gap-0.5">
+                              {Array.from({ length: 5 }).map((_, s) => (
+                                <Star
+                                  key={s}
+                                  className={cn(
+                                    "h-3 w-3",
+                                    s < (review.rating || 0)
+                                      ? "fill-amber-500 text-amber-500"
+                                      : "text-muted-foreground/30"
+                                  )}
+                                />
+                              ))}
+                            </div>
+                          </div>
+                          {review.title && (
+                            <p className="text-xs font-medium text-foreground/90">{review.title}</p>
+                          )}
+                          {review.comment && (
+                            <p className="text-xs text-muted-foreground line-clamp-3">{review.comment}</p>
+                          )}
+                          <div className="flex items-center gap-2 text-[10px] text-muted-foreground/60">
+                            {review.verified_purchase && (
+                              <Badge variant="outline" className="text-[10px] h-4 px-1.5 border-green-500/30 text-green-600">
+                                Achat vérifié
+                              </Badge>
+                            )}
+                            {review.review_date && (
+                              <span>{new Date(review.review_date).toLocaleDateString('fr-FR')}</span>
+                            )}
+                          </div>
+                        </motion.div>
+                      ))}
+                      {editedProduct.extracted_reviews.length > 10 && (
+                        <p className="text-xs text-center text-muted-foreground py-2">
+                          +{editedProduct.extracted_reviews.length - 10} autres avis seront importés
+                        </p>
+                      )}
+                    </div>
                   </ModalSection>
                 </>
               )}
@@ -576,7 +682,7 @@ export function ProductPreviewEditModal({
               ) : (
                 <>
                   <ShoppingCart className="h-4 w-4 mr-2" />
-                  Importer avec {validSelectedCount} image{validSelectedCount > 1 ? 's' : ''}
+                  Importer ({validSelectedCount} img{editedProduct.videos && editedProduct.videos.length > 0 ? `, ${editedProduct.videos.length} vid` : ''}{editedProduct.extracted_reviews && editedProduct.extracted_reviews.length > 0 ? `, ${editedProduct.extracted_reviews.length} avis` : ''})
                 </>
               )}
             </Button>

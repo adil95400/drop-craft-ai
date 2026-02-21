@@ -51,6 +51,8 @@ interface ProductPreview {
   source_url: string
   variants?: any[]
   videos?: string[]
+  extracted_reviews?: any[]
+  reviews?: { rating: number | null; count: number | null }
 }
 
 interface QueuedUrl {
