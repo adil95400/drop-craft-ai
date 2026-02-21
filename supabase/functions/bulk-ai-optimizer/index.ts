@@ -12,10 +12,51 @@ serve(async (req) => {
   }
 
   try {
-    const { userId, productIds, action, batchSize = 10 } = await req.json()
+    const body = await req.json()
 
-    if (!userId || !productIds || !action) {
+    // Support both calling conventions
+    let userId: string
+    let productIds: string[]
+    let action: string
+    let batchSize = 10
+
+    if (body.userId && body.productIds && body.action) {
+      // Direct format from BulkAIActions
+      userId = body.userId
+      productIds = body.productIds
+      action = body.action
+      batchSize = body.batchSize || 10
+    } else if (body.filter_criteria && body.enrichment_types) {
+      // Format from useApiAI.bulkEnrich
+      // Extract auth user from JWT
+      const authHeader = req.headers.get('Authorization')
+      if (!authHeader) throw new Error('Missing authorization')
+      const token = authHeader.replace('Bearer ', '')
+      const supabaseAuth = createClient(
+        Deno.env.get('SUPABASE_URL') ?? '',
+        Deno.env.get('SUPABASE_ANON_KEY') ?? ''
+      )
+      const { data: { user }, error: userError } = await supabaseAuth.auth.getUser(token)
+      if (userError || !user) throw new Error('Invalid session')
+
+      userId = user.id
+      productIds = body.filter_criteria?.product_ids || []
+      // Map enrichment_types to action
+      const types = body.enrichment_types || []
+      if (types.includes('full')) action = 'full_optimization'
+      else if (types.includes('seo')) action = 'generate_seo'
+      else if (types.includes('description')) action = 'rewrite_descriptions'
+      else if (types.includes('title')) action = 'rewrite_titles'
+      else if (types.includes('attributes')) action = 'complete_attributes'
+      else if (types.includes('pricing')) action = 'optimize_pricing'
+      else action = 'full_optimization'
+      batchSize = body.limit || 10
+    } else {
       throw new Error('Missing required parameters')
+    }
+
+    if (!userId || !productIds || productIds.length === 0) {
+      throw new Error('Missing required parameters: userId and productIds are required')
     }
 
     const supabaseClient = createClient(
