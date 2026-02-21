@@ -294,12 +294,7 @@ const Security = {
     'product_detected', 'ping', 'get_debug_logs', 'get_diagnostics',
     'get_import_logs', 'clear_import_logs',
     'preview_product', 'check_duplicate', 'ai_merge', 'confirm_import',
-    'get_capabilities'
-    'get_settings', 'save_settings', 'sync_settings',
-    'product_detected', 'ping', 'get_debug_logs', 'get_diagnostics',
-    'get_import_logs', 'clear_import_logs',
-    // P3: New message types
-    'preview_product', 'check_duplicate', 'ai_merge', 'confirm_import'
+    'get_capabilities', 'import_reviews'
   ],
 
   _rateLimits: new Map(),
@@ -418,6 +413,7 @@ async function handleMessage(message, sender) {
     case 'check_duplicate': return checkDuplicate(data);
     case 'ai_merge': return aiMergeProduct(data);
     case 'confirm_import': return confirmImport(data);
+    case 'import_reviews': return importReviews(data);
     default:
       return { success: false, error: `Unknown action: ${action}`, code: 'UNKNOWN_ACTION' };
   }
@@ -494,6 +490,52 @@ async function previewProduct(tabId) {
   } catch (error) {
     Logger.error('[PREVIEW] Error:', error.message);
     return { success: false, error: error.message, code: 'PREVIEW_ERROR' };
+  }
+}
+
+// ============================================
+// Import Reviews — Send extracted reviews to backend
+// ============================================
+async function importReviews(data) {
+  const session = await StorageManager.getSession();
+  const token = session?.access_token || await StorageManager.get('extension_token');
+
+  if (!token) return { success: false, error: 'Non authentifié', code: 'AUTH_REQUIRED' };
+  if (!data?.reviews || !Array.isArray(data.reviews) || data.reviews.length === 0) {
+    return { success: false, error: 'Aucun avis à importer', code: 'INVALID_DATA' };
+  }
+
+  try {
+    const startTime = Date.now();
+    const response = await fetch(`${SUPABASE_URL}/functions/v1/extension-review-importer`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': SUPABASE_ANON_KEY,
+        'x-extension-token': token,
+        ...(session?.access_token ? { 'Authorization': `Bearer ${session.access_token}` } : {})
+      },
+      body: JSON.stringify({
+        source: 'extension',
+        platform: data.platform || 'unknown',
+        product_id: data.product_id || null,
+        reviews: data.reviews.slice(0, 200)
+      })
+    });
+
+    const result = await response.json();
+    Logger.api('POST', 'extension-review-importer', response.status, Date.now() - startTime);
+
+    if (!response.ok || !result.success) {
+      Logger.error('[REVIEWS] Import failed:', result.error);
+      return { success: false, error: result.error || 'Erreur serveur', code: 'IMPORT_FAILED' };
+    }
+
+    Logger.info(`[REVIEWS] Imported ${result.imported} reviews from ${data.platform}`);
+    return { success: true, imported: result.imported, total: data.reviews.length };
+  } catch (error) {
+    Logger.error('[REVIEWS] Network error:', error.message);
+    return { success: false, error: error.message, code: 'NETWORK_ERROR' };
   }
 }
 
