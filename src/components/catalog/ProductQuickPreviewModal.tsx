@@ -172,21 +172,23 @@ export function ProductQuickPreviewModal({
     try {
       const { data } = await supabase
         .from('imported_products')
-        .select('metadata')
+        .select('video_urls, videos, reviews_summary, specifications, variants')
         .eq('id', productId)
         .maybeSingle()
 
       if (data) {
-        const metadata = (data as any).metadata as any
-        if (metadata) {
-          setExtendedData({
-            videos: metadata.videos || [],
-            extracted_reviews: metadata.extracted_reviews || [],
-            reviews: metadata.reviews || null,
-            variants: metadata.variants || [],
-            specifications: metadata.specifications || {},
-          })
-        }
+        const d = data as any
+        const allVideos = [
+          ...(d.video_urls || []),
+          ...(d.videos || []),
+        ]
+        setExtendedData({
+          videos: allVideos,
+          extracted_reviews: [],
+          reviews: d.reviews_summary || null,
+          variants: d.variants || [],
+          specifications: d.specifications || {},
+        })
       }
     } catch {
       // Not critical, just won't show extended data
@@ -756,6 +758,7 @@ export function ProductQuickPreviewModal({
         {zoomedImage && (
           <Dialog open={!!zoomedImage} onOpenChange={() => setZoomedImage(null)}>
             <DialogContent className="max-w-4xl p-2 bg-background/95 backdrop-blur-xl">
+              <DialogTitle className="sr-only">Zoom image</DialogTitle>
               <img src={zoomedImage} alt="Preview" className="w-full h-auto max-h-[85vh] object-contain rounded-lg" />
             </DialogContent>
           </Dialog>
