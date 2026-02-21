@@ -343,10 +343,13 @@ function MobileCardView({
                       Stock: {product.stock_quantity ?? 0}
                     </Badge>
                     <Badge 
-                      variant={product.status === 'active' ? 'default' : 'outline'}
+                      variant={product.status === 'active' ? 'default' : product.status === 'draft' ? 'secondary' : 'outline'}
                       className="text-xs"
                     >
-                      {product.status === 'active' ? 'Actif' : 'Inactif'}
+                      {product.status === 'active' ? 'Actif' : 
+                       product.status === 'draft' ? 'Brouillon' : 
+                       product.status === 'paused' ? 'En pause' : 
+                       product.status === 'archived' ? 'Archivé' : 'Inactif'}
                     </Badge>
                     <HealthIndicator product={product} />
                   </div>
@@ -409,6 +412,7 @@ function DesktopTableView({
             <SortableHeader label="Marge" field="margin" currentField={sortField} direction={sortDirection} onSort={onSort} className="text-center" />
             <SortableHeader label="Stock" field="stock_quantity" currentField={sortField} direction={sortDirection} onSort={onSort} className="text-center" />
             <TableHead className="text-center">Statut</TableHead>
+            <TableHead>Marque</TableHead>
             <TableHead className="text-center">Variantes</TableHead>
             <TableHead className="text-center">Santé</TableHead>
             <TableHead>Source</TableHead>
@@ -468,12 +472,22 @@ function DesktopTableView({
                 <Badge variant={
                   product.status === 'active' ? 'default' : 
                   product.status === 'draft' ? 'secondary' : 
+                  product.status === 'paused' ? 'outline' :
                   product.status === 'archived' ? 'outline' : 'outline'
                 }>
                   {product.status === 'active' ? 'Actif' : 
                    product.status === 'draft' ? 'Brouillon' : 
+                   product.status === 'paused' ? 'En pause' :
                    product.status === 'archived' ? 'Archivé' : 'Inactif'}
                 </Badge>
+              </TableCell>
+              {/* Brand */}
+              <TableCell>
+                {product.brand ? (
+                  <span className="text-sm font-medium truncate max-w-[100px] block">{product.brand}</span>
+                ) : (
+                  <span className="text-sm text-muted-foreground">—</span>
+                )}
               </TableCell>
               {/* Variants count */}
               <TableCell className="text-center">
@@ -553,7 +567,7 @@ function DesktopTableView({
           ))}
           {products.length === 0 && (
             <TableRow>
-              <TableCell colSpan={10} className="text-center py-12">
+              <TableCell colSpan={11} className="text-center py-12">
                 <Package className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
                 <p className="text-muted-foreground font-medium">Aucun produit trouvé</p>
                 <p className="text-sm text-muted-foreground mt-1">Importez vos premiers produits ou ajustez vos filtres</p>
@@ -588,31 +602,7 @@ export function ResponsiveProductsTable({
   }
 
   return (
-    <div className="space-y-4">
-      {/* Barre d'actions bulk */}
-      {selectedProducts.length > 0 && (
-        <div className="flex items-center justify-between p-3 sm:p-4 bg-primary/10 border border-primary/20 rounded-lg">
-          <span className="text-sm font-medium">
-            {selectedProducts.length} produit(s) sélectionné(s)
-          </span>
-          <div className="flex gap-2">
-            <Button 
-              variant="outline" 
-              size="sm"
-              onClick={() => onSelectionChange?.([])}
-            >
-              Annuler
-            </Button>
-            {onBulkPublish && (
-              <Button size="sm" onClick={onBulkPublish}>
-                <Upload className="h-4 w-4 mr-2" />
-                <span className="hidden sm:inline">Publier</span>
-              </Button>
-            )}
-          </div>
-        </div>
-      )}
-
+    <div>
       {/* Vue adaptative */}
       {isMobile ? (
         <MobileCardView
