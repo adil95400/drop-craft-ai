@@ -20,10 +20,12 @@ import {
   Building2,
   ExternalLink,
   Sparkles,
-  RefreshCw
+  RefreshCw,
+  Eye
 } from 'lucide-react'
 import { useDraftProducts, DraftProduct } from '@/hooks/catalog/useDraftProducts'
 import { cn } from '@/lib/utils'
+import { ProductQuickPreviewModal, type QuickPreviewProduct } from './ProductQuickPreviewModal'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -41,11 +43,12 @@ interface DraftProductCardProps {
   issues: string[]
   onValidate: () => void
   onDelete: () => void
+  onPreview: () => void
   isValidating: boolean
   isDeleting: boolean
 }
 
-function DraftProductCard({ product, issues, onValidate, onDelete, isValidating, isDeleting }: DraftProductCardProps) {
+function DraftProductCard({ product, issues, onValidate, onDelete, onPreview, isValidating, isDeleting }: DraftProductCardProps) {
   const getIssueIcon = (issue: string) => {
     if (issue.toLowerCase().includes('image')) return <ImageIcon className="h-3 w-3" />
     if (issue.toLowerCase().includes('description')) return <FileText className="h-3 w-3" />
@@ -105,6 +108,10 @@ function DraftProductCard({ product, issues, onValidate, onDelete, isValidating,
 
           {/* Actions */}
           <div className="flex items-center gap-2 pt-1">
+            <Button size="sm" variant="outline" onClick={onPreview} className="h-8">
+              <Eye className="h-3 w-3 mr-1" />
+              Aperçu
+            </Button>
             <Button 
               size="sm" 
               onClick={onValidate}
@@ -164,6 +171,8 @@ function DraftProductCard({ product, issues, onValidate, onDelete, isValidating,
 }
 
 export function DraftProductsPanel() {
+  const [previewProduct, setPreviewProduct] = useState<QuickPreviewProduct | null>(null)
+  const [previewOpen, setPreviewOpen] = useState(false)
   const { 
     draftProducts, 
     stats, 
@@ -174,6 +183,25 @@ export function DraftProductsPanel() {
     isValidating,
     isDeleting
   } = useDraftProducts()
+
+  const openPreview = (product: DraftProduct) => {
+    setPreviewProduct({
+      id: product.id,
+      name: product.name,
+      description: product.description,
+      price: product.price,
+      cost_price: product.cost_price,
+      sku: product.sku,
+      image_urls: product.image_urls,
+      category: product.category,
+      brand: product.brand,
+      status: product.status,
+      source_url: product.source_url,
+      source_platform: product.source_platform,
+      created_at: product.created_at,
+    })
+    setPreviewOpen(true)
+  }
 
   if (isLoading) {
     return (
@@ -262,6 +290,7 @@ export function DraftProductsPanel() {
                 issues={parseImportNotes(product.import_notes)}
                 onValidate={() => validateDraft(product.id)}
                 onDelete={() => deleteDraft(product.id)}
+                onPreview={() => openPreview(product)}
                 isValidating={isValidating}
                 isDeleting={isDeleting}
               />
@@ -270,5 +299,17 @@ export function DraftProductsPanel() {
         </ScrollArea>
       </CardContent>
     </Card>
+
+      <ProductQuickPreviewModal
+        open={previewOpen}
+        onOpenChange={setPreviewOpen}
+        product={previewProduct}
+        onValidate={(id) => {
+          validateDraft(id)
+          setPreviewOpen(false)
+        }}
+        isValidating={isValidating}
+      />
+    </>
   )
 }

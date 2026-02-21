@@ -11,3 +11,7 @@ export { CatalogHealthAIPanel } from './CatalogHealthAIPanel'
 
 // Phase 3: Draft Products Support
 export { DraftProductsPanel } from './DraftProductsPanel'
+
+// Phase 4: Quick Preview Modal
+export { ProductQuickPreviewModal } from './ProductQuickPreviewModal'
+export type { QuickPreviewProduct } from './ProductQuickPreviewModal'
