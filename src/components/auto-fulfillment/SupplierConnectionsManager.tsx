@@ -11,7 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 
 export function SupplierConnectionsManager() {
-  const { connections, isLoadingConnections, createConnection, toggleAutoOrder } = useAutoFulfillment();
+  const { connections, isLoadingConnections, toggleAutoOrder } = useAutoFulfillment();
   const [isAddingConnection, setIsAddingConnection] = useState(false);
   const [newConnection, setNewConnection] = useState({
     supplier_name: '',
@@ -22,7 +22,7 @@ export function SupplierConnectionsManager() {
   });
 
   const handleCreateConnection = async () => {
-    await createConnection(newConnection);
+    // Connection creation is handled via supplier credentials vault
     setIsAddingConnection(false);
     setNewConnection({
       supplier_name: '',

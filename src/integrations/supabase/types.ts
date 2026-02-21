@@ -1255,47 +1255,62 @@ export type Database = {
       }
       auto_order_queue: {
         Row: {
+          carrier: string | null
           created_at: string
           error_message: string | null
+          estimated_delivery: string | null
           id: string
           max_retries: number
           next_retry_at: string | null
           order_id: string
           payload: Json
+          processed_at: string | null
           result: Json | null
           retry_count: number
           status: string
+          supplier_order_id: string | null
           supplier_type: string
+          tracking_number: string | null
           updated_at: string
           user_id: string
         }
         Insert: {
+          carrier?: string | null
           created_at?: string
           error_message?: string | null
+          estimated_delivery?: string | null
           id?: string
           max_retries?: number
           next_retry_at?: string | null
           order_id: string
           payload?: Json
+          processed_at?: string | null
           result?: Json | null
           retry_count?: number
           status?: string
+          supplier_order_id?: string | null
           supplier_type?: string
+          tracking_number?: string | null
           updated_at?: string
           user_id: string
         }
         Update: {
+          carrier?: string | null
           created_at?: string
           error_message?: string | null
+          estimated_delivery?: string | null
           id?: string
           max_retries?: number
           next_retry_at?: string | null
           order_id?: string
           payload?: Json
+          processed_at?: string | null
           result?: Json | null
           retry_count?: number
           status?: string
+          supplier_order_id?: string | null
           supplier_type?: string
+          tracking_number?: string | null
           updated_at?: string
           user_id?: string
         }
@@ -6404,7 +6419,11 @@ export type Database = {
           service_code: string | null
           shipped_at: string | null
           shipping_cost: number | null
+          shopify_fulfillment_id: string | null
+          shopify_synced_at: string | null
           status: string | null
+          supplier_order_id: string | null
+          supplier_order_status: string | null
           tracking_events: Json | null
           tracking_number: string | null
           updated_at: string | null
@@ -6425,7 +6444,11 @@ export type Database = {
           service_code?: string | null
           shipped_at?: string | null
           shipping_cost?: number | null
+          shopify_fulfillment_id?: string | null
+          shopify_synced_at?: string | null
           status?: string | null
+          supplier_order_id?: string | null
+          supplier_order_status?: string | null
           tracking_events?: Json | null
           tracking_number?: string | null
           updated_at?: string | null
@@ -6446,7 +6469,11 @@ export type Database = {
           service_code?: string | null
           shipped_at?: string | null
           shipping_cost?: number | null
+          shopify_fulfillment_id?: string | null
+          shopify_synced_at?: string | null
           status?: string | null
+          supplier_order_id?: string | null
+          supplier_order_status?: string | null
           tracking_events?: Json | null
           tracking_number?: string | null
           updated_at?: string | null

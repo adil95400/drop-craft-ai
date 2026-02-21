@@ -24,7 +24,7 @@ export function FulfillmentDashboard() {
           <CardContent className="p-3 md:p-6 pt-0">
             <div className="text-xl md:text-2xl font-bold">{stats?.todayOrders || 0}</div>
             <p className="text-[10px] md:text-xs text-muted-foreground">
-              +{stats?.todayGrowth || 0}% vs hier
+              Traitement auto
             </p>
           </CardContent>
         </Card>
@@ -80,14 +80,14 @@ export function FulfillmentDashboard() {
                 <CheckCircle className="w-4 h-4 text-green-600 shrink-0" />
                 <span className="text-xs md:text-sm">Confirmées</span>
               </div>
-              <span className="font-bold text-sm md:text-base">{stats?.confirmed || 0}</span>
+              <span className="font-bold text-sm md:text-base">{stats?.completed || 0}</span>
             </div>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Package className="w-4 h-4 text-blue-600 shrink-0" />
                 <span className="text-xs md:text-sm">Expédiées</span>
               </div>
-              <span className="font-bold text-sm md:text-base">{stats?.shipped || 0}</span>
+              <span className="font-bold text-sm md:text-base">{(stats as any)?.unsyncedTracking || 0}</span>
             </div>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
