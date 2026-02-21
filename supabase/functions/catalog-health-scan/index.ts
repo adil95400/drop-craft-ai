@@ -72,7 +72,7 @@ function scoreProduct(p: any) {
   // Identifiers (0-100)
   let idScore = 0
   if (p.sku) idScore += 30
-  if (p.category || p.category_id) idScore += 25
+  if (p.category) idScore += 25
   if (p.brand) idScore += 20
   if (p.barcode) idScore += 15
   if ((p.tags?.length || 0) >= 2) idScore += 10
@@ -87,8 +87,8 @@ function scoreProduct(p: any) {
   const seoDesc = p.seo_description || ''
   if (seoDesc.length >= 100 && seoDesc.length <= 160) seoScore += 30
   else if (seoDesc.length > 0) seoScore += 15
-  if ((p.seo_keywords?.length || 0) >= 3) seoScore += 20
-  else if ((p.tags?.length || 0) >= 3) seoScore += 8
+  if ((p.tags?.length || 0) >= 3) seoScore += 20
+  else if ((p.tags?.length || 0) >= 1) seoScore += 8
   const titleWords = title.toLowerCase().split(/\s+/).filter((w: string) => w.length > 3)
   const descLower = desc.toLowerCase()
   const overlap = titleWords.filter((w: string) => descLower.includes(w)).length
@@ -161,7 +161,7 @@ Deno.serve(async (req) => {
       // Fetch all user products
       const { data: products, error: pErr } = await supabase
         .from('products')
-        .select('id, title, name, description, image_url, images, price, cost_price, stock_quantity, sku, barcode, category, category_id, brand, tags, seo_title, seo_description, seo_keywords, status')
+        .select('id, title, name, description, image_url, images, price, cost_price, stock_quantity, sku, barcode, category, brand, tags, seo_title, seo_description, status')
         .eq('user_id', user.id)
         .limit(1000)
 
