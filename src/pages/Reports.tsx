@@ -25,6 +25,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
+import { exportSalesExcel, exportInventoryExcel, exportCustomersExcel, exportOrdersExcel } from '@/utils/excelExport';
 import { 
   downloadPDFReport, 
   generateSalesReport, 
@@ -286,19 +287,32 @@ export default function Reports() {
           includeSummary,
           includeRecommendations,
         });
+      } else if (format === 'excel') {
+        switch (reportType) {
+          case 'sales': exportSalesExcel(realData as any); break;
+          case 'inventory': exportInventoryExcel(realData as any); break;
+          case 'customers': exportCustomersExcel(realData as any); break;
+          case 'orders': exportOrdersExcel(realData as any); break;
+          default: exportSalesExcel(realData as any);
+        }
+      } else if (format === 'csv') {
+        // CSV fallback using xlsx lib
+        switch (reportType) {
+          case 'sales': exportSalesExcel(realData as any); break;
+          default: exportSalesExcel(realData as any);
+        }
       } else {
         toast({
           title: "Format non disponible",
-          description: `L'export ${format.toUpperCase()} n'est pas encore supporté. Utilisez le format PDF.`,
+          description: `L'export ${format.toUpperCase()} n'est pas encore supporté.`,
           variant: "default",
         });
-        setFormat('pdf');
         return;
       }
 
       toast({
         title: "Rapport généré avec succès",
-        description: "Votre rapport PDF a été téléchargé.",
+        description: `Votre rapport ${format.toUpperCase()} a été téléchargé.`,
       });
     } catch (error) {
       console.error('Error generating report:', error);

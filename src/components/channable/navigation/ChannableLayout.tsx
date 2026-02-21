@@ -9,6 +9,7 @@ import { ChannableHeader } from './ChannableHeader'
 import { OnboardingModal } from '@/components/onboarding/UnifiedOnboarding'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { MobileHeader, MobileNav } from '@/components/mobile/MobileNav'
+import { SkipToContent } from '@/components/a11y/SkipToContent'
 import { cn } from '@/lib/utils'
 
 interface ChannableLayoutProps {
@@ -23,8 +24,9 @@ export function ChannableLayout({ children, className }: ChannableLayoutProps) {
   if (isMobile) {
     return (
       <div className="min-h-screen bg-background flex flex-col">
+        <SkipToContent />
         <MobileHeader />
-        <main className="flex-1 pb-20 overflow-auto">
+        <main id="main-content" className="flex-1 pb-20 overflow-auto" role="main">
           <div className="container max-w-screen-sm mx-auto px-3 py-3">
             {children}
           </div>
@@ -38,6 +40,7 @@ export function ChannableLayout({ children, className }: ChannableLayoutProps) {
   // Version desktop avec sidebar Channable
   return (
     <SidebarProvider defaultOpen={true}>
+      <SkipToContent />
       <div className="min-h-screen flex w-full">
         <ChannableSidebar />
         
@@ -45,11 +48,11 @@ export function ChannableLayout({ children, className }: ChannableLayoutProps) {
           <ChannableHeader />
           
           {/* Contenu scrollable */}
-          <div className={cn("flex-1 overflow-auto bg-background", className)}>
+          <main id="main-content" className={cn("flex-1 overflow-auto bg-background", className)} role="main">
             <div className="p-4 sm:p-6">
               {children}
             </div>
-          </div>
+          </main>
         </SidebarInset>
       </div>
       

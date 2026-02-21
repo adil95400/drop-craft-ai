@@ -12,6 +12,7 @@
  */
 
 import { useState, useEffect, useCallback, useMemo, lazy, Suspense } from 'react';
+const RealtimeKPIGridLazy = lazy(() => import('./RealtimeKPIGrid').then(m => ({ default: m.RealtimeKPIGrid })));
 import { useReducedMotion } from '@/hooks/useReducedMotion';
 import { useKeyboardShortcut } from '@/hooks/useKeyboardShortcut';
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core';
@@ -440,6 +441,11 @@ export function ChannableDashboard() {
 
           {/* Active Jobs Banner */}
           <ActiveJobsBanner />
+
+          {/* Realtime KPIs with live Supabase subscription */}
+          <Suspense fallback={<Skeleton className="h-32 w-full" />}>
+            <RealtimeKPIGridLazy />
+          </Suspense>
 
           {/* Quick Stats Grid Premium - DONNÉES DYNAMIQUES */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4" role="region" aria-label="Statistiques rapides">
