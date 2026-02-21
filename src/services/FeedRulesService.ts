@@ -303,37 +303,63 @@ export const FeedRulesService = {
     return (data || []).map(transformExecution);
   },
 
-  async executeRule(ruleId: string, feedId?: string): Promise<FeedRuleExecution> {
-    // For now, log the execution locally
+  async executeRule(ruleId: string, feedId?: string): Promise<FeedRuleExecution & { products_matched?: number; products_modified?: number }> {
     const { data: userData } = await supabase.auth.getUser();
     if (!userData.user) throw new Error('Non authentifié');
 
-    const { data, error } = await supabase
+    // Call the Edge Function to actually apply rules to products
+    const { data: result, error: fnError } = await supabase.functions.invoke('execute-feed-rules', {
+      body: { rule_id: ruleId, preview_only: false },
+    });
+
+    if (fnError) throw new Error(fnError.message || 'Erreur exécution règle');
+    if (!result?.ok) throw new Error(result?.error || 'Erreur exécution règle');
+
+    // The Edge Function already logged the execution, fetch the latest one
+    const { data: execData, error: execError } = await supabase
       .from('feed_rule_executions')
-      .insert({
-        rule_id: ruleId,
-        user_id: userData.user.id,
-        feed_id: feedId,
-        products_matched: 0,
-        products_modified: 0,
-        execution_time_ms: 0,
-        status: 'success',
-      })
-      .select()
+      .select('*')
+      .eq('rule_id', ruleId)
+      .eq('user_id', userData.user.id)
+      .order('executed_at', { ascending: false })
+      .limit(1)
       .single();
 
-    if (error) throw error;
+    if (execError) {
+      // Return a synthetic result from the function response
+      return {
+        id: crypto.randomUUID(),
+        rule_id: ruleId,
+        user_id: userData.user.id,
+        products_matched: result.data.products_matched,
+        products_modified: result.data.products_modified,
+        execution_time_ms: result.data.execution_time_ms,
+        status: 'success',
+        executed_at: new Date().toISOString(),
+      };
+    }
 
-    // Update rule execution count
-    await supabase
-      .from('feed_rules')
-      .update({ 
-        execution_count: (await this.getRule(ruleId)).execution_count + 1,
-        last_executed_at: new Date().toISOString(),
-      })
-      .eq('id', ruleId);
+    return {
+      ...transformExecution(execData),
+      products_matched: result.data.products_matched,
+      products_modified: result.data.products_modified,
+    };
+  },
 
-    return transformExecution(data);
+  async previewRule(ruleId: string): Promise<{
+    products_total: number;
+    products_matched: number;
+    products_modified: number;
+    preview: Array<{ product_id: string; title: string; changes: Record<string, { before: any; after: any }> }>;
+  }> {
+    const { data: result, error } = await supabase.functions.invoke('execute-feed-rules', {
+      body: { rule_id: ruleId, preview_only: true },
+    });
+
+    if (error) throw new Error(error.message || 'Erreur prévisualisation');
+    if (!result?.ok) throw new Error(result?.error || 'Erreur prévisualisation');
+
+    return result.data;
   },
 
   // ========== STATS ==========
