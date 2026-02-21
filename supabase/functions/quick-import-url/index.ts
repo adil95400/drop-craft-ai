@@ -1138,7 +1138,7 @@ function extractShippingInfo(html: string, platform: string): any {
 }
 
 // Extract individual reviews from the page
-function extractReviews(html: string, platform: string): any[] {
+function extractReviews(html: string, platform: string, markdown: string = ''): any[] {
   const reviews: any[] = []
   const maxReviews = 20
   
@@ -1179,7 +1179,6 @@ function extractReviews(html: string, platform: string): any[] {
         let reviewDate = null
         if (dateMatch) {
           const dateStr = dateMatch[1]
-          // Try to parse French/English dates
           const parsed = Date.parse(dateStr.replace(/le\s*/i, '').replace(/Reviewed\s*in\s*[^on]+on\s*/i, ''))
           if (!isNaN(parsed)) {
             reviewDate = new Date(parsed).toISOString()
@@ -1233,6 +1232,87 @@ function extractReviews(html: string, platform: string): any[] {
               title: '',
               comment: bodyMatch?.[1]?.trim().slice(0, 2000) || '',
               verified_purchase: /achat\s*v[ée]rifi[ée]|verified/i.test(block),
+              helpful_count: 0,
+              review_date: null,
+              images: []
+            })
+          }
+        }
+      }
+
+      // Pattern 3: Amazon "top reviews" section with a-section blocks
+      if (reviews.length === 0) {
+        const topReviewBlocks = html.matchAll(/class="[^"]*a-section\s+review\s+aok-relative[^"]*"[\s\S]*?(?=class="[^"]*a-section\s+review\s+aok-relative|id="reviewsMedley"|$)/gi)
+        for (const match of topReviewBlocks) {
+          if (reviews.length >= maxReviews) break
+          const block = match[0]
+          const nameMatch = block.match(/a-profile-name[^>]*>([^<]+)</i)
+          const ratingMatch = block.match(/a-star-(\d)/i) || block.match(/(\d+(?:[,.]?\d*))\s*(?:sur|out of)\s*5/i)
+          const titleMatch = block.match(/review-title[^>]*>(?:<span[^>]*>)*\s*([^<]+)/i)
+          const bodyMatch = block.match(/reviewText[^>]*>[\s\S]*?<span[^>]*>([^<]+)/i) ||
+                           block.match(/review-text-content[^>]*>[\s\S]*?<span[^>]*>([^<]+)/i)
+          const comment = bodyMatch?.[1]?.trim().replace(/<br\s*\/?>/gi, '\n').slice(0, 2000) || ''
+          const title = titleMatch?.[1]?.trim() || ''
+          if (comment || title) {
+            reviews.push({
+              customer_name: nameMatch?.[1]?.trim() || 'Client Amazon',
+              rating: ratingMatch ? Math.min(5, parseFloat(ratingMatch[1].replace(',', '.'))) : 5,
+              title,
+              comment,
+              verified_purchase: /achat\s*v[ée]rifi[ée]|verified/i.test(block),
+              helpful_count: 0,
+              review_date: null,
+              images: []
+            })
+          }
+        }
+      }
+
+      // Pattern 4: Extract from Firecrawl markdown content (reviews rendered by JS)
+      if (reviews.length === 0 && markdown) {
+        console.log('📝 Trying markdown-based Amazon review extraction...')
+        // Markdown often renders reviews as star blocks followed by text
+        // Common patterns: "★★★★★" or "5.0 out of 5 stars" followed by review text
+        const mdReviewBlocks = markdown.split(/(?=\d+[.,]\d*\s*(?:out of|sur)\s*5\s*(?:stars?|étoiles?))/gi)
+        for (let i = 1; i < mdReviewBlocks.length && reviews.length < maxReviews; i++) {
+          const block = mdReviewBlocks[i]
+          const ratingMatch = block.match(/^(\d+[.,]?\d*)\s*(?:out of|sur)\s*5/i)
+          if (!ratingMatch) continue
+          
+          const lines = block.split('\n').map(l => l.trim()).filter(Boolean)
+          // Skip the rating line itself
+          let title = ''
+          let comment = ''
+          let customerName = 'Client Amazon'
+          let verified = false
+          
+          for (let j = 1; j < lines.length && j < 10; j++) {
+            const line = lines[j]
+            if (/achat\s*v[ée]rifi[ée]|verified\s*purchase/i.test(line)) { verified = true; continue }
+            if (/Reviewed\s*in|Commenté\s*en/i.test(line)) continue
+            if (/personnes?\s*ont\s*trouv|people?\s*found/i.test(line)) continue
+            if (/Signaler/i.test(line)) continue
+            if (!title && line.length < 100 && line.length > 3) { title = line; continue }
+            if (line.length > 20) { comment = (comment ? comment + '\n' : '') + line }
+          }
+          
+          // Try to find author name (often "By AuthorName" or just a name before the rating)
+          if (i > 0) {
+            const prevBlock = mdReviewBlocks[i - 1]
+            const prevLines = prevBlock.split('\n').map(l => l.trim()).filter(Boolean)
+            const lastLine = prevLines[prevLines.length - 1]
+            if (lastLine && lastLine.length < 40 && !/\d{2,}/.test(lastLine)) {
+              customerName = lastLine.replace(/^By\s+/i, '').trim() || customerName
+            }
+          }
+          
+          if (comment || title) {
+            reviews.push({
+              customer_name: customerName,
+              rating: Math.min(5, parseFloat(ratingMatch[1].replace(',', '.'))),
+              title,
+              comment: comment.slice(0, 2000),
+              verified_purchase: verified,
               helpful_count: 0,
               review_date: null,
               images: []
@@ -1979,7 +2059,7 @@ async function scrapeProductData(url: string, platform: string, externalProductI
     }
     
     // Extract individual reviews
-    productData.extracted_reviews = extractReviews(html, platform)
+    productData.extracted_reviews = extractReviews(html, platform, markdown)
     console.log(`⭐ Extracted ${productData.extracted_reviews.length} reviews`)
     
     console.log(`✅ Scraped: "${productData.title}" - ${productData.price} ${productData.currency}`)
