@@ -7121,36 +7121,51 @@ export type Database = {
           before_state: Json | null
           created_at: string
           error_code: string | null
+          error_message: string | null
           id: string
           job_id: string
+          line_number: number | null
           message: string | null
           processed_at: string | null
           product_id: string | null
+          raw_data: Json | null
+          retry_count: number
           status: string
+          user_id: string | null
         }
         Insert: {
           after_state?: Json | null
           before_state?: Json | null
           created_at?: string
           error_code?: string | null
+          error_message?: string | null
           id?: string
           job_id: string
+          line_number?: number | null
           message?: string | null
           processed_at?: string | null
           product_id?: string | null
+          raw_data?: Json | null
+          retry_count?: number
           status?: string
+          user_id?: string | null
         }
         Update: {
           after_state?: Json | null
           before_state?: Json | null
           created_at?: string
           error_code?: string | null
+          error_message?: string | null
           id?: string
           job_id?: string
+          line_number?: number | null
           message?: string | null
           processed_at?: string | null
           product_id?: string | null
+          raw_data?: Json | null
+          retry_count?: number
           status?: string
+          user_id?: string | null
         }
         Relationships: [
           {
