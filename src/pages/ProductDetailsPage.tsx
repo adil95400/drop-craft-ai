@@ -65,6 +65,7 @@ export default function ProductDetailsPage() {
   const [showEditModal, setShowEditModal] = useState(shouldOpenEdit)
   const [showDescriptionFull, setShowDescriptionFull] = useState(false)
   const [activeTab, setActiveTab] = useState('audit')
+  const [aiGeneratingField, setAiGeneratingField] = useState<string | null>(null)
 
   // Edit form state
   const [editForm, setEditForm] = useState({
@@ -77,6 +78,46 @@ export default function ProductDetailsPage() {
     category: '',
     status: 'draft',
   })
+
+  // AI generation for edit fields
+  const handleAIGenerate = async (field: 'title' | 'description' | 'category') => {
+    setAiGeneratingField(field)
+    try {
+      const prompts: Record<string, { system: string; user: string }> = {
+        title: {
+          system: 'Expert SEO e-commerce. Génère un titre produit optimisé, accrocheur et concis (max 80 chars). Retourne UNIQUEMENT le titre, sans guillemets ni explication.',
+          user: `Produit actuel: "${editForm.name}"\nCatégorie: ${editForm.category || 'Non définie'}\nDescription: ${editForm.description?.slice(0, 200) || 'Aucune'}`
+        },
+        description: {
+          system: 'Expert copywriting e-commerce. Génère une description produit optimisée SEO, persuasive, avec des bullet points. Max 500 chars. Retourne UNIQUEMENT la description.',
+          user: `Produit: "${editForm.name}"\nCatégorie: ${editForm.category || 'Non définie'}\nDescription actuelle: ${editForm.description?.slice(0, 200) || 'Aucune'}\nPrix: ${editForm.price}€`
+        },
+        category: {
+          system: 'Expert catégorisation e-commerce. Retourne UNIQUEMENT le nom de la catégorie la plus pertinente (1-3 mots, en français). Pas d\'explication.',
+          user: `Produit: "${editForm.name}"\nDescription: ${editForm.description?.slice(0, 200) || 'Aucune'}`
+        }
+      }
+
+      const { system, user: userPrompt } = prompts[field]
+      const { data, error } = await supabase.functions.invoke('ai-product-edit-assist', {
+        body: { systemPrompt: system, userPrompt, field }
+      })
+
+      if (error) throw error
+      const result = data?.result?.trim()
+      if (result) {
+        if (field === 'title') setEditForm(prev => ({ ...prev, name: result }))
+        else if (field === 'description') setEditForm(prev => ({ ...prev, description: result }))
+        else if (field === 'category') setEditForm(prev => ({ ...prev, category: result }))
+        toast.success(`${field === 'title' ? 'Titre' : field === 'description' ? 'Description' : 'Catégorie'} généré(e) par l'IA`)
+      }
+    } catch (e) {
+      console.error('AI generation error:', e)
+      toast.error('Erreur lors de la génération IA')
+    } finally {
+      setAiGeneratingField(null)
+    }
+  }
 
   // Action handlers (must be defined before useMemo that references them)
   const handleOptimizeAI = () => {
@@ -932,79 +973,187 @@ export default function ProductDetailsPage() {
         onConfirm={confirmDelete}
       />
 
-      {/* Edit Modal */}
+      {/* Edit Modal — Shopify Premium Style */}
       <Dialog open={showEditModal} onOpenChange={setShowEditModal}>
-        <DialogContent className="sm:max-w-lg">
-          <DialogHeader>
-            <DialogTitle>Modifier le produit</DialogTitle>
+        <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader className="pb-4 border-b">
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center">
+                <Edit className="h-5 w-5 text-primary" />
+              </div>
+              <div>
+                <DialogTitle className="text-lg">Modifier le produit</DialogTitle>
+                <p className="text-sm text-muted-foreground mt-0.5">Éditez les informations et utilisez l'IA pour optimiser</p>
+              </div>
+            </div>
           </DialogHeader>
-          <div className="space-y-4 py-4">
+
+          <div className="space-y-6 py-4">
+            {/* Titre + IA */}
             <div className="space-y-2">
-              <Label htmlFor="edit-name">Nom du produit</Label>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="edit-name" className="text-sm font-semibold">Nom du produit</Label>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-7 text-xs gap-1.5 text-primary hover:text-primary hover:bg-primary/10"
+                  disabled={aiGeneratingField === 'title'}
+                  onClick={() => handleAIGenerate('title')}
+                >
+                  {aiGeneratingField === 'title' ? <Loader2 className="h-3 w-3 animate-spin" /> : <Sparkles className="h-3 w-3" />}
+                  Générer IA
+                </Button>
+              </div>
               <Input
                 id="edit-name"
                 value={editForm.name}
                 onChange={(e) => setEditForm(prev => ({ ...prev, name: e.target.value }))}
+                placeholder="Ex: Machine à café Nespresso Delonghi..."
+                className="h-11"
               />
+              <p className="text-xs text-muted-foreground">{editForm.name.length}/150 caractères</p>
             </div>
+
+            {/* Description + IA */}
             <div className="space-y-2">
-              <Label htmlFor="edit-description">Description</Label>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="edit-description" className="text-sm font-semibold">Description</Label>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-7 text-xs gap-1.5 text-primary hover:text-primary hover:bg-primary/10"
+                  disabled={aiGeneratingField === 'description'}
+                  onClick={() => handleAIGenerate('description')}
+                >
+                  {aiGeneratingField === 'description' ? <Loader2 className="h-3 w-3 animate-spin" /> : <Sparkles className="h-3 w-3" />}
+                  Rédiger IA
+                </Button>
+              </div>
               <Textarea
                 id="edit-description"
                 value={editForm.description}
                 onChange={(e) => setEditForm(prev => ({ ...prev, description: e.target.value }))}
-                rows={4}
+                rows={5}
+                placeholder="Décrivez votre produit en détail pour améliorer le SEO..."
+                className="resize-y min-h-[100px]"
+              />
+              <p className="text-xs text-muted-foreground">{editForm.description.length}/2000 caractères</p>
+            </div>
+
+            <Separator />
+
+            {/* Prix */}
+            <div>
+              <p className="text-sm font-semibold mb-3">Tarification</p>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="edit-price" className="text-xs text-muted-foreground">Prix de vente (€)</Label>
+                  <Input
+                    id="edit-price"
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    value={editForm.price}
+                    onChange={(e) => setEditForm(prev => ({ ...prev, price: parseFloat(e.target.value) || 0 }))}
+                    className="h-11 text-lg font-semibold"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="edit-cost" className="text-xs text-muted-foreground">Prix d'achat (€)</Label>
+                  <Input
+                    id="edit-cost"
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    value={editForm.cost_price}
+                    onChange={(e) => setEditForm(prev => ({ ...prev, cost_price: parseFloat(e.target.value) || 0 }))}
+                    className="h-11"
+                  />
+                </div>
+              </div>
+              {editForm.price > 0 && editForm.cost_price > 0 && (
+                <div className="mt-3 p-3 rounded-lg bg-muted/50 flex items-center justify-between text-sm">
+                  <span className="text-muted-foreground">Marge estimée</span>
+                  <span className={cn("font-bold", ((editForm.price - editForm.cost_price) / editForm.price * 100) >= 30 ? "text-primary" : "text-destructive")}>
+                    {((editForm.price - editForm.cost_price) / editForm.price * 100).toFixed(1)}% ({(editForm.price - editForm.cost_price).toFixed(2)}€)
+                  </span>
+                </div>
+              )}
+            </div>
+
+            <Separator />
+
+            {/* Stock + Catégorie + Statut */}
+            <div>
+              <p className="text-sm font-semibold mb-3">Organisation</p>
+              <div className="grid grid-cols-3 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="edit-stock" className="text-xs text-muted-foreground">Stock</Label>
+                  <Input
+                    id="edit-stock"
+                    type="number"
+                    min="0"
+                    value={editForm.stock_quantity}
+                    onChange={(e) => setEditForm(prev => ({ ...prev, stock_quantity: parseInt(e.target.value) || 0 }))}
+                    className="h-11"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="edit-category" className="text-xs text-muted-foreground">Catégorie</Label>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-5 text-[10px] gap-1 text-primary hover:text-primary hover:bg-primary/10 px-1.5"
+                      disabled={aiGeneratingField === 'category'}
+                      onClick={() => handleAIGenerate('category')}
+                    >
+                      {aiGeneratingField === 'category' ? <Loader2 className="h-2.5 w-2.5 animate-spin" /> : <Sparkles className="h-2.5 w-2.5" />}
+                      IA
+                    </Button>
+                  </div>
+                  <Input
+                    id="edit-category"
+                    value={editForm.category}
+                    onChange={(e) => setEditForm(prev => ({ ...prev, category: e.target.value }))}
+                    placeholder="Ex: Électroménager"
+                    className="h-11"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="edit-status" className="text-xs text-muted-foreground">Statut</Label>
+                  <select
+                    id="edit-status"
+                    value={editForm.status}
+                    onChange={(e) => setEditForm(prev => ({ ...prev, status: e.target.value }))}
+                    className="flex h-11 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  >
+                    <option value="draft">Brouillon</option>
+                    <option value="active">Actif</option>
+                    <option value="paused">En pause</option>
+                    <option value="archived">Archivé</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            {/* SKU */}
+            <div className="space-y-2">
+              <Label htmlFor="edit-sku" className="text-xs text-muted-foreground">SKU / Référence</Label>
+              <Input
+                id="edit-sku"
+                value={editForm.sku}
+                onChange={(e) => setEditForm(prev => ({ ...prev, sku: e.target.value }))}
+                placeholder="Ex: NESP-PIXIE-BLUE"
+                className="h-11 font-mono text-sm"
               />
             </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="edit-price">Prix de vente (€)</Label>
-                <Input
-                  id="edit-price"
-                  type="number"
-                  step="0.01"
-                  min="0"
-                  value={editForm.price}
-                  onChange={(e) => setEditForm(prev => ({ ...prev, price: parseFloat(e.target.value) || 0 }))}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="edit-cost">Prix d'achat (€)</Label>
-                <Input
-                  id="edit-cost"
-                  type="number"
-                  step="0.01"
-                  min="0"
-                  value={editForm.cost_price}
-                  onChange={(e) => setEditForm(prev => ({ ...prev, cost_price: parseFloat(e.target.value) || 0 }))}
-                />
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="edit-stock">Stock</Label>
-                <Input
-                  id="edit-stock"
-                  type="number"
-                  min="0"
-                  value={editForm.stock_quantity}
-                  onChange={(e) => setEditForm(prev => ({ ...prev, stock_quantity: parseInt(e.target.value) || 0 }))}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="edit-category">Catégorie</Label>
-                <Input
-                  id="edit-category"
-                  value={editForm.category}
-                  onChange={(e) => setEditForm(prev => ({ ...prev, category: e.target.value }))}
-                />
-              </div>
-            </div>
           </div>
-          <DialogFooter>
+
+          <DialogFooter className="border-t pt-4 gap-2">
             <Button variant="outline" onClick={() => setShowEditModal(false)}>Annuler</Button>
-            <Button onClick={handleSaveEdit} disabled={updateProduct.isPending}>
-              {updateProduct.isPending ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : null}
+            <Button onClick={handleSaveEdit} disabled={updateProduct.isPending} className="min-w-[140px]">
+              {updateProduct.isPending ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <CheckCircle2 className="h-4 w-4 mr-2" />}
               Enregistrer
             </Button>
           </DialogFooter>
