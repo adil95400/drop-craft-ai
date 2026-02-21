@@ -6,7 +6,7 @@ import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Progress } from '@/components/ui/progress';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { 
   Play, 
   Pause, 
@@ -18,9 +18,12 @@ import {
   Truck,
   AlertTriangle,
   Settings,
-  Zap
+  Zap,
+  Plus,
+  Trash2,
+  Shield
 } from 'lucide-react';
-import { useAutoOrderComplete, useAutoOrderSettings } from '@/hooks/useAutoOrderComplete';
+import { useAutoOrderComplete, useAutoOrderSettings, useAutoOrderRules } from '@/hooks/useAutoOrderComplete';
 import { useAutoOrderQueue } from '@/hooks/useAutoOrderQueue';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -29,6 +32,7 @@ export function AutoOrderDashboard() {
   const { queueItems, stats, isLoading, refetch } = useAutoOrderQueue(user?.id);
   const { batchSyncTracking, isBatchSyncing } = useAutoOrderComplete();
   const { settings, updateSettings, isUpdating } = useAutoOrderSettings();
+  const { rules, createRule, deleteRule, isCreating } = useAutoOrderRules();
   const [activeTab, setActiveTab] = useState('overview');
 
   const totalProcessed = stats.completed + stats.failed;
@@ -145,6 +149,7 @@ export function AutoOrderDashboard() {
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList>
           <TabsTrigger value="overview">File d'attente</TabsTrigger>
+          <TabsTrigger value="rules">Règles auto</TabsTrigger>
           <TabsTrigger value="settings">Paramètres</TabsTrigger>
         </TabsList>
 
@@ -196,6 +201,87 @@ export function AutoOrderDashboard() {
                           </Badge>
                         )}
                       </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Rules Tab */}
+        <TabsContent value="rules" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="flex items-center gap-2">
+                    <Shield className="h-5 w-5" />
+                    Règles de réapprovisionnement automatique
+                  </CardTitle>
+                  <CardDescription>
+                    Déclenche une commande fournisseur quand le stock atteint un seuil
+                  </CardDescription>
+                </div>
+                <Button
+                  size="sm"
+                  onClick={() => createRule({
+                    supplier_type: 'cj',
+                    min_stock_trigger: 5,
+                    reorder_quantity: 10,
+                    preferred_shipping: 'standard',
+                    is_active: true
+                  })}
+                  disabled={isCreating}
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Ajouter une règle
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent>
+              {rules.length === 0 ? (
+                <div className="text-center py-8 text-muted-foreground">
+                  <Shield className="h-12 w-12 mx-auto mb-4 opacity-20" />
+                  <p>Aucune règle d'auto-commande configurée</p>
+                  <p className="text-sm mt-1">
+                    Ajoutez une règle pour commander automatiquement quand le stock est bas
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {rules.map((rule) => (
+                    <div
+                      key={rule.id}
+                      className="flex items-center justify-between p-4 border rounded-lg"
+                    >
+                      <div className="flex items-center gap-4">
+                        <Badge variant={rule.is_active ? 'default' : 'secondary'}>
+                          {rule.is_active ? 'Actif' : 'Inactif'}
+                        </Badge>
+                        <div>
+                          <p className="font-medium">
+                            Fournisseur: {rule.supplier_type.toUpperCase()}
+                          </p>
+                          <p className="text-sm text-muted-foreground">
+                            Seuil: ≤ {rule.min_stock_trigger} unités → Commander {rule.reorder_quantity} unités
+                            {rule.max_price && ` (max ${rule.max_price}€)`}
+                          </p>
+                          {rule.trigger_count > 0 && (
+                            <p className="text-xs text-muted-foreground">
+                              Déclenché {rule.trigger_count} fois
+                              {rule.last_triggered_at && ` • Dernier: ${new Date(rule.last_triggered_at).toLocaleDateString('fr-FR')}`}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => deleteRule(rule.id)}
+                      >
+                        <Trash2 className="h-4 w-4 text-destructive" />
+                      </Button>
                     </div>
                   ))}
                 </div>

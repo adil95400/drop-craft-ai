@@ -1301,6 +1301,72 @@ export type Database = {
         }
         Relationships: []
       }
+      auto_order_rules: {
+        Row: {
+          created_at: string | null
+          id: string
+          is_active: boolean | null
+          last_triggered_at: string | null
+          max_price: number | null
+          min_stock_trigger: number
+          preferred_shipping: string | null
+          product_id: string | null
+          reorder_quantity: number
+          supplier_id: string | null
+          supplier_type: string
+          trigger_count: number | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          last_triggered_at?: string | null
+          max_price?: number | null
+          min_stock_trigger?: number
+          preferred_shipping?: string | null
+          product_id?: string | null
+          reorder_quantity?: number
+          supplier_id?: string | null
+          supplier_type?: string
+          trigger_count?: number | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          last_triggered_at?: string | null
+          max_price?: number | null
+          min_stock_trigger?: number
+          preferred_shipping?: string | null
+          product_id?: string | null
+          reorder_quantity?: number
+          supplier_id?: string | null
+          supplier_type?: string
+          trigger_count?: number | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "auto_order_rules_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "auto_order_rules_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "suppliers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       automated_campaigns: {
         Row: {
           actions: Json | null
@@ -15220,6 +15286,7 @@ export type Database = {
       }
       user_settings: {
         Row: {
+          auto_order_settings: Json | null
           created_at: string | null
           extension_settings: Json | null
           id: string
@@ -15232,6 +15299,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          auto_order_settings?: Json | null
           created_at?: string | null
           extension_settings?: Json | null
           id?: string
@@ -15244,6 +15312,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          auto_order_settings?: Json | null
           created_at?: string | null
           extension_settings?: Json | null
           id?: string
