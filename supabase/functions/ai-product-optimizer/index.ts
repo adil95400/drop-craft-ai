@@ -9,7 +9,7 @@ const corsHeaders = {
 interface OptimizeRequest {
   productId: string;
   productSource?: 'products' | 'imported_products' | 'supplier_products';
-  optimizationType?: 'title' | 'description' | 'attributes' | 'seo_meta' | 'full';
+  optimizationType?: 'title' | 'description' | 'attributes' | 'seo_meta' | 'category' | 'full';
   tone?: 'professional' | 'casual' | 'luxury' | 'technical';
   currentData?: {
     name?: string;
@@ -150,6 +150,24 @@ Génère et retourne UNIQUEMENT un JSON avec cette structure:
   "season": "...",
   "features": ["...", "..."]
 }`;
+    } else if (optimizationType === 'category') {
+      systemPrompt = `Tu es un expert en catégorisation e-commerce. Tu analyses les produits et suggères les catégories les plus pertinentes parmi les catégories standard du e-commerce.`;
+      
+      userPrompt = `Catégorise ce produit e-commerce:
+
+Nom: ${currentData.name || 'Sans nom'}
+Description: ${currentData.description || 'Sans description'}
+Prix: ${currentData.price || 0}€
+
+Retourne UNIQUEMENT un JSON avec cette structure exacte (pas de texte autour):
+{
+  "suggestions": [
+    { "category": "Catégorie principale", "subcategory": "Sous-catégorie", "confidence": 0.95 },
+    { "category": "Catégorie alternative", "subcategory": "Sous-catégorie", "confidence": 0.80 }
+  ]
+}
+
+Donne 2 à 3 suggestions avec des scores de confiance réalistes.`;
     } else {
       // Default: seo_meta
       systemPrompt = `Tu es un expert SEO e-commerce. Tu optimises les meta tags pour le référencement.`;
@@ -223,7 +241,7 @@ Génère et retourne UNIQUEMENT un JSON avec:
       optimizedResult = { optimized_title: generatedContent };
     } else if (optimizationType === 'description') {
       optimizedResult = { optimized_description: generatedContent };
-    } else if (optimizationType === 'attributes' || optimizationType === 'seo_meta') {
+    } else if (optimizationType === 'attributes' || optimizationType === 'seo_meta' || optimizationType === 'category') {
       try {
         const jsonMatch = generatedContent.match(/\{[\s\S]*\}/);
         if (jsonMatch) {
