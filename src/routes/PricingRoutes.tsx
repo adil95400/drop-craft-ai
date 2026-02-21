@@ -14,6 +14,8 @@ import { lazy } from 'react';
 // Pricing pages
 const PriceRulesPage = lazy(() => import('@/pages/products/PriceRulesPage'));
 const LiveRepricingPage = lazy(() => import('@/pages/pricing/LiveRepricingPage'));
+const PriceMonitoringPage = lazy(() => import('@/pages/products/PriceMonitoringPage'));
+const PricingEnginePage = lazy(() => import('@/pages/products/PricingEnginePage'));
 
 export function PricingRoutes() {
   return (
@@ -27,8 +29,11 @@ export function PricingRoutes() {
       {/* Repricing Auto - Temps réel + Sync boutiques */}
       <Route path="repricing" element={<LiveRepricingPage />} />
       
-      {/* Veille Prix - Surveillance concurrence */}
-      <Route path="monitoring" element={<LiveRepricingPage />} />
+      {/* Veille Prix - Monitoring P1-1 */}
+      <Route path="monitoring" element={<PriceMonitoringPage />} />
+      
+      {/* Moteur de règles P1-3 */}
+      <Route path="engine" element={<PricingEnginePage />} />
       
       {/* Optimisation IA - Recommandations */}
       <Route path="optimization" element={<PriceRulesPage />} />
