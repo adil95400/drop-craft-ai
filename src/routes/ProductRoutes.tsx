@@ -42,6 +42,7 @@ const PricingEnginePage = lazy(() => import('@/pages/products/PricingEnginePage'
 const ProductScoringPage = lazy(() => import('@/pages/products/ProductScoringPage'));
 const AIContentPage = lazy(() => import('@/pages/products/AIContentPage'));
 const ImageAuditPage = lazy(() => import('@/pages/ImageAuditPage'));
+const SavedViews = lazy(() => import('@/pages/SavedViews'));
 
 export function ProductRoutes() {
   return (
@@ -84,6 +85,7 @@ export function ProductRoutes() {
       <Route path="scoring" element={<ProductScoringPage />} />
       <Route path="ai-content" element={<AIContentPage />} />
       <Route path="image-audit" element={<ImageAuditPage />} />
+      <Route path="views" element={<SavedViews />} />
       
       {/* Import redirect already defined above */}
       
