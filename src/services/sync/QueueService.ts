@@ -22,46 +22,62 @@ export class QueueService {
     return QueueService.instance
   }
 
-  // Ajouter un job à la queue (utilise activity_logs)
+  /**
+   * Add a job to the unified `jobs` table (replaces activity_logs usage)
+   */
   async addJob(
     type: QueueJob['type'], 
     payload: Record<string, any>, 
     options: {
       priority?: number
       maxRetries?: number
+      name?: string
+      idempotencyKey?: string
     } = {}
   ): Promise<string> {
-    const jobId = crypto.randomUUID()
-    
-    const { error } = await supabase
-      .from('activity_logs')
-      .insert({
-        user_id: (await supabase.auth.getUser()).data.user?.id || '',
-        action: `queue_${type}`,
-        description: `Queue job: ${type}`,
-        details: {
-          job_id: jobId,
-          type,
-          payload,
-          status: 'pending',
-          priority: options.priority || 0,
-          retry_count: 0,
-          max_retries: options.maxRetries || 3
-        }
-      })
+    const { data: userData } = await supabase.auth.getUser()
+    const userId = userData.user?.id
+    if (!userId) throw new Error('Non authentifié')
+
+    const insertData: Record<string, any> = {
+      user_id: userId,
+      job_type: type,
+      job_subtype: payload.type || type,
+      name: options.name || `Queue job: ${type}`,
+      status: 'pending',
+      priority: options.priority || 0,
+      max_retries: options.maxRetries || 3,
+      retries: 0,
+      input_data: payload,
+      metadata: { source: 'queue_service' }
+    }
+
+    if (options.idempotencyKey) {
+      insertData.idempotency_key = options.idempotencyKey
+    }
+
+    const { data, error } = await (supabase
+      .from('jobs') as any)
+      .insert(insertData)
+      .select('id')
+      .single()
 
     if (error) throw error
 
+    const jobId = data.id
     console.log(`Added job ${jobId} to queue: ${type}`)
     return jobId
   }
 
-  // Statistiques de la queue
+  /**
+   * Get queue statistics from the unified `jobs` table
+   */
   async getQueueStats(): Promise<any> {
-    const { data, error } = await supabase
-      .from('activity_logs')
-      .select('details')
-      .like('action', 'queue_%')
+    const { data, error } = await (supabase
+      .from('jobs') as any)
+      .select('status, job_type, created_at')
+      .order('created_at', { ascending: false })
+      .limit(500)
 
     if (error) return null
 
@@ -71,13 +87,12 @@ export class QueueService {
       by_type: {} as Record<string, number>
     }
 
-    data?.forEach(log => {
-      const details = (log.details || {}) as any
-      if (details?.status) {
-        stats.by_status[details.status] = (stats.by_status[details.status] || 0) + 1
+    data?.forEach((job: any) => {
+      if (job.status) {
+        stats.by_status[job.status] = (stats.by_status[job.status] || 0) + 1
       }
-      if (details?.type) {
-        stats.by_type[details.type] = (stats.by_type[details.type] || 0) + 1
+      if (job.job_type) {
+        stats.by_type[job.job_type] = (stats.by_type[job.job_type] || 0) + 1
       }
     })
 
@@ -87,10 +102,10 @@ export class QueueService {
   async cleanupOldJobs(days: number = 7): Promise<void> {
     const cutoffDate = new Date(Date.now() - days * 24 * 60 * 60 * 1000)
     
-    await supabase
-      .from('activity_logs')
+    await (supabase
+      .from('jobs') as any)
       .delete()
-      .like('action', 'queue_%')
+      .in('status', ['completed', 'failed', 'cancelled'])
       .lt('created_at', cutoffDate.toISOString())
   }
 }
