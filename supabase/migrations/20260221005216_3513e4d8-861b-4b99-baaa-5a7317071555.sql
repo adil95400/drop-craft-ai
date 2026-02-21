@@ -1,0 +1,1 @@
+ALTER TABLE public.imported_products ADD COLUMN IF NOT EXISTS needs_review boolean DEFAULT true;

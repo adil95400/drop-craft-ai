@@ -6624,6 +6624,7 @@ export type Database = {
           job_id: string | null
           metadata: Json | null
           name: string | null
+          needs_review: boolean | null
           original_images: string[] | null
           price: number | null
           product_id: string | null
@@ -6669,6 +6670,7 @@ export type Database = {
           job_id?: string | null
           metadata?: Json | null
           name?: string | null
+          needs_review?: boolean | null
           original_images?: string[] | null
           price?: number | null
           product_id?: string | null
@@ -6714,6 +6716,7 @@ export type Database = {
           job_id?: string | null
           metadata?: Json | null
           name?: string | null
+          needs_review?: boolean | null
           original_images?: string[] | null
           price?: number | null
           product_id?: string | null
