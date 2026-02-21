@@ -26,7 +26,7 @@ import { useDropzone } from 'react-dropzone'
 import { motion } from 'framer-motion'
 import { ChannablePageLayout } from '@/components/channable/ChannablePageLayout'
 import { ChannableHeroSection } from '@/components/channable/ChannableHeroSection'
-import { ProductPreviewEditModal } from '@/components/import/ProductPreviewEditModal'
+import { ShopifyStyleProductPreview } from '@/components/import/ShopifyStyleProductPreview'
 import { ProfitCalculator } from '@/components/import/ProfitCalculator'
 import { ImportSuccessAnimation } from '@/components/ui/import-success-animation'
 import { useImportSuccessAnimation } from '@/hooks/useImportSuccessAnimation'
@@ -790,7 +790,7 @@ export default function AutoDSImportPage() {
       </Tabs>
 
       {/* Modal d'aperçu et modification */}
-      <ProductPreviewEditModal
+      <ShopifyStyleProductPreview
         open={previewModalOpen}
         onOpenChange={setPreviewModalOpen}
         product={selectedProductForPreview?.preview || null}
