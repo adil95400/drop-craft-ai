@@ -68,6 +68,7 @@ export function ProductRoutes() {
       
       {/* Dynamic product ID route (must be after specific routes) */}
       <Route path=":id" element={<ProductDetailsPage />} />
+      <Route path=":id/edit" element={<ProductDetailsPage />} />
       
       {/* Product Module Structure */}
       <Route path="rules" element={<Navigate to="/products?tab=rules" replace />} />

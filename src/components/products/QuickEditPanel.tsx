@@ -103,14 +103,16 @@ export function QuickEditPanel({ product, onSave, onCancel }: QuickEditPanelProp
             <Label htmlFor="quick-status" className="text-xs">Statut</Label>
             <Select 
               value={formData.status} 
-              onValueChange={(value: 'active' | 'inactive') => setFormData(prev => ({ ...prev, status: value }))}
+              onValueChange={(value: 'active' | 'paused' | 'draft' | 'archived') => setFormData(prev => ({ ...prev, status: value }))}
             >
               <SelectTrigger className="h-8">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="active">Actif</SelectItem>
-                <SelectItem value="inactive">Inactif</SelectItem>
+                <SelectItem value="paused">En pause</SelectItem>
+                <SelectItem value="draft">Brouillon</SelectItem>
+                <SelectItem value="archived">Archivé</SelectItem>
               </SelectContent>
             </Select>
           </div>

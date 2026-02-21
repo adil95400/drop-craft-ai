@@ -281,7 +281,9 @@ export function CreateProductDialog({ open, onOpenChange, onSuccess }: CreatePro
                       </FormControl>
                       <SelectContent className="z-[100] bg-popover">
                         <SelectItem value="active">Actif</SelectItem>
-                        <SelectItem value="inactive">Inactif</SelectItem>
+                        <SelectItem value="paused">En pause</SelectItem>
+                        <SelectItem value="draft">Brouillon</SelectItem>
+                        <SelectItem value="archived">Archivé</SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />

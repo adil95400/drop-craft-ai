@@ -11,7 +11,7 @@ export interface UnifiedProduct {
   description?: string
   price: number
   cost_price?: number
-  status: 'active' | 'inactive'
+  status: 'active' | 'paused' | 'draft' | 'archived'
   stock_quantity?: number
   sku?: string
   category?: string
@@ -73,7 +73,7 @@ function mapRecordToUnified(r: ProductRecord): UnifiedProduct {
     description: r.description ?? undefined,
     price: r.price,
     cost_price: r.cost_price || undefined,
-    status: (r.status === 'active' ? 'active' : 'inactive') as 'active' | 'inactive',
+    status: (['active', 'paused', 'draft', 'archived'].includes(r.status) ? r.status : 'draft') as UnifiedProduct['status'],
     stock_quantity: r.stock_quantity,
     sku: r.sku ?? undefined,
     category: r.category ?? undefined,
@@ -116,7 +116,7 @@ export class ProductsUnifiedService {
     filters?: {
       search?: string
       category?: string
-      status?: 'active' | 'inactive'
+      status?: 'active' | 'paused' | 'draft' | 'archived'
       lowStock?: boolean
     },
     options?: { page?: number; perPage?: number }
@@ -158,7 +158,7 @@ export class ProductsUnifiedService {
       cost_price: product.cost_price,
       category: product.category,
       brand: product.brand,
-      status: product.status === 'active' ? 'active' : product.status === 'inactive' ? 'inactive' : undefined,
+      status: product.status,
       stock_quantity: product.stock_quantity,
       weight: product.weight,
       weight_unit: product.weight_unit,

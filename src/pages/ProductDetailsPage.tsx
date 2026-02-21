@@ -33,7 +33,7 @@ import {
   Lightbulb, AlertCircle, ImagePlus, DollarSign, FileSearch,
   Loader2
 } from 'lucide-react'
-import { useNavigate, useParams } from 'react-router-dom'
+import { useNavigate, useParams, useLocation } from 'react-router-dom'
 import { useProduct } from '@/hooks/useUnifiedProducts'
 import { cn } from '@/lib/utils'
 import { motion } from 'framer-motion'
@@ -46,6 +46,7 @@ import { useAuth } from '@/contexts/AuthContext'
 
 export default function ProductDetailsPage() {
   const navigate = useNavigate()
+  const location = useLocation()
   const { id } = useParams<{ id: string }>()
   const { data: product, isLoading, refetch } = useProduct(id || '')
   const [selectedImageIndex, setSelectedImageIndex] = useState(0)
@@ -56,9 +57,12 @@ export default function ProductDetailsPage() {
   const { generateContent, optimizeSeo, isGenerating, isOptimizingSeo } = useApiAI()
   const { triggerSync } = useApiSync()
 
+  // Auto-open edit modal when navigated with openEdit state or /edit path
+  const shouldOpenEdit = location.state?.openEdit || location.pathname.endsWith('/edit')
+
   // UI state
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
-  const [showEditModal, setShowEditModal] = useState(false)
+  const [showEditModal, setShowEditModal] = useState(shouldOpenEdit)
   const [showDescriptionFull, setShowDescriptionFull] = useState(false)
   const [activeTab, setActiveTab] = useState('audit')
 

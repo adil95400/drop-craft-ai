@@ -65,7 +65,7 @@ import { PlatformExportDialog } from '@/components/products/export/PlatformExpor
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper'
 
 // ============= Types =============
-type StatusFilter = 'all' | 'active' | 'inactive' | 'draft' | 'archived'
+type StatusFilter = 'all' | 'active' | 'paused' | 'draft' | 'archived'
 type ViewMode = 'table' | 'grid'
 type SortField = 'name' | 'price' | 'stock_quantity' | 'margin' | 'created_at'
 type SortDirection = 'asc' | 'desc'
@@ -230,7 +230,7 @@ export default function CatalogProductsPage() {
   }, [refetch, queryClient, toast])
 
   const handleEdit = useCallback((product: any) => {
-    navigate(`/products/${product.id}/edit`)
+    navigate(`/products/${product.id}`, { state: { openEdit: true } })
   }, [navigate])
 
   const handleView = useCallback((product: any) => {
@@ -513,7 +513,7 @@ export default function CatalogProductsPage() {
               <SelectContent>
                 <SelectItem value="all">Tous statuts</SelectItem>
                 <SelectItem value="active">Actif</SelectItem>
-                <SelectItem value="inactive">Inactif</SelectItem>
+                <SelectItem value="paused">En pause</SelectItem>
                 <SelectItem value="draft">Brouillon</SelectItem>
                 <SelectItem value="archived">Archivé</SelectItem>
               </SelectContent>

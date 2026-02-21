@@ -135,13 +135,15 @@ export function ProductEditModal({ open, onOpenChange, product }: ProductEditMod
 
                 <div>
                   <Label htmlFor="status">Statut</Label>
-                  <Select value={formData.status} onValueChange={(value) => setFormData({ ...formData, status: value as 'active' | 'inactive' })}>
+                  <Select value={formData.status} onValueChange={(value) => setFormData({ ...formData, status: value as 'active' | 'paused' | 'draft' | 'archived' })}>
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="active">Actif</SelectItem>
-                      <SelectItem value="inactive">Inactif</SelectItem>
+                      <SelectItem value="paused">En pause</SelectItem>
+                      <SelectItem value="draft">Brouillon</SelectItem>
+                      <SelectItem value="archived">Archivé</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
