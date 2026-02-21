@@ -37,6 +37,8 @@ const ProductAuditPage = lazy(() => import('@/pages/products/ProductAuditPage'))
 const PredictiveAnalyticsPage = lazy(() => import('@/pages/PredictiveAnalyticsPage'));
 const ProductSourcingPage = lazy(() => import('@/pages/products/ProductSourcingPage'));
 const PriceRulesPage = lazy(() => import('@/pages/products/PriceRulesPage'));
+const PriceMonitoringPage = lazy(() => import('@/pages/products/PriceMonitoringPage'));
+const PricingEnginePage = lazy(() => import('@/pages/products/PricingEnginePage'));
 const ProductScoringPage = lazy(() => import('@/pages/products/ProductScoringPage'));
 const AIContentPage = lazy(() => import('@/pages/products/AIContentPage'));
 const ImageAuditPage = lazy(() => import('@/pages/ImageAuditPage'));
@@ -77,6 +79,8 @@ export function ProductRoutes() {
       <Route path="intelligence" element={<PredictiveAnalyticsPage />} />
       <Route path="sourcing" element={<ProductSourcingPage />} />
       <Route path="price-rules" element={<PriceRulesPage />} />
+      <Route path="price-monitoring" element={<PriceMonitoringPage />} />
+      <Route path="pricing-engine" element={<PricingEnginePage />} />
       <Route path="scoring" element={<ProductScoringPage />} />
       <Route path="ai-content" element={<AIContentPage />} />
       <Route path="image-audit" element={<ImageAuditPage />} />

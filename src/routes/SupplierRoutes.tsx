@@ -18,6 +18,7 @@ const ChannableFeedManager = lazy(() => import('@/pages/feeds/ChannableFeedManag
 const BTSImportPage = lazy(() => import('@/pages/suppliers/BTSImportPage'))
 const VariantMappingPage = lazy(() => import('@/pages/suppliers/VariantMappingPage'))
 const AdvancedSupplierEnginePage = lazy(() => import('@/pages/suppliers/AdvancedSupplierEnginePage'))
+const SupplierFallbackPage = lazy(() => import('@/pages/suppliers/SupplierFallbackPage'))
 
 /**
  * ROUTES DU MODULE FOURNISSEURS
@@ -48,6 +49,9 @@ export default function SupplierRoutes() {
       
       {/* Analytics */}
       <Route path="analytics" element={<SupplierAnalyticsDashboard />} />
+      
+      {/* Fallback Fournisseur - P1-2 */}
+      <Route path="fallback" element={<SupplierFallbackPage />} />
       
       {/* Settings */}
       <Route path="settings" element={<SupplierSettingsPage />} />
