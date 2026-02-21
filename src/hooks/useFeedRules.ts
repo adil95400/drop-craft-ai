@@ -173,10 +173,21 @@ export function useExecuteFeedRule() {
       queryClient.invalidateQueries({ queryKey: ['feed-rules'] });
       queryClient.invalidateQueries({ queryKey: ['feed-rule-executions'] });
       queryClient.invalidateQueries({ queryKey: ['feed-rules-stats'] });
-      toast.success(`Règle exécutée: ${data.products_modified} produits modifiés`);
+      const matched = (data as any).products_matched ?? 0;
+      const modified = (data as any).products_modified ?? 0;
+      toast.success(`Règle exécutée: ${modified} produits modifiés sur ${matched} correspondants`);
     },
     onError: (error: Error) => {
       toast.error(`Erreur d'exécution: ${error.message}`);
+    },
+  });
+}
+
+export function usePreviewFeedRule() {
+  return useMutation({
+    mutationFn: (ruleId: string) => FeedRulesService.previewRule(ruleId),
+    onError: (error: Error) => {
+      toast.error(`Erreur preview: ${error.message}`);
     },
   });
 }
