@@ -3,6 +3,97 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
 
+// ── Auto-Order Rules Hook ──
+export interface AutoOrderRule {
+  id: string;
+  user_id: string;
+  product_id: string | null;
+  supplier_id: string | null;
+  supplier_type: string;
+  min_stock_trigger: number;
+  reorder_quantity: number;
+  max_price: number | null;
+  preferred_shipping: string;
+  is_active: boolean;
+  last_triggered_at: string | null;
+  trigger_count: number;
+  created_at: string;
+}
+
+export function useAutoOrderRules() {
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
+
+  const { data: rules = [], isLoading } = useQuery({
+    queryKey: ['auto-order-rules', user?.id],
+    queryFn: async () => {
+      if (!user) return [];
+      const { data, error } = await (supabase
+        .from('auto_order_rules') as any)
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
+      if (error) throw error;
+      return (data || []) as AutoOrderRule[];
+    },
+    enabled: !!user
+  });
+
+  const createRule = useMutation({
+    mutationFn: async (rule: Partial<AutoOrderRule>) => {
+      if (!user) throw new Error('Not authenticated');
+      const { data, error } = await (supabase
+        .from('auto_order_rules') as any)
+        .insert({ ...rule, user_id: user.id })
+        .select()
+        .single();
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      toast.success('Règle auto-order créée');
+      queryClient.invalidateQueries({ queryKey: ['auto-order-rules'] });
+    }
+  });
+
+  const updateRule = useMutation({
+    mutationFn: async ({ id, ...updates }: { id: string } & Partial<AutoOrderRule>) => {
+      const { error } = await (supabase
+        .from('auto_order_rules') as any)
+        .update(updates)
+        .eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success('Règle mise à jour');
+      queryClient.invalidateQueries({ queryKey: ['auto-order-rules'] });
+    }
+  });
+
+  const deleteRule = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await (supabase
+        .from('auto_order_rules') as any)
+        .delete()
+        .eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success('Règle supprimée');
+      queryClient.invalidateQueries({ queryKey: ['auto-order-rules'] });
+    }
+  });
+
+  return {
+    rules,
+    isLoading,
+    createRule: createRule.mutate,
+    updateRule: updateRule.mutate,
+    deleteRule: deleteRule.mutate,
+    isCreating: createRule.isPending,
+  };
+}
+
 interface OrderItem {
   product_id: string;
   variant_id?: string;
@@ -188,29 +279,29 @@ export function useAutoOrderSettings() {
     queryFn: async () => {
       if (!user) return defaultSettings;
 
-      const { data, error } = await supabase
-        .from('user_settings')
-        .select('*')
+      const { data, error } = await (supabase
+        .from('user_settings') as any)
+        .select('auto_order_settings')
         .eq('user_id', user.id)
         .maybeSingle();
 
       if (error && error.code !== 'PGRST116') throw error;
-      // Use type assertion since column may not exist in generated types
-      const settings = data as Record<string, any> | null;
-      return settings?.auto_order_settings || defaultSettings;
+      return data?.auto_order_settings || defaultSettings;
     },
     enabled: !!user
   });
+
+  const queryClient = useQueryClient();
 
   const updateSettings = useMutation({
     mutationFn: async (newSettings: Record<string, unknown>) => {
       if (!user) throw new Error('Not authenticated');
 
-      // Direct insert/update
       const { error } = await (supabase
-        .from('user_settings') as unknown as ReturnType<typeof supabase.from>)
+        .from('user_settings') as any)
         .upsert({
           user_id: user.id,
+          auto_order_settings: newSettings,
           updated_at: new Date().toISOString()
         }, { onConflict: 'user_id' });
 
@@ -218,6 +309,7 @@ export function useAutoOrderSettings() {
     },
     onSuccess: () => {
       toast.success('Paramètres auto-order mis à jour');
+      queryClient.invalidateQueries({ queryKey: ['auto-order-settings'] });
     }
   });
 
