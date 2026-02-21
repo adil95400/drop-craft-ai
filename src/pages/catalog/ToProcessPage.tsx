@@ -1,7 +1,7 @@
 /**
  * ToProcessPage - Backlog intelligent avec données réelles
  * Hub d'exécution: priorisation IA des actions requises
- * Phase 3: Intégration brouillons importés
+ * Phase 4: Modal de prévisualisation produit intégrée
  */
 import { useState, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
@@ -10,11 +10,12 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { AlertCircle, TrendingUp, CheckCircle, Zap, Filter, ArrowUpDown, Package, Sparkles, Euro, Clock, Brain, FileEdit } from 'lucide-react'
+import { AlertCircle, TrendingUp, CheckCircle, Zap, Filter, ArrowUpDown, Package, Sparkles, Euro, Clock, Brain, FileEdit, Eye } from 'lucide-react'
 import { useProductBacklog, BacklogCategory, BacklogItem, useDraftProducts } from '@/hooks/catalog'
 import { AdvancedFeatureGuide } from '@/components/guide'
 import { ADVANCED_GUIDES } from '@/components/guide'
-import { BacklogAIPanel, DraftProductsPanel } from '@/components/catalog'
+import { BacklogAIPanel, DraftProductsPanel, ProductQuickPreviewModal } from '@/components/catalog'
+import type { QuickPreviewProduct } from '@/components/catalog'
 import { Skeleton } from '@/components/ui/skeleton'
 import { cn } from '@/lib/utils'
 import { Progress } from '@/components/ui/progress'
@@ -24,21 +25,36 @@ export default function ToProcessPage() {
   const [activeTab, setActiveTab] = useState<BacklogCategory | 'drafts'>('all')
   const [viewMode, setViewMode] = useState<'list' | 'ai' | 'drafts'>('ai')
   const { backlogItems, counts, totalEstimatedImpact, filterByCategory, isLoading } = useProductBacklog()
-  const { stats: draftStats } = useDraftProducts()
+  const { stats: draftStats, validateDraft, isValidating } = useDraftProducts()
 
-  // Filtrer selon l'onglet actif (seulement pour les catégories backlog, pas drafts)
+  // Preview modal state
+  const [previewProduct, setPreviewProduct] = useState<QuickPreviewProduct | null>(null)
+  const [previewOpen, setPreviewOpen] = useState(false)
+
+  // Filtrer selon l'onglet actif
   const filteredItems = useMemo(() => {
     if (activeTab === 'drafts') return []
     return filterByCategory(activeTab as BacklogCategory).slice(0, 20)
   }, [activeTab, filterByCategory])
 
-  const getPriorityColor = (priority: string) => {
-    switch (priority) {
-      case 'critical': return 'text-red-500 bg-red-500/10'
-      case 'high': return 'text-orange-500 bg-orange-500/10'
-      case 'medium': return 'text-amber-500 bg-amber-500/10'
-      default: return 'text-blue-500 bg-blue-500/10'
-    }
+  const openPreview = (item: BacklogItem) => {
+    const p = item.product as any
+    setPreviewProduct({
+      id: p.id,
+      name: p.name,
+      description: p.description || null,
+      price: p.price || 0,
+      cost_price: p.cost_price || null,
+      sku: p.sku || null,
+      image_urls: p.image_url ? [p.image_url] : p.images || [],
+      category: p.category || null,
+      brand: p.brand || null,
+      status: p.status || null,
+      source_url: p.source_url || null,
+      source_platform: p.source_platform || null,
+      created_at: p.created_at,
+    })
+    setPreviewOpen(true)
   }
 
   const getPriorityBadge = (priority: string) => {
@@ -50,7 +66,6 @@ export default function ToProcessPage() {
     }
   }
 
-  // Compteur total incluant les brouillons
   const totalToProcess = counts.total + draftStats.total
 
   return (
@@ -231,8 +246,12 @@ export default function ToProcessPage() {
                           )}
                         </div>
                       </div>
-                      <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-2">
                         <Badge variant={priorityBadge.variant}>{priorityBadge.label}</Badge>
+                        <Button size="sm" variant="outline" onClick={() => openPreview(item)}>
+                          <Eye className="h-4 w-4 mr-1" />
+                          Aperçu
+                        </Button>
                         <Button size="sm" onClick={() => navigate(`/products?id=${item.product.id}`)}>
                           {item.suggestedAction}
                         </Button>
@@ -247,6 +266,19 @@ export default function ToProcessPage() {
           </div>
         </TabsContent>
       </Tabs>
+
+      {/* Preview Modal */}
+      <ProductQuickPreviewModal
+        open={previewOpen}
+        onOpenChange={setPreviewOpen}
+        product={previewProduct}
+        onValidate={(id) => {
+          validateDraft(id)
+          setPreviewOpen(false)
+        }}
+        onNavigateToProduct={(id) => navigate(`/products?id=${id}`)}
+        isValidating={isValidating}
+      />
     </ChannablePageWrapper>
   )
 }
