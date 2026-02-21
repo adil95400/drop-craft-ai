@@ -266,19 +266,55 @@ export default function ProductPreviewPage() {
     setNewImageUrl('')
   }
 
-  const handleConfirm = () => {
+  const handleConfirm = async () => {
     if (!editedProduct) return
     const filtered = editedProduct.images.filter((_, i) => selectedImages.has(i) && !failedImages.has(i))
     if (filtered.length === 0) {
       toast({ title: 'Aucune image valide', variant: 'destructive' }); return
     }
-    // Navigate back with the edited product data
-    navigate(returnTo || '/import/autods', {
-      state: {
-        confirmedProduct: { ...editedProduct, images: filtered },
-        queuedItemId
-      }
-    })
+    setIsImporting(true)
+    try {
+      const finalProduct = { ...editedProduct, images: filtered }
+      const { data, error } = await supabase.functions.invoke('quick-import-url', {
+        body: {
+          url: finalProduct.source_url,
+          action: 'import',
+          price_multiplier: finalProduct.suggested_price > 0 && finalProduct.price > 0
+            ? finalProduct.suggested_price / finalProduct.price
+            : 1.5,
+          override_data: {
+            title: finalProduct.title,
+            description: finalProduct.description,
+            images: finalProduct.images,
+            brand: finalProduct.brand,
+            sku: finalProduct.sku,
+            price: finalProduct.price,
+            suggested_price: finalProduct.suggested_price,
+            status: productStatus,
+            category,
+            subcategory,
+            variants: finalProduct.variants,
+            videos: finalProduct.videos,
+          }
+        }
+      })
+      if (error) throw error
+      if (!data?.success) throw new Error(data?.error || 'Erreur lors de l\'import')
+      
+      toast({
+        title: '✅ Produit importé avec succès',
+        description: data.message || `"${finalProduct.title}" ajouté au catalogue`,
+      })
+      navigate('/products')
+    } catch (err) {
+      toast({
+        title: 'Erreur d\'import',
+        description: err instanceof Error ? err.message : 'Erreur inconnue',
+        variant: 'destructive'
+      })
+    } finally {
+      setIsImporting(false)
+    }
   }
 
   const handleGoBack = () => {
