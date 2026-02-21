@@ -10,7 +10,7 @@ export type { UnifiedProduct }
 export interface ProductFilters {
   search?: string
   category?: string
-  status?: 'active' | 'inactive'
+  status?: 'active' | 'paused' | 'draft' | 'archived'
   minPrice?: number
   maxPrice?: number
   lowStock?: boolean
@@ -54,7 +54,7 @@ export function useUnifiedProducts(filters?: ProductFilters) {
   // Statistiques calculées en temps réel
   const stats = useMemo(() => {
     const active = products.filter(p => p.status === 'active')
-    const inactive = products.filter(p => p.status === 'inactive')
+    const inactive = products.filter(p => p.status === 'paused' || p.status === 'archived')
     const lowStock = products.filter(p => (p.stock_quantity || 0) < 10 && (p.stock_quantity || 0) > 0)
     const outOfStock = products.filter(p => (p.stock_quantity || 0) === 0)
     
@@ -259,7 +259,7 @@ export function useProduct(productId: string) {
         
         return {
           ...product,
-          status: product.status as 'active' | 'inactive',
+          status: (['active', 'paused', 'draft', 'archived'].includes(product.status) ? product.status : 'draft') as UnifiedProduct['status'],
           source: 'products' as const,
           images: product.image_url ? [product.image_url] : [],
           variants
@@ -281,7 +281,7 @@ export function useProduct(productId: string) {
           description: undefined,
           price: imported.price || 0,
           cost_price: undefined,
-          status: (imported.status === 'published' ? 'active' : 'inactive') as 'active' | 'inactive',
+          status: (imported.status === 'published' ? 'active' : 'draft') as UnifiedProduct['status'],
           stock_quantity: 0,
           sku: undefined,
           category: imported.category || undefined,

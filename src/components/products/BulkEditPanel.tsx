@@ -41,7 +41,7 @@ import {
 import { cn } from '@/lib/utils'
 import { useToast } from '@/hooks/use-toast'
 import { supabase } from '@/integrations/supabase/client'
-import { UnifiedProduct } from '@/hooks/useUnifiedProducts'
+import { UnifiedProduct } from '@/hooks/unified/useProductsUnified'
 
 interface BulkEditPanelProps {
   selectedProducts: UnifiedProduct[]
@@ -134,8 +134,8 @@ export function BulkEditPanel({ selectedProducts, onClose, onComplete, onCancel 
       let processed = 0
 
       for (const product of selectedProducts) {
-        // Déterminer la table source
-        const tableName = product.source === 'products' ? 'products' : 'imported_products'
+        // Always use products table
+        const tableName = 'products'
         
         let updateData: any = {}
 
@@ -321,7 +321,7 @@ export function BulkEditPanel({ selectedProducts, onClose, onComplete, onCancel 
                 <Button
                   variant="outline"
                   className="h-20 flex-col gap-2"
-                  onClick={() => handleAction({ operation: 'status', value: 'inactive' })}
+                  onClick={() => handleAction({ operation: 'status', value: 'paused' })}
                   disabled={isProcessing}
                 >
                   <EyeOff className="h-5 w-5 text-orange-600" />

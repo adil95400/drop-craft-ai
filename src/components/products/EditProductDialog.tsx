@@ -151,14 +151,16 @@ export function EditProductDialog({ product, open, onOpenChange, onSave }: EditP
                     <Label htmlFor="status">Statut</Label>
                     <Select 
                       value={formData.status} 
-                      onValueChange={(value: 'active' | 'inactive') => setFormData(prev => ({ ...prev, status: value }))}
+                      onValueChange={(value: 'active' | 'paused' | 'draft' | 'archived') => setFormData(prev => ({ ...prev, status: value }))}
                     >
                       <SelectTrigger>
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="active">Actif</SelectItem>
-                        <SelectItem value="inactive">Inactif</SelectItem>
+                        <SelectItem value="paused">En pause</SelectItem>
+                        <SelectItem value="draft">Brouillon</SelectItem>
+                        <SelectItem value="archived">Archivé</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>

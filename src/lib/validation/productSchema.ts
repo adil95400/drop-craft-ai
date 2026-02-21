@@ -35,8 +35,8 @@ export const productSchema = z.object({
     .min(0, { message: "Le stock ne peut pas être négatif" })
     .max(999999, { message: "Le stock est trop élevé" }),
   
-  status: z.enum(['active', 'inactive'], {
-    errorMap: () => ({ message: "Le statut doit être 'active' ou 'inactive'" })
+  status: z.enum(['active', 'paused', 'draft', 'archived'], {
+    errorMap: () => ({ message: "Le statut doit être 'active', 'paused', 'draft' ou 'archived'" })
   }),
   
   image_url: z.string()
@@ -64,7 +64,7 @@ export const importProductSchema = productSchema.extend({
     .max(200),
   price: z.number().min(0),
   stock_quantity: z.number().int().min(0).default(0),
-  status: z.enum(['active', 'inactive']).default('active'),
+  status: z.enum(['active', 'paused', 'draft', 'archived']).default('active'),
 })
 
 // Schéma pour l'export

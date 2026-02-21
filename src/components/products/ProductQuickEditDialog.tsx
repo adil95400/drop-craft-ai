@@ -57,7 +57,7 @@ export function ProductQuickEditDialog({
         price: parseFloat(formData.price) || 0,
         cost_price: formData.cost_price ? parseFloat(formData.cost_price) : null,
         stock_quantity: formData.stock_quantity ? parseInt(formData.stock_quantity) : null,
-        status: formData.status as 'active' | 'inactive'
+        status: formData.status as 'active' | 'paused' | 'draft' | 'archived'
       }
 
       await updateProduct({ id: product.id, updates })
@@ -194,7 +194,9 @@ export function ProductQuickEditDialog({
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="active">Actif</SelectItem>
-                  <SelectItem value="inactive">Inactif</SelectItem>
+                  <SelectItem value="paused">En pause</SelectItem>
+                  <SelectItem value="draft">Brouillon</SelectItem>
+                  <SelectItem value="archived">Archivé</SelectItem>
                 </SelectContent>
               </Select>
             </div>

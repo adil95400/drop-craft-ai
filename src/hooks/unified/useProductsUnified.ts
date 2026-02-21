@@ -17,7 +17,7 @@ export interface UnifiedProduct {
   price: number
   cost_price?: number
   stock_quantity?: number
-  status: 'active' | 'inactive' | 'draft' | 'archived'
+  status: 'active' | 'paused' | 'draft' | 'archived'
   category?: string
   sku?: string
   image_url?: string
@@ -46,7 +46,7 @@ export interface UnifiedProduct {
 }
 
 export interface ProductFilters {
-  status?: 'active' | 'inactive' | 'draft' | 'archived'
+  status?: 'active' | 'paused' | 'draft' | 'archived'
   category?: string
   search?: string
   low_stock?: boolean
@@ -85,7 +85,7 @@ function mapRecord(r: ProductRecord): UnifiedProduct {
     price: r.price ?? 0,
     cost_price: r.cost_price || undefined,
     stock_quantity: r.stock_quantity,
-    status: (['active', 'inactive', 'draft', 'archived'].includes(r.status) ? r.status : 'draft') as UnifiedProduct['status'],
+    status: (['active', 'paused', 'draft', 'archived'].includes(r.status) ? r.status : 'draft') as UnifiedProduct['status'],
     category: r.category ?? undefined,
     sku: r.sku ?? undefined,
     image_url: r.images?.length > 0 ? r.images[0] : undefined,
