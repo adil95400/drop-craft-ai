@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '@/integrations/supabase/client'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -54,6 +55,7 @@ interface ImportedProduct {
 }
 
 export default function ImportedProductsPage() {
+  const navigate = useNavigate()
   const { user } = useAuth()
   const { toast } = useToast()
   const queryClient = useQueryClient()
@@ -544,8 +546,19 @@ export default function ImportedProductsPage() {
               key={product.id} 
               className="hover:shadow-lg transition-shadow relative cursor-pointer"
               onClick={() => {
-                setSelectedProduct(product)
-                openModal('productDetails', { product })
+                navigate('/import/preview', {
+                  state: {
+                    product: {
+                      title: product.name,
+                      description: product.description || '',
+                      price: product.price || 0,
+                      images: product.image_urls || (product.image_url ? [product.image_url] : []),
+                      category: product.category || '',
+                      sku: product.sku || '',
+                    },
+                    returnTo: '/stores/imported-products',
+                  }
+                })
               }}
             >
               <div 

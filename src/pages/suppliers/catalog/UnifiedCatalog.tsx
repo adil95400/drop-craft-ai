@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import { 
   Search, RefreshCw, Package, TrendingUp, Star, 
   ShoppingCart, Eye, Heart, Grid3X3, List, Filter,
@@ -92,6 +93,7 @@ interface UnifiedCatalogProps {
 type TabFilter = 'all' | 'winners' | 'trending' | 'bestsellers' | 'low_stock';
 
 export function UnifiedCatalog({ supplierId }: UnifiedCatalogProps) {
+  const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [stockFilter, setStockFilter] = useState<string>("all");
@@ -838,7 +840,19 @@ export function UnifiedCatalog({ supplierId }: UnifiedCatalogProps) {
 
                   {/* Quick view overlay */}
                   <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-                    <Button size="sm" variant="secondary" onClick={() => setSelectedProduct(product)}>
+                    <Button size="sm" variant="secondary" onClick={() => navigate('/import/preview', {
+                      state: {
+                        product: {
+                          title: product.name,
+                          description: product.description,
+                          price: product.retail_price,
+                          images: product.images || (product.image_url ? [product.image_url] : []),
+                          category: product.category,
+                          sku: product.id,
+                        },
+                        returnTo: '/suppliers/catalog',
+                      }
+                    })}>
                       <Eye className="h-4 w-4 mr-1" />
                       Aperçu
                     </Button>

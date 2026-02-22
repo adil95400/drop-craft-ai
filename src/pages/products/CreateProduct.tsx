@@ -269,7 +269,19 @@ export default function CreateProduct() {
             </Button>
             <Button
               variant="outline"
-              onClick={() => setShowPreview(!showPreview)}
+              onClick={() => navigate('/import/preview', {
+                state: {
+                  product: {
+                    title: formData.name,
+                    description: formData.description,
+                    price: parseFloat(formData.price) || 0,
+                    images: images,
+                    category: formData.category,
+                    sku: formData.sku,
+                  },
+                  returnTo: '/products/create',
+                }
+              })}
               className="gap-2"
             >
               <Eye className="h-4 w-4" />
