@@ -1,10 +1,10 @@
 /**
- * useSuppliersUnified - Hook unifié pour les fournisseurs (API V1)
- * All reads delegated to /v1/suppliers/* endpoints
+ * useSuppliersUnified - Hook unifié pour les fournisseurs
+ * Reads directly from the suppliers table
  */
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useAuth } from '@/contexts/AuthContext'
-import { suppliersApi } from '@/services/api/client'
+import { supabase } from '@/integrations/supabase/client'
 
 export interface UnifiedSupplier {
   id: string
@@ -36,30 +36,32 @@ export interface UnifiedSupplier {
   credentials_updated_at?: string
 }
 
-function mapSupplier(item: any, userId: string): UnifiedSupplier {
+function mapSupplier(item: any): UnifiedSupplier {
   return {
     id: item.id,
     name: item.name,
     display_name: item.name,
     description: item.description,
-    supplier_type: item.api_type || 'api',
-    category: item.category || 'General',
+    supplier_type: item.supplier_type || item.api_type || 'api',
+    category: item.sector || 'General',
     country: item.country,
-    sector: item.category,
-    status: item.is_verified ? 'verified' : 'pending',
-    connection_status: item.is_verified ? 'connected' : 'disconnected',
-    product_count: 0,
+    sector: item.sector,
+    status: item.status || 'active',
+    connection_status: item.status === 'active' ? 'connected' : 'disconnected',
+    product_count: item.product_count || 0,
     rating: item.rating || 0,
     success_rate: 100,
     error_count: 0,
     access_count: 0,
     is_premium: item.is_featured || false,
-    tags: [],
-    user_id: userId,
+    tags: item.tags || [],
+    user_id: item.user_id,
     created_at: item.created_at,
     updated_at: item.updated_at,
     logo_url: item.logo_url,
-    website: item.website
+    website: item.website,
+    api_endpoint: item.api_endpoint,
+    last_sync_at: item.last_sync_at,
   }
 }
 
@@ -76,14 +78,27 @@ export function useSuppliersUnified(filters?: {
     queryFn: async () => {
       if (!user) return []
       
-      const res = await suppliersApi.list({
-        per_page: 100,
-        category: filters?.category,
-        q: filters?.search
-      })
+      const { data: items, error: dbError } = await supabase
+        .from('suppliers')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+        .limit(100)
 
-      let result = (res.items || []).map((item: any) => mapSupplier(item, user.id))
+      if (dbError) {
+        console.error('Error fetching suppliers:', dbError)
+        throw dbError
+      }
 
+      let result = (items || []).map(mapSupplier)
+
+      if (filters?.category) {
+        result = result.filter(s => s.category === filters.category)
+      }
+      if (filters?.search) {
+        const q = filters.search.toLowerCase()
+        result = result.filter(s => s.name.toLowerCase().includes(q))
+      }
       if (filters?.status) {
         result = result.filter(s => s.status === filters.status)
       }
