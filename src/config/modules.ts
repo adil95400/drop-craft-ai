@@ -300,6 +300,21 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     groupId: 'catalog'
   },
 
+  // 8. Vues Produits - Filtres prédéfinis et vues enregistrées
+  productViews: {
+    id: 'productViews',
+    name: 'Vues Produits',
+    icon: 'BookmarkCheck',
+    enabled: true,
+    minPlan: 'standard',
+    route: '/products/views',
+    features: ['saved-views', 'smart-filters', 'predefined-views'],
+    description: 'Filtres prédéfinis et vues enregistrées',
+    category: 'product',
+    order: 8,
+    groupId: 'catalog'
+  },
+
   // ═══════════════════════════════════════════════════════════════════════════
   // PERFORMANCE - Modules Diagnostic & Analyse
   // ═══════════════════════════════════════════════════════════════════════════
