@@ -18,10 +18,11 @@ interface RateLimitResult {
 
 // Predefined rate limits for different operations
 export const RATE_LIMITS = {
-  COMPETITIVE_ANALYSIS: { maxRequests: 10, windowMinutes: 60 }, // 10 per hour
-  ANALYZE_COMPETITOR: { maxRequests: 20, windowMinutes: 60 }, // 20 per hour
-  IMPORT: { maxRequests: 5, windowMinutes: 60 }, // 5 per hour
-  API_GENERAL: { maxRequests: 60, windowMinutes: 60 }, // 60 per hour
+  COMPETITIVE_ANALYSIS: { maxRequests: 10, windowMinutes: 60 },
+  ANALYZE_COMPETITOR: { maxRequests: 20, windowMinutes: 60 },
+  IMPORT: { maxRequests: 5, windowMinutes: 60 },
+  SYNC: { maxRequests: 10, windowMinutes: 60 },
+  API_GENERAL: { maxRequests: 60, windowMinutes: 60 },
 } as const;
 
 /**
