@@ -87,6 +87,7 @@ const SEOContentHubPage = lazy(() => import('@/pages/seo/SEOContentHubPage'));
 const SubscriptionDashboard = lazy(() => import('@/pages/SubscriptionDashboard'));
 const ChoosePlanPage = lazy(() => import('@/pages/ChoosePlanPage'));
 const BillingPage = lazy(() => import('@/pages/BillingPage'));
+const ProfilePage = lazy(() => import('@/pages/profile/ProfilePage'));
 const APIDocumentationPage = lazy(() => import('@/pages/APIDocumentationPage'));
 
 // Loading component
@@ -173,7 +174,7 @@ export function AppRoutes() {
           <Route path="/marketing/*" element={<Protected><MarketingRoutes /></Protected>} />
           <Route path="/seo/content-hub" element={<Protected><SEOContentHubPage /></Protected>} />
           <Route path="/seo/*" element={<Navigate to="/seo/content-hub" replace />} />
-          <Route path="/crm" element={<Protected><CRMDashboardPage /></Protected>} />
+          <Route path="/crm/*" element={<Protected><CRMDashboardPage /></Protected>} />
           <Route path="/inventory/*" element={<Navigate to="/stock" replace />} />
           
           {/* Tools & Utilities */}
@@ -222,7 +223,7 @@ export function AppRoutes() {
           <Route path="/services" element={<Protected><FreelanceMarketplacePage /></Protected>} />
           
           {/* Profile & Subscription (Settings group) */}
-          <Route path="/profile" element={<Protected><BillingPage /></Protected>} />
+          <Route path="/profile" element={<Protected><ProfilePage /></Protected>} />
           <Route path="/subscription" element={<Protected><SubscriptionDashboard /></Protected>} />
           <Route path="/choose-plan" element={<Protected><ChoosePlanPage /></Protected>} />
           <Route path="/api/documentation" element={<Protected><APIDocumentationPage /></Protected>} />

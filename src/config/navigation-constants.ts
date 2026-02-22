@@ -11,7 +11,8 @@ import {
   LayoutDashboard, PackageCheck, Bell, Eye, Trophy, FileEdit, Search,
   Star, Lock, Crown, User, CreditCard, Receipt, Key, FlaskConical,
   BookmarkCheck, AlertCircle, Image, FolderTree, HeartPulse, Contact,
-  Code, Stethoscope
+  Code, Stethoscope, PieChart, UserPlus, Award, Share2, Play, Palette,
+  FileText
 } from "lucide-react"
 import type { NavGroupId } from "@/config/modules"
 
@@ -44,7 +45,7 @@ export const ICON_MAP: Record<string, React.ComponentType<{ className?: string }
   'Megaphone': Megaphone, 
   'Tag': Tag, 
   'Mail': Mail, 
-  'FileText': FileEdit,
+  'FileText': FileText,
   'Rss': Rss, 
   'PackageCheck': PackageCheck, 
   'Plug': Plug, 
@@ -86,6 +87,12 @@ export const ICON_MAP: Record<string, React.ComponentType<{ className?: string }
   'Contact': Contact,
   'Code': Code,
   'Stethoscope': Stethoscope,
+  'PieChart': PieChart,
+  'UserPlus': UserPlus,
+  'Award': Award,
+  'Share2': Share2,
+  'Play': Play,
+  'Palette': Palette,
 } as const
 
 // Static group colors - 6 groupes consolidés
