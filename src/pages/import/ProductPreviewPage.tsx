@@ -20,7 +20,7 @@ import {
   ZoomIn, Loader2, Tag, DollarSign, FileText, Film, Star,
   MessageSquare, Play, Sparkles, ClipboardList, AlertCircle,
   ArrowLeft, Globe, Search, BarChart3, Layers, Settings,
-  ChevronDown, ChevronUp, ExternalLink, Copy
+  ChevronDown, ChevronUp, ExternalLink, Copy, Save
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { toast } from '@/hooks/use-toast'
@@ -147,6 +147,7 @@ export default function ProductPreviewPage() {
   const [isOptimizingDesc, setIsOptimizingDesc] = useState(false)
   const [isOptimizingCategory, setIsOptimizingCategory] = useState(false)
   const [isImporting, setIsImporting] = useState(false)
+  const [isSaving, setIsSaving] = useState(false)
   const [productStatus, setProductStatus] = useState('draft')
   const [category, setCategory] = useState('')
   const [subcategory, setSubcategory] = useState('')
@@ -321,6 +322,52 @@ export default function ProductPreviewPage() {
     navigate(returnTo || '/import/autods')
   }
 
+  const handleSave = async () => {
+    if (!editedProduct) return
+    setIsSaving(true)
+    try {
+      const filtered = editedProduct.images.filter((_, i) => selectedImages.has(i) && !failedImages.has(i))
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) throw new Error('Non authentifié')
+
+      const productData = {
+        title: editedProduct.title,
+        description: editedProduct.description,
+        price: editedProduct.suggested_price || editedProduct.price,
+        compare_at_price: editedProduct.price,
+        cost_price: editedProduct.price,
+        image_url: filtered[0] || null,
+        image_urls: filtered,
+        images: filtered,
+        brand: editedProduct.brand || null,
+        sku: editedProduct.sku || null,
+        source_url: editedProduct.source_url || null,
+        source_platform: editedProduct.platform_detected || null,
+        category: category || null,
+        status: productStatus,
+        profit_margin: parseFloat(margin) || 0,
+        user_id: user.id,
+      }
+
+      const { error } = await supabase.from('products').insert(productData)
+      if (error) throw error
+
+      toast({
+        title: '✅ Produit sauvegardé',
+        description: `"${editedProduct.title}" a été enregistré dans le catalogue`,
+      })
+      navigate(returnTo || '/products')
+    } catch (err) {
+      toast({
+        title: 'Erreur de sauvegarde',
+        description: err instanceof Error ? err.message : 'Erreur inconnue',
+        variant: 'destructive',
+      })
+    } finally {
+      setIsSaving(false)
+    }
+  }
+
   const validSelectedCount = [...selectedImages].filter(i => !failedImages.has(i)).length
   const mainImage = editedProduct.images[mainImageIndex]
   const margin = editedProduct.suggested_price > 0 && editedProduct.price > 0
@@ -355,6 +402,20 @@ export default function ProductPreviewPage() {
                 <SelectItem value="active">Actif</SelectItem>
               </SelectContent>
             </Select>
+            <Button
+              onClick={handleSave}
+              disabled={isSaving}
+              size="sm"
+              variant="outline"
+              className="gap-1.5"
+            >
+              {isSaving ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Save className="h-4 w-4" />
+              )}
+              Sauvegarder
+            </Button>
             <Button
               onClick={handleConfirm}
               disabled={isImporting || validSelectedCount === 0}
