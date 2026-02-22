@@ -48,6 +48,12 @@ import {
   Contact,
   Code,
   Stethoscope,
+  PieChart,
+  UserPlus,
+  Award,
+  Share2,
+  Play,
+  Palette,
   type LucideIcon
 } from 'lucide-react'
 
@@ -99,7 +105,13 @@ export const iconMap: Record<string, LucideIcon> = {
   HeartPulse,
   Contact,
   Code,
-  Stethoscope
+  Stethoscope,
+  PieChart,
+  UserPlus,
+  Award,
+  Share2,
+  Play,
+  Palette
 }
 
 export function getIcon(iconName: string): LucideIcon {
