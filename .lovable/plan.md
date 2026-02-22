@@ -19,11 +19,11 @@ sécurité multi-tenant, et parité concurrentielle (AutoDS/DSers/Channable).
 | `url-import` | **SÉCURISÉ** → JWT + products canon | ✅ Done |
 | `import-products` | **SÉCURISÉ** → JWT + products canon | ✅ Done |
 | `quick-import-url` | **SÉCURISÉ** → JWT obligatoire, écrit dans products | ✅ Done |
-| `bulk-import-products` | **DÉLÉGUER** → robust-import | 🔲 À faire |
-| `bulk-import-multi` | **DÉLÉGUER** → robust-import | 🔲 À faire |
-| `csv-import` | **DÉLÉGUER** → robust-import | 🔲 À faire |
-| `unified-import` | **DÉPRÉCIER** | 🔲 À faire |
-| `xml-json-import` | **DÉLÉGUER** → robust-import | 🔲 À faire |
+| `bulk-import-products` | **DÉLÉGUER** → robust-import | ✅ Done |
+| `bulk-import-multi` | **DÉLÉGUER** → robust-import | ✅ Done |
+| `csv-import` | **DÉLÉGUER** → robust-import | ✅ Done |
+| `unified-import` | **DÉPRÉCIÉ** → stub redirect | ✅ Done |
+| `xml-json-import` | **DÉLÉGUER** → robust-import | ✅ Done |
 | `import-cron` | **DOCUMENTÉ** — Exception service_role (cron) | ✅ Done |
 
 ### 1.2 Sécurisation des Edge Functions
