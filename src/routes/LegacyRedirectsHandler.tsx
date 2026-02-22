@@ -27,15 +27,15 @@ const EXTENDED_REDIRECTS: Record<string, string> = {
   // Stores
   '/stores': '/stores-channels',
   
-  // CRM (top-level redirects to marketing)
-  '/crm': '/marketing/crm',
-  '/crm/leads': '/marketing/crm/leads',
-  '/crm/emails': '/marketing/crm/emails',
-  '/crm/calls': '/marketing/crm/calls',
-  '/crm/calendar': '/marketing/crm/calendar',
-  '/crm/activity': '/marketing/crm/activity',
-  '/crm/pipeline': '/marketing/crm/pipeline',
-  '/crm/scoring': '/marketing/crm/scoring',
+  // CRM (legacy marketing/crm redirects to /crm)
+  '/marketing/crm': '/crm',
+  '/marketing/crm/leads': '/crm/leads',
+  '/marketing/crm/emails': '/crm/emails',
+  '/marketing/crm/calls': '/crm/calls',
+  '/marketing/crm/calendar': '/crm/calendar',
+  '/marketing/crm/activity': '/crm/activity',
+  '/marketing/crm/pipeline': '/crm/pipeline',
+  '/marketing/crm/scoring': '/crm/scoring',
   
   // SEO  
   '/seo': '/marketing/seo',
@@ -174,7 +174,7 @@ export function LegacyRedirectHandler({ children }: { children: React.ReactNode 
       { pattern: '/dashboard/stores/', redirect: '/stores-channels/' },
       { pattern: '/dashboard/settings/', redirect: '/settings/' },
       { pattern: '/stores/', redirect: '/stores-channels/' },
-      { pattern: '/crm/', redirect: '/marketing/crm/' },
+      { pattern: '/marketing/crm/', redirect: '/crm/' },
       { pattern: '/produits/', redirect: '/products/' },
       { pattern: '/fournisseurs/', redirect: '/suppliers/' },
       { pattern: '/attributes/', redirect: '/catalog/attributes/' },

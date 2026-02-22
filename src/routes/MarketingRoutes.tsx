@@ -81,7 +81,7 @@ export function MarketingRoutes() {
       <Route path="creative-studio" element={<CreativeStudioPage />} />
       
       {/* Legacy redirects */}
-      <Route path="crm-ultra-pro" element={<Navigate to="/marketing/crm" replace />} />
+      <Route path="crm-ultra-pro" element={<Navigate to="/crm" replace />} />
       <Route path="seo-ultra-pro" element={<Navigate to="/marketing/seo" replace />} />
     </Routes>
   );

@@ -63,7 +63,7 @@ const Header = () => {
   const solutionsItems = [
     {
       title: "CRM",
-      href: "/marketing/crm",
+      href: "/crm",
       description: "Gérez vos clients et prospects",
       icon: Users
     },

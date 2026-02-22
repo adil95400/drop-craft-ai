@@ -41,6 +41,13 @@ import {
   RefreshCw,
   History,
   Link,
+  AlertCircle,
+  Image,
+  FolderTree,
+  HeartPulse,
+  Contact,
+  Code,
+  Stethoscope,
   type LucideIcon
 } from 'lucide-react'
 
@@ -85,7 +92,14 @@ export const iconMap: Record<string, LucideIcon> = {
   Plus,
   RefreshCw,
   History,
-  Link
+  Link,
+  AlertCircle,
+  Image,
+  FolderTree,
+  HeartPulse,
+  Contact,
+  Code,
+  Stethoscope
 }
 
 export function getIcon(iconName: string): LucideIcon {
