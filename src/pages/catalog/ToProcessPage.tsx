@@ -14,8 +14,7 @@ import { AlertCircle, TrendingUp, CheckCircle, Zap, Filter, ArrowUpDown, Package
 import { useProductBacklog, BacklogCategory, BacklogItem, useDraftProducts } from '@/hooks/catalog'
 import { AdvancedFeatureGuide } from '@/components/guide'
 import { ADVANCED_GUIDES } from '@/components/guide'
-import { BacklogAIPanel, DraftProductsPanel, ProductQuickPreviewModal } from '@/components/catalog'
-import type { QuickPreviewProduct } from '@/components/catalog'
+import { BacklogAIPanel, DraftProductsPanel } from '@/components/catalog'
 import { Skeleton } from '@/components/ui/skeleton'
 import { cn } from '@/lib/utils'
 import { Progress } from '@/components/ui/progress'
@@ -27,9 +26,8 @@ export default function ToProcessPage() {
   const { backlogItems, counts, totalEstimatedImpact, filterByCategory, isLoading } = useProductBacklog()
   const { stats: draftStats, validateDraft, isValidating } = useDraftProducts()
 
-  // Preview modal state
-  const [previewProduct, setPreviewProduct] = useState<QuickPreviewProduct | null>(null)
-  const [previewOpen, setPreviewOpen] = useState(false)
+
+
 
   // Filtrer selon l'onglet actif
   const filteredItems = useMemo(() => {
@@ -52,23 +50,6 @@ export default function ToProcessPage() {
         returnTo: '/catalog/to-process',
       }
     })
-    return
-    setPreviewProduct({
-      id: p.id,
-      name: p.name,
-      description: p.description || null,
-      price: p.price || 0,
-      cost_price: p.cost_price || null,
-      sku: p.sku || null,
-      image_urls: p.image_url ? [p.image_url] : p.images || [],
-      category: p.category || null,
-      brand: p.brand || null,
-      status: p.status || null,
-      source_url: p.source_url || null,
-      source_platform: p.source_platform || null,
-      created_at: p.created_at,
-    })
-    setPreviewOpen(true)
   }
 
   const getPriorityBadge = (priority: string) => {
@@ -281,18 +262,6 @@ export default function ToProcessPage() {
         </TabsContent>
       </Tabs>
 
-      {/* Preview Modal */}
-      <ProductQuickPreviewModal
-        open={previewOpen}
-        onOpenChange={setPreviewOpen}
-        product={previewProduct}
-        onValidate={(id) => {
-          validateDraft(id)
-          setPreviewOpen(false)
-        }}
-        onNavigateToProduct={(id) => navigate(`/products?id=${id}`)}
-        isValidating={isValidating}
-      />
     </ChannablePageWrapper>
   )
 }

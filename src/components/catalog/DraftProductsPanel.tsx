@@ -4,6 +4,7 @@
  * Phase 3: Interface de gestion des imports incomplets
  */
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -171,8 +172,7 @@ function DraftProductCard({ product, issues, onValidate, onDelete, onPreview, is
 }
 
 export function DraftProductsPanel() {
-  const [previewProduct, setPreviewProduct] = useState<QuickPreviewProduct | null>(null)
-  const [previewOpen, setPreviewOpen] = useState(false)
+  const navigate = useNavigate()
   const { 
     draftProducts, 
     stats, 
@@ -185,22 +185,19 @@ export function DraftProductsPanel() {
   } = useDraftProducts()
 
   const openPreview = (product: DraftProduct) => {
-    setPreviewProduct({
-      id: product.id,
-      name: product.name,
-      description: product.description,
-      price: product.price,
-      cost_price: product.cost_price,
-      sku: product.sku,
-      image_urls: product.image_urls,
-      category: product.category,
-      brand: product.brand,
-      status: product.status,
-      source_url: product.source_url,
-      source_platform: product.source_platform,
-      created_at: product.created_at,
+    navigate('/import/preview', {
+      state: {
+        product: {
+          title: product.name,
+          description: product.description || '',
+          price: product.price || 0,
+          images: product.image_urls || [],
+          category: product.category || '',
+          sku: product.sku || '',
+        },
+        returnTo: '/catalog/to-process',
+      }
     })
-    setPreviewOpen(true)
   }
 
   if (isLoading) {
@@ -301,16 +298,6 @@ export function DraftProductsPanel() {
       </CardContent>
     </Card>
 
-      <ProductQuickPreviewModal
-        open={previewOpen}
-        onOpenChange={setPreviewOpen}
-        product={previewProduct}
-        onValidate={(id) => {
-          validateDraft(id)
-          setPreviewOpen(false)
-        }}
-        isValidating={isValidating}
-      />
     </>
   )
 }
