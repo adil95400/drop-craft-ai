@@ -146,6 +146,7 @@ export default function ProductPreviewPage() {
   const [isOptimizingTitle, setIsOptimizingTitle] = useState(false)
   const [isOptimizingDesc, setIsOptimizingDesc] = useState(false)
   const [isOptimizingCategory, setIsOptimizingCategory] = useState(false)
+  const [isOptimizingBrand, setIsOptimizingBrand] = useState(false)
   const [isImporting, setIsImporting] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
   const [productStatus, setProductStatus] = useState('draft')
@@ -200,6 +201,38 @@ export default function ProductPreviewPage() {
       toast({ title: 'Erreur IA', description: err instanceof Error ? err.message : 'Erreur', variant: 'destructive' })
     } finally {
       setter(false)
+    }
+  }
+
+  const optimizeBrandWithAI = async () => {
+    setIsOptimizingBrand(true)
+    try {
+      const { data, error } = await supabase.functions.invoke('ai-product-optimizer', {
+        body: {
+          productId: 'preview',
+          optimizationType: 'brand',
+          currentData: {
+            name: editedProduct.title,
+            description: editedProduct.description,
+            category: category || '',
+            price: editedProduct.price,
+            brand: editedProduct.brand,
+            source_url: editedProduct.source_url,
+          }
+        }
+      })
+      if (error) throw error
+      if (data?.result?.optimized_brand) {
+        handleFieldChange('brand', data.result.optimized_brand)
+        toast({ title: '✨ Marque optimisée par IA' })
+      } else if (data?.result?.brand) {
+        handleFieldChange('brand', data.result.brand)
+        toast({ title: '✨ Marque détectée par IA' })
+      }
+    } catch (err) {
+      toast({ title: 'Erreur IA', description: err instanceof Error ? err.message : 'Erreur', variant: 'destructive' })
+    } finally {
+      setIsOptimizingBrand(false)
     }
   }
 
@@ -935,7 +968,19 @@ export default function ProductPreviewPage() {
                   </div>
                   <Separator />
                   <div className="space-y-1.5">
-                    <label className="text-xs text-muted-foreground">Marque / Vendeur</label>
+                    <div className="flex items-center justify-between">
+                      <label className="text-xs text-muted-foreground">Marque / Vendeur</label>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-6 text-xs text-primary gap-1"
+                        onClick={optimizeBrandWithAI}
+                        disabled={isOptimizingBrand}
+                      >
+                        {isOptimizingBrand ? <Loader2 className="h-3 w-3 animate-spin" /> : <Sparkles className="h-3 w-3" />}
+                        Optimiser avec l'IA
+                      </Button>
+                    </div>
                     <Input
                       value={editedProduct.brand || ''}
                       onChange={e => handleFieldChange('brand', e.target.value)}

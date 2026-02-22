@@ -9,7 +9,7 @@ const corsHeaders = {
 interface OptimizeRequest {
   productId: string;
   productSource?: 'products' | 'imported_products' | 'supplier_products';
-  optimizationType?: 'title' | 'description' | 'attributes' | 'seo_meta' | 'category' | 'full';
+  optimizationType?: 'title' | 'description' | 'attributes' | 'seo_meta' | 'category' | 'brand' | 'full';
   tone?: 'professional' | 'casual' | 'luxury' | 'technical';
   currentData?: {
     name?: string;
@@ -150,6 +150,24 @@ Génère et retourne UNIQUEMENT un JSON avec cette structure:
   "season": "...",
   "features": ["...", "..."]
 }`;
+    } else if (optimizationType === 'brand') {
+      systemPrompt = `Tu es un expert en identification de marques e-commerce. Tu analyses les produits pour identifier ou suggérer la marque/vendeur la plus pertinente.`;
+      
+      userPrompt = `Identifie ou suggère la marque/vendeur pour ce produit e-commerce:
+
+Nom: ${currentData.name || 'Sans nom'}
+Description: ${currentData.description || 'Sans description'}
+Catégorie: ${currentData.category || 'Non catégorisé'}
+Marque actuelle: ${currentData.brand || 'Non renseignée'}
+URL source: ${currentData.source_url || 'Non disponible'}
+
+Règles:
+- Si la marque est clairement identifiable dans le titre ou la description, retourne-la
+- Sinon, suggère la marque la plus probable
+- Corrige les fautes d'orthographe ou la casse (ex: "NIKE" → "Nike")
+- Retourne un nom de marque propre et standardisé
+
+Retourne UNIQUEMENT le nom de la marque, sans guillemets ni explications.`;
     } else if (optimizationType === 'category') {
       systemPrompt = `Tu es un expert en catégorisation e-commerce. Tu analyses les produits et suggères les catégories les plus pertinentes parmi les catégories standard du e-commerce.`;
       
@@ -241,6 +259,8 @@ Génère et retourne UNIQUEMENT un JSON avec:
       optimizedResult = { optimized_title: generatedContent };
     } else if (optimizationType === 'description') {
       optimizedResult = { optimized_description: generatedContent };
+    } else if (optimizationType === 'brand') {
+      optimizedResult = { optimized_brand: generatedContent };
     } else if (optimizationType === 'attributes' || optimizationType === 'seo_meta' || optimizationType === 'category') {
       try {
         const jsonMatch = generatedContent.match(/\{[\s\S]*\}/);
