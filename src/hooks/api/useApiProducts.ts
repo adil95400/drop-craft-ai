@@ -31,7 +31,6 @@ export function useApiProducts() {
     }) => {
       const resp = await productsApi.create({
         title: product.title,
-        name: product.title,
         description: product.description,
         sku: product.sku,
         cost_price: product.costPrice ?? 0,
@@ -53,7 +52,7 @@ export function useApiProducts() {
   const updateProduct = useMutation({
     mutationFn: async ({ id, updates }: { id: string; updates: Partial<{ title: string; description: string; costPrice: number; salePrice: number; stock: number; status: string }> }) => {
       const apiUpdates: Record<string, any> = {}
-      if (updates.title) { apiUpdates.title = updates.title; apiUpdates.name = updates.title }
+      if (updates.title) { apiUpdates.title = updates.title }
       if (updates.description) apiUpdates.description = updates.description
       if (updates.costPrice !== undefined) apiUpdates.cost_price = updates.costPrice
       if (updates.salePrice !== undefined) apiUpdates.price = updates.salePrice

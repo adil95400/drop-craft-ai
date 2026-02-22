@@ -205,15 +205,18 @@ async function getProduct(id: string, auth: Auth, reqId: string) {
 }
 
 async function createProduct(req: Request, auth: Auth, reqId: string) {
-  const body = await req.json();
+  const raw = await req.json();
+  // Strip generated column "name" and read-only fields
+  delete raw.name; delete raw.id; delete raw.user_id; delete raw.created_at; delete raw.updated_at;
   const admin = serviceClient();
-  const { data, error } = await admin.from("products").insert({ ...body, user_id: auth.user.id }).select().single();
+  const { data, error } = await admin.from("products").insert({ ...raw, user_id: auth.user.id }).select().single();
   if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
   return json(data, 201, reqId);
 }
 
+// "name" is a GENERATED column (= title), never include it in updates
 const PRODUCT_ALLOWED_FIELDS = new Set([
-  "title","name","description","description_html","sku","barcode","price","compare_at_price",
+  "title","description","description_html","sku","barcode","price","compare_at_price",
   "cost_price","category","brand","supplier","supplier_url","supplier_product_id","status",
   "stock_quantity","weight","weight_unit","images","variants","tags","seo_title","seo_description",
   "shopify_product_id","google_product_id","is_published","image_url","product_type","vendor",
