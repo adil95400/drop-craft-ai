@@ -45,56 +45,88 @@ serve(async (req) => {
     let integrationId = body.integrationId || body.integration_id || body.platform_id
     const type = body.type || body.sync_type || 'products'
 
-    // Auto-detect integration if not provided
-    if (!integrationId) {
-      const { data: autoIntegration } = await supabaseClient
+    // Auto-detect integration: check store_integrations first, then integrations table
+    let integration: any = null
+
+    if (integrationId) {
+      // Try store_integrations first
+      const { data: si } = await supabaseClient
         .from('store_integrations')
-        .select('id')
+        .select('*')
+        .eq('id', integrationId)
+        .eq('user_id', userId)
+        .maybeSingle()
+      
+      if (si) {
+        integration = { ...si, _source: 'store_integrations' }
+      } else {
+        // Fallback to integrations table
+        const { data: ig } = await supabaseClient
+          .from('integrations')
+          .select('*')
+          .eq('id', integrationId)
+          .eq('user_id', userId)
+          .maybeSingle()
+        if (ig) integration = { ...ig, _source: 'integrations' }
+      }
+    } else {
+      // Auto-detect from store_integrations
+      const { data: si } = await supabaseClient
+        .from('store_integrations')
+        .select('*')
         .eq('user_id', userId)
         .eq('platform', 'shopify')
-        .eq('connection_status', 'connected')
+        .eq('is_active', true)
         .limit(1)
         .maybeSingle()
 
-      if (autoIntegration) {
-        integrationId = autoIntegration.id
+      if (si) {
+        integration = { ...si, _source: 'store_integrations' }
+      } else {
+        // Fallback to integrations table
+        const { data: ig } = await supabaseClient
+          .from('integrations')
+          .select('*')
+          .eq('user_id', userId)
+          .eq('platform', 'shopify')
+          .eq('connection_status', 'connected')
+          .limit(1)
+          .maybeSingle()
+        if (ig) integration = { ...ig, _source: 'integrations' }
       }
     }
 
-    if (!integrationId) {
+    if (!integration) {
       return new Response(
         JSON.stringify({ error: 'Aucune boutique Shopify connectée. Veuillez d\'abord connecter votre boutique.' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
 
-    // Get integration - VERIFY OWNERSHIP
-    const { data: integration, error: integrationError } = await supabaseClient
-      .from('store_integrations')
-      .select('*')
-      .eq('id', integrationId)
-      .eq('user_id', userId) // CRITICAL: Verify ownership
-      .single()
+    // Extract credentials from either table format
+    let shopifyDomain: string | null = null
+    let accessToken: string | null = null
 
-    if (integrationError || !integration) {
-      return new Response(
-        JSON.stringify({ error: 'Intégration non trouvée ou non autorisée' }),
-        { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
+    if (integration._source === 'integrations') {
+      // integrations table stores creds in config.credentials
+      const config = integration.config || {}
+      const creds = config.credentials || {}
+      shopifyDomain = creds.shop_domain || integration.store_url
+      accessToken = creds.access_token
+    } else {
+      // store_integrations table
+      const creds = integration.credentials || {}
+      shopifyDomain = creds.shop_domain || integration.store_url
+      accessToken = creds.access_token || integration.access_token_encrypted
     }
 
-    const credentials = integration.credentials || {}
-    
-    if (!credentials.access_token || !credentials.shop_domain) {
-      console.error('Credentials manquants:', { hasToken: !!credentials.access_token, hasDomain: !!credentials.shop_domain })
+    if (!accessToken || !shopifyDomain) {
+      console.error('Credentials manquants:', { hasToken: !!accessToken, hasDomain: !!shopifyDomain, source: integration._source })
       return new Response(
         JSON.stringify({ error: 'Credentials Shopify manquants. Veuillez configurer votre boutique Shopify d\'abord.' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
-
-    const shopifyDomain = credentials.shop_domain
-    const accessToken = credentials.access_token
 
     console.log(`Synchronisation ${type} pour ${shopifyDomain} (user: ${userId})`)
 
@@ -201,15 +233,18 @@ async function syncProducts(
   }
 
   // Update integration status - SCOPED TO USER
+  const updateTable = integration._source === 'integrations' ? 'integrations' : 'store_integrations'
+  const updateData: any = { last_sync_at: new Date().toISOString() }
+  if (updateTable === 'store_integrations') {
+    updateData.sync_status = 'synced'
+  } else {
+    updateData.connection_status = 'connected'
+  }
   await supabaseClient
-    .from('store_integrations')
-    .update({ 
-      connection_status: 'connected',
-      last_sync_at: new Date().toISOString(),
-      product_count: productsToInsert.length
-    })
+    .from(updateTable)
+    .update(updateData)
     .eq('id', integration.id)
-    .eq('user_id', userId) // Verify ownership again
+    .eq('user_id', userId)
 
   return new Response(
     JSON.stringify({ 
