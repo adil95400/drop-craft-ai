@@ -98,8 +98,6 @@ export function AutoSyncSettings({
   // Save mutation
   const saveMutation = useMutation({
     mutationFn: async () => {
-      // NOTE: Certains environnements n'ont pas les colonnes auto_sync_*.
-      // On persiste donc la configuration dans le champ JSON existant `sync_settings`.
       const syncSettingsPayload = {
         auto_sync: config.enabled,
         interval_minutes: config.interval,
@@ -119,10 +117,10 @@ export function AutoSyncSettings({
         },
       }
 
+      // 1. Save to database first
       const { error } = await supabase
         .from('integrations')
         .update({
-          // Sauvegarde principale
           sync_settings: syncSettingsPayload as any,
           updated_at: new Date().toISOString(),
         } as any)
@@ -130,17 +128,19 @@ export function AutoSyncSettings({
 
       if (error) throw error
 
-      // If enabled, register the sync schedule
+      // 2. Try to register schedule (non-blocking — don't fail the save)
       if (config.enabled) {
-        const { error: scheduleError } = await supabase.functions.invoke('auto-sync-channels', {
-          body: {
-            action: 'schedule',
-            channelId,
-            intervalMinutes: config.interval,
-          },
-        })
-
-        if (scheduleError) throw scheduleError
+        try {
+          await supabase.functions.invoke('auto-sync-channels', {
+            body: {
+              action: 'schedule',
+              channelId,
+              intervalMinutes: config.interval,
+            },
+          })
+        } catch (scheduleErr) {
+          console.warn('Schedule registration failed (non-critical):', scheduleErr)
+        }
       }
 
       return config
@@ -149,7 +149,7 @@ export function AutoSyncSettings({
       queryClient.invalidateQueries({ queryKey: ['channel', channelId] })
       setIsDirty(false)
       onConfigChange?.(config)
-      toast({ title: 'Configuration sauvegardée' })
+      toast({ title: 'Configuration sauvegardée', description: 'Vos paramètres ont été enregistrés avec succès' })
     },
     onError: (error) => {
       toast({ 
