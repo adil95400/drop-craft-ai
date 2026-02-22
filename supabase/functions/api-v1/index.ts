@@ -212,12 +212,33 @@ async function createProduct(req: Request, auth: Auth, reqId: string) {
   return json(data, 201, reqId);
 }
 
+const PRODUCT_ALLOWED_FIELDS = new Set([
+  "title","name","description","description_html","sku","barcode","price","compare_at_price",
+  "cost_price","category","brand","supplier","supplier_url","supplier_product_id","status",
+  "stock_quantity","weight","weight_unit","images","variants","tags","seo_title","seo_description",
+  "shopify_product_id","google_product_id","is_published","image_url","product_type","vendor",
+  "default_language","primary_image_url","currency","source_type","source_url","supplier_name",
+  "profit_margin","main_image_url","bullet_points","collections","source_of_truth","fallback_supplier_id"
+]);
+
 async function updateProduct(id: string, req: Request, auth: Auth, reqId: string) {
-  const body = await req.json();
-  delete body.id; delete body.user_id;
+  const raw = await req.json();
+  // Only allow known product columns
+  const body: Record<string, unknown> = {};
+  for (const [k, v] of Object.entries(raw)) {
+    if (PRODUCT_ALLOWED_FIELDS.has(k)) body[k] = v;
+  }
+  if (Object.keys(body).length === 0) {
+    return errorResponse("VALIDATION", "No valid fields to update", 400, reqId);
+  }
   const admin = serviceClient();
+  console.log(`[updateProduct] id=${id}, user=${auth.user.id}, fields=${Object.keys(body).join(",")}`);
   const { data, error } = await admin.from("products").update(body).eq("id", id).eq("user_id", auth.user.id).select().single();
-  if (error || !data) return errorResponse("NOT_FOUND", "Product not found or update failed", 404, reqId);
+  if (error) {
+    console.error(`[updateProduct] DB error: ${error.message}`, error.details, error.hint);
+    return errorResponse("DB_ERROR", error.message, 400, reqId);
+  }
+  if (!data) return errorResponse("NOT_FOUND", "Product not found", 404, reqId);
   return json(data, 200, reqId);
 }
 
