@@ -11,6 +11,8 @@ const ALLOWED_ORIGINS = [
   'https://drop-craft-ai.lovable.app',
   // Lovable preview URLs pattern
   /^https:\/\/[a-z0-9-]+--[a-f0-9-]+\.lovable\.app$/,
+  // Lovable project preview URLs
+  /^https:\/\/[\w-]+\.lovableproject\.com$/,
   // Chrome extension pattern
   /^chrome-extension:\/\/[a-z]{32}$/,
 ];
@@ -59,7 +61,7 @@ export function getSecureCorsHeaders(req: Request): Record<string, string> {
   
   const baseHeaders = {
     'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-extension-token, x-request-id',
+    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-extension-token, x-request-id, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
     'Access-Control-Max-Age': '86400',
   };
   
