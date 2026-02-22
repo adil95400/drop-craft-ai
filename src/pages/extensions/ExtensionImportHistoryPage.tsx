@@ -362,7 +362,19 @@ export default function ExtensionImportHistoryPage() {
                     <div 
                       key={item.id}
                       className="flex items-center gap-4 p-4 border rounded-lg hover:bg-muted/30 transition-colors cursor-pointer"
-                      onClick={() => navigate(`/products/${item.id}`)}
+                      onClick={() => navigate('/import/preview', {
+                        state: {
+                          product: {
+                            title: item.title,
+                            description: item.description || '',
+                            price: item.price || 0,
+                            images: item.image_urls || [],
+                            category: item.category || '',
+                            sku: item.sku || '',
+                          },
+                          returnTo: '/extensions/import-history',
+                        }
+                      })}
                     >
                       {/* Image */}
                       <div className="h-14 w-14 rounded-lg bg-muted flex items-center justify-center overflow-hidden shrink-0">
@@ -417,7 +429,19 @@ export default function ExtensionImportHistoryPage() {
                         <DropdownMenuContent align="end">
                           <DropdownMenuItem onClick={(e) => {
                             e.stopPropagation();
-                            navigate(`/products/${item.id}`);
+                            navigate('/import/preview', {
+                              state: {
+                                product: {
+                                  title: item.title,
+                                  description: item.description || '',
+                                  price: item.price || 0,
+                                  images: item.image_urls || [],
+                                  category: item.category || '',
+                                  sku: item.sku || '',
+                                },
+                                returnTo: '/extensions/import-history',
+                              }
+                            });
                           }}>
                             <Eye className="h-4 w-4 mr-2" />
                             Voir détails

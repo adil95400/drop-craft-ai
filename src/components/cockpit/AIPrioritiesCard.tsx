@@ -62,7 +62,19 @@ export function AIPrioritiesCard({ priorities }: AIPrioritiesCardProps) {
                     <div
                       key={p.id}
                       className="group flex flex-col p-3 rounded-lg border hover:border-primary/30 hover:bg-muted/30 transition-all cursor-pointer"
-                      onClick={() => navigate(`/products/${p.id}`)}
+                      onClick={() => navigate('/import/preview', {
+                        state: {
+                          product: {
+                            title: p.name,
+                            description: '',
+                            price: 0,
+                            images: p.image_url ? [p.image_url] : [],
+                            category: p.category || '',
+                            sku: p.sku || '',
+                          },
+                          returnTo: '/cockpit',
+                        }
+                      })}
                     >
                       <div className="flex items-start gap-2.5 mb-2">
                         {/* Thumbnail */}

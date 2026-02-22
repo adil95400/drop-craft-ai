@@ -55,7 +55,19 @@ export function TopProductsCard({ products }: TopProductsCardProps) {
                 <div
                   key={p.id}
                   className="flex items-center gap-3 p-2 rounded-lg border hover:border-primary/30 hover:bg-muted/30 cursor-pointer transition-all"
-                  onClick={() => navigate(`/products/${p.id}`)}
+                  onClick={() => navigate('/import/preview', {
+                    state: {
+                      product: {
+                        title: p.name || p.title,
+                        description: p.description || '',
+                        price: p.price || 0,
+                        images: p.image_url ? [p.image_url] : [],
+                        category: p.category || '',
+                        sku: p.sku || '',
+                      },
+                      returnTo: '/cockpit',
+                    }
+                  })}
                 >
                   <span className={cn(
                     "text-sm font-bold w-5 text-center shrink-0",

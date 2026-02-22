@@ -328,7 +328,7 @@ export default function ProductDetailsPage() {
 
       if (error) throw error
       toast.success('Produit dupliqué avec succès')
-      if (data?.id) navigate(`/products/${data.id}`)
+      if (data?.id) navigate('/import/preview', { state: { productId: data.id, returnTo: '/products' } })
     } catch (err) {
       toast.error('Erreur lors de la duplication')
     }

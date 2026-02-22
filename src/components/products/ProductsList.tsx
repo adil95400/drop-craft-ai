@@ -94,7 +94,20 @@ export function ProductsList() {
   }
 
   const handleView = (productId: string) => {
-    navigate(`/products/${productId}`)
+    const product = products?.find((p: any) => p.id === productId)
+    navigate('/import/preview', {
+      state: {
+        product: product ? {
+          title: product.name || product.title,
+          description: product.description || '',
+          price: product.price || 0,
+          images: product.image_urls || (product.image_url ? [product.image_url] : []),
+          category: product.category || '',
+          sku: product.sku || '',
+        } : undefined,
+        returnTo: window.location.pathname,
+      }
+    })
   }
 
   const formatPrice = (price: number) => `${price.toLocaleString('fr-FR', {
