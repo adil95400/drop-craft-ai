@@ -1,28 +1,66 @@
 
+# Corrections des lacunes detectees dans l'application
 
-## Ajouter "Vues Produits" dans le menu principal (sidebar)
+## Objectif
+Corriger les 4 problemes identifies lors de l'audit complet de l'application.
 
-### Ce qui sera fait
+---
 
-Un nouveau lien "Vues Produits" sera ajoute dans le groupe **Catalogue** de la sidebar principale, juste apres "Sante du Catalogue". Il apparaitra sur toutes les pages de l'application (desktop et mobile).
+## 1. Ajouter les 6 icones manquantes
 
-### Modifications
+Les sous-modules suivants referent des icones absentes du ICON_MAP :
+- `PieChart` -- Segmentation clients
+- `UserPlus` -- Leads CRM
+- `Award` -- Programme fidelite
+- `Share2` -- Social commerce
+- `Play` -- Declencheurs automation
+- `Palette` -- Studio automation
 
-**1. `src/config/modules.ts`** - Ajouter un nouveau module `productViews`
+**Fichiers modifies** : `src/config/navigation-constants.ts`, `src/lib/icon-map.ts`
 
-- Ajouter une entree dans `MODULE_REGISTRY` avec :
-  - `id: 'productViews'`
-  - `name: 'Vues Produits'`
-  - `icon: 'BookmarkCheck'`
-  - `route: '/products/views'`
-  - `groupId: 'catalog'`
-  - `order: 8` (apres Sante du Catalogue qui est en order 7)
+---
 
-**2. `src/config/navigation-constants.ts`** - Ajouter l'icone `BookmarkCheck`
+## 2. Ajouter les sous-routes CRM manquantes
 
-- Importer `BookmarkCheck` depuis `lucide-react`
-- Ajouter l'entree `'BookmarkCheck': BookmarkCheck` dans `ICON_MAP`
+Le module CRM definit 5 sous-modules mais seul `/crm` a une route. Il faut ajouter `/crm/*` qui redirige vers `CRMDashboardPage` pour gerer les sous-routes.
 
-### Resultat
+**Fichier modifie** : `src/routes/index.tsx` -- changer `path="/crm"` en `path="/crm/*"`
 
-Le lien sera visible dans la sidebar sous le groupe "Catalogue", accessible depuis n'importe quelle page du dashboard. Il menera directement a la page des filtres predefinies et vues enregistrees.
+---
+
+## 3. Corriger la route `/profile`
+
+La route `/profile` affiche actuellement `BillingPage` au lieu de la page profil. Correction pour pointer vers `ProfilePage`.
+
+**Fichier modifie** : `src/routes/index.tsx` -- remplacer `BillingPage` par un import de `ProfilePage`
+
+---
+
+## 4. Corriger le mapping `FileText`
+
+Remplacer `'FileText': FileEdit` par `'FileText': FileText` pour que l'icone des rapports soit correcte.
+
+**Fichier modifie** : `src/config/navigation-constants.ts` -- ajouter l'import de `FileText` et corriger le mapping
+
+---
+
+## Details techniques
+
+### navigation-constants.ts
+- Ajouter imports : `PieChart, UserPlus, Award, Share2, Play, Palette, FileText`
+- Ajouter dans ICON_MAP : 6 nouvelles entrees + corriger FileText
+
+### icon-map.ts
+- Ajouter les memes 7 icones pour coherence
+
+### routes/index.tsx
+- Ligne 176 : `/crm` devenir `/crm/*` avec le meme composant
+- Ligne 225 : Remplacer `BillingPage` par `ProfilePage` (deja importe via lazy dans CoreRoutes)
+
+---
+
+## Impact
+- Pas de changement de fonctionnalite visible pour l'utilisateur final
+- Les icones s'afficheront correctement dans la sidebar pour les sous-modules
+- Les sous-routes CRM ne retourneront plus 404
+- La page profil affichera le bon contenu
