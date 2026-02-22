@@ -1,25 +1,28 @@
 
 
-## Ajouter une redirection `/products/vues` vers `/products/views`
+## Ajouter "Vues Produits" dans le menu principal (sidebar)
 
-Actuellement, la route pour les vues produits est configuree en anglais (`/products/views`), mais vous avez naturellement essaye `/products/vues`. Le fix consiste a ajouter une redirection dans le fichier de routes pour que les deux chemins fonctionnent.
+### Ce qui sera fait
 
-### Modification
+Un nouveau lien "Vues Produits" sera ajoute dans le groupe **Catalogue** de la sidebar principale, juste apres "Sante du Catalogue". Il apparaitra sur toutes les pages de l'application (desktop et mobile).
 
-**Fichier : `src/routes/ProductRoutes.tsx`**
+### Modifications
 
-Ajouter une ligne de redirection juste apres la route `views` existante (ligne 88) :
+**1. `src/config/modules.ts`** - Ajouter un nouveau module `productViews`
 
-```
-<Route path="vues" element={<Navigate to="/products/views" replace />} />
-```
+- Ajouter une entree dans `MODULE_REGISTRY` avec :
+  - `id: 'productViews'`
+  - `name: 'Vues Produits'`
+  - `icon: 'BookmarkCheck'`
+  - `route: '/products/views'`
+  - `groupId: 'catalog'`
+  - `order: 8` (apres Sante du Catalogue qui est en order 7)
 
-Cela garantit que `/products/vues` redirige automatiquement vers `/products/views` sans casser la navigation existante.
+**2. `src/config/navigation-constants.ts`** - Ajouter l'icone `BookmarkCheck`
 
-### Details techniques
+- Importer `BookmarkCheck` depuis `lucide-react`
+- Ajouter l'entree `'BookmarkCheck': BookmarkCheck` dans `ICON_MAP`
 
-- Un seul fichier modifie : `src/routes/ProductRoutes.tsx`
-- Utilise le composant `Navigate` deja importe dans le fichier
-- Redirection avec `replace` pour ne pas polluer l'historique de navigation
-- Zero impact sur les autres routes
+### Resultat
 
+Le lien sera visible dans la sidebar sous le groupe "Catalogue", accessible depuis n'importe quelle page du dashboard. Il menera directement a la page des filtres predefinies et vues enregistrees.
