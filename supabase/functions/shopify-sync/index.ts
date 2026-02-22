@@ -1,7 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { authenticateUser } from '../_shared/secure-auth.ts'
-import { getCorsHeaders, handleCorsPreflightRequest } from '../_shared/secure-cors.ts'
+import { getSecureCorsHeaders, handleCorsPreflightSecure } from '../_shared/secure-cors.ts'
 import { checkRateLimit, createRateLimitResponse, RATE_LIMITS } from '../_shared/rate-limit.ts'
 
 /**
@@ -15,10 +15,10 @@ import { checkRateLimit, createRateLimitResponse, RATE_LIMITS } from '../_shared
  */
 
 serve(async (req) => {
-  const corsHeaders = getCorsHeaders(req)
-  
-  const preflightResponse = handleCorsPreflightRequest(req, corsHeaders)
-  if (preflightResponse) return preflightResponse
+  if (req.method === 'OPTIONS') {
+    return handleCorsPreflightSecure(req)
+  }
+  const corsHeaders = getSecureCorsHeaders(req)
 
   try {
     const supabaseClient = createClient(
@@ -41,11 +41,29 @@ serve(async (req) => {
       return createRateLimitResponse(rateLimitResult, corsHeaders)
     }
 
-    const { integrationId, type = 'products' } = await req.json()
+    const body = await req.json()
+    let integrationId = body.integrationId || body.integration_id || body.platform_id
+    const type = body.type || body.sync_type || 'products'
+
+    // Auto-detect integration if not provided
+    if (!integrationId) {
+      const { data: autoIntegration } = await supabaseClient
+        .from('store_integrations')
+        .select('id')
+        .eq('user_id', userId)
+        .eq('platform', 'shopify')
+        .eq('connection_status', 'connected')
+        .limit(1)
+        .maybeSingle()
+
+      if (autoIntegration) {
+        integrationId = autoIntegration.id
+      }
+    }
 
     if (!integrationId) {
       return new Response(
-        JSON.stringify({ error: 'integrationId is required' }),
+        JSON.stringify({ error: 'Aucune boutique Shopify connectée. Veuillez d\'abord connecter votre boutique.' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
@@ -155,7 +173,7 @@ async function syncProducts(
     category: product.product_type || 'Général',
     image_url: product.images?.[0]?.src || null,
     stock_quantity: product.variants?.reduce((sum: number, v: any) => sum + (v.inventory_quantity || 0), 0) || 0,
-    status: product.status === 'active' ? 'active' as const : 'inactive' as const,
+    status: product.status === 'active' ? 'active' as const : 'draft' as const,
     external_id: product.id.toString(),
     external_platform: 'shopify',
     tags: product.tags ? product.tags.split(',').map((t: string) => t.trim()) : [],
