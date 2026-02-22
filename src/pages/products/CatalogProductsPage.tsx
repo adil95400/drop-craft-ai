@@ -17,6 +17,7 @@ import { useProductsUnified, UnifiedProduct } from '@/hooks/unified/useProductsU
 import { useApiProducts } from '@/hooks/api/useApiProducts';
 import { useApiSync } from '@/hooks/api/useApiSync';
 import { useApiAI } from '@/hooks/api/useApiAI';
+import { usePublishProducts } from '@/hooks/usePublishProducts';
 import { useApiJobs } from '@/hooks/api/useApiJobs';
 import { productsApi } from '@/services/api/client';
 
@@ -112,6 +113,7 @@ export default function CatalogProductsPage() {
   const { deleteProduct, createProduct } = useApiProducts();
   const { triggerSync, isSyncing } = useApiSync();
   const { bulkEnrich, isBulkEnriching } = useApiAI();
+  const { bulkPublish, isBulkPublishing } = usePublishProducts();
   const { activeJobs } = useApiJobs({ limit: 5 });
 
   const categories = useMemo(() => {
@@ -291,12 +293,17 @@ export default function CatalogProductsPage() {
     });
   }, [products, createProduct, handleRefresh]);
 
-  // Bulk delete via Supabase
+  // Bulk delete via Supabase direct
   const handleBulkDelete = useCallback(async () => {
     if (selectedProducts.length === 0) return;
     setIsBulkDeleting(true);
     try {
-      await productsApi.bulkUpdate(selectedProducts, { status: 'archived' } as any);
+      const { supabase } = await import('@/integrations/supabase/client');
+      const { error } = await supabase
+        .from('products')
+        .delete()
+        .in('id', selectedProducts);
+      if (error) throw error;
       toast({
         title: 'Produits supprimés',
         description: `${selectedProducts.length} produit(s) supprimé(s)`
@@ -310,6 +317,11 @@ export default function CatalogProductsPage() {
       setIsBulkDeleting(false);
     }
   }, [selectedProducts, toast, handleRefresh]);
+
+  const handleBulkPublish = useCallback(() => {
+    if (selectedProducts.length === 0) return;
+    bulkPublish(selectedProducts);
+  }, [selectedProducts, bulkPublish]);
 
   // Export CSV client-side
   const handleExportCSV = useCallback(async () => {
@@ -644,6 +656,10 @@ export default function CatalogProductsPage() {
             <Button variant="destructive" size="sm" className="gap-2" onClick={() => setBulkDeleteOpen(true)}>
               <Trash2 className="h-4 w-4" />
               Supprimer
+            </Button>
+            <Button size="sm" className="gap-2" onClick={handleBulkPublish} disabled={isBulkPublishing}>
+              {isBulkPublishing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
+              Publier
             </Button>
             <Button variant="ghost" size="sm" onClick={() => setSelectedProducts([])}>
               Désélectionner
