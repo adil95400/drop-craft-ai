@@ -39,6 +39,20 @@ export default function ToProcessPage() {
 
   const openPreview = (item: BacklogItem) => {
     const p = item.product as any
+    navigate('/import/preview', {
+      state: {
+        product: {
+          title: p.name,
+          description: p.description || '',
+          price: p.price || 0,
+          images: p.image_url ? [p.image_url] : p.images || [],
+          category: p.category || '',
+          sku: p.sku || '',
+        },
+        returnTo: '/catalog/to-process',
+      }
+    })
+    return
     setPreviewProduct({
       id: p.id,
       name: p.name,
