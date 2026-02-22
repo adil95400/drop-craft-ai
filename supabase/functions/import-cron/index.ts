@@ -7,6 +7,10 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
+// NOTE: import-cron is a system/cron function invoked via pg_cron with service_role.
+// This is a documented exception to the JWT-first rule per plan.md §Architecture Rules.
+// It MUST NOT accept user-provided tokens — it operates on behalf of all users with scheduled imports.
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });

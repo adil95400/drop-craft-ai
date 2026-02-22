@@ -13,17 +13,18 @@ sécurité multi-tenant, et parité concurrentielle (AutoDS/DSers/Channable).
 **Problème**: 12+ Edge Functions d'import avec contrats, tables cibles et patterns d'auth différents.
 **Solution**: `robust-import-pipeline` devient le SEUL backend d'import.
 
-| Fonction actuelle | Action | Raison |
+| Fonction actuelle | Action | Statut |
 |---|---|---|
-| `robust-import-pipeline` | **GARDER** — Standard | Best pattern (jobs+job_items, retry, validation) |
-| `url-import` | **DÉLÉGUER** → robust-import | Bon auth mais écrit dans imported_products |
-| `import-products` | **DÉPRÉCIER** | Écrit dans import_jobs (legacy) + products directement |
-| `quick-import-url` | **REFACTORER** | 2314L, extraction multi-plateforme utile, mais auth/pipeline à consolider |
-| `bulk-import-products` | **DÉLÉGUER** → robust-import | Appelle quick-import-url en interne |
-| `bulk-import-multi` | **DÉLÉGUER** → robust-import | Même pattern |
-| `csv-import` | **DÉLÉGUER** → robust-import | CSV via robust-import action=start source=csv |
-| `unified-import` | **DÉPRÉCIER** | Doublon |
-| `xml-json-import` | **DÉLÉGUER** → robust-import | Parser XML/JSON comme source |
+| `robust-import-pipeline` | **GARDER** — Standard | ✅ En place |
+| `url-import` | **SÉCURISÉ** → JWT + products canon | ✅ Done |
+| `import-products` | **SÉCURISÉ** → JWT + products canon | ✅ Done |
+| `quick-import-url` | **SÉCURISÉ** → JWT obligatoire, écrit dans products | ✅ Done |
+| `bulk-import-products` | **DÉLÉGUER** → robust-import | 🔲 À faire |
+| `bulk-import-multi` | **DÉLÉGUER** → robust-import | 🔲 À faire |
+| `csv-import` | **DÉLÉGUER** → robust-import | 🔲 À faire |
+| `unified-import` | **DÉPRÉCIER** | 🔲 À faire |
+| `xml-json-import` | **DÉLÉGUER** → robust-import | 🔲 À faire |
+| `import-cron` | **DOCUMENTÉ** — Exception service_role (cron) | ✅ Done |
 
 ### 1.2 Sécurisation des Edge Functions
 **Problème**: 247 fichiers utilisent SERVICE_ROLE_KEY, souvent sans auth JWT.
