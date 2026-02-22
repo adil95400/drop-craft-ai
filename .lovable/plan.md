@@ -1,66 +1,61 @@
 
-# Corrections des lacunes detectees dans l'application
+# Drop Craft AI — Plan de Consolidation P0/P1
 
-## Objectif
-Corriger les 4 problemes identifies lors de l'audit complet de l'application.
-
----
-
-## 1. Ajouter les 6 icones manquantes
-
-Les sous-modules suivants referent des icones absentes du ICON_MAP :
-- `PieChart` -- Segmentation clients
-- `UserPlus` -- Leads CRM
-- `Award` -- Programme fidelite
-- `Share2` -- Social commerce
-- `Play` -- Declencheurs automation
-- `Palette` -- Studio automation
-
-**Fichiers modifies** : `src/config/navigation-constants.ts`, `src/lib/icon-map.ts`
+## Vision
+Transformer Drop Craft AI en plateforme SaaS production-ready avec architecture unifiée,
+sécurité multi-tenant, et parité concurrentielle (AutoDS/DSers/Channable).
 
 ---
 
-## 2. Ajouter les sous-routes CRM manquantes
+## Phase 1 — Fondations P0 (Semaines 1-4)
 
-Le module CRM definit 5 sous-modules mais seul `/crm` a une route. Il faut ajouter `/crm/*` qui redirige vers `CRMDashboardPage` pour gerer les sous-routes.
+### 1.1 Unification du Pipeline d'Import
+**Problème**: 12+ Edge Functions d'import avec contrats, tables cibles et patterns d'auth différents.
+**Solution**: `robust-import-pipeline` devient le SEUL backend d'import.
 
-**Fichier modifie** : `src/routes/index.tsx` -- changer `path="/crm"` en `path="/crm/*"`
+| Fonction actuelle | Action | Raison |
+|---|---|---|
+| `robust-import-pipeline` | **GARDER** — Standard | Best pattern (jobs+job_items, retry, validation) |
+| `url-import` | **DÉLÉGUER** → robust-import | Bon auth mais écrit dans imported_products |
+| `import-products` | **DÉPRÉCIER** | Écrit dans import_jobs (legacy) + products directement |
+| `quick-import-url` | **REFACTORER** | 2314L, extraction multi-plateforme utile, mais auth/pipeline à consolider |
+| `bulk-import-products` | **DÉLÉGUER** → robust-import | Appelle quick-import-url en interne |
+| `bulk-import-multi` | **DÉLÉGUER** → robust-import | Même pattern |
+| `csv-import` | **DÉLÉGUER** → robust-import | CSV via robust-import action=start source=csv |
+| `unified-import` | **DÉPRÉCIER** | Doublon |
+| `xml-json-import` | **DÉLÉGUER** → robust-import | Parser XML/JSON comme source |
 
----
+### 1.2 Sécurisation des Edge Functions
+**Problème**: 247 fichiers utilisent SERVICE_ROLE_KEY, souvent sans auth JWT.
+**Solution**: Pattern standard — JWT + ANON_KEY par défaut, service role = exception documentée.
 
-## 3. Corriger la route `/profile`
-
-La route `/profile` affiche actuellement `BillingPage` au lieu de la page profil. Correction pour pointer vers `ProfilePage`.
-
-**Fichier modifie** : `src/routes/index.tsx` -- remplacer `BillingPage` par un import de `ProfilePage`
-
----
-
-## 4. Corriger le mapping `FileText`
-
-Remplacer `'FileText': FileEdit` par `'FileText': FileText` pour que l'icone des rapports soit correcte.
-
-**Fichier modifie** : `src/config/navigation-constants.ts` -- ajouter l'import de `FileText` et corriger le mapping
-
----
-
-## Details techniques
-
-### navigation-constants.ts
-- Ajouter imports : `PieChart, UserPlus, Award, Share2, Play, Palette, FileText`
-- Ajouter dans ICON_MAP : 6 nouvelles entrees + corriger FileText
-
-### icon-map.ts
-- Ajouter les memes 7 icones pour coherence
-
-### routes/index.tsx
-- Ligne 176 : `/crm` devenir `/crm/*` avec le meme composant
-- Ligne 225 : Remplacer `BillingPage` par `ProfilePage` (deja importe via lazy dans CoreRoutes)
+### 1.3 Cohérence API / Schéma
+**Table canon**: `products` (source of truth)
+**Tables staging**: `imported_products` (drafts), `supplier_products` (feeds fournisseur)
 
 ---
 
-## Impact
-- Pas de changement de fonctionnalite visible pour l'utilisateur final
-- Les icones s'afficheront correctement dans la sidebar pour les sous-modules
-- Les sous-routes CRM ne retourneront plus 404
-- La page profil affichera le bon contenu
+## Phase 2 — Automatisation P1 (Semaines 5-8)
+
+### 2.1 Monitoring Prix & Stock unifié
+### 2.2 Moteur de Règles industrialisé (Channable-like)
+### 2.3 Supplier Fallback automatique
+
+---
+
+## Phase 3 — Production Ready (Semaines 9-12)
+
+### 3.1 Observabilité & Tests E2E
+### 3.2 Monétisation Stripe
+### 3.3 Scalabilité
+
+---
+
+## Règles d'Architecture
+
+1. **Auth**: JWT + RLS par défaut. Service role = exception documentée.
+2. **Import**: Tout passe par `robust-import-pipeline` → `jobs` + `job_items` → `products`.
+3. **Source of truth**: `products` table uniquement pour le catalogue.
+4. **Champs**: `title` (pas `name`), statuts enum strict, `user_id` non-nullable + RLS.
+5. **Rate limiting**: Systématique sur tous les endpoints utilisateur.
+6. **Idempotency**: Via `idempotency_key` sur les jobs.
