@@ -2078,36 +2078,45 @@ serve(async (req) => {
   }
 
   try {
-    const supabaseClient = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
-      { auth: { persistSession: false } }
-    )
-
-    // SECURITY: Extract user_id from JWT token, NOT from body
+    // SECURITY: JWT-first authentication — never trust body user_id
     const authHeader = req.headers.get('authorization')
-    let userId: string | null = null
-    
-    if (authHeader?.startsWith('Bearer ')) {
-      const token = authHeader.replace('Bearer ', '')
-      const { data: userData, error: authError } = await supabaseClient.auth.getUser(token)
-      if (!authError && userData?.user) {
-        userId = userData.user.id
-      }
+    if (!authHeader?.startsWith('Bearer ')) {
+      return new Response(
+        JSON.stringify({ success: false, error: 'Authorization header required' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
     }
+
+    const token = authHeader.replace('Bearer ', '')
+    const anonKey = Deno.env.get('SUPABASE_ANON_KEY')!
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!
+
+    // Create user-scoped client for RLS
+    const supabaseUser = createClient(supabaseUrl, anonKey, {
+      global: { headers: { Authorization: `Bearer ${token}` } },
+      auth: { persistSession: false },
+    })
+
+    // Verify JWT
+    const { data: claimsData, error: claimsError } = await supabaseUser.auth.getUser(token)
+    if (claimsError || !claimsData?.user) {
+      return new Response(
+        JSON.stringify({ success: false, error: 'Invalid or expired token' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+    const user_id = claimsData.user.id
+
+    // Service-role client only for cross-table writes (jobs, reviews)
+    const supabaseAdmin = createClient(supabaseUrl, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!, {
+      auth: { persistSession: false },
+    })
 
     const body = await req.json()
     const { url, action = 'preview', target_store_id, price_multiplier = 1.5 } = body
     
-    // Backward compat: accept user_id from body only if no JWT (extension calls)
-    const user_id = userId || body.user_id
-    
     if (!url) {
       throw new Error('URL requise')
-    }
-    
-    if (!user_id) {
-      throw new Error('Authentification requise')
     }
 
     console.log(`🔗 Quick Import from URL: ${url}`)
@@ -2166,57 +2175,8 @@ serve(async (req) => {
       const costPrice = overrideData.price || productData.price
       const importReviews = productData.extracted_reviews?.length > 0
       
-      // 1) Insert into imported_products
-      const { data: importedProduct, error: insertError } = await supabaseClient
-        .from('imported_products')
-        .insert({
-          user_id,
-          supplier_name: platform,
-          supplier_product_id: productId || `${platform}-${Date.now()}`,
-          name: finalTitle,
-          description: finalDescription,
-          price: suggestedPrice,
-          cost_price: costPrice,
-          currency: productData.currency === 'USD' ? 'EUR' : productData.currency,
-          stock_quantity: 999,
-          category: finalCategory,
-          brand: finalBrand,
-          sku: finalSku,
-          image_urls: finalImages,
-          original_images: productData.images,
-          video_urls: finalVideos,
-          variants: finalVariants,
-          specifications: productData.specifications,
-          shipping_info: productData.shipping,
-          reviews_summary: productData.reviews,
-          seller_info: productData.seller,
-          status: finalStatus,
-          source_url: url,
-          sync_status: 'synced',
-          metadata: {
-            platform,
-            original_price: productData.price,
-            original_currency: productData.currency,
-            scraped_at: productData.scraped_at,
-            price_multiplier,
-            has_variants: finalVariants?.length > 0,
-            has_videos: finalVideos?.length > 0,
-            has_reviews: importReviews,
-            images_count: finalImages?.length || 0,
-            variants_count: finalVariants?.length || 0,
-            videos_count: finalVideos?.length || 0,
-            reviews_count: productData.extracted_reviews?.length || 0
-          }
-        })
-        .select()
-        .single()
-      
-      if (insertError) throw insertError
-      
-      console.log(`✅ Product imported to imported_products: ${importedProduct.id}`)
-
-      // 2) Mirror insert into products table so it appears in /products
-      const { error: productsInsertError } = await supabaseClient
+      // Insert into canonical products table (source of truth)
+      const { data: insertedProduct, error: insertError } = await supabaseAdmin
         .from('products')
         .insert({
           user_id,
@@ -2225,6 +2185,7 @@ serve(async (req) => {
           description: finalDescription,
           price: suggestedPrice,
           cost_price: costPrice,
+          currency: productData.currency || 'EUR',
           sku: finalSku,
           brand: finalBrand,
           category: finalCategory,
@@ -2233,18 +2194,22 @@ serve(async (req) => {
           images: finalImages,
           image_url: finalImages?.[0] || null,
           primary_image_url: finalImages?.[0] || null,
+          main_image_url: finalImages?.[0] || null,
           variants: finalVariants || null,
           supplier: platform,
           supplier_url: url,
+          supplier_name: platform,
           supplier_product_id: productId || null,
+          source_url: url,
+          source_type: platform,
           vendor: finalBrand || platform,
         })
-
-      if (productsInsertError) {
-        console.error('⚠️ Mirror insert into products failed:', productsInsertError)
-      } else {
-        console.log(`✅ Product also inserted into products table`)
-      }
+        .select()
+        .single()
+      
+      if (insertError) throw insertError
+      
+      console.log(`✅ Product imported to products (canon): ${insertedProduct.id}`)
       
       // Import reviews if available
       let reviewsImported = 0
@@ -2253,7 +2218,7 @@ serve(async (req) => {
         
         const reviewsToInsert = productData.extracted_reviews.map((review: any) => ({
           user_id,
-          imported_product_id: importedProduct.id,
+          imported_product_id: insertedProduct.id,
           product_name: finalTitle,
           product_sku: finalSku,
           customer_name: review.customer_name || 'Client',
@@ -2272,7 +2237,7 @@ serve(async (req) => {
           }
         }))
         
-        const { data: insertedReviews, error: reviewsError } = await supabaseClient
+        const { data: insertedReviews, error: reviewsError } = await supabaseAdmin
           .from('imported_reviews')
           .insert(reviewsToInsert)
           .select()
@@ -2289,7 +2254,7 @@ serve(async (req) => {
         JSON.stringify({
           success: true,
           action: 'imported',
-          data: importedProduct,
+          data: insertedProduct,
           message: `Produit "${finalTitle}" importé avec succès${reviewsImported > 0 ? ` avec ${reviewsImported} avis` : ''}`,
           summary: {
             images: finalImages?.length || 0,
