@@ -330,6 +330,10 @@ export default function ProductPreviewPage() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) throw new Error('Non authentifié')
 
+      const marginVal = editedProduct.suggested_price > 0 && editedProduct.price > 0
+        ? ((editedProduct.suggested_price - editedProduct.price) / editedProduct.suggested_price * 100)
+        : 0
+
       const productData = {
         title: editedProduct.title,
         description: editedProduct.description,
@@ -337,15 +341,13 @@ export default function ProductPreviewPage() {
         compare_at_price: editedProduct.price,
         cost_price: editedProduct.price,
         image_url: filtered[0] || null,
-        image_urls: filtered,
         images: filtered,
         brand: editedProduct.brand || null,
         sku: editedProduct.sku || null,
         source_url: editedProduct.source_url || null,
-        source_platform: editedProduct.platform_detected || null,
         category: category || null,
         status: productStatus,
-        profit_margin: parseFloat(margin) || 0,
+        profit_margin: marginVal,
         user_id: user.id,
       }
 
