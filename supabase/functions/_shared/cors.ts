@@ -20,6 +20,7 @@ const ALLOWED_ORIGINS = [
 
 // Pattern for Lovable preview URLs
 const LOVABLE_PREVIEW_PATTERN = /^https:\/\/[a-z0-9-]+--[a-f0-9-]+\.lovable\.app$/;
+const LOVABLE_PROJECT_PATTERN = /^https:\/\/[a-f0-9-]+\.lovableproject\.com$/;
 
 // Development origins (only in dev mode)
 const DEV_ORIGINS = [
@@ -41,6 +42,7 @@ export function isAllowedOrigin(origin: string | null): boolean {
   
   // Check Lovable preview pattern
   if (LOVABLE_PREVIEW_PATTERN.test(origin)) return true;
+  if (LOVABLE_PROJECT_PATTERN.test(origin)) return true;
   
   // In development, allow local origins
   const isDev = Deno.env.get('ENVIRONMENT') !== 'production';

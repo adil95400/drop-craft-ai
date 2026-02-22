@@ -5,7 +5,7 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
-import { corsHeaders } from '../_shared/cors.ts'
+import { getSecureCorsHeaders, handleCorsPreflightSecure } from '../_shared/cors.ts'
 
 interface SyncResult {
   channelId: string
@@ -26,7 +26,6 @@ const platformSyncers: Record<string, (supabase: any, channel: any) => Promise<S
     let ordersUpdated = 0
     
     try {
-      // Call shopify-complete-import for product sync
       const { data, error } = await supabase.functions.invoke('shopify-complete-import', {
         body: { 
           integrationId: channel.id,
@@ -37,7 +36,6 @@ const platformSyncers: Record<string, (supabase: any, channel: any) => Promise<S
       if (error) throw error
       productsUpdated = data?.productsImported || 0
       
-      // Get order count
       const { count } = await supabase
         .from('orders')
         .select('*', { count: 'exact', head: true })
@@ -133,7 +131,6 @@ const platformSyncers: Record<string, (supabase: any, channel: any) => Promise<S
     }
   },
   
-  // Generic syncer for other platforms
   generic: async (supabase, channel) => {
     const startTime = Date.now()
     
@@ -173,9 +170,12 @@ const platformSyncers: Record<string, (supabase: any, channel: any) => Promise<S
 }
 
 serve(async (req) => {
-  if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders })
-  }
+  // Handle CORS preflight
+  const preflightResponse = handleCorsPreflightSecure(req)
+  if (preflightResponse) return preflightResponse
+
+  const origin = req.headers.get('origin')
+  const headers = { ...getSecureCorsHeaders(origin), 'Content-Type': 'application/json' }
 
   try {
     const supabase = createClient(
@@ -183,28 +183,68 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     )
 
-    const body = await req.json().catch(() => ({}))
-    const { channelId, userId, syncType = 'all' } = body
+    // Authenticate user
+    const authHeader = req.headers.get('Authorization')
+    if (!authHeader) throw new Error('Non authentifié')
 
-    console.log('[Auto-Sync] Starting sync', { channelId, userId, syncType })
+    const { data: { user }, error: authError } = await supabase.auth.getUser(
+      authHeader.replace('Bearer ', '')
+    )
+    if (authError || !user) throw new Error('Non authentifié')
+
+    const body = await req.json().catch(() => ({}))
+    const { action, channelId, userId, syncType = 'all', intervalMinutes } = body
+
+    console.log('[Auto-Sync] Starting', { action, channelId, userId, syncType })
+
+    // Handle schedule action
+    if (action === 'schedule') {
+      if (!channelId) throw new Error('channelId requis')
+
+      // Verify ownership
+      const { data: integration, error: intError } = await supabase
+        .from('integrations')
+        .select('id, sync_settings')
+        .eq('id', channelId)
+        .eq('user_id', user.id)
+        .maybeSingle()
+
+      if (intError) throw intError
+      if (!integration) throw new Error('Intégration introuvable')
+
+      const currentSettings = (integration.sync_settings as Record<string, unknown>) || {}
+      const updatedSettings = {
+        ...currentSettings,
+        auto_sync: true,
+        interval_minutes: intervalMinutes || 60,
+        scheduled_at: new Date().toISOString(),
+      }
+
+      const { error: updateError } = await supabase
+        .from('integrations')
+        .update({ sync_settings: updatedSettings, updated_at: new Date().toISOString() })
+        .eq('id', channelId)
+
+      if (updateError) throw updateError
+
+      return new Response(
+        JSON.stringify({ success: true, message: 'Synchronisation planifiée', intervalMinutes }),
+        { headers }
+      )
+    }
 
     // Build query for channels to sync
     let query = supabase
       .from('integrations')
       .select('*')
       .eq('is_active', true)
-      .eq('connection_status', 'connected')
 
     if (channelId) {
       query = query.eq('id', channelId)
     } else if (userId) {
       query = query.eq('user_id', userId)
-    }
-
-    // Only sync channels that haven't synced recently (within 5 minutes)
-    if (syncType === 'scheduled') {
-      const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString()
-      query = query.or(`last_sync_at.is.null,last_sync_at.lt.${fiveMinutesAgo}`)
+    } else {
+      query = query.eq('user_id', user.id)
     }
 
     const { data: channels, error: fetchError } = await query.limit(50)
@@ -212,8 +252,8 @@ serve(async (req) => {
     if (fetchError) throw fetchError
     if (!channels || channels.length === 0) {
       return new Response(
-        JSON.stringify({ message: 'No channels to sync', results: [] }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        JSON.stringify({ success: true, message: 'No channels to sync', summary: { totalProducts: 0 }, results: [] }),
+        { headers }
       )
     }
 
@@ -221,57 +261,29 @@ serve(async (req) => {
 
     const results: SyncResult[] = []
 
-    // Process channels in parallel (max 5 at a time)
     const batchSize = 5
     for (let i = 0; i < channels.length; i += batchSize) {
       const batch = channels.slice(i, i + batchSize)
       
       const batchResults = await Promise.all(
         batch.map(async (channel) => {
-          // Update status to syncing
           await supabase
             .from('integrations')
-            .update({ 
-              connection_status: 'connecting',
-              sync_in_progress: true
-            })
+            .update({ sync_in_progress: true })
             .eq('id', channel.id)
 
-          // Get platform-specific syncer
           const platform = channel.platform_type?.toLowerCase() || 'generic'
           const syncer = platformSyncers[platform] || platformSyncers.generic
           
           const result = await syncer(supabase, channel)
 
-          // Update channel with results
           await supabase
             .from('integrations')
             .update({
-              connection_status: result.success ? 'connected' : 'error',
               sync_in_progress: false,
               last_sync_at: new Date().toISOString(),
-              last_sync_error: result.error || null,
-              products_synced: result.productsUpdated,
-              orders_synced: result.ordersUpdated,
-              sync_duration_ms: result.duration
             })
             .eq('id', channel.id)
-
-          // Log sync activity
-          if (channel.user_id) {
-            await supabase
-              .from('activity_logs')
-              .insert({
-                user_id: channel.user_id,
-                action: result.success ? 'sync_completed' : 'sync_failed',
-                entity_type: 'channel',
-                entity_id: channel.id,
-                description: result.success 
-                  ? `${platform} sync: ${result.productsUpdated} produits, ${result.ordersUpdated} commandes`
-                  : `${platform} sync failed: ${result.error}`,
-                metadata: result
-              })
-          }
 
           return result
         })
@@ -280,7 +292,6 @@ serve(async (req) => {
       results.push(...batchResults)
     }
 
-    // Summary
     const summary = {
       total: results.length,
       successful: results.filter(r => r.success).length,
@@ -293,19 +304,15 @@ serve(async (req) => {
     console.log('[Auto-Sync] Completed', summary)
 
     return new Response(
-      JSON.stringify({ 
-        success: true,
-        summary,
-        results 
-      }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      JSON.stringify({ success: true, summary, results }),
+      { headers }
     )
 
   } catch (error) {
     console.error('[Auto-Sync] Error:', error)
     return new Response(
       JSON.stringify({ success: false, error: error.message }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      { status: 400, headers }
     )
   }
 })
