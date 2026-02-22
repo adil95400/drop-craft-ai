@@ -241,11 +241,49 @@ export default function ChannelDetailPage() {
   })
 
   // Save configuration handler
-  const handleSaveConfig = () => {
-    toast({ 
-      title: 'Configuration sauvegardée',
-      description: 'Vos paramètres ont été enregistrés avec succès'
-    })
+  const handleSaveConfig = async () => {
+    try {
+      const newSyncSettings = {
+        types: {
+          products: syncSettings.products,
+          orders: syncSettings.orders,
+          inventory: syncSettings.inventory,
+          prices: syncSettings.prices,
+        },
+        notifications: {
+          success: syncSettings.notifySuccess,
+          error: syncSettings.notifyError,
+        },
+        auto_sync: true,
+        retry: {
+          enabled: syncSettings.autoRetry,
+          max_retries: retryCount[0] ?? 3,
+        },
+        interval_minutes: 60,
+      }
+
+      const { error } = await supabase
+        .from('integrations')
+        .update({ 
+          sync_settings: newSyncSettings,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', channelId)
+
+      if (error) throw error
+
+      queryClient.invalidateQueries({ queryKey: ['channel', channelId] })
+      toast({ 
+        title: 'Configuration sauvegardée',
+        description: 'Vos paramètres ont été enregistrés avec succès'
+      })
+    } catch (error) {
+      toast({ 
+        title: 'Erreur',
+        description: 'Impossible de sauvegarder la configuration',
+        variant: 'destructive'
+      })
+    }
   }
 
   if (isLoading) {
