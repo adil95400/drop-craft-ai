@@ -91,8 +91,8 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     enabled: true,
     minPlan: 'standard',
     route: '/dashboard',
-    features: ['overview', 'quick-stats', 'recent-activity'],
-    description: 'Vue d\'ensemble de votre activité',
+    features: ['overview', 'quick-stats', 'recent-activity', 'widgets', 'shortcuts', 'quick-actions', 'kpi-cards'],
+    description: 'Vue d\'ensemble, widgets et raccourcis',
     category: 'core',
     order: 1,
     groupId: 'home'
