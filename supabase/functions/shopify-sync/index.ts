@@ -14,6 +14,22 @@ import { checkRateLimit, createRateLimitResponse, RATE_LIMITS } from '../_shared
  * - Integration ownership verification
  */
 
+// Helper: fetch with retry on 429
+async function shopifyFetch(url: string, headers: Record<string, string>, maxRetries = 3): Promise<Response> {
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    const response = await fetch(url, { headers })
+    if (response.status === 429) {
+      const retryAfter = parseFloat(response.headers.get('Retry-After') || '2')
+      const delay = Math.max(retryAfter, 1) * 1000 * (attempt + 1)
+      console.log(`Shopify 429 - retry ${attempt + 1}/${maxRetries} after ${delay}ms`)
+      await new Promise(r => setTimeout(r, delay))
+      continue
+    }
+    return response
+  }
+  throw new Error('Shopify API rate limit exceeded after retries')
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return handleCorsPreflightSecure(req)
@@ -168,11 +184,9 @@ async function syncProducts(
   while (hasNextPage) {
     const url = `https://${shopifyDomain}/admin/api/2023-10/products.json?limit=250${nextPageInfo ? `&page_info=${nextPageInfo}` : ''}`
     
-    const response = await fetch(url, {
-      headers: {
-        'X-Shopify-Access-Token': accessToken,
-        'Content-Type': 'application/json'
-      }
+    const response = await shopifyFetch(url, {
+      'X-Shopify-Access-Token': accessToken,
+      'Content-Type': 'application/json'
     })
 
     if (!response.ok) {
@@ -274,11 +288,9 @@ async function syncOrders(
   while (hasNextPage) {
     const url = `https://${shopifyDomain}/admin/api/2023-10/orders.json?limit=250&status=any&created_at_min=${thirtyDaysAgo.toISOString()}${nextPageInfo ? `&page_info=${nextPageInfo}` : ''}`
     
-    const response = await fetch(url, {
-      headers: {
-        'X-Shopify-Access-Token': accessToken,
-        'Content-Type': 'application/json'
-      }
+    const response = await shopifyFetch(url, {
+      'X-Shopify-Access-Token': accessToken,
+      'Content-Type': 'application/json'
     })
 
     if (!response.ok) {
