@@ -7,7 +7,8 @@ import {
   Zap,
   Grid3X3,
   Truck,
-  Crown
+  Crown,
+  BookmarkCheck
 } from 'lucide-react'
 
 interface CatalogNavigationProps {
@@ -48,6 +49,12 @@ export function CatalogNavigation({ className }: CatalogNavigationProps) {
       icon: Crown,
       description: 'Fournisseurs premium avec fonctionnalités avancées',
       badge: { text: 'Pro', variant: 'pro' as const }
+    },
+    {
+      title: 'Vues Produits',
+      href: '/products/views',
+      icon: BookmarkCheck,
+      description: 'Filtres prédéfinis et vues enregistrées'
     }
   ]
 
