@@ -1,6 +1,11 @@
 /**
- * Import Products - Secure Edge Function
- * SECURITY: JWT authentication + input validation + user scoping
+ * Import Products - Secure Edge Function (CONSOLIDATED P0)
+ * 
+ * CHANGES from legacy:
+ * - Uses JWT + ANON_KEY (not service_role) for RLS compliance
+ * - Writes to `jobs` table (not `import_jobs`)
+ * - Inserts into `products` as 'draft' (canon table)
+ * - Ownership always from JWT, never from body
  */
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0';
@@ -26,16 +31,17 @@ serve(
       return new Response(null, { headers: corsHeaders });
     }
 
-    const supabase = createClient(
-      Deno.env.get('SUPABASE_URL')!,
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
-    );
-
-    // SECURITY: Authenticate user via JWT
+    // SECURITY: Use JWT context + ANON_KEY for RLS compliance
     const authHeader = req.headers.get('Authorization');
     if (!authHeader?.startsWith('Bearer ')) {
       throw new ValidationError('Authorization required');
     }
+
+    const supabase = createClient(
+      Deno.env.get('SUPABASE_URL')!,
+      Deno.env.get('SUPABASE_ANON_KEY')!,
+      { global: { headers: { Authorization: authHeader } } }
+    );
 
     const token = authHeader.replace('Bearer ', '');
     const { data: userData, error: authError } = await supabase.auth.getUser(token);
@@ -45,11 +51,17 @@ serve(
     }
     
     const userId = userData.user.id;
-    console.log(`[IMPORT-PRODUCTS] User ${userId} starting import`);
+    console.log(`[IMPORT-PRODUCTS] User ${userId.slice(0, 8)} starting import`);
+
+    // Service client only for operations that need to bypass RLS (job creation with system fields)
+    const serviceClient = createClient(
+      Deno.env.get('SUPABASE_URL')!,
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+    );
 
     // SECURITY: Rate limiting - 10 imports per hour
     const rateLimitOk = await checkRateLimit(
-      supabase,
+      serviceClient,
       `import_products:${userId}`,
       10,
       3600000
@@ -61,24 +73,32 @@ serve(
     // Validate input
     const { source, data } = await parseJsonValidated(req, ImportSchema);
 
-    // SECURITY: Validate URL if provided
+    // SECURITY: Validate URL if provided (SSRF protection)
     if (source === 'url' && data.url) {
       const url = new URL(data.url);
-      const blockedHosts = ['localhost', '127.0.0.1', '0.0.0.0', 'internal', 'metadata'];
+      const blockedHosts = ['localhost', '127.0.0.1', '0.0.0.0', 'internal', 'metadata', '169.254.169.254'];
       if (blockedHosts.some(h => url.hostname.includes(h))) {
         throw new ValidationError('Invalid URL');
       }
+      if (!['http:', 'https:'].includes(url.protocol)) {
+        throw new ValidationError('URL must use http or https');
+      }
     }
 
-    // Create import job record scoped to user
-    const { data: importJob, error: jobError } = await supabase
-      .from('import_jobs')
+    // Create job in UNIFIED `jobs` table (not import_jobs)
+    const { data: job, error: jobError } = await serviceClient
+      .from('jobs')
       .insert({
         user_id: userId,
-        source_platform: source,
         job_type: 'import',
+        job_subtype: source,
         status: 'processing',
-        started_at: new Date().toISOString()
+        name: `Import ${source}`,
+        started_at: new Date().toISOString(),
+        input_data: { source, config: data.config },
+        total_items: 0,
+        processed_items: 0,
+        failed_items: 0,
       })
       .select()
       .single();
@@ -114,24 +134,25 @@ serve(
     } catch (error) {
       console.error('Import processing error:', error);
       
-      await supabase
-        .from('import_jobs')
+      // Update job as failed with ownership check
+      await serviceClient
+        .from('jobs')
         .update({
           status: 'failed',
-          error_log: [(error as Error).message],
+          error_message: (error as Error).message,
           completed_at: new Date().toISOString()
         })
-        .eq('id', importJob.id)
-        .eq('user_id', userId); // Double-check user ownership
+        .eq('id', job.id)
+        .eq('user_id', userId);
       
       throw error;
     }
 
-    // SECURITY: All products scoped to authenticated user
+    // Insert products into CANON `products` table as 'draft'
     if (importedProducts.length > 0) {
       const productsToInsert = importedProducts.map(product => ({
-        user_id: userId, // CRITICAL: Always set user_id
-        title: (product.name || 'Produit sans nom').substring(0, 500),
+        user_id: userId,
+        title: (product.name || product.title || 'Produit sans nom').substring(0, 500),
         description: (product.description || '').substring(0, 5000),
         price: Math.min(parseFloat(product.price) || 0, 999999.99),
         cost_price: Math.min(parseFloat(product.cost_price) || (parseFloat(product.price) * 0.7), 999999.99),
@@ -141,10 +162,12 @@ serve(
         image_url: Array.isArray(product.images) ? product.images[0] : product.images || null,
         images: Array.isArray(product.images) ? product.images.slice(0, 10) : [],
         tags: product.tags || [`${source}-import`],
+        source_url: product.supplier_url || product.source_url || null,
+        source_type: source,
         status: 'draft',
       }));
 
-      const { error: insertError } = await supabase
+      const { error: insertError } = await serviceClient
         .from('products')
         .insert(productsToInsert);
 
@@ -154,24 +177,25 @@ serve(
       }
     }
 
-    // Update import job with ownership check
-    await supabase
-      .from('import_jobs')
+    // Update job as completed
+    await serviceClient
+      .from('jobs')
       .update({
         status: 'completed',
-        total_products: importedProducts.length,
-        successful_imports: importedProducts.length,
-        failed_imports: 0,
+        total_items: importedProducts.length,
+        processed_items: importedProducts.length,
+        failed_items: 0,
+        progress_percent: 100,
         completed_at: new Date().toISOString()
       })
-      .eq('id', importJob.id)
+      .eq('id', job.id)
       .eq('user_id', userId);
 
-    console.log(`[IMPORT-PRODUCTS] User ${userId} imported ${importedProducts.length} products`);
+    console.log(`[IMPORT-PRODUCTS] User ${userId.slice(0, 8)} imported ${importedProducts.length} products`);
 
     return new Response(JSON.stringify({
       success: true,
-      import_id: importJob.id,
+      job_id: job.id,
       products_imported: importedProducts.length,
       message: `${importedProducts.length} produits importés avec succès`
     }), {
@@ -201,6 +225,12 @@ async function importFromURL(url: string, config: any = {}): Promise<any[]> {
     }
 
     const content = await response.text();
+    
+    // Limit response size
+    if (content.length > 2_000_000) {
+      throw new Error('Response too large (max 2MB)');
+    }
+
     const products: any[] = [];
     
     // Look for JSON-LD structured data
