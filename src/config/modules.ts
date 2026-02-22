@@ -330,7 +330,7 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     features: ['quality-scoring', 'seo-audit', 'product-audit', 'qa'],
     description: 'Diagnostic et contrôle qualité',
     category: 'product',
-    order: 10,
+    order: 1,
     groupId: 'performance',
     subModules: [
       { id: 'quality-dashboard', name: 'Dashboard', route: '/audit', icon: 'LayoutDashboard', description: 'Vue d\'ensemble', features: ['overview'], order: 1 },
@@ -354,7 +354,7 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     features: ['price-rules', 'dynamic-pricing', 'repricing', 'margin-control', 'store-sync'],
     description: 'Gestion et optimisation des prix',
     category: 'automation',
-    order: 11,
+    order: 2,
     groupId: 'performance',
     subModules: [
       { id: 'pricing-hub', name: 'Hub Tarification', route: '/pricing-manager', icon: 'LayoutDashboard', description: 'Vue d\'ensemble et KPIs', features: ['overview', 'kpis'], order: 1 },
@@ -376,7 +376,7 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     features: ['ai-descriptions', 'ai-seo', 'ai-content', 'ai-assistant'],
     description: 'Outils IA transversaux',
     category: 'automation',
-    order: 12,
+    order: 3,
     groupId: 'config',
     badge: 'pro',
     subModules: [
@@ -537,7 +537,7 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     features: ['dashboards', 'reports', 'charts'],
     description: 'Tableaux de bord et rapports',
     category: 'analytics',
-    order: 1,
+    order: 3,
     groupId: 'performance',
     subModules: [
       { id: 'analytics-dashboard', name: 'Dashboard', route: '/analytics', icon: 'LayoutDashboard', description: 'Vue d\'ensemble', features: ['overview'], order: 1 },
@@ -559,7 +559,7 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     features: ['campaigns', 'email', 'promotions', 'abandoned-cart', 'loyalty'],
     description: 'Campagnes marketing',
     category: 'customer',
-    order: 2,
+    order: 4,
     groupId: 'performance',
     badge: 'pro',
     subModules: [
@@ -584,7 +584,7 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     icon: 'Contact',
     enabled: true,
     minPlan: 'pro',
-    route: '/marketing/crm',
+    route: '/crm',
     features: ['leads', 'pipeline', 'contacts'],
     description: 'Gestion relation client',
     category: 'customer',
@@ -592,11 +592,11 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     groupId: 'sales',
     badge: 'pro',
     subModules: [
-      { id: 'crm-dashboard', name: 'Dashboard', route: '/marketing/crm', icon: 'LayoutDashboard', description: 'Vue d\'ensemble', features: ['overview'], order: 1 },
-      { id: 'crm-leads', name: 'Leads', route: '/marketing/crm/leads', icon: 'UserPlus', description: 'Gestion des leads', features: ['leads'], order: 2 },
-      { id: 'crm-pipeline', name: 'Pipeline', route: '/marketing/crm/pipeline', icon: 'GitBranch', description: 'Pipeline de ventes', features: ['pipeline'], order: 3 },
-      { id: 'crm-emails', name: 'Emails', route: '/marketing/crm/emails', icon: 'Mail', description: 'Historique emails', features: ['emails'], order: 4 },
-      { id: 'crm-scoring', name: 'Lead Scoring', route: '/marketing/crm/scoring', icon: 'Target', description: 'Notation des leads', features: ['scoring'], order: 5 },
+      { id: 'crm-dashboard', name: 'Dashboard', route: '/crm', icon: 'LayoutDashboard', description: 'Vue d\'ensemble', features: ['overview'], order: 1 },
+      { id: 'crm-leads', name: 'Leads', route: '/crm/leads', icon: 'UserPlus', description: 'Gestion des leads', features: ['leads'], order: 2 },
+      { id: 'crm-pipeline', name: 'Pipeline', route: '/crm/pipeline', icon: 'GitBranch', description: 'Pipeline de ventes', features: ['pipeline'], order: 3 },
+      { id: 'crm-emails', name: 'Emails', route: '/crm/emails', icon: 'Mail', description: 'Historique emails', features: ['emails'], order: 4 },
+      { id: 'crm-scoring', name: 'Lead Scoring', route: '/crm/scoring', icon: 'Target', description: 'Notation des leads', features: ['scoring'], order: 5 },
     ]
   },
 
@@ -610,7 +610,7 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     features: ['seo-audit', 'keywords', 'rankings'],
     description: 'Optimisation référencement',
     category: 'analytics',
-    order: 4,
+    order: 5,
     groupId: 'performance',
     subModules: [
       { id: 'seo-manager', name: 'Manager', route: '/marketing/seo', icon: 'Search', description: 'Gestion SEO', features: ['manager'], order: 1 },
@@ -629,7 +629,7 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     features: ['reports', 'exports', 'scheduled-reports'],
     description: 'Rapports et exports',
     category: 'analytics',
-    order: 5,
+    order: 6,
     groupId: 'performance'
   },
 
@@ -644,8 +644,8 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     features: ['profit-calculation', 'margins', 'roi-analysis'],
     description: 'Calculez vos marges et rentabilité',
     category: 'analytics',
-    order: 20,
-    groupId: 'config'
+    order: 7,
+    groupId: 'performance'
   },
 
   // ═══════════════════════════════════════════════════════════════════════════
@@ -662,7 +662,7 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     features: ['profile', 'avatar', 'preferences'],
     description: 'Gérer votre profil',
     category: 'system',
-    order: 0,
+    order: 1,
     groupId: 'config'
   },
 
@@ -676,7 +676,7 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     features: ['plan', 'billing', 'invoices'],
     description: 'Gérer votre abonnement',
     category: 'system',
-    order: 0.5,
+    order: 2,
     groupId: 'config'
   },
   
@@ -690,7 +690,7 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     features: ['account', 'preferences'],
     description: 'Configuration générale',
     category: 'system',
-    order: 1,
+    order: 3,
     groupId: 'config',
     subModules: [
       { id: 'settings-general', name: 'Général', route: '/settings', icon: 'Settings', description: 'Paramètres généraux', features: ['general'], order: 1 },
@@ -710,7 +710,7 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     features: ['api-keys', 'webhooks', 'connectors'],
     description: 'APIs et connecteurs',
     category: 'integrations',
-    order: 2,
+    order: 4,
     groupId: 'config',
     subModules: [
       { id: 'integrations-overview', name: 'Vue d\'ensemble', route: '/integrations', icon: 'Plug', description: 'Connecteurs et APIs', features: ['overview'], order: 1 },

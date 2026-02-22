@@ -10,7 +10,8 @@ import {
   Clock, Activity, Database, Target, Mail, Bot, Globe, Wrench,
   LayoutDashboard, PackageCheck, Bell, Eye, Trophy, FileEdit, Search,
   Star, Lock, Crown, User, CreditCard, Receipt, Key, FlaskConical,
-  BookmarkCheck
+  BookmarkCheck, AlertCircle, Image, FolderTree, HeartPulse, Contact,
+  Code, Stethoscope
 } from "lucide-react"
 import type { NavGroupId } from "@/config/modules"
 
@@ -78,6 +79,13 @@ export const ICON_MAP: Record<string, React.ComponentType<{ className?: string }
   'Key': Key,
   'FlaskConical': FlaskConical,
   'BookmarkCheck': BookmarkCheck,
+  'AlertCircle': AlertCircle,
+  'Image': Image,
+  'FolderTree': FolderTree,
+  'HeartPulse': HeartPulse,
+  'Contact': Contact,
+  'Code': Code,
+  'Stethoscope': Stethoscope,
 } as const
 
 // Static group colors - 6 groupes consolidés

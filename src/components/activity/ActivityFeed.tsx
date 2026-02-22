@@ -46,7 +46,7 @@ export function ActivityFeed() {
       module: 'CRM',
       action: {
         label: 'Voir CRM',
-        onClick: () => navigate('/marketing/crm')
+        onClick: () => navigate('/crm')
       }
     },
     {
