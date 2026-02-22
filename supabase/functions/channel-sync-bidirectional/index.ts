@@ -1,9 +1,13 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
-import { corsHeaders } from '../_shared/cors.ts'
+import { getSecureCorsHeaders, handleCorsPreflightSecure } from '../_shared/cors.ts'
 
 serve(async (req) => {
-  if (req.method === 'OPTIONS') return new Response(null, { headers: corsHeaders })
+  const preflight = handleCorsPreflightSecure(req);
+  if (preflight) return preflight;
+
+  const origin = req.headers.get('origin');
+  const corsHeaders = getSecureCorsHeaders(origin);
 
   try {
     const supabase = createClient(
@@ -11,7 +15,6 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     )
 
-    // Validate JWT
     const authHeader = req.headers.get('Authorization')
     if (!authHeader) throw new Error('Non authentifié')
     const { data: { user }, error: authError } = await supabase.auth.getUser(authHeader.replace('Bearer ', ''))
@@ -20,7 +23,6 @@ serve(async (req) => {
     const body = await req.json()
     const { sync_type, direction, integration_id } = body
 
-    // Get user's connected integrations
     const { data: integrations } = await supabase
       .from('integrations')
       .select('id, platform_type, store_name, is_active')
@@ -36,7 +38,6 @@ serve(async (req) => {
       }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
     }
 
-    // Queue sync items for each integration
     const targets = integration_id
       ? integrations.filter(i => i.id === integration_id)
       : integrations

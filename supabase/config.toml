@@ -674,7 +674,22 @@ verify_jwt = true
 verify_jwt = true
 
 [functions.channel-sync-bidirectional]
-verify_jwt = true
+verify_jwt = false
+
+[functions.process-price-sync-queue]
+verify_jwt = false
+
+[functions.sync-stock-to-channels]
+verify_jwt = false
+
+[functions.sync-orders-to-channels]
+verify_jwt = false
+
+[functions.sync-customers-to-channels]
+verify_jwt = false
+
+[functions.sync-tracking-to-channels]
+verify_jwt = false
 
 [functions.shopify-complete-sync]
 verify_jwt = true

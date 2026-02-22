@@ -1,9 +1,13 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
-import { corsHeaders } from '../_shared/cors.ts'
+import { getSecureCorsHeaders, handleCorsPreflightSecure } from '../_shared/cors.ts'
 
 serve(async (req) => {
-  if (req.method === 'OPTIONS') return new Response(null, { headers: corsHeaders })
+  const preflight = handleCorsPreflightSecure(req);
+  if (preflight) return preflight;
+
+  const origin = req.headers.get('origin');
+  const corsHeaders = getSecureCorsHeaders(origin);
 
   try {
     const supabase = createClient(
@@ -16,8 +20,7 @@ serve(async (req) => {
     const { data: { user }, error: authError } = await supabase.auth.getUser(authHeader.replace('Bearer ', ''))
     if (authError || !user) throw new Error('Non authentifié')
 
-    // Process pending price sync items
-    const { data: queueItems, error } = await supabase
+    const { data: queueItems } = await supabase
       .from('price_sync_queue')
       .select('*')
       .eq('user_id', user.id)
@@ -27,7 +30,6 @@ serve(async (req) => {
 
     const processed = queueItems?.length || 0
 
-    // Mark items as processing
     if (queueItems && queueItems.length > 0) {
       const ids = queueItems.map(i => i.id)
       await supabase
