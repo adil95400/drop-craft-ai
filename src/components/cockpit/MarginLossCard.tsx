@@ -85,7 +85,19 @@ export function MarginLossCard({ products }: MarginLossCardProps) {
               <div
                 key={p.id}
                 className="flex items-center gap-2 p-2 rounded border hover:border-primary/30 cursor-pointer transition-all"
-                onClick={() => navigate(`/products/${p.id}`)}
+                onClick={() => navigate('/import/preview', {
+                  state: {
+                    product: {
+                      title: p.name || p.title,
+                      description: p.description || '',
+                      price: p.price || 0,
+                      images: p.image_url ? [p.image_url] : [],
+                      category: p.category || '',
+                      sku: p.sku || '',
+                    },
+                    returnTo: '/cockpit',
+                  }
+                })}
               >
                 <div className="h-7 w-7 rounded bg-muted flex items-center justify-center shrink-0 overflow-hidden">
                   {p.image_url ? (

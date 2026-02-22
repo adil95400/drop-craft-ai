@@ -649,7 +649,12 @@ export default function AuditProductsList() {
                     className="flex-1"
                     onClick={() => {
                       setShowAuditDialog(false);
-                      navigate(`/products/${selectedAudit.productId}`);
+                      navigate('/import/preview', {
+                        state: {
+                          productId: selectedAudit.productId,
+                          returnTo: '/audit',
+                        }
+                      });
                     }}
                   >
                     <Eye className="h-4 w-4 mr-2" />

@@ -231,11 +231,36 @@ export default function CatalogProductsPage() {
   }, [refetch, queryClient, toast]);
 
   const handleEdit = useCallback((product: any) => {
-    navigate(`/products/${product.id}`, { state: { openEdit: true } });
+    navigate('/import/preview', {
+      state: {
+        product: {
+          title: product.name || product.title,
+          description: product.description || '',
+          price: product.price || 0,
+          images: product.image_urls || (product.image_url ? [product.image_url] : []),
+          category: product.category || '',
+          sku: product.sku || '',
+        },
+        returnTo: '/products',
+        openEdit: true,
+      }
+    });
   }, [navigate]);
 
   const handleView = useCallback((product: any) => {
-    navigate(`/products/${product.id}`);
+    navigate('/import/preview', {
+      state: {
+        product: {
+          title: product.name || product.title,
+          description: product.description || '',
+          price: product.price || 0,
+          images: product.image_urls || (product.image_url ? [product.image_url] : []),
+          category: product.category || '',
+          sku: product.sku || '',
+        },
+        returnTo: '/products',
+      }
+    });
   }, [navigate]);
 
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
