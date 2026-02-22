@@ -10,6 +10,7 @@
  * - Memoization optimisée
  */
 import { useState, useMemo, useCallback, memo } from "react";
+import { useHeaderNotifications } from "@/hooks/useHeaderNotifications";
 import shopoptiLogo from "@/assets/logo-shopopti.png";
 import { useLocation, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
@@ -121,7 +122,8 @@ const ChannableNavItem = memo(({
   subModules,
   isSubOpen,
   onSubToggle,
-  t
+  t,
+  badgeCount
 }: {
   module: any;
   isActive: boolean;
@@ -135,6 +137,7 @@ const ChannableNavItem = memo(({
   isSubOpen: boolean;
   onSubToggle: () => void;
   t: (key: string) => string;
+  badgeCount?: number;
 }) => {
   const prefersReducedMotion = useReducedMotion();
   const Icon = ICON_MAP[module.icon] || Package;
@@ -170,6 +173,12 @@ const ChannableNavItem = memo(({
               </span>
               
               <div className="flex items-center gap-1.5 ml-2 flex-shrink-0 pr-6">
+                {badgeCount != null && badgeCount > 0 && (
+                  <Badge className="text-[9px] px-1.5 py-0 h-4 font-bold border-0 bg-rose-500 text-white shadow-sm min-w-[1.25rem] text-center animate-pulse">
+                    {badgeCount > 99 ? '99+' : badgeCount}
+                  </Badge>
+                )}
+                
                 {isComingSoon && (
                   <Badge className="text-[8px] px-1 py-0 h-3.5 font-bold border-0 uppercase tracking-wide bg-muted text-muted-foreground">
                     {t('sidebar.comingSoon')}
@@ -248,7 +257,8 @@ const ChannableNavGroup = memo(({
   openSubMenus,
   onSubMenuToggle,
   currentPlan,
-  t
+  t,
+  badgeCounts
 }: {
   group: typeof NAV_GROUPS[0];
   modules: any[];
@@ -266,6 +276,7 @@ const ChannableNavGroup = memo(({
   onSubMenuToggle: (id: string) => void;
   currentPlan: string;
   t: (key: string) => string;
+  badgeCounts?: Record<string, number>;
 }) => {
   const prefersReducedMotion = useReducedMotion();
   const Icon = ICON_MAP[group.icon] || Package;
@@ -305,7 +316,7 @@ const ChannableNavGroup = memo(({
       }} className="mt-1 space-y-0.5 px-1" role="group" aria-label={group.label}>
             <SidebarGroupContent>
               <SidebarMenu className="gap-0.5">
-                {modules.map(module => <ChannableNavItem key={module.id} module={module} isActive={activeRoute(module.route)} hasAccess={canAccess(module.id)} collapsed={collapsed} groupColor={color} isFavorite={favorites.isFavorite(module.id)} onNavigate={onNavigate} onFavoriteToggle={() => onFavoriteToggle(module.id)} subModules={module.subModules || []} isSubOpen={openSubMenus[module.id] || false} onSubToggle={() => onSubMenuToggle(module.id)} t={t} />)}
+                {modules.map(module => <ChannableNavItem key={module.id} module={module} isActive={activeRoute(module.route)} hasAccess={canAccess(module.id)} collapsed={collapsed} groupColor={color} isFavorite={favorites.isFavorite(module.id)} onNavigate={onNavigate} onFavoriteToggle={() => onFavoriteToggle(module.id)} subModules={module.subModules || []} isSubOpen={openSubMenus[module.id] || false} onSubToggle={() => onSubMenuToggle(module.id)} t={t} badgeCount={badgeCounts?.[module.id]} />)}
               </SidebarMenu>
             </SidebarGroupContent>
           </motion.div>}
@@ -488,6 +499,12 @@ export function ChannableSidebar() {
 
   // Debounce search for better performance
   const debouncedSearchQuery = useDebouncedValue(searchQuery, 150);
+  
+  // Notification unread count for badge
+  const { unreadCount: notificationUnreadCount } = useHeaderNotifications();
+  const badgeCounts = useMemo(() => ({
+    notifications: notificationUnreadCount
+  }), [notificationUnreadCount]);
   const {
     availableModules,
     allModules,
@@ -566,7 +583,7 @@ export function ChannableSidebar() {
           
           {/* Navigation Groups */}
           <nav aria-label={t('navigation', { ns: 'navigation' })}>
-            {filteredGroups.map(group => <ChannableNavGroup key={group.id} group={group} modules={modulesByGroup[group.id] || []} isOpen={openGroups.includes(group.id)} onToggle={() => toggleGroup(group.id)} collapsed={collapsed} activeRoute={isActive} canAccess={canAccess} favorites={favorites} onNavigate={handleNavigate} onFavoriteToggle={handleFavoriteToggle} openSubMenus={openSubMenus} onSubMenuToggle={toggleSubMenu} currentPlan={currentPlan} t={t} />)}
+            {filteredGroups.map(group => <ChannableNavGroup key={group.id} group={group} modules={modulesByGroup[group.id] || []} isOpen={openGroups.includes(group.id)} onToggle={() => toggleGroup(group.id)} collapsed={collapsed} activeRoute={isActive} canAccess={canAccess} favorites={favorites} onNavigate={handleNavigate} onFavoriteToggle={handleFavoriteToggle} openSubMenus={openSubMenus} onSubMenuToggle={toggleSubMenu} currentPlan={currentPlan} t={t} badgeCounts={badgeCounts} />)}
           </nav>
         </ScrollArea>
       </SidebarContent>
