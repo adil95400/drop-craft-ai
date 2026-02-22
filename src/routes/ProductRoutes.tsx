@@ -86,8 +86,7 @@ export function ProductRoutes() {
       <Route path="ai-content" element={<AIContentPage />} />
       <Route path="image-audit" element={<ImageAuditPage />} />
       <Route path="views" element={<SavedViews />} />
-      
-      {/* Import redirect already defined above */}
+      <Route path="vues" element={<Navigate to="/products/views" replace />} />
       
       {/* Suppliers - Redirect to dedicated module */}
       <Route path="suppliers/*" element={<Navigate to="/suppliers" replace />} />
