@@ -1,27 +1,21 @@
-import { createClient } from "npm:@supabase/supabase-js@2";
-import { logConsumption } from '../_shared/consumption.ts';
+import { handlePreflight, requireAuth, errorResponse, successResponse } from '../_shared/jwt-auth.ts'
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.53.0'
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
-};
+// ── Versioned prompts ──────────────────────────────────────────────────
+const PROMPT_VERSION = '1.3.0'
+const MODEL = 'google/gemini-2.5-flash'
 
-// ── Versioned prompts (stored in code) ─────────────────────────────────
-const PROMPT_VERSION = "1.3.0";
-const MODEL = "gpt-4.1-mini";
-
-const SYSTEM_PROMPT = `Tu es un expert en e-commerce et SEO. Tu enrichis les fiches produits pour maximiser les conversions et le référencement naturel. Tu retournes uniquement du JSON valide structuré.`;
+const SYSTEM_PROMPT = `Tu es un expert en e-commerce et SEO. Tu enrichis les fiches produits pour maximiser les conversions et le référencement naturel. Tu retournes uniquement du JSON valide structuré.`
 
 function buildUserPrompt(product: any, language: string, tone: string): string {
-  const imageCount = Array.isArray(product.images) ? product.images.length : 0;
+  const imageCount = Array.isArray(product.images) ? product.images.length : 0
   return `Enrichis ce produit pour le rendre attractif et SEO-optimisé.
 
 Produit actuel:
-- Titre: ${product.title || "N/A"}
-- Description: ${product.description || "N/A"}
-- Catégorie: ${product.category || "N/A"}
-- Prix: ${product.price || "N/A"}
+- Titre: ${product.title || 'N/A'}
+- Description: ${product.description || 'N/A'}
+- Catégorie: ${product.category || 'N/A'}
+- Prix: ${product.price || 'N/A'}
 - Nombre d'images: ${imageCount}
 
 Langue cible: ${language}
@@ -34,296 +28,194 @@ Génère un JSON avec:
 - seo_title: balise title SEO (max 60 caractères)
 - seo_description: meta description (max 160 caractères)
 - tags: tableau de 5-8 tags pertinents
-- image_alt_texts: tableau de ${Math.max(1, imageCount)} textes alternatifs SEO pour les images (descriptifs, incluant le nom du produit et des mots-clés, max 125 caractères chacun)`;
+- image_alt_texts: tableau de ${Math.max(1, imageCount)} textes alternatifs SEO pour les images`
 }
 
-const OPENAI_TOOL = {
-  type: "function" as const,
-  function: {
-    name: "enrich_product",
-    description: "Enrichit un produit e-commerce avec du contenu optimisé SEO",
-    parameters: {
-      type: "object",
-      properties: {
-        title: { type: "string" },
-        description: { type: "string" },
-        category: { type: "string" },
-        seo_title: { type: "string" },
-        seo_description: { type: "string" },
-        tags: { type: "array", items: { type: "string" } },
-        image_alt_texts: { type: "array", items: { type: "string" }, description: "SEO alt texts for product images" },
-      },
-      required: ["title", "description"],
-      additionalProperties: false,
-    },
-  },
-};
-
-// ── Main handler ───────────────────────────────────────────────────────
 Deno.serve(async (req) => {
-  if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
-  }
+  const preflight = handlePreflight(req)
+  if (preflight) return preflight
 
   try {
-    const authHeader = req.headers.get("Authorization");
-    if (!authHeader) {
-      return new Response(JSON.stringify({ error: "Missing authorization" }), {
-        status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
+    const { userId, supabase, corsHeaders } = await requireAuth(req)
 
-    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const supabase = createClient(supabaseUrl, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
-
-    const anonClient = createClient(supabaseUrl, Deno.env.get("SUPABASE_ANON_KEY")!);
-    const token = authHeader.replace("Bearer ", "");
-    const { data: { user }, error: authError } = await anonClient.auth.getUser(token);
-    if (authError || !user) {
-      return new Response(JSON.stringify({ error: "Unauthorized" }), {
-        status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-
-    const { product_ids, language = "fr", tone = "professionnel" } = await req.json();
+    const { product_ids, language = 'fr', tone = 'professionnel' } = await req.json()
 
     if (!product_ids || !Array.isArray(product_ids) || product_ids.length === 0) {
-      return new Response(JSON.stringify({ error: "product_ids required" }), {
-        status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      return errorResponse('product_ids required', corsHeaders, 400)
     }
 
-    const OPENAI_API_KEY = Deno.env.get("OPENAI_API_KEY");
-    if (!OPENAI_API_KEY) {
-      return new Response(JSON.stringify({ error: "OPENAI_API_KEY not configured" }), {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+    const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY')
+    if (!LOVABLE_API_KEY) {
+      return errorResponse('LOVABLE_API_KEY not configured', corsHeaders, 500)
     }
 
-    // Create job in unified `jobs` table
-    const { data: job, error: jobError } = await supabase
-      .from("jobs")
+    // Create job (use service-scoped client for background work)
+    const bgSupabase = createClient(
+      Deno.env.get('SUPABASE_URL')!,
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+    )
+
+    const { data: job, error: jobError } = await bgSupabase
+      .from('jobs')
       .insert({
-        user_id: user.id,
-        job_type: "ai_enrich",
-        status: "running",
+        user_id: userId,
+        job_type: 'ai_enrich',
+        status: 'running',
         total_items: product_ids.length,
         processed_items: 0,
         failed_items: 0,
         progress_percent: 0,
-        name: `Enrichissement IA OpenAI (${product_ids.length} produits)`,
+        name: `Enrichissement IA (${product_ids.length} produits)`,
         started_at: new Date().toISOString(),
         metadata: { prompt_version: PROMPT_VERSION, model: MODEL, language, tone, items_succeeded: 0 },
       })
-      .select("id")
-      .single();
+      .select('id')
+      .single()
 
-    if (jobError) throw jobError;
-
-    // Track consumption
-    await logConsumption(supabase, { userId: user.id, action: 'ai_enrichment', quantity: product_ids.length, metadata: { job_id: job.id, model: MODEL } });
+    if (jobError) throw jobError
 
     // ── Background processing ──────────────────────────────────────────
     const processProducts = async () => {
-      let succeeded = 0;
-      let failed = 0;
+      let succeeded = 0
+      let failed = 0
 
       for (let i = 0; i < product_ids.length; i++) {
-        const productId = product_ids[i];
-        const startTime = Date.now();
+        const productId = product_ids[i]
+        const startTime = Date.now()
 
         try {
+          // Use RLS-scoped client to verify ownership
           const { data: product } = await supabase
-            .from("products")
-            .select("title, description, category, price, images")
-            .eq("id", productId)
-            .eq("user_id", user.id)
-            .single();
+            .from('products')
+            .select('title, description, category, price, images')
+            .eq('id', productId)
+            .single()
 
           if (!product) {
-            // Persist failure
-            await supabase.from("product_ai_enrichments").insert({
-              product_id: productId,
-              job_id: job.id,
-              user_id: user.id,
-              status: "failed",
-              error_message: "Product not found",
-              model: MODEL,
-              prompt_version: PROMPT_VERSION,
-              language,
-              tone,
-            });
-            failed++;
-            continue;
+            await bgSupabase.from('product_ai_enrichments').insert({
+              product_id: productId, job_id: job.id, user_id: userId,
+              status: 'failed', error_message: 'Product not found',
+              model: MODEL, prompt_version: PROMPT_VERSION, language, tone,
+            })
+            failed++
+            continue
           }
 
-          const userPrompt = buildUserPrompt(product, language, tone);
+          const userPrompt = buildUserPrompt(product, language, tone)
 
-          const aiResponse = await fetch("https://api.openai.com/v1/chat/completions", {
-            method: "POST",
-            headers: {
-              Authorization: `Bearer ${OPENAI_API_KEY}`,
-              "Content-Type": "application/json",
-            },
+          const aiResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+            method: 'POST',
+            headers: { Authorization: `Bearer ${LOVABLE_API_KEY}`, 'Content-Type': 'application/json' },
             body: JSON.stringify({
               model: MODEL,
               messages: [
-                { role: "system", content: SYSTEM_PROMPT },
-                { role: "user", content: userPrompt },
+                { role: 'system', content: SYSTEM_PROMPT },
+                { role: 'user', content: userPrompt },
               ],
-              tools: [OPENAI_TOOL],
-              tool_choice: { type: "function", function: { name: "enrich_product" } },
               temperature: 0.7,
             }),
-          });
+          })
 
-          const durationMs = Date.now() - startTime;
+          const durationMs = Date.now() - startTime
 
           if (!aiResponse.ok) {
-            const errBody = await aiResponse.text();
-            console.error(`OpenAI error for ${productId}: ${aiResponse.status} ${errBody}`);
-            await supabase.from("product_ai_enrichments").insert({
-              product_id: productId,
-              job_id: job.id,
-              user_id: user.id,
-              original_title: product.title,
-              original_description: product.description,
-              original_category: product.category,
-              status: "failed",
-              error_message: `OpenAI ${aiResponse.status}: ${errBody.substring(0, 500)}`,
-              model: MODEL,
-              prompt_version: PROMPT_VERSION,
-              language,
-              tone,
-              generation_time_ms: durationMs,
-            });
-            failed++;
-            continue;
+            const errBody = await aiResponse.text()
+            console.error(`AI error for ${productId}: ${aiResponse.status}`)
+            await bgSupabase.from('product_ai_enrichments').insert({
+              product_id: productId, job_id: job.id, user_id: userId,
+              original_title: product.title, original_description: product.description,
+              original_category: product.category, status: 'failed',
+              error_message: `AI ${aiResponse.status}: ${errBody.substring(0, 500)}`,
+              model: MODEL, prompt_version: PROMPT_VERSION, language, tone, generation_time_ms: durationMs,
+            })
+            failed++
+            continue
           }
 
-          const aiData = await aiResponse.json();
-          const toolCall = aiData.choices?.[0]?.message?.tool_calls?.[0];
-          let enriched: any = {};
+          const aiData = await aiResponse.json()
+          const content = aiData.choices?.[0]?.message?.content || ''
+          let enriched: any = {}
 
-          if (toolCall?.function?.arguments) {
-            enriched = JSON.parse(toolCall.function.arguments);
+          try {
+            const jsonMatch = content.match(/\{[\s\S]*\}/)
+            enriched = jsonMatch ? JSON.parse(jsonMatch[0]) : JSON.parse(content)
+          } catch {
+            console.error(`JSON parse error for ${productId}`)
+            failed++
+            continue
           }
 
-          const tokensUsed = aiData.usage?.total_tokens || null;
-
-          // ── Persist enrichment result in product_ai_enrichments ───────
-          await supabase.from("product_ai_enrichments").insert({
-            product_id: productId,
-            job_id: job.id,
-            user_id: user.id,
-            original_title: product.title,
-            original_description: product.description,
+          // Persist enrichment
+          await bgSupabase.from('product_ai_enrichments').insert({
+            product_id: productId, job_id: job.id, user_id: userId,
+            original_title: product.title, original_description: product.description,
             original_category: product.category,
-            enriched_title: enriched.title || null,
-            enriched_description: enriched.description || null,
-            enriched_category: enriched.category || null,
-            enriched_seo_title: enriched.seo_title || null,
-            enriched_seo_description: enriched.seo_description || null,
-            enriched_tags: enriched.tags || null,
-            model: MODEL,
-            prompt_version: PROMPT_VERSION,
-            language,
-            tone,
-            tokens_used: tokensUsed,
-            generation_time_ms: durationMs,
-            status: "generated",
-          });
+            enriched_title: enriched.title || null, enriched_description: enriched.description || null,
+            enriched_category: enriched.category || null, enriched_seo_title: enriched.seo_title || null,
+            enriched_seo_description: enriched.seo_description || null, enriched_tags: enriched.tags || null,
+            model: MODEL, prompt_version: PROMPT_VERSION, language, tone,
+            generation_time_ms: durationMs, status: 'generated',
+          })
 
-          // ── Apply to product ─────────────────────────────────────────
-          const updateData: any = {};
-          if (enriched.title) updateData.title = enriched.title;
-          if (enriched.description) updateData.description = enriched.description;
-          if (enriched.category) updateData.category = enriched.category;
-          if (enriched.seo_title) updateData.seo_title = enriched.seo_title;
-          if (enriched.seo_description) updateData.seo_description = enriched.seo_description;
-          if (enriched.tags) updateData.tags = enriched.tags;
+          // Apply to product via RLS-scoped client
+          const updateData: any = {}
+          if (enriched.title) updateData.title = enriched.title
+          if (enriched.description) updateData.description = enriched.description
+          if (enriched.category) updateData.category = enriched.category
+          if (enriched.seo_title) updateData.seo_title = enriched.seo_title
+          if (enriched.seo_description) updateData.seo_description = enriched.seo_description
+          if (enriched.tags) updateData.tags = enriched.tags
 
-          // Apply alt texts to images array
           if (enriched.image_alt_texts && Array.isArray(product.images) && product.images.length > 0) {
             const updatedImages = product.images.map((img: any, idx: number) => {
-              const altText = enriched.image_alt_texts[idx] || enriched.image_alt_texts[0] || enriched.title;
-              if (typeof img === "string") {
-                return { url: img, alt: altText };
-              }
-              return { ...img, alt: altText };
-            });
-            updateData.images = updatedImages;
+              const altText = enriched.image_alt_texts[idx] || enriched.image_alt_texts[0] || enriched.title
+              return typeof img === 'string' ? { url: img, alt: altText } : { ...img, alt: altText }
+            })
+            updateData.images = updatedImages
           }
 
           if (Object.keys(updateData).length > 0) {
-            await supabase
-              .from("products")
-              .update(updateData)
-              .eq("id", productId)
-              .eq("user_id", user.id);
+            await supabase.from('products').update(updateData).eq('id', productId)
 
-            // Mark enrichment as applied
-            // (we just inserted it, update the latest one)
-            await supabase
-              .from("product_ai_enrichments")
-              .update({ status: "applied", applied_at: new Date().toISOString() })
-              .eq("product_id", productId)
-              .eq("job_id", job.id)
-              .eq("status", "generated");
+            await bgSupabase.from('product_ai_enrichments')
+              .update({ status: 'applied', applied_at: new Date().toISOString() })
+              .eq('product_id', productId).eq('job_id', job.id).eq('status', 'generated')
 
-            succeeded++;
+            succeeded++
           } else {
-            failed++;
+            failed++
           }
         } catch (err) {
-          console.error(`Error enriching ${productId}:`, err);
-          failed++;
+          console.error(`Error enriching ${productId}:`, err)
+          failed++
         }
 
         // Update job progress
-        const processed = i + 1;
-        const progress = Math.round((processed / product_ids.length) * 100);
-        await supabase
-          .from("jobs")
-          .update({
-            processed_items: processed,
-            failed_items: failed,
-            progress_percent: progress,
-            progress_message: `${processed}/${product_ids.length} produits traités`,
-            metadata: { prompt_version: PROMPT_VERSION, model: MODEL, language, tone, items_succeeded: succeeded },
-          })
-          .eq("id", job.id);
+        const processed = i + 1
+        const progress = Math.round((processed / product_ids.length) * 100)
+        await bgSupabase.from('jobs').update({
+          processed_items: processed, failed_items: failed, progress_percent: progress,
+          progress_message: `${processed}/${product_ids.length} produits traités`,
+          metadata: { prompt_version: PROMPT_VERSION, model: MODEL, language, tone, items_succeeded: succeeded },
+        }).eq('id', job.id)
       }
 
-      await supabase
-        .from("jobs")
-        .update({
-          status: failed === product_ids.length ? "failed" : "completed",
-          completed_at: new Date().toISOString(),
-          progress_percent: 100,
-          progress_message: `Terminé: ${succeeded} enrichis, ${failed} échecs`,
-          error_message: failed > 0 ? `${failed} produit(s) non enrichi(s)` : null,
-        })
-        .eq("id", job.id);
-    };
+      await bgSupabase.from('jobs').update({
+        status: failed === product_ids.length ? 'failed' : 'completed',
+        completed_at: new Date().toISOString(), progress_percent: 100,
+        progress_message: `Terminé: ${succeeded} enrichis, ${failed} échecs`,
+        error_message: failed > 0 ? `${failed} produit(s) non enrichi(s)` : null,
+      }).eq('id', job.id)
+    }
 
-    processProducts().catch((err) =>
-      console.error("[ai-enrich-import] background error:", err)
-    );
+    processProducts().catch((err) => console.error('[ai-enrich-import] background error:', err))
 
-    return new Response(
-      JSON.stringify({ success: true, job_id: job.id, message: "Enrichissement IA OpenAI démarré" }),
-      { headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    );
-  } catch (error) {
-    console.error("[ai-enrich-import] error:", error);
-    return new Response(
-      JSON.stringify({ error: error instanceof Error ? error.message : "Unknown error" }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    );
+    return successResponse({ job_id: job.id, message: 'Enrichissement IA démarré' }, corsHeaders)
+  } catch (error: any) {
+    if (error instanceof Response) return error
+    console.error('[ai-enrich-import] error:', error)
+    const origin = req.headers.get('origin')
+    const { getSecureCorsHeaders } = await import('../_shared/cors.ts')
+    return errorResponse(error.message || 'Unknown error', getSecureCorsHeaders(origin), 500)
   }
-});
+})
