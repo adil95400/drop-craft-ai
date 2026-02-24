@@ -13,6 +13,7 @@ const EXTENDED_REDIRECTS: Record<string, string> = {
   // Dashboard legacy
   '/dashboard/super': '/dashboard',
   '/dashboard/classic': '/dashboard',
+  '/dashboardbilling': '/dashboard/billing',
   '/modern': '/dashboard',
   '/unified-dashboard': '/dashboard',
   '/home-optimized': '/dashboard',
