@@ -1,109 +1,61 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-}
+import { handlePreflight, requireAuth, errorResponse, successResponse } from '../_shared/jwt-auth.ts'
 
 const ALLOWED_ACTIONS = new Set(['process', 'check_rules'])
 
 serve(async (req) => {
-  if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders })
-  }
+  const preflight = handlePreflight(req)
+  if (preflight) return preflight
 
   if (req.method !== 'POST') {
     return new Response(
       JSON.stringify({ error: 'Method not allowed' }),
-      { status: 405, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      { status: 405, headers: { 'Content-Type': 'application/json' } }
     )
   }
 
-  const supabase = createClient(
-    Deno.env.get('SUPABASE_URL') ?? '',
-    Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-  )
-
   try {
-    // Auth mandatory
-    const authHeader = req.headers.get('Authorization')
-    if (!authHeader?.startsWith('Bearer ')) {
-      return new Response(
-        JSON.stringify({ error: 'Authorization required' }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
-    }
-
-    const token = authHeader.replace('Bearer ', '')
-    const { data: { user }, error: authError } = await supabase.auth.getUser(token)
-    if (authError || !user) {
-      return new Response(
-        JSON.stringify({ error: 'Invalid or expired token' }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
-    }
-
-    const userId = user.id
+    const { userId, supabase, corsHeaders } = await requireAuth(req)
 
     const body = await req.json().catch(() => null)
     if (!body || typeof body !== 'object') {
-      return new Response(
-        JSON.stringify({ error: 'Invalid JSON body' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
+      return errorResponse('Invalid JSON body', corsHeaders)
     }
 
     const { orderId, ruleId, action = 'process' } = body
 
     if (!ALLOWED_ACTIONS.has(action)) {
-      return new Response(
-        JSON.stringify({ error: 'Invalid action' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
+      return errorResponse('Invalid action', corsHeaders)
     }
 
     console.log(`[order-fulfillment-auto] ${action} for user: ${userId.slice(0, 8)}`)
 
     if (action === 'process') {
       if (!orderId || !ruleId) {
-        return new Response(
-          JSON.stringify({ error: 'orderId and ruleId are required' }),
-          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        )
+        return errorResponse('orderId and ruleId are required', corsHeaders)
       }
 
-      // Get order - SCOPED TO USER
+      // RLS-scoped: only returns user's orders
       const { data: order, error: orderError } = await supabase
         .from('orders')
         .select('*')
         .eq('id', orderId)
-        .eq('user_id', userId)
         .single()
 
       if (orderError || !order) {
-        return new Response(
-          JSON.stringify({ error: 'Order not found or access denied' }),
-          { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        )
+        return errorResponse('Order not found or access denied', corsHeaders, 404)
       }
 
-      // Get fulfillment rule from `fulfilment_rules` table
       const { data: rule, error: ruleError } = await supabase
         .from('fulfilment_rules')
         .select('*')
         .eq('id', ruleId)
-        .eq('user_id', userId)
         .single()
 
       if (ruleError || !rule || !rule.is_active) {
-        return new Response(
-          JSON.stringify({ error: 'Rule not found, inactive, or access denied' }),
-          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        )
+        return errorResponse('Rule not found, inactive, or access denied', corsHeaders)
       }
 
-      // Execute the rule actions
       const ruleActions = (rule.actions || []) as any[]
       const results: any[] = []
 
@@ -116,14 +68,11 @@ serve(async (req) => {
         }
       }
 
-      // Update order status to processing
       await supabase
         .from('orders')
         .update({ status: 'processing', fulfillment_status: 'in_progress', updated_at: new Date().toISOString() })
         .eq('id', orderId)
-        .eq('user_id', userId)
 
-      // Log activity
       await supabase.from('activity_logs').insert({
         user_id: userId,
         action: 'order_auto_fulfilled',
@@ -134,49 +83,37 @@ serve(async (req) => {
         source: 'order-fulfillment-auto'
       })
 
-      return new Response(
-        JSON.stringify({
-          success: true,
-          order_number: order.order_number,
-          rule_name: rule.name,
-          actions_executed: results.filter(r => r.success).length,
-          results
-        }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
+      return successResponse({
+        order_number: order.order_number,
+        rule_name: rule.name,
+        actions_executed: results.filter(r => r.success).length,
+        results
+      }, corsHeaders)
     }
 
     if (action === 'check_rules') {
       const { data: rules, error: rulesError } = await supabase
         .from('fulfilment_rules')
         .select('id, name, is_active, priority')
-        .eq('user_id', userId)
         .eq('is_active', true)
         .order('priority', { ascending: true })
 
       if (rulesError) {
-        return new Response(
-          JSON.stringify({ error: 'Failed to fetch rules' }),
-          { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        )
+        return errorResponse('Failed to fetch rules', corsHeaders, 500)
       }
 
-      return new Response(
-        JSON.stringify({ success: true, active_rules: rules?.length || 0, rules: rules || [] }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
+      return successResponse({ active_rules: rules?.length || 0, rules: rules || [] }, corsHeaders)
     }
 
-    return new Response(
-      JSON.stringify({ error: 'Invalid action' }),
-      { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    )
-
+    return errorResponse('Invalid action', corsHeaders)
   } catch (error: any) {
+    if (error instanceof Response) return error
     console.error('Order fulfillment error:', error)
+    const origin = req.headers.get('origin')
+    const { getSecureCorsHeaders } = await import('../_shared/cors.ts')
     return new Response(
-      JSON.stringify({ error: error.message || 'Internal error' }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      JSON.stringify({ success: false, error: error.message || 'Internal error' }),
+      { status: 500, headers: { ...getSecureCorsHeaders(origin), 'Content-Type': 'application/json' } }
     )
   }
 })
