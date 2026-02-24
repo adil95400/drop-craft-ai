@@ -111,72 +111,92 @@ const SuperAdminDashboard = () => {
   };
 
   const loadSystemMetrics = async (): Promise<SystemMetrics> => {
-    // Simuler le chargement de métriques réelles
-    // En production, ces données viendraient de votre API
-    await new Promise(resolve => setTimeout(resolve, 500));
-    
+    const [
+      { count: usersCount },
+      { data: orders },
+      { count: productsCount },
+      { count: suppliersCount },
+      { data: recentApiLogs },
+      { count: securityEventsCount },
+      healthCheckResult
+    ] = await Promise.all([
+      supabase.from('profiles').select('*', { count: 'exact', head: true }),
+      supabase.from('orders').select('id, total_amount, user_id, created_at'),
+      supabase.from('products').select('*', { count: 'exact', head: true }),
+      supabase.from('integrations').select('*', { count: 'exact', head: true }).eq('is_active', true),
+      supabase.from('api_logs').select('status_code, created_at').order('created_at', { ascending: false }).limit(1000),
+      supabase.from('security_events').select('*', { count: 'exact', head: true }).gte('created_at', new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()),
+      supabase.functions.invoke('health-check').catch(() => ({ data: null }))
+    ]);
+
+    // Active users (ordered in last 30 days)
+    const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+    const activeUserIds = new Set(
+      (orders || []).filter(o => new Date(o.created_at || '') > thirtyDaysAgo).map(o => o.user_id)
+    );
+
+    // Revenue
+    const totalRevenue = (orders || []).reduce((sum, o) => sum + (o.total_amount || 0), 0);
+
+    // API error rate
+    const apiLogs = recentApiLogs || [];
+    const failedLogs = apiLogs.filter(l => (l.status_code || 0) >= 400).length;
+    const errorRate = apiLogs.length > 0 ? failedLogs / apiLogs.length : 0;
+
+    // System health from health-check
+    const healthData = (healthCheckResult as any)?.data;
+    const healthServices = healthData?.services || [];
+    const healthyCount = healthServices.filter((s: any) => s.status === 'healthy').length;
+    const systemLoad = healthServices.length > 0 ? Math.round((1 - healthyCount / healthServices.length) * 100) : 15;
+
     return {
-      totalUsers: Math.floor(Math.random() * 5000) + 15000,
-      activeUsers: Math.floor(Math.random() * 1000) + 2500,
-      totalOrders: Math.floor(Math.random() * 10000) + 45000,
-      totalRevenue: Math.floor(Math.random() * 500000) + 2500000,
-      totalProducts: Math.floor(Math.random() * 50000) + 150000,
-      totalSuppliers: Math.floor(Math.random() * 100) + 350,
-      systemLoad: Math.floor(Math.random() * 40) + 45,
-      databaseSize: Math.random() * 2 + 3.5,
-      apiCalls: Math.floor(Math.random() * 500000) + 1200000,
-      errorRate: Math.random() * 0.03 + 0.01,
-      securityEvents: Math.floor(Math.random() * 20) + 5,
-      onlineUsers: Math.floor(Math.random() * 200) + 150
+      totalUsers: usersCount || 0,
+      activeUsers: activeUserIds.size,
+      totalOrders: orders?.length || 0,
+      totalRevenue: totalRevenue,
+      totalProducts: productsCount || 0,
+      totalSuppliers: suppliersCount || 0,
+      systemLoad,
+      databaseSize: 0, // Not available via client
+      apiCalls: apiLogs.length,
+      errorRate,
+      securityEvents: securityEventsCount || 0,
+      onlineUsers: activeUserIds.size // Approximation
     };
   };
 
   const loadRecentActivities = async (): Promise<RecentActivity[]> => {
-    // Simuler le chargement d'activités récentes
-    await new Promise(resolve => setTimeout(resolve, 300));
-    
-    return [
-      {
-        id: '1',
-        type: 'user_signup',
-        message: 'Nouveau compte utilisateur créé',
-        user: 'marie.dupont@email.com',
-        time: 'Il y a 2 min',
-        severity: 'success'
-      },
-      {
-        id: '2',
-        type: 'order_placed',
-        message: 'Commande importante passée',
-        user: 'Client Premium #1247',
-        time: 'Il y a 5 min',
-        severity: 'info'
-      },
-      {
-        id: '3',
-        type: 'security_alert',
-        message: 'Tentative de connexion suspecte détectée',
-        user: 'Système de sécurité',
-        time: 'Il y a 8 min',
-        severity: 'warning'
-      },
-      {
-        id: '4',
-        type: 'import_completed',
-        message: 'Import de 2,500 produits terminé',
-        user: 'Fournisseur TechCorp',
-        time: 'Il y a 12 min',
-        severity: 'success'
-      },
-      {
-        id: '5',
-        type: 'system_backup',
-        message: 'Sauvegarde système automatique réussie',
-        user: 'Système',
-        time: 'Il y a 15 min',
-        severity: 'info'
-      }
-    ];
+    const { data: logs } = await supabase
+      .from('activity_logs')
+      .select('id, action, description, source, severity, created_at')
+      .order('created_at', { ascending: false })
+      .limit(10);
+
+    if (!logs || logs.length === 0) return [];
+
+    return logs.map(log => {
+      let type: RecentActivity['type'] = 'system_backup';
+      if (log.action?.includes('signup') || log.action?.includes('login')) type = 'user_signup';
+      else if (log.action?.includes('order')) type = 'order_placed';
+      else if (log.action?.includes('security') || log.severity === 'warn' || log.severity === 'error') type = 'security_alert';
+      else if (log.action?.includes('import')) type = 'import_completed';
+
+      const diffMs = Date.now() - new Date(log.created_at || '').getTime();
+      const diffMins = Math.floor(diffMs / 60000);
+      let time = 'À l\'instant';
+      if (diffMins >= 1440) time = `Il y a ${Math.floor(diffMins / 1440)}j`;
+      else if (diffMins >= 60) time = `Il y a ${Math.floor(diffMins / 60)}h`;
+      else if (diffMins >= 1) time = `Il y a ${diffMins} min`;
+
+      return {
+        id: log.id,
+        type,
+        message: log.description || log.action,
+        user: log.source || 'Système',
+        time,
+        severity: (log.severity === 'error' ? 'error' : log.severity === 'warn' ? 'warning' : 'info') as RecentActivity['severity']
+      };
+    });
   };
 
   const runSystemAction = async (action: string) => {
