@@ -1,10 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+import { getSecureCorsHeaders, handleCorsPreflightSecure } from '../_shared/secure-cors.ts';
+import { handleError, ValidationError } from '../_shared/error-handler.ts';
 
 interface OneClickImportRequest {
   urls: string[];
@@ -365,9 +362,10 @@ function normalizeProductData(rawData: any, options: OneClickImportRequest): any
 }
 
 serve(async (req) => {
-  if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
-  }
+  const preflightResponse = handleCorsPreflightSecure(req);
+  if (preflightResponse) return preflightResponse;
+
+  const corsHeaders = getSecureCorsHeaders(req);
 
   try {
     const supabaseClient = createClient(
@@ -382,11 +380,44 @@ serve(async (req) => {
 
     const { data: { user } } = await supabaseClient.auth.getUser();
     if (!user) {
-      throw new Error('Non authentifié');
+      throw new ValidationError('Non authentifié');
     }
 
-    const requestData: OneClickImportRequest = await req.json();
-    const { urls, importType, autoPublish = true, priceMultiplier = 1.5 } = requestData;
+    const rawBody = await req.json();
+    
+    // Input validation
+    if (!rawBody || typeof rawBody !== 'object') {
+      throw new ValidationError('Request body must be a JSON object');
+    }
+
+    const urls = rawBody.urls;
+    const importType = rawBody.importType;
+    const autoPublish = rawBody.autoPublish ?? true;
+    const priceMultiplier = rawBody.priceMultiplier ?? 1.5;
+
+    if (!Array.isArray(urls) || urls.length === 0) {
+      throw new ValidationError('urls must be a non-empty array');
+    }
+    if (urls.length > 50) {
+      throw new ValidationError('Maximum 50 URLs per import');
+    }
+    // Validate each URL
+    for (const url of urls) {
+      if (typeof url !== 'string' || url.length > 2000) {
+        throw new ValidationError('Each URL must be a string of max 2000 characters');
+      }
+      try { new URL(url); } catch { throw new ValidationError(`Invalid URL: ${url.substring(0, 50)}`); }
+    }
+
+    if (!['products', 'reviews'].includes(importType)) {
+      throw new ValidationError('importType must be "products" or "reviews"');
+    }
+
+    if (typeof priceMultiplier !== 'number' || priceMultiplier < 0.1 || priceMultiplier > 100) {
+      throw new ValidationError('priceMultiplier must be between 0.1 and 100');
+    }
+
+    const requestData = { ...rawBody, urls, importType, autoPublish, priceMultiplier } as OneClickImportRequest;
 
     if (!urls || urls.length === 0) {
       throw new Error('Aucune URL fournie');
@@ -565,16 +596,6 @@ serve(async (req) => {
       }
     );
   } catch (error) {
-    console.error('❌ Erreur one-click import:', error);
-    return new Response(
-      JSON.stringify({
-        success: false,
-        error: error.message,
-      }),
-      {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 400,
-      }
-    );
+    return handleError(error, corsHeaders);
   }
 });

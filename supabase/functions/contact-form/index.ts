@@ -1,40 +1,44 @@
 import "npm:@supabase/supabase-js@2"
 import { createClient } from "npm:@supabase/supabase-js@2"
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-}
+import { getSecureCorsHeaders, handleCorsPreflightSecure } from '../_shared/secure-cors.ts'
+import { handleError, ValidationError } from '../_shared/error-handler.ts'
 
 Deno.serve(async (req) => {
-  if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders })
-  }
+  // Secure CORS
+  const preflightResponse = handleCorsPreflightSecure(req)
+  if (preflightResponse) return preflightResponse
+
+  const origin = req.headers.get('Origin')
+  const corsHeaders = getSecureCorsHeaders(req)
 
   try {
-    const { name, email, message } = await req.json()
+    const body = await req.json()
+
+    // Input validation
+    const name = typeof body.name === 'string' ? body.name.trim() : ''
+    const email = typeof body.email === 'string' ? body.email.trim() : ''
+    const message = typeof body.message === 'string' ? body.message.trim() : ''
 
     if (!name || !email || !message) {
-      return new Response(
-        JSON.stringify({ error: 'Tous les champs sont requis' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
+      throw new ValidationError('Tous les champs sont requis')
     }
 
-    // Basic validation
-    if (name.length > 100 || email.length > 255 || message.length > 5000) {
-      return new Response(
-        JSON.stringify({ error: 'Un ou plusieurs champs dépassent la longueur maximale' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
+    if (name.length > 100) {
+      throw new ValidationError('Le nom ne doit pas dépasser 100 caractères')
+    }
+    if (email.length > 255) {
+      throw new ValidationError('L\'email ne doit pas dépasser 255 caractères')
+    }
+    if (message.length > 5000) {
+      throw new ValidationError('Le message ne doit pas dépasser 5000 caractères')
+    }
+    if (message.length < 10) {
+      throw new ValidationError('Le message doit contenir au moins 10 caractères')
     }
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
     if (!emailRegex.test(email)) {
-      return new Response(
-        JSON.stringify({ error: 'Adresse email invalide' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
+      throw new ValidationError('Adresse email invalide')
     }
 
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!
@@ -43,7 +47,7 @@ Deno.serve(async (req) => {
 
     const { error } = await supabase
       .from('contact_messages')
-      .insert({ name: name.trim(), email: email.trim(), message: message.trim() })
+      .insert({ name, email, message })
 
     if (error) {
       console.error('DB insert error:', error)
@@ -58,10 +62,6 @@ Deno.serve(async (req) => {
       { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
   } catch (err) {
-    console.error('Contact form error:', err)
-    return new Response(
-      JSON.stringify({ error: 'Erreur serveur' }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    )
+    return handleError(err, corsHeaders)
   }
 })
