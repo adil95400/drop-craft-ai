@@ -11,59 +11,61 @@ import {
   ArrowRight 
 } from 'lucide-react';
 import logoFull from '@/assets/logo-shopopti-full.png';
+import { useTranslation } from 'react-i18next';
 
 const FooterNavigation = () => {
+  const { t } = useTranslation('navigation');
   const currentYear = new Date().getFullYear();
 
   const footerSections = [
     {
-      title: "Produit",
+      title: t('footer.product'),
       links: [
-        { name: "Fonctionnalités", href: "/features" },
-        { name: "Tarifs", href: "/pricing" },
-        { name: "Documentation", href: "/documentation" },
-        { name: "API", href: "/integrations/api/documentation" },
-        { name: "Guide de démarrage", href: "/guides/getting-started" }
+        { name: t('footer.features'), href: "/features" },
+        { name: t('footer.pricing'), href: "/pricing" },
+        { name: t('footer.documentation'), href: "/documentation" },
+        { name: t('footer.api'), href: "/integrations/api/documentation" },
+        { name: t('footer.gettingStarted'), href: "/guides/getting-started" }
       ]
     },
     {
-      title: "Solutions",
+      title: t('footer.solutions'),
       links: [
-        { name: "IA d'optimisation", href: "/features/ai-optimization" },
-        { name: "Multi-marketplace", href: "/features/multi-marketplace" },
-        { name: "Analytics", href: "/features/analytics" },
-        { name: "Automatisation", href: "/automation" },
-        { name: "CRM & Marketing", href: "/marketing" }
+        { name: t('footer.aiOptimization'), href: "/features/ai-optimization" },
+        { name: t('footer.multiMarketplace'), href: "/features/multi-marketplace" },
+        { name: t('footer.analytics'), href: "/features/analytics" },
+        { name: t('footer.automation'), href: "/automation" },
+        { name: t('footer.crmMarketing'), href: "/marketing" }
       ]
     },
     {
-      title: "Ressources",
+      title: t('footer.resources'),
       links: [
-        { name: "Blog", href: "/blog" },
-        { name: "Académie", href: "/academy" },
-        { name: "Centre d'aide", href: "/faq" },
-        { name: "Support", href: "/contact" },
-        { name: "Extensions", href: "/extensions" }
+        { name: t('footer.blog'), href: "/blog" },
+        { name: t('footer.academy'), href: "/academy" },
+        { name: t('footer.helpCenter'), href: "/faq" },
+        { name: t('footer.support'), href: "/contact" },
+        { name: t('footer.extensions'), href: "/extensions" }
       ]
     },
     {
-      title: "Entreprise", 
+      title: t('footer.company'), 
       links: [
-        { name: "À propos", href: "/about" },
-        { name: "Contact", href: "/contact" },
-        { name: "Enterprise", href: "/pricing" },
-        { name: "Partenaires", href: "/about" },
-        { name: "Carrières", href: "/about" }
+        { name: t('footer.about'), href: "/about" },
+        { name: t('footer.contact'), href: "/contact" },
+        { name: t('footer.enterprise'), href: "/pricing" },
+        { name: t('footer.partners'), href: "/about" },
+        { name: t('footer.careers'), href: "/about" }
       ]
     },
     {
-      title: "Légal",
+      title: t('footer.legal'),
       links: [
-        { name: "Mentions légales", href: "/terms" },
-        { name: "Confidentialité", href: "/privacy" },
-        { name: "Conditions", href: "/terms" },
-        { name: "RGPD", href: "/privacy" },
-        { name: "Cookies", href: "/privacy" }
+        { name: t('footer.legalNotice'), href: "/terms" },
+        { name: t('footer.privacy'), href: "/privacy" },
+        { name: t('footer.terms'), href: "/terms" },
+        { name: t('footer.gdpr'), href: "/privacy" },
+        { name: t('footer.cookies'), href: "/privacy" }
       ]
     }
   ];
@@ -91,8 +93,7 @@ const FooterNavigation = () => {
               />
             </Link>
             <p className="text-muted-foreground text-sm leading-relaxed max-w-sm">
-              La plateforme e-commerce intelligente qui révolutionne le dropshipping. 
-              Automatisez vos processus et développez votre business avec l'IA.
+              {t('footer.description')}
             </p>
             <div className="space-y-2">
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -133,17 +134,17 @@ const FooterNavigation = () => {
         {/* Newsletter Subscription */}
         <div className="mt-12 pt-8 border-t">
           <div className="max-w-md">
-            <h3 className="font-semibold mb-2">Restez informé</h3>
+            <h3 className="font-semibold mb-2">{t('footer.stayInformed')}</h3>
             <p className="text-sm text-muted-foreground mb-4">
-              Recevez les dernières actualités et conseils e-commerce directement dans votre boîte mail.
+              {t('footer.newsletterDesc')}
             </p>
             <div className="flex gap-2">
               <input
                 type="email"
-                placeholder="Votre email"
+                placeholder={t('footer.yourEmail')}
                 className="flex-1 px-3 py-2 text-sm border rounded-md bg-background"
               />
-              <Button size="sm" aria-label="S'abonner à la newsletter">
+              <Button size="sm" aria-label={t('footer.subscribe')}>
                 <ArrowRight className="h-4 w-4" />
               </Button>
             </div>
@@ -154,7 +155,7 @@ const FooterNavigation = () => {
         <div className="mt-12 pt-8 border-t flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
           {/* Copyright */}
           <div className="text-sm text-muted-foreground">
-            © {currentYear} ShopOpti+. Tous droits réservés.
+            © {currentYear} ShopOpti+. {t('footer.allRightsReserved')}
           </div>
 
           {/* Social Links */}
@@ -178,7 +179,7 @@ const FooterNavigation = () => {
 
           {/* Language/Region Selector */}
           <div className="flex items-center space-x-2 text-sm text-muted-foreground">
-            <span>🇫🇷 Français</span>
+            <span>🌍 {t('footer.language')}</span>
           </div>
         </div>
       </div>
