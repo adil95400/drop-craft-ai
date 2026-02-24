@@ -98,6 +98,7 @@ export const PLAN_QUOTAS = {
 interface UnifiedPlanState {
   // État du plan
   currentPlan: PlanType
+  subscriptionStatus: string | null
   userRole: UserRole
   adminMode: AdminMode
   effectivePlan: PlanType
@@ -106,6 +107,7 @@ interface UnifiedPlanState {
   
   // Actions de base
   setPlan: (plan: PlanType) => void
+  setSubscriptionStatus: (status: string | null) => void
   setUserRole: (role: UserRole) => void
   setAdminMode: (mode: AdminMode) => void
   setLoading: (loading: boolean) => void
@@ -116,6 +118,7 @@ interface UnifiedPlanState {
   isPro: () => boolean
   isUltraPro: () => boolean
   isStandard: () => boolean
+  isSuspended: () => boolean
   
   // Gestion des fonctionnalités
   hasFeature: (feature: string) => boolean
@@ -153,6 +156,7 @@ export const useUnifiedPlan = create<UnifiedPlanState>()(
   subscribeWithSelector((set, get) => ({
     // État initial
     currentPlan: 'free',
+    subscriptionStatus: null,
     userRole: 'user',
     adminMode: null,
     effectivePlan: 'free',
@@ -164,6 +168,8 @@ export const useUnifiedPlan = create<UnifiedPlanState>()(
       currentPlan: plan,
       effectivePlan: calculateEffectivePlan(plan, state.userRole, state.adminMode)
     })),
+
+    setSubscriptionStatus: (status) => set({ subscriptionStatus: status }),
     
     setUserRole: (role) => set((state) => ({
       userRole: role,
@@ -180,13 +186,21 @@ export const useUnifiedPlan = create<UnifiedPlanState>()(
     
     // Vérifications de plan
     hasPlan: (minPlan) => {
-      const { effectivePlan } = get()
+      const { effectivePlan, subscriptionStatus } = get()
+      // Suspended users are treated as free
+      if (subscriptionStatus === 'past_due' || subscriptionStatus === 'cancelled') {
+        return PLAN_HIERARCHY['free'] >= PLAN_HIERARCHY[minPlan]
+      }
       return PLAN_HIERARCHY[effectivePlan] >= PLAN_HIERARCHY[minPlan]
     },
     
     isPro: () => get().hasPlan('pro'),
     isUltraPro: () => get().effectivePlan === 'ultra_pro',
     isStandard: () => get().effectivePlan === 'standard',
+    isSuspended: () => {
+      const status = get().subscriptionStatus
+      return status === 'past_due' || status === 'cancelled'
+    },
     
     // Gestion des fonctionnalités
     hasFeature: (feature) => {
@@ -213,7 +227,7 @@ export const useUnifiedPlan = create<UnifiedPlanState>()(
         // Get profile with subscription_plan
         const { data: profile, error: profileError } = await supabase
           .from('profiles')
-          .select('subscription_plan, admin_mode')
+          .select('subscription_plan, subscription_status, admin_mode')
           .eq('id', userId)
           .maybeSingle()
         
@@ -234,11 +248,13 @@ export const useUnifiedPlan = create<UnifiedPlanState>()(
         
         const role: UserRole = isAdmin ? 'admin' : 'user'
         const adminMode = (profile?.admin_mode as AdminMode) || null
+        const subStatus = (profile as any)?.subscription_status || null
         
         const effectivePlan = calculateEffectivePlan(plan, role, adminMode)
         
         set({
           currentPlan: plan,
+          subscriptionStatus: subStatus,
           userRole: role,
           adminMode,
           effectivePlan,

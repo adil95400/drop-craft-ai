@@ -165,6 +165,15 @@ serve(async (req) => {
     } else {
       logStep("No active subscription found");
       
+      // Check for past_due subscriptions
+      const pastDueSubscriptions = await stripe.subscriptions.list({
+        customer: customerId,
+        status: "past_due",
+        limit: 1,
+      });
+      
+      const isPastDue = pastDueSubscriptions.data.length > 0;
+      
       // Check current profile plan to avoid unnecessary updates
       const { data: profile } = await supabaseClient
         .from('profiles')
@@ -172,12 +181,14 @@ serve(async (req) => {
         .eq('id', user.id)
         .single();
       
-      if (profile?.subscription_status === 'active') {
+      if (profile?.subscription_status === 'active' || isPastDue) {
+        const newStatus = isPastDue ? 'past_due' : 'inactive';
         const { error: resetError } = await supabaseClient
           .from('profiles')
           .update({ 
-            plan: 'standard',
-            subscription_status: 'inactive',
+            plan: 'free',
+            subscription_plan: 'free',
+            subscription_status: newStatus,
             updated_at: new Date().toISOString()
           })
           .eq('id', user.id);
@@ -188,11 +199,19 @@ serve(async (req) => {
       }
     }
 
+    // Get subscription_status from profile for response
+    const { data: finalProfile } = await supabaseClient
+      .from('profiles')
+      .select('subscription_status')
+      .eq('id', user.id)
+      .single();
+
     const result = {
       subscribed: hasActiveSub,
       product_id: productId,
       plan: plan,
-      subscription_end: subscriptionEnd
+      subscription_end: subscriptionEnd,
+      subscription_status: finalProfile?.subscription_status || (hasActiveSub ? 'active' : 'inactive')
     };
     
     // Cache the result
