@@ -1,50 +1,69 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+/**
+ * analyze-supplier — SECURED (P0)
+ * 
+ * Fixes:
+ * - JWT auth via getClaims() (no more userId from body)
+ * - ANON_KEY + JWT for RLS enforcement
+ * - Secure CORS headers
+ * - Rate limited: 20 analyses/hour
+ * - URL validation
+ */
+import { requireAuth, handlePreflight, errorResponse, successResponse } from '../_shared/jwt-auth.ts'
+import { checkRateLimit, rateLimitResponse } from '../_shared/rate-limiter.ts'
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-}
-
-serve(async (req) => {
-  if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders })
-  }
+Deno.serve(async (req) => {
+  const preflight = handlePreflight(req)
+  if (preflight) return preflight
 
   try {
-    const supabaseClient = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-    )
+    // 1. JWT Auth
+    const auth = await requireAuth(req)
 
-    const { url, userId } = await req.json()
-
-    if (!url || !userId) {
-      return new Response(
-        JSON.stringify({ error: 'URL and userId are required' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
+    // 2. Rate limit
+    const rateCheck = await checkRateLimit(auth.userId, 'analyze-supplier', 20, 60)
+    if (!rateCheck.allowed) {
+      return rateLimitResponse(auth.corsHeaders, 'Limite atteinte (20 analyses/heure).')
     }
 
-    console.log('Analyzing supplier:', url)
+    // 3. Parse & validate input
+    const body = await req.json().catch(() => null)
+    if (!body || typeof body !== 'object') {
+      return errorResponse('Invalid JSON body', auth.corsHeaders)
+    }
 
-    // Fetch the supplier website
-    const pageResponse = await fetch(url, {
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+    const { url } = body
+    if (!url || typeof url !== 'string') {
+      return errorResponse('URL is required', auth.corsHeaders)
+    }
+
+    // Validate URL
+    let parsedUrl: URL
+    try {
+      parsedUrl = new URL(url)
+      if (!['http:', 'https:'].includes(parsedUrl.protocol)) {
+        throw new Error('Invalid protocol')
       }
+    } catch {
+      return errorResponse('Invalid URL format', auth.corsHeaders)
+    }
+
+    console.log(`[analyze-supplier] User ${auth.userId} analyzing: ${parsedUrl.hostname}`)
+
+    // 4. Fetch supplier page
+    const pageResponse = await fetch(url, {
+      headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' },
     })
 
     if (!pageResponse.ok) {
-      throw new Error(`Failed to fetch supplier page: ${pageResponse.status}`)
+      return errorResponse(`Failed to fetch supplier page: ${pageResponse.status}`, auth.corsHeaders)
     }
 
     const html = await pageResponse.text()
 
-    // Use AI to analyze the supplier
+    // 5. AI analysis via Lovable AI
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY')
     if (!LOVABLE_API_KEY) {
-      throw new Error('LOVABLE_API_KEY not configured')
+      return errorResponse('AI service not configured', auth.corsHeaders, 500)
     }
 
     const aiResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
@@ -72,53 +91,42 @@ Return ONLY a JSON object with this exact structure (no markdown, no explanation
   "reliability_score": number between 0-5,
   "has_api": boolean,
   "shipping_countries": ["country1", "country2"]
-}`
+}`,
           },
           {
             role: 'user',
-            content: `Analyze this supplier website and extract information:\n\nURL: ${url}\n\nHTML excerpt (first 5000 chars):\n${html.substring(0, 5000)}`
-          }
+            content: `Analyze this supplier website:\n\nURL: ${url}\n\nHTML excerpt (first 5000 chars):\n${html.substring(0, 5000)}`,
+          },
         ],
         temperature: 0.3,
-      })
+      }),
     })
 
     if (!aiResponse.ok) {
-      if (aiResponse.status === 429) {
-        return new Response(
-          JSON.stringify({ error: 'Rate limit exceeded. Please try again later.' }),
-          { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        )
-      }
-      if (aiResponse.status === 402) {
-        return new Response(
-          JSON.stringify({ error: 'Payment required. Please add credits to your Lovable AI workspace.' }),
-          { status: 402, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        )
-      }
-      throw new Error(`AI analysis failed: ${aiResponse.status}`)
+      const status = aiResponse.status
+      await aiResponse.text() // consume body
+      if (status === 429) return errorResponse('AI rate limit exceeded', auth.corsHeaders, 429)
+      if (status === 402) return errorResponse('AI credits required', auth.corsHeaders, 402)
+      return errorResponse(`AI analysis failed: ${status}`, auth.corsHeaders, 500)
     }
 
     const aiData = await aiResponse.json()
-    const content = aiData.choices[0].message.content
-    
-    // Parse the JSON from AI response
-    let supplierData
+    const content = aiData.choices[0]?.message?.content || '{}'
+
+    let supplierData: any
     try {
-      // Remove markdown code blocks if present
       const cleanContent = content.replace(/```json\n?|\n?```/g, '').trim()
       supplierData = JSON.parse(cleanContent)
-    } catch (e) {
-      console.error('Failed to parse AI response:', content)
-      throw new Error('Failed to parse supplier data from AI response')
+    } catch {
+      return errorResponse('Failed to parse AI response', auth.corsHeaders, 500)
     }
 
-    // Insert supplier into database
-    const { data: supplier, error: dbError } = await supabaseClient
+    // 6. Insert via RLS-scoped client
+    const { data: supplier, error: dbError } = await auth.supabase
       .from('suppliers')
       .insert({
-        user_id: userId,
-        name: supplierData.name,
+        user_id: auth.userId,
+        name: supplierData.name || 'Unknown Supplier',
         website: supplierData.website || url,
         country: supplierData.country,
         description: supplierData.description,
@@ -130,55 +138,51 @@ Return ONLY a JSON object with this exact structure (no markdown, no explanation
         product_count: supplierData.estimated_products || 0,
         tags: supplierData.product_categories || [],
         supplier_type: supplierData.has_api ? 'api' : 'manual',
-        sector: supplierData.product_categories?.[0] || 'General'
+        sector: supplierData.product_categories?.[0] || 'General',
       })
       .select()
       .single()
 
     if (dbError) {
-      console.error('Database error:', dbError)
-      throw dbError
+      console.error('[analyze-supplier] DB error:', dbError)
+      return errorResponse('Failed to save supplier', auth.corsHeaders, 500)
     }
 
-    // Log activity
-    await supabaseClient
+    // 7. Log activity (best-effort)
+    auth.supabase
       .from('activity_logs')
       .insert({
-        user_id: userId,
+        user_id: auth.userId,
         action: 'supplier_analyzed',
         entity_type: 'supplier',
         entity_id: supplier.id,
         description: `Analyzed supplier: ${supplierData.name}`,
-        metadata: {
-          url,
-          categories: supplierData.product_categories,
-          reliability_score: supplierData.reliability_score
-        }
+        source: 'edge_function',
       })
+      .then(() => {})
+      .catch((e: Error) => console.warn('Activity log failed:', e.message))
 
-    return new Response(
-      JSON.stringify({
-        success: true,
+    return successResponse(
+      {
         supplier,
         analysis: {
           name: supplierData.name,
           categories: supplierData.product_categories,
           estimated_products: supplierData.estimated_products,
           reliability_score: supplierData.reliability_score,
-          has_api: supplierData.has_api
-        }
-      }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          has_api: supplierData.has_api,
+        },
+      },
+      auth.corsHeaders
     )
-
   } catch (error) {
-    console.error('Supplier analysis error:', error)
-    return new Response(
-      JSON.stringify({ 
-        error: error.message || 'Failed to analyze supplier',
-        details: error.toString()
-      }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    if (error instanceof Response) return error
+    console.error('[analyze-supplier] Error:', error)
+    const { getSecureCorsHeaders } = await import('../_shared/cors.ts')
+    return errorResponse(
+      error instanceof Error ? error.message : 'Internal error',
+      getSecureCorsHeaders(req.headers.get('origin')),
+      500
     )
   }
 })
