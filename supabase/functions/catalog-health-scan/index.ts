@@ -1,10 +1,9 @@
-import "jsr:@supabase/functions-js/edge-runtime.d.ts"
-import { createClient } from "npm:@supabase/supabase-js@2"
+/**
+ * Catalog Health Scan — SECURED (JWT-first, RLS-enforced)
+ * Scores all user products on 6 pillars and persists to product_scores.
+ */
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-}
+import { requireAuth, handlePreflight, successResponse, errorResponse } from '../_shared/jwt-auth.ts'
 
 const PILLAR_WEIGHTS = { title: 20, description: 20, images: 20, pricing: 15, identifiers: 15, seo: 10 }
 
@@ -105,7 +104,6 @@ function scoreProduct(p: any) {
      seoScore * PILLAR_WEIGHTS.seo) / 100
   )
 
-  // Build issues array
   const issues: any[] = []
   if (!title) issues.push({ category: 'title', message: 'Titre manquant', severity: 'error' })
   else if (title.length < 25) issues.push({ category: 'title', message: 'Titre trop court', severity: 'warning' })
@@ -129,40 +127,20 @@ function scoreProduct(p: any) {
 }
 
 Deno.serve(async (req) => {
-  if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders })
-  }
+  const preflight = handlePreflight(req)
+  if (preflight) return preflight
 
   try {
-    const authHeader = req.headers.get('Authorization')
-    if (!authHeader) {
-      return new Response(JSON.stringify({ ok: false, error: 'Unauthorized' }), {
-        status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-      })
-    }
-
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')!
-    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
-    const supabase = createClient(supabaseUrl, supabaseKey)
-
-    // Validate user
-    const anonClient = createClient(supabaseUrl, Deno.env.get('SUPABASE_ANON_KEY')!)
-    const { data: { user }, error: authError } = await anonClient.auth.getUser(authHeader.replace('Bearer ', ''))
-    if (authError || !user) {
-      return new Response(JSON.stringify({ ok: false, error: 'Invalid token' }), {
-        status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-      })
-    }
+    const { userId, supabase, corsHeaders } = await requireAuth(req)
 
     const body = await req.json().catch(() => ({}))
     const action = body.action || 'batch_scan'
 
     if (action === 'batch_scan') {
-      // Fetch all user products
       const { data: products, error: pErr } = await supabase
         .from('products')
         .select('id, title, name, description, image_url, images, price, cost_price, stock_quantity, sku, barcode, category, brand, tags, seo_title, seo_description, status')
-        .eq('user_id', user.id)
+        .eq('user_id', userId)
         .limit(1000)
 
       if (pErr) throw pErr
@@ -178,7 +156,7 @@ Deno.serve(async (req) => {
           scanned++
           totalScore += result.overall
           return {
-            user_id: user.id,
+            user_id: userId,
             product_id: p.id,
             overall_score: result.overall,
             title_score: result.titleScore,
@@ -199,14 +177,7 @@ Deno.serve(async (req) => {
 
       const averageScore = scanned > 0 ? Math.round(totalScore / scanned) : 0
 
-      return new Response(JSON.stringify({
-        ok: true,
-        scanned,
-        averageScore,
-        timestamp: new Date().toISOString()
-      }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-      })
+      return successResponse({ ok: true, scanned, averageScore, timestamp: new Date().toISOString() }, corsHeaders)
     }
 
     if (action === 'single_scan') {
@@ -217,7 +188,7 @@ Deno.serve(async (req) => {
         .from('products')
         .select('*')
         .eq('id', productId)
-        .eq('user_id', user.id)
+        .eq('user_id', userId)
         .single()
 
       if (pErr || !product) throw new Error('Product not found')
@@ -225,7 +196,7 @@ Deno.serve(async (req) => {
       const result = scoreProduct(product)
 
       await supabase.from('product_scores').upsert({
-        user_id: user.id,
+        user_id: userId,
         product_id: productId,
         overall_score: result.overall,
         title_score: result.titleScore,
@@ -240,17 +211,18 @@ Deno.serve(async (req) => {
         updated_at: new Date().toISOString(),
       }, { onConflict: 'product_id' })
 
-      return new Response(JSON.stringify({ ok: true, score: result.overall, details: result }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-      })
+      return successResponse({ ok: true, score: result.overall, details: result }, corsHeaders)
     }
 
-    return new Response(JSON.stringify({ ok: false, error: 'Unknown action' }), {
-      status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-    })
+    return errorResponse('Unknown action', corsHeaders, 400)
   } catch (err) {
-    return new Response(JSON.stringify({ ok: false, error: err.message }), {
-      status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-    })
+    if (err instanceof Response) return err
+    console.error('[catalog-health-scan] Error:', err)
+    const origin = req.headers.get('origin')
+    const { getSecureCorsHeaders } = await import('../_shared/cors.ts')
+    return new Response(
+      JSON.stringify({ ok: false, error: err instanceof Error ? err.message : 'Erreur interne' }),
+      { status: 500, headers: { ...getSecureCorsHeaders(origin), 'Content-Type': 'application/json' } }
+    )
   }
 })
