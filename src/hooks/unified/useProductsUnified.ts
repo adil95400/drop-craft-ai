@@ -247,9 +247,20 @@ export function useProductsUnified(options: UseProductsUnifiedOptions = {}) {
 
   const optimizeMutation = useMutation({
     mutationFn: async (id: string) => {
-      // TODO: connect to /v1/ai/enrichments when ready
-      toast({ title: 'Optimisation IA', description: 'Fonctionnalité en cours de connexion au backend.' })
-      return { id }
+      const { data, error } = await (await import('@/integrations/supabase/client')).supabase
+        .functions.invoke('ai-enrich-import', {
+          body: { product_ids: [id], language: 'fr', tone: 'professionnel' }
+        })
+      if (error) throw error
+      if (!data?.success) throw new Error(data?.error || 'Enrichment failed')
+      return data
+    },
+    onSuccess: () => {
+      toast({ title: 'Optimisation IA', description: 'Enrichissement lancé avec succès.' })
+      invalidateAll()
+    },
+    onError: (err: Error) => {
+      toast({ title: 'Erreur', description: err.message, variant: 'destructive' })
     },
   })
 
