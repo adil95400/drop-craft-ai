@@ -4,6 +4,7 @@
  */
 
 import { useState, useMemo, useCallback } from 'react'
+import { useTranslation } from 'react-i18next'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { Helmet } from 'react-helmet-async'
 import { useNavigate, useSearchParams } from 'react-router-dom'
@@ -165,33 +166,35 @@ interface ChannelCardPremiumProps {
 }
 
 function ChannelCardPremium({ connection, viewMode, onSync, onManage, isSyncing, index, isSelected, onToggleSelect }: ChannelCardPremiumProps) {
+  const { t } = useTranslation('channels')
+
   const statusConfig = {
     connected: { 
       color: 'text-emerald-500', 
       bg: 'bg-emerald-500/10 border-emerald-500/30', 
       icon: CheckCircle2, 
-      label: 'Connecté',
+      label: t('hub.connectedStatus'),
       dot: 'bg-emerald-500'
     },
     error: { 
       color: 'text-red-500', 
       bg: 'bg-red-500/10 border-red-500/30', 
       icon: AlertCircle, 
-      label: 'Erreur',
+      label: t('hub.errorStatus'),
       dot: 'bg-red-500'
     },
     connecting: { 
       color: 'text-amber-500', 
       bg: 'bg-amber-500/10 border-amber-500/30', 
       icon: Loader2, 
-      label: 'Connexion...',
+      label: t('hub.connectingStatus'),
       dot: 'bg-amber-500'
     },
     disconnected: { 
       color: 'text-muted-foreground', 
       bg: 'bg-muted/50 border-muted', 
       icon: WifiOff, 
-      label: 'Déconnecté',
+      label: t('hub.disconnectedStatus'),
       dot: 'bg-muted-foreground'
     },
   }
@@ -200,13 +203,13 @@ function ChannelCardPremium({ connection, viewMode, onSync, onManage, isSyncing,
   const StatusIcon = status.icon
 
   const formatLastSync = (date?: string) => {
-    if (!date) return 'Jamais'
+    if (!date) return t('hub.lastSyncNever')
     const diff = Date.now() - new Date(date).getTime()
     const minutes = Math.floor(diff / 60000)
-    if (minutes < 60) return `Il y a ${minutes}min`
+    if (minutes < 60) return t('hub.lastSyncMinutes', { count: minutes })
     const hours = Math.floor(minutes / 60)
-    if (hours < 24) return `Il y a ${hours}h`
-    return `Il y a ${Math.floor(hours / 24)}j`
+    if (hours < 24) return t('hub.lastSyncHours', { count: hours })
+    return t('hub.lastSyncDays', { count: Math.floor(hours / 24) })
   }
 
   if (viewMode === 'list') {
@@ -242,15 +245,15 @@ function ChannelCardPremium({ connection, viewMode, onSync, onManage, isSyncing,
         <div className="hidden sm:flex items-center gap-6 text-center">
           <div>
             <p className="text-lg font-bold">{connection.products_synced?.toLocaleString() || 0}</p>
-            <p className="text-[10px] text-muted-foreground">Produits</p>
+            <p className="text-[10px] text-muted-foreground">{t('stats.products')}</p>
           </div>
           <div>
             <p className="text-lg font-bold">{connection.orders_synced?.toLocaleString() || 0}</p>
-            <p className="text-[10px] text-muted-foreground">Commandes</p>
+            <p className="text-[10px] text-muted-foreground">{t('stats.orders')}</p>
           </div>
           <div>
             <p className="text-sm">{formatLastSync(connection.last_sync_at)}</p>
-            <p className="text-[10px] text-muted-foreground">Dernière sync</p>
+            <p className="text-[10px] text-muted-foreground">{t('stats.lastSync')}</p>
           </div>
         </div>
 
@@ -325,14 +328,14 @@ function ChannelCardPremium({ connection, viewMode, onSync, onManage, isSyncing,
           <div className="p-3 rounded-xl bg-gradient-to-br from-primary/10 to-primary/5 border border-primary/20">
             <div className="flex items-center gap-2 mb-1">
               <Package className="h-3.5 w-3.5 text-primary" />
-              <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-wide">Produits</span>
+              <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-wide">{t('stats.products')}</span>
             </div>
             <p className="text-xl font-bold">{connection.products_synced?.toLocaleString() || 0}</p>
           </div>
           <div className="p-3 rounded-xl bg-gradient-to-br from-emerald-500/10 to-emerald-500/5 border border-emerald-500/20">
             <div className="flex items-center gap-2 mb-1">
               <ShoppingCart className="h-3.5 w-3.5 text-emerald-500" />
-              <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-wide">Commandes</span>
+              <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-wide">{t('stats.orders')}</span>
             </div>
             <p className="text-xl font-bold">{connection.orders_synced?.toLocaleString() || 0}</p>
           </div>
@@ -341,7 +344,7 @@ function ChannelCardPremium({ connection, viewMode, onSync, onManage, isSyncing,
         {/* Last sync */}
         <div className="flex items-center gap-2 text-xs text-muted-foreground mb-4">
           <Timer className="h-3.5 w-3.5" />
-          <span>Sync: {formatLastSync(connection.last_sync_at)}</span>
+          <span>{t('hub.sync')}: {formatLastSync(connection.last_sync_at)}</span>
         </div>
 
         {/* Footer */}
@@ -369,7 +372,7 @@ function ChannelCardPremium({ connection, viewMode, onSync, onManage, isSyncing,
             className="h-8 gap-1.5 bg-primary/90 hover:bg-primary"
             onClick={onManage}
           >
-            Gérer
+            {t('hub.manage')}
             <ArrowRight className="h-3.5 w-3.5" />
           </Button>
         </div>
@@ -386,6 +389,7 @@ interface PlatformCardPremiumProps {
 }
 
 function PlatformCardPremium({ platform, onConnect, index }: PlatformCardPremiumProps) {
+  const { t } = useTranslation('channels')
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0.9 }}
@@ -408,7 +412,7 @@ function PlatformCardPremium({ platform, onConnect, index }: PlatformCardPremium
           <p className="font-semibold text-sm">{platform.name}</p>
           <p className="text-[10px] text-muted-foreground group-hover:text-primary transition-colors flex items-center gap-1 justify-center mt-1">
             <Plus className="h-3 w-3" />
-            Connecter
+            {t('hub.connect')}
           </p>
         </div>
       </div>
@@ -452,6 +456,7 @@ function HealthMetricCard({ icon: Icon, label, value, status }: HealthMetricProp
 
 // ============= ACTIVE JOBS SIDEBAR =============
 function ActiveJobsSidebar() {
+  const { t } = useTranslation('channels')
   const { activeJobs, jobs } = useApiJobs({ limit: 5, jobType: 'sync' })
   
   const recentJobs = jobs.slice(0, 5)
@@ -464,10 +469,10 @@ function ActiveJobsSidebar() {
           <div className="p-1.5 rounded-lg bg-primary/10">
             <Zap className="h-4 w-4 text-primary" />
           </div>
-          Jobs Sync
+          {t('hub.syncJobs')}
           {activeJobs.length > 0 && (
             <Badge className="text-[10px] bg-primary/10 text-primary border-0">
-              {activeJobs.length} actif{activeJobs.length > 1 ? 's' : ''}
+              {activeJobs.length} {activeJobs.length > 1 ? t('hub.activePlural') : t('hub.active')}
             </Badge>
           )}
         </CardTitle>
@@ -502,6 +507,7 @@ function ActiveJobsSidebar() {
 
 // ============= MAIN COMPONENT =============
 export default function StoresAndChannelsHub() {
+  const { t } = useTranslation('channels')
   const navigate = useNavigate()
   const { toast } = useToast()
   const queryClient = useQueryClient()
@@ -525,11 +531,11 @@ export default function StoresAndChannelsHub() {
 
   // Categories
   const categories = useMemo(() => [
-    { id: 'all', label: 'Tous', icon: LayoutGrid, count: connections.length },
-    { id: 'stores', label: 'Boutiques', icon: Store, count: connections.filter(c => STORE_PLATFORMS.some(p => p.id === c.platform_type?.toLowerCase())).length },
-    { id: 'marketplaces', label: 'Marketplaces', icon: ShoppingCart, count: connections.filter(c => MARKETPLACE_PLATFORMS.some(p => p.id === c.platform_type?.toLowerCase())).length },
-    { id: 'errors', label: 'Erreurs', icon: AlertCircle, count: connections.filter(c => c.connection_status === 'error').length },
-  ], [connections])
+    { id: 'all', label: t('hub.all'), icon: LayoutGrid, count: connections.length },
+    { id: 'stores', label: t('hub.stores'), icon: Store, count: connections.filter(c => STORE_PLATFORMS.some(p => p.id === c.platform_type?.toLowerCase())).length },
+    { id: 'marketplaces', label: t('hub.marketplaces'), icon: ShoppingCart, count: connections.filter(c => MARKETPLACE_PLATFORMS.some(p => p.id === c.platform_type?.toLowerCase())).length },
+    { id: 'errors', label: t('hub.errors'), icon: AlertCircle, count: connections.filter(c => c.connection_status === 'error').length },
+  ], [connections, t])
 
   // Filter connections
   const filteredConnections = useMemo(() => {
@@ -564,12 +570,12 @@ export default function StoresAndChannelsHub() {
 
   // Bulk actions
   const bulkActions = useMemo(() => [
-    { id: 'sync-all', label: 'Synchroniser', icon: RefreshCw, onClick: () => syncMutation.mutate(Array.from(selectedIds)) },
-    { id: 'enable-autosync', label: 'Auto-Sync On', icon: Zap, onClick: () => toggleAutoSyncMutation.mutate({ connectionIds: Array.from(selectedIds), enabled: true }) },
-    { id: 'disable-autosync', label: 'Auto-Sync Off', icon: EyeOff, variant: 'outline' as const, onClick: () => toggleAutoSyncMutation.mutate({ connectionIds: Array.from(selectedIds), enabled: false }) },
-    { id: 'export', label: 'Exporter', icon: Download, onClick: () => { exportChannels(Array.from(selectedIds)); deselectAll() } },
-    { id: 'delete', label: 'Supprimer', icon: Trash2, variant: 'destructive' as const, onClick: () => setShowBulkDeleteConfirm(true) }
-  ], [selectedIds, syncMutation, toggleAutoSyncMutation, deleteMutation, exportChannels, deselectAll])
+    { id: 'sync-all', label: t('hub.bulkSync'), icon: RefreshCw, onClick: () => syncMutation.mutate(Array.from(selectedIds)) },
+    { id: 'enable-autosync', label: t('hub.bulkAutoSyncOn'), icon: Zap, onClick: () => toggleAutoSyncMutation.mutate({ connectionIds: Array.from(selectedIds), enabled: true }) },
+    { id: 'disable-autosync', label: t('hub.bulkAutoSyncOff'), icon: EyeOff, variant: 'outline' as const, onClick: () => toggleAutoSyncMutation.mutate({ connectionIds: Array.from(selectedIds), enabled: false }) },
+    { id: 'export', label: t('hub.bulkExport'), icon: Download, onClick: () => { exportChannels(Array.from(selectedIds)); deselectAll() } },
+    { id: 'delete', label: t('hub.bulkDelete'), icon: Trash2, variant: 'destructive' as const, onClick: () => setShowBulkDeleteConfirm(true) }
+  ], [selectedIds, syncMutation, toggleAutoSyncMutation, deleteMutation, exportChannels, deselectAll, t])
 
   // Available platforms
   const connectedPlatformIds = connections.map(c => c.platform_type?.toLowerCase())
@@ -581,7 +587,7 @@ export default function StoresAndChannelsHub() {
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="text-center space-y-4">
           <Loader2 className="w-10 h-10 animate-spin text-primary mx-auto" />
-          <p className="text-muted-foreground">Chargement des canaux...</p>
+          <p className="text-muted-foreground">{t('hub.loadingChannels')}</p>
         </div>
       </div>
     )
@@ -590,17 +596,17 @@ export default function StoresAndChannelsHub() {
   return (
     <>
       <Helmet>
-        <title>Boutiques & Canaux - ShopOpti</title>
-        <meta name="description" content="Gérez vos connexions boutiques et marketplaces. Synchronisez vos produits en temps réel." />
+        <title>{t('hub.pageTitle')} - ShopOpti</title>
+        <meta name="description" content={t('hub.metaDescription')} />
       </Helmet>
 
       <ChannablePageWrapper
-        title="Boutiques & Canaux"
-        subtitle="Gestion Multi-Canal"
-        description="Connectez vos boutiques et publiez sur les marketplaces. Synchronisation en temps réel."
+        title={t('hub.pageTitle')}
+        subtitle={t('hub.subtitle')}
+        description={t('hub.heroDescription')}
         heroImage="integrations"
         badge={{
-          label: `${connections.filter(c => c.connection_status === 'connected').length} actifs`,
+          label: t('hub.activeBadge', { count: connections.filter(c => c.connection_status === 'connected').length }),
           icon: Link2
         }}
         actions={
@@ -608,7 +614,7 @@ export default function StoresAndChannelsHub() {
             <ChannableSearchBar
               value={searchTerm}
               onChange={setSearchTerm}
-              placeholder="Rechercher..."
+              placeholder={t('hub.search')}
             />
             
             <Button
@@ -626,7 +632,7 @@ export default function StoresAndChannelsHub() {
               className="h-9 gap-2 bg-primary hover:bg-primary/90 shadow-lg shadow-primary/25"
             >
               <Store className="h-4 w-4" />
-              {!isMobile && 'Boutique'}
+              {!isMobile && t('hub.store')}
             </Button>
             
             <Button
@@ -636,7 +642,7 @@ export default function StoresAndChannelsHub() {
               className="h-9 gap-2 bg-background/50"
             >
               <ShoppingCart className="h-4 w-4" />
-              {!isMobile && 'Marketplace'}
+              {!isMobile && t('hub.marketplace')}
             </Button>
           </div>
         }
@@ -644,7 +650,7 @@ export default function StoresAndChannelsHub() {
         {/* Premium Stats Grid */}
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
           <PremiumStatCard
-            label="Canaux Connectés"
+            label={t('hub.connectedChannels')}
             value={connections.filter(c => c.connection_status === 'connected').length}
             change="+1"
             trend="up"
@@ -654,7 +660,7 @@ export default function StoresAndChannelsHub() {
             onClick={() => setActiveTab('all')}
           />
           <PremiumStatCard
-            label="Boutiques"
+            label={t('hub.stores')}
             value={connections.filter(c => STORE_PLATFORMS.some(p => p.id === c.platform_type?.toLowerCase())).length}
             icon={Store}
             gradient="bg-gradient-to-r from-violet-500 to-violet-400"
@@ -662,7 +668,7 @@ export default function StoresAndChannelsHub() {
             onClick={() => setActiveTab('stores')}
           />
           <PremiumStatCard
-            label="Marketplaces"
+            label={t('hub.marketplaces')}
             value={connections.filter(c => MARKETPLACE_PLATFORMS.some(p => p.id === c.platform_type?.toLowerCase())).length}
             icon={Globe}
             gradient="bg-gradient-to-r from-amber-500 to-amber-400"
@@ -670,7 +676,7 @@ export default function StoresAndChannelsHub() {
             onClick={() => setActiveTab('marketplaces')}
           />
           <PremiumStatCard
-            label="Produits Sync"
+            label={t('hub.productsSynced')}
             value={connections.reduce((acc, c) => acc + (c.products_synced || 0), 0).toLocaleString()}
             change="+156"
             trend="up"
@@ -680,7 +686,7 @@ export default function StoresAndChannelsHub() {
             onClick={() => navigate('/products')}
           />
           <PremiumStatCard
-            label="Commandes"
+            label={t('hub.orders')}
             value={connections.reduce((acc, c) => acc + (c.orders_synced || 0), 0).toLocaleString()}
             change="+89"
             trend="up"
@@ -690,7 +696,7 @@ export default function StoresAndChannelsHub() {
             onClick={() => navigate('/orders')}
           />
           <PremiumStatCard
-            label="Auto-Sync"
+            label={t('hub.autoSync')}
             value={connections.filter(c => c.auto_sync_enabled).length}
             icon={Zap}
             gradient="bg-gradient-to-r from-orange-500 to-orange-400"
@@ -740,7 +746,7 @@ export default function StoresAndChannelsHub() {
                     <div className="p-1.5 rounded-lg bg-emerald-500/10">
                       <CheckCircle2 className="h-5 w-5 text-emerald-500" />
                     </div>
-                    Canaux connectés
+                    {t('hub.connectedChannels')}
                     <Badge className="bg-primary/10 text-primary border-0">{filteredConnections.length}</Badge>
                   </h2>
                 </div>
@@ -769,11 +775,11 @@ export default function StoresAndChannelsHub() {
               </section>
             ) : (
               <ChannableEmptyState
-                title="Aucun canal connecté"
-                description="Connectez votre première boutique ou marketplace pour commencer à synchroniser vos produits."
+                title={t('hub.noChannels')}
+                description={t('hub.noChannelsDesc')}
                 icon={Link2}
                 action={{
-                  label: 'Connecter une boutique',
+                  label: t('hub.connectStore'),
                   onClick: () => navigate('/stores-channels/connect')
                 }}
               />
@@ -786,7 +792,7 @@ export default function StoresAndChannelsHub() {
                   <div className="p-1.5 rounded-lg bg-primary/10">
                     <Store className="h-5 w-5 text-primary" />
                   </div>
-                  Boutiques disponibles
+                  {t('hub.availableStores')}
                 </h2>
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
                   {availableStores.map((platform, i) => (
@@ -808,7 +814,7 @@ export default function StoresAndChannelsHub() {
                   <div className="p-1.5 rounded-lg bg-amber-500/10">
                     <ShoppingCart className="h-5 w-5 text-amber-500" />
                   </div>
-                  Marketplaces disponibles
+                  {t('hub.availableMarketplaces')}
                 </h2>
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
                   {availableMarketplaces.map((platform, i) => (
@@ -836,7 +842,7 @@ export default function StoresAndChannelsHub() {
                   <div className="p-1.5 rounded-lg bg-primary/10">
                     <Shield className="h-4 w-4 text-primary" />
                   </div>
-                  Santé des canaux
+                  {t('hub.channelHealth')}
                   <Badge variant="outline" className="text-[10px] bg-emerald-500/10 text-emerald-500 border-emerald-500/30 gap-1">
                     <span className="relative flex h-1.5 w-1.5">
                       <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
@@ -849,25 +855,25 @@ export default function StoresAndChannelsHub() {
               <CardContent className="p-4 space-y-3">
                 <HealthMetricCard
                   icon={Wifi}
-                  label="Taux de synchronisation"
+                  label={t('hub.syncRate')}
                   value={healthMetrics?.syncRate || 100}
                   status={healthMetrics?.syncRate >= 80 ? 'good' : healthMetrics?.syncRate >= 50 ? 'warning' : 'critical'}
                 />
                 <HealthMetricCard
                   icon={AlertCircle}
-                  label="Taux d'erreur"
+                  label={t('hub.errorRate')}
                   value={100 - (healthMetrics?.errorRate || 0)}
                   status={healthMetrics?.errorRate <= 5 ? 'good' : healthMetrics?.errorRate <= 20 ? 'warning' : 'critical'}
                 />
                 <HealthMetricCard
                   icon={Activity}
-                  label="Disponibilité"
+                  label={t('hub.uptime')}
                   value={healthMetrics?.uptime || 100}
                   status={healthMetrics?.uptime >= 95 ? 'good' : healthMetrics?.uptime >= 80 ? 'warning' : 'critical'}
                 />
                 <HealthMetricCard
                   icon={Timer}
-                  label="Latence"
+                  label={t('hub.latency')}
                   value={Math.max(0, 100 - (healthMetrics?.avgLatency || 0) * 10)}
                   status={healthMetrics?.avgLatency <= 5 ? 'good' : healthMetrics?.avgLatency <= 15 ? 'warning' : 'critical'}
                 />
@@ -881,9 +887,9 @@ export default function StoresAndChannelsHub() {
                   <div className="p-1.5 rounded-lg bg-amber-500/10">
                     <Sparkles className="h-4 w-4 text-amber-500" />
                   </div>
-                  Activité récente
+                  {t('hub.recentActivity')}
                   <Badge className="text-[10px] bg-primary/10 text-primary border-0 animate-pulse">
-                    Temps réel
+                    {t('hub.realtime')}
                   </Badge>
                 </CardTitle>
               </CardHeader>
@@ -907,9 +913,9 @@ export default function StoresAndChannelsHub() {
                   ) : (
                     <div className="py-12 text-center">
                       <Activity className="h-10 w-10 mx-auto text-muted-foreground/30 mb-3" />
-                      <p className="text-sm text-muted-foreground">Aucune activité récente</p>
+                      <p className="text-sm text-muted-foreground">{t('hub.noActivity')}</p>
                       <p className="text-xs text-muted-foreground/70 mt-1">
-                        Les synchronisations apparaîtront ici
+                        {t('hub.noActivityDesc')}
                       </p>
                     </div>
                   )}
@@ -922,9 +928,9 @@ export default function StoresAndChannelsHub() {
       <ConfirmDialog
         open={showBulkDeleteConfirm}
         onOpenChange={setShowBulkDeleteConfirm}
-        title={`Supprimer ${selectedIds.size} canal(aux) ?`}
-        description="Cette action est irréversible."
-        confirmText="Supprimer"
+        title={t('hub.confirmDeleteTitle', { count: selectedIds.size })}
+        description={t('hub.confirmDeleteDesc')}
+        confirmText={t('hub.confirmDeleteBtn')}
         variant="destructive"
         onConfirm={() => { deleteMutation.mutate(Array.from(selectedIds)); deselectAll(); setShowBulkDeleteConfirm(false) }}
       />
