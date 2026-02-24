@@ -15,12 +15,34 @@
     "completed": "Completadas",
     "draft": "Borradores"
   },
+  "automation": {
+    "title": "Automatización",
+    "emailSequences": "Secuencias de email",
+    "triggers": "Disparadores",
+    "workflows": "Flujos de trabajo",
+    "rules": "Reglas"
+  },
   "channels": {
     "email": "Email",
     "sms": "SMS",
     "social": "Redes sociales",
     "ads": "Publicidad",
     "push": "Notificaciones push"
+  },
+  "metrics": {
+    "sent": "Enviados",
+    "delivered": "Entregados",
+    "opened": "Abiertos",
+    "clicked": "Clicados",
+    "converted": "Convertidos",
+    "revenue": "Ingresos generados"
+  },
+  "seo": {
+    "title": "SEO",
+    "keywords": "Palabras clave",
+    "rankings": "Clasificaciones",
+    "backlinks": "Backlinks",
+    "audit": "Auditoría SEO"
   },
   "messages": {
     "campaignCreated": "Campaña creada",

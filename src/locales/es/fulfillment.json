@@ -22,10 +22,14 @@
   },
   "routing": {
     "title": "Reglas de enrutamiento",
-    "description": "Define cómo se enrutan los pedidos",
+    "description": "Define cómo se enrutan los pedidos a los proveedores",
     "addRule": "Nueva regla",
     "noRules": "Sin reglas configuradas",
-    "createFirst": "Crea tu primera regla"
+    "createFirst": "Crea tu primera regla de enrutamiento",
+    "howItWorks": "¿Cómo funciona?",
+    "step1": "Define tus condiciones",
+    "step2": "Elige el proveedor",
+    "step3": "Automatización completa"
   },
   "orders": {
     "title": "Pedidos Auto-Fulfillment",
@@ -37,10 +41,19 @@
       "shipped": "Enviado",
       "delivered": "Entregado",
       "failed": "Fallido"
-    }
+    },
+    "noOrders": "Sin pedidos por el momento"
+  },
+  "actions": {
+    "process": "Procesar",
+    "retry": "Reintentar",
+    "cancel": "Cancelar",
+    "viewDetails": "Ver detalles"
   },
   "messages": {
     "orderProcessed": "Pedido procesado con éxito",
-    "orderFailed": "Error en el procesamiento"
+    "orderFailed": "Error en el procesamiento",
+    "ruleCreated": "Regla creada",
+    "supplierConnected": "Proveedor conectado"
   }
 }

@@ -2,11 +2,24 @@
   "title": "Proveedores",
   "description": "Gestiona tus conexiones de proveedores",
   "search": "Buscar proveedor...",
+  "hub": {
+    "title": "Hub de Proveedores",
+    "subtitle": "Gestiona todos tus proveedores desde una interfaz unificada",
+    "overview": "Vista general",
+    "marketplace": "Marketplace",
+    "mySuppliers": "Mis Proveedores",
+    "feeds": "Feeds y Sync"
+  },
   "tabs": {
     "all": "Todos",
     "connected": "Conectados",
     "available": "Disponibles",
     "premium": "Premium"
+  },
+  "filters": {
+    "category": "Categoría",
+    "region": "Región",
+    "status": "Estado"
   },
   "status": {
     "connected": "Conectado",
@@ -19,14 +32,60 @@
     "connect": "Conectar",
     "disconnect": "Desconectar",
     "sync": "Sincronizar",
+    "syncNow": "Sincronizar ahora",
     "configure": "Configurar",
-    "viewProducts": "Ver productos"
+    "viewProducts": "Ver productos",
+    "viewAnalytics": "Ver analíticas",
+    "importProducts": "Importar productos",
+    "viewCatalog": "Ver catálogo"
+  },
+  "details": {
+    "productsCount": "Productos",
+    "ordersCount": "Pedidos",
+    "successRate": "Tasa de éxito",
+    "avgShipping": "Envío prom.",
+    "lastSync": "Última sync",
+    "apiStatus": "Estado API"
+  },
+  "connection": {
+    "title": "Conexión de proveedor",
+    "apiKey": "Clave API",
+    "apiSecret": "Secreto API",
+    "username": "Nombre de usuario",
+    "password": "Contraseña",
+    "testConnection": "Probar conexión",
+    "saveCredentials": "Guardar credenciales"
+  },
+  "sync": {
+    "title": "Sincronización",
+    "products": "Productos",
+    "inventory": "Inventario",
+    "prices": "Precios",
+    "orders": "Pedidos",
+    "auto": "Auto-sync",
+    "manual": "Sync manual",
+    "lastSync": "Última sincronización",
+    "nextSync": "Próxima sincronización"
   },
   "messages": {
     "connected": "Proveedor conectado con éxito",
     "disconnected": "Proveedor desconectado",
     "syncStarted": "Sincronización iniciada",
     "syncCompleted": "Sincronización completada",
-    "syncFailed": "Error en la sincronización"
+    "syncFailed": "Error en la sincronización",
+    "credentialsSaved": "Credenciales guardadas"
+  },
+  "categories": {
+    "dropshipping": "Dropshipping",
+    "wholesale": "Mayorista",
+    "marketplace": "Marketplace",
+    "pod": "Print on Demand",
+    "fulfillment": "Fulfillment"
+  },
+  "kpis": {
+    "totalProducts": "Total Productos",
+    "activeSuppliers": "Proveedores Activos",
+    "pendingOrders": "Pedidos Pendientes",
+    "syncStatus": "Estado Sync"
   }
 }

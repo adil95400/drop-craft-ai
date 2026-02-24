@@ -17,5 +17,9 @@
   "notifications": "Notificaciones",
   "search": "Buscar...",
   "menu": "Menú",
-  "home": "Inicio"
+  "home": "Inicio",
+  "breadcrumb": "Ruta de navegación",
+  "openCloseSidebar": "Abrir/Cerrar barra lateral",
+  "mainNavigation": "Navegación principal",
+  "navigateTo": "Navegar a {{page}}"
 }

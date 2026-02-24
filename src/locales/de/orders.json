@@ -11,6 +11,17 @@
     "cancelled": "Storniert",
     "refunded": "Erstattet"
   },
+  "table": {
+    "orderNumber": "Bestell-Nr.",
+    "customer": "Kunde",
+    "date": "Datum",
+    "status": "Status",
+    "total": "Gesamt",
+    "items": "Artikel",
+    "payment": "Zahlung",
+    "shipping": "Versand",
+    "actions": "Aktionen"
+  },
   "status": {
     "pending": "Ausstehend",
     "processing": "In Bearbeitung",
@@ -18,7 +29,8 @@
     "shipped": "Versendet",
     "delivered": "Geliefert",
     "cancelled": "Storniert",
-    "refunded": "Erstattet"
+    "refunded": "Erstattet",
+    "onHold": "Zurückgestellt"
   },
   "actions": {
     "view": "Details anzeigen",
@@ -29,11 +41,35 @@
     "print": "Drucken",
     "export": "Exportieren"
   },
+  "details": {
+    "orderInfo": "Bestellinformationen",
+    "customerInfo": "Kundeninformationen",
+    "shippingAddress": "Lieferadresse",
+    "billingAddress": "Rechnungsadresse",
+    "orderItems": "Bestellte Artikel",
+    "paymentInfo": "Zahlungsinformationen",
+    "timeline": "Verlauf"
+  },
+  "fulfillment": {
+    "title": "Fulfillment",
+    "autoFulfill": "Auto-Fulfillment",
+    "manualFulfill": "Manuelles Fulfillment",
+    "tracking": "Sendungsverfolgung",
+    "trackingNumber": "Sendungsnummer",
+    "carrier": "Versanddienstleister",
+    "estimatedDelivery": "Voraussichtliche Lieferung"
+  },
   "messages": {
     "created": "Bestellung erstellt",
     "updated": "Bestellung aktualisiert",
     "cancelled": "Bestellung storniert",
     "shipped": "Bestellung versendet",
     "refunded": "Bestellung erstattet"
+  },
+  "stats": {
+    "total": "Gesamtbestellungen",
+    "pending": "Ausstehend",
+    "processing": "In Bearbeitung",
+    "revenue": "Umsatz"
   }
 }

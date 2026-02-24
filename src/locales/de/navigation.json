@@ -17,5 +17,9 @@
   "notifications": "Benachrichtigungen",
   "search": "Suchen...",
   "menu": "Menü",
-  "home": "Startseite"
+  "home": "Startseite",
+  "breadcrumb": "Breadcrumb",
+  "openCloseSidebar": "Seitenleiste öffnen/schließen",
+  "mainNavigation": "Hauptnavigation",
+  "navigateTo": "Navigieren zu {{page}}"
 }

@@ -16,6 +16,11 @@
     "available": "Verfügbar",
     "premium": "Premium"
   },
+  "filters": {
+    "category": "Kategorie",
+    "region": "Region",
+    "status": "Status"
+  },
   "status": {
     "connected": "Verbunden",
     "disconnected": "Getrennt",
@@ -30,14 +35,52 @@
     "syncNow": "Jetzt synchronisieren",
     "configure": "Konfigurieren",
     "viewProducts": "Produkte anzeigen",
-    "importProducts": "Produkte importieren"
+    "viewAnalytics": "Analytics anzeigen",
+    "importProducts": "Produkte importieren",
+    "viewCatalog": "Katalog anzeigen"
+  },
+  "details": {
+    "productsCount": "Produkte",
+    "ordersCount": "Bestellungen",
+    "successRate": "Erfolgsrate",
+    "avgShipping": "Durchschn. Versand",
+    "lastSync": "Letzte Sync",
+    "apiStatus": "API-Status"
+  },
+  "connection": {
+    "title": "Lieferantenverbindung",
+    "apiKey": "API-Schlüssel",
+    "apiSecret": "API-Geheimnis",
+    "username": "Benutzername",
+    "password": "Passwort",
+    "testConnection": "Verbindung testen",
+    "saveCredentials": "Zugangsdaten speichern"
+  },
+  "sync": {
+    "title": "Synchronisierung",
+    "products": "Produkte",
+    "inventory": "Inventar",
+    "prices": "Preise",
+    "orders": "Bestellungen",
+    "auto": "Auto-Sync",
+    "manual": "Manuelle Sync",
+    "lastSync": "Letzte Synchronisierung",
+    "nextSync": "Nächste Synchronisierung"
   },
   "messages": {
     "connected": "Lieferant erfolgreich verbunden",
     "disconnected": "Lieferant getrennt",
     "syncStarted": "Synchronisierung gestartet",
     "syncCompleted": "Synchronisierung abgeschlossen",
-    "syncFailed": "Synchronisierung fehlgeschlagen"
+    "syncFailed": "Synchronisierung fehlgeschlagen",
+    "credentialsSaved": "Zugangsdaten gespeichert"
+  },
+  "categories": {
+    "dropshipping": "Dropshipping",
+    "wholesale": "Großhandel",
+    "marketplace": "Marktplatz",
+    "pod": "Print on Demand",
+    "fulfillment": "Fulfillment"
   },
   "kpis": {
     "totalProducts": "Gesamtprodukte",
