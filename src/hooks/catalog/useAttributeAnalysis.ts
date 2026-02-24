@@ -5,6 +5,7 @@
 import { useMemo, useCallback } from 'react'
 import { useProductsUnified, UnifiedProduct } from '@/hooks/unified'
 import { useToast } from '@/hooks/use-toast'
+import { supabase } from '@/integrations/supabase/client'
 
 export interface AttributeIssue {
   product: UnifiedProduct
@@ -283,8 +284,14 @@ export function useAttributeAnalysis() {
       title: "Enrichissement IA lancé",
       description: `Analyse de ${attributes.length} attribut(s) en cours...`
     })
-    // TODO: Appeler l'edge function enrich-product-ai
-    return { success: true }
+    const { data, error } = await supabase.functions.invoke('ai-enrich-import', {
+      body: { product_ids: [productId], language: 'fr', tone: 'professionnel' }
+    })
+    if (error) {
+      toast({ title: "Erreur", description: error.message, variant: "destructive" })
+      return { success: false }
+    }
+    return { success: true, jobId: data?.job_id }
   }, [toast])
 
   // Action: Enrichir en masse
@@ -293,8 +300,14 @@ export function useAttributeAnalysis() {
       title: "Enrichissement en masse",
       description: `${productIds.length} produits en file d'attente`
     })
-    // TODO: Appeler l'edge function pour enrichissement batch
-    return { success: true, queued: productIds.length }
+    const { data, error } = await supabase.functions.invoke('ai-enrich-import', {
+      body: { product_ids: productIds, language: 'fr', tone: 'professionnel' }
+    })
+    if (error) {
+      toast({ title: "Erreur", description: error.message, variant: "destructive" })
+      return { success: false, queued: 0 }
+    }
+    return { success: true, queued: productIds.length, jobId: data?.job_id }
   }, [toast])
 
   return {

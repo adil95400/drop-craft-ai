@@ -3,7 +3,10 @@
  * Données réelles depuis Supabase avec calculs business
  */
 import { useMemo } from 'react'
+import { useQuery } from '@tanstack/react-query'
 import { useProductsUnified } from '@/hooks/unified'
+import { supabase } from '@/integrations/supabase/client'
+import { useAuth } from '@/contexts/AuthContext'
 
 export interface CatalogHealthMetrics {
   globalScore: number
@@ -34,6 +37,25 @@ export interface HealthEvolutionPoint {
 
 export function useCatalogHealth() {
   const { products, isLoading } = useProductsUnified()
+  const { user } = useAuth()
+
+  // Fetch last 2 snapshots to compute real trend
+  const { data: snapshots } = useQuery({
+    queryKey: ['catalog-health-snapshots', user?.id],
+    queryFn: async () => {
+      if (!user?.id) return []
+      const { data } = await supabase
+        .from('analytics_snapshots')
+        .select('metrics, snapshot_date')
+        .eq('user_id', user.id)
+        .eq('snapshot_type', 'catalog_health')
+        .order('snapshot_date', { ascending: false })
+        .limit(2)
+      return data || []
+    },
+    enabled: !!user?.id,
+    staleTime: 10 * 60_000,
+  })
 
   const metrics = useMemo<CatalogHealthMetrics | null>(() => {
     if (!products || products.length === 0) return null
@@ -86,7 +108,14 @@ export function useCatalogHealth() {
       toProcessPercent: Math.round((toProcessCount / total) * 100),
       blockingCount,
       blockingPercent: Math.round((blockingCount / total) * 100),
-      trend: 5.2, // TODO: Calculer depuis historique réel
+      trend: (() => {
+        if (snapshots && snapshots.length >= 2) {
+          const current = (snapshots[0].metrics as any)?.globalScore ?? globalScore
+          const previous = (snapshots[1].metrics as any)?.globalScore ?? globalScore
+          return previous > 0 ? Math.round(((current - previous) / previous) * 100 * 10) / 10 : 0
+        }
+        return 0
+      })(),
       details: {
         withImages,
         withCategory,
@@ -96,7 +125,7 @@ export function useCatalogHealth() {
         withMargin
       }
     }
-  }, [products])
+  }, [products, snapshots])
 
   // Évolution simulée basée sur les métriques actuelles
   const evolution = useMemo<HealthEvolutionPoint[]>(() => {

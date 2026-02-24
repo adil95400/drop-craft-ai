@@ -126,6 +126,33 @@ export class ProductAnalyticsService {
       ? ((sales30d - previousMonthSales) / previousMonthSales) * 100 
       : 0;
     
+    // Fetch product cost_price for real margin
+    const { data: productData } = await supabase
+      .from('products')
+      .select('cost_price, price')
+      .eq('id', productId)
+      .single();
+    
+    const costPrice = productData?.cost_price || 0;
+    const sellingPrice = productData?.price || 0;
+    const realMargin = sellingPrice > 0 && costPrice > 0
+      ? Math.round(((sellingPrice - costPrice) / sellingPrice) * 100)
+      : 0;
+
+    // Fetch return data from returns table
+    const { data: returnsData } = await supabase
+      .from('returns')
+      .select('id')
+      .eq('user_id', userId)
+      .gte('created_at', date12m.toISOString());
+    
+    const returnCount = returnsData?.length || 0;
+    const returnRate = sales12m > 0 ? Math.round((returnCount / sales12m) * 100 * 10) / 10 : 0;
+
+    // Add-to-cart estimation from views with better ratio
+    const addToCart = views30d > 0 ? Math.round(views30d * (conversionRate / 100) * 2) : 0;
+    const cartRate = views30d > 0 ? Math.round((addToCart / views30d) * 100) : 0;
+    
     return {
       sales7d,
       sales30d,
@@ -134,17 +161,17 @@ export class ProductAnalyticsService {
       views7d,
       views30d,
       viewsTotal,
-      addToCart: Math.round(sales30d * 1.5), // Estimation: 1.5x ventes
-      cartRate: 45, // TODO: Récupérer depuis analytics
+      addToCart,
+      cartRate,
       conversionRate,
       revenue7d,
       revenue30d,
       revenue90d,
       revenue12m,
-      avgMargin: 35, // TODO: Calculer depuis product.cost_price
-      totalProfit: revenue12m * 0.35, // Estimation
-      returnRate: 2.5, // TODO: Récupérer depuis table returns
-      returnCount: Math.round(sales30d * 0.025),
+      avgMargin: realMargin,
+      totalProfit: realMargin > 0 ? revenue12m * (realMargin / 100) : 0,
+      returnRate,
+      returnCount,
       weekOverWeek,
       monthOverMonth,
       dailyData,
