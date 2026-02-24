@@ -14,18 +14,19 @@ import { Badge } from '@/components/ui/badge'
 import { useNavigation } from '@/contexts/NavigationContext'
 import { getIcon } from '@/lib/icon-map'
 import { cn } from '@/lib/utils'
+import { useTranslation } from 'react-i18next'
 
 interface QuickNavigationBarProps {
   className?: string
 }
 
 export function QuickNavigationBar({ className }: QuickNavigationBarProps) {
+  const { t } = useTranslation('common')
   const [open, setOpen] = useState(false)
   const [search, setSearch] = useState('')
   const navigate = useNavigate()
   const { navigationGroups, canAccessModule, searchModules } = useNavigation()
 
-  // Global keyboard shortcut (Cmd/Ctrl + K)
   useEffect(() => {
     const down = (e: KeyboardEvent) => {
       if (e.key === 'k' && (e.metaKey || e.ctrlKey)) {
@@ -43,7 +44,6 @@ export function QuickNavigationBar({ className }: QuickNavigationBarProps) {
     navigate(route)
   }, [navigate])
 
-  // Filter modules based on search
   const filteredGroups = search
     ? navigationGroups
         .map((group) => ({
@@ -69,8 +69,8 @@ export function QuickNavigationBar({ className }: QuickNavigationBarProps) {
         onClick={() => setOpen(true)}
       >
         <Search className="mr-2 h-4 w-4" />
-        <span className="hidden lg:inline-flex">Rechercher...</span>
-        <span className="inline-flex lg:hidden">Rechercher</span>
+        <span className="hidden lg:inline-flex">{t('header.search')}</span>
+        <span className="inline-flex lg:hidden">{t('search')}</span>
         <kbd className="pointer-events-none absolute right-1.5 top-1.5 hidden h-6 select-none items-center gap-1 rounded border bg-background px-1.5 font-mono text-[10px] font-medium opacity-100 sm:flex">
           <span className="text-xs">⌘</span>K
         </kbd>
@@ -78,12 +78,12 @@ export function QuickNavigationBar({ className }: QuickNavigationBarProps) {
 
       <CommandDialog open={open} onOpenChange={setOpen}>
         <CommandInput
-          placeholder="Rechercher un module, une fonctionnalité..."
+          placeholder={t('header.searchModule')}
           value={search}
           onValueChange={setSearch}
         />
         <CommandList>
-          <CommandEmpty>Aucun résultat trouvé.</CommandEmpty>
+          <CommandEmpty>{t('header.noResultsFound')}</CommandEmpty>
 
           {filteredGroups.map((group) => {
             return (

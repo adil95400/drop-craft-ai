@@ -14,6 +14,7 @@ import {
   Bell, AlertTriangle, RefreshCw, Save, CheckCircle2, Zap,
   Activity, TrendingUp
 } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 
 interface SyncSettings {
   products: boolean
@@ -36,20 +37,6 @@ interface ChannelOverviewTabProps {
   lastEvent?: { type: string } | null
 }
 
-const dataTypes = [
-  { key: 'products', label: 'Produits', desc: 'Titre, prix, images', icon: BoxIcon, color: 'blue' },
-  { key: 'orders', label: 'Commandes', desc: 'Nouvelles commandes', icon: ShoppingCart, color: 'green' },
-  { key: 'inventory', label: 'Inventaire', desc: 'Niveaux de stock', icon: Package, color: 'purple' },
-  { key: 'prices', label: 'Prix', desc: 'Mises à jour prix', icon: DollarSign, color: 'orange' },
-]
-
-const colorVariants = {
-  blue: 'bg-blue-500/10 text-blue-600 dark:text-blue-400',
-  green: 'bg-green-500/10 text-green-600 dark:text-green-400',
-  purple: 'bg-purple-500/10 text-purple-600 dark:text-purple-400',
-  orange: 'bg-orange-500/10 text-orange-600 dark:text-orange-400',
-}
-
 export function ChannelOverviewTab({
   syncSettings,
   onSyncSettingsChange,
@@ -60,6 +47,22 @@ export function ChannelOverviewTab({
   isSyncing,
   lastEvent
 }: ChannelOverviewTabProps) {
+  const { t } = useTranslation('channels')
+  
+  const dataTypes = [
+    { key: 'products', label: t('overview.products'), desc: t('overview.productsDesc'), icon: BoxIcon, color: 'blue' },
+    { key: 'orders', label: t('overview.orders'), desc: t('overview.ordersDesc'), icon: ShoppingCart, color: 'green' },
+    { key: 'inventory', label: t('overview.inventory'), desc: t('overview.inventoryDesc'), icon: Package, color: 'purple' },
+    { key: 'prices', label: t('overview.prices'), desc: t('overview.pricesDesc'), icon: DollarSign, color: 'orange' },
+  ]
+
+  const colorVariants = {
+    blue: 'bg-blue-500/10 text-blue-600 dark:text-blue-400',
+    green: 'bg-green-500/10 text-green-600 dark:text-green-400',
+    purple: 'bg-purple-500/10 text-purple-600 dark:text-purple-400',
+    orange: 'bg-orange-500/10 text-orange-600 dark:text-orange-400',
+  }
+
   const updateSetting = (key: keyof SyncSettings, value: boolean) => {
     onSyncSettingsChange({ ...syncSettings, [key]: value })
   }
@@ -73,8 +76,8 @@ export function ChannelOverviewTab({
             <Activity className="h-5 w-5 text-primary" />
           </div>
           <div>
-            <p className="font-semibold">Synchronisation automatique</p>
-            <p className="text-sm text-muted-foreground">Maintenez vos données à jour automatiquement</p>
+            <p className="font-semibold">{t('overview.autoSync')}</p>
+            <p className="text-sm text-muted-foreground">{t('overview.autoSyncDesc')}</p>
           </div>
         </div>
         <Switch 
@@ -91,8 +94,8 @@ export function ChannelOverviewTab({
               <Database className="h-5 w-5 text-primary" />
             </div>
             <div>
-              <CardTitle className="text-lg">Types de données</CardTitle>
-              <p className="text-sm text-muted-foreground">Sélectionnez les données à synchroniser</p>
+              <CardTitle className="text-lg">{t('overview.dataTypes')}</CardTitle>
+              <p className="text-sm text-muted-foreground">{t('overview.dataTypesDesc')}</p>
             </div>
           </div>
         </CardHeader>
@@ -139,14 +142,14 @@ export function ChannelOverviewTab({
               <div className="p-2 rounded-xl bg-yellow-500/10">
                 <Bell className="h-5 w-5 text-yellow-600 dark:text-yellow-400" />
               </div>
-              <CardTitle className="text-lg">Notifications</CardTitle>
+              <CardTitle className="text-lg">{t('overview.notifications')}</CardTitle>
             </div>
           </CardHeader>
           <CardContent className="space-y-3">
             <div className="flex items-center justify-between p-4 rounded-xl border border-border/50 bg-card hover:bg-muted/30 transition-colors">
               <div>
-                <p className="font-medium text-sm">Succès</p>
-                <p className="text-xs text-muted-foreground">Après chaque sync réussie</p>
+                <p className="font-medium text-sm">{t('overview.success')}</p>
+                <p className="text-xs text-muted-foreground">{t('overview.successDesc')}</p>
               </div>
               <Switch 
                 checked={syncSettings.notifySuccess}
@@ -155,8 +158,8 @@ export function ChannelOverviewTab({
             </div>
             <div className="flex items-center justify-between p-4 rounded-xl border border-border/50 bg-card hover:bg-muted/30 transition-colors">
               <div>
-                <p className="font-medium text-sm">Erreurs</p>
-                <p className="text-xs text-muted-foreground">Si synchronisation échoue</p>
+                <p className="font-medium text-sm">{t('overview.errors')}</p>
+                <p className="text-xs text-muted-foreground">{t('overview.errorsDesc')}</p>
               </div>
               <Switch 
                 checked={syncSettings.notifyError}
@@ -173,14 +176,14 @@ export function ChannelOverviewTab({
               <div className="p-2 rounded-xl bg-red-500/10">
                 <AlertTriangle className="h-5 w-5 text-red-600 dark:text-red-400" />
               </div>
-              <CardTitle className="text-lg">Gestion des erreurs</CardTitle>
+              <CardTitle className="text-lg">{t('overview.errorManagement')}</CardTitle>
             </div>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex items-center justify-between p-4 rounded-xl border border-border/50 bg-card">
               <div>
-                <p className="font-medium text-sm">Réessayer automatiquement</p>
-                <p className="text-xs text-muted-foreground">Retenter en cas d'échec</p>
+                <p className="font-medium text-sm">{t('overview.autoRetry')}</p>
+                <p className="text-xs text-muted-foreground">{t('overview.autoRetryDesc')}</p>
               </div>
               <Switch 
                 checked={syncSettings.autoRetry}
@@ -189,8 +192,10 @@ export function ChannelOverviewTab({
             </div>
             <div className="p-4 rounded-xl border border-border/50 bg-card">
               <div className="flex items-center justify-between mb-3">
-                <p className="font-medium text-sm">Tentatives max: {retryCount[0]}</p>
-                <Badge variant="outline" className="text-xs">{retryCount[0]} essai{retryCount[0] > 1 ? 's' : ''}</Badge>
+                <p className="font-medium text-sm">{t('overview.maxRetries', { count: retryCount[0] })}</p>
+                <Badge variant="outline" className="text-xs">
+                  {retryCount[0]} {retryCount[0] > 1 ? t('overview.retryUnitPlural') : t('overview.retryUnit')}
+                </Badge>
               </div>
               <Slider
                 value={retryCount}
@@ -213,7 +218,7 @@ export function ChannelOverviewTab({
               <div className="p-2 rounded-xl bg-green-500/10">
                 <CheckCircle2 className="h-5 w-5 text-green-600 dark:text-green-400" />
               </div>
-              <CardTitle className="text-lg">Activité récente</CardTitle>
+              <CardTitle className="text-lg">{t('overview.recentActivity')}</CardTitle>
             </div>
           </CardHeader>
           <CardContent>
@@ -228,9 +233,9 @@ export function ChannelOverviewTab({
                 </div>
               )}
               {[
-                { action: 'Synchronisation produits', time: 'Il y a 2h' },
-                { action: 'Import commandes', time: 'Il y a 4h' },
-                { action: 'Mise à jour stock', time: 'Il y a 6h' },
+                { action: t('overview.syncProducts'), time: t('overview.hoursAgo', { count: 2 }) },
+                { action: t('overview.importOrders'), time: t('overview.hoursAgo', { count: 4 }) },
+                { action: t('overview.stockUpdate'), time: t('overview.hoursAgo', { count: 6 }) },
               ].map((item, i) => (
                 <motion.div 
                   key={i} 
@@ -256,15 +261,15 @@ export function ChannelOverviewTab({
               <div className="p-2 rounded-xl bg-purple-500/10">
                 <TrendingUp className="h-5 w-5 text-purple-600 dark:text-purple-400" />
               </div>
-              <CardTitle className="text-lg">Performances</CardTitle>
+              <CardTitle className="text-lg">{t('overview.performance')}</CardTitle>
             </div>
           </CardHeader>
           <CardContent>
             <div className="space-y-5">
               {[
-                { label: 'Taux de sync', value: 98, color: 'bg-green-500' },
-                { label: 'Produits publiés', value: 85, color: 'bg-blue-500' },
-                { label: 'Stock synchronisé', value: 100, color: 'bg-purple-500' },
+                { label: t('overview.syncRate'), value: 98, color: 'bg-green-500' },
+                { label: t('overview.publishedProducts'), value: 85, color: 'bg-blue-500' },
+                { label: t('overview.syncedStock'), value: 100, color: 'bg-purple-500' },
               ].map((item, index) => (
                 <div key={item.label}>
                   <div className="flex justify-between text-sm mb-2">
@@ -295,14 +300,14 @@ export function ChannelOverviewTab({
           className="gap-2 h-11 px-5 rounded-xl"
         >
           <RefreshCw className={cn("h-4 w-4", isSyncing && "animate-spin")} />
-          Synchroniser maintenant
+          {t('overview.syncNow')}
         </Button>
         <Button 
           onClick={onSave} 
           className="gap-2 h-11 px-5 rounded-xl bg-primary hover:bg-primary/90"
         >
           <Save className="h-4 w-4" />
-          Sauvegarder
+          {t('overview.save')}
         </Button>
       </div>
     </div>

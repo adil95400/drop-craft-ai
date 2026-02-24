@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge'
 import { ArrowLeft, RefreshCw, ExternalLink, CheckCircle2, AlertCircle, Loader2, Wifi, Store, Globe } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { motion } from 'framer-motion'
+import { useTranslation } from 'react-i18next'
 
 interface ChannelHeaderProps {
   channel: {
@@ -36,6 +37,7 @@ const platformIcons: Record<string, React.ReactNode> = {
 }
 
 export function ChannelHeader({ channel, webhooksConnected, isSyncing, onBack, onSync }: ChannelHeaderProps) {
+  const { t } = useTranslation('channels')
   const platform = channel.platform?.toLowerCase() || 'default'
   const gradient = platformColors[platform] || platformColors.default
   
@@ -45,25 +47,25 @@ export function ChannelHeader({ channel, webhooksConnected, isSyncing, onBack, o
         return (
           <Badge className="bg-green-500/20 text-green-700 dark:text-green-400 border-green-500/30 gap-1.5 px-3 py-1">
             <CheckCircle2 className="h-3.5 w-3.5" />
-            Connecté
+            {t('header.connected')}
           </Badge>
         )
       case 'connecting':
         return (
           <Badge className="bg-blue-500/20 text-blue-700 dark:text-blue-400 border-blue-500/30 gap-1.5 px-3 py-1">
             <Loader2 className="h-3.5 w-3.5 animate-spin" />
-            Synchronisation
+            {t('header.connecting')}
           </Badge>
         )
       case 'error':
         return (
           <Badge variant="destructive" className="gap-1.5 px-3 py-1">
             <AlertCircle className="h-3.5 w-3.5" />
-            Erreur
+            {t('header.error')}
           </Badge>
         )
       default:
-        return <Badge variant="outline" className="px-3 py-1">Déconnecté</Badge>
+        return <Badge variant="outline" className="px-3 py-1">{t('header.disconnected')}</Badge>
     }
   }
 
@@ -102,12 +104,12 @@ export function ChannelHeader({ channel, webhooksConnected, isSyncing, onBack, o
             <div className="min-w-0">
               <div className="flex flex-wrap items-center gap-3 mb-1">
                 <h1 className="text-2xl font-bold tracking-tight truncate">
-                  {channel.platform_name || 'Canal'}
+                  {channel.platform_name || t('header.channel')}
                 </h1>
                 {getStatusBadge()}
               </div>
               <p className="text-sm text-muted-foreground truncate max-w-[300px]">
-                {channel.store_url || 'URL non configurée'}
+                {channel.store_url || t('header.urlNotConfigured')}
               </p>
             </div>
           </div>
@@ -120,7 +122,7 @@ export function ChannelHeader({ channel, webhooksConnected, isSyncing, onBack, o
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
                   <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
                 </span>
-                Temps réel
+                {t('header.realtime')}
               </Badge>
             )}
             
@@ -131,7 +133,7 @@ export function ChannelHeader({ channel, webhooksConnected, isSyncing, onBack, o
               className="gap-2 h-10 px-4 rounded-xl border-border/50 hover:bg-background/80"
             >
               <RefreshCw className={cn("h-4 w-4", isSyncing && "animate-spin")} />
-              Synchroniser
+              {t('header.sync')}
             </Button>
             
             {channel.store_url && (
@@ -146,7 +148,7 @@ export function ChannelHeader({ channel, webhooksConnected, isSyncing, onBack, o
                   rel="noopener noreferrer"
                 >
                   <ExternalLink className="h-4 w-4" />
-                  Ouvrir
+                  {t('header.open')}
                 </a>
               </Button>
             )}
