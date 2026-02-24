@@ -3,6 +3,7 @@
  */
 
 import { useState, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -25,6 +26,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 
 export default function AuditSEOPage() {
+  const { t } = useTranslation('audit');
   const { seoAnalyses, stats, isLoading, refetch, searchQuery, setSearchQuery } = useAuditSEO();
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState('overview');
@@ -37,22 +39,18 @@ export default function AuditSEOPage() {
   const [isOptimizing, setIsOptimizing] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
 
-  // Handle issue category click
   const handleIssueCategoryClick = (category: 'title' | 'description' | 'keyword' | 'image' | 'category') => {
     setIssueFilter(category);
     setActiveTab('products');
   };
 
-  // Handle "Corriger tout" button
   const handleFixAll = () => {
     setActiveTab('recommendations');
   };
 
-  // Filtered and sorted analyses
   const filteredAnalyses = useMemo(() => {
     let result = [...seoAnalyses];
 
-    // Filter by status
     if (filterStatus !== 'all') {
       result = result.filter(a => {
         if (filterStatus === 'good') return a.seoScore >= 80;
@@ -61,33 +59,24 @@ export default function AuditSEOPage() {
       });
     }
 
-    // Filter by issue category
     if (issueFilter !== 'all') {
       result = result.filter(a => {
         switch (issueFilter) {
-          case 'title':
-            return a.metrics.titleOptimization.status !== 'good';
-          case 'description':
-            return a.metrics.descriptionOptimization.status !== 'good';
-          case 'keyword':
-            return a.metrics.keywordDensity.status !== 'good';
-          case 'image':
-            return a.metrics.imageAlt.status !== 'good';
-          case 'category':
-            return a.metrics.categoryMapping.status !== 'good';
-          default:
-            return true;
+          case 'title': return a.metrics.titleOptimization.status !== 'good';
+          case 'description': return a.metrics.descriptionOptimization.status !== 'good';
+          case 'keyword': return a.metrics.keywordDensity.status !== 'good';
+          case 'image': return a.metrics.imageAlt.status !== 'good';
+          case 'category': return a.metrics.categoryMapping.status !== 'good';
+          default: return true;
         }
       });
     }
 
-    // Sort
     result.sort((a, b) => {
       let comparison = 0;
       if (sortBy === 'score') comparison = a.seoScore - b.seoScore;
       else if (sortBy === 'name') comparison = (a.product.name || '').localeCompare(b.product.name || '');
       else if (sortBy === 'issues') comparison = a.issues.length - b.issues.length;
-      
       return sortOrder === 'asc' ? comparison : -comparison;
     });
 
@@ -111,15 +100,14 @@ export default function AuditSEOPage() {
 
   const handleBulkOptimize = async () => {
     if (selectedProducts.size === 0) {
-      toast({ title: "Sélectionnez des produits", variant: "destructive" });
+      toast({ title: t('seo.selectProducts'), variant: "destructive" });
       return;
     }
     setIsOptimizing(true);
-    // Simulate AI optimization
     await new Promise(resolve => setTimeout(resolve, 2000));
     toast({
-      title: "Optimisation lancée",
-      description: `${selectedProducts.size} produits seront optimisés par l'IA`,
+      title: t('seo.optimizationStarted'),
+      description: t('seo.optimizationStartedDesc', { count: selectedProducts.size }),
     });
     setIsOptimizing(false);
     setSelectedProducts(new Set());
@@ -127,8 +115,8 @@ export default function AuditSEOPage() {
 
   const handleExportReport = () => {
     toast({
-      title: "Export généré",
-      description: "Le rapport SEO a été téléchargé",
+      title: t('seo.exportGenerated'),
+      description: t('seo.exportGeneratedDesc'),
     });
   };
 
@@ -184,11 +172,19 @@ export default function AuditSEOPage() {
     );
   };
 
+  const issueFilterLabels: Record<string, string> = {
+    title: t('seo.titles'),
+    description: t('seo.descriptions'),
+    keyword: t('seo.keywords'),
+    image: t('seo.images'),
+    category: t('seo.categories'),
+  };
+
   if (isLoading) {
     return (
       <ChannablePageWrapper
         title="Audit SEO"
-        description="Chargement de l'analyse SEO..."
+        description={t('seo.loading')}
         heroImage="analytics"
         badge={{ label: "SEO", icon: Search }}
       >
@@ -207,20 +203,20 @@ export default function AuditSEOPage() {
 
   return (
     <ChannablePageWrapper
-      title="Audit SEO Avancé"
-      subtitle="Intelligence artificielle pour le référencement"
-      description="Analysez, optimisez et améliorez le référencement de vos produits avec l'IA"
+      title={t('seo.title')}
+      subtitle={t('seo.subtitle')}
+      description={t('seo.description')}
       heroImage="analytics"
-      badge={{ label: "SEO Pro", icon: Search }}
+      badge={{ label: t('seo.badge'), icon: Search }}
       actions={
         <div className="flex gap-3">
           <Button variant="outline" size="lg" onClick={handleExportReport} className="gap-2">
             <Download className="h-4 w-4" />
-            Exporter
+            {t('seo.export')}
           </Button>
           <Button size="lg" onClick={() => refetch()} className="gap-2">
             <RefreshCw className="h-4 w-4" />
-            Relancer l'audit
+            {t('seo.relaunch')}
           </Button>
         </div>
       }
@@ -233,7 +229,7 @@ export default function AuditSEOPage() {
             <CardContent className="pt-6 relative">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground">Score SEO Global</p>
+                  <p className="text-sm text-muted-foreground">{t('seo.globalScore')}</p>
                   <div className={cn('text-4xl font-bold', getScoreColor(stats.averageSeoScore))}>
                     {stats.averageSeoScore}
                     <span className="text-lg text-muted-foreground">/100</span>
@@ -245,9 +241,9 @@ export default function AuditSEOPage() {
               </div>
               <Progress value={stats.averageSeoScore} className="mt-4 h-2" />
               <p className="text-xs text-muted-foreground mt-2">
-                {stats.averageSeoScore >= 80 ? '✨ Excellent niveau' :
-                 stats.averageSeoScore >= 50 ? '📈 Peut être amélioré' :
-                 '⚠️ Optimisation urgente'}
+                {stats.averageSeoScore >= 80 ? t('seo.excellentLevel') :
+                 stats.averageSeoScore >= 50 ? t('seo.canBeImproved') :
+                 t('seo.urgentOptimization')}
               </p>
             </CardContent>
           </Card>
@@ -261,12 +257,12 @@ export default function AuditSEOPage() {
                   <Award className="h-5 w-5 text-emerald-700 dark:text-emerald-300" />
                 </div>
                 <div>
-                  <p className="text-xs text-emerald-700 dark:text-emerald-400 uppercase tracking-wide">Optimisés</p>
+                  <p className="text-xs text-emerald-700 dark:text-emerald-400 uppercase tracking-wide">{t('seo.optimized')}</p>
                   <div className="text-3xl font-bold text-emerald-700 dark:text-emerald-400">{stats.optimizedProducts}</div>
                 </div>
               </div>
               <p className="text-xs text-muted-foreground mt-3">
-                {stats.totalProducts > 0 ? Math.round((stats.optimizedProducts / stats.totalProducts) * 100) : 0}% du catalogue • Score ≥ 80
+                {t('seo.ofCatalog', { percent: stats.totalProducts > 0 ? Math.round((stats.optimizedProducts / stats.totalProducts) * 100) : 0 })}
               </p>
             </CardContent>
           </Card>
@@ -280,13 +276,11 @@ export default function AuditSEOPage() {
                   <AlertTriangle className="h-5 w-5 text-amber-700 dark:text-amber-300" />
                 </div>
                 <div>
-                  <p className="text-xs text-amber-700 dark:text-amber-400 uppercase tracking-wide">À améliorer</p>
+                  <p className="text-xs text-amber-700 dark:text-amber-400 uppercase tracking-wide">{t('seo.toImprove')}</p>
                   <div className="text-3xl font-bold text-amber-700 dark:text-amber-400">{stats.partiallyOptimized}</div>
                 </div>
               </div>
-              <p className="text-xs text-muted-foreground mt-3">
-                Score entre 50 et 79
-              </p>
+              <p className="text-xs text-muted-foreground mt-3">{t('seo.scoreBetween')}</p>
             </CardContent>
           </Card>
         </motion.div>
@@ -299,13 +293,11 @@ export default function AuditSEOPage() {
                   <TrendingDown className="h-5 w-5 text-red-700 dark:text-red-300" />
                 </div>
                 <div>
-                  <p className="text-xs text-red-700 dark:text-red-400 uppercase tracking-wide">Critiques</p>
+                  <p className="text-xs text-red-700 dark:text-red-400 uppercase tracking-wide">{t('seo.critical')}</p>
                   <div className="text-3xl font-bold text-red-700 dark:text-red-400">{stats.needsOptimization}</div>
                 </div>
               </div>
-              <p className="text-xs text-muted-foreground mt-3">
-                Action urgente requise
-              </p>
+              <p className="text-xs text-muted-foreground mt-3">{t('seo.urgentAction')}</p>
             </CardContent>
           </Card>
         </motion.div>
@@ -318,13 +310,11 @@ export default function AuditSEOPage() {
                   <Sparkles className="h-5 w-5 text-purple-700 dark:text-purple-300" />
                 </div>
                 <div>
-                  <p className="text-xs text-purple-700 dark:text-purple-400 uppercase tracking-wide">Total analysés</p>
+                  <p className="text-xs text-purple-700 dark:text-purple-400 uppercase tracking-wide">{t('seo.totalAnalyzed')}</p>
                   <div className="text-3xl font-bold text-purple-700 dark:text-purple-400">{stats.totalProducts}</div>
                 </div>
               </div>
-              <p className="text-xs text-muted-foreground mt-3">
-                Produits dans le catalogue
-              </p>
+              <p className="text-xs text-muted-foreground mt-3">{t('seo.catalogProducts')}</p>
             </CardContent>
           </Card>
         </motion.div>
@@ -337,24 +327,24 @@ export default function AuditSEOPage() {
             <div>
               <CardTitle className="flex items-center gap-2">
                 <BarChart3 className="h-5 w-5 text-primary" />
-                Répartition des Problèmes SEO
+                {t('seo.issueBreakdown')}
               </CardTitle>
-              <CardDescription>Diagnostic détaillé par catégorie</CardDescription>
+              <CardDescription>{t('seo.detailedDiagnosis')}</CardDescription>
             </div>
             <Button variant="outline" size="sm" className="gap-2" onClick={handleFixAll}>
               <Zap className="h-4 w-4" />
-              Corriger tout
+              {t('seo.fixAll')}
             </Button>
           </div>
         </CardHeader>
         <CardContent>
           <div className="grid gap-4 md:grid-cols-5">
             {[
-              { label: 'Titres', value: stats.issueBreakdown.titleIssues, icon: FileText, color: 'blue', tip: 'Titres trop courts ou manquants', filterKey: 'title' as const },
-              { label: 'Descriptions', value: stats.issueBreakdown.descriptionIssues, icon: FileText, color: 'indigo', tip: 'Descriptions insuffisantes', filterKey: 'description' as const },
-              { label: 'Mots-clés', value: stats.issueBreakdown.keywordIssues, icon: Tag, color: 'violet', tip: 'Densité de mots-clés faible', filterKey: 'keyword' as const },
-              { label: 'Images', value: stats.issueBreakdown.imageIssues, icon: Image, color: 'pink', tip: 'Images manquantes ou sans alt', filterKey: 'image' as const },
-              { label: 'Catégories', value: stats.issueBreakdown.categoryIssues, icon: Globe, color: 'orange', tip: 'Catégorisation incomplète', filterKey: 'category' as const },
+              { label: t('seo.titles'), value: stats.issueBreakdown.titleIssues, icon: FileText, color: 'blue', tip: t('seo.titlesTip'), filterKey: 'title' as const },
+              { label: t('seo.descriptions'), value: stats.issueBreakdown.descriptionIssues, icon: FileText, color: 'indigo', tip: t('seo.descriptionsTip'), filterKey: 'description' as const },
+              { label: t('seo.keywords'), value: stats.issueBreakdown.keywordIssues, icon: Tag, color: 'violet', tip: t('seo.keywordsTip'), filterKey: 'keyword' as const },
+              { label: t('seo.images'), value: stats.issueBreakdown.imageIssues, icon: Image, color: 'pink', tip: t('seo.imagesTip'), filterKey: 'image' as const },
+              { label: t('seo.categories'), value: stats.issueBreakdown.categoryIssues, icon: Globe, color: 'orange', tip: t('seo.categoriesTip'), filterKey: 'category' as const },
             ].map((item, idx) => (
               <TooltipProvider key={idx}>
                 <Tooltip>
@@ -392,7 +382,7 @@ export default function AuditSEOPage() {
                             handleIssueCategoryClick(item.filterKey);
                           }}
                         >
-                          À corriger
+                          {t('seo.toFix')}
                         </Badge>
                       )}
                     </motion.div>
@@ -412,20 +402,20 @@ export default function AuditSEOPage() {
         <TabsList className="grid grid-cols-4 w-full max-w-2xl">
           <TabsTrigger value="overview" className="gap-2">
             <Lightbulb className="h-4 w-4" />
-            <span className="hidden sm:inline">Vue d'ensemble</span>
+            <span className="hidden sm:inline">{t('seo.tabs.overview')}</span>
           </TabsTrigger>
           <TabsTrigger value="products" className="gap-2">
             <FileText className="h-4 w-4" />
-            <span className="hidden sm:inline">Produits</span>
+            <span className="hidden sm:inline">{t('seo.tabs.products')}</span>
             <Badge variant="secondary" className="ml-1">{filteredAnalyses.length}</Badge>
           </TabsTrigger>
           <TabsTrigger value="keywords" className="gap-2">
             <Tag className="h-4 w-4" />
-            <span className="hidden sm:inline">Mots-clés</span>
+            <span className="hidden sm:inline">{t('seo.tabs.keywords')}</span>
           </TabsTrigger>
           <TabsTrigger value="recommendations" className="gap-2">
             <Sparkles className="h-4 w-4" />
-            <span className="hidden sm:inline">IA</span>
+            <span className="hidden sm:inline">{t('seo.tabs.ai')}</span>
           </TabsTrigger>
         </TabsList>
 
@@ -436,45 +426,45 @@ export default function AuditSEOPage() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-lg">
                   <CheckCircle2 className="h-5 w-5 text-emerald-600" />
-                  Bonnes Pratiques SEO
+                  {t('seo.bestPractices')}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="p-4 rounded-lg bg-muted/50 border">
                   <h4 className="font-semibold flex items-center gap-2 mb-3">
-                    <FileText className="h-4 w-4 text-blue-600" /> Titres produits
+                    <FileText className="h-4 w-4 text-blue-600" /> {t('seo.productTitles')}
                   </h4>
                   <ul className="text-sm text-muted-foreground space-y-2">
                     <li className="flex items-start gap-2">
                       <CheckCheck className="h-4 w-4 text-emerald-600 mt-0.5 shrink-0" />
-                      Entre 50 et 60 caractères idéalement
+                      {t('seo.titleTip1')}
                     </li>
                     <li className="flex items-start gap-2">
                       <CheckCheck className="h-4 w-4 text-emerald-600 mt-0.5 shrink-0" />
-                      Inclure marque + produit + caractéristique clé
+                      {t('seo.titleTip2')}
                     </li>
                     <li className="flex items-start gap-2">
                       <CheckCheck className="h-4 w-4 text-emerald-600 mt-0.5 shrink-0" />
-                      Éviter les majuscules excessives
+                      {t('seo.titleTip3')}
                     </li>
                   </ul>
                 </div>
                 <div className="p-4 rounded-lg bg-muted/50 border">
                   <h4 className="font-semibold flex items-center gap-2 mb-3">
-                    <FileText className="h-4 w-4 text-indigo-600" /> Descriptions
+                    <FileText className="h-4 w-4 text-indigo-600" /> {t('seo.descriptionsLabel')}
                   </h4>
                   <ul className="text-sm text-muted-foreground space-y-2">
                     <li className="flex items-start gap-2">
                       <CheckCheck className="h-4 w-4 text-emerald-600 mt-0.5 shrink-0" />
-                      Minimum 150-300 caractères
+                      {t('seo.descTip1')}
                     </li>
                     <li className="flex items-start gap-2">
                       <CheckCheck className="h-4 w-4 text-emerald-600 mt-0.5 shrink-0" />
-                      Points clés en premier
+                      {t('seo.descTip2')}
                     </li>
                     <li className="flex items-start gap-2">
                       <CheckCheck className="h-4 w-4 text-emerald-600 mt-0.5 shrink-0" />
-                      Mots-clés naturellement intégrés
+                      {t('seo.descTip3')}
                     </li>
                   </ul>
                 </div>
@@ -485,27 +475,27 @@ export default function AuditSEOPage() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-lg">
                   <TrendingUp className="h-5 w-5 text-primary" />
-                  Impact Potentiel
+                  {t('seo.potentialImpact')}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="p-4 rounded-lg border border-primary/20 bg-primary/5">
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm font-medium">Visibilité estimée</span>
+                    <span className="text-sm font-medium">{t('seo.estimatedVisibility')}</span>
                     <Badge className="bg-emerald-100 text-emerald-700">+{Math.round(stats.averageSeoScore * 0.3)}%</Badge>
                   </div>
                   <Progress value={stats.averageSeoScore * 0.8} className="h-2" />
                 </div>
                 <div className="p-4 rounded-lg border border-amber-200 bg-amber-50/50">
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm font-medium">CTR potentiel</span>
+                    <span className="text-sm font-medium">{t('seo.potentialCTR')}</span>
                     <Badge className="bg-amber-100 text-amber-700">+{Math.round(stats.averageSeoScore * 0.2)}%</Badge>
                   </div>
                   <Progress value={stats.averageSeoScore * 0.6} className="h-2 [&>div]:bg-amber-500" />
                 </div>
                 <div className="p-4 rounded-lg border border-blue-200 bg-blue-50/50">
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm font-medium">Conversions</span>
+                    <span className="text-sm font-medium">{t('seo.conversions')}</span>
                     <Badge className="bg-blue-100 text-blue-700">+{Math.round(stats.averageSeoScore * 0.15)}%</Badge>
                   </div>
                   <Progress value={stats.averageSeoScore * 0.5} className="h-2 [&>div]:bg-blue-500" />
@@ -517,7 +507,6 @@ export default function AuditSEOPage() {
 
         {/* Products Tab */}
         <TabsContent value="products" className="space-y-4">
-          {/* Toolbar */}
           <Card>
             <CardContent className="p-4">
               <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
@@ -525,17 +514,13 @@ export default function AuditSEOPage() {
                   <div className="relative flex-1 max-w-md">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input 
-                      placeholder="Rechercher un produit..." 
+                      placeholder={t('seo.searchProduct')} 
                       value={searchQuery}
                       onChange={e => setSearchQuery(e.target.value)}
                       className="pl-10" 
                     />
                   </div>
-                  <Button 
-                    variant="outline" 
-                    size="icon"
-                    onClick={() => setShowFilters(!showFilters)}
-                  >
+                  <Button variant="outline" size="icon" onClick={() => setShowFilters(!showFilters)}>
                     <Filter className="h-4 w-4" />
                   </Button>
                 </div>
@@ -551,13 +536,12 @@ export default function AuditSEOPage() {
                       ) : (
                         <Wand2 className="h-4 w-4" />
                       )}
-                      Optimiser {selectedProducts.size} produit(s)
+                      {t('seo.optimizeN', { count: selectedProducts.size })}
                     </Button>
                   )}
                 </div>
               </div>
 
-              {/* Filters Panel */}
               <AnimatePresence>
                 {showFilters && (
                   <motion.div
@@ -568,7 +552,7 @@ export default function AuditSEOPage() {
                   >
                     <div className="flex flex-wrap gap-3 mt-4 pt-4 border-t">
                       <div className="flex items-center gap-2">
-                        <span className="text-sm text-muted-foreground">Statut:</span>
+                        <span className="text-sm text-muted-foreground">{t('seo.statusLabel')}</span>
                         {(['all', 'good', 'warning', 'error'] as const).map(status => (
                           <Button
                             key={status}
@@ -577,22 +561,22 @@ export default function AuditSEOPage() {
                             onClick={() => setFilterStatus(status)}
                             className="h-8"
                           >
-                            {status === 'all' && 'Tous'}
-                            {status === 'good' && '✓ Optimisés'}
-                            {status === 'warning' && '⚠ À améliorer'}
-                            {status === 'error' && '✗ Critiques'}
+                            {status === 'all' && t('seo.all')}
+                            {status === 'good' && t('seo.optimizedFilter')}
+                            {status === 'warning' && t('seo.warningFilter')}
+                            {status === 'error' && t('seo.criticalFilter')}
                           </Button>
                         ))}
                       </div>
                       <div className="flex items-center gap-2">
-                        <span className="text-sm text-muted-foreground">Catégorie:</span>
+                        <span className="text-sm text-muted-foreground">{t('seo.categoryLabel')}</span>
                         {([
-                          { key: 'all', label: 'Toutes' },
-                          { key: 'title', label: 'Titres' },
-                          { key: 'description', label: 'Descriptions' },
-                          { key: 'keyword', label: 'Mots-clés' },
-                          { key: 'image', label: 'Images' },
-                          { key: 'category', label: 'Catégories' },
+                          { key: 'all', label: t('seo.allCategories') },
+                          { key: 'title', label: t('seo.titles') },
+                          { key: 'description', label: t('seo.descriptions') },
+                          { key: 'keyword', label: t('seo.keywords') },
+                          { key: 'image', label: t('seo.images') },
+                          { key: 'category', label: t('seo.categories') },
                         ] as const).map(cat => (
                           <Button
                             key={cat.key}
@@ -606,7 +590,7 @@ export default function AuditSEOPage() {
                         ))}
                       </div>
                       <div className="flex items-center gap-2 ml-auto">
-                        <span className="text-sm text-muted-foreground">Trier par:</span>
+                        <span className="text-sm text-muted-foreground">{t('seo.sortBy')}</span>
                         <Button
                           size="sm"
                           variant="outline"
@@ -616,7 +600,7 @@ export default function AuditSEOPage() {
                           }}
                           className={cn('h-8', sortBy === 'score' && 'border-primary')}
                         >
-                          Score {sortBy === 'score' && (sortOrder === 'asc' ? '↑' : '↓')}
+                          {t('seo.score')} {sortBy === 'score' && (sortOrder === 'asc' ? '↑' : '↓')}
                         </Button>
                         <Button
                           size="sm"
@@ -627,7 +611,7 @@ export default function AuditSEOPage() {
                           }}
                           className={cn('h-8', sortBy === 'issues' && 'border-primary')}
                         >
-                          Issues {sortBy === 'issues' && (sortOrder === 'asc' ? '↑' : '↓')}
+                          {t('seo.issues')} {sortBy === 'issues' && (sortOrder === 'asc' ? '↑' : '↓')}
                         </Button>
                       </div>
                     </div>
@@ -637,7 +621,6 @@ export default function AuditSEOPage() {
             </CardContent>
           </Card>
 
-          {/* Active Filter Indicator */}
           {issueFilter !== 'all' && (
             <motion.div
               initial={{ opacity: 0, y: -10 }}
@@ -647,29 +630,17 @@ export default function AuditSEOPage() {
               <div className="flex items-center gap-2">
                 <Filter className="h-4 w-4 text-primary" />
                 <span className="text-sm font-medium">
-                  Filtre actif : <span className="text-primary capitalize">
-                    {issueFilter === 'title' && 'Titres'}
-                    {issueFilter === 'description' && 'Descriptions'}
-                    {issueFilter === 'keyword' && 'Mots-clés'}
-                    {issueFilter === 'image' && 'Images'}
-                    {issueFilter === 'category' && 'Catégories'}
-                  </span>
+                  {t('seo.activeFilter')} <span className="text-primary capitalize">{issueFilterLabels[issueFilter]}</span>
                 </span>
-                <Badge variant="secondary">{filteredAnalyses.length} produit(s)</Badge>
+                <Badge variant="secondary">{t('seo.nProducts', { count: filteredAnalyses.length })}</Badge>
               </div>
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                onClick={() => setIssueFilter('all')}
-                className="gap-1"
-              >
+              <Button variant="ghost" size="sm" onClick={() => setIssueFilter('all')} className="gap-1">
                 <XCircle className="h-4 w-4" />
-                Effacer le filtre
+                {t('seo.clearFilter')}
               </Button>
             </motion.div>
           )}
 
-          {/* Select All */}
           <div className="flex items-center gap-3 px-2">
             <Checkbox
               checked={selectedProducts.size === filteredAnalyses.length && filteredAnalyses.length > 0}
@@ -677,12 +648,11 @@ export default function AuditSEOPage() {
             />
             <span className="text-sm text-muted-foreground">
               {selectedProducts.size > 0 
-                ? `${selectedProducts.size} sélectionné(s)` 
-                : `Sélectionner tout (${filteredAnalyses.length})`}
+                ? t('seo.nSelected', { count: selectedProducts.size })
+                : t('seo.selectAll', { count: filteredAnalyses.length })}
             </span>
           </div>
 
-          {/* Products List */}
           <ScrollArea className="h-[600px]">
             <div className="space-y-2 pr-4">
               {filteredAnalyses.slice(0, 50).map((analysis, idx) => (
@@ -698,14 +668,12 @@ export default function AuditSEOPage() {
                     expandedProduct === analysis.product.id && 'shadow-lg'
                   )}>
                     <CardContent className="p-4">
-                      {/* Main Row */}
                       <div className="flex items-center gap-4">
                         <Checkbox
                           checked={selectedProducts.has(analysis.product.id)}
                           onCheckedChange={() => toggleProduct(analysis.product.id)}
                         />
                         
-                        {/* Score Badge */}
                         <div className={cn(
                           'w-14 h-14 rounded-xl flex flex-col items-center justify-center font-bold shrink-0',
                           getScoreBg(analysis.seoScore)
@@ -716,9 +684,8 @@ export default function AuditSEOPage() {
                           <span className="text-[10px] text-muted-foreground">/ 100</span>
                         </div>
                         
-                        {/* Product Info */}
                         <div className="flex-1 min-w-0">
-                          <h4 className="font-medium truncate">{analysis.product.name || 'Sans titre'}</h4>
+                          <h4 className="font-medium truncate">{analysis.product.name || t('seo.untitled')}</h4>
                           <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground">
                             {analysis.product.sku && (
                               <span className="flex items-center gap-1">
@@ -728,12 +695,11 @@ export default function AuditSEOPage() {
                             )}
                             {analysis.issues.length > 0 && (
                               <Badge variant="outline" className="text-orange-600 border-orange-300">
-                                {analysis.issues.length} problème(s)
+                                {t('seo.nIssues', { count: analysis.issues.length })}
                               </Badge>
                             )}
                           </div>
                           
-                          {/* Metrics Quick View */}
                           <div className="flex flex-wrap gap-1.5 mt-2">
                             {Object.entries(analysis.metrics).slice(0, 4).map(([key, metric]) => (
                               <TooltipProvider key={key}>
@@ -759,7 +725,6 @@ export default function AuditSEOPage() {
                           </div>
                         </div>
 
-                        {/* Keywords */}
                         <div className="hidden lg:flex gap-1.5 flex-wrap max-w-[200px]">
                           {analysis.keywords.slice(0, 3).map(kw => (
                             <Badge key={kw} variant="secondary" className="text-xs">{kw}</Badge>
@@ -769,28 +734,19 @@ export default function AuditSEOPage() {
                           )}
                         </div>
 
-                        {/* Actions */}
                         <div className="flex items-center gap-1">
                           <Button size="sm" variant="ghost" className="h-8 w-8 p-0">
                             <Edit className="h-4 w-4" />
                           </Button>
                           <Button 
-                            size="sm" 
-                            variant="ghost" 
-                            className="h-8 w-8 p-0"
-                            onClick={() => setExpandedProduct(
-                              expandedProduct === analysis.product.id ? null : analysis.product.id
-                            )}
+                            size="sm" variant="ghost" className="h-8 w-8 p-0"
+                            onClick={() => setExpandedProduct(expandedProduct === analysis.product.id ? null : analysis.product.id)}
                           >
-                            {expandedProduct === analysis.product.id 
-                              ? <ChevronUp className="h-4 w-4" />
-                              : <ChevronDown className="h-4 w-4" />
-                            }
+                            {expandedProduct === analysis.product.id ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
                           </Button>
                         </div>
                       </div>
 
-                      {/* Expanded Details */}
                       <AnimatePresence>
                         {expandedProduct === analysis.product.id && (
                           <motion.div
@@ -800,22 +756,20 @@ export default function AuditSEOPage() {
                             className="overflow-hidden"
                           >
                             <div className="mt-4 pt-4 border-t space-y-4">
-                              {/* Detailed Metrics */}
                               <div className="grid gap-3 md:grid-cols-3">
-                                <MetricCard analysis={analysis} metricKey="titleOptimization" label="Titre" icon={FileText} />
-                                <MetricCard analysis={analysis} metricKey="descriptionOptimization" label="Description" icon={FileText} />
-                                <MetricCard analysis={analysis} metricKey="keywordDensity" label="Mots-clés" icon={Tag} />
-                                <MetricCard analysis={analysis} metricKey="imageAlt" label="Images" icon={Image} />
-                                <MetricCard analysis={analysis} metricKey="urlStructure" label="URL/SKU" icon={Link} />
-                                <MetricCard analysis={analysis} metricKey="categoryMapping" label="Catégorie" icon={Globe} />
+                                <MetricCard analysis={analysis} metricKey="titleOptimization" label={t('seo.metricTitle')} icon={FileText} />
+                                <MetricCard analysis={analysis} metricKey="descriptionOptimization" label={t('seo.metricDescription')} icon={FileText} />
+                                <MetricCard analysis={analysis} metricKey="keywordDensity" label={t('seo.metricKeywords')} icon={Tag} />
+                                <MetricCard analysis={analysis} metricKey="imageAlt" label={t('seo.metricImages')} icon={Image} />
+                                <MetricCard analysis={analysis} metricKey="urlStructure" label={t('seo.metricUrl')} icon={Link} />
+                                <MetricCard analysis={analysis} metricKey="categoryMapping" label={t('seo.metricCategory')} icon={Globe} />
                               </div>
 
-                              {/* Issues */}
                               {analysis.issues.length > 0 && (
                                 <div className="space-y-2">
                                   <h5 className="text-sm font-semibold flex items-center gap-2">
                                     <AlertCircle className="h-4 w-4 text-orange-600" />
-                                    Problèmes détectés
+                                    {t('seo.detectedIssues')}
                                   </h5>
                                   <div className="grid gap-2 md:grid-cols-2">
                                     {analysis.issues.map((issue, i) => (
@@ -847,19 +801,18 @@ export default function AuditSEOPage() {
                                 </div>
                               )}
 
-                              {/* Actions */}
                               <div className="flex gap-2">
                                 <Button size="sm" className="gap-2" onClick={() => {
-                                  toast({ title: "Optimisation lancée", description: `Optimisation IA de "${analysis.product.name}" en cours...` });
+                                  toast({ title: t('seo.optimizationStarted'), description: t('seo.aiOptimizing', { name: analysis.product.name }) });
                                 }}>
                                   <Wand2 className="h-4 w-4" />
-                                  Optimiser avec IA
+                                  {t('seo.optimizeWithAI')}
                                 </Button>
                                 <Button size="sm" variant="outline" className="gap-2" onClick={() => {
                                   window.open(`/products?search=${encodeURIComponent(analysis.product.name || '')}`, '_blank');
                                 }}>
                                   <Eye className="h-4 w-4" />
-                                  Voir le produit
+                                  {t('seo.viewProduct')}
                                 </Button>
                               </div>
                             </div>
@@ -880,9 +833,9 @@ export default function AuditSEOPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Tag className="h-5 w-5 text-primary" />
-                Mots-clés les plus utilisés
+                {t('seo.mostUsedKeywords')}
               </CardTitle>
-              <CardDescription>Termes fréquents dans vos fiches produits</CardDescription>
+              <CardDescription>{t('seo.frequentTerms')}</CardDescription>
             </CardHeader>
             <CardContent>
               {stats.topKeywords.length > 0 ? (
@@ -909,14 +862,13 @@ export default function AuditSEOPage() {
                     ))}
                   </div>
                   
-                  {/* Keyword Analysis */}
                   <div className="grid gap-4 md:grid-cols-3 mt-6">
                     <Card className="border-dashed">
                       <CardContent className="pt-4">
                         <div className="text-center">
                           <TrendingUp className="h-8 w-8 mx-auto mb-2 text-emerald-600" />
                           <p className="text-2xl font-bold">{stats.topKeywords.length}</p>
-                          <p className="text-sm text-muted-foreground">Mots-clés uniques</p>
+                          <p className="text-sm text-muted-foreground">{t('seo.uniqueKeywords')}</p>
                         </div>
                       </CardContent>
                     </Card>
@@ -927,7 +879,7 @@ export default function AuditSEOPage() {
                           <p className="text-2xl font-bold">
                             {stats.topKeywords.length > 0 ? stats.topKeywords[0].count : 0}
                           </p>
-                          <p className="text-sm text-muted-foreground">Fréquence max</p>
+                          <p className="text-sm text-muted-foreground">{t('seo.maxFrequency')}</p>
                         </div>
                       </CardContent>
                     </Card>
@@ -940,7 +892,7 @@ export default function AuditSEOPage() {
                               ? Math.round(stats.topKeywords.reduce((sum, k) => sum + k.count, 0) / stats.topKeywords.length)
                               : 0}
                           </p>
-                          <p className="text-sm text-muted-foreground">Moyenne utilisations</p>
+                          <p className="text-sm text-muted-foreground">{t('seo.avgUsage')}</p>
                         </div>
                       </CardContent>
                     </Card>
@@ -949,8 +901,8 @@ export default function AuditSEOPage() {
               ) : (
                 <div className="text-center py-10 text-muted-foreground">
                   <Tag className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                  <p>Aucun mot-clé détecté</p>
-                  <p className="text-sm">Enrichissez vos fiches produits</p>
+                  <p>{t('seo.noKeywords')}</p>
+                  <p className="text-sm">{t('seo.enrichProducts')}</p>
                 </div>
               )}
             </CardContent>
@@ -963,9 +915,9 @@ export default function AuditSEOPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Sparkles className="h-5 w-5 text-purple-600" />
-                Optimisation IA
+                {t('seo.aiOptimization')}
               </CardTitle>
-              <CardDescription>Laissez l'intelligence artificielle améliorer votre SEO</CardDescription>
+              <CardDescription>{t('seo.aiOptimizationDesc')}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid gap-4 md:grid-cols-2">
@@ -974,19 +926,17 @@ export default function AuditSEOPage() {
                   onClick={() => {
                     setIssueFilter('title');
                     setActiveTab('products');
-                    toast({ title: "Filtre appliqué", description: "Affichage des produits avec problèmes de titres" });
+                    toast({ title: t('seo.filterApplied'), description: t('seo.filterTitlesDesc') });
                   }}
                 >
                   <CardContent className="pt-6 text-center">
                     <div className="w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center mx-auto mb-4">
                       <Wand2 className="h-6 w-6 text-purple-600" />
                     </div>
-                    <h4 className="font-semibold mb-2">Optimiser les titres</h4>
-                    <p className="text-sm text-muted-foreground mb-4">
-                      L'IA réécrit vos titres pour maximiser le CTR et le référencement
-                    </p>
+                    <h4 className="font-semibold mb-2">{t('seo.optimizeTitles')}</h4>
+                    <p className="text-sm text-muted-foreground mb-4">{t('seo.optimizeTitlesDesc')}</p>
                     <Badge className="bg-purple-100 text-purple-700">
-                      {stats.issueBreakdown.titleIssues} à optimiser
+                      {t('seo.nToOptimize', { count: stats.issueBreakdown.titleIssues })}
                     </Badge>
                   </CardContent>
                 </Card>
@@ -996,19 +946,17 @@ export default function AuditSEOPage() {
                   onClick={() => {
                     setIssueFilter('description');
                     setActiveTab('products');
-                    toast({ title: "Filtre appliqué", description: "Affichage des produits avec problèmes de descriptions" });
+                    toast({ title: t('seo.filterApplied'), description: t('seo.filterDescriptionsDesc') });
                   }}
                 >
                   <CardContent className="pt-6 text-center">
                     <div className="w-12 h-12 rounded-full bg-indigo-100 flex items-center justify-center mx-auto mb-4">
                       <FileText className="h-6 w-6 text-indigo-600" />
                     </div>
-                    <h4 className="font-semibold mb-2">Enrichir les descriptions</h4>
-                    <p className="text-sm text-muted-foreground mb-4">
-                      Génération de descriptions uniques et optimisées SEO
-                    </p>
+                    <h4 className="font-semibold mb-2">{t('seo.enrichDescriptions')}</h4>
+                    <p className="text-sm text-muted-foreground mb-4">{t('seo.enrichDescriptionsDesc')}</p>
                     <Badge className="bg-indigo-100 text-indigo-700">
-                      {stats.issueBreakdown.descriptionIssues} à enrichir
+                      {t('seo.nToEnrich', { count: stats.issueBreakdown.descriptionIssues })}
                     </Badge>
                   </CardContent>
                 </Card>
@@ -1018,19 +966,17 @@ export default function AuditSEOPage() {
                   onClick={() => {
                     setIssueFilter('image');
                     setActiveTab('products');
-                    toast({ title: "Filtre appliqué", description: "Affichage des produits avec problèmes d'images" });
+                    toast({ title: t('seo.filterApplied'), description: t('seo.filterImagesDesc') });
                   }}
                 >
                   <CardContent className="pt-6 text-center">
                     <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center mx-auto mb-4">
                       <Image className="h-6 w-6 text-blue-600" />
                     </div>
-                    <h4 className="font-semibold mb-2">Alt text images</h4>
-                    <p className="text-sm text-muted-foreground mb-4">
-                      Génération automatique d'attributs alt descriptifs
-                    </p>
+                    <h4 className="font-semibold mb-2">{t('seo.altTextImages')}</h4>
+                    <p className="text-sm text-muted-foreground mb-4">{t('seo.altTextImagesDesc')}</p>
                     <Badge className="bg-blue-100 text-blue-700">
-                      {stats.issueBreakdown.imageIssues} images
+                      {t('seo.nImages', { count: stats.issueBreakdown.imageIssues })}
                     </Badge>
                   </CardContent>
                 </Card>
@@ -1040,19 +986,17 @@ export default function AuditSEOPage() {
                   onClick={() => {
                     setIssueFilter('keyword');
                     setActiveTab('products');
-                    toast({ title: "Filtre appliqué", description: "Affichage des produits avec problèmes de mots-clés" });
+                    toast({ title: t('seo.filterApplied'), description: t('seo.filterKeywordsDesc') });
                   }}
                 >
                   <CardContent className="pt-6 text-center">
                     <div className="w-12 h-12 rounded-full bg-emerald-100 flex items-center justify-center mx-auto mb-4">
                       <Tag className="h-6 w-6 text-emerald-600" />
                     </div>
-                    <h4 className="font-semibold mb-2">Enrichir les mots-clés</h4>
-                    <p className="text-sm text-muted-foreground mb-4">
-                      Suggestion et intégration de mots-clés pertinents
-                    </p>
+                    <h4 className="font-semibold mb-2">{t('seo.enrichKeywords')}</h4>
+                    <p className="text-sm text-muted-foreground mb-4">{t('seo.enrichKeywordsDesc')}</p>
                     <Badge className="bg-emerald-100 text-emerald-700">
-                      {stats.issueBreakdown.keywordIssues} produits
+                      {t('seo.nKeywordProducts', { count: stats.issueBreakdown.keywordIssues })}
                     </Badge>
                   </CardContent>
                 </Card>
@@ -1062,17 +1006,17 @@ export default function AuditSEOPage() {
                 className="w-full gap-2 h-12 text-lg bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700"
                 onClick={() => {
                   setIsOptimizing(true);
-                  toast({ title: "Optimisation globale lancée", description: "Tous les produits seront optimisés par l'IA..." });
+                  toast({ title: t('seo.globalOptimizationStarted'), description: t('seo.globalOptimizationStartedDesc') });
                   setTimeout(() => {
                     setIsOptimizing(false);
-                    toast({ title: "Optimisation terminée", description: "Vos produits ont été optimisés avec succès" });
+                    toast({ title: t('seo.optimizationDone'), description: t('seo.optimizationDoneDesc') });
                     refetch();
                   }, 3000);
                 }}
                 disabled={isOptimizing}
               >
                 {isOptimizing ? <RefreshCw className="h-5 w-5 animate-spin" /> : <Sparkles className="h-5 w-5" />}
-                {isOptimizing ? "Optimisation en cours..." : "Lancer l'optimisation complète"}
+                {isOptimizing ? t('seo.optimizing') : t('seo.launchFullOptimization')}
               </Button>
             </CardContent>
           </Card>

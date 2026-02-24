@@ -68,6 +68,12 @@ import channelsEn from '@/locales/en/channels.json';
 import channelsEs from '@/locales/es/channels.json';
 import channelsDe from '@/locales/de/channels.json';
 
+// Audit
+import auditFr from '@/locales/fr/audit.json';
+import auditEn from '@/locales/en/audit.json';
+import auditEs from '@/locales/es/audit.json';
+import auditDe from '@/locales/de/audit.json';
+
 const resources = {
   fr: {
     common: commonFr,
@@ -81,6 +87,7 @@ const resources = {
     monitoring: monitoringFr,
     fulfillment: fulfillmentFr,
     channels: channelsFr,
+    audit: auditFr,
   },
   en: {
     common: commonEn,
@@ -94,6 +101,7 @@ const resources = {
     monitoring: monitoringEn,
     fulfillment: fulfillmentEn,
     channels: channelsEn,
+    audit: auditEn,
   },
   es: {
     common: commonEs,
@@ -107,6 +115,7 @@ const resources = {
     monitoring: monitoringEs,
     fulfillment: fulfillmentEs,
     channels: channelsEs,
+    audit: auditEs,
   },
   de: {
     common: commonDe,
@@ -120,6 +129,7 @@ const resources = {
     monitoring: monitoringDe,
     fulfillment: fulfillmentDe,
     channels: channelsDe,
+    audit: auditDe,
   },
 };
 
