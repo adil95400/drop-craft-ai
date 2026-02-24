@@ -1,8 +1,5 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts"
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0"
-import { authenticateUser } from '../_shared/secure-auth.ts'
-import { getSecureCorsHeaders, handleCorsPreflightSecure } from '../_shared/secure-cors.ts'
-import { checkRateLimit, createRateLimitResponse, RATE_LIMITS } from '../_shared/rate-limit.ts'
+import { requireAuth, handlePreflight, errorResponse } from '../_shared/jwt-auth.ts'
 import { z } from 'https://deno.land/x/zod@v3.22.4/mod.ts'
 
 // Input validation schemas
@@ -11,33 +8,18 @@ const ActionSchema = z.enum(['check_prices', 'create_monitor', 'get_monitors', '
 const CreateMonitorSchema = z.object({
   productId: z.string().uuid(),
   supplierUrl: z.string().url().optional(),
-  checkFrequency: z.number().int().min(15).max(1440).default(60), // 15 min to 24h
-  alertThreshold: z.number().min(0.1).max(100).default(5.0), // percentage
+  checkFrequency: z.number().int().min(15).max(1440).default(60),
+  alertThreshold: z.number().min(0.1).max(100).default(5.0),
   alertOnIncrease: z.boolean().default(true),
   alertOnDecrease: z.boolean().default(true),
 })
 
 serve(async (req) => {
-  const corsHeaders = getSecureCorsHeaders(req)
-  
-  if (req.method === 'OPTIONS') {
-    return handleCorsPreflightSecure(req)
-  }
-
-  const supabaseUrl = Deno.env.get('SUPABASE_URL')!
-  const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
-  const supabase = createClient(supabaseUrl, supabaseKey)
+  const preflight = handlePreflight(req)
+  if (preflight) return preflight
 
   try {
-    // 1. Auth obligatoire - userId provient du token uniquement
-    const { user } = await authenticateUser(req, supabase)
-    const userId = user.id
-
-    // 2. Rate limiting
-    const rateCheck = await checkRateLimit(supabase, userId, 'price_monitor', RATE_LIMITS.API_GENERAL)
-    if (!rateCheck.allowed) {
-      return createRateLimitResponse(rateCheck, corsHeaders)
-    }
+    const { userId, supabase, corsHeaders } = await requireAuth(req)
 
     // 3. Parse input
     const body = await req.json()
@@ -255,10 +237,13 @@ serve(async (req) => {
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
     )
   } catch (error) {
+    if (error instanceof Response) return error
     console.error('Price monitor error:', error)
+    const origin = req.headers.get('origin')
+    const { getSecureCorsHeaders } = await import('../_shared/cors.ts')
     return new Response(
       JSON.stringify({ success: false, error: error.message }),
-      { headers: { ...getSecureCorsHeaders(req), 'Content-Type': 'application/json' }, status: 500 }
+      { headers: { ...getSecureCorsHeaders(origin), 'Content-Type': 'application/json' }, status: 500 }
     )
   }
 })
