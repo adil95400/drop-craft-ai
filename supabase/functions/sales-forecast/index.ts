@@ -1,79 +1,41 @@
-import "https://deno.land/x/xhr@0.1.0/mod.ts";
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+/**
+ * Sales Forecast — SECURED (JWT-first, RLS-enforced, Lovable AI Gateway)
+ */
+import { requireAuth, handlePreflight, successResponse, errorResponse } from '../_shared/jwt-auth.ts'
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
-
-serve(async (req) => {
-  if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
-  }
-
-  const supabaseClient = createClient(
-    Deno.env.get('SUPABASE_URL') ?? '',
-    Deno.env.get('SUPABASE_ANON_KEY') ?? ''
-  );
+Deno.serve(async (req) => {
+  const preflight = handlePreflight(req)
+  if (preflight) return preflight
 
   try {
-    console.log('[SALES-FORECAST] Starting sales forecast analysis');
+    const { userId, supabase, corsHeaders } = await requireAuth(req)
 
-    const authHeader = req.headers.get('Authorization')!;
-    const token = authHeader.replace('Bearer ', '');
-    const { data } = await supabaseClient.auth.getUser(token);
-    const user = data.user;
-    if (!user) throw new Error('User not authenticated');
+    const { productId, timePeriod, analysisType } = await req.json()
 
-    const { productId, timePeriod, analysisType } = await req.json();
+    // RLS-scoped queries
+    const [ordersRes, customersRes, productsRes] = await Promise.all([
+      supabase.from('orders').select('id, total_amount, created_at, status')
+        .gte('created_at', new Date(Date.now() - 365 * 24 * 60 * 60 * 1000).toISOString()),
+      supabase.from('customers').select('id, created_at'),
+      supabase.from('imported_products').select('id, title, price, stock_quantity'),
+    ])
 
-    // Get historical data
-    const { data: orders } = await supabaseClient
-      .from('orders')
-      .select('*, order_items(*)')
-      .eq('user_id', user.id)
-      .gte('created_at', new Date(Date.now() - 365 * 24 * 60 * 60 * 1000).toISOString());
+    const orders = ordersRes.data || []
+    const customers = customersRes.data || []
+    const products = productsRes.data || []
 
-    const { data: customers } = await supabaseClient
-      .from('customers')
-      .select('*')
-      .eq('user_id', user.id);
+    console.log('[SALES-FORECAST] Data retrieved', { orders: orders.length, customers: customers.length, products: products.length })
 
-    const { data: products } = await supabaseClient
-      .from('imported_products')
-      .select('*')
-      .eq('user_id', user.id);
+    // Use Lovable AI Gateway (no API key needed)
+    const prompt = `You are a predictive sales analyst for e-commerce. Analyze:
+- Orders: ${orders.length} over 12 months
+- Customers: ${customers.length} total
+- Products: ${products.length}
+- Analysis type: ${analysisType || 'general'}
+- Period: ${timePeriod || '6_months'}
+- Product filter: ${productId || 'all'}
 
-    console.log('[SALES-FORECAST] Retrieved historical data', { 
-      orders: orders?.length, 
-      customers: customers?.length, 
-      products: products?.length 
-    });
-
-    // Prepare AI analysis prompt
-    const prompt = `
-Vous êtes un expert en analyse prédictive des ventes e-commerce. Analysez les données suivantes et fournissez des prédictions précises.
-
-DONNÉES HISTORIQUES:
-- Commandes: ${orders?.length || 0} commandes sur 12 mois
-- Clients: ${customers?.length || 0} clients totaux
-- Produits: ${products?.length || 0} produits
-
-ANALYSE DEMANDÉE:
-- Type: ${analysisType}
-- Période: ${timePeriod}
-- Produit spécifique: ${productId || 'Tous les produits'}
-
-Fournissez une analyse structurée avec:
-1. Prédictions de ventes pour les 3, 6 et 12 prochains mois
-2. Score de confiance (0-100)
-3. Facteurs d'influence identifiés
-4. Actions recommandées pour optimiser les ventes
-5. Analyse des tendances saisonnières
-6. Recommandations de prix et de stock
-
-Répondez UNIQUEMENT en JSON valide avec cette structure:
+Respond ONLY in valid JSON:
 {
   "predictions": {
     "3_months": { "revenue": number, "orders": number, "growth_rate": number },
@@ -81,79 +43,60 @@ Répondez UNIQUEMENT en JSON valide avec cette structure:
     "12_months": { "revenue": number, "orders": number, "growth_rate": number }
   },
   "confidence_score": number,
-  "market_insights": {
-    "seasonal_trends": string,
-    "demand_patterns": string,
-    "competitive_position": string
-  },
-  "recommended_actions": [
-    { "priority": "high|medium|low", "action": string, "impact": string }
-  ],
+  "market_insights": { "seasonal_trends": string, "demand_patterns": string, "competitive_position": string },
+  "recommended_actions": [{ "priority": "high|medium|low", "action": string, "impact": string }],
   "risk_factors": [string],
   "opportunities": [string]
-}
-`;
+}`
 
-    console.log('[SALES-FORECAST] Calling OpenAI for analysis');
-
-    const openAIResponse = await fetch('https://api.openai.com/v1/chat/completions', {
+    const aiResponse = await fetch('https://jsmwckzrmqecwwrswwrz.supabase.co/functions/v1/unified-ai', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${Deno.env.get('OPENAI_API_KEY')}`,
+        'Authorization': req.headers.get('Authorization')!,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4o-mini',
+        model: 'google/gemini-2.5-flash',
         messages: [{ role: 'user', content: prompt }],
         max_tokens: 2000,
       }),
-    });
+    })
 
-    const aiResponse = await openAIResponse.json();
-    const aiAnalysis = JSON.parse(aiResponse.choices[0].message.content);
+    const aiResult = await aiResponse.json()
+    const content = aiResult.choices?.[0]?.message?.content || '{}'
+    const cleaned = content.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim()
+    const aiAnalysis = JSON.parse(cleaned)
 
-    console.log('[SALES-FORECAST] AI analysis completed', { confidence: aiAnalysis.confidence_score });
-
-    // Store results in database
-    const supabaseService = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
-      { auth: { persistSession: false } }
-    );
-
-    const { data: savedAnalysis } = await supabaseService
+    // Save via RLS-scoped client
+    const { data: savedAnalysis } = await supabase
       .from('sales_intelligence')
       .insert({
-        user_id: user.id,
+        user_id: userId,
         product_id: productId,
         analysis_type: 'forecast',
         time_period: timePeriod,
         predictions: aiAnalysis.predictions,
         confidence_score: aiAnalysis.confidence_score,
         market_insights: aiAnalysis.market_insights,
-        recommended_actions: aiAnalysis.recommended_actions
+        recommended_actions: aiAnalysis.recommended_actions,
       })
-      .select()
-      .single();
+      .select('id')
+      .single()
 
-    console.log('[SALES-FORECAST] Results saved to database', { id: savedAnalysis?.id });
-
-    return new Response(JSON.stringify({
+    return successResponse({
       success: true,
       analysis: aiAnalysis,
-      analysisId: savedAnalysis?.id
-    }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
+      analysisId: savedAnalysis?.id,
+    }, corsHeaders)
 
-  } catch (error) {
-    console.error('[SALES-FORECAST] Error:', error);
-    return new Response(JSON.stringify({ 
-      error: error.message,
-      success: false
-    }), {
-      status: 500,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
+  } catch (err) {
+    if (err instanceof Response) return err
+    console.error('[SALES-FORECAST] Error:', err)
+    const origin = req.headers.get('origin')
+    const { getSecureCorsHeaders } = await import('../_shared/cors.ts')
+    return new Response(
+      JSON.stringify({ success: false, error: err instanceof Error ? err.message : 'Internal error' }),
+      { status: 500, headers: { ...getSecureCorsHeaders(origin), 'Content-Type': 'application/json' } }
+    )
   }
-});
+})
