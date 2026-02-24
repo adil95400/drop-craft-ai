@@ -159,12 +159,13 @@ export function EnhancedUnifiedCatalog() {
       }
       
       return (data || []).map((p: any, index: number) => {
-        const costPrice = p.cost_price || p.price || Math.random() * 50 + 5;
-        const retailPrice = p.retail_price || costPrice * (1.5 + Math.random() * 1);
+        const costPrice = p.cost_price || p.price || 0;
+        const retailPrice = p.retail_price || (costPrice > 0 ? costPrice * 1.8 : 0);
         const profit = retailPrice - costPrice;
-        const profitMargin = retailPrice > 0 ? (profit / retailPrice) * 100 : 50;
-        const aiScore = 0.55 + Math.random() * 0.4;
+        const profitMargin = retailPrice > 0 ? (profit / retailPrice) * 100 : 0;
+        const aiScore = p.ai_score ?? 0;
         const connectorIndex = index % CONNECTORS.length;
+        const stockQty = p.stock_quantity ?? 0;
 
         return {
           id: p.id,
@@ -177,23 +178,23 @@ export function EnhancedUnifiedCatalog() {
           retail_price: retailPrice,
           profit: profit,
           profit_margin: profitMargin,
-          stock_quantity: p.stock_quantity ?? Math.floor(Math.random() * 200),
-          stock_status: (p.stock_quantity || 0) > 10 ? 'in_stock' : (p.stock_quantity || 0) > 0 ? 'low_stock' : 'out_of_stock',
+          stock_quantity: stockQty,
+          stock_status: stockQty > 10 ? 'in_stock' : stockQty > 0 ? 'low_stock' : 'out_of_stock',
           ai_score: aiScore,
-          image_url: p.image_urls?.[0] || p.image_url || 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400',
+          image_url: p.image_urls?.[0] || p.image_url || '/placeholder.svg',
           images: p.image_urls || (p.image_url ? [p.image_url] : []),
           category: p.category || 'Non classé',
           brand: p.brand || '',
           currency: p.currency || 'EUR',
-          shipping_time: '3-7 jours',
-          rating: 3.5 + Math.random() * 1.5,
-          orders_count: Math.floor(Math.random() * 1500) + 50,
+          shipping_time: p.shipping_time || 'N/A',
+          rating: p.rating ?? 0,
+          orders_count: p.orders_count ?? 0,
           sku: p.sku || `SKU-${p.id?.slice(0, 6)?.toUpperCase() || index}`,
           is_winner: aiScore > 0.88,
-          is_trending: index % 7 === 0,
+          is_trending: p.is_trending ?? false,
           status: 'active' as const,
-          delivery_time: '3-7 jours',
-          supplier_rating: 4 + Math.random(),
+          delivery_time: p.shipping_time || 'N/A',
+          supplier_rating: p.supplier_rating ?? 0,
         } as CatalogProduct;
       });
     },

@@ -160,7 +160,7 @@ export function useMediaAudit() {
             'Authorization': `Bearer ${session.access_token}`,
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ product_id: productId }),
+                  body: JSON.stringify({ productId: productId }),
         }
       )
 
@@ -216,7 +216,7 @@ export function useMediaAudit() {
                   'Authorization': `Bearer ${session.access_token}`,
                   'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ product_id: productId }),
+                body: JSON.stringify({ productId: productId }),
               }
             )
             if (response.ok) {
