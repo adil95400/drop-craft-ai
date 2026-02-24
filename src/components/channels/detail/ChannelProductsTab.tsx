@@ -10,6 +10,8 @@ import { cn } from '@/lib/utils'
 import { Package, RefreshCw, Loader2, Search, Filter, Grid3X3, List, Image as ImageIcon, Check, CheckSquare, Square } from 'lucide-react'
 import { useState, useMemo, useCallback } from 'react'
 import { ChannelBulkActions } from './ChannelBulkActions'
+import { supabase } from '@/integrations/supabase/client'
+import { toast } from 'sonner'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -205,8 +207,58 @@ export function ChannelProductsTab({
           selectedIds={selectedIds}
           onSelectionChange={setSelectedIds}
           onAction={async (action, ids, params) => {
-            console.log('Bulk action:', action, ids, params)
-            // TODO: Implement real bulk actions
+            try {
+              switch (action) {
+                case 'activate':
+                case 'deactivate': {
+                  const newStatus = action === 'activate' ? 'active' : 'draft'
+                  const { error } = await supabase
+                    .from('products')
+                    .update({ status: newStatus })
+                    .in('id', ids)
+                  if (error) throw error
+                  onRefresh()
+                  break
+                }
+                case 'delete': {
+                  const { error } = await supabase
+                    .from('products')
+                    .delete()
+                    .in('id', ids)
+                  if (error) throw error
+                  onRefresh()
+                  break
+                }
+                case 'update_price': {
+                  if (!params?.value) break
+                  const adjustment = parseFloat(params.value)
+                  // Fetch current prices, apply adjustment
+                  const { data: prods } = await supabase
+                    .from('products')
+                    .select('id, price')
+                    .in('id', ids)
+                  if (prods) {
+                    for (const p of prods) {
+                      const currentPrice = p.price || 0
+                      const newPrice = params.type === 'percent'
+                        ? currentPrice * (1 + adjustment / 100)
+                        : currentPrice + adjustment
+                      await supabase
+                        .from('products')
+                        .update({ price: Math.max(0, Math.round(newPrice * 100) / 100) })
+                        .eq('id', p.id)
+                    }
+                  }
+                  onRefresh()
+                  break
+                }
+                case 'export':
+                  break // handled by ChannelBulkActions directly
+              }
+            } catch (error: any) {
+              toast.error(error.message || 'Erreur lors de l\'action en masse')
+              throw error
+            }
           }}
         />
 

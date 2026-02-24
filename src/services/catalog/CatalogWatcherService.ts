@@ -358,7 +358,70 @@ export class CatalogWatcherService {
   }
 
   private static async sendCriticalNotification(userId: string, events: CatalogEvent[]): Promise<void> {
-    // TODO: Implémenter notification (email, push, webhook...)
-    console.log(`[CatalogWatcher] Critical notification for user ${userId}:`, events)
+    try {
+      // 1. In-app notification via active_alerts table
+      const alertsToInsert = events.map(event => ({
+        user_id: userId,
+        alert_type: event.event_type,
+        title: `⚠️ ${event.product_name}`,
+        message: this.formatAlertMessage(event),
+        severity: event.severity,
+        status: 'active',
+        metadata: event.details,
+        expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
+      }))
+
+      const { error: alertError } = await supabase
+        .from('active_alerts')
+        .insert(alertsToInsert)
+
+      if (alertError) {
+        console.error('[CatalogWatcher] Error creating in-app alerts:', alertError)
+      }
+
+      // 2. Check for webhook configuration
+      const { data: webhookConfigs } = await supabase
+        .from('alert_configurations')
+        .select('*')
+        .eq('user_id', userId)
+        .eq('is_enabled', true)
+        .contains('channels', ['webhook'])
+
+      if (webhookConfigs && webhookConfigs.length > 0) {
+        // Trigger webhook via edge function
+        await supabase.functions.invoke('catalog-alert-webhook', {
+          body: {
+            userId,
+            events: events.map(e => ({
+              type: e.event_type,
+              product: e.product_name,
+              productId: e.product_id,
+              severity: e.severity,
+              details: e.details,
+              timestamp: new Date().toISOString()
+            }))
+          }
+        })
+      }
+
+      console.log(`[CatalogWatcher] Critical notification sent for user ${userId}: ${events.length} alert(s)`)
+    } catch (error) {
+      console.error('[CatalogWatcher] Error sending critical notification:', error)
+    }
+  }
+
+  private static formatAlertMessage(event: CatalogEvent): string {
+    switch (event.event_type) {
+      case 'inventory_low':
+        return `Stock critique: ${event.details.stock_quantity} unité(s) restante(s) (seuil: ${event.details.threshold})`
+      case 'price_changed':
+        return `Variation de prix significative: ${event.details.change_percent}% (${event.details.before_price}€ → ${event.details.after_price}€)`
+      case 'score_degraded':
+        return `Score qualité dégradé: ${event.details.before_score} → ${event.details.after_score}`
+      case 'product_audit_failed':
+        return `Audit critique: ${event.details.critical_issues?.length || 0} problème(s) détecté(s)`
+      default:
+        return `Événement critique détecté sur le produit`
+    }
   }
 }

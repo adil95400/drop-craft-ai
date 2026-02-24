@@ -66,13 +66,42 @@ export default function CreateSupplier() {
 
   const onSubmit = async (data: SupplierFormData) => {
     try {
-      // TODO: Implement via FastAPI POST /api/v1/suppliers
+      const { data: { user } } = await (await import('@/integrations/supabase/client')).supabase.auth.getUser()
+      if (!user) throw new Error('Non authentifié')
+
+      const { error } = await (await import('@/integrations/supabase/client')).supabase
+        .from('suppliers')
+        .insert({
+          user_id: user.id,
+          name: data.companyName,
+          contact_name: data.contactName,
+          email: data.email,
+          phone: data.phone || null,
+          website: data.website || null,
+          country: data.country || null,
+          supplier_type: 'api',
+          status: data.isActive ? 'active' : 'inactive',
+          notes: data.address ? `${data.address}, ${data.city || ''} ${data.postalCode || ''}`.trim() : null,
+          rating: data.isPreferred ? 5 : null,
+          metadata: {
+            category: data.category,
+            payment_terms: data.paymentTerms,
+            tax_id: data.taxId,
+            city: data.city,
+            postal_code: data.postalCode,
+            is_preferred: data.isPreferred,
+            contacts,
+            documents
+          }
+        })
+
+      if (error) throw error
+
       toast({
         title: "Fournisseur créé",
         description: `${data.companyName} a été ajouté avec succès`,
       })
       refetch()
-
       navigate('/suppliers')
     } catch (error: any) {
       toast({
