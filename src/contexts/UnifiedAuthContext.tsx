@@ -34,6 +34,7 @@ export interface Profile {
   activity_visible?: boolean;
   analytics_enabled?: boolean;
   settings?: any;
+  onboarding_completed?: boolean | null;
   created_at: string;
   updated_at: string;
 }
