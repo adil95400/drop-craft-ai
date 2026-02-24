@@ -159,10 +159,12 @@ serve(async (req) => {
             .maybeSingle();
 
           if (profiles) {
+            const isActive = subscription.status === "active" || subscription.status === "trialing";
             await supabase
               .from('profiles')
               .update({ 
-                plan: subscription.status === "active" ? plan : "standard",
+                plan: isActive ? plan : "free",
+                subscription_plan: isActive ? plan : "free",
                 subscription_status: status,
                 updated_at: new Date().toISOString()
               })
@@ -190,13 +192,14 @@ serve(async (req) => {
             await supabase
               .from('profiles')
               .update({ 
-                plan: "standard",
+                plan: "free",
+                subscription_plan: "free",
                 subscription_status: 'cancelled',
                 updated_at: new Date().toISOString()
               })
               .eq('id', profiles.id);
 
-            logStep("Profile downgraded to standard");
+            logStep("Profile downgraded to free");
           }
         }
         break;
