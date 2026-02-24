@@ -2,6 +2,7 @@
   "title": "Commandes",
   "description": "Gérez toutes vos commandes",
   "search": "Rechercher une commande...",
+  "searchPlaceholder": "Rechercher par numéro, client ou tracking...",
   "filters": {
     "all": "Toutes",
     "pending": "En attente",
@@ -32,6 +33,11 @@
     "refunded": "Remboursée",
     "onHold": "En suspens"
   },
+  "statusAction": {
+    "pending": "Traiter",
+    "processing": "Expédier",
+    "shipped": "Livrer"
+  },
   "actions": {
     "view": "Voir détails",
     "edit": "Modifier",
@@ -39,7 +45,11 @@
     "refund": "Rembourser",
     "ship": "Marquer expédiée",
     "print": "Imprimer",
-    "export": "Exporter"
+    "export": "Exporter",
+    "create": "Créer une commande",
+    "new": "Nouvelle commande",
+    "importShopify": "Importer Shopify",
+    "refresh": "Actualiser"
   },
   "details": {
     "orderInfo": "Informations commande",
@@ -64,12 +74,53 @@
     "updated": "Commande mise à jour",
     "cancelled": "Commande annulée",
     "shipped": "Commande expédiée",
-    "refunded": "Commande remboursée"
+    "refunded": "Commande remboursée",
+    "statusUpdated": "Statut mis à jour",
+    "statusUpdatedDesc": "La commande est maintenant \"{{status}}\"",
+    "loadError": "Erreur de chargement",
+    "updateError": "Erreur de mise à jour",
+    "exportDone": "Export terminé",
+    "exportDoneDesc": "{{count}} commandes exportées",
+    "exportError": "Erreur d'export"
   },
   "stats": {
     "total": "Total commandes",
     "pending": "En attente",
     "processing": "En cours",
-    "revenue": "Chiffre d'affaires"
-  }
+    "revenue": "Chiffre d'affaires",
+    "totalRevenue": "CA Total"
+  },
+  "center": {
+    "title": "Centre de Commandes",
+    "subtitle": "Gestion & Suivi",
+    "description": "Vue unifiée de toutes vos commandes avec gestion avancée et suivi en temps réel"
+  },
+  "tabs": {
+    "orders": "Commandes",
+    "autoOrder": "Auto-Order"
+  },
+  "empty": {
+    "title": "Aucune commande",
+    "description": "Aucune commande ne correspond à vos critères"
+  },
+  "pagination": {
+    "showing": "Affichage {{start}} - {{end}} sur {{total}} commandes",
+    "pages": "{{count}} page(s)",
+    "previous": "Précédent",
+    "next": "Suivant"
+  },
+  "sort": {
+    "placeholder": "Trier par...",
+    "dateDesc": "Date (récent)",
+    "dateAsc": "Date (ancien)",
+    "amountDesc": "Montant (élevé)",
+    "amountAsc": "Montant (faible)"
+  },
+  "dateFilter": {
+    "period": "Période",
+    "startDate": "Date de début",
+    "endDate": "Date de fin",
+    "reset": "Réinitialiser"
+  },
+  "items": "article(s)"
 }

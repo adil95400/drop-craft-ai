@@ -248,5 +248,12 @@
     "pro": "Pro",
     "standard": "Standard",
     "free": "Gratuit"
-  }
+  },
+  "notFound": {
+    "title": "Page non trouvée",
+    "description": "La page que vous recherchez n'existe pas ou a été déplacée.",
+    "backToDashboard": "Retour au tableau de bord",
+    "previousPage": "Page précédente"
+  },
+  "skipToContent": "Aller au contenu principal"
 }

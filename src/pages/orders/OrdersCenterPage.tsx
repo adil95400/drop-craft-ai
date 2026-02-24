@@ -1,8 +1,10 @@
 /**
  * Centre de Commandes avec design Channable premium
  * Pagination, filtres avancés et mise à jour de statut réels
+ * i18n integrated
  */
 import { useState, useEffect, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -108,13 +110,15 @@ function OrderCard({
   onView: () => void; 
   onUpdateStatus: (status: string) => void;
 }) {
+  const { t } = useTranslation('orders');
+  
   const getStatusConfig = (status: string) => {
     const configs: Record<string, { color: string; icon: React.ElementType; label: string }> = {
-      pending: { color: 'bg-amber-500/10 text-amber-600 border-amber-500/30', icon: Clock, label: 'En attente' },
-      processing: { color: 'bg-blue-500/10 text-blue-600 border-blue-500/30', icon: Package, label: 'Traitement' },
-      shipped: { color: 'bg-purple-500/10 text-purple-600 border-purple-500/30', icon: Truck, label: 'Expédié' },
-      delivered: { color: 'bg-green-500/10 text-green-600 border-green-500/30', icon: CheckCircle2, label: 'Livré' },
-      cancelled: { color: 'bg-red-500/10 text-red-600 border-red-500/30', icon: AlertCircle, label: 'Annulé' },
+      pending: { color: 'bg-amber-500/10 text-amber-600 border-amber-500/30', icon: Clock, label: t('status.pending') },
+      processing: { color: 'bg-blue-500/10 text-blue-600 border-blue-500/30', icon: Package, label: t('status.processing') },
+      shipped: { color: 'bg-purple-500/10 text-purple-600 border-purple-500/30', icon: Truck, label: t('status.shipped') },
+      delivered: { color: 'bg-green-500/10 text-green-600 border-green-500/30', icon: CheckCircle2, label: t('status.delivered') },
+      cancelled: { color: 'bg-red-500/10 text-red-600 border-red-500/30', icon: AlertCircle, label: t('status.cancelled') },
     };
     return configs[status] || configs.pending;
   };
@@ -132,12 +136,7 @@ function OrderCard({
   };
 
   const getNextStatusLabel = () => {
-    const labels: Record<string, string> = {
-      pending: 'Traiter',
-      processing: 'Expédier',
-      shipped: 'Livrer',
-    };
-    return labels[order.status];
+    return t(`statusAction.${order.status}`, '');
   };
 
   return (
@@ -162,7 +161,7 @@ function OrderCard({
                   </Badge>
                 </div>
                 <p className="text-sm text-muted-foreground truncate">
-                  {order.customer_name} • {order.items_count || 0} article(s)
+                  {order.customer_name} • {order.items_count || 0} {t('items')}
                 </p>
               </div>
             </div>
@@ -209,6 +208,7 @@ export default function OrdersCenterPage() {
   const navigate = useNavigate();
   const { user } = useUnifiedAuth();
   const { toast } = useToast();
+  const { t } = useTranslation('orders');
   const [orders, setOrders] = useState<Order[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
@@ -318,7 +318,7 @@ export default function OrdersCenterPage() {
     } catch (error: any) {
       console.warn('Error loading orders:', error);
       toast({
-        title: "Erreur de chargement",
+        title: t('messages.loadError'),
         description: error.message,
         variant: "destructive"
       });
@@ -334,17 +334,9 @@ export default function OrdersCenterPage() {
       { orderId, status: newStatus },
       {
         onSuccess: () => {
-          const statusLabels: Record<string, string> = {
-            pending: 'En attente',
-            processing: 'En traitement',
-            shipped: 'Expédiée',
-            delivered: 'Livrée',
-            cancelled: 'Annulée'
-          };
-
           toast({
-            title: "✓ Statut mis à jour",
-            description: `La commande est maintenant "${statusLabels[newStatus] || newStatus}"`
+            title: `✓ ${t('messages.statusUpdated')}`,
+            description: t('messages.statusUpdatedDesc', { status: t(`status.${newStatus}`, newStatus) })
           });
 
           // Optimistic update
@@ -355,7 +347,7 @@ export default function OrdersCenterPage() {
         },
         onError: (error: any) => {
           toast({
-            title: "Erreur de mise à jour",
+            title: t('messages.updateError'),
             description: error.message,
             variant: "destructive"
           });
@@ -368,7 +360,7 @@ export default function OrdersCenterPage() {
   const handleExport = async () => {
     try {
       // Client-side CSV export
-      const headers = ['ID', 'Numéro', 'Client', 'Statut', 'Montant', 'Date'];
+      const headers = ['ID', t('table.orderNumber'), t('table.customer'), t('table.status'), t('table.total'), t('table.date')];
       const rows = filteredOrders.map(o => [o.id, o.order_number, o.customer_name, o.status, o.total_amount, o.created_at]);
       const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
       const blob = new Blob([csv], { type: 'text/csv' });
@@ -380,12 +372,12 @@ export default function OrdersCenterPage() {
       window.URL.revokeObjectURL(url);
 
       toast({
-        title: "Export terminé",
-        description: `${filteredOrders.length} commandes exportées`
+        title: t('messages.exportDone'),
+        description: t('messages.exportDoneDesc', { count: filteredOrders.length })
       });
     } catch (error: any) {
       toast({
-        title: "Erreur d'export",
+        title: t('messages.exportError'),
         description: error.message,
         variant: "destructive"
       });
@@ -393,7 +385,7 @@ export default function OrdersCenterPage() {
   };
 
   const convertOrdersToCSV = (orders: Order[]) => {
-    const headers = ['Numéro', 'Client', 'Statut', 'Montant', 'Devise', 'Date', 'Articles'];
+    const headers = [t('table.orderNumber'), t('table.customer'), t('table.status'), t('table.total'), t('currency', { ns: 'common' }), t('table.date'), t('table.items')];
     const rows = orders.map(o => [
       o.order_number,
       o.customer_name,
@@ -430,9 +422,9 @@ export default function OrdersCenterPage() {
 
   return (
     <ChannablePageWrapper
-      title="Centre de Commandes"
-      subtitle="Gestion & Suivi"
-      description="Vue unifiée de toutes vos commandes avec gestion avancée et suivi en temps réel"
+      title={t('center.title')}
+      subtitle={t('center.subtitle')}
+      description={t('center.description')}
       heroImage="orders"
       badge={{
         label: 'Live',
@@ -457,7 +449,7 @@ export default function OrdersCenterPage() {
               ) : (
                 <Store className="h-4 w-4" />
               )}
-              Importer Shopify
+              {t('actions.importShopify')}
             </Button>
           )}
           <Button 
@@ -465,7 +457,7 @@ export default function OrdersCenterPage() {
             className="gap-2 bg-primary hover:bg-primary/90 shadow-lg shadow-primary/25"
           >
             <Plus className="h-4 w-4" />
-            Nouvelle commande
+            {t('actions.new')}
           </Button>
           <Button 
             variant="outline" 
@@ -474,7 +466,7 @@ export default function OrdersCenterPage() {
             className="gap-2 backdrop-blur-sm bg-background/50"
           >
             <RefreshCw className={cn("h-4 w-4", isLoading && "animate-spin")} />
-            Actualiser
+            {t('actions.refresh')}
           </Button>
           <Button 
             variant="outline" 
@@ -482,7 +474,7 @@ export default function OrdersCenterPage() {
             className="gap-2 backdrop-blur-sm bg-background/50"
           >
             <Download className="h-4 w-4" />
-            Exporter
+            {t('actions.export')}
           </Button>
         </>
       }
@@ -493,11 +485,11 @@ export default function OrdersCenterPage() {
         <TabsList className="grid w-full grid-cols-2 lg:w-auto lg:inline-grid">
           <TabsTrigger value="orders" className="gap-2">
             <Package className="w-4 h-4" />
-            Commandes
+            {t('tabs.orders')}
           </TabsTrigger>
           <TabsTrigger value="auto-order" className="gap-2">
             <Zap className="w-4 h-4" />
-            Auto-Order
+            {t('tabs.autoOrder')}
             <Badge variant="secondary" className="ml-1 text-xs">PRO</Badge>
           </TabsTrigger>
         </TabsList>
@@ -509,11 +501,11 @@ export default function OrdersCenterPage() {
         <TabsContent value="orders" className="mt-6 space-y-6">
           {/* Stats Grid */}
           <div className="grid gap-4 grid-cols-2 lg:grid-cols-5">
-            <StatCard icon={Package} label="Total" value={statusCounts.all} trend="+12%" color="primary" onClick={() => setStatusFilter('all')} />
-            <StatCard icon={Clock} label="En attente" value={statusCounts.pending} color="warning" onClick={() => setStatusFilter('pending')} />
-            <StatCard icon={Package} label="Traitement" value={statusCounts.processing} color="primary" onClick={() => setStatusFilter('processing')} />
-            <StatCard icon={Truck} label="Expédiées" value={statusCounts.shipped} color="primary" onClick={() => setStatusFilter('shipped')} />
-            <StatCard icon={DollarSign} label="CA Total" value={`${totalRevenue.toFixed(0)}€`} trend="+25%" color="success" onClick={() => navigate('/analytics')} />
+            <StatCard icon={Package} label={t('stats.total')} value={statusCounts.all} trend="+12%" color="primary" onClick={() => setStatusFilter('all')} />
+            <StatCard icon={Clock} label={t('status.pending')} value={statusCounts.pending} color="warning" onClick={() => setStatusFilter('pending')} />
+            <StatCard icon={Package} label={t('status.processing')} value={statusCounts.processing} color="primary" onClick={() => setStatusFilter('processing')} />
+            <StatCard icon={Truck} label={t('filters.shipped')} value={statusCounts.shipped} color="primary" onClick={() => setStatusFilter('shipped')} />
+            <StatCard icon={DollarSign} label={t('stats.totalRevenue')} value={`${totalRevenue.toFixed(0)}€`} trend="+25%" color="success" onClick={() => navigate('/analytics')} />
           </div>
           {/* Search & Filter */}
           <motion.div
@@ -527,7 +519,7 @@ export default function OrdersCenterPage() {
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
                 <Input
-                  placeholder="Rechercher par numéro, client ou tracking..."
+                  placeholder={t('searchPlaceholder')}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="pl-10 border-0 bg-muted/50 focus-visible:ring-1"
@@ -539,13 +531,13 @@ export default function OrdersCenterPage() {
                 <PopoverTrigger asChild>
                   <Button variant="outline" className="gap-2">
                     <Calendar className="w-4 h-4" />
-                    Période
+                    {t('dateFilter.period')}
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-80">
                   <div className="space-y-4">
                     <div className="space-y-2">
-                      <Label>Date de début</Label>
+                      <Label>{t('dateFilter.startDate')}</Label>
                       <Input
                         type="date"
                         value={dateRange.start}
@@ -553,7 +545,7 @@ export default function OrdersCenterPage() {
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label>Date de fin</Label>
+                      <Label>{t('dateFilter.endDate')}</Label>
                       <Input
                         type="date"
                         value={dateRange.end}
@@ -566,7 +558,7 @@ export default function OrdersCenterPage() {
                       className="w-full"
                       onClick={() => setDateRange({ start: '', end: '' })}
                     >
-                      Réinitialiser
+                      {t('dateFilter.reset')}
                     </Button>
                   </div>
                 </PopoverContent>
@@ -579,13 +571,13 @@ export default function OrdersCenterPage() {
                 setSortOrder(order);
               }}>
                 <SelectTrigger className="w-[180px]">
-                  <SelectValue placeholder="Trier par..." />
+                  <SelectValue placeholder={t('sort.placeholder')} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="date-desc">Date (récent)</SelectItem>
-                  <SelectItem value="date-asc">Date (ancien)</SelectItem>
-                  <SelectItem value="amount-desc">Montant (élevé)</SelectItem>
-                  <SelectItem value="amount-asc">Montant (faible)</SelectItem>
+                  <SelectItem value="date-desc">{t('sort.dateDesc')}</SelectItem>
+                  <SelectItem value="date-asc">{t('sort.dateAsc')}</SelectItem>
+                  <SelectItem value="amount-desc">{t('sort.amountDesc')}</SelectItem>
+                  <SelectItem value="amount-asc">{t('sort.amountAsc')}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -602,19 +594,19 @@ export default function OrdersCenterPage() {
             <Tabs defaultValue="all" onValueChange={setStatusFilter} className="space-y-4">
           <TabsList className="bg-muted/50 p-1 rounded-xl w-full sm:w-auto overflow-x-auto">
             <TabsTrigger value="all" className="rounded-lg px-4 data-[state=active]:bg-background data-[state=active]:shadow-sm">
-              Toutes ({statusCounts.all})
+              {t('filters.all')} ({statusCounts.all})
             </TabsTrigger>
             <TabsTrigger value="pending" className="rounded-lg px-4 data-[state=active]:bg-background data-[state=active]:shadow-sm">
-              En attente ({statusCounts.pending})
+              {t('filters.pending')} ({statusCounts.pending})
             </TabsTrigger>
             <TabsTrigger value="processing" className="rounded-lg px-4 data-[state=active]:bg-background data-[state=active]:shadow-sm">
-              Traitement ({statusCounts.processing})
+              {t('filters.processing')} ({statusCounts.processing})
             </TabsTrigger>
             <TabsTrigger value="shipped" className="rounded-lg px-4 data-[state=active]:bg-background data-[state=active]:shadow-sm">
-              Expédiées ({statusCounts.shipped})
+              {t('filters.shipped')} ({statusCounts.shipped})
             </TabsTrigger>
             <TabsTrigger value="delivered" className="rounded-lg px-4 data-[state=active]:bg-background data-[state=active]:shadow-sm">
-              Livrées ({statusCounts.delivered})
+              {t('filters.delivered')} ({statusCounts.delivered})
             </TabsTrigger>
           </TabsList>
 
@@ -629,13 +621,13 @@ export default function OrdersCenterPage() {
                   <div className="p-4 rounded-full bg-muted/50 w-fit mx-auto mb-4">
                     <Package className="h-8 w-8 text-muted-foreground" />
                   </div>
-                  <h3 className="font-semibold mb-2">Aucune commande</h3>
+                  <h3 className="font-semibold mb-2">{t('empty.title')}</h3>
                   <p className="text-sm text-muted-foreground mb-4">
-                    Aucune commande ne correspond à vos critères
+                    {t('empty.description')}
                   </p>
                   <Button onClick={() => navigate('/orders/new')} className="gap-2">
                     <Plus className="h-4 w-4" />
-                    Créer une commande
+                    {t('actions.create')}
                   </Button>
                 </CardContent>
               </Card>
@@ -644,9 +636,9 @@ export default function OrdersCenterPage() {
                 {/* Info pagination */}
                 <div className="flex items-center justify-between text-sm text-muted-foreground">
                   <span>
-                    Affichage {((currentPage - 1) * ITEMS_PER_PAGE) + 1} - {Math.min(currentPage * ITEMS_PER_PAGE, filteredOrders.length)} sur {filteredOrders.length} commandes
+                    {t('pagination.showing', { start: ((currentPage - 1) * ITEMS_PER_PAGE) + 1, end: Math.min(currentPage * ITEMS_PER_PAGE, filteredOrders.length), total: filteredOrders.length })}
                   </span>
-                  <span>{totalPages} page(s)</span>
+                  <span>{t('pagination.pages', { count: totalPages })}</span>
                 </div>
 
                 <div className="space-y-3">

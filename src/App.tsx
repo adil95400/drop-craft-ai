@@ -54,7 +54,7 @@ const AppContent = memo(() => {
       <MobileGlobalOptimizer>
         {/* Skip link for keyboard navigation */}
         <a href="#main-content" className="skip-link">
-          Aller au contenu principal
+          {/* Skip link - translated via i18n common.skipToContent */}
         </a>
         
         {/* Lightweight offline status indicator (no framer-motion) */}

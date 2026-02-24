@@ -1,12 +1,18 @@
 {
   "title": "Tableau de bord",
+  "subtitle": "Vue d'ensemble",
   "welcome": "Bienvenue sur votre tableau de bord",
   "overview": "Vue d'ensemble de votre activité e-commerce",
+  "description": "Pilotez votre activité e-commerce avec des insights en temps réel et des outils d'optimisation intelligents.",
   "stats": {
     "totalOrders": "Commandes totales",
     "totalRevenue": "Chiffre d'affaires total",
     "totalProducts": "Produits total",
-    "totalCustomers": "Clients total"
+    "totalCustomers": "Clients total",
+    "revenue": "Chiffre d'affaires",
+    "orders": "Commandes",
+    "activeProducts": "Produits actifs",
+    "customers": "Clients"
   },
   "charts": {
     "revenue": "Évolution du chiffre d'affaires",
@@ -18,8 +24,32 @@
     "newOrder": "Nouvelle commande",
     "addProduct": "Ajouter un produit",
     "viewCustomers": "Voir les clients",
-    "viewReports": "Voir les rapports"
+    "viewReports": "Voir les rapports",
+    "analytics": "Analytiques",
+    "analyticsDesc": "Vue détaillée",
+    "optimize": "Optimiser",
+    "optimizeDesc": "IA automatique",
+    "reports": "Rapports",
+    "reportsDesc": "Export PDF"
   },
+  "widgets": {
+    "refresh": "Actualiser",
+    "customize": "Personnaliser",
+    "done": "Terminer",
+    "addWidget": "Ajouter widget",
+    "noActiveWidgets": "Aucun widget actif",
+    "noActiveWidgetsDesc": "Personnalisez votre tableau de bord en ajoutant des widgets pour suivre vos KPIs les plus importants.",
+    "addWidgets": "Ajouter des widgets",
+    "dragToReorder": "Glissez les widgets pour les réorganiser",
+    "reset": "Réinitialiser"
+  },
+  "sidebar": {
+    "channelHealth": "Santé des canaux",
+    "recentActivity": "Activité récente"
+  },
+  "lastUpdate": "Dernière mise à jour",
+  "loadingData": "Chargement des données...",
+  "refreshed": "Dashboard actualisé avec les données réelles",
   "vsLastMonth": "vs mois dernier",
   "criticalAIAlerts": "Alertes IA Critiques",
   "finalizeConfig": "Finaliser la configuration",
@@ -27,5 +57,6 @@
   "averageBasket": "Panier moyen",
   "performance": "Performance",
   "excellent": "Excellente",
-  "allIndicatorsPositive": "Tous les indicateurs sont positifs"
+  "allIndicatorsPositive": "Tous les indicateurs sont positifs",
+  "realtime": "Temps réel"
 }
