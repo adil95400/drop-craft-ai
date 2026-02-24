@@ -90,7 +90,7 @@ const BillingPage = lazy(() => import('@/pages/BillingPage'));
 const ProfilePage = lazy(() => import('@/pages/profile/ProfilePage'));
 const APIDocumentationPage = lazy(() => import('@/pages/APIDocumentationPage'));
 
-// Loading component
+// Loading components
 const PageLoader = () => (
   <div className="min-h-screen flex items-center justify-center bg-background">
     <div className="text-center space-y-4">
@@ -99,6 +99,9 @@ const PageLoader = () => (
     </div>
   </div>
 );
+
+// Dashboard-specific skeleton for smoother perceived loading
+const DashboardSkeleton = lazy(() => import('@/components/dashboard/DashboardSkeleton').then(m => ({ default: m.DashboardSkeleton })));
 
 /**
  * Protected route wrapper helper
