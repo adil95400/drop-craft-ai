@@ -1,291 +1,176 @@
-import "https://deno.land/x/xhr@0.1.0/mod.ts";
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.38.4";
+/**
+ * Smart Inventory Manager — SECURED (JWT-first, RLS-enforced)
+ * Uses Lovable AI Gateway instead of OpenAI
+ */
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+import { requireAuth, handlePreflight, successResponse } from '../_shared/jwt-auth.ts'
 
-const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
-const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-
-serve(async (req) => {
-  if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
-  }
+Deno.serve(async (req) => {
+  const preflight = handlePreflight(req)
+  if (preflight) return preflight
 
   try {
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
-    const { productId, userId, analysisType = 'full' } = await req.json();
+    const { userId, supabase, corsHeaders } = await requireAuth(req)
 
-    console.log('Smart Inventory Manager - Processing:', { productId, userId, analysisType });
+    const { productId, analysisType = 'full' } = await req.json()
 
-    // Récupérer les données produit et historique
-    const productData = await getProductInventoryData(supabase, productId, userId);
-    
-    // Analyser la demande et les tendances
-    const demandAnalysis = await analyzeDemandPatterns(productData);
-    
-    // Calculer les niveaux optimaux
-    const inventoryOptimization = await calculateOptimalLevels(productData, demandAnalysis);
-    
-    // Générer des recommandations intelligentes
-    const recommendations = await generateInventoryRecommendations(productData, demandAnalysis, inventoryOptimization);
+    console.log('Smart Inventory Manager:', { productId, userId, analysisType })
 
-    // Mettre à jour ou créer l'enregistrement d'inventaire intelligent
+    // Get product data (RLS-scoped)
+    const { data: product } = await supabase
+      .from('imported_products')
+      .select('*')
+      .eq('id', productId)
+      .eq('user_id', userId)
+      .single()
+
+    const { data: orders } = await supabase
+      .from('order_items')
+      .select('*, orders!inner(*)')
+      .eq('product_id', productId)
+      .eq('orders.user_id', userId)
+      .order('orders.created_at', { ascending: false })
+      .limit(100)
+
+    const productData = {
+      product,
+      currentStock: product?.stock_quantity || 0,
+      orderHistory: orders || [],
+      supplierPerformance: { leadTime: 7, reliability: 95, minOrderQty: 10 }
+    }
+
+    // Demand analysis via Lovable AI Gateway
+    const demandAnalysis = await analyzeDemand(productData)
+    const optimization = calculateOptimalLevels(productData, demandAnalysis)
+    const recommendations = generateRecommendations(productData, demandAnalysis, optimization)
+
+    // Save analysis (RLS-scoped)
     const { data: smartInventory, error: upsertError } = await supabase
       .from('smart_inventory')
       .upsert({
         user_id: userId,
         product_id: productId,
         current_stock: productData.currentStock,
-        optimal_stock: inventoryOptimization.optimalStock,
-        minimum_threshold: inventoryOptimization.minimumThreshold,
-        maximum_threshold: inventoryOptimization.maximumThreshold,
-        reorder_point: inventoryOptimization.reorderPoint,
-        reorder_quantity: inventoryOptimization.reorderQuantity,
+        optimal_stock: optimization.optimalStock,
+        minimum_threshold: optimization.minimumThreshold,
+        maximum_threshold: optimization.maximumThreshold,
+        reorder_point: optimization.reorderPoint,
+        reorder_quantity: optimization.reorderQuantity,
         demand_forecast: demandAnalysis.forecast,
         seasonality_data: demandAnalysis.seasonality,
         supplier_performance: productData.supplierPerformance,
-        cost_optimization: inventoryOptimization.costAnalysis,
+        cost_optimization: optimization.costAnalysis,
         stock_risk_level: recommendations.riskLevel,
         next_reorder_prediction: recommendations.nextReorderDate,
-        performance_metrics: {
-          accuracy: demandAnalysis.accuracy,
-          confidence: recommendations.confidence,
-          lastAnalysis: new Date().toISOString()
-        }
+        performance_metrics: { accuracy: demandAnalysis.accuracy, confidence: recommendations.confidence, lastAnalysis: new Date().toISOString() }
       })
       .select()
-      .single();
+      .single()
 
-    if (upsertError) {
-      throw new Error('Failed to save inventory analysis');
-    }
+    if (upsertError) throw new Error('Failed to save inventory analysis')
 
-    return new Response(JSON.stringify({
+    return successResponse({
       success: true,
       currentStock: productData.currentStock,
-      optimalLevels: inventoryOptimization,
+      optimalLevels: optimization,
       demandForecast: demandAnalysis.forecast,
-      recommendations: recommendations,
-      riskAssessment: {
-        stockoutRisk: recommendations.stockoutRisk,
-        overstockRisk: recommendations.overstockRisk,
-        overall: recommendations.riskLevel
-      },
+      recommendations,
+      riskAssessment: { stockoutRisk: recommendations.stockoutRisk, overstockRisk: recommendations.overstockRisk, overall: recommendations.riskLevel },
       nextActions: recommendations.actions,
       inventoryId: smartInventory.id
-    }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
+    }, corsHeaders)
 
-  } catch (error) {
-    console.error('Error in smart inventory manager:', error);
-    return new Response(JSON.stringify({ 
-      success: false, 
-      error: error.message 
-    }), {
-      status: 500,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
+  } catch (err) {
+    if (err instanceof Response) return err
+    console.error('[smart-inventory-manager] Error:', err)
+    const origin = req.headers.get('origin')
+    const { getSecureCorsHeaders } = await import('../_shared/cors.ts')
+    return new Response(
+      JSON.stringify({ success: false, error: err instanceof Error ? err.message : 'Erreur interne' }),
+      { status: 500, headers: { ...getSecureCorsHeaders(origin), 'Content-Type': 'application/json' } }
+    )
   }
-});
+})
 
-async function getProductInventoryData(supabase: any, productId: string, userId: string) {
-  // Récupérer les données produit
-  const { data: product } = await supabase
-    .from('imported_products')
-    .select('*')
-    .eq('id', productId)
-    .eq('user_id', userId)
-    .single();
+async function analyzeDemand(productData: any) {
+  const apiKey = Deno.env.get('LOVABLE_API_KEY')
+  if (!apiKey) {
+    return { trend: 'stable', avgDemandPerDay: 1, seasonality: {}, forecast: { next7Days: 7, next30Days: 30 }, variability: 'medium', accuracy: 70 }
+  }
 
-  // Récupérer l'historique des commandes (simulé)
-  const { data: orders } = await supabase
-    .from('order_items')
-    .select('*, orders!inner(*)')
-    .eq('product_id', productId)
-    .eq('orders.user_id', userId)
-    .order('orders.created_at', { ascending: false })
-    .limit(100);
-
-  return {
-    product,
-    currentStock: product?.stock_quantity || 0,
-    orderHistory: orders || [],
-    supplierPerformance: {
-      leadTime: 7, // jours
-      reliability: 95, // %
-      minOrderQty: 10
-    }
-  };
-}
-
-async function analyzeDemandPatterns(productData: any) {
-  const prompt = `
-Analysez les patterns de demande pour ce produit:
-
-Historique des commandes: ${JSON.stringify(productData.orderHistory.slice(0, 20))}
-Stock actuel: ${productData.currentStock}
-
-Analysez:
-1. Tendance de la demande (croissante/stable/décroissante)
-2. Saisonnalité et cycles
-3. Variabilité de la demande
-4. Prédiction pour les 30 prochains jours
-
-Répondez en JSON avec: 
-{
-  "trend": "string",
-  "avgDemandPerDay": number,
-  "seasonality": {...},
-  "forecast": {
-    "next7Days": number,
-    "next30Days": number
-  },
-  "variability": "low|medium|high",
-  "accuracy": number
-}
-`;
-
-  const response = await fetch('https://api.openai.com/v1/chat/completions', {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${openAIApiKey}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      model: 'gpt-5-2025-08-07',
-      messages: [
-        { 
-          role: 'system', 
-          content: 'Tu es un expert en gestion de stock et prévision de demande. Analyse les patterns de vente et fournis des prédictions précises.' 
-        },
-        { role: 'user', content: prompt }
-      ],
-      max_completion_tokens: 1000,
-    }),
-  });
-
-  const data = await response.json();
-  const content = data.choices[0].message.content;
-  
   try {
-    return JSON.parse(content);
+    const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'google/gemini-2.5-flash',
+        messages: [
+          { role: 'system', content: 'Expert en gestion de stock. Analyse et retourne du JSON uniquement.' },
+          { role: 'user', content: `Analyse demande: stock=${productData.currentStock}, commandes=${productData.orderHistory.length}. Retourne JSON: { "trend": "stable|up|down", "avgDemandPerDay": number, "seasonality": {}, "forecast": { "next7Days": number, "next30Days": number }, "variability": "low|medium|high", "accuracy": number }` }
+        ],
+      }),
+    })
+    const data = await response.json()
+    const content = data.choices?.[0]?.message?.content || '{}'
+    const match = content.match(/\{[\s\S]*\}/)
+    return match ? JSON.parse(match[0]) : { trend: 'stable', avgDemandPerDay: 1, seasonality: {}, forecast: { next7Days: 7, next30Days: 30 }, variability: 'medium', accuracy: 70 }
   } catch {
-    return {
-      trend: 'stable',
-      avgDemandPerDay: 1,
-      seasonality: {},
-      forecast: {
-        next7Days: 7,
-        next30Days: 30
-      },
-      variability: 'medium',
-      accuracy: 70
-    };
+    return { trend: 'stable', avgDemandPerDay: 1, seasonality: {}, forecast: { next7Days: 7, next30Days: 30 }, variability: 'medium', accuracy: 70 }
   }
 }
 
-async function calculateOptimalLevels(productData: any, demandAnalysis: any) {
-  const leadTime = productData.supplierPerformance.leadTime;
-  const avgDemandPerDay = demandAnalysis.avgDemandPerDay;
-  const demandVariability = demandAnalysis.variability === 'high' ? 2 : 
-                           demandAnalysis.variability === 'medium' ? 1.5 : 1;
+function calculateOptimalLevels(productData: any, demandAnalysis: any) {
+  const leadTime = productData.supplierPerformance.leadTime
+  const avgDemand = demandAnalysis.avgDemandPerDay || 1
+  const variabilityFactor = demandAnalysis.variability === 'high' ? 2 : demandAnalysis.variability === 'medium' ? 1.5 : 1
 
-  // Calcul du stock de sécurité
-  const safetyStock = Math.ceil(avgDemandPerDay * leadTime * demandVariability);
-  
-  // Point de réapprovisionnement
-  const reorderPoint = Math.ceil((avgDemandPerDay * leadTime) + safetyStock);
-  
-  // Quantité de réapprovisionnement (EOQ simplifié)
-  const reorderQuantity = Math.max(
-    Math.ceil(avgDemandPerDay * 14), // 2 semaines de demande
-    productData.supplierPerformance.minOrderQty
-  );
-  
-  // Stock optimal (point de réappro + quantité de réappro)
-  const optimalStock = reorderPoint + reorderQuantity;
-  
-  // Seuils
-  const minimumThreshold = safetyStock;
-  const maximumThreshold = optimalStock * 1.5;
+  const safetyStock = Math.ceil(avgDemand * leadTime * variabilityFactor)
+  const reorderPoint = Math.ceil((avgDemand * leadTime) + safetyStock)
+  const reorderQuantity = Math.max(Math.ceil(avgDemand * 14), productData.supplierPerformance.minOrderQty)
+  const optimalStock = reorderPoint + reorderQuantity
 
   return {
     optimalStock: Math.ceil(optimalStock),
-    minimumThreshold: Math.ceil(minimumThreshold),
-    maximumThreshold: Math.ceil(maximumThreshold),
+    minimumThreshold: Math.ceil(safetyStock),
+    maximumThreshold: Math.ceil(optimalStock * 1.5),
     reorderPoint: Math.ceil(reorderPoint),
     reorderQuantity: Math.ceil(reorderQuantity),
     safetyStock: Math.ceil(safetyStock),
     costAnalysis: {
-      holdingCost: optimalStock * (productData.product?.cost_price || 0) * 0.02, // 2% par mois
-      stockoutCost: avgDemandPerDay * (productData.product?.price || 0) * 0.1 // 10% de perte de vente
+      holdingCost: optimalStock * (productData.product?.cost_price || 0) * 0.02,
+      stockoutCost: avgDemand * (productData.product?.price || 0) * 0.1
     }
-  };
+  }
 }
 
-async function generateInventoryRecommendations(productData: any, demandAnalysis: any, optimization: any) {
-  const currentStock = productData.currentStock;
-  const reorderPoint = optimization.reorderPoint;
-  const actions = [];
-  
-  // Calculer le risque de rupture
-  const daysUntilStockout = currentStock / demandAnalysis.avgDemandPerDay;
-  const stockoutRisk = daysUntilStockout < 7 ? 'high' : 
-                      daysUntilStockout < 14 ? 'medium' : 'low';
-  
-  // Calculer le risque de surstock
-  const overstockRatio = currentStock / optimization.optimalStock;
-  const overstockRisk = overstockRatio > 1.5 ? 'high' :
-                       overstockRatio > 1.2 ? 'medium' : 'low';
-  
-  // Générer des actions recommandées
-  if (currentStock <= reorderPoint) {
-    actions.push({
-      type: 'reorder',
-      priority: 'high',
-      message: `Réapprovisionner ${optimization.reorderQuantity} unités`,
-      quantity: optimization.reorderQuantity
-    });
+function generateRecommendations(productData: any, demandAnalysis: any, optimization: any) {
+  const currentStock = productData.currentStock
+  const avgDemand = demandAnalysis.avgDemandPerDay || 1
+  const actions: any[] = []
+
+  const daysUntilStockout = currentStock / avgDemand
+  const stockoutRisk = daysUntilStockout < 7 ? 'high' : daysUntilStockout < 14 ? 'medium' : 'low'
+  const overstockRatio = currentStock / (optimization.optimalStock || 1)
+  const overstockRisk = overstockRatio > 1.5 ? 'high' : overstockRatio > 1.2 ? 'medium' : 'low'
+
+  if (currentStock <= optimization.reorderPoint) {
+    actions.push({ type: 'reorder', priority: 'high', message: `Réapprovisionner ${optimization.reorderQuantity} unités`, quantity: optimization.reorderQuantity })
   }
-  
   if (stockoutRisk === 'high') {
-    actions.push({
-      type: 'urgent_reorder',
-      priority: 'critical',
-      message: 'Risque de rupture élevé - commande urgente recommandée'
-    });
+    actions.push({ type: 'urgent_reorder', priority: 'critical', message: 'Risque de rupture élevé - commande urgente' })
   }
-  
   if (overstockRisk === 'high') {
-    actions.push({
-      type: 'reduce_price',
-      priority: 'medium',
-      message: 'Surstock détecté - considérer une promotion'
-    });
+    actions.push({ type: 'reduce_price', priority: 'medium', message: 'Surstock détecté - considérer une promotion' })
   }
 
-  // Déterminer le niveau de risque global
-  const riskLevel = stockoutRisk === 'high' || overstockRisk === 'high' ? 'high' :
-                   stockoutRisk === 'medium' || overstockRisk === 'medium' ? 'medium' : 'low';
-
-  // Prédire la prochaine date de réapprovisionnement
-  const daysUntilReorder = Math.max(0, (currentStock - reorderPoint) / demandAnalysis.avgDemandPerDay);
-  const nextReorderDate = new Date(Date.now() + daysUntilReorder * 24 * 60 * 60 * 1000);
+  const riskLevel = stockoutRisk === 'high' || overstockRisk === 'high' ? 'high' : stockoutRisk === 'medium' || overstockRisk === 'medium' ? 'medium' : 'low'
+  const daysUntilReorder = Math.max(0, (currentStock - optimization.reorderPoint) / avgDemand)
 
   return {
-    riskLevel,
-    stockoutRisk,
-    overstockRisk,
-    actions,
-    nextReorderDate: nextReorderDate.toISOString(),
-    confidence: demandAnalysis.accuracy,
+    riskLevel, stockoutRisk, overstockRisk, actions,
+    nextReorderDate: new Date(Date.now() + daysUntilReorder * 86400000).toISOString(),
+    confidence: demandAnalysis.accuracy || 70,
     daysUntilStockout: Math.ceil(daysUntilStockout),
-    recommendations: actions.map(a => a.message)
-  };
+    recommendations: actions.map((a: any) => a.message)
+  }
 }
