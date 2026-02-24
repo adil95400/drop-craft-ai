@@ -13,6 +13,7 @@
 
 import { useState, useEffect, useCallback, useMemo, lazy, Suspense } from 'react';
 const RealtimeKPIGridLazy = lazy(() => import('./RealtimeKPIGrid').then(m => ({ default: m.RealtimeKPIGrid })));
+import { FreeTrialBanner } from './FreeTrialBanner';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
 import { useKeyboardShortcut } from '@/hooks/useKeyboardShortcut';
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core';
@@ -425,6 +426,9 @@ export function ChannableDashboard() {
         </>
       }
     >
+      {/* Free tier upgrade banner */}
+      <FreeTrialBanner />
+
       {/* Modal d'onboarding pour premier login */}
       <OnboardingModal />
 

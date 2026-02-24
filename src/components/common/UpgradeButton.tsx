@@ -18,7 +18,7 @@ export function UpgradeButton({
   const navigate = useNavigate();
 
   const handleUpgrade = () => {
-    navigate("/pricing-plans");
+    navigate("/choose-plan");
   };
 
   return (
