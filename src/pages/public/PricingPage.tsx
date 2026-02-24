@@ -3,70 +3,73 @@ import { PublicLayout } from '@/layouts/PublicLayout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { CheckCircle2, Crown, Zap, Rocket, ArrowRight, Users, MessageSquare } from 'lucide-react';
+import { CheckCircle2, Crown, ArrowRight, MessageSquare, Shield, Rocket } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { ROICalculator } from '@/components/public/ROICalculator';
 import { ComparisonTable } from '@/components/public/ComparisonTable';
-import { TestimonialCard } from '@/components/public/TestimonialCard';
 import { TrustBadges } from '@/components/public/TrustBadges';
+import { useAuth } from '@/contexts/AuthContext';
 
 const PricingPage = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
 
   const plans = [
     {
-      name: "Starter",
-      price: "0€",
+      id: 'standard',
+      name: "Standard",
+      price: "29€",
       period: "/mois",
-      description: "Pour débuter votre activité e-commerce",
-      icon: Zap,
+      description: "Pour débuter avec les outils essentiels",
+      icon: Shield,
       features: [
-        "Jusqu'à 100 produits",
-        "1 boutique connectée",
-        "Import produits basique",
-        "Support communautaire",
-        "Mises à jour gratuites"
+        "1 000 produits max",
+        "3 intégrations",
+        "100 imports/mois",
+        "10 commandes auto/jour",
+        "50 crédits IA/mois",
+        "Support email"
       ],
-      cta: "Commencer gratuitement",
+      cta: "Commencer",
       highlighted: false
     },
     {
+      id: 'pro',
       name: "Pro",
       price: "49€",
       period: "/mois",
       description: "Pour les e-commerçants en croissance",
       icon: Crown,
       features: [
-        "Produits illimités",
-        "5 boutiques connectées",
-        "Import automatisé multi-fournisseurs",
-        "Optimisation IA des prix",
+        "10 000 produits max",
+        "Intégrations illimitées",
+        "1 000 imports/mois",
+        "100 commandes auto/jour",
+        "500 crédits IA/mois",
         "Analytics avancés",
-        "Support prioritaire 24/7",
-        "Automatisation des commandes",
-        "API complète"
+        "IA avancée",
+        "Support prioritaire"
       ],
       cta: "Essai gratuit 14 jours",
       highlighted: true,
       badge: "Le plus populaire"
     },
     {
-      name: "Enterprise",
-      price: "Sur mesure",
-      period: "",
-      description: "Pour les grandes entreprises et agences",
+      id: 'ultra_pro',
+      name: "Ultra Pro",
+      price: "99€",
+      period: "/mois",
+      description: "Tout illimité pour les pros exigeants",
       icon: Rocket,
       features: [
-        "Tout du plan Pro",
-        "Boutiques illimitées",
-        "Multi-tenant (gestion clients)",
-        "White label complet",
-        "Compte manager dédié",
-        "SLA garanti 99.9%",
-        "Développements sur mesure",
-        "Formation équipe incluse"
+        "Produits illimités",
+        "Tout illimité",
+        "White-label",
+        "IA premium illimitée",
+        "API complète",
+        "Support dédié 24/7",
+        "Onboarding personnalisé"
       ],
-      cta: "Contactez-nous",
+      cta: "Passer Ultra Pro",
       highlighted: false
     }
   ];
@@ -74,27 +77,35 @@ const PricingPage = () => {
   const faq = [
     {
       question: "Puis-je changer de plan à tout moment ?",
-      answer: "Oui, vous pouvez upgrader ou downgrader votre plan à tout moment. Les changements sont effectifs immédiatement et la facturation est ajustée au prorata."
+      answer: "Oui, vous pouvez upgrader ou downgrader à tout moment. La facturation est ajustée au prorata."
     },
     {
       question: "Y a-t-il des frais cachés ?",
-      answer: "Non, aucun frais caché. Le prix affiché est tout inclus : hébergement, mises à jour, support. Seuls les frais de transaction des plateformes de paiement s'appliquent."
+      answer: "Non, aucun frais caché. Le prix affiché est tout inclus."
     },
     {
-      question: "Que se passe-t-il après la période d'essai ?",
-      answer: "Après les 14 jours d'essai gratuit, vous pouvez choisir de continuer avec un abonnement payant ou rester sur le plan gratuit. Une carte bancaire est requise lors du paiement après l'essai."
+      question: "Que se passe-t-il si j'annule ?",
+      answer: "Vous gardez l'accès jusqu'à la fin de votre période, puis repassez au plan gratuit. Aucune pénalité."
     },
     {
-      question: "Puis-je annuler mon abonnement ?",
-      answer: "Oui, vous pouvez annuler votre abonnement à tout moment depuis votre tableau de bord. Aucun engagement, aucune pénalité d'annulation."
+      question: "Comment fonctionne le paiement ?",
+      answer: "Le paiement est sécurisé via Stripe. Carte bancaire acceptée. Facturation mensuelle automatique."
     }
   ];
+
+  const handleSelectPlan = () => {
+    if (user) {
+      navigate('/choose-plan');
+    } else {
+      navigate('/auth?redirect=/choose-plan');
+    }
+  };
 
   return (
     <PublicLayout>
       <Helmet>
-        <title>Tarifs - ShopOpti</title>
-        <meta name="description" content="Découvrez nos plans tarifaires adaptés à tous les besoins. Essai gratuit 14 jours." />
+        <title>Tarifs - Drop Craft AI</title>
+        <meta name="description" content="Plans Standard à 29€, Pro à 49€ et Ultra Pro à 99€/mois. Commencez gratuitement." />
       </Helmet>
 
       <div className="min-h-screen">
@@ -149,7 +160,7 @@ const PricingPage = () => {
                       <ul className="space-y-3">
                         {plan.features.map((feature, idx) => (
                           <li key={idx} className="flex items-start gap-2">
-                            <CheckCircle2 className="h-5 w-5 text-success flex-shrink-0 mt-0.5" />
+                            <CheckCircle2 className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
                             <span className="text-sm">{feature}</span>
                           </li>
                         ))}
@@ -160,10 +171,7 @@ const PricingPage = () => {
                         className="w-full" 
                         variant={plan.highlighted ? "default" : "outline"}
                         size="lg"
-                        onClick={() => {
-                          try { localStorage.setItem('pending_trial', 'true'); } catch {}
-                          navigate('/auth?trial=true');
-                        }}
+                        onClick={handleSelectPlan}
                       >
                         {plan.cta}
                         <ArrowRight className="w-4 h-4 ml-2" />
@@ -177,75 +185,17 @@ const PricingPage = () => {
             {/* Trust badges */}
             <div className="flex flex-wrap items-center justify-center gap-8 text-sm text-muted-foreground">
               <div className="flex items-center gap-2">
-                <CheckCircle2 className="h-5 w-5 text-success" />
-                <span>14 jours d'essai gratuit</span>
+                <CheckCircle2 className="h-5 w-5 text-primary" />
+                <span>Plan gratuit disponible</span>
               </div>
               <div className="flex items-center gap-2">
-                <CheckCircle2 className="h-5 w-5 text-success" />
+                <CheckCircle2 className="h-5 w-5 text-primary" />
                 <span>Annulation à tout moment</span>
               </div>
               <div className="flex items-center gap-2">
-                <CheckCircle2 className="h-5 w-5 text-success" />
-                <span>Garantie satisfait ou remboursé 30 jours</span>
+                <CheckCircle2 className="h-5 w-5 text-primary" />
+                <span>Paiement sécurisé Stripe</span>
               </div>
-            </div>
-          </div>
-        </section>
-
-        {/* ROI Calculator */}
-        <section className="py-20 bg-secondary/30">
-          <div className="container mx-auto px-4 sm:px-6">
-            <div className="text-center space-y-4 mb-12">
-              <h2 className="text-3xl md:text-4xl font-bold">Calculez votre retour sur investissement</h2>
-              <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-                Découvrez combien vous pourriez économiser avec ShopOpti
-              </p>
-            </div>
-            <div className="max-w-5xl mx-auto">
-              <ROICalculator />
-            </div>
-          </div>
-        </section>
-
-        {/* Testimonials */}
-        <section className="py-20">
-          <div className="container mx-auto px-4 sm:px-6">
-            <div className="text-center space-y-4 mb-12">
-              <Badge className="px-4 py-2 bg-success/10 text-success border-success/20">
-                <Users className="h-4 w-4 mr-2" />
-                Programme Beta actif
-              </Badge>
-              <h2 className="text-3xl md:text-4xl font-bold">Ce que disent nos premiers utilisateurs</h2>
-              <p className="text-lg text-muted-foreground">
-                Retours des beta-testeurs
-              </p>
-            </div>
-            
-            <div className="grid md:grid-cols-3 gap-6 max-w-6xl mx-auto">
-              <TestimonialCard
-                name="Sophie M."
-                role="Beta-testeuse"
-                company="BelleMode.fr"
-                rating={5}
-                text="L'automatisation IA est vraiment impressionnante. J'ai pu tester l'import de produits et la synchronisation multi-boutiques sans problème."
-                metrics={{ label: "Phase", value: "Beta" }}
-              />
-              <TestimonialCard
-                name="Marc D."
-                role="Beta-testeur"
-                company="TechDrop"
-                rating={5}
-                text="Interface intuitive et l'import automatique depuis plusieurs fournisseurs fonctionne parfaitement. Hâte de voir la version finale !"
-                metrics={{ label: "Phase", value: "Beta" }}
-              />
-              <TestimonialCard
-                name="Julie C."
-                role="Beta-testeuse"
-                company="MultiStores Pro"
-                rating={5}
-                text="La centralisation et les analytics sont exactement ce dont j'avais besoin. Le support répond rapidement aux retours."
-                metrics={{ label: "Phase", value: "Beta" }}
-              />
             </div>
           </div>
         </section>
@@ -272,9 +222,6 @@ const PricingPage = () => {
           <div className="container mx-auto px-4 sm:px-6">
             <div className="text-center space-y-4 mb-12">
               <h2 className="text-3xl md:text-4xl font-bold">Questions fréquentes</h2>
-              <p className="text-lg text-muted-foreground">
-                Tout ce que vous devez savoir sur nos tarifs
-              </p>
             </div>
             
             <div className="max-w-3xl mx-auto space-y-4">
@@ -303,14 +250,11 @@ const PricingPage = () => {
                 Prêt à transformer votre e-commerce ?
               </h2>
               <p className="text-lg text-muted-foreground">
-                Rejoignez des milliers d'entrepreneurs qui ont déjà fait le choix de ShopOpti
+                Commencez gratuitement, upgradez quand vous êtes prêt.
               </p>
-              <Button size="lg" onClick={() => {
-                try { localStorage.setItem('pending_trial', 'true'); } catch {}
-                navigate('/auth?trial=true');
-              }}>
+              <Button size="lg" onClick={handleSelectPlan}>
                 <Crown className="w-5 h-5 mr-2" />
-                Commencer gratuitement
+                Voir les plans
                 <ArrowRight className="w-4 h-4 ml-2" />
               </Button>
             </div>
