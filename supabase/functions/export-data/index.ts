@@ -1,8 +1,5 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
-import { authenticateUser, logSecurityEvent, checkRateLimit } from '../_shared/secure-auth.ts'
-import { getSecureCorsHeaders, handleCorsPreflightSecure } from '../_shared/secure-cors.ts'
-import { createRateLimitResponse } from '../_shared/rate-limit.ts'
+import { requireAuth, handlePreflight, errorResponse } from '../_shared/jwt-auth.ts'
 import { z } from 'https://deno.land/x/zod@v3.22.4/mod.ts'
 
 // Input validation schemas
@@ -22,30 +19,11 @@ const ExportRequestSchema = z.object({
 })
 
 serve(async (req) => {
-  const corsHeaders = getSecureCorsHeaders(req)
-  
-  if (req.method === 'OPTIONS') {
-    return handleCorsPreflightSecure(req)
-  }
+  const preflight = handlePreflight(req)
+  if (preflight) return preflight
 
   try {
-    const supabase = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-    )
-
-    // 1. Auth obligatoire - userId provient du token uniquement
-    const { user } = await authenticateUser(req, supabase)
-    const userId = user.id
-    
-    // 2. Rate limiting: max 20 exports per hour
-    const rateCheck = await checkRateLimit(supabase, userId, 'data_export', 20, 60)
-    if (!rateCheck) {
-      return new Response(
-        JSON.stringify({ success: false, error: 'Rate limit exceeded. Max 20 exports per hour.' }),
-        { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
-    }
+    const { userId, supabase, corsHeaders } = await requireAuth(req)
 
     // 3. Parse and validate input
     const body = await req.json()

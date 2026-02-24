@@ -1,33 +1,12 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
-import { authenticateUser } from '../_shared/secure-auth.ts'
-import { secureUpdate, secureDelete } from '../_shared/db-helpers.ts'
-import { handleError, ValidationError } from '../_shared/error-handler.ts'
-import { getSecureCorsHeaders, handleCorsPreflightSecure } from '../_shared/secure-cors.ts'
-import { checkRateLimit, createRateLimitResponse, RATE_LIMITS } from '../_shared/rate-limit.ts'
-
-const supabaseUrl = Deno.env.get('SUPABASE_URL')!
-const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+import { requireAuth, handlePreflight, errorResponse } from '../_shared/jwt-auth.ts'
 
 serve(async (req) => {
-  const corsHeaders = getSecureCorsHeaders(req)
-  
-  if (req.method === 'OPTIONS') {
-    return handleCorsPreflightSecure(req)
-  }
+  const preflight = handlePreflight(req)
+  if (preflight) return preflight
 
   try {
-    const supabase = createClient(supabaseUrl, supabaseKey)
-    
-    // 1. Auth obligatoire - userId provient du token uniquement
-    const { user } = await authenticateUser(req, supabase)
-    const userId = user.id
-
-    // 2. Rate limiting
-    const rateCheck = await checkRateLimit(supabase, userId, 'order_management', RATE_LIMITS.API_GENERAL)
-    if (!rateCheck.allowed) {
-      return createRateLimitResponse(rateCheck, corsHeaders)
-    }
+    const { userId, supabase, corsHeaders } = await requireAuth(req)
     
     const url = new URL(req.url)
     const action = url.searchParams.get('action') || 'list'
@@ -69,8 +48,14 @@ serve(async (req) => {
         )
     }
   } catch (error) {
+    if (error instanceof Response) return error
     console.error('Error in order-management:', error)
-    return handleError(error, getSecureCorsHeaders(req))
+    const origin = req.headers.get('origin')
+    const { getSecureCorsHeaders } = await import('../_shared/cors.ts')
+    return new Response(
+      JSON.stringify({ success: false, error: error.message }),
+      { headers: { ...getSecureCorsHeaders(origin), 'Content-Type': 'application/json' }, status: 500 }
+    )
   }
 })
 
