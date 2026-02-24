@@ -10,10 +10,12 @@ import { ImageAuditStats, ImageStats } from '@/components/products/ImageAuditSta
 import { ImageAuditProductList, ProductWithImageCount } from '@/components/products/ImageAuditProductList';
 import { ImageAuditProgress } from '@/components/products/ImageAuditProgress';
 import { AnimatePresence } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 
 export default function ImageAuditPage() {
   const { user } = useUnifiedAuth();
   const { toast } = useToast();
+  const { t } = useTranslation('audit');
   
   const [loading, setLoading] = useState(true);
   const [products, setProducts] = useState<ProductWithImageCount[]>([]);
@@ -30,7 +32,6 @@ export default function ImageAuditPage() {
     setLoading(true);
     
     try {
-      // Fetch products and imported_products in parallel
       const [productsResult, importedResult] = await Promise.all([
         supabase
           .from('products')
@@ -47,7 +48,6 @@ export default function ImageAuditPage() {
 
       const allProducts: ProductWithImageCount[] = [];
       
-      // Process main products
       (productsResult.data || []).forEach(p => {
         const rawImages = p.images as unknown;
         const imagesArray = Array.isArray(rawImages) 
@@ -58,7 +58,7 @@ export default function ImageAuditPage() {
         
         allProducts.push({
           id: p.id,
-          title: p.title || 'Sans titre',
+          title: p.title || t('seo.untitled'),
           image_url: p.image_url,
           images: imagesArray,
           supplier_url: p.supplier_url,
@@ -66,7 +66,6 @@ export default function ImageAuditPage() {
         });
       });
 
-      // Process imported products
       (importedResult.data || []).forEach(p => {
         const rawImages = p.image_urls as unknown;
         const imagesArray = Array.isArray(rawImages) 
@@ -76,7 +75,7 @@ export default function ImageAuditPage() {
         
         allProducts.push({
           id: p.id,
-          title: p.name || 'Sans titre',
+          title: p.name || t('seo.untitled'),
           image_url: imagesArray[0] || null,
           images: imagesArray.slice(1),
           supplier_url: p.source_url,
@@ -84,7 +83,6 @@ export default function ImageAuditPage() {
         });
       });
 
-      // Calculate stats
       const newStats: ImageStats = {
         total: allProducts.length,
         noImages: allProducts.filter(p => p.imageCount === 0).length,
@@ -98,14 +96,14 @@ export default function ImageAuditPage() {
     } catch (error) {
       console.error('Error loading products:', error);
       toast({
-        title: 'Erreur',
-        description: 'Impossible de charger les produits',
+        title: t('imageAudit.error'),
+        description: t('imageAudit.loadError'),
         variant: 'destructive'
       });
     } finally {
       setLoading(false);
     }
-  }, [user, toast]);
+  }, [user, toast, t]);
 
   useEffect(() => {
     if (user) loadProducts();
@@ -176,15 +174,14 @@ export default function ImageAuditPage() {
 
       setProcessProgress({ current: i + 1, total: selectedProducts.length, success, failed });
       
-      // Rate limiting delay
       if (i < selectedProducts.length - 1) {
         await new Promise(resolve => setTimeout(resolve, 800));
       }
     }
 
     toast({
-      title: 'Enrichissement terminé',
-      description: `${success} produits enrichis, ${failed} échecs`,
+      title: t('imageAudit.enrichmentDone'),
+      description: t('imageAudit.enrichmentResult', { success, failed }),
       variant: success > 0 ? 'default' : 'destructive'
     });
 
@@ -200,11 +197,11 @@ export default function ImageAuditPage() {
 
   return (
     <ChannablePageWrapper
-      title="Audit des Images"
-      subtitle="Qualité Produits"
-      description="Identifiez les produits avec peu d'images et enrichissez-les automatiquement via Firecrawl ou génération IA"
+      title={t('imageAudit.title')}
+      subtitle={t('imageAudit.subtitle')}
+      description={t('imageAudit.description')}
       heroImage="products"
-      badge={{ label: `${stats.noImages + stats.oneImage} à enrichir`, icon: Image }}
+      badge={{ label: t('imageAudit.toEnrich', { count: stats.noImages + stats.oneImage }), icon: Image }}
       actions={
         <div className="flex flex-wrap gap-2">
           <Button 
@@ -213,29 +210,26 @@ export default function ImageAuditPage() {
             size="lg"
           >
             <ImagePlus className="h-4 w-4 mr-2" />
-            Enrichir {selectedProducts.length > 0 ? `(${selectedProducts.length})` : ''}
+            {selectedProducts.length > 0 ? t('imageAudit.enrichN', { count: selectedProducts.length }) : t('imageAudit.enrich')}
           </Button>
           <Button variant="outline" onClick={loadProducts} disabled={loading} size="lg">
             <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
-            Actualiser
+            {t('imageAudit.refresh')}
           </Button>
         </div>
       }
     >
       <div className="space-y-6">
-        {/* Stats Cards */}
         <ImageAuditStats 
           stats={stats} 
           activeFilter={filter} 
           onFilterChange={setFilter} 
         />
 
-        {/* Processing Progress */}
         <AnimatePresence>
           <ImageAuditProgress progress={processProgress} isProcessing={processing} />
         </AnimatePresence>
 
-        {/* Products List */}
         <ImageAuditProductList
           products={filteredProducts}
           selectedProducts={selectedProducts}
@@ -247,7 +241,6 @@ export default function ImageAuditPage() {
         />
       </div>
 
-      {/* Enrichment Modal */}
       <ImageEnrichmentModal
         open={enrichmentModal}
         onClose={() => setEnrichmentModal(false)}
