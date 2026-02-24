@@ -1,64 +1,47 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+import { requireAuth, handlePreflight, errorResponse, successResponse } from '../_shared/jwt-auth.ts'
 
 serve(async (req) => {
-  if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
-  }
+  const preflight = handlePreflight(req)
+  if (preflight) return preflight
 
   try {
-    const supabaseClient = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-    );
+    const { userId, supabase, corsHeaders } = await requireAuth(req)
 
-    const authHeader = req.headers.get('Authorization')!;
-    const token = authHeader.replace('Bearer ', '');
-    const { data: { user } } = await supabaseClient.auth.getUser(token);
-
-    if (!user) throw new Error('Unauthorized');
-
-    const { action, ...params } = await req.json();
-    console.log('🔄 Returns automation action:', action);
+    const { action, ...params } = await req.json()
+    console.log('🔄 Returns automation action:', action)
 
     switch (action) {
       case 'process_return': {
-        const { return_id } = params;
-        
-        // Get return details with automation rules
-        const { data: returnData, error: returnError } = await supabaseClient
+        const { return_id } = params
+        if (!return_id) return errorResponse('return_id is required', corsHeaders)
+
+        // RLS-scoped queries
+        const { data: returnData, error: returnError } = await supabase
           .from('returns')
           .select('*, order:orders(*)')
           .eq('id', return_id)
-          .single();
+          .single()
 
-        if (returnError) throw returnError;
+        if (returnError) return errorResponse(returnError.message, corsHeaders, 500)
 
-        // Find matching automation rule
-        const { data: rules } = await supabaseClient
+        const { data: rules } = await supabase
           .from('return_automation_rules')
           .select('*')
-          .eq('user_id', user.id)
           .eq('is_active', true)
-          .order('priority', { ascending: false });
+          .order('priority', { ascending: false })
 
-        let matchedRule = null;
+        let matchedRule = null
         for (const rule of rules || []) {
-          const conditions = rule.trigger_conditions as any;
+          const conditions = rule.trigger_conditions as any
           if (conditions.reason?.includes(returnData.reason)) {
-            matchedRule = rule;
-            break;
+            matchedRule = rule
+            break
           }
         }
 
-        // Auto-approve if rule allows
         if (matchedRule?.auto_approve) {
-          await supabaseClient
+          await supabase
             .from('returns')
             .update({
               status: 'approved',
@@ -66,80 +49,75 @@ serve(async (req) => {
               auto_processed: true,
               ai_decision_confidence: 0.95
             })
-            .eq('id', return_id);
+            .eq('id', return_id)
 
-          // Auto-send confirmation
           if (matchedRule.auto_send_confirmation) {
-            await supabaseClient
+            await supabase
               .from('customer_confirmations')
               .insert({
-                user_id: user.id,
+                user_id: userId,
                 return_id,
                 confirmation_type: 'return_approved',
                 email_subject: 'Votre retour a été approuvé',
                 email_body: `Votre demande de retour ${returnData.return_number} a été approuvée automatiquement.`,
                 channels_used: ['email'],
                 sent_at: new Date().toISOString()
-              });
+              })
           }
         }
 
-        return new Response(
-          JSON.stringify({
-            success: true,
-            auto_approved: matchedRule?.auto_approve || false,
-            message: 'Return processed'
-          }),
-          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
+        return successResponse({
+          auto_approved: matchedRule?.auto_approve || false,
+          message: 'Return processed'
+        }, corsHeaders)
       }
 
       case 'auto_refund': {
-        const { return_id } = params;
-        
-        const { data: returnData } = await supabaseClient
+        const { return_id } = params
+        if (!return_id) return errorResponse('return_id is required', corsHeaders)
+
+        const { data: returnData } = await supabase
           .from('returns')
           .select('*')
           .eq('id', return_id)
-          .single();
+          .single()
 
         if (returnData?.refund_approved_amount) {
-          await supabaseClient
+          await supabase
             .from('returns')
             .update({
               status: 'refunded',
               refunded_at: new Date().toISOString()
             })
-            .eq('id', return_id);
+            .eq('id', return_id)
 
-          // Send confirmation
-          await supabaseClient
+          await supabase
             .from('customer_confirmations')
             .insert({
-              user_id: user.id,
+              user_id: userId,
               return_id,
               confirmation_type: 'refund_processed',
               email_subject: 'Votre remboursement a été traité',
               channels_used: ['email'],
               sent_at: new Date().toISOString()
-            });
+            })
         }
 
-        return new Response(
-          JSON.stringify({ success: true, message: 'Refund processed' }),
-          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
+        return successResponse({ message: 'Refund processed' }, corsHeaders)
       }
 
       default:
-        throw new Error('Invalid action');
+        return errorResponse('Invalid action', corsHeaders)
     }
 
   } catch (error) {
-    console.error('❌ Returns automation error:', error);
+    if (error instanceof Response) return error
+    console.error('❌ Returns automation error:', error)
+    const origin = req.headers.get('origin')
+    const { getSecureCorsHeaders } = await import('../_shared/cors.ts')
     return new Response(
-      JSON.stringify({ error: error.message }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
+      JSON.stringify({ success: false, error: error.message }),
+      { status: 500, headers: { ...getSecureCorsHeaders(origin), 'Content-Type': 'application/json' } }
+    )
   }
-});
+})
