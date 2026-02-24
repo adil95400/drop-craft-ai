@@ -62,6 +62,12 @@ import fulfillmentEn from '@/locales/en/fulfillment.json';
 import fulfillmentEs from '@/locales/es/fulfillment.json';
 import fulfillmentDe from '@/locales/de/fulfillment.json';
 
+// Channels
+import channelsFr from '@/locales/fr/channels.json';
+import channelsEn from '@/locales/en/channels.json';
+import channelsEs from '@/locales/es/channels.json';
+import channelsDe from '@/locales/de/channels.json';
+
 const resources = {
   fr: {
     common: commonFr,
@@ -74,6 +80,7 @@ const resources = {
     marketing: marketingFr,
     monitoring: monitoringFr,
     fulfillment: fulfillmentFr,
+    channels: channelsFr,
   },
   en: {
     common: commonEn,
@@ -86,6 +93,7 @@ const resources = {
     marketing: marketingEn,
     monitoring: monitoringEn,
     fulfillment: fulfillmentEn,
+    channels: channelsEn,
   },
   es: {
     common: commonEs,
@@ -98,6 +106,7 @@ const resources = {
     marketing: marketingEs,
     monitoring: monitoringEs,
     fulfillment: fulfillmentEs,
+    channels: channelsEs,
   },
   de: {
     common: commonDe,
@@ -110,6 +119,7 @@ const resources = {
     marketing: marketingDe,
     monitoring: monitoringDe,
     fulfillment: fulfillmentDe,
+    channels: channelsDe,
   },
 };
 

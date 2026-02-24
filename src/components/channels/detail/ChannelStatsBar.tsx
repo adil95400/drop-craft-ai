@@ -4,6 +4,7 @@
 import { Package, ShoppingCart, TrendingUp, Clock, ArrowUpRight, ArrowDownRight } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { cn } from '@/lib/utils'
+import { useTranslation } from 'react-i18next'
 
 interface StatItem {
   label: string
@@ -35,33 +36,36 @@ const iconBgClasses = {
 }
 
 export function ChannelStatsBar({ productCount, orderCount, revenue, lastSync }: ChannelStatsBarProps) {
+  const { t, i18n } = useTranslation('channels')
+  const locale = i18n.language === 'fr' ? 'fr-FR' : i18n.language === 'de' ? 'de-DE' : i18n.language === 'es' ? 'es-ES' : 'en-US'
+
   const stats: StatItem[] = [
     {
-      label: 'Produits',
-      value: productCount.toLocaleString('fr-FR'),
+      label: t('stats.products'),
+      value: productCount.toLocaleString(locale),
       icon: <Package className="h-5 w-5" />,
       trend: { value: 12, isPositive: true },
       color: 'blue'
     },
     {
-      label: 'Commandes',
-      value: orderCount.toLocaleString('fr-FR'),
+      label: t('stats.orders'),
+      value: orderCount.toLocaleString(locale),
       icon: <ShoppingCart className="h-5 w-5" />,
       color: 'green'
     },
     {
-      label: 'CA Total',
-      value: `€${revenue.toLocaleString('fr-FR', { minimumFractionDigits: 0 })}`,
+      label: t('stats.revenue'),
+      value: `€${revenue.toLocaleString(locale, { minimumFractionDigits: 0 })}`,
       icon: <TrendingUp className="h-5 w-5" />,
       color: 'purple'
     },
     {
-      label: 'Dernière sync',
-      value: lastSync ? new Date(lastSync).toLocaleDateString('fr-FR', { 
+      label: t('stats.lastSync'),
+      value: lastSync ? new Date(lastSync).toLocaleDateString(locale, { 
         day: '2-digit', 
         month: '2-digit', 
         year: 'numeric' 
-      }) : 'Jamais',
+      }) : t('stats.never'),
       icon: <Clock className="h-5 w-5" />,
       color: 'orange'
     }

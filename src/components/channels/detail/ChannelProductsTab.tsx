@@ -12,6 +12,7 @@ import { useState, useMemo, useCallback } from 'react'
 import { ChannelBulkActions } from './ChannelBulkActions'
 import { supabase } from '@/integrations/supabase/client'
 import { toast } from 'sonner'
+import { useTranslation } from 'react-i18next'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -48,6 +49,7 @@ export function ChannelProductsTab({
   onSync,
   isSyncing
 }: ChannelProductsTabProps) {
+  const { t } = useTranslation('channels')
   const [searchQuery, setSearchQuery] = useState('')
   const [viewMode, setViewMode] = useState<'list' | 'grid'>('grid')
   const [statusFilter, setStatusFilter] = useState<string | null>(null)
@@ -61,8 +63,6 @@ export function ChannelProductsTab({
 
   const filteredProducts = useMemo(() => {
     let filtered = products
-    
-    // Filter by search query
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase()
       filtered = filtered.filter(p => 
@@ -70,25 +70,31 @@ export function ChannelProductsTab({
         p.sku?.toLowerCase().includes(query)
       )
     }
-    
-    // Filter by status
     if (statusFilter) {
       filtered = filtered.filter(p => p.status === statusFilter)
     }
-    
     return filtered
   }, [products, searchQuery, statusFilter])
 
   const getStatusBadge = (status: string | null) => {
     switch (status) {
       case 'active':
-        return <Badge className="bg-green-500/20 text-green-700 dark:text-green-400 border-green-500/30 text-xs">Actif</Badge>
+        return <Badge className="bg-green-500/20 text-green-700 dark:text-green-400 border-green-500/30 text-xs">{t('products.active')}</Badge>
       case 'draft':
-        return <Badge variant="secondary" className="text-xs">Brouillon</Badge>
+        return <Badge variant="secondary" className="text-xs">{t('products.draft')}</Badge>
       case 'archived':
-        return <Badge variant="outline" className="text-xs">Archivé</Badge>
+        return <Badge variant="outline" className="text-xs">{t('products.archived')}</Badge>
       default:
         return <Badge variant="outline" className="text-xs">{status || 'draft'}</Badge>
+    }
+  }
+
+  const getStatusLabel = (status: string) => {
+    switch (status) {
+      case 'active': return t('products.active')
+      case 'draft': return t('products.draft')
+      case 'archived': return t('products.archived')
+      default: return status
     }
   }
 
@@ -101,8 +107,8 @@ export function ChannelProductsTab({
               <Package className="h-5 w-5 text-blue-600 dark:text-blue-400" />
             </div>
             <div>
-              <CardTitle className="text-lg">Produits synchronisés</CardTitle>
-              <p className="text-sm text-muted-foreground">{totalCount.toLocaleString('fr-FR')} produits au total</p>
+              <CardTitle className="text-lg">{t('products.syncedProducts')}</CardTitle>
+              <p className="text-sm text-muted-foreground">{t('products.totalProducts', { count: totalCount })}</p>
             </div>
           </div>
           
@@ -114,7 +120,7 @@ export function ChannelProductsTab({
             className="gap-2 rounded-xl"
           >
             <RefreshCw className={cn("h-4 w-4", isLoading && "animate-spin")} />
-            Actualiser
+            {t('products.refresh')}
           </Button>
         </div>
 
@@ -123,14 +129,13 @@ export function ChannelProductsTab({
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
-              placeholder="Rechercher par nom ou SKU..."
+              placeholder={t('products.searchPlaceholder')}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-10 rounded-xl border-border/50"
             />
           </div>
           <div className="flex gap-2">
-            {/* Filter Dropdown */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button 
@@ -142,22 +147,22 @@ export function ChannelProductsTab({
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-48">
-                <DropdownMenuLabel>Filtrer par statut</DropdownMenuLabel>
+                <DropdownMenuLabel>{t('products.filterByStatus')}</DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={() => setStatusFilter(null)}>
-                  <span className="flex-1">Tous</span>
+                  <span className="flex-1">{t('products.all')}</span>
                   {statusFilter === null && <Check className="h-4 w-4 text-primary" />}
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => setStatusFilter('active')}>
-                  <span className="flex-1">Actif</span>
+                  <span className="flex-1">{t('products.active')}</span>
                   {statusFilter === 'active' && <Check className="h-4 w-4 text-primary" />}
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => setStatusFilter('draft')}>
-                  <span className="flex-1">Brouillon</span>
+                  <span className="flex-1">{t('products.draft')}</span>
                   {statusFilter === 'draft' && <Check className="h-4 w-4 text-primary" />}
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => setStatusFilter('archived')}>
-                  <span className="flex-1">Archivé</span>
+                  <span className="flex-1">{t('products.archived')}</span>
                   {statusFilter === 'archived' && <Check className="h-4 w-4 text-primary" />}
                 </DropdownMenuItem>
               </DropdownMenuContent>
@@ -188,7 +193,7 @@ export function ChannelProductsTab({
         {statusFilter && (
           <div className="flex items-center gap-2 mt-3">
             <Badge variant="secondary" className="gap-1.5">
-              Statut: {statusFilter === 'active' ? 'Actif' : statusFilter === 'draft' ? 'Brouillon' : 'Archivé'}
+              {t('products.statusLabel', { status: getStatusLabel(statusFilter) })}
               <button
                 onClick={() => setStatusFilter(null)}
                 className="ml-1 hover:text-destructive"
@@ -232,7 +237,6 @@ export function ChannelProductsTab({
                 case 'update_price': {
                   if (!params?.value) break
                   const adjustment = parseFloat(params.value)
-                  // Fetch current prices, apply adjustment
                   const { data: prods } = await supabase
                     .from('products')
                     .select('id, price')
@@ -253,10 +257,10 @@ export function ChannelProductsTab({
                   break
                 }
                 case 'export':
-                  break // handled by ChannelBulkActions directly
+                  break
               }
             } catch (error: any) {
-              toast.error(error.message || 'Erreur lors de l\'action en masse')
+              toast.error(error.message || t('products.bulkError'))
               throw error
             }
           }}
@@ -266,7 +270,7 @@ export function ChannelProductsTab({
           <div className="flex items-center justify-center py-16">
             <div className="text-center">
               <Loader2 className="h-10 w-10 animate-spin text-primary mx-auto mb-4" />
-              <p className="text-sm text-muted-foreground">Chargement des produits...</p>
+              <p className="text-sm text-muted-foreground">{t('products.loading')}</p>
             </div>
           </div>
         ) : filteredProducts.length > 0 ? (
@@ -289,7 +293,6 @@ export function ChannelProductsTab({
                         : "border-border/50"
                     )}
                   >
-                    {/* Selection checkbox */}
                     <div className="flex items-center justify-center w-5 h-5">
                       {selectedIds.includes(product.id) ? (
                         <CheckSquare className="h-5 w-5 text-primary" />
@@ -317,7 +320,7 @@ export function ChannelProductsTab({
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="font-medium truncate group-hover:text-primary transition-colors">
-                        {product.title || 'Sans titre'}
+                        {product.title || t('products.untitled')}
                       </p>
                       <p className="text-xs text-muted-foreground mt-0.5">
                         {product.sku && <span className="font-mono">SKU: {product.sku}</span>}
@@ -366,7 +369,7 @@ export function ChannelProductsTab({
                       </div>
                     </div>
                     <div className="p-3">
-                      <p className="font-medium text-sm truncate">{product.title || 'Sans titre'}</p>
+                      <p className="font-medium text-sm truncate">{product.title || t('products.untitled')}</p>
                       <p className="text-xs text-muted-foreground mt-0.5 truncate">
                         {product.sku && `SKU: ${product.sku}`}
                       </p>
@@ -388,18 +391,18 @@ export function ChannelProductsTab({
               <Package className="h-8 w-8 text-muted-foreground" />
             </div>
             <h3 className="text-lg font-semibold mb-2">
-              {searchQuery ? 'Aucun résultat' : 'Aucun produit synchronisé'}
+              {searchQuery ? t('products.noResults') : t('products.noSynced')}
             </h3>
             <p className="text-sm text-muted-foreground mb-6 max-w-sm mx-auto">
               {searchQuery 
-                ? `Aucun produit ne correspond à "${searchQuery}"`
-                : 'Lancez une synchronisation pour importer vos produits depuis votre boutique'
+                ? t('products.noResultsFor', { query: searchQuery })
+                : t('products.noSyncedDesc')
               }
             </p>
             {!searchQuery && (
               <Button onClick={onSync} disabled={isSyncing} className="gap-2 rounded-xl">
                 <RefreshCw className={cn("h-4 w-4", isSyncing && "animate-spin")} />
-                {isSyncing ? 'Synchronisation...' : 'Lancer la synchronisation'}
+                {isSyncing ? t('products.syncing') : t('products.startSync')}
               </Button>
             )}
           </div>
