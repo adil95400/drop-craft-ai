@@ -8,6 +8,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Eye, EyeOff, Mail, Lock, ArrowRight } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
+import { useTranslation } from 'react-i18next';
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -16,14 +17,15 @@ const Login = () => {
   const [loading, setLoading] = useState(false);
   const { signIn } = useAuth();
   const { toast } = useToast();
+  const { t } = useTranslation('auth');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!email || !password) {
       toast({
-        title: "Erreur",
-        description: "Veuillez remplir tous les champs",
+        title: t('login.errorTitle'),
+        description: t('login.errorFillAll'),
         variant: "destructive",
       });
       return;
@@ -34,14 +36,14 @@ const Login = () => {
     try {
       await signIn(email, password);
       toast({
-        title: "Connexion réussie",
-        description: "Vous êtes maintenant connecté",
+        title: t('login.successTitle'),
+        description: t('login.successDesc'),
       });
     } catch (error: any) {
       console.error('Login error:', error);
       toast({
-        title: "Erreur de connexion",
-        description: error.message || "Une erreur est survenue lors de la connexion",
+        title: t('login.errorLoginTitle'),
+        description: error.message || t('login.errorLoginDesc'),
         variant: "destructive",
       });
     } finally {
@@ -57,28 +59,28 @@ const Login = () => {
           <img src="/images/logo.svg" alt="Logo" className="h-12 w-12" />
           <h1 className="text-2xl font-bold">E-Commerce Pro</h1>
           <p className="text-muted-foreground text-center">
-            Connectez-vous à votre tableau de bord
+            {t('login.subtitle')}
           </p>
         </div>
 
         {/* Login Form */}
         <Card>
           <CardHeader>
-            <CardTitle>Connexion</CardTitle>
+            <CardTitle>{t('login.title')}</CardTitle>
             <CardDescription>
-              Entrez vos identifiants pour accéder à votre compte
+              {t('login.description')}
             </CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="email">Adresse e-mail</Label>
+                <Label htmlFor="email">{t('login.email')}</Label>
                 <div className="relative">
                   <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                   <Input
                     id="email"
                     type="email"
-                    placeholder="nom@exemple.com"
+                    placeholder={t('login.emailPlaceholder')}
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     className="pl-9"
@@ -88,7 +90,7 @@ const Login = () => {
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="password">Mot de passe</Label>
+                <Label htmlFor="password">{t('login.password')}</Label>
                 <div className="relative">
                   <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                   <Input
@@ -125,11 +127,11 @@ const Login = () => {
                 {loading ? (
                   <>
                     <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
-                    Connexion...
+                    {t('login.submitting')}
                   </>
                 ) : (
                   <>
-                    Se connecter
+                    {t('login.submit')}
                     <ArrowRight className="ml-2 h-4 w-4" />
                   </>
                 )}
@@ -138,12 +140,12 @@ const Login = () => {
 
             <div className="mt-6 text-center">
               <p className="text-sm text-muted-foreground">
-                Pas encore de compte ?{' '}
+                {t('login.noAccount')}{' '}
                 <Link 
                   to="/register" 
                   className="text-primary hover:underline font-medium"
                 >
-                  Créer un compte
+                  {t('login.createAccount')}
                 </Link>
               </p>
             </div>
@@ -154,9 +156,9 @@ const Login = () => {
         <Card className="bg-muted/50">
           <CardContent className="pt-6">
             <div className="text-center space-y-2">
-              <p className="text-sm font-medium">Version de démonstration</p>
+              <p className="text-sm font-medium">{t('login.demoTitle')}</p>
               <p className="text-xs text-muted-foreground">
-                Utilisez n'importe quelle adresse e-mail valide pour créer un compte
+                {t('login.demoDesc')}
               </p>
             </div>
           </CardContent>

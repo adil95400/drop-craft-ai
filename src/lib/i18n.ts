@@ -74,6 +74,12 @@ import auditEn from '@/locales/en/audit.json';
 import auditEs from '@/locales/es/audit.json';
 import auditDe from '@/locales/de/audit.json';
 
+// Auth
+import authFr from '@/locales/fr/auth.json';
+import authEn from '@/locales/en/auth.json';
+import authEs from '@/locales/es/auth.json';
+import authDe from '@/locales/de/auth.json';
+
 const resources = {
   fr: {
     common: commonFr,
@@ -88,6 +94,7 @@ const resources = {
     fulfillment: fulfillmentFr,
     channels: channelsFr,
     audit: auditFr,
+    auth: authFr,
   },
   en: {
     common: commonEn,
@@ -102,6 +109,7 @@ const resources = {
     fulfillment: fulfillmentEn,
     channels: channelsEn,
     audit: auditEn,
+    auth: authEn,
   },
   es: {
     common: commonEs,
@@ -116,6 +124,7 @@ const resources = {
     fulfillment: fulfillmentEs,
     channels: channelsEs,
     audit: auditEs,
+    auth: authEs,
   },
   de: {
     common: commonDe,
@@ -130,6 +139,7 @@ const resources = {
     fulfillment: fulfillmentDe,
     channels: channelsDe,
     audit: auditDe,
+    auth: authDe,
   },
 };
 
