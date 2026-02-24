@@ -87,5 +87,29 @@
     "activeSuppliers": "Active Suppliers",
     "pendingOrders": "Pending Orders",
     "syncStatus": "Sync Status"
+  },
+  "page": {
+    "title": "Dropshipping Suppliers",
+    "subtitle": "Supplier Hub",
+    "heroDescription": "Connect to the best dropshipping suppliers worldwide.",
+    "verifiedBadge": "{{count}}+ Verified Suppliers",
+    "addSupplier": "Add a supplier",
+    "manageSuppliers": "Manage my suppliers",
+    "catalog": "Catalog",
+    "apiSearch": "API Search",
+    "analytics": "Analytics",
+    "synchronization": "Synchronization",
+    "newNotification": "{{count}} new notification",
+    "newNotifications": "{{count}} new notifications",
+    "markAllRead": "Mark all as read",
+    "yourSuppliers": "Your Suppliers ({{count}})",
+    "manageAll": "Manage all",
+    "suppliersFound": "{{count}} supplier found",
+    "suppliersFoundPlural": "{{count}} suppliers found",
+    "noSupplierFound": "No supplier found",
+    "noSupplierFoundDesc": "Modify your search criteria",
+    "resetFilters": "Reset filters",
+    "supplierConnected": "Supplier connected",
+    "supplierConnectedDesc": "{{name}} has been added successfully."
   }
 }
