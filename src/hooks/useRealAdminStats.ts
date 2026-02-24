@@ -67,8 +67,25 @@ export const useRealAdminStats = () => {
         i.connection_status === 'connected' && i.is_active
       ).length || 0
 
-      // Count today's imports (mock for now, would need import_jobs table)
-      const todayImports = Math.floor(Math.random() * 20) + 5
+      // Count today's imports from jobs table
+      const { count: todayImports } = await supabase
+        .from('jobs')
+        .select('*', { count: 'exact', head: true })
+        .eq('job_type', 'import')
+        .gte('created_at', new Date(new Date().setHours(0, 0, 0, 0)).toISOString())
+
+      // Get real system health from health-check
+      let systemHealthScore = 100;
+      try {
+        const { data: healthData } = await supabase.functions.invoke('health-check');
+        if (healthData?.services) {
+          const services = healthData.services as Array<{ status: string }>;
+          const healthyCount = services.filter(s => s.status === 'healthy').length;
+          systemHealthScore = services.length > 0 ? Math.round((healthyCount / services.length) * 100) : 100;
+        }
+      } catch {
+        systemHealthScore = 0;
+      }
 
       return {
         totalUsers: usersCount || 0,
@@ -77,8 +94,8 @@ export const useRealAdminStats = () => {
         revenue: totalRevenue,
         productsCount: activeProducts,
         suppliersCount: connectedSuppliers,
-        importJobs: todayImports,
-        systemHealth: 98.5 // Would calculate from system metrics
+        importJobs: todayImports || 0,
+        systemHealth: systemHealthScore
       }
     },
     staleTime: 2 * 60 * 1000, // 2 minutes
