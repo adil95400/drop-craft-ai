@@ -22,10 +22,14 @@
   },
   "routing": {
     "title": "Routing-Regeln",
-    "description": "Definieren Sie, wie Bestellungen geroutet werden",
+    "description": "Definieren Sie, wie Bestellungen an Lieferanten weitergeleitet werden",
     "addRule": "Neue Regel",
     "noRules": "Keine Regeln konfiguriert",
-    "createFirst": "Erstellen Sie Ihre erste Regel"
+    "createFirst": "Erstellen Sie Ihre erste Routing-Regel",
+    "howItWorks": "Wie funktioniert es?",
+    "step1": "Bedingungen definieren",
+    "step2": "Lieferant wählen",
+    "step3": "Vollständige Automatisierung"
   },
   "orders": {
     "title": "Auto-Fulfillment Bestellungen",
@@ -37,10 +41,19 @@
       "shipped": "Versendet",
       "delivered": "Geliefert",
       "failed": "Fehlgeschlagen"
-    }
+    },
+    "noOrders": "Noch keine Bestellungen"
+  },
+  "actions": {
+    "process": "Verarbeiten",
+    "retry": "Erneut versuchen",
+    "cancel": "Stornieren",
+    "viewDetails": "Details anzeigen"
   },
   "messages": {
     "orderProcessed": "Bestellung erfolgreich verarbeitet",
-    "orderFailed": "Verarbeitung fehlgeschlagen"
+    "orderFailed": "Verarbeitung fehlgeschlagen",
+    "ruleCreated": "Regel erstellt",
+    "supplierConnected": "Lieferant verbunden"
   }
 }

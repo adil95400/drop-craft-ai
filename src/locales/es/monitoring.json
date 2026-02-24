@@ -29,6 +29,26 @@
     "configure": "Configurar alertas",
     "noAlerts": "Sin alertas"
   },
+  "suppliers": {
+    "connected": "Conectados",
+    "syncing": "Sincronizando",
+    "errors": "Con errores",
+    "lastSync": "Última sync"
+  },
+  "performance": {
+    "title": "Rendimiento",
+    "cpu": "CPU",
+    "memory": "Memoria",
+    "storage": "Almacenamiento",
+    "network": "Red"
+  },
+  "logs": {
+    "title": "Logs",
+    "info": "Información",
+    "warning": "Advertencia",
+    "error": "Error",
+    "debug": "Debug"
+  },
   "actions": {
     "refresh": "Actualizar",
     "exportLogs": "Exportar logs",

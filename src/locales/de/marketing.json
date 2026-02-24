@@ -15,12 +15,34 @@
     "completed": "Abgeschlossen",
     "draft": "Entwürfe"
   },
+  "automation": {
+    "title": "Automatisierung",
+    "emailSequences": "E-Mail-Sequenzen",
+    "triggers": "Auslöser",
+    "workflows": "Workflows",
+    "rules": "Regeln"
+  },
   "channels": {
     "email": "E-Mail",
     "sms": "SMS",
     "social": "Soziale Medien",
     "ads": "Werbung",
     "push": "Push-Benachrichtigungen"
+  },
+  "metrics": {
+    "sent": "Gesendet",
+    "delivered": "Zugestellt",
+    "opened": "Geöffnet",
+    "clicked": "Geklickt",
+    "converted": "Konvertiert",
+    "revenue": "Generierter Umsatz"
+  },
+  "seo": {
+    "title": "SEO",
+    "keywords": "Schlüsselwörter",
+    "rankings": "Rankings",
+    "backlinks": "Backlinks",
+    "audit": "SEO-Audit"
   },
   "messages": {
     "campaignCreated": "Kampagne erstellt",

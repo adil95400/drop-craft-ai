@@ -29,6 +29,26 @@
     "configure": "Warnungen konfigurieren",
     "noAlerts": "Keine Warnungen"
   },
+  "suppliers": {
+    "connected": "Verbunden",
+    "syncing": "Synchronisierung",
+    "errors": "Mit Fehlern",
+    "lastSync": "Letzte Sync"
+  },
+  "performance": {
+    "title": "Leistung",
+    "cpu": "CPU",
+    "memory": "Speicher",
+    "storage": "Festplatte",
+    "network": "Netzwerk"
+  },
+  "logs": {
+    "title": "Logs",
+    "info": "Information",
+    "warning": "Warnung",
+    "error": "Fehler",
+    "debug": "Debug"
+  },
   "actions": {
     "refresh": "Aktualisieren",
     "exportLogs": "Logs exportieren",

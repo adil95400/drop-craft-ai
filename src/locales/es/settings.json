@@ -1,46 +1,138 @@
 {
   "title": "Configuración",
-  "description": "Configure sus preferencias y configuración de la aplicación",
-  "tabs": {
-    "general": "General",
+  "subtitle": "Preferencias",
+  "description": "Configure sus preferencias y personalice su experiencia",
+  "categories": {
+    "title": "Categorías",
     "appearance": "Apariencia",
     "notifications": "Notificaciones",
+    "privacy": "Privacidad",
     "security": "Seguridad",
-    "integrations": "Integraciones",
-    "support": "Soporte"
-  },
-  "general": {
-    "title": "Configuración general",
-    "profile": "Perfil de usuario",
-    "name": "Nombre",
-    "email": "Email",
-    "timezone": "Zona horaria",
-    "language": "Idioma",
-    "currency": "Moneda"
+    "billing": "Facturación",
+    "account": "Cuenta",
+    "about": "Acerca de"
   },
   "appearance": {
     "title": "Apariencia",
-    "theme": "Tema",
-    "themes": {
+    "description": "Personalice la interfaz",
+    "theme": {
+      "label": "Tema",
+      "description": "Elija su tema preferido",
       "light": "Claro",
       "dark": "Oscuro",
       "system": "Sistema"
     },
-    "compactMode": "Modo compacto",
-    "animations": "Animaciones",
-    "sounds": "Sonidos"
+    "language": {
+      "label": "Idioma",
+      "description": "Idioma de la interfaz"
+    }
   },
   "notifications": {
     "title": "Notificaciones",
-    "desktop": "Notificaciones de escritorio",
-    "email": "Notificaciones por email",
-    "push": "Notificaciones push",
-    "marketing": "Notificaciones de marketing"
+    "description": "Gestione sus alertas",
+    "email": {
+      "label": "Email",
+      "description": "Notificaciones por email"
+    },
+    "push": {
+      "label": "Push",
+      "description": "Notificaciones del navegador"
+    },
+    "marketing": {
+      "label": "Marketing",
+      "description": "Novedades del producto"
+    },
+    "security": {
+      "label": "Seguridad",
+      "description": "Alertas de seguridad"
+    }
+  },
+  "privacy": {
+    "title": "Privacidad",
+    "description": "Controle sus datos",
+    "profileVisible": {
+      "label": "Perfil público",
+      "description": "Visible para otros usuarios"
+    },
+    "activityVisible": {
+      "label": "Actividad visible",
+      "description": "Compartir con el equipo"
+    },
+    "analytics": {
+      "label": "Analytics",
+      "description": "Datos anonimizados"
+    }
+  },
+  "security": {
+    "title": "Seguridad",
+    "description": "Proteja su cuenta",
+    "password": {
+      "label": "Contraseña",
+      "description": "Última modificación: hace 30 días",
+      "change": "Cambiar"
+    },
+    "twoFactor": {
+      "label": "2FA",
+      "description": "Autenticación de dos factores",
+      "recommended": "Recomendado",
+      "comingSoon": "Próximamente"
+    },
+    "sessions": {
+      "label": "Sesiones",
+      "description": "Dispositivos conectados",
+      "comingSoon": "Próximamente"
+    }
+  },
+  "billing": {
+    "title": "Facturación",
+    "description": "Gestione su suscripción",
+    "currentPlan": {
+      "title": "Plan actual",
+      "free": "Gratuito",
+      "changePlan": "Cambiar de plan"
+    },
+    "invoices": {
+      "title": "Facturas",
+      "download": "Descargar",
+      "noInvoices": "No hay facturas disponibles",
+      "noInvoicesDesc": "Sus facturas aparecerán aquí después de su primera suscripción."
+    }
+  },
+  "account": {
+    "title": "Acciones de cuenta",
+    "description": "Gestione sus datos",
+    "export": {
+      "label": "Exportar mis datos",
+      "description": "Descargar un archivo",
+      "button": "Exportar"
+    },
+    "dangerZone": {
+      "title": "Zona peligrosa",
+      "description": "Acciones irreversibles"
+    },
+    "delete": {
+      "label": "Eliminar cuenta",
+      "description": "Esta acción es permanente",
+      "button": "Eliminar mi cuenta",
+      "confirmTitle": "¿Eliminar su cuenta?",
+      "confirmDescription": "Esta acción es irreversible. Todos sus datos serán eliminados permanentemente.",
+      "confirm": "Sí, eliminar mi cuenta"
+    }
+  },
+  "about": {
+    "title": "Acerca de",
+    "description": "Información de la aplicación"
   },
   "messages": {
     "saved": "Configuración guardada",
-    "appearanceSaved": "Configuración de apariencia guardada",
-    "languageChanged": "Idioma cambiado a {{language}}",
-    "themeChanged": "Tema cambiado a {{theme}}"
+    "savedDescription": "Sus preferencias han sido actualizadas.",
+    "passwordReset": "Email de restablecimiento enviado",
+    "passwordResetDescription": "Revise su bandeja de entrada para restablecer su contraseña.",
+    "exportStarted": "Exportación iniciada",
+    "exportStartedDescription": "Sus datos se están preparando.",
+    "accountDeleted": "Cuenta eliminada",
+    "accountDeletedDescription": "Su cuenta ha sido eliminada permanentemente.",
+    "deleteError": "Error de eliminación",
+    "deleteErrorDescription": "No se pudo eliminar la cuenta. Por favor, inténtelo de nuevo."
   }
 }

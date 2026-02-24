@@ -41,6 +41,28 @@
     "bulkEdit": "Edición masiva",
     "optimize": "Optimizar con IA"
   },
+  "form": {
+    "basicInfo": "Información básica",
+    "name": "Nombre del producto",
+    "description": "Descripción",
+    "shortDescription": "Descripción corta",
+    "pricing": "Precios",
+    "price": "Precio de venta",
+    "comparePrice": "Precio tachado",
+    "costPrice": "Precio de coste",
+    "inventory": "Inventario",
+    "sku": "SKU",
+    "barcode": "Código de barras",
+    "quantity": "Cantidad",
+    "trackInventory": "Seguir stock",
+    "images": "Imágenes",
+    "addImages": "Añadir imágenes",
+    "mainImage": "Imagen principal",
+    "seo": "SEO",
+    "metaTitle": "Meta título",
+    "metaDescription": "Meta descripción",
+    "urlHandle": "URL personalizada"
+  },
   "status": {
     "active": "Activo",
     "draft": "Borrador",
@@ -55,5 +77,28 @@
     "imported": "Productos importados",
     "exported": "Exportación en curso...",
     "optimized": "Producto optimizado por IA"
+  },
+  "audit": {
+    "title": "Auditoría de calidad",
+    "score": "Puntuación global",
+    "seo": "SEO",
+    "content": "Contenido",
+    "images": "Imágenes",
+    "data": "Datos",
+    "excellent": "Excelente",
+    "good": "Bueno",
+    "needsWork": "Necesita mejora",
+    "critical": "Crítico"
+  },
+  "marketplace": {
+    "title": "Marketplace Global",
+    "description": "Descubre e importa productos de todos tus proveedores",
+    "totalProducts": "Productos disponibles",
+    "avgMargin": "Margen medio",
+    "suppliers": "Proveedores",
+    "winners": "Winners",
+    "trending": "Tendencia",
+    "fastShip": "Envío rápido",
+    "importProduct": "Importar este producto"
   }
 }

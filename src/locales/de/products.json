@@ -41,6 +41,28 @@
     "bulkEdit": "Massenbearbeitung",
     "optimize": "Mit KI optimieren"
   },
+  "form": {
+    "basicInfo": "Grundinformationen",
+    "name": "Produktname",
+    "description": "Beschreibung",
+    "shortDescription": "Kurzbeschreibung",
+    "pricing": "Preisgestaltung",
+    "price": "Verkaufspreis",
+    "comparePrice": "Vergleichspreis",
+    "costPrice": "Einkaufspreis",
+    "inventory": "Inventar",
+    "sku": "SKU",
+    "barcode": "Barcode",
+    "quantity": "Menge",
+    "trackInventory": "Bestand verfolgen",
+    "images": "Bilder",
+    "addImages": "Bilder hinzufügen",
+    "mainImage": "Hauptbild",
+    "seo": "SEO",
+    "metaTitle": "Meta-Titel",
+    "metaDescription": "Meta-Beschreibung",
+    "urlHandle": "URL-Handle"
+  },
   "status": {
     "active": "Aktiv",
     "draft": "Entwurf",
@@ -55,5 +77,28 @@
     "imported": "Produkte importiert",
     "exported": "Export läuft...",
     "optimized": "Produkt durch KI optimiert"
+  },
+  "audit": {
+    "title": "Qualitätsaudit",
+    "score": "Gesamtbewertung",
+    "seo": "SEO",
+    "content": "Inhalt",
+    "images": "Bilder",
+    "data": "Daten",
+    "excellent": "Ausgezeichnet",
+    "good": "Gut",
+    "needsWork": "Verbesserungsbedarf",
+    "critical": "Kritisch"
+  },
+  "marketplace": {
+    "title": "Globaler Marktplatz",
+    "description": "Entdecken und importieren Sie Produkte von allen Lieferanten",
+    "totalProducts": "Verfügbare Produkte",
+    "avgMargin": "Durchschnittliche Marge",
+    "suppliers": "Lieferanten",
+    "winners": "Winners",
+    "trending": "Trend",
+    "fastShip": "Schneller Versand",
+    "importProduct": "Dieses Produkt importieren"
   }
 }

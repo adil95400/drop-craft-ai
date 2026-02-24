@@ -1,46 +1,138 @@
 {
   "title": "Einstellungen",
-  "description": "Konfigurieren Sie Ihre Einstellungen und Anwendungseinstellungen",
-  "tabs": {
-    "general": "Allgemein",
+  "subtitle": "Präferenzen",
+  "description": "Konfigurieren Sie Ihre Präferenzen und personalisieren Sie Ihre Erfahrung",
+  "categories": {
+    "title": "Kategorien",
     "appearance": "Erscheinungsbild",
     "notifications": "Benachrichtigungen",
+    "privacy": "Datenschutz",
     "security": "Sicherheit",
-    "integrations": "Integrationen",
-    "support": "Support"
-  },
-  "general": {
-    "title": "Allgemeine Einstellungen",
-    "profile": "Benutzerprofil",
-    "name": "Name",
-    "email": "E-Mail",
-    "timezone": "Zeitzone",
-    "language": "Sprache",
-    "currency": "Währung"
+    "billing": "Abrechnung",
+    "account": "Konto",
+    "about": "Über"
   },
   "appearance": {
     "title": "Erscheinungsbild",
-    "theme": "Theme",
-    "themes": {
+    "description": "Passen Sie die Oberfläche an",
+    "theme": {
+      "label": "Theme",
+      "description": "Wählen Sie Ihr bevorzugtes Theme",
       "light": "Hell",
       "dark": "Dunkel",
       "system": "System"
     },
-    "compactMode": "Kompakter Modus",
-    "animations": "Animationen",
-    "sounds": "Töne"
+    "language": {
+      "label": "Sprache",
+      "description": "Sprache der Oberfläche"
+    }
   },
   "notifications": {
     "title": "Benachrichtigungen",
-    "desktop": "Desktop-Benachrichtigungen",
-    "email": "E-Mail-Benachrichtigungen",
-    "push": "Push-Benachrichtigungen",
-    "marketing": "Marketing-Benachrichtigungen"
+    "description": "Verwalten Sie Ihre Warnungen",
+    "email": {
+      "label": "E-Mail",
+      "description": "E-Mail-Benachrichtigungen"
+    },
+    "push": {
+      "label": "Push",
+      "description": "Browser-Benachrichtigungen"
+    },
+    "marketing": {
+      "label": "Marketing",
+      "description": "Produktneuheiten"
+    },
+    "security": {
+      "label": "Sicherheit",
+      "description": "Sicherheitswarnungen"
+    }
+  },
+  "privacy": {
+    "title": "Datenschutz",
+    "description": "Kontrollieren Sie Ihre Daten",
+    "profileVisible": {
+      "label": "Öffentliches Profil",
+      "description": "Für andere Benutzer sichtbar"
+    },
+    "activityVisible": {
+      "label": "Sichtbare Aktivität",
+      "description": "Mit dem Team teilen"
+    },
+    "analytics": {
+      "label": "Analytics",
+      "description": "Anonymisierte Daten"
+    }
+  },
+  "security": {
+    "title": "Sicherheit",
+    "description": "Schützen Sie Ihr Konto",
+    "password": {
+      "label": "Passwort",
+      "description": "Letzte Änderung: vor 30 Tagen",
+      "change": "Ändern"
+    },
+    "twoFactor": {
+      "label": "2FA",
+      "description": "Zwei-Faktor-Authentifizierung",
+      "recommended": "Empfohlen",
+      "comingSoon": "Demnächst"
+    },
+    "sessions": {
+      "label": "Sitzungen",
+      "description": "Verbundene Geräte",
+      "comingSoon": "Demnächst"
+    }
+  },
+  "billing": {
+    "title": "Abrechnung",
+    "description": "Verwalten Sie Ihr Abonnement",
+    "currentPlan": {
+      "title": "Aktueller Plan",
+      "free": "Kostenlos",
+      "changePlan": "Plan ändern"
+    },
+    "invoices": {
+      "title": "Rechnungen",
+      "download": "Herunterladen",
+      "noInvoices": "Keine Rechnungen verfügbar",
+      "noInvoicesDesc": "Ihre Rechnungen erscheinen hier nach Ihrem ersten Abonnement."
+    }
+  },
+  "account": {
+    "title": "Kontoaktionen",
+    "description": "Verwalten Sie Ihre Daten",
+    "export": {
+      "label": "Meine Daten exportieren",
+      "description": "Archiv herunterladen",
+      "button": "Exportieren"
+    },
+    "dangerZone": {
+      "title": "Gefahrenzone",
+      "description": "Unwiderrufliche Aktionen"
+    },
+    "delete": {
+      "label": "Konto löschen",
+      "description": "Diese Aktion ist endgültig",
+      "button": "Mein Konto löschen",
+      "confirmTitle": "Konto löschen?",
+      "confirmDescription": "Diese Aktion ist unwiderruflich. Alle Ihre Daten werden dauerhaft gelöscht.",
+      "confirm": "Ja, mein Konto löschen"
+    }
+  },
+  "about": {
+    "title": "Über",
+    "description": "Anwendungsinformationen"
   },
   "messages": {
     "saved": "Einstellungen gespeichert",
-    "appearanceSaved": "Erscheinungseinstellungen gespeichert",
-    "languageChanged": "Sprache geändert zu {{language}}",
-    "themeChanged": "Theme geändert zu {{theme}}"
+    "savedDescription": "Ihre Präferenzen wurden aktualisiert.",
+    "passwordReset": "Passwort-Reset-E-Mail gesendet",
+    "passwordResetDescription": "Überprüfen Sie Ihren Posteingang, um Ihr Passwort zurückzusetzen.",
+    "exportStarted": "Export gestartet",
+    "exportStartedDescription": "Ihre Daten werden vorbereitet.",
+    "accountDeleted": "Konto gelöscht",
+    "accountDeletedDescription": "Ihr Konto wurde dauerhaft gelöscht.",
+    "deleteError": "Löschfehler",
+    "deleteErrorDescription": "Konto konnte nicht gelöscht werden. Bitte versuchen Sie es erneut."
   }
 }
