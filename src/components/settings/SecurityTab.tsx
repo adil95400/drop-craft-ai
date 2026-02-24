@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Shield, Key, Lock, Monitor, CheckCircle2, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
 import { SecurityBadge, SecurityFooterBar } from "@/components/ui/security-badge";
+import { supabase } from "@/integrations/supabase/client";
 
 export function SecurityTab() {
   const [passwordData, setPasswordData] = useState({
@@ -15,6 +16,24 @@ export function SecurityTab() {
     confirm: ""
   });
   const [twoFactorEnabled, setTwoFactorEnabled] = useState(false);
+  const [loading2FA, setLoading2FA] = useState(false);
+
+  // Check real 2FA status on mount
+  useEffect(() => {
+    const check2FAStatus = async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          const factors = (user as any).factors || [];
+          const hasTotp = factors.some((f: any) => f.factor_type === 'totp' && f.status === 'verified');
+          setTwoFactorEnabled(hasTotp);
+        }
+      } catch (e) {
+        console.error('Error checking 2FA status:', e);
+      }
+    };
+    check2FAStatus();
+  }, []);
 
   const handleChangePassword = async () => {
     if (!passwordData.current || !passwordData.new || !passwordData.confirm) {
@@ -33,33 +52,57 @@ export function SecurityTab() {
     }
     
     toast.promise(
-      new Promise(resolve => setTimeout(resolve, 1500)),
+      supabase.auth.updateUser({ password: passwordData.new }).then(({ error }) => {
+        if (error) throw error;
+        setPasswordData({ current: "", new: "", confirm: "" });
+      }),
       {
         loading: 'Modification du mot de passe...',
-        success: () => {
-          setPasswordData({ current: "", new: "", confirm: "" });
-          return 'Mot de passe modifié avec succès';
-        },
+        success: 'Mot de passe modifié avec succès',
         error: 'Erreur lors de la modification'
       }
     );
   };
 
-  const handleToggle2FA = () => {
-    const action = twoFactorEnabled ? 'Désactivation' : 'Activation';
-    toast.promise(
-      new Promise(resolve => {
-        setTimeout(() => {
-          setTwoFactorEnabled(!twoFactorEnabled);
-          resolve('success');
-        }, 1200);
-      }),
-      {
-        loading: `${action} du 2FA...`,
-        success: `2FA ${twoFactorEnabled ? 'désactivé' : 'activé'} avec succès`,
-        error: `Erreur lors de l'${action.toLowerCase()}`
+  const handleToggle2FA = async () => {
+    setLoading2FA(true);
+    try {
+      if (twoFactorEnabled) {
+        // Unenroll: get current TOTP factor and unenroll
+        const { data: { user } } = await supabase.auth.getUser();
+        const factors = (user as any)?.factors || [];
+        const totpFactor = factors.find((f: any) => f.factor_type === 'totp' && f.status === 'verified');
+        
+        if (totpFactor) {
+          const { error } = await supabase.auth.mfa.unenroll({ factorId: totpFactor.id });
+          if (error) throw error;
+          setTwoFactorEnabled(false);
+          toast.success('2FA désactivé avec succès');
+        }
+      } else {
+        // Enroll: create new TOTP factor
+        const { data, error } = await supabase.auth.mfa.enroll({ factorType: 'totp' });
+        if (error) throw error;
+        
+        // For full flow, user would scan QR code and verify
+        // Here we show the QR code URI for now
+        if (data) {
+          toast.info('Scannez le QR code dans votre application d\'authentification, puis vérifiez le code.');
+          // In a complete implementation, show a dialog with the QR code
+          // For now, open the TOTP URI
+          const totpUri = (data as any).totp?.uri;
+          if (totpUri) {
+            window.open(totpUri, '_blank');
+          }
+          // Mark as pending - user needs to verify
+          toast.success('2FA configuré. Vérifiez avec un code pour activer.');
+        }
       }
-    );
+    } catch (error: any) {
+      toast.error(error.message || 'Erreur lors de la configuration 2FA');
+    } finally {
+      setLoading2FA(false);
+    }
   };
 
   const passwordStrength = passwordData.new.length >= 12 ? 'Fort' : 
