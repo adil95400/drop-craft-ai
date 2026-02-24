@@ -59,6 +59,7 @@ type SortBy = 'name' | 'score' | 'price' | 'issues';
 export default function AuditProductsList() {
   const navigate = useNavigate();
   const { user } = useUnifiedAuth();
+  const { t } = useTranslation('audit');
   const [searchTerm, setSearchTerm] = useState('');
   const [activeTab, setActiveTab] = useState<ProductSource>('products');
   const [viewMode, setViewMode] = useState<ViewMode>('list');
@@ -221,11 +222,11 @@ export default function AuditProductsList() {
       const audit = auditMap.get(productId);
       if (audit) {
         if (audit.score.global >= 80) {
-          toast.success(`Score: ${audit.score.global}/100 - Excellent! ✨`);
+          toast.success(`Score: ${audit.score.global}/100 - ${t('scoring.excellentLabel')}! ✨`);
         } else if (audit.score.global >= 60) {
-          toast.info(`Score: ${audit.score.global}/100 - Bon`);
+          toast.info(`Score: ${audit.score.global}/100 - ${t('scoring.goodLabel')}`);
         } else {
-          toast.warning(`Score: ${audit.score.global}/100 - ${audit.issues.length} problème(s) détecté(s)`);
+          toast.warning(`Score: ${audit.score.global}/100 - ${t('productsList.issuesDetected', { count: audit.issues.length })}`);
         }
         setSelectedAudit(audit);
         setShowAuditDialog(true);
@@ -236,7 +237,7 @@ export default function AuditProductsList() {
   // Bulk audit
   const handleBulkAudit = useCallback(() => {
     if (selectedIds.size === 0) {
-      toast.warning('Sélectionnez des produits à auditer');
+      toast.warning(t('productsList.selectToAudit'));
       return;
     }
     
@@ -254,7 +255,7 @@ export default function AuditProductsList() {
     );
     
     toast.success(
-      `${selectedIds.size} produits audités • Score moyen: ${avgScore}/100 • ${criticalCount} problèmes critiques`,
+      `${selectedIds.size} ${t('productsList.nDisplayed', { count: selectedIds.size, issues: criticalCount }).split('•')[0]} • ${t('productsList.averageScore')}: ${avgScore}/100`,
       { duration: 5000 }
     );
     
@@ -264,14 +265,14 @@ export default function AuditProductsList() {
   // Export audit
   const handleExportAudit = useCallback(() => {
     if (processedProducts.length === 0) {
-      toast.warning('Aucun produit à exporter');
+      toast.warning(t('productsList.noProductsToExport'));
       return;
     }
     
     const data = processedProducts.map(p => {
       const audit = auditMap.get(p.id);
       return {
-        nom: p.name || 'Sans nom',
+        nom: p.name || t('seo.untitled'),
         prix: p.price || 0,
         categorie: p.category || '',
         sku: p.sku || '',
@@ -283,7 +284,7 @@ export default function AuditProductsList() {
         score_ai: audit?.score.aiReadiness || 0,
         nb_problemes: audit?.issues.length || 0,
         nb_critiques: audit?.issues.filter(i => i.severity === 'critical').length || 0,
-        a_corriger: audit?.needsCorrection ? 'Oui' : 'Non'
+        a_corriger: audit?.needsCorrection ? '✓' : '✗'
       };
     });
 
@@ -300,7 +301,7 @@ export default function AuditProductsList() {
     a.download = `audit-${activeTab}-${new Date().toISOString().split('T')[0]}.csv`;
     a.click();
     URL.revokeObjectURL(url);
-    toast.success('Export CSV téléchargé');
+    toast.success(t('productsList.csvDownloaded'));
   }, [processedProducts, auditMap, activeTab]);
 
   const toggleSort = useCallback((field: SortBy) => {
@@ -326,28 +327,28 @@ export default function AuditProductsList() {
 
   const getSeverityBadge = (severity: string) => {
     switch (severity) {
-      case 'critical': return <Badge variant="destructive">Critique</Badge>;
-      case 'warning': return <Badge variant="secondary" className="bg-yellow-100 text-yellow-800">Attention</Badge>;
-      default: return <Badge variant="outline">Info</Badge>;
+      case 'critical': return <Badge variant="destructive">{t('productsList.severityCritical')}</Badge>;
+      case 'warning': return <Badge variant="secondary" className="bg-yellow-100 text-yellow-800">{t('productsList.severityWarning')}</Badge>;
+      default: return <Badge variant="outline">{t('productsList.severityInfo')}</Badge>;
     }
   };
 
   return (
     <ChannablePageWrapper
-      title="Audit Qualité Produits"
-      subtitle="Analyse en temps réel"
-      description={`${rawProducts?.length || 0} produits chargés • Détection automatique des problèmes`}
+      title={t('productsList.title')}
+      subtitle={t('productsList.subtitle')}
+      description={t('productsList.description', { count: rawProducts?.length || 0 })}
       heroImage="analytics"
       badge={{ label: 'Audit IA', icon: Sparkles }}
       actions={
         <>
           <Button variant="outline" size="sm" onClick={() => refetch()}>
             <RefreshCw className="h-4 w-4 mr-2" />
-            Actualiser
+            {t('productsList.refresh')}
           </Button>
           <Button variant="outline" size="sm" onClick={handleExportAudit}>
             <Download className="h-4 w-4 mr-2" />
-            Export CSV
+            {t('productsList.exportCsv')}
           </Button>
         </>
       }
@@ -362,9 +363,9 @@ export default function AuditProductsList() {
         <CardHeader className="pb-4">
           <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
             <div>
-              <CardTitle className="text-xl">Catalogue Produits</CardTitle>
+              <CardTitle className="text-xl">{t('productsList.catalogProducts')}</CardTitle>
               <CardDescription>
-                {processedProducts.length} produits affichés • {stats.criticalIssuesCount} problèmes critiques
+                {t('productsList.nDisplayed', { count: processedProducts.length, issues: stats.criticalIssuesCount })}
               </CardDescription>
             </div>
 
@@ -373,7 +374,7 @@ export default function AuditProductsList() {
               <div className="relative flex-1 min-w-[200px]">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
-                  placeholder="Rechercher par nom, SKU..."
+                  placeholder={t('productsList.searchPlaceholder')}
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-9"
@@ -419,10 +420,10 @@ export default function AuditProductsList() {
               <TabsList>
                 <TabsTrigger value="products" className="gap-2">
                   <Package className="h-4 w-4" />
-                  Mes Produits
+                  {t('productsList.myProducts')}
                 </TabsTrigger>
-                <TabsTrigger value="imported_products">Importés</TabsTrigger>
-                <TabsTrigger value="supplier_products">Fournisseurs</TabsTrigger>
+                <TabsTrigger value="imported_products">{t('productsList.imported')}</TabsTrigger>
+                <TabsTrigger value="supplier_products">{t('productsList.suppliers')}</TabsTrigger>
               </TabsList>
 
               {/* Bulk Actions */}
@@ -432,10 +433,10 @@ export default function AuditProductsList() {
                   animate={{ opacity: 1, scale: 1 }}
                   className="flex items-center gap-2"
                 >
-                  <Badge variant="secondary">{selectedIds.size} sélectionné(s)</Badge>
+                  <Badge variant="secondary">{t('productsList.nSelectedLabel', { count: selectedIds.size })}</Badge>
                   <Button size="sm" onClick={handleBulkAudit}>
                     <Zap className="h-4 w-4 mr-2" />
-                    Auditer la sélection
+                    {t('productsList.auditSelection')}
                   </Button>
                 </motion.div>
               )}
@@ -452,18 +453,18 @@ export default function AuditProductsList() {
                     }}
                     onCheckedChange={handleSelectAll}
                   />
-                  <span className="text-muted-foreground">Tout</span>
+                  <span className="text-muted-foreground">{t('productsList.selectAllLabel')}</span>
                 </div>
                 <Separator orientation="vertical" className="h-4 hidden sm:block" />
                 <div className="flex items-center gap-1 flex-wrap">
-                  <span className="text-muted-foreground text-xs mr-2">Trier:</span>
+                  <span className="text-muted-foreground text-xs mr-2">{t('productsList.sortLabel')}</span>
                   <Button
                     variant={sortBy === 'score' ? 'secondary' : 'ghost'}
                     size="sm"
                     className="h-7 gap-1"
                     onClick={() => toggleSort('score')}
                   >
-                    Score
+                    {t('productsList.sortScore')}
                     {sortBy === 'score' && <ArrowUpDown className="h-3 w-3" />}
                   </Button>
                   <Button
@@ -472,7 +473,7 @@ export default function AuditProductsList() {
                     className="h-7 gap-1"
                     onClick={() => toggleSort('issues')}
                   >
-                    Problèmes
+                    {t('productsList.sortIssues')}
                     {sortBy === 'issues' && <ArrowUpDown className="h-3 w-3" />}
                   </Button>
                   <Button
@@ -481,7 +482,7 @@ export default function AuditProductsList() {
                     className="h-7 gap-1"
                     onClick={() => toggleSort('name')}
                   >
-                    Nom
+                    {t('productsList.sortName')}
                     {sortBy === 'name' && <ArrowUpDown className="h-3 w-3" />}
                   </Button>
                 </div>
@@ -497,15 +498,15 @@ export default function AuditProductsList() {
               ) : processedProducts.length === 0 ? (
                 <div className="text-center py-16">
                   <Package className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
-                  <h3 className="text-lg font-semibold mb-2">Aucun produit trouvé</h3>
+                  <h3 className="text-lg font-semibold mb-2">{t('productsList.noProductFound')}</h3>
                   <p className="text-muted-foreground mb-4">
                     {searchTerm || activeCount > 0
-                      ? 'Essayez de modifier vos filtres ou votre recherche'
-                      : 'Commencez par ajouter des produits à votre catalogue'}
+                      ? t('productsList.modifyFiltersHint')
+                      : t('productsList.addProductsHint')}
                   </p>
                   {activeCount > 0 && (
                     <Button variant="outline" onClick={resetFilters}>
-                      Réinitialiser les filtres
+                      {t('productsList.resetFilters')}
                     </Button>
                   )}
                 </div>
@@ -535,15 +536,15 @@ export default function AuditProductsList() {
                   <div className="flex items-center gap-4 text-sm text-muted-foreground flex-wrap">
                     <span className="flex items-center gap-1">
                       <CheckCircle2 className="h-4 w-4 text-green-600" />
-                      {stats.excellentCount} excellents
+                      {stats.excellentCount} {t('productsList.excellents')}
                     </span>
                     <span className="hidden sm:inline">•</span>
-                    <span>{stats.goodCount} bons</span>
+                    <span>{stats.goodCount} {t('productsList.good')}</span>
                     <span className="hidden sm:inline">•</span>
-                    <span className="text-destructive">{stats.poorCount} à améliorer</span>
+                    <span className="text-destructive">{stats.poorCount} {t('scoring.toImproveLabel')}</span>
                   </div>
                   <div className="flex items-center gap-3">
-                    <span className="text-sm text-muted-foreground">Score moyen</span>
+                    <span className="text-sm text-muted-foreground">{t('productsList.averageScore')}</span>
                     <AuditScoreGauge 
                       score={stats.averageScore} 
                       size="sm" 
@@ -563,10 +564,10 @@ export default function AuditProductsList() {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Sparkles className="h-5 w-5 text-primary" />
-              Résultat de l'Audit
+              {t('productsList.auditResult')}
             </DialogTitle>
             <DialogDescription>
-              {selectedAudit?.productName || 'Produit'}
+              {selectedAudit?.productName || t('dashboard.product')}
             </DialogDescription>
           </DialogHeader>
 
@@ -579,18 +580,18 @@ export default function AuditProductsList() {
                     score={selectedAudit.score.global} 
                     size="lg" 
                     showLabel 
-                    label="Score Global"
+                    label={t('productsList.globalScoreLabel')}
                   />
                 </div>
 
                 {/* Score Breakdown */}
                 <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
                   {[
-                    { label: 'SEO', score: selectedAudit.score.seo },
-                    { label: 'Contenu', score: selectedAudit.score.content },
-                    { label: 'Images', score: selectedAudit.score.images },
-                    { label: 'Données', score: selectedAudit.score.dataCompleteness },
-                    { label: 'AI Ready', score: selectedAudit.score.aiReadiness },
+                    { label: t('productsList.seoLabel'), score: selectedAudit.score.seo },
+                    { label: t('productsList.contentLabel'), score: selectedAudit.score.content },
+                    { label: t('productsList.imagesLabel'), score: selectedAudit.score.images },
+                    { label: t('productsList.dataLabel'), score: selectedAudit.score.dataCompleteness },
+                    { label: t('productsList.aiReadyLabel'), score: selectedAudit.score.aiReadiness },
                   ].map(item => (
                     <div key={item.label} className="text-center p-3 bg-muted/50 rounded-lg">
                       <div className="text-2xl font-bold">{item.score}</div>
@@ -604,7 +605,7 @@ export default function AuditProductsList() {
                   <div className="space-y-3">
                     <h4 className="font-semibold flex items-center gap-2">
                       <AlertTriangle className="h-4 w-4" />
-                      Problèmes détectés ({selectedAudit.issues.length})
+                      {t('productsList.issuesDetected', { count: selectedAudit.issues.length })}
                     </h4>
                     <div className="space-y-2">
                       {selectedAudit.issues.map((issue, i) => (
@@ -632,7 +633,7 @@ export default function AuditProductsList() {
                   <div className="space-y-3">
                     <h4 className="font-semibold flex items-center gap-2 text-green-600">
                       <CheckCircle2 className="h-4 w-4" />
-                      Points forts ({selectedAudit.strengths.length})
+                      {t('productsList.strengths', { count: selectedAudit.strengths.length })}
                     </h4>
                     <div className="flex flex-wrap gap-2">
                       {selectedAudit.strengths.map((strength, i) => (
@@ -659,10 +660,10 @@ export default function AuditProductsList() {
                     }}
                   >
                     <Eye className="h-4 w-4 mr-2" />
-                    Voir le produit
+                    {t('seo.viewProduct')}
                   </Button>
                   <Button variant="outline" onClick={() => setShowAuditDialog(false)}>
-                    Fermer
+                    {t('productsList.closeDialog')}
                   </Button>
                 </div>
               </div>
