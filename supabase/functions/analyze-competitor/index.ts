@@ -11,7 +11,7 @@ import { checkRateLimit, createRateLimitResponse, RATE_LIMITS } from '../_shared
 import { handleError, ValidationError, AuthenticationError } from '../_shared/error-handler.ts'
 
 const supabaseUrl = Deno.env.get('SUPABASE_URL')!
-const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')!
 
 // Strict CORS allowlist
 const ALLOWED_ORIGINS = [
@@ -325,7 +325,11 @@ Deno.serve(async (req) => {
     )
   }
 
-  const supabase = createClient(supabaseUrl, supabaseServiceKey)
+  // Use ANON_KEY + user JWT for RLS enforcement
+  const authHeader = req.headers.get('Authorization') || ''
+  const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+    global: { headers: { Authorization: authHeader } },
+  })
 
   try {
     // 1) Authentication required

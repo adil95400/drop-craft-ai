@@ -1,51 +1,61 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+/**
+ * customer-intelligence — SECURED (P0)
+ * 
+ * Fixes:
+ * - REMOVED hardcoded credentials from another project (!)
+ * - JWT auth via getClaims()
+ * - ANON_KEY + JWT for RLS enforcement
+ * - Secure CORS headers
+ * - Correct Lovable AI gateway URL
+ * - Rate limited: 30 analyses/hour
+ */
+import { requireAuth, handlePreflight, errorResponse, successResponse } from '../_shared/jwt-auth.ts'
+import { checkRateLimit, rateLimitResponse } from '../_shared/rate-limiter.ts'
 
 interface CustomerData {
-  customer_id: string;
-  customer_email: string;
-  customer_name?: string;
-  total_orders?: number;
-  total_spent?: number;
-  avg_order_value?: number;
-  last_order_date?: string;
-  first_order_date?: string;
+  customer_id: string
+  customer_email: string
+  customer_name?: string
+  total_orders?: number
+  total_spent?: number
+  avg_order_value?: number
+  last_order_date?: string
+  first_order_date?: string
 }
 
-serve(async (req) => {
-  if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
-  }
+Deno.serve(async (req) => {
+  const preflight = handlePreflight(req)
+  if (preflight) return preflight
 
   try {
-    const supabase = createClient(
-      'https://dtozyrmmekdnvekissuh.supabase.co',
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR0b3p5cm1tZWtkbnZla2lzc3VoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ0MjMwODIsImV4cCI6MjA2OTk5OTA4Mn0.5glFIyN1_wR_6WFO7ieFiL93aWDz_os8P26DHw-E_dI',
-      {
-        auth: {
-          persistSession: false,
-        },
-        global: {
-          headers: { Authorization: req.headers.get('Authorization')! },
-        },
-      }
-    );
+    // 1. JWT Auth
+    const auth = await requireAuth(req)
 
-    const { data: { user }, error: userError } = await supabase.auth.getUser();
-    if (userError || !user) {
-      throw new Error('Unauthorized');
+    // 2. Rate limit
+    const rateCheck = await checkRateLimit(auth.userId, 'customer-intelligence', 30, 60)
+    if (!rateCheck.allowed) {
+      return rateLimitResponse(auth.corsHeaders, 'Limite atteinte (30/heure).')
     }
 
-    const { customerData } = await req.json() as { customerData: CustomerData };
+    // 3. Parse input
+    const body = await req.json().catch(() => null)
+    if (!body || !body.customerData) {
+      return errorResponse('customerData is required', auth.corsHeaders)
+    }
 
-    console.log('Analyzing customer behavior for:', customerData.customer_email);
+    const customerData: CustomerData = body.customerData
+    if (!customerData.customer_id || !customerData.customer_email) {
+      return errorResponse('customer_id and customer_email are required', auth.corsHeaders)
+    }
 
-    // Build AI analysis prompt
+    console.log(`[customer-intelligence] User ${auth.userId} analyzing: ${customerData.customer_email}`)
+
+    // 4. AI analysis via Lovable AI
+    const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY')
+    if (!LOVABLE_API_KEY) {
+      return errorResponse('AI service not configured', auth.corsHeaders, 500)
+    }
+
     const prompt = `Analyze this customer's behavior and provide insights:
 
 Customer: ${customerData.customer_name || customerData.customer_email}
@@ -55,86 +65,64 @@ Average Order Value: $${customerData.avg_order_value || 0}
 Last Order: ${customerData.last_order_date || 'Never'}
 First Order: ${customerData.first_order_date || 'Never'}
 
-Based on this data, provide:
-1. Behavioral Score (0-100): Overall customer value and engagement
-2. Engagement Level: low, medium, high, or very_high
-3. Customer Segment: vip, loyal, at_risk, new, dormant, or champion
-4. Segment Confidence (0-100): How confident you are in this segmentation
-5. Purchase Frequency: Description of purchase pattern
-6. Lifetime Value Prediction: Estimated total value
-7. Predicted Next Purchase Days: Days until likely next purchase
-8. Churn Probability (0-100): Likelihood customer will stop buying
-9. Churn Risk Level: low, medium, high, or critical
-10. Key Insights: 3-5 actionable insights about this customer
-11. Recommended Actions: 3-5 specific actions to take
-12. Preferences: Inferred customer preferences
-
 Respond in JSON format with these exact fields:
 {
-  "behavioral_score": number,
-  "engagement_level": string,
-  "customer_segment": string,
-  "segment_confidence": number,
+  "behavioral_score": number (0-100),
+  "engagement_level": "low"|"medium"|"high"|"very_high",
+  "customer_segment": "vip"|"loyal"|"at_risk"|"new"|"dormant"|"champion",
+  "segment_confidence": number (0-100),
   "purchase_frequency": string,
   "lifetime_value": number,
   "predicted_next_purchase_days": number,
-  "churn_probability": number,
-  "churn_risk_level": string,
+  "churn_probability": number (0-100),
+  "churn_risk_level": "low"|"medium"|"high"|"critical",
   "key_insights": [string],
   "recommended_actions": [string],
   "preferences": [string]
-}`;
+}`
 
-    // Call Lovable AI
-    const aiResponse = await fetch('https://api.lovable.app/v1/ai/chat-completions', {
+    const aiResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
       headers: {
+        'Authorization': `Bearer ${LOVABLE_API_KEY}`,
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${Deno.env.get('LOVABLE_API_KEY')}`,
       },
       body: JSON.stringify({
-        model: 'google/gemini-2.0-flash-exp',
+        model: 'google/gemini-2.5-flash',
         messages: [
           {
             role: 'system',
-            content: 'You are a customer analytics expert. Provide accurate, actionable insights based on customer data. Always respond with valid JSON.'
+            content: 'You are a customer analytics expert. Provide accurate, actionable insights. Always respond with valid JSON only.',
           },
-          {
-            role: 'user',
-            content: prompt
-          }
+          { role: 'user', content: prompt },
         ],
         temperature: 0.7,
         max_tokens: 2000,
       }),
-    });
+    })
 
     if (!aiResponse.ok) {
-      const error = await aiResponse.text();
-      console.error('AI API Error:', error);
-      throw new Error('Failed to generate AI analysis');
+      const status = aiResponse.status
+      await aiResponse.text() // consume body
+      return errorResponse(`AI analysis failed: ${status}`, auth.corsHeaders, status >= 500 ? 500 : status)
     }
 
-    const aiData = await aiResponse.json();
-    const content = aiData.choices[0]?.message?.content || '{}';
-    
-    // Parse AI response
-    let analysis;
+    const aiData = await aiResponse.json()
+    const content = aiData.choices[0]?.message?.content || '{}'
+
+    let analysis: any
     try {
-      const jsonMatch = content.match(/\{[\s\S]*\}/);
-      analysis = JSON.parse(jsonMatch ? jsonMatch[0] : content);
-    } catch (e) {
-      console.error('Failed to parse AI response:', content);
-      throw new Error('Invalid AI response format');
+      const jsonMatch = content.match(/\{[\s\S]*\}/)
+      analysis = JSON.parse(jsonMatch ? jsonMatch[0] : content)
+    } catch {
+      return errorResponse('Invalid AI response format', auth.corsHeaders, 500)
     }
 
-    console.log('AI Analysis completed:', analysis);
-
-    // Save analysis to database using existing schema
-    const { data: savedAnalysis, error: saveError } = await supabase
+    // 5. Save via RLS-scoped client
+    const { data: savedAnalysis, error: saveError } = await auth.supabase
       .from('customer_behavior_analytics')
       .insert({
-        user_id: user.id,
+        user_id: auth.userId,
         customer_id: customerData.customer_id,
         behavior_type: 'general',
         behavioral_score: analysis.behavioral_score || 50,
@@ -160,51 +148,48 @@ Respond in JSON format with these exact fields:
         },
       })
       .select()
-      .single();
+      .single()
 
     if (saveError) {
-      console.error('Database error:', saveError);
-      throw saveError;
+      console.error('[customer-intelligence] DB error:', saveError)
+      return errorResponse('Failed to save analysis', auth.corsHeaders, 500)
     }
 
-    console.log('Analysis saved to database');
-
-    // Map response to match expected interface
-    const mappedAnalysis = {
-      id: savedAnalysis.id,
-      customer_id: savedAnalysis.customer_id,
-      customer_email: customerData.customer_email,
-      customer_name: customerData.customer_name,
-      analysis_date: savedAnalysis.created_at,
-      behavioral_score: savedAnalysis.behavioral_score,
-      engagement_level: analysis.engagement_level,
-      purchase_frequency: analysis.purchase_frequency,
-      avg_order_value: customerData.avg_order_value,
-      total_orders: customerData.total_orders || 0,
-      total_spent: customerData.total_spent || 0,
-      customer_segment: analysis.customer_segment,
-      segment_confidence: analysis.segment_confidence,
-      lifetime_value: savedAnalysis.lifetime_value,
-      predicted_next_purchase_days: analysis.predicted_next_purchase_days,
-      churn_probability: savedAnalysis.churn_probability,
-      churn_risk_level: analysis.churn_risk_level,
-      key_insights: analysis.key_insights || [],
-      recommended_actions: analysis.recommended_actions || [],
-      preferences: analysis.preferences || [],
-      created_at: savedAnalysis.created_at,
-      updated_at: savedAnalysis.updated_at,
-    };
-
-    return new Response(
-      JSON.stringify({ success: true, analysis: mappedAnalysis }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
-
+    return successResponse(
+      {
+        analysis: {
+          id: savedAnalysis.id,
+          customer_id: savedAnalysis.customer_id,
+          customer_email: customerData.customer_email,
+          customer_name: customerData.customer_name,
+          analysis_date: savedAnalysis.created_at,
+          behavioral_score: savedAnalysis.behavioral_score,
+          engagement_level: analysis.engagement_level,
+          purchase_frequency: analysis.purchase_frequency,
+          avg_order_value: customerData.avg_order_value,
+          total_orders: customerData.total_orders || 0,
+          total_spent: customerData.total_spent || 0,
+          customer_segment: analysis.customer_segment,
+          segment_confidence: analysis.segment_confidence,
+          lifetime_value: savedAnalysis.lifetime_value,
+          predicted_next_purchase_days: analysis.predicted_next_purchase_days,
+          churn_probability: savedAnalysis.churn_probability,
+          churn_risk_level: analysis.churn_risk_level,
+          key_insights: analysis.key_insights || [],
+          recommended_actions: analysis.recommended_actions || [],
+          preferences: analysis.preferences || [],
+        },
+      },
+      auth.corsHeaders
+    )
   } catch (error) {
-    console.error('Error:', error);
-    return new Response(
-      JSON.stringify({ error: error.message }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
+    if (error instanceof Response) return error
+    console.error('[customer-intelligence] Error:', error)
+    const { getSecureCorsHeaders } = await import('../_shared/cors.ts')
+    return errorResponse(
+      error instanceof Error ? error.message : 'Internal error',
+      getSecureCorsHeaders(req.headers.get('origin')),
+      500
+    )
   }
-});
+})
