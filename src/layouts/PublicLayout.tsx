@@ -5,6 +5,7 @@ import { Menu, X } from 'lucide-react';
 import FooterNavigation from '@/components/navigation/FooterNavigation';
 import { useIsMobile } from '@/hooks/use-mobile';
 import logoFull from '@/assets/logo-shopopti-full.png';
+import { useTranslation } from 'react-i18next';
 
 interface PublicLayoutProps {
   children: React.ReactNode;
@@ -30,36 +31,27 @@ export function PublicLayout({
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const navigate = useNavigate();
   const isMobile = useIsMobile();
-  const navigation = [{
-    name: 'Fonctionnalités',
-    href: '/features'
-  }, {
-    name: 'Tarifs',
-    href: '/pricing'
-  }, {
-    name: 'Documentation',
-    href: '/documentation'
-  }, {
-    name: 'À propos',
-    href: '/about'
-  }, {
-    name: 'Blog',
-    href: '/blog'
-  }, {
-    name: 'Contact',
-    href: '/contact'
-  }];
+  const { t } = useTranslation('navigation');
+
+  const navigation = [
+    { name: t('publicNav.features'), href: '/features' },
+    { name: t('publicNav.pricing'), href: '/pricing' },
+    { name: t('publicNav.documentation'), href: '/documentation' },
+    { name: t('publicNav.about'), href: '/about' },
+    { name: t('publicNav.blog'), href: '/blog' },
+    { name: t('publicNav.contact'), href: '/contact' },
+  ];
+
   return <div className="min-h-screen flex flex-col bg-background">
       {/* Header */}
       <header className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 pt-safe">
         <div className="container mx-auto px-3 sm:px-4 lg:px-6">
           <div className="flex h-14 sm:h-16 items-center justify-between">
-            {/* Logo */}
             <HeaderLogo />
 
             {/* Desktop Navigation */}
             <nav className="hidden md:flex items-center space-x-1">
-              {navigation.map(item => <Link key={item.name} to={item.href} className="px-3 py-2 rounded-md text-sm font-medium hover:bg-accent transition-colors text-primary font-sans">
+              {navigation.map(item => <Link key={item.href} to={item.href} className="px-3 py-2 rounded-md text-sm font-medium hover:bg-accent transition-colors text-primary font-sans">
                   {item.name}
                 </Link>)}
             </nav>
@@ -67,15 +59,15 @@ export function PublicLayout({
             {/* CTA Buttons */}
             <div className="hidden md:flex items-center space-x-2 lg:space-x-3">
               <Button variant="ghost" size={isMobile ? "sm" : "default"} onClick={() => navigate('/auth')}>
-                Connexion
+                {t('publicNav.login')}
               </Button>
               <Button size={isMobile ? "sm" : "default"} onClick={() => navigate('/auth')} className="bg-gradient-hero hover:opacity-90 transition-opacity bg-primary text-primary-foreground text-center border-primary">
-                Essai Gratuit
+                {t('publicNav.freeTrial')}
               </Button>
             </div>
 
             {/* Mobile menu button */}
-            <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className="md:hidden p-1.5 sm:p-2 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors" aria-label={mobileMenuOpen ? "Fermer le menu" : "Ouvrir le menu"}>
+            <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className="md:hidden p-1.5 sm:p-2 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors" aria-label={mobileMenuOpen ? t('publicNav.closeMenu') : t('publicNav.openMenu')}>
               {mobileMenuOpen ? <X className="h-5 w-5 sm:h-6 sm:w-6" /> : <Menu className="h-5 w-5 sm:h-6 sm:w-6" />}
             </button>
           </div>
@@ -84,7 +76,7 @@ export function PublicLayout({
         {/* Mobile Navigation */}
         {mobileMenuOpen && <div className="md:hidden border-t bg-background">
             <div className="container mx-auto px-3 sm:px-4 py-3 sm:py-4 space-y-1.5 sm:space-y-2 max-h-[calc(100vh-4rem)] overflow-y-auto pb-safe">
-              {navigation.map(item => <Link key={item.name} to={item.href} onClick={() => setMobileMenuOpen(false)} className="block px-3 py-2.5 rounded-md text-sm sm:text-base font-medium text-muted-foreground hover:text-foreground hover:bg-accent transition-colors active:scale-95">
+              {navigation.map(item => <Link key={item.href} to={item.href} onClick={() => setMobileMenuOpen(false)} className="block px-3 py-2.5 rounded-md text-sm sm:text-base font-medium text-muted-foreground hover:text-foreground hover:bg-accent transition-colors active:scale-95">
                   {item.name}
                 </Link>)}
               <div className="pt-3 sm:pt-4 space-y-2 border-t">
@@ -92,13 +84,13 @@ export function PublicLayout({
               setMobileMenuOpen(false);
               navigate('/auth');
             }}>
-                  Connexion
+                  {t('publicNav.login')}
                 </Button>
                 <Button size="lg" className="w-full h-11 sm:h-12 text-sm sm:text-base bg-gradient-hero hover:opacity-90" onClick={() => {
               setMobileMenuOpen(false);
               navigate('/auth');
             }}>
-                  Essai Gratuit
+                  {t('publicNav.freeTrial')}
                 </Button>
               </div>
             </div>

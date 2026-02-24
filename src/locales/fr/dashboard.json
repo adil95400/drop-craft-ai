@@ -58,5 +58,18 @@
   "performance": "Performance",
   "excellent": "Excellente",
   "allIndicatorsPositive": "Tous les indicateurs sont positifs",
-  "realtime": "Temps réel"
+  "realtime": "Temps réel",
+  "quickStats": "Statistiques rapides",
+  "alerts": {
+    "title": "Alertes",
+    "noAlerts": "Aucune alerte pour le moment",
+    "viewAll": "Voir toutes les alertes"
+  },
+  "ads": {
+    "title": "Publicités",
+    "noCampaigns": "Aucune campagne configurée",
+    "impressions": "Impressions",
+    "clicks": "Clics",
+    "activeCampaigns": "Campagnes actives"
+  }
 }

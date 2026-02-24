@@ -57,6 +57,7 @@ import { ChevronDown, ChevronUp } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { useTabletLayout } from './TabletOptimizedDashboard';
+import { useTranslation } from 'react-i18next';
 
 // Lazy load ALL widgets (each pulls in recharts ~100KB)
 const RevenueWidgetChannable = lazy(() => import('./widgets/RevenueWidgetChannable').then(m => ({ default: m.RevenueWidgetChannable })));
@@ -180,6 +181,7 @@ function QuickStatCard({
 export function ChannableDashboard() {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
+  const { t } = useTranslation('dashboard');
   const {
     widgets,
     timeRange,
@@ -230,7 +232,7 @@ export function ChannableDashboard() {
     await queryClient.invalidateQueries({ queryKey: ['dashboard-sync-events'] });
     await queryClient.invalidateQueries({ queryKey: ['dashboard-health-metrics'] });
     setIsRefreshing(false);
-    toast.success('Dashboard actualisé avec les données réelles');
+    toast.success(t('refreshed'));
   }, [queryClient]);
 
   // Keyboard shortcuts
@@ -285,31 +287,31 @@ export function ChannableDashboard() {
   const quickActions: ChannableQuickAction[] = [
     {
       id: 'add-product',
-      label: 'Ajouter un produit',
+      label: t('quickActions.addProduct'),
       icon: Plus,
       onClick: () => navigate('/products'),
       variant: 'primary'
     },
     {
       id: 'view-analytics',
-      label: 'Analytiques',
+      label: t('quickActions.analytics'),
       icon: BarChart3,
       onClick: () => navigate('/analytics'),
-      description: 'Vue détaillée'
+      description: t('quickActions.analyticsDesc')
     },
     {
       id: 'optimize',
-      label: 'Optimiser',
+      label: t('quickActions.optimize'),
       icon: Zap,
       onClick: () => navigate('/automation'),
-      description: 'IA automatique'
+      description: t('quickActions.optimizeDesc')
     },
     {
       id: 'reports',
-      label: 'Rapports',
+      label: t('quickActions.reports'),
       icon: TrendingUp,
       onClick: () => navigate('/reports'),
-      description: 'Export PDF'
+      description: t('quickActions.reportsDesc')
     }
   ];
 
@@ -379,12 +381,12 @@ export function ChannableDashboard() {
 
   return (
     <ChannablePageWrapper
-      title="Tableau de Bord"
-      subtitle="Vue d'ensemble"
-      description="Pilotez votre activité e-commerce avec des insights en temps réel et des outils d'optimisation intelligents."
+      title={t('title')}
+      subtitle={t('subtitle')}
+      description={t('description')}
       heroImage="dashboard"
       badge={{
-        label: autoRefresh ? `Auto-refresh ${refreshInterval}s` : 'Temps réel',
+        label: autoRefresh ? `Auto-refresh ${refreshInterval}s` : t('realtime'),
         icon: RefreshCw
       }}
       actions={
@@ -403,7 +405,7 @@ export function ChannableDashboard() {
             ) : (
               <RefreshCw className="h-4 w-4" />
             )}
-            <span className="ml-2 hidden sm:inline">Actualiser</span>
+            <span className="ml-2 hidden sm:inline">{t('widgets.refresh')}</span>
           </Button>
 
           <Button
@@ -413,7 +415,7 @@ export function ChannableDashboard() {
             className={cn(!isCustomizing && "bg-background/50 backdrop-blur-sm border-border/50 hover:bg-background/80")}
           >
             <LayoutGrid className="h-4 w-4 mr-2" />
-            {isCustomizing ? 'Terminer' : 'Personnaliser'}
+            {isCustomizing ? t('widgets.done') : t('widgets.customize')}
           </Button>
 
           <Button
@@ -422,7 +424,7 @@ export function ChannableDashboard() {
             onClick={() => setShowWidgetLibrary(true)}
           >
             <Plus className="h-4 w-4 mr-2" />
-            Ajouter widget
+            {t('widgets.addWidget')}
           </Button>
         </>
       }
@@ -456,9 +458,9 @@ export function ChannableDashboard() {
           </Suspense>
 
           {/* Quick Stats Grid Premium - DONNÉES DYNAMIQUES */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4" role="region" aria-label="Statistiques rapides">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4" role="region" aria-label={t('quickStats')}>
         <QuickStatCard
-          label="Chiffre d'affaires"
+          label={t('stats.revenue')}
           value={quickStatsData.revenue.value}
           change={quickStatsData.revenue.change}
           changeType={quickStatsData.revenue.changeType}
@@ -466,10 +468,10 @@ export function ChannableDashboard() {
           color="primary"
           onClick={() => navigate('/analytics')}
           isLoading={dataLoading}
-          ariaLabel={`Chiffre d'affaires: ${quickStatsData.revenue.value}, variation: ${quickStatsData.revenue.change}`}
+          ariaLabel={`${t('stats.revenue')}: ${quickStatsData.revenue.value}, ${quickStatsData.revenue.change}`}
         />
         <QuickStatCard
-          label="Commandes"
+          label={t('stats.orders')}
           value={quickStatsData.orders.value}
           change={quickStatsData.orders.change}
           changeType={quickStatsData.orders.changeType}
@@ -477,10 +479,10 @@ export function ChannableDashboard() {
           color="success"
           onClick={() => navigate('/orders')}
           isLoading={dataLoading}
-          ariaLabel={`Commandes: ${quickStatsData.orders.value}, variation: ${quickStatsData.orders.change}`}
+          ariaLabel={`${t('stats.orders')}: ${quickStatsData.orders.value}, ${quickStatsData.orders.change}`}
         />
         <QuickStatCard
-          label="Produits actifs"
+          label={t('stats.activeProducts')}
           value={quickStatsData.products.value}
           change={quickStatsData.products.change}
           changeType={quickStatsData.products.changeType}
@@ -488,10 +490,10 @@ export function ChannableDashboard() {
           color="info"
           onClick={() => navigate('/products')}
           isLoading={dataLoading}
-          ariaLabel={`Produits actifs: ${quickStatsData.products.value}, variation: ${quickStatsData.products.change}`}
+          ariaLabel={`${t('stats.activeProducts')}: ${quickStatsData.products.value}, ${quickStatsData.products.change}`}
         />
         <QuickStatCard
-          label="Clients"
+          label={t('stats.customers')}
           value={quickStatsData.customers.value}
           change={quickStatsData.customers.change}
           changeType={quickStatsData.customers.changeType}
@@ -499,7 +501,7 @@ export function ChannableDashboard() {
           color="warning"
           onClick={() => navigate('/customers')}
           isLoading={dataLoading}
-          ariaLabel={`Clients: ${quickStatsData.customers.value}, variation: ${quickStatsData.customers.change}`}
+          ariaLabel={`${t('stats.customers')}: ${quickStatsData.customers.value}, ${quickStatsData.customers.change}`}
         />
       </div>
 
@@ -513,15 +515,15 @@ export function ChannableDashboard() {
         >
           <Settings2 className="h-4 w-4 text-primary" />
           <span className="text-sm text-muted-foreground flex-1">
-            Glissez les widgets pour les réorganiser
+            {t('widgets.dragToReorder')}
           </span>
           <Button variant="outline" size="sm" onClick={() => setShowWidgetLibrary(true)}>
             <Plus className="h-4 w-4 mr-1" />
-            Ajouter widget
+            {t('widgets.addWidget')}
           </Button>
           <Button variant="ghost" size="sm" onClick={resetToDefaults}>
             <RotateCcw className="h-4 w-4 mr-1" />
-            Réinitialiser
+            {t('widgets.reset')}
           </Button>
         </motion.div>
       )}
@@ -553,7 +555,7 @@ export function ChannableDashboard() {
               {getTimeRangeLabel(timeRange)}
             </Badge>
             <span className="text-xs text-muted-foreground">
-              Dernière mise à jour : {lastRefresh.toLocaleTimeString()}
+              {t('lastUpdate')} : {lastRefresh.toLocaleTimeString()}
             </span>
           </div>
 
@@ -598,13 +600,13 @@ export function ChannableDashboard() {
               className="text-center py-16 border-2 border-dashed rounded-2xl bg-muted/30"
             >
               <LayoutGrid className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
-              <h3 className="text-xl font-semibold mb-2">Aucun widget actif</h3>
+              <h3 className="text-xl font-semibold mb-2">{t('widgets.noActiveWidgets')}</h3>
               <p className="text-muted-foreground mb-6 max-w-md mx-auto">
-                Personnalisez votre tableau de bord en ajoutant des widgets pour suivre vos KPIs les plus importants.
+                {t('widgets.noActiveWidgetsDesc')}
               </p>
               <Button onClick={() => setShowWidgetLibrary(true)} size="lg">
                 <Plus className="h-4 w-4 mr-2" />
-                Ajouter des widgets
+                {t('widgets.addWidgets')}
               </Button>
             </motion.div>
           )}
@@ -621,7 +623,7 @@ export function ChannableDashboard() {
               >
                 <div className="flex items-center gap-2">
                   <Activity className="h-4 w-4 text-primary" />
-                  <span className="font-medium text-sm">Santé des canaux</span>
+                  <span className="font-medium text-sm">{t('sidebar.channelHealth')}</span>
                 </div>
                 {showHealthPanel ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
               </motion.div>
@@ -646,7 +648,7 @@ export function ChannableDashboard() {
               >
                 <div className="flex items-center gap-2">
                   <Sparkles className="h-4 w-4 text-primary" />
-                  <span className="font-medium text-sm">Activité récente</span>
+                  <span className="font-medium text-sm">{t('sidebar.recentActivity')}</span>
                   <Badge variant="secondary" className="text-xs">Live</Badge>
                 </div>
                 {showActivityPanel ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
@@ -667,7 +669,7 @@ export function ChannableDashboard() {
           {dataLoading && (
             <div className="flex items-center justify-center p-4 text-muted-foreground">
               <Loader2 className="h-4 w-4 animate-spin mr-2" />
-              <span className="text-sm">Chargement des données...</span>
+              <span className="text-sm">{t('loadingData')}</span>
             </div>
           )}
         </div>

@@ -4,6 +4,7 @@ import { ChevronRight, Home } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { MODULE_REGISTRY } from '@/config/modules';
 import { getSubModuleById } from '@/config/sub-modules';
+import { useTranslation } from 'react-i18next';
 
 interface BreadcrumbItem {
   label: string;
@@ -18,13 +19,14 @@ interface BreadcrumbsProps {
 
 export const Breadcrumbs: React.FC<BreadcrumbsProps> = ({ className, items: customItems }) => {
   const location = useLocation();
+  const { t } = useTranslation('navigation');
   
   const getBreadcrumbsFromPath = (): BreadcrumbItem[] => {
     if (customItems) return customItems;
 
     const pathSegments = location.pathname.split('/').filter(Boolean);
     const breadcrumbs: BreadcrumbItem[] = [
-      { label: 'Accueil', href: '/' }
+      { label: t('home'), href: '/' }
     ];
 
     if (pathSegments.length === 0) {
@@ -84,7 +86,7 @@ export const Breadcrumbs: React.FC<BreadcrumbsProps> = ({ className, items: cust
 
   return (
     <nav
-      aria-label="Breadcrumb"
+      aria-label={t('breadcrumb')}
       className={cn("flex items-center space-x-1 text-sm text-muted-foreground", className)}
     >
       {breadcrumbs.map((item, index) => (

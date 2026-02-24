@@ -3,6 +3,7 @@ import { AlertCircle, AlertTriangle, Info, Loader2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { useDashboard } from '@/hooks/useDashboard';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
 interface AlertsWidgetProps {
   isCustomizing: boolean;
@@ -11,6 +12,7 @@ interface AlertsWidgetProps {
 export function AlertsWidget({ isCustomizing }: AlertsWidgetProps) {
   const { activityEvents, isLoading } = useDashboard();
   const navigate = useNavigate();
+  const { t } = useTranslation('dashboard');
 
   // Filter activity events to show only alerts/warnings
   const alerts = activityEvents
@@ -53,7 +55,7 @@ export function AlertsWidget({ isCustomizing }: AlertsWidgetProps) {
           <CardTitle className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <AlertCircle className="h-5 w-5 text-primary" />
-              Alertes
+              {t('alerts.title', 'Alertes')}
             </div>
             <Badge variant="destructive">...</Badge>
           </CardTitle>
@@ -72,7 +74,7 @@ export function AlertsWidget({ isCustomizing }: AlertsWidgetProps) {
         <CardTitle className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <AlertCircle className="h-5 w-5 text-primary" />
-            Alertes
+            {t('alerts.title', 'Alertes')}
           </div>
           <Badge variant={alertCount > 0 ? "destructive" : "secondary"}>{alertCount}</Badge>
         </CardTitle>
@@ -80,7 +82,7 @@ export function AlertsWidget({ isCustomizing }: AlertsWidgetProps) {
       <CardContent className="space-y-3">
         {alertCount === 0 ? (
           <div className="text-center py-8">
-            <p className="text-sm text-muted-foreground">Aucune alerte pour le moment</p>
+            <p className="text-sm text-muted-foreground">{t('alerts.noAlerts', 'Aucune alerte pour le moment')}</p>
           </div>
         ) : (
           <>
@@ -101,7 +103,7 @@ export function AlertsWidget({ isCustomizing }: AlertsWidgetProps) {
             {alertCount > 3 && (
               <div className="pt-2 border-t">
                 <button className="text-sm text-primary hover:underline w-full text-left">
-                  Voir toutes les alertes ({alertCount}) →
+                  {t('alerts.viewAll', 'Voir toutes les alertes')} ({alertCount}) →
                 </button>
               </div>
             )}
