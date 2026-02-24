@@ -6,6 +6,7 @@ import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import { useOnboardingStore } from '@/stores/onboardingStore'
+import { useOnboardingPersistence } from '@/hooks/useOnboardingPersistence'
 import { useUnifiedAuth } from '@/contexts/UnifiedAuthContext'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
@@ -54,8 +55,9 @@ const STEPS = [
 
 export default function OnboardingWizardPage() {
   const navigate = useNavigate()
-  const { profile } = useUnifiedAuth()
+  const { profile, refetchProfile } = useUnifiedAuth()
   const store = useOnboardingStore()
+  const { save } = useOnboardingPersistence()
   const [businessName, setBusinessName] = useState(store.businessName)
   const [businessType, setBusinessType] = useState(store.businessType)
   const [selectedPlatform, setSelectedPlatform] = useState(store.storePlatform)
@@ -78,8 +80,11 @@ export default function OnboardingWizardPage() {
     store.nextStep()
   }
 
-  const handleFinish = () => {
+  const handleFinish = async () => {
     store.completeOnboarding()
+    save()
+    // Refetch profile so ProtectedRoute sees onboarding_completed = true
+    await refetchProfile()
     if (selectedPlatform && selectedPlatform !== 'other') {
       navigate('/stores-channels')
     } else if (selectedImport === 'csv') {

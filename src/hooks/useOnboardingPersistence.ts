@@ -65,6 +65,14 @@ export function useOnboardingPersistence() {
         .from('onboarding_progress')
         .upsert(payload, { onConflict: 'user_id' });
       if (error) throw error;
+
+      // Also update profiles table so ProtectedRoute redirect works
+      if (store.onboardingCompleted) {
+        await supabase
+          .from('profiles')
+          .update({ onboarding_completed: true })
+          .eq('id', user.id);
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['onboarding-progress'] });

@@ -1,5 +1,6 @@
 /**
  * Composant de protection des routes nécessitant une authentification
+ * Redirige automatiquement les nouveaux utilisateurs vers le wizard d'onboarding
  */
 import React from 'react'
 import { useUnifiedAuth as useAuth } from '@/contexts/UnifiedAuthContext'
@@ -10,8 +11,11 @@ interface ProtectedRouteProps {
   requireAuth?: boolean
 }
 
+// Routes exclues de la redirection onboarding (pour éviter les boucles)
+const ONBOARDING_EXEMPT_ROUTES = ['/onboarding', '/auth', '/choose-plan', '/pricing']
+
 export function ProtectedRoute({ children, requireAuth = true }: ProtectedRouteProps) {
-  const { user, loading } = useAuth()
+  const { user, profile, loading } = useAuth()
   const location = useLocation()
 
   if (loading) {
@@ -28,14 +32,22 @@ export function ProtectedRoute({ children, requireAuth = true }: ProtectedRouteP
   }
 
   if (requireAuth && !user) {
-    // Redirect to auth page with return URL
     return <Navigate to={`/auth?redirect=${encodeURIComponent(location.pathname)}`} replace />
   }
 
   if (!requireAuth && user) {
-    // Redirect authenticated users away from auth pages
     const redirectUrl = new URLSearchParams(location.search).get('redirect')
     return <Navigate to={redirectUrl || '/dashboard'} replace />
+  }
+
+  // Auto-redirect new users to onboarding wizard
+  if (
+    user &&
+    profile &&
+    !profile.onboarding_completed &&
+    !ONBOARDING_EXEMPT_ROUTES.some(r => location.pathname.startsWith(r))
+  ) {
+    return <Navigate to="/onboarding/wizard" replace />
   }
 
   return <>{children}</>
