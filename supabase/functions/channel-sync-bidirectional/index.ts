@@ -1,24 +1,16 @@
-import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
-import { getSecureCorsHeaders, handleCorsPreflightSecure } from '../_shared/cors.ts'
+/**
+ * Channel Sync Bidirectional — SECURED (JWT-first, RLS-enforced)
+ * Queues sync jobs for active integrations
+ */
 
-serve(async (req) => {
-  const preflight = handleCorsPreflightSecure(req);
-  if (preflight) return preflight;
+import { requireAuth, handlePreflight, successResponse } from '../_shared/jwt-auth.ts'
 
-  const origin = req.headers.get('origin');
-  const corsHeaders = getSecureCorsHeaders(origin);
+Deno.serve(async (req) => {
+  const preflight = handlePreflight(req)
+  if (preflight) return preflight
 
   try {
-    const supabase = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-    )
-
-    const authHeader = req.headers.get('Authorization')
-    if (!authHeader) throw new Error('Non authentifié')
-    const { data: { user }, error: authError } = await supabase.auth.getUser(authHeader.replace('Bearer ', ''))
-    if (authError || !user) throw new Error('Non authentifié')
+    const { userId, supabase, corsHeaders } = await requireAuth(req)
 
     const body = await req.json()
     const { sync_type, direction, integration_id } = body
@@ -26,24 +18,23 @@ serve(async (req) => {
     const { data: integrations } = await supabase
       .from('integrations')
       .select('id, platform_type, store_name, is_active')
-      .eq('user_id', user.id)
+      .eq('user_id', userId)
       .eq('is_active', true)
 
     if (!integrations || integrations.length === 0) {
-      return new Response(JSON.stringify({
-        success: true,
+      return successResponse({
         message: 'Aucune boutique connectée',
         synced: 0,
         results: []
-      }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+      }, corsHeaders)
     }
 
     const targets = integration_id
-      ? integrations.filter(i => i.id === integration_id)
+      ? integrations.filter((i: any) => i.id === integration_id)
       : integrations
 
-    const queueItems = targets.map(integration => ({
-      user_id: user.id,
+    const queueItems = targets.map((integration: any) => ({
+      user_id: userId,
       sync_type: sync_type || 'products',
       entity_type: sync_type || 'products',
       entity_id: integration.id,
@@ -58,17 +49,20 @@ serve(async (req) => {
       await supabase.from('unified_sync_queue').insert(queueItems)
     }
 
-    return new Response(JSON.stringify({
-      success: true,
+    return successResponse({
       message: `Synchronisation ${sync_type || 'products'} planifiée pour ${targets.length} boutique(s)`,
       queued: targets.length,
-      stores: targets.map(i => i.store_name)
-    }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+      stores: targets.map((i: any) => i.store_name)
+    }, corsHeaders)
 
-  } catch (error) {
-    return new Response(JSON.stringify({
-      success: false,
-      error: error.message || 'Erreur interne'
-    }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+  } catch (err) {
+    if (err instanceof Response) return err
+    console.error('[channel-sync-bidirectional] Error:', err)
+    const origin = req.headers.get('origin')
+    const { getSecureCorsHeaders } = await import('../_shared/cors.ts')
+    return new Response(
+      JSON.stringify({ success: false, error: err instanceof Error ? err.message : 'Erreur interne' }),
+      { status: 400, headers: { ...getSecureCorsHeaders(origin), 'Content-Type': 'application/json' } }
+    )
   }
 })
