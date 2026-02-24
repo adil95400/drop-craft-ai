@@ -1,44 +1,39 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-}
+import { requireAuth, handlePreflight, errorResponse, successResponse } from '../_shared/jwt-auth.ts'
 
 serve(async (req) => {
-  if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders })
-  }
+  const preflight = handlePreflight(req)
+  if (preflight) return preflight
 
   try {
-    const supabase = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-    )
+    const { userId, supabase, corsHeaders } = await requireAuth(req)
 
     const { 
       product_id, 
       movement_type, 
       quantity, 
       reason, 
-      user_id,
       trigger_automation,
-      update_reorder_points
     } = await req.json()
 
-    // Get current product stock
-    const { data: products, error: productError } = await supabase
+    if (!product_id || !movement_type || quantity == null) {
+      return errorResponse('product_id, movement_type and quantity are required', corsHeaders)
+    }
+
+    // Get current product stock (RLS-scoped)
+    const { data: product, error: productError } = await supabase
       .from('products')
       .select('name, stock_quantity')
       .eq('id', product_id)
-      .eq('user_id', user_id)
       .single()
 
-    let currentStock = products?.stock_quantity || 0
+    if (productError || !product) {
+      return errorResponse('Product not found or access denied', corsHeaders, 404)
+    }
+
+    let currentStock = product.stock_quantity || 0
     let newStock = currentStock
 
-    // Calculate new stock based on movement type
     switch (movement_type) {
       case 'in':
         newStock = currentStock + quantity
@@ -50,85 +45,87 @@ serve(async (req) => {
         newStock = quantity
         break
       case 'reserved':
-        // Reserved stock doesn't change actual quantity but tracks reservations
         break
       case 'returned':
         newStock = currentStock + quantity
         break
+      default:
+        return errorResponse('Invalid movement_type', corsHeaders)
     }
 
-    // Update product stock if needed
+    // Update product stock if needed (RLS-scoped)
     if (movement_type !== 'reserved') {
-      await supabase
+      const { error: updateError } = await supabase
         .from('products')
         .update({ stock_quantity: newStock })
         .eq('id', product_id)
-        .eq('user_id', user_id)
+
+      if (updateError) {
+        return errorResponse('Failed to update stock: ' + updateError.message, corsHeaders, 500)
+      }
     }
 
-    // Log the stock movement
+    // Log the stock movement (RLS-scoped)
     const { data: movement, error: movementError } = await supabase
       .from('activity_logs')
       .insert({
-        user_id,
+        user_id: userId,
         action: 'stock_movement',
         entity_type: 'product',
         entity_id: product_id,
-        description: `Stock ${movement_type}: ${quantity} units - ${reason}`,
-        metadata: {
+        description: `Stock ${movement_type}: ${quantity} units - ${reason || 'N/A'}`,
+        details: {
           movement_type,
           quantity,
           reason,
           previous_stock: currentStock,
           new_stock: newStock,
-          product_name: products?.name
+          product_name: product.name
         }
       })
       .select()
       .single()
 
-    // Check if stock is low and trigger automation if needed
+    if (movementError) {
+      console.error('Failed to log movement:', movementError.message)
+    }
+
+    // Check low stock alert
     if (trigger_automation && newStock <= 10) {
       await supabase
         .from('activity_logs')
         .insert({
-          user_id,
+          user_id: userId,
           action: 'stock_alert',
           entity_type: 'product',
           entity_id: product_id,
           description: `Low stock alert: ${newStock} units remaining`,
-          metadata: {
+          details: {
             current_stock: newStock,
             minimum_threshold: 10,
             urgency: newStock <= 3 ? 'critical' : 'high',
-            product_name: products?.name,
+            product_name: product.name,
             recommended_order_quantity: Math.max(50, newStock * 5)
           }
         })
     }
 
-    return new Response(
-      JSON.stringify({
-        success: true,
-        message: 'Stock movement processed successfully',
-        movement_id: movement.id,
-        previous_stock: currentStock,
-        new_stock: newStock,
-        stock_alert_triggered: trigger_automation && newStock <= 10
-      }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    )
+    return successResponse({
+      message: 'Stock movement processed successfully',
+      movement_id: movement?.id,
+      previous_stock: currentStock,
+      new_stock: newStock,
+      stock_alert_triggered: trigger_automation && newStock <= 10
+    }, corsHeaders)
+
   } catch (error) {
+    if (error instanceof Response) return error
     console.error('Stock movement processing error:', error)
+    const origin = req.headers.get('origin')
+    const { getSecureCorsHeaders } = await import('../_shared/cors.ts')
     return new Response(
-      JSON.stringify({ 
-        success: false, 
-        error: error.message 
-      }),
-      { 
-        status: 500, 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-      }
+      JSON.stringify({ success: false, error: error.message }),
+      { status: 500, headers: { ...getSecureCorsHeaders(origin), 'Content-Type': 'application/json' } }
     )
   }
 })
