@@ -12,8 +12,13 @@ export const useStripeCheckout = () => {
   const createCheckoutSession = async (planType: StripePlanType) => {
     setLoading(true);
     try {
-      const { data, error } = await supabase.functions.invoke('create-checkout-session', {
-        body: { planType }
+      // Use the secured create-checkout function with priceId
+      const { STRIPE_CONFIG } = await import('@/lib/stripe-config');
+      const plan = STRIPE_CONFIG.plans[planType];
+      if (!plan?.priceId) throw new Error('Plan invalide');
+
+      const { data, error } = await supabase.functions.invoke('create-checkout', {
+        body: { priceId: plan.priceId }
       });
 
       if (error) throw error;
@@ -35,7 +40,7 @@ export const useStripeCheckout = () => {
   const createPortalSession = async () => {
     setLoading(true);
     try {
-      const { data, error } = await supabase.functions.invoke('create-portal-session');
+      const { data, error } = await supabase.functions.invoke('stripe-portal');
 
       if (error) throw error;
 
