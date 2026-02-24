@@ -4,6 +4,7 @@
  */
 
 import { useState, useMemo, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Dialog } from '@/components/ui/dialog';
@@ -34,6 +35,7 @@ import {
 export default function ChannableStyleSuppliersPage() {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { t } = useTranslation('suppliers');
   const { suppliers, refetch } = useSuppliersUnified();
   
   // Filter states
@@ -96,11 +98,10 @@ export default function ChannableStyleSuppliersPage() {
   }, [searchTerm, activeCategory, selectedCountry, selectedShippingZone, sortBy]);
 
   const handleConnect = useCallback((data: any) => {
-    // Refetch suppliers after connection
     refetch();
     setSelectedDefinition(null);
-    toast({ title: 'Fournisseur connecté', description: `${data.name} a été ajouté avec succès.` });
-  }, [refetch, toast]);
+    toast({ title: t('page.supplierConnected'), description: t('page.supplierConnectedDesc', { name: data.name }) });
+  }, [refetch, toast, t]);
 
   const handleResetFilters = useCallback(() => {
     setSearchTerm('');
@@ -113,19 +114,19 @@ export default function ChannableStyleSuppliersPage() {
 
   return (
     <ChannablePageWrapper
-      title="Fournisseurs Dropshipping"
-      subtitle="Hub Fournisseurs"
-      description="Connectez-vous aux meilleurs fournisseurs dropshipping du monde."
+      title={t('page.title')}
+      subtitle={t('page.subtitle')}
+      description={t('page.heroDescription')}
       heroImage="suppliers"
-      badge={{ label: `${stats.total}+ Fournisseurs Vérifiés`, icon: Sparkles }}
+      badge={{ label: t('page.verifiedBadge', { count: stats.total }), icon: Sparkles }}
       actions={
         <div className="flex items-center gap-3">
           <Button onClick={() => setActiveCategory('all')} className="gap-2">
             <Plus className="h-4 w-4" />
-            Ajouter un fournisseur
+            {t('page.addSupplier')}
           </Button>
           <Button variant="outline" onClick={() => navigate('/suppliers/my')} className="gap-2 bg-background/80 backdrop-blur">
-            Gérer mes fournisseurs
+            {t('page.manageSuppliers')}
           </Button>
         </div>
       }
@@ -135,19 +136,19 @@ export default function ChannableStyleSuppliersPage() {
         <TabsList className="grid w-full grid-cols-4 lg:w-auto lg:inline-grid">
           <TabsTrigger value="catalog" className="gap-2">
             <Package className="w-4 h-4" />
-            <span className="hidden sm:inline">Catalogue</span>
+            <span className="hidden sm:inline">{t('page.catalog')}</span>
           </TabsTrigger>
           <TabsTrigger value="search" className="gap-2">
             <Search className="w-4 h-4" />
-            <span className="hidden sm:inline">Recherche API</span>
+            <span className="hidden sm:inline">{t('page.apiSearch')}</span>
           </TabsTrigger>
           <TabsTrigger value="analytics" className="gap-2">
             <BarChart2 className="w-4 h-4" />
-            <span className="hidden sm:inline">Analytics</span>
+            <span className="hidden sm:inline">{t('page.analytics')}</span>
           </TabsTrigger>
           <TabsTrigger value="sync" className="gap-2 relative">
             <RefreshCcw className="w-4 h-4" />
-            <span className="hidden sm:inline">Synchronisation</span>
+            <span className="hidden sm:inline">{t('page.synchronization')}</span>
             {activeSyncJobs.length > 0 && (
               <span className="absolute -top-1 -right-1 w-2 h-2 bg-green-500 rounded-full animate-pulse" />
             )}
@@ -159,9 +160,14 @@ export default function ChannableStyleSuppliersPage() {
           <div className="mt-4 p-3 bg-primary/10 border border-primary/20 rounded-lg flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Bell className="w-4 h-4 text-primary" />
-              <span className="text-sm font-medium">{unreadNotifications} nouvelle{unreadNotifications > 1 ? 's' : ''} notification{unreadNotifications > 1 ? 's' : ''}</span>
+              <span className="text-sm font-medium">
+                {unreadNotifications > 1 
+                  ? t('page.newNotifications', { count: unreadNotifications })
+                  : t('page.newNotification', { count: unreadNotifications })
+                }
+              </span>
             </div>
-            <Button variant="ghost" size="sm" onClick={markAllAsRead}>Tout marquer comme lu</Button>
+            <Button variant="ghost" size="sm" onClick={markAllAsRead}>{t('page.markAllRead')}</Button>
           </div>
         )}
         
@@ -172,10 +178,10 @@ export default function ChannableStyleSuppliersPage() {
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-xl font-semibold flex items-center gap-2">
                   <PlugZap className="w-5 h-5 text-green-500" />
-                  Vos Fournisseurs ({suppliers.length})
+                  {t('page.yourSuppliers', { count: suppliers.length })}
                 </h2>
                 <Button variant="outline" size="sm" onClick={() => navigate('/suppliers/my')}>
-                  Gérer tout <ArrowRight className="w-4 h-4 ml-1" />
+                  {t('page.manageAll')} <ArrowRight className="w-4 h-4 ml-1" />
                 </Button>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
@@ -215,7 +221,10 @@ export default function ChannableStyleSuppliersPage() {
           {/* Results */}
           <div className="flex items-center justify-between mb-4">
             <p className="text-sm text-muted-foreground">
-              {filteredSuppliers.length} fournisseur{filteredSuppliers.length > 1 ? 's' : ''} trouvé{filteredSuppliers.length > 1 ? 's' : ''}
+              {filteredSuppliers.length > 1 
+                ? t('page.suppliersFoundPlural', { count: filteredSuppliers.length })
+                : t('page.suppliersFound', { count: filteredSuppliers.length })
+              }
             </p>
           </div>
 
@@ -236,9 +245,9 @@ export default function ChannableStyleSuppliersPage() {
           {filteredSuppliers.length === 0 && (
             <div className="text-center py-16">
               <Package className="w-16 h-16 mx-auto text-muted-foreground mb-4" />
-              <h3 className="text-lg font-medium mb-2">Aucun fournisseur trouvé</h3>
-              <p className="text-muted-foreground mb-4">Modifiez vos critères de recherche</p>
-              <Button onClick={handleResetFilters}>Réinitialiser les filtres</Button>
+              <h3 className="text-lg font-medium mb-2">{t('page.noSupplierFound')}</h3>
+              <p className="text-muted-foreground mb-4">{t('page.noSupplierFoundDesc')}</p>
+              <Button onClick={handleResetFilters}>{t('page.resetFilters')}</Button>
             </div>
           )}
         </TabsContent>

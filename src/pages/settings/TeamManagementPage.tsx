@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
 import { RequirePlan } from '@/components/plan/RequirePlan';
 import { useTeamManagement, TeamMember } from '@/hooks/useTeamManagement';
@@ -11,45 +12,43 @@ import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Users, Store, UserPlus, Shield, Mail, Clock, Trash2, Plus, Globe } from 'lucide-react';
-import { format } from 'date-fns';
-import { fr } from 'date-fns/locale';
+import { format, type Locale as DateLocale } from 'date-fns';
+import { fr, enUS, es, de } from 'date-fns/locale';
+import { useLanguage } from '@/hooks/useLanguage';
 
-const ROLE_LABELS: Record<string, { label: string; color: string }> = {
-  owner: { label: 'Propriétaire', color: 'bg-accent text-accent-foreground' },
-  admin: { label: 'Admin', color: 'bg-destructive/10 text-destructive' },
-  editor: { label: 'Éditeur', color: 'bg-primary/10 text-primary' },
-  viewer: { label: 'Lecteur', color: 'bg-muted text-muted-foreground' },
-};
-
-const PLATFORM_ICONS: Record<string, string> = {
-  shopify: '🟢',
-  woocommerce: '🟣',
-  prestashop: '🔴',
-  amazon: '🟠',
-  ebay: '🔵',
-};
+const DATE_LOCALES: Record<string, DateLocale> = { fr, en: enUS, es, de };
 
 export default function TeamManagementPage() {
+  const { t } = useTranslation('settings');
+  const { language } = useLanguage();
+
+  const ROLE_LABELS: Record<string, { label: string; color: string }> = {
+    owner: { label: t('team.roleOwner'), color: 'bg-accent text-accent-foreground' },
+    admin: { label: t('team.roleAdmin'), color: 'bg-destructive/10 text-destructive' },
+    editor: { label: t('team.roleEditor'), color: 'bg-primary/10 text-primary' },
+    viewer: { label: t('team.roleViewer'), color: 'bg-muted text-muted-foreground' },
+  };
+
   return (
     <RequirePlan minPlan="pro">
       <ChannablePageWrapper
-        title="Équipe & Boutiques"
-        description="Gérez votre équipe et vos boutiques multi-canal"
+        title={t('team.title')}
+        description={t('team.description')}
         heroImage="integrations"
         badge={{ label: 'Multi-Store', icon: Users }}
       >
         <Tabs defaultValue="team" className="space-y-6">
           <TabsList className="grid w-full max-w-md grid-cols-2">
             <TabsTrigger value="team" className="gap-2">
-              <Users className="h-4 w-4" /> Équipe
+              <Users className="h-4 w-4" /> {t('team.tab')}
             </TabsTrigger>
             <TabsTrigger value="stores" className="gap-2">
-              <Store className="h-4 w-4" /> Boutiques
+              <Store className="h-4 w-4" /> {t('team.storesTab')}
             </TabsTrigger>
           </TabsList>
 
           <TabsContent value="team">
-            <TeamTab />
+            <TeamTab roleLabels={ROLE_LABELS} dateLocale={DATE_LOCALES[language] || fr} />
           </TabsContent>
           <TabsContent value="stores">
             <StoresTab />
@@ -60,7 +59,8 @@ export default function TeamManagementPage() {
   );
 }
 
-function TeamTab() {
+function TeamTab({ roleLabels, dateLocale }: { roleLabels: Record<string, { label: string; color: string }>; dateLocale: DateLocale }) {
+  const { t } = useTranslation('settings');
   const { members, pendingInvites, isLoading, inviteMember, isInviting, updateMemberRole, removeMember } = useTeamManagement();
   const [showInvite, setShowInvite] = useState(false);
   const [email, setEmail] = useState('');
@@ -80,41 +80,41 @@ function TeamTab() {
           <CardContent className="pt-6 text-center">
             <Users className="h-8 w-8 mx-auto mb-2 text-primary" />
             <p className="text-2xl font-bold">{members.length}</p>
-            <p className="text-sm text-muted-foreground">Membres actifs</p>
+            <p className="text-sm text-muted-foreground">{t('team.activeMembers')}</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="pt-6 text-center">
             <Mail className="h-8 w-8 mx-auto mb-2 text-accent-foreground" />
             <p className="text-2xl font-bold">{pendingInvites.length}</p>
-            <p className="text-sm text-muted-foreground">Invitations en attente</p>
+            <p className="text-sm text-muted-foreground">{t('team.pendingInvites')}</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="pt-6 text-center">
             <Shield className="h-8 w-8 mx-auto mb-2 text-primary" />
             <p className="text-2xl font-bold">{members.filter(m => m.role === 'admin').length}</p>
-            <p className="text-sm text-muted-foreground">Administrateurs</p>
+            <p className="text-sm text-muted-foreground">{t('team.administrators')}</p>
           </CardContent>
         </Card>
       </div>
 
       <div className="flex justify-between items-center">
-        <h3 className="text-lg font-semibold">Membres de l'équipe</h3>
+        <h3 className="text-lg font-semibold">{t('team.teamMembers')}</h3>
         <Dialog open={showInvite} onOpenChange={setShowInvite}>
           <DialogTrigger asChild>
             <Button className="gap-2">
-              <UserPlus className="h-4 w-4" /> Inviter
+              <UserPlus className="h-4 w-4" /> {t('team.invite')}
             </Button>
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Inviter un membre</DialogTitle>
+              <DialogTitle>{t('team.inviteMember')}</DialogTitle>
             </DialogHeader>
             <div className="space-y-4 pt-4">
               <Input
                 type="email"
-                placeholder="email@exemple.com"
+                placeholder={t('team.emailPlaceholder')}
                 value={email}
                 onChange={e => setEmail(e.target.value)}
               />
@@ -123,13 +123,13 @@ function TeamTab() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="admin">Admin — Accès complet</SelectItem>
-                  <SelectItem value="editor">Éditeur — Produits & commandes</SelectItem>
-                  <SelectItem value="viewer">Lecteur — Consultation seule</SelectItem>
+                  <SelectItem value="admin">{t('team.adminRole')}</SelectItem>
+                  <SelectItem value="editor">{t('team.editorRole')}</SelectItem>
+                  <SelectItem value="viewer">{t('team.viewerRole')}</SelectItem>
                 </SelectContent>
               </Select>
               <Button onClick={handleInvite} disabled={isInviting || !email.trim()} className="w-full">
-                {isInviting ? 'Envoi...' : "Envoyer l'invitation"}
+                {isInviting ? t('team.sending') : t('team.sendInvitation')}
               </Button>
             </div>
           </DialogContent>
@@ -139,12 +139,12 @@ function TeamTab() {
       <Card>
         <CardContent className="p-0">
           {isLoading ? (
-            <div className="p-8 text-center text-muted-foreground">Chargement...</div>
+            <div className="p-8 text-center text-muted-foreground">{t('team.loading')}</div>
           ) : members.length === 0 ? (
             <div className="p-8 text-center text-muted-foreground">
               <Users className="h-12 w-12 mx-auto mb-3 opacity-30" />
-              <p>Aucun membre dans l'équipe</p>
-              <p className="text-sm">Invitez des collaborateurs pour travailler ensemble</p>
+              <p>{t('team.noMembers')}</p>
+              <p className="text-sm">{t('team.noMembersDesc')}</p>
             </div>
           ) : (
             <div className="divide-y">
@@ -158,16 +158,16 @@ function TeamTab() {
                       <p className="font-medium">{member.member_email}</p>
                       <div className="flex items-center gap-2 text-sm text-muted-foreground">
                         <Clock className="h-3 w-3" />
-                        {format(new Date(member.invited_at), 'dd MMM yyyy', { locale: fr })}
+                        {format(new Date(member.invited_at), 'dd MMM yyyy', { locale: dateLocale })}
                       </div>
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
-                    <Badge variant="secondary" className={ROLE_LABELS[member.role]?.color}>
-                      {ROLE_LABELS[member.role]?.label}
+                    <Badge variant="secondary" className={roleLabels[member.role]?.color}>
+                      {roleLabels[member.role]?.label}
                     </Badge>
                     <Badge variant={member.status === 'active' ? 'default' : 'outline'}>
-                      {member.status === 'pending' ? 'En attente' : 'Actif'}
+                      {member.status === 'pending' ? t('team.statusPending') : t('team.statusActive')}
                     </Badge>
                     <Select
                       value={member.role}
@@ -177,9 +177,9 @@ function TeamTab() {
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="admin">Admin</SelectItem>
-                        <SelectItem value="editor">Éditeur</SelectItem>
-                        <SelectItem value="viewer">Lecteur</SelectItem>
+                        <SelectItem value="admin">{t('team.roleAdmin')}</SelectItem>
+                        <SelectItem value="editor">{t('team.roleEditor')}</SelectItem>
+                        <SelectItem value="viewer">{t('team.roleViewer')}</SelectItem>
                       </SelectContent>
                     </Select>
                     <Button variant="ghost" size="icon" className="text-destructive" onClick={() => removeMember(member.id)}>
@@ -197,6 +197,7 @@ function TeamTab() {
 }
 
 function StoresTab() {
+  const { t } = useTranslation('settings');
   const { stores, isLoading, addStore, isAdding, deleteStore } = useStoreManagement();
   const [showAdd, setShowAdd] = useState(false);
   const [name, setName] = useState('');
@@ -213,19 +214,19 @@ function StoresTab() {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h3 className="text-lg font-semibold">Mes boutiques ({stores.length})</h3>
+        <h3 className="text-lg font-semibold">{t('stores.myStores', { count: stores.length })}</h3>
         <Dialog open={showAdd} onOpenChange={setShowAdd}>
           <DialogTrigger asChild>
             <Button className="gap-2">
-              <Plus className="h-4 w-4" /> Ajouter une boutique
+              <Plus className="h-4 w-4" /> {t('stores.addStore')}
             </Button>
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Nouvelle boutique</DialogTitle>
+              <DialogTitle>{t('stores.newStore')}</DialogTitle>
             </DialogHeader>
             <div className="space-y-4 pt-4">
-              <Input placeholder="Nom de la boutique" value={name} onChange={e => setName(e.target.value)} />
+              <Input placeholder={t('stores.storeName')} value={name} onChange={e => setName(e.target.value)} />
               <Select value={platform} onValueChange={setPlatform}>
                 <SelectTrigger>
                   <SelectValue />
@@ -238,9 +239,9 @@ function StoresTab() {
                   <SelectItem value="ebay">🔵 eBay</SelectItem>
                 </SelectContent>
               </Select>
-              <Input placeholder="Domaine (optionnel)" value={domain} onChange={e => setDomain(e.target.value)} />
+              <Input placeholder={t('stores.domainOptional')} value={domain} onChange={e => setDomain(e.target.value)} />
               <Button onClick={handleAdd} disabled={isAdding || !name.trim()} className="w-full">
-                {isAdding ? 'Ajout...' : 'Ajouter'}
+                {isAdding ? t('stores.adding') : t('stores.add')}
               </Button>
             </div>
           </DialogContent>
@@ -248,13 +249,13 @@ function StoresTab() {
       </div>
 
       {isLoading ? (
-        <div className="p-8 text-center text-muted-foreground">Chargement...</div>
+        <div className="p-8 text-center text-muted-foreground">{t('team.loading')}</div>
       ) : stores.length === 0 ? (
         <Card>
           <CardContent className="p-8 text-center">
             <Store className="h-12 w-12 mx-auto mb-3 opacity-30" />
-            <p className="font-medium">Aucune boutique configurée</p>
-            <p className="text-sm text-muted-foreground">Ajoutez votre première boutique pour commencer</p>
+            <p className="font-medium">{t('stores.noStores')}</p>
+            <p className="text-sm text-muted-foreground">{t('stores.noStoresDesc')}</p>
           </CardContent>
         </Card>
       ) : (
@@ -263,7 +264,7 @@ function StoresTab() {
             <Card key={store.id}>
               <CardHeader className="pb-3">
                 <div className="flex items-center gap-2">
-                  <span className="text-lg">{PLATFORM_ICONS[store.platform] || '🏪'}</span>
+                  <span className="text-lg">{'🏪'}</span>
                   <CardTitle className="text-base">{store.name}</CardTitle>
                 </div>
                 <CardDescription className="capitalize">{store.platform}</CardDescription>
@@ -277,12 +278,12 @@ function StoresTab() {
                 )}
                 <div className="flex items-center gap-2 text-sm">
                   <Badge variant={store.status === 'active' ? 'default' : 'secondary'}>
-                    {store.status === 'active' ? 'Active' : store.status}
+                    {store.status === 'active' ? t('stores.active') : store.status}
                   </Badge>
                 </div>
                 <div className="flex justify-end pt-2">
                   <Button variant="ghost" size="sm" className="text-destructive" onClick={() => deleteStore(store.id)}>
-                    <Trash2 className="h-3 w-3 mr-1" /> Supprimer
+                    <Trash2 className="h-3 w-3 mr-1" /> {t('stores.delete')}
                   </Button>
                 </div>
               </CardContent>
