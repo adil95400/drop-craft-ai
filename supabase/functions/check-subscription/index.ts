@@ -1,232 +1,198 @@
-import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import Stripe from "https://esm.sh/stripe@18.5.0";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
+/**
+ * Check Subscription — SECURED (JWT-first via getClaims)
+ * 
+ * NOTE: This function legitimately needs SERVICE_ROLE_KEY to sync profile
+ * data (plan, subscription_status) because RLS prevents users from updating
+ * their own plan column. The auth check itself uses getClaims() (no round-trip).
+ */
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.53.0'
+import { getSecureCorsHeaders } from '../_shared/cors.ts'
+import Stripe from 'https://esm.sh/stripe@18.5.0'
 
-// Product IDs mapping - MUST match stripe-config.ts
+const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!
+const SUPABASE_ANON_KEY = Deno.env.get('SUPABASE_ANON_KEY')!
+const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+
 const PRODUCT_TO_PLAN: Record<string, string> = {
-  "prod_TuImodwMnB71NS": "standard",
-  "prod_TuImFSanPs0svj": "pro",
-  "prod_T3RTMipVwUA7Ud": "ultra_pro"
-};
+  'prod_TuImodwMnB71NS': 'standard',
+  'prod_TuImFSanPs0svj': 'pro',
+  'prod_T3RTMipVwUA7Ud': 'ultra_pro',
+}
 
 const logStep = (step: string, details?: any) => {
-  const detailsStr = details ? ` - ${JSON.stringify(details)}` : '';
-  console.log(`[CHECK-SUBSCRIPTION] ${step}${detailsStr}`);
-};
+  const safeDetails = details ? { ...details } : undefined
+  if (safeDetails?.email) safeDetails.email = safeDetails.email.slice(0, 3) + '***'
+  console.log(`[CHECK-SUBSCRIPTION] ${step}${safeDetails ? ` - ${JSON.stringify(safeDetails)}` : ''}`)
+}
 
 // Simple in-memory cache (per worker instance)
-const cache: { [email: string]: { data: any; timestamp: number } } = {};
-const CACHE_TTL = 60 * 1000; // 1 minute cache
+const cache: { [userId: string]: { data: any; timestamp: number } } = {}
+const CACHE_TTL = 60 * 1000
 
-serve(async (req) => {
-  if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+Deno.serve(async (req) => {
+  if (req.method === 'OPTIONS') {
+    const origin = req.headers.get('origin')
+    return new Response(null, { status: 204, headers: getSecureCorsHeaders(origin) })
   }
 
-  const supabaseClient = createClient(
-    Deno.env.get("SUPABASE_URL") ?? "",
-    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
-    { auth: { persistSession: false } }
-  );
+  const origin = req.headers.get('origin')
+  const corsHeaders = getSecureCorsHeaders(origin)
 
   try {
-    logStep("Function started");
+    logStep('Function started')
 
-    const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
-    if (!stripeKey) throw new Error("STRIPE_SECRET_KEY is not set");
-
-    const authHeader = req.headers.get("Authorization");
-    if (!authHeader) throw new Error("No authorization header provided");
-
-    const token = authHeader.replace("Bearer ", "");
-    const { data: userData, error: userError } = await supabaseClient.auth.getUser(token);
-    if (userError) throw new Error(`Authentication error: ${userError.message}`);
-    const user = userData.user;
-    if (!user?.email) throw new Error("User not authenticated or email not available");
-    logStep("User authenticated", { userId: user.id, email: user.email });
-
-    // Check cache first
-    const cached = cache[user.email];
-    if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
-      logStep("Returning cached response");
-      return new Response(JSON.stringify(cached.data), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-        status: 200,
-      });
+    // ── Auth: JWT-first via getClaims (no server round-trip) ──
+    const authHeader = req.headers.get('Authorization')
+    if (!authHeader?.startsWith('Bearer ')) {
+      return new Response(JSON.stringify({ error: 'Authorization required' }), {
+        status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
     }
 
-    const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
-    
-    let customers;
+    const anonClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+      global: { headers: { Authorization: authHeader } },
+    })
+
+    const token = authHeader.replace('Bearer ', '')
+    const { data: claimsData, error: claimsErr } = await anonClient.auth.getClaims(token)
+    if (claimsErr || !claimsData?.claims) {
+      return new Response(JSON.stringify({ error: 'Invalid or expired token' }), {
+        status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
+
+    const userId = claimsData.claims.sub as string
+    const email = claimsData.claims.email as string
+    if (!userId || !email) {
+      return new Response(JSON.stringify({ error: 'Invalid token claims' }), {
+        status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
+
+    logStep('User authenticated', { userId: userId.slice(0, 8), email })
+
+    // ── Cache check ──
+    const cached = cache[userId]
+    if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
+      logStep('Returning cached response')
+      return new Response(JSON.stringify(cached.data), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
+
+    // ── Stripe lookup ──
+    const stripeKey = Deno.env.get('STRIPE_SECRET_KEY')
+    if (!stripeKey) throw new Error('STRIPE_SECRET_KEY is not set')
+
+    const stripe = new Stripe(stripeKey, { apiVersion: '2025-08-27.basil' })
+
+    let customers
     try {
-      customers = await stripe.customers.list({ email: user.email, limit: 1 });
+      customers = await stripe.customers.list({ email, limit: 1 })
     } catch (stripeError: any) {
       if (stripeError.code === 'rate_limit') {
-        logStep("Stripe rate limited, returning cached or default");
-        // Return cached data if available, even if stale
+        logStep('Stripe rate limited, returning cached or default')
         if (cached) {
           return new Response(JSON.stringify(cached.data), {
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
-            status: 200,
-          });
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          })
         }
-        // Return default free plan if no cache
-        return new Response(JSON.stringify({ 
-          subscribed: false, 
-          product_id: null, 
-          plan: 'free', 
-          subscription_end: null 
-        }), {
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-          status: 200,
-        });
+        return new Response(JSON.stringify({ subscribed: false, product_id: null, plan: 'free', subscription_end: null }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        })
       }
-      throw stripeError;
+      throw stripeError
     }
-    
+
     if (customers.data.length === 0) {
-      logStep("No customer found, returning free plan");
-      const result = { 
-        subscribed: false,
-        product_id: null,
-        plan: 'free',
-        subscription_end: null
-      };
-      cache[user.email] = { data: result, timestamp: Date.now() };
+      logStep('No customer found, returning free plan')
+      const result = { subscribed: false, product_id: null, plan: 'free', subscription_end: null }
+      cache[userId] = { data: result, timestamp: Date.now() }
       return new Response(JSON.stringify(result), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-        status: 200,
-      });
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
     }
 
-    const customerId = customers.data[0].id;
-    logStep("Found Stripe customer", { customerId });
+    const customerId = customers.data[0].id
+    logStep('Found Stripe customer', { customerId })
 
-    // Check for active subscriptions
-    const subscriptions = await stripe.subscriptions.list({
-      customer: customerId,
-      status: "active",
-      limit: 1,
-    });
-    
-    let hasActiveSub = subscriptions.data.length > 0;
-    let productId: string | null = null;
-    let subscriptionEnd: string | null = null;
-    let plan = 'free';
+    const subscriptions = await stripe.subscriptions.list({ customer: customerId, status: 'active', limit: 1 })
 
-    // Also check for trialing subscriptions
+    let hasActiveSub = subscriptions.data.length > 0
+    let productId: string | null = null
+    let subscriptionEnd: string | null = null
+    let plan = 'free'
+
     if (!hasActiveSub) {
-      const trialingSubscriptions = await stripe.subscriptions.list({
-        customer: customerId,
-        status: "trialing",
-        limit: 1,
-      });
-      if (trialingSubscriptions.data.length > 0) {
-        hasActiveSub = true;
-        const subscription = trialingSubscriptions.data[0];
-        subscriptionEnd = new Date(subscription.current_period_end * 1000).toISOString();
-        productId = subscription.items.data[0].price.product as string;
-        plan = PRODUCT_TO_PLAN[productId] || 'standard';
-        logStep("Trial subscription found", { productId, plan });
+      const trialingSubs = await stripe.subscriptions.list({ customer: customerId, status: 'trialing', limit: 1 })
+      if (trialingSubs.data.length > 0) {
+        hasActiveSub = true
+        const sub = trialingSubs.data[0]
+        subscriptionEnd = new Date(sub.current_period_end * 1000).toISOString()
+        productId = sub.items.data[0].price.product as string
+        plan = PRODUCT_TO_PLAN[productId] || 'standard'
       }
     }
 
     if (hasActiveSub && !productId) {
-      const subscription = subscriptions.data[0];
-      subscriptionEnd = new Date(subscription.current_period_end * 1000).toISOString();
-      productId = subscription.items.data[0].price.product as string;
-      plan = PRODUCT_TO_PLAN[productId] || 'standard';
-      logStep("Active subscription found", { subscriptionId: subscription.id, productId, plan, endDate: subscriptionEnd });
+      const sub = subscriptions.data[0]
+      subscriptionEnd = new Date(sub.current_period_end * 1000).toISOString()
+      productId = sub.items.data[0].price.product as string
+      plan = PRODUCT_TO_PLAN[productId] || 'standard'
     }
 
-    // Sync with profiles table
+    // ── Profile sync (requires SERVICE_ROLE to bypass RLS on plan column) ──
+    const adminClient = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
+      auth: { persistSession: false },
+    })
+
     if (hasActiveSub) {
-      const { error: updateError } = await supabaseClient
-        .from('profiles')
-        .update({ 
-          plan,
-          subscription_plan: plan,
-          subscription_status: 'active',
-          stripe_customer_id: customerId,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', user.id);
-      
-      if (updateError) {
-        logStep("Error syncing profile", { error: updateError.message });
-      } else {
-        logStep("Profile synced successfully", { plan });
-      }
+      await adminClient.from('profiles').update({
+        plan,
+        subscription_plan: plan,
+        subscription_status: 'active',
+        stripe_customer_id: customerId,
+        updated_at: new Date().toISOString(),
+      }).eq('id', userId)
     } else {
-      logStep("No active subscription found");
-      
-      // Check for past_due subscriptions
-      const pastDueSubscriptions = await stripe.subscriptions.list({
-        customer: customerId,
-        status: "past_due",
-        limit: 1,
-      });
-      
-      const isPastDue = pastDueSubscriptions.data.length > 0;
-      
-      // Check current profile plan to avoid unnecessary updates
-      const { data: profile } = await supabaseClient
-        .from('profiles')
-        .select('plan, subscription_status')
-        .eq('id', user.id)
-        .single();
-      
+      const pastDueSubs = await stripe.subscriptions.list({ customer: customerId, status: 'past_due', limit: 1 })
+      const isPastDue = pastDueSubs.data.length > 0
+
+      const { data: profile } = await adminClient.from('profiles')
+        .select('plan, subscription_status').eq('id', userId).single()
+
       if (profile?.subscription_status === 'active' || isPastDue) {
-        const newStatus = isPastDue ? 'past_due' : 'inactive';
-        const { error: resetError } = await supabaseClient
-          .from('profiles')
-          .update({ 
-            plan: 'free',
-            subscription_plan: 'free',
-            subscription_status: newStatus,
-            updated_at: new Date().toISOString()
-          })
-          .eq('id', user.id);
-        
-        if (resetError) {
-          logStep("Error resetting profile", { error: resetError.message });
-        }
+        await adminClient.from('profiles').update({
+          plan: 'free',
+          subscription_plan: 'free',
+          subscription_status: isPastDue ? 'past_due' : 'inactive',
+          updated_at: new Date().toISOString(),
+        }).eq('id', userId)
       }
     }
 
-    // Get subscription_status from profile for response
-    const { data: finalProfile } = await supabaseClient
-      .from('profiles')
-      .select('subscription_status')
-      .eq('id', user.id)
-      .single();
+    const { data: finalProfile } = await adminClient.from('profiles')
+      .select('subscription_status').eq('id', userId).single()
 
     const result = {
       subscribed: hasActiveSub,
       product_id: productId,
-      plan: plan,
+      plan,
       subscription_end: subscriptionEnd,
-      subscription_status: finalProfile?.subscription_status || (hasActiveSub ? 'active' : 'inactive')
-    };
-    
-    // Cache the result
-    cache[user.email] = { data: result, timestamp: Date.now() };
+      subscription_status: finalProfile?.subscription_status || (hasActiveSub ? 'active' : 'inactive'),
+    }
+
+    cache[userId] = { data: result, timestamp: Date.now() }
 
     return new Response(JSON.stringify(result), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-      status: 200,
-    });
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    })
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : String(error);
-    logStep("ERROR in check-subscription", { message: errorMessage });
-    return new Response(JSON.stringify({ error: errorMessage }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-      status: 500,
-    });
+    const msg = error instanceof Error ? error.message : String(error)
+    logStep('ERROR', { message: msg })
+    return new Response(JSON.stringify({ error: msg }), {
+      status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    })
   }
-});
+})

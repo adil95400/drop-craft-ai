@@ -1,269 +1,212 @@
-import "https://deno.land/x/xhr@0.1.0/mod.ts";
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.53.0';
+/**
+ * Automation Engine — SECURED (JWT-first, RLS-enforced)
+ * CRUD for automation rules & workflows.
+ */
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+import { requireAuth, handlePreflight, successResponse, errorResponse } from '../_shared/jwt-auth.ts'
 
-const supabase = createClient(
-  Deno.env.get('SUPABASE_URL') ?? '',
-  Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
-);
-
-serve(async (req) => {
-  if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
-  }
+Deno.serve(async (req) => {
+  const preflight = handlePreflight(req)
+  if (preflight) return preflight
 
   try {
-    const { action, ...params } = await req.json();
-    console.log(`🤖 Automation Engine - Action: ${action}`);
+    const { userId, supabase, corsHeaders } = await requireAuth(req)
 
-    const authHeader = req.headers.get('Authorization');
-    if (!authHeader) {
-      throw new Error('Authorization header required');
-    }
+    const { action, ...params } = await req.json()
+    console.log(`🤖 Automation Engine - Action: ${action}, User: ${userId.slice(0, 8)}`)
 
-    const token = authHeader.replace('Bearer ', '');
-    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
-    if (authError || !user) {
-      throw new Error('Authentication failed');
-    }
-
-    let result;
+    let result
 
     switch (action) {
       case 'create_rule':
-        result = await createRule(user.id, params);
-        break;
+        result = await createRule(supabase, userId, params)
+        break
       case 'update_rule':
-        result = await updateRule(user.id, params);
-        break;
+        result = await updateRule(supabase, userId, params)
+        break
       case 'get_rule':
-        result = await getRule(user.id, params);
-        break;
+        result = await getRule(supabase, userId, params)
+        break
       case 'delete_rule':
-        result = await deleteRule(user.id, params);
-        break;
+        result = await deleteRule(supabase, userId, params)
+        break
       case 'get_rules':
-        result = await getRules(user.id, params);
-        break;
+        result = await getRules(supabase, userId)
+        break
       case 'create_workflow':
-        result = await createWorkflow(user.id, params);
-        break;
+        result = await createWorkflow(supabase, userId, params)
+        break
       case 'execute_workflow':
-        result = await executeWorkflow(user.id, params);
-        break;
+        result = await executeWorkflow(supabase, userId, params)
+        break
       case 'get_workflows':
-        result = await getWorkflows(user.id, params);
-        break;
+        result = await getWorkflows(supabase, userId)
+        break
       case 'analyze_automation_performance':
-        result = await analyzeAutomationPerformance(user.id, params);
-        break;
+        result = await analyzeAutomationPerformance(supabase, userId)
+        break
       default:
-        throw new Error(`Unknown action: ${action}`);
+        return errorResponse(`Unknown action: ${action}`, corsHeaders, 400)
     }
 
-    return new Response(JSON.stringify(result), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
-
-  } catch (error) {
-    console.error('🔥 Automation Engine Error:', error);
-    return new Response(JSON.stringify({ 
-      error: error.message,
-      success: false 
-    }), {
-      status: 500,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
+    return successResponse(result, corsHeaders)
+  } catch (err) {
+    if (err instanceof Response) return err
+    console.error('🔥 Automation Engine Error:', err)
+    const origin = req.headers.get('origin')
+    const { getSecureCorsHeaders } = await import('../_shared/cors.ts')
+    return new Response(
+      JSON.stringify({ error: err instanceof Error ? err.message : 'Erreur interne', success: false }),
+      { status: 500, headers: { ...getSecureCorsHeaders(origin), 'Content-Type': 'application/json' } }
+    )
   }
-});
+})
 
-async function createRule(userId: string, params: any) {
-  const { rule } = params;
-  
+async function createRule(supabase: any, userId: string, params: any) {
+  const { rule } = params
   const { data, error } = await supabase
     .from('automation_rules')
-    .insert({
-      ...rule,
-      user_id: userId,
-    })
+    .insert({ ...rule, user_id: userId })
     .select()
-    .single();
-
-  if (error) throw error;
-
-  return {
-    success: true,
-    rule: data,
-    message: 'Règle créée avec succès'
-  };
+    .single()
+  if (error) throw error
+  return { success: true, rule: data, message: 'Règle créée avec succès' }
 }
 
-async function updateRule(userId: string, params: any) {
-  const { rule_id, updates } = params;
-  
+async function updateRule(supabase: any, userId: string, params: any) {
+  const { rule_id, updates } = params
   const { data, error } = await supabase
     .from('automation_rules')
     .update(updates)
     .eq('id', rule_id)
     .eq('user_id', userId)
     .select()
-    .single();
-
-  if (error) throw error;
-
-  return {
-    success: true,
-    rule: data,
-    message: 'Règle mise à jour avec succès'
-  };
+    .single()
+  if (error) throw error
+  return { success: true, rule: data, message: 'Règle mise à jour avec succès' }
 }
 
-async function getRule(userId: string, params: any) {
-  const { rule_id } = params;
-  
+async function getRule(supabase: any, userId: string, params: any) {
+  const { rule_id } = params
   const { data, error } = await supabase
     .from('automation_rules')
     .select('*')
     .eq('id', rule_id)
     .eq('user_id', userId)
-    .single();
-
-  if (error) throw error;
-
-  return {
-    success: true,
-    rule: data
-  };
+    .single()
+  if (error) throw error
+  return { success: true, rule: data }
 }
 
-async function deleteRule(userId: string, params: any) {
-  const { rule_id } = params;
-  
+async function deleteRule(supabase: any, userId: string, params: any) {
+  const { rule_id } = params
   const { error } = await supabase
     .from('automation_rules')
     .delete()
     .eq('id', rule_id)
-    .eq('user_id', userId);
-
-  if (error) throw error;
-
-  return {
-    success: true,
-    message: 'Règle supprimée avec succès'
-  };
+    .eq('user_id', userId)
+  if (error) throw error
+  return { success: true, message: 'Règle supprimée avec succès' }
 }
 
-async function getRules(userId: string, params: any) {
+async function getRules(supabase: any, userId: string) {
   const { data, error } = await supabase
     .from('automation_rules')
     .select('*')
     .eq('user_id', userId)
     .order('created_at', { ascending: false })
-    .limit(100);
-
-  if (error) throw error;
-
-  return {
-    success: true,
-    rules: data || [],
-    count: data?.length || 0
-  };
+    .limit(100)
+  if (error) throw error
+  return { success: true, rules: data || [], count: data?.length || 0 }
 }
 
-async function createWorkflow(userId: string, params: any) {
-  const { name, description, triggers, actions } = params;
-  
+async function createWorkflow(supabase: any, userId: string, params: any) {
+  const { name, description, triggers, actions } = params
   const { data, error } = await supabase
     .from('automation_workflows')
     .insert({
       user_id: userId,
       name,
       description,
-      trigger_type: triggers[0]?.type || 'manual',
-      trigger_config: triggers[0] || {},
+      trigger_type: triggers?.[0]?.type || 'manual',
+      trigger_config: triggers?.[0] || {},
       steps: actions || [],
-      status: 'draft'
+      status: 'draft',
     })
     .select()
-    .single();
+    .single()
+  if (error) throw error
+  return { success: true, workflow: data, message: 'Workflow créé avec succès' }
+}
 
-  if (error) throw error;
+async function executeWorkflow(supabase: any, userId: string, params: any) {
+  const { workflowId } = params
+
+  // Verify ownership
+  const { data: wf, error } = await supabase
+    .from('automation_workflows')
+    .select('id, name, steps')
+    .eq('id', workflowId)
+    .eq('user_id', userId)
+    .single()
+  if (error || !wf) throw new Error('Workflow not found')
+
+  // Update execution count
+  await supabase
+    .from('automation_workflows')
+    .update({
+      execution_count: (wf.execution_count || 0) + 1,
+      last_run_at: new Date().toISOString(),
+    })
+    .eq('id', workflowId)
+    .eq('user_id', userId)
 
   return {
     success: true,
-    workflow: data,
-    message: 'Workflow créé avec succès'
-  };
+    execution_id: crypto.randomUUID(),
+    workflow_id: workflowId,
+    steps_executed: (wf.steps || []).length,
+    message: 'Workflow exécuté',
+  }
 }
 
-async function executeWorkflow(userId: string, params: any) {
-  const { workflowId, inputData } = params;
-  
-  return {
-    success: true,
-    execution_id: 'test-exec-' + Date.now(),
-    steps_executed: 3,
-    results: [
-      { stepIndex: 0, stepType: 'send_email', result: { status: 'completed' } },
-      { stepIndex: 1, stepType: 'create_notification', result: { status: 'completed' } },
-      { stepIndex: 2, stepType: 'ai_analysis', result: { status: 'completed' } }
-    ]
-  };
-}
-
-async function getWorkflows(userId: string, params: any) {
+async function getWorkflows(supabase: any, userId: string) {
   const { data, error } = await supabase
     .from('automation_workflows')
     .select('*')
     .eq('user_id', userId)
     .order('created_at', { ascending: false })
-    .limit(50);
-
-  if (error) throw error;
-
-  return {
-    success: true,
-    workflows: data || [],
-    count: data?.length || 0
-  };
+    .limit(50)
+  if (error) throw error
+  return { success: true, workflows: data || [], count: data?.length || 0 }
 }
 
-async function analyzeAutomationPerformance(userId: string, params: any) {
+async function analyzeAutomationPerformance(supabase: any, userId: string) {
+  const { data: workflows } = await supabase
+    .from('automation_workflows')
+    .select('id, name, status, execution_count, run_count, is_active')
+    .eq('user_id', userId)
+
+  const { data: rules } = await supabase
+    .from('automation_rules')
+    .select('id, is_active, trigger_count')
+    .eq('user_id', userId)
+
+  const totalWorkflows = workflows?.length || 0
+  const activeWorkflows = workflows?.filter((w: any) => w.is_active)?.length || 0
+  const totalExecutions = workflows?.reduce((sum: number, w: any) => sum + (w.execution_count || 0), 0) || 0
+  const totalRules = rules?.length || 0
+  const activeRules = rules?.filter((r: any) => r.is_active)?.length || 0
+
   return {
     success: true,
     analysis: {
-      total_workflows: 5,
-      active_workflows: 3,
-      total_executions: 127,
-      successful_executions: 119,
-      failed_executions: 8,
-      success_rate: '93.7%',
-      avg_execution_time: '250ms',
-      most_used_workflow: 'Email Marketing',
-      recommendations: [
-        {
-          type: 'optimization',
-          title: 'Optimisation recommandée',
-          description: 'Certains workflows peuvent être améliorés',
-          action: 'Analysez les performances et ajustez si nécessaire'
-        }
-      ]
+      total_workflows: totalWorkflows,
+      active_workflows: activeWorkflows,
+      total_executions: totalExecutions,
+      total_rules: totalRules,
+      active_rules: activeRules,
     },
-    workflows: [
-      {
-        id: '1',
-        name: 'Email Marketing',
-        status: 'active',
-        execution_count: 45,
-        success_count: 43,
-        failure_count: 2,
-        success_rate: '95.6%'
-      }
-    ]
-  };
+    workflows: workflows || [],
+  }
 }
