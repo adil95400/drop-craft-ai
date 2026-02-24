@@ -1,84 +1,67 @@
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
-}
-
 /**
- * Auto-Fulfillment Engine — Complete pipeline:
+ * Auto-Fulfillment Engine — SECURED (JWT-first, RLS-enforced)
+ * 
+ * Pipeline:
  * 1. order.created → match products → find supplier → place supplier order
  * 2. tracking received → update shipment → sync to Shopify
  * 3. retry failed orders with exponential backoff
  * 
  * Actions: process_order, process_pending, retry_failed, sync_tracking, get_stats
  */
-Deno.serve(async (req) => {
-  if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders })
-  }
 
-  const supabaseAdmin = createClient(
-    Deno.env.get('SUPABASE_URL')!,
-    Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
-  )
+import { requireAuth, handlePreflight, errorResponse, successResponse } from '../_shared/jwt-auth.ts'
+
+Deno.serve(async (req) => {
+  const preflight = handlePreflight(req)
+  if (preflight) return preflight
 
   try {
-    // Auth
-    const authHeader = req.headers.get('Authorization')
-    if (!authHeader?.startsWith('Bearer ')) {
-      return json({ error: 'Unauthorized' }, 401)
-    }
-
-    const token = authHeader.replace('Bearer ', '')
-    const { data, error: authErr } = await supabaseAdmin.auth.getUser(token)
-    if (authErr || !data.user) {
-      return json({ error: 'Invalid token' }, 401)
-    }
-    const userId = data.user.id
+    const { userId, supabase, corsHeaders } = await requireAuth(req)
 
     const body = await req.json().catch(() => ({}))
     const { action = 'get_stats' } = body
 
     console.log(`[auto-fulfillment-engine] action=${action} user=${userId.slice(0, 8)}`)
 
+    let result: Record<string, unknown>
+
     switch (action) {
       case 'process_order':
-        return json(await processOrder(supabaseAdmin, userId, body.order_id))
-
+        result = await processOrder(supabase, userId, body.order_id)
+        break
       case 'process_pending':
-        return json(await processPendingOrders(supabaseAdmin, userId))
-
+        result = await processPendingOrders(supabase, userId)
+        break
       case 'retry_failed':
-        return json(await retryFailedOrders(supabaseAdmin, userId, body.queue_ids))
-
+        result = await retryFailedOrders(supabase, userId, body.queue_ids)
+        break
       case 'sync_tracking':
-        return json(await syncTrackingToShopify(supabaseAdmin, userId))
-
+        result = await syncTrackingToShopify(supabase, userId)
+        break
       case 'get_stats':
-        return json(await getStats(supabaseAdmin, userId))
-
+        result = await getStats(supabase, userId)
+        break
       default:
-        return json({ error: `Unknown action: ${action}` }, 400)
+        return errorResponse(`Unknown action: ${action}`, corsHeaders)
     }
-  } catch (err: any) {
+
+    return successResponse(result, corsHeaders)
+  } catch (err) {
+    if (err instanceof Response) return err
     console.error('[auto-fulfillment-engine] Error:', err)
-    return json({ error: err.message || 'Internal error' }, 500)
+    const origin = req.headers.get('origin')
+    const { getSecureCorsHeaders } = await import('../_shared/cors.ts')
+    return new Response(
+      JSON.stringify({ success: false, error: err instanceof Error ? err.message : 'Internal error' }),
+      { status: 500, headers: { ...getSecureCorsHeaders(origin), 'Content-Type': 'application/json' } }
+    )
   }
 })
-
-function json(data: any, status = 200) {
-  return new Response(JSON.stringify(data), {
-    status,
-    headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-  })
-}
 
 // ─── PROCESS A SINGLE ORDER ──────────────────────────────────────────────────
 async function processOrder(supabase: any, userId: string, orderId: string) {
   if (!orderId) throw new Error('order_id required')
 
-  // 1. Get order with items
   const { data: order, error: oErr } = await supabase
     .from('orders')
     .select('*, order_items(*)')
@@ -88,7 +71,7 @@ async function processOrder(supabase: any, userId: string, orderId: string) {
 
   if (oErr || !order) throw new Error('Order not found')
 
-  // 2. Check if already queued
+  // Check if already queued
   const { data: existing } = await supabase
     .from('auto_order_queue')
     .select('id, status')
@@ -98,10 +81,10 @@ async function processOrder(supabase: any, userId: string, orderId: string) {
     .maybeSingle()
 
   if (existing) {
-    return { success: false, error: 'Order already in queue', queue_id: existing.id }
+    return { error: 'Order already in queue', queue_id: existing.id }
   }
 
-  // 3. Match order items to products → find supplier
+  // Match order items to products → find supplier
   const items = order.order_items || []
   const supplierItems: any[] = []
   let primarySupplier = 'manual'
@@ -129,10 +112,10 @@ async function processOrder(supabase: any, userId: string, orderId: string) {
   }
 
   if (supplierItems.length === 0) {
-    return { success: false, error: 'No products with supplier mapping found' }
+    return { error: 'No products with supplier mapping found' }
   }
 
-  // 4. Enqueue the supplier order
+  // Enqueue the supplier order
   const { data: queued, error: qErr } = await supabase
     .from('auto_order_queue')
     .insert({
@@ -156,10 +139,10 @@ async function processOrder(supabase: any, userId: string, orderId: string) {
 
   if (qErr) throw qErr
 
-  // 5. Try to process immediately
+  // Try to process immediately
   const result = await executeSupplierOrder(supabase, userId, queued.id)
 
-  // 6. Log activity
+  // Log activity
   await supabase.from('activity_logs').insert({
     user_id: userId,
     action: 'auto_fulfillment_queued',
@@ -171,7 +154,6 @@ async function processOrder(supabase: any, userId: string, orderId: string) {
   })
 
   return {
-    success: true,
     queue_id: queued.id,
     supplier: primarySupplier,
     items_count: supplierItems.length,
@@ -190,14 +172,13 @@ async function executeSupplierOrder(supabase: any, userId: string, queueId: stri
 
   if (!queueItem) throw new Error('Queue item not found')
 
-  // Update status to processing
   await supabase
     .from('auto_order_queue')
     .update({ status: 'processing', updated_at: new Date().toISOString() })
     .eq('id', queueId)
 
   try {
-    // Get supplier credentials
+    // Get supplier credentials (RLS-scoped to this user)
     const { data: creds } = await supabase
       .from('supplier_credentials_vault')
       .select('supplier_slug, oauth_data')
@@ -207,7 +188,6 @@ async function executeSupplierOrder(supabase: any, userId: string, queueId: stri
       .maybeSingle()
 
     if (!creds) {
-      // No credentials — mark as needing manual processing
       await supabase
         .from('auto_order_queue')
         .update({
@@ -220,7 +200,6 @@ async function executeSupplierOrder(supabase: any, userId: string, queueId: stri
       return { status: 'pending_manual', reason: 'no_credentials' }
     }
 
-    // Call the supplier-order-place function internally
     const payload = queueItem.payload as any
     const orderResult = await placeSupplierOrder(
       queueItem.supplier_type,
@@ -229,7 +208,6 @@ async function executeSupplierOrder(supabase: any, userId: string, queueId: stri
       payload.shipping_address
     )
 
-    // Success — update queue and create shipment
     await supabase
       .from('auto_order_queue')
       .update({
@@ -244,7 +222,6 @@ async function executeSupplierOrder(supabase: any, userId: string, queueId: stri
       })
       .eq('id', queueId)
 
-    // Create/update fulfillment shipment
     await supabase
       .from('fulfillment_shipments')
       .upsert({
@@ -259,7 +236,6 @@ async function executeSupplierOrder(supabase: any, userId: string, queueId: stri
         shipping_cost: payload.total_cost,
       }, { onConflict: 'order_id,user_id' })
 
-    // Update order status
     await supabase
       .from('orders')
       .update({
@@ -275,7 +251,6 @@ async function executeSupplierOrder(supabase: any, userId: string, queueId: stri
     return { status: 'completed', ...orderResult }
 
   } catch (err: any) {
-    // Failed — schedule retry
     const nextRetry = queueItem.retry_count < queueItem.max_retries
       ? new Date(Date.now() + Math.pow(2, queueItem.retry_count) * 60000).toISOString()
       : null
@@ -373,7 +348,7 @@ async function placeSupplierOrder(
     }
 
     default:
-      throw new Error(`Supplier "${supplierType}" not supported for auto-order. Configure credentials first.`)
+      throw new Error(`Supplier "${supplierType}" not supported for auto-order.`)
   }
 }
 
@@ -394,7 +369,7 @@ async function processPendingOrders(supabase: any, userId: string) {
     results.push({ queue_id: item.id, ...result })
   }
 
-  return { success: true, processed: results.length, results }
+  return { processed: results.length, results }
 }
 
 // ─── RETRY FAILED ORDERS ────────────────────────────────────────────────────
@@ -411,7 +386,6 @@ async function retryFailedOrders(supabase: any, userId: string, queueIds?: strin
 
   const { data: failed } = await query.limit(20)
 
-  // Reset retry count and status
   for (const item of failed || []) {
     await supabase
       .from('auto_order_queue')
@@ -419,19 +393,17 @@ async function retryFailedOrders(supabase: any, userId: string, queueIds?: strin
       .eq('id', item.id)
   }
 
-  // Process them
   const results = []
   for (const item of failed || []) {
     const result = await executeSupplierOrder(supabase, userId, item.id)
     results.push({ queue_id: item.id, ...result })
   }
 
-  return { success: true, retried: results.length, results }
+  return { retried: results.length, results }
 }
 
 // ─── SYNC TRACKING TO SHOPIFY ────────────────────────────────────────────────
 async function syncTrackingToShopify(supabase: any, userId: string) {
-  // Find shipments with tracking but not yet synced to Shopify
   const { data: shipments } = await supabase
     .from('fulfillment_shipments')
     .select('*, order:orders(shopify_order_id)')
@@ -441,10 +413,9 @@ async function syncTrackingToShopify(supabase: any, userId: string) {
     .limit(20)
 
   if (!shipments?.length) {
-    return { success: true, synced: 0, message: 'No tracking to sync' }
+    return { synced: 0, message: 'No tracking to sync' }
   }
 
-  // Get Shopify credentials
   const { data: shop } = await supabase
     .from('shops')
     .select('shop_domain, access_token')
@@ -454,7 +425,7 @@ async function syncTrackingToShopify(supabase: any, userId: string) {
     .maybeSingle()
 
   if (!shop?.access_token) {
-    return { success: false, error: 'No active Shopify connection' }
+    return { error: 'No active Shopify connection' }
   }
 
   let synced = 0
@@ -465,7 +436,6 @@ async function syncTrackingToShopify(supabase: any, userId: string) {
     if (!shopifyOrderId) continue
 
     try {
-      // Create fulfillment in Shopify
       const fulfillmentResp = await fetch(
         `https://${shop.shop_domain}/admin/api/2024-10/orders/${shopifyOrderId}/fulfillments.json`,
         {
@@ -494,7 +464,6 @@ async function syncTrackingToShopify(supabase: any, userId: string) {
             updated_at: new Date().toISOString(),
           })
           .eq('id', shipment.id)
-
         synced++
       } else {
         const errText = await fulfillmentResp.text()
@@ -505,7 +474,6 @@ async function syncTrackingToShopify(supabase: any, userId: string) {
     }
   }
 
-  // Log
   await supabase.from('activity_logs').insert({
     user_id: userId,
     action: 'tracking_synced_to_shopify',
@@ -515,7 +483,7 @@ async function syncTrackingToShopify(supabase: any, userId: string) {
     source: 'auto-fulfillment-engine',
   })
 
-  return { success: true, synced, errors: errors.length, error_details: errors }
+  return { synced, errors: errors.length, error_details: errors }
 }
 
 // ─── GET STATS ───────────────────────────────────────────────────────────────
@@ -544,17 +512,15 @@ async function getStats(supabase: any, userId: string) {
   const total = items.length || 1
   const successRate = Math.round((completed / total) * 100)
 
-  // Avg processing time for completed
   let avgTime = 0
   const completedItems = items.filter((i: any) => i.status === 'completed' && i.processed_at)
   if (completedItems.length > 0) {
     const totalMs = completedItems.reduce((sum: number, i: any) => {
       return sum + (new Date(i.processed_at).getTime() - new Date(i.created_at).getTime())
     }, 0)
-    avgTime = Math.round(totalMs / completedItems.length / 60000 * 10) / 10 // minutes
+    avgTime = Math.round(totalMs / completedItems.length / 60000 * 10) / 10
   }
 
-  // Pending shipments without Shopify sync
   const { count: unsyncedTracking } = await supabase
     .from('fulfillment_shipments')
     .select('id', { count: 'exact', head: true })
@@ -563,7 +529,6 @@ async function getStats(supabase: any, userId: string) {
     .is('shopify_synced_at', null)
 
   return {
-    success: true,
     todayOrders: todayItems.length,
     successRate,
     avgProcessingTime: avgTime,
