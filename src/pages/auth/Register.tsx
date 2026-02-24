@@ -8,6 +8,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Eye, EyeOff, Mail, Lock, User, ArrowRight, CheckCircle } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
+import { useTranslation } from 'react-i18next';
 
 const Register = () => {
   const [email, setEmail] = useState('');
@@ -19,12 +20,13 @@ const Register = () => {
   const [loading, setLoading] = useState(false);
   const { signUp } = useAuth();
   const { toast } = useToast();
+  const { t } = useTranslation('auth');
 
   const validateForm = () => {
     if (!email || !password || !confirmPassword || !fullName) {
       toast({
-        title: "Erreur",
-        description: "Veuillez remplir tous les champs",
+        title: t('register.errorTitle'),
+        description: t('register.errorFillAll'),
         variant: "destructive",
       });
       return false;
@@ -32,8 +34,8 @@ const Register = () => {
 
     if (password !== confirmPassword) {
       toast({
-        title: "Erreur",
-        description: "Les mots de passe ne correspondent pas",
+        title: t('register.errorTitle'),
+        description: t('register.errorPasswordsMismatch'),
         variant: "destructive",
       });
       return false;
@@ -41,8 +43,8 @@ const Register = () => {
 
     if (password.length < 6) {
       toast({
-        title: "Erreur", 
-        description: "Le mot de passe doit contenir au moins 6 caractères",
+        title: t('register.errorTitle'), 
+        description: t('register.errorPasswordTooShort'),
         variant: "destructive",
       });
       return false;
@@ -61,14 +63,14 @@ const Register = () => {
     try {
       await signUp(email, password, { full_name: fullName });
       toast({
-        title: "Compte créé avec succès",
-        description: "Vérifiez votre e-mail pour confirmer votre compte",
+        title: t('register.successTitle'),
+        description: t('register.successDesc'),
       });
     } catch (error: any) {
       console.error('Registration error:', error);
       toast({
-        title: "Erreur d'inscription",
-        description: error.message || "Une erreur est survenue lors de l'inscription",
+        title: t('register.errorRegisterTitle'),
+        description: error.message || t('register.errorRegisterDesc'),
         variant: "destructive",
       });
     } finally {
@@ -89,13 +91,13 @@ const Register = () => {
     switch (strength) {
       case 0:
       case 1:
-        return { label: 'Faible', color: 'text-red-500' };
+        return { label: t('register.strengthWeak'), color: 'text-red-500' };
       case 2:
-        return { label: 'Moyen', color: 'text-yellow-500' };
+        return { label: t('register.strengthMedium'), color: 'text-yellow-500' };
       case 3:
-        return { label: 'Fort', color: 'text-blue-500' };
+        return { label: t('register.strengthStrong'), color: 'text-blue-500' };
       case 4:
-        return { label: 'Très fort', color: 'text-green-500' };
+        return { label: t('register.strengthVeryStrong'), color: 'text-green-500' };
       default:
         return { label: '', color: '' };
     }
@@ -112,28 +114,28 @@ const Register = () => {
           <img src="/images/logo.svg" alt="Logo" className="h-12 w-12" />
           <h1 className="text-2xl font-bold">E-Commerce Pro</h1>
           <p className="text-muted-foreground text-center">
-            Créez votre compte pour commencer
+            {t('register.subtitle')}
           </p>
         </div>
 
         {/* Register Form */}
         <Card>
           <CardHeader>
-            <CardTitle>Créer un compte</CardTitle>
+            <CardTitle>{t('register.title')}</CardTitle>
             <CardDescription>
-              Remplissez le formulaire pour créer votre compte
+              {t('register.description')}
             </CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="fullName">Nom complet</Label>
+                <Label htmlFor="fullName">{t('register.fullName')}</Label>
                 <div className="relative">
                   <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                   <Input
                     id="fullName"
                     type="text"
-                    placeholder="Jean Dupont"
+                    placeholder={t('register.fullNamePlaceholder')}
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
                     className="pl-9"
@@ -143,13 +145,13 @@ const Register = () => {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="email">Adresse e-mail</Label>
+                <Label htmlFor="email">{t('register.email')}</Label>
                 <div className="relative">
                   <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                   <Input
                     id="email"
                     type="email"
-                    placeholder="nom@exemple.com"
+                    placeholder={t('register.emailPlaceholder')}
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     className="pl-9"
@@ -159,7 +161,7 @@ const Register = () => {
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="password">Mot de passe</Label>
+                <Label htmlFor="password">{t('register.password')}</Label>
                 <div className="relative">
                   <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                   <Input
@@ -206,7 +208,7 @@ const Register = () => {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="confirmPassword">Confirmer le mot de passe</Label>
+                <Label htmlFor="confirmPassword">{t('register.confirmPassword')}</Label>
                 <div className="relative">
                   <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                   <Input
@@ -236,7 +238,7 @@ const Register = () => {
                 {confirmPassword && password === confirmPassword && (
                   <div className="flex items-center gap-1 text-xs text-green-600">
                     <CheckCircle className="h-3 w-3" />
-                    <span>Les mots de passe correspondent</span>
+                    <span>{t('register.passwordsMatch')}</span>
                   </div>
                 )}
               </div>
@@ -249,11 +251,11 @@ const Register = () => {
                 {loading ? (
                   <>
                     <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
-                    Création du compte...
+                    {t('register.submitting')}
                   </>
                 ) : (
                   <>
-                    Créer mon compte
+                    {t('register.submit')}
                     <ArrowRight className="ml-2 h-4 w-4" />
                   </>
                 )}
@@ -262,12 +264,12 @@ const Register = () => {
 
             <div className="mt-6 text-center">
               <p className="text-sm text-muted-foreground">
-                Déjà un compte ?{' '}
+                {t('register.hasAccount')}{' '}
                 <Link 
                   to="/login" 
                   className="text-primary hover:underline font-medium"
                 >
-                  Se connecter
+                  {t('register.signIn')}
                 </Link>
               </p>
             </div>
@@ -278,23 +280,23 @@ const Register = () => {
         <Card className="bg-muted/50">
           <CardContent className="pt-6">
             <div className="space-y-3">
-              <p className="text-sm font-medium text-center">Inclus avec votre compte :</p>
+              <p className="text-sm font-medium text-center">{t('register.includedTitle')}</p>
               <div className="grid grid-cols-1 gap-2 text-xs">
                 <div className="flex items-center gap-2">
                   <CheckCircle className="h-3 w-3 text-green-600" />
-                  <span>Tableau de bord complet</span>
+                  <span>{t('register.featureDashboard')}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <CheckCircle className="h-3 w-3 text-green-600" />
-                  <span>Gestion des commandes</span>
+                  <span>{t('register.featureOrders')}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <CheckCircle className="h-3 w-3 text-green-600" />
-                  <span>Base de données clients</span>
+                  <span>{t('register.featureCustomers')}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <CheckCircle className="h-3 w-3 text-green-600" />
-                  <span>Catalogue de produits</span>
+                  <span>{t('register.featureProducts')}</span>
                 </div>
               </div>
             </div>

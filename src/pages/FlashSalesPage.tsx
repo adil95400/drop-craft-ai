@@ -6,8 +6,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Zap, Clock, TrendingUp, DollarSign, Users, Plus } from 'lucide-react';
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
 import { AdvancedFeatureGuide, ADVANCED_GUIDES } from '@/components/guide';
+import { useTranslation } from 'react-i18next';
 
 const FlashSalesPage: React.FC = () => {
+  const { t } = useTranslation('marketing');
+
   const flashSales = [
     {
       id: 1,
@@ -46,15 +49,15 @@ const FlashSalesPage: React.FC = () => {
 
   return (
     <ChannablePageWrapper
-      title="Ventes Flash"
-      subtitle="Marketing"
-      description="Créez l'urgence et boostez vos ventes avec des offres limitées"
+      title={t('flashSales.title')}
+      subtitle={t('flashSales.subtitle')}
+      description={t('flashSales.description')}
       heroImage="marketing"
-      badge={{ label: "Flash", icon: Zap }}
+      badge={{ label: t('flashSales.badge'), icon: Zap }}
       actions={
         <Button>
           <Plus className="mr-2 h-4 w-4" />
-          Nouvelle vente flash
+          {t('flashSales.newFlashSale')}
         </Button>
       }
     >
@@ -63,65 +66,65 @@ const FlashSalesPage: React.FC = () => {
       <div className="grid gap-4 md:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Ventes flash actives</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('flashSales.activeFlashSales')}</CardTitle>
             <Zap className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">3</div>
-            <p className="text-xs text-muted-foreground">2 programmées</p>
+            <p className="text-xs text-muted-foreground">{t('flashSales.nScheduled', { count: 2 })}</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Revenue généré</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('flashSales.revenueGenerated')}</CardTitle>
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">€17,457</div>
             <p className="text-xs text-muted-foreground flex items-center gap-1">
               <TrendingUp className="h-3 w-3 text-green-500" />
-              Ce mois
+              {t('flashSales.thisMonth')}
             </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Produits vendus</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('flashSales.productsSold')}</CardTitle>
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">323</div>
-            <p className="text-xs text-muted-foreground">Sur 550 disponibles</p>
+            <p className="text-xs text-muted-foreground">{t('flashSales.outOfAvailable', { count: 550 })}</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Taux de conversion</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('flashSales.conversionRate')}</CardTitle>
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">18.5%</div>
-            <p className="text-xs text-muted-foreground">+8% vs ventes normales</p>
+            <p className="text-xs text-muted-foreground">{t('flashSales.vsNormalSales', { percent: 8 })}</p>
           </CardContent>
         </Card>
       </div>
 
       <Tabs defaultValue="active" className="space-y-4">
         <TabsList>
-          <TabsTrigger value="active">Actives</TabsTrigger>
-          <TabsTrigger value="scheduled">Programmées</TabsTrigger>
-          <TabsTrigger value="completed">Terminées</TabsTrigger>
-          <TabsTrigger value="templates">Templates</TabsTrigger>
+          <TabsTrigger value="active">{t('flashSales.tabActive')}</TabsTrigger>
+          <TabsTrigger value="scheduled">{t('flashSales.tabScheduled')}</TabsTrigger>
+          <TabsTrigger value="completed">{t('flashSales.tabCompleted')}</TabsTrigger>
+          <TabsTrigger value="templates">{t('flashSales.tabTemplates')}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="active" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>Ventes flash en cours</CardTitle>
-              <CardDescription>Offres actuellement disponibles</CardDescription>
+              <CardTitle>{t('flashSales.currentFlashSales')}</CardTitle>
+              <CardDescription>{t('flashSales.currentlyAvailable')}</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
@@ -142,7 +145,7 @@ const FlashSalesPage: React.FC = () => {
                             <div className="flex items-center gap-2 mt-1">
                               <Badge variant="destructive" className="gap-1">
                                 <Clock className="h-3 w-3" />
-                                Se termine dans {sale.endsIn}
+                                {t('flashSales.endsIn', { time: sale.endsIn })}
                               </Badge>
                               <Badge variant="outline">-{sale.discount}%</Badge>
                             </div>
@@ -150,31 +153,31 @@ const FlashSalesPage: React.FC = () => {
                         </div>
                         <div className="flex gap-2">
                           <Button size="sm" variant="outline">
-                            Modifier
+                            {t('flashSales.edit')}
                           </Button>
                           <Button size="sm" variant="outline">
-                            Arrêter
+                            {t('flashSales.stop')}
                           </Button>
                         </div>
                       </div>
 
                       <div className="grid grid-cols-4 gap-4">
                         <div>
-                          <div className="text-xs text-muted-foreground mb-1">Produits</div>
+                          <div className="text-xs text-muted-foreground mb-1">{t('flashSales.products')}</div>
                           <div className="text-lg font-semibold">{sale.products}</div>
                         </div>
                         <div>
-                          <div className="text-xs text-muted-foreground mb-1">Vendus</div>
+                          <div className="text-xs text-muted-foreground mb-1">{t('flashSales.sold')}</div>
                           <div className="text-lg font-semibold">
                             {sale.sold}/{sale.stock}
                           </div>
                         </div>
                         <div>
-                          <div className="text-xs text-muted-foreground mb-1">Revenue</div>
+                          <div className="text-xs text-muted-foreground mb-1">{t('flashSales.revenue')}</div>
                           <div className="text-lg font-semibold">€{sale.revenue}</div>
                         </div>
                         <div>
-                          <div className="text-xs text-muted-foreground mb-1">Taux</div>
+                          <div className="text-xs text-muted-foreground mb-1">{t('flashSales.rate')}</div>
                           <div className="text-lg font-semibold">
                             {((sale.sold / sale.stock) * 100).toFixed(1)}%
                           </div>
@@ -199,8 +202,8 @@ const FlashSalesPage: React.FC = () => {
         <TabsContent value="scheduled">
           <Card>
             <CardHeader>
-              <CardTitle>Ventes programmées</CardTitle>
-              <CardDescription>Prochaines ventes flash à venir</CardDescription>
+              <CardTitle>{t('flashSales.scheduledSales')}</CardTitle>
+              <CardDescription>{t('flashSales.upcomingSales')}</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
@@ -218,17 +221,16 @@ const FlashSalesPage: React.FC = () => {
                         <div>
                           <h3 className="font-semibold">{sale.name}</h3>
                           <p className="text-sm text-muted-foreground">
-                            Démarre dans {sale.startsIn} • {sale.products} produits • -
-                            {sale.discount}%
+                            {t('flashSales.startsIn', { time: sale.startsIn, products: sale.products, discount: sale.discount })}
                           </p>
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
-                        <Badge variant="secondary">Programmée</Badge>
+                        <Badge variant="secondary">{t('flashSales.scheduledBadge')}</Badge>
                         <Button size="sm" variant="outline">
-                          Modifier
+                          {t('flashSales.edit')}
                         </Button>
-                        <Button size="sm">Lancer maintenant</Button>
+                        <Button size="sm">{t('flashSales.launchNow')}</Button>
                       </div>
                     </div>
                   ))}
@@ -240,8 +242,8 @@ const FlashSalesPage: React.FC = () => {
         <TabsContent value="completed">
           <Card>
             <CardHeader>
-              <CardTitle>Ventes terminées</CardTitle>
-              <CardDescription>Historique des ventes flash</CardDescription>
+              <CardTitle>{t('flashSales.completedSales')}</CardTitle>
+              <CardDescription>{t('flashSales.salesHistory')}</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
@@ -259,8 +261,7 @@ const FlashSalesPage: React.FC = () => {
                         <div>
                           <h3 className="font-semibold">{sale.name}</h3>
                           <p className="text-sm text-muted-foreground">
-                            Terminée le {sale.completedAt} • {sale.sold} ventes • €
-                            {sale.revenue}
+                            {t('flashSales.completedOn', { date: sale.completedAt, sold: sale.sold, revenue: sale.revenue })}
                           </p>
                         </div>
                       </div>
@@ -269,10 +270,10 @@ const FlashSalesPage: React.FC = () => {
                           <div className="text-sm font-semibold">
                             {((sale.sold / sale.stock) * 100).toFixed(1)}%
                           </div>
-                          <div className="text-xs text-muted-foreground">Taux de vente</div>
+                          <div className="text-xs text-muted-foreground">{t('flashSales.salesRate')}</div>
                         </div>
                         <Button size="sm" variant="outline">
-                          Voir rapport
+                          {t('flashSales.viewReport')}
                         </Button>
                       </div>
                     </div>
@@ -285,8 +286,8 @@ const FlashSalesPage: React.FC = () => {
         <TabsContent value="templates">
           <Card>
             <CardHeader>
-              <CardTitle>Templates de ventes flash</CardTitle>
-              <CardDescription>Modèles prédéfinis pour lancer rapidement</CardDescription>
+              <CardTitle>{t('flashSales.templates')}</CardTitle>
+              <CardDescription>{t('flashSales.templatesDesc')}</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="grid gap-4 md:grid-cols-3">
@@ -303,11 +304,11 @@ const FlashSalesPage: React.FC = () => {
                         </div>
                         <h4 className="font-semibold">{template.name}</h4>
                         <p className="text-xs text-muted-foreground">
-                          Durée: {template.duration}
+                          {t('flashSales.duration', { duration: template.duration })}
                         </p>
                       </div>
                       <Button className="w-full" size="sm">
-                        Utiliser ce template
+                        {t('flashSales.useTemplate')}
                       </Button>
                     </CardContent>
                   </Card>
