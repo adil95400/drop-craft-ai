@@ -1,153 +1,91 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-}
+import { handlePreflight, requireAuth, errorResponse, successResponse } from '../_shared/jwt-auth.ts'
 
 serve(async (req) => {
-  if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders })
-  }
+  const preflight = handlePreflight(req)
+  if (preflight) return preflight
 
   try {
-    const supabase = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-    )
-
-    // Auth check
-    const authHeader = req.headers.get('Authorization')
-    if (!authHeader?.startsWith('Bearer ')) {
-      return new Response(
-        JSON.stringify({ error: 'Authorization required' }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
-    }
-
-    const token = authHeader.replace('Bearer ', '')
-    const { data: { user }, error: authError } = await supabase.auth.getUser(token)
-    if (authError || !user) {
-      return new Response(
-        JSON.stringify({ error: 'Invalid or expired token' }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
-    }
+    const { userId, supabase, corsHeaders } = await requireAuth(req)
 
     const { order_id, trigger_type, immediate_processing } = await req.json()
 
     if (!order_id) {
-      return new Response(
-        JSON.stringify({ error: 'order_id is required' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
+      return errorResponse('order_id is required', corsHeaders)
     }
 
-    // Get order details - SCOPED TO USER
+    // RLS-scoped
     const { data: order, error: orderError } = await supabase
       .from('orders')
       .select('*')
       .eq('id', order_id)
-      .eq('user_id', user.id)
       .single()
 
     if (orderError || !order) {
-      return new Response(
-        JSON.stringify({ error: 'Order not found or access denied' }),
-        { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
+      return errorResponse('Order not found or access denied', corsHeaders, 404)
     }
 
-    // Get applicable automation rules (using `action_type` not `rule_type`)
     const { data: rules, error: rulesError } = await supabase
       .from('automation_rules')
       .select('*')
-      .eq('user_id', user.id)
       .eq('action_type', 'order_automation')
       .eq('is_active', true)
 
     if (rulesError) {
-      throw new Error('Failed to fetch automation rules')
+      return errorResponse('Failed to fetch automation rules', corsHeaders, 500)
     }
 
     const applicableRules = (rules || []).filter(rule => {
       const triggerConfig = rule.trigger_config as any
       if (!triggerConfig) return false
-      return triggerConfig.trigger_type === trigger_type &&
-             matchesOrderConditions(order, triggerConfig)
+      return triggerConfig.trigger_type === trigger_type && matchesOrderConditions(order, triggerConfig)
     })
 
     let actionsExecuted = 0
     const executionResults: any[] = []
 
-    // Execute actions for each applicable rule
     for (const rule of applicableRules) {
       const actions = (rule.action_config || []) as any[]
-
       for (const action of actions) {
         try {
           const result = await executeAction(action, order, supabase)
-          executionResults.push({
-            rule_id: rule.id,
-            action_type: action.type,
-            success: true,
-            result
-          })
+          executionResults.push({ rule_id: rule.id, action_type: action.type, success: true, result })
           actionsExecuted++
 
-          // Update rule execution count
           await supabase
             .from('automation_rules')
-            .update({
-              trigger_count: (rule.trigger_count || 0) + 1,
-              last_triggered_at: new Date().toISOString()
-            })
+            .update({ trigger_count: (rule.trigger_count || 0) + 1, last_triggered_at: new Date().toISOString() })
             .eq('id', rule.id)
-
         } catch (actionError: any) {
-          console.error(`Action execution failed:`, actionError)
-          executionResults.push({
-            rule_id: rule.id,
-            action_type: action.type,
-            success: false,
-            error: actionError.message
-          })
+          executionResults.push({ rule_id: rule.id, action_type: action.type, success: false, error: actionError.message })
         }
       }
     }
 
-    // Log the automation execution
     if (applicableRules.length > 0) {
-      await supabase
-        .from('automation_execution_logs')
-        .insert({
-          user_id: user.id,
-          trigger_id: applicableRules[0]?.id,
-          input_data: { order_id, trigger_type },
-          output_data: { execution_results: executionResults, actions_executed: actionsExecuted },
-          status: actionsExecuted > 0 ? 'completed' : 'skipped',
-          executed_at: new Date().toISOString(),
-        })
+      await supabase.from('automation_execution_logs').insert({
+        user_id: userId,
+        trigger_id: applicableRules[0]?.id,
+        input_data: { order_id, trigger_type },
+        output_data: { execution_results: executionResults, actions_executed: actionsExecuted },
+        status: actionsExecuted > 0 ? 'completed' : 'skipped',
+        executed_at: new Date().toISOString(),
+      })
     }
 
-    return new Response(
-      JSON.stringify({
-        success: true,
-        message: 'Order automation processed',
-        order_id,
-        rules_matched: applicableRules.length,
-        actions_executed: actionsExecuted,
-        execution_results: executionResults
-      }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    )
+    return successResponse({
+      message: 'Order automation processed',
+      order_id,
+      rules_matched: applicableRules.length,
+      actions_executed: actionsExecuted,
+      execution_results: executionResults
+    }, corsHeaders)
   } catch (error: any) {
+    if (error instanceof Response) return error
     console.error('Order automation processing error:', error)
-    return new Response(
-      JSON.stringify({ success: false, error: error.message }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    )
+    const origin = req.headers.get('origin')
+    const { getSecureCorsHeaders } = await import('../_shared/cors.ts')
+    return errorResponse(error.message || 'Internal error', getSecureCorsHeaders(origin), 500)
   }
 })
 
@@ -171,26 +109,19 @@ async function executeAction(action: any, order: any, supabase: any): Promise<an
 
     case 'send_email':
       await supabase.from('activity_logs').insert({
-        user_id: order.user_id,
-        action: 'automation_email_sent',
-        entity_type: 'order',
-        entity_id: order.id,
-        description: `Automation email for order ${order.order_number}`,
+        user_id: order.user_id, action: 'automation_email_sent', entity_type: 'order',
+        entity_id: order.id, description: `Automation email for order ${order.order_number}`,
       })
       return { email_logged: true }
 
     case 'notify_supplier':
       await supabase.from('activity_logs').insert({
-        user_id: order.user_id,
-        action: 'supplier_notified',
-        entity_type: 'order',
-        entity_id: order.id,
-        description: `Supplier notification for order ${order.order_number}`,
+        user_id: order.user_id, action: 'supplier_notified', entity_type: 'order',
+        entity_id: order.id, description: `Supplier notification for order ${order.order_number}`,
       })
       return { notification_sent: true }
 
     case 'update_stock':
-      // Fetch order items and decrement stock
       const { data: items } = await supabase
         .from('order_items')
         .select('product_id, qty')
@@ -217,16 +148,12 @@ async function executeAction(action: any, order: any, supabase: any): Promise<an
 
     case 'create_support_ticket':
       await supabase.from('activity_logs').insert({
-        user_id: order.user_id,
-        action: 'support_ticket_created',
-        entity_type: 'order',
-        entity_id: order.id,
-        description: `Support ticket for order ${order.order_number}: ${config.message || ''}`,
+        user_id: order.user_id, action: 'support_ticket_created', entity_type: 'order',
+        entity_id: order.id, description: `Support ticket for order ${order.order_number}: ${config.message || ''}`,
       })
       return { ticket_created: true }
 
     default:
-      console.warn(`Unknown action type: ${action.type}`)
       return { skipped: true, reason: `Unknown action: ${action.type}` }
   }
 }
