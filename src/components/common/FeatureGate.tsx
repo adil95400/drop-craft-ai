@@ -118,7 +118,7 @@ export const FeatureGate: React.FC<FeatureGateProps> = ({
           <Button 
             size="sm" 
             className="ml-4"
-            onClick={() => navigate('/pricing')}
+            onClick={() => navigate('/choose-plan')}
           >
             Passer au {planLabel}
           </Button>

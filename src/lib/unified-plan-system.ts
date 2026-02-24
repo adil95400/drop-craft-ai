@@ -20,10 +20,8 @@ export interface UserProfile {
 // Configuration des fonctionnalités par plan
 export const PLAN_FEATURES = {
   free: [
-    'basic-analytics',
-    'basic-import',
-    'standard-catalog',
-    'basic-dashboard'
+    'basic-dashboard',
+    'basic-catalog-view'
   ],
   standard: [
     'basic-analytics',
@@ -76,9 +74,9 @@ export const PLAN_FEATURES = {
 // Configuration des quotas par plan
 export const PLAN_QUOTAS = {
   free: {
-    'products-import': 100,
-    'ai-analysis': 10,
-    'api-calls': 1000
+    'products-import': 10,
+    'ai-analysis': 0,
+    'api-calls': 100
   },
   standard: {
     'products-import': 100,
@@ -136,7 +134,7 @@ interface UnifiedPlanState {
   canBypass: () => boolean
 }
 
-const PLAN_HIERARCHY = { free: 0, standard: 0, pro: 1, ultra_pro: 2 }
+const PLAN_HIERARCHY = { free: 0, standard: 1, pro: 2, ultra_pro: 3 }
 
 function calculateEffectivePlan(plan: PlanType, role: UserRole, adminMode: AdminMode): PlanType {
   // Les admins en mode bypass ont toujours le plan ultra_pro
@@ -154,10 +152,10 @@ function calculateEffectivePlan(plan: PlanType, role: UserRole, adminMode: Admin
 export const useUnifiedPlan = create<UnifiedPlanState>()(
   subscribeWithSelector((set, get) => ({
     // État initial
-    currentPlan: 'standard',
+    currentPlan: 'free',
     userRole: 'user',
     adminMode: null,
-    effectivePlan: 'standard',
+    effectivePlan: 'free',
     loading: false,
     error: null,
     
@@ -228,11 +226,11 @@ export const useUnifiedPlan = create<UnifiedPlanState>()(
         })
         
         // Map subscription_plan to PlanType
-        let plan: PlanType = 'standard'
+        let plan: PlanType = 'free'
         const subPlan = profile?.subscription_plan?.toLowerCase()
-        if (subPlan === 'pro') plan = 'pro'
+        if (subPlan === 'standard') plan = 'standard'
+        else if (subPlan === 'pro') plan = 'pro'
         else if (subPlan === 'ultra_pro' || subPlan === 'ultra-pro') plan = 'ultra_pro'
-        else if (subPlan === 'free') plan = 'standard'
         
         const role: UserRole = isAdmin ? 'admin' : 'user'
         const adminMode = (profile?.admin_mode as AdminMode) || null
