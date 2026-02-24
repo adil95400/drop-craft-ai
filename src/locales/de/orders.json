@@ -2,6 +2,7 @@
   "title": "Bestellungen",
   "description": "Verwalten Sie alle Ihre Bestellungen",
   "search": "Bestellung suchen...",
+  "searchPlaceholder": "Suche nach Nummer, Kunde oder Tracking...",
   "filters": {
     "all": "Alle",
     "pending": "Ausstehend",
@@ -32,6 +33,11 @@
     "refunded": "Erstattet",
     "onHold": "Zurückgestellt"
   },
+  "statusAction": {
+    "pending": "Bearbeiten",
+    "processing": "Versenden",
+    "shipped": "Liefern"
+  },
   "actions": {
     "view": "Details anzeigen",
     "edit": "Bearbeiten",
@@ -39,7 +45,11 @@
     "refund": "Erstatten",
     "ship": "Als versendet markieren",
     "print": "Drucken",
-    "export": "Exportieren"
+    "export": "Exportieren",
+    "create": "Bestellung erstellen",
+    "new": "Neue Bestellung",
+    "importShopify": "Shopify importieren",
+    "refresh": "Aktualisieren"
   },
   "details": {
     "orderInfo": "Bestellinformationen",
@@ -64,12 +74,53 @@
     "updated": "Bestellung aktualisiert",
     "cancelled": "Bestellung storniert",
     "shipped": "Bestellung versendet",
-    "refunded": "Bestellung erstattet"
+    "refunded": "Bestellung erstattet",
+    "statusUpdated": "Status aktualisiert",
+    "statusUpdatedDesc": "Die Bestellung ist jetzt \"{{status}}\"",
+    "loadError": "Ladefehler",
+    "updateError": "Aktualisierungsfehler",
+    "exportDone": "Export abgeschlossen",
+    "exportDoneDesc": "{{count}} Bestellungen exportiert",
+    "exportError": "Exportfehler"
   },
   "stats": {
     "total": "Gesamtbestellungen",
     "pending": "Ausstehend",
     "processing": "In Bearbeitung",
-    "revenue": "Umsatz"
-  }
+    "revenue": "Umsatz",
+    "totalRevenue": "Gesamtumsatz"
+  },
+  "center": {
+    "title": "Bestellzentrum",
+    "subtitle": "Verwaltung & Tracking",
+    "description": "Einheitliche Ansicht aller Bestellungen mit erweiterter Verwaltung und Echtzeit-Tracking"
+  },
+  "tabs": {
+    "orders": "Bestellungen",
+    "autoOrder": "Auto-Order"
+  },
+  "empty": {
+    "title": "Keine Bestellungen",
+    "description": "Keine Bestellungen entsprechen Ihren Kriterien"
+  },
+  "pagination": {
+    "showing": "Anzeige {{start}} - {{end}} von {{total}} Bestellungen",
+    "pages": "{{count}} Seite(n)",
+    "previous": "Zurück",
+    "next": "Weiter"
+  },
+  "sort": {
+    "placeholder": "Sortieren nach...",
+    "dateDesc": "Datum (neueste)",
+    "dateAsc": "Datum (älteste)",
+    "amountDesc": "Betrag (höchste)",
+    "amountAsc": "Betrag (niedrigste)"
+  },
+  "dateFilter": {
+    "period": "Zeitraum",
+    "startDate": "Startdatum",
+    "endDate": "Enddatum",
+    "reset": "Zurücksetzen"
+  },
+  "items": "Artikel"
 }

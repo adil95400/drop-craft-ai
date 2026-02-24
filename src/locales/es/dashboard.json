@@ -1,12 +1,18 @@
 {
   "title": "Panel",
+  "subtitle": "Resumen",
   "welcome": "Bienvenido a tu panel",
   "overview": "Resumen de tu actividad de comercio electrónico",
+  "description": "Controla tu actividad e-commerce con datos en tiempo real y herramientas de optimización inteligentes.",
   "stats": {
     "totalOrders": "Pedidos Totales",
-    "totalRevenue": "Ingresos Totales", 
+    "totalRevenue": "Ingresos Totales",
     "totalProducts": "Productos Totales",
-    "totalCustomers": "Clientes Totales"
+    "totalCustomers": "Clientes Totales",
+    "revenue": "Ingresos",
+    "orders": "Pedidos",
+    "activeProducts": "Productos activos",
+    "customers": "Clientes"
   },
   "charts": {
     "revenue": "Evolución de Ingresos",
@@ -17,9 +23,33 @@
     "title": "Acciones Rápidas",
     "newOrder": "Nuevo Pedido",
     "addProduct": "Añadir Producto",
-    "viewCustomers": "Ver Clientes", 
-    "viewReports": "Ver Reportes"
+    "viewCustomers": "Ver Clientes",
+    "viewReports": "Ver Reportes",
+    "analytics": "Analíticas",
+    "analyticsDesc": "Vista detallada",
+    "optimize": "Optimizar",
+    "optimizeDesc": "IA automática",
+    "reports": "Informes",
+    "reportsDesc": "Exportar PDF"
   },
+  "widgets": {
+    "refresh": "Actualizar",
+    "customize": "Personalizar",
+    "done": "Terminar",
+    "addWidget": "Añadir widget",
+    "noActiveWidgets": "Sin widgets activos",
+    "noActiveWidgetsDesc": "Personaliza tu panel añadiendo widgets para seguir tus KPIs más importantes.",
+    "addWidgets": "Añadir widgets",
+    "dragToReorder": "Arrastra los widgets para reordenar",
+    "reset": "Restablecer"
+  },
+  "sidebar": {
+    "channelHealth": "Salud de canales",
+    "recentActivity": "Actividad reciente"
+  },
+  "lastUpdate": "Última actualización",
+  "loadingData": "Cargando datos...",
+  "refreshed": "Panel actualizado con datos reales",
   "vsLastMonth": "vs mes pasado",
   "criticalAIAlerts": "Alertas IA Críticas",
   "finalizeConfig": "Finalizar Configuración",
@@ -27,5 +57,6 @@
   "averageBasket": "Cesta Promedio",
   "performance": "Rendimiento",
   "excellent": "Excelente",
-  "allIndicatorsPositive": "Todos los indicadores son positivos"
+  "allIndicatorsPositive": "Todos los indicadores son positivos",
+  "realtime": "Tiempo real"
 }

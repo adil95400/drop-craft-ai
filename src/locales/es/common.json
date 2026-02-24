@@ -248,5 +248,12 @@
     "pro": "Pro",
     "standard": "Estándar",
     "free": "Gratuito"
-  }
+  },
+  "notFound": {
+    "title": "Página no encontrada",
+    "description": "La página que buscas no existe o ha sido movida.",
+    "backToDashboard": "Volver al panel",
+    "previousPage": "Página anterior"
+  },
+  "skipToContent": "Ir al contenido principal"
 }

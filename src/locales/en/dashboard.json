@@ -1,12 +1,18 @@
 {
   "title": "Dashboard",
+  "subtitle": "Overview",
   "welcome": "Welcome to your dashboard",
   "overview": "Overview of your e-commerce activity",
+  "description": "Drive your e-commerce activity with real-time insights and intelligent optimization tools.",
   "stats": {
     "totalOrders": "Total Orders",
     "totalRevenue": "Total Revenue",
     "totalProducts": "Total Products",
-    "totalCustomers": "Total Customers"
+    "totalCustomers": "Total Customers",
+    "revenue": "Revenue",
+    "orders": "Orders",
+    "activeProducts": "Active Products",
+    "customers": "Customers"
   },
   "charts": {
     "revenue": "Revenue Evolution",
@@ -18,8 +24,32 @@
     "newOrder": "New Order",
     "addProduct": "Add Product",
     "viewCustomers": "View Customers",
-    "viewReports": "View Reports"
+    "viewReports": "View Reports",
+    "analytics": "Analytics",
+    "analyticsDesc": "Detailed view",
+    "optimize": "Optimize",
+    "optimizeDesc": "Auto AI",
+    "reports": "Reports",
+    "reportsDesc": "PDF Export"
   },
+  "widgets": {
+    "refresh": "Refresh",
+    "customize": "Customize",
+    "done": "Done",
+    "addWidget": "Add widget",
+    "noActiveWidgets": "No active widgets",
+    "noActiveWidgetsDesc": "Customize your dashboard by adding widgets to track your most important KPIs.",
+    "addWidgets": "Add widgets",
+    "dragToReorder": "Drag widgets to reorder",
+    "reset": "Reset"
+  },
+  "sidebar": {
+    "channelHealth": "Channel Health",
+    "recentActivity": "Recent Activity"
+  },
+  "lastUpdate": "Last update",
+  "loadingData": "Loading data...",
+  "refreshed": "Dashboard refreshed with real data",
   "vsLastMonth": "vs last month",
   "criticalAIAlerts": "Critical AI Alerts",
   "finalizeConfig": "Finalize Configuration",
@@ -27,5 +57,6 @@
   "averageBasket": "Average Basket",
   "performance": "Performance",
   "excellent": "Excellent",
-  "allIndicatorsPositive": "All indicators are positive"
+  "allIndicatorsPositive": "All indicators are positive",
+  "realtime": "Real-time"
 }

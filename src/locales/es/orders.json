@@ -2,6 +2,7 @@
   "title": "Pedidos",
   "description": "Gestiona todos tus pedidos",
   "search": "Buscar pedido...",
+  "searchPlaceholder": "Buscar por número, cliente o seguimiento...",
   "filters": {
     "all": "Todos",
     "pending": "Pendientes",
@@ -32,6 +33,11 @@
     "refunded": "Reembolsado",
     "onHold": "En espera"
   },
+  "statusAction": {
+    "pending": "Procesar",
+    "processing": "Enviar",
+    "shipped": "Entregar"
+  },
   "actions": {
     "view": "Ver detalles",
     "edit": "Editar",
@@ -39,7 +45,11 @@
     "refund": "Reembolsar",
     "ship": "Marcar como enviado",
     "print": "Imprimir",
-    "export": "Exportar"
+    "export": "Exportar",
+    "create": "Crear pedido",
+    "new": "Nuevo pedido",
+    "importShopify": "Importar Shopify",
+    "refresh": "Actualizar"
   },
   "details": {
     "orderInfo": "Información del pedido",
@@ -64,12 +74,53 @@
     "updated": "Pedido actualizado",
     "cancelled": "Pedido cancelado",
     "shipped": "Pedido enviado",
-    "refunded": "Pedido reembolsado"
+    "refunded": "Pedido reembolsado",
+    "statusUpdated": "Estado actualizado",
+    "statusUpdatedDesc": "El pedido es ahora \"{{status}}\"",
+    "loadError": "Error de carga",
+    "updateError": "Error de actualización",
+    "exportDone": "Exportación completada",
+    "exportDoneDesc": "{{count}} pedidos exportados",
+    "exportError": "Error de exportación"
   },
   "stats": {
     "total": "Total pedidos",
     "pending": "Pendientes",
     "processing": "En proceso",
-    "revenue": "Ingresos"
-  }
+    "revenue": "Ingresos",
+    "totalRevenue": "Ingresos totales"
+  },
+  "center": {
+    "title": "Centro de Pedidos",
+    "subtitle": "Gestión y Seguimiento",
+    "description": "Vista unificada de todos tus pedidos con gestión avanzada y seguimiento en tiempo real"
+  },
+  "tabs": {
+    "orders": "Pedidos",
+    "autoOrder": "Auto-Order"
+  },
+  "empty": {
+    "title": "Sin pedidos",
+    "description": "Ningún pedido coincide con tus criterios"
+  },
+  "pagination": {
+    "showing": "Mostrando {{start}} - {{end}} de {{total}} pedidos",
+    "pages": "{{count}} página(s)",
+    "previous": "Anterior",
+    "next": "Siguiente"
+  },
+  "sort": {
+    "placeholder": "Ordenar por...",
+    "dateDesc": "Fecha (reciente)",
+    "dateAsc": "Fecha (antiguo)",
+    "amountDesc": "Monto (mayor)",
+    "amountAsc": "Monto (menor)"
+  },
+  "dateFilter": {
+    "period": "Período",
+    "startDate": "Fecha de inicio",
+    "endDate": "Fecha de fin",
+    "reset": "Restablecer"
+  },
+  "items": "artículo(s)"
 }

@@ -2,6 +2,7 @@
   "title": "Orders",
   "description": "Manage all your orders",
   "search": "Search orders...",
+  "searchPlaceholder": "Search by number, customer or tracking...",
   "filters": {
     "all": "All",
     "pending": "Pending",
@@ -32,6 +33,11 @@
     "refunded": "Refunded",
     "onHold": "On hold"
   },
+  "statusAction": {
+    "pending": "Process",
+    "processing": "Ship",
+    "shipped": "Deliver"
+  },
   "actions": {
     "view": "View details",
     "edit": "Edit",
@@ -39,7 +45,11 @@
     "refund": "Refund",
     "ship": "Mark as shipped",
     "print": "Print",
-    "export": "Export"
+    "export": "Export",
+    "create": "Create order",
+    "new": "New order",
+    "importShopify": "Import Shopify",
+    "refresh": "Refresh"
   },
   "details": {
     "orderInfo": "Order information",
@@ -64,12 +74,53 @@
     "updated": "Order updated",
     "cancelled": "Order cancelled",
     "shipped": "Order shipped",
-    "refunded": "Order refunded"
+    "refunded": "Order refunded",
+    "statusUpdated": "Status updated",
+    "statusUpdatedDesc": "The order is now \"{{status}}\"",
+    "loadError": "Loading error",
+    "updateError": "Update error",
+    "exportDone": "Export complete",
+    "exportDoneDesc": "{{count}} orders exported",
+    "exportError": "Export error"
   },
   "stats": {
     "total": "Total orders",
     "pending": "Pending",
     "processing": "Processing",
-    "revenue": "Revenue"
-  }
+    "revenue": "Revenue",
+    "totalRevenue": "Total Revenue"
+  },
+  "center": {
+    "title": "Order Center",
+    "subtitle": "Management & Tracking",
+    "description": "Unified view of all your orders with advanced management and real-time tracking"
+  },
+  "tabs": {
+    "orders": "Orders",
+    "autoOrder": "Auto-Order"
+  },
+  "empty": {
+    "title": "No orders",
+    "description": "No orders match your criteria"
+  },
+  "pagination": {
+    "showing": "Showing {{start}} - {{end}} of {{total}} orders",
+    "pages": "{{count}} page(s)",
+    "previous": "Previous",
+    "next": "Next"
+  },
+  "sort": {
+    "placeholder": "Sort by...",
+    "dateDesc": "Date (newest)",
+    "dateAsc": "Date (oldest)",
+    "amountDesc": "Amount (highest)",
+    "amountAsc": "Amount (lowest)"
+  },
+  "dateFilter": {
+    "period": "Period",
+    "startDate": "Start date",
+    "endDate": "End date",
+    "reset": "Reset"
+  },
+  "items": "item(s)"
 }

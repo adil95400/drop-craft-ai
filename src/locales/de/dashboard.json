@@ -1,12 +1,18 @@
 {
   "title": "Dashboard",
+  "subtitle": "Übersicht",
   "welcome": "Willkommen zu Ihrem Dashboard",
   "overview": "Übersicht Ihrer E-Commerce-Aktivität",
+  "description": "Steuern Sie Ihre E-Commerce-Aktivität mit Echtzeit-Einblicken und intelligenten Optimierungstools.",
   "stats": {
     "totalOrders": "Gesamtbestellungen",
     "totalRevenue": "Gesamtumsatz",
     "totalProducts": "Gesamtprodukte",
-    "totalCustomers": "Gesamtkunden"
+    "totalCustomers": "Gesamtkunden",
+    "revenue": "Umsatz",
+    "orders": "Bestellungen",
+    "activeProducts": "Aktive Produkte",
+    "customers": "Kunden"
   },
   "charts": {
     "revenue": "Umsatzentwicklung",
@@ -18,8 +24,32 @@
     "newOrder": "Neue Bestellung",
     "addProduct": "Produkt hinzufügen",
     "viewCustomers": "Kunden anzeigen",
-    "viewReports": "Berichte anzeigen"
+    "viewReports": "Berichte anzeigen",
+    "analytics": "Analytics",
+    "analyticsDesc": "Detailansicht",
+    "optimize": "Optimieren",
+    "optimizeDesc": "Auto-KI",
+    "reports": "Berichte",
+    "reportsDesc": "PDF-Export"
   },
+  "widgets": {
+    "refresh": "Aktualisieren",
+    "customize": "Anpassen",
+    "done": "Fertig",
+    "addWidget": "Widget hinzufügen",
+    "noActiveWidgets": "Keine aktiven Widgets",
+    "noActiveWidgetsDesc": "Passen Sie Ihr Dashboard an, indem Sie Widgets hinzufügen, um Ihre wichtigsten KPIs zu verfolgen.",
+    "addWidgets": "Widgets hinzufügen",
+    "dragToReorder": "Widgets zum Neuordnen ziehen",
+    "reset": "Zurücksetzen"
+  },
+  "sidebar": {
+    "channelHealth": "Kanalgesundheit",
+    "recentActivity": "Letzte Aktivität"
+  },
+  "lastUpdate": "Letzte Aktualisierung",
+  "loadingData": "Daten werden geladen...",
+  "refreshed": "Dashboard mit echten Daten aktualisiert",
   "vsLastMonth": "vs letzter Monat",
   "criticalAIAlerts": "Kritische KI-Warnungen",
   "finalizeConfig": "Konfiguration abschließen",
@@ -27,5 +57,6 @@
   "averageBasket": "Durchschnittlicher Warenkorb",
   "performance": "Leistung",
   "excellent": "Ausgezeichnet",
-  "allIndicatorsPositive": "Alle Indikatoren sind positiv"
+  "allIndicatorsPositive": "Alle Indikatoren sind positiv",
+  "realtime": "Echtzeit"
 }
