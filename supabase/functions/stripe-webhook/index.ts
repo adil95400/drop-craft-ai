@@ -96,8 +96,8 @@ serve(async (req) => {
           
           // Map product ID to plan type
           const planMap: Record<string, string> = {
-            "prod_T3RS5DA7XYPWBP": "standard",
-            "prod_T3RTReiXnCg9hy": "pro",
+            "prod_TuImodwMnB71NS": "standard",
+            "prod_TuImFSanPs0svj": "pro",
             "prod_T3RTMipVwUA7Ud": "ultra_pro"
           };
           
@@ -144,8 +144,8 @@ serve(async (req) => {
           const productId = subscription.items.data[0].price.product as string;
           
           const planMap: Record<string, string> = {
-            "prod_T3RS5DA7XYPWBP": "standard",
-            "prod_T3RTReiXnCg9hy": "pro",
+            "prod_TuImodwMnB71NS": "standard",
+            "prod_TuImFSanPs0svj": "pro",
             "prod_T3RTMipVwUA7Ud": "ultra_pro"
           };
           
@@ -204,9 +204,38 @@ serve(async (req) => {
 
       case "invoice.payment_failed": {
         const invoice = event.data.object as Stripe.Invoice;
-        logStep("Payment failed");
+        logStep("Payment failed", { customerId: (invoice.customer as string)?.slice(0, 10) });
         
-        // Could send notification to user here
+        // Suspend user on payment failure
+        const failedCustomer = await stripe.customers.retrieve(invoice.customer as string);
+        if ('email' in failedCustomer && failedCustomer.email) {
+          const { data: failedProfile } = await supabase
+            .from('profiles')
+            .select('id')
+            .eq('email', failedCustomer.email)
+            .maybeSingle();
+
+          if (failedProfile) {
+            await supabase
+              .from('profiles')
+              .update({ 
+                subscription_status: 'past_due',
+                updated_at: new Date().toISOString()
+              })
+              .eq('id', failedProfile.id);
+
+            logStep("User marked as past_due", { email: '***' });
+            
+            // Log security event
+            await supabase.from('security_events').insert({
+              user_id: failedProfile.id,
+              event_type: 'payment_failed',
+              severity: 'warn',
+              description: 'Invoice payment failed - account marked past_due',
+              metadata: { invoice_id: invoice.id }
+            }).catch(() => {});
+          }
+        }
         break;
       }
 

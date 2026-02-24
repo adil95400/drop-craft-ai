@@ -196,6 +196,13 @@ export const UnifiedAuthProvider: React.FC<{ children: React.ReactNode }> = ({ c
           if (event === 'SIGNED_IN') {
             logLoginActivity(session.user.id, event, true);
             
+            // Check subscription status on login
+            supabase.functions.invoke('check-subscription').then(({ data, error }) => {
+              if (!error && data) {
+                console.log('[subscription-check] Plan:', data.plan);
+              }
+            }).catch(() => {});
+            
             // Auto-activate free trial if user came from a trial CTA
             try {
               const pendingTrial = localStorage.getItem('pending_trial');
@@ -268,11 +275,26 @@ export const UnifiedAuthProvider: React.FC<{ children: React.ReactNode }> = ({ c
     // Set up periodic session checks
     sessionCheckRef.current = setInterval(checkSessionExpiry, SESSION_CHECK_INTERVAL);
 
+    // Periodic subscription sync (every 10 minutes)
+    const subscriptionCheckRef = setInterval(() => {
+      supabase.auth.getSession().then(({ data: { session: s } }) => {
+        if (s?.user) {
+          supabase.functions.invoke('check-subscription').then(({ data, error }) => {
+            if (!error && data && s.user) {
+              // Refetch profile to get updated plan
+              fetchUserProfile(s.user.id);
+            }
+          }).catch(() => {});
+        }
+      });
+    }, 10 * 60 * 1000); // 10 minutes
+
     return () => {
       subscription.unsubscribe();
       if (sessionCheckRef.current) {
         clearInterval(sessionCheckRef.current);
       }
+      clearInterval(subscriptionCheckRef);
     };
   }, [checkSessionExpiry, logLoginActivity]);
 
