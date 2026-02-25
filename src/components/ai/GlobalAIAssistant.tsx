@@ -108,15 +108,14 @@ export function GlobalAIAssistant() {
     }])
 
     try {
-      // Préparer l'historique pour l'API
       const conversationHistory = messages.map(m => ({
         role: m.role,
         content: m.content
       }))
 
-      // Appeler l'edge function avec streaming
+      const { edgeFunctionUrl } = await import('@/lib/supabase-env')
       const response = await fetch(
-        (await import('@/lib/supabase-env')).edgeFunctionUrl('ai-chatbot-support'),
+        edgeFunctionUrl('ai-chatbot-support'),
         {
           method: 'POST',
           headers: {
@@ -135,47 +134,58 @@ export function GlobalAIAssistant() {
       )
 
       if (!response.ok) {
-        throw new Error('Erreur de l\'API')
+        const { toast } = await import('@/hooks/use-toast')
+        if (response.status === 429) {
+          toast({ title: 'Limite atteinte', description: 'Réessayez dans quelques instants.', variant: 'destructive' })
+        } else if (response.status === 402) {
+          toast({ title: 'Crédits IA épuisés', description: 'Rechargez vos crédits pour continuer.', variant: 'destructive' })
+        }
+        throw new Error(`API error ${response.status}`)
       }
 
-      // Traiter le stream SSE
       const reader = response.body?.getReader()
       const decoder = new TextDecoder()
       let fullContent = ''
+      let textBuffer = ''
 
       if (reader) {
         while (true) {
           const { done, value } = await reader.read()
           if (done) break
 
-          const chunk = decoder.decode(value, { stream: true })
-          const lines = chunk.split('\n')
+          textBuffer += decoder.decode(value, { stream: true })
 
-          for (const line of lines) {
-            if (line.startsWith('data: ')) {
-              const data = line.slice(6).trim()
-              if (data === '[DONE]') continue
+          let newlineIndex: number
+          while ((newlineIndex = textBuffer.indexOf('\n')) !== -1) {
+            let line = textBuffer.slice(0, newlineIndex)
+            textBuffer = textBuffer.slice(newlineIndex + 1)
 
-              try {
-                const parsed = JSON.parse(data)
-                const content = parsed.choices?.[0]?.delta?.content
-                if (content) {
-                  fullContent += content
-                  setMessages(prev => prev.map(m =>
-                    m.id === assistantMessageId
-                      ? { ...m, content: fullContent }
-                      : m
-                  ))
-                }
-              } catch {
-                // Ignorer les lignes non-JSON
+            if (line.endsWith('\r')) line = line.slice(0, -1)
+            if (line.startsWith(':') || line.trim() === '') continue
+            if (!line.startsWith('data: ')) continue
+
+            const jsonStr = line.slice(6).trim()
+            if (jsonStr === '[DONE]') continue
+
+            try {
+              const parsed = JSON.parse(jsonStr)
+              const content = parsed.choices?.[0]?.delta?.content
+              if (content) {
+                fullContent += content
+                setMessages(prev => prev.map(m =>
+                  m.id === assistantMessageId
+                    ? { ...m, content: fullContent }
+                    : m
+                ))
               }
+            } catch {
+              textBuffer = line + '\n' + textBuffer
+              break
             }
           }
         }
       }
 
-      // Marquer le streaming comme terminé
       setMessages(prev => prev.map(m =>
         m.id === assistantMessageId
           ? { ...m, isStreaming: false }
@@ -184,7 +194,6 @@ export function GlobalAIAssistant() {
 
     } catch (error) {
       console.error('Erreur chat IA:', error)
-      // Fallback: réponse locale en cas d'erreur
       setMessages(prev => prev.map(m =>
         m.id === assistantMessageId
           ? { 
