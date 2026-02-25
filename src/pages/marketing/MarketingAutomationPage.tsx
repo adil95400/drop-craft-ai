@@ -1,4 +1,5 @@
 import { Helmet } from 'react-helmet-async';
+import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
 import { useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -144,18 +145,12 @@ export default function MarketingAutomationPage() {
         <meta name="description" content="Automatisez vos campagnes marketing : emails, relances, ventes flash et plus encore." />
       </Helmet>
 
-      <div className="space-y-8 p-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold flex items-center gap-3">
-              <Zap className="h-8 w-8 text-primary" />
-              Marketing Automation
-            </h1>
-            <p className="text-muted-foreground mt-1">
-              Créez des séquences automatisées pour engager vos clients au bon moment
-            </p>
-          </div>
-        </div>
+      <ChannablePageWrapper
+        title="Marketing Automation"
+        description="Créez des séquences automatisées pour engager vos clients au bon moment"
+        heroImage="marketing"
+        badge={{ label: 'Automation', icon: Zap }}
+      >
 
         {/* KPIs */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -292,7 +287,7 @@ export default function MarketingAutomationPage() {
             </div>
           </TabsContent>
         </Tabs>
-      </div>
+      </ChannablePageWrapper>
     </>
   );
 }
