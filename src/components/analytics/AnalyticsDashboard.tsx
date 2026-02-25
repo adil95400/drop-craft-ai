@@ -38,9 +38,9 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
   const { data: metrics, isLoading: metricsLoading } = useQuery({
     queryKey: ['analytics-metrics', timeRange],
     queryFn: async () => {
-      const ordersRes = await supabase.from('orders').select('id, total_amount, created_at').gte('created_at', since);
-      const customersRes = await supabase.from('customers').select('id', { count: 'exact' }).eq('status', 'active');
-      const productsRes = await supabase.from('products').select('id', { count: 'exact' }).eq('status', 'active');
+      const ordersRes = await (supabase.from('orders').select('id, total_amount, created_at') as any).gte('created_at', since);
+      const customersRes = await (supabase.from('customers').select('id', { count: 'exact' }) as any).eq('status', 'active');
+      const productsRes = await (supabase.from('products').select('id', { count: 'exact' }) as any).eq('status', 'active');
       const orders = ordersRes.data || [];
       const revenue = orders.reduce((s: number, o: any) => s + (o.total_amount || 0), 0);
       return {
