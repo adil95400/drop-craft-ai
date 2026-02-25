@@ -140,6 +140,27 @@ Tous les modules critiques utilisent des données réelles.
 
 ---
 
+## 🔵 SPRINT 5 — Industrialisation & Excellence (Semaines 13-16)
+
+### 5.1 Documentation API Publique
+- [x] Page interactive avec endpoints, scopes, paramètres ✅
+- [x] API Playground (try-it) intégré ✅
+- [x] Exemples SDK (JS, Python, PHP) ✅
+- [x] Tableau des rate limits par plan ✅
+
+### 5.2 Accessibilité WCAG 2.1
+- [ ] Audit contraste et aria-labels
+- [ ] Navigation clavier complète
+- [ ] Screen reader compatibility
+- [ ] Focus management et skip links
+
+### 5.3 Tests de charge
+- [ ] Scripts k6 pour endpoints critiques
+- [ ] Dashboard résultats performance
+- [ ] Seuils d'alerte automatiques
+
+---
+
 ## 📋 Pages à Fusionner / Supprimer
 
 | Existant | Cible | Raison |
