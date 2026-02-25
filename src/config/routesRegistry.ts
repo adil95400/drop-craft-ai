@@ -1,16 +1,26 @@
 /**
  * Registre centralisé de toutes les routes disponibles dans l'application
- * Facilite la gestion et l'ajout de nouvelles pages
+ * Source de vérité unique — utilisé pour navigation, breadcrumbs, sitemap, validation
+ * 
+ * Sprint 2 — nettoyé et enrichi avec helpers
  */
+
+export type RouteGroup = 'core' | 'analytics' | 'automation' | 'marketing' | 'ai' | 'enterprise' | 'tools' | 'settings' | 'public';
 
 export interface RouteConfig {
   path: string;
   component: string;
   protected: boolean;
   adminOnly?: boolean;
-  category: 'core' | 'analytics' | 'automation' | 'marketing' | 'ai' | 'enterprise' | 'tools' | 'settings' | 'public';
+  category: RouteGroup;
   description: string;
   implemented: boolean;
+  /** Label for breadcrumbs / sitemap */
+  label?: string;
+  /** Icon name from lucide-react */
+  icon?: string;
+  /** Route this one redirects to (deprecated routes) */
+  redirectTo?: string;
 }
 
 export const ROUTES_REGISTRY: RouteConfig[] = [
@@ -164,8 +174,31 @@ export function getMissingRoutes(): RouteConfig[] {
 /**
  * Obtenir les routes par catégorie
  */
-export function getRoutesByCategory(category: RouteConfig['category']): RouteConfig[] {
+export function getRoutesByCategory(category: RouteGroup): RouteConfig[] {
   return ROUTES_REGISTRY.filter(route => route.category === category);
+}
+
+/**
+ * Trouver une route par path
+ */
+export function findRoute(path: string): RouteConfig | undefined {
+  return ROUTES_REGISTRY.find(r => r.path === path);
+}
+
+/**
+ * Obtenir le label d'une route (utile pour breadcrumbs)
+ */
+export function getRouteLabel(path: string): string {
+  const route = findRoute(path);
+  return route?.label || route?.description || path;
+}
+
+/**
+ * Vérifier si un path est public
+ */
+export function isPublicRoute(path: string): boolean {
+  const route = findRoute(path);
+  return route ? !route.protected : false;
 }
 
 /**

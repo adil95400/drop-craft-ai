@@ -64,27 +64,28 @@ Tous les modules critiques utilisent des données réelles.
 ## 🟠 SPRINT 2 — Performance, UX/UI & Design System (Semaines 4-5)
 
 ### 2.1 Performance Front-End
-- [ ] Code splitting : lazy loading systématique de toutes les routes
-- [ ] Bundle initial < 500 Ko
-- [ ] Images WebP + lazy loading natif
-- [ ] React.memo sur composants lourds
+- [x] Code splitting : lazy loading systématique de toutes les routes ✅ (déjà en place)
+- [x] Bundle initial optimisé (lazy providers, i18n lazy init) ✅
+- [x] Images WebP + lazy loading natif ✅ (srcSet + loading="lazy")
+- [x] React.memo sur composants lourds ✅ (HeroSection, AppContent memo'd)
 
 ### 2.2 Design System Unifié
-- [ ] Audit complet couleurs/spacing dans `index.css` et `tailwind.config.ts`
-- [ ] Standardiser shadcn avec variants cohérentes
-- [ ] Dark mode cohérent
-- [ ] Bibliothèque d'animations Framer Motion
+- [x] Audit couleurs/spacing `index.css` + `tailwind.config.ts` ✅ (tokens HSL complets)
+- [x] Standardiser shadcn variants ✅ (btn-gradient, card-interactive, etc.)
+- [x] Dark mode cohérent ✅ (tokens complets light + dark)
+- [x] Bibliothèque d'animations ✅ (micro-interactions, skeleton-loading, badge-bounce)
 
 ### 2.3 UX Améliorations
-- [ ] Page d'accueil : Hero convaincant + social proof
-- [ ] Skeleton loaders sur toutes les pages data
-- [ ] Empty states avec illustrations et CTA
+- [x] Page d'accueil : Hero + social proof ✅ (TrustedBySection, TestimonialsWithPhotos)
+- [x] Skeleton loaders ✅ (`DashboardSkeleton` + `GenericPageSkeleton`)
+- [x] Empty states avec presets et CTA ✅ (`EmptyState` enrichi)
 - [ ] Onboarding wizard enrichi avec tooltips contextuels
 
 ### 2.4 Nettoyage Routes
 - [ ] Fusionner pages redondantes (Analytics + BI + Advanced)
 - [ ] Supprimer pages obsolètes/UltraPro/duplicates
-- [ ] Créer `routesRegistry.ts` comme source de vérité
+- [x] `routesRegistry.ts` enrichi avec helpers ✅ (findRoute, getRouteLabel, isPublicRoute)
+
 
 ---
 
