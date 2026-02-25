@@ -94,25 +94,19 @@ export function StoreSettingsDialog({ store, onUpdate }: StoreSettingsDialogProp
 
   const updateCredentials = async () => {
     try {
-      // Store in localStorage as mock since store_integrations doesn't exist
-      const stored = localStorage.getItem('mock_store_integrations') || '[]'
-      const integrations = JSON.parse(stored)
-      const index = integrations.findIndex((i: any) => i.id === store.id)
-      
-      const updatedStore = {
-        ...store,
-        name: formData.name,
-        domain: formData.domain,
-        status: 'connected'
-      }
-      
-      if (index >= 0) {
-        integrations[index] = updatedStore
-      } else {
-        integrations.push(updatedStore)
-      }
-      
-      localStorage.setItem('mock_store_integrations', JSON.stringify(integrations))
+      // Update the integration record in the database
+      const { error } = await supabase
+        .from('integrations')
+        .update({
+          name: formData.name,
+          config: { domain: formData.domain },
+          is_active: true,
+          status: 'connected',
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', store.id)
+
+      if (error) throw error
 
       onUpdate()
 

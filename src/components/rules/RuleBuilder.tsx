@@ -2,6 +2,8 @@
  * RuleBuilder - Modal de création/édition de règles optimisé
  */
 import { useState, useEffect, useMemo } from 'react'
+import { useQuery } from '@tanstack/react-query'
+import { supabase } from '@/integrations/supabase/client'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
@@ -86,16 +88,35 @@ const CHANNELS: { value: RuleChannel; label: string; color: string }[] = [
   { value: 'shopify', label: 'Shopify', color: 'bg-green-500' },
 ]
 
-// Mock products for preview
-const MOCK_PRODUCTS = [
-  { id: '1', name: 'iPhone 15 Pro Max 256Go Noir Titane - Smartphone Apple dernière génération', price: 1299, stock_quantity: 15, category: 'Électronique', brand: 'Apple' },
-  { id: '2', name: 'Samsung Galaxy S24 Ultra', price: 1199, stock_quantity: 8, category: 'Électronique', brand: 'Samsung' },
-  { id: '3', name: 'T-shirt Coton Bio', price: 29.99, stock_quantity: 3, category: 'Vêtements', brand: 'Basics' },
+// Fallback products for preview when no real data available
+const FALLBACK_PRODUCTS = [
+  { id: '1', name: 'Produit exemple 1', price: 29.99, stock_quantity: 10, category: 'Général', brand: 'N/A' },
+  { id: '2', name: 'Produit exemple 2', price: 49.99, stock_quantity: 5, category: 'Général', brand: 'N/A' },
 ]
 
 export function RuleBuilder({ rule, open, onOpenChange, onSave }: RuleBuilderProps) {
   const { toast } = useToast()
   const [activeTab, setActiveTab] = useState('config')
+
+  // Fetch real products for preview
+  const { data: realProducts } = useQuery({
+    queryKey: ['rule-preview-products'],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from('products')
+        .select('id, name, price, stock_quantity, category, brand')
+        .limit(10)
+      return (data || []).map(p => ({
+        id: p.id,
+        name: p.name || '',
+        price: p.price || 0,
+        stock_quantity: p.stock_quantity || 0,
+        category: p.category || '',
+        brand: p.brand || ''
+      }))
+    }
+  })
+  const previewProducts = realProducts && realProducts.length > 0 ? realProducts : FALLBACK_PRODUCTS
   
   const [name, setName] = useState(rule?.name || '')
   const [description, setDescription] = useState(rule?.description || '')
@@ -140,9 +161,9 @@ export function RuleBuilder({ rule, open, onOpenChange, onSave }: RuleBuilderPro
 
   // Calculer les produits qui matchent les conditions
   const matchingProducts = useMemo(() => {
-    if (conditions.length === 0) return MOCK_PRODUCTS;
+    if (conditions.length === 0) return previewProducts;
     
-    return MOCK_PRODUCTS.filter(product => {
+    return previewProducts.filter(product => {
       const results = conditions.map(condition => {
         const fieldValue = (product as any)[condition.field];
         const condValue = condition.value;
@@ -163,7 +184,7 @@ export function RuleBuilder({ rule, open, onOpenChange, onSave }: RuleBuilderPro
         ? results.every(r => r)
         : results.some(r => r);
     });
-  }, [conditions, conditionLogic]);
+  }, [conditions, conditionLogic, previewProducts]);
 
   const addCondition = () => {
     setConditions([...conditions, {
@@ -674,13 +695,13 @@ export function RuleBuilder({ rule, open, onOpenChange, onSave }: RuleBuilderPro
                       Produits affectés
                     </h3>
                     <Badge variant="secondary">
-                      {matchingProducts.length}/{MOCK_PRODUCTS.length}
+                      {matchingProducts.length}/{previewProducts.length}
                     </Badge>
                   </div>
                   
                   <ScrollArea className="flex-1">
                     <div className="space-y-2">
-                      {MOCK_PRODUCTS.map(product => {
+                      {previewProducts.map(product => {
                         const matches = matchingProducts.some(p => p.id === product.id);
                         return (
                           <Card 
