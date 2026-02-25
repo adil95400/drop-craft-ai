@@ -134,9 +134,9 @@ Tous les modules critiques utilisent des données réelles.
 - [ ] API Enterprise + rate limits augmentés
 
 ### 4.4 Mobile & PWA
-- [ ] PWA complète (manifest, service worker, offline)
-- [ ] Push notifications (Capacitor)
-- [ ] Interface tactile (swipe, pull-to-refresh)
+- [x] PWA complète (manifest, service worker, offline) ✅
+- [x] Push notifications (Capacitor + local notifications) ✅
+- [x] Interface tactile (swipe, pull-to-refresh) ✅
 
 ---
 
