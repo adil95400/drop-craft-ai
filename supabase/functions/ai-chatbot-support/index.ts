@@ -72,10 +72,10 @@ serve(async (req) => {
       content: typeof msg.content === 'string' ? msg.content.substring(0, 4000) : ''
     }));
     
-    const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
+    const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY');
 
-    if (!LOVABLE_API_KEY) {
-      throw new Error('LOVABLE_API_KEY is not configured');
+    if (!OPENAI_API_KEY) {
+      throw new Error('OPENAI_API_KEY is not configured');
     }
 
     const systemPrompt = `Tu es l'assistant IA expert de Drop Craft AI, la plateforme de dropshipping la plus avancée du marché.
@@ -125,38 +125,34 @@ Problème critique → Suggère chat avec expert humain
 
 Réponds en français, sois concis, actionnable et empathique.`;
 
-    const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${LOVABLE_API_KEY}`,
+        'Authorization': `Bearer ${OPENAI_API_KEY}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'google/gemini-2.5-flash',
+        model: 'gpt-4o-mini',
         messages: [
           { role: 'system', content: systemPrompt },
           ...sanitizedMessages
         ],
         stream: true,
+        max_tokens: 1000,
+        temperature: 0.7,
       }),
     });
 
     if (!response.ok) {
       if (response.status === 429) {
         return new Response(
-          JSON.stringify({ error: 'Trop de requêtes. Réessayez dans quelques instants.' }), 
+          JSON.stringify({ error: 'Trop de requêtes OpenAI. Réessayez dans quelques instants.' }), 
           { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
-      if (response.status === 402) {
-        return new Response(
-          JSON.stringify({ error: 'Crédits insuffisants. Contactez le support.' }), 
-          { status: 402, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
-      }
       const errorText = await response.text();
-      console.error('Lovable AI error:', response.status, errorText);
-      throw new Error(`AI Gateway error: ${response.status}`);
+      console.error('OpenAI error:', response.status, errorText);
+      throw new Error(`OpenAI API error: ${response.status}`);
     }
 
     return new Response(response.body, {
