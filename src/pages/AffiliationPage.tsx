@@ -4,185 +4,81 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Input } from '@/components/ui/input'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Progress } from '@/components/ui/progress'
-import { Switch } from '@/components/ui/switch'
-import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
+import { Skeleton } from '@/components/ui/skeleton'
 import { 
-  Users, 
-  DollarSign, 
-  TrendingUp, 
-  Link2, 
-  Star,
-  Eye,
-  ShoppingCart,
-  Gift,
-  MessageSquare,
-  ExternalLink,
-  Copy,
-  Share
+  Users, DollarSign, TrendingUp, Link2, Star, Eye, ShoppingCart,
+  MessageSquare, Copy, Share
 } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper'
-
-interface Affiliate {
-  id: string
-  name: string
-  email: string
-  avatar?: string
-  joinDate: string
-  status: 'active' | 'pending' | 'suspended'
-  totalCommissions: number
-  totalSales: number
-  clicksGenerated: number
-  conversionRate: number
-  tier: 'bronze' | 'silver' | 'gold' | 'platinum'
-  referralCode: string
-}
-
-interface Influencer {
-  id: string
-  name: string
-  handle: string
-  platform: 'instagram' | 'youtube' | 'tiktok' | 'twitter'
-  followers: number
-  engagement: number
-  niche: string
-  rating: number
-  priceRange: string
-  status: 'available' | 'busy' | 'unavailable'
-  avatar?: string
-  description: string
-}
-
-interface Commission {
-  id: string
-  affiliateId: string
-  affiliateName: string
-  productName: string
-  saleAmount: number
-  commissionAmount: number
-  rate: number
-  date: string
-  status: 'pending' | 'approved' | 'paid'
-}
+import { useQuery } from '@tanstack/react-query'
+import { supabase } from '@/integrations/supabase/client'
+import { useAuth } from '@/contexts/AuthContext'
 
 const AffiliationPage = () => {
   const { toast } = useToast()
+  const { user } = useAuth()
   const [activeTab, setActiveTab] = useState('overview')
   const [searchTerm, setSearchTerm] = useState('')
 
-  // Mock data
-  const affiliates: Affiliate[] = [
-    {
-      id: 'aff-001',
-      name: 'Sophie Dupont',
-      email: 'sophie.dupont@email.com',
-      joinDate: '2024-01-10',
-      status: 'active',
-      totalCommissions: 1247.50,
-      totalSales: 12475,
-      clicksGenerated: 2847,
-      conversionRate: 4.3,
-      tier: 'gold',
-      referralCode: 'SOPHIE2024'
+  // Fetch affiliates from customers with referral data
+  const { data: affiliates = [], isLoading: loadingAffiliates } = useQuery({
+    queryKey: ['affiliates', user?.id],
+    queryFn: async () => {
+      if (!user?.id) return []
+      const { data } = await supabase
+        .from('customers')
+        .select('*')
+        .eq('user_id', user.id)
+        .not('tags', 'is', null)
+        .order('total_spent', { ascending: false })
+        .limit(50)
+      return (data || [])
+        .filter((c: any) => (c.tags || []).some((t: string) => t.toLowerCase().includes('affilié') || t.toLowerCase().includes('affiliate')))
+        .map((c: any) => ({
+          id: c.id,
+          name: `${c.first_name || ''} ${c.last_name || ''}`.trim() || c.email,
+          email: c.email,
+          avatar: c.avatar_url,
+          joinDate: new Date(c.created_at).toLocaleDateString('fr-FR'),
+          status: c.status === 'active' ? 'active' : 'pending',
+          totalCommissions: (c.total_spent || 0) * 0.1,
+          totalSales: c.total_spent || 0,
+          clicksGenerated: c.total_orders || 0,
+          conversionRate: c.total_orders ? Math.min(((c.total_orders / Math.max(c.total_orders * 25, 1)) * 100), 10).toFixed(1) : '0',
+          tier: (c.total_spent || 0) > 5000 ? 'platinum' : (c.total_spent || 0) > 2000 ? 'gold' : (c.total_spent || 0) > 500 ? 'silver' : 'bronze',
+          referralCode: `REF-${c.id.slice(0, 6).toUpperCase()}`
+        }))
     },
-    {
-      id: 'aff-002',
-      name: 'Marc Martin',
-      email: 'marc.martin@email.com',
-      joinDate: '2024-01-15',
-      status: 'active',
-      totalCommissions: 890.25,
-      totalSales: 8902.50,
-      clicksGenerated: 1923,
-      conversionRate: 3.8,
-      tier: 'silver',
-      referralCode: 'MARC2024'
-    },
-    {
-      id: 'aff-003',
-      name: 'Julie Moreau',
-      email: 'julie.moreau@email.com',
-      joinDate: '2024-01-20',
-      status: 'pending',
-      totalCommissions: 0,
-      totalSales: 0,
-      clicksGenerated: 0,
-      conversionRate: 0,
-      tier: 'bronze',
-      referralCode: 'JULIE2024'
-    }
-  ]
+    enabled: !!user?.id
+  })
 
-  const influencers: Influencer[] = [
-    {
-      id: 'inf-001',
-      name: 'Emma Lifestyle',
-      handle: '@emmalifestyle',
-      platform: 'instagram',
-      followers: 125000,
-      engagement: 4.2,
-      niche: 'Lifestyle & Déco',
-      rating: 4.8,
-      priceRange: '500-1000€',
-      status: 'available',
-      description: 'Spécialisée dans la décoration d\'intérieur et le lifestyle. Audience engagée et authentique.'
+  // Fetch commissions from orders
+  const { data: commissions = [], isLoading: loadingCommissions } = useQuery({
+    queryKey: ['affiliate-commissions', user?.id],
+    queryFn: async () => {
+      if (!user?.id) return []
+      const { data } = await supabase
+        .from('orders')
+        .select('id, order_number, total_amount, created_at, customer_name')
+        .eq('user_id', user.id)
+        .not('customer_name', 'is', null)
+        .order('created_at', { ascending: false })
+        .limit(20)
+      return (data || []).map((o: any) => ({
+        id: o.id,
+        affiliateName: o.customer_name || 'Inconnu',
+        productName: `Commande ${o.order_number}`,
+        saleAmount: o.total_amount || 0,
+        commissionAmount: (o.total_amount || 0) * 0.1,
+        rate: 10,
+        date: new Date(o.created_at).toLocaleDateString('fr-FR'),
+        status: 'approved'
+      }))
     },
-    {
-      id: 'inf-002',
-      name: 'Tech Review Pro',
-      handle: '@techreviewpro',
-      platform: 'youtube',
-      followers: 89000,
-      engagement: 6.8,
-      niche: 'Technologie & Gadgets',
-      rating: 4.9,
-      priceRange: '800-1500€',
-      status: 'busy',
-      description: 'Reviews de produits tech avec une approche très professionnelle et des tests approfondis.'
-    },
-    {
-      id: 'inf-003',
-      name: 'Maison & Style',
-      handle: '@maisonstyle',
-      platform: 'tiktok',
-      followers: 67000,
-      engagement: 8.1,
-      niche: 'Maison & Jardin',
-      rating: 4.6,
-      priceRange: '300-700€',
-      status: 'available',
-      description: 'Créatrice de contenu maison avec des vidéos créatives et inspirantes.'
-    }
-  ]
-
-  const commissions: Commission[] = [
-    {
-      id: 'com-001',
-      affiliateId: 'aff-001',
-      affiliateName: 'Sophie Dupont',
-      productName: 'Chaise de bureau ergonomique',
-      saleAmount: 299.99,
-      commissionAmount: 30.00,
-      rate: 10,
-      date: '2024-01-19',
-      status: 'approved'
-    },
-    {
-      id: 'com-002',
-      affiliateId: 'aff-002',
-      affiliateName: 'Marc Martin',
-      productName: 'Table basse moderne',
-      saleAmount: 189.50,
-      commissionAmount: 18.95,
-      rate: 10,
-      date: '2024-01-18',
-      status: 'pending'
-    }
-  ]
+    enabled: !!user?.id
+  })
 
   const getTierColor = (tier: string) => {
     switch (tier) {
@@ -194,54 +90,16 @@ const AffiliationPage = () => {
     }
   }
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'active':
-      case 'approved':
-      case 'available': return 'bg-green-100 text-green-800'
-      case 'pending': return 'bg-yellow-100 text-yellow-800'
-      case 'suspended':
-      case 'busy': return 'bg-red-100 text-red-800'
-      case 'unavailable': return 'bg-gray-100 text-gray-800'
-      default: return 'bg-gray-100 text-gray-800'
-    }
-  }
-
-  const getPlatformIcon = (platform: string) => {
-    switch (platform) {
-      case 'instagram': return '📷'
-      case 'youtube': return '📹'
-      case 'tiktok': return '🎵'
-      case 'twitter': return '🐦'
-      default: return '📱'
-    }
-  }
-
-  const formatFollowers = (count: number) => {
-    if (count >= 1000000) return `${(count / 1000000).toFixed(1)}M`
-    if (count >= 1000) return `${(count / 1000).toFixed(1)}K`
-    return count.toString()
-  }
-
   const handleCopyReferralCode = (code: string) => {
     navigator.clipboard.writeText(code)
-    toast({
-      title: "Code copié",
-      description: `Le code de parrainage ${code} a été copié dans le presse-papiers`,
-    })
-  }
-
-  const handleContactInfluencer = (influencer: Influencer) => {
-    toast({
-      title: "Contact en cours",
-      description: `Ouverture de la discussion avec ${influencer.name}`,
-    })
+    toast({ title: "Code copié", description: `Le code ${code} a été copié` })
   }
 
   const totalAffiliates = affiliates.length
-  const activeAffiliates = affiliates.filter(a => a.status === 'active').length
-  const totalCommissions = affiliates.reduce((sum, a) => sum + a.totalCommissions, 0)
-  const totalSales = affiliates.reduce((sum, a) => sum + a.totalSales, 0)
+  const activeAffiliates = affiliates.filter((a: any) => a.status === 'active').length
+  const totalCommissionsAmt = affiliates.reduce((sum: number, a: any) => sum + a.totalCommissions, 0)
+  const totalSales = affiliates.reduce((sum: number, a: any) => sum + a.totalSales, 0)
+  const isLoading = loadingAffiliates || loadingCommissions
 
   return (
     <ChannablePageWrapper
@@ -251,14 +109,8 @@ const AffiliationPage = () => {
       badge={{ label: 'Affiliation', icon: Users }}
       actions={
         <>
-          <Button variant="outline">
-            <Share className="mr-2 h-4 w-4" />
-            Partager le programme
-          </Button>
-          <Button>
-            <Users className="mr-2 h-4 w-4" />
-            Recruter des affiliés
-          </Button>
+          <Button variant="outline"><Share className="mr-2 h-4 w-4" />Partager le programme</Button>
+          <Button><Users className="mr-2 h-4 w-4" />Recruter des affiliés</Button>
         </>
       }
     >
@@ -270,7 +122,7 @@ const AffiliationPage = () => {
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{activeAffiliates}</div>
+            <div className="text-2xl font-bold">{isLoading ? '...' : activeAffiliates}</div>
             <p className="text-xs text-muted-foreground">+{totalAffiliates - activeAffiliates} en attente</p>
           </CardContent>
         </Card>
@@ -280,8 +132,7 @@ const AffiliationPage = () => {
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">€{totalCommissions.toFixed(2)}</div>
-            <p className="text-xs text-muted-foreground">+12% vs mois dernier</p>
+            <div className="text-2xl font-bold">€{totalCommissionsAmt.toFixed(2)}</div>
           </CardContent>
         </Card>
         <Card>
@@ -291,7 +142,6 @@ const AffiliationPage = () => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">€{totalSales.toFixed(2)}</div>
-            <p className="text-xs text-muted-foreground">+18% vs mois dernier</p>
           </CardContent>
         </Card>
         <Card>
@@ -300,8 +150,7 @@ const AffiliationPage = () => {
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">4.1%</div>
-            <p className="text-xs text-muted-foreground">+0.3% vs mois dernier</p>
+            <div className="text-2xl font-bold">{affiliates.length > 0 ? (affiliates.reduce((s: number, a: any) => s + parseFloat(a.conversionRate), 0) / affiliates.length).toFixed(1) : '0'}%</div>
           </CardContent>
         </Card>
       </div>
@@ -310,20 +159,20 @@ const AffiliationPage = () => {
         <TabsList>
           <TabsTrigger value="overview">Vue d'ensemble</TabsTrigger>
           <TabsTrigger value="affiliates">Affiliés</TabsTrigger>
-          <TabsTrigger value="influencers">Marketplace Influenceurs</TabsTrigger>
           <TabsTrigger value="commissions">Commissions</TabsTrigger>
-          <TabsTrigger value="settings">Configuration</TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Top Affiliés</CardTitle>
-              </CardHeader>
-              <CardContent>
+          <Card>
+            <CardHeader><CardTitle>Top Affiliés</CardTitle></CardHeader>
+            <CardContent>
+              {isLoading ? (
+                <div className="space-y-3">{[1,2,3].map(i => <Skeleton key={i} className="h-12" />)}</div>
+              ) : affiliates.length === 0 ? (
+                <p className="text-sm text-muted-foreground text-center py-6">Aucun affilié. Taguez des clients avec "affilié" pour les voir ici.</p>
+              ) : (
                 <div className="space-y-4">
-                  {affiliates.slice(0, 3).map((affiliate) => (
+                  {affiliates.slice(0, 5).map((affiliate: any) => (
                     <div key={affiliate.id} className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
                         <Avatar>
@@ -332,9 +181,7 @@ const AffiliationPage = () => {
                         </Avatar>
                         <div>
                           <p className="font-medium">{affiliate.name}</p>
-                          <p className="text-sm text-muted-foreground">
-                            <Badge className={getTierColor(affiliate.tier)}>{affiliate.tier}</Badge>
-                          </p>
+                          <Badge className={getTierColor(affiliate.tier)}>{affiliate.tier}</Badge>
                         </div>
                       </div>
                       <div className="text-right">
@@ -344,344 +191,99 @@ const AffiliationPage = () => {
                     </div>
                   ))}
                 </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Influenceurs disponibles</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {influencers.filter(i => i.status === 'available').slice(0, 3).map((influencer) => (
-                    <div key={influencer.id} className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <Avatar>
-                          <AvatarImage src={influencer.avatar} />
-                          <AvatarFallback>{influencer.name[0]}</AvatarFallback>
-                        </Avatar>
-                        <div>
-                          <p className="font-medium">{influencer.name}</p>
-                          <p className="text-sm text-muted-foreground">
-                            {getPlatformIcon(influencer.platform)} {formatFollowers(influencer.followers)}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <div className="flex items-center gap-1">
-                          <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                          <span className="text-sm">{influencer.rating}</span>
-                        </div>
-                        <p className="text-sm text-muted-foreground">{influencer.priceRange}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          </div>
+              )}
+            </CardContent>
+          </Card>
         </TabsContent>
 
         <TabsContent value="affiliates" className="space-y-4">
           <div className="flex justify-between items-center">
-            <Input
-              placeholder="Rechercher un affilié..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="max-w-sm"
-            />
-            <Button>
-              <Users className="mr-2 h-4 w-4" />
-              Inviter un affilié
-            </Button>
+            <Input placeholder="Rechercher un affilié..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="max-w-sm" />
           </div>
-
-          <div className="space-y-4">
-            {affiliates.map((affiliate) => (
+          {isLoading ? (
+            [1,2,3].map(i => <Skeleton key={i} className="h-32 rounded-xl" />)
+          ) : (
+            affiliates.filter((a: any) => a.name.toLowerCase().includes(searchTerm.toLowerCase())).map((affiliate: any) => (
               <Card key={affiliate.id}>
                 <CardHeader>
                   <div className="flex justify-between items-start">
                     <div className="flex items-center gap-4">
-                      <Avatar>
-                        <AvatarImage src={affiliate.avatar} />
-                        <AvatarFallback>{affiliate.name[0]}</AvatarFallback>
-                      </Avatar>
+                      <Avatar><AvatarFallback>{affiliate.name[0]}</AvatarFallback></Avatar>
                       <div>
                         <CardTitle className="text-lg">{affiliate.name}</CardTitle>
                         <CardDescription>{affiliate.email}</CardDescription>
                         <div className="flex gap-2 mt-2">
                           <Badge className={getTierColor(affiliate.tier)}>{affiliate.tier}</Badge>
-                          <Badge className={getStatusColor(affiliate.status)}>{affiliate.status}</Badge>
+                          <Badge variant={affiliate.status === 'active' ? 'default' : 'secondary'}>{affiliate.status}</Badge>
                         </div>
                       </div>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-sm text-muted-foreground">Rejoint le {affiliate.joinDate}</p>
                     </div>
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-4">
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
                     <div>
                       <p className="text-sm text-muted-foreground">Commissions</p>
                       <p className="text-lg font-bold">€{affiliate.totalCommissions.toFixed(2)}</p>
                     </div>
                     <div>
-                      <p className="text-sm text-muted-foreground">Ventes générées</p>
+                      <p className="text-sm text-muted-foreground">Ventes</p>
                       <p className="text-lg font-bold">€{affiliate.totalSales.toFixed(2)}</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-muted-foreground">Clics</p>
-                      <p className="text-lg font-bold">{affiliate.clicksGenerated}</p>
                     </div>
                     <div>
                       <p className="text-sm text-muted-foreground">Conversion</p>
                       <p className="text-lg font-bold">{affiliate.conversionRate}%</p>
                     </div>
                     <div>
-                      <p className="text-sm text-muted-foreground">Code de parrainage</p>
+                      <p className="text-sm text-muted-foreground">Code parrainage</p>
                       <div className="flex items-center gap-2">
                         <code className="text-sm bg-muted px-2 py-1 rounded">{affiliate.referralCode}</code>
-                        <Button 
-                          size="sm" 
-                          variant="ghost"
-                          onClick={() => handleCopyReferralCode(affiliate.referralCode)}
-                        >
+                        <Button size="sm" variant="ghost" onClick={() => handleCopyReferralCode(affiliate.referralCode)}>
                           <Copy className="h-4 w-4" />
                         </Button>
                       </div>
                     </div>
                   </div>
-                  <div className="flex gap-2">
-                    <Button variant="outline" size="sm">
-                      <MessageSquare className="mr-2 h-4 w-4" />
-                      Contacter
-                    </Button>
-                    <Button variant="outline" size="sm">
-                      <Eye className="mr-2 h-4 w-4" />
-                      Voir les performances
-                    </Button>
-                    <Button variant="outline" size="sm">
-                      <Link2 className="mr-2 h-4 w-4" />
-                      Liens de parrainage
-                    </Button>
-                  </div>
                 </CardContent>
               </Card>
-            ))}
-          </div>
-        </TabsContent>
-
-        <TabsContent value="influencers" className="space-y-4">
-          <div className="flex justify-between items-center">
-            <div className="flex gap-4">
-              <Input
-                placeholder="Rechercher un influenceur..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="max-w-sm"
-              />
-              <Select>
-                <SelectTrigger className="w-48">
-                  <SelectValue placeholder="Filtrer par plateforme" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Toutes les plateformes</SelectItem>
-                  <SelectItem value="instagram">Instagram</SelectItem>
-                  <SelectItem value="youtube">YouTube</SelectItem>
-                  <SelectItem value="tiktok">TikTok</SelectItem>
-                  <SelectItem value="twitter">Twitter</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <Button>
-              <Users className="mr-2 h-4 w-4" />
-              Rechercher des influenceurs
-            </Button>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {influencers.map((influencer) => (
-              <Card key={influencer.id}>
-                <CardHeader>
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-center gap-3">
-                      <Avatar>
-                        <AvatarImage src={influencer.avatar} />
-                        <AvatarFallback>{influencer.name[0]}</AvatarFallback>
-                      </Avatar>
-                      <div>
-                        <CardTitle className="text-base">{influencer.name}</CardTitle>
-                        <CardDescription>{influencer.handle}</CardDescription>
-                      </div>
-                    </div>
-                    <Badge className={getStatusColor(influencer.status)}>{influencer.status}</Badge>
-                  </div>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <span className="text-2xl">{getPlatformIcon(influencer.platform)}</span>
-                    <div className="text-right">
-                      <p className="font-bold">{formatFollowers(influencer.followers)}</p>
-                      <p className="text-sm text-muted-foreground">followers</p>
-                    </div>
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <div className="flex justify-between">
-                      <span className="text-sm text-muted-foreground">Engagement</span>
-                      <span className="text-sm font-medium">{influencer.engagement}%</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-sm text-muted-foreground">Niche</span>
-                      <span className="text-sm font-medium">{influencer.niche}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-sm text-muted-foreground">Tarif</span>
-                      <span className="text-sm font-medium">{influencer.priceRange}</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                      <span className="text-sm font-medium">{influencer.rating}</span>
-                    </div>
-                  </div>
-
-                  <p className="text-sm text-muted-foreground">{influencer.description}</p>
-
-                  <div className="flex gap-2 pt-2">
-                    <Button 
-                      size="sm" 
-                      onClick={() => handleContactInfluencer(influencer)}
-                      disabled={influencer.status !== 'available'}
-                    >
-                      <MessageSquare className="mr-2 h-4 w-4" />
-                      Contacter
-                    </Button>
-                    <Button size="sm" variant="outline">
-                      <Eye className="mr-2 h-4 w-4" />
-                      Profil
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+            ))
+          )}
         </TabsContent>
 
         <TabsContent value="commissions" className="space-y-4">
-          <div className="space-y-4">
-            {commissions.map((commission) => (
-              <Card key={commission.id}>
-                <CardHeader>
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <CardTitle className="text-lg">{commission.productName}</CardTitle>
-                      <CardDescription>Par {commission.affiliateName} • {commission.date}</CardDescription>
-                    </div>
-                    <Badge className={getStatusColor(commission.status)}>{commission.status}</Badge>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <div>
-                      <p className="text-sm text-muted-foreground">Montant de la vente</p>
-                      <p className="text-lg font-bold">€{commission.saleAmount}</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-muted-foreground">Commission</p>
-                      <p className="text-lg font-bold text-green-600">€{commission.commissionAmount}</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-muted-foreground">Taux</p>
-                      <p className="text-lg font-bold">{commission.rate}%</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-muted-foreground">ID Commission</p>
-                      <p className="text-sm font-mono">{commission.id}</p>
-                    </div>
-                  </div>
-                  {commission.status === 'pending' && (
-                    <div className="flex gap-2 mt-4">
-                      <Button size="sm">Approuver</Button>
-                      <Button size="sm" variant="outline">Rejeter</Button>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </TabsContent>
-
-        <TabsContent value="settings" className="space-y-4">
           <Card>
-            <CardHeader>
-              <CardTitle>Configuration du programme d'affiliation</CardTitle>
-              <CardDescription>Paramètres généraux de votre programme d'affiliation</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <Label>Taux de commission par défaut (%)</Label>
-                  <Input type="number" defaultValue="10" />
+            <CardHeader><CardTitle>Dernières commissions</CardTitle></CardHeader>
+            <CardContent>
+              {loadingCommissions ? (
+                <div className="space-y-3">{[1,2,3].map(i => <Skeleton key={i} className="h-12" />)}</div>
+              ) : commissions.length === 0 ? (
+                <p className="text-sm text-muted-foreground text-center py-6">Aucune commission enregistrée</p>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b text-left text-muted-foreground">
+                        <th className="p-3">Affilié</th>
+                        <th className="p-3">Vente</th>
+                        <th className="p-3">Commission</th>
+                        <th className="p-3">Date</th>
+                        <th className="p-3">Statut</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {commissions.map((c: any) => (
+                        <tr key={c.id} className="border-b">
+                          <td className="p-3 font-medium">{c.affiliateName}</td>
+                          <td className="p-3">€{c.saleAmount.toFixed(2)}</td>
+                          <td className="p-3 font-bold text-green-600">€{c.commissionAmount.toFixed(2)}</td>
+                          <td className="p-3 text-muted-foreground">{c.date}</td>
+                          <td className="p-3"><Badge variant="default">Approuvé</Badge></td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
-                <div>
-                  <Label>Commission minimum pour paiement (€)</Label>
-                  <Input type="number" defaultValue="50" />
-                </div>
-              </div>
-
-              <div className="space-y-4">
-                <h4 className="font-medium">Taux par tier</h4>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  <div>
-                    <Label>Bronze (%)</Label>
-                    <Input type="number" defaultValue="8" />
-                  </div>
-                  <div>
-                    <Label>Silver (%)</Label>
-                    <Input type="number" defaultValue="10" />
-                  </div>
-                  <div>
-                    <Label>Gold (%)</Label>
-                    <Input type="number" defaultValue="12" />
-                  </div>
-                  <div>
-                    <Label>Platinum (%)</Label>
-                    <Input type="number" defaultValue="15" />
-                  </div>
-                </div>
-              </div>
-
-              <div className="space-y-4">
-                <h4 className="font-medium">Options</h4>
-                <div className="space-y-3">
-                  <div className="flex items-center space-x-2">
-                    <Switch defaultChecked />
-                    <Label>Approbation automatique des nouveaux affiliés</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <Switch defaultChecked />
-                    <Label>Notification par email des nouvelles commissions</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <Switch />
-                    <Label>Permettre aux affiliés de voir leurs statistiques en temps réel</Label>
-                  </div>
-                </div>
-              </div>
-
-              <div>
-                <Label>Conditions d'utilisation du programme</Label>
-                <Textarea 
-                  placeholder="Décrivez les conditions d'utilisation de votre programme d'affiliation..."
-                  className="mt-2"
-                />
-              </div>
-
-              <Button>
-                <Gift className="mr-2 h-4 w-4" />
-                Sauvegarder la configuration
-              </Button>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
