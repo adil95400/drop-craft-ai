@@ -1,64 +1,63 @@
 import React, { useState } from 'react'
+import { useQuery } from '@tanstack/react-query'
+import { useAuth } from '@/contexts/AuthContext'
+import { supabase } from '@/integrations/supabase/client'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Users, UserPlus, Crown, Shield, Eye, Settings, Mail, MoreVertical } from 'lucide-react'
+import { Avatar, AvatarFallback } from '@/components/ui/avatar'
+import { Skeleton } from '@/components/ui/skeleton'
+import { Users, UserPlus, Crown, Shield, Eye, Settings } from 'lucide-react'
 
 export default function TeamPage() {
   const [inviteEmail, setInviteEmail] = useState('')
+  const { user } = useAuth()
 
-  const teamMembers = [
-    {
-      id: '1',
-      name: 'Jean Dupont',
-      email: 'jean.dupont@example.com',
-      role: 'owner',
-      avatar: '/api/placeholder/40/40',
-      joinedAt: '2024-01-01',
-      lastActive: '2024-01-15 16:30',
-      permissions: ['read', 'write', 'deploy', 'admin']
-    },
-    {
-      id: '2',
-      name: 'Marie Martin',
-      email: 'marie.martin@example.com',
-      role: 'admin',
-      avatar: '/api/placeholder/40/40',
-      joinedAt: '2024-01-05',
-      lastActive: '2024-01-15 14:20',
-      permissions: ['read', 'write', 'deploy']
-    },
-    {
-      id: '3',
-      name: 'Pierre Durant',
-      email: 'pierre.durant@example.com',
-      role: 'developer',
-      avatar: '/api/placeholder/40/40',
-      joinedAt: '2024-01-10',
-      lastActive: '2024-01-15 12:15',
-      permissions: ['read', 'write']
+  const { data, isLoading } = useQuery({
+    queryKey: ['team-members', user?.id],
+    enabled: !!user,
+    queryFn: async () => {
+      // Get current user's profile
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('id, full_name, email, subscription_plan, created_at')
+        .eq('id', user!.id)
+        .single()
+
+      // Get user roles
+      const { data: roles } = await supabase
+        .from('user_roles')
+        .select('user_id, role')
+        .eq('user_id', user!.id)
+
+      const currentRole = roles?.[0]?.role || 'user'
+
+      return {
+        members: [{
+          id: profile?.id || user!.id,
+          name: profile?.full_name || user!.email?.split('@')[0] || 'Vous',
+          email: profile?.email || user!.email || '',
+          role: currentRole === 'admin' ? 'owner' : currentRole,
+          joinedAt: profile?.created_at || new Date().toISOString(),
+        }]
+      }
     }
-  ]
+  })
 
   const getRoleIcon = (role: string) => {
     switch (role) {
       case 'owner': return <Crown className="w-4 h-4 text-yellow-500" />
       case 'admin': return <Shield className="w-4 h-4 text-blue-500" />
-      default: return <Eye className="w-4 h-4 text-gray-500" />
+      default: return <Eye className="w-4 h-4 text-muted-foreground" />
     }
   }
 
-  const getRoleBadge = (role: string) => {
-    const variants = {
-      owner: 'default' as const,
-      admin: 'secondary' as const,
-      developer: 'outline' as const
-    }
-    return <Badge variant={variants[role as keyof typeof variants] || 'outline'}>{role}</Badge>
+  if (isLoading) {
+    return <div className="space-y-6">{[1,2].map(i => <Skeleton key={i} className="h-24" />)}</div>
   }
+
+  const members = data?.members || []
 
   return (
     <div className="space-y-6">
@@ -67,22 +66,11 @@ export default function TeamPage() {
           <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
             Gestion d'Équipe
           </h1>
-          <p className="text-muted-foreground mt-2">
-            Gérez les membres de votre équipe et leurs permissions
-          </p>
+          <p className="text-muted-foreground mt-2">Gérez les membres de votre équipe et leurs permissions</p>
         </div>
-        
         <div className="flex items-center space-x-2">
-          <Input
-            placeholder="Inviter par email..."
-            value={inviteEmail}
-            onChange={(e) => setInviteEmail(e.target.value)}
-            className="w-64"
-          />
-          <Button>
-            <UserPlus className="w-4 h-4 mr-2" />
-            Inviter
-          </Button>
+          <Input placeholder="Inviter par email..." value={inviteEmail} onChange={(e) => setInviteEmail(e.target.value)} className="w-64" />
+          <Button><UserPlus className="w-4 h-4 mr-2" />Inviter</Button>
         </div>
       </div>
 
@@ -90,21 +78,21 @@ export default function TeamPage() {
         <Card>
           <CardContent className="p-6 text-center">
             <Users className="w-8 h-8 mx-auto mb-2 text-primary" />
-            <div className="text-2xl font-bold">{teamMembers.length}</div>
+            <div className="text-2xl font-bold">{members.length}</div>
             <p className="text-sm text-muted-foreground">Membres actifs</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-6 text-center">
             <Settings className="w-8 h-8 mx-auto mb-2 text-blue-500" />
-            <div className="text-2xl font-bold">5</div>
+            <div className="text-2xl font-bold">-</div>
             <p className="text-sm text-muted-foreground">Extensions partagées</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-6 text-center">
             <Shield className="w-8 h-8 mx-auto mb-2 text-green-500" />
-            <div className="text-2xl font-bold">2</div>
+            <div className="text-2xl font-bold">{members.filter(m => m.role === 'owner' || m.role === 'admin').length}</div>
             <p className="text-sm text-muted-foreground">Administrateurs</p>
           </CardContent>
         </Card>
@@ -113,20 +101,17 @@ export default function TeamPage() {
       <Card>
         <CardHeader>
           <CardTitle>Membres de l'Équipe</CardTitle>
-          <CardDescription>
-            Gérez les rôles et permissions des membres de votre équipe
-          </CardDescription>
+          <CardDescription>Gérez les rôles et permissions</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {teamMembers.map((member) => (
+            {members.map((member) => (
               <Card key={member.id}>
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-3">
                       <Avatar>
-                        <AvatarImage src={member.avatar} />
-                        <AvatarFallback>{member.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
+                        <AvatarFallback>{member.name.split(' ').map((n: string) => n[0]).join('').toUpperCase()}</AvatarFallback>
                       </Avatar>
                       <div>
                         <div className="flex items-center space-x-2">
@@ -134,28 +119,10 @@ export default function TeamPage() {
                           {getRoleIcon(member.role)}
                         </div>
                         <p className="text-sm text-muted-foreground">{member.email}</p>
-                        <div className="flex items-center space-x-4 text-xs text-muted-foreground mt-1">
-                          <span>Rejoint le {member.joinedAt}</span>
-                          <span>Actif: {member.lastActive}</span>
-                        </div>
+                        <span className="text-xs text-muted-foreground">Depuis {new Date(member.joinedAt).toLocaleDateString()}</span>
                       </div>
                     </div>
-                    <div className="flex items-center space-x-2">
-                      {getRoleBadge(member.role)}
-                      <Select defaultValue={member.role}>
-                        <SelectTrigger className="w-32">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="developer">Developer</SelectItem>
-                          <SelectItem value="admin">Admin</SelectItem>
-                          {member.role === 'owner' && <SelectItem value="owner">Owner</SelectItem>}
-                        </SelectContent>
-                      </Select>
-                      <Button variant="outline" size="sm">
-                        <MoreVertical className="w-4 h-4" />
-                      </Button>
-                    </div>
+                    <Badge variant="outline">{member.role}</Badge>
                   </div>
                 </CardContent>
               </Card>

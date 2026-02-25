@@ -1,17 +1,12 @@
 import { useState, useEffect } from 'react'
+import { useQuery } from '@tanstack/react-query'
+import { supabase } from '@/integrations/supabase/client'
+import { useAuth } from '@/contexts/AuthContext'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { 
-  Activity, 
-  Package, 
-  ShoppingCart, 
-  Users, 
-  TrendingUp,
-  AlertCircle,
-  CheckCircle,
-  Clock,
-  Zap
+  Activity, Package, ShoppingCart, Users, AlertCircle, CheckCircle, Clock, Zap
 } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
 import { fr } from 'date-fns/locale'
@@ -22,83 +17,45 @@ interface ActivityItem {
   title: string
   description: string
   timestamp: string
-  metadata?: any
 }
 
 interface LiveActivityFeedProps {
   storeId: string
 }
 
+function mapAction(action: string): ActivityItem['type'] {
+  if (action.includes('order') || action.includes('commande')) return 'order'
+  if (action.includes('product') || action.includes('import')) return 'product'
+  if (action.includes('sync') || action.includes('synchron')) return 'sync'
+  if (action.includes('error') || action.includes('fail')) return 'error'
+  return 'success'
+}
+
 export function LiveActivityFeed({ storeId }: LiveActivityFeedProps) {
-  const [activities, setActivities] = useState<ActivityItem[]>([
-    {
-      id: '1',
-      type: 'success',
-      title: 'Synchronisation terminée',
-      description: '127 produits synchronisés avec succès',
-      timestamp: new Date(Date.now() - 1000 * 60 * 5).toISOString()
-    },
-    {
-      id: '2',
-      type: 'order',
-      title: 'Nouvelle commande',
-      description: 'Commande #1032 - 89,99 €',
-      timestamp: new Date(Date.now() - 1000 * 60 * 15).toISOString()
-    },
-    {
-      id: '3',
-      type: 'product',
-      title: 'Produit ajouté',
-      description: 'iPhone 15 Pro Max ajouté au catalogue',
-      timestamp: new Date(Date.now() - 1000 * 60 * 32).toISOString()
-    },
-    {
-      id: '4',
-      type: 'sync',
-      title: 'Synchronisation auto',
-      description: 'Vérification des mises à jour Shopify',
-      timestamp: new Date(Date.now() - 1000 * 60 * 60).toISOString()
+  const { user } = useAuth()
+
+  const { data: activities = [], isLoading } = useQuery({
+    queryKey: ['live-activity-feed', user?.id, storeId],
+    enabled: !!user,
+    refetchInterval: 30000, // auto-refresh every 30s
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('activity_logs')
+        .select('id, action, description, created_at')
+        .eq('user_id', user!.id)
+        .order('created_at', { ascending: false })
+        .limit(20)
+
+      if (error) throw error
+      return (data || []).map((item: any) => ({
+        id: item.id,
+        type: mapAction(item.action || ''),
+        title: item.action?.replace(/_/g, ' ') || 'Activité',
+        description: item.description || '',
+        timestamp: item.created_at,
+      })) as ActivityItem[]
     }
-  ])
-
-  // Simulation d'activité en temps réel
-  useEffect(() => {
-    const interval = setInterval(() => {
-      const randomEvents = [
-        {
-          type: 'order' as const,
-          title: 'Nouvelle commande',
-          description: `Commande #${Math.floor(Math.random() * 9000) + 1000} - ${(Math.random() * 200 + 20).toFixed(2)} €`
-        },
-        {
-          type: 'sync' as const,
-          title: 'Auto-sync',
-          description: 'Vérification automatique des données'
-        },
-        {
-          type: 'product' as const,
-          title: 'Stock mis à jour',
-          description: `Mise à jour du stock pour ${Math.floor(Math.random() * 20) + 1} produits`
-        }
-      ]
-
-      // Ajouter un événement aléatoire toutes les 30 secondes
-      if (Math.random() > 0.7) {
-        const event = randomEvents[Math.floor(Math.random() * randomEvents.length)]
-        const newActivity: ActivityItem = {
-          id: Date.now().toString(),
-          type: event.type,
-          title: event.title,
-          description: event.description,
-          timestamp: new Date().toISOString()
-        }
-
-        setActivities(prev => [newActivity, ...prev.slice(0, 9)]) // Garder max 10 items
-      }
-    }, 30000)
-
-    return () => clearInterval(interval)
-  }, [])
+  })
 
   const getIcon = (type: ActivityItem['type']) => {
     switch (type) {
@@ -107,7 +64,7 @@ export function LiveActivityFeed({ storeId }: LiveActivityFeedProps) {
       case 'product': return <Package className="w-4 h-4 text-purple-500" />
       case 'error': return <AlertCircle className="w-4 h-4 text-red-500" />
       case 'success': return <CheckCircle className="w-4 h-4 text-green-500" />
-      default: return <Activity className="w-4 h-4 text-gray-500" />
+      default: return <Activity className="w-4 h-4 text-muted-foreground" />
     }
   }
 
@@ -126,15 +83,18 @@ export function LiveActivityFeed({ storeId }: LiveActivityFeedProps) {
         <CardTitle className="flex items-center gap-2">
           <Activity className="w-5 h-5" />
           Activité en temps réel
-          <Badge variant="secondary" className="ml-auto animate-pulse">
-            Live
-          </Badge>
+          <Badge variant="secondary" className="ml-auto animate-pulse">Live</Badge>
         </CardTitle>
       </CardHeader>
       <CardContent>
         <ScrollArea className="h-[400px] pr-4">
           <div className="space-y-3">
-            {activities.length === 0 ? (
+            {isLoading ? (
+              <div className="text-center py-8 text-muted-foreground">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4" />
+                <p>Chargement...</p>
+              </div>
+            ) : activities.length === 0 ? (
               <div className="text-center py-8 text-muted-foreground">
                 <Clock className="w-12 h-12 mx-auto mb-4 opacity-50" />
                 <p>Aucune activité récente</p>
@@ -148,30 +108,17 @@ export function LiveActivityFeed({ storeId }: LiveActivityFeedProps) {
                     index === 0 ? 'animate-fade-in ring-1 ring-primary/20' : ''
                   }`}
                 >
-                  <div className="flex-shrink-0 mt-0.5">
-                    {getIcon(activity.type)}
-                  </div>
-                  
+                  <div className="flex-shrink-0 mt-0.5">{getIcon(activity.type)}</div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
                       <p className="text-sm font-medium">{activity.title}</p>
-                      <Badge variant={getBadgeVariant(activity.type)} className="text-xs">
-                        {activity.type}
-                      </Badge>
+                      <Badge variant={getBadgeVariant(activity.type)} className="text-xs">{activity.type}</Badge>
                     </div>
-                    
-                    <p className="text-sm text-muted-foreground mb-1">
-                      {activity.description}
-                    </p>
-                    
+                    <p className="text-sm text-muted-foreground mb-1">{activity.description}</p>
                     <div className="text-xs text-muted-foreground">
-                      {formatDistanceToNow(new Date(activity.timestamp), { 
-                        addSuffix: true, 
-                        locale: fr 
-                      })}
+                      {formatDistanceToNow(new Date(activity.timestamp), { addSuffix: true, locale: fr })}
                     </div>
                   </div>
-                  
                   <div className="flex-shrink-0">
                     <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse"></div>
                   </div>
