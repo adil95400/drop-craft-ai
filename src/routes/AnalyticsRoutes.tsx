@@ -37,6 +37,9 @@ const BIAdvancedDashboardPage = lazy(() => import('@/pages/analytics/BIAdvancedD
 // Performance (Sprint 18)
 const PerformanceDashboardPage = lazy(() => import('@/pages/analytics/PerformanceDashboardPage'));
 
+// Scheduled Reports
+const ScheduledReportsPage = lazy(() => import('@/pages/analytics/ScheduledReportsPage'));
+
 export function AnalyticsRoutes() {
   return (
     <Routes>
@@ -63,6 +66,7 @@ export function AnalyticsRoutes() {
       
       {/* Reports */}
       <Route path="reports" element={<Reports />} />
+      <Route path="scheduled-reports" element={<ScheduledReportsPage />} />
       <Route path="profit-analytics" element={<ProfitDashboard />} />
       
       {/* Advanced Analytics */}
