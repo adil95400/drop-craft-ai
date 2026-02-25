@@ -1,23 +1,13 @@
 import { useState } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Webhook, Plus, Trash2, TestTube, CheckCircle2, XCircle, Copy, Eye, EyeOff, RotateCcw } from 'lucide-react';
+import { Webhook, Plus, Trash2, TestTube, CheckCircle2, XCircle, Eye, EyeOff, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
-
-interface WebhookConfig {
-  id: string;
-  url: string;
-  events: string[];
-  active: boolean;
-  secret: string;
-  lastTriggered: string | null;
-  failCount: number;
-}
+import { supabase } from '@/integrations/supabase/client';
 
 const eventOptions = [
   { value: 'order.created', label: 'Commande créée' },
@@ -34,29 +24,84 @@ const eventOptions = [
   { value: 'import.completed', label: 'Import terminé' },
 ];
 
-const mockWebhooks: WebhookConfig[] = [
-  { id: '1', url: 'https://api.monsite.com/webhooks/orders', events: ['order.created', 'order.fulfilled'], active: true, secret: 'whsec_abc123...', lastTriggered: '2026-02-11 14:30', failCount: 0 },
-  { id: '2', url: 'https://zapier.com/hooks/catch/12345', events: ['product.created', 'product.updated'], active: true, secret: 'whsec_def456...', lastTriggered: '2026-02-10 09:15', failCount: 0 },
-  { id: '3', url: 'https://slack.com/api/webhook/xyz', events: ['stock.low', 'sync.failed'], active: false, secret: 'whsec_ghi789...', lastTriggered: null, failCount: 3 },
-];
-
 export default function WebhookManagementPage() {
-  const [webhooks, setWebhooks] = useState(mockWebhooks);
   const [showSecrets, setShowSecrets] = useState<Record<string, boolean>>({});
+  const queryClient = useQueryClient();
 
-  const toggleWebhook = (id: string) => {
-    setWebhooks(prev => prev.map(w => w.id === id ? { ...w, active: !w.active } : w));
-    toast.success('Webhook mis à jour');
-  };
+  const { data: webhooks = [], isLoading } = useQuery({
+    queryKey: ['webhook-subscriptions'],
+    queryFn: async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return [];
+      const { data, error } = await supabase
+        .from('webhook_subscriptions')
+        .select('*')
+        .eq('user_id', session.user.id)
+        .order('created_at', { ascending: false });
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+
+  // Count delivery failures from webhook_delivery_logs
+  const { data: failCounts = {} } = useQuery({
+    queryKey: ['webhook-fail-counts'],
+    queryFn: async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return {};
+      const { data, error } = await supabase
+        .from('webhook_delivery_logs')
+        .select('subscription_id, status_code')
+        .gte('created_at', new Date(Date.now() - 7 * 86400000).toISOString());
+      if (error) return {};
+      const counts: Record<string, number> = {};
+      (data ?? []).forEach((log: any) => {
+        if (log.status_code && log.status_code >= 400) {
+          counts[log.subscription_id] = (counts[log.subscription_id] || 0) + 1;
+        }
+      });
+      return counts;
+    },
+  });
+
+  const toggleMutation = useMutation({
+    mutationFn: async ({ id, isActive }: { id: string; isActive: boolean }) => {
+      const { error } = await supabase
+        .from('webhook_subscriptions')
+        .update({ is_active: isActive })
+        .eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['webhook-subscriptions'] });
+      toast.success('Webhook mis à jour');
+    },
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from('webhook_subscriptions').delete().eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['webhook-subscriptions'] });
+      toast.success('Webhook supprimé');
+    },
+  });
 
   const testWebhook = (id: string) => {
     toast.success('Ping de test envoyé', { description: 'Vérifiez la réception côté endpoint.' });
   };
 
-  const deleteWebhook = (id: string) => {
-    setWebhooks(prev => prev.filter(w => w.id !== id));
-    toast.success('Webhook supprimé');
-  };
+  const totalFailCount = Object.values(failCounts).reduce((a: number, b: number) => a + b, 0);
+
+  if (isLoading) {
+    return (
+      <ChannablePageWrapper title="Webhooks" description="Chargement...">
+        <div className="flex items-center justify-center py-12"><Loader2 className="h-8 w-8 animate-spin text-muted-foreground" /></div>
+      </ChannablePageWrapper>
+    );
+  }
 
   return (
     <ChannablePageWrapper
@@ -71,52 +116,59 @@ export default function WebhookManagementPage() {
       {/* Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <Card><CardContent className="pt-4 text-center"><p className="text-2xl font-bold">{webhooks.length}</p><p className="text-xs text-muted-foreground">Webhooks</p></CardContent></Card>
-        <Card><CardContent className="pt-4 text-center"><p className="text-2xl font-bold text-green-600">{webhooks.filter(w => w.active).length}</p><p className="text-xs text-muted-foreground">Actifs</p></CardContent></Card>
+        <Card><CardContent className="pt-4 text-center"><p className="text-2xl font-bold text-green-600">{webhooks.filter((w: any) => w.is_active).length}</p><p className="text-xs text-muted-foreground">Actifs</p></CardContent></Card>
         <Card><CardContent className="pt-4 text-center"><p className="text-2xl font-bold">{eventOptions.length}</p><p className="text-xs text-muted-foreground">Événements dispo</p></CardContent></Card>
-        <Card><CardContent className="pt-4 text-center"><p className="text-2xl font-bold text-red-600">{webhooks.reduce((a, w) => a + w.failCount, 0)}</p><p className="text-xs text-muted-foreground">Échecs récents</p></CardContent></Card>
+        <Card><CardContent className="pt-4 text-center"><p className="text-2xl font-bold text-red-600">{totalFailCount}</p><p className="text-xs text-muted-foreground">Échecs récents</p></CardContent></Card>
       </div>
 
       {/* Webhook list */}
       <div className="space-y-3">
-        {webhooks.map((wh) => (
+        {webhooks.map((wh: any) => (
           <Card key={wh.id}>
             <CardContent className="pt-4 space-y-3">
               <div className="flex items-center justify-between flex-wrap gap-2">
                 <div className="flex items-center gap-3">
-                  <Switch checked={wh.active} onCheckedChange={() => toggleWebhook(wh.id)} />
+                  <Switch checked={wh.is_active} onCheckedChange={() => toggleMutation.mutate({ id: wh.id, isActive: !wh.is_active })} />
                   <div>
                     <code className="text-sm font-mono bg-muted px-2 py-0.5 rounded">{wh.url}</code>
-                    {wh.failCount > 0 && <Badge variant="destructive" className="ml-2 text-xs">{wh.failCount} échecs</Badge>}
+                    {(failCounts[wh.id] || 0) > 0 && <Badge variant="destructive" className="ml-2 text-xs">{failCounts[wh.id]} échecs</Badge>}
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
                   <Button variant="outline" size="sm" onClick={() => testWebhook(wh.id)}>
                     <TestTube className="h-3 w-3 mr-1" /> Tester
                   </Button>
-                  <Button variant="ghost" size="sm" onClick={() => deleteWebhook(wh.id)}>
+                  <Button variant="ghost" size="sm" onClick={() => deleteMutation.mutate(wh.id)}>
                     <Trash2 className="h-3 w-3 text-destructive" />
                   </Button>
                 </div>
               </div>
               <div className="flex items-center gap-2 flex-wrap">
-                {wh.events.map(ev => (
+                {(wh.events ?? []).map((ev: string) => (
                   <Badge key={ev} variant="secondary" className="text-xs">{eventOptions.find(e => e.value === ev)?.label || ev}</Badge>
                 ))}
               </div>
               <div className="flex items-center gap-4 text-xs text-muted-foreground">
                 <span className="flex items-center gap-1">
-                  {wh.active ? <CheckCircle2 className="h-3 w-3 text-green-500" /> : <XCircle className="h-3 w-3 text-red-500" />}
-                  {wh.active ? 'Actif' : 'Inactif'}
+                  {wh.is_active ? <CheckCircle2 className="h-3 w-3 text-green-500" /> : <XCircle className="h-3 w-3 text-red-500" />}
+                  {wh.is_active ? 'Actif' : 'Inactif'}
                 </span>
-                {wh.lastTriggered && <span>Dernier appel : {wh.lastTriggered}</span>}
+                {wh.last_triggered_at && <span>Dernier appel : {new Date(wh.last_triggered_at).toLocaleString('fr-FR')}</span>}
                 <button className="flex items-center gap-1 hover:text-foreground" onClick={() => setShowSecrets(p => ({ ...p, [wh.id]: !p[wh.id] }))}>
                   {showSecrets[wh.id] ? <EyeOff className="h-3 w-3" /> : <Eye className="h-3 w-3" />}
-                  {showSecrets[wh.id] ? wh.secret : 'Afficher le secret'}
+                  {showSecrets[wh.id] ? (wh.secret || 'N/A') : 'Afficher le secret'}
                 </button>
               </div>
             </CardContent>
           </Card>
         ))}
+        {webhooks.length === 0 && (
+          <div className="text-center py-12 text-muted-foreground">
+            <Webhook className="h-12 w-12 mx-auto mb-3" />
+            <p className="font-medium">Aucun webhook configuré</p>
+            <p className="text-sm">Créez votre premier webhook pour recevoir des notifications</p>
+          </div>
+        )}
       </div>
 
       {/* Available events */}

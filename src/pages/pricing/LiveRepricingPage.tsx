@@ -1,77 +1,73 @@
 /**
  * Live Repricing Page - Monitoring prix concurrents & ajustement automatique
- * Channable-style avec dashboard temps réel
+ * Uses pricing_rules + competitive_intelligence tables
  */
 import { useState } from 'react'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Switch } from '@/components/ui/switch'
-import { Input } from '@/components/ui/input'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Progress } from '@/components/ui/progress'
 import { 
   TrendingUp, TrendingDown, DollarSign, Eye, Zap, Shield, 
   ArrowUpDown, RefreshCw, Bell, Settings, Target, BarChart3,
-  AlertTriangle, CheckCircle, Clock, ArrowUp, ArrowDown, Minus
+  AlertTriangle, CheckCircle, Clock, ArrowUp, ArrowDown, Minus, Loader2
 } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
-
-interface PricingRule {
-  id: string
-  name: string
-  strategy: 'beat_lowest' | 'match_average' | 'margin_floor' | 'dynamic_ai'
-  minMargin: number
-  maxDiscount: number
-  isActive: boolean
-  productsCount: number
-  lastAdjusted: string
-  adjustments24h: number
-}
-
-interface CompetitorPrice {
-  id: string
-  productName: string
-  yourPrice: number
-  lowestCompetitor: number
-  avgMarket: number
-  suggestedPrice: number
-  trend: 'up' | 'down' | 'stable'
-  marginImpact: number
-  autoAdjusted: boolean
-}
-
-const mockRules: PricingRule[] = [
-  { id: '1', name: 'Beat Lowest -2%', strategy: 'beat_lowest', minMargin: 15, maxDiscount: 20, isActive: true, productsCount: 145, lastAdjusted: '2m ago', adjustments24h: 34 },
-  { id: '2', name: 'Match Average Market', strategy: 'match_average', minMargin: 20, maxDiscount: 15, isActive: true, productsCount: 89, lastAdjusted: '15m ago', adjustments24h: 12 },
-  { id: '3', name: 'AI Dynamic Pricing', strategy: 'dynamic_ai', minMargin: 18, maxDiscount: 25, isActive: false, productsCount: 230, lastAdjusted: '1h ago', adjustments24h: 0 },
-  { id: '4', name: 'Margin Floor Guard', strategy: 'margin_floor', minMargin: 25, maxDiscount: 10, isActive: true, productsCount: 67, lastAdjusted: '5m ago', adjustments24h: 8 },
-]
-
-const mockCompetitorPrices: CompetitorPrice[] = [
-  { id: '1', productName: 'Wireless Earbuds Pro X', yourPrice: 49.99, lowestCompetitor: 44.99, avgMarket: 47.50, suggestedPrice: 43.99, trend: 'down', marginImpact: -3.2, autoAdjusted: true },
-  { id: '2', productName: 'Smart Watch Ultra', yourPrice: 299.99, lowestCompetitor: 289.99, avgMarket: 305.00, suggestedPrice: 287.99, trend: 'stable', marginImpact: -1.5, autoAdjusted: false },
-  { id: '3', productName: 'USB-C Hub 7-in-1', yourPrice: 34.99, lowestCompetitor: 39.99, avgMarket: 37.50, suggestedPrice: 34.99, trend: 'up', marginImpact: 0, autoAdjusted: false },
-  { id: '4', productName: 'Bluetooth Speaker V3', yourPrice: 79.99, lowestCompetitor: 74.99, avgMarket: 82.00, suggestedPrice: 73.99, trend: 'down', marginImpact: -2.8, autoAdjusted: true },
-  { id: '5', productName: 'Phone Case Premium', yourPrice: 19.99, lowestCompetitor: 15.99, avgMarket: 18.50, suggestedPrice: 15.49, trend: 'down', marginImpact: -5.1, autoAdjusted: false },
-]
+import { supabase } from '@/integrations/supabase/client'
+import { pricingApi } from '@/services/api/client'
 
 export default function LiveRepricingPage() {
   const { toast } = useToast()
-  const [rules, setRules] = useState(mockRules)
   const [scanning, setScanning] = useState(false)
+  const queryClient = useQueryClient()
 
-  const toggleRule = (id: string) => {
-    setRules(prev => prev.map(r => r.id === id ? { ...r, isActive: !r.isActive } : r))
-    toast({ title: 'Règle mise à jour', description: 'Le statut de la règle a été modifié.' })
-  }
+  // Fetch pricing rules from DB
+  const { data: rules = [], isLoading: rulesLoading } = useQuery({
+    queryKey: ['pricing-rules'],
+    queryFn: async () => {
+      const resp = await pricingApi.listRules()
+      return resp.items ?? []
+    },
+  })
+
+  // Fetch competitive intelligence data
+  const { data: competitorPrices = [], isLoading: ciLoading } = useQuery({
+    queryKey: ['competitive-intelligence'],
+    queryFn: async () => {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session) return []
+      const { data, error } = await supabase
+        .from('competitive_intelligence')
+        .select('*, products!competitive_intelligence_product_id_fkey(name, price)')
+        .eq('user_id', session.user.id)
+        .order('created_at', { ascending: false })
+        .limit(20)
+      if (error) throw error
+      return data ?? []
+    },
+  })
+
+  const toggleRuleMutation = useMutation({
+    mutationFn: async ({ id, isActive }: { id: string; isActive: boolean }) => {
+      await pricingApi.updateRule(id, { is_active: isActive })
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['pricing-rules'] })
+      toast({ title: 'Règle mise à jour', description: 'Le statut de la règle a été modifié.' })
+    },
+  })
 
   const startScan = () => {
     setScanning(true)
     toast({ title: 'Scan lancé', description: 'Analyse des prix concurrents en cours...' })
-    setTimeout(() => setScanning(false), 3000)
+    setTimeout(() => {
+      setScanning(false)
+      queryClient.invalidateQueries({ queryKey: ['competitive-intelligence'] })
+    }, 3000)
   }
 
   const TrendIcon = ({ trend }: { trend: string }) => {
@@ -79,6 +75,9 @@ export default function LiveRepricingPage() {
     if (trend === 'down') return <ArrowDown className="h-4 w-4 text-red-500" />
     return <Minus className="h-4 w-4 text-muted-foreground" />
   }
+
+  const activeRules = rules.filter((r: any) => r.is_active)
+  const totalAdjustments = rules.reduce((a: number, r: any) => a + (r.execution_count || 0), 0)
 
   return (
     <ChannablePageWrapper
@@ -92,180 +91,156 @@ export default function LiveRepricingPage() {
             <RefreshCw className={`mr-2 h-4 w-4 ${scanning ? 'animate-spin' : ''}`} />
             {scanning ? 'Scan en cours...' : 'Scanner les prix'}
           </Button>
-          <Button variant="outline">
-            <Bell className="mr-2 h-4 w-4" /> Alertes
-          </Button>
+          <Button variant="outline"><Bell className="mr-2 h-4 w-4" /> Alertes</Button>
         </>
       }
     >
       {/* KPI Cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <Card>
-          <CardContent className="pt-4 pb-3">
-            <div className="flex items-center gap-2 text-muted-foreground text-sm mb-1">
-              <Eye className="h-4 w-4" /> Produits surveillés
-            </div>
-            <div className="text-2xl font-bold">531</div>
-            <p className="text-xs text-muted-foreground mt-1">sur 3 marketplaces</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-4 pb-3">
-            <div className="flex items-center gap-2 text-muted-foreground text-sm mb-1">
-              <Zap className="h-4 w-4" /> Ajustements 24h
-            </div>
-            <div className="text-2xl font-bold text-primary">54</div>
-            <p className="text-xs text-green-600 mt-1">+12% vs hier</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-4 pb-3">
-            <div className="flex items-center gap-2 text-muted-foreground text-sm mb-1">
-              <Shield className="h-4 w-4" /> Marge moyenne
-            </div>
-            <div className="text-2xl font-bold">24.3%</div>
-            <p className="text-xs text-green-600 mt-1">Au-dessus du plancher</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-4 pb-3">
-            <div className="flex items-center gap-2 text-muted-foreground text-sm mb-1">
-              <Target className="h-4 w-4" /> Win Rate
-            </div>
-            <div className="text-2xl font-bold text-green-600">73%</div>
-            <p className="text-xs text-muted-foreground mt-1">Buy Box gagné</p>
-          </CardContent>
-        </Card>
+        <Card><CardContent className="pt-4 pb-3"><div className="flex items-center gap-2 text-muted-foreground text-sm mb-1"><Eye className="h-4 w-4" /> Produits surveillés</div><div className="text-2xl font-bold">{competitorPrices.length}</div><p className="text-xs text-muted-foreground mt-1">intelligence concurrentielle</p></CardContent></Card>
+        <Card><CardContent className="pt-4 pb-3"><div className="flex items-center gap-2 text-muted-foreground text-sm mb-1"><Zap className="h-4 w-4" /> Ajustements</div><div className="text-2xl font-bold text-primary">{totalAdjustments}</div><p className="text-xs text-muted-foreground mt-1">exécutions totales</p></CardContent></Card>
+        <Card><CardContent className="pt-4 pb-3"><div className="flex items-center gap-2 text-muted-foreground text-sm mb-1"><Shield className="h-4 w-4" /> Règles actives</div><div className="text-2xl font-bold">{activeRules.length}</div><p className="text-xs text-muted-foreground mt-1">sur {rules.length} règles</p></CardContent></Card>
+        <Card><CardContent className="pt-4 pb-3"><div className="flex items-center gap-2 text-muted-foreground text-sm mb-1"><Target className="h-4 w-4" /> Marge protégée</div><div className="text-2xl font-bold text-green-600">{rules.length > 0 ? Math.round(rules.reduce((a: number, r: any) => a + (r.margin_protection || 0), 0) / rules.length) : 0}%</div><p className="text-xs text-muted-foreground mt-1">marge minimum moyenne</p></CardContent></Card>
       </div>
 
       <Tabs defaultValue="monitor" className="space-y-4">
         <TabsList>
-          <TabsTrigger value="monitor">
-            <BarChart3 className="mr-2 h-4 w-4" /> Monitoring
-          </TabsTrigger>
-          <TabsTrigger value="rules">
-            <Settings className="mr-2 h-4 w-4" /> Règles
-          </TabsTrigger>
-          <TabsTrigger value="alerts">
-            <AlertTriangle className="mr-2 h-4 w-4" /> Alertes
-          </TabsTrigger>
+          <TabsTrigger value="monitor"><BarChart3 className="mr-2 h-4 w-4" /> Monitoring</TabsTrigger>
+          <TabsTrigger value="rules"><Settings className="mr-2 h-4 w-4" /> Règles</TabsTrigger>
+          <TabsTrigger value="alerts"><AlertTriangle className="mr-2 h-4 w-4" /> Alertes</TabsTrigger>
         </TabsList>
 
-        {/* Monitoring Tab */}
         <TabsContent value="monitor" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <ArrowUpDown className="h-5 w-5" /> Comparaison des prix en direct
-              </CardTitle>
-              <CardDescription>Vos prix vs. la concurrence avec suggestions IA</CardDescription>
+              <CardTitle className="flex items-center gap-2"><ArrowUpDown className="h-5 w-5" /> Comparaison des prix en direct</CardTitle>
+              <CardDescription>Vos prix vs. la concurrence</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="border-b text-left text-muted-foreground">
-                      <th className="pb-3 font-medium">Produit</th>
-                      <th className="pb-3 font-medium text-right">Votre prix</th>
-                      <th className="pb-3 font-medium text-right">Plus bas</th>
-                      <th className="pb-3 font-medium text-right">Moy. marché</th>
-                      <th className="pb-3 font-medium text-right">Suggestion</th>
-                      <th className="pb-3 font-medium text-center">Tendance</th>
-                      <th className="pb-3 font-medium text-center">Statut</th>
-                      <th className="pb-3 font-medium text-right">Action</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {mockCompetitorPrices.map(cp => (
-                      <tr key={cp.id} className="border-b last:border-0 hover:bg-muted/50">
-                        <td className="py-3 font-medium">{cp.productName}</td>
-                        <td className="py-3 text-right">{cp.yourPrice.toFixed(2)}€</td>
-                        <td className="py-3 text-right">
-                          <span className={cp.yourPrice > cp.lowestCompetitor ? 'text-red-500' : 'text-green-500'}>
-                            {cp.lowestCompetitor.toFixed(2)}€
-                          </span>
-                        </td>
-                        <td className="py-3 text-right">{cp.avgMarket.toFixed(2)}€</td>
-                        <td className="py-3 text-right font-semibold text-primary">{cp.suggestedPrice.toFixed(2)}€</td>
-                        <td className="py-3 text-center"><TrendIcon trend={cp.trend} /></td>
-                        <td className="py-3 text-center">
-                          {cp.autoAdjusted ? (
-                            <Badge variant="default" className="text-xs"><CheckCircle className="mr-1 h-3 w-3" /> Auto</Badge>
-                          ) : (
-                            <Badge variant="outline" className="text-xs"><Clock className="mr-1 h-3 w-3" /> Manuel</Badge>
-                          )}
-                        </td>
-                        <td className="py-3 text-right">
-                          <Button size="sm" variant="ghost" onClick={() => toast({ title: 'Prix appliqué', description: `${cp.productName} → ${cp.suggestedPrice}€` })}>
-                            Appliquer
-                          </Button>
-                        </td>
+              {ciLoading ? (
+                <div className="flex justify-center py-8"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>
+              ) : competitorPrices.length === 0 ? (
+                <div className="text-center py-8 text-muted-foreground">
+                  <Eye className="h-12 w-12 mx-auto mb-3" />
+                  <p className="font-medium">Aucune donnée concurrentielle</p>
+                  <p className="text-sm">Lancez un scan pour commencer le monitoring</p>
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b text-left text-muted-foreground">
+                        <th className="pb-3 font-medium">Produit</th>
+                        <th className="pb-3 font-medium text-right">Votre prix</th>
+                        <th className="pb-3 font-medium">Concurrent</th>
+                        <th className="pb-3 font-medium text-right">Prix concurrent</th>
+                        <th className="pb-3 font-medium text-right">Diff.</th>
+                        <th className="pb-3 font-medium text-center">Position</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+                    </thead>
+                    <tbody>
+                      {competitorPrices.map((cp: any) => {
+                        const yourPrice = cp.products?.price || 0
+                        const diff = cp.price_difference || (yourPrice - (cp.competitor_price || 0))
+                        return (
+                          <tr key={cp.id} className="border-b last:border-0 hover:bg-muted/50">
+                            <td className="py-3 font-medium">{cp.products?.name || 'Produit inconnu'}</td>
+                            <td className="py-3 text-right">{yourPrice.toFixed(2)}€</td>
+                            <td className="py-3">{cp.competitor_name}</td>
+                            <td className="py-3 text-right">
+                              <span className={yourPrice > (cp.competitor_price || 0) ? 'text-red-500' : 'text-green-500'}>
+                                {(cp.competitor_price || 0).toFixed(2)}€
+                              </span>
+                            </td>
+                            <td className="py-3 text-right font-medium">
+                              <span className={diff > 0 ? 'text-red-500' : 'text-green-500'}>{diff > 0 ? '+' : ''}{diff.toFixed(2)}€</span>
+                            </td>
+                            <td className="py-3 text-center">
+                              <Badge variant={cp.market_position === 'leader' ? 'default' : 'secondary'} className="text-xs">
+                                {cp.market_position || 'N/A'}
+                              </Badge>
+                            </td>
+                          </tr>
+                        )
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
 
-        {/* Rules Tab */}
         <TabsContent value="rules" className="space-y-4">
-          <div className="grid gap-4">
-            {rules.map(rule => (
-              <Card key={rule.id} className={!rule.isActive ? 'opacity-60' : ''}>
-                <CardContent className="pt-4">
-                  <div className="flex items-center justify-between">
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-2">
-                        <h3 className="font-semibold">{rule.name}</h3>
-                        <Badge variant={rule.strategy === 'dynamic_ai' ? 'default' : 'secondary'} className="text-xs">
-                          {rule.strategy === 'beat_lowest' && 'Battre le plus bas'}
-                          {rule.strategy === 'match_average' && 'Moyenne marché'}
-                          {rule.strategy === 'margin_floor' && 'Plancher marge'}
-                          {rule.strategy === 'dynamic_ai' && '🤖 IA Dynamique'}
-                        </Badge>
+          {rulesLoading ? (
+            <div className="flex justify-center py-8"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>
+          ) : (
+            <div className="grid gap-4">
+              {rules.map((rule: any) => (
+                <Card key={rule.id} className={!rule.is_active ? 'opacity-60' : ''}>
+                  <CardContent className="pt-4">
+                    <div className="flex items-center justify-between">
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-2">
+                          <h3 className="font-semibold">{rule.name}</h3>
+                          <Badge variant={rule.rule_type === 'dynamic_ai' ? 'default' : 'secondary'} className="text-xs">
+                            {rule.rule_type || rule.competitor_strategy || 'custom'}
+                          </Badge>
+                        </div>
+                        <p className="text-sm text-muted-foreground">
+                          {rule.products_affected || 0} produits · Marge min {rule.margin_protection || 0}% · {rule.execution_count || 0} exécutions
+                        </p>
                       </div>
-                      <p className="text-sm text-muted-foreground">
-                        {rule.productsCount} produits · Marge min {rule.minMargin}% · Max -{rule.maxDiscount}% · {rule.adjustments24h} ajustements 24h
-                      </p>
+                      <div className="flex items-center gap-4">
+                        {rule.last_executed_at && <span className="text-xs text-muted-foreground">{new Date(rule.last_executed_at).toLocaleString('fr-FR')}</span>}
+                        <Switch checked={rule.is_active} onCheckedChange={() => toggleRuleMutation.mutate({ id: rule.id, isActive: !rule.is_active })} />
+                      </div>
                     </div>
-                    <div className="flex items-center gap-4">
-                      <span className="text-xs text-muted-foreground">{rule.lastAdjusted}</span>
-                      <Switch checked={rule.isActive} onCheckedChange={() => toggleRule(rule.id)} />
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+                  </CardContent>
+                </Card>
+              ))}
+              {rules.length === 0 && (
+                <div className="text-center py-8 text-muted-foreground">
+                  <Settings className="h-12 w-12 mx-auto mb-3" />
+                  <p className="font-medium">Aucune règle de pricing</p>
+                  <p className="text-sm">Créez des règles pour automatiser vos ajustements de prix</p>
+                </div>
+              )}
+            </div>
+          )}
           <Button variant="outline" className="w-full" disabled>
             + Créer une règle de repricing (bientôt)
           </Button>
         </TabsContent>
 
-        {/* Alerts Tab */}
         <TabsContent value="alerts" className="space-y-4">
           <Card>
             <CardHeader>
               <CardTitle>Alertes Prix</CardTitle>
-              <CardDescription>Notifications en temps réel sur les changements de prix significatifs</CardDescription>
+              <CardDescription>Notifications basées sur les changements de prix significatifs</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-3">
-              {[
-                { msg: 'Wireless Earbuds Pro X : concurrent à -10% sous votre prix', severity: 'high', time: '2 min' },
-                { msg: 'Smart Watch Ultra : prix moyen en hausse de +5%', severity: 'medium', time: '15 min' },
-                { msg: 'USB-C Hub 7-in-1 : vous avez le meilleur prix', severity: 'low', time: '1h' },
-                { msg: 'Phone Case Premium : 3 concurrents sous votre plancher', severity: 'high', time: '3h' },
-              ].map((alert, i) => (
-                <div key={i} className="flex items-start gap-3 p-3 rounded-lg bg-muted/50">
-                  <AlertTriangle className={`h-5 w-5 mt-0.5 ${alert.severity === 'high' ? 'text-destructive' : alert.severity === 'medium' ? 'text-yellow-500' : 'text-green-500'}`} />
-                  <div className="flex-1">
-                    <p className="text-sm">{alert.msg}</p>
-                    <p className="text-xs text-muted-foreground mt-1">il y a {alert.time}</p>
-                  </div>
+            <CardContent>
+              {competitorPrices.filter((cp: any) => Math.abs(cp.price_difference || 0) > 5).length === 0 ? (
+                <div className="text-center py-8 text-muted-foreground">
+                  <CheckCircle className="h-12 w-12 mx-auto mb-3 text-success" />
+                  <p className="font-medium">Pas d'alertes actives</p>
+                  <p className="text-sm">Vos prix sont compétitifs</p>
                 </div>
-              ))}
+              ) : (
+                <div className="space-y-3">
+                  {competitorPrices
+                    .filter((cp: any) => Math.abs(cp.price_difference || 0) > 5)
+                    .map((cp: any) => (
+                      <div key={cp.id} className="flex items-start gap-3 p-3 rounded-lg bg-muted/50">
+                        <AlertTriangle className={`h-5 w-5 mt-0.5 ${Math.abs(cp.price_difference || 0) > 20 ? 'text-destructive' : 'text-yellow-500'}`} />
+                        <div className="flex-1">
+                          <p className="text-sm">{cp.products?.name}: {cp.competitor_name} à {(cp.competitor_price || 0).toFixed(2)}€ (diff: {(cp.price_difference || 0).toFixed(2)}€)</p>
+                          <p className="text-xs text-muted-foreground mt-1">{cp.last_checked_at ? new Date(cp.last_checked_at).toLocaleString('fr-FR') : ''}</p>
+                        </div>
+                      </div>
+                    ))}
+                </div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
