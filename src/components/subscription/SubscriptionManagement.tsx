@@ -36,7 +36,7 @@ interface SubscriptionPlan {
 
 export const SubscriptionManagement: React.FC = () => {
   const { user } = useUnifiedAuth();
-  const { currentPlan, usage: currentUsage } = useUnifiedPlan();
+  const { currentPlan } = useUnifiedPlan();
   const [upgrading, setUpgrading] = useState<string | null>(null);
 
   const { data: plans = [] } = useQuery({
@@ -170,22 +170,22 @@ export const SubscriptionManagement: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <div className="text-center p-4 bg-white/60 rounded-lg">
               <BarChart3 className="w-8 h-8 mx-auto mb-2 text-blue-600" />
-              <p className="text-2xl font-bold">{currentUsage?.products || 0}</p>
+              <p className="text-2xl font-bold">—</p>
               <p className="text-sm text-muted-foreground">Produits importés</p>
             </div>
             <div className="text-center p-4 bg-white/60 rounded-lg">
               <Calendar className="w-8 h-8 mx-auto mb-2 text-green-600" />
-              <p className="text-2xl font-bold">{currentUsage?.orders || 0}</p>
+              <p className="text-2xl font-bold">—</p>
               <p className="text-sm text-muted-foreground">Commandes traitées</p>
             </div>
             <div className="text-center p-4 bg-white/60 rounded-lg">
               <Sparkles className="w-8 h-8 mx-auto mb-2 text-purple-600" />
-              <p className="text-2xl font-bold">{currentUsage?.ai_generations || 0}</p>
+              <p className="text-2xl font-bold">—</p>
               <p className="text-sm text-muted-foreground">Générations IA</p>
             </div>
             <div className="text-center p-4 bg-white/60 rounded-lg">
               <Users className="w-8 h-8 mx-auto mb-2 text-orange-600" />
-              <p className="text-2xl font-bold">{currentUsage?.team_members || 1}</p>
+              <p className="text-2xl font-bold">1</p>
               <p className="text-sm text-muted-foreground">Membres équipe</p>
             </div>
           </div>
