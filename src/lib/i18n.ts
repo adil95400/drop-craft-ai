@@ -80,6 +80,36 @@ import authEn from '@/locales/en/auth.json';
 import authEs from '@/locales/es/auth.json';
 import authDe from '@/locales/de/auth.json';
 
+// Analytics (NEW)
+import analyticsFr from '@/locales/fr/analytics.json';
+import analyticsEn from '@/locales/en/analytics.json';
+import analyticsEs from '@/locales/es/analytics.json';
+import analyticsDe from '@/locales/de/analytics.json';
+
+// Automation (NEW)
+import automationFr from '@/locales/fr/automation.json';
+import automationEn from '@/locales/en/automation.json';
+import automationEs from '@/locales/es/automation.json';
+import automationDe from '@/locales/de/automation.json';
+
+// CRM (NEW)
+import crmFr from '@/locales/fr/crm.json';
+import crmEn from '@/locales/en/crm.json';
+import crmEs from '@/locales/es/crm.json';
+import crmDe from '@/locales/de/crm.json';
+
+// Extensions (NEW)
+import extensionsFr from '@/locales/fr/extensions.json';
+import extensionsEn from '@/locales/en/extensions.json';
+import extensionsEs from '@/locales/es/extensions.json';
+import extensionsDe from '@/locales/de/extensions.json';
+
+// Billing (NEW)
+import billingFr from '@/locales/fr/billing.json';
+import billingEn from '@/locales/en/billing.json';
+import billingEs from '@/locales/es/billing.json';
+import billingDe from '@/locales/de/billing.json';
+
 const resources = {
   fr: {
     common: commonFr,
@@ -95,6 +125,11 @@ const resources = {
     channels: channelsFr,
     audit: auditFr,
     auth: authFr,
+    analytics: analyticsFr,
+    automation: automationFr,
+    crm: crmFr,
+    extensions: extensionsFr,
+    billing: billingFr,
   },
   en: {
     common: commonEn,
@@ -110,6 +145,11 @@ const resources = {
     channels: channelsEn,
     audit: auditEn,
     auth: authEn,
+    analytics: analyticsEn,
+    automation: automationEn,
+    crm: crmEn,
+    extensions: extensionsEn,
+    billing: billingEn,
   },
   es: {
     common: commonEs,
@@ -125,6 +165,11 @@ const resources = {
     channels: channelsEs,
     audit: auditEs,
     auth: authEs,
+    analytics: analyticsEs,
+    automation: automationEs,
+    crm: crmEs,
+    extensions: extensionsEs,
+    billing: billingEs,
   },
   de: {
     common: commonDe,
@@ -140,6 +185,11 @@ const resources = {
     channels: channelsDe,
     audit: auditDe,
     auth: authDe,
+    analytics: analyticsDe,
+    automation: automationDe,
+    crm: crmDe,
+    extensions: extensionsDe,
+    billing: billingDe,
   },
 };
 

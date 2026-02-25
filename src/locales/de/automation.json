@@ -1,0 +1,67 @@
+{
+  "title": "Automatisierung",
+  "subtitle": "Intelligente Workflows",
+  "workflows": {
+    "title": "Workflows",
+    "create": "Workflow erstellen",
+    "edit": "Workflow bearbeiten",
+    "delete": "Löschen",
+    "activate": "Aktivieren",
+    "deactivate": "Deaktivieren",
+    "duplicate": "Duplizieren",
+    "history": "Verlauf",
+    "noWorkflows": "Keine Workflows konfiguriert",
+    "runCount": "{{count}} Ausführungen",
+    "lastRun": "Letzter Lauf"
+  },
+  "triggers": {
+    "title": "Auslöser",
+    "newOrder": "Neue Bestellung",
+    "stockLow": "Niedriger Bestand",
+    "priceChange": "Preisänderung",
+    "newCustomer": "Neuer Kunde",
+    "schedule": "Geplant",
+    "webhook": "Webhook",
+    "manual": "Manuell"
+  },
+  "actions": {
+    "title": "Aktionen",
+    "sendEmail": "E-Mail senden",
+    "updateStock": "Bestand aktualisieren",
+    "adjustPrice": "Preis anpassen",
+    "createOrder": "Bestellung erstellen",
+    "notifyTeam": "Team benachrichtigen",
+    "tagProduct": "Produkt taggen",
+    "publishProduct": "Produkt veröffentlichen"
+  },
+  "rules": {
+    "title": "Regeln",
+    "condition": "Bedingung",
+    "action": "Aktion",
+    "addCondition": "Bedingung hinzufügen",
+    "addAction": "Aktion hinzufügen",
+    "ifThen": "Wenn... Dann...",
+    "preview": "Änderungsvorschau"
+  },
+  "pricing": {
+    "title": "Automatische Preisgestaltung",
+    "dynamicPricing": "Dynamische Preise",
+    "repricing": "Repricing",
+    "margin": "Marge",
+    "markup": "Aufschlag",
+    "rounding": "Psychologische Rundung",
+    "simulator": "Rentabilitätssimulator"
+  },
+  "fulfillment": {
+    "title": "Auto-Fulfillment",
+    "autoOrder": "Automatische Bestellung",
+    "tracking": "Auto-Tracking",
+    "supplierFallback": "Lieferanten-Fallback"
+  },
+  "status": {
+    "active": "Aktiv",
+    "paused": "Pausiert",
+    "error": "Fehler",
+    "draft": "Entwurf"
+  }
+}

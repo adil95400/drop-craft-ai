@@ -1,0 +1,67 @@
+{
+  "title": "Automation",
+  "subtitle": "Smart Workflows",
+  "workflows": {
+    "title": "Workflows",
+    "create": "Create workflow",
+    "edit": "Edit workflow",
+    "delete": "Delete",
+    "activate": "Activate",
+    "deactivate": "Deactivate",
+    "duplicate": "Duplicate",
+    "history": "History",
+    "noWorkflows": "No workflows configured",
+    "runCount": "{{count}} executions",
+    "lastRun": "Last run"
+  },
+  "triggers": {
+    "title": "Triggers",
+    "newOrder": "New order",
+    "stockLow": "Low stock",
+    "priceChange": "Price change",
+    "newCustomer": "New customer",
+    "schedule": "Scheduled",
+    "webhook": "Webhook",
+    "manual": "Manual"
+  },
+  "actions": {
+    "title": "Actions",
+    "sendEmail": "Send email",
+    "updateStock": "Update stock",
+    "adjustPrice": "Adjust price",
+    "createOrder": "Create order",
+    "notifyTeam": "Notify team",
+    "tagProduct": "Tag product",
+    "publishProduct": "Publish product"
+  },
+  "rules": {
+    "title": "Rules",
+    "condition": "Condition",
+    "action": "Action",
+    "addCondition": "Add condition",
+    "addAction": "Add action",
+    "ifThen": "If... Then...",
+    "preview": "Preview changes"
+  },
+  "pricing": {
+    "title": "Automatic Pricing",
+    "dynamicPricing": "Dynamic pricing",
+    "repricing": "Repricing",
+    "margin": "Margin",
+    "markup": "Markup",
+    "rounding": "Psychological rounding",
+    "simulator": "Profitability simulator"
+  },
+  "fulfillment": {
+    "title": "Auto-fulfillment",
+    "autoOrder": "Automatic ordering",
+    "tracking": "Auto-tracking",
+    "supplierFallback": "Supplier fallback"
+  },
+  "status": {
+    "active": "Active",
+    "paused": "Paused",
+    "error": "Error",
+    "draft": "Draft"
+  }
+}

@@ -1,0 +1,35 @@
+{
+  "title": "Billing",
+  "subtitle": "Manage your subscription",
+  "currentPlan": "Current plan",
+  "upgrade": "Upgrade plan",
+  "downgrade": "Downgrade",
+  "changePlan": "Change plan",
+  "cancelSubscription": "Cancel subscription",
+  "billingHistory": "Billing history",
+  "nextBilling": "Next billing",
+  "paymentMethod": "Payment method",
+  "updatePayment": "Update",
+  "invoice": "Invoice",
+  "downloadInvoice": "Download",
+  "quota": {
+    "title": "Quota usage",
+    "used": "Used",
+    "remaining": "Remaining",
+    "limit": "Limit",
+    "exceeded": "Exceeded",
+    "warning": "Warning",
+    "upgradeNeeded": "Upgrade needed"
+  },
+  "plans": {
+    "free": "Free",
+    "starter": "Starter",
+    "pro": "Pro",
+    "enterprise": "Enterprise",
+    "perMonth": "/month",
+    "perYear": "/year",
+    "features": "Features included",
+    "mostPopular": "Most popular",
+    "currentPlan": "Current plan"
+  }
+}

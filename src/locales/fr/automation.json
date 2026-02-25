@@ -1,0 +1,67 @@
+{
+  "title": "Automatisation",
+  "subtitle": "Workflows intelligents",
+  "workflows": {
+    "title": "Workflows",
+    "create": "Créer un workflow",
+    "edit": "Modifier le workflow",
+    "delete": "Supprimer",
+    "activate": "Activer",
+    "deactivate": "Désactiver",
+    "duplicate": "Dupliquer",
+    "history": "Historique",
+    "noWorkflows": "Aucun workflow configuré",
+    "runCount": "{{count}} exécutions",
+    "lastRun": "Dernière exécution"
+  },
+  "triggers": {
+    "title": "Déclencheurs",
+    "newOrder": "Nouvelle commande",
+    "stockLow": "Stock bas",
+    "priceChange": "Changement de prix",
+    "newCustomer": "Nouveau client",
+    "schedule": "Planifié",
+    "webhook": "Webhook",
+    "manual": "Manuel"
+  },
+  "actions": {
+    "title": "Actions",
+    "sendEmail": "Envoyer un email",
+    "updateStock": "Mettre à jour le stock",
+    "adjustPrice": "Ajuster le prix",
+    "createOrder": "Créer une commande",
+    "notifyTeam": "Notifier l'équipe",
+    "tagProduct": "Taguer le produit",
+    "publishProduct": "Publier le produit"
+  },
+  "rules": {
+    "title": "Règles",
+    "condition": "Condition",
+    "action": "Action",
+    "addCondition": "Ajouter une condition",
+    "addAction": "Ajouter une action",
+    "ifThen": "Si... Alors...",
+    "preview": "Aperçu des modifications"
+  },
+  "pricing": {
+    "title": "Pricing automatique",
+    "dynamicPricing": "Pricing dynamique",
+    "repricing": "Repricing",
+    "margin": "Marge",
+    "markup": "Majoration",
+    "rounding": "Arrondis psychologiques",
+    "simulator": "Simulateur de rentabilité"
+  },
+  "fulfillment": {
+    "title": "Fulfillment automatique",
+    "autoOrder": "Commande automatique",
+    "tracking": "Suivi automatique",
+    "supplierFallback": "Fournisseur de secours"
+  },
+  "status": {
+    "active": "Actif",
+    "paused": "En pause",
+    "error": "Erreur",
+    "draft": "Brouillon"
+  }
+}

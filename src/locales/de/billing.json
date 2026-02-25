@@ -1,0 +1,35 @@
+{
+  "title": "Abrechnung",
+  "subtitle": "Verwalten Sie Ihr Abonnement",
+  "currentPlan": "Aktueller Plan",
+  "upgrade": "Plan upgraden",
+  "downgrade": "Plan downgraden",
+  "changePlan": "Plan wechseln",
+  "cancelSubscription": "Abo kündigen",
+  "billingHistory": "Abrechnungsverlauf",
+  "nextBilling": "Nächste Abrechnung",
+  "paymentMethod": "Zahlungsmethode",
+  "updatePayment": "Aktualisieren",
+  "invoice": "Rechnung",
+  "downloadInvoice": "Herunterladen",
+  "quota": {
+    "title": "Kontingentnutzung",
+    "used": "Verwendet",
+    "remaining": "Verbleibend",
+    "limit": "Limit",
+    "exceeded": "Überschritten",
+    "warning": "Warnung",
+    "upgradeNeeded": "Upgrade erforderlich"
+  },
+  "plans": {
+    "free": "Kostenlos",
+    "starter": "Starter",
+    "pro": "Pro",
+    "enterprise": "Enterprise",
+    "perMonth": "/Monat",
+    "perYear": "/Jahr",
+    "features": "Enthaltene Funktionen",
+    "mostPopular": "Beliebtester",
+    "currentPlan": "Aktueller Plan"
+  }
+}

@@ -1,0 +1,55 @@
+{
+  "title": "CRM",
+  "subtitle": "Kundenbeziehungsmanagement",
+  "leads": {
+    "title": "Leads",
+    "new": "Neuer Lead",
+    "qualified": "Qualifiziert",
+    "contacted": "Kontaktiert",
+    "converted": "Konvertiert",
+    "lost": "Verloren",
+    "score": "Score",
+    "source": "Quelle"
+  },
+  "deals": {
+    "title": "Deals",
+    "pipeline": "Pipeline",
+    "value": "Wert",
+    "stage": "Phase",
+    "probability": "Wahrscheinlichkeit",
+    "closeDate": "Abschlussdatum",
+    "won": "Gewonnen",
+    "lost": "Verloren"
+  },
+  "contacts": {
+    "title": "Kontakte",
+    "addContact": "Kontakt hinzufügen",
+    "lastInteraction": "Letzte Interaktion",
+    "lifetime": "Lebenszeitwert",
+    "segments": "Segmente"
+  },
+  "tasks": {
+    "title": "Aufgaben",
+    "create": "Aufgabe erstellen",
+    "dueDate": "Fälligkeitsdatum",
+    "assignee": "Zugewiesen an",
+    "overdue": "Überfällig",
+    "completed": "Erledigt"
+  },
+  "emails": {
+    "title": "E-Mails",
+    "compose": "Verfassen",
+    "templates": "Vorlagen",
+    "campaigns": "Kampagnen",
+    "openRate": "Öffnungsrate",
+    "clickRate": "Klickrate"
+  },
+  "activity": {
+    "title": "Aktivität",
+    "timeline": "Zeitleiste",
+    "note": "Notiz",
+    "call": "Anruf",
+    "meeting": "Besprechung",
+    "email": "E-Mail"
+  }
+}

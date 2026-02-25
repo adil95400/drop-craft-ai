@@ -1,0 +1,67 @@
+{
+  "title": "Automatización",
+  "subtitle": "Flujos inteligentes",
+  "workflows": {
+    "title": "Flujos de trabajo",
+    "create": "Crear flujo",
+    "edit": "Editar flujo",
+    "delete": "Eliminar",
+    "activate": "Activar",
+    "deactivate": "Desactivar",
+    "duplicate": "Duplicar",
+    "history": "Historial",
+    "noWorkflows": "Sin flujos configurados",
+    "runCount": "{{count}} ejecuciones",
+    "lastRun": "Última ejecución"
+  },
+  "triggers": {
+    "title": "Disparadores",
+    "newOrder": "Nuevo pedido",
+    "stockLow": "Stock bajo",
+    "priceChange": "Cambio de precio",
+    "newCustomer": "Nuevo cliente",
+    "schedule": "Programado",
+    "webhook": "Webhook",
+    "manual": "Manual"
+  },
+  "actions": {
+    "title": "Acciones",
+    "sendEmail": "Enviar email",
+    "updateStock": "Actualizar stock",
+    "adjustPrice": "Ajustar precio",
+    "createOrder": "Crear pedido",
+    "notifyTeam": "Notificar equipo",
+    "tagProduct": "Etiquetar producto",
+    "publishProduct": "Publicar producto"
+  },
+  "rules": {
+    "title": "Reglas",
+    "condition": "Condición",
+    "action": "Acción",
+    "addCondition": "Añadir condición",
+    "addAction": "Añadir acción",
+    "ifThen": "Si... Entonces...",
+    "preview": "Vista previa de cambios"
+  },
+  "pricing": {
+    "title": "Precios automáticos",
+    "dynamicPricing": "Precios dinámicos",
+    "repricing": "Repricing",
+    "margin": "Margen",
+    "markup": "Recargo",
+    "rounding": "Redondeo psicológico",
+    "simulator": "Simulador de rentabilidad"
+  },
+  "fulfillment": {
+    "title": "Fulfillment automático",
+    "autoOrder": "Pedido automático",
+    "tracking": "Seguimiento automático",
+    "supplierFallback": "Proveedor de respaldo"
+  },
+  "status": {
+    "active": "Activo",
+    "paused": "En pausa",
+    "error": "Error",
+    "draft": "Borrador"
+  }
+}
