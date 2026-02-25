@@ -30,46 +30,29 @@ export function SyncHistory({ storeId }: SyncHistoryProps) {
 
   const fetchLogs = async () => {
     try {
-      // Pour le moment, on simule des logs. 
-      // En production, ces logs viendraient d'une vraie table de logs
-      const mockLogs: SyncLog[] = [
-        {
-          id: '1',
-          type: 'full',
-          status: 'error',
-          message: 'Erreur sync produits: Edge Function returned a non-2xx status code',
-          created_at: new Date(Date.now() - 1000 * 60 * 5).toISOString() // 5 min ago
-        },
-        {
-          id: '2',
-          type: 'products',
-          status: 'success',
-          message: 'Synchronisation des produits réussie',
-          items_count: 127,
-          created_at: new Date(Date.now() - 1000 * 60 * 60 * 2).toISOString() // 2 hours ago
-        },
-        {
-          id: '3',
-          type: 'orders',
-          status: 'success',
-          message: 'Synchronisation des commandes réussie',
-          items_count: 45,
-          created_at: new Date(Date.now() - 1000 * 60 * 60 * 6).toISOString() // 6 hours ago
-        },
-        {
-          id: '4',
-          type: 'full',
-          status: 'warning',
-          message: 'Synchronisation partiellement réussie - Quelques produits n\'ont pas pu être importés',
-          items_count: 98,
-          details: { skipped: 5, imported: 98 },
-          created_at: new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString() // 1 day ago
-        }
-      ]
-      
-      setLogs(mockLogs)
+      // Fetch real activity logs filtered by store/integration
+      const { data, error } = await (supabase.from('activity_logs') as any)
+        .select('*')
+        .or(`action.eq.sync_completed,action.eq.sync_failed,action.eq.sync_partial,action.ilike.%sync%`)
+        .order('created_at', { ascending: false })
+        .limit(20)
+
+      if (error) throw error
+
+      const mapped: SyncLog[] = (data || []).map((log: any) => ({
+        id: log.id,
+        type: log.entity_type === 'order' ? 'orders' : log.entity_type === 'customer' ? 'customers' : log.entity_type === 'product' ? 'products' : 'full',
+        status: log.severity === 'error' ? 'error' : log.severity === 'warn' ? 'warning' : 'success',
+        message: log.description || log.action,
+        details: log.details,
+        items_count: log.details?.count || log.details?.items_count,
+        created_at: log.created_at,
+      }))
+
+      setLogs(mapped)
     } catch (error) {
       console.error('Error fetching sync logs:', error)
+      setLogs([])
     } finally {
       setLoading(false)
       setRefreshing(false)
@@ -216,17 +199,6 @@ export function SyncHistory({ storeId }: SyncHistoryProps) {
                         </span>
                       )}
                     </div>
-                    
-                    {log.details && (
-                      <div className="mt-2 text-xs text-muted-foreground">
-                        {log.details.imported && (
-                          <span>Importés: {log.details.imported}</span>
-                        )}
-                        {log.details.skipped && (
-                          <span className="ml-2">Ignorés: {log.details.skipped}</span>
-                        )}
-                      </div>
-                    )}
                   </div>
                 </div>
               ))

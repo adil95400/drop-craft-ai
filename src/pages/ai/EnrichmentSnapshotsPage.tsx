@@ -1,97 +1,86 @@
 /**
  * AI Enrichment Snapshots - Diff history for AI-generated content
- * Before/after comparison with version timeline
+ * Uses real data from ai_generated_content table
  */
 import { useState } from 'react'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { supabase } from '@/integrations/supabase/client'
+import { useUnifiedAuth } from '@/contexts/UnifiedAuthContext'
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper'
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { ScrollArea } from '@/components/ui/scroll-area'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import {
-  History, GitCompare, CheckCircle, RotateCcw, Eye, Clock,
-  Sparkles, FileText, ArrowRight, ChevronDown, Diff, Undo2,
-  TrendingUp, Zap, Package
+  History, CheckCircle, RotateCcw, Clock,
+  Sparkles, FileText, TrendingUp, Zap, Package, Undo2
 } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
-
-interface Snapshot {
-  id: string
-  productId: string
-  productName: string
-  version: number
-  timestamp: string
-  contentType: 'title' | 'description' | 'keywords' | 'full_seo'
-  original: string
-  generated: string
-  qualityScore: number
-  tokensUsed: number
-  status: 'applied' | 'generated' | 'reverted'
-  model: string
-}
-
-const mockSnapshots: Snapshot[] = [
-  {
-    id: '1', productId: 'p1', productName: 'Wireless Earbuds Pro X', version: 3,
-    timestamp: 'Il y a 2h', contentType: 'title',
-    original: 'Wireless Earbuds Pro X',
-    generated: 'Écouteurs Sans Fil Pro X – Bluetooth 5.3, Réduction de Bruit Active, 40h Autonomie',
-    qualityScore: 92, tokensUsed: 145, status: 'applied', model: 'gpt-4.1-mini'
-  },
-  {
-    id: '2', productId: 'p1', productName: 'Wireless Earbuds Pro X', version: 2,
-    timestamp: 'Il y a 1j', contentType: 'description',
-    original: 'Good quality wireless earbuds with noise cancellation.',
-    generated: 'Découvrez les Écouteurs Sans Fil Pro X, dotés de la technologie Bluetooth 5.3 pour une connexion ultra-stable. Profitez d\'une réduction de bruit active avancée et de 40 heures d\'autonomie. Conçus pour le confort avec des embouts ergonomiques et un son Hi-Fi cristallin. Idéal pour le sport, les déplacements et le télétravail.',
-    qualityScore: 88, tokensUsed: 289, status: 'applied', model: 'gpt-4.1-mini'
-  },
-  {
-    id: '3', productId: 'p2', productName: 'Smart Watch Ultra', version: 1,
-    timestamp: 'Il y a 3h', contentType: 'full_seo',
-    original: 'Smart Watch Ultra Edition with health tracking',
-    generated: 'Montre Connectée Ultra – Suivi Santé Avancé, GPS Intégré, Écran AMOLED 1.9", Étanche IP68',
-    qualityScore: 95, tokensUsed: 312, status: 'generated', model: 'gpt-4.1-mini'
-  },
-  {
-    id: '4', productId: 'p3', productName: 'USB-C Hub Pro', version: 2,
-    timestamp: 'Hier', contentType: 'keywords',
-    original: 'usb hub, usb-c, adapter',
-    generated: 'hub USB-C, adaptateur multiport, station d\'accueil, HDMI 4K, USB 3.0, lecteur SD, MacBook compatible, Thunderbolt',
-    qualityScore: 85, tokensUsed: 98, status: 'reverted', model: 'gpt-4.1-mini'
-  },
-  {
-    id: '5', productId: 'p1', productName: 'Wireless Earbuds Pro X', version: 1,
-    timestamp: 'Il y a 3j', contentType: 'title',
-    original: 'Earbuds wireless',
-    generated: 'Wireless Earbuds Pro X – Premium Sound Quality',
-    qualityScore: 78, tokensUsed: 67, status: 'reverted', model: 'gpt-4.1-mini'
-  },
-]
+import { formatDistanceToNow } from 'date-fns'
+import { fr } from 'date-fns/locale'
 
 export default function EnrichmentSnapshotsPage() {
   const { toast } = useToast()
-  const [snapshots] = useState(mockSnapshots)
+  const { user } = useUnifiedAuth()
+  const queryClient = useQueryClient()
   const [selectedProduct, setSelectedProduct] = useState<string>('all')
   const [selectedType, setSelectedType] = useState<string>('all')
 
-  const products = [...new Set(snapshots.map(s => s.productName))]
-  const filtered = snapshots.filter(s => {
+  const { data: snapshots = [], isLoading } = useQuery({
+    queryKey: ['enrichment-snapshots', user?.id],
+    queryFn: async () => {
+      const { data, error } = await (supabase.from('ai_generated_content') as any)
+        .select('*, products:product_id(name)')
+        .eq('user_id', user!.id)
+        .order('created_at', { ascending: false })
+        .limit(100)
+      if (error) throw error
+      return (data || []).map((s: any) => ({
+        id: s.id,
+        productId: s.product_id,
+        productName: s.products?.name || 'Produit inconnu',
+        contentType: s.content_type,
+        original: s.original_content || '',
+        generated: s.generated_content || '',
+        qualityScore: s.quality_score || 0,
+        tokensUsed: s.tokens_used || 0,
+        status: s.status || 'generated',
+        createdAt: s.created_at,
+      }))
+    },
+    enabled: !!user?.id,
+  })
+
+  const updateStatus = useMutation({
+    mutationFn: async ({ id, status }: { id: string; status: string }) => {
+      const { error } = await (supabase.from('ai_generated_content') as any)
+        .update({ status, applied_at: status === 'applied' ? new Date().toISOString() : null })
+        .eq('id', id)
+      if (error) throw error
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['enrichment-snapshots'] })
+    },
+  })
+
+  const products = [...new Set(snapshots.map((s: any) => s.productName))]
+  const filtered = snapshots.filter((s: any) => {
     const matchProduct = selectedProduct === 'all' || s.productName === selectedProduct
     const matchType = selectedType === 'all' || s.contentType === selectedType
     return matchProduct && matchType
   })
 
-  const avgScore = snapshots.length > 0 ? Math.round(snapshots.reduce((s, snap) => s + snap.qualityScore, 0) / snapshots.length) : 0
-  const totalTokens = snapshots.reduce((s, snap) => s + snap.tokensUsed, 0)
-  const appliedCount = snapshots.filter(s => s.status === 'applied').length
+  const avgScore = snapshots.length > 0 ? Math.round(snapshots.reduce((s: number, snap: any) => s + snap.qualityScore, 0) / snapshots.length) : 0
+  const totalTokens = snapshots.reduce((s: number, snap: any) => s + snap.tokensUsed, 0)
+  const appliedCount = snapshots.filter((s: any) => s.status === 'applied').length
 
   const revertSnapshot = (id: string) => {
+    updateStatus.mutate({ id, status: 'reverted' })
     toast({ title: 'Contenu restauré', description: 'Le contenu original a été rétabli.' })
   }
 
   const applySnapshot = (id: string) => {
+    updateStatus.mutate({ id, status: 'applied' })
     toast({ title: 'Contenu appliqué', description: 'Le contenu IA a été appliqué au produit.' })
   }
 
@@ -138,7 +127,7 @@ export default function EnrichmentSnapshotsPage() {
           <SelectTrigger className="w-[220px]"><SelectValue placeholder="Tous les produits" /></SelectTrigger>
           <SelectContent>
             <SelectItem value="all">Tous les produits</SelectItem>
-            {products.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}
+            {products.map((p: string) => <SelectItem key={p} value={p}>{p}</SelectItem>)}
           </SelectContent>
         </Select>
         <Select value={selectedType} onValueChange={setSelectedType}>
@@ -154,76 +143,83 @@ export default function EnrichmentSnapshotsPage() {
       </div>
 
       {/* Snapshots Timeline */}
-      <div className="space-y-4">
-        {filtered.map(snap => (
-          <Card key={snap.id}>
-            <CardHeader className="pb-3">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="flex items-center gap-2">
-                    <Package className="h-4 w-4 text-muted-foreground" />
-                    <span className="font-semibold">{snap.productName}</span>
+      {isLoading ? (
+        <div className="text-center py-12 text-muted-foreground">Chargement...</div>
+      ) : (
+        <div className="space-y-4">
+          {filtered.length === 0 && (
+            <Card><CardContent className="py-12 text-center">
+              <Sparkles className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+              <h3 className="text-lg font-semibold">Aucun snapshot trouvé</h3>
+              <p className="text-muted-foreground mt-1">Les contenus générés par l'IA apparaîtront ici.</p>
+            </CardContent></Card>
+          )}
+          {filtered.map((snap: any) => (
+            <Card key={snap.id}>
+              <CardHeader className="pb-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-2">
+                      <Package className="h-4 w-4 text-muted-foreground" />
+                      <span className="font-semibold">{snap.productName}</span>
+                    </div>
+                    <Badge variant="secondary" className="text-xs">{contentTypeLabel(snap.contentType)}</Badge>
+                    {snap.status === 'applied' && <Badge className="bg-green-500/10 text-green-600 border-green-500/20 text-xs">Appliqué</Badge>}
+                    {snap.status === 'generated' && <Badge className="bg-primary/10 text-primary border-primary/20 text-xs">En attente</Badge>}
+                    {snap.status === 'reverted' && <Badge variant="outline" className="text-xs">Révoqué</Badge>}
                   </div>
-                  <Badge variant="outline" className="text-xs">v{snap.version}</Badge>
-                  <Badge variant="secondary" className="text-xs">{contentTypeLabel(snap.contentType)}</Badge>
-                  {snap.status === 'applied' && <Badge className="bg-green-500/10 text-green-600 border-green-500/20 text-xs">Appliqué</Badge>}
-                  {snap.status === 'generated' && <Badge className="bg-primary/10 text-primary border-primary/20 text-xs">En attente</Badge>}
-                  {snap.status === 'reverted' && <Badge variant="outline" className="text-xs">Révoqué</Badge>}
-                </div>
-                <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                  <Clock className="h-3 w-3" /> {snap.timestamp}
-                  <Badge variant="outline" className="text-xs">{snap.qualityScore}/100</Badge>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="grid md:grid-cols-2 gap-4">
-                {/* Original */}
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
-                    <FileText className="h-4 w-4" /> Original
-                  </div>
-                  <div className="p-3 rounded-lg bg-destructive/5 border border-destructive/20 text-sm leading-relaxed">
-                    {snap.original}
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <Clock className="h-3 w-3" /> {formatDistanceToNow(new Date(snap.createdAt), { addSuffix: true, locale: fr })}
+                    <Badge variant="outline" className="text-xs">{snap.qualityScore}/100</Badge>
                   </div>
                 </div>
-                {/* Generated */}
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2 text-sm font-medium text-primary">
-                    <Sparkles className="h-4 w-4" /> Généré par IA
+              </CardHeader>
+              <CardContent>
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+                      <FileText className="h-4 w-4" /> Original
+                    </div>
+                    <div className="p-3 rounded-lg bg-destructive/5 border border-destructive/20 text-sm leading-relaxed">
+                      {snap.original || '—'}
+                    </div>
                   </div>
-                  <div className="p-3 rounded-lg bg-primary/5 border border-primary/20 text-sm leading-relaxed">
-                    {snap.generated}
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2 text-sm font-medium text-primary">
+                      <Sparkles className="h-4 w-4" /> Généré par IA
+                    </div>
+                    <div className="p-3 rounded-lg bg-primary/5 border border-primary/20 text-sm leading-relaxed">
+                      {snap.generated}
+                    </div>
                   </div>
                 </div>
-              </div>
-              <div className="flex items-center justify-between mt-4 pt-3 border-t">
-                <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                  <span>Modèle: {snap.model}</span>
-                  <span>{snap.tokensUsed} tokens</span>
+                <div className="flex items-center justify-between mt-4 pt-3 border-t">
+                  <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                    <span>{snap.tokensUsed} tokens</span>
+                  </div>
+                  <div className="flex gap-2">
+                    {snap.status === 'applied' && (
+                      <Button size="sm" variant="outline" onClick={() => revertSnapshot(snap.id)}>
+                        <Undo2 className="mr-1 h-3.5 w-3.5" /> Révoquer
+                      </Button>
+                    )}
+                    {snap.status === 'generated' && (
+                      <Button size="sm" onClick={() => applySnapshot(snap.id)}>
+                        <CheckCircle className="mr-1 h-3.5 w-3.5" /> Appliquer
+                      </Button>
+                    )}
+                    {snap.status === 'reverted' && (
+                      <Button size="sm" variant="outline" onClick={() => applySnapshot(snap.id)}>
+                        <RotateCcw className="mr-1 h-3.5 w-3.5" /> Ré-appliquer
+                      </Button>
+                    )}
+                  </div>
                 </div>
-                <div className="flex gap-2">
-                  {snap.status === 'applied' && (
-                    <Button size="sm" variant="outline" onClick={() => revertSnapshot(snap.id)}>
-                      <Undo2 className="mr-1 h-3.5 w-3.5" /> Révoquer
-                    </Button>
-                  )}
-                  {snap.status === 'generated' && (
-                    <Button size="sm" onClick={() => applySnapshot(snap.id)}>
-                      <CheckCircle className="mr-1 h-3.5 w-3.5" /> Appliquer
-                    </Button>
-                  )}
-                  {snap.status === 'reverted' && (
-                    <Button size="sm" variant="outline" onClick={() => applySnapshot(snap.id)}>
-                      <RotateCcw className="mr-1 h-3.5 w-3.5" /> Ré-appliquer
-                    </Button>
-                  )}
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
     </ChannablePageWrapper>
   )
 }

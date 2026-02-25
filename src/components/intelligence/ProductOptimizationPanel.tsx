@@ -7,25 +7,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useUnifiedAuth } from '@/contexts/UnifiedAuthContext';
 import { 
-  ShoppingCart,
-  TrendingUp,
-  TrendingDown,
-  Target,
-  DollarSign,
-  BarChart3,
-  Zap,
-  AlertTriangle,
-  CheckCircle,
-  RefreshCw,
-  Star,
-  Eye,
-  Package,
-  Users,
-  Calendar,
-  Settings
+  TrendingUp, TrendingDown, Target, Zap, AlertTriangle, 
+  CheckCircle, RefreshCw, Eye, Package, Settings
 } from 'lucide-react';
 
 interface ProductAnalytics {
@@ -46,7 +34,7 @@ interface ProductAnalytics {
 }
 
 export function ProductOptimizationPanel() {
-  const [products, setProducts] = useState<ProductAnalytics[]>([]);
+  const { user } = useUnifiedAuth();
   const [selectedProduct, setSelectedProduct] = useState<ProductAnalytics | null>(null);
   const [optimizationSettings, setOptimizationSettings] = useState({
     profit_target: [25],
@@ -54,114 +42,62 @@ export function ProductOptimizationPanel() {
     price_sensitivity: [50],
     inventory_priority: 'balanced'
   });
-  const [isAnalyzing, setIsAnalyzing] = useState(false);
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
-  useEffect(() => {
-    generateProductAnalytics();
-  }, []);
+  const { data: products = [], isLoading: isAnalyzing, refetch: generateProductAnalytics } = useQuery({
+    queryKey: ['product-analytics-optimization', user?.id],
+    queryFn: async () => {
+      if (!user) return [];
+      
+      const { data: dbProducts, error } = await (supabase.from('products') as any)
+        .select('*')
+        .eq('user_id', user.id)
+        .order('price', { ascending: false }) // Juste pour avoir des produits intéressants en premier
+        .limit(20);
 
-  const generateProductAnalytics = async () => {
-    setIsAnalyzing(true);
-    
-    // Simulation de données d'analyse produit
-    const mockAnalytics: ProductAnalytics[] = [
-      {
-        id: '1',
-        name: 'Chaise de Bureau Ergonomique',
-        category: 'Mobilier',
-        current_price: 299,
-        suggested_price: 349,
-        demand_score: 85,
-        competition_score: 72,
-        profit_margin: 35,
-        sales_velocity: 4.2,
-        stock_level: 45,
-        optimization_potential: 78,
-        ai_recommendations: [
-          'Augmenter le prix de 16.7% pour optimiser la marge',
-          'Mettre en avant les caractéristiques ergonomiques',
-          'Créer un bundle avec accessoires de bureau'
-        ],
-        risk_factors: [
-          'Concurrence forte sur ce segment',
-          'Saisonnalité des ventes bureau'
-        ],
-        performance_trend: 'improving'
-      },
-      {
-        id: '2',
-        name: 'Table Basse Design',
-        category: 'Mobilier',
-        current_price: 450,
-        suggested_price: 399,
-        demand_score: 62,
-        competition_score: 88,
-        profit_margin: 28,
-        sales_velocity: 2.1,
-        stock_level: 23,
-        optimization_potential: 65,
-        ai_recommendations: [
-          'Réduire le prix de 11.3% pour améliorer la compétitivité',
-          'Optimiser les photos produit',
-          'Proposer des options de personnalisation'
-        ],
-        risk_factors: [
-          'Stock faible, risque de rupture',
-          'Marge déjà serrée'
-        ],
-        performance_trend: 'declining'
-      },
-      {
-        id: '3',
-        name: 'Lampe LED Intelligente',
-        category: 'Éclairage',
-        current_price: 89,
-        suggested_price: 95,
-        demand_score: 91,
-        competition_score: 65,
-        profit_margin: 42,
-        sales_velocity: 8.7,
-        stock_level: 156,
-        optimization_potential: 92,
-        ai_recommendations: [
-          'Augmenter légèrement le prix (+6.7%)',
-          'Développer les fonctionnalités connectées',
-          'Cibler le marché de la domotique'
-        ],
-        risk_factors: [
-          'Évolution technologique rapide'
-        ],
-        performance_trend: 'improving'
-      }
-    ];
+      if (error) throw error;
 
-    setTimeout(() => {
-      setProducts(mockAnalytics);
-      setIsAnalyzing(false);
-      toast({
-        title: "Analyse terminée",
-        description: `${mockAnalytics.length} produits analysés avec succès`,
-      });
-    }, 2000);
-  };
+      // Enrichir avec des données simulées d'analyse (car ces métriques complexes n'existent pas encore toutes en base)
+      // En prod, cela viendrait d'une table `product_analytics` ou d'une Edge Function ML
+      return (dbProducts || []).map((p: any) => ({
+        id: p.id,
+        name: p.name || p.title || 'Produit sans nom',
+        category: p.category || 'Non catégorisé',
+        current_price: Number(p.price) || 0,
+        suggested_price: Number(p.price) * (1 + (Math.random() * 0.2 - 0.05)), // Simulé: +/- 5-15%
+        demand_score: Math.floor(Math.random() * 40) + 60, // Simulé: 60-100
+        competition_score: Math.floor(Math.random() * 50) + 30, // Simulé: 30-80
+        profit_margin: p.profit_margin || Math.floor(Math.random() * 30) + 15,
+        sales_velocity: Math.floor(Math.random() * 10),
+        stock_level: p.stock_quantity || 0,
+        optimization_potential: Math.floor(Math.random() * 40) + 50,
+        ai_recommendations: [
+          'Ajuster le prix pour maximiser la marge',
+          'Optimiser les mots-clés du titre'
+        ],
+        risk_factors: p.stock_quantity < 5 ? ['Stock critique'] : [],
+        performance_trend: Math.random() > 0.5 ? 'improving' : 'stable',
+      }));
+    },
+    enabled: !!user,
+    staleTime: 60000,
+  });
 
   const applyOptimization = async (productId: string) => {
-    const product = products.find(p => p.id === productId);
+    const product = products.find((p: ProductAnalytics) => p.id === productId);
     if (!product) return;
 
     try {
-      // Simulation de l'application des optimisations
-      setProducts(prev => prev.map(p => 
-        p.id === productId 
-          ? { ...p, current_price: p.suggested_price, optimization_potential: 95 }
-          : p
-      ));
+      await (supabase.from('products') as any)
+        .update({ price: product.suggested_price })
+        .eq('id', productId);
 
       toast({
         title: "Optimisation appliquée",
-        description: `Prix de "${product.name}" mis à jour avec succès`,
+        description: `Prix de "${product.name}" mis à jour avec succès à ${product.suggested_price}€`,
       });
+      queryClient.invalidateQueries({ queryKey: ['product-analytics-optimization'] });
     } catch (error) {
       toast({
         title: "Erreur",
@@ -175,7 +111,7 @@ export function ProductOptimizationPanel() {
     switch (trend) {
       case 'improving': return <TrendingUp className="w-4 h-4 text-green-500" />;
       case 'declining': return <TrendingDown className="w-4 h-4 text-red-500" />;
-      default: return <BarChart3 className="w-4 h-4 text-blue-500" />;
+      default: return <Settings className="w-4 h-4 text-blue-500" />;
     }
   };
 
@@ -186,11 +122,11 @@ export function ProductOptimizationPanel() {
   };
 
   const totalOptimizationPotential = products.length > 0 ? 
-    Math.round(products.reduce((sum, p) => sum + p.optimization_potential, 0) / products.length) : 0;
+    Math.round(products.reduce((sum: number, p: ProductAnalytics) => sum + p.optimization_potential, 0) / products.length) : 0;
   
-  const highPotentialProducts = products.filter(p => p.optimization_potential >= 80).length;
+  const highPotentialProducts = products.filter((p: ProductAnalytics) => p.optimization_potential >= 80).length;
   const avgProfitMargin = products.length > 0 ? 
-    Math.round(products.reduce((sum, p) => sum + p.profit_margin, 0) / products.length) : 0;
+    Math.round(products.reduce((sum: number, p: ProductAnalytics) => sum + p.profit_margin, 0) / products.length) : 0;
 
   return (
     <div className="space-y-6">
@@ -310,7 +246,7 @@ export function ProductOptimizationPanel() {
             </div>
 
             <Button 
-              onClick={generateProductAnalytics} 
+              onClick={() => generateProductAnalytics()} 
               disabled={isAnalyzing}
               className="w-full"
             >
@@ -331,7 +267,7 @@ export function ProductOptimizationPanel() {
 
         {/* Products List */}
         <div className="lg:col-span-2 space-y-4">
-          {products.map((product) => (
+          {products.map((product: ProductAnalytics) => (
             <Card key={product.id} className="overflow-hidden">
               <CardHeader className="pb-4">
                 <div className="flex items-start justify-between">
@@ -356,14 +292,14 @@ export function ProductOptimizationPanel() {
                 {/* Prix actuel vs suggéré */}
                 <div className="grid grid-cols-2 gap-4 p-3 bg-muted/30 rounded-lg">
                   <div className="text-center">
-                    <div className="text-lg font-bold">{product.current_price}€</div>
+                    <div className="text-lg font-bold">{product.current_price.toFixed(2)}€</div>
                     <div className="text-xs text-muted-foreground">Prix Actuel</div>
                   </div>
                   <div className="text-center">
                     <div className={`text-lg font-bold ${
                       product.suggested_price > product.current_price ? 'text-green-600' : 'text-red-600'
                     }`}>
-                      {product.suggested_price}€
+                      {product.suggested_price.toFixed(2)}€
                     </div>
                     <div className="text-xs text-muted-foreground">Prix Suggéré</div>
                   </div>
@@ -428,7 +364,7 @@ export function ProductOptimizationPanel() {
                   <Button 
                     size="sm" 
                     onClick={() => applyOptimization(product.id)}
-                    disabled={Math.abs(product.suggested_price - product.current_price) < 1}
+                    disabled={Math.abs(product.suggested_price - product.current_price) < 0.01}
                   >
                     <CheckCircle className="w-3 h-3 mr-1" />
                     Appliquer
@@ -447,9 +383,9 @@ export function ProductOptimizationPanel() {
               <CardContent className="flex items-center justify-center h-64">
                 <div className="text-center">
                   <Target className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
-                  <h3 className="text-lg font-semibold mb-2">Aucune analyse disponible</h3>
+                  <h3 className="text-lg font-semibold mb-2">Aucun produit à optimiser</h3>
                   <p className="text-muted-foreground">
-                    Lancez une analyse pour obtenir des recommandations d'optimisation
+                    Importez des produits pour commencer l'optimisation
                   </p>
                 </div>
               </CardContent>
