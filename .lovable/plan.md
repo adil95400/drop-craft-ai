@@ -126,7 +126,7 @@ Tous les modules critiques utilisent des données réelles.
 ### 4.2 Fournisseurs Premium
 - [x] Interface fournisseurs vérifiés (badge, scoring, tier Platinum/Gold/Silver) ✅
 - [ ] Branded invoicing
-- [ ] Catalogue premium haute marge
+- [x] Catalogue premium haute marge ✅
 
 ### 4.3 Enterprise
 - [x] Team Management (invitations, rôles, permissions granulaires) ✅
