@@ -31,46 +31,7 @@ interface RealTimeMetric {
   status: 'good' | 'warning' | 'critical'
 }
 
-const mockRealTimeData = [
-  { time: '14:50', impressions: 1250, clicks: 67, conversions: 4, revenue: 280 },
-  { time: '14:55', impressions: 1340, clicks: 73, conversions: 5, revenue: 350 },
-  { time: '15:00', impressions: 1420, clicks: 78, conversions: 6, revenue: 420 },
-  { time: '15:05', impressions: 1380, clicks: 71, conversions: 4, revenue: 280 },
-  { time: '15:10', impressions: 1460, clicks: 82, conversions: 7, revenue: 490 }
-]
-
-const mockMetrics: RealTimeMetric[] = [
-  {
-    id: 'impressions',
-    name: 'Impressions',
-    value: 1680,
-    change: 12.5,
-    changeType: 'increase',
-    unit: '/h',
-    target: 2000,
-    status: 'good'
-  },
-  {
-    id: 'clicks',
-    name: 'Clics',
-    value: 101,
-    change: -3.2,
-    changeType: 'decrease',
-    unit: '/h',
-    target: 120,
-    status: 'warning'
-  },
-  {
-    id: 'conversions',
-    name: 'Conversions',
-    value: 11,
-    change: 22.2,
-    changeType: 'increase',
-    unit: '/h',
-    target: 15,
-    status: 'good'
-  }
-]
+// Mock data removed — real-time data is computed from useRealTimeMarketing() below
 
 export function RealTimePerformanceTracker() {
   const { stats, campaigns } = useRealTimeMarketing()
