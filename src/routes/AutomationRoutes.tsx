@@ -27,6 +27,7 @@ const ProductRecommendationsPage = lazy(() => import('@/pages/ProductRecommendat
 // Content Generation (replaces AI Studio references)
 const ContentGenerationPage = lazy(() => import('@/pages/ContentGenerationPage'));
 const WorkflowStudioPage = lazy(() => import('@/pages/automation/WorkflowStudioPage'));
+const WorkflowHistoryPage = lazy(() => import('@/pages/automation/WorkflowHistoryPage'));
 
 // Price Rules - centralized pricing
 const PriceRulesPage = lazy(() => import('@/pages/products/PriceRulesPage'));
@@ -37,6 +38,7 @@ export function AutomationRoutes() {
       {/* Automation */}
       <Route index element={<AutomationPage />} />
       <Route path="studio" element={<WorkflowStudioPage />} />
+      <Route path="history" element={<WorkflowHistoryPage />} />
       <Route path="ai-hub" element={<AutomationPage />} />
       <Route path="triggers" element={<AutomationPage />} />
       

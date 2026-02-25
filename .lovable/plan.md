@@ -25,9 +25,9 @@ Tous les modules critiques utilisent des données réelles.
 ### 1.1 Marketing Automation Hub
 **Routes existantes** : `/marketing/*` — enrichir :
 - [x] `/marketing/automation` — Workflows marketing automatisés (séquences email, trigger-based) ✅
-- [ ] `/marketing/calendar` — Calendrier marketing interactif (drag & drop, vue mois/semaine)
-- [ ] `/marketing/content-generation` — Templates IA (Gemini), preview live, bulk generation
-- [ ] `/marketing/ab-testing` — Dashboard résultats A/B avec significance statistique
+- [x] `/marketing/calendar` — Calendrier marketing interactif (drag & drop, vue mois/semaine) ✅
+- [x] `/marketing/content-generation` — Templates IA (Gemini), preview live, bulk generation ✅
+- [x] `/marketing/ab-testing` — Dashboard résultats A/B avec significance statistique ✅
 
 ### 1.2 AI Assistant & Intelligence Hub
 - [x] `/ai/assistant` — Chat IA conversationnel (Gemini) ✅
@@ -40,14 +40,14 @@ Tous les modules critiques utilisent des données réelles.
 **Route** : `/automation/studio`
 - [x] Builder visuel drag & drop (nœuds : trigger → condition → action) ✅
 - [x] Templates prédéfinis (post-commande, relance panier, alerte stock) ✅
-- [ ] Historique d'exécution et logs
+- [x] Historique d'exécution et logs ✅ (`/automation/history`)
 - [ ] Intégration emails, webhooks, notifications
 
 ### 1.4 Business Intelligence & Advanced Analytics
 - [x] `/analytics/bi` — BI avancé : cohortes, alertes, rapports ✅
 - [x] `/analytics/predictive` — Analytics prédictifs avec visualisations recharts ✅
-- [ ] `/analytics/real-data` — Dashboard temps réel (Supabase Realtime)
-- [ ] `/analytics/reports` — Rapports planifiés avec export PDF/Excel
+- [x] `/analytics/real-data` — Dashboard temps réel (Supabase Realtime) ✅
+- [x] `/analytics/reports` — Rapports planifiés avec export PDF/Excel ✅ (`/analytics/scheduled-reports`)
 
 ### 1.5 Import Avancé Multi-Source
 - [ ] Consolider en interface à onglets (CSV, URL, API, Shopify, AliExpress)
