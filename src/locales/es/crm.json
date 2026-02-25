@@ -1,0 +1,55 @@
+{
+  "title": "CRM",
+  "subtitle": "Gestión de relaciones con clientes",
+  "leads": {
+    "title": "Leads",
+    "new": "Nuevo lead",
+    "qualified": "Calificado",
+    "contacted": "Contactado",
+    "converted": "Convertido",
+    "lost": "Perdido",
+    "score": "Puntuación",
+    "source": "Fuente"
+  },
+  "deals": {
+    "title": "Oportunidades",
+    "pipeline": "Pipeline",
+    "value": "Valor",
+    "stage": "Etapa",
+    "probability": "Probabilidad",
+    "closeDate": "Fecha de cierre",
+    "won": "Ganado",
+    "lost": "Perdido"
+  },
+  "contacts": {
+    "title": "Contactos",
+    "addContact": "Añadir contacto",
+    "lastInteraction": "Última interacción",
+    "lifetime": "Valor de vida",
+    "segments": "Segmentos"
+  },
+  "tasks": {
+    "title": "Tareas",
+    "create": "Crear tarea",
+    "dueDate": "Fecha límite",
+    "assignee": "Asignado a",
+    "overdue": "Atrasada",
+    "completed": "Completada"
+  },
+  "emails": {
+    "title": "Correos",
+    "compose": "Redactar",
+    "templates": "Plantillas",
+    "campaigns": "Campañas",
+    "openRate": "Tasa de apertura",
+    "clickRate": "Tasa de clics"
+  },
+  "activity": {
+    "title": "Actividad",
+    "timeline": "Cronología",
+    "note": "Nota",
+    "call": "Llamada",
+    "meeting": "Reunión",
+    "email": "Correo"
+  }
+}

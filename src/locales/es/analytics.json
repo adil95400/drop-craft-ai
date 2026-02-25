@@ -1,0 +1,63 @@
+{
+  "title": "Analíticas",
+  "subtitle": "Análisis de rendimiento",
+  "overview": "Resumen",
+  "revenue": "Ingresos",
+  "orders": "Pedidos",
+  "visitors": "Visitantes",
+  "conversionRate": "Tasa de conversión",
+  "averageOrderValue": "Valor medio del pedido",
+  "topProducts": "Mejores productos",
+  "topCategories": "Mejores categorías",
+  "salesByChannel": "Ventas por canal",
+  "salesByCountry": "Ventas por país",
+  "trend": "Tendencia",
+  "growth": "Crecimiento",
+  "decline": "Declive",
+  "stable": "Estable",
+  "period": {
+    "today": "Hoy",
+    "yesterday": "Ayer",
+    "last7days": "Últimos 7 días",
+    "last30days": "Últimos 30 días",
+    "last90days": "Últimos 90 días",
+    "thisMonth": "Este mes",
+    "lastMonth": "Mes pasado",
+    "thisYear": "Este año",
+    "custom": "Personalizado"
+  },
+  "metrics": {
+    "impressions": "Impresiones",
+    "clicks": "Clics",
+    "ctr": "Tasa de clics",
+    "roas": "ROAS",
+    "cpc": "Coste por clic",
+    "cpa": "Coste por adquisición",
+    "ltv": "Valor de vida del cliente",
+    "churnRate": "Tasa de abandono",
+    "retentionRate": "Tasa de retención"
+  },
+  "reports": {
+    "title": "Informes",
+    "generate": "Generar informe",
+    "schedule": "Programar",
+    "export": "Exportar",
+    "exportPdf": "Exportar como PDF",
+    "exportCsv": "Exportar como CSV"
+  },
+  "predictions": {
+    "title": "Predicciones IA",
+    "salesForecast": "Previsión de ventas",
+    "demandForecast": "Previsión de demanda",
+    "trendAnalysis": "Análisis de tendencias",
+    "confidence": "Confianza",
+    "accuracy": "Precisión"
+  },
+  "bi": {
+    "title": "Business Intelligence",
+    "kpis": "KPIs en tiempo real",
+    "dashboards": "Paneles",
+    "customReport": "Informe personalizado",
+    "dataExplorer": "Explorador de datos"
+  }
+}

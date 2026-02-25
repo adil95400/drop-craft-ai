@@ -1,0 +1,35 @@
+{
+  "title": "Facturación",
+  "subtitle": "Gestiona tu suscripción",
+  "currentPlan": "Plan actual",
+  "upgrade": "Mejorar plan",
+  "downgrade": "Reducir plan",
+  "changePlan": "Cambiar plan",
+  "cancelSubscription": "Cancelar suscripción",
+  "billingHistory": "Historial de facturación",
+  "nextBilling": "Próxima facturación",
+  "paymentMethod": "Método de pago",
+  "updatePayment": "Actualizar",
+  "invoice": "Factura",
+  "downloadInvoice": "Descargar",
+  "quota": {
+    "title": "Uso de cuotas",
+    "used": "Usado",
+    "remaining": "Restante",
+    "limit": "Límite",
+    "exceeded": "Excedida",
+    "warning": "Advertencia",
+    "upgradeNeeded": "Mejora necesaria"
+  },
+  "plans": {
+    "free": "Gratuito",
+    "starter": "Starter",
+    "pro": "Pro",
+    "enterprise": "Enterprise",
+    "perMonth": "/mes",
+    "perYear": "/año",
+    "features": "Funciones incluidas",
+    "mostPopular": "Más popular",
+    "currentPlan": "Plan actual"
+  }
+}

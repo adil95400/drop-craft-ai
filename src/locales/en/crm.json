@@ -1,0 +1,55 @@
+{
+  "title": "CRM",
+  "subtitle": "Customer Relationship Management",
+  "leads": {
+    "title": "Leads",
+    "new": "New lead",
+    "qualified": "Qualified",
+    "contacted": "Contacted",
+    "converted": "Converted",
+    "lost": "Lost",
+    "score": "Score",
+    "source": "Source"
+  },
+  "deals": {
+    "title": "Deals",
+    "pipeline": "Pipeline",
+    "value": "Value",
+    "stage": "Stage",
+    "probability": "Probability",
+    "closeDate": "Close date",
+    "won": "Won",
+    "lost": "Lost"
+  },
+  "contacts": {
+    "title": "Contacts",
+    "addContact": "Add contact",
+    "lastInteraction": "Last interaction",
+    "lifetime": "Lifetime value",
+    "segments": "Segments"
+  },
+  "tasks": {
+    "title": "Tasks",
+    "create": "Create task",
+    "dueDate": "Due date",
+    "assignee": "Assignee",
+    "overdue": "Overdue",
+    "completed": "Completed"
+  },
+  "emails": {
+    "title": "Emails",
+    "compose": "Compose",
+    "templates": "Templates",
+    "campaigns": "Campaigns",
+    "openRate": "Open rate",
+    "clickRate": "Click rate"
+  },
+  "activity": {
+    "title": "Activity",
+    "timeline": "Timeline",
+    "note": "Note",
+    "call": "Call",
+    "meeting": "Meeting",
+    "email": "Email"
+  }
+}

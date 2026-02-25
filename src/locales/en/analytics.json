@@ -1,0 +1,63 @@
+{
+  "title": "Analytics",
+  "subtitle": "Performance Analysis",
+  "overview": "Overview",
+  "revenue": "Revenue",
+  "orders": "Orders",
+  "visitors": "Visitors",
+  "conversionRate": "Conversion Rate",
+  "averageOrderValue": "Average Order Value",
+  "topProducts": "Top Products",
+  "topCategories": "Top Categories",
+  "salesByChannel": "Sales by Channel",
+  "salesByCountry": "Sales by Country",
+  "trend": "Trend",
+  "growth": "Growth",
+  "decline": "Decline",
+  "stable": "Stable",
+  "period": {
+    "today": "Today",
+    "yesterday": "Yesterday",
+    "last7days": "Last 7 days",
+    "last30days": "Last 30 days",
+    "last90days": "Last 90 days",
+    "thisMonth": "This month",
+    "lastMonth": "Last month",
+    "thisYear": "This year",
+    "custom": "Custom"
+  },
+  "metrics": {
+    "impressions": "Impressions",
+    "clicks": "Clicks",
+    "ctr": "Click-through rate",
+    "roas": "ROAS",
+    "cpc": "Cost per click",
+    "cpa": "Cost per acquisition",
+    "ltv": "Customer lifetime value",
+    "churnRate": "Churn rate",
+    "retentionRate": "Retention rate"
+  },
+  "reports": {
+    "title": "Reports",
+    "generate": "Generate report",
+    "schedule": "Schedule",
+    "export": "Export",
+    "exportPdf": "Export as PDF",
+    "exportCsv": "Export as CSV"
+  },
+  "predictions": {
+    "title": "AI Predictions",
+    "salesForecast": "Sales forecast",
+    "demandForecast": "Demand forecast",
+    "trendAnalysis": "Trend analysis",
+    "confidence": "Confidence",
+    "accuracy": "Accuracy"
+  },
+  "bi": {
+    "title": "Business Intelligence",
+    "kpis": "Real-time KPIs",
+    "dashboards": "Dashboards",
+    "customReport": "Custom report",
+    "dataExplorer": "Data explorer"
+  }
+}

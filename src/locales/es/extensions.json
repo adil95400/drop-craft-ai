@@ -1,0 +1,41 @@
+{
+  "title": "Extensiones",
+  "subtitle": "Amplía las funcionalidades",
+  "chrome": {
+    "title": "Extensión Chrome",
+    "description": "Importa productos directamente desde cualquier página web",
+    "install": "Instalar extensión",
+    "connected": "Conectada",
+    "disconnected": "Desconectada",
+    "lastSync": "Última sincronización",
+    "importCount": "{{count}} productos importados"
+  },
+  "marketplace": {
+    "title": "Marketplace de extensiones",
+    "installed": "Instaladas",
+    "available": "Disponibles",
+    "install": "Instalar",
+    "uninstall": "Desinstalar",
+    "configure": "Configurar",
+    "update": "Actualizar"
+  },
+  "api": {
+    "title": "API y Webhooks",
+    "keys": "Claves API",
+    "createKey": "Crear clave",
+    "webhooks": "Webhooks",
+    "addWebhook": "Añadir webhook",
+    "documentation": "Documentación",
+    "playground": "Playground"
+  },
+  "integrations": {
+    "title": "Integraciones",
+    "shopify": "Shopify",
+    "woocommerce": "WooCommerce",
+    "amazon": "Amazon",
+    "ebay": "eBay",
+    "connected": "Conectado",
+    "configure": "Configurar",
+    "sync": "Sincronizar"
+  }
+}

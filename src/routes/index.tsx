@@ -90,6 +90,7 @@ const ChoosePlanPage = lazy(() => import('@/pages/ChoosePlanPage'));
 const BillingPage = lazy(() => import('@/pages/BillingPage'));
 const ProfilePage = lazy(() => import('@/pages/profile/ProfilePage'));
 const APIDocumentationPage = lazy(() => import('@/pages/APIDocumentationPage'));
+const ApiDocsPage = lazy(() => import('@/pages/api/ApiDocsPage'));
 
 // Loading components
 const PageLoader = () => (
@@ -212,6 +213,7 @@ export function AppRoutes() {
           <Route path="/alerts" element={<Protected><AlertCenterPage /></Protected>} />
           
           {/* Feature Pages */}
+          <Route path="/api-docs" element={<Protected><ApiDocsPage /></Protected>} />
           <Route path="/sync-manager" element={<Protected><SyncManagerPage /></Protected>} />
           <Route path="/reviews" element={<Protected><ReviewsPage /></Protected>} />
           <Route path="/advanced" element={<Protected><AdvancedAnalyticsPage /></Protected>} />

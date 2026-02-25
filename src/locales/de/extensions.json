@@ -1,0 +1,41 @@
+{
+  "title": "Erweiterungen",
+  "subtitle": "Funktionen erweitern",
+  "chrome": {
+    "title": "Chrome-Erweiterung",
+    "description": "Produkte direkt von jeder Webseite importieren",
+    "install": "Erweiterung installieren",
+    "connected": "Verbunden",
+    "disconnected": "Getrennt",
+    "lastSync": "Letzte Synchronisierung",
+    "importCount": "{{count}} Produkte importiert"
+  },
+  "marketplace": {
+    "title": "Erweiterungs-Marketplace",
+    "installed": "Installiert",
+    "available": "Verfügbar",
+    "install": "Installieren",
+    "uninstall": "Deinstallieren",
+    "configure": "Konfigurieren",
+    "update": "Aktualisieren"
+  },
+  "api": {
+    "title": "API & Webhooks",
+    "keys": "API-Schlüssel",
+    "createKey": "Schlüssel erstellen",
+    "webhooks": "Webhooks",
+    "addWebhook": "Webhook hinzufügen",
+    "documentation": "Dokumentation",
+    "playground": "Playground"
+  },
+  "integrations": {
+    "title": "Integrationen",
+    "shopify": "Shopify",
+    "woocommerce": "WooCommerce",
+    "amazon": "Amazon",
+    "ebay": "eBay",
+    "connected": "Verbunden",
+    "configure": "Konfigurieren",
+    "sync": "Synchronisieren"
+  }
+}
