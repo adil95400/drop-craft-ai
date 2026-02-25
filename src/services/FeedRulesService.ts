@@ -431,17 +431,26 @@ export const FeedRulesService = {
     return fieldType === 'number' ? numberOperators : stringOperators;
   },
 
-  getActionOptions(): { value: string; label: string; requiresField: boolean }[] {
+  getActionOptions(): { value: string; label: string; requiresField: boolean; category?: string }[] {
     return [
-      { value: 'exclude', label: 'Exclure du feed', requiresField: false },
-      { value: 'include', label: 'Inclure dans le feed', requiresField: false },
-      { value: 'set_field', label: 'Définir une valeur', requiresField: true },
-      { value: 'modify_field', label: 'Modifier la valeur', requiresField: true },
-      { value: 'append_text', label: 'Ajouter du texte', requiresField: true },
-      { value: 'prepend_text', label: 'Préfixer avec texte', requiresField: true },
-      { value: 'set_category', label: 'Changer la catégorie', requiresField: false },
-      { value: 'add_tag', label: 'Ajouter un tag', requiresField: false },
-      { value: 'remove_tag', label: 'Supprimer un tag', requiresField: false },
+      // Feed actions
+      { value: 'exclude', label: 'Exclure du feed', requiresField: false, category: 'feed' },
+      { value: 'include', label: 'Inclure dans le feed', requiresField: false, category: 'feed' },
+      // Content actions
+      { value: 'set_field', label: 'Définir une valeur', requiresField: true, category: 'content' },
+      { value: 'modify_field', label: 'Modifier la valeur', requiresField: true, category: 'content' },
+      { value: 'append_text', label: 'Ajouter du texte', requiresField: true, category: 'content' },
+      { value: 'prepend_text', label: 'Préfixer avec texte', requiresField: true, category: 'content' },
+      { value: 'set_category', label: 'Changer la catégorie', requiresField: false, category: 'content' },
+      { value: 'add_tag', label: 'Ajouter un tag', requiresField: false, category: 'content' },
+      { value: 'remove_tag', label: 'Supprimer un tag', requiresField: false, category: 'content' },
+      // Dynamic Pricing actions
+      { value: 'apply_margin', label: '💰 Appliquer marge sur coût', requiresField: false, category: 'pricing' },
+      { value: 'percentage_adjust', label: '📊 Ajuster prix en %', requiresField: false, category: 'pricing' },
+      { value: 'round_psychological', label: '🧠 Arrondi psychologique', requiresField: false, category: 'pricing' },
+      { value: 'set_compare_at_price', label: '🏷️ Prix barré (markup %)', requiresField: false, category: 'pricing' },
+      { value: 'min_price', label: '⬇️ Prix minimum', requiresField: false, category: 'pricing' },
+      { value: 'max_price', label: '⬆️ Prix maximum', requiresField: false, category: 'pricing' },
     ];
   },
 };

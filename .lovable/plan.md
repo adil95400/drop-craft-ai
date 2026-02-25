@@ -121,7 +121,7 @@ Tous les modules critiques utilisent des données réelles.
 ### 4.1 Intégrations Marketplace
 - [x] Amazon, eBay, Etsy, TikTok Shop — Connecteurs UI + intégration DB ✅
 - [x] AliExpress enrichi (auto-order, tracking) ✅
-- [ ] Moteur de règles feed + dynamic pricing (Channable-like)
+- [x] Moteur de règles feed + dynamic pricing (Channable-like) ✅
 
 ### 4.2 Fournisseurs Premium
 - [x] Interface fournisseurs vérifiés (badge, scoring, tier Platinum/Gold/Silver) ✅

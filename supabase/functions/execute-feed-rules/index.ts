@@ -156,6 +156,73 @@ function applyActions(
         }
         break;
       }
+      // === Dynamic Pricing Actions ===
+      case "apply_margin": {
+        // Apply a margin percentage on cost_price → price
+        const cost = Number(modified.cost_price || modified.cost || 0);
+        const marginPct = Number(action.value || 0);
+        if (cost > 0 && marginPct > 0) {
+          modified.price = Math.round(cost * (1 + marginPct / 100) * 100) / 100;
+        }
+        if (field || true) changes["price"] = { before: product.price, after: modified.price };
+        break;
+      }
+      case "percentage_adjust": {
+        // Adjust price by a percentage (+/-). E.g. value=10 → +10%, value=-15 → -15%
+        const currentPrice = Number(modified.price || 0);
+        const pctChange = Number(action.value || 0);
+        if (currentPrice > 0) {
+          modified.price = Math.round(currentPrice * (1 + pctChange / 100) * 100) / 100;
+        }
+        changes["price"] = { before: product.price, after: modified.price };
+        break;
+      }
+      case "round_psychological": {
+        // Round price to psychological pricing (e.g. 23.47 → 23.99 or 19.99)
+        const p = Number(modified.price || 0);
+        if (p > 0) {
+          const strategy = String(action.value || '99');
+          if (strategy === '99') {
+            modified.price = Math.floor(p) + 0.99;
+          } else if (strategy === '95') {
+            modified.price = Math.floor(p) + 0.95;
+          } else if (strategy === '00') {
+            modified.price = Math.ceil(p);
+          } else if (strategy === '90') {
+            modified.price = Math.floor(p) + 0.90;
+          }
+        }
+        changes["price"] = { before: product.price, after: modified.price };
+        break;
+      }
+      case "set_compare_at_price": {
+        // Set compare_at_price based on current price + a markup %
+        const basePrice = Number(modified.price || 0);
+        const markupPct = Number(action.value || 20);
+        if (basePrice > 0) {
+          modified.compare_at_price = Math.round(basePrice * (1 + markupPct / 100) * 100) / 100;
+        }
+        changes["compare_at_price"] = { before: product.compare_at_price, after: modified.compare_at_price };
+        break;
+      }
+      case "min_price": {
+        // Enforce minimum price
+        const minVal = Number(action.value || 0);
+        if (Number(modified.price) < minVal) {
+          modified.price = minVal;
+          changes["price"] = { before: product.price, after: modified.price };
+        }
+        break;
+      }
+      case "max_price": {
+        // Enforce maximum price
+        const maxVal = Number(action.value || 0);
+        if (maxVal > 0 && Number(modified.price) > maxVal) {
+          modified.price = maxVal;
+          changes["price"] = { before: product.price, after: modified.price };
+        }
+        break;
+      }
     }
 
     const after = field ? modified[field] : undefined;
