@@ -20,6 +20,7 @@ const VariantMappingPage = lazy(() => import('@/pages/suppliers/VariantMappingPa
 const AdvancedSupplierEnginePage = lazy(() => import('@/pages/suppliers/AdvancedSupplierEnginePage'))
 const SupplierFallbackPage = lazy(() => import('@/pages/suppliers/SupplierFallbackPage'))
 const PremiumSuppliersPage = lazy(() => import('@/pages/suppliers/PremiumSuppliersPage'))
+const AliExpressAutoOrderPage = lazy(() => import('@/pages/suppliers/AliExpressAutoOrderPage'))
 
 /**
  * ROUTES DU MODULE FOURNISSEURS
@@ -50,6 +51,9 @@ export default function SupplierRoutes() {
       
       {/* Premium Suppliers */}
       <Route path="premium" element={<PremiumSuppliersPage />} />
+      
+      {/* AliExpress Auto-Order */}
+      <Route path="aliexpress/auto-order" element={<AliExpressAutoOrderPage />} />
       
       {/* Analytics */}
       <Route path="analytics" element={<SupplierAnalyticsDashboard />} />
