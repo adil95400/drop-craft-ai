@@ -32,20 +32,20 @@ Tous les modules critiques utilisent des données réelles.
 ### 1.2 AI Assistant & Intelligence Hub
 - [x] `/ai/assistant` — Chat IA conversationnel (Gemini) ✅
 - [x] `/ai/optimization` — Hub d'optimisation IA : descriptions, SEO, images en batch ✅
-- [ ] `/ai/rewrite` — Réécriture intelligente de fiches produits (ton, style, langue)
-- [ ] `/intelligence/predictions` — Prédictions avancées : demande, stock, tendances
-- [ ] `/intelligence/opportunities` — Détection d'opportunités (marge + vélocité)
+- [x] `/ai/rewrite` — Réécriture intelligente de fiches produits (ton, style, langue) ✅ (existant)
+- [x] `/intelligence/predictions` — Prédictions avancées : demande, stock, tendances ✅
+- [x] `/intelligence/opportunities` — Détection d'opportunités (marge + vélocité) ✅
 
 ### 1.3 Workflow Builder Visuel
 **Route** : `/automation/studio`
-- [ ] Builder visuel drag & drop (nœuds : trigger → condition → action)
-- [ ] Templates prédéfinis (post-commande, relance panier, alerte stock)
+- [x] Builder visuel drag & drop (nœuds : trigger → condition → action) ✅
+- [x] Templates prédéfinis (post-commande, relance panier, alerte stock) ✅
 - [ ] Historique d'exécution et logs
 - [ ] Intégration emails, webhooks, notifications
 
 ### 1.4 Business Intelligence & Advanced Analytics
-- [ ] `/analytics/bi` — Créateur de rapports personnalisés (widgets drag & drop)
-- [ ] `/analytics/predictive` — Analytics prédictifs avec visualisations
+- [x] `/analytics/bi` — BI avancé : cohortes, alertes, rapports ✅
+- [x] `/analytics/predictive` — Analytics prédictifs avec visualisations recharts ✅
 - [ ] `/analytics/real-data` — Dashboard temps réel (Supabase Realtime)
 - [ ] `/analytics/reports` — Rapports planifiés avec export PDF/Excel
 
@@ -55,9 +55,9 @@ Tous les modules critiques utilisent des données réelles.
 - [ ] Pipeline unifié : Ingestion → Normalisation → Enrichissement → QA → Publication
 
 ### 1.6 Inventory Predictor & Stock Avancé
-- [ ] Prédictions de rupture (IA Gemini)
-- [ ] Alertes intelligentes de réapprovisionnement
-- [ ] Dashboard stock avec vue calendrier prévisionnel
+- [x] Prédictions de rupture (IA Gemini) ✅
+- [x] Alertes intelligentes de réapprovisionnement ✅
+- [x] Dashboard stock avec vue calendrier prévisionnel ✅
 
 ---
 
