@@ -15030,45 +15030,75 @@ export type Database = {
         Row: {
           api_endpoint: string | null
           api_key_encrypted: string | null
+          avg_delivery_days: number | null
           code: string | null
           config: Json | null
           country: string | null
           created_at: string | null
+          description: string | null
           id: string
+          is_verified: boolean | null
           last_sync_at: string | null
+          logo_url: string | null
+          min_order_value: number | null
           name: string
+          rating: number | null
+          return_rate: number | null
           shipping_methods: Json | null
+          specialties: string[] | null
           status: string | null
+          tier: string | null
+          total_orders: number | null
           updated_at: string | null
           user_id: string
         }
         Insert: {
           api_endpoint?: string | null
           api_key_encrypted?: string | null
+          avg_delivery_days?: number | null
           code?: string | null
           config?: Json | null
           country?: string | null
           created_at?: string | null
+          description?: string | null
           id?: string
+          is_verified?: boolean | null
           last_sync_at?: string | null
+          logo_url?: string | null
+          min_order_value?: number | null
           name: string
+          rating?: number | null
+          return_rate?: number | null
           shipping_methods?: Json | null
+          specialties?: string[] | null
           status?: string | null
+          tier?: string | null
+          total_orders?: number | null
           updated_at?: string | null
           user_id: string
         }
         Update: {
           api_endpoint?: string | null
           api_key_encrypted?: string | null
+          avg_delivery_days?: number | null
           code?: string | null
           config?: Json | null
           country?: string | null
           created_at?: string | null
+          description?: string | null
           id?: string
+          is_verified?: boolean | null
           last_sync_at?: string | null
+          logo_url?: string | null
+          min_order_value?: number | null
           name?: string
+          rating?: number | null
+          return_rate?: number | null
           shipping_methods?: Json | null
+          specialties?: string[] | null
           status?: string | null
+          tier?: string | null
+          total_orders?: number | null
           updated_at?: string | null
           user_id?: string
         }

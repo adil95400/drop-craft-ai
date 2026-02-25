@@ -19,6 +19,7 @@ const BTSImportPage = lazy(() => import('@/pages/suppliers/BTSImportPage'))
 const VariantMappingPage = lazy(() => import('@/pages/suppliers/VariantMappingPage'))
 const AdvancedSupplierEnginePage = lazy(() => import('@/pages/suppliers/AdvancedSupplierEnginePage'))
 const SupplierFallbackPage = lazy(() => import('@/pages/suppliers/SupplierFallbackPage'))
+const PremiumSuppliersPage = lazy(() => import('@/pages/suppliers/PremiumSuppliersPage'))
 
 /**
  * ROUTES DU MODULE FOURNISSEURS
@@ -46,6 +47,9 @@ export default function SupplierRoutes() {
       
       {/* Mes fournisseurs */}
       <Route path="my" element={<MySuppliersPage />} />
+      
+      {/* Premium Suppliers */}
+      <Route path="premium" element={<PremiumSuppliersPage />} />
       
       {/* Analytics */}
       <Route path="analytics" element={<SupplierAnalyticsDashboard />} />
