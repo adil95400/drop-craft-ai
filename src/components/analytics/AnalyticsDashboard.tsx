@@ -5,47 +5,15 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
-  LineChart,
-  Line,
-  PieChart,
-  Pie,
-  Cell,
-  AreaChart,
-  Area
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend,
+  ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell, AreaChart, Area
 } from 'recharts';
 import {
-  TrendingUp,
-  TrendingDown,
-  DollarSign,
-  Users,
-  ShoppingCart,
-  Package,
-  Eye,
-  Download
+  TrendingUp, TrendingDown, DollarSign, Users, ShoppingCart, Package, Eye, Download, Loader2
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-
-interface MetricCard {
-  title: string;
-  value: string;
-  change: number;
-  icon: React.ReactNode;
-  trend: 'up' | 'down' | 'neutral';
-}
-
-interface ChartData {
-  name: string;
-  value?: number;
-  [key: string]: any;
-}
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
 
 interface AnalyticsDashboardProps {
   className?: string;
@@ -53,64 +21,7 @@ interface AnalyticsDashboardProps {
   onTimeRangeChange?: (range: string) => void;
 }
 
-const mockMetrics: MetricCard[] = [
-  {
-    title: 'Chiffre d\'affaires',
-    value: '125 450 €',
-    change: 12.5,
-    icon: <DollarSign className="h-4 w-4" />,
-    trend: 'up'
-  },
-  {
-    title: 'Commandes',
-    value: '1,234',
-    change: -2.4,
-    icon: <ShoppingCart className="h-4 w-4" />,
-    trend: 'down'
-  },
-  {
-    title: 'Clients actifs',
-    value: '8,492',
-    change: 18.2,
-    icon: <Users className="h-4 w-4" />,
-    trend: 'up'
-  },
-  {
-    title: 'Produits vendus',
-    value: '3,567',
-    change: 5.8,
-    icon: <Package className="h-4 w-4" />,
-    trend: 'up'
-  }
-];
-
-const salesData: ChartData[] = [
-  { name: 'Jan', sales: 4000, orders: 240, customers: 400 },
-  { name: 'Fév', sales: 3000, orders: 139, customers: 300 },
-  { name: 'Mar', sales: 2000, orders: 980, customers: 200 },
-  { name: 'Avr', sales: 2780, orders: 390, customers: 278 },
-  { name: 'Mai', sales: 1890, orders: 480, customers: 189 },
-  { name: 'Jun', sales: 2390, orders: 380, customers: 239 },
-  { name: 'Jul', sales: 3490, orders: 430, customers: 349 }
-];
-
-const productData: ChartData[] = [
-  { name: 'Électronique', value: 35, color: '#8884d8' },
-  { name: 'Vêtements', value: 25, color: '#82ca9d' },
-  { name: 'Maison', value: 20, color: '#ffc658' },
-  { name: 'Sport', value: 15, color: '#ff7c7c' },
-  { name: 'Autres', value: 5, color: '#8dd1e1' }
-];
-
-const trafficData: ChartData[] = [
-  { name: 'Lun', visits: 1200, unique: 800, bounce: 45 },
-  { name: 'Mar', visits: 1900, unique: 1300, bounce: 38 },
-  { name: 'Mer', visits: 800, unique: 600, bounce: 52 },
-  { name: 'Jeu', visits: 1500, unique: 1000, bounce: 41 },
-  { name: 'Ven', visits: 2000, unique: 1400, bounce: 35 },
-  { name: 'Sam', visits: 2400, unique: 1800, bounce: 28 },
-  { name: 'Dim', visits: 1800, unique: 1200, bounce: 42 }
-];
+const COLORS = ['#8884d8', '#82ca9d', '#ffc658', '#ff7c7c', '#8dd1e1'];
 
 export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
   className,
@@ -119,112 +30,130 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
 }) => {
   const [chartType, setChartType] = useState<'bar' | 'line' | 'area'>('bar');
 
+  const daysMap: Record<string, number> = { '7d': 7, '30d': 30, '90d': 90, '1y': 365 };
+  const days = daysMap[timeRange] || 30;
+  const since = new Date(Date.now() - days * 86400000).toISOString();
+
+  // Real metrics
+  const { data: metrics, isLoading: metricsLoading } = useQuery({
+    queryKey: ['analytics-metrics', timeRange],
+    queryFn: async () => {
+      const ordersRes = await supabase.from('orders').select('id, total_amount, created_at').gte('created_at', since);
+      const customersRes = await supabase.from('customers').select('id', { count: 'exact' }).eq('status', 'active');
+      const productsRes = await supabase.from('products').select('id', { count: 'exact' }).eq('status', 'active');
+      const orders = ordersRes.data || [];
+      const revenue = orders.reduce((s: number, o: any) => s + (o.total_amount || 0), 0);
+      return {
+        revenue,
+        orderCount: orders.length,
+        activeCustomers: customersRes.count || 0,
+        activeProducts: productsRes.count || 0,
+      };
+    },
+  });
+
+  // Sales by month
+  const { data: salesData } = useQuery({
+    queryKey: ['analytics-sales', timeRange],
+    queryFn: async () => {
+      const { data } = await supabase.from('orders').select('total_amount, created_at').gte('created_at', since).order('created_at');
+      if (!data?.length) return [];
+      const byMonth: Record<string, { sales: number; orders: number }> = {};
+      for (const o of data) {
+        const month = new Date(o.created_at).toLocaleDateString('fr-FR', { month: 'short' });
+        if (!byMonth[month]) byMonth[month] = { sales: 0, orders: 0 };
+        byMonth[month].sales += o.total_amount || 0;
+        byMonth[month].orders += 1;
+      }
+      return Object.entries(byMonth).map(([name, v]) => ({ name, ...v }));
+    },
+  });
+
+  // Products by category
+  const { data: productData } = useQuery({
+    queryKey: ['analytics-products-cat'],
+    queryFn: async () => {
+      const { data } = await supabase.from('products').select('category').eq('status', 'active');
+      if (!data?.length) return [];
+      const cats: Record<string, number> = {};
+      for (const p of data) {
+        const cat = p.category || 'Autres';
+        cats[cat] = (cats[cat] || 0) + 1;
+      }
+      return Object.entries(cats)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 5)
+        .map(([name, value], i) => ({ name, value, color: COLORS[i % COLORS.length] }));
+    },
+  });
+
+  // Top products
+  const { data: topProducts } = useQuery({
+    queryKey: ['analytics-top-products', timeRange],
+    queryFn: async () => {
+      const { data: items } = await supabase.from('order_items').select('product_id, qty, unit_price, product_name').limit(500);
+      if (!items?.length) return [];
+      const map: Record<string, { name: string; sales: number; revenue: number }> = {};
+      for (const it of items) {
+        const pid = it.product_id || it.product_name;
+        if (!map[pid]) map[pid] = { name: it.product_name || pid, sales: 0, revenue: 0 };
+        map[pid].sales += it.qty || 1;
+        map[pid].revenue += (it.unit_price || 0) * (it.qty || 1);
+      }
+      return Object.values(map).sort((a, b) => b.revenue - a.revenue).slice(0, 4);
+    },
+  });
+
   const formatChange = (change: number) => {
     const isPositive = change > 0;
     return (
-      <div className={cn(
-        "flex items-center gap-1 text-sm",
-        isPositive ? "text-green-600" : "text-red-600"
-      )}>
+      <div className={cn("flex items-center gap-1 text-sm", isPositive ? "text-green-600" : "text-red-600")}>
         {isPositive ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
         {Math.abs(change)}%
       </div>
     );
   };
 
+  const metricCards = [
+    { title: "Chiffre d'affaires", value: `${(metrics?.revenue || 0).toLocaleString('fr-FR')} €`, icon: <DollarSign className="h-4 w-4" /> },
+    { title: 'Commandes', value: (metrics?.orderCount || 0).toLocaleString(), icon: <ShoppingCart className="h-4 w-4" /> },
+    { title: 'Clients actifs', value: (metrics?.activeCustomers || 0).toLocaleString(), icon: <Users className="h-4 w-4" /> },
+    { title: 'Produits actifs', value: (metrics?.activeProducts || 0).toLocaleString(), icon: <Package className="h-4 w-4" /> },
+  ];
+
   const renderChart = () => {
-    const data = salesData;
-    
-    switch (chartType) {
-      case 'line':
-        return (
-          <ResponsiveContainer width="100%" height={300}>
-            <LineChart data={data}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="name" />
-              <YAxis />
-              <Tooltip />
-              <Legend />
-              <Line 
-                type="monotone" 
-                dataKey="sales" 
-                stroke="#8884d8" 
-                strokeWidth={2}
-                name="Ventes (€)"
-              />
-              <Line 
-                type="monotone" 
-                dataKey="orders" 
-                stroke="#82ca9d" 
-                strokeWidth={2}
-                name="Commandes"
-              />
-            </LineChart>
-          </ResponsiveContainer>
-        );
-        
-      case 'area':
-        return (
-          <ResponsiveContainer width="100%" height={300}>
-            <AreaChart data={data}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="name" />
-              <YAxis />
-              <Tooltip />
-              <Legend />
-              <Area 
-                type="monotone" 
-                dataKey="sales" 
-                stackId="1"
-                stroke="#8884d8" 
-                fill="#8884d8"
-                name="Ventes (€)"
-              />
-              <Area 
-                type="monotone" 
-                dataKey="orders" 
-                stackId="1"
-                stroke="#82ca9d" 
-                fill="#82ca9d"
-                name="Commandes"
-              />
-            </AreaChart>
-          </ResponsiveContainer>
-        );
-        
-      default:
-        return (
-          <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={data}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="name" />
-              <YAxis />
-              <Tooltip />
-              <Legend />
-              <Bar dataKey="sales" fill="#8884d8" name="Ventes (€)" />
-              <Bar dataKey="orders" fill="#82ca9d" name="Commandes" />
-            </BarChart>
-          </ResponsiveContainer>
-        );
-    }
+    const data = salesData || [];
+    const ChartWrapper = chartType === 'line' ? LineChart : chartType === 'area' ? AreaChart : BarChart;
+    return (
+      <ResponsiveContainer width="100%" height={300}>
+        <ChartWrapper data={data}>
+          <CartesianGrid strokeDasharray="3 3" />
+          <XAxis dataKey="name" />
+          <YAxis />
+          <Tooltip />
+          <Legend />
+          {chartType === 'bar' && <><Bar dataKey="sales" fill="#8884d8" name="Ventes (€)" /><Bar dataKey="orders" fill="#82ca9d" name="Commandes" /></>}
+          {chartType === 'line' && <><Line type="monotone" dataKey="sales" stroke="#8884d8" strokeWidth={2} name="Ventes (€)" /><Line type="monotone" dataKey="orders" stroke="#82ca9d" strokeWidth={2} name="Commandes" /></>}
+          {chartType === 'area' && <><Area type="monotone" dataKey="sales" stackId="1" stroke="#8884d8" fill="#8884d8" name="Ventes (€)" /><Area type="monotone" dataKey="orders" stackId="1" stroke="#82ca9d" fill="#82ca9d" name="Commandes" /></>}
+        </ChartWrapper>
+      </ResponsiveContainer>
+    );
   };
+
+  if (metricsLoading) {
+    return <div className="flex justify-center items-center h-64"><Loader2 className="h-8 w-8 animate-spin text-muted-foreground" /></div>;
+  }
 
   return (
     <div className={cn("space-y-4 sm:space-y-6", className)}>
-      {/* Header */}
       <div className="flex flex-col gap-3 sm:gap-4">
         <div>
           <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold">Analytics</h1>
-          <p className="text-xs sm:text-sm text-muted-foreground">
-            Suivez les performances de votre business
-          </p>
+          <p className="text-xs sm:text-sm text-muted-foreground">Suivez les performances de votre business</p>
         </div>
-        
         <div className="flex flex-wrap gap-2">
           <Select value={timeRange} onValueChange={onTimeRangeChange}>
-            <SelectTrigger className="w-[110px] sm:w-32">
-              <SelectValue />
-            </SelectTrigger>
+            <SelectTrigger className="w-[110px] sm:w-32"><SelectValue /></SelectTrigger>
             <SelectContent>
               <SelectItem value="7d">7 jours</SelectItem>
               <SelectItem value="30d">30 jours</SelectItem>
@@ -232,28 +161,20 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
               <SelectItem value="1y">1 an</SelectItem>
             </SelectContent>
           </Select>
-          
-          <Button variant="outline" size="sm">
-            <Download className="h-4 w-4 sm:mr-2" />
-            <span className="hidden sm:inline">Exporter</span>
-          </Button>
+          <Button variant="outline" size="sm"><Download className="h-4 w-4 sm:mr-2" /><span className="hidden sm:inline">Exporter</span></Button>
         </div>
       </div>
 
-      {/* Metrics Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4">
-        {mockMetrics.map((metric, index) => (
+        {metricCards.map((metric, index) => (
           <Card key={index}>
             <CardContent className="p-3 sm:p-4 lg:p-6">
               <div className="flex items-start justify-between gap-2">
                 <div className="space-y-1 sm:space-y-2 min-w-0">
                   <p className="text-[10px] sm:text-xs lg:text-sm text-muted-foreground truncate">{metric.title}</p>
                   <p className="text-base sm:text-lg lg:text-2xl font-bold truncate">{metric.value}</p>
-                  {formatChange(metric.change)}
                 </div>
-                <div className="p-1.5 sm:p-2 bg-primary/10 rounded-lg flex-shrink-0">
-                  {metric.icon}
-                </div>
+                <div className="p-1.5 sm:p-2 bg-primary/10 rounded-lg flex-shrink-0">{metric.icon}</div>
               </div>
             </CardContent>
           </Card>
@@ -265,7 +186,6 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
           <TabsTrigger value="overview" className="text-xs sm:text-sm">Vue d'ensemble</TabsTrigger>
           <TabsTrigger value="sales" className="text-xs sm:text-sm">Ventes</TabsTrigger>
           <TabsTrigger value="products" className="text-xs sm:text-sm">Produits</TabsTrigger>
-          <TabsTrigger value="traffic" className="text-xs sm:text-sm">Trafic</TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="space-y-6">
@@ -273,82 +193,39 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
             <CardHeader>
               <div className="flex items-center justify-between">
                 <CardTitle>Tendances des ventes</CardTitle>
-                <div className="flex gap-2">
-                  <Select value={chartType} onValueChange={(value: any) => setChartType(value)}>
-                    <SelectTrigger className="w-32">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="bar">Barres</SelectItem>
-                      <SelectItem value="line">Lignes</SelectItem>
-                      <SelectItem value="area">Aires</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
+                <Select value={chartType} onValueChange={(v: any) => setChartType(v)}>
+                  <SelectTrigger className="w-32"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="bar">Barres</SelectItem>
+                    <SelectItem value="line">Lignes</SelectItem>
+                    <SelectItem value="area">Aires</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             </CardHeader>
-            <CardContent>
-              {renderChart()}
-            </CardContent>
+            <CardContent>{renderChart()}</CardContent>
           </Card>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
             <Card>
-              <CardHeader>
-                <CardTitle>Répartition par catégorie</CardTitle>
-              </CardHeader>
+              <CardHeader><CardTitle>Répartition par catégorie</CardTitle></CardHeader>
               <CardContent>
-                <ResponsiveContainer width="100%" height={250}>
-                  <PieChart>
-                    <Pie
-                      data={productData}
-                      cx="50%"
-                      cy="50%"
-                      labelLine={false}
-                      label={({ name, percent }: any) => `${name} ${(percent * 100).toFixed(0)}%`}
-                      outerRadius={80}
-                      fill="#8884d8"
-                      dataKey="value"
-                    >
-                      {productData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={entry.color} />
-                      ))}
-                    </Pie>
-                    <Tooltip />
-                  </PieChart>
-                </ResponsiveContainer>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Trafic hebdomadaire</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <ResponsiveContainer width="100%" height={250}>
-                  <AreaChart data={trafficData}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="name" />
-                    <YAxis />
-                    <Tooltip />
-                    <Area 
-                      type="monotone" 
-                      dataKey="visits" 
-                      stroke="#8884d8" 
-                      fill="#8884d8"
-                      fillOpacity={0.6}
-                      name="Visites"
-                    />
-                    <Area 
-                      type="monotone" 
-                      dataKey="unique" 
-                      stroke="#82ca9d" 
-                      fill="#82ca9d"
-                      fillOpacity={0.6}
-                      name="Visiteurs uniques"
-                    />
-                  </AreaChart>
-                </ResponsiveContainer>
+                {(productData?.length || 0) > 0 ? (
+                  <ResponsiveContainer width="100%" height={250}>
+                    <PieChart>
+                      <Pie data={productData} cx="50%" cy="50%" labelLine={false}
+                        label={({ name, percent }: any) => `${name} ${(percent * 100).toFixed(0)}%`}
+                        outerRadius={80} fill="#8884d8" dataKey="value">
+                        {(productData || []).map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={entry.color} />
+                        ))}
+                      </Pie>
+                      <Tooltip />
+                    </PieChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <p className="text-center text-muted-foreground py-8">Aucune donnée de catégorie</p>
+                )}
               </CardContent>
             </Card>
           </div>
@@ -356,24 +233,12 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
 
         <TabsContent value="sales">
           <Card>
-            <CardHeader>
-              <CardTitle>Détails des ventes</CardTitle>
-            </CardHeader>
+            <CardHeader><CardTitle>Détails des ventes</CardTitle></CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={400}>
-                <LineChart data={salesData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="name" />
-                  <YAxis />
-                  <Tooltip />
-                  <Legend />
-                  <Line 
-                    type="monotone" 
-                    dataKey="sales" 
-                    stroke="#8884d8" 
-                    strokeWidth={3}
-                    name="Ventes (€)"
-                  />
+                <LineChart data={salesData || []}>
+                  <CartesianGrid strokeDasharray="3 3" /><XAxis dataKey="name" /><YAxis /><Tooltip /><Legend />
+                  <Line type="monotone" dataKey="sales" stroke="#8884d8" strokeWidth={3} name="Ventes (€)" />
                 </LineChart>
               </ResponsiveContainer>
             </CardContent>
@@ -382,88 +247,22 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
 
         <TabsContent value="products">
           <Card>
-            <CardHeader>
-              <CardTitle>Top produits</CardTitle>
-            </CardHeader>
+            <CardHeader><CardTitle>Top produits</CardTitle></CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {[
-                  { name: 'iPhone 15 Pro', sales: 1234, revenue: '€48,960' },
-                  { name: 'MacBook Air M2', sales: 567, revenue: '€34,020' },
-                  { name: 'AirPods Pro', sales: 890, revenue: '€22,250' },
-                  { name: 'iPad Air', sales: 432, revenue: '€17,280' }
-                ].map((product, index) => (
+                {(topProducts || []).length === 0 && <p className="text-center text-muted-foreground py-8">Aucune donnée de vente</p>}
+                {(topProducts || []).map((product, index) => (
                   <div key={index} className="flex items-center justify-between p-4 border rounded-lg">
                     <div>
                       <h4 className="font-medium">{product.name}</h4>
                       <p className="text-sm text-muted-foreground">{product.sales} ventes</p>
                     </div>
                     <div className="text-right">
-                      <div className="font-bold">{product.revenue}</div>
+                      <div className="font-bold">€{product.revenue.toLocaleString('fr-FR', { minimumFractionDigits: 2 })}</div>
                       <Badge variant="secondary">{index + 1}</Badge>
                     </div>
                   </div>
                 ))}
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="traffic">
-          <Card>
-            <CardHeader>
-              <CardTitle>Analyse du trafic</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-6">
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4">
-                  <Card>
-                    <CardContent className="p-4">
-                      <div className="flex items-center gap-2">
-                        <Eye className="h-4 w-4 text-blue-600" />
-                        <div>
-                          <div className="text-2xl font-bold">12,453</div>
-                          <p className="text-sm text-muted-foreground">Vues de page</p>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                  <Card>
-                    <CardContent className="p-4">
-                      <div className="flex items-center gap-2">
-                        <Users className="h-4 w-4 text-green-600" />
-                        <div>
-                          <div className="text-2xl font-bold">8,492</div>
-                          <p className="text-sm text-muted-foreground">Visiteurs uniques</p>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                  <Card>
-                    <CardContent className="p-4">
-                      <div className="text-2xl font-bold">42%</div>
-                      <p className="text-sm text-muted-foreground">Taux de rebond</p>
-                    </CardContent>
-                  </Card>
-                  <Card>
-                    <CardContent className="p-4">
-                      <div className="text-2xl font-bold">2m 34s</div>
-                      <p className="text-sm text-muted-foreground">Temps moyen</p>
-                    </CardContent>
-                  </Card>
-                </div>
-                
-                <ResponsiveContainer width="100%" height={300}>
-                  <BarChart data={trafficData}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="name" />
-                    <YAxis />
-                    <Tooltip />
-                    <Legend />
-                    <Bar dataKey="visits" fill="#8884d8" name="Visites" />
-                    <Bar dataKey="unique" fill="#82ca9d" name="Visiteurs uniques" />
-                  </BarChart>
-                </ResponsiveContainer>
               </div>
             </CardContent>
           </Card>
