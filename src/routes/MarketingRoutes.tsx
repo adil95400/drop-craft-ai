@@ -8,6 +8,7 @@ import { lazy } from 'react';
 // Marketing - Using consolidated CrmPage as main marketing page
 const CrmPage = lazy(() => import('@/pages/CrmPage'));
 const PromotionsAutomationPage = lazy(() => import('@/pages/PromotionsAutomationPage'));
+const MarketingAutomationPage = lazy(() => import('@/pages/marketing/MarketingAutomationPage'));
 
 // SEO - Use SEOManagerPage only
 const SEOManagerPage = lazy(() => import('@/pages/SEOManagerPage'));
@@ -71,6 +72,7 @@ export function MarketingRoutes() {
       <Route path="social-commerce" element={<SocialCommercePage />} />
       <Route path="creative-studio" element={<CreativeStudioPage />} />
       <Route path="content-generation" element={<ContentGenerationPage />} />
+      <Route path="automation" element={<MarketingAutomationPage />} />
       
       {/* SEO Tools */}
       <Route path="seo/keywords" element={<KeywordResearch />} />
