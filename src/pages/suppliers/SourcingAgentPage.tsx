@@ -1,3 +1,6 @@
+/**
+ * Sourcing Agent Page - Real data from support_tickets for sourcing requests
+ */
 import { useState } from 'react';
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -7,19 +10,17 @@ import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Bot, Send, Clock, CheckCircle2, Package, DollarSign, FileText, Star, MessageSquare } from 'lucide-react';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Bot, Send, Clock, Package, DollarSign, FileText, Star, MessageSquare } from 'lucide-react';
 import { toast } from 'sonner';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
 
-const mockQuotes = [
-  { id: 'QR-001', product: 'Écouteurs Bluetooth TWS', status: 'completed', suppliers: 5, bestPrice: '3,20 €', moq: 100, date: '2026-02-10' },
-  { id: 'QR-002', product: 'Coque iPhone 16 Pro', status: 'in_progress', suppliers: 3, bestPrice: '-', moq: 200, date: '2026-02-11' },
-  { id: 'QR-003', product: 'Lampe LED USB', status: 'pending', suppliers: 0, bestPrice: '-', moq: 50, date: '2026-02-11' },
-];
-
-const statusMap: Record<string, { label: string; color: string }> = {
-  pending: { label: 'En attente', color: 'bg-yellow-100 text-yellow-800' },
-  in_progress: { label: 'En cours', color: 'bg-blue-100 text-blue-800' },
-  completed: { label: 'Terminé', color: 'bg-green-100 text-green-800' },
+const statusMap: Record<string, { label: string; variant: 'default' | 'secondary' | 'outline' }> = {
+  open: { label: 'En attente', variant: 'secondary' },
+  in_progress: { label: 'En cours', variant: 'default' },
+  resolved: { label: 'Terminé', variant: 'outline' },
 };
 
 export default function SourcingAgentPage() {
@@ -27,35 +28,63 @@ export default function SourcingAgentPage() {
   const [description, setDescription] = useState('');
   const [quantity, setQuantity] = useState('');
   const [budget, setBudget] = useState('');
+  const [priority, setPriority] = useState('normal');
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
 
-  const handleSubmit = () => {
+  const { data: quotes = [], isLoading } = useQuery({
+    queryKey: ['sourcing-quotes', user?.id],
+    queryFn: async () => {
+      if (!user?.id) return [];
+      const { data } = await supabase
+        .from('support_tickets')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('category', 'sourcing')
+        .order('created_at', { ascending: false })
+        .limit(20);
+      return data || [];
+    },
+    enabled: !!user?.id,
+  });
+
+  const handleSubmit = async () => {
     if (!productName.trim()) {
       toast.error('Veuillez entrer un nom de produit');
       return;
     }
-    toast.success('Demande de sourcing soumise !', {
-      description: `Notre agent IA va rechercher les meilleurs fournisseurs pour "${productName}".`,
-    });
-    setProductName('');
-    setDescription('');
-    setQuantity('');
-    setBudget('');
+    try {
+      await supabase.from('support_tickets').insert({
+        user_id: user?.id!,
+        subject: `Sourcing: ${productName}`,
+        message: `Produit: ${productName}\nQuantité: ${quantity || 'Non spécifiée'}\nBudget max: ${budget || 'Non spécifié'}\nPriorité: ${priority}\n\n${description}`,
+        category: 'sourcing',
+        priority: priority === 'urgent' ? 'urgent' : priority === 'high' ? 'high' : 'medium',
+        status: 'open',
+      });
+      toast.success('Demande de sourcing soumise !', {
+        description: `Notre agent IA va rechercher les meilleurs fournisseurs pour "${productName}".`,
+      });
+      setProductName('');
+      setDescription('');
+      setQuantity('');
+      setBudget('');
+      queryClient.invalidateQueries({ queryKey: ['sourcing-quotes'] });
+    } catch {
+      toast.error('Erreur lors de la soumission');
+    }
   };
 
   return (
     <ChannablePageWrapper
       title="Agent de Sourcing IA"
       description="Trouvez automatiquement les meilleurs fournisseurs et prix grâce à notre agent IA"
-      actions={
-        <Badge variant="outline" className="gap-1">
-          <Bot className="h-3 w-3" /> Agent automatisé
-        </Badge>
-      }
+      actions={<Badge variant="outline" className="gap-1"><Bot className="h-3 w-3" /> Agent automatisé</Badge>}
     >
       <Tabs defaultValue="new" className="space-y-4">
         <TabsList>
           <TabsTrigger value="new" className="gap-1"><Send className="h-3 w-3" /> Nouvelle demande</TabsTrigger>
-          <TabsTrigger value="history" className="gap-1"><FileText className="h-3 w-3" /> Historique</TabsTrigger>
+          <TabsTrigger value="history" className="gap-1"><FileText className="h-3 w-3" /> Historique ({quotes.length})</TabsTrigger>
         </TabsList>
 
         <TabsContent value="new" className="space-y-4">
@@ -78,7 +107,7 @@ export default function SourcingAgentPage() {
               </div>
               <div className="space-y-2">
                 <label className="text-sm font-medium">Description détaillée</label>
-                <Textarea placeholder="Décrivez les spécifications, matériaux, couleurs, certifications requises..." value={description} onChange={(e) => setDescription(e.target.value)} rows={3} />
+                <Textarea placeholder="Décrivez les spécifications, matériaux, couleurs..." value={description} onChange={(e) => setDescription(e.target.value)} rows={3} />
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
@@ -87,7 +116,7 @@ export default function SourcingAgentPage() {
                 </div>
                 <div className="space-y-2">
                   <label className="text-sm font-medium">Priorité</label>
-                  <Select defaultValue="normal">
+                  <Select value={priority} onValueChange={setPriority}>
                     <SelectTrigger><SelectValue /></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="low">Basse</SelectItem>
@@ -106,32 +135,39 @@ export default function SourcingAgentPage() {
         </TabsContent>
 
         <TabsContent value="history" className="space-y-3">
-          {mockQuotes.map((q) => (
-            <Card key={q.id}>
-              <CardContent className="pt-4">
-                <div className="flex items-center justify-between flex-wrap gap-3">
-                  <div className="flex items-center gap-3">
-                    <Badge variant="outline">{q.id}</Badge>
-                    <span className="font-medium text-sm">{q.product}</span>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <Badge className={statusMap[q.status]?.color}>{statusMap[q.status]?.label}</Badge>
-                    {q.status === 'completed' && (
-                      <div className="flex items-center gap-4 text-sm">
-                        <span className="flex items-center gap-1"><Star className="h-3 w-3 text-yellow-500" /> {q.suppliers} fournisseurs</span>
-                        <span className="flex items-center gap-1"><DollarSign className="h-3 w-3 text-green-500" /> Best: {q.bestPrice}</span>
-                        <span className="flex items-center gap-1"><Package className="h-3 w-3" /> MOQ: {q.moq}</span>
-                      </div>
-                    )}
-                    <span className="text-xs text-muted-foreground flex items-center gap-1"><Clock className="h-3 w-3" />{q.date}</span>
-                    <Button variant="outline" size="sm">
-                      <MessageSquare className="h-3 w-3 mr-1" /> Détails
-                    </Button>
-                  </div>
-                </div>
-              </CardContent>
+          {isLoading ? (
+            [1,2,3].map(i => <Skeleton key={i} className="h-16 rounded-xl" />)
+          ) : quotes.length === 0 ? (
+            <Card className="p-12 text-center">
+              <FileText className="h-12 w-12 mx-auto text-muted-foreground mb-3" />
+              <p className="text-muted-foreground">Aucune demande de sourcing</p>
             </Card>
-          ))}
+          ) : (
+            quotes.map((q: any) => (
+              <Card key={q.id}>
+                <CardContent className="pt-4">
+                  <div className="flex items-center justify-between flex-wrap gap-3">
+                    <div className="flex items-center gap-3">
+                      <Badge variant="outline">{q.id.slice(0, 8)}</Badge>
+                      <span className="font-medium text-sm">{q.subject}</span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <Badge variant={statusMap[q.status]?.variant || 'outline'}>
+                        {statusMap[q.status]?.label || q.status}
+                      </Badge>
+                      <span className="text-xs text-muted-foreground flex items-center gap-1">
+                        <Clock className="h-3 w-3" />
+                        {new Date(q.created_at).toLocaleDateString('fr-FR')}
+                      </span>
+                      <Button variant="outline" size="sm">
+                        <MessageSquare className="h-3 w-3 mr-1" /> Détails
+                      </Button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))
+          )}
         </TabsContent>
       </Tabs>
     </ChannablePageWrapper>
