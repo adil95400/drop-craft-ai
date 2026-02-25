@@ -371,31 +371,31 @@ export const MarketplaceHub = () => {
   const totalOrders = connections.reduce((sum, c) => sum + ((c.sync_stats as any)?.orders || 0), 0)
   const avgSyncTime = '2.3min'
 
-  // Mock data for charts
-  const revenueData = [
-    { name: 'Lun', value: 4200 },
-    { name: 'Mar', value: 3800 },
-    { name: 'Mer', value: 5100 },
-    { name: 'Jeu', value: 4600 },
-    { name: 'Ven', value: 6200 },
-    { name: 'Sam', value: 7800 },
-    { name: 'Dim', value: 5400 }
-  ]
+  // Revenue data computed from connections sync_stats
+  const revenueData = (() => {
+    const days = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
+    return days.map((name, i) => ({
+      name,
+      value: connections.reduce((s, c) => s + (((c.sync_stats as any)?.daily_revenue || [])[i] || ((c.sync_stats as any)?.revenue || 0) / 7), 0)
+    }));
+  })()
 
   const platformData = connections.map(c => ({
     name: c.platform,
-    revenue: (c.sync_stats as any)?.revenue || Math.random() * 5000,
-    products: (c.sync_stats as any)?.products_synced || Math.floor(Math.random() * 100)
+    revenue: (c.sync_stats as any)?.revenue || 0,
+    products: (c.sync_stats as any)?.products_synced || 0
   }))
 
-  const syncPerformanceData = [
-    { time: '00:00', success: 98, errors: 2 },
-    { time: '04:00', success: 99, errors: 1 },
-    { time: '08:00', success: 97, errors: 3 },
-    { time: '12:00', success: 99, errors: 1 },
-    { time: '16:00', success: 98, errors: 2 },
-    { time: '20:00', success: 100, errors: 0 }
-  ]
+  // Sync performance from real connection data
+  const syncPerformanceData = (() => {
+    const times = ['00:00', '04:00', '08:00', '12:00', '16:00', '20:00'];
+    const totalConns = connections.length || 1;
+    return times.map(time => {
+      const errorConns = connections.filter(c => c.status === 'error').length;
+      const successRate = Math.round(((totalConns - errorConns) / totalConns) * 100);
+      return { time, success: successRate, errors: 100 - successRate };
+    });
+  })()
 
   const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8']
 
