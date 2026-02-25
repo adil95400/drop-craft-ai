@@ -1,14 +1,14 @@
 /**
- * Routes Analytics - Reports, Intelligence, Insights
- * Module complet avec données réelles et BI avancée
- * Consolidé v6.0 - Nettoyage fichiers orphelins
+ * Routes Analytics - Consolidé S2
+ * Pages redondantes fusionnées, obsolètes redirigées
  */
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { lazy } from 'react';
 
-// Analytics
+// Core Analytics (tabbed hub)
 const AdvancedAnalyticsPage = lazy(() => import('@/pages/AdvancedAnalyticsPage'));
-const PredictiveAnalyticsPage = lazy(() => import('@/pages/PredictiveAnalyticsPage'));
+
+// Predictive
 const AnalyticsPredictivePage = lazy(() => import('@/pages/analytics/AnalyticsPredictivePage'));
 
 // Competitive
@@ -17,18 +17,16 @@ const CompetitorAnalysisPage = lazy(() => import('@/pages/CompetitorAnalysisPage
 // Reports
 const Reports = lazy(() => import('@/pages/Reports'));
 const ProfitDashboard = lazy(() => import('@/pages/analytics/ProfitDashboard'));
+const ScheduledReportsPage = lazy(() => import('@/pages/analytics/ScheduledReportsPage'));
 
-// Advanced Analytics
+// Segmentation
 const CustomerSegmentationPage = lazy(() => import('@/pages/CustomerSegmentationPage'));
-const AdvancedAnalyticsDashboardPage = lazy(() => import('@/pages/analytics/AdvancedAnalyticsPage'));
 
-// Real Data Analytics
+// Real Data & Forecasting
 const RealDataAnalyticsPage = lazy(() => import('@/pages/analytics/RealDataAnalyticsPage'));
-
-// Revenue Forecasting
 const RevenueForecastingPage = lazy(() => import('@/pages/analytics/RevenueForecastingPage'));
 
-// Interactive Analytics (Sprint 10)
+// Interactive (Sprint 10)
 const InteractiveAnalyticsPage = lazy(() => import('@/pages/analytics/InteractiveAnalyticsPage'));
 
 // BI Advanced (Sprint 17)
@@ -37,64 +35,53 @@ const BIAdvancedDashboardPage = lazy(() => import('@/pages/analytics/BIAdvancedD
 // Performance (Sprint 18)
 const PerformanceDashboardPage = lazy(() => import('@/pages/analytics/PerformanceDashboardPage'));
 
-// Scheduled Reports
-const ScheduledReportsPage = lazy(() => import('@/pages/analytics/ScheduledReportsPage'));
-
 export function AnalyticsRoutes() {
   return (
     <Routes>
-      {/* Analytics Overview */}
+      {/* Main hub */}
       <Route index element={<AdvancedAnalyticsPage />} />
-      <Route path="unified" element={<AdvancedAnalyticsPage />} />
-      <Route path="studio" element={<AdvancedAnalyticsPage />} />
       <Route path="predictive" element={<AnalyticsPredictivePage />} />
-      
-      {/* Real Data Analytics */}
       <Route path="real-data" element={<RealDataAnalyticsPage />} />
       <Route path="bi" element={<BIAdvancedDashboardPage />} />
-      
-      {/* Intelligence - Redirect to predictive */}
-      <Route path="ai-intelligence" element={<PredictiveAnalyticsPage />} />
-      <Route path="customer-intelligence" element={<PredictiveAnalyticsPage />} />
-      <Route path="global-intelligence" element={<PredictiveAnalyticsPage />} />
-      
-      {/* Competitive Analysis */}
+
+      {/* Competitive */}
       <Route path="competitive" element={<CompetitorAnalysisPage />} />
-      <Route path="competitor-analysis" element={<CompetitorAnalysisPage />} />
-      <Route path="competitive-comparison" element={<CompetitorAnalysisPage />} />
-      <Route path="price-monitoring" element={<Navigate to="/pricing-manager/monitoring" replace />} />
-      
+
       {/* Reports */}
       <Route path="reports" element={<Reports />} />
       <Route path="scheduled-reports" element={<ScheduledReportsPage />} />
       <Route path="profit-analytics" element={<ProfitDashboard />} />
-      
-      {/* Advanced Analytics */}
-      <Route path="advanced" element={<AdvancedAnalyticsDashboardPage />} />
-      <Route path="business-intelligence" element={<AdvancedAnalyticsPage />} />
-      <Route path="customer-segmentation" element={<CustomerSegmentationPage />} />
-      <Route path="product-intelligence" element={<PredictiveAnalyticsPage />} />
-      <Route path="advanced-dashboard" element={<AdvancedAnalyticsDashboardPage />} />
-      
-      {/* Revenue Forecasting */}
-      <Route path="forecasting" element={<RevenueForecastingPage />} />
-      <Route path="revenue-forecast" element={<RevenueForecastingPage />} />
-      <Route path="projections" element={<RevenueForecastingPage />} />
-      
-      {/* Interactive Analytics (Sprint 10) */}
-      <Route path="interactive" element={<InteractiveAnalyticsPage />} />
-      
-      {/* BI Advanced (Sprint 17) */}
-      <Route path="bi-advanced" element={<BIAdvancedDashboardPage />} />
-      <Route path="cohorts" element={<BIAdvancedDashboardPage />} />
-      <Route path="smart-alerts" element={<BIAdvancedDashboardPage />} />
-      
-      {/* Performance (Sprint 18) */}
-      <Route path="performance" element={<PerformanceDashboardPage />} />
-      <Route path="monitoring-perf" element={<PerformanceDashboardPage />} />
 
-      {/* Legacy redirects */}
-      <Route path="ultra-pro" element={<Navigate to="/analytics/advanced" replace />} />
+      {/* Segmentation & Forecasting */}
+      <Route path="customer-segmentation" element={<CustomerSegmentationPage />} />
+      <Route path="forecasting" element={<RevenueForecastingPage />} />
+
+      {/* Interactive & BI */}
+      <Route path="interactive" element={<InteractiveAnalyticsPage />} />
+      <Route path="bi-advanced" element={<BIAdvancedDashboardPage />} />
+
+      {/* Performance */}
+      <Route path="performance" element={<PerformanceDashboardPage />} />
+
+      {/* === Redirects: merged/obsolete routes === */}
+      <Route path="unified" element={<Navigate to="/analytics" replace />} />
+      <Route path="studio" element={<Navigate to="/analytics" replace />} />
+      <Route path="advanced" element={<Navigate to="/analytics" replace />} />
+      <Route path="advanced-dashboard" element={<Navigate to="/analytics" replace />} />
+      <Route path="business-intelligence" element={<Navigate to="/analytics" replace />} />
+      <Route path="ultra-pro" element={<Navigate to="/analytics" replace />} />
+      <Route path="ai-intelligence" element={<Navigate to="/analytics/predictive" replace />} />
+      <Route path="customer-intelligence" element={<Navigate to="/analytics/predictive" replace />} />
+      <Route path="global-intelligence" element={<Navigate to="/analytics/predictive" replace />} />
+      <Route path="product-intelligence" element={<Navigate to="/analytics/predictive" replace />} />
+      <Route path="competitor-analysis" element={<Navigate to="/analytics/competitive" replace />} />
+      <Route path="competitive-comparison" element={<Navigate to="/analytics/competitive" replace />} />
+      <Route path="price-monitoring" element={<Navigate to="/pricing-manager/monitoring" replace />} />
+      <Route path="revenue-forecast" element={<Navigate to="/analytics/forecasting" replace />} />
+      <Route path="projections" element={<Navigate to="/analytics/forecasting" replace />} />
+      <Route path="cohorts" element={<Navigate to="/analytics/bi-advanced" replace />} />
+      <Route path="smart-alerts" element={<Navigate to="/analytics/bi-advanced" replace />} />
+      <Route path="monitoring-perf" element={<Navigate to="/analytics/performance" replace />} />
     </Routes>
   );
 }

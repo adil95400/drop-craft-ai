@@ -10,13 +10,14 @@ import OnboardingStepPlatform from '@/components/onboarding/OnboardingStepPlatfo
 import OnboardingStepImport from '@/components/onboarding/OnboardingStepImport';
 import OnboardingStepComplete from '@/components/onboarding/OnboardingStepComplete';
 import { Progress } from '@/components/ui/progress';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Helmet } from 'react-helmet-async';
 
 const STEPS = [
-  { id: 1, label: 'Bienvenue' },
-  { id: 2, label: 'Plateforme' },
-  { id: 3, label: 'Import' },
-  { id: 4, label: 'Terminé' },
+  { id: 1, label: 'Bienvenue', tooltip: 'Nommez votre boutique et choisissez votre type d\'activité' },
+  { id: 2, label: 'Plateforme', tooltip: 'Connectez votre boutique Shopify, WooCommerce ou autre' },
+  { id: 3, label: 'Import', tooltip: 'Choisissez comment importer vos premiers produits' },
+  { id: 4, label: 'Terminé', tooltip: 'Récapitulatif et accès à votre tableau de bord' },
 ];
 
 export default function OnboardingWizardPage() {
@@ -67,22 +68,30 @@ export default function OnboardingWizardPage() {
               </span>
             </div>
             <Progress value={progressPercent} className="h-2" />
-            <div className="flex justify-between mt-2">
-              {STEPS.map((step) => (
-                <span
-                  key={step.id}
-                  className={`text-xs ${
-                    step.id === currentStep
-                      ? 'text-primary font-medium'
-                      : completedSteps.includes(step.id)
-                      ? 'text-primary/60'
-                      : 'text-muted-foreground'
-                  }`}
-                >
-                  {step.label}
-                </span>
-              ))}
-            </div>
+            <TooltipProvider delayDuration={200}>
+              <div className="flex justify-between mt-2">
+                {STEPS.map((step) => (
+                  <Tooltip key={step.id}>
+                    <TooltipTrigger asChild>
+                      <span
+                        className={`text-xs cursor-default ${
+                          step.id === currentStep
+                            ? 'text-primary font-medium'
+                            : completedSteps.includes(step.id)
+                            ? 'text-primary/60'
+                            : 'text-muted-foreground'
+                        }`}
+                      >
+                        {step.label}
+                      </span>
+                    </TooltipTrigger>
+                    <TooltipContent side="bottom" className="text-xs max-w-[200px]">
+                      {step.tooltip}
+                    </TooltipContent>
+                  </Tooltip>
+                ))}
+              </div>
+            </TooltipProvider>
           </div>
         </div>
 
