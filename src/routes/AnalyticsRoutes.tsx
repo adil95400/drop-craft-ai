@@ -47,7 +47,7 @@ export function AnalyticsRoutes() {
       
       {/* Real Data Analytics */}
       <Route path="real-data" element={<RealDataAnalyticsPage />} />
-      <Route path="bi" element={<AdvancedAnalyticsPage />} />
+      <Route path="bi" element={<BIAdvancedDashboardPage />} />
       
       {/* Intelligence - Redirect to predictive */}
       <Route path="ai-intelligence" element={<PredictiveAnalyticsPage />} />

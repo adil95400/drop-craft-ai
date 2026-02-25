@@ -24,14 +24,14 @@ Tous les modules critiques utilisent des données réelles.
 
 ### 1.1 Marketing Automation Hub
 **Routes existantes** : `/marketing/*` — enrichir :
-- [ ] `/marketing/automation` — Workflows marketing automatisés (séquences email, trigger-based)
+- [x] `/marketing/automation` — Workflows marketing automatisés (séquences email, trigger-based) ✅
 - [ ] `/marketing/calendar` — Calendrier marketing interactif (drag & drop, vue mois/semaine)
 - [ ] `/marketing/content-generation` — Templates IA (Gemini), preview live, bulk generation
 - [ ] `/marketing/ab-testing` — Dashboard résultats A/B avec significance statistique
 
 ### 1.2 AI Assistant & Intelligence Hub
-- [ ] `/ai/assistant` — Chat IA conversationnel (Gemini) : aide stratégique, analyse produits
-- [ ] `/ai/optimization` — Hub d'optimisation IA : descriptions, SEO, images en batch
+- [x] `/ai/assistant` — Chat IA conversationnel (Gemini) ✅
+- [x] `/ai/optimization` — Hub d'optimisation IA : descriptions, SEO, images en batch ✅
 - [ ] `/ai/rewrite` — Réécriture intelligente de fiches produits (ton, style, langue)
 - [ ] `/intelligence/predictions` — Prédictions avancées : demande, stock, tendances
 - [ ] `/intelligence/opportunities` — Détection d'opportunités (marge + vélocité)

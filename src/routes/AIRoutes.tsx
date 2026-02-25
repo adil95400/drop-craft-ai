@@ -13,6 +13,7 @@ const PredictiveAnalyticsPage = lazy(() => import('@/pages/PredictiveAnalyticsPa
 const EnrichmentSnapshotsPage = lazy(() => import('@/pages/ai/EnrichmentSnapshotsPage'));
 const AIAutoActions = lazy(() => import('@/pages/AIAutoActions'));
 const AIAssistantPage = lazy(() => import('@/pages/ai/AIAssistantPage'));
+const AIOptimizationPage = lazy(() => import('@/pages/ai/AIOptimizationPage'));
 
 export function AIRoutes() {
   return (
@@ -21,7 +22,7 @@ export function AIRoutes() {
       <Route index element={<ContentGenerationPage />} />
       
       {/* AI Modules */}
-      <Route path="optimization" element={<PredictiveAnalyticsPage />} />
+      <Route path="optimization" element={<AIOptimizationPage />} />
       <Route path="content" element={<ContentGenerationPage />} />
       <Route path="assistant" element={<AIAssistantPage />} />
       <Route path="catalog" element={<CatalogIntelligencePage />} />
