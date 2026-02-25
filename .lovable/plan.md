@@ -129,7 +129,7 @@ Tous les modules critiques utilisent des données réelles.
 - [ ] Catalogue premium haute marge
 
 ### 4.3 Enterprise
-- [ ] Team Management (invitations, rôles, permissions)
+- [x] Team Management (invitations, rôles, permissions granulaires) ✅
 - [ ] White-Label (logo, couleurs, domaine custom)
 - [ ] API Enterprise + rate limits augmentés
 
