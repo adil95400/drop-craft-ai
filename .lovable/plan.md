@@ -119,7 +119,7 @@ Tous les modules critiques utilisent des données réelles.
 ## 🟢 SPRINT 4 — Intégrations, Enterprise & Mobile (Semaines 9-12)
 
 ### 4.1 Intégrations Marketplace
-- [ ] Amazon, eBay, Etsy, TikTok Shop — Connecteurs API
+- [x] Amazon, eBay, Etsy, TikTok Shop — Connecteurs UI + intégration DB ✅
 - [ ] AliExpress enrichi (auto-order, tracking)
 - [ ] Moteur de règles feed + dynamic pricing (Channable-like)
 

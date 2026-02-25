@@ -1,50 +1,52 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Store, ShoppingBag, TrendingUp, RefreshCw, Globe, BarChart3 } from 'lucide-react';
+import { Store, ShoppingBag, TrendingUp, RefreshCw, Globe, BarChart3, Plug, Unplug } from 'lucide-react';
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
+import { useMarketplaceIntegrations } from '@/hooks/useMarketplaceIntegrations';
+import { MarketplaceConnectDialog } from '@/domains/marketplace/components/MarketplaceConnectDialog';
+import { Skeleton } from '@/components/ui/skeleton';
+import { formatDistanceToNow } from 'date-fns';
+import { fr } from 'date-fns/locale';
+
+const AVAILABLE_PLATFORMS = [
+  { key: 'amazon', name: 'Amazon', type: 'marketplace' },
+  { key: 'ebay', name: 'eBay', type: 'marketplace' },
+  { key: 'etsy', name: 'Etsy', type: 'marketplace' },
+  { key: 'tiktok', name: 'TikTok Shop', type: 'social' },
+  { key: 'shopify', name: 'Shopify', type: 'e-commerce' },
+  { key: 'woocommerce', name: 'WooCommerce', type: 'e-commerce' },
+  { key: 'cdiscount', name: 'Cdiscount', type: 'marketplace' },
+  { key: 'allegro', name: 'Allegro', type: 'marketplace' },
+  { key: 'manomano', name: 'ManoMano', type: 'marketplace' },
+];
 
 const MultiChannelManagementPage: React.FC = () => {
-  const channels = [
-    {
-      id: 1,
-      name: 'Amazon',
-      type: 'marketplace',
-      status: 'connected',
-      products: 234,
-      orders: 156,
-      revenue: 15678,
-    },
-    {
-      id: 2,
-      name: 'eBay',
-      type: 'marketplace',
-      status: 'connected',
-      products: 189,
-      orders: 89,
-      revenue: 8765,
-    },
-    {
-      id: 3,
-      name: 'Facebook Shop',
-      type: 'social',
-      status: 'connected',
-      products: 234,
-      orders: 67,
-      revenue: 5432,
-    },
-    {
-      id: 4,
-      name: 'Google Shopping',
-      type: 'advertising',
-      status: 'not_connected',
-      products: 0,
-      orders: 0,
-      revenue: 0,
-    },
-  ];
+  const { integrations, connected, isLoading, connectPlatform, disconnectPlatform, syncPlatform, isConnecting } = useMarketplaceIntegrations();
+  const [connectDialogOpen, setConnectDialogOpen] = useState(false);
+  const [selectedPlatform, setSelectedPlatform] = useState('');
+
+  const connectedPlatformKeys = new Set(connected.map(i => i.platform));
+  const availableToConnect = AVAILABLE_PLATFORMS.filter(p => !connectedPlatformKeys.has(p.key));
+
+  const handleOpenConnect = (platform: string) => {
+    setSelectedPlatform(platform);
+    setConnectDialogOpen(true);
+  };
+
+  const handleConnect = async (credentials: Record<string, string>) => {
+    await connectPlatform({ platform: selectedPlatform, credentials });
+  };
+
+  if (isLoading) {
+    return (
+      <ChannablePageWrapper title="Gestion Multi-Canal" description="Chargement..." heroImage="integrations" badge={{ label: 'Multi-Canal', icon: Globe }}>
+        <div className="grid gap-4 md:grid-cols-4">{[1,2,3,4].map(i => <Skeleton key={i} className="h-28" />)}</div>
+      </ChannablePageWrapper>
+    );
+  }
 
   return (
     <ChannablePageWrapper
@@ -53,292 +55,198 @@ const MultiChannelManagementPage: React.FC = () => {
       heroImage="integrations"
       badge={{ label: 'Multi-Canal', icon: Globe }}
       actions={
-        <Button size="sm">
-          <Store className="mr-2 h-4 w-4" />
+        <Button size="sm" onClick={() => handleOpenConnect(availableToConnect[0]?.key || 'amazon')}>
+          <Plug className="mr-2 h-4 w-4" />
           Connecter un canal
         </Button>
       }
     >
-
+      {/* Stats */}
       <div className="grid gap-4 md:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Canaux actifs</CardTitle>
+            <CardTitle className="text-sm font-medium">Canaux connectés</CardTitle>
             <Globe className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">8</div>
-            <p className="text-xs text-muted-foreground">3 marketplaces, 5 réseaux sociaux</p>
+            <div className="text-2xl font-bold">{connected.length}</div>
+            <p className="text-xs text-muted-foreground">{integrations.length} total configurés</p>
           </CardContent>
         </Card>
-
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Revenue total</CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium">Marketplaces</CardTitle>
+            <Store className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">€29,875</div>
-            <p className="text-xs text-muted-foreground">Ce mois</p>
+            <div className="text-2xl font-bold">{connected.filter(c => ['amazon','ebay','etsy','cdiscount','allegro','manomano'].includes(c.platform)).length}</div>
           </CardContent>
         </Card>
-
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Commandes</CardTitle>
+            <CardTitle className="text-sm font-medium">E-commerce</CardTitle>
             <ShoppingBag className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">312</div>
-            <p className="text-xs text-muted-foreground">Tous canaux</p>
+            <div className="text-2xl font-bold">{connected.filter(c => ['shopify','woocommerce'].includes(c.platform)).length}</div>
           </CardContent>
         </Card>
-
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Produits listés</CardTitle>
-            <BarChart3 className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium">Social Commerce</CardTitle>
+            <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">657</div>
-            <p className="text-xs text-muted-foreground">Sur tous les canaux</p>
+            <div className="text-2xl font-bold">{connected.filter(c => c.platform === 'tiktok').length}</div>
           </CardContent>
         </Card>
       </div>
 
       <Tabs defaultValue="channels" className="space-y-4">
         <TabsList>
-          <TabsTrigger value="channels">Canaux</TabsTrigger>
+          <TabsTrigger value="channels">Canaux connectés</TabsTrigger>
+          <TabsTrigger value="available">Ajouter un canal</TabsTrigger>
           <TabsTrigger value="sync">Synchronisation</TabsTrigger>
-          <TabsTrigger value="analytics">Analytics</TabsTrigger>
-          <TabsTrigger value="settings">Paramètres</TabsTrigger>
         </TabsList>
 
+        {/* Connected channels */}
         <TabsContent value="channels" className="space-y-4">
-          <div className="grid gap-4 md:grid-cols-2">
-            {channels.map((channel) => (
-              <Card key={channel.id}>
-                <CardHeader>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="p-2 bg-primary/10 rounded-lg">
-                        <Store className="h-5 w-5 text-primary" />
+          {connected.length === 0 ? (
+            <Card>
+              <CardContent className="py-12 text-center">
+                <Store className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+                <h3 className="text-lg font-semibold mb-2">Aucun canal connecté</h3>
+                <p className="text-muted-foreground mb-4">Connectez votre première marketplace pour commencer à vendre</p>
+                <Button onClick={() => handleOpenConnect('amazon')}>
+                  <Plug className="mr-2 h-4 w-4" />
+                  Connecter Amazon
+                </Button>
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="grid gap-4 md:grid-cols-2">
+              {connected.map(integration => (
+                <Card key={integration.id}>
+                  <CardHeader>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="p-2 bg-primary/10 rounded-lg">
+                          <Store className="h-5 w-5 text-primary" />
+                        </div>
+                        <div>
+                          <CardTitle className="text-lg">{integration.platform_name || integration.platform}</CardTitle>
+                          <CardDescription>
+                            {integration.store_url || integration.store_id || 'Connecté'}
+                          </CardDescription>
+                        </div>
                       </div>
-                      <div>
-                        <CardTitle className="text-lg">{channel.name}</CardTitle>
-                        <CardDescription className="capitalize">{channel.type}</CardDescription>
-                      </div>
+                      <Badge>Connecté</Badge>
                     </div>
-                    <Badge variant={channel.status === 'connected' ? 'default' : 'secondary'}>
-                      {channel.status === 'connected' ? 'Connecté' : 'Non connecté'}
-                    </Badge>
-                  </div>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  {channel.status === 'connected' ? (
-                    <>
-                      <div className="grid grid-cols-3 gap-4">
-                        <div>
-                          <div className="text-xl font-bold">{channel.products}</div>
-                          <div className="text-xs text-muted-foreground">Produits</div>
-                        </div>
-                        <div>
-                          <div className="text-xl font-bold">{channel.orders}</div>
-                          <div className="text-xs text-muted-foreground">Commandes</div>
-                        </div>
-                        <div>
-                          <div className="text-xl font-bold">€{channel.revenue}</div>
-                          <div className="text-xs text-muted-foreground">Revenue</div>
-                        </div>
-                      </div>
-                      <div className="flex gap-2">
-                        <Button className="flex-1" variant="outline">
-                          <RefreshCw className="mr-2 h-4 w-4" />
-                          Synchroniser
-                        </Button>
-                        <Button className="flex-1" variant="outline">
-                          Gérer
-                        </Button>
-                      </div>
-                    </>
-                  ) : (
-                    <>
-                      <p className="text-sm text-muted-foreground">
-                        Connectez ce canal pour vendre sur {channel.name}
-                      </p>
-                      <Button className="w-full">Connecter</Button>
-                    </>
-                  )}
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    <div className="text-sm text-muted-foreground">
+                      {integration.last_sync_at ? (
+                        <>Dernière sync : {formatDistanceToNow(new Date(integration.last_sync_at), { addSuffix: true, locale: fr })}</>
+                      ) : (
+                        'Jamais synchronisé'
+                      )}
+                    </div>
+                    <div className="flex gap-2">
+                      <Button className="flex-1" variant="outline" size="sm" onClick={() => syncPlatform(integration.id)}>
+                        <RefreshCw className="mr-2 h-4 w-4" />
+                        Synchroniser
+                      </Button>
+                      <Button variant="destructive" size="sm" onClick={() => disconnectPlatform(integration.id)}>
+                        <Unplug className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
+        </TabsContent>
 
+        {/* Available platforms */}
+        <TabsContent value="available">
           <Card>
             <CardHeader>
-              <CardTitle>Canaux disponibles</CardTitle>
+              <CardTitle>Plateformes disponibles</CardTitle>
               <CardDescription>Étendez votre présence en ligne</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="grid gap-4 md:grid-cols-4">
-                {['Etsy', 'Walmart', 'Pinterest', 'TikTok Shop'].map((platform) => (
-                  <Card key={platform} className="cursor-pointer hover:shadow-lg transition-shadow">
-                    <CardContent className="p-4 text-center">
-                      <div className="h-16 bg-muted rounded-lg mb-3 flex items-center justify-center">
-                        <Store className="h-8 w-8 text-muted-foreground" />
-                      </div>
-                      <h4 className="font-semibold mb-2">{platform}</h4>
-                      <Button size="sm" variant="outline" className="w-full">
-                        Connecter
-                      </Button>
-                    </CardContent>
-                  </Card>
-                ))}
+              <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-4">
+                {AVAILABLE_PLATFORMS.map(platform => {
+                  const isConnected = connectedPlatformKeys.has(platform.key);
+                  return (
+                    <Card key={platform.key} className={`cursor-pointer transition-shadow ${isConnected ? 'opacity-60' : 'hover:shadow-lg'}`}>
+                      <CardContent className="p-4 text-center">
+                        <div className="h-14 bg-muted rounded-lg mb-3 flex items-center justify-center">
+                          <Store className="h-7 w-7 text-muted-foreground" />
+                        </div>
+                        <h4 className="font-semibold mb-1">{platform.name}</h4>
+                        <Badge variant="outline" className="mb-3 text-xs">{platform.type}</Badge>
+                        <Button
+                          size="sm"
+                          variant={isConnected ? 'secondary' : 'outline'}
+                          className="w-full"
+                          disabled={isConnected || isConnecting}
+                          onClick={() => handleOpenConnect(platform.key)}
+                        >
+                          {isConnected ? 'Déjà connecté' : 'Connecter'}
+                        </Button>
+                      </CardContent>
+                    </Card>
+                  );
+                })}
               </div>
             </CardContent>
           </Card>
         </TabsContent>
 
+        {/* Sync settings */}
         <TabsContent value="sync">
           <Card>
             <CardHeader>
               <CardTitle>Synchronisation automatique</CardTitle>
-              <CardDescription>Configurez la synchronisation des données</CardDescription>
+              <CardDescription>Statut de synchronisation de vos canaux connectés</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
-                <div className="p-4 border rounded-lg">
-                  <div className="flex items-center justify-between mb-3">
-                    <h4 className="font-semibold">Synchronisation des stocks</h4>
-                    <Badge variant="default">Actif</Badge>
-                  </div>
-                  <p className="text-sm text-muted-foreground mb-2">
-                    Mise à jour automatique toutes les 15 minutes
-                  </p>
-                  <Button size="sm" variant="outline">
-                    Configurer
-                  </Button>
-                </div>
-
-                <div className="p-4 border rounded-lg">
-                  <div className="flex items-center justify-between mb-3">
-                    <h4 className="font-semibold">Synchronisation des prix</h4>
-                    <Badge variant="default">Actif</Badge>
-                  </div>
-                  <p className="text-sm text-muted-foreground mb-2">
-                    Mise à jour en temps réel des modifications de prix
-                  </p>
-                  <Button size="sm" variant="outline">
-                    Configurer
-                  </Button>
-                </div>
-
-                <div className="p-4 border rounded-lg">
-                  <div className="flex items-center justify-between mb-3">
-                    <h4 className="font-semibold">Import des commandes</h4>
-                    <Badge variant="default">Actif</Badge>
-                  </div>
-                  <p className="text-sm text-muted-foreground mb-2">
-                    Import automatique des nouvelles commandes toutes les 5 minutes
-                  </p>
-                  <Button size="sm" variant="outline">
-                    Configurer
-                  </Button>
-                </div>
-
-                <div className="p-4 border rounded-lg">
-                  <div className="flex items-center justify-between mb-3">
-                    <h4 className="font-semibold">Mise à jour des produits</h4>
-                    <Badge variant="secondary">Inactif</Badge>
-                  </div>
-                  <p className="text-sm text-muted-foreground mb-2">
-                    Synchronisation bidirectionnelle des descriptions et images
-                  </p>
-                  <Button size="sm" variant="outline">
-                    Activer
-                  </Button>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="analytics">
-          <div className="grid gap-4 md:grid-cols-2">
-            <Card>
-              <CardHeader>
-                <CardTitle>Performance par canal</CardTitle>
-                <CardDescription>Revenue et commandes ce mois</CardDescription>
-              </CardHeader>
-              <CardContent>
+              {connected.length === 0 ? (
+                <p className="text-center text-muted-foreground py-6">Connectez un canal pour configurer la synchronisation</p>
+              ) : (
                 <div className="space-y-4">
-                  {channels
-                    .filter((c) => c.status === 'connected')
-                    .map((channel) => (
-                      <div key={channel.id} className="flex items-center justify-between">
-                        <div>
-                          <p className="font-medium">{channel.name}</p>
-                          <p className="text-xs text-muted-foreground">
-                            {channel.orders} commandes
-                          </p>
-                        </div>
-                        <div className="text-right">
-                          <p className="font-semibold">€{channel.revenue}</p>
-                          <p className="text-xs text-muted-foreground">
-                            {((channel.revenue / 29875) * 100).toFixed(1)}%
-                          </p>
-                        </div>
+                  {connected.map(integration => (
+                    <div key={integration.id} className="p-4 border rounded-lg flex items-center justify-between">
+                      <div>
+                        <h4 className="font-semibold">{integration.platform_name}</h4>
+                        <p className="text-sm text-muted-foreground">
+                          Fréquence : {integration.sync_frequency || '15 min'} • Auto-sync : {integration.auto_sync_enabled ? 'Actif' : 'Inactif'}
+                        </p>
                       </div>
-                    ))}
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Taux de conversion</CardTitle>
-                <CardDescription>Par canal de vente</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {channels
-                    .filter((c) => c.status === 'connected')
-                    .map((channel) => (
-                      <div key={channel.id}>
-                        <div className="flex justify-between text-sm mb-1">
-                          <span>{channel.name}</span>
-                          <span className="font-medium">
-                            {(Math.random() * 5 + 1).toFixed(1)}%
-                          </span>
-                        </div>
-                        <div className="h-2 bg-muted rounded-full overflow-hidden">
-                          <div
-                            className="h-full bg-primary"
-                            style={{ width: `${Math.random() * 100}%` }}
-                          />
-                        </div>
+                      <div className="flex items-center gap-2">
+                        <Badge variant={integration.auto_sync_enabled ? 'default' : 'secondary'}>
+                          {integration.auto_sync_enabled ? 'Actif' : 'Inactif'}
+                        </Badge>
+                        <Button size="sm" variant="outline" onClick={() => syncPlatform(integration.id)}>
+                          <RefreshCw className="h-4 w-4" />
+                        </Button>
                       </div>
-                    ))}
+                    </div>
+                  ))}
                 </div>
-              </CardContent>
-            </Card>
-          </div>
-        </TabsContent>
-
-        <TabsContent value="settings">
-          <Card>
-            <CardHeader>
-              <CardTitle>Paramètres multi-canal</CardTitle>
-              <CardDescription>Configuration générale</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground">
-                Paramètres de gestion multi-canal...
-              </p>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
       </Tabs>
+
+      <MarketplaceConnectDialog
+        open={connectDialogOpen}
+        onOpenChange={setConnectDialogOpen}
+        platform={selectedPlatform}
+        onConnect={handleConnect}
+      />
     </ChannablePageWrapper>
   );
 };

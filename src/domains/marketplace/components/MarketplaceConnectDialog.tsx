@@ -127,6 +127,19 @@ const platformConfigs = {
       shop_id: z.string().min(1, 'ID de boutique requis'),
     }),
   },
+  tiktok: {
+    name: 'TikTok Shop',
+    fields: [
+      { name: 'app_key', label: 'App Key', placeholder: 'xxxxx', type: 'text' },
+      { name: 'app_secret', label: 'App Secret', placeholder: 'xxxxx', type: 'password' },
+      { name: 'shop_id', label: 'Shop ID', placeholder: '12345', type: 'text' },
+    ],
+    schema: z.object({
+      app_key: z.string().min(1, 'App Key requis'),
+      app_secret: z.string().min(1, 'App Secret requis'),
+      shop_id: z.string().min(1, 'Shop ID requis'),
+    }),
+  },
 }
 
 export function MarketplaceConnectDialog({
