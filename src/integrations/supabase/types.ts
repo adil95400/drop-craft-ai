@@ -7261,43 +7261,130 @@ export type Database = {
           },
         ]
       }
+      invoice_branding: {
+        Row: {
+          accent_color: string | null
+          bank_details: string | null
+          company_address: string | null
+          company_email: string | null
+          company_name: string
+          company_phone: string | null
+          company_website: string | null
+          created_at: string
+          currency: string | null
+          footer_text: string | null
+          id: string
+          invoice_prefix: string | null
+          logo_url: string | null
+          next_invoice_number: number | null
+          payment_terms: string | null
+          tax_id: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          accent_color?: string | null
+          bank_details?: string | null
+          company_address?: string | null
+          company_email?: string | null
+          company_name?: string
+          company_phone?: string | null
+          company_website?: string | null
+          created_at?: string
+          currency?: string | null
+          footer_text?: string | null
+          id?: string
+          invoice_prefix?: string | null
+          logo_url?: string | null
+          next_invoice_number?: number | null
+          payment_terms?: string | null
+          tax_id?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          accent_color?: string | null
+          bank_details?: string | null
+          company_address?: string | null
+          company_email?: string | null
+          company_name?: string
+          company_phone?: string | null
+          company_website?: string | null
+          created_at?: string
+          currency?: string | null
+          footer_text?: string | null
+          id?: string
+          invoice_prefix?: string | null
+          logo_url?: string | null
+          next_invoice_number?: number | null
+          payment_terms?: string | null
+          tax_id?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       invoice_history: {
         Row: {
           amount: number | null
           created_at: string
+          currency: string | null
+          customer_address: string | null
+          customer_email: string | null
           customer_id: string | null
+          customer_name: string | null
           due_date: string | null
           id: string
           invoice_number: string
+          items: Json | null
           metadata: Json | null
+          notes: string | null
           paid_at: string | null
           status: string | null
+          template_name: string | null
+          total_amount: number | null
           updated_at: string
           user_id: string
         }
         Insert: {
           amount?: number | null
           created_at?: string
+          currency?: string | null
+          customer_address?: string | null
+          customer_email?: string | null
           customer_id?: string | null
+          customer_name?: string | null
           due_date?: string | null
           id?: string
           invoice_number: string
+          items?: Json | null
           metadata?: Json | null
+          notes?: string | null
           paid_at?: string | null
           status?: string | null
+          template_name?: string | null
+          total_amount?: number | null
           updated_at?: string
           user_id: string
         }
         Update: {
           amount?: number | null
           created_at?: string
+          currency?: string | null
+          customer_address?: string | null
+          customer_email?: string | null
           customer_id?: string | null
+          customer_name?: string | null
           due_date?: string | null
           id?: string
           invoice_number?: string
+          items?: Json | null
           metadata?: Json | null
+          notes?: string | null
           paid_at?: string | null
           status?: string | null
+          template_name?: string | null
+          total_amount?: number | null
           updated_at?: string
           user_id?: string
         }
