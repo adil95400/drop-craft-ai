@@ -3,6 +3,7 @@
  * Automation Studio for creating complex workflows
  */
 import { useState, useCallback } from 'react';
+import { Link } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -10,7 +11,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
-import { Zap, Plus, Play, Save, Trash2, ArrowRight, Mail, Bell, Package, ShoppingCart, Clock, GitBranch, CheckCircle2, AlertTriangle, Settings, Workflow } from 'lucide-react';
+import { Zap, Plus, Play, Save, Trash2, ArrowRight, Mail, Bell, Package, ShoppingCart, Clock, GitBranch, CheckCircle2, AlertTriangle, Settings, Workflow, Webhook, Globe, Send, History } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -35,9 +36,12 @@ const TRIGGER_TEMPLATES = [
 
 const ACTION_TEMPLATES = [
   { id: 'send-email', name: 'Envoyer un email', icon: 'Mail', description: 'Notification par email' },
+  { id: 'webhook', name: 'Appel Webhook', icon: 'Webhook', description: 'Envoyer un POST à une URL externe' },
   { id: 'update-stock', name: 'Mettre à jour le stock', icon: 'Package', description: 'Modifier les quantités' },
   { id: 'notify', name: 'Notification in-app', icon: 'Bell', description: 'Alerte dans l\'app' },
   { id: 'reorder', name: 'Réapprovisionnement', icon: 'ShoppingCart', description: 'Commander automatiquement' },
+  { id: 'api-call', name: 'Appel API', icon: 'Globe', description: 'Requête vers un service externe' },
+  { id: 'send-sms', name: 'Envoyer SMS/Push', icon: 'Send', description: 'Notification SMS ou push' },
 ];
 
 const WORKFLOW_TEMPLATES = [
@@ -71,7 +75,7 @@ const WORKFLOW_TEMPLATES = [
 ];
 
 const iconMap: Record<string, any> = {
-  ShoppingCart, AlertTriangle, Package, Clock, Mail, Bell, Zap, GitBranch, Settings,
+  ShoppingCart, AlertTriangle, Package, Clock, Mail, Bell, Zap, GitBranch, Settings, Webhook, Globe, Send,
 };
 
 export default function WorkflowStudioPage() {
@@ -165,9 +169,14 @@ export default function WorkflowStudioPage() {
       heroImage="automation"
       badge={{ label: 'Studio', icon: Workflow }}
       actions={
-        <Button onClick={() => setShowCreate(true)}>
-          <Plus className="h-4 w-4 mr-2" /> Nouveau Workflow
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" asChild>
+            <Link to="/automation/history"><History className="h-4 w-4 mr-2" /> Historique</Link>
+          </Button>
+          <Button onClick={() => setShowCreate(true)}>
+            <Plus className="h-4 w-4 mr-2" /> Nouveau Workflow
+          </Button>
+        </div>
       }
     >
       {/* Templates */}
