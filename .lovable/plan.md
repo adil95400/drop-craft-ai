@@ -130,7 +130,7 @@ Tous les modules critiques utilisent des données réelles.
 
 ### 4.3 Enterprise
 - [x] Team Management (invitations, rôles, permissions granulaires) ✅
-- [ ] White-Label (logo, couleurs, domaine custom)
+- [x] White-Label (logo, couleurs, domaine custom) ✅
 - [x] API Enterprise + rate limits augmentés ✅
 
 ### 4.4 Mobile & PWA

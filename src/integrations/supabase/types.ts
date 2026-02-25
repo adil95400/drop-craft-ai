@@ -16646,6 +16646,66 @@ export type Database = {
         }
         Relationships: []
       }
+      white_label_settings: {
+        Row: {
+          accent_color: string | null
+          brand_name: string | null
+          created_at: string
+          custom_css: string | null
+          custom_domain: string | null
+          custom_login_bg: string | null
+          email_branding: boolean | null
+          favicon_url: string | null
+          font_family: string | null
+          hide_platform_badge: boolean | null
+          id: string
+          logo_url: string | null
+          primary_color: string | null
+          secondary_color: string | null
+          tenant_id: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          accent_color?: string | null
+          brand_name?: string | null
+          created_at?: string
+          custom_css?: string | null
+          custom_domain?: string | null
+          custom_login_bg?: string | null
+          email_branding?: boolean | null
+          favicon_url?: string | null
+          font_family?: string | null
+          hide_platform_badge?: boolean | null
+          id?: string
+          logo_url?: string | null
+          primary_color?: string | null
+          secondary_color?: string | null
+          tenant_id?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          accent_color?: string | null
+          brand_name?: string | null
+          created_at?: string
+          custom_css?: string | null
+          custom_domain?: string | null
+          custom_login_bg?: string | null
+          email_branding?: boolean | null
+          favicon_url?: string | null
+          font_family?: string | null
+          hide_platform_badge?: boolean | null
+          id?: string
+          logo_url?: string | null
+          primary_color?: string | null
+          secondary_color?: string | null
+          tenant_id?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       workflow_executions: {
         Row: {
           completed_at: string | null
