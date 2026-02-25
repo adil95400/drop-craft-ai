@@ -23,6 +23,7 @@ const ChromeExtensionConfigPage = lazy(() => import('@/pages/ChromeExtensionConf
 
 // API - Using existing documentation page
 const APIDocumentationPage = lazy(() => import('@/pages/APIDocumentationPage'));
+const APIEnterprisePage = lazy(() => import('@/pages/api/APIEnterprisePage'));
 
 // Support & Learning - Using SupportMainPage as consolidated support
 const SupportMainPage = lazy(() => import('@/pages/support/SupportMainPage'));
@@ -68,9 +69,10 @@ export function IntegrationRoutes() {
       <Route path="extensions/api" element={<ExtensionAPIPage />} />
       <Route path="extensions/chrome-config" element={<ChromeExtensionConfigPage />} />
       
-      {/* API - Redirect developer to documentation */}
+      {/* API */}
       <Route path="api/developer" element={<APIDocumentationPage />} />
       <Route path="api/documentation" element={<APIDocumentationPage />} />
+      <Route path="api/enterprise" element={<APIEnterprisePage />} />
       
       {/* Support & Learning */}
       <Route path="support" element={<SupportMainPage />} />
