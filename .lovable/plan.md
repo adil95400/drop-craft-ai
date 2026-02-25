@@ -105,7 +105,7 @@ Tous les modules critiques utilisent des données réelles.
 
 ### 3.3 Tests
 - [x] Vitest : hooks critiques (useProducts, useOrders, useAuth) ✅ (6 test suites)
-- [ ] Playwright : parcours critiques (auth, import, commandes)
+- [x] Playwright : parcours critiques (auth, import, commandes) ✅ (smoke suite)
 - [x] CI/CD GitHub Actions (lint → type-check → test → build) ✅ (ci.yml)
 
 ### 3.4 Internationalisation
