@@ -8,18 +8,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
 import { 
-  Package, 
-  Truck, 
-  CheckCircle, 
-  Clock, 
-  AlertCircle, 
-  Settings, 
-  Play, 
-  Pause,
-  RefreshCw,
-  MapPin,
-  Calendar,
-  ExternalLink
+  Package, Truck, CheckCircle, Clock, AlertCircle, Settings, 
+  RefreshCw, MapPin, Calendar, ExternalLink
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -44,7 +34,7 @@ interface TrackingEvent {
 
 interface AutoTrackingSettings {
   enabled: boolean;
-  updateInterval: number; // minutes
+  updateInterval: number;
   carriers: string[];
   notifyCustomers: boolean;
   autoUpdateStatus: boolean;
@@ -74,7 +64,6 @@ export const AutoTrackingManager = () => {
       const interval = setInterval(() => {
         updateAllTrackingInfo();
       }, settings.updateInterval * 60 * 1000);
-
       return () => clearInterval(interval);
     }
   }, [settings.enabled, settings.updateInterval]);
@@ -83,96 +72,79 @@ export const AutoTrackingManager = () => {
     try {
       const { data: ordersData, error } = await supabase
         .from('orders')
-        .select('*')
+        .select('id, order_number, tracking_number, carrier, status, updated_at, customer_id')
         .in('status', ['processing', 'shipped', 'in_transit'])
         .order('created_at', { ascending: false })
         .limit(50);
 
       if (error) throw error;
 
-      const formattedOrders = (ordersData || []).map(order => ({
+      // Fetch customer names for these orders
+      const customerIds = [...new Set((ordersData || []).map(o => o.customer_id).filter(Boolean))]
+      let customerMap: Record<string, string> = {}
+      
+      if (customerIds.length > 0) {
+        const { data: customers } = await supabase
+          .from('customers')
+          .select('id, first_name, last_name')
+          .in('id', customerIds)
+
+        ;(customers || []).forEach(c => {
+          customerMap[c.id] = `${c.first_name || ''} ${c.last_name || ''}`.trim() || 'Client'
+        })
+      }
+
+      // Build tracking events from activity_logs
+      const orderIds = (ordersData || []).map(o => o.id)
+      const { data: logs } = await supabase
+        .from('activity_logs')
+        .select('entity_id, action, description, created_at')
+        .eq('entity_type', 'order')
+        .in('entity_id', orderIds.length > 0 ? orderIds : ['none'])
+        .order('created_at', { ascending: true })
+
+      const eventMap: Record<string, TrackingEvent[]> = {}
+      ;(logs || []).forEach(log => {
+        const eid = log.entity_id || ''
+        if (!eventMap[eid]) eventMap[eid] = []
+        eventMap[eid].push({
+          timestamp: log.created_at || new Date().toISOString(),
+          status: log.action,
+          location: '',
+          description: log.description || log.action
+        })
+      })
+
+      const formattedOrders: TrackingOrder[] = (ordersData || []).map(order => ({
         id: order.id,
         order_number: order.order_number,
         tracking_number: order.tracking_number,
         carrier: order.carrier,
         status: order.status,
         last_update: order.updated_at,
-        customer_name: 'Client inconnu',
-        tracking_events: generateMockEvents(order.status)
+        customer_name: customerMap[order.customer_id] || 'Client inconnu',
+        tracking_events: eventMap[order.id] || []
       }));
 
       setOrders(formattedOrders);
     } catch (error) {
       console.error('Error loading orders:', error);
-      toast({
-        title: "Erreur",
-        description: "Impossible de charger les commandes",
-        variant: "destructive"
-      });
+      toast({ title: "Erreur", description: "Impossible de charger les commandes", variant: "destructive" });
     }
-  };
-
-  const generateMockEvents = (status: string): TrackingEvent[] => {
-    const baseEvents = [
-      {
-        timestamp: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-        status: 'order_placed',
-        location: 'Entrepôt Paris',
-        description: 'Commande reçue et préparée'
-      },
-      {
-        timestamp: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
-        status: 'shipped',
-        location: 'Centre de tri Roissy',
-        description: 'Colis expédié'
-      }
-    ];
-
-    if (status === 'in_transit' || status === 'delivered') {
-      baseEvents.push({
-        timestamp: new Date(Date.now() - 12 * 60 * 60 * 1000).toISOString(),
-        status: 'in_transit',
-        location: 'Centre de tri Lyon',
-        description: 'Colis en transit'
-      });
-    }
-
-    if (status === 'delivered') {
-      baseEvents.push({
-        timestamp: new Date().toISOString(),
-        status: 'delivered',
-        location: 'Adresse de livraison',
-        description: 'Colis livré'
-      });
-    }
-
-    return baseEvents;
   };
 
   const updateAllTrackingInfo = async () => {
     setIsUpdating(true);
-    
     try {
-      // Call the order-tracking edge function
       const { data, error } = await supabase.functions.invoke('order-tracking', {
         body: { action: 'update_all' }
       });
-
       if (error) throw error;
-
       await loadOrders();
-      
-      toast({
-        title: "Suivi mis à jour",
-        description: `${data?.updated_count || 0} commandes mises à jour`,
-      });
+      toast({ title: "Suivi mis à jour", description: `${data?.updated_count || 0} commandes mises à jour` });
     } catch (error) {
       console.error('Error updating tracking:', error);
-      toast({
-        title: "Erreur de mise à jour",
-        description: "Impossible de mettre à jour le suivi",
-        variant: "destructive"
-      });
+      toast({ title: "Erreur de mise à jour", description: "Impossible de mettre à jour le suivi", variant: "destructive" });
     } finally {
       setIsUpdating(false);
     }
@@ -180,40 +152,22 @@ export const AutoTrackingManager = () => {
 
   const addTrackingNumber = async () => {
     if (!newTracking.orderId || !newTracking.trackingNumber || !newTracking.carrier) {
-      toast({
-        title: "Informations manquantes",
-        description: "Veuillez remplir tous les champs",
-        variant: "destructive"
-      });
+      toast({ title: "Informations manquantes", description: "Veuillez remplir tous les champs", variant: "destructive" });
       return;
     }
-
     try {
-      const { error } = await supabase.functions.invoke('order-tracking', {
-        body: {
-          action: 'setup_tracking',
-          order_id: newTracking.orderId,
-          tracking_number: newTracking.trackingNumber,
-          carrier: newTracking.carrier
-        }
-      });
+      const { error } = await supabase
+        .from('orders')
+        .update({ tracking_number: newTracking.trackingNumber, carrier: newTracking.carrier, status: 'shipped' })
+        .eq('id', newTracking.orderId);
 
       if (error) throw error;
-
       setNewTracking({ orderId: '', trackingNumber: '', carrier: '' });
       await loadOrders();
-      
-      toast({
-        title: "Numéro de suivi ajouté",
-        description: "Le suivi automatique est activé",
-      });
+      toast({ title: "Numéro de suivi ajouté", description: "Le suivi est activé" });
     } catch (error) {
       console.error('Error adding tracking:', error);
-      toast({
-        title: "Erreur",
-        description: "Impossible d'ajouter le numéro de suivi",
-        variant: "destructive"
-      });
+      toast({ title: "Erreur", description: "Impossible d'ajouter le numéro de suivi", variant: "destructive" });
     }
   };
 
@@ -259,12 +213,7 @@ export const AutoTrackingManager = () => {
           <Badge variant={settings.enabled ? 'default' : 'secondary'}>
             {settings.enabled ? 'Actif' : 'Inactif'}
           </Badge>
-          <Button
-            variant="outline"
-            onClick={updateAllTrackingInfo}
-            disabled={isUpdating}
-            className="gap-2"
-          >
+          <Button variant="outline" onClick={updateAllTrackingInfo} disabled={isUpdating} className="gap-2">
             {isUpdating ? <RefreshCw className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
             Actualiser
           </Button>
@@ -274,10 +223,7 @@ export const AutoTrackingManager = () => {
       {/* Settings */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Settings className="h-5 w-5" />
-            Configuration
-          </CardTitle>
+          <CardTitle className="flex items-center gap-2"><Settings className="h-5 w-5" /> Configuration</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex items-center justify-between">
@@ -285,32 +231,16 @@ export const AutoTrackingManager = () => {
               <Label htmlFor="auto-tracking">Suivi automatique</Label>
               <p className="text-sm text-muted-foreground">Met à jour automatiquement les statuts</p>
             </div>
-            <Switch
-              id="auto-tracking"
-              checked={settings.enabled}
-              onCheckedChange={(checked) => setSettings(prev => ({ ...prev, enabled: checked }))}
-            />
+            <Switch id="auto-tracking" checked={settings.enabled} onCheckedChange={(checked) => setSettings(prev => ({ ...prev, enabled: checked }))} />
           </div>
-          
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <Label htmlFor="interval">Intervalle de mise à jour (minutes)</Label>
-              <Input
-                id="interval"
-                type="number"
-                value={settings.updateInterval}
-                onChange={(e) => setSettings(prev => ({ ...prev, updateInterval: parseInt(e.target.value) || 30 }))}
-                min="5"
-                max="1440"
-              />
+              <Input id="interval" type="number" value={settings.updateInterval} onChange={(e) => setSettings(prev => ({ ...prev, updateInterval: parseInt(e.target.value) || 30 }))} min="5" max="1440" />
             </div>
             <div>
               <Label htmlFor="notify">Notifications clients</Label>
-              <Switch
-                id="notify"
-                checked={settings.notifyCustomers}
-                onCheckedChange={(checked) => setSettings(prev => ({ ...prev, notifyCustomers: checked }))}
-              />
+              <Switch id="notify" checked={settings.notifyCustomers} onCheckedChange={(checked) => setSettings(prev => ({ ...prev, notifyCustomers: checked }))} />
             </div>
           </div>
         </CardContent>
@@ -318,55 +248,34 @@ export const AutoTrackingManager = () => {
 
       {/* Add Tracking */}
       <Card>
-        <CardHeader>
-          <CardTitle>Ajouter un Numéro de Suivi</CardTitle>
-        </CardHeader>
+        <CardHeader><CardTitle>Ajouter un Numéro de Suivi</CardTitle></CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div>
-              <Label htmlFor="order-select">Commande</Label>
+              <Label>Commande</Label>
               <Select value={newTracking.orderId} onValueChange={(value) => setNewTracking(prev => ({ ...prev, orderId: value }))}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Sélectionner" />
-                </SelectTrigger>
+                <SelectTrigger><SelectValue placeholder="Sélectionner" /></SelectTrigger>
                 <SelectContent>
                   {orders.filter(o => !o.tracking_number).map(order => (
-                    <SelectItem key={order.id} value={order.id}>
-                      {order.order_number}
-                    </SelectItem>
+                    <SelectItem key={order.id} value={order.id}>{order.order_number}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
             <div>
-              <Label htmlFor="tracking-input">Numéro de suivi</Label>
-              <Input
-                id="tracking-input"
-                value={newTracking.trackingNumber}
-                onChange={(e) => setNewTracking(prev => ({ ...prev, trackingNumber: e.target.value }))}
-                placeholder="Ex: ABC123456789"
-              />
+              <Label>Numéro de suivi</Label>
+              <Input value={newTracking.trackingNumber} onChange={(e) => setNewTracking(prev => ({ ...prev, trackingNumber: e.target.value }))} placeholder="Ex: ABC123456789" />
             </div>
             <div>
-              <Label htmlFor="carrier-select">Transporteur</Label>
+              <Label>Transporteur</Label>
               <Select value={newTracking.carrier} onValueChange={(value) => setNewTracking(prev => ({ ...prev, carrier: value }))}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Sélectionner" />
-                </SelectTrigger>
+                <SelectTrigger><SelectValue placeholder="Sélectionner" /></SelectTrigger>
                 <SelectContent>
-                  {carrierOptions.map(carrier => (
-                    <SelectItem key={carrier.value} value={carrier.value}>
-                      {carrier.label}
-                    </SelectItem>
-                  ))}
+                  {carrierOptions.map(c => (<SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>))}
                 </SelectContent>
               </Select>
             </div>
-            <div className="flex items-end">
-              <Button onClick={addTrackingNumber} className="w-full">
-                Ajouter
-              </Button>
-            </div>
+            <div className="flex items-end"><Button onClick={addTrackingNumber} className="w-full">Ajouter</Button></div>
           </div>
         </CardContent>
       </Card>
@@ -374,7 +283,6 @@ export const AutoTrackingManager = () => {
       {/* Orders List */}
       <div className="space-y-4">
         <h3 className="text-lg font-semibold">Commandes Suivies ({orders.length})</h3>
-        
         {orders.map((order) => (
           <Card key={order.id}>
             <CardContent className="p-4">
@@ -383,52 +291,33 @@ export const AutoTrackingManager = () => {
                   <div className="flex items-center gap-2 mb-1">
                     {getStatusIcon(order.status)}
                     <span className="font-medium">{order.order_number}</span>
-                    <Badge className={getStatusColor(order.status)}>
-                      {order.status}
-                    </Badge>
+                    <Badge className={getStatusColor(order.status)}>{order.status}</Badge>
                   </div>
-                  <p className="text-sm text-muted-foreground">
-                    Client: {order.customer_name}
-                  </p>
+                  <p className="text-sm text-muted-foreground">Client: {order.customer_name}</p>
                 </div>
-                
                 {order.tracking_number && (
                   <div className="text-right">
                     <div className="flex items-center gap-2 text-sm">
                       <Package className="h-4 w-4" />
                       <span className="font-mono">{order.tracking_number}</span>
-                      <Button size="sm" variant="ghost" className="h-6 w-6 p-0">
-                        <ExternalLink className="h-3 w-3" />
-                      </Button>
                     </div>
-                    <p className="text-xs text-muted-foreground">
-                      {order.carrier?.toUpperCase()}
-                    </p>
+                    <p className="text-xs text-muted-foreground">{order.carrier?.toUpperCase()}</p>
                   </div>
                 )}
               </div>
-              
               {order.tracking_events.length > 0 && (
                 <>
                   <Separator className="my-3" />
                   <div className="space-y-2">
-                    <h4 className="text-sm font-medium">Historique de suivi</h4>
+                    <h4 className="text-sm font-medium">Historique</h4>
                     <div className="space-y-2 max-h-32 overflow-y-auto">
                       {order.tracking_events.map((event, index) => (
                         <div key={index} className="flex items-start gap-3 text-sm">
                           <div className="flex items-center gap-1 min-w-0 flex-1">
                             <Calendar className="h-3 w-3 text-muted-foreground flex-shrink-0" />
-                            <span className="text-xs text-muted-foreground">
-                              {new Date(event.timestamp).toLocaleString()}
-                            </span>
+                            <span className="text-xs text-muted-foreground">{new Date(event.timestamp).toLocaleString()}</span>
                           </div>
-                          <div className="flex items-center gap-1 min-w-0 flex-1">
-                            <MapPin className="h-3 w-3 text-muted-foreground flex-shrink-0" />
-                            <span className="text-xs">{event.location}</span>
-                          </div>
-                          <div className="flex-2">
-                            <span className="text-xs">{event.description}</span>
-                          </div>
+                          <div className="flex-2"><span className="text-xs">{event.description}</span></div>
                         </div>
                       ))}
                     </div>
@@ -438,14 +327,11 @@ export const AutoTrackingManager = () => {
             </CardContent>
           </Card>
         ))}
-        
         {orders.length === 0 && (
-          <Card>
-            <CardContent className="p-8 text-center">
-              <Package className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-              <p className="text-muted-foreground">Aucune commande à suivre</p>
-            </CardContent>
-          </Card>
+          <Card><CardContent className="p-8 text-center">
+            <Package className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+            <p className="text-muted-foreground">Aucune commande à suivre</p>
+          </CardContent></Card>
         )}
       </div>
     </div>

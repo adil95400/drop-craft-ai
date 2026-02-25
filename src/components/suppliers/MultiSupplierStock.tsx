@@ -29,6 +29,8 @@ import {
   TrendingDown,
   Minus
 } from 'lucide-react'
+import { supabase } from '@/integrations/supabase/client'
+import { useAuth } from '@/contexts/AuthContext'
 
 interface StockMapping {
   id: string
@@ -44,64 +46,75 @@ interface StockMapping {
   status: 'in_stock' | 'low_stock' | 'out_of_stock'
 }
 
-// Mock data generator
-const generateMockStockMappings = (): StockMapping[] => {
-  const products = [
-    'iPhone 15 Pro Case',
-    'Samsung Galaxy S24 Screen Protector',
-    'MacBook Pro 14" Sleeve',
-    'AirPods Pro Case',
-    'iPad Mini Cover',
-    'Apple Watch Band',
-    'Wireless Charger Pad',
-    'USB-C Hub Adapter'
-  ]
-  
-  const suppliers = ['Fournisseur A', 'Grossiste Europe', 'BTSWholesaler', 'Supplier Direct']
-  
-  return products.map((name, index) => {
-    const primaryStock = Math.floor(Math.random() * 100)
-    const backupStock = Math.floor(Math.random() * 50)
-    const totalStock = primaryStock + backupStock
-    const threshold = 10
-    
-    return {
-      id: `mapping-${index}`,
-      product_id: `prod-${index}`,
-      product_name: name,
-      primary_supplier: suppliers[index % suppliers.length],
-      backup_supplier: index % 2 === 0 ? suppliers[(index + 1) % suppliers.length] : undefined,
-      total_stock: totalStock,
-      primary_stock: primaryStock,
-      backup_stock: backupStock,
-      auto_switch: index % 3 === 0,
-      min_threshold: threshold,
-      status: totalStock === 0 ? 'out_of_stock' : totalStock <= threshold ? 'low_stock' : 'in_stock'
-    }
-  })
-}
-
 export function MultiSupplierStock() {
+  const { user } = useAuth()
   const [stockMappings, setStockMappings] = useState<StockMapping[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState('all')
 
   useEffect(() => {
-    loadStockMappings()
-  }, [])
+    if (user) loadStockMappings()
+  }, [user])
 
   const loadStockMappings = async () => {
     try {
-      // Load from localStorage or use mock data
-      const stored = localStorage.getItem('product_supplier_mappings')
-      if (stored) {
-        setStockMappings(JSON.parse(stored))
-      } else {
-        const mockData = generateMockStockMappings()
-        setStockMappings(mockData)
-        localStorage.setItem('product_supplier_mappings', JSON.stringify(mockData))
-      }
+      setIsLoading(true)
+
+      // Fetch products with their supplier_products
+      const { data: products, error } = await supabase
+        .from('products')
+        .select('id, name, title, stock_quantity')
+        .eq('user_id', user!.id)
+        .order('name')
+        .limit(50)
+
+      if (error) throw error
+
+      // Fetch supplier products for these product IDs
+      const productIds = (products || []).map(p => p.id)
+      const { data: supplierProducts } = await supabase
+        .from('supplier_products')
+        .select('product_id, supplier_id, stock_quantity, suppliers(name)')
+        .eq('user_id', user!.id)
+        .in('product_id', productIds.length > 0 ? productIds : ['none'])
+
+      // Build supplier mapping per product
+      const supplierMap: Record<string, { primary?: { name: string; stock: number }; backup?: { name: string; stock: number } }> = {}
+      ;(supplierProducts || []).forEach((sp: any) => {
+        const pid = sp.product_id
+        if (!supplierMap[pid]) supplierMap[pid] = {}
+        const entry = { name: sp.suppliers?.name || 'Inconnu', stock: sp.stock_quantity || 0 }
+        if (!supplierMap[pid].primary) {
+          supplierMap[pid].primary = entry
+        } else if (!supplierMap[pid].backup) {
+          supplierMap[pid].backup = entry
+        }
+      })
+
+      const mappings: StockMapping[] = (products || []).map(p => {
+        const sp = supplierMap[p.id] || {}
+        const primaryStock = sp.primary?.stock || 0
+        const backupStock = sp.backup?.stock || 0
+        const totalStock = p.stock_quantity || (primaryStock + backupStock)
+        const threshold = 10
+
+        return {
+          id: p.id,
+          product_id: p.id,
+          product_name: p.name || p.title || 'Sans nom',
+          primary_supplier: sp.primary?.name || 'Aucun',
+          backup_supplier: sp.backup?.name,
+          total_stock: totalStock,
+          primary_stock: primaryStock,
+          backup_stock: backupStock,
+          auto_switch: false,
+          min_threshold: threshold,
+          status: totalStock === 0 ? 'out_of_stock' : totalStock <= threshold ? 'low_stock' : 'in_stock'
+        }
+      })
+
+      setStockMappings(mappings)
     } catch (error) {
       console.error('Error loading stock mappings:', error)
       toast.error('Erreur lors du chargement des stocks')
@@ -111,19 +124,11 @@ export function MultiSupplierStock() {
   }
 
   const toggleAutoSwitch = async (mappingId: string, currentValue: boolean) => {
-    try {
-      const updatedMappings = stockMappings.map(m => 
-        m.id === mappingId 
-          ? { ...m, auto_switch: !currentValue }
-          : m
-      )
-      setStockMappings(updatedMappings)
-      localStorage.setItem('product_supplier_mappings', JSON.stringify(updatedMappings))
-      
-      toast.success('Basculement automatique ' + (!currentValue ? 'activé' : 'désactivé'))
-    } catch (error) {
-      toast.error('Erreur lors de la mise à jour')
-    }
+    const updatedMappings = stockMappings.map(m => 
+      m.id === mappingId ? { ...m, auto_switch: !currentValue } : m
+    )
+    setStockMappings(updatedMappings)
+    toast.success('Basculement automatique ' + (!currentValue ? 'activé' : 'désactivé'))
   }
 
   const getStatusBadge = (status: string) => {
