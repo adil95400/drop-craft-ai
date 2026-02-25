@@ -265,81 +265,113 @@ export function CreateRuleDialog({ open, onOpenChange, editRule, onClose }: Crea
             </div>
 
             <div className="space-y-2 pl-4 border-l-2 border-green-500/20">
-              {actions.map((action, index) => (
-                <div key={index} className="flex items-center gap-2 bg-green-500/5 p-2 rounded-lg">
-                  <Select
-                    value={action.type}
-                    onValueChange={(v) => updateAction(index, { type: v })}
-                  >
-                    <SelectTrigger className="w-44">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {actionOptions.map((a) => (
-                        <SelectItem key={a.value} value={a.value}>
-                          {a.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+              {actions.map((action, index) => {
+                const actionDef = actionOptions.find(a => a.value === action.type);
+                const isPricingAction = ['apply_margin', 'percentage_adjust', 'round_psychological', 'set_compare_at_price', 'min_price', 'max_price'].includes(action.type);
+                
+                return (
+                  <div key={index} className={`flex items-center gap-2 p-2 rounded-lg ${isPricingAction ? 'bg-amber-500/10 border border-amber-500/20' : 'bg-green-500/5'}`}>
+                    <Select
+                      value={action.type}
+                      onValueChange={(v) => updateAction(index, { type: v })}
+                    >
+                      <SelectTrigger className="w-48">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="__feed_header" disabled className="font-semibold text-xs text-muted-foreground">— Feed —</SelectItem>
+                        {actionOptions.filter(a => (a as any).category === 'feed').map((a) => (
+                          <SelectItem key={a.value} value={a.value}>{a.label}</SelectItem>
+                        ))}
+                        <SelectItem value="__content_header" disabled className="font-semibold text-xs text-muted-foreground">— Contenu —</SelectItem>
+                        {actionOptions.filter(a => (a as any).category === 'content').map((a) => (
+                          <SelectItem key={a.value} value={a.value}>{a.label}</SelectItem>
+                        ))}
+                        <SelectItem value="__pricing_header" disabled className="font-semibold text-xs text-muted-foreground">— Dynamic Pricing —</SelectItem>
+                        {actionOptions.filter(a => (a as any).category === 'pricing').map((a) => (
+                          <SelectItem key={a.value} value={a.value}>{a.label}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
 
-                  {actionOptions.find(a => a.value === action.type)?.requiresField && (
-                    <>
-                      <Select
-                        value={action.field || ''}
-                        onValueChange={(v) => updateAction(index, { field: v })}
-                      >
-                        <SelectTrigger className="w-32">
-                          <SelectValue placeholder="Champ" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {fieldOptions.map((f) => (
-                            <SelectItem key={f.value} value={f.value}>
-                              {f.label}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-
-                      {action.type === 'modify_field' && (
+                    {actionDef?.requiresField && (
+                      <>
                         <Select
-                          value={action.operation || 'multiply'}
-                          onValueChange={(v) => updateAction(index, { operation: v })}
+                          value={action.field || ''}
+                          onValueChange={(v) => updateAction(index, { field: v })}
                         >
-                          <SelectTrigger className="w-28">
-                            <SelectValue />
+                          <SelectTrigger className="w-32">
+                            <SelectValue placeholder="Champ" />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="multiply">× Multiplier</SelectItem>
-                            <SelectItem value="divide">÷ Diviser</SelectItem>
-                            <SelectItem value="add">+ Ajouter</SelectItem>
-                            <SelectItem value="subtract">- Soustraire</SelectItem>
+                            {fieldOptions.map((f) => (
+                              <SelectItem key={f.value} value={f.value}>{f.label}</SelectItem>
+                            ))}
                           </SelectContent>
                         </Select>
-                      )}
-                    </>
-                  )}
 
-                  <Input
-                    value={String(action.value || action.reason || '')}
-                    onChange={(e) => updateAction(index, { 
-                      [action.type === 'exclude' ? 'reason' : 'value']: e.target.value 
-                    })}
-                    placeholder={action.type === 'exclude' ? 'Raison (optionnel)' : 'Valeur'}
-                    className="flex-1"
-                  />
+                        {action.type === 'modify_field' && (
+                          <Select
+                            value={action.operation || 'multiply'}
+                            onValueChange={(v) => updateAction(index, { operation: v })}
+                          >
+                            <SelectTrigger className="w-28">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="multiply">× Multiplier</SelectItem>
+                              <SelectItem value="divide">÷ Diviser</SelectItem>
+                              <SelectItem value="add">+ Ajouter</SelectItem>
+                              <SelectItem value="subtract">- Soustraire</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        )}
+                      </>
+                    )}
 
-                  {actions.length > 1 && (
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      onClick={() => removeAction(index)}
-                    >
-                      <Trash2 className="h-4 w-4 text-destructive" />
-                    </Button>
-                  )}
-                </div>
-              ))}
+                    {action.type === 'round_psychological' ? (
+                      <Select
+                        value={String(action.value || '99')}
+                        onValueChange={(v) => updateAction(index, { value: v })}
+                      >
+                        <SelectTrigger className="flex-1">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="99">.99 (ex: 19,99€)</SelectItem>
+                          <SelectItem value="95">.95 (ex: 19,95€)</SelectItem>
+                          <SelectItem value="90">.90 (ex: 19,90€)</SelectItem>
+                          <SelectItem value="00">.00 (arrondi sup.)</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    ) : (
+                      <Input
+                        value={String(action.value || action.reason || '')}
+                        onChange={(e) => updateAction(index, { 
+                          [action.type === 'exclude' ? 'reason' : 'value']: e.target.value 
+                        })}
+                        placeholder={
+                          action.type === 'exclude' ? 'Raison (optionnel)' :
+                          action.type === 'apply_margin' ? 'Marge % (ex: 40)' :
+                          action.type === 'percentage_adjust' ? '% (+10 ou -15)' :
+                          action.type === 'set_compare_at_price' ? 'Markup % (ex: 20)' :
+                          action.type === 'min_price' ? 'Prix min (ex: 5.99)' :
+                          action.type === 'max_price' ? 'Prix max (ex: 99.99)' :
+                          'Valeur'
+                        }
+                        type={isPricingAction ? 'number' : 'text'}
+                        className="flex-1"
+                      />
+                    )}
+
+                    {actions.length > 1 && (
+                      <Button size="sm" variant="ghost" onClick={() => removeAction(index)}>
+                        <Trash2 className="h-4 w-4 text-destructive" />
+                      </Button>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           </div>
 

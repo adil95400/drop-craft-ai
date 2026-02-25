@@ -14,7 +14,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Plus, Play, Copy, Trash2, Settings2, FileText, Zap,
   TrendingUp, Clock, CheckCircle2, Brain, Eye, ArrowRight,
-  Loader2,
+  Loader2, DollarSign,
 } from 'lucide-react';
 import { 
   useFeedRules, useFeedRulesStats, useToggleFeedRule,
@@ -25,6 +25,7 @@ import { CreateRuleDialog } from './CreateRuleDialog';
 import { RuleTemplatesPanel } from './RuleTemplatesPanel';
 import { RuleExecutionsPanel } from './RuleExecutionsPanel';
 import { FeedRulesAIPanel } from './FeedRulesAIPanel';
+import { DynamicPricingPanel } from './DynamicPricingPanel';
 import { FeedRule } from '@/services/FeedRulesService';
 
 interface PreviewResult {
@@ -241,6 +242,10 @@ export function FeedRulesDashboard() {
       <Tabs defaultValue="rules" className="space-y-4">
         <TabsList>
           <TabsTrigger value="rules">Mes règles</TabsTrigger>
+          <TabsTrigger value="pricing" className="gap-1">
+            <DollarSign className="h-4 w-4" />
+            Dynamic Pricing
+          </TabsTrigger>
           <TabsTrigger value="ai" className="gap-1">
             <Brain className="h-4 w-4" />
             IA
@@ -341,6 +346,10 @@ export function FeedRulesDashboard() {
               ))}
             </div>
           )}
+        </TabsContent>
+
+        <TabsContent value="pricing">
+          <DynamicPricingPanel />
         </TabsContent>
 
         <TabsContent value="ai">
