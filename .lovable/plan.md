@@ -41,7 +41,7 @@ Tous les modules critiques utilisent des données réelles.
 - [x] Builder visuel drag & drop (nœuds : trigger → condition → action) ✅
 - [x] Templates prédéfinis (post-commande, relance panier, alerte stock) ✅
 - [x] Historique d'exécution et logs ✅ (`/automation/history`)
-- [ ] Intégration emails, webhooks, notifications
+- [x] Intégration emails, webhooks, notifications ✅ (Webhook, API, SMS/Push actions)
 
 ### 1.4 Business Intelligence & Advanced Analytics
 - [x] `/analytics/bi` — BI avancé : cohortes, alertes, rapports ✅
@@ -50,9 +50,9 @@ Tous les modules critiques utilisent des données réelles.
 - [x] `/analytics/reports` — Rapports planifiés avec export PDF/Excel ✅ (`/analytics/scheduled-reports`)
 
 ### 1.5 Import Avancé Multi-Source
-- [ ] Consolider en interface à onglets (CSV, URL, API, Shopify, AliExpress)
-- [ ] `/import/api` — Import via API avec mapping de champs
-- [ ] Pipeline unifié : Ingestion → Normalisation → Enrichissement → QA → Publication
+- [x] Consolider en interface à onglets (CSV, URL, API, Shopify, AliExpress) ✅ (ImportHub v2.0)
+- [x] `/import/api` — Import via API avec mapping de champs ✅
+- [x] Pipeline unifié : Ingestion → Normalisation → Enrichissement → QA → Publication ✅
 
 ### 1.6 Inventory Predictor & Stock Avancé
 - [x] Prédictions de rupture (IA Gemini) ✅
