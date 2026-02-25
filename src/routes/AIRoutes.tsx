@@ -5,13 +5,14 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { lazy } from 'react';
 
-// AI pages - Using existing consolidated pages only
+// AI pages
 const ContentGenerationPage = lazy(() => import('@/pages/ContentGenerationPage'));
 const CatalogIntelligencePage = lazy(() => import('@/pages/catalog/CatalogIntelligencePage'));
 const AIContentPage = lazy(() => import('@/pages/products/AIContentPage'));
 const PredictiveAnalyticsPage = lazy(() => import('@/pages/PredictiveAnalyticsPage'));
 const EnrichmentSnapshotsPage = lazy(() => import('@/pages/ai/EnrichmentSnapshotsPage'));
 const AIAutoActions = lazy(() => import('@/pages/AIAutoActions'));
+const AIAssistantPage = lazy(() => import('@/pages/ai/AIAssistantPage'));
 
 export function AIRoutes() {
   return (
@@ -22,7 +23,7 @@ export function AIRoutes() {
       {/* AI Modules */}
       <Route path="optimization" element={<PredictiveAnalyticsPage />} />
       <Route path="content" element={<ContentGenerationPage />} />
-      <Route path="assistant" element={<ContentGenerationPage />} />
+      <Route path="assistant" element={<AIAssistantPage />} />
       <Route path="catalog" element={<CatalogIntelligencePage />} />
       <Route path="rewrite" element={<AIContentPage />} />
       <Route path="studio" element={<ContentGenerationPage />} />
