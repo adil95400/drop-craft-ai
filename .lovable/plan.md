@@ -124,7 +124,7 @@ Tous les modules critiques utilisent des données réelles.
 - [ ] Moteur de règles feed + dynamic pricing (Channable-like)
 
 ### 4.2 Fournisseurs Premium
-- [ ] Interface fournisseurs vérifiés (badge, scoring)
+- [x] Interface fournisseurs vérifiés (badge, scoring, tier Platinum/Gold/Silver) ✅
 - [ ] Branded invoicing
 - [ ] Catalogue premium haute marge
 
