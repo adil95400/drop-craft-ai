@@ -79,11 +79,11 @@ Tous les modules critiques utilisent des données réelles.
 - [x] Page d'accueil : Hero + social proof ✅ (TrustedBySection, TestimonialsWithPhotos)
 - [x] Skeleton loaders ✅ (`DashboardSkeleton` + `GenericPageSkeleton`)
 - [x] Empty states avec presets et CTA ✅ (`EmptyState` enrichi)
-- [ ] Onboarding wizard enrichi avec tooltips contextuels
+- [x] Onboarding wizard enrichi avec tooltips contextuels ✅
 
 ### 2.4 Nettoyage Routes
-- [ ] Fusionner pages redondantes (Analytics + BI + Advanced)
-- [ ] Supprimer pages obsolètes/UltraPro/duplicates
+- [x] Fusionner pages redondantes (Analytics + BI + Advanced) ✅
+- [x] Supprimer pages obsolètes/UltraPro/duplicates ✅ (redirects consolidés)
 - [x] `routesRegistry.ts` enrichi avec helpers ✅ (findRoute, getRouteLabel, isPublicRoute)
 
 
