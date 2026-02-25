@@ -1,88 +1,56 @@
-# Guide de nettoyage - Composants et Pages obsolètes
+# Guide de nettoyage - Consolidation S3
 
-Ce document identifie les éléments potentiellement redondants à consolider.
+## ✅ Nettoyages effectués (S3)
 
-## ✅ Nettoyages effectués
+### Redirections Legacy (FAIT)
+- `src/routes/legacy-redirects.ts` → **Supprimé** (fusionné dans `LegacyRedirectsHandler.tsx`)
+- Source unique de vérité : `src/routes/LegacyRedirectsHandler.tsx`
 
-### Navigation Mobile (FAIT)
-- ~~`src/components/layout/MobileNav.tsx`~~ → Supprimé (doublon de mobile/)
-- ~~`src/components/layout/MobileBottomNav.tsx`~~ → Recréé en version minimale
-- Navigation principale: `src/components/mobile/MobileNav.tsx`
+### Routes Registry (FAIT)
+- `src/config/routesRegistry.ts` → **Réécrit** (synchronisé avec les routes réelles)
+- Supprimé `component` field inutile, nettoyé flags `implemented`
 
-## Composants Analytics (Doublons identifiés)
+### ModuleRoutes (FAIT)
+- `src/components/routing/ModuleRoutes.tsx` → **Supprimé** (doublon de `src/routes/index.tsx`)
 
-### À conserver (principaux)
-- `src/pages/AdvancedAnalyticsPage.tsx` - Page principale analytics
-- `src/pages/UnifiedAnalyticsDashboard.tsx` - Dashboard unifié
-- `src/components/analytics/AdvancedAnalyticsDashboard.tsx` - Composant dashboard
+### CoreRoutes (FAIT)
+- `src/routes/CoreRoutes.tsx` → **Allégé** (retiré 13 imports dupliqués avec `index.tsx`)
+- Pages standalone (billing, subscription, security, etc.) gérées directement dans `index.tsx`
 
-### À évaluer pour fusion/suppression
-- `src/components/dashboard/AdvancedAnalytics.tsx` - Possiblement doublon
-- `src/components/analytics/AdvancedAnalytics.tsx` - Autre implémentation
+## ✅ Nettoyages précédents
 
-## Pages avec fonctionnalités similaires
+### Navigation Mobile
+- Navigation principale : `src/components/mobile/MobileNav.tsx`
+- Drawer : `src/components/mobile/MobileDrawerNav.tsx`
 
-### Import
-- `/import` - Hub principal (CONSERVER)
-- `/import/advanced` - Import avancé
-- `/import/simplified` - Import simplifié  
-- `/import/shopify` - Import Shopify
+## Architecture actuelle des routes
 
-**Recommandation**: Consolider dans `/import` avec tabs
+```
+src/routes/index.tsx          → Point d'entrée principal
+src/routes/LegacyRedirectsHandler.tsx → Redirections centralisées
+src/routes/*Routes.tsx        → Modules de routes (lazy loaded)
+src/config/routesRegistry.ts  → Registre de référence
+```
 
-### Marketing
-- `/marketing` - Hub marketing (CONSERVER)
-- `/marketing/ads` - Gestionnaire publicités
-- Plusieurs pages Email/Ads séparées
-
-**Recommandation**: Unifier sous `/marketing/*`
-
-### CRM
-- `/dashboard/customers` - Page clients principale
-- `/crm/*` - Anciennes pages CRM
-
-**Recommandation**: Rediriger `/crm` vers `/dashboard/customers`
-
-## Utilitaires créés pour uniformisation
+## Utilitaires disponibles
 
 ### Labels en français
 ```typescript
 import { getStatusLabel, getStatusColorClass } from '@/utils/statusLabels'
 import { StatusBadge } from '@/components/ui/status-badge'
-
-// Usage simple
 <StatusBadge status="delivered" category="order" />
 ```
 
 ### Composants de chargement
 ```typescript
 import { LoadingSpinner, LoadingOverlay, LoadingSkeleton, CardSkeleton, CardSkeletonGrid } from '@/components/ui/loading-spinner'
-
-// Overlay sur opérations longues
-<LoadingOverlay isLoading={isLoading} text="Chargement des données...">
+<LoadingOverlay isLoading={isLoading} text="Chargement...">
   {children}
 </LoadingOverlay>
-
-// Skeleton pour listes
-<LoadingSkeleton rows={5} />
-
-// Skeleton pour grilles de cards
-<CardSkeletonGrid count={4} />
 ```
-
-## Navigation mobile
-- `src/components/mobile/MobileNav.tsx` - Navigation complète avec bottom bar et drawer
-- `src/components/mobile/MobileDrawerNav.tsx` - Drawer de navigation complet
-- `src/components/layout/MobileBottomNav.tsx` - Barre de navigation inférieure
 
 ## Prochaines étapes recommandées
 
-1. **Phase 1**: Utiliser `StatusBadge` partout au lieu de badges personnalisés
-2. **Phase 2**: Ajouter `LoadingOverlay` sur les formulaires et opérations longues
-3. **Phase 3**: Consolider les pages Analytics en une seule avec tabs
-4. **Phase 4**: Nettoyer les imports/exports inutilisés
-
-## Fichiers à ne PAS supprimer
-- Tout dans `supabase/functions/` sauf ceux documentés dans `_DEPRECATED_FUNCTIONS.md`
-- Composants UI de base dans `src/components/ui/`
-- Hooks partagés dans `src/hooks/` et `src/shared/hooks/`
+1. **Sécurité RLS** : Audit des politiques d'accès aux données
+2. **Tests** : Couverture des routes principales
+3. **Performance** : Audit bundle size, lazy loading verification
