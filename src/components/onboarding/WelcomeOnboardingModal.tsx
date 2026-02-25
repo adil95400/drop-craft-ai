@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Dialog, DialogContent } from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
@@ -108,6 +108,7 @@ export function WelcomeOnboardingModal() {
   return (
     <Dialog open={isOpen} onOpenChange={(open) => { if (!open) handleComplete() }}>
       <DialogContent className="max-w-lg p-0 overflow-hidden border-0">
+        <DialogTitle className="sr-only">Bienvenue sur ShopOpti+</DialogTitle>
         {/* Header gradient */}
         <div className={cn("p-6 pb-8 bg-gradient-to-br text-white", step.color)}>
           <div className="flex items-center justify-between mb-4">

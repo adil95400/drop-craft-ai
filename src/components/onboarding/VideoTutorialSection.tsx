@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Play, X, ChevronLeft, ChevronRight, Check, Clock } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Dialog, DialogContent } from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area'
 import { Badge } from '@/components/ui/badge'
 import { EnhancedVideoPlayer, VideoThumbnail } from './EnhancedVideoPlayer'
@@ -129,6 +129,7 @@ export function VideoTutorialSection({
       {/* Video Modal */}
       <Dialog open={!!selectedVideo} onOpenChange={(open) => !open && setSelectedVideo(null)}>
         <DialogContent className="max-w-4xl p-0 overflow-hidden">
+          <DialogTitle className="sr-only">Tutoriel vidéo</DialogTitle>
           <AnimatePresence mode="wait">
             {selectedVideo && (
               <motion.div
