@@ -688,21 +688,80 @@
     border-radius: 0.25rem;
   }
   
-  /* Skip link for keyboard navigation */
+  /* Skip link for keyboard navigation (WCAG 2.4.1) */
   .skip-link {
-    position: absolute;
-    top: -40px;
-    left: 0;
+    position: fixed;
+    top: -100%;
+    left: 50%;
+    transform: translateX(-50%);
     background: hsl(var(--primary));
     color: hsl(var(--primary-foreground));
-    padding: 8px 16px;
-    z-index: 100;
+    padding: 12px 24px;
+    z-index: 99999;
     text-decoration: none;
-    font-weight: 500;
+    font-weight: 600;
+    font-size: 0.875rem;
+    border-radius: 0 0 0.5rem 0.5rem;
+    box-shadow: 0 4px 12px hsl(var(--primary) / 0.4);
+    transition: top 0.2s ease;
   }
   
   .skip-link:focus {
     top: 0;
+    outline: 3px solid hsl(var(--ring));
+    outline-offset: 2px;
+  }
+  
+  /* WCAG 2.1 — Ensure minimum touch target 44x44 (WCAG 2.5.5) */
+  @media (pointer: coarse) {
+    button,
+    a,
+    input[type="checkbox"],
+    input[type="radio"],
+    [role="button"],
+    [role="tab"],
+    [role="menuitem"] {
+      min-height: 44px;
+      min-width: 44px;
+    }
+  }
+  
+  /* WCAG prefers-reduced-motion at OS level (WCAG 2.3.3) */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+  
+  /* WCAG prefers-contrast (WCAG 1.4.11) */
+  @media (prefers-contrast: more) {
+    :root {
+      --border: 0 0% 40%;
+      --muted-foreground: 0 0% 25%;
+      --foreground: 0 0% 0%;
+    }
+    
+    .dark {
+      --border: 0 0% 60%;
+      --muted-foreground: 0 0% 75%;
+      --foreground: 0 0% 100%;
+    }
+  }
+  
+  /* Ensure all focusable elements have visible focus (WCAG 2.4.7) */
+  :focus-visible {
+    outline: 2px solid hsl(var(--ring));
+    outline-offset: 2px;
+  }
+  
+  /* Don't show focus ring for mouse users */
+  :focus:not(:focus-visible) {
+    outline: none;
   }
   
   /* =========================

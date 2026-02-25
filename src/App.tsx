@@ -52,10 +52,13 @@ const AppContent = memo(() => {
   return (
     <Suspense fallback={null}>
       <MobileGlobalOptimizer>
-        {/* Skip link for keyboard navigation */}
+        {/* Skip link for keyboard navigation (WCAG 2.4.1) */}
         <a href="#main-content" className="skip-link">
-          {/* Skip link - translated via i18n common.skipToContent */}
+          Aller au contenu principal
         </a>
+        
+        {/* ARIA live region for dynamic announcements (WCAG 4.1.3) */}
+        <div id="a11y-announcer" aria-live="polite" aria-atomic="true" className="sr-only" role="status" />
         
         {/* Lightweight offline status indicator (no framer-motion) */}
         <GoogleTracking />

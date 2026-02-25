@@ -23,6 +23,7 @@ import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { useAccessibility } from '@/hooks/useAccessibility';
 import { useTheme } from 'next-themes';
+import { announce } from '@/utils/a11y';
 import { cn } from '@/lib/utils';
 
 interface AccessibilityMenuProps {
@@ -104,7 +105,10 @@ export function AccessibilityMenu({ className }: AccessibilityMenuProps) {
         {/* Theme toggle */}
         <DropdownMenuItem 
           className="flex items-center justify-between cursor-pointer"
-          onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+          onClick={() => {
+            setTheme(theme === 'dark' ? 'light' : 'dark');
+            announce(`Thème ${theme === 'dark' ? 'clair' : 'sombre'} activé`);
+          }}
         >
           <div className="flex items-center gap-3">
             {theme === 'dark' ? (
@@ -128,6 +132,7 @@ export function AccessibilityMenu({ className }: AccessibilityMenuProps) {
             onClick={(e) => {
               e.preventDefault();
               item.onToggle();
+              announce(`${item.label} ${!item.checked ? 'activé' : 'désactivé'}`);
             }}
           >
             <div className="flex items-center gap-3">
