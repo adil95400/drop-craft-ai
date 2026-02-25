@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import DOMPurify from 'dompurify';
 
 /**
  * Validation schemas for API requests and forms
@@ -249,27 +250,28 @@ export function errorsToObject(errors: z.ZodError['errors']): Record<string, str
 }
 
 /**
- * Sanitize string input to prevent XSS
- * @param input String to sanitize
- * @returns Sanitized string
+ * Sanitize string input to prevent XSS (basic)
  */
 export function sanitizeString(input: string): string {
-  return input
-    .replace(/[<>]/g, '') // Remove < and >
-    .replace(/javascript:/gi, '') // Remove javascript: protocol
-    .replace(/on\w+=/gi, '') // Remove event handlers
-    .trim();
+  return DOMPurify.sanitize(input, { ALLOWED_TAGS: [] }).trim();
+}
+
+/**
+ * Sanitize HTML — allow safe formatting tags only
+ */
+export function sanitizeHtml(dirty: string): string {
+  return DOMPurify.sanitize(dirty, {
+    ALLOWED_TAGS: ['b', 'i', 'em', 'strong', 'a', 'p', 'br', 'ul', 'ol', 'li', 'span'],
+    ALLOWED_ATTR: ['href', 'target', 'rel', 'class'],
+  });
 }
 
 /**
  * Validate and sanitize URL
- * @param url URL to validate
- * @returns Validated URL or null if invalid
  */
 export function validateUrl(url: string): string | null {
   try {
     const parsed = new URL(url);
-    // Only allow http and https protocols
     if (!['http:', 'https:'].includes(parsed.protocol)) {
       return null;
     }
@@ -283,7 +285,7 @@ export function validateUrl(url: string): string | null {
  * Strip HTML tags from string
  */
 export function stripHtml(input: string): string {
-  return input.replace(/<[^>]+>/g, '').trim();
+  return DOMPurify.sanitize(input, { ALLOWED_TAGS: [] }).trim();
 }
 
 /**
@@ -306,7 +308,6 @@ export function containsXss(input: string): boolean {
     /<script/i,
     /javascript:/i,
     /on\w+\s*=/i,
-    /data:/i,
   ];
   return xssPatterns.some(pattern => pattern.test(input));
 }
