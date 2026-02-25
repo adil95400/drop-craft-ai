@@ -1,391 +1,212 @@
-import React, { useState, useEffect } from 'react'
+import React from 'react'
+import { useQuery } from '@tanstack/react-query'
+import { useAuth } from '@/contexts/AuthContext'
+import { supabase } from '@/integrations/supabase/client'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
+import { Skeleton } from '@/components/ui/skeleton'
 import { 
-  BarChart3, 
-  TrendingUp, 
-  Clock, 
-  CheckCircle,
-  AlertTriangle,
-  Activity,
-  Zap,
-  Target,
-  Database,
-  Users
+  BarChart3, TrendingUp, Clock, CheckCircle, AlertTriangle, Activity, Zap, Target, Database
 } from 'lucide-react'
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell } from 'recharts'
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts'
 
-interface PerformanceMetrics {
-  totalImports: number
-  successRate: number
-  avgProcessingTime: number
-  throughput: number
-  errorRate: number
-  dataQuality: number
-  userSatisfaction: number
-  systemLoad: number
-}
-
-const mockMetrics: PerformanceMetrics = {
-  totalImports: 15420,
-  successRate: 94.2,
-  avgProcessingTime: 2.3,
-  throughput: 450,
-  errorRate: 5.8,
-  dataQuality: 88.5,
-  userSatisfaction: 92.1,
-  systemLoad: 67.3
-}
-
-const performanceData = [
-  { time: '00:00', imports: 45, errors: 2, quality: 89 },
-  { time: '04:00', imports: 67, errors: 1, quality: 92 },
-  { time: '08:00', imports: 125, errors: 8, quality: 85 },
-  { time: '12:00', imports: 189, errors: 12, quality: 83 },
-  { time: '16:00', imports: 234, errors: 15, quality: 87 },
-  { time: '20:00', imports: 156, errors: 6, quality: 91 },
-]
-
-const categoryData = [
-  { name: 'Électronique', value: 35, color: '#3b82f6' },
-  { name: 'Vêtements', value: 28, color: '#10b981' },
-  { name: 'Maison', value: 20, color: '#f59e0b' },
-  { name: 'Sport', value: 12, color: '#ef4444' },
-  { name: 'Autres', value: 5, color: '#8b5cf6' },
-]
-
-const errorTypes = [
-  { type: 'Format invalide', count: 45, percentage: 32 },
-  { type: 'Données manquantes', count: 38, percentage: 27 },
-  { type: 'Doublons détectés', count: 28, percentage: 20 },
-  { type: 'Images inaccessibles', count: 19, percentage: 13 },
-  { type: 'Validation échouée', count: 11, percentage: 8 },
-]
+const CATEGORY_COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6']
 
 export const ImportPerformanceMonitor = () => {
-  const [metrics, setMetrics] = useState<PerformanceMetrics>(mockMetrics)
-  const [realTimeData, setRealTimeData] = useState(performanceData)
-  const [isLive, setIsLive] = useState(false)
+  const { user } = useAuth()
 
-  useEffect(() => {
-    if (!isLive) return
+  const { data, isLoading } = useQuery({
+    queryKey: ['import-performance', user?.id],
+    enabled: !!user,
+    queryFn: async () => {
+      const [jobsRes, importedRes] = await Promise.all([
+        supabase.from('jobs').select('id, status, job_type, created_at, started_at, completed_at, total_items, processed_items, failed_items').eq('user_id', user!.id).order('created_at', { ascending: false }).limit(500),
+        supabase.from('imported_products').select('id, status, category, created_at').eq('user_id', user!.id).limit(1000),
+      ])
 
-    const interval = setInterval(() => {
-      setMetrics(prev => ({
-        ...prev,
-        totalImports: prev.totalImports + Math.floor(Math.random() * 5),
-        successRate: Math.max(85, Math.min(98, prev.successRate + (Math.random() - 0.5) * 2)),
-        avgProcessingTime: Math.max(1, Math.min(5, prev.avgProcessingTime + (Math.random() - 0.5) * 0.2)),
-        throughput: Math.max(200, Math.min(600, prev.throughput + (Math.random() - 0.5) * 20)),
-        systemLoad: Math.max(30, Math.min(95, prev.systemLoad + (Math.random() - 0.5) * 10)),
-      }))
-    }, 2000)
+      const jobs = jobsRes.data || []
+      const imported = importedRes.data || []
 
-    return () => clearInterval(interval)
-  }, [isLive])
+      const totalImports = imported.length
+      const successCount = imported.filter(i => i.status === 'validated' || i.status === 'promoted').length
+      const failedCount = imported.filter(i => i.status === 'rejected' || i.status === 'error').length
+      const successRate = totalImports > 0 ? (successCount / totalImports) * 100 : 0
+      const errorRate = totalImports > 0 ? (failedCount / totalImports) * 100 : 0
 
-  const getMetricColor = (value: number, isGood: boolean = true) => {
-    if (isGood) {
-      return value >= 90 ? 'text-green-600' : value >= 70 ? 'text-orange-600' : 'text-red-600'
-    } else {
-      return value <= 10 ? 'text-green-600' : value <= 30 ? 'text-orange-600' : 'text-red-600'
+      // Avg processing time from jobs
+      const completedJobs = jobs.filter(j => j.started_at && j.completed_at)
+      const avgTime = completedJobs.length > 0
+        ? completedJobs.reduce((s, j) => s + (new Date(j.completed_at!).getTime() - new Date(j.started_at!).getTime()), 0) / completedJobs.length / 1000
+        : 0
+
+      // Category distribution
+      const catMap: Record<string, number> = {}
+      imported.forEach(i => {
+        const cat = (i as any).category || 'Non classé'
+        catMap[cat] = (catMap[cat] || 0) + 1
+      })
+      const categoryData = Object.entries(catMap)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 5)
+        .map(([name, value], i) => ({
+          name, value: Math.round((value / (totalImports || 1)) * 100),
+          color: CATEGORY_COLORS[i % CATEGORY_COLORS.length]
+        }))
+
+      // Error analysis from failed items
+      const errorMap: Record<string, number> = {}
+      imported.filter(i => i.status === 'rejected' || i.status === 'error').forEach(() => {
+        errorMap['Validation échouée'] = (errorMap['Validation échouée'] || 0) + 1
+      })
+      const totalErrors = Object.values(errorMap).reduce((a, b) => a + b, 0) || 1
+      const errorTypes = Object.entries(errorMap)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 5)
+        .map(([type, count]) => ({ type, count, percentage: Math.round((count / totalErrors) * 100) }))
+
+      // Trend data by date (last 6 periods)
+      const trendMap: Record<string, { imports: number; errors: number }> = {}
+      imported.forEach(i => {
+        const date = new Date(i.created_at).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' })
+        if (!trendMap[date]) trendMap[date] = { imports: 0, errors: 0 }
+        trendMap[date].imports++
+        if (i.status === 'rejected' || i.status === 'error') trendMap[date].errors++
+      })
+      const trendData = Object.entries(trendMap).slice(-6).map(([time, v]) => ({ time, ...v }))
+
+      return {
+        totalImports, successRate, errorRate, avgProcessingTime: avgTime,
+        throughput: completedJobs.length > 0 ? Math.round(totalImports / Math.max(completedJobs.length, 1)) : 0,
+        dataQuality: successRate,
+        categoryData, errorTypes, trendData
+      }
     }
-  }
+  })
 
-  const getProgressColor = (value: number, isGood: boolean = true) => {
-    if (isGood) {
-      return value >= 90 ? 'bg-green-500' : value >= 70 ? 'bg-orange-500' : 'bg-red-500'
-    } else {
-      return value <= 10 ? 'bg-green-500' : value <= 30 ? 'bg-orange-500' : 'bg-red-500'
-    }
+  const getMetricColor = (value: number) => value >= 90 ? 'text-green-600' : value >= 70 ? 'text-orange-600' : 'text-red-600'
+
+  if (isLoading) {
+    return <div className="space-y-6">{[1,2,3].map(i => <Skeleton key={i} className="h-32" />)}</div>
   }
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-bold flex items-center gap-2">
-            <BarChart3 className="w-6 h-6" />
-            Monitoring Performance
-          </h2>
-          <p className="text-muted-foreground">
-            Métriques en temps réel de vos imports et traitement des données
-          </p>
-        </div>
-        
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => setIsLive(!isLive)}
-            className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-              isLive 
-                ? 'bg-green-100 text-green-600 border border-green-200' 
-                : 'bg-muted text-muted-foreground hover:bg-muted/80'
-            }`}
-          >
-            <Activity className="w-4 h-4" />
-            {isLive ? 'En Direct' : 'Mode Statique'}
-          </button>
-        </div>
+      <div>
+        <h2 className="text-2xl font-bold flex items-center gap-2"><BarChart3 className="w-6 h-6" />Monitoring Performance</h2>
+        <p className="text-muted-foreground">Métriques de vos imports et traitement des données</p>
       </div>
 
-      {/* Key Metrics */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">Imports Totaux</p>
-                <p className="text-2xl font-bold">{metrics.totalImports.toLocaleString()}</p>
-                <p className="text-xs text-green-600 flex items-center gap-1">
-                  <TrendingUp className="w-3 h-3" />
-                  +12% ce mois
-                </p>
-              </div>
-              <Database className="w-8 h-8 text-blue-500" />
+        <Card><CardContent className="p-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-muted-foreground">Imports Totaux</p>
+              <p className="text-2xl font-bold">{(data?.totalImports || 0).toLocaleString()}</p>
             </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">Taux de Succès</p>
-                <p className={`text-2xl font-bold ${getMetricColor(metrics.successRate)}`}>
-                  {metrics.successRate.toFixed(1)}%
-                </p>
-                <Progress 
-                  value={metrics.successRate} 
-                  className="h-2 mt-1"
-                />
-              </div>
-              <CheckCircle className="w-8 h-8 text-green-500" />
+            <Database className="w-8 h-8 text-blue-500" />
+          </div>
+        </CardContent></Card>
+        <Card><CardContent className="p-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-muted-foreground">Taux de Succès</p>
+              <p className={`text-2xl font-bold ${getMetricColor(data?.successRate || 0)}`}>{(data?.successRate || 0).toFixed(1)}%</p>
+              <Progress value={data?.successRate || 0} className="h-2 mt-1" />
             </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">Temps Moyen</p>
-                <p className="text-2xl font-bold">{metrics.avgProcessingTime.toFixed(1)}s</p>
-                <p className="text-xs text-orange-600 flex items-center gap-1">
-                  <Clock className="w-3 h-3" />
-                  Objectif: &lt;2s
-                </p>
-              </div>
-              <Clock className="w-8 h-8 text-orange-500" />
+            <CheckCircle className="w-8 h-8 text-green-500" />
+          </div>
+        </CardContent></Card>
+        <Card><CardContent className="p-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-muted-foreground">Temps Moyen</p>
+              <p className="text-2xl font-bold">{(data?.avgProcessingTime || 0).toFixed(1)}s</p>
             </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">Débit</p>
-                <p className="text-2xl font-bold">{metrics.throughput}</p>
-                <p className="text-xs text-muted-foreground">items/h</p>
-              </div>
-              <Zap className="w-8 h-8 text-purple-500" />
+            <Clock className="w-8 h-8 text-orange-500" />
+          </div>
+        </CardContent></Card>
+        <Card><CardContent className="p-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-muted-foreground">Items/Job</p>
+              <p className="text-2xl font-bold">{data?.throughput || 0}</p>
             </div>
-          </CardContent>
-        </Card>
+            <Zap className="w-8 h-8 text-purple-500" />
+          </div>
+        </CardContent></Card>
       </div>
 
-      {/* Performance Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Import Trends */}
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <TrendingUp className="w-5 h-5" />
-              Tendances Import (24h)
-            </CardTitle>
-            <CardDescription>
-              Volume d'imports et taux d'erreur par période
-            </CardDescription>
+            <CardTitle className="flex items-center gap-2"><TrendingUp className="w-5 h-5" />Tendances Import</CardTitle>
           </CardHeader>
           <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <LineChart data={realTimeData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="time" />
-                <YAxis />
-                <Tooltip />
-                <Line 
-                  type="monotone" 
-                  dataKey="imports" 
-                  stroke="#3b82f6" 
-                  strokeWidth={2}
-                  name="Imports"
-                />
-                <Line 
-                  type="monotone" 
-                  dataKey="errors" 
-                  stroke="#ef4444" 
-                  strokeWidth={2}
-                  name="Erreurs"
-                />
-              </LineChart>
-            </ResponsiveContainer>
+            {(data?.trendData?.length || 0) > 0 ? (
+              <ResponsiveContainer width="100%" height={300}>
+                <LineChart data={data!.trendData}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="time" />
+                  <YAxis />
+                  <Tooltip />
+                  <Line type="monotone" dataKey="imports" stroke="#3b82f6" strokeWidth={2} name="Imports" />
+                  <Line type="monotone" dataKey="errors" stroke="#ef4444" strokeWidth={2} name="Erreurs" />
+                </LineChart>
+              </ResponsiveContainer>
+            ) : (
+              <p className="text-center text-muted-foreground py-12">Aucune donnée d'import</p>
+            )}
           </CardContent>
         </Card>
 
-        {/* Category Distribution */}
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Target className="w-5 h-5" />
-              Répartition par Catégorie
-            </CardTitle>
-            <CardDescription>
-              Distribution des imports par catégorie produit
-            </CardDescription>
+            <CardTitle className="flex items-center gap-2"><Target className="w-5 h-5" />Répartition par Catégorie</CardTitle>
           </CardHeader>
           <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <PieChart>
-                <Pie
-                  data={categoryData}
-                  cx="50%"
-                  cy="50%"
-                  outerRadius={100}
-                  fill="#8884d8"
-                  dataKey="value"
-                  label={({ name, value }) => `${name}: ${value}%`}
-                >
-                  {categoryData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
-                  ))}
-                </Pie>
-                <Tooltip />
-              </PieChart>
-            </ResponsiveContainer>
+            {(data?.categoryData?.length || 0) > 0 ? (
+              <ResponsiveContainer width="100%" height={300}>
+                <PieChart>
+                  <Pie data={data!.categoryData} cx="50%" cy="50%" outerRadius={100} dataKey="value" label={({ name, value }) => `${name}: ${value}%`}>
+                    {data!.categoryData.map((entry, index) => <Cell key={`cell-${index}`} fill={entry.color} />)}
+                  </Pie>
+                  <Tooltip />
+                </PieChart>
+              </ResponsiveContainer>
+            ) : (
+              <p className="text-center text-muted-foreground py-12">Aucune catégorie</p>
+            )}
           </CardContent>
         </Card>
       </div>
 
-      {/* Quality Metrics */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      {(data?.errorTypes?.length || 0) > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Qualité des Données</CardTitle>
+            <CardTitle className="flex items-center gap-2"><AlertTriangle className="w-5 h-5" />Analyse des Erreurs</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex items-center justify-between">
-              <span className="text-sm">Score Global</span>
-              <span className={`font-bold ${getMetricColor(metrics.dataQuality)}`}>
-                {metrics.dataQuality.toFixed(1)}%
-              </span>
-            </div>
-            <Progress 
-              value={metrics.dataQuality} 
-              className="h-2"
-            />
-            
-            <div className="space-y-2 text-sm">
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Complétude</span>
-                <span>92%</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Validité</span>
-                <span>87%</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Cohérence</span>
-                <span>89%</span>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">Satisfaction Utilisateur</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex items-center justify-between">
-              <span className="text-sm">Score NPS</span>
-              <span className={`font-bold ${getMetricColor(metrics.userSatisfaction)}`}>
-                {metrics.userSatisfaction.toFixed(1)}%
-              </span>
-            </div>
-            <Progress 
-              value={metrics.userSatisfaction} 
-              className="h-2"
-            />
-            
-            <div className="flex items-center gap-2">
-              <Users className="w-4 h-4 text-muted-foreground" />
-              <span className="text-sm text-muted-foreground">
-                Basé sur 1,247 retours utilisateur
-              </span>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">Charge Système</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex items-center justify-between">
-              <span className="text-sm">Utilisation</span>
-              <span className={`font-bold ${getMetricColor(metrics.systemLoad, false)}`}>
-                {metrics.systemLoad.toFixed(1)}%
-              </span>
-            </div>
-            <Progress 
-              value={metrics.systemLoad} 
-              className="h-2"
-            />
-            
-            <div className="flex items-center gap-2">
-              <Activity className="w-4 h-4 text-muted-foreground" />
-              <span className="text-sm text-muted-foreground">
-                Capacité optimale: &lt;80%
-              </span>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Error Analysis */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <AlertTriangle className="w-5 h-5" />
-            Analyse des Erreurs
-          </CardTitle>
-          <CardDescription>
-            Types d'erreurs les plus fréquents et leurs impacts
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {errorTypes.map((error, index) => (
-              <div key={index} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
-                <div className="flex items-center gap-3">
-                  <AlertTriangle className="w-4 h-4 text-orange-500" />
-                  <div>
-                    <p className="font-medium">{error.type}</p>
-                    <p className="text-sm text-muted-foreground">{error.count} occurrences</p>
+          <CardContent>
+            <div className="space-y-4">
+              {data!.errorTypes.map((error, index) => (
+                <div key={index} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+                  <div className="flex items-center gap-3">
+                    <AlertTriangle className="w-4 h-4 text-orange-500" />
+                    <div>
+                      <p className="font-medium">{error.type}</p>
+                      <p className="text-sm text-muted-foreground">{error.count} occurrences</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Progress value={error.percentage} className="w-20 h-2" />
+                    <span className="text-sm font-medium">{error.percentage}%</span>
                   </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <Progress value={error.percentage} className="w-20 h-2" />
-                  <span className="text-sm font-medium">{error.percentage}%</span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   )
 }
