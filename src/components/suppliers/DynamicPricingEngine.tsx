@@ -182,7 +182,7 @@ export function DynamicPricingEngine() {
 
       const { error } = await supabase
         .from('suppliers')
-        .update({ pricing_rules: pricingRulesData as any })
+        .update({ config: { pricing_rules: pricingRulesData } as any })
         .eq('id', ruleId)
 
       if (error) throw error
