@@ -15,7 +15,7 @@ import { Bell, Package, AlertCircle, TrendingUp, Users, CheckCircle2, Info, Aler
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { formatDistanceToNow } from "date-fns";
-import { fr } from "date-fns/locale";
+import { getDateFnsLocale } from "@/utils/dateFnsLocale";
 
 const TYPE_ICONS: Record<string, React.ElementType> = {
   success: CheckCircle2,
@@ -126,7 +126,7 @@ export function NotificationDropdown() {
                     </div>
                     <p className="text-xs text-muted-foreground line-clamp-2">{n.message}</p>
                     <p className="text-xs text-muted-foreground">
-                      {formatDistanceToNow(new Date(n.created_at), { addSuffix: true, locale: fr })}
+                      {formatDistanceToNow(new Date(n.created_at), { addSuffix: true, locale: getDateFnsLocale() })}
                     </p>
                   </div>
                 </DropdownMenuItem>
