@@ -13,7 +13,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '@/integrations/supabase/client'
 import { useState } from 'react'
 import { format } from 'date-fns'
-import { fr } from 'date-fns/locale'
+import { useDateFnsLocale } from '@/hooks/useDateFnsLocale'
 import { toast } from 'sonner'
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger
@@ -24,6 +24,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 
 export default function ScheduledReportsPage() {
+  const locale = useDateFnsLocale()
   const queryClient = useQueryClient()
   const [isCreateOpen, setIsCreateOpen] = useState(false)
   const [newReport, setNewReport] = useState({
@@ -248,7 +249,7 @@ export default function ScheduledReportsPage() {
                           </Badge>
                           {report.last_generated_at && (
                             <span className="text-xs text-muted-foreground">
-                              Dernier: {format(new Date(report.last_generated_at), 'dd MMM yyyy', { locale: fr })}
+                              Dernier: {format(new Date(report.last_generated_at), 'dd MMM yyyy', { locale })}
                             </span>
                           )}
                         </div>

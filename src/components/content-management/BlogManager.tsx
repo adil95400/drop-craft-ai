@@ -36,7 +36,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
-import { fr } from 'date-fns/locale';
+import { useDateFnsLocale } from '@/hooks/useDateFnsLocale';
 import { RichTextEditor } from './RichTextEditor';
 import { AIContentAssistant } from './AIContentAssistant';
 import { SEOAnalyzer } from './SEOAnalyzer';
@@ -70,6 +70,7 @@ const STATUS_OPTIONS = {
 const CATEGORIES = ['Actualités', 'Tutoriels', 'Guides', 'Études de cas', 'Annonces', 'E-commerce', 'Marketing'];
 
 export function BlogManager() {
+  const locale = useDateFnsLocale();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedStatus, setSelectedStatus] = useState<string>('all');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -451,7 +452,7 @@ export function BlogManager() {
                             {post.views || 0}
                           </span>
                           <span className="text-xs text-muted-foreground">
-                            {format(new Date(post.created_at), 'dd MMM yyyy', { locale: fr })}
+                            {format(new Date(post.created_at), 'dd MMM yyyy', { locale })}
                           </span>
                         </div>
                       </div>

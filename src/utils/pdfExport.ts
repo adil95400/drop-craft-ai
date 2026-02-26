@@ -1,5 +1,5 @@
 import { format } from 'date-fns';
-import { fr } from 'date-fns/locale';
+import { getDateFnsLocale } from '@/utils/dateFnsLocale';
 
 const loadPdfLibs = async () => {
   const [{ default: jsPDF }, { default: autoTable }] = await Promise.all([
@@ -75,7 +75,7 @@ export async function generatePDFReport(data: ReportData, options: PDFExportOpti
 
   doc.setFontSize(10);
   doc.setFont('helvetica', 'normal');
-  doc.text(`Généré le ${format(new Date(), 'dd MMMM yyyy à HH:mm', { locale: fr })}`, margin, 30);
+  doc.text(`Généré le ${format(new Date(), 'dd MMMM yyyy à HH:mm', { locale: getDateFnsLocale() })}`, margin, 30);
 
   yPos = 50;
 

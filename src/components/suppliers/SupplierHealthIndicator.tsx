@@ -3,7 +3,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { CheckCircle2, AlertCircle, XCircle, Loader2 } from 'lucide-react'
 import { useSupplierHealthCheck } from '@/hooks/useSupplierHealthCheck'
 import { formatDistanceToNow } from 'date-fns'
-import { fr } from 'date-fns/locale'
+import { useDateFnsLocale } from '@/hooks/useDateFnsLocale'
 
 interface SupplierHealthIndicatorProps {
   supplierId: string
@@ -11,6 +11,7 @@ interface SupplierHealthIndicatorProps {
 }
 
 export function SupplierHealthIndicator({ supplierId, showDetails = false }: SupplierHealthIndicatorProps) {
+  const locale = useDateFnsLocale()
   const { health, isLoading } = useSupplierHealthCheck(supplierId)
 
   if (isLoading) {
@@ -53,7 +54,7 @@ export function SupplierHealthIndicator({ supplierId, showDetails = false }: Sup
         <div>Produits: {health.productCount}</div>
         {health.lastSync && (
           <div>
-            Dernière sync: {formatDistanceToNow(new Date(health.lastSync), { addSuffix: true, locale: fr })}
+            Dernière sync: {formatDistanceToNow(new Date(health.lastSync), { addSuffix: true, locale })}
           </div>
         )}
         {health.errors.length > 0 && (

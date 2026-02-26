@@ -15,7 +15,7 @@ import {
   Eye
 } from 'lucide-react';
 import { format } from 'date-fns';
-import { fr } from 'date-fns/locale';
+import { useDateFnsLocale } from '@/hooks/useDateFnsLocale';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 
@@ -36,6 +36,7 @@ export function TrackingList({
 }: TrackingListProps) {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
+  const locale = useDateFnsLocale();
 
   const filteredData = trackingData.filter(track => {
     const matchesSearch = 
@@ -180,9 +181,9 @@ export function TrackingList({
                       <span>📦 {track.carrier}</span>
                       <span>👤 {track.customerName}</span>
                       {track.estimatedDelivery && (
-                        <span>📅 Prévu: {format(new Date(track.estimatedDelivery), 'dd MMM', { locale: fr })}</span>
+                        <span>📅 Prévu: {format(new Date(track.estimatedDelivery), 'dd MMM', { locale })}</span>
                       )}
-                      <span>🕐 MAJ: {format(new Date(track.lastUpdate), 'dd/MM HH:mm', { locale: fr })}</span>
+                      <span>🕐 MAJ: {format(new Date(track.lastUpdate), 'dd/MM HH:mm', { locale })}</span>
                     </div>
                   </div>
                 </div>

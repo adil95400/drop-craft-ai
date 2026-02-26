@@ -9,7 +9,7 @@ import {
   Sparkles, Loader2, CheckCircle2, AlertTriangle, Clock, Wand2, Globe, MessageSquare
 } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
-import { fr } from 'date-fns/locale'
+import { useDateFnsLocale } from '@/hooks/useDateFnsLocale'
 
 interface AIEnrichmentPanelProps {
   selectedProductIds: string[]
@@ -33,6 +33,7 @@ const TONES: { value: EnrichTone; label: string; description: string }[] = [
 ]
 
 export default function AIEnrichmentPanel({ selectedProductIds, onComplete }: AIEnrichmentPanelProps) {
+  const locale = useDateFnsLocale()
   const { jobs, activeJob, isEnriching, enrich } = useAIEnrichment()
   const [language, setLanguage] = useState<EnrichLanguage>('fr')
   const [tone, setTone] = useState<EnrichTone>('professionnel')
@@ -135,7 +136,7 @@ export default function AIEnrichmentPanel({ selectedProductIds, onComplete }: AI
                   </span>
                 </div>
                 <span className="text-xs text-muted-foreground">
-                  {formatDistanceToNow(new Date(job.created_at), { addSuffix: true, locale: fr })}
+                  {formatDistanceToNow(new Date(job.created_at), { addSuffix: true, locale })}
                 </span>
               </div>
             ))}

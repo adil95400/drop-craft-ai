@@ -10,7 +10,7 @@ import { useQuery } from '@tanstack/react-query'
 import { supabase } from '@/integrations/supabase/client'
 import { useState, useMemo } from 'react'
 import { format, formatDistanceToNow } from 'date-fns'
-import { fr } from 'date-fns/locale'
+import { useDateFnsLocale } from '@/hooks/useDateFnsLocale'
 
 interface WorkflowRun {
   id: string
@@ -27,6 +27,7 @@ interface WorkflowRun {
 }
 
 export default function WorkflowHistoryPage() {
+  const locale = useDateFnsLocale()
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState('all')
 
@@ -186,7 +187,7 @@ export default function WorkflowHistoryPage() {
                         <p className="font-medium text-sm">{run.workflow_name}</p>
                         <p className="text-xs text-muted-foreground">
                           {run.started_at
-                            ? formatDistanceToNow(new Date(run.started_at), { addSuffix: true, locale: fr })
+                            ? formatDistanceToNow(new Date(run.started_at), { addSuffix: true, locale })
                             : '—'}
                         </p>
                       </div>

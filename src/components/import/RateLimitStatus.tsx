@@ -5,9 +5,10 @@ import { Badge } from '@/components/ui/badge'
 import { AlertCircle, CheckCircle } from 'lucide-react'
 import { importRateLimiter } from '@/services/importRateLimiter'
 import { format } from 'date-fns'
-import { fr } from 'date-fns/locale'
+import { useDateFnsLocale } from '@/hooks/useDateFnsLocale'
 
 export const RateLimitStatus = () => {
+  const locale = useDateFnsLocale()
   const [status, setStatus] = useState<any>(null)
   const [isLoading, setIsLoading] = useState(true)
 
@@ -60,7 +61,7 @@ export const RateLimitStatus = () => {
         <Progress value={usagePercent} className="h-2" />
         
         <div className="text-xs text-muted-foreground">
-          Réinitialisation: {format(new Date(status.reset_at), 'PPp', { locale: fr })}
+          Réinitialisation: {format(new Date(status.reset_at), 'PPp', { locale })}
         </div>
 
         {isNearLimit && (

@@ -22,10 +22,11 @@ import {
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
-import { fr } from 'date-fns/locale';
+import { useDateFnsLocale } from '@/hooks/useDateFnsLocale';
 import { toast } from 'sonner';
 
 export default function ExtensionAPIPage() {
+  const locale = useDateFnsLocale();
   const { apiKeys, loading, generateApiKey, deleteApiKey, toggleApiKey, refetch } = useApiKeys();
   const [activeTab, setActiveTab] = useState('keys');
   const [showNewKeyDialog, setShowNewKeyDialog] = useState(false);
@@ -279,10 +280,10 @@ export default function ExtensionAPIPage() {
                               </code>
                               <span className="flex items-center gap-1">
                                 <Clock className="h-3 w-3" />
-                                Créée {format(new Date(key.created_at), 'dd MMM yyyy', { locale: fr })}
+                                Créée {format(new Date(key.created_at), 'dd MMM yyyy', { locale })}
                               </span>
                               {key.last_used_at && (
-                                <span>Dernière utilisation: {format(new Date(key.last_used_at), 'dd MMM', { locale: fr })}</span>
+                                <span>Dernière utilisation: {format(new Date(key.last_used_at), 'dd MMM', { locale })}</span>
                               )}
                             </div>
                           </div>

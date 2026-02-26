@@ -17,7 +17,7 @@ import {
   Facebook, DollarSign, MousePointer, Eye, ShoppingCart
 } from 'lucide-react';
 import { format } from 'date-fns';
-import { fr } from 'date-fns/locale';
+import { useDateFnsLocale } from '@/hooks/useDateFnsLocale';
 
 const CAMPAIGN_TYPES = [
   { value: 'product_feed', label: 'Flux Produits', icon: ShoppingCart },

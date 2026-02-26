@@ -31,7 +31,7 @@ import { ExtensionBidirectionalSync } from '@/components/extensions/ExtensionBid
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { formatDistanceToNow } from 'date-fns';
-import { fr } from 'date-fns/locale';
+import { useDateFnsLocale } from '@/hooks/useDateFnsLocale';
 import { cn } from '@/lib/utils';
 
 // Chrome Web Store URL - Replace [EXTENSION_ID] with actual ID after publication
@@ -77,6 +77,7 @@ const defaultSettings: ExtensionSettings = {
 };
 
 export default function ChromeExtensionPage() {
+  const locale = useDateFnsLocale();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -849,7 +850,7 @@ export default function ChromeExtensionPage() {
                             <div className="flex items-center gap-2 text-xs text-muted-foreground">
                               <span className="capitalize">{item.source_platform}</span>
                               <span>•</span>
-                              <span>{formatDistanceToNow(new Date(item.created_at), { addSuffix: true, locale: fr })}</span>
+                              <span>{formatDistanceToNow(new Date(item.created_at), { addSuffix: true, locale })}</span>
                             </div>
                           </div>
                           <Badge 
@@ -1243,7 +1244,7 @@ export default function ChromeExtensionPage() {
                       <div className="flex-1 min-w-0">
                         <p className="font-medium truncate">{item.product_name}</p>
                         <p className="text-xs text-muted-foreground">
-                          {item.source_platform} • {formatDistanceToNow(new Date(item.created_at), { addSuffix: true, locale: fr })}
+                          {item.source_platform} • {formatDistanceToNow(new Date(item.created_at), { addSuffix: true, locale })}
                         </p>
                       </div>
                       <Badge variant={item.status === 'success' ? 'default' : item.status === 'pending' ? 'secondary' : 'destructive'}>

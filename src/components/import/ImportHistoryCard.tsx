@@ -1,7 +1,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { ImportStatusBadge } from './ImportStatusBadge'
 import { formatDistanceToNow } from 'date-fns'
-import { fr } from 'date-fns/locale'
+import { useDateFnsLocale } from '@/hooks/useDateFnsLocale'
 import { Package, AlertCircle, CheckCircle2 } from 'lucide-react'
 
 interface ImportHistoryCardProps {
@@ -18,6 +18,7 @@ interface ImportHistoryCardProps {
 }
 
 export function ImportHistoryCard({ job }: ImportHistoryCardProps) {
+  const locale = useDateFnsLocale()
   return (
     <Card>
       <CardHeader>
@@ -27,7 +28,7 @@ export function ImportHistoryCard({ job }: ImportHistoryCardProps) {
             <CardDescription>
               {formatDistanceToNow(new Date(job.created_at), { 
                 addSuffix: true, 
-                locale: fr 
+                locale 
               })}
             </CardDescription>
           </div>

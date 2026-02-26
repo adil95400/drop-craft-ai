@@ -12,7 +12,7 @@ import { Switch } from '@/components/ui/switch'
 import { Calendar } from '@/components/ui/calendar'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { format } from 'date-fns'
-import { fr } from 'date-fns/locale'
+import { useDateFnsLocale } from '@/hooks/useDateFnsLocale'
 import { 
   Save, Eye, Send, Calendar as CalendarIcon, Image, 
   Link2, Hash, Target, Sparkles, FileText, Settings,
@@ -28,6 +28,7 @@ interface BlogEditorProps {
 }
 
 export function BlogEditor({ postId, onSave, onPublish }: BlogEditorProps) {
+  const locale = useDateFnsLocale()
   const { generatePost, generating } = useBlog()
   const [title, setTitle] = useState('')
   const [content, setContent] = useState('')
@@ -222,7 +223,7 @@ export function BlogEditor({ postId, onSave, onPublish }: BlogEditorProps) {
                       >
                         <CalendarIcon className="mr-2 h-4 w-4" />
                         {publishDate ? (
-                          format(publishDate, "PPP", { locale: fr })
+                          format(publishDate, "PPP", { locale })
                         ) : (
                           <span>Sélectionner une date</span>
                         )}

@@ -18,7 +18,7 @@ import {
   Clock, ShieldAlert, Filter
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
-import { fr } from 'date-fns/locale';
+import { useDateFnsLocale } from '@/hooks/useDateFnsLocale';
 
 const filterOptions: { value: AlertFilter; label: string; icon: React.ReactNode }[] = [
   { value: 'all', label: 'Toutes', icon: <Bell className="h-3.5 w-3.5" /> },
@@ -67,6 +67,7 @@ function AlertCard({
   onMarkRead: (id: string) => void;
   onDelete: (id: string) => void;
 }) {
+  const locale = useDateFnsLocale();
   return (
     <Card className={`transition-all ${!alert.is_read ? 'ring-1 ring-primary/20' : 'opacity-80'} ${getPriorityStyle(alert.priority)}`}>
       <CardContent className="p-4">
@@ -83,7 +84,7 @@ function AlertCard({
             )}
             <div className="flex items-center gap-2 text-xs text-muted-foreground">
               <Clock className="h-3 w-3" />
-              {formatDistanceToNow(new Date(alert.created_at), { addSuffix: true, locale: fr })}
+              {formatDistanceToNow(new Date(alert.created_at), { addSuffix: true, locale })}
               {alert.category && (
                 <Badge variant="outline" className="text-[10px] px-1">{alert.category}</Badge>
               )}
