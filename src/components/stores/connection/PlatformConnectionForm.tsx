@@ -222,7 +222,7 @@ export function PlatformConnectionForm({ platform, onConnect, onCancel }: Platfo
                       <FormControl>
                         <Input 
                           type="password"
-                          placeholder="shpat_xxxxxxxxxxxxxxxxxxxxxxxxxx"
+                          placeholder="••••••••••••••••"
                           {...field}
                         />
                       </FormControl>

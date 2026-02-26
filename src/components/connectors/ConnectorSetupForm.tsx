@@ -196,10 +196,10 @@ export const ConnectorSetupForm: React.FC<ConnectorSetupFormProps> = ({
   const getFieldPlaceholder = (field: string): string => {
     const placeholders: Record<string, string> = {
       shop_url: platform.id === 'shopify' ? 'monshop.myshopify.com' : 'https://monsite.com',
-      accessToken: 'shpat_...',
-      apiKey: 'Votre clé API',
-      clientId: 'ck_...',
-      clientSecret: 'cs_...',
+      accessToken: '••••••••••••••••',
+      apiKey: '••••••••••••••••',
+      clientId: '••••••••••••••••',
+      clientSecret: '••••••••••••••••',
       api_version: platform.id === 'shopify' ? '2023-10' : '3'
     };
     return placeholders[field] || '';

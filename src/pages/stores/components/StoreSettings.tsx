@@ -124,7 +124,7 @@ export function StoreSettings({ store, onUpdate }: StoreSettingsProps) {
               <Input
                 id="access_token"
                 type="password"
-                placeholder="shpat_..."
+                placeholder="••••••••••••••••"
                 value={credentials.access_token}
                 onChange={(e) => setCredentials({...credentials, access_token: e.target.value})}
               />

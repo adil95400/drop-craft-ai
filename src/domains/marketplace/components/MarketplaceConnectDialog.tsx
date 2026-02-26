@@ -35,7 +35,7 @@ const platformConfigs = {
     name: 'Shopify',
     fields: [
       { name: 'shop_url', label: 'URL de la boutique', placeholder: 'monboutique.myshopify.com', type: 'text' },
-      { name: 'access_token', label: "Token d'accès", placeholder: 'shpat_xxxxx', type: 'password' },
+      { name: 'access_token', label: "Token d'accès", placeholder: '••••••••••••••••', type: 'password' },
     ],
     schema: z.object({
       shop_url: z.string().min(1, 'URL requise'),
@@ -46,8 +46,8 @@ const platformConfigs = {
     name: 'WooCommerce',
     fields: [
       { name: 'shop_url', label: 'URL de la boutique', placeholder: 'https://monsite.com', type: 'text' },
-      { name: 'api_key', label: 'Clé API (Consumer Key)', placeholder: 'ck_xxxxx', type: 'text' },
-      { name: 'api_secret', label: 'Secret API (Consumer Secret)', placeholder: 'cs_xxxxx', type: 'password' },
+      { name: 'api_key', label: 'Clé API (Consumer Key)', placeholder: '••••••••••••••••', type: 'text' },
+      { name: 'api_secret', label: 'Secret API (Consumer Secret)', placeholder: '••••••••••••••••', type: 'password' },
     ],
     schema: z.object({
       shop_url: z.string().url('URL invalide').min(1, 'URL requise'),
@@ -58,7 +58,7 @@ const platformConfigs = {
   etsy: {
     name: 'Etsy',
     fields: [
-      { name: 'api_key', label: 'Clé API', placeholder: 'xxxxx', type: 'password' },
+      { name: 'api_key', label: 'Clé API', placeholder: '••••••••••••••••', type: 'password' },
       { name: 'shop_id', label: 'ID de la boutique', placeholder: '12345678', type: 'text' },
     ],
     schema: z.object({
@@ -69,10 +69,10 @@ const platformConfigs = {
   amazon: {
     name: 'Amazon',
     fields: [
-      { name: 'api_key', label: 'Access Key ID', placeholder: 'AKIA...', type: 'text' },
-      { name: 'api_secret', label: 'Secret Access Key', placeholder: 'xxxxx', type: 'password' },
-      { name: 'seller_id', label: 'Seller ID', placeholder: 'A...', type: 'text' },
-      { name: 'marketplace_id', label: 'Marketplace ID', placeholder: 'ATVPDKIKX0DER', type: 'text' },
+      { name: 'api_key', label: 'Access Key ID', placeholder: '••••••••••••••••', type: 'text' },
+      { name: 'api_secret', label: 'Secret Access Key', placeholder: '••••••••••••••••', type: 'password' },
+      { name: 'seller_id', label: 'Seller ID', placeholder: 'Votre identifiant vendeur', type: 'text' },
+      { name: 'marketplace_id', label: 'Marketplace ID', placeholder: 'Votre Marketplace ID', type: 'text' },
     ],
     schema: z.object({
       api_key: z.string().min(1, 'Access Key ID requis'),

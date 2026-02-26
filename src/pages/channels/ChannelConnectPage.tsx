@@ -50,7 +50,7 @@ const PLATFORMS_CONFIG: Record<string, PlatformConfig> = {
     longDescription: 'Synchronisez automatiquement vos produits, commandes et inventaire avec Shopify.',
     fields: [
       { key: 'shop_domain', label: 'Domaine de la boutique', placeholder: 'votre-boutique.myshopify.com', required: true },
-      { key: 'access_token', label: 'Token d\'accès API', placeholder: 'shpat_xxxxx', required: true, secret: true },
+      { key: 'access_token', label: 'Token d\'accès API', placeholder: '••••••••••••••••', required: true, secret: true },
     ],
     helpUrl: 'https://help.shopify.com/fr/manual/apps/custom-apps',
     features: ['Sync bidirectionnelle', 'Webhooks temps réel', 'Gestion multi-boutiques'],

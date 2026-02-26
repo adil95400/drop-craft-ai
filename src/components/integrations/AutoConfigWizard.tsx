@@ -67,7 +67,7 @@ const platformConfigs: Record<string, ConfigStep[]> = {
           name: 'access_token',
           label: "Token d'accès Admin",
           type: 'password',
-          placeholder: 'shpat_...',
+          placeholder: '••••••••••••••••',
           required: true,
           helpText: "Token d'accès à l'API Admin",
           helpLink: 'https://help.shopify.com/fr/manual/apps/app-types/custom-apps'
@@ -107,7 +107,7 @@ const platformConfigs: Record<string, ConfigStep[]> = {
           name: 'consumer_key',
           label: 'Consumer Key',
           type: 'password',
-          placeholder: 'ck_...',
+          placeholder: '••••••••••••••••',
           required: true,
           helpText: 'Disponible dans WooCommerce > Paramètres > Avancé > REST API',
           helpLink: 'https://woocommerce.com/document/woocommerce-rest-api/'
@@ -116,7 +116,7 @@ const platformConfigs: Record<string, ConfigStep[]> = {
           name: 'consumer_secret',
           label: 'Consumer Secret',
           type: 'password',
-          placeholder: 'cs_...',
+          placeholder: '••••••••••••••••',
           required: true,
           helpText: 'Secret associé à la clé Consumer',
           helpLink: 'https://woocommerce.com/document/woocommerce-rest-api/'
@@ -171,7 +171,7 @@ const platformConfigs: Record<string, ConfigStep[]> = {
           name: 'seller_id',
           label: 'Seller ID',
           type: 'text',
-          placeholder: 'A2...',
+          placeholder: 'Votre identifiant vendeur',
           required: true,
           helpText: 'Votre identifiant vendeur Amazon'
         },
@@ -179,7 +179,7 @@ const platformConfigs: Record<string, ConfigStep[]> = {
           name: 'mws_auth_token',
           label: 'MWS Auth Token',
           type: 'password',
-          placeholder: 'amzn.mws...',
+          placeholder: '••••••••••••••••',
           required: true,
           helpText: 'Token MWS depuis Seller Central'
         },
@@ -187,7 +187,7 @@ const platformConfigs: Record<string, ConfigStep[]> = {
           name: 'aws_access_key',
           label: 'AWS Access Key',
           type: 'password',
-          placeholder: 'AKIA...',
+          placeholder: '••••••••••••••••',
           required: true
         },
         {
