@@ -13,7 +13,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { format } from 'date-fns';
-import { fr } from 'date-fns/locale';
+import { getDateFnsLocale } from '@/utils/dateFnsLocale';
 import { EmailTemplatesManager } from '@/components/email/EmailTemplatesManager';
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
 import { AdvancedFeatureGuide, ADVANCED_GUIDES } from '@/components/guide';
@@ -245,7 +245,7 @@ const EmailMarketingPage: React.FC = () => {
                               ) : campaign.start_date ? (
                                 <span className="flex items-center gap-1">
                                   <Clock className="h-3 w-3" />
-                                  Prévu le {format(new Date(campaign.start_date), 'dd MMM yyyy', { locale: fr })}
+                                  Prévu le {format(new Date(campaign.start_date), 'dd MMM yyyy', { locale: getDateFnsLocale() })}
                                 </span>
                               ) : (
                                 <span>Brouillon - pas encore envoyé</span>
@@ -261,7 +261,7 @@ const EmailMarketingPage: React.FC = () => {
                               </p>
                             )}
                             <p className="text-xs text-muted-foreground">
-                              {format(new Date(campaign.created_at), 'dd/MM/yyyy', { locale: fr })}
+                              {format(new Date(campaign.created_at), 'dd/MM/yyyy', { locale: getDateFnsLocale() })}
                             </p>
                           </div>
                           {getStatusBadge(campaign.status || 'draft')}

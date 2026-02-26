@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { CheckCircle2, Eye, RotateCcw, Clock, TrendingUp, TrendingDown, Download, Filter } from 'lucide-react';
 import { usePriceRuleLogs } from '@/hooks/usePriceRules';
 import { formatDistanceToNow, format } from 'date-fns';
-import { fr } from 'date-fns/locale';
+import { getDateFnsLocale } from '@/utils/dateFnsLocale';
 import { toast } from 'sonner';
 
 export function PriceRuleLogsPanel({ ruleId }: { ruleId?: string }) {
@@ -96,7 +96,7 @@ export function PriceRuleLogsPanel({ ruleId }: { ruleId?: string }) {
                       <Badge variant={log.action === 'applied' ? 'default' : 'secondary'}>{actionLabels[log.action] || log.action}</Badge>
                     </div>
                     <span className="text-sm text-muted-foreground">
-                      {formatDistanceToNow(new Date(log.executed_at), { addSuffix: true, locale: fr })}
+                      {formatDistanceToNow(new Date(log.executed_at), { addSuffix: true, locale: getDateFnsLocale() })}
                     </span>
                   </div>
                   <div className="grid grid-cols-3 gap-4 text-sm">

@@ -32,7 +32,7 @@ import {
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { formatDistanceToNow } from 'date-fns'
-import { fr } from 'date-fns/locale'
+import { getDateFnsLocale } from '@/utils/dateFnsLocale'
 import { useChannelWebhooks } from '@/hooks/useChannelWebhooks'
 
 interface WebhookEvent {
@@ -254,7 +254,7 @@ export function WebhookEventsLog({
                           <p className="text-xs text-muted-foreground">
                             {formatDistanceToNow(new Date(event.created_at), { 
                               addSuffix: true, 
-                              locale: fr 
+                              locale: getDateFnsLocale() 
                             })}
                           </p>
                         </div>

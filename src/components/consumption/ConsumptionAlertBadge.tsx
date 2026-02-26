@@ -14,7 +14,7 @@ import {
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useConsumptionTracking, ConsumptionAlert } from '@/hooks/useConsumptionTracking';
 import { formatDistanceToNow } from 'date-fns';
-import { fr } from 'date-fns/locale';
+import { getDateFnsLocale } from '@/utils/dateFnsLocale';
 import { cn } from '@/lib/utils';
 
 const ALERT_STYLES = {
@@ -80,7 +80,7 @@ function AlertItem({ alert, onDismiss, onRead }: AlertItemProps) {
               •
             </span>
             <span className="text-xs text-muted-foreground">
-              {formatDistanceToNow(new Date(alert.created_at), { addSuffix: true, locale: fr })}
+              {formatDistanceToNow(new Date(alert.created_at), { addSuffix: true, locale: getDateFnsLocale() })}
             </span>
           </div>
         </div>
