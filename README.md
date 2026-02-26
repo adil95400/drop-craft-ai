@@ -82,6 +82,13 @@ L'application sera accessible sur http://localhost:5173
 - **[Guide des Tests](README.TESTING.md)** - Suite de tests automatisés (unitaires, E2E, intégration)
 - **[Guide de Sécurité](docs/SECURITY_GUIDELINES.md)** - Pratiques de sécurité et audit
 - **[Documentation API](docs/API_GUIDE.md)** - Référence de l'API publique
+- **[Playbook de Dépannage](docs/FAQ.md)** - Résolution de problèmes courants
+
+### 📖 Guides Utilisateur (in-app)
+
+- **[Centre d'aide](/knowledge-base)** - Articles, tutoriels vidéo et FAQ
+- **[Académie](/academy)** - Formations complètes (dropshipping, IA, marketing)
+- **[Getting Started](/onboarding)** - Guide de démarrage interactif
 
 ## 🏗️ Architecture
 
@@ -309,14 +316,14 @@ Voir [DEVELOPMENT_GUIDE.md](docs/DEVELOPMENT_GUIDE.md) pour :
 
 ## 📝 License
 
-Ce projet est sous licence MIT. Voir le fichier [LICENSE](LICENSE) pour plus de détails.
+Ce projet est sous licence MIT.
 
 ## 👥 Équipe & Support
 
 ### Support
 - **Documentation**: [docs/](docs/)
-- **Issues**: [GitHub Issues](https://github.com/your-repo/drop-craft-ai/issues)
-- **Email**: support@dropcraftai.com
+- **Centre d'aide in-app**: `/knowledge-base`
+- **Playbook dépannage**: [docs/FAQ.md](docs/FAQ.md)
 
 ### Monitoring & Status
 - **Sentry**: Error tracking en temps réel
