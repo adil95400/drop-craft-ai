@@ -181,7 +181,7 @@ export const useRealImportMethods = () => {
     error,
     createMethod: createMethod.mutate,
     executeImport: executeImport.mutate,
-    updateMethod: () => {},
+    updateMethod: (_id: string, _data: unknown) => { /* Method update not yet implemented - uses re-import workflow */ },
     deleteMethod: deleteMethod.mutate,
     isCreating: createMethod.isPending,
     isExecuting: executeImport.isPending,
