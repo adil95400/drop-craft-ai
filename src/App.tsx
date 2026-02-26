@@ -6,7 +6,7 @@
  * to improve initial page load for public pages like the landing page.
  */
 import { memo, useEffect, lazy, Suspense } from 'react';
-import { GoogleTracking } from '@/components/seo/GoogleTracking';
+import { usePageTracking } from '@/hooks/usePageTracking';
 import { Toaster } from '@/components/ui/toaster';
 import { Toaster as SonnerToaster } from '@/components/ui/sonner';
 import { ErrorBoundary } from '@/components/common/ErrorBoundary';
@@ -43,6 +43,7 @@ const initI18n = () => import('@/lib/i18n');
 const AppContent = memo(() => {
   useAutoTheme();
   usePerformanceMonitor();
+  usePageTracking();
   
   useEffect(() => {
     // Initialize i18n lazily
@@ -61,7 +62,7 @@ const AppContent = memo(() => {
         <div id="a11y-announcer" aria-live="polite" aria-atomic="true" className="sr-only" role="status" />
         
         {/* Lightweight offline status indicator (no framer-motion) */}
-        <GoogleTracking />
+        {/* Analytics tracking is handled by usePageTracking + initAnalytics */}
         <OfflineIndicatorLite />
         
         <div className="pb-20 md:pb-0">
