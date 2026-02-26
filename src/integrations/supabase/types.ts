@@ -12169,6 +12169,48 @@ export type Database = {
         }
         Relationships: []
       }
+      saved_workflows: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          last_run_at: string | null
+          name: string
+          nodes: Json
+          run_count: number | null
+          status: string
+          trigger_type: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          last_run_at?: string | null
+          name: string
+          nodes?: Json
+          run_count?: number | null
+          status?: string
+          trigger_type?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          last_run_at?: string | null
+          name?: string
+          nodes?: Json
+          run_count?: number | null
+          status?: string
+          trigger_type?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       scheduled_imports: {
         Row: {
           config: Json | null
