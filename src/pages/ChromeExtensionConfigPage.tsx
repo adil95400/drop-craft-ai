@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -30,14 +31,26 @@ export default function ChromeExtensionConfigPage() {
   const [copied, setCopied] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
 
-  // Generate API key (simulation)
-  const generateApiKey = () => {
-    const newKey = `dk_${Math.random().toString(36).substring(2, 15)}${Math.random().toString(36).substring(2, 15)}`;
-    setApiKey(newKey);
-    toast({
-      title: "Clé API générée",
-      description: "Copiez et conservez cette clé en lieu sûr.",
-    });
+  // Generate API key using secure database function
+  const generateApiKey = async () => {
+    try {
+      const { data, error } = await supabase.rpc('generate_api_key', {
+        key_name: 'Chrome Extension',
+        key_scopes: ['products:read', 'products:import', 'sync:read'],
+      });
+      if (error) throw error;
+      setApiKey(data);
+      toast({
+        title: "Clé API générée",
+        description: "Copiez et conservez cette clé en lieu sûr. Elle ne sera plus visible après.",
+      });
+    } catch (err: any) {
+      toast({
+        title: "Erreur",
+        description: err.message || "Impossible de générer la clé API",
+        variant: "destructive",
+      });
+    }
   };
 
   const copyToClipboard = (text: string) => {

@@ -209,28 +209,37 @@ export class StockSyncService {
   }
 
   private async fetchSupplierStock(supplier: any, product: any): Promise<number> {
-    // Simulate API call to supplier
-    // In real implementation, use appropriate connector (BigBuy, Eprolo, etc.)
-    
-    // Mock realistic stock fluctuation
-    const currentStock = product.stock_quantity || 0;
-    const variation = Math.floor(Math.random() * 21) - 10; // ±10 units
-    const newStock = Math.max(0, currentStock + variation);
-    
-    console.log(`📦 ${supplier.name} - ${product.sku}: ${currentStock} → ${newStock}`);
-    
-    return newStock;
+    // Query supplier_products for the latest stock data
+    const { data: supplierProduct } = await supabase
+      .from('supplier_products')
+      .select('stock_quantity')
+      .eq('supplier_id', supplier.id)
+      .eq('product_id', product.id)
+      .maybeSingle();
+
+    if (supplierProduct?.stock_quantity != null) {
+      return supplierProduct.stock_quantity;
+    }
+
+    // Fallback: keep current stock if no supplier data
+    return product.stock_quantity || 0;
   }
 
   private async fetchSupplierPrice(supplier: any, product: any): Promise<number> {
-    // Simulate API call to supplier for price updates
-    const currentPrice = product.price || 0;
-    const variation = (Math.random() - 0.5) * 0.1; // ±5% variation
-    const newPrice = Math.round(currentPrice * (1 + variation) * 100) / 100;
-    
-    console.log(`💰 ${supplier.name} - ${product.sku}: ${currentPrice} → ${newPrice}`);
-    
-    return newPrice;
+    // Query supplier_products for the latest price data
+    const { data: supplierProduct } = await supabase
+      .from('supplier_products')
+      .select('price, cost_price')
+      .eq('supplier_id', supplier.id)
+      .eq('product_id', product.id)
+      .maybeSingle();
+
+    if (supplierProduct?.price != null) {
+      return supplierProduct.price;
+    }
+
+    // Fallback: keep current price if no supplier data
+    return product.price || 0;
   }
 
   private async syncProductToPlatform(product: any, integration: any): Promise<{success: boolean, error?: string}> {
@@ -274,15 +283,22 @@ export class StockSyncService {
       }]
     };
 
-    // Mock API success with 95% rate
-    const success = Math.random() > 0.05;
-    
-    if (success) {
-      console.log(`✅ Shopify sync successful: ${product.sku}`);
-      return { success: true };
-    } else {
-      return { success: false, error: 'Shopify API error (simulated)' };
+    // Queue the sync via unified_sync_queue (real platform sync handled by backend)
+    const { error } = await supabase.from('unified_sync_queue').insert({
+      user_id: product.user_id,
+      sync_type: 'products',
+      entity_type: 'products',
+      entity_id: product.id,
+      action: 'update',
+      channels: JSON.stringify([{ integration_id: integration.id, platform: 'shopify' }]),
+      priority: 5,
+      payload: { stock_quantity: product.stock_quantity, price: product.price, sku: product.sku },
+    });
+
+    if (error) {
+      return { success: false, error: `Shopify sync queue error: ${error.message}` };
     }
+    return { success: true };
   }
 
   private async syncToWooCommerce(product: any, integration: any): Promise<{success: boolean, error?: string}> {
@@ -303,15 +319,22 @@ export class StockSyncService {
       images: product.image_urls?.map((url: string) => ({ src: url }))
     };
 
-    // Mock API success with 95% rate
-    const success = Math.random() > 0.05;
-    
-    if (success) {
-      console.log(`✅ WooCommerce sync successful: ${product.sku}`);
-      return { success: true };
-    } else {
-      return { success: false, error: 'WooCommerce API error (simulated)' };
+    // Queue the sync via unified_sync_queue (real platform sync handled by backend)
+    const { error } = await supabase.from('unified_sync_queue').insert({
+      user_id: product.user_id,
+      sync_type: 'products',
+      entity_type: 'products',
+      entity_id: product.id,
+      action: 'update',
+      channels: JSON.stringify([{ integration_id: integration.id, platform: 'woocommerce' }]),
+      priority: 5,
+      payload: { stock_quantity: product.stock_quantity, price: product.price, sku: product.sku },
+    });
+
+    if (error) {
+      return { success: false, error: `WooCommerce sync queue error: ${error.message}` };
     }
+    return { success: true };
   }
 
   private async adjustPricesAutomatically(userId: string, config: StockSyncConfig): Promise<{errors: string[]}> {
