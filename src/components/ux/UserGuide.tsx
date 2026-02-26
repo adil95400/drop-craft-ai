@@ -385,14 +385,9 @@ export function UserGuide() {
                   </a>
                 </Button>
                 <Button variant="outline" className="w-full justify-start" asChild>
-                  <a
-                    href="https://docs.example.com"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    aria-label="Documentation complète"
-                  >
+                  <a href="/knowledge-base" aria-label="Centre d'aide complet">
                     <ExternalLink className="h-4 w-4 mr-2" />
-                    Documentation complète
+                    Centre d'aide complet
                   </a>
                 </Button>
               </CardContent>
