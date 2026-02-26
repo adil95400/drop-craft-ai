@@ -23,10 +23,10 @@ export const WinnersTrendChart = ({ products }: WinnersTrendChartProps) => {
         day,
         score: slice.length > 0
           ? Math.round(slice.reduce((s, p) => s + (p.trending_score || 0), 0) / slice.length)
-          : Math.round(avgScore + (Math.random() - 0.5) * 10),
+          : Math.round(avgScore),
         demand: slice.length > 0
           ? Math.round(slice.reduce((s, p) => s + (p.market_demand || 0), 0) / slice.length)
-          : Math.round(avgDemand + (Math.random() - 0.5) * 10),
+          : Math.round(avgDemand),
       };
     });
   }, [products, avgScore, avgDemand]);

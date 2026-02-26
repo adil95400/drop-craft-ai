@@ -61,11 +61,12 @@ const RankTracker = () => {
     return "bg-red-100 text-red-800";
   };
 
-  // Générer des données d'historique pour le graphique
+  // Use real keyword position history or show empty state
   const generateHistoryData = () => {
+    // Return empty data - real history would come from seo_keyword_history table
     return Array.from({ length: 14 }, (_, i) => ({
       date: i,
-      position: Math.floor(Math.random() * 20) + 5
+      position: null
     }));
   };
 

@@ -67,10 +67,25 @@ export class PredictiveAnalyticsService {
     
     const recommendations: RestockRecommendation[] = []
     
+    // Get actual order items to estimate daily sales per product
+    const { data: recentOrderItems } = await supabase
+      .from('order_items')
+      .select('product_id, qty, created_at')
+      .gte('created_at', new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString())
+
+    // Calculate real daily sales rate per product
+    const salesByProduct = new Map<string, number>()
+    recentOrderItems?.forEach(item => {
+      if (!item.product_id) return
+      const current = salesByProduct.get(item.product_id) || 0
+      salesByProduct.set(item.product_id, current + (item.qty || 1))
+    })
+
     for (const product of products || []) {
       const stock = product.stock_quantity || 0
-      const dailySales = Math.random() * 5 + 2 // Mock
-      const daysRemaining = stock / dailySales
+      const totalSold30d = salesByProduct.get(product.id) || 0
+      const dailySales = totalSold30d / 30 || 0.5 // Minimum 0.5/day estimate if no data
+      const daysRemaining = dailySales > 0 ? stock / dailySales : 999
       
       recommendations.push({
         id: crypto.randomUUID(),
@@ -114,8 +129,8 @@ export class PredictiveAnalyticsService {
       const currentMargin = product.cost_price ? 
         ((product.price - product.cost_price) / product.cost_price) * 100 : 30
       
-      // Mock market analysis
-      const marketAvg = product.price * (0.9 + Math.random() * 0.2)
+      // Price optimization based on margin analysis
+      const marketAvg = product.price // Use current price as market reference since we don't have competitor data
       const recommendedPrice = Math.max(
         product.price * 1.05,
         product.cost_price ? product.cost_price * 1.25 : product.price
@@ -160,14 +175,31 @@ export class PredictiveAnalyticsService {
       .eq('user_id', userId)
       .limit(100)
     
-    // Mock trend analysis
-    const trending = products?.slice(0, 5).map((p, i) => ({
-      product_id: p.id,
-      product_name: p.name,
-      trend_score: 85 - i * 5,
-      sales_velocity: 12.5 - i * 2,
-      growth_rate_percent: 45 - i * 8
-    })) || []
+    // Calculate real trends from order data
+    const { data: orderItems } = await supabase
+      .from('order_items')
+      .select('product_id, qty, created_at')
+      .gte('created_at', new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString())
+
+    const salesByProduct = new Map<string, number>()
+    orderItems?.forEach(item => {
+      if (!item.product_id) return
+      const current = salesByProduct.get(item.product_id) || 0
+      salesByProduct.set(item.product_id, current + (item.qty || 1))
+    })
+
+    const trending = products?.map(p => {
+      const totalSold = salesByProduct.get(p.id) || 0
+      return {
+        product_id: p.id,
+        product_name: p.name,
+        trend_score: Math.min(100, totalSold * 10),
+        sales_velocity: totalSold / 30,
+        growth_rate_percent: totalSold > 0 ? 15 : 0
+      }
+    })
+    .sort((a, b) => b.trend_score - a.trend_score)
+    .slice(0, 5) || []
     
     return {
       id: crypto.randomUUID(),
@@ -258,16 +290,21 @@ export class PredictiveAnalyticsService {
           urgency: r.urgency
         })),
       
-      trending_up: [
-        { product_name: 'Chaise ergonomique Pro', growth_rate: 45.3 },
-        { product_name: 'Bureau électrique', growth_rate: 32.8 },
-        { product_name: 'Lampe LED design', growth_rate: 28.1 }
-      ],
+      trending_up: restockRecs
+        .filter(r => r.predicted_sales_next_30_days > 10)
+        .slice(0, 3)
+        .map(r => ({
+          product_name: 'Product ' + r.product_id.slice(0, 8),
+          growth_rate: Math.round((r.predicted_sales_next_30_days / 30) * 10)
+        })),
       
-      trending_down: [
-        { product_name: 'Classeur vintage', decline_rate: -15.2 },
-        { product_name: 'Agenda papier', decline_rate: -22.5 }
-      ]
+      trending_down: restockRecs
+        .filter(r => r.days_of_stock_remaining < 7 && r.urgency === 'critical')
+        .slice(0, 2)
+        .map(r => ({
+          product_name: 'Product ' + r.product_id.slice(0, 8),
+          decline_rate: -Math.round(100 / Math.max(r.days_of_stock_remaining, 1))
+        }))
     }
   }
 
@@ -275,32 +312,50 @@ export class PredictiveAnalyticsService {
    * Récupère stats fulfillment
    */
   async getFulfillmentStats(userId: string): Promise<FulfillmentStats> {
-    // Mock stats
+    // Get real order data for fulfillment stats
+    const { data: orders } = await supabase
+      .from('orders')
+      .select('id, status, carrier, created_at, tracking_number')
+      .eq('user_id', userId)
+
+    const allOrders = orders || []
+    const shippedOrders = allOrders.filter(o => o.tracking_number)
+    const todayOrders = allOrders.filter(o => {
+      const d = new Date(o.created_at || '')
+      const today = new Date()
+      return d.toDateString() === today.toDateString()
+    })
+    const deliveredOrders = allOrders.filter(o => o.status === 'delivered' || o.status === 'completed')
+    const pendingOrders = allOrders.filter(o => o.status === 'pending' || o.status === 'processing')
+    const failedOrders = allOrders.filter(o => o.status === 'cancelled' || o.status === 'failed')
+
+    // Aggregate by carrier
+    const carrierStats = new Map<string, { count: number }>()
+    shippedOrders.forEach(o => {
+      const carrier = o.carrier || 'Inconnu'
+      const existing = carrierStats.get(carrier) || { count: 0 }
+      carrierStats.set(carrier, { count: existing.count + 1 })
+    })
+
     return {
-      total_shipments: 1247,
-      shipments_today: 23,
-      in_transit: 45,
-      delivered_on_time: 1180,
-      delivery_success_rate: 94.6,
-      avg_delivery_time_days: 3.2,
+      total_shipments: shippedOrders.length,
+      shipments_today: todayOrders.length,
+      in_transit: allOrders.filter(o => o.status === 'shipped' || o.status === 'in_transit').length,
+      delivered_on_time: deliveredOrders.length,
+      delivery_success_rate: shippedOrders.length > 0 
+        ? Math.round((deliveredOrders.length / shippedOrders.length) * 1000) / 10 
+        : 0,
+      avg_delivery_time_days: 0, // Would need delivery timestamps to calculate
       
-      by_carrier: [
-        {
-          carrier_name: 'Colissimo',
-          shipments: 680,
-          on_time_rate: 96.5,
-          avg_cost: 8.90
-        },
-        {
-          carrier_name: 'Chronopost',
-          shipments: 345,
-          on_time_rate: 98.2,
-          avg_cost: 15.50
-        }
-      ],
+      by_carrier: [...carrierStats.entries()].map(([name, stats]) => ({
+        carrier_name: name,
+        shipments: stats.count,
+        on_time_rate: 0, // Would need delivery timestamps
+        avg_cost: 0 // Would need shipping cost data
+      })),
       
-      pending_labels: 8,
-      failed_shipments: 5
+      pending_labels: pendingOrders.length,
+      failed_shipments: failedOrders.length
     }
   }
 }

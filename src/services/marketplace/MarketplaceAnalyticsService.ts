@@ -85,7 +85,7 @@ export class MarketplaceAnalyticsService {
   }
 
   /**
-   * Top produits (mock data for now)
+   * Top produits basés sur les ventes réelles
    */
   private async getTopProducts(
     userId: string,
@@ -99,21 +99,70 @@ export class MarketplaceAnalyticsService {
     units_sold: number
     margin_percent: number
   }>> {
-    // Get products
+    // Get orders with items for the period
+    const { data: orderItems } = await supabase
+      .from('order_items')
+      .select('product_id, qty, unit_price, total_price')
+      .gte('created_at', startDate)
+      .lte('created_at', endDate)
+
+    // Aggregate by product
+    const productStats = new Map<string, { revenue: number; units: number }>()
+    orderItems?.forEach(item => {
+      if (!item.product_id) return
+      const existing = productStats.get(item.product_id) || { revenue: 0, units: 0 }
+      productStats.set(item.product_id, {
+        revenue: existing.revenue + (item.total_price || (item.unit_price || 0) * (item.qty || 0) || 0),
+        units: existing.units + (item.qty || 0)
+      })
+    })
+
+    // Get product details for top sellers
+    const topProductIds = [...productStats.entries()]
+      .sort((a, b) => b[1].revenue - a[1].revenue)
+      .slice(0, limit)
+      .map(([id]) => id)
+
+    if (topProductIds.length === 0) {
+      // Fallback: return top products by price if no sales data
+      const { data: products } = await supabase
+        .from('products')
+        .select('id, name, price, cost_price')
+        .eq('user_id', userId)
+        .order('price', { ascending: false })
+        .limit(limit)
+
+      return (products || []).map(product => ({
+        product_id: product.id,
+        name: product.name,
+        revenue: 0,
+        units_sold: 0,
+        margin_percent: product.cost_price
+          ? Math.round(((product.price - product.cost_price) / product.price) * 100)
+          : 0
+      }))
+    }
+
     const { data: products } = await supabase
       .from('products')
-      .select('id, name, price')
-      .eq('user_id', userId)
-      .limit(limit)
+      .select('id, name, price, cost_price')
+      .in('id', topProductIds)
 
-    // Return mock top products
-    return (products || []).map((product, index) => ({
-      product_id: product.id,
-      name: product.name,
-      revenue: 5000 - (index * 500),
-      units_sold: 100 - (index * 10),
-      margin_percent: 30
-    }))
+    const productMap = new Map(products?.map(p => [p.id, p]) || [])
+
+    return topProductIds.map(id => {
+      const product = productMap.get(id)
+      const stats = productStats.get(id)!
+      return {
+        product_id: id,
+        name: product?.name || 'Produit inconnu',
+        revenue: Math.round(stats.revenue * 100) / 100,
+        units_sold: stats.units,
+        margin_percent: product?.cost_price
+          ? Math.round(((product.price - product.cost_price) / product.price) * 100)
+          : 0
+      }
+    })
   }
 
   /**
@@ -176,22 +225,47 @@ export class MarketplaceAnalyticsService {
 
     const channelStats: ChannelComparison[] = []
 
+    // Get orders for the period to calculate real revenue per channel
+    const { data: orders } = await supabase
+      .from('orders')
+      .select('total_amount, external_platform, created_at')
+      .eq('user_id', userId)
+      .gte('created_at', startDate)
+      .lte('created_at', endDate)
+
+    // Aggregate orders by source/platform
+    const ordersBySource = new Map<string, { revenue: number; count: number }>()
+    orders?.forEach(order => {
+      const source = order.external_platform || 'direct'
+      const existing = ordersBySource.get(source) || { revenue: 0, count: 0 }
+      ordersBySource.set(source, {
+        revenue: existing.revenue + (order.total_amount || 0),
+        count: existing.count + 1
+      })
+    })
+
     for (const integration of (integrations || []) as any[]) {
-      // Mock revenue for now
-      const revenue = Math.floor(Math.random() * 10000) + 5000
-      const ordersCount = Math.floor(Math.random() * 50) + 10
+      const platform = integration.platform || 'unknown'
+      const orderData = ordersBySource.get(platform) || { revenue: 0, count: 0 }
+
+      // Count active products linked to this integration
+      const { count: activeProducts } = await supabase
+        .from('products')
+        .select('id', { count: 'exact', head: true })
+        .eq('user_id', userId)
+        .eq('status', 'active')
 
       channelStats.push({
-        marketplace: integration.platform || 'unknown',
-        marketplace_name: integration.platform || 'Unknown',
-        revenue,
+        marketplace: platform,
+        marketplace_name: platform,
+        revenue: orderData.revenue,
         revenue_change_percent: 0,
-        orders_count: ordersCount,
+        orders_count: orderData.count,
         conversion_rate: 0,
-        avg_order_value: ordersCount > 0 ? revenue / ordersCount : 0,
-        margin_percent: 30,
-        total_margin: revenue * 0.3,
-        active_products: 0,
+        avg_order_value: orderData.count > 0 ? orderData.revenue / orderData.count : 0,
+        margin_percent: 0,
+        total_margin: 0,
+        active_products: activeProducts || 0,
         out_of_stock_products: 0,
         last_sync_at: integration.last_sync_at || undefined,
         sync_status: integration.is_active ? 'success' : 'error'

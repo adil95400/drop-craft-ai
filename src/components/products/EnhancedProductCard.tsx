@@ -88,7 +88,17 @@ export const EnhancedProductCard = memo(function EnhancedProductCard({
   const queryClient = useQueryClient();
 
   const imageUrl = product.image_url;
-  const aiScore = (product as any).ai_score || Math.floor(Math.random() * 40) + 60;
+  // Use real AI score from product_scores or SEO quality, fallback to computed score based on completeness
+  const computedScore = [
+    product.image_url ? 20 : 0,
+    product.description ? 20 : 0,
+    product.cost_price ? 15 : 0,
+    (product.stock_quantity || 0) > 0 ? 15 : 0,
+    product.category ? 10 : 0,
+    product.sku ? 10 : 0,
+    product.status === 'active' ? 10 : 0,
+  ].reduce((a, b) => a + b, 0);
+  const aiScore = (product as any).ai_score || (product as any).quality_score || computedScore;
   const isWinner = (product as any).is_winner;
   const isTrending = (product as any).is_trending;
   
