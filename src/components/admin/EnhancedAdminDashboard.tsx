@@ -70,12 +70,12 @@ export const EnhancedAdminDashboard = () => {
 
       setMetrics({
         totalUsers: usersRes.count || 0,
-        activeUsers: Math.round((usersRes.count || 0) * 0.18),
+        activeUsers: ordersTodayRes.count || 0,
         totalOrders,
         totalRevenue,
         totalProducts: productsRes.count || 0,
         totalSuppliers: suppliersRes.count || 0,
-        systemLoad: 45 + Math.random() * 20,
+        systemLoad: totalApiCalls > 0 ? Math.min(95, Math.round((totalApiCalls / 10000) * 100)) : 0,
         databaseSize: 2.4,
         apiCalls: totalApiCalls,
         errorRate,

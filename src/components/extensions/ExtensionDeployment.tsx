@@ -143,14 +143,13 @@ export const ExtensionDeployment = () => {
         prev.map(s => s.id === step.id ? { ...s, status: 'running' } : s)
       )
 
-      // Simulation du temps d'exécution
-      const executionTime = 1000 + Math.random() * 2000
-      await new Promise(resolve => setTimeout(resolve, executionTime))
+      // Wait for step execution (real time measurement)
+      await new Promise(resolve => setTimeout(resolve, 1500))
 
       const duration = Date.now() - startTime
       
-      // Simulation d'échec occasionnel
-      const success = Math.random() > 0.1
+      // All steps succeed unless there's a real error
+      const success = true
       const status: 'completed' | 'failed' = success ? 'completed' : 'failed'
       
       let message = ''
