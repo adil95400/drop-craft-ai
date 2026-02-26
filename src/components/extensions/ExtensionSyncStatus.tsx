@@ -17,7 +17,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { formatDistanceToNow } from 'date-fns';
-import { fr } from 'date-fns/locale';
+import { getDateFnsLocale } from '@/utils/dateFnsLocale';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 
@@ -264,7 +264,7 @@ export function ExtensionSyncStatus() {
                         )}
                         {module.lastSync && (
                           <p className="text-xs text-muted-foreground">
-                            Sync: {formatDistanceToNow(new Date(module.lastSync), { addSuffix: true, locale: fr })}
+                            Sync: {formatDistanceToNow(new Date(module.lastSync), { addSuffix: true, locale: getDateFnsLocale() })}
                           </p>
                         )}
                       </div>

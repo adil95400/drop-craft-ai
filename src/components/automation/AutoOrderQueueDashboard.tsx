@@ -24,7 +24,7 @@ import {
 import { useAutoOrderQueue } from '@/hooks/useAutoOrderQueue'
 import { useAuth } from '@/contexts/AuthContext'
 import { formatDistanceToNow } from 'date-fns'
-import { fr } from 'date-fns/locale'
+import { getDateFnsLocale } from '@/utils/dateFnsLocale'
 
 const supplierIcons: Record<string, string> = {
   cj: '🚚',
@@ -244,7 +244,7 @@ export function AutoOrderQueueDashboard() {
                         </TableCell>
                         <TableCell>
                           <span className="text-sm text-muted-foreground">
-                            {formatDistanceToNow(new Date(item.created_at), { addSuffix: true, locale: fr })}
+                            {formatDistanceToNow(new Date(item.created_at), { addSuffix: true, locale: getDateFnsLocale() })}
                           </span>
                         </TableCell>
                         <TableCell className="text-right">
@@ -289,7 +289,7 @@ export function AutoOrderQueueDashboard() {
                                 <div className="text-sm">
                                   <span className="text-muted-foreground">Prochaine tentative: </span>
                                   <span className="font-medium">
-                                    {formatDistanceToNow(new Date(item.next_retry_at), { addSuffix: true, locale: fr })}
+                                    {formatDistanceToNow(new Date(item.next_retry_at), { addSuffix: true, locale: getDateFnsLocale() })}
                                   </span>
                                 </div>
                               )}

@@ -23,7 +23,7 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import { SupportTicket, useTicketMessages } from '@/hooks/useSupportTickets';
 import { format } from 'date-fns';
-import { fr } from 'date-fns/locale';
+import { getDateFnsLocale } from '@/utils/dateFnsLocale';
 
 interface TicketDetailModalProps {
   ticket: SupportTicket | null;
@@ -72,7 +72,7 @@ export function TicketDetailModal({ ticket, open, onOpenChange }: TicketDetailMo
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <Clock className="h-3.5 w-3.5" />
                 <span>
-                  Créé le {format(new Date(ticket.created_at), "d MMMM yyyy 'à' HH:mm", { locale: fr })}
+                  Créé le {format(new Date(ticket.created_at), "d MMMM yyyy 'à' HH:mm", { locale: getDateFnsLocale() })}
                 </span>
               </div>
             </div>
@@ -105,7 +105,7 @@ export function TicketDetailModal({ ticket, open, onOpenChange }: TicketDetailMo
                 <div className="flex items-center gap-2 mb-1">
                   <span className="font-medium text-sm">Vous</span>
                   <span className="text-xs text-muted-foreground">
-                    {format(new Date(ticket.created_at), "d MMM HH:mm", { locale: fr })}
+                    {format(new Date(ticket.created_at), "d MMM HH:mm", { locale: getDateFnsLocale() })}
                   </span>
                 </div>
                 <div className="bg-muted/50 rounded-lg p-3 text-sm">
@@ -140,7 +140,7 @@ export function TicketDetailModal({ ticket, open, onOpenChange }: TicketDetailMo
                           {msg.is_staff ? 'Support' : 'Vous'}
                         </span>
                         <span className="text-xs text-muted-foreground">
-                          {format(new Date(msg.created_at), "d MMM HH:mm", { locale: fr })}
+                          {format(new Date(msg.created_at), "d MMM HH:mm", { locale: getDateFnsLocale() })}
                         </span>
                       </div>
                       <div className={`rounded-lg p-3 text-sm ${

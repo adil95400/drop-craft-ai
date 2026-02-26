@@ -31,7 +31,7 @@ import {
 import { supabase } from '@/integrations/supabase/client'
 import { useQuery } from '@tanstack/react-query'
 import { format, subDays, startOfDay, endOfDay } from 'date-fns'
-import { fr } from 'date-fns/locale'
+import { getDateFnsLocale } from '@/utils/dateFnsLocale'
 import { cn } from '@/lib/utils'
 
 // =============================================================================
@@ -340,7 +340,7 @@ function AlertRow({ alert }: { alert: HistoricalAlert }) {
           <p className="text-sm text-muted-foreground line-clamp-2">{alert.message}</p>
         </div>
         <div className="text-right text-sm text-muted-foreground whitespace-nowrap">
-          <p>{format(new Date(alert.timestamp), 'dd MMM yyyy', { locale: fr })}</p>
+          <p>{format(new Date(alert.timestamp), 'dd MMM yyyy', { locale: getDateFnsLocale() })}</p>
           <p>{format(new Date(alert.timestamp), 'HH:mm')}</p>
         </div>
       </div>

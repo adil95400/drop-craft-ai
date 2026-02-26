@@ -17,7 +17,7 @@ import {
 } from 'lucide-react';
 import { MarketplaceType, MarketplaceCredentials, useMarketplaceConnectors } from '@/hooks/useMarketplaceConnectors';
 import { formatDistanceToNow } from 'date-fns';
-import { fr } from 'date-fns/locale';
+import { getDateFnsLocale } from '@/utils/dateFnsLocale';
 
 interface MarketplaceConfig {
   id: MarketplaceType;
@@ -180,7 +180,7 @@ export function MarketplaceConnectionCard({ platform }: MarketplaceConnectionCar
                 <CardTitle className="text-lg">{config.name}</CardTitle>
                 <p className="text-sm text-muted-foreground">
                   {isConnected && connection?.lastSync ? (
-                    `Sync: ${formatDistanceToNow(new Date(connection.lastSync), { addSuffix: true, locale: fr })}`
+                    `Sync: ${formatDistanceToNow(new Date(connection.lastSync), { addSuffix: true, locale: getDateFnsLocale() })}`
                   ) : (
                     'Non connecté'
                   )}

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { format } from 'date-fns'
-import { fr } from 'date-fns/locale'
+import { getDateFnsLocale } from '@/utils/dateFnsLocale'
 import {
   Dialog,
   DialogContent,
@@ -177,7 +177,7 @@ export function ProductHistoryDialog({
                         {getChangeLabel(entry.change_type)}
                       </Badge>
                       <span className="text-sm text-muted-foreground">
-                        {format(new Date(entry.created_at), 'PPp', { locale: fr })}
+                        {format(new Date(entry.created_at), 'PPp', { locale: getDateFnsLocale() })}
                       </span>
                     </div>
 

@@ -6,7 +6,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Loader2, Webhook, RefreshCw, Plus, Trash2, CheckCircle, Clock, AlertTriangle } from 'lucide-react';
 import { useShopifyWebhooks } from '@/hooks/useShopifyWebhooks';
 import { formatDistanceToNow } from 'date-fns';
-import { fr } from 'date-fns/locale';
+import { getDateFnsLocale } from '@/utils/dateFnsLocale';
 
 interface WebhookManagerProps {
   integrationId: string;
@@ -132,7 +132,7 @@ export function WebhookManager({ integrationId }: WebhookManagerProps) {
                         {webhook.topic}
                       </Badge>
                       <span className="text-xs text-muted-foreground">
-                        Créé {formatDistanceToNow(new Date(webhook.created_at), { addSuffix: true, locale: fr })}
+                        Créé {formatDistanceToNow(new Date(webhook.created_at), { addSuffix: true, locale: getDateFnsLocale() })}
                       </span>
                     </div>
                     <p className="text-xs text-muted-foreground mt-1 font-mono truncate">
@@ -258,7 +258,7 @@ export function WebhookManager({ integrationId }: WebhookManagerProps) {
                         {event.event_type}
                       </Badge>
                       <span className="text-xs text-muted-foreground">
-                        {formatDistanceToNow(new Date(event.created_at), { addSuffix: true, locale: fr })}
+                        {formatDistanceToNow(new Date(event.created_at), { addSuffix: true, locale: getDateFnsLocale() })}
                       </span>
                     </div>
                     {event.error_message && (
@@ -268,7 +268,7 @@ export function WebhookManager({ integrationId }: WebhookManagerProps) {
                     )}
                     {event.processed && event.processed_at && (
                       <p className="text-xs text-muted-foreground">
-                        Traité {formatDistanceToNow(new Date(event.processed_at), { addSuffix: true, locale: fr })}
+                        Traité {formatDistanceToNow(new Date(event.processed_at), { addSuffix: true, locale: getDateFnsLocale() })}
                       </p>
                     )}
                   </div>

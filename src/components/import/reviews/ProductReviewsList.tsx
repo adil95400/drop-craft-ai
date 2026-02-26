@@ -7,7 +7,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
-import { fr } from 'date-fns/locale';
+import { getDateFnsLocale } from '@/utils/dateFnsLocale';
 
 interface Review {
   id: string;
@@ -134,7 +134,7 @@ export function ProductReviewsList({ reviews, onRefresh }: ProductReviewsListPro
               <div className="flex items-center gap-3 mt-3 text-xs text-muted-foreground">
                 {review.review_date && (
                   <span>
-                    {format(new Date(review.review_date), 'd MMMM yyyy', { locale: fr })}
+                    {format(new Date(review.review_date), 'd MMMM yyyy', { locale: getDateFnsLocale() })}
                   </span>
                 )}
                 {review.helpful_count && review.helpful_count > 0 && (

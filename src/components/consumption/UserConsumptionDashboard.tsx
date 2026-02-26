@@ -39,7 +39,7 @@ import {
   ResponsiveContainer,
 } from 'recharts';
 import { format } from 'date-fns';
-import { fr } from 'date-fns/locale';
+import { getDateFnsLocale } from '@/utils/dateFnsLocale';
 
 const QUOTA_ICONS: Record<QuotaKey, React.ReactNode> = {
   products: <Package className="h-5 w-5 text-blue-500" />,
@@ -272,7 +272,7 @@ export function UserConsumptionDashboard() {
                       <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
                       <XAxis 
                         dataKey="date" 
-                        tickFormatter={(value) => format(new Date(value), 'dd/MM', { locale: fr })}
+                        tickFormatter={(value) => format(new Date(value), 'dd/MM', { locale: getDateFnsLocale() })}
                         className="text-xs"
                       />
                       <YAxis className="text-xs" />
@@ -282,7 +282,7 @@ export function UserConsumptionDashboard() {
                             const data = payload[0].payload;
                             return (
                               <div className="bg-background border rounded-lg p-3 shadow-lg">
-                                <p className="font-medium">{format(new Date(data.date), 'PPP', { locale: fr })}</p>
+                                <p className="font-medium">{format(new Date(data.date), 'PPP', { locale: getDateFnsLocale() })}</p>
                                 <p className="text-sm text-muted-foreground">Actions: {data.actions}</p>
                                 <p className="text-sm text-muted-foreground">Tokens: {data.tokens}</p>
                                 <p className="text-sm text-muted-foreground">Coût: ${data.cost.toFixed(4)}</p>

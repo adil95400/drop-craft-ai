@@ -33,7 +33,7 @@ import {
 } from 'lucide-react';
 import { useCRMLeads } from '@/hooks/useCRMLeads';
 import { formatDistanceToNow } from 'date-fns';
-import { fr } from 'date-fns/locale';
+import { getDateFnsLocale } from '@/utils/dateFnsLocale';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -312,7 +312,7 @@ export function LeadsManager() {
                         )}
 
                         <div className="text-xs text-muted-foreground">
-                          Créé {formatDistanceToNow(new Date(lead.created_at), { addSuffix: true, locale: fr })}
+                          Créé {formatDistanceToNow(new Date(lead.created_at), { addSuffix: true, locale: getDateFnsLocale() })}
                         </div>
                       </div>
 
