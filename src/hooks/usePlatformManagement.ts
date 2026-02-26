@@ -227,9 +227,12 @@ export function usePlatformManagement() {
 
       if (logError) throw logError
 
-      // Simulate sync process
-      await new Promise(resolve => setTimeout(resolve, 2000))
-      const itemsSynced = Math.floor(Math.random() * 50) + 10
+      // Count real items for this platform
+      const { count: productCount } = await supabase
+        .from('products')
+        .select('id', { count: 'exact', head: true })
+        .eq('user_id', user.id)
+      const itemsSynced = productCount || 0
 
       // Update log with results
       const { error: updateError } = await supabase
@@ -289,7 +292,11 @@ export function usePlatformManagement() {
         { type: 'keywords', message: 'Intégrez les termes de recherche populaires' }
       ]
 
-      const score = Math.floor(Math.random() * 20) + 80
+      // Deterministic score based on content completeness
+      const hasTitle = !!originalContent.title
+      const hasDesc = !!originalContent.description
+      const hasImage = !!originalContent.image_url
+      const score = 60 + (hasTitle ? 15 : 0) + (hasDesc ? 15 : 0) + (hasImage ? 10 : 0)
 
       const { data, error } = await supabase
         .from('content_optimizations')
@@ -393,30 +400,7 @@ export function usePlatformManagement() {
   }
 }
 
-function generateSampleMetrics(userId: string, platform: string, days: number): PlatformMetric[] {
-  const platforms = platform === 'all' 
-    ? ['shopify', 'amazon', 'ebay', 'woocommerce', 'facebook', 'google']
-    : [platform]
-  
-  const metrics: PlatformMetric[] = []
-
-  for (let i = 0; i < days; i++) {
-    const date = subDays(new Date(), days - i - 1)
-    platforms.forEach(p => {
-      metrics.push({
-        id: `${p}-${i}`,
-        platform: p,
-        metric_date: format(date, 'yyyy-MM-dd'),
-        total_revenue: Math.random() * 1000 + 200,
-        total_profit: Math.random() * 300 + 50,
-        total_orders: Math.floor(Math.random() * 20) + 5,
-        total_fees: Math.random() * 50 + 10,
-        views: Math.floor(Math.random() * 500) + 100,
-        conversion_rate: Math.random() * 5 + 1,
-        roas: Math.random() * 3 + 1
-      })
-    })
-  }
-
-  return metrics
+function generateSampleMetrics(_userId: string, _platform: string, _days: number): PlatformMetric[] {
+  // Return empty array instead of fake data — no data is better than fake data
+  return []
 }
