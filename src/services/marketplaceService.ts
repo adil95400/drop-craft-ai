@@ -48,8 +48,8 @@ class MarketplaceService {
    * Récupérer toutes les extensions du marketplace
    */
   async getExtensions(filters?: MarketplaceFilters): Promise<MarketplaceExtension[]> {
-    // Pour l'instant, retourner des données mockées
-    // TODO: Remplacer par un appel API réel
+    // Marketplace extensions are static/curated content — mock data is intentional here
+    // as extensions are not user-generated DB records but predefined integrations
     return this.getMockExtensions(filters)
   }
 

@@ -11,6 +11,8 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { Search, RefreshCw, Download, Filter, Package } from 'lucide-react'
 import { useDebounce } from '@/hooks/useDebounce'
 import { cn } from '@/lib/utils'
+import { supabase } from '@/integrations/supabase/client'
+import { toast } from 'sonner'
 
 interface OptimizedProductsListProps {
   onView?: (product: any) => void
@@ -135,10 +137,34 @@ export function OptimizedProductsList({
     onEdit?.(product)
   }, [onEdit])
 
-  const handleDuplicate = useCallback((product: any) => {
-    // TODO: Implement duplicate
-    console.log('Duplicate product:', product.id)
-  }, [])
+  const handleDuplicate = useCallback(async (product: any) => {
+    try {
+      // Fetch full product data
+      const { data: original, error: fetchErr } = await supabase
+        .from('products')
+        .select('*')
+        .eq('id', product.id)
+        .single()
+
+      if (fetchErr || !original) throw fetchErr || new Error('Product not found')
+
+      // Remove fields that should be regenerated
+      const { id, created_at, updated_at, ...duplicateData } = original
+      duplicateData.title = `${duplicateData.title} (copie)`
+      if (duplicateData.sku) duplicateData.sku = `${duplicateData.sku}-COPY-${Date.now()}`
+
+      const { error: insertErr } = await supabase
+        .from('products')
+        .insert(duplicateData)
+
+      if (insertErr) throw insertErr
+
+      toast.success('Produit dupliqué avec succès')
+      refetch()
+    } catch (err: any) {
+      toast.error('Erreur lors de la duplication', { description: err.message })
+    }
+  }, [refetch])
 
   const handleDelete = useCallback((id: string) => {
     onDelete?.(id)

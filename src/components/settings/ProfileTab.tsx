@@ -8,6 +8,7 @@ import { Save, Shield, RefreshCw } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useEnhancedAuth } from "@/hooks/useEnhancedAuth";
+import { useMFA } from "@/hooks/useMFA";
 import AvatarUpload from '@/components/common/AvatarUpload';
 import { RefreshProfileButton } from '@/components/auth/RefreshProfileButton';
 import { ProfileCompletionCard } from './ProfileCompletionCard';
@@ -32,6 +33,7 @@ export function ProfileTab({ profileData, setProfileData, onSave }: ProfileTabPr
   const navigate = useNavigate();
   const { profile, user } = useAuth();
   const { isAdmin, role } = useEnhancedAuth();
+  const { isEnabled: is2FAEnabled } = useMFA();
 
   const handleCompletionAction = (action: string) => {
     switch (action) {
@@ -57,7 +59,7 @@ export function ProfileTab({ profileData, setProfileData, onSave }: ProfileTabPr
       <ProfileCompletionCard
         hasAvatar={!!profile?.avatar_url}
         isEmailVerified={!!user?.email_confirmed_at}
-        has2FA={false} // TODO: Connect to actual 2FA status
+        has2FA={is2FAEnabled}
         hasCompany={!!profileData.company}
         hasWebsite={!!profileData.website}
         hasBio={!!profileData.bio}
