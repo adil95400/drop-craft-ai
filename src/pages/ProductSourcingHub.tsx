@@ -1,243 +1,506 @@
 import { useState } from 'react'
 import { Helmet } from 'react-helmet-async'
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Slider } from '@/components/ui/slider'
+import { Switch } from '@/components/ui/switch'
+import { Label } from '@/components/ui/label'
 import { Skeleton } from '@/components/ui/skeleton'
+import { Separator } from '@/components/ui/separator'
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet'
 import { 
-  Search, 
-  TrendingUp, 
-  Globe, 
-  Star,
-  Filter,
-  Download,
-  Eye,
-  Heart
+  Search, TrendingUp, Globe, Star, Filter, Download, Eye, Heart, 
+  Package, Truck, DollarSign, Flame, RotateCcw, Calculator,
+  ArrowUpDown, Zap, ShoppingCart, BarChart3, X
 } from 'lucide-react'
-import { useProductSourcing } from '@/hooks/useProductSourcing'
-import { AdvancedFeatureGuide } from '@/components/guide'
-import { ADVANCED_GUIDES } from '@/components/guide'
+import { useSupplierDiscovery, type DiscoveryProduct } from '@/hooks/useSupplierDiscovery'
+import { cn } from '@/lib/utils'
 
+// ─── Winning Score Badge ─────────────────────────────────────
+function WinningBadge({ score }: { score: number }) {
+  if (score >= 80) return (
+    <Badge className="bg-gradient-to-r from-primary to-accent text-primary-foreground border-0 gap-1">
+      <Flame className="h-3 w-3" /> Winner {score}
+    </Badge>
+  );
+  if (score >= 60) return (
+    <Badge variant="default" className="gap-1">
+      <TrendingUp className="h-3 w-3" /> Potentiel {score}
+    </Badge>
+  );
+  if (score >= 40) return (
+    <Badge variant="secondary" className="gap-1">
+      <BarChart3 className="h-3 w-3" /> Moyen {score}
+    </Badge>
+  );
+  return <Badge variant="outline" className="gap-1">Score {score}</Badge>;
+}
+
+// ─── Margin Indicator ────────────────────────────────────────
+function MarginBar({ percent }: { percent: number }) {
+  const color = percent >= 50 ? 'bg-primary' : percent >= 30 ? 'bg-accent' : percent >= 15 ? 'bg-secondary' : 'bg-destructive';
+  return (
+    <div className="flex items-center gap-2">
+      <div className="flex-1 h-2 rounded-full bg-muted overflow-hidden">
+        <div className={cn("h-full rounded-full transition-all", color)} style={{ width: `${Math.min(percent, 100)}%` }} />
+      </div>
+      <span className={cn("text-xs font-bold", percent >= 30 ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400')}>
+        {percent}%
+      </span>
+    </div>
+  );
+}
+
+// ─── Profit Calculator Modal ─────────────────────────────────
+function ProfitCalculator({ product }: { product: DiscoveryProduct }) {
+  const [quantity, setQuantity] = useState(100);
+  const [customSell, setCustomSell] = useState(product.selling_price);
+  const shippingCost = 2.5;
+  const profit = (customSell - product.cost_price - shippingCost) * quantity;
+  const margin = customSell > 0 ? ((customSell - product.cost_price - shippingCost) / customSell * 100) : 0;
+
+  return (
+    <div className="space-y-4 p-4 bg-muted/50 rounded-lg border">
+      <div className="flex items-center gap-2 text-sm font-semibold">
+        <Calculator className="h-4 w-4 text-primary" />
+        Simulateur de Profit
+      </div>
+      <div className="grid grid-cols-2 gap-3 text-sm">
+        <div>
+          <Label className="text-xs text-muted-foreground">Prix de vente</Label>
+          <Input 
+            type="number" 
+            value={customSell} 
+            onChange={e => setCustomSell(Number(e.target.value))} 
+            className="h-8 mt-1"
+          />
+        </div>
+        <div>
+          <Label className="text-xs text-muted-foreground">Quantité</Label>
+          <Input 
+            type="number" 
+            value={quantity} 
+            onChange={e => setQuantity(Number(e.target.value))} 
+            className="h-8 mt-1"
+          />
+        </div>
+      </div>
+      <div className="grid grid-cols-3 gap-2 text-center">
+        <div className="p-2 bg-background rounded">
+          <p className="text-xs text-muted-foreground">Coût unitaire</p>
+          <p className="font-bold text-sm">{(product.cost_price + shippingCost).toFixed(2)}€</p>
+        </div>
+        <div className="p-2 bg-background rounded">
+          <p className="text-xs text-muted-foreground">Marge nette</p>
+          <p className={cn("font-bold text-sm", margin >= 30 ? 'text-emerald-600' : 'text-amber-600')}>{margin.toFixed(1)}%</p>
+        </div>
+        <div className="p-2 bg-background rounded">
+          <p className="text-xs text-muted-foreground">Profit total</p>
+          <p className={cn("font-bold text-sm", profit > 0 ? 'text-emerald-600' : 'text-destructive')}>{profit.toFixed(2)}€</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Product Card ────────────────────────────────────────────
+function ProductCard({ product, onImport, isImporting }: {
+  product: DiscoveryProduct;
+  onImport: (p: DiscoveryProduct) => void;
+  isImporting: boolean;
+}) {
+  const [showCalc, setShowCalc] = useState(false);
+
+  return (
+    <Card className="overflow-hidden group hover:shadow-lg transition-shadow">
+      <div className="relative">
+        {product.image_url ? (
+          <img src={product.image_url} alt={product.title} className="w-full h-44 object-cover" loading="lazy" />
+        ) : (
+          <div className="w-full h-44 bg-muted flex items-center justify-center">
+            <Package className="h-10 w-10 text-muted-foreground" />
+          </div>
+        )}
+        <div className="absolute top-2 left-2">
+          <WinningBadge score={product.winning_score} />
+        </div>
+        <div className="absolute top-2 right-2">
+          <Badge variant="outline" className="bg-background/80 backdrop-blur-sm text-xs">
+            {product.source_platform}
+          </Badge>
+        </div>
+        {product.stock_quantity <= 0 && (
+          <div className="absolute inset-0 bg-background/60 flex items-center justify-center">
+            <Badge variant="destructive">Rupture de stock</Badge>
+          </div>
+        )}
+      </div>
+
+      <CardContent className="p-4 space-y-3">
+        <h3 className="font-semibold text-sm line-clamp-2 min-h-[2.5rem]">{product.title}</h3>
+        
+        {/* Price grid */}
+        <div className="grid grid-cols-3 gap-2 text-xs">
+          <div>
+            <p className="text-muted-foreground">Coût</p>
+            <p className="font-bold">{product.cost_price.toFixed(2)}€</p>
+          </div>
+          <div>
+            <p className="text-muted-foreground">Vente</p>
+            <p className="font-bold text-primary">{product.selling_price.toFixed(2)}€</p>
+          </div>
+          <div>
+            <p className="text-muted-foreground">Profit</p>
+            <p className="font-bold text-emerald-600 dark:text-emerald-400">
+              {(product.selling_price - product.cost_price).toFixed(2)}€
+            </p>
+          </div>
+        </div>
+
+        {/* Margin bar */}
+        <MarginBar percent={product.margin_percent} />
+
+        {/* Meta */}
+        <div className="flex items-center justify-between text-xs text-muted-foreground">
+          <span className="flex items-center gap-1">
+            <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
+            {product.rating}
+          </span>
+          <span className="flex items-center gap-1">
+            <Truck className="h-3 w-3" />
+            {product.shipping_time_days}j
+          </span>
+          <span className="flex items-center gap-1">
+            <Package className="h-3 w-3" />
+            {product.stock_quantity > 0 ? `${product.stock_quantity}` : 'Rupture'}
+          </span>
+        </div>
+
+        <Separator />
+
+        {/* Calculator toggle */}
+        {showCalc && <ProfitCalculator product={product} />}
+
+        {/* Actions */}
+        <div className="flex gap-2">
+          <Button 
+            size="sm" 
+            className="flex-1 gap-1"
+            onClick={() => onImport(product)}
+            disabled={isImporting || product.is_imported}
+          >
+            {product.is_imported ? (
+              <>Importé</>
+            ) : (
+              <><Download className="h-3.5 w-3.5" /> Importer</>
+            )}
+          </Button>
+          <Button 
+            size="icon" 
+            variant="outline" 
+            className="h-8 w-8"
+            onClick={() => setShowCalc(!showCalc)}
+          >
+            <Calculator className="h-3.5 w-3.5" />
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+// ─── Main Component ──────────────────────────────────────────
 export default function ProductSourcingHub() {
-  const [searchQuery, setSearchQuery] = useState('')
-  const { 
-    catalogProducts, 
-    isLoadingCatalog, 
-    platforms, 
-    isLoadingPlatforms,
-    favorites,
-    isLoadingFavorites,
-    calculateMargin,
-    importProduct,
-    isImporting,
-    addToFavorites 
-  } = useProductSourcing()
+  const {
+    products, isLoading, filters, updateFilter, resetFilters,
+    categories, platformList, stats, importProduct, isImporting
+  } = useSupplierDiscovery();
 
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault()
-    // Search is handled by filtering the existing data
-  }
+  const [showFilters, setShowFilters] = useState(false);
 
-  const filteredProducts = catalogProducts?.filter(p => 
-    !searchQuery || p.title.toLowerCase().includes(searchQuery.toLowerCase())
-  ) || []
+  const FilterPanel = () => (
+    <div className="space-y-5">
+      {/* Platform */}
+      <div>
+        <Label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Plateforme</Label>
+        <Select value={filters.platform} onValueChange={v => updateFilter('platform', v)}>
+          <SelectTrigger className="mt-1.5"><SelectValue /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Toutes</SelectItem>
+            {platformList.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}
+          </SelectContent>
+        </Select>
+      </div>
+
+      {/* Category */}
+      <div>
+        <Label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Catégorie</Label>
+        <Select value={filters.category} onValueChange={v => updateFilter('category', v)}>
+          <SelectTrigger className="mt-1.5"><SelectValue /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Toutes</SelectItem>
+            {categories.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+          </SelectContent>
+        </Select>
+      </div>
+
+      {/* Min Margin */}
+      <div>
+        <Label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+          Marge min: {filters.minMargin}%
+        </Label>
+        <Slider 
+          value={[filters.minMargin]} 
+          onValueChange={([v]) => updateFilter('minMargin', v)} 
+          min={0} max={80} step={5} 
+          className="mt-2"
+        />
+      </div>
+
+      {/* Max Price */}
+      <div>
+        <Label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+          Prix max: {filters.maxPrice < 9999 ? `${filters.maxPrice}€` : '∞'}
+        </Label>
+        <Slider 
+          value={[filters.maxPrice]} 
+          onValueChange={([v]) => updateFilter('maxPrice', v)} 
+          min={1} max={500} step={5} 
+          className="mt-2"
+        />
+      </div>
+
+      {/* Min Rating */}
+      <div>
+        <Label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+          Note min: {filters.minRating > 0 ? `${filters.minRating}★` : 'Toutes'}
+        </Label>
+        <Slider 
+          value={[filters.minRating]} 
+          onValueChange={([v]) => updateFilter('minRating', v)} 
+          min={0} max={5} step={0.5} 
+          className="mt-2"
+        />
+      </div>
+
+      {/* In Stock */}
+      <div className="flex items-center justify-between">
+        <Label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">En stock uniquement</Label>
+        <Switch checked={filters.inStock} onCheckedChange={v => updateFilter('inStock', v)} />
+      </div>
+
+      <Button variant="ghost" size="sm" className="w-full gap-2" onClick={resetFilters}>
+        <RotateCcw className="h-3.5 w-3.5" /> Réinitialiser
+      </Button>
+    </div>
+  );
 
   return (
     <>
       <Helmet>
-        <title>Sourcing Produits - Drop Craft AI</title>
-        <meta name="description" content="Trouvez les meilleurs produits à vendre depuis AliExpress, Amazon, CJ Dropshipping et plus" />
+        <title>Supplier Discovery Hub - ShopOpti</title>
+        <meta name="description" content="Découvrez les meilleurs produits gagnants depuis AliExpress, CJ, Alibaba et plus. Calculateur de profit intégré." />
       </Helmet>
 
       <div className="space-y-6">
-        <div>
-          <h1 className="text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent">
-            Product Sourcing Hub
-          </h1>
-          <p className="text-muted-foreground mt-1">
-            Trouvez les meilleurs produits depuis 6+ plateformes
-          </p>
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <h1 className="text-2xl font-bold flex items-center gap-2">
+              <Globe className="h-6 w-6 text-primary" />
+              Supplier Discovery Hub
+            </h1>
+            <p className="text-sm text-muted-foreground mt-1">
+              Trouvez les produits gagnants depuis {stats.suppliers} fournisseurs
+            </p>
+          </div>
         </div>
 
-        {/* Guide intégré */}
-        <AdvancedFeatureGuide {...ADVANCED_GUIDES.sourcing} />
+        {/* Stats */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <Card>
+            <CardContent className="p-4 flex items-center gap-3">
+              <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                <Package className="h-5 w-5 text-primary" />
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground">Produits</p>
+                <p className="text-xl font-bold">{stats.totalProducts}</p>
+              </div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="p-4 flex items-center gap-3">
+              <div className="h-10 w-10 rounded-lg bg-emerald-500/10 flex items-center justify-center">
+                <DollarSign className="h-5 w-5 text-emerald-600" />
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground">Marge moy.</p>
+                <p className="text-xl font-bold">{stats.avgMargin}%</p>
+              </div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="p-4 flex items-center gap-3">
+              <div className="h-10 w-10 rounded-lg bg-amber-500/10 flex items-center justify-center">
+                <Flame className="h-5 w-5 text-amber-600" />
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground">Winners</p>
+                <p className="text-xl font-bold">{stats.winningProducts}</p>
+              </div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="p-4 flex items-center gap-3">
+              <div className="h-10 w-10 rounded-lg bg-violet-500/10 flex items-center justify-center">
+                <ShoppingCart className="h-5 w-5 text-violet-600" />
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground">Fournisseurs</p>
+                <p className="text-xl font-bold">{stats.suppliers}</p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
 
-        {/* Search */}
+        {/* Search + Sort + Filter */}
         <Card>
-          <CardContent className="p-6">
-            <form onSubmit={handleSearch} className="flex gap-4">
-              <div className="flex-1">
+          <CardContent className="p-4">
+            <div className="flex flex-col sm:flex-row gap-3">
+              <div className="flex-1 relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
-                  placeholder="Rechercher des produits gagnants..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="h-12"
+                  placeholder="Rechercher produits, fournisseurs, catégories..."
+                  value={filters.search}
+                  onChange={(e) => updateFilter('search', e.target.value)}
+                  className="pl-10 h-10"
                 />
-              </div>
-              <Button type="submit" size="lg" className="px-8">
-                <Search className="h-5 w-5 mr-2" />
-                Rechercher
-              </Button>
-              <Button size="lg" variant="outline" type="button">
-                <Filter className="h-5 w-5" />
-              </Button>
-            </form>
-          </CardContent>
-        </Card>
-
-        {/* Platforms */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Globe className="h-5 w-5" />
-              Plateformes de Sourcing
-            </CardTitle>
-            <CardDescription>
-              Connectez vos plateformes préférées
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            {isLoadingPlatforms ? (
-              <div className="grid grid-cols-3 gap-4">
-                {Array.from({ length: 6 }).map((_, i) => (
-                  <Skeleton key={i} className="h-32" />
-                ))}
-              </div>
-            ) : (
-              <div className="grid grid-cols-3 gap-4">
-                {platforms?.map((platform) => (
-                  <div
-                    key={platform.name}
-                    className={`p-4 border rounded-lg text-center ${
-                      platform.active ? 'border-primary bg-primary/5' : 'border-border'
-                    }`}
+                {filters.search && (
+                  <Button 
+                    variant="ghost" size="icon" 
+                    className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7"
+                    onClick={() => updateFilter('search', '')}
                   >
-                    <div className="text-4xl mb-2">{platform.logo}</div>
-                    <h3 className="font-semibold mb-1">{platform.name}</h3>
-                    <p className="text-sm text-muted-foreground mb-2">{platform.products} produits</p>
-                    <Badge variant={platform.active ? 'default' : 'secondary'}>
-                      {platform.active ? 'Connecté' : 'Non connecté'}
-                    </Badge>
+                    <X className="h-3.5 w-3.5" />
+                  </Button>
+                )}
+              </div>
+              <Select value={filters.sortBy} onValueChange={(v: any) => updateFilter('sortBy', v)}>
+                <SelectTrigger className="w-[200px] h-10">
+                  <ArrowUpDown className="h-4 w-4 mr-2" />
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="winning_score">🔥 Score Winner</SelectItem>
+                  <SelectItem value="margin">💰 Meilleure marge</SelectItem>
+                  <SelectItem value="price_asc">↗️ Prix croissant</SelectItem>
+                  <SelectItem value="price_desc">↘️ Prix décroissant</SelectItem>
+                  <SelectItem value="rating">⭐ Meilleures notes</SelectItem>
+                  <SelectItem value="newest">🆕 Plus récents</SelectItem>
+                </SelectContent>
+              </Select>
+
+              {/* Mobile filter sheet */}
+              <Sheet open={showFilters} onOpenChange={setShowFilters}>
+                <SheetTrigger asChild>
+                  <Button variant="outline" className="gap-2 sm:hidden">
+                    <Filter className="h-4 w-4" /> Filtres
+                  </Button>
+                </SheetTrigger>
+                <SheetContent side="right">
+                  <SheetHeader>
+                    <SheetTitle>Filtres</SheetTitle>
+                  </SheetHeader>
+                  <div className="mt-6">
+                    <FilterPanel />
                   </div>
-                ))}
+                </SheetContent>
+              </Sheet>
+            </div>
+
+            {/* Active filter badges */}
+            {(filters.platform !== 'all' || filters.category !== 'all' || filters.minMargin > 0 || filters.inStock) && (
+              <div className="flex flex-wrap gap-2 mt-3">
+                {filters.platform !== 'all' && (
+                  <Badge variant="secondary" className="gap-1">
+                    {filters.platform}
+                    <X className="h-3 w-3 cursor-pointer" onClick={() => updateFilter('platform', 'all')} />
+                  </Badge>
+                )}
+                {filters.category !== 'all' && (
+                  <Badge variant="secondary" className="gap-1">
+                    {filters.category}
+                    <X className="h-3 w-3 cursor-pointer" onClick={() => updateFilter('category', 'all')} />
+                  </Badge>
+                )}
+                {filters.minMargin > 0 && (
+                  <Badge variant="secondary" className="gap-1">
+                    Marge ≥ {filters.minMargin}%
+                    <X className="h-3 w-3 cursor-pointer" onClick={() => updateFilter('minMargin', 0)} />
+                  </Badge>
+                )}
+                {filters.inStock && (
+                  <Badge variant="secondary" className="gap-1">
+                    En stock
+                    <X className="h-3 w-3 cursor-pointer" onClick={() => updateFilter('inStock', false)} />
+                  </Badge>
+                )}
               </div>
             )}
           </CardContent>
         </Card>
 
-        {/* Products */}
-        <Tabs defaultValue="trending" className="space-y-6">
-          <TabsList>
-            <TabsTrigger value="trending">
-              <TrendingUp className="h-4 w-4 mr-2" />
-              Catalogue ({filteredProducts.length})
-            </TabsTrigger>
-            <TabsTrigger value="bestsellers">
-              <Star className="h-4 w-4 mr-2" />
-              Best-sellers
-            </TabsTrigger>
-            <TabsTrigger value="saved">
-              <Heart className="h-4 w-4 mr-2" />
-              Favoris ({favorites?.length || 0})
-            </TabsTrigger>
-          </TabsList>
+        {/* Main content: sidebar filters + grid */}
+        <div className="flex gap-6">
+          {/* Desktop filter sidebar */}
+          <div className="hidden sm:block w-56 shrink-0">
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm flex items-center gap-2">
+                  <Filter className="h-4 w-4" /> Filtres
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <FilterPanel />
+              </CardContent>
+            </Card>
+          </div>
 
-          <TabsContent value="trending" className="space-y-4">
-            {isLoadingCatalog ? (
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {/* Product grid */}
+          <div className="flex-1">
+            <div className="flex items-center justify-between mb-4">
+              <p className="text-sm text-muted-foreground">
+                {products.length} produit{products.length !== 1 ? 's' : ''} trouvé{products.length !== 1 ? 's' : ''}
+              </p>
+            </div>
+
+            {isLoading ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {Array.from({ length: 6 }).map((_, i) => (
                   <Card key={i}>
-                    <Skeleton className="h-48 w-full" />
-                    <CardContent className="p-4">
-                      <Skeleton className="h-20 w-full" />
+                    <Skeleton className="h-44 w-full" />
+                    <CardContent className="p-4 space-y-2">
+                      <Skeleton className="h-4 w-3/4" />
+                      <Skeleton className="h-4 w-1/2" />
+                      <Skeleton className="h-8 w-full" />
                     </CardContent>
                   </Card>
                 ))}
               </div>
-            ) : filteredProducts.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {filteredProducts.map((product) => (
-                  <Card key={product.id} className="overflow-hidden">
-                    <div className="relative">
-                      {product.image_urls && product.image_urls[0] ? (
-                        <img
-                          src={product.image_urls[0]}
-                          alt={product.title}
-                          className="w-full h-48 object-cover"
-                        />
-                      ) : (
-                        <div className="w-full h-48 bg-muted flex items-center justify-center">
-                          <span className="text-muted-foreground">Pas d'image</span>
-                        </div>
-                      )}
-                      {product.status === 'trending' && (
-                        <Badge className="absolute top-2 right-2">
-                          <TrendingUp className="h-3 w-3 mr-1" />
-                          Trending
-                        </Badge>
-                      )}
-                    </div>
-                    <CardContent className="p-4">
-                      <h3 className="font-semibold mb-2 line-clamp-2">{product.title}</h3>
-                      
-                      <div className="flex items-center gap-1 mb-3">
-                        <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                        <span className="font-medium">4.5</span>
-                        <span className="text-sm text-muted-foreground">(0)</span>
-                      </div>
-
-                      <div className="grid grid-cols-2 gap-2 text-sm mb-4">
-                        <div>
-                          <p className="text-muted-foreground">Prix Vente</p>
-                          <p className="font-bold text-primary">{product.compare_at_price?.toFixed(2) || '0.00'}€</p>
-                        </div>
-                        <div>
-                          <p className="text-muted-foreground">Prix Coût</p>
-                          <p className="font-medium">{product.price?.toFixed(2) || '0.00'}€</p>
-                        </div>
-                        <div>
-                          <p className="text-muted-foreground">Marge</p>
-                          <p className="font-bold text-green-600">
-                            {calculateMargin(product.compare_at_price, product.price)}%
-                          </p>
-                        </div>
-                        <div>
-                          <p className="text-muted-foreground">Fournisseur</p>
-                          <p className="font-medium truncate">{product.supplier_name || 'N/A'}</p>
-                        </div>
-                      </div>
-
-                      <div className="flex gap-2">
-                        <Button 
-                          size="sm" 
-                          className="flex-1"
-                          onClick={() => importProduct(product.id)}
-                          disabled={isImporting || product.is_imported}
-                        >
-                          <Download className="h-4 w-4 mr-1" />
-                          {product.is_imported ? 'Importé' : 'Importer'}
-                        </Button>
-                        <Button size="sm" variant="outline">
-                          <Eye className="h-4 w-4" />
-                        </Button>
-                        <Button 
-                          size="sm" 
-                          variant="outline"
-                          onClick={() => addToFavorites(product.id)}
-                        >
-                          <Heart className="h-4 w-4" />
-                        </Button>
-                      </div>
-
-                      <div className="mt-3 pt-3 border-t">
-                        <Badge variant="outline" className="text-xs">
-                          {product.source_platform || 'Manuel'}
-                        </Badge>
-                      </div>
-                    </CardContent>
-                  </Card>
+            ) : products.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {products.map(product => (
+                  <ProductCard
+                    key={product.id}
+                    product={product}
+                    onImport={importProduct}
+                    isImporting={isImporting}
+                  />
                 ))}
               </div>
             ) : (
@@ -245,89 +508,18 @@ export default function ProductSourcingHub() {
                 <CardContent className="p-12 text-center">
                   <Search className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
                   <h3 className="text-lg font-semibold mb-2">Aucun produit trouvé</h3>
-                  <p className="text-muted-foreground">
-                    Ajoutez des produits au catalogue pour les voir ici
+                  <p className="text-muted-foreground mb-4">
+                    Ajoutez des produits fournisseurs ou ajustez vos filtres
                   </p>
+                  <Button variant="outline" onClick={resetFilters}>
+                    <RotateCcw className="h-4 w-4 mr-2" /> Réinitialiser les filtres
+                  </Button>
                 </CardContent>
               </Card>
             )}
-          </TabsContent>
-
-          <TabsContent value="bestsellers" className="space-y-4">
-            <Card>
-              <CardContent className="p-12 text-center">
-                <Star className="h-12 w-12 text-yellow-500 mx-auto mb-4" />
-                <h3 className="text-lg font-semibold mb-2">Best-sellers par Catégorie</h3>
-                <p className="text-muted-foreground mb-4">
-                  Découvrez les produits les plus vendus par catégorie
-                </p>
-                <Button>
-                  Explorer les Best-sellers
-                </Button>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="saved" className="space-y-4">
-            {isLoadingFavorites ? (
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {Array.from({ length: 3 }).map((_, i) => (
-                  <Card key={i}>
-                    <Skeleton className="h-48 w-full" />
-                    <CardContent className="p-4">
-                      <Skeleton className="h-20 w-full" />
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            ) : favorites && favorites.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {favorites.map((product) => (
-                  <Card key={product.id} className="overflow-hidden">
-                    <div className="relative">
-                      {product.image_urls && product.image_urls[0] ? (
-                        <img
-                          src={product.image_urls[0]}
-                          alt={product.title}
-                          className="w-full h-48 object-cover"
-                        />
-                      ) : (
-                        <div className="w-full h-48 bg-muted flex items-center justify-center">
-                          <span className="text-muted-foreground">Pas d'image</span>
-                        </div>
-                      )}
-                    </div>
-                    <CardContent className="p-4">
-                      <h3 className="font-semibold mb-2 line-clamp-2">{product.title}</h3>
-                      <div className="flex gap-2">
-                        <Button 
-                          size="sm" 
-                          className="flex-1"
-                          onClick={() => importProduct(product.id)}
-                          disabled={isImporting || product.is_imported}
-                        >
-                          <Download className="h-4 w-4 mr-1" />
-                          {product.is_imported ? 'Importé' : 'Importer'}
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            ) : (
-              <Card>
-                <CardContent className="p-12 text-center">
-                  <Heart className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                  <h3 className="text-lg font-semibold mb-2">Aucun produit favori</h3>
-                  <p className="text-muted-foreground">
-                    Enregistrez vos produits préférés pour y accéder rapidement
-                  </p>
-                </CardContent>
-              </Card>
-            )}
-          </TabsContent>
-        </Tabs>
+          </div>
+        </div>
       </div>
     </>
-  )
+  );
 }
