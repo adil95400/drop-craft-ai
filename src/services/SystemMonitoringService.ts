@@ -1,9 +1,24 @@
+/**
+ * @module SystemMonitoringService
+ * @description Real-time system health monitoring and alerting service.
+ *
+ * Provides both static helpers (for quick one-off queries) and instance
+ * methods (for richer monitoring workflows including real-time polling,
+ * alert resolution, and performance trend analysis).
+ *
+ * Data sources:
+ *  - `system_health_monitoring` table
+ *  - `performance_metrics` table
+ *  - `system-monitoring` edge function
+ */
 import { supabase } from "@/integrations/supabase/client";
 
+/** Health snapshot for a single infrastructure component. */
 interface SystemHealthMonitoring {
   id: string;
   component_name: string;
   health_status: 'healthy' | 'warning' | 'critical';
+  /** Score 0–100 computed from error rate, latency, and uptime. */
   performance_score: number;
   error_rate?: number;
   response_time_ms?: number;
@@ -15,6 +30,9 @@ interface SystemHealthMonitoring {
 }
 
 export class SystemMonitoringService {
+  // ── Static convenience methods ─────────────────────────────────
+
+  /** Fetch all component health records, most-recently-checked first. */
   static async getSystemHealth() {
     const { data, error } = await (supabase as any)
       .from('system_health_monitoring')
@@ -25,6 +43,7 @@ export class SystemMonitoringService {
     return (data || []) as SystemHealthMonitoring[];
   }
 
+  /** Fetch system-level performance metrics. */
   static async getPerformanceMetrics() {
     const { data, error } = await (supabase as any)
       .from('performance_metrics')
@@ -36,36 +55,32 @@ export class SystemMonitoringService {
     return data || [];
   }
 
+  /** Trigger a server-side health check via the edge function. */
   static async runSystemHealthCheck() {
     const { data, error } = await supabase.functions.invoke('system-monitoring', {
-      body: {
-        action: 'health_check'
-      }
+      body: { action: 'health_check' }
     });
-
     if (error) throw error;
     return data;
   }
 
+  /** Request server-side system optimization (cache clear, index rebuild…). */
   static async optimizeSystemPerformance() {
     const { data, error } = await supabase.functions.invoke('system-monitoring', {
-      body: {
-        action: 'optimize_system'
-      }
+      body: { action: 'optimize_system' }
     });
-
     if (error) throw error;
     return data;
   }
 
+  // ── Instance methods ───────────────────────────────────────────
+
+  /** Fetch system health summary via the edge function. */
   async getSystemHealth() {
     try {
       const { data, error } = await supabase.functions.invoke('system-monitoring', {
-        body: {
-          action: 'get_system_health'
-        }
+        body: { action: 'get_system_health' }
       });
-
       if (error) throw error;
       return data;
     } catch (error) {
@@ -74,16 +89,16 @@ export class SystemMonitoringService {
     }
   }
 
+  /**
+   * Fetch performance metrics filtered by type and timeframe.
+   * @param metricType - Metric category filter (default: "all").
+   * @param timeframe  - Lookback window, e.g. "24h", "7d" (default: "24h").
+   */
   async getPerformanceMetrics(metricType: string = 'all', timeframe: string = '24h') {
     try {
       const { data, error } = await supabase.functions.invoke('system-monitoring', {
-        body: {
-          action: 'get_metrics',
-          metric_type: metricType,
-          timeframe: timeframe
-        }
+        body: { action: 'get_metrics', metric_type: metricType, timeframe }
       });
-
       if (error) throw error;
       return data;
     } catch (error) {
@@ -92,19 +107,19 @@ export class SystemMonitoringService {
     }
   }
 
+  /**
+   * Create a system alert via the monitoring edge function.
+   * @param alertType     - Category (e.g. "high_error_rate", "disk_full").
+   * @param severity      - Urgency level.
+   * @param message       - Human-readable description.
+   * @param componentName - Affected component identifier.
+   * @param metadata      - Additional context attached to the alert.
+   */
   async createSystemAlert(alertType: string, severity: 'low' | 'medium' | 'high' | 'critical', message: string, componentName: string, metadata: any = {}) {
     try {
       const { data, error } = await supabase.functions.invoke('system-monitoring', {
-        body: {
-          action: 'create_alert',
-          alert_type: alertType,
-          severity: severity,
-          message: message,
-          component_name: componentName,
-          metadata: metadata
-        }
+        body: { action: 'create_alert', alert_type: alertType, severity, message, component_name: componentName, metadata }
       });
-
       if (error) throw error;
       return data;
     } catch (error) {
@@ -113,17 +128,17 @@ export class SystemMonitoringService {
     }
   }
 
+  /**
+   * Retrieve system alerts with optional filters.
+   * @param severityFilter  - Filter by severity level.
+   * @param componentFilter - Filter by component name.
+   * @param limit           - Max results (default 50).
+   */
   async getSystemAlerts(severityFilter?: string, componentFilter?: string, limit: number = 50) {
     try {
       const { data, error } = await supabase.functions.invoke('system-monitoring', {
-        body: {
-          action: 'get_alerts',
-          severity_filter: severityFilter,
-          component_filter: componentFilter,
-          limit: limit
-        }
+        body: { action: 'get_alerts', severity_filter: severityFilter, component_filter: componentFilter, limit }
       });
-
       if (error) throw error;
       return data;
     } catch (error) {
@@ -132,6 +147,12 @@ export class SystemMonitoringService {
     }
   }
 
+  /**
+   * Push updated health metrics for a specific component.
+   * @param componentName    - Component identifier.
+   * @param healthStatus     - New health status.
+   * @param performanceScore - New score (0–100).
+   */
   async updateComponentHealth(
     componentName: string,
     healthStatus: 'healthy' | 'warning' | 'critical',
@@ -154,7 +175,6 @@ export class SystemMonitoringService {
           metrics_data: metricsData
         }
       });
-
       if (error) throw error;
       return data;
     } catch (error) {
@@ -163,13 +183,13 @@ export class SystemMonitoringService {
     }
   }
 
+  /** Fetch all health monitoring records from the database. */
   async getHealthMonitoring(): Promise<SystemHealthMonitoring[]> {
     try {
       const { data, error } = await (supabase as any)
         .from('system_health_monitoring')
         .select('*')
         .order('last_check_at', { ascending: false });
-
       if (error) throw error;
       return (data || []) as SystemHealthMonitoring[];
     } catch (error) {
@@ -178,6 +198,10 @@ export class SystemMonitoringService {
     }
   }
 
+  /**
+   * Get health data for a single component.
+   * @returns The component record, or `null` if not found.
+   */
   async getComponentHealth(componentName: string): Promise<SystemHealthMonitoring | null> {
     try {
       const { data, error } = await (supabase as any)
@@ -185,7 +209,6 @@ export class SystemMonitoringService {
         .select('*')
         .eq('component_name', componentName)
         .maybeSingle();
-
       if (error) throw error;
       return data as SystemHealthMonitoring | null;
     } catch (error) {
@@ -194,42 +217,34 @@ export class SystemMonitoringService {
     }
   }
 
-  // Real-time monitoring functions
+  // ── Real-time monitoring ───────────────────────────────────────
+
+  /**
+   * Start a monitoring pass for a list of components (or defaults).
+   * Generates synthetic metrics and updates each component's health record.
+   * @param components - Component names to monitor (uses defaults if empty).
+   */
   async startRealTimeMonitoring(components: string[] = []) {
     const defaultComponents = [
-      'api_server',
-      'database',
-      'file_storage',
-      'payment_processing',
-      'email_service',
-      'cdn'
+      'api_server', 'database', 'file_storage',
+      'payment_processing', 'email_service', 'cdn'
     ];
-
     const componentsToMonitor = components.length > 0 ? components : defaultComponents;
 
-    // Start monitoring each component
-    const monitoringPromises = componentsToMonitor.map(component => 
-      this.monitorComponent(component)
-    );
-
     try {
-      const results = await Promise.all(monitoringPromises);
-      return {
-        success: true,
-        monitored_components: componentsToMonitor,
-        results: results
-      };
+      const results = await Promise.all(
+        componentsToMonitor.map(c => this.monitorComponent(c))
+      );
+      return { success: true, monitored_components: componentsToMonitor, results };
     } catch (error) {
       console.error('Error starting real-time monitoring:', error);
       throw error;
     }
   }
 
+  /** Run a single monitoring cycle for one component. */
   private async monitorComponent(componentName: string) {
-    // Simulate component monitoring
     const metrics = await this.generateComponentMetrics(componentName);
-    
-    // Update component health based on metrics
     return await this.updateComponentHealth(
       componentName,
       metrics.healthStatus,
@@ -241,8 +256,11 @@ export class SystemMonitoringService {
     );
   }
 
+  /**
+   * Generate synthetic metrics for a component (simulated).
+   * In production this would query real infrastructure APIs.
+   */
   private async generateComponentMetrics(componentName: string) {
-    // Simulate different metrics based on component type
     const baseMetrics = {
       api_server: { baseScore: 85, baseResponseTime: 150, baseErrorRate: 2 },
       database: { baseScore: 90, baseResponseTime: 50, baseErrorRate: 1 },
@@ -255,21 +273,11 @@ export class SystemMonitoringService {
     const base = baseMetrics[componentName as keyof typeof baseMetrics] || 
                 { baseScore: 80, baseResponseTime: 200, baseErrorRate: 3 };
 
-    // Add some random variation
-    const performanceScore = Math.max(0, Math.min(100, 
-      base.baseScore + (Math.random() - 0.5) * 20
-    ));
-    const responseTime = Math.max(10, 
-      base.baseResponseTime + (Math.random() - 0.5) * base.baseResponseTime * 0.5
-    );
-    const errorRate = Math.max(0, 
-      base.baseErrorRate + (Math.random() - 0.5) * base.baseErrorRate
-    );
-    const uptime = Math.max(80, Math.min(100, 
-      98 + (Math.random() - 0.5) * 4
-    ));
+    const performanceScore = Math.max(0, Math.min(100, base.baseScore + (Math.random() - 0.5) * 20));
+    const responseTime = Math.max(10, base.baseResponseTime + (Math.random() - 0.5) * base.baseResponseTime * 0.5);
+    const errorRate = Math.max(0, base.baseErrorRate + (Math.random() - 0.5) * base.baseErrorRate);
+    const uptime = Math.max(80, Math.min(100, 98 + (Math.random() - 0.5) * 4));
 
-    // Determine health status
     let healthStatus: 'healthy' | 'warning' | 'critical' = 'healthy';
     if (performanceScore < 70 || errorRate > 5 || uptime < 90) {
       healthStatus = 'critical';
@@ -294,18 +302,20 @@ export class SystemMonitoringService {
     };
   }
 
-  // Alert management
+  // ── Alert management ───────────────────────────────────────────
+
+  /**
+   * Resolve (remove) a specific alert from a component's triggered alerts list.
+   * If no alerts remain, the component status reverts to "healthy".
+   */
   async resolveAlert(componentName: string, alertType: string) {
     try {
-      // Get component health data
       const component = await this.getComponentHealth(componentName);
       if (!component) return;
 
-      // Remove specific alert from alerts_triggered
       const alerts = Array.isArray(component.alerts_triggered) ? component.alerts_triggered : [];
       const filteredAlerts = alerts.filter((alert: any) => alert.type !== alertType);
 
-      // Update component with resolved alert
       const { error } = await (supabase as any)
         .from('system_health_monitoring')
         .update({
@@ -315,7 +325,6 @@ export class SystemMonitoringService {
         .eq('component_name', componentName);
 
       if (error) throw error;
-
       return { success: true, resolved_alert: alertType };
     } catch (error) {
       console.error('Error resolving alert:', error);
@@ -323,7 +332,14 @@ export class SystemMonitoringService {
     }
   }
 
-  // Performance analysis
+  // ── Performance analysis ───────────────────────────────────────
+
+  /**
+   * Analyze performance trends by comparing the most recent 10 data points
+   * against the preceding 10.
+   * @param metrics - Time-ordered array of metric records (must have a `value` field).
+   * @returns Trend direction, percentage change, and actionable recommendations.
+   */
   analyzePerformanceTrends(metrics: any[]) {
     if (!metrics || metrics.length < 2) {
       return {
@@ -334,8 +350,7 @@ export class SystemMonitoringService {
       };
     }
 
-    // Calculate trend over time
-    const recentMetrics = metrics.slice(-10); // Last 10 data points
+    const recentMetrics = metrics.slice(-10);
     const olderMetrics = metrics.slice(0, Math.min(10, metrics.length - 10));
 
     if (olderMetrics.length === 0) {
@@ -349,17 +364,14 @@ export class SystemMonitoringService {
 
     const recentAvg = recentMetrics.reduce((sum: number, m: any) => sum + (m.value || 0), 0) / recentMetrics.length;
     const olderAvg = olderMetrics.reduce((sum: number, m: any) => sum + (m.value || 0), 0) / olderMetrics.length;
-
     const performanceChange = ((recentAvg - olderAvg) / olderAvg) * 100;
+
     let trendDirection = 'stable';
     let trend = 'stable';
-
     if (Math.abs(performanceChange) > 10) {
       trend = performanceChange > 0 ? 'improving' : 'declining';
       trendDirection = performanceChange > 0 ? 'increasing' : 'decreasing';
     }
-
-    const recommendations = this.generatePerformanceRecommendations(trend, performanceChange, recentAvg);
 
     return {
       trend,
@@ -367,10 +379,11 @@ export class SystemMonitoringService {
       performance_change: Math.round(performanceChange * 100) / 100,
       recent_average: Math.round(recentAvg * 100) / 100,
       older_average: Math.round(olderAvg * 100) / 100,
-      recommendations
+      recommendations: this.generatePerformanceRecommendations(trend, performanceChange, recentAvg)
     };
   }
 
+  /** Generate human-readable recommendations from trend data. */
   private generatePerformanceRecommendations(trend: string, change: number, current: number): string[] {
     const recommendations: string[] = [];
 
@@ -396,7 +409,13 @@ export class SystemMonitoringService {
     return recommendations;
   }
 
-  // System health score calculation
+  // ── Aggregate health score ─────────────────────────────────────
+
+  /**
+   * Calculate an overall system health score from all component snapshots.
+   * @param components - Array of component health records.
+   * @returns Weighted average score, per-component scores, critical list, and recommendations.
+   */
   calculateSystemHealthScore(components: SystemHealthMonitoring[]): {
     overall_score: number;
     component_scores: { [key: string]: number };
@@ -420,26 +439,24 @@ export class SystemMonitoringService {
     components.forEach(component => {
       const score = component.performance_score || 0;
       componentScores[component.component_name] = score;
-      
       if (component.health_status === 'critical') {
         criticalComponents.push(component.component_name);
       }
-      
       totalScore += score;
       validComponents++;
     });
 
     const overallScore = validComponents > 0 ? Math.round(totalScore / validComponents) : 0;
-    const recommendations = this.generateSystemRecommendations(overallScore, criticalComponents, components);
 
     return {
       overall_score: overallScore,
       component_scores: componentScores,
       critical_components: criticalComponents,
-      recommendations
+      recommendations: this.generateSystemRecommendations(overallScore, criticalComponents, components)
     };
   }
 
+  /** Generate system-wide recommendations based on overall health. */
   private generateSystemRecommendations(overallScore: number, criticalComponents: string[], components: SystemHealthMonitoring[]): string[] {
     const recommendations: string[] = [];
 
@@ -458,13 +475,11 @@ export class SystemMonitoringService {
       recommendations.push(`Critical components need immediate attention: ${criticalComponents.join(', ')}`);
     }
 
-    // Check for high error rates
     const highErrorComponents = components.filter(c => (c.error_rate || 0) > 5);
     if (highErrorComponents.length > 0) {
       recommendations.push('High error rates detected in some components - investigate error patterns');
     }
 
-    // Check for low uptime
     const lowUptimeComponents = components.filter(c => (c.uptime_percentage || 100) < 95);
     if (lowUptimeComponents.length > 0) {
       recommendations.push('Some components have low uptime - review availability requirements');

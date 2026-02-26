@@ -1,10 +1,22 @@
+/**
+ * @module AutomationEngineService
+ * @description CRUD & execution service for automation rules.
+ *
+ * Rules are persisted in `automation_rules` / `automation_workflows` tables
+ * and executed server-side via the `ai-automation-engine` edge function.
+ *
+ * The service also exposes preset rule templates for quick onboarding
+ * (inventory reorder, dynamic pricing, automated campaigns).
+ */
 import { supabase } from '@/integrations/supabase/client';
 
+/** Domain model for an automation rule (mapped from DB records). */
 export interface AutomationRule {
   id: string;
   user_id: string;
   name: string;
   description?: string;
+  /** Discriminator: "inventory" | "pricing" | "marketing" | "custom" */
   rule_type: string;
   trigger_conditions: any;
   ai_conditions: any;
@@ -12,6 +24,7 @@ export interface AutomationRule {
   is_active: boolean;
   priority: number;
   execution_count: number;
+  /** 0–100 success percentage. */
   success_rate: number;
   last_executed_at?: string;
   performance_metrics: any;
@@ -19,6 +32,7 @@ export interface AutomationRule {
   updated_at: string;
 }
 
+/** Result returned after executing a rule via the AI engine. */
 export interface AutomationExecution {
   success: boolean;
   analysis: any;
@@ -27,7 +41,10 @@ export interface AutomationExecution {
   executedActions: number;
 }
 
-// Helper to map DB records to AutomationRule
+/**
+ * Map a raw database record to the {@link AutomationRule} domain model.
+ * Handles column-name differences between `automation_rules` and the UI model.
+ */
 function mapToAutomationRule(record: any): AutomationRule {
   return {
     id: record.id,
@@ -51,6 +68,7 @@ function mapToAutomationRule(record: any): AutomationRule {
 
 export class AutomationEngineService {
   
+  /** Fetch all automation rules for the authenticated user, newest first. */
   static async getAllRules(): Promise<AutomationRule[]> {
     const { data, error } = await supabase
       .from('automation_rules')
@@ -61,6 +79,11 @@ export class AutomationEngineService {
     return (data || []).map(mapToAutomationRule);
   }
 
+  /**
+   * Create a new automation rule.
+   * Inserts into `automation_workflows` and returns the mapped domain model.
+   * @throws Error if the user is not authenticated.
+   */
   static async createRule(ruleData: {
     name: string;
     description?: string;
@@ -94,6 +117,10 @@ export class AutomationEngineService {
     return mapToAutomationRule(data);
   }
 
+  /**
+   * Partially update an existing automation rule.
+   * Only provided fields are sent to the database.
+   */
   static async updateRule(id: string, updates: Partial<AutomationRule>): Promise<AutomationRule> {
     const dbUpdates: any = {};
     if (updates.name) dbUpdates.name = updates.name;
@@ -113,6 +140,7 @@ export class AutomationEngineService {
     return mapToAutomationRule(data);
   }
 
+  /** Delete a rule by ID. */
   static async deleteRule(id: string): Promise<void> {
     const { error } = await supabase
       .from('automation_rules')
@@ -122,6 +150,12 @@ export class AutomationEngineService {
     if (error) throw error;
   }
 
+  /**
+   * Execute a rule server-side via the AI automation engine edge function.
+   * @param ruleId    - The rule to execute.
+   * @param inputData - Contextual data (product, order, etc.) fed to the AI.
+   * @returns Execution result with decisions taken and actions performed.
+   */
   static async executeRule(ruleId: string, inputData: any): Promise<AutomationExecution> {
     const { data: currentUser } = await supabase.auth.getUser();
     if (!currentUser.user) throw new Error('Not authenticated');
@@ -138,10 +172,16 @@ export class AutomationEngineService {
     return data;
   }
 
+  /** Convenience wrapper to enable/disable a rule. */
   static async toggleRuleStatus(id: string, isActive: boolean): Promise<AutomationRule> {
     return this.updateRule(id, { is_active: isActive });
   }
 
+  /**
+   * Fetch execution history for a specific rule from activity logs.
+   * @param ruleId - The rule whose history to retrieve.
+   * @returns Last 50 activity log entries for this rule.
+   */
   static async getExecutionHistory(ruleId: string) {
     const { data, error } = await (supabase
       .from('activity_logs') as any)
@@ -155,6 +195,10 @@ export class AutomationEngineService {
     return data || [];
   }
 
+  /**
+   * Get all active rules of a specific type.
+   * @param ruleType - Filter value (e.g. "inventory", "pricing").
+   */
   static async getRulesByType(ruleType: string): Promise<AutomationRule[]> {
     const { data, error } = await supabase
       .from('automation_rules')
@@ -167,7 +211,10 @@ export class AutomationEngineService {
     return (data || []).map(mapToAutomationRule);
   }
 
-  // Templates de règles prédéfinies
+  /**
+   * Return built-in preset rule templates for quick setup.
+   * These are not persisted — they serve as starting points for {@link createRule}.
+   */
   static getPresetRules(): Partial<AutomationRule>[] {
     return [
       {
