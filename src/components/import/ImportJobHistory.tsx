@@ -18,7 +18,7 @@ import {
 import { useImportJobsReal } from '@/hooks/useImportJobsReal'
 import { useJobActions } from '@/hooks/useJobActions'
 import { formatDistanceToNow } from 'date-fns'
-import { fr } from 'date-fns/locale'
+import { getDateFnsLocale } from '@/utils/dateFnsLocale'
 
 export function ImportJobHistory() {
   const { jobs, isLoading, deleteJob, isDeleting } = useImportJobsReal()
@@ -112,7 +112,7 @@ export function ImportJobHistory() {
                             </div>
                           )}
                           <div className="mt-1">
-                            {formatDistanceToNow(new Date(job.created_at), { addSuffix: true, locale: fr })}
+                            {formatDistanceToNow(new Date(job.created_at), { addSuffix: true, locale: getDateFnsLocale() })}
                           </div>
                         </div>
 

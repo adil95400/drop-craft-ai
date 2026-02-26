@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { useStripeSubscription } from '@/hooks/useStripeSubscription';
 import { format } from 'date-fns';
-import { fr } from 'date-fns/locale';
+import { getDateFnsLocale } from '@/utils/dateFnsLocale';
 
 export function CurrentSubscription() {
   const { subscription, loading, checkSubscription, openCustomerPortal } = useStripeSubscription();
@@ -61,7 +61,7 @@ export function CurrentSubscription() {
             <div>
               <p className="font-medium">Renouvellement</p>
               <p className="text-muted-foreground">
-                {format(new Date(subscription.subscription_end), "d MMMM yyyy", { locale: fr })}
+                {format(new Date(subscription.subscription_end), "d MMMM yyyy", { locale: getDateFnsLocale() })}
               </p>
             </div>
           </div>

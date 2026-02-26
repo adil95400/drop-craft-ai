@@ -19,7 +19,7 @@ import {
 import { Return, useReturns } from '@/hooks/useReturns';
 import { EnhancedReturnFlow } from './EnhancedReturnFlow';
 import { formatDistanceToNow } from 'date-fns';
-import { fr } from 'date-fns/locale';
+import { getDateFnsLocale } from '@/utils/dateFnsLocale';
 
 const STATUS_CONFIG: Record<string, { label: string; icon: React.ReactNode; variant: 'default' | 'secondary' | 'destructive' | 'outline' }> = {
   pending: { label: 'En attente', icon: <Clock className="h-4 w-4" />, variant: 'secondary' },
@@ -98,7 +98,7 @@ export function EnhancedReturnFlowWrapper() {
             <div>
               <p className="font-mono font-bold">{returnItem.rma_number}</p>
               <p className="text-sm text-muted-foreground">
-                {formatDistanceToNow(new Date(returnItem.created_at), { addSuffix: true, locale: fr })}
+                {formatDistanceToNow(new Date(returnItem.created_at), { addSuffix: true, locale: getDateFnsLocale() })}
               </p>
             </div>
             <Badge variant={statusConfig.variant} className="flex items-center gap-1">

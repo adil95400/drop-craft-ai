@@ -32,7 +32,7 @@ import {
 } from 'lucide-react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { format } from 'date-fns'
-import { fr } from 'date-fns/locale'
+import { getDateFnsLocale } from '@/utils/dateFnsLocale'
 
 interface OrderEditModalProps {
   open: boolean
@@ -173,7 +173,7 @@ export function OrderEditModal({ open, onOpenChange, order, onSuccess }: OrderEd
           <div>
             <div className="text-sm text-muted-foreground">Date</div>
             <div className="font-medium">
-              {format(new Date(order.created_at), 'dd MMM yyyy', { locale: fr })}
+              {format(new Date(order.created_at), 'dd MMM yyyy', { locale: getDateFnsLocale() })}
             </div>
           </div>
         </div>
@@ -450,11 +450,11 @@ export function OrderEditModal({ open, onOpenChange, order, onSuccess }: OrderEd
                     </div>
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">Créée le</span>
-                      <span>{format(new Date(order.created_at), 'dd/MM/yyyy HH:mm', { locale: fr })}</span>
+                      <span>{format(new Date(order.created_at), 'dd/MM/yyyy HH:mm', { locale: getDateFnsLocale() })}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">Mise à jour</span>
-                      <span>{format(new Date(order.updated_at), 'dd/MM/yyyy HH:mm', { locale: fr })}</span>
+                      <span>{format(new Date(order.updated_at), 'dd/MM/yyyy HH:mm', { locale: getDateFnsLocale() })}</span>
                     </div>
                   </CardContent>
                 </Card>

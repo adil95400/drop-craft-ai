@@ -16,7 +16,7 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import { SupportTicket } from '@/hooks/useSupportTickets';
 import { format, formatDistanceToNow } from 'date-fns';
-import { fr } from 'date-fns/locale';
+import { getDateFnsLocale } from '@/utils/dateFnsLocale';
 
 interface TicketsListProps {
   tickets: SupportTicket[];
@@ -111,7 +111,7 @@ export function TicketsList({ tickets, isLoading, onSelectTicket, onCreateTicket
                       <div className="flex items-center gap-3 text-xs text-muted-foreground">
                         <span className="flex items-center gap-1">
                           <Clock className="h-3 w-3" />
-                          {formatDistanceToNow(new Date(ticket.created_at), { addSuffix: true, locale: fr })}
+                          {formatDistanceToNow(new Date(ticket.created_at), { addSuffix: true, locale: getDateFnsLocale() })}
                         </span>
                         <span className="capitalize text-muted-foreground/70">
                           {ticket.category}

@@ -25,7 +25,7 @@ import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { format } from 'date-fns';
-import { fr } from 'date-fns/locale';
+import { getDateFnsLocale } from '@/utils/dateFnsLocale';
 
 interface TokenData {
   id: string;
@@ -379,7 +379,7 @@ export function ExtensionTokenGenerator() {
                           </div>
                           <div className="flex items-center gap-2 text-xs text-muted-foreground">
                             <Clock className="h-3 w-3" />
-                            Créé {format(new Date(token.created_at), 'dd MMM yyyy', { locale: fr })}
+                            Créé {format(new Date(token.created_at), 'dd MMM yyyy', { locale: getDateFnsLocale() })}
                           </div>
                         </div>
                         <Button
