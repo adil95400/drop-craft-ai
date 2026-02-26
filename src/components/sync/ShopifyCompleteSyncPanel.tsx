@@ -32,7 +32,7 @@ import { useShopifySync } from '@/hooks/useShopifySync'
 import { supabase } from '@/integrations/supabase/client'
 import { useAuth } from '@/contexts/AuthContext'
 import { format } from 'date-fns'
-import { fr } from 'date-fns/locale'
+import { getDateFnsLocale } from '@/utils/dateFnsLocale'
 import { LoadingSpinner } from '@/components/ui/loading-spinner'
 import { StatusBadge } from '@/components/ui/status-badge'
 
@@ -210,7 +210,7 @@ export function ShopifyCompleteSyncPanel() {
                         <p className="font-medium">{config.store_url || 'Boutique Shopify'}</p>
                         {config.last_sync_at && (
                           <p className="text-xs text-muted-foreground">
-                            Dernière sync: {format(new Date(config.last_sync_at), 'Pp', { locale: fr })}
+                            Dernière sync: {format(new Date(config.last_sync_at), 'Pp', { locale: getDateFnsLocale() })}
                           </p>
                         )}
                       </div>
@@ -258,7 +258,7 @@ export function ShopifyCompleteSyncPanel() {
                     <div>
                       <div className="flex items-center gap-2">
                         <span className="text-sm font-medium">
-                          {format(new Date(log.started_at), 'Pp', { locale: fr })}
+                          {format(new Date(log.started_at), 'Pp', { locale: getDateFnsLocale() })}
                         </span>
                         <Badge variant="outline" className="text-xs">
                           {log.sync_type}

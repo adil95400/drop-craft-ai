@@ -11,7 +11,7 @@ import { Brain, TrendingUp, CheckCircle, AlertTriangle, Target, Zap, Clock } fro
 import { useAutomation } from '@/hooks/useAutomation'
 import { useRealAutomation } from '@/hooks/useRealAutomation'
 import { formatDistanceToNow } from 'date-fns'
-import { fr } from 'date-fns/locale'
+import { getDateFnsLocale } from '@/utils/dateFnsLocale'
 
 export const DecisionEngine: React.FC = () => {
   const { triggers, stats, isLoading, processTrigger, isProcessing } = useAutomation()
@@ -115,7 +115,7 @@ export const DecisionEngine: React.FC = () => {
                       </div>
                       {exec.created_at && (
                         <div className="text-xs text-muted-foreground">
-                          {formatDistanceToNow(new Date(exec.created_at), { addSuffix: true, locale: fr })}
+                          {formatDistanceToNow(new Date(exec.created_at), { addSuffix: true, locale: getDateFnsLocale() })}
                         </div>
                       )}
                     </div>

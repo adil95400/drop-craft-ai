@@ -7,7 +7,7 @@ import { useAuth } from '@/contexts/AuthContext'
 import { useStripeSubscription } from '@/hooks/useStripeSubscription'
 import { Crown, Star, Shield, Calendar, CreditCard, ExternalLink } from 'lucide-react'
 import { format } from 'date-fns'
-import { fr } from 'date-fns/locale'
+import { getDateFnsLocale } from '@/utils/dateFnsLocale'
 
 const planIcons = {
   free: Shield,
@@ -108,7 +108,7 @@ export const SubscriptionManager = () => {
               <div>
                 <p className="font-medium">Prochaine facturation</p>
                 <p className="text-sm text-muted-foreground">
-                  {format(new Date(subscription.subscription_end), 'dd MMMM yyyy', { locale: fr })}
+                  {format(new Date(subscription.subscription_end), 'dd MMMM yyyy', { locale: getDateFnsLocale() })}
                 </p>
               </div>
             </div>

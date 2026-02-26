@@ -13,7 +13,7 @@ import { useNavigate } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useReports } from '@/hooks/useReports';
 import { format } from 'date-fns';
-import { fr } from 'date-fns/locale';
+import { getDateFnsLocale } from '@/utils/dateFnsLocale';
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
 import {
   ChannableStatsGrid,
@@ -357,7 +357,7 @@ function ReportCard({ report, onExport, onDelete, formatData }: ReportCardProps)
         >
           <h3 className="font-semibold">{report.report_name}</h3>
           <p className="text-sm text-muted-foreground">
-            {format(new Date(report.created_at), 'PPP à HH:mm', { locale: fr })}
+            {format(new Date(report.created_at), 'PPP à HH:mm', { locale: getDateFnsLocale() })}
           </p>
         </div>
         <div className="flex gap-2">

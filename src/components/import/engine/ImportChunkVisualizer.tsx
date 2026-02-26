@@ -13,7 +13,7 @@ import {
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { formatDistanceToNow } from 'date-fns'
-import { fr } from 'date-fns/locale'
+import { getDateFnsLocale } from '@/utils/dateFnsLocale'
 
 interface ChunkData {
   id: string
@@ -134,7 +134,7 @@ export function ImportChunkVisualizer({ activeImports, className }: ImportChunkV
                           {imp.source_type || imp.job_type || 'Import'}
                         </p>
                         <p className="text-[11px] text-muted-foreground">
-                          {formatDistanceToNow(new Date(imp.created_at), { addSuffix: true, locale: fr })}
+                          {formatDistanceToNow(new Date(imp.created_at), { addSuffix: true, locale: getDateFnsLocale() })}
                         </p>
                       </div>
                     </div>

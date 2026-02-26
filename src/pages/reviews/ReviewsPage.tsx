@@ -31,7 +31,7 @@ import {
 } from '@/hooks/reviews/useProductReviews';
 import { AdvancedReviewsImportModal } from '@/components/import/reviews/AdvancedReviewsImportModal';
 import { format } from 'date-fns';
-import { fr } from 'date-fns/locale';
+import { getDateFnsLocale } from '@/utils/dateFnsLocale';
 
 function StatCard({ label, value, icon: Icon, trend, color }: {
   label: string; value: string; icon: React.ElementType; trend?: string; color?: string;
@@ -389,7 +389,7 @@ function ReviewCard({ review, onDelete }: { review: ProductReview; onDelete: (id
               {review.review_date && (
                 <>
                   <span>•</span>
-                  <span>{format(new Date(review.review_date), 'd MMM yyyy', { locale: fr })}</span>
+                  <span>{format(new Date(review.review_date), 'd MMM yyyy', { locale: getDateFnsLocale() })}</span>
                 </>
               )}
               {review.country && (

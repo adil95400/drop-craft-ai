@@ -25,7 +25,7 @@ import {
 import type { ProductSeoResult, ProductSeoHistoryItem } from '@/services/api/seoApi'
 import { SeoScoreEvolutionChart } from './SeoScoreEvolutionChart'
 import { formatDistanceToNow } from 'date-fns'
-import { fr } from 'date-fns/locale'
+import { getDateFnsLocale } from '@/utils/dateFnsLocale'
 import { useUnifiedQuotas } from '@/hooks/useUnifiedQuotas'
 import { useNavigate } from 'react-router-dom'
 import { cn } from '@/lib/utils'
@@ -267,7 +267,7 @@ function HistoryDialog({ productId, productName, open, onOpenChange }: {
                         <div className="flex items-center justify-between mb-2">
                           <Badge variant="outline" className="text-[10px]">{item.source}</Badge>
                           <span className="text-[10px] text-muted-foreground">
-                            v{item.version} • {formatDistanceToNow(new Date(item.created_at), { addSuffix: true, locale: fr })}
+                            v{item.version} • {formatDistanceToNow(new Date(item.created_at), { addSuffix: true, locale: getDateFnsLocale() })}
                           </span>
                         </div>
                         {item.fields?.score && (

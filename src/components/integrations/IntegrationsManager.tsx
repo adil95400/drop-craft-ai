@@ -11,7 +11,7 @@ import { AlertCircle, CheckCircle2, Clock, ShoppingCart, Globe, Package, Zap, Se
 import { useIntegrationsUnified, type UnifiedIntegration as Integration } from '@/hooks/unified';
 import { useToast } from '@/hooks/use-toast';
 import { formatDistanceToNow } from 'date-fns';
-import { fr } from 'date-fns/locale';
+import { getDateFnsLocale } from '@/utils/dateFnsLocale';
 import { CanvaIntegrationCard } from './CanvaIntegrationCard';
 
 export const IntegrationsManager = () => {
@@ -199,7 +199,7 @@ export const IntegrationsManager = () => {
                 <p className="text-sm text-muted-foreground">Dernière sync</p>
                 <p className="text-sm font-medium">
                   {stats.lastSync.getTime() > 0 
-                    ? formatDistanceToNow(stats.lastSync, { addSuffix: true, locale: fr })
+                    ? formatDistanceToNow(stats.lastSync, { addSuffix: true, locale: getDateFnsLocale() })
                     : 'Jamais'
                   }
                 </p>
@@ -381,7 +381,7 @@ export const IntegrationsManager = () => {
                             </p>
                             {integration.last_sync_at && (
                               <p className="text-xs text-muted-foreground">
-                                Dernière sync: {formatDistanceToNow(new Date(integration.last_sync_at), { addSuffix: true, locale: fr })}
+                                Dernière sync: {formatDistanceToNow(new Date(integration.last_sync_at), { addSuffix: true, locale: getDateFnsLocale() })}
                               </p>
                             )}
                           </div>

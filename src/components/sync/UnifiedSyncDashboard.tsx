@@ -24,7 +24,7 @@ import {
   Store
 } from 'lucide-react';
 import { format } from 'date-fns';
-import { fr } from 'date-fns/locale';
+import { getDateFnsLocale } from '@/utils/dateFnsLocale';
 import { 
   useSyncConfigurations, 
   useUnifiedSyncQueue,
@@ -253,7 +253,7 @@ export function UnifiedSyncDashboard() {
                             </Badge>
                           )}
                           <span className="text-xs text-muted-foreground">
-                            {format(new Date(item.created_at), 'HH:mm', { locale: fr })}
+                            {format(new Date(item.created_at), 'HH:mm', { locale: getDateFnsLocale() })}
                           </span>
                         </div>
                       </div>
@@ -309,7 +309,7 @@ export function UnifiedSyncDashboard() {
                             {log.status}
                           </Badge>
                           <span className="text-xs text-muted-foreground">
-                            {format(new Date(log.created_at), 'dd/MM HH:mm', { locale: fr })}
+                            {format(new Date(log.created_at), 'dd/MM HH:mm', { locale: getDateFnsLocale() })}
                           </span>
                         </div>
                       </div>

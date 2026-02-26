@@ -27,7 +27,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import { format, formatDistanceToNow } from 'date-fns';
-import { fr } from 'date-fns/locale';
+import { getDateFnsLocale } from '@/utils/dateFnsLocale';
 import { cn } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
@@ -400,7 +400,7 @@ export default function ExtensionImportHistoryPage() {
                             <span>{getPlatformEmoji(item.source_platform)} {item.source_platform}</span>
                           )}
                           <span>•</span>
-                          <span>{formatDistanceToNow(new Date(item.created_at), { addSuffix: true, locale: fr })}</span>
+                          <span>{formatDistanceToNow(new Date(item.created_at), { addSuffix: true, locale: getDateFnsLocale() })}</span>
                         </div>
                       </div>
 

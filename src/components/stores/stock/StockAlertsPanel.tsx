@@ -11,7 +11,7 @@ import {
   X,
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
-import { fr } from 'date-fns/locale';
+import { getDateFnsLocale } from '@/utils/dateFnsLocale';
 
 export function StockAlertsPanel() {
   const {
@@ -136,7 +136,7 @@ export function StockAlertsPanel() {
                       <span className="text-xs text-muted-foreground">
                         {formatDistanceToNow(new Date(alert.created_at), {
                           addSuffix: true,
-                          locale: fr,
+                          locale: getDateFnsLocale(),
                         })}
                       </span>
 

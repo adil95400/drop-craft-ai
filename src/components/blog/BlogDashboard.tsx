@@ -30,7 +30,7 @@ import {
 import { BlogStats } from './BlogStats'
 import { useBlog } from '@/hooks/useBlog'
 import { format } from 'date-fns'
-import { fr } from 'date-fns/locale'
+import { getDateFnsLocale } from '@/utils/dateFnsLocale'
 
 interface BlogDashboardProps {
   onCreatePost?: () => void
@@ -303,7 +303,7 @@ export function BlogDashboard({ onCreatePost, onEditPost }: BlogDashboardProps) 
                       </TableCell>
                       <TableCell>{post.views.toLocaleString()}</TableCell>
                       <TableCell>
-                        {format(new Date(post.created_at), 'dd MMM yyyy', { locale: fr })}
+                        {format(new Date(post.created_at), 'dd MMM yyyy', { locale: getDateFnsLocale() })}
                       </TableCell>
                       <TableCell>
                         <div className="flex gap-2">

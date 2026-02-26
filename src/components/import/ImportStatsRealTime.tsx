@@ -13,7 +13,7 @@ import {
 } from 'lucide-react'
 import { useImportStatsReal } from '@/hooks/useImportJobsReal'
 import { formatDistanceToNow } from 'date-fns'
-import { fr } from 'date-fns/locale'
+import { getDateFnsLocale } from '@/utils/dateFnsLocale'
 
 interface ImportStatsRealTimeProps {
   refreshInterval?: number
@@ -202,7 +202,7 @@ export const ImportStatsRealTime = ({ refreshInterval = 5000 }: ImportStatsRealT
                       </div>
                     </div>
                     <Badge variant="outline" className="text-xs">
-                      {formatDistanceToNow(new Date(job.created_at), { addSuffix: true, locale: fr })}
+                      {formatDistanceToNow(new Date(job.created_at), { addSuffix: true, locale: getDateFnsLocale() })}
                     </Badge>
                   </div>
                 ))

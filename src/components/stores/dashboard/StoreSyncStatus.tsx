@@ -3,7 +3,7 @@ import { Badge } from '@/components/ui/badge';
 import { CheckCircle2, AlertCircle, Clock, RefreshCw } from 'lucide-react';
 import { StoreStats } from '@/hooks/useUnifiedStores';
 import { formatDistanceToNow } from 'date-fns';
-import { fr } from 'date-fns/locale';
+import { getDateFnsLocale } from '@/utils/dateFnsLocale';
 
 interface StoreSyncStatusProps {
   stats: StoreStats[];
@@ -86,7 +86,7 @@ export function StoreSyncStatus({ stats, isLoading }: StoreSyncStatusProps) {
                           <span className="text-xs text-muted-foreground">
                             {formatDistanceToNow(new Date(integration.last_sync), {
                               addSuffix: true,
-                              locale: fr,
+                              locale: getDateFnsLocale(),
                             })}
                           </span>
                         )}

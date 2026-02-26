@@ -15,7 +15,7 @@ import {
   CheckCircle, AlertCircle, Clock3
 } from 'lucide-react'
 import { format, addDays, addWeeks, addMonths } from 'date-fns'
-import { fr } from 'date-fns/locale'
+import { getDateFnsLocale } from '@/utils/dateFnsLocale'
 
 interface ScheduledPost {
   id: string
@@ -306,7 +306,7 @@ export function BlogScheduler() {
             <Card>
               <CardHeader>
                 <CardTitle>
-                  {format(selectedDate, 'dd MMMM yyyy', { locale: fr })}
+                  {format(selectedDate, 'dd MMMM yyyy', { locale: getDateFnsLocale() })}
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -356,7 +356,7 @@ export function BlogScheduler() {
                     <div className="space-y-2 text-xs text-muted-foreground">
                       <div className="flex items-center gap-2">
                         <CalendarIcon className="h-3 w-3" />
-                        {format(post.scheduledDate, 'dd MMM yyyy à HH:mm', { locale: fr })}
+                        {format(post.scheduledDate, 'dd MMM yyyy à HH:mm', { locale: getDateFnsLocale() })}
                       </div>
                       <div className="flex items-center gap-2">
                         <Target className="h-3 w-3" />
@@ -414,7 +414,7 @@ export function BlogScheduler() {
                       <div className="flex items-center gap-4 text-sm text-muted-foreground">
                         <span className="flex items-center gap-1">
                           <CalendarIcon className="h-4 w-4" />
-                          {format(post.scheduledDate, 'dd MMM yyyy à HH:mm', { locale: fr })}
+                          {format(post.scheduledDate, 'dd MMM yyyy à HH:mm', { locale: getDateFnsLocale() })}
                         </span>
                         <span className="flex items-center gap-1">
                           <Target className="h-4 w-4" />

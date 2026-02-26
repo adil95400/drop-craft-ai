@@ -7,7 +7,7 @@ import { Palette, ExternalLink, Settings, RefreshCw, CheckCircle2, AlertCircle }
 import { useCanvaIntegration } from '@/hooks/useCanvaIntegration'
 import { useToast } from '@/hooks/use-toast'
 import { formatDistanceToNow } from 'date-fns'
-import { fr } from 'date-fns/locale'
+import { getDateFnsLocale } from '@/utils/dateFnsLocale'
 import { productionLogger } from '@/utils/productionLogger';
 
 export const CanvaIntegrationCard = () => {
@@ -97,7 +97,7 @@ export const CanvaIntegrationCard = () => {
               </p>
               {lastSync && (
                 <p className="text-xs text-muted-foreground">
-                  Dernière sync: {formatDistanceToNow(lastSync, { addSuffix: true, locale: fr })}
+                  Dernière sync: {formatDistanceToNow(lastSync, { addSuffix: true, locale: getDateFnsLocale() })}
                 </p>
               )}
             </div>

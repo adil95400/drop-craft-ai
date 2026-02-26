@@ -13,11 +13,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Switch } from '@/components/ui/switch';
 import { Users, Store, UserPlus, Shield, Mail, Clock, Trash2, Plus, Globe, CheckCircle, XCircle, Settings2 } from 'lucide-react';
-import { format, type Locale as DateLocale } from 'date-fns';
-import { fr, enUS, es, de } from 'date-fns/locale';
+import { format, type Locale } from 'date-fns';
+import { getDateFnsLocale } from '@/utils/dateFnsLocale';
 import { useLanguage } from '@/hooks/useLanguage';
-
-const DATE_LOCALES: Record<string, DateLocale> = { fr, en: enUS, es, de };
 
 export default function TeamManagementPage() {
   const { t } = useTranslation('settings');
@@ -58,10 +56,10 @@ export default function TeamManagementPage() {
           </TabsList>
 
           <TabsContent value="team">
-            <TeamTab roleLabels={ROLE_LABELS} dateLocale={DATE_LOCALES[language] || fr} />
+            <TeamTab roleLabels={ROLE_LABELS} dateLocale={getDateFnsLocale()} />
           </TabsContent>
           <TabsContent value="invitations">
-            <InvitationsTab roleLabels={ROLE_LABELS} dateLocale={DATE_LOCALES[language] || fr} />
+            <InvitationsTab roleLabels={ROLE_LABELS} dateLocale={getDateFnsLocale()} />
           </TabsContent>
           <TabsContent value="stores">
             <StoresTab />
@@ -73,7 +71,7 @@ export default function TeamManagementPage() {
 }
 
 /* ── Team Tab ── */
-function TeamTab({ roleLabels, dateLocale }: { roleLabels: Record<string, { label: string; color: string }>; dateLocale: DateLocale }) {
+function TeamTab({ roleLabels, dateLocale }: { roleLabels: Record<string, { label: string; color: string }>; dateLocale: Locale }) {
   const { t } = useTranslation('settings');
   const { members, pendingInvites, isLoading, inviteMember, isInviting, updateMemberRole, updateMemberPermissions, removeMember } = useTeamManagement();
   const [showInvite, setShowInvite] = useState(false);
@@ -242,7 +240,7 @@ function TeamTab({ roleLabels, dateLocale }: { roleLabels: Record<string, { labe
 }
 
 /* ── Invitations Tab (invitations received) ── */
-function InvitationsTab({ roleLabels, dateLocale }: { roleLabels: Record<string, { label: string; color: string }>; dateLocale: DateLocale }) {
+function InvitationsTab({ roleLabels, dateLocale }: { roleLabels: Record<string, { label: string; color: string }>; dateLocale: Locale }) {
   const { myInvitations, acceptInvitation, declineInvitation } = useTeamManagement();
 
   if (myInvitations.length === 0) {

@@ -17,7 +17,7 @@ import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { motion } from 'framer-motion';
 import { format } from 'date-fns';
-import { fr } from 'date-fns/locale';
+import { getDateFnsLocale } from '@/utils/dateFnsLocale';
 import type { TrackingEvent as BaseTrackingEvent } from '@/hooks/useRealtimeTracking';
 
 // Extended interface supporting both simple and advanced usage
@@ -353,7 +353,7 @@ export function UnifiedTrackingTimeline({
                         </span>
                         <time className="text-xs text-muted-foreground whitespace-nowrap">
                           {event.timestamp 
-                            ? format(new Date(event.timestamp), 'dd MMM HH:mm', { locale: fr })
+                            ? format(new Date(event.timestamp), 'dd MMM HH:mm', { locale: getDateFnsLocale() })
                             : 'N/A'
                           }
                         </time>

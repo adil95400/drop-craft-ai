@@ -17,18 +17,15 @@ import {
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
-import { fr, enUS, es, de } from 'date-fns/locale';
+import { getDateFnsLocale } from '@/utils/dateFnsLocale';
 import { useTranslation } from 'react-i18next';
-import type { Locale } from 'date-fns';
-
-const dateLocales: Record<string, Locale> = { fr, en: enUS, es, de };
 
 export default function AuditFeedPage() {
   const { feedChannels, stats, isLoading, refetch, selectedChannel, setSelectedChannel, selectedChannelData } = useAuditFeed();
-  const { t, i18n } = useTranslation('audit');
+  const { t } = useTranslation('audit');
   const [activeTab, setActiveTab] = useState('channels');
 
-  const dateFnsLocale = dateLocales[i18n.language] || fr;
+  const dateFnsLocale = getDateFnsLocale();
 
   const getStatusBadge = (status: string) => {
     switch (status) {

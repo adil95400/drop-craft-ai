@@ -17,7 +17,7 @@ import {
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { formatDistanceToNow } from 'date-fns'
-import { fr } from 'date-fns/locale'
+import { getDateFnsLocale } from '@/utils/dateFnsLocale'
 
 // Job type icons mapping
 const JOB_ICONS: Record<string, React.ElementType> = {
@@ -140,7 +140,7 @@ function JobRow({ job, isExpanded, onToggle, onCancel, onRetry, isCancelling, is
               <div className="mt-0.5 text-[11px] text-muted-foreground">
                 {job.processed_items} traités • {job.failed_items > 0 ? `${job.failed_items} erreurs` : 'aucune erreur'}
                 {' • '}
-                {formatDistanceToNow(new Date(job.updated_at), { addSuffix: true, locale: fr })}
+                {formatDistanceToNow(new Date(job.updated_at), { addSuffix: true, locale: getDateFnsLocale() })}
               </div>
             )}
 

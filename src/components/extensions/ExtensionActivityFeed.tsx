@@ -16,7 +16,7 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { formatDistanceToNow } from 'date-fns';
-import { fr } from 'date-fns/locale';
+import { getDateFnsLocale } from '@/utils/dateFnsLocale';
 import { cn } from '@/lib/utils';
 
 interface ActivityItem {
@@ -283,7 +283,7 @@ export function ExtensionActivityFeed() {
                       <span>
                         {formatDistanceToNow(new Date(activity.created_at), { 
                           addSuffix: true, 
-                          locale: fr 
+                          locale: getDateFnsLocale() 
                         })}
                       </span>
                     </div>

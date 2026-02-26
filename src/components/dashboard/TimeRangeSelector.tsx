@@ -5,7 +5,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { CalendarIcon } from 'lucide-react';
 import { format } from 'date-fns';
-import { fr } from 'date-fns/locale';
+import { getDateFnsLocale } from '@/utils/dateFnsLocale';
 import { useDashboardConfig, TimeRange, getTimeRangeLabel } from '@/hooks/useDashboardConfig';
 import { cn } from '@/lib/utils';
 
@@ -76,11 +76,11 @@ export function TimeRangeSelector() {
               {dateRange.from ? (
                 dateRange.to ? (
                   <>
-                    {format(dateRange.from, 'dd MMM', { locale: fr })} -{' '}
-                    {format(dateRange.to, 'dd MMM yyyy', { locale: fr })}
+                    {format(dateRange.from, 'dd MMM', { locale: getDateFnsLocale() })} -{' '}
+                    {format(dateRange.to, 'dd MMM yyyy', { locale: getDateFnsLocale() })}
                   </>
                 ) : (
-                  format(dateRange.from, 'dd MMM yyyy', { locale: fr })
+                  format(dateRange.from, 'dd MMM yyyy', { locale: getDateFnsLocale() })
                 )
               ) : (
                 <span>Choisir les dates</span>
@@ -95,7 +95,7 @@ export function TimeRangeSelector() {
               selected={dateRange as any}
               onSelect={handleDateSelect as any}
               numberOfMonths={2}
-              locale={fr}
+              locale={getDateFnsLocale()}
             />
           </PopoverContent>
         </Popover>

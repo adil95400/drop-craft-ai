@@ -8,7 +8,7 @@ import { History, Search, CheckCircle, XCircle, TrendingUp, RefreshCw, Download,
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
-import { fr } from 'date-fns/locale';
+import { getDateFnsLocale } from '@/utils/dateFnsLocale';
 
 interface LogEntry {
   id: string;
@@ -148,7 +148,7 @@ export function RepricingLogsPanel() {
                           <Badge variant="default">Succès</Badge>
                         </div>
                         <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                          <span>{format(new Date(log.created_at), 'dd/MM/yyyy HH:mm', { locale: fr })}</span>
+                          <span>{format(new Date(log.created_at), 'dd/MM/yyyy HH:mm', { locale: getDateFnsLocale() })}</span>
                           <span>{log.products_updated} produits</span>
                           <span>{formatDuration(log.execution_time_ms)}</span>
                         </div>

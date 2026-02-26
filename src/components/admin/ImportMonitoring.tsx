@@ -15,7 +15,7 @@ import {
 import { supabase } from '@/integrations/supabase/client'
 import { useToast } from '@/hooks/use-toast'
 import { format } from 'date-fns'
-import { fr } from 'date-fns/locale'
+import { getDateFnsLocale } from '@/utils/dateFnsLocale'
 
 interface ImportStats {
   total_jobs: number
@@ -312,7 +312,7 @@ export const ImportMonitoring = () => {
                       )}
                     </div>
                     <div className="text-xs text-muted-foreground">
-                      {format(new Date(job.created_at), 'PPp', { locale: fr })}
+                      {format(new Date(job.created_at), 'PPp', { locale: getDateFnsLocale() })}
                     </div>
                     {job.started_at && job.completed_at && (
                       <div className="text-xs text-muted-foreground">

@@ -14,7 +14,7 @@ import {
 import { useSystemStatus } from '@/hooks/useSystemStatus';
 import { Link } from 'react-router-dom';
 import { format } from 'date-fns';
-import { fr } from 'date-fns/locale';
+import { getDateFnsLocale } from '@/utils/dateFnsLocale';
 
 const statusConfig = {
   operational: { icon: CheckCircle2, label: 'Opérationnel', color: 'text-green-600', bg: 'bg-green-100', badge: 'default' as const },
@@ -64,7 +64,7 @@ export default function StatusPage() {
             </span>
           </div>
           <p className="text-muted-foreground">
-            {isLoading ? 'Vérification...' : `${operational}/${total} services opérationnels • Dernière mise à jour : ${format(new Date(), 'HH:mm', { locale: fr })}`}
+            {isLoading ? 'Vérification...' : `${operational}/${total} services opérationnels • Dernière mise à jour : ${format(new Date(), 'HH:mm', { locale: getDateFnsLocale() })}`}
           </p>
         </div>
 

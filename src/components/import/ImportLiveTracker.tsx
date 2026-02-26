@@ -18,7 +18,7 @@ import {
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { formatDistanceToNow } from 'date-fns'
-import { fr } from 'date-fns/locale'
+import { getDateFnsLocale } from '@/utils/dateFnsLocale'
 import { motion, AnimatePresence } from 'framer-motion'
 
 interface ImportJob {
@@ -256,7 +256,7 @@ function ImportJobRow({ job, onDismiss, onViewProducts }: {
             </span>
           )}
           <span className="ml-auto">
-            {formatDistanceToNow(new Date(job.created_at), { addSuffix: true, locale: fr })}
+            {formatDistanceToNow(new Date(job.created_at), { addSuffix: true, locale: getDateFnsLocale() })}
           </span>
         </div>
 

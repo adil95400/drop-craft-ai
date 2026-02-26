@@ -11,7 +11,7 @@ import {
 import { BarChart3, PieChart as PieIcon, TrendingUp } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { format, subDays } from 'date-fns'
-import { fr } from 'date-fns/locale'
+import { getDateFnsLocale } from '@/utils/dateFnsLocale'
 
 interface ImportStatsChartProps {
   imports: any[]
@@ -31,7 +31,7 @@ export function ImportStatsChart({ imports, className }: ImportStatsChartProps) 
       })
       days.push({
         date: dateStr,
-        label: format(date, 'dd MMM', { locale: fr }),
+        label: format(date, 'dd MMM', { locale: getDateFnsLocale() }),
         total: dayImports.length,
         success: dayImports.filter(i => i.status === 'completed').length,
         failed: dayImports.filter(i => i.status === 'failed').length,
@@ -61,7 +61,7 @@ export function ImportStatsChart({ imports, className }: ImportStatsChartProps) 
       const dateStr = format(date, 'yyyy-MM-dd')
       const dayImports = imports.filter(imp => format(new Date(imp.created_at), 'yyyy-MM-dd') === dateStr)
       const products = dayImports.reduce((sum, imp) => sum + (imp.success_rows || imp.items_succeeded || 0), 0)
-      days.push({ label: format(date, 'dd', { locale: fr }), products })
+      days.push({ label: format(date, 'dd', { locale: getDateFnsLocale() }), products })
     }
     return days
   }, [imports])

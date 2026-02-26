@@ -15,7 +15,7 @@ import {
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { formatDistanceToNow } from 'date-fns'
-import { fr } from 'date-fns/locale'
+import { getDateFnsLocale } from '@/utils/dateFnsLocale'
 
 interface ProductMicroInfoProps {
   margin?: number
@@ -64,7 +64,7 @@ export const ProductMicroInfo = memo(function ProductMicroInfo({
     items.push({
       id: 'sync',
       icon: RefreshCw,
-      label: formatDistanceToNow(syncDate, { addSuffix: false, locale: fr }),
+      label: formatDistanceToNow(syncDate, { addSuffix: false, locale: getDateFnsLocale() }),
       tooltip: `Dernière sync: ${syncDate.toLocaleDateString('fr-FR')} ${syncDate.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}`,
       className: isRecent ? 'text-emerald-600' : 'text-muted-foreground'
     })

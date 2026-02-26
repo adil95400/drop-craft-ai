@@ -3,7 +3,7 @@ import { ImportJob, ImportedProductData } from '@/domains/commerce/services/impo
 import { BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts'
 import { TrendingUp, TrendingDown, Activity, Package, Clock, AlertCircle } from 'lucide-react'
 import { format, subDays, isAfter } from 'date-fns'
-import { fr } from 'date-fns/locale'
+import { getDateFnsLocale } from '@/utils/dateFnsLocale'
 
 interface ImportAnalyticsDashboardProps {
   jobs: ImportJob[]
@@ -30,7 +30,7 @@ export const ImportAnalyticsDashboard = ({ jobs, products }: ImportAnalyticsDash
       return jobDate === dateStr
     })
     return {
-      date: format(date, 'dd MMM', { locale: fr }),
+      date: format(date, 'dd MMM', { locale: getDateFnsLocale() }),
       imports: dayJobs.length,
       success: dayJobs.filter(j => j.status === 'completed').length,
       failed: dayJobs.filter(j => j.status === 'failed').length,

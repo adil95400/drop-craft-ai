@@ -31,7 +31,7 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { importAdvancedService } from '@/domains/commerce/services/importAdvancedService';
 import { format } from 'date-fns';
-import { fr } from 'date-fns/locale';
+import { getDateFnsLocale } from '@/utils/dateFnsLocale';
 
 interface ImportJob {
   id: string;
@@ -337,10 +337,10 @@ export const ImportHistoryInterface: React.FC = () => {
 
                       <TableCell>
                         <div className="text-sm">
-                          <div>{format(new Date(job.created_at), 'dd/MM/yyyy HH:mm', { locale: fr })}</div>
+                          <div>{format(new Date(job.created_at), 'dd/MM/yyyy HH:mm', { locale: getDateFnsLocale() })}</div>
                           {job.completed_at && (
                             <div className="text-muted-foreground">
-                              Terminé le {format(new Date(job.completed_at), 'dd/MM HH:mm', { locale: fr })}
+                              Terminé le {format(new Date(job.completed_at), 'dd/MM HH:mm', { locale: getDateFnsLocale() })}
                             </div>
                           )}
                         </div>
