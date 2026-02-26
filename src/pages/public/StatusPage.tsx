@@ -75,7 +75,11 @@ export default function StatusPage() {
           </CardHeader>
           <CardContent className="space-y-0">
             {isLoading ? (
-              <div className="space-y-4 p-4 text-center text-muted-foreground">Chargement des statuts...</div>
+              <div className="space-y-3 p-4">
+                {[1,2,3,4].map(i => (
+                  <div key={i} className="h-12 bg-muted animate-pulse rounded-lg" />
+                ))}
+              </div>
             ) : (
               services.map((service, index) => {
                 const config = statusConfig[service.status] || statusConfig.operational;

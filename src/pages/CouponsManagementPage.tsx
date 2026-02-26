@@ -68,7 +68,11 @@ export default function CouponsManagementPage() {
     >
       <Card className="p-6">
         {isLoading ? (
-          <div className="text-center py-8 text-muted-foreground">Chargement des coupons...</div>
+          <div className="space-y-3 py-4">
+            {[1,2,3].map(i => (
+              <div key={i} className="h-20 bg-muted animate-pulse rounded-lg" />
+            ))}
+          </div>
         ) : coupons.length === 0 ? (
           <div className="text-center py-8">
             <Ticket className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />

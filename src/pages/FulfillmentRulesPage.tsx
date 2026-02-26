@@ -126,7 +126,11 @@ export default function FulfillmentRulesPage() {
 
       <Card className="p-6">
         {isLoading ? (
-          <div className="text-center py-8 text-muted-foreground">Chargement des règles...</div>
+          <div className="space-y-3 py-4">
+            {[1,2,3].map(i => (
+              <div key={i} className="h-16 bg-muted animate-pulse rounded-lg" />
+            ))}
+          </div>
         ) : rules?.length === 0 ? (
           <div className="text-center py-8">
             <p className="text-muted-foreground mb-4">Aucune règle d'automatisation configurée</p>
