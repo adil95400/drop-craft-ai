@@ -11,7 +11,7 @@ import {
   RotateCcw, ExternalLink, ChevronDown, ChevronUp
 } from 'lucide-react';
 import { formatDistanceToNow, format } from 'date-fns';
-import { fr } from 'date-fns/locale';
+import { getDateFnsLocale } from '@/utils/dateFnsLocale';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -236,7 +236,7 @@ export function FulfillmentOrdersEnhanced() {
                         </span>
                       </div>
                       <p className="text-xs text-muted-foreground truncate">
-                        {order.customer_name || 'Client'} • {formatDistanceToNow(new Date(order.created_at), { addSuffix: true, locale: fr })}
+                        {order.customer_name || 'Client'} • {formatDistanceToNow(new Date(order.created_at), { addSuffix: true, locale: getDateFnsLocale() })}
                       </p>
                     </div>
                     <div className="hidden md:block">
@@ -298,7 +298,7 @@ export function FulfillmentOrdersEnhanced() {
                         </div>
                         <div>
                           <p className="text-muted-foreground text-xs">Créée le</p>
-                          <p className="font-medium">{format(new Date(order.created_at), 'dd/MM/yyyy HH:mm', { locale: fr })}</p>
+                          <p className="font-medium">{format(new Date(order.created_at), 'dd/MM/yyyy HH:mm', { locale: getDateFnsLocale() })}</p>
                         </div>
                         <div>
                           <p className="text-muted-foreground text-xs">Montant total</p>

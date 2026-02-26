@@ -14,7 +14,7 @@ import {
 } from '@/components/ui/table';
 import { AlertTriangle, CheckCircle2 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
-import { fr } from 'date-fns/locale';
+import { getDateFnsLocale } from '@/utils/dateFnsLocale';
 
 export function ConflictResolver() {
   const { conflicts, resolveConflict, isLoadingConflicts } = useSyncManager();
@@ -107,7 +107,7 @@ export function ConflictResolver() {
                         Détecté{' '}
                         {formatDistanceToNow(new Date(conflict.created_at), {
                           addSuffix: true,
-                          locale: fr,
+                          locale: getDateFnsLocale(),
                         })}
                       </p>
                     </TableCell>

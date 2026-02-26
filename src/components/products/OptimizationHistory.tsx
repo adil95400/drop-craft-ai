@@ -6,7 +6,7 @@ import { History, RotateCcw, CheckCircle2, Clock, Sparkles } from 'lucide-react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useToast } from '@/hooks/use-toast'
 import { format } from 'date-fns'
-import { fr } from 'date-fns/locale'
+import { getDateFnsLocale } from '@/utils/dateFnsLocale'
 import { supabase } from '@/integrations/supabase/client'
 
 interface OptimizationHistoryProps {
@@ -196,7 +196,7 @@ export function OptimizationHistory({ productId, sourceTable }: OptimizationHist
                       {typeLabels[entry.optimization_type] || entry.optimization_type}
                     </div>
                     <div className="text-xs text-muted-foreground">
-                      {format(new Date(entry.created_at), "d MMMM yyyy 'à' HH:mm", { locale: fr })}
+                      {format(new Date(entry.created_at), "d MMMM yyyy 'à' HH:mm", { locale: getDateFnsLocale() })}
                     </div>
                   </div>
                 </div>

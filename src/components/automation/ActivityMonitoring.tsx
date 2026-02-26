@@ -10,7 +10,7 @@ import {
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { format, formatDistanceToNow } from 'date-fns';
-import { fr } from 'date-fns/locale';
+import { getDateFnsLocale } from '@/utils/dateFnsLocale';
 import { cn } from '@/lib/utils';
 
 interface ExecutionLog {
@@ -234,7 +234,7 @@ export function ActivityMonitoring() {
                             <span className="flex items-center gap-1">
                               <Calendar className="h-3 w-3" />
                               {log.executed_at 
-                                ? formatDistanceToNow(new Date(log.executed_at), { addSuffix: true, locale: fr })
+                                ? formatDistanceToNow(new Date(log.executed_at), { addSuffix: true, locale: getDateFnsLocale() })
                                 : 'N/A'}
                             </span>
                             {log.duration_ms && (

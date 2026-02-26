@@ -22,7 +22,7 @@ import { useOrdersUnified, UnifiedOrder } from '@/hooks/unified'
 
 type Order = UnifiedOrder
 import { format } from 'date-fns'
-import { fr } from 'date-fns/locale'
+import { getDateFnsLocale } from '@/utils/dateFnsLocale'
 
 export function OrdersTable() {
   const [search, setSearch] = useState('')
@@ -184,10 +184,10 @@ export function OrdersTable() {
                   </TableCell>
                   <TableCell>
                     <div className="text-sm">
-                      {format(new Date(order.created_at), 'dd MMM yyyy', { locale: fr })}
+                      {format(new Date(order.created_at), 'dd MMM yyyy', { locale: getDateFnsLocale() })}
                     </div>
                     <div className="text-xs text-muted-foreground">
-                      {format(new Date(order.created_at), 'HH:mm', { locale: fr })}
+                      {format(new Date(order.created_at), 'HH:mm', { locale: getDateFnsLocale() })}
                     </div>
                   </TableCell>
                   <TableCell>

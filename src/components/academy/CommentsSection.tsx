@@ -9,7 +9,7 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { MessageSquare, ThumbsUp, Star } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { formatDistanceToNow } from 'date-fns';
-import { fr } from 'date-fns/locale';
+import { getDateFnsLocale } from '@/utils/dateFnsLocale';
 
 interface CommentsSectionProps {
   courseId: string;
@@ -168,7 +168,7 @@ export function CommentsSection({ courseId, lessonId }: CommentsSectionProps) {
                       <p className="text-xs text-muted-foreground">
                         {formatDistanceToNow(new Date(comment.created_at), {
                           addSuffix: true,
-                          locale: fr,
+                          locale: getDateFnsLocale(),
                         })}
                       </p>
                     </div>

@@ -27,7 +27,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isToday, isSameDay, addMonths, subMonths } from 'date-fns';
-import { fr } from 'date-fns/locale';
+import { getDateFnsLocale } from '@/utils/dateFnsLocale';
 
 interface CalendarEvent {
   id: string;
@@ -229,7 +229,7 @@ export function ContentCalendar() {
             <ChevronLeft className="h-4 w-4" />
           </Button>
           <h2 className="text-xl font-semibold">
-            {format(currentDate, 'MMMM yyyy', { locale: fr })}
+            {format(currentDate, 'MMMM yyyy', { locale: getDateFnsLocale() })}
           </h2>
           <Button variant="outline" size="icon" onClick={() => setCurrentDate(addMonths(currentDate, 1))}>
             <ChevronRight className="h-4 w-4" />
@@ -338,7 +338,7 @@ export function ContentCalendar() {
                     <div className="flex-1 min-w-0">
                       <p className="truncate font-medium">{event.title}</p>
                       <p className="text-xs text-muted-foreground">
-                        {format(new Date(event.scheduled_date), 'dd MMM', { locale: fr })}
+                        {format(new Date(event.scheduled_date), 'dd MMM', { locale: getDateFnsLocale() })}
                       </p>
                     </div>
                     <Badge variant="secondary" className={STATUS_COLORS[event.status as keyof typeof STATUS_COLORS]}>
@@ -364,7 +364,7 @@ export function ContentCalendar() {
               {editingEvent ? 'Modifier l\'événement' : 'Nouvel événement'}
               {selectedDate && (
                 <span className="text-sm font-normal text-muted-foreground ml-2">
-                  - {format(selectedDate, 'dd MMMM yyyy', { locale: fr })}
+                  - {format(selectedDate, 'dd MMMM yyyy', { locale: getDateFnsLocale() })}
                 </span>
               )}
             </DialogTitle>
