@@ -406,8 +406,8 @@ export class RealMarketingService {
       lifecycle_distribution: byLifecycleStage,
       source_distribution: bySource,
       average_lead_score: Math.round(averageLeadScore),
-      growth_rate: Math.round(Math.random() * 20 + 5), // Mock growth rate
-      engagement_score: Math.round(Math.random() * 30 + 60), // Mock engagement
+      growth_rate: 0, // No mock — calculate from real period comparison when data available
+      engagement_score: Math.round(averageLeadScore), // Use real lead score as proxy
     };
   }
 
@@ -460,7 +460,7 @@ export class RealMarketingService {
       active_campaigns: activeCampaigns,
       average_open_rate: Math.round(avgOpenRate * 100) / 100,
       average_click_rate: Math.round(avgClickRate * 100) / 100,
-      performance_trend: Math.random() > 0.5 ? 'improving' : 'stable',
+      performance_trend: avgOpenRate > 20 ? 'improving' : 'stable',
     };
   }
 
