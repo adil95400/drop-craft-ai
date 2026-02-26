@@ -13,7 +13,7 @@ import { LiveDemoPreview } from "@/components/landing/LiveDemoPreview";
 import { TestimonialsWithPhotos } from "@/components/landing/TestimonialsWithPhotos";
 import { InteractiveDemo } from "@/components/landing/InteractiveDemo";
 import { TrustedBySection } from "@/components/landing/TrustedBySection";
-import { memo } from "react";
+import { memo, useEffect } from "react";
 import logoPng from "@/assets/logo-shopopti.png";
 
 // Hero images in public folder for LCP discovery
@@ -692,8 +692,15 @@ const Index = () => {
   const { isAuthenticated, isLoading } = useLightAuth();
   const navigate = useNavigate();
 
+  // Redirect authenticated users to dashboard
+  useEffect(() => {
+    if (!isLoading && isAuthenticated) {
+      navigate('/dashboard', { replace: true });
+    }
+  }, [isAuthenticated, isLoading, navigate]);
+
   // Show loading while auth is being determined (very fast - local storage check)
-  if (isLoading) {
+  if (isLoading || isAuthenticated) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center space-y-4">
@@ -702,12 +709,6 @@ const Index = () => {
         </div>
       </div>
     );
-  }
-
-  // If user is logged in, redirect to dashboard
-  if (isAuthenticated) {
-    navigate('/dashboard');
-    return null;
   }
 
   return (
