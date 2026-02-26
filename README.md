@@ -79,16 +79,19 @@ L'application sera accessible sur http://localhost:5173
 - **[Documentation Technique](docs/TECHNICAL_DOCUMENTATION.md)** - Architecture et détails techniques complets
 - **[Guide de Développement](docs/DEVELOPMENT_GUIDE.md)** - Conventions, patterns et bonnes pratiques
 - **[Guide de Déploiement](docs/DEPLOYMENT_GUIDE.md)** - Instructions de déploiement production
-- **[Guide des Tests](README.TESTING.md)** - Suite de tests automatisés (unitaires, E2E, intégration)
+- **[Guide des Tests](docs/TESTING.md)** - Suite de tests automatisés (unitaires, E2E, intégration)
 - **[Guide de Sécurité](docs/SECURITY_GUIDELINES.md)** - Pratiques de sécurité et audit
 - **[Documentation API](docs/API_GUIDE.md)** - Référence de l'API publique
 - **[Playbook de Dépannage](docs/FAQ.md)** - Résolution de problèmes courants
+- **[Guide Utilisateur](docs/USER_GUIDE.md)** - Guide complet de la plateforme
+- **[Tutoriels Vidéo](docs/VIDEO_TUTORIALS_GUIDE.md)** - Comment ajouter et gérer vos vidéos
 
 ### 📖 Guides Utilisateur (in-app)
 
-- **[Centre d'aide](/knowledge-base)** - Articles, tutoriels vidéo et FAQ
-- **[Académie](/academy)** - Formations complètes (dropshipping, IA, marketing)
-- **[Getting Started](/onboarding)** - Guide de démarrage interactif
+- **[Centre d'aide](https://drop-craft-ai.lovable.app/knowledge-base)** - Articles, tutoriels vidéo, FAQ et playbook dépannage
+- **[Académie](https://drop-craft-ai.lovable.app/academy)** - 12 formations complètes (dropshipping, IA, SEO, marketing)
+- **[Getting Started](https://drop-craft-ai.lovable.app/getting-started)** - Guide de démarrage en 4 étapes
+- **[Guide interactif](https://drop-craft-ai.lovable.app/guide)** - Tutoriels pas-à-pas par module
 
 ## 🏗️ Architecture
 
@@ -163,7 +166,7 @@ npm run test:all
 npm run test:coverage
 ```
 
-Voir [README.TESTING.md](README.TESTING.md) pour plus de détails.
+Voir [docs/TESTING.md](docs/TESTING.md) pour plus de détails.
 
 ### Tests de Commercialisation
 
@@ -321,9 +324,10 @@ Ce projet est sous licence MIT.
 ## 👥 Équipe & Support
 
 ### Support
-- **Documentation**: [docs/](docs/)
-- **Centre d'aide in-app**: `/knowledge-base`
-- **Playbook dépannage**: [docs/FAQ.md](docs/FAQ.md)
+- **Documentation**: [docs/](docs/) — guides techniques et API
+- **Centre d'aide in-app**: [/knowledge-base](https://drop-craft-ai.lovable.app/knowledge-base) — articles, vidéos, FAQ
+- **Playbook dépannage**: [docs/FAQ.md](docs/FAQ.md) — résolution pas-à-pas
+- **Guide utilisateur**: [/guide](https://drop-craft-ai.lovable.app/guide) — tutoriels interactifs
 
 ### Monitoring & Status
 - **Sentry**: Error tracking en temps réel
