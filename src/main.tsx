@@ -7,15 +7,19 @@ import { HelmetProvider } from 'react-helmet-async'
 import * as Sentry from '@sentry/react'
 import { initSentry } from '@/utils/sentry'
 import { logger } from '@/utils/logger'
+import { installConsoleInterceptor } from '@/utils/consoleInterceptor'
 import App from './App'
 import './index.css'
 // Animation CSS is loaded lazily via useAnimationStyles hook to reduce initial CSS bundle
 import { PWAService } from './services/PWAService'
 
-// Initialize PWA
+// 1. Intercept all console.* calls globally (must be first)
+installConsoleInterceptor()
+
+// 2. Initialize PWA
 PWAService.init()
 
-// Initialize error monitoring
+// 3. Initialize error monitoring
 initSentry()
 
 // Log application start
