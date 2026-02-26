@@ -1,7 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import { useToast } from '@/hooks/use-toast'
 import { supabase } from '@/integrations/supabase/client'
-import { getProductList } from '@/services/api/productHelpers'
 
 export interface AdCampaign {
   id: string
@@ -51,62 +50,33 @@ export const useRealAdsManager = () => {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) throw new Error('User not authenticated')
 
-      const [
-        { data: orders },
-        productsList,
-        { data: integrations }
-      ] = await Promise.all([
-        supabase.from('orders').select('*').eq('user_id', user.id),
-        getProductList(500),
-        supabase.from('integrations').select('*').eq('user_id', user.id)
-      ])
-      const products = productsList as any[]
+      // Fetch real ad campaigns from database
+      const { data: dbCampaigns, error: campError } = await supabase
+        .from('ad_campaigns')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
 
-      // Generate ad campaigns based on product categories and integrations
-      const campaigns: AdCampaign[] = []
-      const hasGoogleAds = integrations?.some(i => i.platform?.includes('google') || i.platform_name?.includes('Google'))
-      const hasFacebookAds = integrations?.some(i => i.platform?.includes('facebook') || i.platform_name?.includes('Facebook'))
+      if (campError) throw campError
 
-      // Group products by category
-      const categories = products?.reduce((acc, p) => {
-        if (!p.category) return acc
-        if (!acc[p.category]) acc[p.category] = []
-        acc[p.category].push(p)
-        return acc
-      }, {} as Record<string, typeof products>) || {}
+      const campaigns: AdCampaign[] = (dbCampaigns || []).map((c: any) => ({
+        id: c.id,
+        name: c.name,
+        platform: (c.platform || 'google') as AdCampaign['platform'],
+        status: (c.status || 'draft') as AdCampaign['status'],
+        budget: c.budget || 0,
+        spent: c.spend || 0,
+        impressions: c.impressions || 0,
+        clicks: c.clicks || 0,
+        conversions: c.conversions || 0,
+        ctr: c.ctr || ((c.clicks || 0) > 0 && (c.impressions || 0) > 0 ? ((c.clicks / c.impressions) * 100) : 0),
+        cpc: c.cpc || ((c.clicks || 0) > 0 ? (c.spend || 0) / c.clicks : 0),
+        roas: c.roas || 0,
+        start_date: c.start_date || c.created_at,
+        end_date: c.end_date || undefined
+      }))
 
-      // Create campaigns for top categories
-      Object.entries(categories).slice(0, 5).forEach(([category, categoryProducts], idx) => {
-        const avgPrice = (categoryProducts as any[]).reduce((sum, p) => sum + p.price, 0) / (categoryProducts as any[]).length
-        const budget = Math.min(avgPrice * 10, 500)
-        const spent = budget * (0.3 + Math.random() * 0.5)
-        const impressions = Math.floor(spent * 100 * (1 + Math.random()))
-        const clicks = Math.floor(impressions * (0.02 + Math.random() * 0.03))
-        const conversions = Math.floor(clicks * (0.05 + Math.random() * 0.1))
-        const revenue = conversions * avgPrice
-
-        const platforms: AdCampaign['platform'][] = ['google', 'facebook', 'instagram', 'tiktok']
-        const platform = platforms[idx % platforms.length]
-
-        campaigns.push({
-          id: `campaign-${idx}`,
-          name: `Campagne ${category}`,
-          platform,
-          status: idx < 3 ? 'active' : 'paused',
-          budget,
-          spent,
-          impressions,
-          clicks,
-          conversions,
-          ctr: clicks / impressions * 100,
-          cpc: spent / clicks,
-          roas: revenue / spent,
-          start_date: new Date(Date.now() - (idx + 1) * 7 * 24 * 60 * 60 * 1000).toISOString(),
-          end_date: idx >= 3 ? new Date(Date.now() - idx * 24 * 60 * 60 * 1000).toISOString() : undefined
-        })
-      })
-
-      // Calculate overall metrics
+      // Calculate overall metrics from real data
       const totalBudget = campaigns.reduce((sum, c) => sum + c.budget, 0)
       const totalSpent = campaigns.reduce((sum, c) => sum + c.spent, 0)
       const totalImpressions = campaigns.reduce((sum, c) => sum + c.impressions, 0)
@@ -123,29 +93,28 @@ export const useRealAdsManager = () => {
         total_conversions: totalConversions,
         avg_ctr: totalImpressions > 0 ? (totalClicks / totalImpressions) * 100 : 0,
         avg_cpc: totalClicks > 0 ? totalSpent / totalClicks : 0,
-        avg_roas: totalSpent > 0 ? (totalConversions * 50) / totalSpent : 0
+        avg_roas: totalSpent > 0 ? campaigns.reduce((s, c) => s + c.roas, 0) / campaigns.length : 0
       }
 
-      // Calculate platform performance
-      const platformData: Record<string, { campaigns: number, spent: number, conversions: number }> = {
-        google: { campaigns: 0, spent: 0, conversions: 0 },
-        facebook: { campaigns: 0, spent: 0, conversions: 0 },
-        instagram: { campaigns: 0, spent: 0, conversions: 0 },
-        tiktok: { campaigns: 0, spent: 0, conversions: 0 }
-      }
+      // Calculate platform performance from real data
+      const platformData: Record<string, { campaigns: number; spent: number; conversions: number; roas: number }> = {}
 
       campaigns.forEach(c => {
+        if (!platformData[c.platform]) {
+          platformData[c.platform] = { campaigns: 0, spent: 0, conversions: 0, roas: 0 }
+        }
         platformData[c.platform].campaigns++
         platformData[c.platform].spent += c.spent
         platformData[c.platform].conversions += c.conversions
+        platformData[c.platform].roas += c.roas
       })
 
       const platformPerformance: PlatformPerformance[] = Object.entries(platformData).map(([platform, data]) => ({
         platform,
         campaigns: data.campaigns,
         spent: data.spent,
-        revenue: data.conversions * 50,
-        roas: data.spent > 0 ? (data.conversions * 50) / data.spent : 0,
+        revenue: data.conversions > 0 ? data.spent * (data.roas / data.campaigns) : 0,
+        roas: data.campaigns > 0 ? data.roas / data.campaigns : 0,
         conversions: data.conversions
       }))
 
@@ -154,11 +123,7 @@ export const useRealAdsManager = () => {
     staleTime: 5 * 60 * 1000,
     meta: {
       onError: () => {
-        toast({
-          title: "Erreur de chargement",
-          description: "Impossible de charger les données publicitaires",
-          variant: "destructive"
-        })
+        toast({ title: "Erreur de chargement", description: "Impossible de charger les données publicitaires", variant: "destructive" })
       }
     }
   })

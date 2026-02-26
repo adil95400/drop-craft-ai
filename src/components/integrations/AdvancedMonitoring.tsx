@@ -58,151 +58,135 @@ export const AdvancedMonitoring = () => {
 
   useEffect(() => {
     fetchMonitoringData()
-    
-    // Auto-refresh every 30 seconds
     const interval = setInterval(fetchMonitoringData, 30000)
     return () => clearInterval(interval)
   }, [selectedTimeRange, selectedPlatform])
 
+  const getTimeRangeFilter = () => {
+    const now = new Date()
+    switch (selectedTimeRange) {
+      case '1h': return new Date(now.getTime() - 3600000).toISOString()
+      case '24h': return new Date(now.getTime() - 86400000).toISOString()
+      case '7d': return new Date(now.getTime() - 7 * 86400000).toISOString()
+      case '30d': return new Date(now.getTime() - 30 * 86400000).toISOString()
+      default: return new Date(now.getTime() - 86400000).toISOString()
+    }
+  }
+
   const fetchMonitoringData = async () => {
     try {
       setIsLoading(true)
-      
-      // Fetch real-time metrics
-      await Promise.all([
-        fetchMetrics(),
-        fetchLogs(),
-        fetchAlerts()
-      ])
-      
+      await Promise.all([fetchMetrics(), fetchLogs(), fetchAlerts()])
     } catch (error) {
       productionLogger.error('Failed to fetch monitoring data', error as Error, 'AdvancedMonitoring')
-      toast({
-        title: "Erreur de monitoring",
-        description: "Impossible de récupérer les données de monitoring",
-        variant: "destructive"
-      })
+      toast({ title: "Erreur de monitoring", description: "Impossible de récupérer les données de monitoring", variant: "destructive" })
     } finally {
       setIsLoading(false)
     }
   }
 
   const fetchMetrics = async () => {
-    // Simulation de métriques en temps réel
-    const mockMetrics = [
-      {
-        id: 'api_calls',
-        name: 'Appels API',
-        value: Math.floor(Math.random() * 10000) + 5000,
-        change: Math.floor(Math.random() * 20) - 10,
-        unit: 'calls',
-        status: 'success'
-      },
-      {
-        id: 'response_time',
-        name: 'Temps de réponse',
-        value: Math.floor(Math.random() * 500) + 100,
-        change: Math.floor(Math.random() * 20) - 10,
-        unit: 'ms',
-        status: 'success'
-      },
-      {
-        id: 'error_rate',
-        name: 'Taux d\'erreur',
-        value: Math.floor(Math.random() * 5) + 1,
-        change: Math.floor(Math.random() * 10) - 5,
-        unit: '%',
-        status: 'warning'
-      },
-      {
-        id: 'sync_success',
-        name: 'Sync réussies',
-        value: Math.floor(Math.random() * 100) + 85,
-        change: Math.floor(Math.random() * 10) - 5,
-        unit: '%',
-        status: 'success'
-      },
-      {
-        id: 'active_integrations',
-        name: 'Intégrations actives',
-        value: Math.floor(Math.random() * 20) + 15,
-        change: Math.floor(Math.random() * 5) - 2,
-        unit: 'count',
-        status: 'info'
-      },
-      {
-        id: 'data_processed',
-        name: 'Données traitées',
-        value: Math.floor(Math.random() * 50000) + 10000,
-        change: Math.floor(Math.random() * 25) - 12,
-        unit: 'records',
-        status: 'success'
-      }
-    ]
-    
-    setMetrics(mockMetrics)
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return
+
+    const since = getTimeRangeFilter()
+
+    // Fetch real data from multiple tables in parallel
+    const [syncRes, integRes, apiLogRes] = await Promise.all([
+      supabase.from('unified_sync_queue').select('id, status, created_at').eq('user_id', user.id).gte('created_at', since),
+      supabase.from('integrations').select('id, is_active').eq('user_id', user.id),
+      supabase.from('api_logs').select('id, status_code, response_time_ms').eq('user_id', user.id).gte('created_at', since)
+    ])
+
+    const syncs = syncRes.data || []
+    const integrations = integRes.data || []
+    const apiLogs = apiLogRes.data || []
+
+    const totalSyncs = syncs.length
+    const successSyncs = syncs.filter(s => s.status === 'completed' || s.status === 'synced').length
+    const syncRate = totalSyncs > 0 ? Math.round((successSyncs / totalSyncs) * 100) : 100
+
+    const totalApiCalls = apiLogs.length
+    const failedCalls = apiLogs.filter(l => (l.status_code || 0) >= 400).length
+    const errorRate = totalApiCalls > 0 ? Math.round((failedCalls / totalApiCalls) * 100) : 0
+    const avgResponseTime = apiLogs.length > 0
+      ? Math.round(apiLogs.reduce((s, l) => s + (l.response_time_ms || 0), 0) / apiLogs.length)
+      : 0
+
+    const activeIntegrations = integrations.filter(i => i.is_active).length
+
+    setMetrics([
+      { id: 'api_calls', name: 'Appels API', value: totalApiCalls, change: 0, unit: 'calls', status: 'success' },
+      { id: 'response_time', name: 'Temps de réponse', value: avgResponseTime, change: 0, unit: 'ms', status: avgResponseTime > 1000 ? 'warning' : 'success' },
+      { id: 'error_rate', name: "Taux d'erreur", value: errorRate, change: 0, unit: '%', status: errorRate > 5 ? 'error' : errorRate > 2 ? 'warning' : 'success' },
+      { id: 'sync_success', name: 'Sync réussies', value: syncRate, change: 0, unit: '%', status: syncRate < 90 ? 'warning' : 'success' },
+      { id: 'active_integrations', name: 'Intégrations actives', value: activeIntegrations, change: 0, unit: 'count', status: 'info' },
+      { id: 'data_processed', name: 'Données traitées', value: totalSyncs, change: 0, unit: 'records', status: 'success' }
+    ])
   }
 
   const fetchLogs = async () => {
-    // Simulation de logs d'activité
-    const platforms = ['Shopify', 'Amazon', 'eBay', 'Stripe', 'PayPal', 'Google Ads']
-    const events = ['sync', 'webhook', 'api_call', 'error', 'connection', 'auth']
-    const statuses = ['success', 'warning', 'error', 'info']
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return
 
-    const mockLogs = Array.from({ length: 50 }, (_, i) => ({
-      id: `log_${i}`,
-      timestamp: new Date(Date.now() - Math.random() * 86400000).toISOString(),
-      platform: platforms[Math.floor(Math.random() * platforms.length)],
-      event: events[Math.floor(Math.random() * events.length)],
-      status: statuses[Math.floor(Math.random() * statuses.length)],
-      message: `Event ${events[Math.floor(Math.random() * events.length)]} processed successfully`,
-      duration: Math.floor(Math.random() * 5000) + 100,
-      details: {
-        user_id: 'user_' + Math.floor(Math.random() * 1000),
-        ip: `192.168.${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}`,
-        user_agent: 'Mozilla/5.0 Chrome/91.0'
+    const since = getTimeRangeFilter()
+
+    // Real logs from unified_sync_queue
+    const { data: syncLogs } = await supabase
+      .from('unified_sync_queue')
+      .select('id, sync_type, entity_type, action, status, channels, created_at, completed_at')
+      .eq('user_id', user.id)
+      .gte('created_at', since)
+      .order('created_at', { ascending: false })
+      .limit(50)
+
+    const realLogs = (syncLogs || []).map((log: any) => {
+      const channels = log.channels || []
+      const platform = channels[0]?.platform || log.entity_type || 'System'
+      const duration = log.completed_at
+        ? new Date(log.completed_at).getTime() - new Date(log.created_at).getTime()
+        : 0
+
+      return {
+        id: log.id,
+        timestamp: log.created_at,
+        platform,
+        event: `${log.sync_type || 'sync'}_${log.action || 'update'}`,
+        status: log.status === 'completed' || log.status === 'synced' ? 'success'
+          : log.status === 'failed' ? 'error'
+          : log.status === 'pending' ? 'info' : 'warning',
+        message: `${log.action || 'Sync'} ${log.entity_type || ''} — ${log.status}`,
+        duration,
+        details: { sync_type: log.sync_type, entity_type: log.entity_type }
       }
-    }))
+    })
 
-    setLogs(mockLogs.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()))
+    setLogs(realLogs)
   }
 
   const fetchAlerts = async () => {
-    // Simulation d'alertes
-    const mockAlerts = [
-      {
-        id: 'alert_1',
-        type: 'error',
-        title: 'Taux d\'erreur élevé',
-        message: 'Le taux d\'erreur Shopify a dépassé 5% dans la dernière heure',
-        platform: 'Shopify',
-        severity: 'high',
-        timestamp: new Date(Date.now() - 3600000).toISOString(),
-        acknowledged: false
-      },
-      {
-        id: 'alert_2',
-        type: 'warning',
-        title: 'Temps de réponse lent',
-        message: 'Les API Amazon répondent lentement (>2s en moyenne)',
-        platform: 'Amazon',
-        severity: 'medium',
-        timestamp: new Date(Date.now() - 7200000).toISOString(),
-        acknowledged: true
-      },
-      {
-        id: 'alert_3',
-        type: 'info',
-        title: 'Nouvelle intégration',
-        message: 'Une nouvelle intégration PayPal a été configurée',
-        platform: 'PayPal',
-        severity: 'low',
-        timestamp: new Date(Date.now() - 14400000).toISOString(),
-        acknowledged: false
-      }
-    ]
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return
 
-    setAlerts(mockAlerts)
+    const { data: activeAlerts } = await supabase
+      .from('active_alerts')
+      .select('*')
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false })
+      .limit(20)
+
+    const realAlerts = (activeAlerts || []).map((alert: any) => ({
+      id: alert.id,
+      type: alert.severity === 'high' ? 'error' : alert.severity === 'medium' ? 'warning' : 'info',
+      title: alert.title,
+      message: alert.message || '',
+      platform: (alert.metadata as any)?.platform || 'System',
+      severity: alert.severity || 'low',
+      timestamp: alert.created_at,
+      acknowledged: alert.acknowledged || false
+    }))
+
+    setAlerts(realAlerts)
   }
 
   const getStatusIcon = (status: string) => {
@@ -223,10 +207,7 @@ export const AdvancedMonitoring = () => {
 
   const formatTimestamp = (timestamp: string) => {
     return new Date(timestamp).toLocaleString('fr-FR', {
-      day: '2-digit',
-      month: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit'
+      day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit'
     })
   }
 
@@ -239,31 +220,17 @@ export const AdvancedMonitoring = () => {
   })
 
   const acknowledgeAlert = async (alertId: string) => {
-    setAlerts(prev => prev.map(alert => 
-      alert.id === alertId ? { ...alert, acknowledged: true } : alert
-    ))
-    
-    toast({
-      title: "Alerte acquittée",
-      description: "L'alerte a été marquée comme acquittée"
-    })
+    await supabase.from('active_alerts').update({ acknowledged: true, acknowledged_at: new Date().toISOString() }).eq('id', alertId)
+    setAlerts(prev => prev.map(alert => alert.id === alertId ? { ...alert, acknowledged: true } : alert))
+    toast({ title: "Alerte acquittée", description: "L'alerte a été marquée comme acquittée" })
   }
 
   const exportLogs = () => {
+    if (filteredLogs.length === 0) return
     const data = filteredLogs.map(log => ({
-      timestamp: log.timestamp,
-      platform: log.platform,
-      event: log.event,
-      status: log.status,
-      message: log.message,
-      duration: log.duration
+      timestamp: log.timestamp, platform: log.platform, event: log.event, status: log.status, message: log.message, duration: log.duration
     }))
-
-    const csv = [
-      Object.keys(data[0]).join(','),
-      ...data.map(row => Object.values(row).join(','))
-    ].join('\n')
-
+    const csv = [Object.keys(data[0]).join(','), ...data.map(row => Object.values(row).join(','))].join('\n')
     const blob = new Blob([csv], { type: 'text/csv' })
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
@@ -278,44 +245,24 @@ export const AdvancedMonitoring = () => {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold">Monitoring Avancé</h2>
-          <p className="text-muted-foreground">
-            Surveillance en temps réel de vos intégrations
-          </p>
+          <p className="text-muted-foreground">Surveillance en temps réel de vos intégrations</p>
         </div>
-        
         <div className="flex gap-2">
-          <Button variant="outline" onClick={exportLogs}>
-            <Download className="w-4 h-4 mr-2" />
-            Exporter
-          </Button>
-          <Button variant="outline" onClick={fetchMonitoringData}>
-            <RefreshCw className="w-4 h-4 mr-2" />
-            Actualiser
-          </Button>
+          <Button variant="outline" onClick={exportLogs}><Download className="w-4 h-4 mr-2" />Exporter</Button>
+          <Button variant="outline" onClick={fetchMonitoringData}><RefreshCw className="w-4 h-4 mr-2" />Actualiser</Button>
         </div>
       </div>
 
       {/* Filters */}
       <div className="flex gap-4 flex-wrap">
         <Select value={selectedTimeRange} onValueChange={setSelectedTimeRange}>
-          <SelectTrigger className="w-48">
-            <Calendar className="w-4 h-4 mr-2" />
-            <SelectValue />
-          </SelectTrigger>
+          <SelectTrigger className="w-48"><Calendar className="w-4 h-4 mr-2" /><SelectValue /></SelectTrigger>
           <SelectContent>
-            {timeRanges.map(range => (
-              <SelectItem key={range.value} value={range.value}>
-                {range.label}
-              </SelectItem>
-            ))}
+            {timeRanges.map(range => (<SelectItem key={range.value} value={range.value}>{range.label}</SelectItem>))}
           </SelectContent>
         </Select>
-
         <Select value={selectedPlatform} onValueChange={setSelectedPlatform}>
-          <SelectTrigger className="w-48">
-            <Globe className="w-4 h-4 mr-2" />
-            <SelectValue />
-          </SelectTrigger>
+          <SelectTrigger className="w-48"><Globe className="w-4 h-4 mr-2" /><SelectValue /></SelectTrigger>
           <SelectContent>
             <SelectItem value="all">Toutes les plateformes</SelectItem>
             <SelectItem value="Shopify">Shopify</SelectItem>
@@ -324,101 +271,58 @@ export const AdvancedMonitoring = () => {
             <SelectItem value="Stripe">Stripe</SelectItem>
           </SelectContent>
         </Select>
-
         <div className="relative">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
-          <Input
-            placeholder="Rechercher dans les logs..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10 w-64"
-          />
+          <Input placeholder="Rechercher dans les logs..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="pl-10 w-64" />
         </div>
       </div>
 
       <Tabs defaultValue="overview" className="space-y-6">
         <TabsList>
-          <TabsTrigger value="overview" className="flex items-center gap-2">
-            <Gauge className="w-4 h-4" />
-            Vue d'ensemble
-          </TabsTrigger>
-          <TabsTrigger value="metrics" className="flex items-center gap-2">
-            <BarChart3 className="w-4 h-4" />
-            Métriques
-          </TabsTrigger>
-          <TabsTrigger value="logs" className="flex items-center gap-2">
-            <Activity className="w-4 h-4" />
-            Logs
-          </TabsTrigger>
+          <TabsTrigger value="overview" className="flex items-center gap-2"><Gauge className="w-4 h-4" />Vue d'ensemble</TabsTrigger>
+          <TabsTrigger value="metrics" className="flex items-center gap-2"><BarChart3 className="w-4 h-4" />Métriques</TabsTrigger>
+          <TabsTrigger value="logs" className="flex items-center gap-2"><Activity className="w-4 h-4" />Logs</TabsTrigger>
           <TabsTrigger value="alerts" className="flex items-center gap-2">
-            <Bell className="w-4 h-4" />
-            Alertes {alerts.filter(a => !a.acknowledged).length > 0 && 
-              <Badge variant="destructive" className="ml-1">
-                {alerts.filter(a => !a.acknowledged).length}
-              </Badge>
-            }
+            <Bell className="w-4 h-4" />Alertes {alerts.filter(a => !a.acknowledged).length > 0 && 
+              <Badge variant="destructive" className="ml-1">{alerts.filter(a => !a.acknowledged).length}</Badge>}
           </TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview">
-          {/* Metrics Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
             {metrics.map(metric => (
               <Card key={metric.id}>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">
-                    {metric.name}
-                  </CardTitle>
-                  <div className="flex items-center gap-1">
-                    {getChangeIcon(metric.change)}
-                    {getStatusIcon(metric.status)}
-                  </div>
+                  <CardTitle className="text-sm font-medium">{metric.name}</CardTitle>
+                  <div className="flex items-center gap-1">{getChangeIcon(metric.change)}{getStatusIcon(metric.status)}</div>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">
-                    {metric.value.toLocaleString()} {metric.unit}
-                  </div>
-                  {metric.change !== 0 && (
-                    <p className={`text-xs ${metric.change > 0 ? 'text-green-600' : 'text-red-600'}`}>
-                      {metric.change > 0 ? '+' : ''}{metric.change}% vs période précédente
-                    </p>
-                  )}
+                  <div className="text-2xl font-bold">{metric.value.toLocaleString()} {metric.unit}</div>
                 </CardContent>
               </Card>
             ))}
           </div>
 
-          {/* Recent Activity */}
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Activity className="w-5 h-5" />
-                Activité Récente
-              </CardTitle>
+              <CardTitle className="flex items-center gap-2"><Activity className="w-5 h-5" />Activité Récente</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
+                {logs.length === 0 && <p className="text-muted-foreground text-center py-4">Aucune activité récente</p>}
                 {logs.slice(0, 10).map(log => (
                   <div key={log.id} className="flex items-center gap-3 p-3 rounded-lg bg-muted/30">
                     {getStatusIcon(log.status)}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
                         <span className="font-medium text-sm">{log.platform}</span>
-                        <Badge variant="outline" className="text-xs">
-                          {log.event}
-                        </Badge>
+                        <Badge variant="outline" className="text-xs">{log.event}</Badge>
                       </div>
-                      <p className="text-sm text-muted-foreground truncate">
-                        {log.message}
-                      </p>
+                      <p className="text-sm text-muted-foreground truncate">{log.message}</p>
                     </div>
                     <div className="text-right">
-                      <div className="text-xs text-muted-foreground">
-                        {formatTimestamp(log.timestamp)}
-                      </div>
-                      <div className="text-xs">
-                        {log.duration}ms
-                      </div>
+                      <div className="text-xs text-muted-foreground">{formatTimestamp(log.timestamp)}</div>
+                      {log.duration > 0 && <div className="text-xs">{log.duration}ms</div>}
                     </div>
                   </div>
                 ))}
@@ -434,41 +338,11 @@ export const AdvancedMonitoring = () => {
                 <CardHeader>
                   <CardTitle className="flex items-center justify-between">
                     <span>{metric.name}</span>
-                    <Badge className={statusColors[metric.status as keyof typeof statusColors]}>
-                      {metric.status}
-                    </Badge>
+                    <Badge className={statusColors[metric.status as keyof typeof statusColors]}>{metric.status}</Badge>
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-4">
-                    <div className="text-3xl font-bold">
-                      {metric.value.toLocaleString()} {metric.unit}
-                    </div>
-                    
-                    {/* Simulation d'un graphique simple */}
-                    <div className="h-32 bg-muted/30 rounded-lg flex items-end p-2">
-                      {Array.from({ length: 24 }, (_, i) => (
-                        <div
-                          key={i}
-                          className="flex-1 mx-0.5 bg-primary/60 rounded-sm"
-                          style={{ 
-                            height: `${Math.random() * 100 + 20}%`,
-                            minHeight: '4px'
-                          }}
-                        />
-                      ))}
-                    </div>
-
-                    <div className="flex items-center justify-between text-sm text-muted-foreground">
-                      <span>Dernières 24h</span>
-                      <div className="flex items-center gap-1">
-                        {getChangeIcon(metric.change)}
-                        <span className={metric.change > 0 ? 'text-green-600' : 'text-red-600'}>
-                          {metric.change > 0 ? '+' : ''}{metric.change}%
-                        </span>
-                      </div>
-                    </div>
-                  </div>
+                  <div className="text-3xl font-bold">{metric.value.toLocaleString()} {metric.unit}</div>
                 </CardContent>
               </Card>
             ))}
@@ -477,79 +351,22 @@ export const AdvancedMonitoring = () => {
 
         <TabsContent value="logs">
           <Card>
-            <CardHeader>
-              <CardTitle>Logs d'Activité</CardTitle>
-            </CardHeader>
+            <CardHeader><CardTitle>Logs d'Activité</CardTitle></CardHeader>
             <CardContent>
               <div className="space-y-2">
+                {filteredLogs.length === 0 && <p className="text-muted-foreground text-center py-4">Aucun log trouvé</p>}
                 {filteredLogs.map(log => (
-                  <Dialog key={log.id}>
-                    <DialogTrigger asChild>
-                      <div className="flex items-center gap-3 p-3 rounded-lg hover:bg-muted/50 cursor-pointer transition-colors">
-                        {getStatusIcon(log.status)}
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 mb-1">
-                            <span className="font-medium">{log.platform}</span>
-                            <Badge variant="outline">{log.event}</Badge>
-                            <Badge className={statusColors[log.status as keyof typeof statusColors]}>
-                              {log.status}
-                            </Badge>
-                          </div>
-                          <p className="text-sm text-muted-foreground truncate">
-                            {log.message}
-                          </p>
-                        </div>
-                        <div className="text-right">
-                          <div className="text-sm font-medium">
-                            {formatTimestamp(log.timestamp)}
-                          </div>
-                          <div className="text-xs text-muted-foreground">
-                            {log.duration}ms
-                          </div>
-                        </div>
-                        <Eye className="w-4 h-4 text-muted-foreground" />
+                  <div key={log.id} className="flex items-center gap-3 p-3 rounded-lg hover:bg-muted/50 cursor-pointer transition-colors">
+                    {getStatusIcon(log.status)}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium text-sm">{log.platform}</span>
+                        <Badge variant="outline" className="text-xs">{log.event}</Badge>
                       </div>
-                    </DialogTrigger>
-                    <DialogContent>
-                      <DialogHeader>
-                        <DialogTitle>Détails du Log</DialogTitle>
-                      </DialogHeader>
-                      <div className="space-y-4">
-                        <div className="grid grid-cols-2 gap-4">
-                          <div>
-                            <label className="text-sm font-medium">Plateforme</label>
-                            <p>{log.platform}</p>
-                          </div>
-                          <div>
-                            <label className="text-sm font-medium">Événement</label>
-                            <p>{log.event}</p>
-                          </div>
-                          <div>
-                            <label className="text-sm font-medium">Statut</label>
-                            <Badge className={statusColors[log.status as keyof typeof statusColors]}>
-                              {log.status}
-                            </Badge>
-                          </div>
-                          <div>
-                            <label className="text-sm font-medium">Durée</label>
-                            <p>{log.duration}ms</p>
-                          </div>
-                        </div>
-                        
-                        <div>
-                          <label className="text-sm font-medium">Message</label>
-                          <p className="mt-1 p-3 bg-muted/30 rounded-lg">{log.message}</p>
-                        </div>
-                        
-                        <div>
-                          <label className="text-sm font-medium">Détails techniques</label>
-                          <pre className="mt-1 p-3 bg-muted/30 rounded-lg text-xs overflow-auto">
-                            {JSON.stringify(log.details, null, 2)}
-                          </pre>
-                        </div>
-                      </div>
-                    </DialogContent>
-                  </Dialog>
+                      <p className="text-sm text-muted-foreground truncate">{log.message}</p>
+                    </div>
+                    <div className="text-right text-xs text-muted-foreground">{formatTimestamp(log.timestamp)}</div>
+                  </div>
                 ))}
               </div>
             </CardContent>
@@ -557,54 +374,36 @@ export const AdvancedMonitoring = () => {
         </TabsContent>
 
         <TabsContent value="alerts">
-          <div className="space-y-4">
-            {alerts.map(alert => (
-              <Card key={alert.id} className={`border-l-4 ${
-                alert.severity === 'high' ? 'border-l-red-500' :
-                alert.severity === 'medium' ? 'border-l-yellow-500' : 'border-l-blue-500'
-              }`}>
-                <CardHeader>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      {alert.type === 'error' && <AlertTriangle className="w-5 h-5 text-red-500" />}
-                      {alert.type === 'warning' && <AlertTriangle className="w-5 h-5 text-yellow-500" />}
-                      {alert.type === 'info' && <Globe className="w-5 h-5 text-blue-500" />}
-                      
-                      <div>
-                        <CardTitle className="text-base">{alert.title}</CardTitle>
-                        <p className="text-sm text-muted-foreground">
-                          {alert.platform} • {formatTimestamp(alert.timestamp)}
-                        </p>
+          <Card>
+            <CardHeader><CardTitle className="flex items-center gap-2"><Shield className="w-5 h-5" />Alertes Actives</CardTitle></CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                {alerts.length === 0 && <p className="text-muted-foreground text-center py-4">Aucune alerte active</p>}
+                {alerts.map(alert => (
+                  <div key={alert.id} className={`p-4 rounded-lg border ${alert.acknowledged ? 'opacity-50' : ''} ${
+                    alert.type === 'error' ? 'border-red-200 bg-red-50' : alert.type === 'warning' ? 'border-yellow-200 bg-yellow-50' : 'border-blue-200 bg-blue-50'
+                  }`}>
+                    <div className="flex items-start justify-between">
+                      <div className="flex items-start gap-3">
+                        {getStatusIcon(alert.type)}
+                        <div>
+                          <h4 className="font-medium">{alert.title}</h4>
+                          <p className="text-sm text-muted-foreground mt-1">{alert.message}</p>
+                          <div className="flex items-center gap-2 mt-2">
+                            <Badge variant="outline">{alert.platform}</Badge>
+                            <span className="text-xs text-muted-foreground">{formatTimestamp(alert.timestamp)}</span>
+                          </div>
+                        </div>
                       </div>
-                    </div>
-                    
-                    <div className="flex items-center gap-2">
-                      <Badge variant={alert.severity === 'high' ? 'destructive' : alert.severity === 'medium' ? 'outline' : 'secondary'}>
-                        {alert.severity}
-                      </Badge>
                       {!alert.acknowledged && (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => acknowledgeAlert(alert.id)}
-                        >
-                          Acquitter
-                        </Button>
+                        <Button variant="outline" size="sm" onClick={() => acknowledgeAlert(alert.id)}>Acquitter</Button>
                       )}
                     </div>
                   </div>
-                </CardHeader>
-                <CardContent>
-                  <p>{alert.message}</p>
-                  {alert.acknowledged && (
-                    <p className="text-xs text-muted-foreground mt-2">
-                      ✓ Alerte acquittée
-                    </p>
-                  )}
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
         </TabsContent>
       </Tabs>
     </div>
