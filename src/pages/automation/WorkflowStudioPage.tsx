@@ -80,7 +80,7 @@ export default function WorkflowStudioPage() {
       <div>
         <h3 className="text-lg font-semibold mb-3">📋 Vos Workflows</h3>
         {isLoading ? (
-          <div className="text-center py-12 text-muted-foreground">Chargement...</div>
+          <div className="space-y-3 py-4">{[1,2,3].map(i => <div key={i} className="h-24 bg-muted animate-pulse rounded-xl" />)}</div>
         ) : workflows.length === 0 ? (
           <Card><CardContent className="py-12 text-center">
             <Workflow className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />

@@ -219,7 +219,11 @@ export default function ReviewsPage() {
         </div>
 
         {isLoading ? (
-          <div className="text-center py-12 text-muted-foreground">Chargement...</div>
+          <div className="space-y-3 py-4">
+            {[1,2,3,4].map(i => (
+              <div key={i} className="h-24 bg-muted animate-pulse rounded-lg" />
+            ))}
+          </div>
         ) : reviews.length === 0 ? (
           <Card>
             <CardContent className="py-12 text-center">

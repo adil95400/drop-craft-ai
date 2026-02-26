@@ -90,7 +90,7 @@ export default function PredictiveAnalyticsPage() {
                 </CardHeader>
                 <CardContent>
                   {isLoadingDashboard ? (
-                    <div className="text-center py-8 text-muted-foreground">Chargement...</div>
+                    <div className="space-y-3 py-2">{[1,2,3].map(i => <div key={i} className="h-14 bg-muted animate-pulse rounded-lg" />)}</div>
                   ) : dashboard?.restock_recommendations.length === 0 ? (
                     <div className="text-center py-8 text-muted-foreground">Aucune recommandation</div>
                   ) : (
@@ -118,7 +118,7 @@ export default function PredictiveAnalyticsPage() {
                 </CardHeader>
                 <CardContent>
                   {isLoadingDashboard ? (
-                    <div className="text-center py-8 text-muted-foreground">Chargement...</div>
+                    <div className="space-y-3 py-2">{[1,2,3].map(i => <div key={i} className="h-14 bg-muted animate-pulse rounded-lg" />)}</div>
                   ) : dashboard?.pricing_recommendations.length === 0 ? (
                     <div className="text-center py-8 text-muted-foreground">Aucune recommandation</div>
                   ) : (

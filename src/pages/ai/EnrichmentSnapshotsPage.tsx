@@ -144,7 +144,11 @@ export default function EnrichmentSnapshotsPage() {
 
       {/* Snapshots Timeline */}
       {isLoading ? (
-        <div className="text-center py-12 text-muted-foreground">Chargement...</div>
+        <div className="space-y-4 py-4">
+          {[1,2,3].map(i => (
+            <div key={i} className="h-32 bg-muted animate-pulse rounded-xl" />
+          ))}
+        </div>
       ) : (
         <div className="space-y-4">
           {filtered.length === 0 && (

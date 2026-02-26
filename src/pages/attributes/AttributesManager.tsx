@@ -208,7 +208,11 @@ export default function AttributesManager() {
           </CardHeader>
           <CardContent>
             {isLoading ? (
-              <div className="text-center py-12 text-muted-foreground">Chargement...</div>
+              <div className="space-y-3 py-4">
+                {[1,2,3,4,5].map(i => (
+                  <div key={i} className="h-12 bg-muted animate-pulse rounded-lg" />
+                ))}
+              </div>
             ) : !attributes || attributes.length === 0 ? (
               <div className="text-center py-12">
                 <div className="p-4 rounded-full bg-muted/50 w-fit mx-auto mb-4">
