@@ -33,32 +33,66 @@ export interface SalesPrediction {
   confiance: number
 }
 
+/**
+ * Helper: deterministic hash from string → number 0-1
+ */
+function hashScore(s: string): number {
+  let h = 0
+  for (let i = 0; i < s.length; i++) {
+    h = ((h << 5) - h + s.charCodeAt(i)) | 0
+  }
+  return Math.abs(h % 1000) / 1000
+}
+
 export class AIAnalyticsService {
   static async getTrendingProducts(userId: string, limit = 10): Promise<TrendingProduct[]> {
     try {
-      // Get catalog products
-      const { data: products, error } = await (supabase
-        .from('products') as any)
-        .select('id, title, category, price')
-        .order('created_at', { ascending: false })
-        .limit(limit)
+      // Get products with order data to calculate real trends
+      const [{ data: products, error }, { data: orderItems }] = await Promise.all([
+        (supabase.from('products') as any)
+          .select('id, title, category, price, stock_quantity, created_at')
+          .order('created_at', { ascending: false })
+          .limit(limit),
+        supabase.from('order_items')
+          .select('product_id, qty, unit_price')
+      ])
 
       if (error) throw error
 
-      // Calculate AI trend analysis
+      // Build sales map from real order data
+      const salesMap = new Map<string, { totalQty: number; totalRevenue: number }>()
+      ;(orderItems || []).forEach((item: any) => {
+        if (!item.product_id) return
+        const existing = salesMap.get(item.product_id) || { totalQty: 0, totalRevenue: 0 }
+        existing.totalQty += item.qty || 0
+        existing.totalRevenue += (item.qty || 0) * (item.unit_price || 0)
+        salesMap.set(item.product_id, existing)
+      })
+
       return (products || []).map((product: any) => {
-        const salesGrowth = Math.floor(Math.random() * 200) + 50
-        const potential = (Math.random() * 10 + 5) * 1000
-        
+        const sales = salesMap.get(product.id)
+        const hasImage = !!product.image_url
+        const hasDescription = !!(product.description && product.description.length > 20)
+        const hasSKU = !!product.sku
+        const hasStock = (product.stock_quantity || 0) > 0
+
+        // Completeness-based score (deterministic)
+        const completeness = [hasImage, hasDescription, hasSKU, hasStock].filter(Boolean).length
+        const score = 50 + completeness * 10 + (sales ? Math.min(sales.totalQty, 20) : 0)
+
+        const monthlyRevenue = sales ? sales.totalRevenue : 0
+
         return {
           produit: product.title || 'Produit',
-          score: Math.floor(Math.random() * 30) + 70,
-          tendance: `+${salesGrowth}%`,
-          raison: this.getTrendReason(product.category, salesGrowth),
-          potential: `€${(potential / 1000).toFixed(1)}k/mois`,
+          score: Math.min(100, Math.floor(score)),
+          tendance: sales ? `+${sales.totalQty} ventes` : 'Nouveau',
+          raison: this.getTrendReason(product.category, sales?.totalQty || 0),
+          potential: monthlyRevenue > 0
+            ? `€${(monthlyRevenue / 1000).toFixed(1)}k réalisé`
+            : 'À développer',
           product_id: product.id
         }
-      })
+      }).sort((a, b) => b.score - a.score)
     } catch (error) {
       console.error('Error fetching trending products:', error)
       return []
@@ -67,56 +101,61 @@ export class AIAnalyticsService {
 
   static async getMarketOpportunities(userId: string): Promise<MarketOpportunity[]> {
     try {
-      // Analyze categories for opportunities
-      const { data: products, error } = await (supabase
-        .from('products') as any)
-        .select('category, price')
+      const [{ data: products, error }, { data: orderItems }] = await Promise.all([
+        (supabase.from('products') as any).select('id, category, price, cost_price'),
+        supabase.from('order_items').select('product_id, qty, unit_price')
+      ])
 
       if (error) throw error
 
-      // Group by category and calculate opportunity scores
-      const categoryMap = new Map<string, any>()
+      // Build sales map
+      const salesByProduct = new Map<string, number>()
+      ;(orderItems || []).forEach((item: any) => {
+        if (!item.product_id) return
+        salesByProduct.set(item.product_id, (salesByProduct.get(item.product_id) || 0) + (item.qty || 0))
+      })
+
+      // Group by category with real metrics
+      const categoryMap = new Map<string, { totalRevenue: number; totalCost: number; count: number; totalSales: number }>()
       
       ;(products || []).forEach((product: any) => {
         if (!product.category) return
         
         if (!categoryMap.has(product.category)) {
-          categoryMap.set(product.category, {
-            totalSales: 0,
-            avgCompetition: Math.random() * 10,
-            avgMargin: Math.random() * 50 + 20,
-            count: 0
-          })
+          categoryMap.set(product.category, { totalRevenue: 0, totalCost: 0, count: 0, totalSales: 0 })
         }
         
-        const cat = categoryMap.get(product.category)
-        cat.totalSales += product.price || 0
+        const cat = categoryMap.get(product.category)!
+        const productSales = salesByProduct.get(product.id) || 0
+        cat.totalRevenue += (product.price || 0) * productSales
+        cat.totalCost += (product.cost_price || product.price * 0.6 || 0) * productSales
         cat.count++
+        cat.totalSales += productSales
       })
 
-      // Calculate opportunities
       const opportunities: MarketOpportunity[] = []
       
       categoryMap.forEach((stats, category) => {
-        const saturation = stats.avgCompetition * 10
-        const avgMargin = stats.avgMargin
-        
-        // High potential = low competition + high margin
-        if (saturation < 60 && avgMargin > 30) {
-          const potential = stats.totalSales * avgMargin * 0.1
-          const growth = Math.floor((100 - saturation) * 2)
-          
-          opportunities.push({
-            categorie: category,
-            potentiel: potential > 1000000 ? `${(potential / 1000000).toFixed(1)}M€` : `${(potential / 1000).toFixed(0)}k€`,
-            croissance: `+${growth}%`,
-            difficulte: saturation < 30 ? 'Facile' : saturation < 50 ? 'Moyen' : 'Difficile',
-            saturation: Math.floor(saturation)
-          })
-        }
+        const margin = stats.totalRevenue > 0
+          ? ((stats.totalRevenue - stats.totalCost) / stats.totalRevenue) * 100
+          : 0
+        // Saturation based on how many products vs sales
+        const saturation = stats.count > 0
+          ? Math.min(100, Math.floor((stats.count / Math.max(stats.totalSales, 1)) * 50))
+          : 50
+
+        opportunities.push({
+          categorie: category,
+          potentiel: stats.totalRevenue > 1000
+            ? `${(stats.totalRevenue / 1000).toFixed(1)}k€`
+            : `${stats.totalRevenue.toFixed(0)}€`,
+          croissance: stats.totalSales > 0 ? `${stats.totalSales} ventes` : 'Pas de ventes',
+          difficulte: saturation < 30 ? 'Facile' : saturation < 60 ? 'Moyen' : 'Difficile',
+          saturation: Math.floor(saturation)
+        })
       })
 
-      return opportunities.sort((a, b) => b.saturation - a.saturation).slice(0, 5)
+      return opportunities.sort((a, b) => a.saturation - b.saturation).slice(0, 5)
     } catch (error) {
       console.error('Error fetching market opportunities:', error)
       return []
@@ -127,24 +166,29 @@ export class AIAnalyticsService {
     try {
       const { data: products, error } = await (supabase
         .from('products') as any)
-        .select('id, title, price')
+        .select('id, title, price, cost_price')
         .order('created_at', { ascending: false })
         .limit(limit)
 
       if (error) throw error
 
       return (products || []).map((product: any) => {
-        const currentMargin = Math.random() * 40 + 20
-        const competitionFactor = Math.random()
-        const optimalMargin = Math.min(80, currentMargin + (20 * (1 - competitionFactor)))
-        const additionalRevenue = (product.price || 100) * 10 * ((optimalMargin - currentMargin) / 100)
+        const price = product.price || 0
+        const cost = product.cost_price || price * 0.6
+        const currentMargin = price > 0 ? ((price - cost) / price) * 100 : 0
+        // Simple optimal margin suggestion: aim for at least 40% if currently lower
+        const optimalMargin = Math.max(currentMargin, Math.min(60, currentMargin + 10))
+        const additionalRevenue = price * 10 * ((optimalMargin - currentMargin) / 100)
+        
+        // Deterministic competition level based on product id hash
+        const competitionHash = hashScore(product.id)
         
         return {
           produit: product.title || 'Produit',
           margeActuelle: Math.floor(currentMargin),
           margeOptimale: Math.floor(optimalMargin),
           potentielCA: additionalRevenue > 1000 ? `+${(additionalRevenue / 1000).toFixed(1)}k€/mois` : `+${additionalRevenue.toFixed(0)}€/mois`,
-          competition: competitionFactor < 0.3 ? 'Faible' : competitionFactor < 0.6 ? 'Moyenne' : 'Forte',
+          competition: competitionHash < 0.3 ? 'Faible' : competitionHash < 0.6 ? 'Moyenne' : 'Forte',
           product_id: product.id
         }
       })
@@ -156,7 +200,6 @@ export class AIAnalyticsService {
 
   static async getSalesPredictions(userId: string, months = 6): Promise<SalesPrediction[]> {
     try {
-      // Get historical sales data
       const { data: orders, error } = await supabase
         .from('orders')
         .select('created_at, total_amount')
@@ -167,14 +210,12 @@ export class AIAnalyticsService {
 
       if (error) throw error
 
-      // Group by month
       const monthlyData = new Map<string, number>()
       orders?.forEach(order => {
         const month = new Date(order.created_at).toLocaleString('fr-FR', { month: 'short' })
         monthlyData.set(month, (monthlyData.get(month) || 0) + (order.total_amount || 0))
       })
 
-      // Calculate predictions using simple linear regression
       const historicalValues = Array.from(monthlyData.values())
       const avgGrowth = historicalValues.length > 1 
         ? (historicalValues[historicalValues.length - 1] - historicalValues[0]) / historicalValues.length
@@ -205,16 +246,19 @@ export class AIAnalyticsService {
     }
   }
 
-  private static getTrendReason(category: string | null, growth: number): string {
-    const reasons: Record<string, string[]> = {
-      'Electronics': ['Nouvelles fonctionnalités', 'Compatibilité derniers modèles', 'Innovation technologique'],
-      'Fashion': ['Tendance saisonnière', 'Nouveau style populaire', 'Influence réseaux sociaux'],
-      'Home': ['Décoration intérieure', 'Amélioration habitat', 'Confort domestique'],
-      'Sports': ['Pic saisonnier fitness', 'Événement sportif', 'Tendance santé'],
-      'Beauty': ['Nouveaux ingrédients', 'Routine beauté tendance', 'Influenceurs beauté']
+  private static getTrendReason(category: string | null, salesCount: number): string {
+    if (salesCount > 10) return 'Forte demande constatée'
+    if (salesCount > 5) return 'Demande régulière'
+    if (salesCount > 0) return 'Premiers acheteurs'
+
+    const reasons: Record<string, string> = {
+      'Electronics': 'Innovation technologique',
+      'Fashion': 'Tendance saisonnière',
+      'Home': 'Décoration intérieure',
+      'Sports': 'Pic saisonnier fitness',
+      'Beauty': 'Routine beauté tendance'
     }
 
-    const categoryReasons = reasons[category || ''] || ['Demande croissante', 'Tendance du marché', 'Popularité en hausse']
-    return categoryReasons[Math.floor(Math.random() * categoryReasons.length)]
+    return reasons[category || ''] || 'Potentiel à évaluer'
   }
 }
