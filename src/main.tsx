@@ -22,6 +22,10 @@ PWAService.init()
 // 3. Initialize error monitoring
 initSentry()
 
+// 4. Initialize analytics (GA4, Mixpanel, Hotjar)
+import { initAnalytics } from '@/lib/analytics'
+initAnalytics()
+
 // Log application start
 logger.info('Application started', { component: 'main' })
 
