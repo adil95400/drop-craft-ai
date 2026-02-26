@@ -205,7 +205,10 @@ export default function MarketingAutomationPage() {
                 <p className="text-muted-foreground mb-4">
                   Utilisez un template pour créer votre première automatisation marketing
                 </p>
-                <Button variant="outline" onClick={() => {}}>
+                <Button variant="outline" onClick={() => {
+                  const tabEl = document.querySelector('[data-state="inactive"][value="templates"]') as HTMLElement;
+                  tabEl?.click();
+                }}>
                   Voir les Templates
                 </Button>
               </Card>

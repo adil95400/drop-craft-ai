@@ -168,7 +168,16 @@ export default function SupplierAnalyticsDashboard() {
         description="Analysez les performances de vos fournisseurs, marges et tendances de vente."
         secondaryAction={{
           label: "Exporter",
-          onClick: () => {}
+          onClick: () => {
+            const csvData = `Métrique,Valeur\nRevenus,${analyticsData?.totalRevenue || 0}€\nCommandes,${analyticsData?.totalOrders || 0}\nMarge Moyenne,${analyticsData?.avgMargin || 0}%\nFournisseurs Actifs,${analyticsData?.activeSuppliers || 0}`;
+            const blob = new Blob([csvData], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `supplier-analytics-${new Date().toISOString().split('T')[0]}.csv`;
+            a.click();
+            URL.revokeObjectURL(url);
+          }
         }}
         stats={[
           { value: `${(analyticsData?.totalRevenue || 0).toLocaleString()}€`, label: "Revenus", icon: DollarSign },
