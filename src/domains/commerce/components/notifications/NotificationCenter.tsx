@@ -10,7 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useNotifications } from '../../hooks/useNotifications';
 import { formatDistanceToNow } from 'date-fns';
-import { fr } from 'date-fns/locale';
+import { getDateFnsLocale } from '@/utils/dateFnsLocale';
 
 export const NotificationCenter = () => {
   const navigate = useNavigate();
@@ -91,7 +91,7 @@ export const NotificationCenter = () => {
                         {notification.message}
                       </p>
                       <p className="text-xs text-muted-foreground mt-2">
-                        {formatDistanceToNow(notification.timestamp, { addSuffix: true, locale: fr })}
+                        {formatDistanceToNow(notification.timestamp, { addSuffix: true, locale: getDateFnsLocale() })}
                       </p>
                       {notification.action && (
                         <Button

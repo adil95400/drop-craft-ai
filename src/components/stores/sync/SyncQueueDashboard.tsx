@@ -20,7 +20,7 @@ import {
   RefreshCw,
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
-import { fr } from 'date-fns/locale';
+import { getDateFnsLocale } from '@/utils/dateFnsLocale';
 
 export function SyncQueueDashboard() {
   const { queue, cancelSync, retrySync, isLoadingQueue, isCancelling } = useSyncManager();
@@ -206,7 +206,7 @@ export function SyncQueueDashboard() {
                     <TableCell className="text-sm text-muted-foreground">
                       {formatDistanceToNow(new Date(job.scheduled_at), {
                         addSuffix: true,
-                        locale: fr,
+                        locale: getDateFnsLocale(),
                       })}
                     </TableCell>
 

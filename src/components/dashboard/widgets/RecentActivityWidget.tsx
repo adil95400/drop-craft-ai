@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { useProductionData } from '@/hooks/useProductionData';
 import { useMemo } from 'react';
 import { formatDistanceToNow } from 'date-fns';
-import { fr } from 'date-fns/locale';
+import { getDateFnsLocale } from '@/utils/dateFnsLocale';
 
 interface RecentActivityWidgetProps {
   timeRange: string;
@@ -43,7 +43,7 @@ export function RecentActivityWidget({ settings }: RecentActivityWidgetProps) {
         id: `order-${order.id}`,
         type: 'order',
         message: `Commande ${order.order_number} - ${Number(order.total_amount || 0).toLocaleString('fr-FR')}€`,
-        time: formatDistanceToNow(new Date(order.created_at || ''), { addSuffix: true, locale: fr }),
+        time: formatDistanceToNow(new Date(order.created_at || ''), { addSuffix: true, locale: getDateFnsLocale() }),
         timestamp: new Date(order.created_at || ''),
         icon: ShoppingCart,
         color: 'text-blue-500'
@@ -56,7 +56,7 @@ export function RecentActivityWidget({ settings }: RecentActivityWidgetProps) {
         id: `customer-${customer.id}`,
         type: 'customer',
         message: `Nouveau client: ${customer.first_name || ''} ${customer.last_name || customer.email}`,
-        time: formatDistanceToNow(new Date(customer.created_at || ''), { addSuffix: true, locale: fr }),
+        time: formatDistanceToNow(new Date(customer.created_at || ''), { addSuffix: true, locale: getDateFnsLocale() }),
         timestamp: new Date(customer.created_at || ''),
         icon: UserPlus,
         color: 'text-green-500'
@@ -69,7 +69,7 @@ export function RecentActivityWidget({ settings }: RecentActivityWidgetProps) {
         id: `shipment-${shipment.id}`,
         type: 'shipping',
         message: `Expédition ${shipment.tracking_number || shipment.id.slice(0, 8)} - ${shipment.status}`,
-        time: formatDistanceToNow(new Date(shipment.created_at || ''), { addSuffix: true, locale: fr }),
+        time: formatDistanceToNow(new Date(shipment.created_at || ''), { addSuffix: true, locale: getDateFnsLocale() }),
         timestamp: new Date(shipment.created_at || ''),
         icon: Package,
         color: 'text-orange-500'

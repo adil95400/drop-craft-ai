@@ -30,7 +30,7 @@ import { ImportLiveTracker } from '@/components/import/ImportLiveTracker';
 import { ImportScheduler } from '@/components/import/ImportScheduler';
 import { useChannelConnections } from '@/hooks/useChannelConnections';
 import { formatDistanceToNow } from 'date-fns';
-import { fr } from 'date-fns/locale';
+import { getDateFnsLocale } from '@/utils/dateFnsLocale';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
@@ -389,7 +389,7 @@ function ImportHubContent() {
                         <TooltipContent>
                           <p>{channel.shop_domain || channel.platform_name}</p>
                           <p className="text-xs text-muted-foreground">
-                            Dernière sync: {channel.last_sync_at ? formatDistanceToNow(new Date(channel.last_sync_at), { addSuffix: true, locale: fr }) : 'Jamais'}
+                            Dernière sync: {channel.last_sync_at ? formatDistanceToNow(new Date(channel.last_sync_at), { addSuffix: true, locale: getDateFnsLocale() }) : 'Jamais'}
                           </p>
                         </TooltipContent>
                       </Tooltip>
@@ -658,7 +658,7 @@ function ImportHubContent() {
                             <div>
                               <p className="font-medium">{imp.source_type || imp.method_name || 'Import'}</p>
                               <p className="text-sm text-muted-foreground">
-                                {formatDistanceToNow(new Date(imp.created_at), { addSuffix: true, locale: fr })}
+                                {formatDistanceToNow(new Date(imp.created_at), { addSuffix: true, locale: getDateFnsLocale() })}
                               </p>
                             </div>
                           </div>
@@ -897,7 +897,7 @@ function ImportHubContent() {
                         
                         <div className="flex items-center justify-between">
                           <span className="text-xs text-muted-foreground">
-                            Sync: {store.last_sync_at ? formatDistanceToNow(new Date(store.last_sync_at), { addSuffix: true, locale: fr }) : 'Jamais'}
+                            Sync: {store.last_sync_at ? formatDistanceToNow(new Date(store.last_sync_at), { addSuffix: true, locale: getDateFnsLocale() }) : 'Jamais'}
                           </span>
                           <Button variant="ghost" size="sm" onClick={() => handleSyncChannel(store.id)} disabled={syncMutation.isPending}>
                             <RefreshCw className={cn("w-4 h-4", syncMutation.isPending && "animate-spin")} />
@@ -976,7 +976,7 @@ function ImportHubContent() {
                         
                         <div className="flex items-center justify-between">
                           <span className="text-xs text-muted-foreground">
-                            Sync: {marketplace.last_sync_at ? formatDistanceToNow(new Date(marketplace.last_sync_at), { addSuffix: true, locale: fr }) : 'Jamais'}
+                            Sync: {marketplace.last_sync_at ? formatDistanceToNow(new Date(marketplace.last_sync_at), { addSuffix: true, locale: getDateFnsLocale() }) : 'Jamais'}
                           </span>
                           <Button variant="ghost" size="sm" onClick={() => handleSyncChannel(marketplace.id)} disabled={syncMutation.isPending}>
                             <RefreshCw className={cn("w-4 h-4", syncMutation.isPending && "animate-spin")} />
@@ -1090,7 +1090,7 @@ function ImportHubContent() {
                             <div>
                               <p className="font-medium">{imp.source_type || imp.method_name || 'Import'}</p>
                               <p className="text-sm text-muted-foreground">
-                                {formatDistanceToNow(new Date(imp.created_at), { addSuffix: true, locale: fr })}
+                                {formatDistanceToNow(new Date(imp.created_at), { addSuffix: true, locale: getDateFnsLocale() })}
                               </p>
                             </div>
                           </div>
