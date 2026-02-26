@@ -13,7 +13,7 @@ import {
 import { useState, useEffect } from 'react'
 import { cn } from '@/lib/utils'
 import { format } from 'date-fns'
-import { fr } from 'date-fns/locale'
+import { getDateFnsLocale } from '@/utils/dateFnsLocale'
 
 interface SyncLog {
   id: string
@@ -251,7 +251,7 @@ export function ChannelSyncHistory({
                     <StatusIcon className={cn("h-4 w-4", statusConfig.color, log.status === 'running' && "animate-spin")} />
                   </div>
                   <p className="text-xs text-muted-foreground mt-0.5">
-                    {format(log.startedAt, 'HH:mm', { locale: fr })}
+                    {format(log.startedAt, 'HH:mm', { locale: getDateFnsLocale() })}
                   </p>
                 </div>
               </motion.div>

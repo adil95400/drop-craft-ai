@@ -14,7 +14,7 @@ import {
 import { usePriceChangeHistory, PriceChangeRecord } from '@/hooks/usePriceChangeHistory';
 import { useStockAlerts } from '@/hooks/useStockAlerts';
 import { formatDistanceToNow, format } from 'date-fns';
-import { fr } from 'date-fns/locale';
+import { getDateFnsLocale } from '@/utils/dateFnsLocale';
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, BarChart, Bar, Cell
@@ -27,7 +27,7 @@ function PriceChangeChart({ records }: { records: PriceChangeRecord[] }) {
     .reverse()
     .map((r, i) => ({
       idx: i,
-      date: format(new Date(r.created_at), 'dd/MM', { locale: fr }),
+      date: format(new Date(r.created_at), 'dd/MM', { locale: getDateFnsLocale() }),
       oldPrice: r.old_price,
       newPrice: r.new_price,
       change: r.change_percent,
@@ -272,7 +272,7 @@ export function PriceMonitoringDashboard() {
                     {records.map((r) => (
                       <tr key={r.id} className="border-b border-border/50 hover:bg-muted/30">
                         <td className="p-2">
-                          {formatDistanceToNow(new Date(r.created_at), { addSuffix: true, locale: fr })}
+                          {formatDistanceToNow(new Date(r.created_at), { addSuffix: true, locale: getDateFnsLocale() })}
                         </td>
                         <td className="p-2">
                           <Badge variant="outline" className="text-xs">{r.change_type}</Badge>

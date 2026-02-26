@@ -20,7 +20,7 @@ import {
 import { useSalesChannels, useChannelSyncLogs, useChannelStats, useStartChannelSync, useDeleteSalesChannel } from '@/hooks/useMultiChannel';
 import { CreateChannelDialog } from './CreateChannelDialog';
 import { formatDistanceToNow } from 'date-fns';
-import { fr } from 'date-fns/locale';
+import { getDateFnsLocale } from '@/utils/dateFnsLocale';
 import { SalesChannel } from '@/services/MultiChannelService';
 
 export function MultiChannelDashboard() {
@@ -171,7 +171,7 @@ export function MultiChannelDashboard() {
                       <TableCell>{channel.products_synced}</TableCell>
                       <TableCell>
                         {channel.last_sync_at 
-                          ? formatDistanceToNow(new Date(channel.last_sync_at), { addSuffix: true, locale: fr })
+                          ? formatDistanceToNow(new Date(channel.last_sync_at), { addSuffix: true, locale: getDateFnsLocale() })
                           : 'Jamais'}
                       </TableCell>
                       <TableCell>
@@ -244,7 +244,7 @@ export function MultiChannelDashboard() {
                         {log.duration_ms ? `${(log.duration_ms / 1000).toFixed(1)}s` : '-'}
                       </TableCell>
                       <TableCell>
-                        {formatDistanceToNow(new Date(log.started_at), { addSuffix: true, locale: fr })}
+                        {formatDistanceToNow(new Date(log.started_at), { addSuffix: true, locale: getDateFnsLocale() })}
                       </TableCell>
                     </TableRow>
                   ))}

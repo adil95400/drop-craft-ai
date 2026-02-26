@@ -9,7 +9,7 @@ import { Shield, Lock, AlertTriangle, CheckCircle2, Eye, Key, Search, Download, 
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
 import { useAuditLogs, useAuditStatistics } from '@/hooks/useAuditLog';
 import { formatDistanceToNow } from 'date-fns';
-import { fr } from 'date-fns/locale';
+import { getDateFnsLocale } from '@/utils/dateFnsLocale';
 import { Skeleton } from '@/components/ui/skeleton';
 import { GDPRComplianceCenter } from '@/components/security/GDPRComplianceCenter';
 import { TwoFactorSetup } from '@/components/security/TwoFactorSetup';
@@ -172,7 +172,7 @@ export default function SecurityDashboard() {
                           <p className="text-xs text-muted-foreground truncate">{log.description}</p>
                         </div>
                         <span className="text-xs text-muted-foreground whitespace-nowrap">
-                          {log.created_at && formatDistanceToNow(new Date(log.created_at), { addSuffix: true, locale: fr })}
+                          {log.created_at && formatDistanceToNow(new Date(log.created_at), { addSuffix: true, locale: getDateFnsLocale() })}
                         </span>
                       </div>
                     ))}
@@ -255,7 +255,7 @@ export default function SecurityDashboard() {
                           {(log as any).actor_ip && <span>🌐 {(log as any).actor_ip}</span>}
                           <span>
                             <Clock className="h-3 w-3 inline mr-1" />
-                            {log.created_at && formatDistanceToNow(new Date(log.created_at), { addSuffix: true, locale: fr })}
+                            {log.created_at && formatDistanceToNow(new Date(log.created_at), { addSuffix: true, locale: getDateFnsLocale() })}
                           </span>
                         </div>
                       </div>

@@ -28,7 +28,7 @@ import {
 } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils';
 import { format } from 'date-fns';
-import { fr } from 'date-fns/locale';
+import { getDateFnsLocale } from '@/utils/dateFnsLocale';
 import { OptimizedModal } from '@/components/ui/optimized-modal';
 import { StatCard, CompactStat } from '@/components/ui/optimized-stats-grid';
 import { MediaGalleryManager } from '@/components/products/MediaGalleryManager';
@@ -365,13 +365,13 @@ export function ProductDetailsDialog({ open, onOpenChange, productId }: ProductD
                       Date de création
                     </p>
                     <p className="text-sm">
-                      {format(new Date(product.created_at), 'PPP', { locale: fr })}
+                      {format(new Date(product.created_at), 'PPP', { locale: getDateFnsLocale() })}
                     </p>
                   </div>
                   <div className="p-4 rounded-lg bg-muted/50">
                     <p className="text-sm font-medium text-muted-foreground mb-1">Dernière mise à jour</p>
                     <p className="text-sm">
-                      {format(new Date(product.updated_at), 'PPP', { locale: fr })}
+                      {format(new Date(product.updated_at), 'PPP', { locale: getDateFnsLocale() })}
                     </p>
                   </div>
                 </div>
@@ -519,7 +519,7 @@ export function ProductDetailsDialog({ open, onOpenChange, productId }: ProductD
                                   {review.author_name || 'Anonyme'}
                                 </span>
                                 <span>
-                                  {format(new Date(review.created_at), 'dd MMM yyyy', { locale: fr })}
+                                  {format(new Date(review.created_at), 'dd MMM yyyy', { locale: getDateFnsLocale() })}
                                 </span>
                                 {review.helpful_count && review.helpful_count > 0 && (
                                   <span className="flex items-center gap-1">

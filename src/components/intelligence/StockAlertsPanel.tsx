@@ -14,7 +14,7 @@ import {
   Clock
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
-import { fr } from 'date-fns/locale';
+import { getDateFnsLocale } from '@/utils/dateFnsLocale';
 
 export function StockAlertsPanel() {
   const { data: alerts, isLoading } = useStockAlerts();
@@ -150,7 +150,7 @@ function AlertCard({
                 <Clock className="h-3 w-3" />
                 {formatDistanceToNow(new Date(alert.created_at), { 
                   addSuffix: true, 
-                  locale: fr 
+                  locale: getDateFnsLocale() 
                 })}
               </span>
             </div>

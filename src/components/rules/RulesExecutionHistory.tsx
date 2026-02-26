@@ -16,7 +16,7 @@ import {
   TrendingDown, AlertTriangle, Brain, BarChart3
 } from 'lucide-react';
 import { formatDistanceToNow, format } from 'date-fns';
-import { fr } from 'date-fns/locale';
+import { getDateFnsLocale } from '@/utils/dateFnsLocale';
 import { cn } from '@/lib/utils';
 import { useRulesExecutionData, useExecutionAIInsights } from '@/hooks/rules';
 
@@ -310,7 +310,7 @@ export function RulesExecutionHistory({ onRefresh }: RulesExecutionHistoryProps)
                             <div className="flex items-center gap-4 text-sm text-muted-foreground">
                               <span className="flex items-center gap-1">
                                 <Clock className="h-3 w-3" />
-                                {formatDistanceToNow(new Date(exec.executedAt), { addSuffix: true, locale: fr })}
+                                {formatDistanceToNow(new Date(exec.executedAt), { addSuffix: true, locale: getDateFnsLocale() })}
                               </span>
                               <span className="flex items-center gap-1">
                                 <Package className="h-3 w-3" />
@@ -346,7 +346,7 @@ export function RulesExecutionHistory({ onRefresh }: RulesExecutionHistoryProps)
                               <div className="pt-4 mt-4 border-t border-border/50 space-y-3">
                                 <div className="text-sm">
                                   <span className="text-muted-foreground">Exécuté le: </span>
-                                  <span>{format(new Date(exec.executedAt), 'dd/MM/yyyy à HH:mm:ss', { locale: fr })}</span>
+                                  <span>{format(new Date(exec.executedAt), 'dd/MM/yyyy à HH:mm:ss', { locale: getDateFnsLocale() })}</span>
                                 </div>
                                 
                                 {exec.error && (

@@ -12,7 +12,7 @@ import {
 } from 'lucide-react';
 import { useSmartAlerts } from '@/hooks/useSmartAlerts';
 import { formatDistanceToNow } from 'date-fns';
-import { fr } from 'date-fns/locale';
+import { getDateFnsLocale } from '@/utils/dateFnsLocale';
 import { motion } from 'framer-motion';
 
 const categoryIcons: Record<string, typeof Bell> = {
@@ -123,7 +123,7 @@ export function SmartAlertsDashboard() {
                             <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground">
                               <span>{alert.alert_category}</span>
                               <span>•</span>
-                              <span>{formatDistanceToNow(new Date(alert.created_at), { addSuffix: true, locale: fr })}</span>
+                              <span>{formatDistanceToNow(new Date(alert.created_at), { addSuffix: true, locale: getDateFnsLocale() })}</span>
                               {alert.source && <><span>•</span><span>{alert.source}</span></>}
                             </div>
                           </div>

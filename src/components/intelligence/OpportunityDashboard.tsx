@@ -10,7 +10,7 @@ import {
 } from 'lucide-react';
 import { useProductOpportunities } from '@/hooks/useProductOpportunities';
 import { formatDistanceToNow } from 'date-fns';
-import { fr } from 'date-fns/locale';
+import { getDateFnsLocale } from '@/utils/dateFnsLocale';
 import { motion } from 'framer-motion';
 
 const typeConfig: Record<string, { label: string; icon: typeof Sparkles; color: string }> = {
@@ -120,7 +120,7 @@ export function OpportunityDashboard() {
                           )}
                           <div className="flex items-center gap-3 mt-1 text-xs text-muted-foreground">
                             {opp.estimated_demand && <span>Demande: ~{opp.estimated_demand}/mois</span>}
-                            <span>{formatDistanceToNow(new Date(opp.created_at), { addSuffix: true, locale: fr })}</span>
+                            <span>{formatDistanceToNow(new Date(opp.created_at), { addSuffix: true, locale: getDateFnsLocale() })}</span>
                           </div>
                         </div>
                       </div>

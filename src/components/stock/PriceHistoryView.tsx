@@ -2,7 +2,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { TrendingUp, TrendingDown } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
-import { fr } from 'date-fns/locale';
+import { getDateFnsLocale } from '@/utils/dateFnsLocale';
 
 interface PriceHistoryViewProps {
   priceHistory: any[];
@@ -30,7 +30,7 @@ export function PriceHistoryView({ priceHistory }: PriceHistoryViewProps) {
                       {change.change_reason}
                     </Badge>
                     <span>
-                      {formatDistanceToNow(new Date(change.created_at), { addSuffix: true, locale: fr })}
+                      {formatDistanceToNow(new Date(change.created_at), { addSuffix: true, locale: getDateFnsLocale() })}
                     </span>
                   </div>
                 </div>

@@ -2,7 +2,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Package, ExternalLink } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
-import { fr } from 'date-fns/locale'
+import { getDateFnsLocale } from '@/utils/dateFnsLocale'
 
 interface ShipmentsListProps {
   shipments: any[]
@@ -64,7 +64,7 @@ export function ShipmentsList({ shipments, isLoading }: ShipmentsListProps) {
                   {shipment.shipping_address?.city}, {shipment.shipping_address?.country}
                 </p>
                 <p className="text-xs text-muted-foreground">
-                  {formatDistanceToNow(new Date(shipment.created_at), { addSuffix: true, locale: fr })}
+                  {formatDistanceToNow(new Date(shipment.created_at), { addSuffix: true, locale: getDateFnsLocale() })}
                 </p>
               </div>
               <div className="text-right">
