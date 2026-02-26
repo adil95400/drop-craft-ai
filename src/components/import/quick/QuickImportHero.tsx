@@ -31,14 +31,14 @@ import {
 
 // Plateformes supportées avec logos
 const supportedPlatforms = [
-  { name: 'AliExpress', logo: '/logos/aliexpress-logo.svg', color: 'text-orange-500' },
-  { name: 'Amazon', logo: '/logos/amazon-logo.svg', color: 'text-amber-600' },
-  { name: 'Temu', logo: '/logos/temu-logo.svg', color: 'text-orange-600' },
-  { name: 'eBay', logo: '/logos/ebay-icon.svg', color: 'text-blue-500' },
-  { name: 'Etsy', logo: '/logos/etsy.svg', color: 'text-orange-500' },
-  { name: 'CJ', logo: '/logos/cj-logo.svg', color: 'text-red-500' },
-  { name: 'Cdiscount', logo: '/logos/cdiscount-icon.svg', color: 'text-red-600' },
-  { name: 'Shopify', logo: '/logos/shopify.svg', color: 'text-green-600' },
+  { name: 'AliExpress', logo: '/logos/aliexpress-logo.svg', color: 'text-orange-500', path: '/import/aliexpress' },
+  { name: 'Amazon', logo: '/logos/amazon-logo.svg', color: 'text-amber-600', path: '/import/amazon' },
+  { name: 'Temu', logo: '/logos/temu-logo.svg', color: 'text-orange-600', path: '/import/temu' },
+  { name: 'eBay', logo: '/logos/ebay-icon.svg', color: 'text-blue-500', path: '/import/ebay' },
+  { name: 'Etsy', logo: '/logos/etsy.svg', color: 'text-orange-500', path: '/import/etsy' },
+  { name: 'CJ', logo: '/logos/cj-logo.svg', color: 'text-red-500', path: '/import/cj-dropshipping' },
+  { name: 'Cdiscount', logo: '/logos/cdiscount-icon.svg', color: 'text-red-600', path: '/import/cdiscount' },
+  { name: 'Shopify', logo: '/logos/shopify.svg', color: 'text-green-600', path: '/import/shopify' },
 ];
 
 interface QuickImportHeroProps {
@@ -200,7 +200,7 @@ export function QuickImportHero({ className, onImportStart }: QuickImportHeroPro
                     <Badge
                       variant="secondary"
                       className="flex items-center gap-1.5 cursor-pointer hover:bg-secondary/80 transition-colors"
-                      onClick={() => navigate(`/import/${platform.name.toLowerCase().replace(/\s+/g, '-')}`)}
+                      onClick={() => navigate(platform.path)}
                     >
                       <img
                         src={platform.logo}
@@ -219,7 +219,7 @@ export function QuickImportHero({ className, onImportStart }: QuickImportHeroPro
                 </Tooltip>
               ))}
             </TooltipProvider>
-            <Button variant="ghost" size="sm" className="text-xs" onClick={() => navigate('/import')}>
+            <Button variant="ghost" size="sm" className="text-xs" onClick={() => navigate('/import/search-suppliers')}>
               Voir tout
               <ArrowRight className="w-3 h-3 ml-1" />
             </Button>

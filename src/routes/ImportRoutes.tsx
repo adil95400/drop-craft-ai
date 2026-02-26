@@ -82,6 +82,7 @@ export function ImportRoutes() {
       <Route path="search-suppliers" element={<SearchAllSuppliersPage />} />
       <Route path="shopify-hub" element={<ShopifyImportHub />} />
       <Route path="aliexpress-legacy" element={<Navigate to="/import/aliexpress" replace />} />
+      <Route path="cj" element={<Navigate to="/import/cj-dropshipping" replace />} />
       
       {/* IA & Génération */}
       <Route path="ai-generation" element={<AIGenerationPage />} />
