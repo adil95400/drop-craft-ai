@@ -1,5 +1,16 @@
+/**
+ * @module DynamicPricingService
+ * @description AI-powered dynamic pricing engine.
+ *
+ * Manages pricing recommendations: creation via the
+ * `dynamic-pricing-optimizer` edge function, approval/rejection workflow,
+ * bulk optimization, and performance tracking.
+ *
+ * Pricing data is stored in the `dynamic_pricing` table.
+ */
 import { supabase } from '@/integrations/supabase/client';
 
+/** A pricing recommendation stored in the database. */
 export interface DynamicPricing {
   id: string;
   user_id: string;
@@ -8,12 +19,15 @@ export interface DynamicPricing {
   suggested_price: number;
   original_price: number;
   price_change_reason: string;
+  /** AI confidence score (0–100). */
   ai_confidence: number;
   market_factors: any;
   competitor_analysis: any;
   demand_forecast: any;
+  /** Estimated profit delta if the suggestion is applied. */
   profit_impact: number;
   expected_sales_impact: number;
+  /** Workflow status: "pending" | "approved" | "rejected" | "applied". */
   status: string;
   applied_at?: string;
   expires_at?: string;
@@ -22,11 +36,14 @@ export interface DynamicPricing {
   updated_at: string;
 }
 
+/** Result returned by the AI pricing optimizer. */
 export interface PricingOptimization {
   success: boolean;
   currentPrice: number;
   suggestedPrice: number;
+  /** Human-readable price change description (e.g. "+5.2%"). */
   priceChange: string;
+  /** AI confidence 0–100. */
   confidence: number;
   reasoning: string;
   marketAnalysis: any;
@@ -36,6 +53,7 @@ export interface PricingOptimization {
 
 export class DynamicPricingService {
   
+  /** Fetch all pricing recommendations, newest first. */
   static async getAllPricingRecommendations(): Promise<DynamicPricing[]> {
     const { data, error } = await (supabase
       .from('dynamic_pricing' as any) as any)
@@ -46,6 +64,12 @@ export class DynamicPricingService {
     return (data || []) as DynamicPricing[];
   }
 
+  /**
+   * Request an AI-generated price optimization for a single product.
+   * @param productId  - The product to optimize.
+   * @param marketData - Optional external market data to enrich the analysis.
+   * @throws Error if not authenticated.
+   */
   static async optimizeProductPrice(productId: string, marketData: any = {}): Promise<PricingOptimization> {
     const { data: currentUser } = await supabase.auth.getUser();
     if (!currentUser.user) throw new Error('Not authenticated');
@@ -62,6 +86,7 @@ export class DynamicPricingService {
     return data;
   }
 
+  /** Mark a recommendation as approved (does NOT apply the price yet). */
   static async approvePricingRecommendation(recommendationId: string): Promise<DynamicPricing> {
     const { data, error } = await (supabase
       .from('dynamic_pricing' as any) as any)
@@ -77,6 +102,7 @@ export class DynamicPricingService {
     return data as DynamicPricing;
   }
 
+  /** Reject a pricing recommendation. */
   static async rejectPricingRecommendation(recommendationId: string): Promise<DynamicPricing> {
     const { data, error } = await (supabase
       .from('dynamic_pricing' as any) as any)
@@ -89,8 +115,13 @@ export class DynamicPricingService {
     return data as DynamicPricing;
   }
 
+  /**
+   * Apply a recommendation: update the product's price in `imported_products`
+   * and mark the recommendation status as "applied".
+   * @param recommendationId - The recommendation to apply.
+   * @returns `true` on success.
+   */
   static async applyPricingRecommendation(recommendationId: string): Promise<boolean> {
-    // Récupérer la recommandation
     const { data: recommendation, error: fetchError } = await (supabase
       .from('dynamic_pricing' as any) as any)
       .select('*')
@@ -101,7 +132,6 @@ export class DynamicPricingService {
 
     const rec = recommendation as DynamicPricing;
 
-    // Mettre à jour le prix du produit
     const { error: updateError } = await supabase
       .from('imported_products')
       .update({ 
@@ -112,12 +142,14 @@ export class DynamicPricingService {
 
     if (updateError) throw updateError;
 
-    // Marquer comme appliqué
     await this.updateRecommendationStatus(recommendationId, 'applied');
-
     return true;
   }
 
+  /**
+   * Update the workflow status of a recommendation.
+   * Automatically sets `applied_at` when status is "applied".
+   */
   static async updateRecommendationStatus(
     recommendationId: string, 
     status: string
@@ -136,6 +168,7 @@ export class DynamicPricingService {
     return data as DynamicPricing;
   }
 
+  /** Get all pending recommendations sorted by confidence (highest first). */
   static async getPendingRecommendations(): Promise<DynamicPricing[]> {
     const { data, error } = await (supabase
       .from('dynamic_pricing' as any) as any)
@@ -147,6 +180,10 @@ export class DynamicPricingService {
     return (data || []) as DynamicPricing[];
   }
 
+  /**
+   * Compute aggregate performance metrics for all applied recommendations.
+   * @returns Summary object with counts, averages, and total profit impact.
+   */
   static async getPerformanceMetrics(): Promise<any> {
     const { data: recommendations, error } = await (supabase
       .from('dynamic_pricing' as any) as any)
@@ -183,16 +220,19 @@ export class DynamicPricingService {
     };
   }
 
+  /**
+   * Run pricing optimization for multiple products sequentially.
+   * A 500 ms delay is inserted between requests to avoid rate-limiting.
+   * @param productIds - Array of product IDs to optimize.
+   * @param marketData - Shared market context for all optimizations.
+   */
   static async bulkOptimizePricing(productIds: string[], marketData: any = {}): Promise<PricingOptimization[]> {
     const results = [];
     
-    // Traiter par lots pour éviter la surcharge
     for (const productId of productIds) {
       try {
         const result = await this.optimizeProductPrice(productId, marketData);
         results.push(result);
-        
-        // Pause courte entre les requêtes
         await new Promise(resolve => setTimeout(resolve, 500));
       } catch (error: any) {
         console.error(`Error optimizing pricing for product ${productId}:`, error);
@@ -207,9 +247,11 @@ export class DynamicPricingService {
     return results;
   }
 
+  /**
+   * Get current market trend indicators.
+   * @returns Simulated trends (demand index, competitor activity, seasonal factors).
+   */
   static async getMarketTrends(): Promise<any> {
-    // Simuler l'analyse des tendances de marché
-    // En production, ceci ferait appel à des APIs de données de marché
     return {
       overallTrend: 'stable',
       demandIndex: 105,

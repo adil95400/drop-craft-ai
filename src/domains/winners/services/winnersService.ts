@@ -1,11 +1,26 @@
+/**
+ * @module WinnersService
+ * @description Service for discovering and importing winning products.
+ *
+ * Uses a singleton pattern with an in-memory cache (5 min TTL) to avoid
+ * redundant calls to the `winners-aggregator` and `winners-trends` edge functions.
+ *
+ * Key capabilities:
+ *  - Multi-source search (Google Trends, eBay, Amazon)
+ *  - Trend analysis by keyword
+ *  - One-click product import into the user's catalog
+ */
 import { supabase } from '@/integrations/supabase/client'
 import { WinnersResponse, WinnersSearchParams, WinnerProduct } from '../types'
 
 export class WinnersService {
   private static instance: WinnersService
+  /** In-memory response cache keyed by serialized search params. */
   private cache = new Map<string, { data: WinnersResponse; timestamp: number }>()
-  private readonly cacheTimeout = 5 * 60 * 1000 // 5 minutes
+  /** Cache entries expire after 5 minutes. */
+  private readonly cacheTimeout = 5 * 60 * 1000
 
+  /** Get or create the singleton instance. */
   public static getInstance(): WinnersService {
     if (!WinnersService.instance) {
       WinnersService.instance = new WinnersService()
@@ -13,11 +28,17 @@ export class WinnersService {
     return WinnersService.instance
   }
 
+  /**
+   * Search for winning products across multiple data sources.
+   * Results are cached for {@link cacheTimeout} ms.
+   *
+   * @param params - Search criteria (query, category, limits, sources, filters).
+   * @returns Aggregated response with scored product results.
+   */
   async searchWinners(params: WinnersSearchParams): Promise<WinnersResponse> {
     const cacheKey = JSON.stringify(params)
     const cached = this.cache.get(cacheKey)
     
-    // Return cached data if valid
     if (cached && Date.now() - cached.timestamp < this.cacheTimeout) {
       return cached.data
     }
@@ -36,9 +57,7 @@ export class WinnersService {
 
       if (error) throw error
 
-      // Cache the result
       this.cache.set(cacheKey, { data, timestamp: Date.now() })
-      
       return data
     } catch (error) {
       console.error('Winners search failed:', error)
@@ -46,6 +65,11 @@ export class WinnersService {
     }
   }
 
+  /**
+   * Analyze trending keywords and their momentum.
+   * @param keyword - The keyword or niche to analyze.
+   * @returns Trend data with volume, growth rate, and related queries.
+   */
   async analyzeTrends(keyword: string): Promise<any> {
     try {
       const { data, error } = await supabase.functions.invoke('winners-trends', {
@@ -60,12 +84,19 @@ export class WinnersService {
     }
   }
 
+  /**
+   * Import a winning product into the authenticated user's catalog.
+   * Automatically computes estimated cost (30% margin) and generates a unique SKU.
+   *
+   * @param product - The winning product to import.
+   * @returns The newly created product record.
+   * @throws Error if the user is not authenticated.
+   */
   async importProduct(product: WinnerProduct): Promise<any> {
     try {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) throw new Error('User not authenticated')
 
-      // Calculate estimated cost (30% margin)
       const estimatedCost = product.price * 0.7
 
       const { data, error } = await supabase
@@ -97,10 +128,12 @@ export class WinnersService {
     }
   }
 
+  /** Invalidate the entire in-memory cache. */
   clearCache(): void {
     this.cache.clear()
   }
 
+  /** Return cache diagnostics (size and active keys). */
   getCacheStats() {
     return {
       size: this.cache.size,
@@ -109,4 +142,5 @@ export class WinnersService {
   }
 }
 
+/** Pre-instantiated singleton for convenience. */
 export const winnersService = WinnersService.getInstance()
