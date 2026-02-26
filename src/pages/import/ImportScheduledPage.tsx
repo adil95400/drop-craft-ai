@@ -15,7 +15,7 @@ import { useReducedMotion, getMotionProps } from '@/hooks/useReducedMotion'
 import { motion } from 'framer-motion'
 import { cn } from '@/lib/utils'
 import { format, formatDistanceToNow } from 'date-fns'
-import { fr } from 'date-fns/locale'
+import { getDateFnsLocale } from '@/utils/dateFnsLocale'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -363,12 +363,12 @@ export default function ImportScheduledPage() {
                       <div className="flex items-center gap-4 text-sm text-muted-foreground">
                         <span className="flex items-center gap-1">
                           <Timer className="w-3 h-3" />
-                          Prochain: {format(new Date(schedule.next_run_at), 'dd MMM à HH:mm', { locale: fr })}
+                          Prochain: {format(new Date(schedule.next_run_at), 'dd MMM à HH:mm', { locale: getDateFnsLocale() })}
                         </span>
                         {schedule.last_run_at && (
                           <span className="flex items-center gap-1">
                             {getStatusIcon(schedule.last_run_status)}
-                            Dernier: {formatDistanceToNow(new Date(schedule.last_run_at), { addSuffix: true, locale: fr })}
+                            Dernier: {formatDistanceToNow(new Date(schedule.last_run_at), { addSuffix: true, locale: getDateFnsLocale() })}
                           </span>
                         )}
                       </div>

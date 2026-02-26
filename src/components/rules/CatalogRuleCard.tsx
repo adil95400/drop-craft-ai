@@ -19,7 +19,7 @@ import {
 } from 'lucide-react';
 import { ProductRule } from '@/lib/rules/ruleTypes';
 import { formatDistanceToNow } from 'date-fns';
-import { fr } from 'date-fns/locale';
+import { getDateFnsLocale } from '@/utils/dateFnsLocale';
 import { cn } from '@/lib/utils';
 
 interface CatalogRuleCardProps {
@@ -177,7 +177,7 @@ export function CatalogRuleCard({
                 <span className="text-xs">
                   {formatDistanceToNow(new Date(rule.lastExecutedAt), { 
                     addSuffix: true,
-                    locale: fr 
+                    locale: getDateFnsLocale() 
                   })}
                 </span>
               </div>

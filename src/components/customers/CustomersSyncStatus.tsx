@@ -21,7 +21,7 @@ import {
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { formatDistanceToNow } from 'date-fns'
-import { fr } from 'date-fns/locale'
+import { getDateFnsLocale } from '@/utils/dateFnsLocale'
 import { useIntegrationsUnified } from '@/hooks/unified/useIntegrationsUnified'
 import { supabase } from '@/integrations/supabase/client'
 import { useToast } from '@/hooks/use-toast'
@@ -244,7 +244,7 @@ export function CustomersSyncStatus() {
                               {channel.lastSync && (
                                 <span className="flex items-center gap-1">
                                   <Clock className="h-3 w-3" />
-                                  {formatDistanceToNow(channel.lastSync, { addSuffix: true, locale: fr })}
+                                  {formatDistanceToNow(channel.lastSync, { addSuffix: true, locale: getDateFnsLocale() })}
                                 </span>
                               )}
                             </div>

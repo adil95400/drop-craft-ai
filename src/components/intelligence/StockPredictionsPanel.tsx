@@ -20,7 +20,7 @@ import {
   ShoppingCart
 } from 'lucide-react';
 import { format } from 'date-fns';
-import { fr } from 'date-fns/locale';
+import { getDateFnsLocale } from '@/utils/dateFnsLocale';
 
 export function StockPredictionsPanel() {
   const { data: predictions, isLoading } = useStockPredictions();
@@ -181,7 +181,7 @@ function PredictionCard({ prediction }: { prediction: StockPrediction }) {
           <p className="text-muted-foreground">Commander avant</p>
           <p className="font-semibold">
             {prediction.recommended_reorder_date 
-              ? format(new Date(prediction.recommended_reorder_date), 'dd MMM', { locale: fr })
+              ? format(new Date(prediction.recommended_reorder_date), 'dd MMM', { locale: getDateFnsLocale() })
               : '-'}
           </p>
         </div>

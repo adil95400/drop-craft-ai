@@ -25,7 +25,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { formatDistanceToNow } from 'date-fns';
-import { fr } from 'date-fns/locale';
+import { getDateFnsLocale } from '@/utils/dateFnsLocale';
 import { useUnifiedAuth } from '@/contexts/UnifiedAuthContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
@@ -128,7 +128,7 @@ const NotificationItem = memo(({
           <span className="text-xs text-muted-foreground">
             {formatDistanceToNow(new Date(notification.created_at), {
               addSuffix: true,
-              locale: fr,
+              locale: getDateFnsLocale(),
             })}
           </span>
           <div className="flex gap-3 opacity-0 group-hover:opacity-100 transition-opacity focus-within:opacity-100">

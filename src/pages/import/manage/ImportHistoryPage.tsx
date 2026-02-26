@@ -12,7 +12,7 @@ import {
   FileSpreadsheet, AlertTriangle, RefreshCw, X
 } from 'lucide-react'
 import { format, formatDistanceToNow } from 'date-fns'
-import { fr } from 'date-fns/locale'
+import { getDateFnsLocale } from '@/utils/dateFnsLocale'
 import { unifiedImportService, ImportJobStatus } from '@/services/UnifiedImportService'
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper'
 import { useReducedMotion, getMotionProps } from '@/hooks/useReducedMotion'
@@ -433,7 +433,7 @@ export default function ImportHistoryPage() {
                             </Badge>
                           </div>
                           <div className="text-sm text-muted-foreground">
-                            {format(new Date(item.created_at), 'dd MMM yyyy à HH:mm', { locale: fr })}
+                            {format(new Date(item.created_at), 'dd MMM yyyy à HH:mm', { locale: getDateFnsLocale() })}
                           </div>
                           {item.source_url && (
                             <div className="text-xs text-muted-foreground mt-1 truncate max-w-md">
@@ -534,7 +534,7 @@ export default function ImportHistoryPage() {
                           
                           <h3 className="font-semibold mb-1 truncate">{item.source_type?.toUpperCase() || 'Import'}</h3>
                           <p className="text-sm text-muted-foreground mb-4">
-                            {formatDistanceToNow(new Date(item.created_at), { addSuffix: true, locale: fr })}
+                            {formatDistanceToNow(new Date(item.created_at), { addSuffix: true, locale: getDateFnsLocale() })}
                           </p>
                           
                           {item.status === 'processing' && item.total_rows > 0 && (
@@ -634,7 +634,7 @@ export default function ImportHistoryPage() {
                       <div>
                         <h2 className="text-2xl font-bold">{selectedJob.source_type?.toUpperCase() || 'Import'}</h2>
                         <p className="text-white/80 text-sm mt-1">
-                          {format(new Date(selectedJob.created_at), 'EEEE dd MMMM yyyy', { locale: fr })}
+                          {format(new Date(selectedJob.created_at), 'EEEE dd MMMM yyyy', { locale: getDateFnsLocale() })}
                         </p>
                         <p className="text-white/60 text-xs">
                           à {format(new Date(selectedJob.created_at), 'HH:mm:ss')}

@@ -43,7 +43,7 @@ import {
   ChevronRight,
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
-import { fr } from 'date-fns/locale';
+import { getDateFnsLocale } from '@/utils/dateFnsLocale';
 import { cn } from '@/lib/utils';
 import { useIsMobile } from '@/hooks/use-mobile';
 
@@ -154,7 +154,7 @@ function ConnectedStoreCard({ connection, onSync }: { connection: any; onSync: (
             <p className="font-medium">{connection.products_synced} produits</p>
             <p className="text-muted-foreground text-xs">
               {connection.last_sync_at 
-                ? formatDistanceToNow(new Date(connection.last_sync_at), { addSuffix: true, locale: fr })
+                ? formatDistanceToNow(new Date(connection.last_sync_at), { addSuffix: true, locale: getDateFnsLocale() })
                 : 'Jamais sync'
               }
             </p>
@@ -205,7 +205,7 @@ function QueueItemCard({ item, onCancel }: { item: any; onCancel: () => void }) 
           </div>
           <div className="flex items-center gap-2">
             <span className="text-xs text-muted-foreground">
-              {formatDistanceToNow(new Date(item.scheduled_at), { addSuffix: true, locale: fr })}
+              {formatDistanceToNow(new Date(item.scheduled_at), { addSuffix: true, locale: getDateFnsLocale() })}
             </span>
             {item.status === 'pending' && (
               <Button 
@@ -263,7 +263,7 @@ function LogItemCard({ log }: { log: any }) {
             </p>
           </div>
           <div className="text-right text-xs text-muted-foreground whitespace-nowrap">
-            <p>{formatDistanceToNow(new Date(log.created_at), { addSuffix: true, locale: fr })}</p>
+            <p>{formatDistanceToNow(new Date(log.created_at), { addSuffix: true, locale: getDateFnsLocale() })}</p>
             {log.duration_ms && <p>{log.duration_ms}ms</p>}
           </div>
         </div>

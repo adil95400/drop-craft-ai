@@ -8,7 +8,7 @@ import { Mail, Phone, MapPin, Calendar, ShoppingBag, Package, Euro, Edit, Trash2
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { format } from 'date-fns';
-import { fr } from 'date-fns/locale';
+import { getDateFnsLocale } from '@/utils/dateFnsLocale';
 
 interface Customer {
   id: string;
@@ -129,7 +129,7 @@ export function CustomerDetailSheet({
             </Badge>
           </div>
           <SheetDescription>
-            Client depuis {format(new Date(customer.created_at), 'MMMM yyyy', { locale: fr })}
+            Client depuis {format(new Date(customer.created_at), 'MMMM yyyy', { locale: getDateFnsLocale() })}
           </SheetDescription>
         </SheetHeader>
 
@@ -238,7 +238,7 @@ export function CustomerDetailSheet({
                         <div className="font-medium text-sm">{order.order_number}</div>
                         <div className="text-xs text-muted-foreground flex items-center gap-2">
                           <Calendar className="h-3 w-3" />
-                          {format(new Date(order.created_at), 'dd MMM yyyy', { locale: fr })}
+                          {format(new Date(order.created_at), 'dd MMM yyyy', { locale: getDateFnsLocale() })}
                           <span>•</span>
                           <span>{order.items_count} article{order.items_count > 1 ? 's' : ''}</span>
                         </div>

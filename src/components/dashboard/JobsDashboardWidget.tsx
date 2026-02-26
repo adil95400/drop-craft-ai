@@ -13,7 +13,7 @@ import {
 } from 'lucide-react';
 import { useBackgroundJobs, useJobStats, useRealtimeJobs } from '@/hooks/useBackgroundJobs';
 import { formatDistanceToNow } from 'date-fns';
-import { fr } from 'date-fns/locale';
+import { getDateFnsLocale } from '@/utils/dateFnsLocale';
 import { Link } from 'react-router-dom';
 
 const StatusIcon = ({ status }: { status: string }) => {
@@ -155,7 +155,7 @@ export function JobsDashboardWidget() {
                       <p className="text-xs text-muted-foreground">
                         {formatDistanceToNow(new Date(job.created_at), {
                           addSuffix: true,
-                          locale: fr,
+                          locale: getDateFnsLocale(),
                         })}
                       </p>
                     </div>

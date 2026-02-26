@@ -22,7 +22,7 @@ import {
 import { usePriceSyncQueue, usePriceSyncLogs, usePriceSyncStats } from '@/hooks/usePriceSync';
 import { useIntegrationsUnified } from '@/hooks/unified';
 import { formatDistanceToNow } from 'date-fns';
-import { fr } from 'date-fns/locale';
+import { getDateFnsLocale } from '@/utils/dateFnsLocale';
 
 const platformIcons: Record<string, string> = {
   shopify: '🛍️',
@@ -218,7 +218,7 @@ export function PriceSyncPanel() {
                             <p className="text-xs text-muted-foreground">
                               {formatDistanceToNow(new Date(item.created_at), { 
                                 addSuffix: true, 
-                                locale: fr 
+                                locale: getDateFnsLocale() 
                               })}
                             </p>
                           </div>
@@ -272,7 +272,7 @@ export function PriceSyncPanel() {
                         <span className="text-xs text-muted-foreground">
                           {formatDistanceToNow(new Date(log.created_at), { 
                             addSuffix: true, 
-                            locale: fr 
+                            locale: getDateFnsLocale() 
                           })}
                         </span>
                       </div>

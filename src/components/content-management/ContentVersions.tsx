@@ -16,7 +16,7 @@ import {
   Check, X, ChevronRight
 } from 'lucide-react';
 import { format, formatDistanceToNow } from 'date-fns';
-import { fr } from 'date-fns/locale';
+import { getDateFnsLocale } from '@/utils/dateFnsLocale';
 
 interface Version {
   id: string;
@@ -150,7 +150,7 @@ export function ContentVersions({
                           <Clock className="h-3 w-3" />
                           {formatDistanceToNow(new Date(version.created_at), { 
                             addSuffix: true, 
-                            locale: fr 
+                            locale: getDateFnsLocale() 
                           })}
                         </div>
                       </CardContent>
@@ -170,7 +170,7 @@ export function ContentVersions({
                         Version {selectedVersion.version_number}
                       </h4>
                       <p className="text-sm text-muted-foreground">
-                        {format(new Date(selectedVersion.created_at), 'dd MMM yyyy à HH:mm', { locale: fr })}
+                        {format(new Date(selectedVersion.created_at), 'dd MMM yyyy à HH:mm', { locale: getDateFnsLocale() })}
                       </p>
                     </div>
                     <div className="flex items-center gap-2">
