@@ -16,7 +16,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { format } from 'date-fns'
-import { fr } from 'date-fns/locale'
+import { useDateFnsLocale } from '@/hooks/useDateFnsLocale'
 
 interface Comment {
   id: string
@@ -55,6 +55,7 @@ export function BlogComments({
   onDeleteComment,
   onReportComment
 }: BlogCommentsProps) {
+  const locale = useDateFnsLocale()
   const [newComment, setNewComment] = useState('')
   const [replyingTo, setReplyingTo] = useState<string | null>(null)
   const [replyContent, setReplyContent] = useState('')
@@ -107,7 +108,7 @@ export function BlogComments({
               </Badge>
             )}
             <span className="text-sm text-muted-foreground">
-              {format(comment.createdAt, 'PPp', { locale: fr })}
+              {format(comment.createdAt, 'PPp', { locale })}
             </span>
           </div>
           

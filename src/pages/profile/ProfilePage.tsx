@@ -48,7 +48,7 @@ import {
 import { Helmet } from 'react-helmet-async'
 import { supabase } from '@/integrations/supabase/client'
 import { formatDistanceToNow } from 'date-fns'
-import { fr } from 'date-fns/locale'
+import { useDateFnsLocale } from '@/hooks/useDateFnsLocale'
 
 interface ProfileFormData {
   full_name: string
@@ -64,6 +64,7 @@ interface ProfileFormData {
 }
 
 export default function ProfilePage() {
+  const locale = useDateFnsLocale()
   const { user } = useAuth()
   const { profile, isLoading: profileLoading, refetch } = useProfile()
   const { uploadAvatar, uploading: avatarUploading } = useAvatarUpload(refetch)
@@ -641,7 +642,7 @@ export default function ProfilePage() {
                                 {s.ip_address ?? '—'}
                                 {' · '}
                                 {s.created_at
-                                  ? formatDistanceToNow(new Date(s.created_at), { addSuffix: true, locale: fr })
+                                  ? formatDistanceToNow(new Date(s.created_at), { addSuffix: true, locale })
                                   : '—'}
                                 {s.isCurrent && (
                                   <Badge variant="outline" className="ml-2 text-[10px] py-0 px-1">Actuelle</Badge>

@@ -21,7 +21,7 @@ import {
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { format } from 'date-fns';
-import { fr } from 'date-fns/locale';
+import { useDateFnsLocale } from '@/hooks/useDateFnsLocale';
 import { cn } from '@/lib/utils';
 
 const notificationTemplates = [
@@ -34,6 +34,7 @@ const notificationTemplates = [
 
 export default function CreateNotification() {
   const navigate = useNavigate();
+  const locale = useDateFnsLocale();
   const [selectedTemplate, setSelectedTemplate] = useState('');
   const [scheduleDate, setScheduleDate] = useState<Date>();
   const [scheduleTime, setScheduleTime] = useState('');
@@ -139,7 +140,7 @@ export default function CreateNotification() {
       toast.success(
         formData.scheduleType === 'now'
           ? 'Notification envoyée avec succès'
-          : `Notification programmée pour le ${format(scheduleDate!, 'dd/MM/yyyy', { locale: fr })} à ${scheduleTime || '09:00'}`
+          : `Notification programmée pour le ${format(scheduleDate!, 'dd/MM/yyyy', { locale })} à ${scheduleTime || '09:00'}`
       );
       navigate('/dashboard');
     } catch (error: any) {
@@ -493,7 +494,7 @@ export default function CreateNotification() {
                                   )}
                                 >
                                   <Calendar className="mr-2 h-4 w-4" />
-                                  {scheduleDate ? format(scheduleDate, 'PPP', { locale: fr }) : 'Sélectionner'}
+                                  {scheduleDate ? format(scheduleDate, 'PPP', { locale }) : 'Sélectionner'}
                                 </Button>
                               </PopoverTrigger>
                               <PopoverContent className="w-auto p-0" align="start">
@@ -523,7 +524,7 @@ export default function CreateNotification() {
                         {scheduleDate && scheduleTime && (
                           <div className="p-4 border rounded-lg bg-green-50/50 dark:bg-green-950/20">
                             <p className="text-sm text-green-900 dark:text-green-100">
-                              Envoi prévu: {format(scheduleDate, 'EEEE d MMMM yyyy', { locale: fr })} à {scheduleTime}
+                              Envoi prévu: {format(scheduleDate, 'EEEE d MMMM yyyy', { locale })} à {scheduleTime}
                             </p>
                           </div>
                         )}

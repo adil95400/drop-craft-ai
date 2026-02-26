@@ -7,9 +7,10 @@ import { useQuery } from '@tanstack/react-query'
 import { importJobsApi } from '@/services/api/client'
 import { useAuth } from '@/contexts/AuthContext'
 import { format } from 'date-fns'
-import { fr } from 'date-fns/locale'
+import { useDateFnsLocale } from '@/hooks/useDateFnsLocale'
 
 export const ImportHistoryTab = () => {
+  const locale = useDateFnsLocale()
   const { user } = useAuth()
 
   const { data: jobs = [], isLoading } = useQuery({
@@ -43,7 +44,7 @@ export const ImportHistoryTab = () => {
             <div key={job.job_id || job.id} className="flex items-center justify-between p-4 border rounded-lg">
               <div className="flex items-center gap-4">
                 <div className="text-sm text-muted-foreground">
-                  {format(new Date(job.created_at), 'dd MMM yyyy HH:mm', { locale: fr })}
+                  {format(new Date(job.created_at), 'dd MMM yyyy HH:mm', { locale })}
                 </div>
                 <div className="font-medium">{job.name || job.job_type || job.source}</div>
                 <div className="text-sm">

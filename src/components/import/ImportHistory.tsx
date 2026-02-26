@@ -1,6 +1,6 @@
 import { memo } from 'react';
 import { formatDistanceToNow } from 'date-fns';
-import { fr } from 'date-fns/locale';
+import { getDateFnsLocale } from '@/utils/dateFnsLocale';
 import { FileText, CheckCircle2, XCircle, Clock, TrendingUp } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -114,9 +114,9 @@ export const ImportHistory = memo(function ImportHistory({
               </div>
 
               <p className="text-sm text-muted-foreground">
-                {formatDistanceToNow(new Date(job.created_at), {
+{formatDistanceToNow(new Date(job.created_at), {
                   addSuffix: true,
-                  locale: fr,
+                  locale: getDateFnsLocale(),
                 })}
               </p>
 

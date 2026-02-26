@@ -29,7 +29,7 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { formatDistanceToNow } from 'date-fns';
-import { fr } from 'date-fns/locale';
+import { getDateFnsLocale } from '@/utils/dateFnsLocale';
 
 interface ExtensionEvent {
   id: string;
@@ -367,7 +367,7 @@ export function ExtensionHealthDashboard() {
                     <div className="flex items-center justify-between mt-1 text-xs text-muted-foreground">
                       <span>{error.platform || 'N/A'}</span>
                       <span>
-                        {formatDistanceToNow(new Date(error.created_at), { addSuffix: true, locale: fr })}
+                        {formatDistanceToNow(new Date(error.created_at), { addSuffix: true, locale: getDateFnsLocale() })}
                       </span>
                     </div>
                   </div>

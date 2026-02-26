@@ -35,7 +35,7 @@ import {
 import { CreatePageDialog } from './CreatePageDialog';
 import { Skeleton } from '@/components/ui/skeleton';
 import { formatDistanceToNow } from 'date-fns';
-import { fr } from 'date-fns/locale';
+import { useDateFnsLocale } from '@/hooks/useDateFnsLocale';
 
 const STATUS_CONFIG: Record<string, { label: string; color: string }> = {
   draft: { label: 'Brouillon', color: 'bg-gray-500' },
@@ -45,6 +45,7 @@ const STATUS_CONFIG: Record<string, { label: string; color: string }> = {
 
 export function PageBuilderDashboard() {
   const navigate = useNavigate();
+  const locale = useDateFnsLocale();
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [showCreateDialog, setShowCreateDialog] = useState(false);
@@ -200,7 +201,7 @@ export function PageBuilderDashboard() {
                       </div>
                       <p className="text-xs text-muted-foreground truncate">/{page.slug}</p>
                       <p className="text-xs text-muted-foreground mt-1">
-                        Modifié {formatDistanceToNow(new Date(page.updated_at), { locale: fr, addSuffix: true })}
+                        Modifié {formatDistanceToNow(new Date(page.updated_at), { locale, addSuffix: true })}
                       </p>
                     </div>
 

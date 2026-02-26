@@ -19,7 +19,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
-import { fr } from 'date-fns/locale';
+import { useDateFnsLocale } from '@/hooks/useDateFnsLocale';
 
 interface NotificationTemplate {
   id: string;
@@ -63,6 +63,7 @@ const DEFAULT_TEMPLATES: NotificationTemplate[] = [
 export function PushNotificationManager() {
   const { user } = useAuth();
   const { toast } = useToast();
+  const locale = useDateFnsLocale();
   const [templates, setTemplates] = useState<NotificationTemplate[]>(DEFAULT_TEMPLATES);
   const [scheduledNotifications, setScheduledNotifications] = useState<ScheduledNotification[]>([]);
   const [devices, setDevices] = useState<DeviceRegistration[]>([]);
@@ -451,7 +452,7 @@ export function PushNotificationManager() {
                         <div>
                           <p className="font-medium capitalize">{device.platform}</p>
                           <p className="text-sm text-muted-foreground">
-                            Dernière activité: {format(new Date(device.last_active), "dd MMM yyyy 'à' HH:mm", { locale: fr })}
+                            Dernière activité: {format(new Date(device.last_active), "dd MMM yyyy 'à' HH:mm", { locale })}
                           </p>
                         </div>
                       </div>
