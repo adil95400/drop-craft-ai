@@ -9,7 +9,7 @@ import { useReturns, useUpdateReturn } from '@/hooks/useFulfillment';
 import { RotateCcw, CheckCircle, Clock, AlertTriangle, Package, Eye } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { format } from 'date-fns';
-import { fr } from 'date-fns/locale';
+import { getDateFnsLocale } from '@/utils/dateFnsLocale';
 
 interface RMAItem {
   id: string;
@@ -137,7 +137,7 @@ export function ReturnsManager() {
                           {rma.refund_amount ? `${rma.refund_amount.toFixed(2)} €` : '-'}
                         </TableCell>
                         <TableCell className="text-sm text-muted-foreground">
-                          {rma.requested_at ? format(new Date(rma.requested_at), 'dd/MM/yyyy', { locale: fr }) : '-'}
+                          {rma.requested_at ? format(new Date(rma.requested_at), 'dd/MM/yyyy', { locale: getDateFnsLocale() }) : '-'}
                         </TableCell>
                         <TableCell className="text-right">
                           <div className="flex justify-end gap-1">

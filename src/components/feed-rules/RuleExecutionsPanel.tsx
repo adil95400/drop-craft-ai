@@ -8,7 +8,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { CheckCircle2, AlertCircle, Clock, Zap, Package } from 'lucide-react';
 import { useFeedRuleExecutions } from '@/hooks/useFeedRules';
 import { formatDistanceToNow } from 'date-fns';
-import { fr } from 'date-fns/locale';
+import { getDateFnsLocale } from '@/utils/dateFnsLocale';
 
 interface RuleExecutionsPanelProps {
   ruleId?: string;
@@ -85,7 +85,7 @@ export function RuleExecutionsPanel({ ruleId }: RuleExecutionsPanelProps) {
                   <span className="text-sm text-muted-foreground">
                     {formatDistanceToNow(new Date(execution.executed_at), {
                       addSuffix: true,
-                      locale: fr,
+                      locale: getDateFnsLocale(),
                     })}
                   </span>
                 </div>

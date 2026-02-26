@@ -8,7 +8,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { Truck, Package, Clock, DollarSign, Plus, Settings, Globe } from 'lucide-react'
 import { useShippingManager } from '@/hooks/useShippingManager'
 import { format } from 'date-fns'
-import { fr } from 'date-fns/locale'
+import { getDateFnsLocale } from '@/utils/dateFnsLocale'
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper'
 
 export default function ShippingManager() {
@@ -174,7 +174,7 @@ export default function ShippingManager() {
                     <div className="grid grid-cols-2 gap-3 sm:gap-4 text-xs sm:text-sm">
                       <div>
                         <p className="text-muted-foreground">Expédié le</p>
-                        <p className="font-medium">{shipment.shipped_at ? format(new Date(shipment.shipped_at), 'dd/MM/yyyy', { locale: fr }) : 'Non expédié'}</p>
+                        <p className="font-medium">{shipment.shipped_at ? format(new Date(shipment.shipped_at), 'dd/MM/yyyy', { locale: getDateFnsLocale() }) : 'Non expédié'}</p>
                       </div>
                       <div>
                         <p className="text-muted-foreground">Coût</p>
@@ -184,7 +184,7 @@ export default function ShippingManager() {
                     {shipment.estimated_delivery && (
                       <div className="bg-muted p-2 sm:p-3 rounded-lg">
                         <p className="text-xs sm:text-sm font-medium mb-1">Livraison estimée</p>
-                        <p className="text-xs sm:text-sm text-muted-foreground">{format(new Date(shipment.estimated_delivery), 'dd MMMM yyyy', { locale: fr })}</p>
+                        <p className="text-xs sm:text-sm text-muted-foreground">{format(new Date(shipment.estimated_delivery), 'dd MMMM yyyy', { locale: getDateFnsLocale() })}</p>
                       </div>
                     )}
                     <Button variant="outline" className="w-full" size="sm">Voir le Suivi</Button>

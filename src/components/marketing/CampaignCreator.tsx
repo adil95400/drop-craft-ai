@@ -16,7 +16,7 @@ import {
   Sparkles, Zap, Clock, TrendingUp, Settings, X, Plus
 } from 'lucide-react'
 import { format } from 'date-fns'
-import { fr } from 'date-fns/locale'
+import { getDateFnsLocale } from '@/utils/dateFnsLocale'
 
 interface CampaignCreatorProps {
   isOpen: boolean
@@ -199,7 +199,7 @@ export const CampaignCreator: React.FC<CampaignCreatorProps> = ({
                         <Button variant="outline" className="w-full justify-start text-left">
                           <CalendarIcon className="h-4 w-4 mr-2" />
                           {formData.scheduledDate 
-                            ? format(formData.scheduledDate, 'PPP', { locale: fr })
+                            ? format(formData.scheduledDate, 'PPP', { locale: getDateFnsLocale() })
                             : 'Sélectionner une date'
                           }
                         </Button>

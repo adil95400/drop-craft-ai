@@ -13,7 +13,7 @@ import {
   ArrowUpRight, ArrowDownRight
 } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
-import { fr } from 'date-fns/locale'
+import { getDateFnsLocale } from '@/utils/dateFnsLocale'
 
 export interface SyncEvent {
   id: string
@@ -188,7 +188,7 @@ export function ChannableSyncTimeline({
               <p className="text-xs text-muted-foreground mt-1">
                 {formatDistanceToNow(new Date(event.timestamp), { 
                   addSuffix: true, 
-                  locale: fr 
+                  locale: getDateFnsLocale() 
                 })}
               </p>
             </div>

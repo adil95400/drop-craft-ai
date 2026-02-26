@@ -9,7 +9,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { CalendarIcon, Filter, X, RefreshCw } from "lucide-react";
 import { format } from "date-fns";
-import { fr } from "date-fns/locale";
+import { getDateFnsLocale } from '@/utils/dateFnsLocale';
 import { cn } from "@/lib/utils";
 
 interface FilterOption {
@@ -235,7 +235,7 @@ export function FilterPanel({
                       )}
                     >
                       <CalendarIcon className="mr-2 h-4 w-4" />
-                      {dateFrom ? format(dateFrom, "dd/MM/yyyy", { locale: fr }) : "Du"}
+                      {dateFrom ? format(dateFrom, "dd/MM/yyyy", { locale: getDateFnsLocale() }) : "Du"}
                     </Button>
                   </PopoverTrigger>
                   <PopoverContent className="w-auto p-0" align="start">
@@ -259,7 +259,7 @@ export function FilterPanel({
                       )}
                     >
                       <CalendarIcon className="mr-2 h-4 w-4" />
-                      {dateTo ? format(dateTo, "dd/MM/yyyy", { locale: fr }) : "Au"}
+                      {dateTo ? format(dateTo, "dd/MM/yyyy", { locale: getDateFnsLocale() }) : "Au"}
                     </Button>
                   </PopoverTrigger>
                   <PopoverContent className="w-auto p-0" align="start">
