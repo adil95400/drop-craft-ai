@@ -7,10 +7,34 @@ import { useBulkContentGeneration } from '@/hooks/useBulkContentGeneration';
 import { Activity, CheckCircle2, XCircle, Clock, Download, Trash2 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { useDateFnsLocale } from '@/hooks/useDateFnsLocale';
+import { useToast } from '@/hooks/use-toast';
 
 export function BulkJobsMonitor() {
   const { jobs, isLoadingJobs, refetchJobs, cancelJob } = useBulkContentGeneration();
   const locale = useDateFnsLocale();
+  const { toast } = useToast();
+
+  const handleDownloadResults = (job: any) => {
+    if (!job.results || job.results.length === 0) {
+      toast({ title: 'Aucun résultat à télécharger', variant: 'destructive' });
+      return;
+    }
+
+    const csvHeader = 'Nom,Type,URL\n';
+    const csvRows = job.results.map((r: any) => 
+      `"${(r.name || '').replace(/"/g, '""')}","${job.job_type}","${r.imageUrl || r.videoUrl || ''}"`
+    ).join('\n');
+
+    const blob = new Blob([csvHeader + csvRows], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `bulk-${job.job_type}-${job.id.slice(0, 8)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+
+    toast({ title: `${job.results.length} résultats exportés` });
+  };
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -103,7 +127,7 @@ export function BulkJobsMonitor() {
                   
                   <div className="flex gap-2">
                     {job.status === 'completed' && job.results?.length > 0 && (
-                      <Button variant="outline" size="sm">
+                      <Button variant="outline" size="sm" onClick={() => handleDownloadResults(job)}>
                         <Download className="h-4 w-4 mr-1" />
                         Télécharger
                       </Button>
