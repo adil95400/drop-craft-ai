@@ -214,7 +214,7 @@ export class RealDataAnalyticsService {
         priority: insight.priority || 'medium',
         title: insight.message?.split('.')[0] || 'AI Insight',
         description: insight.message || '',
-        impact_score: 70 + Math.random() * 25,
+        impact_score: insight.confidence || 75,
         action_items: insight.actions || ['Analyser les données', 'Prendre action']
       }));
 

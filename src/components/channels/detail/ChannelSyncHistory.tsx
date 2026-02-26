@@ -1,5 +1,6 @@
 /**
  * ChannelSyncHistory - Historique et statut de synchronisation bidirectionnelle
+ * Uses real data from unified_sync_queue
  */
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -14,6 +15,8 @@ import { useState, useEffect } from 'react'
 import { cn } from '@/lib/utils'
 import { format } from 'date-fns'
 import { getDateFnsLocale } from '@/utils/dateFnsLocale'
+import { useQuery } from '@tanstack/react-query'
+import { supabase } from '@/integrations/supabase/client'
 
 interface SyncLog {
   id: string
@@ -33,46 +36,46 @@ interface ChannelSyncHistoryProps {
   isSyncing?: boolean
 }
 
-const mockLogs: SyncLog[] = [
-  {
-    id: '1',
-    direction: 'pull',
-    status: 'success',
-    type: 'products',
-    itemsProcessed: 3759,
-    itemsTotal: 3759,
-    startedAt: new Date(Date.now() - 1000 * 60 * 30),
-    completedAt: new Date(Date.now() - 1000 * 60 * 28),
-  },
-  {
-    id: '2',
-    direction: 'pull',
-    status: 'success',
-    type: 'orders',
-    itemsProcessed: 2,
-    itemsTotal: 2,
-    startedAt: new Date(Date.now() - 1000 * 60 * 60),
-    completedAt: new Date(Date.now() - 1000 * 60 * 59),
-  },
-  {
-    id: '3',
-    direction: 'push',
-    status: 'error',
-    type: 'inventory',
-    itemsProcessed: 45,
-    itemsTotal: 100,
-    startedAt: new Date(Date.now() - 1000 * 60 * 120),
-    error: 'Rate limit exceeded'
-  },
-]
-
 export function ChannelSyncHistory({ 
   channelId, 
   onSync,
   isSyncing = false 
 }: ChannelSyncHistoryProps) {
-  const [logs, setLogs] = useState<SyncLog[]>(mockLogs)
+  // Fetch real sync logs from unified_sync_queue
+  const { data: realLogs } = useQuery({
+    queryKey: ['sync-history', channelId],
+    queryFn: async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return [];
+      const { data } = await supabase
+        .from('unified_sync_queue')
+        .select('id, sync_type, action, status, created_at, processed_at, payload')
+        .eq('user_id', session.user.id)
+        .order('created_at', { ascending: false })
+        .limit(10);
+      return (data || []).map((item: any) => ({
+        id: item.id,
+        direction: (item.action === 'create' ? 'push' : 'pull') as SyncLog['direction'],
+        status: (item.status === 'completed' ? 'success' : item.status === 'failed' ? 'error' : item.status === 'processing' ? 'running' : 'pending') as SyncLog['status'],
+        type: (item.sync_type || 'products') as SyncLog['type'],
+        itemsProcessed: item.status === 'completed' ? 1 : 0,
+        itemsTotal: 1,
+        startedAt: new Date(item.created_at),
+        completedAt: item.processed_at ? new Date(item.processed_at) : undefined,
+        error: item.status === 'failed' ? 'Sync failed' : undefined,
+      })) as SyncLog[];
+    },
+  });
+
+  const [logs, setLogs] = useState<SyncLog[]>([])
   const [currentSync, setCurrentSync] = useState<SyncLog | null>(null)
+
+  // Update logs when real data arrives
+  useEffect(() => {
+    if (realLogs && realLogs.length > 0) {
+      setLogs(realLogs);
+    }
+  }, [realLogs]);
 
   const getDirectionIcon = (direction: SyncLog['direction']) => {
     switch (direction) {
