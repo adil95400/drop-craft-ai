@@ -114,8 +114,8 @@ const BlogArticlePage = () => {
               <p className="text-xl text-muted-foreground mb-6">{post.excerpt}</p>
             )}
             <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
-              <span className="flex items-center gap-1"><Calendar className="h-4 w-4" /> {new Date(post.publish_date || post.created_at || "").toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" })}</span>
-              <span className="flex items-center gap-1"><Clock className="h-4 w-4" /> {readTime} min de lecture</span>
+              <span className="flex items-center gap-1"><Calendar className="h-4 w-4" /> {new Date(post.publish_date || post.created_at || "").toLocaleDateString(undefined, { day: "numeric", month: "long", year: "numeric" })}</span>
+              <span className="flex items-center gap-1"><Clock className="h-4 w-4" /> {readTime} min</span>
             </div>
           </header>
 

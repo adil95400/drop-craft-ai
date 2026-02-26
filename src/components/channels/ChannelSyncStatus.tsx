@@ -13,7 +13,8 @@ import {
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { formatDistanceToNow } from 'date-fns'
-import { fr } from 'date-fns/locale'
+import { useTranslation } from 'react-i18next'
+import { useDateFnsLocale } from '@/hooks/useDateFnsLocale'
 
 type SyncStatus = 'idle' | 'syncing' | 'success' | 'error' | 'pending'
 
@@ -42,6 +43,8 @@ export function ChannelSyncStatus({
   isLoading,
   compact = false
 }: ChannelSyncStatusProps) {
+  const { t } = useTranslation(['common', 'channels'])
+  const locale = useDateFnsLocale()
   const [animatedProgress, setAnimatedProgress] = useState(0)
 
   useEffect(() => {
@@ -65,35 +68,35 @@ export function ChannelSyncStatus({
       case 'syncing':
         return {
           icon: <Loader2 className="h-4 w-4 animate-spin" />,
-          label: 'Synchronisation...',
+          label: t('common:syncing'),
           color: 'bg-blue-500/20 text-blue-700 border-blue-500/30',
           bgColor: 'bg-blue-500'
         }
       case 'success':
         return {
           icon: <CheckCircle2 className="h-4 w-4" />,
-          label: 'Synchronisé',
+          label: t('common:synced'),
           color: 'bg-green-500/20 text-green-700 border-green-500/30',
           bgColor: 'bg-green-500'
         }
       case 'error':
         return {
           icon: <AlertCircle className="h-4 w-4" />,
-          label: 'Erreur',
+          label: t('common:error'),
           color: 'bg-red-500/20 text-red-700 border-red-500/30',
           bgColor: 'bg-red-500'
         }
       case 'pending':
         return {
           icon: <Clock className="h-4 w-4" />,
-          label: 'En attente',
+          label: t('common:pending'),
           color: 'bg-yellow-500/20 text-yellow-700 border-yellow-500/30',
           bgColor: 'bg-yellow-500'
         }
       default:
         return {
           icon: <Wifi className="h-4 w-4" />,
-          label: 'Prêt',
+          label: t('common:active'),
           color: 'bg-gray-500/20 text-gray-700 border-gray-500/30',
           bgColor: 'bg-gray-500'
         }
@@ -115,9 +118,9 @@ export function ChannelSyncStatus({
           <TooltipContent side="bottom" className="max-w-xs">
             <div className="space-y-1 text-xs">
               {lastSyncAt && (
-                <p>Dernière sync: {formatDistanceToNow(new Date(lastSyncAt), { addSuffix: true, locale: fr })}</p>
+                <p>{t('common:lastSync')}: {formatDistanceToNow(new Date(lastSyncAt), { addSuffix: true, locale })}</p>
               )}
-              <p>{productsCount} produits · {ordersCount} commandes</p>
+              <p>{productsCount} {t('navigation:products').toLowerCase()} · {ordersCount} {t('navigation:orders').toLowerCase()}</p>
               {errorMessage && <p className="text-destructive">{errorMessage}</p>}
             </div>
           </TooltipContent>
@@ -151,7 +154,7 @@ export function ChannelSyncStatus({
             className="gap-2"
           >
             <RefreshCw className={cn("h-4 w-4", (isLoading || status === 'syncing') && "animate-spin")} />
-            Synchroniser
+            {t('common:sync')}
           </Button>
         )}
       </div>
@@ -165,12 +168,12 @@ export function ChannelSyncStatus({
       <div className="grid grid-cols-2 gap-4 text-sm">
         <div className="flex items-center gap-2">
           <ArrowUpDown className="h-4 w-4 text-muted-foreground" />
-          <span className="text-muted-foreground">Produits:</span>
+          <span className="text-muted-foreground">{t('navigation:products')}:</span>
           <span className="font-medium">{productsCount.toLocaleString()}</span>
         </div>
         <div className="flex items-center gap-2">
           <ArrowUpDown className="h-4 w-4 text-muted-foreground" />
-          <span className="text-muted-foreground">Commandes:</span>
+          <span className="text-muted-foreground">{t('navigation:orders')}:</span>
           <span className="font-medium">{ordersCount.toLocaleString()}</span>
         </div>
       </div>
@@ -180,13 +183,13 @@ export function ChannelSyncStatus({
         {lastSyncAt && (
           <div className="flex items-center gap-1">
             <Clock className="h-3 w-3" />
-            Dernière sync: {formatDistanceToNow(new Date(lastSyncAt), { addSuffix: true, locale: fr })}
+            {t('common:lastSync')}: {formatDistanceToNow(new Date(lastSyncAt), { addSuffix: true, locale })}
           </div>
         )}
         {nextSyncAt && (
           <div className="flex items-center gap-1">
             <Clock className="h-3 w-3" />
-            Prochaine sync: {formatDistanceToNow(new Date(nextSyncAt), { addSuffix: true, locale: fr })}
+            {formatDistanceToNow(new Date(nextSyncAt), { addSuffix: true, locale })}
           </div>
         )}
       </div>

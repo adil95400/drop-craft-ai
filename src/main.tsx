@@ -46,13 +46,13 @@ const SentryErrorBoundary = Sentry.withErrorBoundary(App, {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center p-4">
         <div className="text-center">
-          <h1 className="text-2xl font-bold mb-4">Une erreur critique s'est produite</h1>
-          <p className="text-muted-foreground mb-4">L'équipe a été notifiée automatiquement.</p>
+          <h1 className="text-2xl font-bold mb-4">Critical Error</h1>
+          <p className="text-muted-foreground mb-4">The team has been notified automatically.</p>
           <button 
             onClick={() => window.location.reload()} 
             className="px-4 py-2 bg-primary text-primary-foreground rounded-md"
           >
-            Recharger la page
+            Reload
           </button>
         </div>
       </div>
