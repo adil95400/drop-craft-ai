@@ -6,19 +6,13 @@ import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import { 
   Activity, 
-  Zap, 
-  Database, 
   Server, 
   AlertTriangle, 
   CheckCircle2,
-  Clock,
-  Users,
-  ShoppingCart,
   TrendingUp,
   Wifi,
-  HardDrive
 } from 'lucide-react'
-import { useToast } from '@/hooks/use-toast'
+import { supabase } from '@/integrations/supabase/client'
 
 interface SystemMetric {
   id: string
@@ -41,105 +35,141 @@ export function RealTimeMonitoring() {
   const [metrics, setMetrics] = useState<SystemMetric[]>([])
   const [networkMetrics, setNetworkMetrics] = useState<NetworkMetric[]>([])
   const [isMonitoring, setIsMonitoring] = useState(true)
-  const { toast } = useToast()
 
-  // Simuler les métriques en temps réel
   useEffect(() => {
-    const generateMetrics = (): SystemMetric[] => [
-      {
-        id: 'cpu',
-        name: 'CPU Usage',
-        value: Math.random() * 30 + 20, // 20-50%
-        unit: '%',
-        status: 'healthy',
-        trend: Math.random() > 0.5 ? 'up' : 'down',
-        lastUpdate: new Date().toISOString()
-      },
-      {
-        id: 'memory',
-        name: 'Memory Usage',
-        value: Math.random() * 20 + 40, // 40-60%
-        unit: '%',
-        status: 'healthy',
-        trend: 'stable',
-        lastUpdate: new Date().toISOString()
-      },
-      {
-        id: 'storage',
-        name: 'Storage Usage',
-        value: Math.random() * 15 + 65, // 65-80%
-        unit: '%',
-        status: 'warning',
-        trend: 'up',
-        lastUpdate: new Date().toISOString()
-      },
-      {
-        id: 'active_users',
-        name: 'Active Users',
-        value: Math.floor(Math.random() * 50 + 150), // 150-200
-        unit: 'users',
-        status: 'healthy',
-        trend: 'up',
-        lastUpdate: new Date().toISOString()
-      },
-      {
-        id: 'response_time',
-        name: 'API Response Time',
-        value: Math.random() * 100 + 120, // 120-220ms
-        unit: 'ms',
-        status: Math.random() > 0.7 ? 'warning' : 'healthy',
-        trend: 'stable',
-        lastUpdate: new Date().toISOString()
-      },
-      {
-        id: 'error_rate',
-        name: 'Error Rate',
-        value: Math.random() * 2, // 0-2%
-        unit: '%',
-        status: 'healthy',
-        trend: 'down',
-        lastUpdate: new Date().toISOString()
-      }
-    ]
+    const fetchRealMetrics = async () => {
+      try {
+        const fiveMinAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString()
+        const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
 
-    const generateNetworkMetrics = (): NetworkMetric[] => [
-      {
-        endpoint: '/api/products',
-        responseTime: Math.random() * 50 + 80,
-        status: 'online',
-        uptime: 99.9
-      },
-      {
-        endpoint: '/api/orders',
-        responseTime: Math.random() * 100 + 150,
-        status: Math.random() > 0.8 ? 'slow' : 'online',
-        uptime: 99.7
-      },
-      {
-        endpoint: '/api/customers',
-        responseTime: Math.random() * 80 + 100,
-        status: 'online',
-        uptime: 99.8
-      },
-      {
-        endpoint: '/api/analytics',
-        responseTime: Math.random() * 200 + 200,
-        status: Math.random() > 0.9 ? 'error' : 'online',
-        uptime: 98.5
+        // Fetch recent API logs for real metrics
+        const { data: recentLogs } = await supabase
+          .from('api_logs')
+          .select('endpoint, status_code, response_time_ms, created_at')
+          .gte('created_at', fiveMinAgo)
+          .limit(200)
+
+        const { data: dailyLogs } = await supabase
+          .from('api_logs')
+          .select('status_code, response_time_ms')
+          .gte('created_at', oneDayAgo)
+          .limit(1000)
+
+        const logs = recentLogs || []
+        const daily = dailyLogs || []
+
+        // Calculate real metrics
+        const totalRecent = logs.length || 1
+        const errorCount = logs.filter(l => (l.status_code || 0) >= 500).length
+        const avgResponseTime = logs.reduce((sum, l) => sum + (l.response_time_ms || 0), 0) / totalRecent
+        const errorRate = (errorCount / totalRecent) * 100
+
+        // Browser performance API for memory/CPU proxy
+        const perfMemory = (performance as any).memory
+        const memoryUsage = perfMemory 
+          ? Math.round((perfMemory.usedJSHeapSize / perfMemory.jsHeapSizeLimit) * 100) 
+          : 45
+
+        // Active users = distinct user entries in recent activity logs
+        const { count: activeUserCount } = await supabase
+          .from('activity_logs')
+          .select('user_id', { count: 'exact', head: true })
+          .gte('created_at', fiveMinAgo)
+
+        const systemMetrics: SystemMetric[] = [
+          {
+            id: 'memory',
+            name: 'Memory Usage',
+            value: memoryUsage,
+            unit: '%',
+            status: memoryUsage > 80 ? 'warning' : 'healthy',
+            trend: 'stable',
+            lastUpdate: new Date().toISOString()
+          },
+          {
+            id: 'active_users',
+            name: 'Active Users',
+            value: activeUserCount || 0,
+            unit: 'users',
+            status: 'healthy',
+            trend: 'stable',
+            lastUpdate: new Date().toISOString()
+          },
+          {
+            id: 'response_time',
+            name: 'API Response Time',
+            value: Math.round(avgResponseTime),
+            unit: 'ms',
+            status: avgResponseTime > 500 ? 'warning' : 'healthy',
+            trend: avgResponseTime > 300 ? 'up' : 'stable',
+            lastUpdate: new Date().toISOString()
+          },
+          {
+            id: 'error_rate',
+            name: 'Error Rate',
+            value: Math.round(errorRate * 100) / 100,
+            unit: '%',
+            status: errorRate > 5 ? 'critical' : errorRate > 2 ? 'warning' : 'healthy',
+            trend: errorRate > 2 ? 'up' : 'down',
+            lastUpdate: new Date().toISOString()
+          },
+          {
+            id: 'requests',
+            name: 'Requests (5min)',
+            value: totalRecent,
+            unit: 'req',
+            status: 'healthy',
+            trend: 'stable',
+            lastUpdate: new Date().toISOString()
+          }
+        ]
+
+        setMetrics(systemMetrics)
+
+        // Build network metrics from real endpoint data
+        const endpointMap = new Map<string, { times: number[], errors: number }>()
+        logs.forEach(l => {
+          const ep = l.endpoint || '/unknown'
+          const short = '/' + ep.split('/').filter(Boolean).slice(0, 2).join('/')
+          if (!endpointMap.has(short)) endpointMap.set(short, { times: [], errors: 0 })
+          const entry = endpointMap.get(short)!
+          entry.times.push(l.response_time_ms || 0)
+          if ((l.status_code || 0) >= 500) entry.errors++
+        })
+
+        const dailyTotal = daily.length || 1
+        const dailyErrors = daily.filter(l => (l.status_code || 0) >= 500).length
+        const globalUptime = Math.round((1 - dailyErrors / dailyTotal) * 1000) / 10
+
+        const netMetrics: NetworkMetric[] = Array.from(endpointMap.entries())
+          .slice(0, 4)
+          .map(([ep, data]) => {
+            const avgTime = data.times.reduce((a, b) => a + b, 0) / (data.times.length || 1)
+            const epErrorRate = data.errors / (data.times.length || 1)
+            return {
+              endpoint: ep,
+              responseTime: Math.round(avgTime),
+              status: epErrorRate > 0.3 ? 'error' as const : avgTime > 500 ? 'slow' as const : 'online' as const,
+              uptime: Math.round((1 - epErrorRate) * 1000) / 10
+            }
+          })
+
+        setNetworkMetrics(netMetrics.length > 0 ? netMetrics : [
+          { endpoint: '/api/v1', responseTime: 0, status: 'online', uptime: globalUptime }
+        ])
+
+      } catch {
+        // Silently handle - metrics will show empty state
       }
-    ]
+    }
 
     if (isMonitoring) {
-      setMetrics(generateMetrics())
-      setNetworkMetrics(generateNetworkMetrics())
+      fetchRealMetrics()
     }
 
     const interval = setInterval(() => {
-      if (isMonitoring) {
-        setMetrics(generateMetrics())
-        setNetworkMetrics(generateNetworkMetrics())
-      }
-    }, 3000) // Mise à jour toutes les 3 secondes
+      if (isMonitoring) fetchRealMetrics()
+    }, 10000) // Refresh every 10 seconds
 
     return () => clearInterval(interval)
   }, [isMonitoring])
@@ -156,7 +186,7 @@ export function RealTimeMonitoring() {
       case 'error':
         return <AlertTriangle className="h-4 w-4 text-red-500" />
       default:
-        return <Activity className="h-4 w-4 text-gray-500" />
+        return <Activity className="h-4 w-4 text-muted-foreground" />
     }
   }
 
@@ -172,7 +202,7 @@ export function RealTimeMonitoring() {
       case 'error':
         return 'bg-red-500'
       default:
-        return 'bg-gray-500'
+        return 'bg-muted'
     }
   }
 
@@ -183,17 +213,16 @@ export function RealTimeMonitoring() {
       case 'down':
         return <TrendingUp className="h-3 w-3 text-red-500 rotate-180" />
       default:
-        return <div className="h-3 w-3 rounded-full bg-gray-400" />
+        return <div className="h-3 w-3 rounded-full bg-muted" />
     }
   }
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-      {/* Métriques Système */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Server className="h-5 w-5 text-blue-500" />
+            <Server className="h-5 w-5 text-primary" />
             Métriques Système
             <div className="flex items-center gap-2 ml-auto">
               {isMonitoring && (
@@ -202,18 +231,12 @@ export function RealTimeMonitoring() {
                   <span className="text-xs text-green-600">LIVE</span>
                 </div>
               )}
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setIsMonitoring(!isMonitoring)}
-              >
+              <Button variant="outline" size="sm" onClick={() => setIsMonitoring(!isMonitoring)}>
                 {isMonitoring ? 'Pause' : 'Resume'}
               </Button>
             </div>
           </CardTitle>
-          <CardDescription>
-            Surveillance en temps réel des performances système
-          </CardDescription>
+          <CardDescription>Surveillance en temps réel des performances système</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
@@ -230,56 +253,43 @@ export function RealTimeMonitoring() {
                       {typeof metric.value === 'number' ? metric.value.toFixed(1) : metric.value}
                       {metric.unit}
                     </span>
-                    <Badge 
-                      variant="secondary" 
-                      className={`text-xs ${getStatusColor(metric.status)} text-white`}
-                    >
+                    <Badge variant="secondary" className={`text-xs ${getStatusColor(metric.status)} text-white`}>
                       {metric.status}
                     </Badge>
                   </div>
                 </div>
-                <Progress 
-                  value={Math.min(metric.value, 100)} 
-                  className="h-2"
-                />
+                <Progress value={Math.min(metric.value, 100)} className="h-2" />
               </div>
             ))}
+            {metrics.length === 0 && (
+              <p className="text-sm text-muted-foreground text-center py-4">Chargement des métriques...</p>
+            )}
           </div>
         </CardContent>
       </Card>
 
-      {/* Métriques Réseau */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Wifi className="h-5 w-5 text-green-500" />
             État du Réseau
           </CardTitle>
-          <CardDescription>
-            Performance des API et endpoints
-          </CardDescription>
+          <CardDescription>Performance des API et endpoints</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
             {networkMetrics.map((metric, index) => (
-              <div key={index} className="flex items-center justify-between p-3 rounded-lg bg-gray-50">
+              <div key={index} className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
                 <div className="flex items-center gap-3">
                   {getStatusIcon(metric.status)}
                   <div>
                     <div className="font-medium text-sm">{metric.endpoint}</div>
-                    <div className="text-xs text-gray-500">
-                      Uptime: {metric.uptime}%
-                    </div>
+                    <div className="text-xs text-muted-foreground">Uptime: {metric.uptime}%</div>
                   </div>
                 </div>
                 <div className="text-right">
-                  <div className="text-sm font-mono">
-                    {metric.responseTime.toFixed(0)}ms
-                  </div>
-                  <Badge 
-                    variant="secondary"
-                    className={`text-xs ${getStatusColor(metric.status)} text-white`}
-                  >
+                  <div className="text-sm font-mono">{metric.responseTime}ms</div>
+                  <Badge variant="secondary" className={`text-xs ${getStatusColor(metric.status)} text-white`}>
                     {metric.status}
                   </Badge>
                 </div>
@@ -291,16 +301,26 @@ export function RealTimeMonitoring() {
 
           <div className="grid grid-cols-3 gap-4 text-center">
             <div>
-              <div className="text-2xl font-bold text-green-600">99.2%</div>
-              <div className="text-xs text-gray-500">Uptime Global</div>
+              <div className="text-2xl font-bold text-green-600">
+                {networkMetrics.length > 0 
+                  ? (networkMetrics.reduce((sum, m) => sum + m.uptime, 0) / networkMetrics.length).toFixed(1)
+                  : '—'}%
+              </div>
+              <div className="text-xs text-muted-foreground">Uptime Global</div>
             </div>
             <div>
-              <div className="text-2xl font-bold text-blue-600">142ms</div>
-              <div className="text-xs text-gray-500">Latence Moy.</div>
+              <div className="text-2xl font-bold text-primary">
+                {networkMetrics.length > 0
+                  ? Math.round(networkMetrics.reduce((sum, m) => sum + m.responseTime, 0) / networkMetrics.length)
+                  : '—'}ms
+              </div>
+              <div className="text-xs text-muted-foreground">Latence Moy.</div>
             </div>
             <div>
-              <div className="text-2xl font-bold text-purple-600">0.8%</div>
-              <div className="text-xs text-gray-500">Taux d'Erreur</div>
+              <div className="text-2xl font-bold text-purple-600">
+                {metrics.find(m => m.id === 'error_rate')?.value.toFixed(1) ?? '—'}%
+              </div>
+              <div className="text-xs text-muted-foreground">Taux d'Erreur</div>
             </div>
           </div>
         </CardContent>

@@ -1,4 +1,5 @@
 import { supabase } from '@/integrations/supabase/client'
+import { logger } from '@/utils/logger'
 
 export interface StockAlert {
   id: string
@@ -68,86 +69,38 @@ export class StockManagementService {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) throw new Error('User not authenticated')
 
-      // Using activity_logs as fallback for stock alerts
-      const { data, error } = await supabase
-        .from('activity_logs')
-        .select('*')
+      // Get products with low stock from the real products table
+      const { data: products, error } = await supabase
+        .from('products')
+        .select('id, title, stock_quantity, category')
         .eq('user_id', user.id)
-        .eq('action', 'stock_alert')
-        .order('created_at', { ascending: false })
+        .lt('stock_quantity', 15)
+        .order('stock_quantity', { ascending: true })
         .limit(20)
 
       if (error) throw error
 
-      const alerts = (data || []).map((log: any) => ({
-        id: log.id,
-        product_id: log.entity_id || crypto.randomUUID(),
-        product_name: log.metadata?.product_name || 'Produit',
-        current_stock: log.metadata?.current_stock || 5,
-        minimum_threshold: log.metadata?.minimum_threshold || 10,
-        reorder_point: log.metadata?.reorder_point || 15,
-        recommended_order_quantity: log.metadata?.recommended_order_quantity || 50,
-        urgency: log.metadata?.urgency || 'medium',
-        days_until_stockout: log.metadata?.days_until_stockout || 7,
-        backup_suppliers: log.metadata?.backup_suppliers || [],
-        auto_reorder_enabled: log.metadata?.auto_reorder_enabled || false,
-        last_reorder_date: log.metadata?.last_reorder_date,
-        estimated_stockout_date: log.metadata?.estimated_stockout_date || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
-        created_at: log.created_at
-      }))
+      return (products || []).map((p: any) => {
+        const stock = p.stock_quantity ?? 0
+        const urgency: StockAlert['urgency'] = stock === 0 ? 'critical' : stock < 5 ? 'high' : stock < 10 ? 'medium' : 'low'
 
-      // Filter by urgency if specified
-      if (urgencyFilter && urgencyFilter !== 'all') {
-        return alerts.filter(alert => alert.urgency === urgencyFilter)
-      }
-
-      return alerts
-    } catch (error) {
-      console.error('Failed to fetch stock alerts:', error)
-      // Return mock data as fallback
-      return [
-        {
-          id: '1',
-          product_id: 'prod-1',
-          product_name: 'Produit A',
-          current_stock: 3,
+        return {
+          id: p.id,
+          product_id: p.id,
+          product_name: p.title || 'Produit',
+          current_stock: stock,
           minimum_threshold: 10,
           reorder_point: 15,
           recommended_order_quantity: 50,
-        urgency: 'high' as const,
-          backup_suppliers: [{
-            id: 'sup-1',
-            name: 'Fournisseur B',
-            price: 25.0,
-            lead_time_days: 5,
-            minimum_order_quantity: 100,
-            reliability_score: 95
-          }],
-          auto_reorder_enabled: true,
-          last_reorder_date: '2024-01-10',
-        estimated_stockout_date: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString()
-        },
-        {
-          id: '2', 
-          product_id: 'prod-2',
-          product_name: 'Produit B',
-          current_stock: 7,
-          minimum_threshold: 15,
-          reorder_point: 20,
-          recommended_order_quantity: 75,
-        urgency: 'medium' as const,
-          backup_suppliers: [{
-            id: 'sup-2',
-            name: 'Fournisseur A',
-            price: 18.5,
-            lead_time_days: 3,
-            minimum_order_quantity: 50,
-            reliability_score: 88
-          }],
+          urgency,
+          backup_suppliers: [],
           auto_reorder_enabled: false,
-        estimated_stockout_date: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString()
+          estimated_stockout_date: new Date(Date.now() + Math.max(stock, 1) * 24 * 60 * 60 * 1000).toISOString()
         }
-      ]
+      }).filter(a => !urgencyFilter || urgencyFilter === 'all' || a.urgency === urgencyFilter)
+    } catch (error) {
+      logger.error('Failed to fetch stock alerts', error as Error, { component: 'StockManagement' })
+      return []
     }
   }
 
@@ -156,7 +109,6 @@ export class StockManagementService {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) throw new Error('User not authenticated')
 
-      // Using existing automation_rules table for stock rules  
       const { data, error } = await (supabase as any)
         .from('automation_rules')
         .insert({
@@ -174,7 +126,7 @@ export class StockManagementService {
       if (error) throw error
       return { id: data.id, ...rule }
     } catch (error) {
-      console.error('Failed to create auto reorder rule:', error)
+      logger.error('Failed to create auto reorder rule', error as Error, { component: 'StockManagement' })
       throw error
     }
   }
@@ -184,7 +136,7 @@ export class StockManagementService {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) throw new Error('User not authenticated')
 
-      const { data, error } = await supabase.functions.invoke('stock-movement-processor', {
+      const { error } = await supabase.functions.invoke('stock-movement-processor', {
         body: {
           ...movement,
           user_id: user.id,
@@ -194,9 +146,9 @@ export class StockManagementService {
       })
 
       if (error) throw error
-      console.log('Stock movement processed:', data)
+      logger.info('Stock movement processed', { component: 'StockManagement', metadata: { productId: movement.product_id } })
     } catch (error) {
-      console.error('Stock movement processing failed:', error)
+      logger.error('Stock movement processing failed', error as Error, { component: 'StockManagement' })
       throw error
     }
   }
@@ -206,7 +158,7 @@ export class StockManagementService {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) throw new Error('User not authenticated')
 
-      const { data, error } = await supabase.functions.invoke('auto-reorder-executor', {
+      const { error } = await supabase.functions.invoke('auto-reorder-executor', {
         body: {
           product_id: productId,
           user_id: user.id,
@@ -217,9 +169,9 @@ export class StockManagementService {
       })
 
       if (error) throw error
-      console.log('Auto reorder executed:', data)
+      logger.info('Auto reorder executed', { component: 'StockManagement', metadata: { productId } })
     } catch (error) {
-      console.error('Auto reorder execution failed:', error)
+      logger.error('Auto reorder execution failed', error as Error, { component: 'StockManagement' })
       throw error
     }
   }
@@ -239,7 +191,7 @@ export class StockManagementService {
       if (error) throw error
       return data.backup_suppliers || []
     } catch (error) {
-      console.error('Failed to find backup suppliers:', error)
+      logger.error('Failed to find backup suppliers', error as Error, { component: 'StockManagement' })
       throw error
     }
   }
@@ -249,7 +201,6 @@ export class StockManagementService {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) throw new Error('User not authenticated')
 
-      // Using activity_logs table as fallback for stock movements
       let queryBuilder = supabase
         .from('activity_logs')
         .select('*')
@@ -276,7 +227,7 @@ export class StockManagementService {
         created_by: log.user_id
       }))
     } catch (error) {
-      console.error('Failed to fetch stock movements:', error)
+      logger.error('Failed to fetch stock movements', error as Error, { component: 'StockManagement' })
       throw error
     }
   }
@@ -286,7 +237,7 @@ export class StockManagementService {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) throw new Error('User not authenticated')
 
-      const { data, error } = await supabase.functions.invoke('bulk-stock-updater', {
+      const { error } = await supabase.functions.invoke('bulk-stock-updater', {
         body: {
           updates,
           user_id: user.id,
@@ -296,9 +247,9 @@ export class StockManagementService {
       })
 
       if (error) throw error
-      console.log('Stock levels updated:', data)
+      logger.info('Stock levels updated', { component: 'StockManagement', metadata: { count: updates.length } })
     } catch (error) {
-      console.error('Bulk stock update failed:', error)
+      logger.error('Bulk stock update failed', error as Error, { component: 'StockManagement' })
       throw error
     }
   }
@@ -327,7 +278,7 @@ export class StockManagementService {
         confidence_score: 0
       }
     } catch (error) {
-      console.error('Stock predictions failed:', error)
+      logger.error('Stock predictions failed', error as Error, { component: 'StockManagement' })
       throw error
     }
   }
@@ -345,49 +296,44 @@ export class StockManagementService {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) throw new Error('User not authenticated')
 
-      // Simulate stats calculation from activity logs
-      const { data: stockData, error } = await supabase
-        .from('activity_logs')
-        .select('*')
+      // Real queries for stock stats
+      const [
+        { count: totalProducts },
+        { count: lowStockCount },
+        { count: outOfStockCount },
+        { count: autoReorderCount },
+        { data: topProducts }
+      ] = await Promise.all([
+        supabase.from('products').select('*', { count: 'exact', head: true }).eq('user_id', user.id),
+        supabase.from('products').select('*', { count: 'exact', head: true }).eq('user_id', user.id).lt('stock_quantity', 10).gt('stock_quantity', 0),
+        supabase.from('products').select('*', { count: 'exact', head: true }).eq('user_id', user.id).eq('stock_quantity', 0),
+        supabase.from('auto_order_rules').select('*', { count: 'exact', head: true }).eq('user_id', user.id).eq('is_active', true),
+        supabase.from('products').select('title, stock_quantity').eq('user_id', user.id).order('stock_quantity', { ascending: false }).limit(3),
+      ])
+
+      // Estimate stock value from products
+      const { data: stockValueData } = await supabase
+        .from('products')
+        .select('price, stock_quantity')
         .eq('user_id', user.id)
-        .in('action', ['stock_update', 'stock_alert', 'reorder'])
-        .gte('created_at', new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString())
 
-      if (error) throw error
-
-      const totalProducts = 150
-      const lowStockCount = Math.max((stockData || []).filter(log => {
-        const details = (log as any).details as any
-        return details?.current_stock && details.current_stock < 10
-      }).length, 8)
+      const stockValue = (stockValueData || []).reduce((sum, p) => sum + (Number(p.price) || 0) * (p.stock_quantity || 0), 0)
 
       return {
-        total_products: totalProducts,
-        low_stock_products: lowStockCount,
-        out_of_stock_products: Math.floor(lowStockCount * 0.3),
-        auto_reorders_active: 12,
-        reorders_this_month: 24,
-        stock_value: 145280,
-        top_moving_products: [
-          { name: 'Produit A', velocity: 85 },
-          { name: 'Produit B', velocity: 72 },
-          { name: 'Produit C', velocity: 68 }
-        ]
+        total_products: totalProducts || 0,
+        low_stock_products: lowStockCount || 0,
+        out_of_stock_products: outOfStockCount || 0,
+        auto_reorders_active: autoReorderCount || 0,
+        reorders_this_month: 0,
+        stock_value: Math.round(stockValue),
+        top_moving_products: (topProducts || []).map(p => ({ name: p.title || 'Produit', velocity: p.stock_quantity || 0 }))
       }
     } catch (error) {
-      console.error('Failed to fetch stock dashboard stats:', error)
+      logger.error('Failed to fetch stock dashboard stats', error as Error, { component: 'StockManagement' })
       return {
-        total_products: 150,
-        low_stock_products: 8,
-        out_of_stock_products: 2,
-        auto_reorders_active: 12,
-        reorders_this_month: 24,
-        stock_value: 145280,
-        top_moving_products: [
-          { name: 'Produit A', velocity: 85 },
-          { name: 'Produit B', velocity: 72 },
-          { name: 'Produit C', velocity: 68 }
-        ]
+        total_products: 0, low_stock_products: 0, out_of_stock_products: 0,
+        auto_reorders_active: 0, reorders_this_month: 0, stock_value: 0,
+        top_moving_products: []
       }
     }
   }
