@@ -31,7 +31,7 @@ import { CreatePPCLinkDialog } from './CreatePPCLinkDialog';
 import { PPCSyncLogsPanel } from './PPCSyncLogsPanel';
 import { PPCFeedLink, PPCFeedLinkService } from '@/services/PPCFeedLinkService';
 import { formatDistanceToNow } from 'date-fns';
-import { fr } from 'date-fns/locale';
+import { getDateFnsLocale } from '@/utils/dateFnsLocale';
 
 const platformLabels: Record<string, { label: string; icon: string }> = {
   google_ads: { label: 'Google Ads', icon: '🔍' },
@@ -225,7 +225,7 @@ export function PPCFeedLinkDashboard() {
                             {link.last_sync_at && (
                               <span className="flex items-center gap-1">
                                 <Clock className="h-3 w-3" />
-                                Sync: {formatDistanceToNow(new Date(link.last_sync_at), { addSuffix: true, locale: fr })}
+                                Sync: {formatDistanceToNow(new Date(link.last_sync_at), { addSuffix: true, locale: getDateFnsLocale() })}
                               </span>
                             )}
                             <span>Fréquence: {link.sync_frequency}</span>

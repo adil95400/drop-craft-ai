@@ -20,7 +20,7 @@ import {
 import { useToast } from '@/hooks/use-toast'
 import { useAutoFulfillment } from '@/hooks/useAutoFulfillment'
 import { format } from 'date-fns'
-import { fr } from 'date-fns/locale'
+import { getDateFnsLocale } from '@/utils/dateFnsLocale'
 
 export default function AutoOrderSystem() {
   const { toast } = useToast()
@@ -187,7 +187,7 @@ export default function AutoOrderSystem() {
                         <div>
                           <h4 className="font-semibold">{order.shopify_order_id || order.order_id?.slice(0, 8)}</h4>
                           <p className="text-sm text-muted-foreground">
-                            {order.created_at && format(new Date(order.created_at), 'dd/MM/yyyy HH:mm', { locale: fr })}
+                            {order.created_at && format(new Date(order.created_at), 'dd/MM/yyyy HH:mm', { locale: getDateFnsLocale() })}
                           </p>
                         </div>
                         {getStatusBadge(order.status)}
@@ -245,7 +245,7 @@ export default function AutoOrderSystem() {
                         <div>
                           <h4 className="font-semibold">{order.shopify_order_id || order.order_id?.slice(0, 8)}</h4>
                           <p className="text-sm text-muted-foreground">
-                            {order.processed_at && format(new Date(order.processed_at), 'dd/MM/yyyy HH:mm', { locale: fr })}
+                            {order.processed_at && format(new Date(order.processed_at), 'dd/MM/yyyy HH:mm', { locale: getDateFnsLocale() })}
                           </p>
                         </div>
                         {getStatusBadge(order.status)}

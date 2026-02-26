@@ -20,7 +20,7 @@ import {
   ResponsiveContainer 
 } from 'recharts';
 import { format } from 'date-fns';
-import { fr } from 'date-fns/locale';
+import { getDateFnsLocale } from '@/utils/dateFnsLocale';
 import { 
   Settings2, 
   Calculator, 
@@ -101,9 +101,9 @@ function RateHistoryPanel() {
   const { data: historyData, isLoading } = useRateHistory(baseCurrency, targetCurrency, period);
 
   const chartData = historyData?.history?.map(item => ({
-    date: format(new Date(item.recorded_at), 'dd/MM', { locale: fr }),
+    date: format(new Date(item.recorded_at), 'dd/MM', { locale: getDateFnsLocale() }),
     rate: item.rate,
-    fullDate: format(new Date(item.recorded_at), 'dd MMM yyyy', { locale: fr })
+    fullDate: format(new Date(item.recorded_at), 'dd MMM yyyy', { locale: getDateFnsLocale() })
   })) || [];
 
   // Calculer les statistiques

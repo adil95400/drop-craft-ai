@@ -25,7 +25,7 @@ import {
   X
 } from 'lucide-react';
 import { format, formatDistanceToNow } from 'date-fns';
-import { fr } from 'date-fns/locale';
+import { getDateFnsLocale } from '@/utils/dateFnsLocale';
 
 interface SupplierSyncManagerProps {
   supplierId: string;
@@ -274,7 +274,7 @@ export function SupplierSyncManager({ supplierId, supplierName }: SupplierSyncMa
                   </p>
                   {currentSchedule.last_run_at && (
                     <p className="text-muted-foreground">
-                      Dernière exécution: {formatDistanceToNow(new Date(currentSchedule.last_run_at), { addSuffix: true, locale: fr })}
+                      Dernière exécution: {formatDistanceToNow(new Date(currentSchedule.last_run_at), { addSuffix: true, locale: getDateFnsLocale() })}
                     </p>
                   )}
                 </div>
@@ -310,7 +310,7 @@ export function SupplierSyncManager({ supplierId, supplierName }: SupplierSyncMa
                   </div>
                   <div className="text-right">
                     <p className="text-sm">
-                      {format(new Date(job.created_at), 'dd MMM HH:mm', { locale: fr })}
+                      {format(new Date(job.created_at), 'dd MMM HH:mm', { locale: getDateFnsLocale() })}
                     </p>
                     {job.completed_at && (
                       <p className="text-xs text-muted-foreground">

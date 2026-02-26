@@ -24,7 +24,7 @@ import {
 } from '@/hooks/useRepricingEngine';
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
 import { format } from 'date-fns';
-import { fr } from 'date-fns/locale';
+import { getDateFnsLocale } from '@/utils/dateFnsLocale';
 
 interface RepricingRulesListProps {
   onEditRule?: (rule: PricingRule) => void;
@@ -150,7 +150,7 @@ export function RepricingRulesList({ onEditRule, onPreviewRule }: RepricingRules
                     </span>
                     {rule.last_executed_at && (
                       <span>
-                        Exécuté: {format(new Date(rule.last_executed_at), 'dd/MM HH:mm', { locale: fr })}
+                        Exécuté: {format(new Date(rule.last_executed_at), 'dd/MM HH:mm', { locale: getDateFnsLocale() })}
                       </span>
                     )}
                   </div>

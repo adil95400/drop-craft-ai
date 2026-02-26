@@ -11,7 +11,7 @@ import { Input } from '@/components/ui/input';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { format } from 'date-fns';
-import { fr } from 'date-fns/locale';
+import { getDateFnsLocale } from '@/utils/dateFnsLocale';
 import { 
   Facebook, 
   Instagram, 
@@ -398,7 +398,7 @@ export const ImportPublishOptions: React.FC<ImportPublishOptionsProps> = ({
                   <PopoverTrigger asChild>
                     <Button variant="outline" className="w-full justify-start text-left font-normal" disabled={isPublishing}>
                       <CalendarIcon className="mr-2 h-4 w-4" />
-                      {scheduleDate ? format(scheduleDate, 'PPP', { locale: fr }) : 'Choisir une date'}
+                      {scheduleDate ? format(scheduleDate, 'PPP', { locale: getDateFnsLocale() }) : 'Choisir une date'}
                     </Button>
                   </PopoverTrigger>
                   <PopoverContent className="w-auto p-0">
@@ -416,7 +416,7 @@ export const ImportPublishOptions: React.FC<ImportPublishOptionsProps> = ({
               <div className="p-4 bg-muted rounded-lg">
                 <p className="text-sm">
                   {scheduleDate
-                    ? `La publication sera effectuée le ${format(scheduleDate, 'PPP', { locale: fr })}`
+                    ? `La publication sera effectuée le ${format(scheduleDate, 'PPP', { locale: getDateFnsLocale() })}`
                     : 'La publication sera effectuée immédiatement'}
                 </p>
               </div>

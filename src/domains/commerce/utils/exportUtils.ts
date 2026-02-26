@@ -1,7 +1,7 @@
 import { ImportJob, ImportedProductData } from '../services/importService'
 import { utils, writeFile } from 'xlsx'
 import { format } from 'date-fns'
-import { fr } from 'date-fns/locale'
+import { getDateFnsLocale } from '@/utils/dateFnsLocale'
 
 export const exportUtils = {
   /**
@@ -9,9 +9,10 @@ export const exportUtils = {
    */
   exportHistoryToCSV(jobs: ImportJob[]) {
     const headers = ['Date', 'Type', 'Source', 'Statut', 'Total Lignes', 'Succès', 'Erreurs']
+    const locale = getDateFnsLocale()
     
     const rows = jobs.map(job => [
-      format(new Date(job.created_at), 'dd/MM/yyyy HH:mm', { locale: fr }),
+      format(new Date(job.created_at), 'dd/MM/yyyy HH:mm', { locale }),
       this.getSourceTypeLabel(job.source_type),
       job.source_url || job.source_name || '-',
       this.getStatusLabel(job.status),
@@ -32,8 +33,9 @@ export const exportUtils = {
    * Export import history to Excel
    */
   exportHistoryToExcel(jobs: ImportJob[]) {
+    const locale = getDateFnsLocale()
     const data = jobs.map(job => ({
-      'Date': format(new Date(job.created_at), 'dd/MM/yyyy HH:mm', { locale: fr }),
+      'Date': format(new Date(job.created_at), 'dd/MM/yyyy HH:mm', { locale }),
       'Type': this.getSourceTypeLabel(job.source_type),
       'Source': job.source_url || job.source_name || '-',
       'Statut': this.getStatusLabel(job.status),
@@ -48,7 +50,6 @@ export const exportUtils = {
     const workbook = utils.book_new()
     utils.book_append_sheet(workbook, worksheet, 'Historique Imports')
 
-    // Auto-size columns
     const maxWidth = data.reduce((w, r) => Math.max(w, ...Object.values(r).map(v => String(v).length)), 10)
     worksheet['!cols'] = Object.keys(data[0] || {}).map(() => ({ wch: maxWidth }))
 
@@ -60,6 +61,7 @@ export const exportUtils = {
    */
   exportProductsToCSV(products: ImportedProductData[]) {
     const headers = ['Nom', 'SKU', 'Prix', 'Prix Coût', 'Stock', 'Catégorie', 'Statut', 'Date Import']
+    const locale = getDateFnsLocale()
     
     const rows = products.map(product => [
       product.name,
@@ -69,7 +71,7 @@ export const exportUtils = {
       product.stock_quantity || 0,
       product.category || '-',
       product.status,
-      format(new Date(product.created_at), 'dd/MM/yyyy HH:mm', { locale: fr })
+      format(new Date(product.created_at), 'dd/MM/yyyy HH:mm', { locale })
     ])
 
     const csvContent = [
@@ -84,6 +86,7 @@ export const exportUtils = {
    * Export products to Excel
    */
   exportProductsToExcel(products: ImportedProductData[]) {
+    const locale = getDateFnsLocale()
     const data = products.map(product => ({
       'Nom': product.name,
       'Description': product.description || '-',
@@ -96,7 +99,7 @@ export const exportUtils = {
       'Marque': product.brand || '-',
       'Statut': product.status,
       'AI Optimisé': product.ai_optimized ? 'Oui' : 'Non',
-      'Date Import': format(new Date(product.created_at), 'dd/MM/yyyy HH:mm', { locale: fr })
+      'Date Import': format(new Date(product.created_at), 'dd/MM/yyyy HH:mm', { locale })
     }))
 
     const worksheet = utils.json_to_sheet(data)
@@ -104,18 +107,9 @@ export const exportUtils = {
     utils.book_append_sheet(workbook, worksheet, 'Produits')
 
     worksheet['!cols'] = [
-      { wch: 30 }, // Nom
-      { wch: 50 }, // Description
-      { wch: 15 }, // SKU
-      { wch: 10 }, // Prix
-      { wch: 10 }, // Prix Coût
-      { wch: 8 },  // Devise
-      { wch: 8 },  // Stock
-      { wch: 15 }, // Catégorie
-      { wch: 15 }, // Marque
-      { wch: 12 }, // Statut
-      { wch: 12 }, // AI Optimisé
-      { wch: 18 }, // Date Import
+      { wch: 30 }, { wch: 50 }, { wch: 15 }, { wch: 10 }, { wch: 10 },
+      { wch: 8 }, { wch: 8 }, { wch: 15 }, { wch: 15 }, { wch: 12 },
+      { wch: 12 }, { wch: 18 },
     ]
 
     writeFile(workbook, `products-${format(new Date(), 'yyyy-MM-dd')}.xlsx`)
@@ -141,11 +135,8 @@ export const exportUtils = {
    */
   getSourceTypeLabel(type: string): string {
     const labels: Record<string, string> = {
-      'file_upload': 'Fichier',
-      'url_import': 'URL',
-      'xml_import': 'XML/RSS',
-      'api_sync': 'API',
-      'ftp_import': 'FTP'
+      'file_upload': 'Fichier', 'url_import': 'URL', 'xml_import': 'XML/RSS',
+      'api_sync': 'API', 'ftp_import': 'FTP'
     }
     return labels[type] || type
   },
@@ -155,10 +146,8 @@ export const exportUtils = {
    */
   getStatusLabel(status: string): string {
     const labels: Record<string, string> = {
-      'pending': 'En attente',
-      'processing': 'En cours',
-      'completed': 'Terminé',
-      'failed': 'Échoué'
+      'pending': 'En attente', 'processing': 'En cours',
+      'completed': 'Terminé', 'failed': 'Échoué'
     }
     return labels[status] || status
   }

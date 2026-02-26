@@ -6,10 +6,11 @@ import { Progress } from '@/components/ui/progress';
 import { useBulkContentGeneration } from '@/hooks/useBulkContentGeneration';
 import { Activity, CheckCircle2, XCircle, Clock, Download, Trash2 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
-import { fr } from 'date-fns/locale';
+import { useDateFnsLocale } from '@/hooks/useDateFnsLocale';
 
 export function BulkJobsMonitor() {
   const { jobs, isLoadingJobs, refetchJobs, cancelJob } = useBulkContentGeneration();
+  const locale = useDateFnsLocale();
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -95,7 +96,7 @@ export function BulkJobsMonitor() {
                     <p className="text-sm text-muted-foreground mt-1">
                       Créé {formatDistanceToNow(new Date(job.created_at), { 
                         addSuffix: true,
-                        locale: fr 
+                        locale 
                       })}
                     </p>
                   </div>

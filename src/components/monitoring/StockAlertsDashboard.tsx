@@ -14,7 +14,7 @@ import { useStockAlerts, StockAlert } from '@/hooks/useStockAlerts'
 import { PageLoading } from '@/components/ui/loading'
 import { EmptyState } from '@/components/ui/empty-state'
 import { formatDistanceToNow } from 'date-fns'
-import { fr } from 'date-fns/locale'
+import { useDateFnsLocale } from '@/hooks/useDateFnsLocale'
 
 const SEVERITY_CONFIG = {
   low: { label: 'Faible', variant: 'outline' as const, color: 'text-blue-600' },
@@ -32,6 +32,7 @@ const ALERT_TYPE_LABELS: Record<string, string> = {
 }
 
 export function StockAlertsDashboard() {
+  const locale = useDateFnsLocale()
   const { alerts, stats, isLoading, refetch, resolveAlert, dismissAlert, isResolving } = useStockAlerts()
 
   if (isLoading) {
@@ -161,6 +162,7 @@ function AlertCard({
   onDismiss: () => void
   isResolving: boolean
 }) {
+  const locale = useDateFnsLocale()
   const severityConfig = SEVERITY_CONFIG[alert.severity as keyof typeof SEVERITY_CONFIG] || SEVERITY_CONFIG.medium
 
   return (
@@ -193,7 +195,7 @@ function AlertCard({
               <p className="text-sm text-muted-foreground">
                 Stock actuel: {alert.current_value} / Seuil: {alert.threshold_value} • 
                 {' '}
-                {formatDistanceToNow(new Date(alert.created_at), { addSuffix: true, locale: fr })}
+                {formatDistanceToNow(new Date(alert.created_at), { addSuffix: true, locale })}
               </p>
             </div>
           </div>

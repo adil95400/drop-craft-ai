@@ -16,7 +16,7 @@ import {
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { formatDistanceToNow } from 'date-fns';
-import { fr } from 'date-fns/locale';
+import { getDateFnsLocale } from '@/utils/dateFnsLocale';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -162,7 +162,7 @@ export function AutomationExecutionTimeline({ executions: propExecutions, onRetr
                             <Badge variant="outline" className="text-[10px]">{exec.triggeredBy}</Badge>
                           </div>
                           <div className="flex items-center gap-3 text-xs text-muted-foreground mt-0.5">
-                            <span>{formatDistanceToNow(new Date(exec.startedAt), { addSuffix: true, locale: fr })}</span>
+                            <span>{formatDistanceToNow(new Date(exec.startedAt), { addSuffix: true, locale: getDateFnsLocale() })}</span>
                             {exec.totalDurationMs && <span>{(exec.totalDurationMs / 1000).toFixed(1)}s</span>}
                             <span>{successSteps}/{totalSteps} étapes</span>
                           </div>

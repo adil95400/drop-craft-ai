@@ -16,7 +16,7 @@ import { usePricingRules } from '@/hooks/usePricingRules';
 import { CreatePricingEngineRuleDialog } from './CreatePricingEngineRuleDialog';
 import { PricingSimulator } from './PricingSimulator';
 import { formatDistanceToNow } from 'date-fns';
-import { fr } from 'date-fns/locale';
+import { useDateFnsLocale } from '@/hooks/useDateFnsLocale';
 import { motion } from 'framer-motion';
 
 const ruleTypeConfig: Record<string, { label: string; icon: typeof Percent; color: string }> = {
@@ -29,6 +29,7 @@ const ruleTypeConfig: Record<string, { label: string; icon: typeof Percent; colo
 export function PricingEngineDashboard() {
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const { rules, stats, isLoading, updateRule, deleteRule, applyRule, isApplying } = usePricingRules();
+  const locale = useDateFnsLocale();
 
   const statCards = [
     { title: 'Règles totales', value: stats.totalRules, icon: Layers, color: 'text-primary' },
@@ -148,7 +149,7 @@ export function PricingEngineDashboard() {
                               )}
                               {rule.last_executed_at && (
                                 <span>
-                                  Dernière exec: {formatDistanceToNow(new Date(rule.last_executed_at), { addSuffix: true, locale: fr })}
+                                  Dernière exec: {formatDistanceToNow(new Date(rule.last_executed_at), { addSuffix: true, locale })}
                                 </span>
                               )}
                             </div>
