@@ -15,8 +15,9 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/co
 import { 
   Search, TrendingUp, Globe, Star, Filter, Download, Eye, Heart, 
   Package, Truck, DollarSign, Flame, RotateCcw, Calculator,
-  ArrowUpDown, Zap, ShoppingCart, BarChart3, X
+  ArrowUpDown, Zap, ShoppingCart, BarChart3, X, Link2
 } from 'lucide-react'
+import { UrlScraper } from '@/components/sourcing/UrlScraper'
 import { useSupplierDiscovery, type DiscoveryProduct } from '@/hooks/useSupplierDiscovery'
 import { cn } from '@/lib/utils'
 
@@ -320,6 +321,23 @@ export default function ProductSourcingHub() {
           </div>
         </div>
 
+        {/* Tabs: Catalogue + URL Import */}
+        <Tabs defaultValue="catalog" className="space-y-6">
+          <TabsList>
+            <TabsTrigger value="catalog" className="gap-2">
+              <Package className="h-4 w-4" /> Catalogue
+            </TabsTrigger>
+            <TabsTrigger value="url-import" className="gap-2">
+              <Link2 className="h-4 w-4" /> Import URL
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="url-import" className="space-y-4">
+            <UrlScraper />
+          </TabsContent>
+
+          <TabsContent value="catalog" className="space-y-6">
+
         {/* Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           <Card>
@@ -519,6 +537,8 @@ export default function ProductSourcingHub() {
             )}
           </div>
         </div>
+          </TabsContent>
+        </Tabs>
       </div>
     </>
   );
