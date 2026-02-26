@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { 
-  Activity, Package, ShoppingCart, Users, AlertCircle, CheckCircle, Clock, Zap
+  Activity, Package, ShoppingCart, AlertCircle, CheckCircle, Clock, Zap
 } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
 import { useDateFnsLocale } from '@/hooks/useDateFnsLocale'
