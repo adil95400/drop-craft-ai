@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Bell, BellRing, Check, RefreshCw, Mail, Smartphone } from 'lucide-react';
 import { format } from 'date-fns';
-import { fr } from 'date-fns/locale';
+import { getDateFnsLocale } from '@/utils/dateFnsLocale';
 
 const ALERT_TYPE_LABELS: Record<string, string> = {
   '30_days': '30 jours avant',
@@ -156,9 +156,9 @@ export default function RenewalAlertsPage() {
                         Renouvellement {ALERT_TYPE_LABELS[alert.alert_type] || alert.alert_type}
                       </p>
                       <p className="text-sm text-muted-foreground">
-                        Expiration : {format(new Date(alert.subscription_end_date), 'dd MMM yyyy', { locale: fr })}
+                        Expiration : {format(new Date(alert.subscription_end_date), 'dd MMM yyyy', { locale: getDateFnsLocale() })}
                         {' · '}
-                        Envoyé le {format(new Date(alert.sent_at), 'dd MMM yyyy HH:mm', { locale: fr })}
+                        Envoyé le {format(new Date(alert.sent_at), 'dd MMM yyyy HH:mm', { locale: getDateFnsLocale() })}
                       </p>
                     </div>
                   </div>

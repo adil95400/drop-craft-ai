@@ -7,7 +7,7 @@ import { BTSImportUploader } from '@/components/suppliers/BTSImportUploader';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
-import { fr } from 'date-fns/locale';
+import { getDateFnsLocale } from '@/utils/dateFnsLocale';
 
 interface ImportJob {
   id: string;
@@ -129,7 +129,7 @@ export default function BTSImportPage() {
                 <div>
                   <p className="text-2xl font-bold">
                     {recentJobs?.[0]?.created_at 
-                      ? format(new Date(recentJobs[0].created_at), 'dd MMM', { locale: fr })
+                      ? format(new Date(recentJobs[0].created_at), 'dd MMM', { locale: getDateFnsLocale() })
                       : '-'
                     }
                   </p>
@@ -169,7 +169,7 @@ export default function BTSImportPage() {
                           {job.processed_products || 0} / {job.total_products || 0} produits
                         </p>
                         <p className="text-xs text-muted-foreground">
-                          {format(new Date(job.created_at), 'dd/MM/yyyy HH:mm', { locale: fr })}
+                          {format(new Date(job.created_at), 'dd/MM/yyyy HH:mm', { locale: getDateFnsLocale() })}
                         </p>
                       </div>
                     </div>

@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Trash2, TrendingUp, TrendingDown } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
-import { fr } from 'date-fns/locale';
+import { getDateFnsLocale } from '@/utils/dateFnsLocale';
 
 export function ProfitHistory() {
   const { calculations, isLoadingCalculations, deleteCalculation } = useProfitCalculator();
@@ -39,7 +39,7 @@ export function ProfitHistory() {
               <p className="text-sm text-muted-foreground">
                 {formatDistanceToNow(new Date(calc.created_at), {
                   addSuffix: true,
-                  locale: fr
+                  locale: getDateFnsLocale()
                 })}
               </p>
             </div>
