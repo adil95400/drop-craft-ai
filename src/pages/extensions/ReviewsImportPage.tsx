@@ -22,7 +22,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
-import { fr } from 'date-fns/locale';
+import { getDateFnsLocale } from '@/utils/dateFnsLocale';
 import { AdvancedReviewsImportModal } from '@/components/import/reviews/AdvancedReviewsImportModal';
 import { ProductReviewsList } from '@/components/import/reviews/ProductReviewsList';
 import {
@@ -418,7 +418,7 @@ export default function ReviewsImportPage() {
                         
                         {review.review_date && (
                           <p className="text-xs text-muted-foreground mt-2">
-                            {format(new Date(review.review_date), 'd MMMM yyyy', { locale: fr })}
+                            {format(new Date(review.review_date), 'd MMMM yyyy', { locale: getDateFnsLocale() })}
                           </p>
                         )}
                       </div>

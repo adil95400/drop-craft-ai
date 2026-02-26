@@ -8,7 +8,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Zap, List, Activity, Plus, Play, Pause, Trash2, RefreshCw, CheckCircle2, XCircle, Clock, FlaskConical, LayoutTemplate, GitBranch, BarChart3, Terminal, Calendar } from 'lucide-react';
 import { useAutomationWorkflows, useAutomationStats } from '@/hooks/useAutomationRealData';
 import { formatDistanceToNow } from 'date-fns';
-import { fr } from 'date-fns/locale';
+import { getDateFnsLocale } from '@/utils/dateFnsLocale';
 import { cn } from '@/lib/utils';
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
 import { AdvancedFeatureGuide } from '@/components/guide';
@@ -279,7 +279,7 @@ export default function AutomationPage() {
                         <div>Exécuté {workflow.execution_count} fois</div>
                         {workflow.last_run_at && (
                           <div className="ml-auto text-xs">
-                            Dernière exécution: {formatDistanceToNow(new Date(workflow.last_run_at), { addSuffix: true, locale: fr })}
+                            Dernière exécution: {formatDistanceToNow(new Date(workflow.last_run_at), { addSuffix: true, locale: getDateFnsLocale() })}
                           </div>
                         )}
                       </div>

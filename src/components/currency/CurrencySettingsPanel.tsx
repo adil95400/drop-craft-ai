@@ -20,7 +20,7 @@ import {
 import { RefreshCw, DollarSign, TrendingUp, Settings2 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { formatDistanceToNow } from 'date-fns';
-import { fr } from 'date-fns/locale';
+import { getDateFnsLocale } from '@/utils/dateFnsLocale';
 
 export function CurrencySettingsPanel() {
   const { data: settings, isLoading } = useCurrencySettings();
@@ -180,7 +180,7 @@ export function CurrencySettingsPanel() {
               Base: {settings?.default_currency || 'EUR'}
               {ratesData?.fetchedAt && (
                 <span className="ml-2">
-                  • Mis à jour {formatDistanceToNow(new Date(ratesData.fetchedAt), { addSuffix: true, locale: fr })}
+                  • Mis à jour {formatDistanceToNow(new Date(ratesData.fetchedAt), { addSuffix: true, locale: getDateFnsLocale() })}
                 </span>
               )}
             </CardDescription>

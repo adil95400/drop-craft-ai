@@ -49,7 +49,7 @@ import {
   Clock
 } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
-import { fr } from 'date-fns/locale'
+import { getDateFnsLocale } from '@/utils/dateFnsLocale'
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper'
 import { motion, AnimatePresence } from 'framer-motion'
 import { cn } from '@/lib/utils'
@@ -448,7 +448,7 @@ export default function CustomersPage() {
                                 {(customer.total_spent || 0).toFixed(2)} €
                               </TableCell>
                               <TableCell className="text-muted-foreground text-sm">
-                                {formatDistanceToNow(new Date(customer.created_at), { addSuffix: true, locale: fr })}
+                                {formatDistanceToNow(new Date(customer.created_at), { addSuffix: true, locale: getDateFnsLocale() })}
                               </TableCell>
                               <TableCell className="text-right">
                                 <DropdownMenu>

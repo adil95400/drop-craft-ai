@@ -24,7 +24,7 @@ import {
   MapPin
 } from 'lucide-react';
 import { format } from 'date-fns';
-import { fr } from 'date-fns/locale';
+import { getDateFnsLocale } from '@/utils/dateFnsLocale';
 import { toast } from 'sonner';
 
 export function TrackingDashboardContent() {
@@ -202,7 +202,7 @@ export function TrackingDashboardContent() {
                 <div>
                   <p className="text-sm text-muted-foreground">Livraison estimée</p>
                   <p className="font-medium mt-1">
-                    {format(new Date(selectedTracking.estimatedDelivery), 'PPP', { locale: fr })}
+                    {format(new Date(selectedTracking.estimatedDelivery), 'PPP', { locale: getDateFnsLocale() })}
                   </p>
                 </div>
               )}

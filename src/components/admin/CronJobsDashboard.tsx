@@ -27,7 +27,7 @@ import {
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { format, formatDistanceToNow } from 'date-fns';
-import { fr } from 'date-fns/locale';
+import { getDateFnsLocale } from '@/utils/dateFnsLocale';
 
 interface CronJob {
   id: string;
@@ -303,7 +303,7 @@ export function CronJobsDashboard() {
                       <Calendar className="h-3 w-3 inline mr-1" />
                       Dernière exécution: {formatDistanceToNow(new Date(job.lastRun), { 
                         addSuffix: true, 
-                        locale: fr 
+                        locale: getDateFnsLocale() 
                       })}
                     </div>
                   )}
@@ -363,7 +363,7 @@ export function CronJobsDashboard() {
                         <div>
                           <p className="font-medium text-sm">{log.endpoint}</p>
                           <p className="text-xs text-muted-foreground">
-                            {format(new Date(log.created_at), 'dd MMM yyyy HH:mm:ss', { locale: fr })}
+                            {format(new Date(log.created_at), 'dd MMM yyyy HH:mm:ss', { locale: getDateFnsLocale() })}
                           </p>
                         </div>
                       </div>
