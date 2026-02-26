@@ -78,7 +78,7 @@ const FooterNavigation = () => {
   ];
 
   return (
-    <footer className="bg-background border-t">
+    <footer className="bg-background border-t" role="contentinfo" aria-label={t('footer.siteFooter', 'Pied de page du site')}>
       <div className="container mx-auto px-4 py-12">
         {/* Main Footer Content */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-8">
@@ -87,7 +87,7 @@ const FooterNavigation = () => {
             <Link to="/" className="inline-block">
               <img 
                 src={logoFull} 
-                alt="ShopOpti" 
+                alt="ShopOpti – Retour à l'accueil" 
                 className="h-14 w-auto object-contain"
                 loading="lazy"
               />
@@ -97,15 +97,15 @@ const FooterNavigation = () => {
             </p>
             <div className="space-y-2">
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <MapPin className="h-4 w-4" />
+                <MapPin className="h-4 w-4" aria-hidden="true" />
                 <span>Paris, France</span>
               </div>
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <Mail className="h-4 w-4" />
+                <Mail className="h-4 w-4" aria-hidden="true" />
                 <span>contact@shopopti.io</span>
               </div>
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <Phone className="h-4 w-4" />
+                <Phone className="h-4 w-4" aria-hidden="true" />
                 <span>+33 1 85 08 99 47</span>
               </div>
             </div>
@@ -138,16 +138,19 @@ const FooterNavigation = () => {
             <p className="text-sm text-muted-foreground mb-4">
               {t('footer.newsletterDesc')}
             </p>
-            <div className="flex gap-2">
+            <form className="flex gap-2" onSubmit={(e) => e.preventDefault()} role="search" aria-label={t('footer.newsletterSubscription', 'Inscription newsletter')}>
+              <label htmlFor="footer-newsletter-email" className="sr-only">{t('footer.yourEmail')}</label>
               <input
+                id="footer-newsletter-email"
                 type="email"
                 placeholder={t('footer.yourEmail')}
                 className="flex-1 px-3 py-2 text-sm border rounded-md bg-background"
+                autoComplete="email"
               />
               <Button size="sm" aria-label={t('footer.subscribe')}>
                 <ArrowRight className="h-4 w-4" />
               </Button>
-            </div>
+            </form>
           </div>
         </div>
 
@@ -159,7 +162,7 @@ const FooterNavigation = () => {
           </div>
 
           {/* Social Links */}
-          <div className="flex space-x-4">
+          <nav className="flex space-x-4" aria-label={t('footer.socialLinks', 'Réseaux sociaux')}>
             {socialLinks.map((social) => {
               const IconComponent = social.icon;
               return (
@@ -171,11 +174,11 @@ const FooterNavigation = () => {
                   className="text-muted-foreground hover:text-foreground transition-colors"
                   aria-label={social.label}
                 >
-                  <IconComponent className="h-4 w-4" />
+                  <IconComponent className="h-4 w-4" aria-hidden="true" />
                 </a>
               );
             })}
-          </div>
+          </nav>
 
           {/* Language/Region Selector */}
           <div className="flex items-center space-x-2 text-sm text-muted-foreground">
