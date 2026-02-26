@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { RefreshCw, Clock, CheckCircle2, XCircle, AlertCircle, Loader2 } from 'lucide-react'
 import { usePlatformManagement } from '@/hooks/usePlatformManagement'
 import { format } from 'date-fns'
-import { fr } from 'date-fns/locale'
+import { getDateFnsLocale } from '@/utils/dateFnsLocale'
 
 export function SyncConfigManager() {
   const { syncConfigs, syncLogs, loading, platforms, updateSyncConfig, runSync } = usePlatformManagement()
@@ -79,7 +79,7 @@ export function SyncConfigManager() {
                     <CardTitle className="capitalize">{platform}</CardTitle>
                     <CardDescription>
                       {config?.last_sync_at
-                        ? `Dernière sync: ${format(new Date(config.last_sync_at), 'Pp', { locale: fr })}`
+                        ? `Dernière sync: ${format(new Date(config.last_sync_at), 'Pp', { locale: getDateFnsLocale() })}`
                         : 'Jamais synchronisé'}
                     </CardDescription>
                   </div>
@@ -171,7 +171,7 @@ export function SyncConfigManager() {
                   <div>
                     <p className="font-medium capitalize">{log.platform} - {log.sync_type}</p>
                     <p className="text-sm text-muted-foreground">
-                      {format(new Date(log.started_at), 'Pp', { locale: fr })}
+                      {format(new Date(log.started_at), 'Pp', { locale: getDateFnsLocale() })}
                     </p>
                   </div>
                 </div>

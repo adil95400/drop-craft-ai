@@ -23,7 +23,7 @@ import {
 } from 'lucide-react'
 import type { FeedRule } from '@/lib/rules/ruleTypes'
 import { formatDistanceToNow } from 'date-fns'
-import { fr } from 'date-fns/locale'
+import { getDateFnsLocale } from '@/utils/dateFnsLocale'
 
 interface RulesListProps {
   rules: FeedRule[]
@@ -114,7 +114,7 @@ export function RulesList({
                     <span>
                       {formatDistanceToNow(new Date(rule.lastAppliedAt), { 
                         addSuffix: true,
-                        locale: fr 
+                        locale: getDateFnsLocale() 
                       })}
                     </span>
                   </div>

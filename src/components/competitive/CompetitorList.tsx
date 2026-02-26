@@ -4,7 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { useCompetitiveAnalysis } from '@/hooks/useCompetitiveAnalysis';
 import { Trash2, ExternalLink, TrendingUp, TrendingDown, Minus } from 'lucide-react';
 import { format } from 'date-fns';
-import { fr } from 'date-fns/locale';
+import { getDateFnsLocale } from '@/utils/dateFnsLocale';
 
 export function CompetitorList() {
   const { analyses, isLoading, deleteAnalysis } = useCompetitiveAnalysis();
@@ -59,7 +59,7 @@ export function CompetitorList() {
                 </CardTitle>
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
                   <span>
-                    Analysé le {format(new Date(analysis.created_at), 'PPp', { locale: fr })}
+                    Analysé le {format(new Date(analysis.created_at), 'PPp', { locale: getDateFnsLocale() })}
                   </span>
                 </div>
               </div>

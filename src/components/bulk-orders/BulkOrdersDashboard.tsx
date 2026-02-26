@@ -31,7 +31,7 @@ import { CreateBulkOrderDialog } from './CreateBulkOrderDialog';
 import { BulkOrderDetailModal } from './BulkOrderDetailModal';
 import { Skeleton } from '@/components/ui/skeleton';
 import { formatDistanceToNow } from 'date-fns';
-import { fr } from 'date-fns/locale';
+import { getDateFnsLocale } from '@/utils/dateFnsLocale';
 
 const STATUS_CONFIG = {
   draft: { label: 'Brouillon', color: 'bg-gray-500', icon: FileText },

@@ -18,7 +18,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { formatDistanceToNow } from 'date-fns';
-import { fr } from 'date-fns/locale';
+import { getDateFnsLocale } from '@/utils/dateFnsLocale';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 
@@ -316,7 +316,7 @@ export function ExtensionBidirectionalSync() {
               <div>
                 <p className="text-sm font-medium">
                   {syncStats?.lastSync 
-                    ? formatDistanceToNow(new Date(syncStats.lastSync), { addSuffix: true, locale: fr })
+                    ? formatDistanceToNow(new Date(syncStats.lastSync), { addSuffix: true, locale: getDateFnsLocale() })
                     : 'Jamais'
                   }
                 </p>
@@ -390,7 +390,7 @@ export function ExtensionBidirectionalSync() {
                         </Badge>
                       </div>
                       <p className="text-xs text-muted-foreground">
-                        {formatDistanceToNow(new Date(event.createdAt), { addSuffix: true, locale: fr })}
+                        {formatDistanceToNow(new Date(event.createdAt), { addSuffix: true, locale: getDateFnsLocale() })}
                       </p>
                     </div>
                     {getStatusBadge(event.status)}

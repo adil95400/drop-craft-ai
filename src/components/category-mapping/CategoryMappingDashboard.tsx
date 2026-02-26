@@ -33,7 +33,7 @@ import { MappingRulesEditor } from './MappingRulesEditor';
 import { CategoryMappingAIPanel } from './CategoryMappingAIPanel';
 import { CategoryMapping } from '@/services/CategoryMappingService';
 import { formatDistanceToNow } from 'date-fns';
-import { fr } from 'date-fns/locale';
+import { getDateFnsLocale } from '@/utils/dateFnsLocale';
 
 const destinationLabels: Record<string, string> = {
   google: 'Google Shopping',
@@ -213,7 +213,7 @@ export function CategoryMappingDashboard() {
                         <span>{mapping.products_mapped} produits</span>
                         {mapping.last_applied_at && (
                           <span>
-                            Appliqué: {formatDistanceToNow(new Date(mapping.last_applied_at), { addSuffix: true, locale: fr })}
+                            Appliqué: {formatDistanceToNow(new Date(mapping.last_applied_at), { addSuffix: true, locale: getDateFnsLocale() })}
                           </span>
                         )}
                         {mapping.auto_map_enabled && (

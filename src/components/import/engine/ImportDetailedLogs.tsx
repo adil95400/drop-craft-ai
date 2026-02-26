@@ -17,7 +17,7 @@ import {
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { formatDistanceToNow } from 'date-fns'
-import { fr } from 'date-fns/locale'
+import { getDateFnsLocale } from '@/utils/dateFnsLocale'
 import { toast } from 'sonner'
 
 interface LogEntry {
@@ -404,7 +404,7 @@ export function ImportDetailedLogs({ imports, onRetryItem, className }: ImportDe
 
                       <p className="text-[10px] text-muted-foreground flex items-center gap-2">
                         <Clock className="w-2.5 h-2.5" />
-                        {formatDistanceToNow(new Date(log.timestamp), { addSuffix: true, locale: fr })}
+                        {formatDistanceToNow(new Date(log.timestamp), { addSuffix: true, locale: getDateFnsLocale() })}
                         {(log.details || log.productName) && (
                           <span className="opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1">
                             {isExpanded ? <ChevronUp className="w-2.5 h-2.5" /> : <ChevronDown className="w-2.5 h-2.5" />}

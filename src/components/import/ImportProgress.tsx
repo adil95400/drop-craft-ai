@@ -4,7 +4,7 @@ import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { RefreshCw, AlertCircle, CheckCircle } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
-import { fr } from 'date-fns/locale';
+import { getDateFnsLocale } from '@/utils/dateFnsLocale';
 
 export interface ImportJobStatus {
   id: string;
@@ -58,7 +58,7 @@ export function ImportProgress({ job, onRetry }: ImportProgressProps) {
               <p className="text-sm text-muted-foreground">
                 {formatDistanceToNow(new Date(job.created_at), {
                   addSuffix: true,
-                  locale: fr,
+                  locale: getDateFnsLocale(),
                 })}
               </p>
             </div>

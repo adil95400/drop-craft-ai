@@ -49,7 +49,7 @@ import {
 } from 'lucide-react';
 import { Return, useReturns } from '@/hooks/useReturns';
 import { format, formatDistanceToNow } from 'date-fns';
-import { fr } from 'date-fns/locale';
+import { getDateFnsLocale } from '@/utils/dateFnsLocale';
 
 // Timeline step component
 interface TimelineStepProps {
@@ -90,7 +90,7 @@ function TimelineStep({ icon, title, description, date, isCompleted, isActive, i
           <h4 className={`font-medium ${isActive ? 'text-primary' : ''}`}>{title}</h4>
           {date && (
             <span className="text-sm text-muted-foreground">
-              {format(new Date(date), 'dd/MM/yyyy HH:mm', { locale: fr })}
+              {format(new Date(date), 'dd/MM/yyyy HH:mm', { locale: getDateFnsLocale() })}
             </span>
           )}
         </div>
@@ -399,7 +399,7 @@ export function EnhancedReturnFlow({ returnItem, onClose }: EnhancedReturnFlowPr
               </Badge>
             </div>
             <p className="text-muted-foreground">
-              Créé {formatDistanceToNow(new Date(returnItem.created_at), { addSuffix: true, locale: fr })}
+              Créé {formatDistanceToNow(new Date(returnItem.created_at), { addSuffix: true, locale: getDateFnsLocale() })}
             </p>
           </div>
         </div>

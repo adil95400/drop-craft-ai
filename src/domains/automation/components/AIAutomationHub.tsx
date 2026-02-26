@@ -15,7 +15,7 @@ import {
 import { useAutomation } from '@/hooks/useAutomation'
 import { useRealAutomation } from '@/hooks/useRealAutomation'
 import { formatDistanceToNow } from 'date-fns'
-import { fr } from 'date-fns/locale'
+import { getDateFnsLocale } from '@/utils/dateFnsLocale'
 
 export const AIAutomationHub: React.FC = () => {
   const [selectedTab, setSelectedTab] = useState('workflows')
@@ -102,7 +102,7 @@ export const AIAutomationHub: React.FC = () => {
                           </div>
                           <div>{wf.steps?.length || 0} étapes</div>
                           {wf.last_executed_at && (
-                            <div>Dernière: {formatDistanceToNow(new Date(wf.last_executed_at), { addSuffix: true, locale: fr })}</div>
+                            <div>Dernière: {formatDistanceToNow(new Date(wf.last_executed_at), { addSuffix: true, locale: getDateFnsLocale() })}</div>
                           )}
                         </div>
                       </div>
@@ -154,7 +154,7 @@ export const AIAutomationHub: React.FC = () => {
                           </div>
                           {exec.created_at && (
                             <div className="text-xs text-muted-foreground">
-                              {formatDistanceToNow(new Date(exec.created_at), { addSuffix: true, locale: fr })}
+                              {formatDistanceToNow(new Date(exec.created_at), { addSuffix: true, locale: getDateFnsLocale() })}
                             </div>
                           )}
                         </div>

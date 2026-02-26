@@ -13,7 +13,7 @@ import { useQuery } from '@tanstack/react-query'
 import { supabase } from '@/integrations/supabase/client'
 import { cn } from '@/lib/utils'
 import { format } from 'date-fns'
-import { fr } from 'date-fns/locale'
+import { getDateFnsLocale } from '@/utils/dateFnsLocale'
 
 interface ChannelOrdersPanelProps {
   channelId: string
@@ -155,7 +155,7 @@ export function ChannelOrdersPanel({ channelId, onRefresh }: ChannelOrdersPanelP
                   <div className="text-right shrink-0">
                     <p className="font-bold">€{(order.total_amount || 0).toFixed(2)}</p>
                     <p className="text-xs text-muted-foreground">
-                      {order.created_at && format(new Date(order.created_at), 'dd MMM HH:mm', { locale: fr })}
+                      {order.created_at && format(new Date(order.created_at), 'dd MMM HH:mm', { locale: getDateFnsLocale() })}
                     </p>
                   </div>
                   

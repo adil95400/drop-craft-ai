@@ -9,7 +9,7 @@ import { useMarketplaceIntegrations } from '@/hooks/useMarketplaceIntegrations';
 import { MarketplaceConnectDialog } from '@/domains/marketplace/components/MarketplaceConnectDialog';
 import { Skeleton } from '@/components/ui/skeleton';
 import { formatDistanceToNow } from 'date-fns';
-import { fr } from 'date-fns/locale';
+import { getDateFnsLocale } from '@/utils/dateFnsLocale';
 
 const AVAILABLE_PLATFORMS = [
   { key: 'amazon', name: 'Amazon', type: 'marketplace' },
@@ -146,7 +146,7 @@ const MultiChannelManagementPage: React.FC = () => {
                   <CardContent className="space-y-3">
                     <div className="text-sm text-muted-foreground">
                       {integration.last_sync_at ? (
-                        <>Dernière sync : {formatDistanceToNow(new Date(integration.last_sync_at), { addSuffix: true, locale: fr })}</>
+                        <>Dernière sync : {formatDistanceToNow(new Date(integration.last_sync_at), { addSuffix: true, locale: getDateFnsLocale() })}</>
                       ) : (
                         'Jamais synchronisé'
                       )}

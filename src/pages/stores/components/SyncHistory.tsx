@@ -7,7 +7,7 @@ import { ScrollArea } from '@/components/ui/scroll-area'
 import { supabase } from '@/integrations/supabase/client'
 import { RefreshCw, Clock, CheckCircle, XCircle, AlertCircle, Package, ShoppingCart, Users } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
-import { fr } from 'date-fns/locale'
+import { getDateFnsLocale } from '@/utils/dateFnsLocale'
 
 interface SyncLog {
   id: string
@@ -190,7 +190,7 @@ export function SyncHistory({ storeId }: SyncHistoryProps) {
                       <span>
                         {formatDistanceToNow(new Date(log.created_at), { 
                           addSuffix: true, 
-                          locale: fr 
+                          locale: getDateFnsLocale() 
                         })}
                       </span>
                       {log.items_count && (

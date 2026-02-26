@@ -41,7 +41,7 @@ import {
   Loader2
 } from 'lucide-react';
 import { format, subDays } from 'date-fns';
-import { fr } from 'date-fns/locale';
+import { getDateFnsLocale } from '@/utils/dateFnsLocale';
 
 const COLORS = [
   'hsl(var(--primary))', 
@@ -96,7 +96,7 @@ export function AdvancedSupplierAnalytics() {
         a.analytics_date?.startsWith(format(date, 'yyyy-MM-dd'))
       );
       return {
-        date: format(date, 'dd MMM', { locale: fr }),
+        date: format(date, 'dd MMM', { locale: getDateFnsLocale() }),
         revenue: dayData.reduce((sum, d) => sum + (d.revenue || d.total_revenue || 0), 0),
         orders: dayData.reduce((sum, d) => sum + (d.orders_count || d.total_orders || 0), 0),
       };

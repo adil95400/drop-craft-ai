@@ -12,7 +12,7 @@ import {
 } from 'lucide-react'
 import { ReviewsService, Review } from '@/services/reviews.service'
 import { format } from 'date-fns'
-import { fr } from 'date-fns/locale'
+import { getDateFnsLocale } from '@/utils/dateFnsLocale'
 
 interface ProductReviewsProps {
   productId: string
@@ -162,7 +162,7 @@ export function ProductReviews({ productId, reviews: initialReviews }: ProductRe
                         </div>
                         <div className="flex gap-1">{renderStars(review.rating)}</div>
                         <p className="text-sm text-muted-foreground">
-                          {format(new Date(review.created_at), 'dd MMMM yyyy', { locale: fr })}
+                          {format(new Date(review.created_at), 'dd MMMM yyyy', { locale: getDateFnsLocale() })}
                         </p>
                       </div>
                     </div>

@@ -12,7 +12,7 @@ import { PlatformConnectionStatus } from '@/components/integrations/PlatformConn
 import { WebhookManager } from '@/components/webhooks/WebhookManager'
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper'
 import { formatDistanceToNow } from 'date-fns'
-import { fr } from 'date-fns/locale'
+import { getDateFnsLocale } from '@/utils/dateFnsLocale'
 
 export default function ManageIntegrationPage() {
   const { id } = useParams<{ id: string }>()
@@ -46,7 +46,7 @@ export default function ManageIntegrationPage() {
   }
 
   const formatRelativeTime = (dateString: string) => {
-    return formatDistanceToNow(new Date(dateString), { addSuffix: true, locale: fr })
+    return formatDistanceToNow(new Date(dateString), { addSuffix: true, locale: getDateFnsLocale() })
   }
 
   const calculateSuccessRate = () => {

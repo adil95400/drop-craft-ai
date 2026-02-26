@@ -13,7 +13,7 @@ import {
 import { useStockIntelligence } from '@/hooks/useStockIntelligence';
 import { TrendingUp, TrendingDown, Minus, AlertTriangle, Calendar } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
-import { fr } from 'date-fns/locale';
+import { getDateFnsLocale } from '@/utils/dateFnsLocale';
 
 export function StockPredictionsDashboard() {
   const { predictions, isLoadingPredictions, generatePredictions, isGeneratingPredictions } = useStockIntelligence();
@@ -136,7 +136,7 @@ export function StockPredictionsDashboard() {
                           <span className="text-xs text-muted-foreground">
                             {formatDistanceToNow(
                               new Date(prediction.predicted_stockout_date),
-                              { addSuffix: true, locale: fr }
+                              { addSuffix: true, locale: getDateFnsLocale() }
                             )}
                           </span>
                         )}

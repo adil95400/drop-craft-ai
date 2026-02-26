@@ -16,7 +16,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { formatDistanceToNow, format } from 'date-fns';
-import { fr } from 'date-fns/locale';
+import { getDateFnsLocale } from '@/utils/dateFnsLocale';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import {
@@ -269,7 +269,7 @@ export function ImportRollbackManager() {
                       </div>
                       <div className="flex items-center gap-1 text-xs text-muted-foreground mt-1">
                         <Clock className="h-3 w-3" />
-                        {formatDistanceToNow(new Date(job.createdAt), { addSuffix: true, locale: fr })}
+                        {formatDistanceToNow(new Date(job.createdAt), { addSuffix: true, locale: getDateFnsLocale() })}
                       </div>
                     </div>
 
@@ -279,7 +279,7 @@ export function ImportRollbackManager() {
                         <div className="space-y-2">
                           <Badge variant="outline" className="bg-orange-500/10 text-orange-600 border-orange-500/20">
                             <Clock className="h-3 w-3 mr-1" />
-                            Expire {formatDistanceToNow(new Date(job.rollbackDeadline), { addSuffix: true, locale: fr })}
+                            Expire {formatDistanceToNow(new Date(job.rollbackDeadline), { addSuffix: true, locale: getDateFnsLocale() })}
                           </Badge>
                           <div>
                             <Button 
@@ -336,7 +336,7 @@ export function ImportRollbackManager() {
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">Date</span>
                   <span className="font-medium">
-                    {format(new Date(selectedJob.createdAt), 'dd/MM/yyyy HH:mm', { locale: fr })}
+                    {format(new Date(selectedJob.createdAt), 'dd/MM/yyyy HH:mm', { locale: getDateFnsLocale() })}
                   </span>
                 </div>
                 <div className="flex justify-between text-sm">
