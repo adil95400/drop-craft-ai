@@ -69,6 +69,30 @@ export function useAutomaticAlerts() {
     refetchInterval: 60_000,
   });
 
+  // Send Slack notification (fire-and-forget)
+  const notifySlack = useCallback(async (alert: {
+    title: string;
+    message: string;
+    severity: string;
+    alert_type: string;
+    metadata?: Record<string, any>;
+  }) => {
+    try {
+      await supabase.functions.invoke('slack-alert-notification', {
+        body: {
+          alert_type: alert.alert_type,
+          title: alert.title,
+          message: alert.message,
+          severity: alert.severity,
+          metadata: alert.metadata,
+        },
+      });
+    } catch (err) {
+      // Non-blocking: log but don't fail the alert creation
+      console.warn('Slack notification failed (non-blocking):', err);
+    }
+  }, []);
+
   // Create alert
   const createAlert = useMutation({
     mutationFn: async (alert: {
@@ -103,6 +127,9 @@ export function useAutomaticAlerts() {
         metadata: alert.metadata || {},
       });
       if (error) throw error;
+
+      // Send Slack notification for new alerts
+      notifySlack(alert);
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['active-alerts'] }),
   });
