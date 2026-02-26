@@ -19,10 +19,10 @@ export interface SupplierResult {
   productUrl: string
   imageUrl: string
   variants?: number
-  moq?: number // Minimum Order Quantity
+  moq?: number
   totalCost: number
   margin?: number
-  score: number // Calculated score for ranking
+  score: number
 }
 
 export interface SearchFilters {
@@ -53,54 +53,106 @@ const SUPPORTED_PLATFORMS = [
   { id: 'rakuten', name: 'Rakuten', icon: '🔴', searchable: true },
 ]
 
-// Simulated search results for demo (in production, this calls real APIs)
-const simulateSearch = async (query: string, platform: typeof SUPPORTED_PLATFORMS[0]): Promise<SupplierResult | null> => {
-  // Simulate API delay
-  await new Promise(resolve => setTimeout(resolve, 300 + Math.random() * 700))
-  
-  // Random chance of no result
-  if (Math.random() < 0.15) return null
-  
-  const basePrice = 5 + Math.random() * 50
-  const shipping = Math.random() < 0.3 ? 0 : 2 + Math.random() * 10
-  const rating = 3.5 + Math.random() * 1.5
-  const reviews = Math.floor(100 + Math.random() * 10000)
-  
-  const availabilityOptions: SupplierResult['availability'][] = ['in_stock', 'in_stock', 'in_stock', 'low_stock', 'out_of_stock']
-  const shippingTimes = ['3-7 days', '7-15 days', '15-30 days', '1-3 days', '5-10 days']
-  
-  const totalCost = basePrice + shipping
+// Extract price from text using regex
+function extractPrice(text: string): number | null {
+  // Match patterns like $12.99, €15,50, 12.99$, 15,50€, US $12.99
+  const patterns = [
+    /(?:US\s*)?\$\s*([\d,]+\.?\d*)/i,
+    /€\s*([\d,]+\.?\d*)/i,
+    /([\d,]+\.?\d*)\s*(?:\$|€|USD|EUR)/i,
+    /(?:price|prix)[:\s]*([\d,]+\.?\d*)/i,
+  ]
+  for (const pattern of patterns) {
+    const match = text.match(pattern)
+    if (match) {
+      return parseFloat(match[1].replace(',', '.'))
+    }
+  }
+  return null
+}
+
+// Extract rating from text
+function extractRating(text: string): number {
+  const match = text.match(/([\d.]+)\s*(?:\/\s*5|out of 5|stars?|étoiles?|⭐)/i)
+  if (match) {
+    const val = parseFloat(match[1])
+    if (val > 0 && val <= 5) return val
+  }
+  return 4.0
+}
+
+// Extract review count
+function extractReviews(text: string): number {
+  const match = text.match(/([\d,]+)\s*(?:reviews?|avis|évaluations?|ratings?|commentaires?)/i)
+  if (match) return parseInt(match[1].replace(/,/g, ''))
+  return 0
+}
+
+// Detect platform from URL
+function detectPlatform(url: string): { name: string; icon: string } | null {
+  const urlLower = url.toLowerCase()
+  for (const p of SUPPORTED_PLATFORMS) {
+    if (urlLower.includes(p.id) || urlLower.includes(p.name.toLowerCase())) {
+      return { name: p.name, icon: p.icon }
+    }
+  }
+  return null
+}
+
+// Extract image from metadata or markdown
+function extractImage(item: any): string {
+  if (item.metadata?.ogImage) return item.metadata.ogImage
+  if (item.metadata?.image) return item.metadata.image
+  // Try to find image in markdown
+  const imgMatch = item.markdown?.match(/!\[.*?\]\((https?:\/\/[^\s)]+)\)/)
+  if (imgMatch) return imgMatch[1]
+  return ''
+}
+
+function parseFirecrawlResult(item: any, query: string): SupplierResult | null {
+  const url = item.url || ''
+  const title = item.title || item.metadata?.title || query
+  const description = item.description || item.metadata?.description || ''
+  const markdown = item.markdown || ''
+  const fullText = `${title} ${description} ${markdown}`
+
+  const platform = detectPlatform(url)
+  if (!platform) return null // Skip non-marketplace results
+
+  const price = extractPrice(fullText)
+  if (!price || price <= 0) return null // Skip results without a price
+
+  const rating = extractRating(fullText)
+  const reviews = extractReviews(fullText)
+  const imageUrl = extractImage(item)
+  const shipping = 0
+  const totalCost = price + shipping
   const suggestedPrice = totalCost * 2.5
   const margin = ((suggestedPrice - totalCost) / suggestedPrice) * 100
-  
-  // Calculate score based on price, rating, shipping
-  const priceScore = Math.max(0, 100 - basePrice * 2)
+
+  // Score: rating + reviews + price competitiveness
   const ratingScore = rating * 20
-  const shippingScore = shipping === 0 ? 30 : Math.max(0, 30 - shipping * 2)
   const reviewScore = Math.min(20, reviews / 500)
-  const score = (priceScore + ratingScore + shippingScore + reviewScore) / 4
-  
+  const priceScore = Math.max(0, 100 - price * 2)
+  const score = (ratingScore + reviewScore + priceScore) / 3
+
   return {
     platform: platform.name,
     platformIcon: platform.icon,
-    productTitle: `${query} - ${platform.name} Version`,
-    price: parseFloat(basePrice.toFixed(2)),
-    originalPrice: Math.random() > 0.5 ? parseFloat((basePrice * 1.3).toFixed(2)) : undefined,
-    currency: platform.id === 'cdiscount' || platform.id === 'fnac' ? 'EUR' : 'USD',
-    shipping: parseFloat(shipping.toFixed(2)),
-    shippingTime: shippingTimes[Math.floor(Math.random() * shippingTimes.length)],
-    availability: availabilityOptions[Math.floor(Math.random() * availabilityOptions.length)],
+    productTitle: title.slice(0, 120),
+    price: parseFloat(price.toFixed(2)),
+    currency: url.includes('cdiscount') || url.includes('fnac') ? 'EUR' : 'USD',
+    shipping,
+    shippingTime: 'Voir sur le site',
+    availability: 'in_stock',
     rating: parseFloat(rating.toFixed(1)),
     reviews,
-    seller: `${platform.name} Seller ${Math.floor(Math.random() * 1000)}`,
-    sellerRating: parseFloat((85 + Math.random() * 15).toFixed(1)),
-    productUrl: `https://${platform.id}.com/product/${Date.now()}`,
-    imageUrl: `https://picsum.photos/seed/${platform.id}${Date.now()}/200/200`,
-    variants: Math.floor(1 + Math.random() * 10),
-    moq: platform.id === '1688' ? Math.floor(10 + Math.random() * 90) : 1,
+    seller: platform.name,
+    productUrl: url,
+    imageUrl,
     totalCost: parseFloat(totalCost.toFixed(2)),
     margin: parseFloat(margin.toFixed(1)),
-    score: parseFloat(score.toFixed(1))
+    score: parseFloat(score.toFixed(1)),
   }
 }
 
@@ -113,7 +165,7 @@ export function useSearchAllSuppliers() {
   const { toast } = useToast()
 
   const searchAllPlatforms = useCallback(async (
-    query: string, 
+    query: string,
     filters?: SearchFilters
   ) => {
     if (!query.trim()) {
@@ -131,30 +183,65 @@ export function useSearchAllSuppliers() {
     setPlatformsSearched([])
     setError(null)
 
-    const platformsToSearch = filters?.platforms?.length 
+    // Build platform-specific search queries
+    const platformsToSearch = filters?.platforms?.length
       ? SUPPORTED_PLATFORMS.filter(p => filters.platforms?.includes(p.id))
       : SUPPORTED_PLATFORMS.filter(p => p.searchable)
 
     const allResults: SupplierResult[] = []
 
     try {
-      // Search platforms in parallel batches for performance
-      const batchSize = 5
+      // Search in batches of platforms using Firecrawl web search
+      const batchSize = 4
       for (let i = 0; i < platformsToSearch.length; i += batchSize) {
         const batch = platformsToSearch.slice(i, i + batchSize)
-        
-        const batchResults = await Promise.all(
-          batch.map(async (platform) => {
-            const result = await simulateSearch(query, platform)
-            setPlatformsSearched(prev => [...prev, platform.name])
-            return result
-          })
-        )
 
-        const validResults = batchResults.filter((r): r is SupplierResult => r !== null)
-        
+        const batchPromises = batch.map(async (platform) => {
+          try {
+            const searchQuery = `${query} site:${platform.id === '1688' ? '1688.com' : platform.id === 'cj' ? 'cjdropshipping.com' : `${platform.id}.com`}`
+
+            const { data, error: fnError } = await supabase.functions.invoke('firecrawl-search', {
+              body: {
+                query: searchQuery,
+                options: {
+                  limit: 5,
+                  lang: 'fr',
+                  country: 'fr',
+                  scrapeOptions: { formats: ['markdown'] },
+                },
+              },
+            })
+
+            setPlatformsSearched(prev => [...prev, platform.name])
+
+            if (fnError || !data?.success) {
+              console.warn(`Search failed for ${platform.name}:`, fnError || data?.error)
+              return []
+            }
+
+            const items = data?.data || []
+            const parsed = items
+              .map((item: any) => parseFirecrawlResult(item, query))
+              .filter((r: SupplierResult | null): r is SupplierResult => r !== null)
+
+            // Force correct platform if detection was wrong
+            return parsed.map((r: SupplierResult) => ({
+              ...r,
+              platform: platform.name,
+              platformIcon: platform.icon,
+            }))
+          } catch (err) {
+            console.warn(`Error searching ${platform.name}:`, err)
+            setPlatformsSearched(prev => [...prev, platform.name])
+            return []
+          }
+        })
+
+        const batchResults = await Promise.all(batchPromises)
+        const flatResults = batchResults.flat()
+
         // Apply filters
-        const filteredResults = validResults.filter(r => {
+        const filteredResults = flatResults.filter(r => {
           if (filters?.minPrice && r.price < filters.minPrice) return false
           if (filters?.maxPrice && r.price > filters.maxPrice) return false
           if (filters?.maxShipping && r.shipping > filters.maxShipping) return false
@@ -169,10 +256,10 @@ export function useSearchAllSuppliers() {
       }
 
       setSearchProgress(100)
-      
+
       toast({
         title: "Recherche terminée",
-        description: `${allResults.length} résultats trouvés sur ${platformsToSearch.length} plateformes`
+        description: `${allResults.length} résultats réels trouvés sur ${platformsToSearch.length} plateformes`
       })
 
     } catch (err) {
