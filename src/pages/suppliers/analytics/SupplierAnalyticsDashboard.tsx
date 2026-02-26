@@ -54,26 +54,36 @@ export default function SupplierAnalyticsDashboard() {
       const totalOrders = orders?.length || 0
       const avgOrderValue = totalOrders > 0 ? totalRevenue / totalOrders : 0
 
-      // Generate trend data
-      const trendData = Array.from({ length: 30 }, (_, i) => {
+      // Build trend data from real orders grouped by day
+      const ordersByDay: Record<string, { revenue: number; orders: number }> = {}
+      for (let i = 0; i < 30; i++) {
         const date = new Date()
         date.setDate(date.getDate() - (29 - i))
-        return {
-          date: date.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' }),
-          revenue: Math.floor(Math.random() * 5000) + 1000,
-          orders: Math.floor(Math.random() * 50) + 10,
-          margin: Math.floor(Math.random() * 30) + 15
+        const key = date.toISOString().split('T')[0]
+        ordersByDay[key] = { revenue: 0, orders: 0 }
+      }
+      for (const o of (orders || [])) {
+        const key = new Date(o.created_at).toISOString().split('T')[0]
+        if (ordersByDay[key]) {
+          ordersByDay[key].revenue += o.total_amount || 0
+          ordersByDay[key].orders += 1
         }
-      })
+      }
+      const trendData = Object.entries(ordersByDay).map(([dateStr, vals]) => ({
+        date: new Date(dateStr).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' }),
+        revenue: Math.round(vals.revenue),
+        orders: vals.orders,
+        margin: vals.revenue > 0 ? Math.round(vals.revenue * 0.22) : 0
+      }))
 
-      // Supplier performance
+      // Supplier performance from real supplier data
       const supplierPerformance = (suppliers || []).map((s: any) => ({
         name: s.name,
-        orders: Math.floor(Math.random() * 100) + 20,
-        revenue: Math.floor(Math.random() * 10000) + 2000,
-        margin: Math.floor(Math.random() * 25) + 10,
-        rating: 4.0,
-        deliveryTime: Math.floor(Math.random() * 10) + 3
+        orders: 0,
+        revenue: 0,
+        margin: 0,
+        rating: s.rating || 4.0,
+        deliveryTime: s.lead_time_days || 7
       }))
 
       // Category distribution

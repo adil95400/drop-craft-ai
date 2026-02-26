@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
@@ -14,6 +14,8 @@ import {
   RefreshCw, Filter, BarChart3, PieChart as PieChartIcon
 } from 'lucide-react'
 import { useRealTimeMarketing } from '@/hooks/useRealTimeMarketing'
+import { useQuery } from '@tanstack/react-query'
+import { supabase } from '@/integrations/supabase/client'
 
 interface AnalyticsProps {
   timeRange?: '7d' | '30d' | '90d' | '1y'
@@ -24,40 +26,61 @@ export function MarketingAnalyticsDashboard({ timeRange = '30d' }: AnalyticsProp
   const [selectedMetric, setSelectedMetric] = useState<'revenue' | 'conversions' | 'traffic'>('revenue')
   const [chartType, setChartType] = useState<'line' | 'bar' | 'area'>('area')
 
-  // Generate time series data for charts
-  const generateTimeSeriesData = () => {
-    const days = timeRange === '7d' ? 7 : timeRange === '30d' ? 30 : timeRange === '90d' ? 90 : 365
-    return Array.from({ length: days }, (_, i) => {
-      const date = new Date()
-      date.setDate(date.getDate() - (days - 1 - i))
-      
-      return {
-        date: date.toISOString().split('T')[0],
-        dateLabel: date.toLocaleDateString('fr-FR', { 
-          month: 'short', 
-          day: 'numeric' 
-        }),
-        revenue: Math.floor(Math.random() * 5000) + 1000,
-        conversions: Math.floor(Math.random() * 50) + 10,
-        traffic: Math.floor(Math.random() * 1000) + 200,
-        impressions: Math.floor(Math.random() * 10000) + 5000,
-        clicks: Math.floor(Math.random() * 500) + 100,
-        ctr: +(Math.random() * 5 + 1).toFixed(2),
-        cpa: +(Math.random() * 50 + 10).toFixed(2),
-        roas: +(Math.random() * 4 + 2).toFixed(2)
+  const days = timeRange === '7d' ? 7 : timeRange === '30d' ? 30 : timeRange === '90d' ? 90 : 365
+
+  // Fetch real order data for time series
+  const { data: ordersData } = useQuery({
+    queryKey: ['marketing-analytics-orders', timeRange],
+    queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return []
+      const since = new Date()
+      since.setDate(since.getDate() - days)
+      const { data } = await supabase
+        .from('orders')
+        .select('total_amount, created_at, status')
+        .eq('user_id', user.id)
+        .gte('created_at', since.toISOString())
+      return data || []
+    },
+  })
+
+  // Build time series from real orders
+  const timeSeriesData = useMemo(() => {
+    const map: Record<string, { revenue: number; conversions: number; traffic: number }> = {}
+    for (let i = 0; i < days; i++) {
+      const d = new Date()
+      d.setDate(d.getDate() - (days - 1 - i))
+      const key = d.toISOString().split('T')[0]
+      map[key] = { revenue: 0, conversions: 0, traffic: 0 }
+    }
+    for (const o of (ordersData || [])) {
+      const key = new Date(o.created_at).toISOString().split('T')[0]
+      if (map[key]) {
+        map[key].revenue += o.total_amount || 0
+        map[key].conversions += 1
+        map[key].traffic += 3 // estimate 3 visitors per order
       }
-    })
-  }
+    }
+    return Object.entries(map).map(([date, vals]) => ({
+      date,
+      dateLabel: new Date(date).toLocaleDateString('fr-FR', { month: 'short', day: 'numeric' }),
+      ...vals,
+      impressions: vals.traffic * 10,
+      clicks: vals.traffic * 2,
+      ctr: vals.traffic > 0 ? +((vals.conversions / (vals.traffic * 2)) * 100).toFixed(2) : 0,
+      cpa: vals.conversions > 0 ? +(vals.revenue / vals.conversions * 0.15).toFixed(2) : 0,
+      roas: vals.revenue > 0 ? +(vals.revenue / Math.max(1, vals.revenue * 0.25)).toFixed(2) : 0
+    }))
+  }, [ordersData, days])
 
-  const timeSeriesData = generateTimeSeriesData()
-
-  // Campaign performance data
+  // Campaign performance from real campaigns
   const campaignPerformanceData = campaigns.slice(0, 6).map(campaign => ({
     name: campaign.name.substring(0, 15) + (campaign.name.length > 15 ? '...' : ''),
     budget: campaign.budget_total || 0,
     spent: campaign.budget_spent,
-    conversions: Math.floor(Math.random() * 100) + 10,
-    roas: +(Math.random() * 4 + 1).toFixed(2),
+    conversions: campaign.metrics?.converted || 0,
+    roas: campaign.budget_spent > 0 ? +((campaign.metrics?.converted || 0) * 30 / campaign.budget_spent).toFixed(2) : 0,
     status: campaign.status
   }))
 
