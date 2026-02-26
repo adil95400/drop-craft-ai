@@ -1,67 +1,63 @@
 /**
- * Workflow Studio - Enhanced with Visual Canvas + Node Config
+ * Workflow Studio - Visual Canvas with full CRUD persistence
  */
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-import { Workflow, Plus, Save, History } from 'lucide-react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
+import { Workflow, Plus, Save, History, Edit, Trash2, Play, Pause } from 'lucide-react';
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
 import { VisualWorkflowCanvas, type WorkflowNode } from '@/components/workflows/VisualWorkflowCanvas';
 import { NodeConfigPanel } from '@/components/workflows/NodeConfigPanel';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import type { Json } from '@/integrations/supabase/types';
+import { useSavedWorkflows, type SavedWorkflow } from '@/hooks/useSavedWorkflows';
 
 export default function WorkflowStudioPage() {
   const [nodes, setNodes] = useState<WorkflowNode[]>([]);
   const [selectedNode, setSelectedNode] = useState<WorkflowNode | null>(null);
   const [workflowName, setWorkflowName] = useState('');
-  const [showCreate, setShowCreate] = useState(false);
-  const { toast } = useToast();
-  const queryClient = useQueryClient();
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [showEditor, setShowEditor] = useState(false);
+  const { workflows, isLoading, create, update, remove, isCreating, isUpdating } = useSavedWorkflows();
 
-  const { data: workflows = [], isLoading } = useQuery({
-    queryKey: ['studio-workflows'],
-    queryFn: async () => {
-      const { data } = await supabase.from('automation_workflows').select('*').order('created_at', { ascending: false }).limit(20);
-      return data || [];
-    },
-  });
+  const openNew = () => {
+    setNodes([]);
+    setSelectedNode(null);
+    setWorkflowName('');
+    setEditingId(null);
+    setShowEditor(true);
+  };
 
-  const saveMutation = useMutation({
-    mutationFn: async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('Non authentifié');
-      const { error } = await supabase.from('automation_workflows').insert({
-        name: workflowName,
-        description: `${nodes.length} étapes`,
-        steps: nodes as unknown as Json,
-        trigger_type: nodes.find(n => n.type === 'trigger')?.name || 'manual',
-        is_active: false,
-        user_id: user.id,
-      });
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      toast({ title: '✅ Workflow sauvegardé' });
-      queryClient.invalidateQueries({ queryKey: ['studio-workflows'] });
-      setShowCreate(false);
-      setNodes([]);
-      setWorkflowName('');
-      setSelectedNode(null);
-    },
-    onError: (err: any) => toast({ title: 'Erreur', description: err.message, variant: 'destructive' }),
-  });
+  const openEdit = (wf: SavedWorkflow) => {
+    setNodes(wf.nodes || []);
+    setSelectedNode(null);
+    setWorkflowName(wf.name);
+    setEditingId(wf.id);
+    setShowEditor(true);
+  };
+
+  const handleSave = async () => {
+    if (editingId) {
+      await update({ id: editingId, name: workflowName, nodes });
+    } else {
+      await create({ name: workflowName, nodes });
+    }
+    setShowEditor(false);
+  };
+
+  const toggleStatus = async (wf: SavedWorkflow) => {
+    await update({ id: wf.id, status: wf.status === 'active' ? 'paused' : 'active' });
+  };
 
   const handleNodeUpdate = (updated: WorkflowNode) => {
     setNodes(prev => prev.map(n => n.id === updated.id ? updated : n));
     setSelectedNode(updated);
   };
+
+  const statusColor = (s: string) =>
+    s === 'active' ? 'default' : s === 'paused' ? 'secondary' : 'outline';
 
   return (
     <ChannablePageWrapper
@@ -75,35 +71,47 @@ export default function WorkflowStudioPage() {
           <Button variant="outline" asChild>
             <Link to="/automation/history"><History className="h-4 w-4 mr-2" /> Historique</Link>
           </Button>
-          <Button onClick={() => setShowCreate(true)}>
+          <Button onClick={openNew}>
             <Plus className="h-4 w-4 mr-2" /> Nouveau Workflow
           </Button>
         </div>
       }
     >
-      {/* Existing workflows */}
       <div>
         <h3 className="text-lg font-semibold mb-3">📋 Vos Workflows</h3>
-        {workflows.length === 0 ? (
+        {isLoading ? (
+          <div className="text-center py-12 text-muted-foreground">Chargement...</div>
+        ) : workflows.length === 0 ? (
           <Card><CardContent className="py-12 text-center">
             <Workflow className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-            <p className="text-muted-foreground">Aucun workflow. Créez-en un pour commencer !</p>
+            <p className="text-muted-foreground mb-4">Aucun workflow. Créez-en un pour commencer !</p>
+            <Button onClick={openNew}><Plus className="h-4 w-4 mr-2" /> Créer un workflow</Button>
           </CardContent></Card>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {workflows.map(wf => (
-              <Card key={wf.id}>
+              <Card key={wf.id} className="group">
                 <CardHeader className="pb-2">
                   <div className="flex items-center justify-between">
                     <CardTitle className="text-sm">{wf.name}</CardTitle>
-                    <Badge variant={wf.is_active ? 'default' : 'secondary'}>{wf.is_active ? 'Actif' : 'Inactif'}</Badge>
+                    <Badge variant={statusColor(wf.status)}>{wf.status}</Badge>
                   </div>
-                  <CardDescription className="text-xs">{wf.description}</CardDescription>
+                  <CardDescription className="text-xs">
+                    {(wf.nodes?.length || 0)} étapes · {wf.run_count} exécutions
+                  </CardDescription>
                 </CardHeader>
                 <CardContent className="pt-0">
-                  <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                    <span>{wf.execution_count || 0} exécutions</span>
-                    <span>Trigger: {wf.trigger_type}</span>
+                  <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <Button size="sm" variant="outline" onClick={() => openEdit(wf)}>
+                      <Edit className="h-3.5 w-3.5 mr-1" /> Éditer
+                    </Button>
+                    <Button size="sm" variant="outline" onClick={() => toggleStatus(wf)}>
+                      {wf.status === 'active' ? <Pause className="h-3.5 w-3.5 mr-1" /> : <Play className="h-3.5 w-3.5 mr-1" />}
+                      {wf.status === 'active' ? 'Pause' : 'Activer'}
+                    </Button>
+                    <Button size="sm" variant="destructive" onClick={() => remove(wf.id)}>
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </Button>
                   </div>
                 </CardContent>
               </Card>
@@ -112,11 +120,10 @@ export default function WorkflowStudioPage() {
         )}
       </div>
 
-      {/* Create Dialog with Visual Canvas */}
-      <Dialog open={showCreate} onOpenChange={setShowCreate}>
+      <Dialog open={showEditor} onOpenChange={setShowEditor}>
         <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Créer un Workflow</DialogTitle>
+            <DialogTitle>{editingId ? 'Modifier le Workflow' : 'Créer un Workflow'}</DialogTitle>
           </DialogHeader>
           <Input placeholder="Nom du workflow" value={workflowName} onChange={e => setWorkflowName(e.target.value)} className="mb-4" />
           
@@ -147,9 +154,9 @@ export default function WorkflowStudioPage() {
           </div>
 
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowCreate(false)}>Annuler</Button>
-            <Button onClick={() => saveMutation.mutate()} disabled={!workflowName || nodes.length === 0 || saveMutation.isPending}>
-              <Save className="h-4 w-4 mr-2" /> Sauvegarder
+            <Button variant="outline" onClick={() => setShowEditor(false)}>Annuler</Button>
+            <Button onClick={handleSave} disabled={!workflowName || nodes.length === 0 || isCreating || isUpdating}>
+              <Save className="h-4 w-4 mr-2" /> {editingId ? 'Mettre à jour' : 'Sauvegarder'}
             </Button>
           </DialogFooter>
         </DialogContent>
