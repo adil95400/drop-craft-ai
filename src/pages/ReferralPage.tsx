@@ -8,7 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Users, Gift, Copy, Plus, ArrowRight, TrendingUp } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
-import { fr } from 'date-fns/locale';
+import { getDateFnsLocale } from '@/utils/dateFnsLocale';
 
 export default function ReferralPage() {
   const { codes, referrals, stats, isLoading, generateCode, isGenerating, applyCode, isApplying } = useReferrals();
@@ -193,7 +193,7 @@ export default function ReferralPage() {
               <TableBody>
                 {referrals.map((r) => (
                   <TableRow key={r.id}>
-                    <TableCell>{format(new Date(r.created_at), 'dd MMM yyyy', { locale: fr })}</TableCell>
+                    <TableCell>{format(new Date(r.created_at), 'dd MMM yyyy', { locale: getDateFnsLocale() })}</TableCell>
                     <TableCell>
                       <Badge variant={r.status === 'completed' || r.status === 'rewarded' ? 'default' : 'secondary'}>
                         {r.status}

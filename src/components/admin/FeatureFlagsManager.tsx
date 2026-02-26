@@ -48,7 +48,7 @@ import {
   Zap
 } from 'lucide-react';
 import { format } from 'date-fns';
-import { fr } from 'date-fns/locale';
+import { getDateFnsLocale } from '@/utils/dateFnsLocale';
 
 import type { Json } from '@/integrations/supabase/types';
 
@@ -531,7 +531,7 @@ export function FeatureFlagsManager() {
                   {auditLogs.map((log) => (
                     <TableRow key={log.id}>
                       <TableCell className="text-sm">
-                        {format(new Date(log.created_at), 'Pp', { locale: fr })}
+                        {format(new Date(log.created_at), 'Pp', { locale: getDateFnsLocale() })}
                       </TableCell>
                       <TableCell className="font-mono text-sm">
                         {log.flag_key}

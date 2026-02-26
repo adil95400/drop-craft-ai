@@ -18,7 +18,7 @@ import {
 } from 'lucide-react'
 import { useExtensionActionLogs, type ExtensionActionLog } from '@/hooks/useExtensionActionLogs'
 import { formatDistanceToNow } from 'date-fns'
-import { fr } from 'date-fns/locale'
+import { getDateFnsLocale } from '@/utils/dateFnsLocale'
 
 const ACTION_ICONS: Record<string, React.ReactNode> = {
   'IMPORT_PRODUCT': <Download className="h-4 w-4" />,
@@ -110,7 +110,7 @@ function LogItem({ log }: { log: ExtensionActionLog }) {
           <span>
             {formatDistanceToNow(new Date(log.created_at), { 
               addSuffix: true, 
-              locale: fr 
+              locale: getDateFnsLocale() 
             })}
           </span>
         </div>

@@ -3,7 +3,7 @@ import { Badge } from '@/components/ui/badge';
 import { useStockMovements } from '@/hooks/useStockManagement';
 import { ArrowDownLeft, ArrowUpRight, ArrowLeftRight, RotateCcw, AlertTriangle, Package } from 'lucide-react';
 import { format } from 'date-fns';
-import { fr } from 'date-fns/locale';
+import { getDateFnsLocale } from '@/utils/dateFnsLocale';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
@@ -121,7 +121,7 @@ export function StockMovementsLog({ limit = 50, compact = false }: StockMovement
               </p>
             </div>
             <span className="text-xs text-muted-foreground whitespace-nowrap">
-              {format(new Date(movement.created_at), 'HH:mm', { locale: fr })}
+              {format(new Date(movement.created_at), 'HH:mm', { locale: getDateFnsLocale() })}
             </span>
           </div>
         ))}
@@ -159,7 +159,7 @@ export function StockMovementsLog({ limit = 50, compact = false }: StockMovement
                     )}
                     <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground">
                       <span>
-                        {format(new Date(movement.created_at), 'dd MMM yyyy à HH:mm', { locale: fr })}
+                        {format(new Date(movement.created_at), 'dd MMM yyyy à HH:mm', { locale: getDateFnsLocale() })}
                       </span>
                       {movement.performed_by && (
                         <span>Par: {movement.performed_by}</span>

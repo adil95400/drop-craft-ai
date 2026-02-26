@@ -9,7 +9,7 @@ import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from '@/components/ui/table'
 import { formatDistanceToNow } from 'date-fns'
-import { fr } from 'date-fns/locale'
+import { getDateFnsLocale } from '@/utils/dateFnsLocale'
 import { CouponCreationDialog } from '@/components/promotions/CouponCreationDialog'
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper'
 import { toast } from 'sonner'
@@ -140,7 +140,7 @@ export default function CouponsManagementPage() {
                     <div className="flex items-center gap-1 text-xs text-muted-foreground">
                       <Calendar className="w-3 h-3" />
                       {coupon.expires_at
-                        ? formatDistanceToNow(new Date(coupon.expires_at), { addSuffix: true, locale: fr })
+                        ? formatDistanceToNow(new Date(coupon.expires_at), { addSuffix: true, locale: getDateFnsLocale() })
                         : 'Illimité'}
                     </div>
                   </TableCell>

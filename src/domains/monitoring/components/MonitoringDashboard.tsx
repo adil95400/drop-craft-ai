@@ -39,7 +39,7 @@ import {
 import { supabase } from '@/integrations/supabase/client'
 import { cn } from '@/lib/utils'
 import { format, formatDistanceToNow } from 'date-fns'
-import { fr } from 'date-fns/locale'
+import { getDateFnsLocale } from '@/utils/dateFnsLocale'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 
 // =============================================================================
@@ -564,7 +564,7 @@ function RecentAlertsList({
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium truncate">{alert.title}</p>
               <p className="text-xs text-muted-foreground">
-                {formatDistanceToNow(new Date(alert.timestamp), { addSuffix: true, locale: fr })}
+                {formatDistanceToNow(new Date(alert.timestamp), { addSuffix: true, locale: getDateFnsLocale() })}
               </p>
             </div>
             {!alert.acknowledged && (
@@ -615,7 +615,7 @@ function ImportActivitySummary({
                 <Progress value={job.progress_percent} className="h-1 mt-1" />
               ) : (
                 <p className="text-xs text-muted-foreground">
-                  {formatDistanceToNow(new Date(job.created_at), { addSuffix: true, locale: fr })}
+                  {formatDistanceToNow(new Date(job.created_at), { addSuffix: true, locale: getDateFnsLocale() })}
                 </p>
               )}
             </div>
@@ -882,7 +882,7 @@ function AlertDetailModal({
             </Button>
           </div>
           <CardDescription>
-            {format(new Date(alert.timestamp), 'dd MMMM yyyy à HH:mm', { locale: fr })}
+            {format(new Date(alert.timestamp), 'dd MMMM yyyy à HH:mm', { locale: getDateFnsLocale() })}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
