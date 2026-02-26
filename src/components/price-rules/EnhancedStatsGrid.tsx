@@ -12,7 +12,7 @@ import {
 import { usePriceRulesAIStats } from '@/hooks/pricing';
 import { cn } from '@/lib/utils';
 import { formatDistanceToNow } from 'date-fns';
-import { fr } from 'date-fns/locale';
+import { getDateFnsLocale } from '@/utils/dateFnsLocale';
 
 export function EnhancedStatsGrid() {
   const { data: stats, isLoading } = usePriceRulesAIStats();
@@ -142,7 +142,7 @@ export function EnhancedStatsGrid() {
                 <Badge variant="secondary" className="text-xs">
                   Dernière: {formatDistanceToNow(new Date(stats.lastRuleApplication), { 
                     addSuffix: true, 
-                    locale: fr 
+                    locale: getDateFnsLocale() 
                   })}
                 </Badge>
               )}

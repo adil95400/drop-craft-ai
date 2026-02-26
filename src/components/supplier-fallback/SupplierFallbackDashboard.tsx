@@ -13,7 +13,7 @@ import {
 import { useSupplierFallback } from '@/hooks/useSupplierFallback';
 import { CreateFallbackRuleDialog } from './CreateFallbackRuleDialog';
 import { formatDistanceToNow } from 'date-fns';
-import { fr } from 'date-fns/locale';
+import { getDateFnsLocale } from '@/utils/dateFnsLocale';
 import { motion } from 'framer-motion';
 
 const triggerLabels: Record<string, { label: string; icon: typeof PackageX; color: string }> = {
@@ -154,7 +154,7 @@ export function SupplierFallbackDashboard() {
                               <span>{(rule.fallback_suppliers as any[])?.length || 0} fournisseur(s) alternatif(s)</span>
                               <span>{rule.switch_count || 0} basculement(s)</span>
                               {rule.last_switch_at && (
-                                <span>Dernier : {formatDistanceToNow(new Date(rule.last_switch_at), { addSuffix: true, locale: fr })}</span>
+                                <span>Dernier : {formatDistanceToNow(new Date(rule.last_switch_at), { addSuffix: true, locale: getDateFnsLocale() })}</span>
                               )}
                             </div>
                           </div>

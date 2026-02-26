@@ -19,7 +19,7 @@ import {
   CheckCircle2, Clock, XCircle, Package, Calendar, TrendingUp
 } from 'lucide-react';
 import { formatDistanceToNow, format } from 'date-fns';
-import { fr } from 'date-fns/locale';
+import { getDateFnsLocale } from '@/utils/dateFnsLocale';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 
@@ -396,7 +396,7 @@ export function ExtensionImportHistoryTable() {
                         <div className="text-sm">
                           <p>{format(new Date(item.created_at), 'dd/MM/yyyy')}</p>
                           <p className="text-xs text-muted-foreground">
-                            {formatDistanceToNow(new Date(item.created_at), { addSuffix: true, locale: fr })}
+                            {formatDistanceToNow(new Date(item.created_at), { addSuffix: true, locale: getDateFnsLocale() })}
                           </p>
                         </div>
                       </TableCell>

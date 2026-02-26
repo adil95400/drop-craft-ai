@@ -24,7 +24,7 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
-import { fr } from 'date-fns/locale';
+import { getDateFnsLocale } from '@/utils/dateFnsLocale';
 
 interface Schedule {
   id: string;
@@ -143,7 +143,7 @@ export function RepricingSchedulePanel() {
                           {schedule.time_of_day}
                         </span>
                         <span>
-                          Prochaine: {format(new Date(schedule.next_run_at), 'dd/MM HH:mm', { locale: fr })}
+                          Prochaine: {format(new Date(schedule.next_run_at), 'dd/MM HH:mm', { locale: getDateFnsLocale() })}
                         </span>
                       </div>
                     </div>

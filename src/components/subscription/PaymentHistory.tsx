@@ -3,7 +3,7 @@ import { Card } from '@/components/ui/card'
 import { useAuth } from '@/contexts/AuthContext'
 import { supabase } from '@/integrations/supabase/client'
 import { format } from 'date-fns'
-import { fr } from 'date-fns/locale'
+import { useDateFnsLocale } from '@/hooks/useDateFnsLocale'
 import { Download, CreditCard, CheckCircle, XCircle, Clock } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useToast } from '@/hooks/use-toast'
@@ -23,6 +23,7 @@ export function PaymentHistory() {
   const { toast } = useToast()
   const [invoices, setInvoices] = useState<Invoice[]>([])
   const [loading, setLoading] = useState(true)
+  const locale = useDateFnsLocale()
 
   useEffect(() => {
     if (user) {
@@ -131,7 +132,7 @@ export function PaymentHistory() {
                   {formatAmount(invoice.amount_paid, invoice.currency)}
                 </p>
                 <p className="text-sm text-muted-foreground">
-                  {format(new Date(invoice.created * 1000), 'dd MMMM yyyy', { locale: fr })}
+                  {format(new Date(invoice.created * 1000), 'dd MMMM yyyy', { locale })}
                 </p>
               </div>
             </div>

@@ -26,7 +26,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { format } from 'date-fns';
-import { fr } from 'date-fns/locale';
+import { useDateFnsLocale } from '@/hooks/useDateFnsLocale';
 
 interface ContentItem {
   id: string;
@@ -57,6 +57,7 @@ export function ContentLibrary() {
   const [selectedType, setSelectedType] = useState('all');
   const [showFavorites, setShowFavorites] = useState(false);
   const queryClient = useQueryClient();
+  const locale = useDateFnsLocale();
 
   const { data: contentItems = [], isLoading } = useQuery({
     queryKey: ['content-library', selectedType, showFavorites],
@@ -312,7 +313,7 @@ export function ContentLibrary() {
                   <div className="flex items-center justify-between text-xs text-muted-foreground">
                     <div className="flex items-center gap-1">
                       <Clock className="h-3 w-3" />
-                      {format(new Date(item.created_at), 'dd MMM yyyy', { locale: fr })}
+                      {format(new Date(item.created_at), 'dd MMM yyyy', { locale })}
                     </div>
                     <div className="flex items-center gap-2">
                       {item.is_favorite && <Star className="h-3 w-3 text-yellow-500 fill-yellow-500" />}

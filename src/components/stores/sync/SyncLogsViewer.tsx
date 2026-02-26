@@ -22,7 +22,7 @@ import {
   Trash2,
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
-import { fr } from 'date-fns/locale';
+import { getDateFnsLocale } from '@/utils/dateFnsLocale';
 
 export function SyncLogsViewer() {
   const { logs, isLoadingLogs } = useSyncManager();
@@ -119,7 +119,7 @@ export function SyncLogsViewer() {
                     <TableCell className="text-sm text-muted-foreground">
                       {formatDistanceToNow(new Date(log.created_at), {
                         addSuffix: true,
-                        locale: fr,
+                        locale: getDateFnsLocale(),
                       })}
                     </TableCell>
 

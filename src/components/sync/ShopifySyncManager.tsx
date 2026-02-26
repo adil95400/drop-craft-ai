@@ -23,7 +23,7 @@ import { useShopifySync } from '@/hooks/useShopifySync'
 import { supabase } from '@/integrations/supabase/client'
 import { RefreshCw, Download, Upload, ArrowLeftRight, Clock, CheckCircle, XCircle, Play, Trash2 } from 'lucide-react'
 import { format } from 'date-fns'
-import { fr } from 'date-fns/locale'
+import { getDateFnsLocale } from '@/utils/dateFnsLocale'
 
 export const ShopifySyncManager = () => {
   const { 
@@ -190,12 +190,12 @@ export const ShopifySyncManager = () => {
                   <div className="flex gap-4">
                     {config.last_sync_at && (
                       <span>
-                        Dernière sync: {format(new Date(config.last_sync_at), 'Pp', { locale: fr })}
+                        Dernière sync: {format(new Date(config.last_sync_at), 'Pp', { locale: getDateFnsLocale() })}
                       </span>
                     )}
                     {config.next_sync_at && config.auto_sync_enabled && (
                       <span>
-                        Prochaine: {format(new Date(config.next_sync_at), 'Pp', { locale: fr })}
+                        Prochaine: {format(new Date(config.next_sync_at), 'Pp', { locale: getDateFnsLocale() })}
                       </span>
                     )}
                   </div>
@@ -265,7 +265,7 @@ export const ShopifySyncManager = () => {
             {logs?.slice(0, 10).map((log) => (
               <TableRow key={log.id}>
                 <TableCell className="text-sm">
-                  {format(new Date(log.started_at), 'Pp', { locale: fr })}
+                  {format(new Date(log.started_at), 'Pp', { locale: getDateFnsLocale() })}
                 </TableCell>
                 <TableCell>
                   <div className="flex items-center gap-2">

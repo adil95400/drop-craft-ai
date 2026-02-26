@@ -7,7 +7,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { CheckCircle2, AlertCircle, Clock, Package, Plus, Minus, RefreshCw } from 'lucide-react';
 import { usePPCSyncLogs } from '@/hooks/usePPCFeedLink';
 import { formatDistanceToNow } from 'date-fns';
-import { fr } from 'date-fns/locale';
+import { getDateFnsLocale } from '@/utils/dateFnsLocale';
 
 interface PPCSyncLogsPanelProps {
   linkId?: string;
@@ -85,7 +85,7 @@ export function PPCSyncLogsPanel({ linkId }: PPCSyncLogsPanelProps) {
                   <span className="text-sm text-muted-foreground">
                     {formatDistanceToNow(new Date(log.started_at), {
                       addSuffix: true,
-                      locale: fr,
+                      locale: getDateFnsLocale(),
                     })}
                   </span>
                 </div>

@@ -16,7 +16,7 @@ import {
   TrendingUp, TrendingDown, ArrowRight
 } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
-import { fr } from 'date-fns/locale'
+import { useDateFnsLocale } from '@/hooks/useDateFnsLocale'
 
 export interface ActivityEvent {
   id: string
@@ -72,6 +72,7 @@ export function ChannableActivityFeed({
 }: ChannableActivityFeedProps) {
   const [displayedEvents, setDisplayedEvents] = useState(events.slice(0, maxItems))
   const [newEventIds, setNewEventIds] = useState<Set<string>>(new Set())
+  const locale = useDateFnsLocale()
 
   // Update displayed events when props change
   useEffect(() => {
@@ -190,7 +191,7 @@ export function ChannableActivityFeed({
                           <span className="text-xs text-muted-foreground">
                             {formatDistanceToNow(new Date(event.timestamp), {
                               addSuffix: true,
-                              locale: fr
+                              locale
                             })}
                           </span>
                         )}

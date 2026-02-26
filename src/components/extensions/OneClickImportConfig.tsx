@@ -15,7 +15,7 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { useImportHistory } from '@/hooks/useImportHistory';
 import { format } from 'date-fns';
-import { fr } from 'date-fns/locale';
+import { getDateFnsLocale } from '@/utils/dateFnsLocale';
 
 interface ImportResult {
   url: string;
@@ -285,7 +285,7 @@ export const OneClickImportConfig: React.FC = () => {
                               {history.job_type || 'import'}
                             </Badge>
                             <span className="text-xs text-muted-foreground">
-                              {format(new Date(history.created_at), 'PPp', { locale: fr })}
+                              {format(new Date(history.created_at), 'PPp', { locale: getDateFnsLocale() })}
                             </span>
                           </div>
                           

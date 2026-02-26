@@ -26,7 +26,7 @@ import {
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { formatDistanceToNow } from 'date-fns'
-import { fr } from 'date-fns/locale'
+import { getDateFnsLocale } from '@/utils/dateFnsLocale'
 import { useIntegrationsUnified, UnifiedIntegration } from '@/hooks/unified/useIntegrationsUnified'
 import { supabase } from '@/integrations/supabase/client'
 import { useToast } from '@/hooks/use-toast'
@@ -361,7 +361,7 @@ export function ConnectedStoresPanel({ onImportComplete, autoSync = true }: Conn
                                   </span>
                                   {integration.last_sync_at && (
                                     <span>
-                                      Sync {formatDistanceToNow(new Date(integration.last_sync_at), { addSuffix: true, locale: fr })}
+                                      Sync {formatDistanceToNow(new Date(integration.last_sync_at), { addSuffix: true, locale: getDateFnsLocale() })}
                                     </span>
                                   )}
                                 </div>

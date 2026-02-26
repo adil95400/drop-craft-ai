@@ -6,7 +6,7 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Skeleton } from '@/components/ui/skeleton';
 import { formatDistanceToNow } from 'date-fns';
-import { fr } from 'date-fns/locale';
+import { useDateFnsLocale } from '@/hooks/useDateFnsLocale';
 import { getPlatformLogo } from '@/utils/platformLogos';
 
 interface ConnectedStoresWidgetProps {
@@ -18,6 +18,7 @@ interface ConnectedStoresWidgetProps {
 
 export function ConnectedStoresWidget({ settings }: ConnectedStoresWidgetProps) {
   const showDetails = settings?.showDetails ?? true;
+  const locale = useDateFnsLocale();
 
   const { data: stores, isLoading, refetch } = useQuery({
     queryKey: ['connected-stores'],
@@ -142,7 +143,7 @@ export function ConnectedStoresWidget({ settings }: ConnectedStoresWidgetProps) 
 
         {stores && stores.length > 0 && stores[0].last_sync_at && (
           <p className="text-xs text-muted-foreground text-center">
-            Dernière sync: {formatDistanceToNow(new Date(stores[0].last_sync_at), { addSuffix: true, locale: fr })}
+            Dernière sync: {formatDistanceToNow(new Date(stores[0].last_sync_at), { addSuffix: true, locale })}
           </p>
         )}
       </CardContent>

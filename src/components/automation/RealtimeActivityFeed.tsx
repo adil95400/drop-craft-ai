@@ -15,11 +15,12 @@ import {
   Database
 } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
-import { fr } from 'date-fns/locale'
+import { useDateFnsLocale } from '@/hooks/useDateFnsLocale'
 import { useRealtimeActivity } from '@/hooks/useRealtimeActivity'
 
 export const RealtimeActivityFeed = () => {
   const { activities, isLoading } = useRealtimeActivity()
+  const locale = useDateFnsLocale()
 
   const getActivityIcon = (type: string) => {
     switch (type) {
@@ -123,7 +124,7 @@ export const RealtimeActivityFeed = () => {
                     
                     <div className="flex items-center justify-between">
                       <span className="text-xs text-gray-500">
-                        {formatDistanceToNow(activity.timestamp, { locale: fr, addSuffix: true })}
+                        {formatDistanceToNow(activity.timestamp, { locale, addSuffix: true })}
                       </span>
                       
                       {activity.metadata && (
