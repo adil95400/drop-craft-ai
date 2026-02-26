@@ -19,12 +19,13 @@ import {
 } from 'lucide-react';
 import { useCustomerSegments, useRFMScores, useSegmentStats, useCreateCustomerSegment, useDeleteCustomerSegment, useCalculateRFMScores } from '@/hooks/useCustomerSegmentation';
 import { formatDistanceToNow } from 'date-fns';
-import { fr } from 'date-fns/locale';
+import { useDateFnsLocale } from '@/hooks/useDateFnsLocale';
 import { SegmentTemplatesModal } from './SegmentTemplatesModal';
 import { SegmentTemplate } from '@/services/CustomerSegmentationService';
 import { toast } from 'sonner';
 
 export function CustomerSegmentationDashboard() {
+  const locale = useDateFnsLocale();
   const [activeTab, setActiveTab] = useState('segments');
   const [templatesOpen, setTemplatesOpen] = useState(false);
 
@@ -208,7 +209,7 @@ export function CustomerSegmentationDashboard() {
                       <TableCell>{formatCurrency(segment.total_revenue)}</TableCell>
                       <TableCell>
                         {segment.last_calculated_at 
-                          ? formatDistanceToNow(new Date(segment.last_calculated_at), { addSuffix: true, locale: fr })
+                          ? formatDistanceToNow(new Date(segment.last_calculated_at), { addSuffix: true, locale })
                           : 'Jamais'}
                       </TableCell>
                       <TableCell>

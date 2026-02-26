@@ -31,7 +31,7 @@ import {
 import { useAuditLogs, useAuditStatistics } from '@/hooks/useAuditLog';
 import type { AuditCategory, AuditSeverity, AuditLogRecord } from '@/services/AuditService';
 import { formatDistanceToNow, format } from 'date-fns';
-import { fr } from 'date-fns/locale';
+import { useDateFnsLocale } from '@/hooks/useDateFnsLocale';
 
 const CATEGORY_ICONS: Record<AuditCategory, React.ReactNode> = {
   auth: <User className="h-4 w-4" />,
@@ -63,6 +63,7 @@ const CATEGORIES: AuditCategory[] = [
 const SEVERITIES: AuditSeverity[] = ['debug', 'info', 'warn', 'error', 'critical'];
 
 export function AuditLogViewer() {
+  const locale = useDateFnsLocale();
   const [category, setCategory] = useState<AuditCategory | 'all'>('all');
   const [severity, setSeverity] = useState<AuditSeverity | 'all'>('all');
   const [searchQuery, setSearchQuery] = useState('');
@@ -239,6 +240,7 @@ export function AuditLogViewer() {
 }
 
 function AuditLogItem({ log }: { log: AuditLogRecord }) {
+  const locale = useDateFnsLocale();
   const [expanded, setExpanded] = useState(false);
   const severityConfig = SEVERITY_CONFIG[log.severity as AuditSeverity] || SEVERITY_CONFIG.info;
   const categoryIcon = CATEGORY_ICONS[log.action_category as AuditCategory];
@@ -291,7 +293,7 @@ function AuditLogItem({ log }: { log: AuditLogRecord }) {
         
         <div className="text-xs text-muted-foreground whitespace-nowrap flex items-center gap-1">
           <Clock className="h-3 w-3" />
-          {formatDistanceToNow(new Date(log.created_at), { addSuffix: true, locale: fr })}
+          {formatDistanceToNow(new Date(log.created_at), { addSuffix: true, locale })}
         </div>
       </div>
       
@@ -343,7 +345,7 @@ function AuditLogItem({ log }: { log: AuditLogRecord }) {
           )}
           
           <div className="text-xs text-muted-foreground">
-            {format(new Date(log.created_at), 'PPpp', { locale: fr })}
+            {format(new Date(log.created_at), 'PPpp', { locale })}
           </div>
         </div>
       )}

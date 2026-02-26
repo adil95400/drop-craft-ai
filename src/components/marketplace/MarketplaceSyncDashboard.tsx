@@ -16,7 +16,7 @@ import {
   ArrowRightLeft, Zap, Play, Pause
 } from 'lucide-react';
 import { format } from 'date-fns';
-import { fr } from 'date-fns/locale';
+import { useDateFnsLocale } from '@/hooks/useDateFnsLocale';
 
 const MARKETPLACES = [
   { id: 'shopify', name: 'Shopify', icon: '🛒', color: 'bg-green-500' },
@@ -28,6 +28,7 @@ const MARKETPLACES = [
 ];
 
 export function MarketplaceSyncDashboard() {
+  const locale = useDateFnsLocale();
   const {
     connections,
     syncStats,
@@ -128,7 +129,7 @@ export function MarketplaceSyncDashboard() {
                 <p className="text-sm text-muted-foreground">Dernière sync</p>
                 <p className="text-sm font-medium">
                   {syncStats?.lastSync 
-                    ? format(new Date(syncStats.lastSync), 'HH:mm', { locale: fr })
+                    ? format(new Date(syncStats.lastSync), 'HH:mm', { locale })
                     : 'Jamais'
                   }
                 </p>
@@ -289,7 +290,7 @@ export function MarketplaceSyncDashboard() {
                         <p className="text-sm text-muted-foreground">Dernière sync</p>
                         <p className="text-sm font-medium">
                           {connection.last_sync_at 
-                            ? format(new Date(connection.last_sync_at), 'dd/MM/yyyy HH:mm', { locale: fr })
+                            ? format(new Date(connection.last_sync_at), 'dd/MM/yyyy HH:mm', { locale })
                             : 'Jamais'
                           }
                         </p>
@@ -364,7 +365,7 @@ export function MarketplaceSyncDashboard() {
                     <Badge className="bg-green-500">Succès</Badge>
                   </TableCell>
                   <TableCell>45 produits</TableCell>
-                  <TableCell>{format(new Date(), 'dd/MM HH:mm', { locale: fr })}</TableCell>
+                  <TableCell>{format(new Date(), 'dd/MM HH:mm', { locale })}</TableCell>
                 </TableRow>
                 <TableRow>
                   <TableCell>
@@ -378,7 +379,7 @@ export function MarketplaceSyncDashboard() {
                     <Badge className="bg-green-500">Succès</Badge>
                   </TableCell>
                   <TableCell>120 produits</TableCell>
-                  <TableCell>{format(new Date(Date.now() - 3600000), 'dd/MM HH:mm', { locale: fr })}</TableCell>
+                  <TableCell>{format(new Date(Date.now() - 3600000), 'dd/MM HH:mm', { locale })}</TableCell>
                 </TableRow>
               </TableBody>
             </Table>

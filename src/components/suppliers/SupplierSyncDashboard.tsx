@@ -7,9 +7,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useSupplierSyncMonitor } from '@/hooks/useSupplierSyncMonitor';
 import { RefreshCw, AlertTriangle, CheckCircle, Clock, Bell, Activity, Loader2 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
-import { fr } from 'date-fns/locale';
+import { useDateFnsLocale } from '@/hooks/useDateFnsLocale';
 
 export function SupplierSyncDashboard() {
+  const locale = useDateFnsLocale();
   const {
     syncStatuses,
     recentAlerts,
@@ -127,7 +128,7 @@ export function SupplierSyncDashboard() {
                       <div className="flex items-center gap-2 text-xs text-muted-foreground">
                         <Clock className="h-3 w-3" />
                         {status.lastSyncAt
-                          ? `Dernière sync: ${formatDistanceToNow(new Date(status.lastSyncAt), { addSuffix: true, locale: fr })}`
+                          ? `Dernière sync: ${formatDistanceToNow(new Date(status.lastSyncAt), { addSuffix: true, locale })}`
                           : 'Jamais synchronisé'}
                       </div>
                     </div>
@@ -187,7 +188,7 @@ export function SupplierSyncDashboard() {
                       <p className="text-sm font-medium truncate">{alert.title}</p>
                       <p className="text-xs text-muted-foreground truncate">{alert.message}</p>
                       <p className="text-xs text-muted-foreground mt-1">
-                        {formatDistanceToNow(new Date(alert.createdAt), { addSuffix: true, locale: fr })}
+                        {formatDistanceToNow(new Date(alert.createdAt), { addSuffix: true, locale })}
                       </p>
                     </div>
                     <Badge variant={alert.severity === 'high' ? 'destructive' : 'secondary'} className="text-xs flex-shrink-0">
@@ -237,8 +238,8 @@ export function SupplierSyncDashboard() {
                     </Badge>
                     <p className="text-xs text-muted-foreground mt-1">
                       {job.completed_at
-                        ? formatDistanceToNow(new Date(job.completed_at), { addSuffix: true, locale: fr })
-                        : formatDistanceToNow(new Date(job.created_at), { addSuffix: true, locale: fr })}
+                        ? formatDistanceToNow(new Date(job.completed_at), { addSuffix: true, locale })
+                        : formatDistanceToNow(new Date(job.created_at), { addSuffix: true, locale })}
                     </p>
                   </div>
                 </div>

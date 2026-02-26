@@ -7,7 +7,7 @@ import { Calendar } from '@/components/ui/calendar'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { CalendarIcon, Search, X } from 'lucide-react'
 import { format } from 'date-fns'
-import { fr } from 'date-fns/locale'
+import { useDateFnsLocale } from '@/hooks/useDateFnsLocale'
 
 export interface ImportFilters {
   search?: string
@@ -24,6 +24,7 @@ interface ImportHistoryFiltersProps {
 }
 
 export const ImportHistoryFilters = ({ filters, onFiltersChange, onReset }: ImportHistoryFiltersProps) => {
+  const locale = useDateFnsLocale()
   const [localSearch, setLocalSearch] = useState(filters.search || '')
 
   const handleSearchSubmit = (e: React.FormEvent) => {
@@ -130,7 +131,7 @@ export const ImportHistoryFilters = ({ filters, onFiltersChange, onReset }: Impo
                 >
                   <CalendarIcon className="mr-2 h-4 w-4" />
                   {filters.dateFrom ? (
-                    format(filters.dateFrom, 'P', { locale: fr })
+                    format(filters.dateFrom, 'P', { locale })
                   ) : (
                     <span>Sélectionner</span>
                   )}
@@ -158,7 +159,7 @@ export const ImportHistoryFilters = ({ filters, onFiltersChange, onReset }: Impo
                 >
                   <CalendarIcon className="mr-2 h-4 w-4" />
                   {filters.dateTo ? (
-                    format(filters.dateTo, 'P', { locale: fr })
+                    format(filters.dateTo, 'P', { locale })
                   ) : (
                     <span>Sélectionner</span>
                   )}

@@ -16,7 +16,7 @@ import {
 } from 'lucide-react';
 import { useEmailTemplates, EmailTemplate } from '@/hooks/useEmailTemplates';
 import { format } from 'date-fns';
-import { fr } from 'date-fns/locale';
+import { useDateFnsLocale } from '@/hooks/useDateFnsLocale';
 
 const CATEGORIES = [
   { value: 'welcome', label: 'Bienvenue' },
@@ -63,6 +63,7 @@ export function EmailTemplatesManager() {
     isUpdating 
   } = useEmailTemplates();
 
+  const locale = useDateFnsLocale();
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
@@ -287,8 +288,8 @@ export function EmailTemplatesManager() {
 
                     <p className="text-xs text-muted-foreground mt-3">
                       Modifié le {template.updated_at 
-                        ? format(new Date(template.updated_at), 'dd MMM yyyy', { locale: fr })
-                        : format(new Date(template.created_at!), 'dd MMM yyyy', { locale: fr })
+                        ? format(new Date(template.updated_at), 'dd MMM yyyy', { locale })
+                        : format(new Date(template.created_at!), 'dd MMM yyyy', { locale })
                       }
                     </p>
                   </CardContent>

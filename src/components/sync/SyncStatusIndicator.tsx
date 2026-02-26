@@ -12,13 +12,14 @@ import {
 } from 'lucide-react'
 import { useAutoSync } from '@/hooks/useAutoSync'
 import { formatDistanceToNow } from 'date-fns'
-import { fr } from 'date-fns/locale'
+import { useDateFnsLocale } from '@/hooks/useDateFnsLocale'
 
 interface SyncStatusIndicatorProps {
   compact?: boolean
 }
 
 export const SyncStatusIndicator: React.FC<SyncStatusIndicatorProps> = ({ compact = false }) => {
+  const locale = useDateFnsLocale()
   const { 
     enableAutoSync, 
     isSyncing, 
@@ -53,7 +54,7 @@ export const SyncStatusIndicator: React.FC<SyncStatusIndicatorProps> = ({ compac
     if (isSyncing) return 'Synchronisation...'
     if (!enableAutoSync) return 'Sync désactivée'
     if (lastSyncTime && Date.now() - lastSyncTime < 2 * 60 * 1000) return 'À jour'
-    if (lastSyncTime) return `Dernière sync: ${formatDistanceToNow(lastSyncTime, { locale: fr, addSuffix: true })}`
+    if (lastSyncTime) return `Dernière sync: ${formatDistanceToNow(lastSyncTime, { locale, addSuffix: true })}`
     return 'Non synchronisé'
   }
 
