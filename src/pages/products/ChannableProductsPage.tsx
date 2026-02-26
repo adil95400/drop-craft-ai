@@ -397,31 +397,47 @@ export default function ChannableProductsPage() {
 
   // Handler for bulk actions
   const handleBulkAction = useCallback(async (actionId: string, productIds: string[]) => {
-    switch (actionId) {
-      case 'apply_price_rule':
-        toast({ title: 'Règle de prix', description: `Application en cours sur ${productIds.length} produits...` })
-        break
-      case 'sync_stores':
-        toast({ title: 'Synchronisation', description: `Synchronisation de ${productIds.length} produits en cours...` })
-        break
-      case 'optimize_ai':
-        toast({ title: 'Optimisation IA', description: `Analyse de ${productIds.length} produits...` })
-        break
-      case 'add_tag':
-        toast({ title: 'Tags', description: 'Ouverture du gestionnaire de tags...' })
-        break
-      case 'export':
-        setShowPlatformExport(true)
-        break
-      case 'delete':
-        setBulkDeleteDialogOpen(true)
-        break
-      default:
-        toast({ title: 'Action', description: `Action ${actionId} sur ${productIds.length} produits` })
+    const { importExportService } = await import('@/services/importExportService')
+    
+    try {
+      switch (actionId) {
+        case 'apply_price_rule':
+          // Appliquer un multiplicateur de prix (ex: +10%)
+          await importExportService.bulkUpdatePrices(productIds, 1.10)
+          toast({ title: 'Règle de prix appliquée', description: `${productIds.length} produits mis à jour (+10%)` })
+          setSelectedProducts([])
+          handleRefresh()
+          break
+        case 'sync_stores':
+          await importExportService.bulkUpdateStatus(productIds, 'active')
+          toast({ title: 'Synchronisation terminée', description: `${productIds.length} produits activés` })
+          setSelectedProducts([])
+          handleRefresh()
+          break
+        case 'optimize_ai':
+          setShowBulkEnrichment(true)
+          break
+        case 'add_tag':
+          setShowBulkEdit(true)
+          break
+        case 'export':
+          setShowPlatformExport(true)
+          break
+        case 'delete':
+          setBulkDeleteDialogOpen(true)
+          break
+        default:
+          toast({ title: 'Action', description: `Action ${actionId} sur ${productIds.length} produits` })
+      }
+    } catch (error) {
+      console.error('Bulk action failed:', error)
+      toast({ 
+        title: 'Erreur', 
+        description: error instanceof Error ? error.message : 'Une erreur est survenue',
+        variant: 'destructive'
+      })
     }
-    // Simulate delay for demo
-    await new Promise(resolve => setTimeout(resolve, 1000))
-  }, [toast])
+  }, [toast, handleRefresh])
 
   const handleClearSelection = useCallback(() => {
     setSelectedProducts([])
