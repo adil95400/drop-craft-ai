@@ -17,7 +17,7 @@ import {
 } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 import { formatDistanceToNow } from 'date-fns'
-import { fr } from 'date-fns/locale'
+import { getDateFnsLocale } from '@/utils/dateFnsLocale'
 
 export default function EnrichmentSnapshotsPage() {
   const { toast } = useToast()
@@ -169,7 +169,7 @@ export default function EnrichmentSnapshotsPage() {
                     {snap.status === 'reverted' && <Badge variant="outline" className="text-xs">Révoqué</Badge>}
                   </div>
                   <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                    <Clock className="h-3 w-3" /> {formatDistanceToNow(new Date(snap.createdAt), { addSuffix: true, locale: fr })}
+                    <Clock className="h-3 w-3" /> {formatDistanceToNow(new Date(snap.createdAt), { addSuffix: true, locale: getDateFnsLocale() })}
                     <Badge variant="outline" className="text-xs">{snap.qualityScore}/100</Badge>
                   </div>
                 </div>

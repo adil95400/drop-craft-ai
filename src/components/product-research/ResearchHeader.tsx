@@ -10,7 +10,7 @@ import {
 } from 'lucide-react';
 import { ResearchStats } from '@/hooks/useRealProductResearch';
 import { formatDistanceToNow } from 'date-fns';
-import { fr } from 'date-fns/locale';
+import { getDateFnsLocale } from '@/utils/dateFnsLocale';
 
 interface ResearchHeaderProps {
   stats?: ResearchStats;
@@ -24,7 +24,7 @@ export function ResearchHeader({ stats }: ResearchHeaderProps) {
   };
 
   const lastUpdatedText = stats?.lastUpdated 
-    ? formatDistanceToNow(new Date(stats.lastUpdated), { addSuffix: true, locale: fr })
+    ? formatDistanceToNow(new Date(stats.lastUpdated), { addSuffix: true, locale: getDateFnsLocale() })
     : 'il y a quelques secondes';
 
   const displayStats = {

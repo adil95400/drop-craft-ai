@@ -32,7 +32,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { format } from 'date-fns';
-import { fr } from 'date-fns/locale';
+import { getDateFnsLocale } from '@/utils/dateFnsLocale';
 
 interface MediaAsset {
   id: string;
@@ -470,7 +470,7 @@ export function MediaLibrary() {
                   <div className="flex-1 min-w-0">
                     <p className="font-medium truncate">{asset.original_name}</p>
                     <p className="text-sm text-muted-foreground">
-                      {formatFileSize(asset.file_size)} • {format(new Date(asset.created_at), 'dd MMM yyyy', { locale: fr })}
+                      {formatFileSize(asset.file_size)} • {format(new Date(asset.created_at), 'dd MMM yyyy', { locale: getDateFnsLocale() })}
                     </p>
                   </div>
                   <div className="flex items-center gap-2">

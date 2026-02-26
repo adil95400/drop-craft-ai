@@ -16,7 +16,7 @@ import {
   useProductScores, useScoringStats, useRunBatchAnalysis, useScoringBatches, useScoringRules 
 } from '@/hooks/useProductScoring';
 import { formatDistanceToNow } from 'date-fns';
-import { fr } from 'date-fns/locale';
+import { getDateFnsLocale } from '@/utils/dateFnsLocale';
 
 function getScoreColor(score: number): string {
   if (score >= 90) return 'text-green-500';
@@ -135,7 +135,7 @@ export function ProductScoringDashboard() {
                             <span className="text-sm text-muted-foreground">ID: {score.product_id.slice(0, 8)}</span>
                           </div>
                           <span className="text-xs text-muted-foreground">
-                            {formatDistanceToNow(new Date(score.last_analyzed_at), { addSuffix: true, locale: fr })}
+                            {formatDistanceToNow(new Date(score.last_analyzed_at), { addSuffix: true, locale: getDateFnsLocale() })}
                           </span>
                         </div>
                         <div className="grid grid-cols-6 gap-2">
@@ -222,7 +222,7 @@ export function ProductScoringDashboard() {
                         </div>
                         <span className="text-sm text-muted-foreground flex items-center gap-1">
                           <Clock className="h-4 w-4" />
-                          {formatDistanceToNow(new Date(batch.started_at), { addSuffix: true, locale: fr })}
+                          {formatDistanceToNow(new Date(batch.started_at), { addSuffix: true, locale: getDateFnsLocale() })}
                         </span>
                       </div>
                       <p className={`text-lg font-bold ${getScoreColor(batch.avg_score)}`}>

@@ -20,7 +20,7 @@ import {
 } from 'lucide-react';
 import { useWorkflows, useWorkflowExecutions, useWorkflowStats, useCreateWorkflow, useDeleteWorkflow, useExecuteWorkflow, useUpdateWorkflow } from '@/hooks/useWorkflows';
 import { formatDistanceToNow } from 'date-fns';
-import { fr } from 'date-fns/locale';
+import { getDateFnsLocale } from '@/utils/dateFnsLocale';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { cn } from '@/lib/utils';
 
@@ -201,7 +201,7 @@ export function WorkflowBuilderDashboard() {
                         <TableCell>{workflow.execution_count}</TableCell>
                         <TableCell>
                           {workflow.last_executed_at 
-                            ? formatDistanceToNow(new Date(workflow.last_executed_at), { addSuffix: true, locale: fr })
+                            ? formatDistanceToNow(new Date(workflow.last_executed_at), { addSuffix: true, locale: getDateFnsLocale() })
                             : 'Jamais'}
                         </TableCell>
                         <TableCell>
@@ -303,7 +303,7 @@ export function WorkflowBuilderDashboard() {
                           {execution.duration_ms ? `${(execution.duration_ms / 1000).toFixed(1)}s` : '-'}
                         </TableCell>
                         <TableCell>
-                          {formatDistanceToNow(new Date(execution.started_at), { addSuffix: true, locale: fr })}
+                          {formatDistanceToNow(new Date(execution.started_at), { addSuffix: true, locale: getDateFnsLocale() })}
                         </TableCell>
                       </TableRow>
                     ))}
@@ -359,7 +359,7 @@ function MobileWorkflowCard({
         <span>{workflow.execution_count} exécutions</span>
         <span>
           {workflow.last_executed_at 
-            ? formatDistanceToNow(new Date(workflow.last_executed_at), { addSuffix: true, locale: fr })
+            ? formatDistanceToNow(new Date(workflow.last_executed_at), { addSuffix: true, locale: getDateFnsLocale() })
             : 'Jamais'}
         </span>
       </div>
@@ -417,7 +417,7 @@ function MobileExecutionCard({
           {execution.duration_ms ? `${(execution.duration_ms / 1000).toFixed(1)}s` : '-'}
         </span>
         <span>
-          {formatDistanceToNow(new Date(execution.started_at), { addSuffix: true, locale: fr })}
+          {formatDistanceToNow(new Date(execution.started_at), { addSuffix: true, locale: getDateFnsLocale() })}
         </span>
       </div>
     </div>

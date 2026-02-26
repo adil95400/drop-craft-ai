@@ -4,7 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Package, ExternalLink, RefreshCw } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
-import { fr } from 'date-fns/locale';
+import { getDateFnsLocale } from '@/utils/dateFnsLocale';
 
 export function FulfillmentOrdersMonitor() {
   const { orders, isLoadingOrders, refetchOrders } = useAutoFulfillment();
@@ -61,7 +61,7 @@ export function FulfillmentOrdersMonitor() {
                       {getStatusBadge(order.status)}
                     </div>
                     <CardDescription className="text-xs md:text-sm">
-                      Créé {formatDistanceToNow(new Date(order.created_at), { addSuffix: true, locale: fr })}
+                      Créé {formatDistanceToNow(new Date(order.created_at), { addSuffix: true, locale: getDateFnsLocale() })}
                     </CardDescription>
                   </div>
                   <div className="text-left xs:text-right">

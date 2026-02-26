@@ -16,7 +16,7 @@ import {
 } from 'lucide-react';
 import { useScheduledImports, type ScheduledImport } from '@/hooks/useScheduledImports';
 import { formatDistanceToNow, format } from 'date-fns';
-import { fr } from 'date-fns/locale';
+import { getDateFnsLocale } from '@/utils/dateFnsLocale';
 import { cn } from '@/lib/utils';
 
 const FREQUENCY_OPTIONS = [
@@ -195,7 +195,7 @@ function ScheduleRow({
         <div className="flex items-center gap-3 mt-1 text-[11px] text-muted-foreground flex-wrap">
           <span className="flex items-center gap-1"><Clock className="h-3 w-3" /> {freqLabel}</span>
           {schedule.next_run_at && isActive && (
-            <span>Prochain : {formatDistanceToNow(new Date(schedule.next_run_at), { addSuffix: true, locale: fr })}</span>
+            <span>Prochain : {formatDistanceToNow(new Date(schedule.next_run_at), { addSuffix: true, locale: getDateFnsLocale() })}</span>
           )}
           {schedule.last_run_at && (
             <span className="flex items-center gap-1">

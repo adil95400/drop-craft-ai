@@ -9,7 +9,7 @@ import { useShipments } from '@/hooks/useFulfillment';
 import { Search, Filter, ExternalLink, Package, Truck, CheckCircle, AlertTriangle, Clock } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { format } from 'date-fns';
-import { fr } from 'date-fns/locale';
+import { getDateFnsLocale } from '@/utils/dateFnsLocale';
 
 interface ShipmentData {
   id: string;
@@ -160,7 +160,7 @@ export function ShipmentsTable() {
                         {shippingCost.toFixed(2)} €
                       </TableCell>
                       <TableCell className="text-sm text-muted-foreground">
-                        {format(new Date(shipment.created_at), 'dd/MM/yyyy', { locale: fr })}
+                        {format(new Date(shipment.created_at), 'dd/MM/yyyy', { locale: getDateFnsLocale() })}
                       </TableCell>
                       <TableCell className="text-right">
                         <div className="flex justify-end gap-1">
