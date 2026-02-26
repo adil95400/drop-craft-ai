@@ -39,7 +39,7 @@ export default function FeedRulesPage() {
         open={isCreateOpen} 
         onOpenChange={setIsCreateOpen}
         editRule={null}
-        onClose={() => {}}
+        onClose={() => setIsCreateOpen(false)}
       />
     </ChannablePageWrapper>
   );

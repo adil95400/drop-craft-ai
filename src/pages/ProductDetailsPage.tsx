@@ -903,7 +903,7 @@ export default function ProductDetailsPage() {
                           updates: { variants: newVariants } as any
                         }, { onSuccess: () => refetch() })
                       }}
-                      onOptionsChange={() => {}}
+                      onOptionsChange={() => refetch()}
                     />
                   </TabsContent>
 

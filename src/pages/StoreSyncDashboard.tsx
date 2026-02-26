@@ -598,7 +598,7 @@ export default function StoreSyncDashboard() {
                       <ConnectedStoreCard 
                         key={connection.id} 
                         connection={connection}
-                        onSync={() => {}}
+                        onSync={() => handleModuleSync('products')}
                       />
                     ))}
                   </div>

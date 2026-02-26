@@ -148,7 +148,7 @@ export function FeedRulesDashboard() {
   const [selectedRule, setSelectedRule] = useState<FeedRule | null>(null);
   const [previewRuleId, setPreviewRuleId] = useState<string | null>(null);
 
-  const { data: rules = [], isLoading } = useFeedRules();
+  const { data: rules = [], isLoading, refetch: refetchRules } = useFeedRules();
   const { data: stats } = useFeedRulesStats();
   const toggleRule = useToggleFeedRule();
   const deleteRule = useDeleteFeedRule();
@@ -357,7 +357,7 @@ export function FeedRulesDashboard() {
         </TabsContent>
 
         <TabsContent value="templates">
-          <RuleTemplatesPanel onUseTemplate={() => {}} />
+          <RuleTemplatesPanel onUseTemplate={() => refetchRules()} />
         </TabsContent>
 
         <TabsContent value="history">

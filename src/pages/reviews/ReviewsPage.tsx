@@ -95,7 +95,7 @@ export default function ReviewsPage() {
   const minRating = ratingFilter === 'positive' ? 4 : ratingFilter === 'negative' ? undefined : undefined;
   const maxRating = ratingFilter === 'negative' ? 2 : undefined;
 
-  const { data: reviews = [], isLoading } = useProductReviews({
+  const { data: reviews = [], isLoading, refetch: refetchReviews } = useProductReviews({
     search: search || undefined,
     platform: platformFilter,
     minRating,
@@ -262,7 +262,7 @@ export default function ReviewsPage() {
       <AdvancedReviewsImportModal
         open={importModalOpen}
         onOpenChange={setImportModalOpen}
-        onSuccess={() => {}}
+        onSuccess={() => refetchReviews()}
       />
 
       {/* Create Review Modal */}

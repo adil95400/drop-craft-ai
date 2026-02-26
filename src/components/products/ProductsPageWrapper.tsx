@@ -139,7 +139,7 @@ export function ProductsPageWrapper({
             handleClearSelection();
             onRefresh?.();
           }}
-          onBulkEdit={() => {}}
+          onBulkEdit={() => { /* TODO: bulk edit modal */ }}
           onProductUpdate={onRefresh}
         />
       )}
