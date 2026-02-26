@@ -61,8 +61,7 @@ import { useSearchShortcut } from "@/hooks/useKeyboardShortcut"
 import { useReducedMotion } from "@/hooks/useReducedMotion"
 import { useHeaderNotifications } from "@/hooks/useHeaderNotifications"
 import { formatDistanceToNow } from "date-fns"
-import { enUS, fr } from "date-fns/locale"
-import i18n from "@/lib/i18n"
+import { getDateFnsLocale } from "@/utils/dateFnsLocale"
 
 // Breadcrumbs Premium avec animations
 const ChannableBreadcrumbs = memo(() => {
@@ -433,8 +432,7 @@ const NotificationsDropdown = memo(() => {
 
   const getTimeAgo = (dateStr: string) => {
     try {
-      const locale = i18n.language === 'fr' ? fr : enUS
-      return formatDistanceToNow(new Date(dateStr), { addSuffix: true, locale })
+      return formatDistanceToNow(new Date(dateStr), { addSuffix: true, locale: getDateFnsLocale() })
     } catch {
       return ''
     }
