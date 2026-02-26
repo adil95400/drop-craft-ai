@@ -9,7 +9,7 @@ import {
   Activity, Package, ShoppingCart, Users, AlertCircle, CheckCircle, Clock, Zap
 } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
-import { fr } from 'date-fns/locale'
+import { useDateFnsLocale } from '@/hooks/useDateFnsLocale'
 
 interface ActivityItem {
   id: string
@@ -32,6 +32,7 @@ function mapAction(action: string): ActivityItem['type'] {
 }
 
 export function LiveActivityFeed({ storeId }: LiveActivityFeedProps) {
+  const locale = useDateFnsLocale()
   const { user } = useAuth()
 
   const { data: activities = [], isLoading } = useQuery({
@@ -116,7 +117,7 @@ export function LiveActivityFeed({ storeId }: LiveActivityFeedProps) {
                     </div>
                     <p className="text-sm text-muted-foreground mb-1">{activity.description}</p>
                     <div className="text-xs text-muted-foreground">
-                      {formatDistanceToNow(new Date(activity.timestamp), { addSuffix: true, locale: fr })}
+                      {formatDistanceToNow(new Date(activity.timestamp), { addSuffix: true, locale })}
                     </div>
                   </div>
                   <div className="flex-shrink-0">

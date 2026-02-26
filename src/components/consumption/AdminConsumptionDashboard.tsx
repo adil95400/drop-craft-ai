@@ -52,7 +52,7 @@ import { useAdminConsumption } from '@/hooks/useConsumptionTracking';
 import { QuotaKey } from '@/hooks/useUnifiedQuotas';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
-import { fr } from 'date-fns/locale';
+import { getDateFnsLocale } from '@/utils/dateFnsLocale';
 
 const STATUS_STYLES = {
   ok: { label: 'OK', icon: Activity, color: 'text-green-500', bg: 'bg-green-50 dark:bg-green-950/30' },
@@ -126,7 +126,7 @@ function UserDetailDialog({ user }: UserDetailDialogProps) {
             <p className="text-sm text-muted-foreground">Dernière connexion</p>
             <p className="font-medium">
               {user.last_login_at 
-                ? format(new Date(user.last_login_at), 'PPp', { locale: fr })
+                ? format(new Date(user.last_login_at), 'PPp', { locale: getDateFnsLocale() })
                 : 'Jamais'
               }
             </p>
@@ -178,7 +178,7 @@ function UserDetailDialog({ user }: UserDetailDialogProps) {
                     <span className="font-medium">+{addon.credits} crédits</span>
                     {addon.expires_at && (
                       <p className="text-xs text-muted-foreground">
-                        Expire: {format(new Date(addon.expires_at), 'PP', { locale: fr })}
+                        Expire: {format(new Date(addon.expires_at), 'PP', { locale: getDateFnsLocale() })}
                       </p>
                     )}
                   </div>

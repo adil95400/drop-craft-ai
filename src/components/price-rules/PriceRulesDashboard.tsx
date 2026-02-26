@@ -20,7 +20,7 @@ import { PriceSyncPanel } from './PriceSyncPanel';
 import { AIRecommendationsPanel } from './AIRecommendationsPanel';
 import { EnhancedStatsGrid } from './EnhancedStatsGrid';
 import { formatDistanceToNow } from 'date-fns';
-import { fr } from 'date-fns/locale';
+import { useDateFnsLocale } from '@/hooks/useDateFnsLocale';
 
 const ruleTypeLabels: Record<string, string> = {
   markup: 'Markup', margin: 'Marge', fixed: 'Fixe',
@@ -28,6 +28,7 @@ const ruleTypeLabels: Record<string, string> = {
 };
 
 export function PriceRulesDashboard() {
+  const locale = useDateFnsLocale();
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const { data: rules = [], isLoading } = usePriceRules();
   const updateRule = useUpdatePriceRule();
@@ -97,7 +98,7 @@ export function PriceRulesDashboard() {
                         <div className="flex items-center gap-4 mt-1 text-xs text-muted-foreground">
                           <span>{rule.products_affected} produits</span>
                           {rule.last_applied_at && (
-                            <span>Appliqué: {formatDistanceToNow(new Date(rule.last_applied_at), { addSuffix: true, locale: fr })}</span>
+                            <span>Appliqué: {formatDistanceToNow(new Date(rule.last_applied_at), { addSuffix: true, locale })}</span>
                           )}
                         </div>
                       </div>

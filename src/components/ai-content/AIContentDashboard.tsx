@@ -20,9 +20,10 @@ import {
 import { useAIContentTemplates, useGeneratedContent, useAIContentStats, useUpdateContentStatus } from '@/hooks/useAIContent';
 import { CreateTemplateDialog } from './CreateTemplateDialog';
 import { formatDistanceToNow } from 'date-fns';
-import { fr } from 'date-fns/locale';
+import { useDateFnsLocale } from '@/hooks/useDateFnsLocale';
 
 export function AIContentDashboard() {
+  const locale = useDateFnsLocale();
   const [activeTab, setActiveTab] = useState('overview');
   const [showCreateDialog, setShowCreateDialog] = useState(false);
 
@@ -160,7 +161,7 @@ export function AIContentDashboard() {
                     <div>
                       <p className="font-medium">{content.product?.name || 'Produit'}</p>
                       <p className="text-sm text-muted-foreground">
-                        {formatDistanceToNow(new Date(content.created_at), { addSuffix: true, locale: fr })}
+{formatDistanceToNow(new Date(content.created_at), { addSuffix: true, locale })}
                       </p>
                     </div>
                     {getStatusBadge(content.status)}
@@ -251,7 +252,7 @@ export function AIContentDashboard() {
                       </TableCell>
                       <TableCell>{getStatusBadge(content.status)}</TableCell>
                       <TableCell>
-                        {formatDistanceToNow(new Date(content.created_at), { addSuffix: true, locale: fr })}
+                        {formatDistanceToNow(new Date(content.created_at), { addSuffix: true, locale })}
                       </TableCell>
                       <TableCell>
                         <div className="flex gap-1">

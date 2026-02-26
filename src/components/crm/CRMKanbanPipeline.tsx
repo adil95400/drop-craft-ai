@@ -34,7 +34,7 @@ import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useCRMDeals, CRMDeal } from '@/hooks/useCRMDeals';
 import { formatDistanceToNow } from 'date-fns';
-import { fr } from 'date-fns/locale';
+import { useDateFnsLocale } from '@/hooks/useDateFnsLocale';
 
 interface PipelineStage {
   id: string;
@@ -61,6 +61,7 @@ interface DealCardProps {
 }
 
 function DealCard({ deal, onMoveToStage, onEdit, onDelete }: DealCardProps) {
+  const locale = useDateFnsLocale();
   const [isHovered, setIsHovered] = useState(false);
 
   const currentStageIndex = stages.findIndex(s => s.id === deal.stage);
@@ -84,7 +85,7 @@ function DealCard({ deal, onMoveToStage, onEdit, onDelete }: DealCardProps) {
             <div className="flex-1 min-w-0">
               <h4 className="font-semibold truncate">{deal.name}</h4>
               <p className="text-sm text-muted-foreground truncate">
-                {formatDistanceToNow(new Date(deal.created_at), { addSuffix: true, locale: fr })}
+                {formatDistanceToNow(new Date(deal.created_at), { addSuffix: true, locale })}
               </p>
             </div>
             <DropdownMenu>

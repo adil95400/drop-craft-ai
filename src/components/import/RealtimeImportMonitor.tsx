@@ -16,7 +16,7 @@ import {
 import { cn } from '@/lib/utils'
 import { importJobsApi } from '@/services/api/client'
 import { formatDistanceToNow } from 'date-fns'
-import { fr } from 'date-fns/locale'
+import { getDateFnsLocale } from '@/utils/dateFnsLocale'
 
 interface ImportMonitorProps {
   className?: string
@@ -114,7 +114,7 @@ export function RealtimeImportMonitor({
 
       {dataUpdatedAt > 0 && (
         <div className="text-xs text-muted-foreground text-right">
-          {t('common.lastSync', 'Dernière MAJ')}: {formatDistanceToNow(new Date(dataUpdatedAt), { addSuffix: true, locale: fr })}
+          {t('common.lastSync', 'Dernière MAJ')}: {formatDistanceToNow(new Date(dataUpdatedAt), { addSuffix: true, locale: getDateFnsLocale() })}
         </div>
       )}
     </div>
@@ -140,7 +140,7 @@ function JobCard({ job }: { job: ImportJob }) {
       <Progress value={job.progress} className="h-1.5 mb-2" />
       <div className="flex justify-between text-xs text-muted-foreground">
         <span>{job.successfulImports}/{job.totalProducts} {t('import.products', 'produits')}</span>
-        <span>{formatDistanceToNow(job.createdAt, { addSuffix: true, locale: fr })}</span>
+        <span>{formatDistanceToNow(job.createdAt, { addSuffix: true, locale: getDateFnsLocale() })}</span>
       </div>
       {job.failedImports > 0 && (
         <div className="mt-1 text-xs text-destructive">

@@ -11,7 +11,7 @@ import {
 } from 'lucide-react';
 import { useDeleteBulkSupplierOrder, useSubmitBulkSupplierOrder } from '@/hooks/useBulkSupplierOrders';
 import { formatDistanceToNow } from 'date-fns';
-import { fr } from 'date-fns/locale';
+import { useDateFnsLocale } from '@/hooks/useDateFnsLocale';
 
 const STATUS_CONFIG: Record<string, { label: string; color: string; icon: any }> = {
   draft: { label: 'Brouillon', color: 'bg-gray-500', icon: FileText },
@@ -28,6 +28,7 @@ interface BulkOrderCardProps {
 }
 
 export function BulkOrderCard({ order, onView }: BulkOrderCardProps) {
+  const locale = useDateFnsLocale();
   const deleteMutation = useDeleteBulkSupplierOrder();
   const submitMutation = useSubmitBulkSupplierOrder();
 
@@ -55,7 +56,7 @@ export function BulkOrderCard({ order, onView }: BulkOrderCardProps) {
                 <p className="text-sm text-muted-foreground">{order.name}</p>
               )}
               <p className="text-xs text-muted-foreground mt-1">
-                Créée {formatDistanceToNow(new Date(order.created_at), { locale: fr, addSuffix: true })}
+                Créée {formatDistanceToNow(new Date(order.created_at), { locale, addSuffix: true })}
               </p>
             </div>
           </div>
