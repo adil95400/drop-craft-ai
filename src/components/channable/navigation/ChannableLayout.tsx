@@ -11,6 +11,8 @@ import { useIsMobile } from '@/hooks/use-mobile'
 import { MobileHeader, MobileNav } from '@/components/mobile/MobileNav'
 import { SkipToContent } from '@/components/a11y/SkipToContent'
 import { cn } from '@/lib/utils'
+import { DiagnosticWidget } from '@/components/support/DiagnosticWidget'
+import { useRetentionTracking } from '@/hooks/useRetentionTracking'
 
 interface ChannableLayoutProps {
   children: React.ReactNode
@@ -19,6 +21,7 @@ interface ChannableLayoutProps {
 
 export function ChannableLayout({ children, className }: ChannableLayoutProps) {
   const isMobile = useIsMobile()
+  useRetentionTracking()
 
   // Version mobile avec navigation en bas
   if (isMobile) {
@@ -33,6 +36,7 @@ export function ChannableLayout({ children, className }: ChannableLayoutProps) {
         </main>
         <MobileNav />
         <OnboardingModal />
+        <DiagnosticWidget />
       </div>
     )
   }
@@ -57,6 +61,7 @@ export function ChannableLayout({ children, className }: ChannableLayoutProps) {
       </div>
       
       <OnboardingModal />
+      <DiagnosticWidget />
     </SidebarProvider>
   )
 }
