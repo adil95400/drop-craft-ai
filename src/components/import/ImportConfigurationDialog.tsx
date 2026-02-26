@@ -105,7 +105,7 @@ const getMethodConfig = (method: string) => {
         { name: 'shop_domain', label: 'Domaine boutique', placeholder: 'monboutique.myshopify.com', required: true },
         { name: 'api_key', label: 'Clé API', placeholder: 'votre-cle-api', required: true },
         { name: 'api_secret', label: 'Secret API', type: 'password', required: true },
-        { name: 'access_token', label: 'Token d\'accès', placeholder: 'shpat_...', required: true }
+        { name: 'access_token', label: 'Token d\'accès', placeholder: '••••••••••••••••', required: true }
       ]
     },
     woocommerce: {

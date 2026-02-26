@@ -294,7 +294,7 @@ export const ShopifyConnectionGuide = () => {
                 <Input
                   id="accessToken"
                   type="password"
-                  placeholder="shpat_xxxxxxxxxxxxx"
+                  placeholder="••••••••••••••••"
                   value={credentials.accessToken}
                   onChange={(e) => setCredentials(prev => ({ ...prev, accessToken: e.target.value }))}
                 />

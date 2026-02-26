@@ -56,7 +56,7 @@ export const ConnectionForm = ({ platform, onConnect, onCancel }: ConnectionForm
         { key: 'shopDomain', label: 'Domaine Shopify', type: 'text', required: true, 
           help: 'Exemple: votre-boutique.myshopify.com', placeholder: 'votre-boutique.myshopify.com' },
         { key: 'accessToken', label: 'Private App Access Token', type: 'password', required: true,
-          help: 'Token d\'accès depuis votre app privée Shopify', placeholder: 'shpat_xxxxxxxxxxxxx' },
+          help: 'Token d\'accès depuis votre app privée Shopify', placeholder: '••••••••••••••••' },
         { key: 'apiVersion', label: 'Version API', type: 'select', required: false, 
           help: 'Version de l\'API Shopify (par défaut: 2023-10)', placeholder: '2023-10',
           options: ['2023-10', '2023-07', '2023-04'] }

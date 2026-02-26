@@ -154,7 +154,7 @@ export function RealIntegrationsManager() {
                   <Input
                     id="accessToken"
                     type="password"
-                    placeholder="shpat_xxxxxxxxxxxxx"
+                    placeholder="••••••••••••••••"
                     value={shopifyData.accessToken}
                     onChange={(e) => setShopifyData({...shopifyData, accessToken: e.target.value})}
                   />

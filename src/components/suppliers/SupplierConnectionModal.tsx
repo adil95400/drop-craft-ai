@@ -54,13 +54,13 @@ export default function SupplierConnectionModal({
 
   const getFieldPlaceholder = (field: string) => {
     const placeholders: Record<string, string> = {
-      api_key: 'sk_live_xxxxxxxxxxxxx',
-      api_token: 'eyJhbGciOiJIUzI1NiIsInR...',
+      api_key: '••••••••••••••••',
+      api_token: '••••••••••••••••',
       email: 'votre@email.com',
       password: '••••••••',
       account_id: '123456',
-      client_id: 'client_xxxxxxxxxxxxx',
-      client_secret: 'secret_xxxxxxxxxxxxx'
+      client_id: '••••••••••••••••',
+      client_secret: '••••••••••••••••'
     }
     return placeholders[field] || ''
   }
