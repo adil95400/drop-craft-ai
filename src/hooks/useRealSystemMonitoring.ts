@@ -40,6 +40,7 @@ export const useRealSystemMonitoring = () => {
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: ['system-monitoring'],
     queryFn: async () => {
+      const queryStart = performance.now();
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) throw new Error('User not authenticated')
 
@@ -157,7 +158,7 @@ export const useRealSystemMonitoring = () => {
       const health: SystemHealth = {
         status: systemStatus,
         uptime: 99.8,
-        response_time: 145 + Math.random() * 50,
+        response_time: Math.round(performance.now() - queryStart),
         error_rate: errorRate,
         active_users: 1,
         database_health: (ordersError || productsError) ? 'degraded' : 'good',

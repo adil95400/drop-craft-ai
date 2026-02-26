@@ -14,67 +14,29 @@ export interface Review {
 
 export class ReviewsService {
   /**
-   * Récupère les avis pour un produit
+   * Récupère les avis pour un produit depuis la table product_reviews
    */
   static async getProductReviews(productId: string): Promise<Review[]> {
-    // Pour l'instant, créer des avis basés sur les vraies commandes
-    const { data: orders, error } = await supabase
-      .from('orders')
-      .select(`
-        id,
-        created_at,
-        customer_id
-      `)
-      .eq('status', 'delivered')
-      .limit(10);
+    const { data: reviews, error } = await supabase
+      .from('product_reviews')
+      .select('*')
+      .eq('product_id', productId)
+      .order('created_at', { ascending: false })
+      .limit(50);
 
-    if (error || !orders) return [];
+    if (error || !reviews) return [];
 
-    // Convertir les commandes en avis réalistes
-    return orders.map((order, index) => {
-      const customerName = `Client ${index + 1}`;
-
-      const ratings = [5, 5, 4, 5, 4, 5, 3, 5, 4, 5];
-      const rating = ratings[index % ratings.length];
-
-      const comments = [
-        'Très satisfait de mon achat. Produit de qualité et livraison rapide.',
-        'Excellent rapport qualité-prix. Je recommande !',
-        'Conforme à la description. Service client réactif.',
-        'Produit de bonne qualité, livraison dans les temps.',
-        'Bon produit, rien à redire.',
-        'Satisfait de mon achat. Emballage soigné.',
-        'Produit correct mais j\'attendais mieux.',
-        'Parfait ! Exactement ce que je cherchais.',
-        'Très bon produit, je recommande vivement.',
-        'Qualité au rendez-vous. Livraison rapide.'
-      ];
-
-      const titles = [
-        'Excellent produit !',
-        'Très satisfait',
-        'Conforme à mes attentes',
-        'Bonne qualité',
-        'Satisfait',
-        'Bon achat',
-        'Produit correct',
-        'Parfait !',
-        'Je recommande',
-        'Très bon'
-      ];
-
-      return {
-        id: order.id,
-        customer_name: customerName,
-        rating,
-        title: titles[index % titles.length],
-        comment: comments[index % comments.length],
-        verified_purchase: true,
-        helpful_count: Math.floor(Math.random() * 15),
-        created_at: order.created_at,
-        images: []
-      };
-    });
+    return reviews.map((review) => ({
+      id: review.id,
+      customer_name: review.author || 'Client anonyme',
+      rating: review.rating,
+      title: review.text?.substring(0, 50) || 'Avis',
+      comment: review.text || '',
+      verified_purchase: review.verified_purchase ?? false,
+      helpful_count: review.helpful_count ?? 0,
+      created_at: review.review_date || review.created_at,
+      images: review.images || [],
+    }));
   }
 
   /**
