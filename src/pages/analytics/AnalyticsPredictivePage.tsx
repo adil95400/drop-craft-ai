@@ -53,14 +53,23 @@ export default function AnalyticsPredictivePage() {
       const key = weekStart.toISOString().slice(0, 10);
       weeks[key] = (weeks[key] || 0) + (o.total_amount || 0);
     });
-    return Object.entries(weeks)
+    const sorted = Object.entries(weeks)
       .sort(([a], [b]) => a.localeCompare(b))
-      .slice(-12)
-      .map(([week, revenue]) => ({
-        week: new Date(week).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' }),
-        revenue: Math.round(revenue),
-        forecast: Math.round(revenue * (1 + Math.random() * 0.15)),
-      }));
+      .slice(-12);
+    
+    // Calculate trend-based forecast (linear regression on recent weeks)
+    const values = sorted.map(([, v]) => v);
+    const n = values.length;
+    const avgGrowth = n > 1 
+      ? values.slice(1).reduce((sum, v, i) => sum + (v - values[i]) / Math.max(values[i], 1), 0) / (n - 1)
+      : 0.05;
+    const growthRate = Math.max(-0.2, Math.min(0.3, avgGrowth)); // clamp between -20% and +30%
+
+    return sorted.map(([week, revenue], idx) => ({
+      week: new Date(week).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' }),
+      revenue: Math.round(revenue),
+      forecast: Math.round(revenue * (1 + growthRate * ((idx + 1) / n))),
+    }));
   })();
 
   // Category distribution

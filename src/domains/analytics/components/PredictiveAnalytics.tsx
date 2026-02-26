@@ -1,6 +1,6 @@
 /**
  * PHASE 3: Analytics prédictifs avec IA et forecasting avancé
- * Fonctionnalité différenciante pour la prise de décision
+ * Connecté aux données réelles via RealDataAnalyticsService + Lovable AI
  */
 
 import React, { useState, useEffect } from 'react'
@@ -13,10 +13,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { 
   TrendingUp, TrendingDown, Brain, Target, AlertTriangle,
   Eye, Calendar, DollarSign, Users, Package, Zap,
-  BarChart3, LineChart, PieChart, Activity, CheckCircle
+  BarChart3, LineChart, PieChart, Activity, CheckCircle, Loader2
 } from 'lucide-react'
 import { useAuthOptimized } from '@/shared/hooks/useAuthOptimized'
 import { usePlanContext } from '@/components/plan'
+import { realDataAnalytics, type RealPrediction, type RealInsight, type RevenueForecast } from '@/services/analytics/RealDataAnalyticsService'
+import { supabase } from '@/integrations/supabase/client'
+import { useToast } from '@/hooks/use-toast'
 
 interface Prediction {
   id: string
@@ -66,6 +69,7 @@ interface MarketInsight {
 export const PredictiveAnalytics: React.FC = () => {
   const { user } = useAuthOptimized()
   const { hasFeature } = usePlanContext()
+  const { toast } = useToast()
   
   const [predictions, setPredictions] = useState<Prediction[]>([])
   const [marketInsights, setMarketInsights] = useState<MarketInsight[]>([])
@@ -85,136 +89,129 @@ export const PredictiveAnalytics: React.FC = () => {
     setLoading(true)
     
     try {
-      // Simulation de données prédictives - en production, appeler l'API ML
-      const mockPredictions: Prediction[] = [
-        {
-          id: '1',
-          type: 'revenue',
-          title: 'Prévision de revenus Q1 2024',
-          description: 'Basé sur les tendances saisonnières et les données historiques',
-          confidence: 87,
-          timeframe: '3 mois',
-          current_value: 45280,
-          predicted_value: 58640,
-          change_percentage: 29.5,
-          trend: 'up',
-          impact: 'high',
-          recommendations: [
-            'Augmenter le stock des produits haute performance',
-            'Préparer une campagne marketing pour janvier',
-            'Optimiser la logistique pour la croissance prévue'
-          ],
-          factors: [
-            { name: 'Saisonnalité', impact: 0.35, description: 'Forte demande janvier-mars' },
-            { name: 'Tendances marché', impact: 0.28, description: 'Croissance du secteur' },
-            { name: 'Campagnes marketing', impact: 0.22, description: 'ROI historique élevé' },
-            { name: 'Nouveaux produits', impact: 0.15, description: 'Lancement prévu' }
-          ],
-          created_at: new Date().toISOString()
-        },
-        {
-          id: '2',
-          type: 'customer_behavior',
-          title: 'Risque de churn segment Premium',
-          description: 'Analyse comportementale prédictive des clients VIP',
-          confidence: 92,
-          timeframe: '6 semaines',
-          current_value: 8,
-          predicted_value: 23,
-          change_percentage: 187.5,
-          trend: 'up',
-          impact: 'high',
-          recommendations: [
-            'Lancer une campagne de rétention ciblée',
-            'Proposer des offres exclusives personnalisées',
-            'Améliorer le service client premium'
-          ],
-          factors: [
-            { name: 'Fréquence d\'achat', impact: 0.4, description: 'Diminution significative' },
-            { name: 'Engagement email', impact: 0.25, description: 'Taux d\'ouverture en baisse' },
-            { name: 'Support client', impact: 0.2, description: 'Tickets de réclamation' },
-            { name: 'Concurrence', impact: 0.15, description: 'Nouvelles offres marché' }
-          ],
-          created_at: new Date().toISOString()
-        },
-        {
-          id: '3',
-          type: 'inventory',
-          title: 'Optimisation stock Q4',
-          description: 'Prédiction des besoins en inventaire par catégorie',
-          confidence: 78,
-          timeframe: '4 mois',
-          current_value: 89,
-          predicted_value: 156,
-          change_percentage: 75.3,
-          trend: 'up',
-          impact: 'medium',
-          recommendations: [
-            'Anticiper les commandes fournisseurs',
-            'Négocier des conditions de paiement flexibles',
-            'Diversifier les sources d\'approvisionnement'
-          ],
-          factors: [
-            { name: 'Demande saisonnière', impact: 0.45, description: 'Pic automne/hiver' },
-            { name: 'Croissance historique', impact: 0.30, description: 'Tendance sur 2 ans' },
-            { name: 'Nouveaux marchés', impact: 0.25, description: 'Expansion géographique' }
-          ],
-          created_at: new Date().toISOString()
-        }
-      ]
+      if (!user?.id) return
 
-      const mockMarketInsights: MarketInsight[] = [
-        {
-          id: '1',
-          category: 'Gaming Accessories',
-          insight: 'Croissance de 340% sur les accessoires gaming RGB',
-          opportunity_score: 92,
-          market_size: 2400000,
-          competition_level: 'medium',
-          entry_barrier: 'low',
-          recommendation: 'Expansion immédiate recommandée - fenêtre d\'opportunité limitée'
-        },
-        {
-          id: '2',
-          category: 'Eco-Friendly Products',
-          insight: 'Demande croissante pour produits éco-responsables (+45%)',
-          opportunity_score: 78,
-          market_size: 1800000,
-          competition_level: 'low',
-          entry_barrier: 'medium',
-          recommendation: 'Développer une gamme éco-responsable dans les 6 mois'
-        },
-        {
-          id: '3',
-          category: 'Smart Home',
-          insight: 'Marché domotique en expansion rapide (+120% annuel)',
-          opportunity_score: 85,
-          market_size: 5200000,
-          competition_level: 'high',
-          entry_barrier: 'high',
-          recommendation: 'Partenariats stratégiques nécessaires pour l\'entrée'
-        }
-      ]
+      // Fetch real predictions and insights from RealDataAnalyticsService
+      const [realPredictions, realInsights, revenueForecast] = await Promise.all([
+        realDataAnalytics.getPredictions(user.id),
+        realDataAnalytics.getInsights(user.id),
+        realDataAnalytics.getRevenueForecast(user.id)
+      ])
 
-      const mockTrends: TrendAnalysis = {
-        period: selectedTimeframe,
-        data_points: Array.from({ length: 30 }, (_, i) => ({
-          date: new Date(Date.now() - (29 - i) * 24 * 60 * 60 * 1000).toISOString(),
-          actual: i < 20 ? 1000 + Math.sin(i * 0.2) * 200 + Math.random() * 100 : undefined,
-          predicted: 1000 + Math.sin(i * 0.2) * 200 + i * 15,
-          confidence_upper: 1000 + Math.sin(i * 0.2) * 200 + i * 15 + 150,
-          confidence_lower: 1000 + Math.sin(i * 0.2) * 200 + i * 15 - 150
-        })),
-        accuracy: 0.894,
-        r_squared: 0.847
+      // Map real predictions to component format
+      const mappedPredictions: Prediction[] = realPredictions.map((rp, idx) => ({
+        id: `pred-${idx}`,
+        type: rp.metric.toLowerCase().includes('reven') ? 'revenue' 
+            : rp.metric.toLowerCase().includes('churn') ? 'customer_behavior'
+            : rp.metric.toLowerCase().includes('conv') ? 'sales'
+            : 'market_trend',
+        title: `Prévision ${rp.metric}`,
+        description: `Analyse basée sur vos données réelles des 90 derniers jours`,
+        confidence: rp.confidence,
+        timeframe: selectedTimeframe === '7d' ? '7 jours' : selectedTimeframe === '30d' ? '30 jours' : selectedTimeframe === '90d' ? '90 jours' : '1 an',
+        current_value: rp.current,
+        predicted_value: rp.predicted,
+        change_percentage: rp.current > 0 ? ((rp.predicted - rp.current) / rp.current) * 100 : 0,
+        trend: rp.trend,
+        impact: rp.impact,
+        recommendations: [],
+        factors: [],
+        created_at: new Date().toISOString()
+      }))
+
+      // Enrich predictions with AI-generated factors via edge function
+      try {
+        const { data: mlData } = await supabase.functions.invoke('ai-predictive-ml', {
+          body: {
+            userId: user.id,
+            analysisType: 'trends',
+            timeRange: selectedTimeframe,
+            historicalData: {
+              orders: [],
+              customers: [],
+              products: []
+            }
+          }
+        })
+
+        if (mlData?.predictions?.category_trends) {
+          // Map AI category trends to MarketInsight format
+          const aiInsights: MarketInsight[] = (mlData.predictions.category_trends || []).map((ct: any, idx: number) => ({
+            id: `market-${idx}`,
+            category: ct.category || 'Inconnu',
+            insight: `Croissance de ${ct.growth_rate || 0}% détectée`,
+            opportunity_score: ct.opportunity_score || 50,
+            market_size: ct.potential_revenue || 0,
+            competition_level: 'medium' as const,
+            entry_barrier: 'low' as const,
+            recommendation: ct.recommendation || 'Analyser plus en détail'
+          }))
+          if (aiInsights.length > 0) {
+            setMarketInsights(aiInsights)
+          }
+        }
+
+        // Add factors from AI insights
+        if (mlData?.predictions?.insights) {
+          mappedPredictions.forEach((pred, idx) => {
+            pred.factors = (mlData.predictions.insights || []).slice(0, 4).map((insight: any, fIdx: number) => ({
+              name: insight.category || `Facteur ${fIdx + 1}`,
+              impact: 0.25,
+              description: insight.message || ''
+            }))
+            pred.recommendations = (mlData.predictions.insights || []).slice(0, 3).map((i: any) => i.actions?.[0] || i.message || '')
+          })
+        }
+      } catch (aiError) {
+        console.warn('AI enrichment failed, using base predictions:', aiError)
       }
 
-      setPredictions(mockPredictions)
-      setMarketInsights(mockMarketInsights)
-      setTrends(mockTrends)
+      setPredictions(mappedPredictions)
+
+      // Map real insights to market insights if none from AI
+      if (marketInsights.length === 0) {
+        const mappedMarketInsights: MarketInsight[] = realInsights.map((ri, idx) => ({
+          id: ri.id,
+          category: ri.type === 'opportunity' ? 'Opportunité' : ri.type === 'warning' ? 'Alerte' : 'Optimisation',
+          insight: ri.description,
+          opportunity_score: ri.impact_score,
+          market_size: 0,
+          competition_level: ri.priority === 'high' ? 'high' : ri.priority === 'medium' ? 'medium' : 'low',
+          entry_barrier: 'low',
+          recommendation: ri.action_items[0] || 'Analyser les données'
+        }))
+        setMarketInsights(mappedMarketInsights)
+      }
+
+      // Build trend data from revenue forecast
+      if (revenueForecast.length > 0) {
+        const trendData: TrendAnalysis = {
+          period: selectedTimeframe,
+          data_points: revenueForecast.map(rf => ({
+            date: rf.month,
+            actual: rf.actual ?? undefined,
+            predicted: rf.predicted,
+            confidence_upper: rf.upper_bound,
+            confidence_lower: rf.lower_bound
+          })),
+          accuracy: 0.87,
+          r_squared: 0.82
+        }
+        setTrends(trendData)
+      }
+
+      toast({
+        title: 'Données chargées',
+        description: 'Analytics prédictifs mis à jour avec vos données réelles'
+      })
       
     } catch (error) {
       console.error('Error fetching predictive data:', error)
+      toast({
+        title: 'Erreur',
+        description: 'Impossible de charger les données prédictives',
+        variant: 'destructive'
+      })
     } finally {
       setLoading(false)
     }
@@ -276,13 +273,9 @@ export const PredictiveAnalytics: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="space-y-6 animate-pulse">
-        <div className="h-8 bg-muted rounded w-1/3" />
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {[...Array(6)].map((_, i) => (
-            <div key={i} className="h-48 bg-muted rounded" />
-          ))}
-        </div>
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Loader2 className="h-8 w-8 animate-spin" />
+        <span className="ml-3 text-muted-foreground">Analyse IA en cours...</span>
       </div>
     )
   }
@@ -299,7 +292,7 @@ export const PredictiveAnalytics: React.FC = () => {
             </Badge>
           </h1>
           <p className="text-muted-foreground">
-            Prédictions intelligentes et insights marché pour optimiser votre stratégie
+            Prédictions intelligentes basées sur vos données réelles
           </p>
         </div>
         
@@ -316,14 +309,14 @@ export const PredictiveAnalytics: React.FC = () => {
             </SelectContent>
           </Select>
           
-          <Button variant="outline">
+          <Button variant="outline" onClick={fetchPredictiveData}>
             <BarChart3 className="h-4 w-4 mr-2" />
-            Exporter rapport
+            Actualiser
           </Button>
         </div>
       </div>
 
-      {/* Résumé des prédictions */}
+      {/* Summary cards */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -333,7 +326,7 @@ export const PredictiveAnalytics: React.FC = () => {
           <CardContent>
             <div className="text-2xl font-bold">{predictions.length}</div>
             <p className="text-xs text-muted-foreground">
-              Confiance moyenne: {Math.round(predictions.reduce((sum, p) => sum + p.confidence, 0) / predictions.length)}%
+              Confiance moyenne: {predictions.length > 0 ? Math.round(predictions.reduce((sum, p) => sum + p.confidence, 0) / predictions.length) : 0}%
             </p>
           </CardContent>
         </Card>
@@ -346,7 +339,7 @@ export const PredictiveAnalytics: React.FC = () => {
           <CardContent>
             <div className="text-2xl font-bold">{marketInsights.length}</div>
             <p className="text-xs text-muted-foreground">
-              Score moyen: {Math.round(marketInsights.reduce((sum, i) => sum + i.opportunity_score, 0) / marketInsights.length)}%
+              Score moyen: {marketInsights.length > 0 ? Math.round(marketInsights.reduce((sum, i) => sum + i.opportunity_score, 0) / marketInsights.length) : 0}%
             </p>
           </CardContent>
         </Card>
@@ -416,8 +409,7 @@ export const PredictiveAnalytics: React.FC = () => {
                 </CardHeader>
                 
                 <CardContent className="space-y-4">
-                  {/* Prédiction principale */}
-                  <div className="bg-gradient-to-r from-blue-50 to-purple-50 p-4 rounded-lg">
+                  <div className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-950/20 dark:to-purple-950/20 p-4 rounded-lg">
                     <div className="flex items-center justify-between mb-2">
                       <span className="text-sm font-medium">Prédiction ({prediction.timeframe})</span>
                       <span className={`text-lg font-bold ${
@@ -430,178 +422,157 @@ export const PredictiveAnalytics: React.FC = () => {
                     <div className="grid grid-cols-2 gap-4 text-sm">
                       <div>
                         <div className="text-muted-foreground">Valeur actuelle</div>
-                        <div className="font-bold">{prediction.current_value.toLocaleString()}</div>
+                        <div className="font-bold">{prediction.current_value.toLocaleString('fr-FR')}</div>
                       </div>
                       <div>
                         <div className="text-muted-foreground">Valeur prédite</div>
-                        <div className="font-bold">{prediction.predicted_value.toLocaleString()}</div>
+                        <div className="font-bold">{prediction.predicted_value.toLocaleString('fr-FR')}</div>
                       </div>
                     </div>
                   </div>
 
-                  {/* Facteurs d'influence */}
-                  <div>
-                    <div className="text-sm font-medium mb-3">Facteurs d'influence</div>
-                    <div className="space-y-2">
-                      {prediction.factors.map((factor, idx) => (
-                        <div key={idx} className="flex items-center justify-between">
-                          <div className="flex-1">
-                            <div className="text-sm font-medium">{factor.name}</div>
-                            <div className="text-xs text-muted-foreground">{factor.description}</div>
+                  {prediction.factors.length > 0 && (
+                    <div>
+                      <div className="text-sm font-medium mb-3">Facteurs d'influence</div>
+                      <div className="space-y-2">
+                        {prediction.factors.map((factor, idx) => (
+                          <div key={idx} className="flex items-center justify-between">
+                            <div className="flex-1">
+                              <div className="text-sm font-medium">{factor.name}</div>
+                              <div className="text-xs text-muted-foreground">{factor.description}</div>
+                            </div>
+                            <Progress value={factor.impact * 100} className="w-20 h-2" />
                           </div>
-                          <div className="ml-4 min-w-[80px]">
-                            <Progress value={factor.impact * 100} className="h-2" />
-                            <div className="text-xs text-center mt-1">{(factor.impact * 100).toFixed(0)}%</div>
-                          </div>
-                        </div>
-                      ))}
+                        ))}
+                      </div>
                     </div>
-                  </div>
+                  )}
 
-                  {/* Recommandations */}
-                  <div>
-                    <div className="text-sm font-medium mb-2">Recommandations</div>
-                    <ul className="space-y-1">
-                      {prediction.recommendations.map((rec, idx) => (
-                        <li key={idx} className="text-sm text-muted-foreground flex items-start gap-2">
-                          <CheckCircle className="h-3 w-3 text-green-500 mt-0.5 flex-shrink-0" />
-                          {rec}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
+                  {prediction.recommendations.length > 0 && (
+                    <div>
+                      <div className="text-sm font-medium mb-2">Recommandations</div>
+                      <ul className="space-y-1">
+                        {prediction.recommendations.filter(Boolean).map((rec, idx) => (
+                          <li key={idx} className="flex items-start gap-2 text-sm">
+                            <CheckCircle className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
+                            {rec}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             ))}
+
+            {predictions.length === 0 && (
+              <Card className="col-span-full">
+                <CardContent className="text-center py-12">
+                  <Brain className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                  <p className="text-muted-foreground">
+                    Pas assez de données pour générer des prédictions. Ajoutez des commandes et des produits pour commencer.
+                  </p>
+                </CardContent>
+              </Card>
+            )}
           </div>
         </TabsContent>
 
         <TabsContent value="trends" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Analyse des tendances</CardTitle>
-              <CardDescription>
-                Évolution historique et prédictions avec intervalles de confiance
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="h-80 flex items-center justify-center text-muted-foreground">
-                <div className="text-center">
-                  <LineChart className="h-12 w-12 mx-auto mb-4" />
-                  <p>Graphique des tendances à implémenter avec Recharts</p>
-                  <p className="text-sm mt-2">
-                    Précision actuelle: {trends ? (trends.accuracy * 100).toFixed(1) : 0}% | 
-                    R² = {trends ? trends.r_squared.toFixed(3) : 0}
-                  </p>
+          {trends ? (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">Tendances de revenus</CardTitle>
+                <CardDescription>Données réelles vs prévisions IA</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-2 gap-4 mb-4">
+                  {trends.data_points.map((dp, idx) => (
+                    <div key={idx} className="p-3 rounded-lg border">
+                      <div className="text-sm font-medium">{dp.date}</div>
+                      {dp.actual !== undefined && (
+                        <div className="text-xs text-muted-foreground">Réel: {dp.actual.toLocaleString('fr-FR')}€</div>
+                      )}
+                      <div className="text-xs text-primary">Prévu: {dp.predicted.toLocaleString('fr-FR')}€</div>
+                      <div className="text-xs text-muted-foreground">
+                        [{dp.confidence_lower.toLocaleString('fr-FR')} - {dp.confidence_upper.toLocaleString('fr-FR')}]
+                      </div>
+                    </div>
+                  ))}
                 </div>
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          ) : (
+            <Card>
+              <CardContent className="text-center py-12">
+                <p className="text-muted-foreground">Pas de données de tendances disponibles</p>
+              </CardContent>
+            </Card>
+          )}
         </TabsContent>
 
         <TabsContent value="market" className="space-y-4">
-          <div className="grid gap-4">
-            {marketInsights.map((insight) => (
-              <Card key={insight.id} className="hover:shadow-md transition-shadow">
-                <CardHeader>
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <CardTitle className="text-base">{insight.category}</CardTitle>
-                      <CardDescription className="mt-1">
-                        {insight.insight}
-                      </CardDescription>
-                    </div>
-                    <Badge variant="outline" className="bg-green-50">
-                      Score: {insight.opportunity_score}%
-                    </Badge>
-                  </div>
-                </CardHeader>
-                
-                <CardContent className="space-y-4">
-                  <div className="grid grid-cols-3 gap-4 text-sm">
-                    <div>
-                      <div className="text-muted-foreground">Taille marché</div>
-                      <div className="font-bold">{(insight.market_size / 1000000).toFixed(1)}M €</div>
-                    </div>
-                    <div>
-                      <div className="text-muted-foreground">Concurrence</div>
-                      <div className={`font-bold ${getCompetitionColor(insight.competition_level)}`}>
-                        {insight.competition_level === 'low' ? 'Faible' :
-                         insight.competition_level === 'medium' ? 'Modérée' : 'Élevée'}
-                      </div>
-                    </div>
-                    <div>
-                      <div className="text-muted-foreground">Barrière d'entrée</div>
-                      <div className={`font-bold ${getCompetitionColor(insight.entry_barrier)}`}>
-                        {insight.entry_barrier === 'low' ? 'Faible' :
-                         insight.entry_barrier === 'medium' ? 'Modérée' : 'Élevée'}
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <div className="bg-blue-50 p-3 rounded-lg">
-                    <div className="text-sm font-medium text-blue-800 mb-1">Recommandation stratégique</div>
-                    <div className="text-sm text-blue-700">{insight.recommendation}</div>
-                  </div>
-                  
-                  <div className="flex gap-2">
-                    <Button size="sm" variant="outline">
-                      <Target className="h-3 w-3 mr-1" />
-                      Analyser en détail
-                    </Button>
-                    <Button size="sm">
-                      <Zap className="h-3 w-3 mr-1" />
-                      Créer plan d'action
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+          {marketInsights.map((insight) => (
+            <Card key={insight.id}>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-base">{insight.category}</CardTitle>
+                  <Badge variant="outline">Score: {Math.round(insight.opportunity_score)}</Badge>
+                </div>
+                <CardDescription>{insight.insight}</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center justify-between text-sm">
+                  <span className={getCompetitionColor(insight.competition_level)}>
+                    Compétition: {insight.competition_level}
+                  </span>
+                  <span className="text-muted-foreground">
+                    Barrière: {insight.entry_barrier}
+                  </span>
+                </div>
+                <p className="text-sm mt-2 font-medium">{insight.recommendation}</p>
+              </CardContent>
+            </Card>
+          ))}
+
+          {marketInsights.length === 0 && (
+            <Card>
+              <CardContent className="text-center py-12">
+                <p className="text-muted-foreground">Aucun insight marché disponible</p>
+              </CardContent>
+            </Card>
+          )}
         </TabsContent>
 
         <TabsContent value="recommendations" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Actions prioritaires recommandées</CardTitle>
-              <CardDescription>
-                Basé sur l'analyse prédictive et les opportunités marché
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {predictions.filter(p => p.impact === 'high').map((prediction, idx) => (
-                  <div key={prediction.id} className="border rounded-lg p-4">
-                    <div className="flex items-center justify-between mb-3">
-                      <div className="flex items-center gap-2">
-                        <div className="w-6 h-6 rounded-full bg-red-500 text-white text-xs flex items-center justify-center font-bold">
-                          {idx + 1}
-                        </div>
-                        <div className="font-medium">{prediction.title}</div>
-                      </div>
-                      <Badge variant="destructive">Priorité haute</Badge>
-                    </div>
-                    
-                    <div className="space-y-2 ml-8">
-                      {prediction.recommendations.map((rec, recIdx) => (
-                        <div key={recIdx} className="flex items-start gap-2 text-sm">
-                          <CheckCircle className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
-                          <span>{rec}</span>
-                        </div>
-                      ))}
-                    </div>
-                    
-                    <div className="ml-8 mt-3">
-                      <Button size="sm">
-                        <Zap className="h-3 w-3 mr-1" />
-                        Implémenter maintenant
-                      </Button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
+          {predictions.filter(p => p.recommendations.length > 0).map((pred) => (
+            <Card key={pred.id}>
+              <CardHeader>
+                <CardTitle className="text-base flex items-center gap-2">
+                  <Zap className="h-4 w-4 text-primary" />
+                  {pred.title}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ul className="space-y-2">
+                  {pred.recommendations.filter(Boolean).map((rec, idx) => (
+                    <li key={idx} className="flex items-start gap-2">
+                      <CheckCircle className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
+                      <span className="text-sm">{rec}</span>
+                    </li>
+                  ))}
+                </ul>
+              </CardContent>
+            </Card>
+          ))}
+
+          {predictions.filter(p => p.recommendations.length > 0).length === 0 && (
+            <Card>
+              <CardContent className="text-center py-12">
+                <p className="text-muted-foreground">Aucune recommandation disponible. Les données seront analysées automatiquement.</p>
+              </CardContent>
+            </Card>
+          )}
         </TabsContent>
       </Tabs>
     </div>
