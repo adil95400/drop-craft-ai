@@ -2,7 +2,7 @@
  * Email Campaign Builder - Version enrichie avec éditeur visuel et templates
  */
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useCallback } from 'react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -21,6 +21,7 @@ import {
 import { motion, AnimatePresence } from 'framer-motion'
 import { useRealTimeMarketing } from '@/hooks/useRealTimeMarketing'
 import { useToast } from '@/hooks/use-toast'
+import { supabase } from '@/integrations/supabase/client'
 import { cn } from '@/lib/utils'
 
 // Templates d'email prédéfinis
@@ -214,7 +215,7 @@ export function EmailCampaignBuilder() {
     }))
   }
 
-  const handleSaveCampaign = async () => {
+  const handleSaveCampaign = useCallback(async () => {
     if (!campaignData.name.trim() || !campaignData.subject.trim()) {
       toast({ 
         title: "Champs requis", 
@@ -223,12 +224,31 @@ export function EmailCampaignBuilder() {
       })
       return
     }
-    // TODO: Sauvegarder via API
+
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) {
+      toast({ title: "Non authentifié", variant: "destructive" })
+      return
+    }
+
+    const { error } = await supabase.from('email_campaigns').insert({
+      user_id: user.id,
+      name: campaignData.name,
+      subject: campaignData.subject,
+      content: campaignData.content,
+      status: 'draft',
+    })
+
+    if (error) {
+      toast({ title: "Erreur de sauvegarde", description: error.message, variant: "destructive" })
+      return
+    }
+
     toast({ 
       title: "Campagne sauvegardée", 
       description: `"${campaignData.name}" enregistrée avec succès` 
     })
-  }
+  }, [campaignData, toast])
 
   const handleSendTest = () => {
     toast({ 
