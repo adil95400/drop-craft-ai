@@ -207,7 +207,7 @@ ${product.rating ? `- Note : ${product.rating}/5 (${product.reviews || 0} avis)`
                           <Icon className="h-5 w-5" />
                           <span className="font-medium">{channel.name}</span>
                           {isPublished && (
-                            <Check className="h-4 w-4 text-green-500 ml-auto" />
+                            <Check className="h-4 w-4 text-success ml-auto" />
                           )}
                         </div>
                         {channel.requiresAuth && (
@@ -248,7 +248,7 @@ ${product.rating ? `- Note : ${product.rating}/5 (${product.reviews || 0} avis)`
                           <Icon className="h-5 w-5" />
                           <span className="font-medium">{channel.name}</span>
                           {isPublished && (
-                            <Check className="h-4 w-4 text-green-500 ml-auto" />
+                            <Check className="h-4 w-4 text-success ml-auto" />
                           )}
                         </div>
                         {channel.requiresAuth && (
@@ -289,7 +289,7 @@ ${product.rating ? `- Note : ${product.rating}/5 (${product.reviews || 0} avis)`
                           <Icon className="h-5 w-5" />
                           <span className="font-medium">{channel.name}</span>
                           {isPublished && (
-                            <Check className="h-4 w-4 text-green-500 ml-auto" />
+                            <Check className="h-4 w-4 text-success ml-auto" />
                           )}
                         </div>
                         {channel.requiresAuth && (
@@ -330,7 +330,7 @@ ${product.rating ? `- Note : ${product.rating}/5 (${product.reviews || 0} avis)`
                           <Icon className="h-5 w-5" />
                           <span className="font-medium">{channel.name}</span>
                           {isPublished && (
-                            <Check className="h-4 w-4 text-green-500 ml-auto" />
+                            <Check className="h-4 w-4 text-success ml-auto" />
                           )}
                         </div>
                       </div>

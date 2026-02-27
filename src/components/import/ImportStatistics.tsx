@@ -153,8 +153,8 @@ export const ImportStatistics = () => {
           <div className="flex items-center gap-1 mt-1">
             {stats.trend === 'up' && (
               <>
-                <TrendingUp className="h-3 w-3 text-green-600" />
-                <span className="text-xs text-green-600">En hausse</span>
+                <TrendingUp className="h-3 w-3 text-success" />
+                <span className="text-xs text-success">En hausse</span>
               </>
             )}
             {stats.trend === 'down' && (
@@ -181,7 +181,7 @@ export const ImportStatistics = () => {
           </div>
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold text-green-600 dark:text-green-400">
+          <div className="text-2xl font-bold text-success">
             {stats.successRate}%
           </div>
           <p className="text-xs text-muted-foreground mt-1">

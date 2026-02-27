@@ -161,9 +161,9 @@ export function APIKeyManager() {
           </div>
 
           {showNewKey && (
-            <Card className="bg-green-500/10 border-green-500">
+            <Card className="bg-success/10 border-success">
               <CardContent className="pt-4">
-                <Label className="text-green-700 dark:text-green-400 font-semibold">
+                <Label className="text-success font-semibold">
                   ⚠️ Nouvelle clé API (copiez-la maintenant!)
                 </Label>
                 <div className="flex items-center gap-2 mt-2">

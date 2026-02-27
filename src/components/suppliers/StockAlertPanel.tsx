@@ -55,12 +55,12 @@ export function StockAlertPanel({ supplierId, monitorResult }: StockAlertPanelPr
           <div className="text-2xl font-bold text-destructive">{summary.outOfStock}</div>
         </Card>
 
-        <Card className="p-4 border-yellow-500">
+        <Card className="p-4 border-warning">
           <div className="flex items-center gap-2 mb-2">
-            <TrendingDown className="h-4 w-4 text-yellow-600" />
+            <TrendingDown className="h-4 w-4 text-warning" />
             <span className="text-sm text-muted-foreground">Stock faible</span>
           </div>
-          <div className="text-2xl font-bold text-yellow-600">{summary.lowStock}</div>
+          <div className="text-2xl font-bold text-warning">{summary.lowStock}</div>
         </Card>
 
         <Card className="p-4">
@@ -100,20 +100,20 @@ export function StockAlertPanel({ supplierId, monitorResult }: StockAlertPanelPr
       {lowStock.length > 0 && (
         <Card className="p-6">
           <h4 className="text-lg font-semibold mb-4 flex items-center gap-2">
-            <TrendingDown className="h-5 w-5 text-yellow-600" />
+            <TrendingDown className="h-5 w-5 text-warning" />
             Stock Faible ({lowStock.length})
           </h4>
           <div className="space-y-2">
             {lowStock.map((item) => (
               <div
                 key={item.sku}
-                className="flex items-center justify-between p-3 bg-yellow-50 dark:bg-yellow-950/20 rounded-lg"
+                className="flex items-center justify-between p-3 bg-warning/10 rounded-lg"
               >
                 <div>
                   <div className="font-medium">{item.name}</div>
                   <div className="text-sm text-muted-foreground">SKU: {item.sku}</div>
                 </div>
-                <Badge variant="outline" className="border-yellow-500 text-yellow-600">
+                <Badge variant="outline" className="border-warning text-warning">
                   Stock: {item.stock}
                 </Badge>
               </div>

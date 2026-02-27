@@ -90,8 +90,8 @@ export function UnifiedCatalog() {
 
   const planBadge = renderByPlan({
     standard: <Badge variant="outline">Standard</Badge>,
-    pro: <Badge variant="default" className="bg-blue-600"><Zap className="w-3 h-3 mr-1" />Pro</Badge>,
-    ultra_pro: <Badge variant="default" className="bg-gradient-to-r from-purple-600 to-pink-600">
+    pro: <Badge variant="default" className="bg-info"><Zap className="w-3 h-3 mr-1" />Pro</Badge>,
+    ultra_pro: <Badge variant="default" className="bg-gradient-to-r from-primary to-accent">
       <Brain className="w-3 h-3 mr-1" />Ultra Pro
     </Badge>
   })
@@ -367,7 +367,7 @@ export function UnifiedCatalog() {
               <div className="grid grid-cols-1 gap-4">
                 <Card className="p-6">
                   <div className="flex items-center gap-3 mb-4">
-                    <TrendingUp className="w-5 h-5 text-green-600" />
+                    <TrendingUp className="w-5 h-5 text-success" />
                     <h4 className="font-medium">Opportunités Détectées</h4>
                     <Badge variant="outline">3 nouvelles</Badge>
                   </div>
