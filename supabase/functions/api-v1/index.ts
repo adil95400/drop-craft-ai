@@ -327,6 +327,206 @@ async function proxyEdgeFunction(fnName: string, req: Request, auth: Auth, reqId
   }
 }
 
+// ── SEO ─────────────────────────────────────────────────────────────────────
+
+async function listSeoAudits(url: URL, auth: Auth, reqId: string) {
+  const { page, perPage, from, to } = parsePagination(url);
+  const status = url.searchParams.get("status");
+  const targetType = url.searchParams.get("target_type");
+  const admin = serviceClient();
+  let q = admin.from("seo_audits").select("*", { count: "exact" }).eq("user_id", auth.user.id).order("created_at", { ascending: false }).range(from, to);
+  if (status) q = q.eq("status", status);
+  if (targetType) q = q.eq("target_type", targetType);
+  const { data, count, error } = await q;
+  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
+  const items = (data ?? []).map((a: any) => ({
+    audit_id: a.id,
+    target_type: a.target_type ?? "url",
+    target_id: a.target_id,
+    url: a.url,
+    score: a.score,
+    status: a.status ?? "completed",
+    provider: a.provider ?? "internal",
+    language: a.language ?? "fr",
+    summary: a.summary,
+    created_at: a.created_at,
+    completed_at: a.completed_at,
+  }));
+  return json({ items, meta: { page, per_page: perPage, total: count ?? 0 } }, 200, reqId);
+}
+
+async function getSeoAudit(auditId: string, auth: Auth, reqId: string) {
+  const admin = serviceClient();
+  const { data, error } = await admin.from("seo_audits").select("*").eq("id", auditId).eq("user_id", auth.user.id).single();
+  if (error || !data) return errorResponse("NOT_FOUND", "Audit not found", 404, reqId);
+  // Fetch issues
+  const { data: pages } = await admin.from("seo_audit_pages").select("id").eq("audit_id", auditId);
+  const pageIds = (pages ?? []).map((p: any) => p.id);
+  let issues: any[] = [];
+  if (pageIds.length > 0) {
+    const { data: issueRows } = await admin.from("seo_issues").select("*").in("page_id", pageIds);
+    issues = issueRows ?? [];
+  }
+  return json({
+    audit_id: data.id,
+    target_type: data.target_type ?? "url",
+    target_id: data.target_id,
+    url: data.url,
+    score: data.score,
+    status: data.status ?? "completed",
+    provider: data.provider ?? "internal",
+    language: data.language ?? "fr",
+    summary: data.summary,
+    error_message: data.error_message,
+    issues,
+    created_at: data.created_at,
+    completed_at: data.completed_at,
+  }, 200, reqId);
+}
+
+async function createSeoAudit(req: Request, auth: Auth, reqId: string) {
+  const body = await req.json();
+  if (!body.url) return errorResponse("VALIDATION_ERROR", "url is required", 400, reqId);
+  const admin = serviceClient();
+  const { data, error } = await admin.from("seo_audits").insert({
+    user_id: auth.user.id,
+    url: body.url,
+    target_type: body.scope ?? "url",
+    target_id: body.target_id ?? null,
+    language: body.language ?? "fr",
+    provider: body.provider ?? "internal",
+    status: "pending",
+    options: body.options ?? {},
+  }).select("id, status").single();
+  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
+  return json({ audit_id: data.id, status: data.status }, 201, reqId);
+}
+
+async function listProductSeoScores(url: URL, auth: Auth, reqId: string) {
+  const { page, perPage, from, to } = parsePagination(url);
+  const status = url.searchParams.get("status");
+  const sort = url.searchParams.get("sort");
+  const admin = serviceClient();
+  let q = admin.from("products").select("id, title, seo_title, seo_description, description, images, status, price, category", { count: "exact" }).eq("user_id", auth.user.id).range(from, to);
+  if (status === "active") q = q.eq("status", "active");
+  
+  const { data, count, error } = await q;
+  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
+  
+  const items = (data ?? []).map((p: any) => {
+    // Compute a simple SEO score
+    let score = 0;
+    const issues: any[] = [];
+    const strengths: string[] = [];
+    
+    if (p.seo_title && p.seo_title.length >= 10) { score += 20; strengths.push("Titre SEO présent"); }
+    else issues.push({ id: "no_seo_title", severity: "critical", category: "title", message: "Titre SEO manquant", recommendation: "Ajoutez un titre SEO de 50-60 caractères" });
+    
+    if (p.seo_description && p.seo_description.length >= 20) { score += 20; strengths.push("Meta description présente"); }
+    else issues.push({ id: "no_seo_desc", severity: "critical", category: "meta", message: "Meta description manquante", recommendation: "Ajoutez une meta description de 150-160 caractères" });
+    
+    if (p.title && p.title.length >= 5) { score += 20; strengths.push("Titre produit présent"); }
+    else issues.push({ id: "no_title", severity: "warning", category: "content", message: "Titre produit trop court" });
+    
+    if (p.description && p.description.length >= 50) { score += 20; strengths.push("Description détaillée"); }
+    else issues.push({ id: "short_desc", severity: "warning", category: "content", message: "Description trop courte", recommendation: "Minimum 150 caractères recommandés" });
+    
+    const imgs = Array.isArray(p.images) ? p.images : [];
+    if (imgs.length > 0) { score += 20; strengths.push("Images présentes"); }
+    else issues.push({ id: "no_images", severity: "warning", category: "images", message: "Aucune image produit" });
+    
+    const statusLabel = score >= 80 ? "optimized" : score >= 50 ? "needs_work" : "critical";
+    
+    return {
+      product_id: p.id,
+      product_name: p.title ?? "Sans titre",
+      current: { seo_title: p.seo_title, seo_description: p.seo_description, title: p.title, description: p.description },
+      score: { global: score, seo: (p.seo_title ? 50 : 0) + (p.seo_description ? 50 : 0), content: p.description?.length > 50 ? 80 : 30, images: imgs.length > 0 ? 100 : 0, data: score, ai_readiness: score },
+      status: statusLabel,
+      issues,
+      strengths,
+      business_impact: { traffic_impact: score < 50 ? "high" : "medium", conversion_impact: score < 50 ? "high" : "low", estimated_traffic_gain_percent: Math.max(0, 80 - score), estimated_conversion_gain_percent: Math.max(0, 40 - score / 2), priority: score < 40 ? "urgent" : score < 70 ? "high" : "normal" },
+    };
+  });
+  
+  // Sort
+  if (sort === "score_asc") items.sort((a: any, b: any) => a.score.global - b.score.global);
+  else if (sort === "score_desc") items.sort((a: any, b: any) => b.score.global - a.score.global);
+  
+  const stats = {
+    avg_score: items.length > 0 ? Math.round(items.reduce((s: number, i: any) => s + i.score.global, 0) / items.length) : 0,
+    critical: items.filter((i: any) => i.status === "critical").length,
+    needs_work: items.filter((i: any) => i.status === "needs_work").length,
+    optimized: items.filter((i: any) => i.status === "optimized").length,
+    total: count ?? 0,
+  };
+  
+  return json({ items, stats, meta: { page, per_page: perPage, total: count ?? 0 } }, 200, reqId);
+}
+
+async function auditProductsSeo(req: Request, auth: Auth, reqId: string) {
+  const body = await req.json();
+  const productIds = body.product_ids;
+  if (!Array.isArray(productIds) || productIds.length === 0) return errorResponse("VALIDATION_ERROR", "product_ids array required", 400, reqId);
+  // Reuse scores logic for specific products
+  const admin = serviceClient();
+  const { data, error } = await admin.from("products").select("id, title, seo_title, seo_description, description, images").eq("user_id", auth.user.id).in("id", productIds);
+  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
+  
+  const products = (data ?? []).map((p: any) => {
+    let score = 0;
+    if (p.seo_title && p.seo_title.length >= 10) score += 25;
+    if (p.seo_description && p.seo_description.length >= 20) score += 25;
+    if (p.title && p.title.length >= 5) score += 25;
+    if (p.description && p.description.length >= 50) score += 25;
+    return {
+      product_id: p.id,
+      product_name: p.title ?? "Sans titre",
+      current: { seo_title: p.seo_title, seo_description: p.seo_description, title: p.title, description: p.description },
+      score: { global: score, seo: (p.seo_title ? 50 : 0) + (p.seo_description ? 50 : 0), content: p.description?.length > 50 ? 80 : 30, images: Array.isArray(p.images) && p.images.length > 0 ? 100 : 0, data: score, ai_readiness: score },
+      status: score >= 80 ? "optimized" : score >= 50 ? "needs_work" : "critical",
+      issues: [],
+      strengths: [],
+      business_impact: { traffic_impact: "medium", conversion_impact: "low", estimated_traffic_gain_percent: 0, estimated_conversion_gain_percent: 0, priority: "normal" },
+    };
+  });
+  
+  return json({ products, total: products.length, audited_at: new Date().toISOString() }, 200, reqId);
+}
+
+async function seoGenerate(req: Request, auth: Auth, reqId: string) {
+  const body = await req.json();
+  if (!body.target_id) return errorResponse("VALIDATION_ERROR", "target_id is required", 400, reqId);
+  const admin = serviceClient();
+  const { data: job, error } = await admin.from("jobs").insert({
+    user_id: auth.user.id,
+    job_type: "seo",
+    job_subtype: "generate",
+    status: "pending",
+    name: `SEO Generate: ${body.target_type ?? "product"}`,
+    input_data: body,
+  }).select("id, status").single();
+  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
+  return json({ job_id: job.id, status: job.status }, 201, reqId);
+}
+
+async function seoApply(req: Request, auth: Auth, reqId: string) {
+  const body = await req.json();
+  if (!body.target_id || !body.fields) return errorResponse("VALIDATION_ERROR", "target_id and fields required", 400, reqId);
+  const admin = serviceClient();
+  // Apply SEO fields to the product
+  const updates: Record<string, unknown> = {};
+  const appliedFields: string[] = [];
+  for (const [k, v] of Object.entries(body.fields)) {
+    if (PRODUCT_ALLOWED_FIELDS.has(k)) { updates[k] = v; appliedFields.push(k); }
+  }
+  if (Object.keys(updates).length > 0) {
+    const { error } = await admin.from("products").update(updates).eq("id", body.target_id).eq("user_id", auth.user.id);
+    if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
+  }
+  return json({ success: true, target_id: body.target_id, applied_fields: appliedFields }, 200, reqId);
+}
+
 // ── Router ──────────────────────────────────────────────────────────────────
 const EXT_PREFIXES = ["/v1/automation", "/v1/marketing", "/v1/ads", "/v1/crm", "/v1/finance", "/v1/monetization", "/v1/ai", "/v1/bi"];
 
@@ -356,12 +556,47 @@ Deno.serve(async (req) => {
 
     const m = req.method;
 
+    // ── SEO
+    if (path === "/v1/seo/audits" && m === "GET") return listSeoAudits(url, auth, reqId);
+    if (path === "/v1/seo/audit" && m === "POST") return createSeoAudit(req, auth, reqId);
+    if (path === "/v1/seo/products/scores" && m === "GET") return listProductSeoScores(url, auth, reqId);
+    if (path === "/v1/seo/products/audit" && m === "POST") return auditProductsSeo(req, auth, reqId);
+    if (path === "/v1/seo/generate" && m === "POST") return seoGenerate(req, auth, reqId);
+    if (path === "/v1/seo/apply" && m === "POST") return seoApply(req, auth, reqId);
+    let params = matchRoute("/v1/seo/audits/:id", path);
+    if (params && m === "GET") return getSeoAudit(params.id, auth, reqId);
+    params = matchRoute("/v1/seo/generate/:id", path);
+    if (params && m === "GET") {
+      const admin = serviceClient();
+      const { data, error } = await admin.from("jobs").select("*").eq("id", params.id).eq("user_id", auth.user.id).single();
+      if (error || !data) return errorResponse("NOT_FOUND", "Generation job not found", 404, reqId);
+      return json({ job_id: data.id, status: data.status, target_type: data.input_data?.target_type, target_id: data.input_data?.target_id, result: data.output_data, created_at: data.created_at }, 200, reqId);
+    }
+    params = matchRoute("/v1/seo/products/:id/score", path);
+    if (params && m === "GET") {
+      const admin = serviceClient();
+      const { data: p, error } = await admin.from("products").select("id, title, seo_title, seo_description, description, images").eq("id", params.id).eq("user_id", auth.user.id).single();
+      if (error || !p) return errorResponse("NOT_FOUND", "Product not found", 404, reqId);
+      let score = 0;
+      if (p.seo_title && p.seo_title.length >= 10) score += 25;
+      if (p.seo_description && p.seo_description.length >= 20) score += 25;
+      if (p.title && p.title.length >= 5) score += 25;
+      if (p.description && p.description.length >= 50) score += 25;
+      return json({ product_id: p.id, product_name: p.title, score: { global: score }, status: score >= 80 ? "optimized" : score >= 50 ? "needs_work" : "critical", issues: [], strengths: [] }, 200, reqId);
+    }
+    params = matchRoute("/v1/seo/products/:id/history", path);
+    if (params && m === "GET") {
+      const admin = serviceClient();
+      const { data } = await admin.from("seo_history_snapshots").select("*").eq("product_id", params.id).order("created_at", { ascending: false }).limit(20);
+      return json({ items: data ?? [], meta: { page: 1, per_page: 20, total: (data ?? []).length } }, 200, reqId);
+    }
+
     // ── Products
     if (path === "/v1/products/stats" && m === "GET") return productStats(auth, reqId);
     if (path === "/v1/products/bulk" && (m === "PATCH" || m === "POST")) return bulkUpdateProducts(req, auth, reqId);
     if (path === "/v1/products" && m === "GET") return listProducts(url, auth, reqId);
     if (path === "/v1/products" && m === "POST") return createProduct(req, auth, reqId);
-    let params = matchRoute("/v1/products/:id", path);
+    params = matchRoute("/v1/products/:id", path);
     if (params && m === "GET") return getProduct(params.id, auth, reqId);
     if (params && m === "PUT") return updateProduct(params.id, req, auth, reqId);
     if (params && m === "PATCH") return updateProduct(params.id, req, auth, reqId);
