@@ -19,6 +19,8 @@ import {
 } from 'lucide-react';
 import { useSalesChannels, useChannelSyncLogs, useChannelStats, useStartChannelSync, useDeleteSalesChannel } from '@/hooks/useMultiChannel';
 import { CreateChannelDialog } from './CreateChannelDialog';
+import { EmailMarketingTab } from './EmailMarketingTab';
+import { SocialMediaTab } from './SocialMediaTab';
 import { formatDistanceToNow } from 'date-fns';
 import { getDateFnsLocale } from '@/utils/dateFnsLocale';
 import { SalesChannel } from '@/services/MultiChannelService';
@@ -128,9 +130,11 @@ export function MultiChannelDashboard() {
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <div className="flex justify-between items-center">
-          <TabsList>
+          <TabsList className="flex-wrap">
             <TabsTrigger value="channels">Canaux de vente</TabsTrigger>
             <TabsTrigger value="sync-logs">Historique sync</TabsTrigger>
+            <TabsTrigger value="email">Email Marketing</TabsTrigger>
+            <TabsTrigger value="social">Réseaux sociaux</TabsTrigger>
           </TabsList>
 
           <Button onClick={() => setShowCreateDialog(true)}>
@@ -259,6 +263,14 @@ export function MultiChannelDashboard() {
               </Table>
             </CardContent>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="email">
+          <EmailMarketingTab />
+        </TabsContent>
+
+        <TabsContent value="social">
+          <SocialMediaTab />
         </TabsContent>
       </Tabs>
 
