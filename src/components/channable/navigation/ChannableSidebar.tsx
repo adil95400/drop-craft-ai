@@ -9,7 +9,7 @@
  * - Debounce sur la recherche
  * - Memoization optimisée
  */
-import { useState, useMemo, useCallback, memo } from "react";
+import { useState, useMemo, useCallback, useEffect, memo } from "react";
 import { useHeaderNotifications } from "@/hooks/useHeaderNotifications";
 import shopoptiLogo from "@/assets/logo-shopopti.png";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -129,7 +129,7 @@ const ChannableNavItem = memo(({
   isActive: boolean;
   hasAccess: boolean;
   collapsed: boolean;
-  groupColor: typeof GROUP_COLORS.home;
+  groupColor: typeof GROUP_COLORS.dashboard;
   isFavorite: boolean;
   onNavigate: (route: string) => void;
   onFavoriteToggle: () => void;
@@ -280,7 +280,7 @@ const ChannableNavGroup = memo(({
 }) => {
   const prefersReducedMotion = useReducedMotion();
   const Icon = ICON_MAP[group.icon] || Package;
-  const color = GROUP_COLORS[group.id] || GROUP_COLORS.home;
+  const color = GROUP_COLORS[group.id] || GROUP_COLORS.dashboard;
   const hasActiveModule = modules.some(m => activeRoute(m.route));
   return <SidebarGroup className="py-0.5">
       <motion.button onClick={onToggle} className={cn("w-full flex items-center gap-2.5 px-2.5 py-2.5 rounded-xl transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50", "hover:bg-sidebar-accent/40 dark:hover:bg-sidebar-accent/20", isOpen && "bg-sidebar-accent/30 dark:bg-sidebar-accent/15", hasActiveModule && `${color?.bg} ${color?.border} border`, collapsed && "justify-center px-0")} whileHover={prefersReducedMotion ? undefined : {
@@ -493,9 +493,7 @@ export function ChannableSidebar() {
   const { t } = useTranslation('common');
   const [searchQuery, setSearchQuery] = useState("");
   const [openGroups, setOpenGroups] = useState<NavGroupId[]>([]);
-  const [openSubMenus, setOpenSubMenus] = useState<Record<string, boolean>>({
-    marketing: true
-  });
+  const [openSubMenus, setOpenSubMenus] = useState<Record<string, boolean>>({});
 
   // Debounce search for better performance
   const debouncedSearchQuery = useDebouncedValue(searchQuery, 150);
@@ -513,6 +511,21 @@ export function ChannableSidebar() {
     currentPlan,
     isAdminBypass
   } = useModules();
+
+  // Auto-open the group containing the active route
+  const activeGroupId = useMemo(() => {
+    const activeModule = availableModules.find(m => 
+      location.pathname === m.route || location.pathname.startsWith(m.route + '/')
+    );
+    return activeModule?.groupId || null;
+  }, [location.pathname, availableModules]);
+
+  // Ensure active group is always open
+  useEffect(() => {
+    if (activeGroupId && !openGroups.includes(activeGroupId)) {
+      setOpenGroups(prev => prev.includes(activeGroupId) ? prev : [...prev, activeGroupId]);
+    }
+  }, [activeGroupId]);
   const favorites = useFavorites();
   const isActive = useCallback((path: string) => {
     return location.pathname === path || location.pathname.startsWith(path + '/');

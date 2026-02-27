@@ -120,12 +120,16 @@ function useMobileNavGroups() {
   return useMemo(() => {
     // Grouper les modules par groupId
     const modulesByGroup: Record<NavGroupId, ModuleConfig[]> = {
-      home: [],
+      dashboard: [],
       catalog: [],
-      sourcing: [],
-      sales: [],
-      performance: [],
-      config: [],
+      orders: [],
+      customers: [],
+      marketing: [],
+      automation: [],
+      integrations: [],
+      reports: [],
+      settings: [],
+      help: [],
     };
 
     // Remplir les groupes avec les modules
