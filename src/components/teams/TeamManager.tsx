@@ -145,13 +145,13 @@ export function TeamManager() {
   const getRoleIcon = (role: string) => {
     switch (role) {
       case 'owner':
-        return <Shield className="h-4 w-4 text-yellow-500" />;
+        return <Shield className="h-4 w-4 text-warning" />;
       case 'admin':
-        return <Settings className="h-4 w-4 text-blue-500" />;
+        return <Settings className="h-4 w-4 text-info" />;
       case 'viewer':
-        return <Eye className="h-4 w-4 text-gray-500" />;
+        return <Eye className="h-4 w-4 text-muted-foreground" />;
       default:
-        return <Users className="h-4 w-4 text-green-500" />;
+        return <Users className="h-4 w-4 text-success" />;
     }
   };
 

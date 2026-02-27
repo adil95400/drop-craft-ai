@@ -247,9 +247,9 @@ export default function ProductDetailsPage() {
   }, [product, id])
 
   const getHealthColor = (score: number) => {
-    if (score >= 80) return 'text-green-500'
-    if (score >= 50) return 'text-orange-500'
-    return 'text-red-500'
+    if (score >= 80) return 'text-success'
+    if (score >= 50) return 'text-warning'
+    return 'text-destructive'
   }
 
   const getHealthBadge = (score: number) => {
@@ -259,9 +259,9 @@ export default function ProductDetailsPage() {
   }
 
   const getPriorityColor = (priority: string) => {
-    if (priority === 'high') return 'border-red-500/30 bg-red-500/5'
-    if (priority === 'medium') return 'border-orange-500/30 bg-orange-500/5'
-    return 'border-blue-500/30 bg-blue-500/5'
+    if (priority === 'high') return 'border-destructive/30 bg-destructive/5'
+    if (priority === 'medium') return 'border-warning/30 bg-warning/5'
+    return 'border-info/30 bg-info/5'
   }
 
   const getPriorityBadge = (priority: string) => {

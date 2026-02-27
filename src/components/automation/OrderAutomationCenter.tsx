@@ -100,10 +100,10 @@ export function OrderAutomationCenter() {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'completed': return 'text-green-600 bg-green-100'
-      case 'processing': return 'text-blue-600 bg-blue-100'
-      case 'failed': return 'text-red-600 bg-red-100'
-      default: return 'text-yellow-600 bg-yellow-100'
+      case 'completed': return 'text-success bg-success/10'
+      case 'processing': return 'text-info bg-info/10'
+      case 'failed': return 'text-destructive bg-destructive/10'
+      default: return 'text-warning bg-warning/10'
     }
   }
 
@@ -146,7 +146,7 @@ export function OrderAutomationCenter() {
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center">
-              <Settings className="h-8 w-8 text-blue-600" />
+              <Settings className="h-8 w-8 text-info" />
               <div className="ml-3">
                 <p className="text-sm font-medium text-muted-foreground">Règles Totales</p>
                 <p className="text-2xl font-bold">{stats.total_rules}</p>
@@ -158,7 +158,7 @@ export function OrderAutomationCenter() {
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center">
-              <Zap className="h-8 w-8 text-green-600" />
+              <Zap className="h-8 w-8 text-success" />
               <div className="ml-3">
                 <p className="text-sm font-medium text-muted-foreground">Règles Actives</p>
                 <p className="text-2xl font-bold">{stats.active_rules}</p>
@@ -170,7 +170,7 @@ export function OrderAutomationCenter() {
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center">
-              <Activity className="h-8 w-8 text-purple-600" />
+              <Activity className="h-8 w-8 text-primary" />
               <div className="ml-3">
                 <p className="text-sm font-medium text-muted-foreground">Jobs Aujourd'hui</p>
                 <p className="text-2xl font-bold">{stats.jobs_completed_today}</p>
@@ -182,7 +182,7 @@ export function OrderAutomationCenter() {
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center">
-              <CheckCircle className="h-8 w-8 text-emerald-600" />
+              <CheckCircle className="h-8 w-8 text-success" />
               <div className="ml-3">
                 <p className="text-sm font-medium text-muted-foreground">Taux de Réussite</p>
                 <p className="text-2xl font-bold">{stats.success_rate}%</p>
@@ -194,7 +194,7 @@ export function OrderAutomationCenter() {
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center">
-              <Clock className="h-8 w-8 text-orange-600" />
+              <Clock className="h-8 w-8 text-warning" />
               <div className="ml-3">
                 <p className="text-sm font-medium text-muted-foreground">Temps Économisé</p>
                 <p className="text-2xl font-bold">{stats.time_saved_hours}h</p>
@@ -330,7 +330,7 @@ function AutomationRuleCard({
   }
 
   return (
-    <Card className={`border-l-4 ${rule.is_active ? 'border-l-green-500' : 'border-l-gray-300'}`}>
+    <Card className={`border-l-4 ${rule.is_active ? 'border-l-success' : 'border-l-border'}`}>
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <div>
@@ -404,10 +404,10 @@ function AutomationRuleCard({
 function JobStatusCard({ job }: { job: OrderAutomationJob }) {
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'completed': return 'text-green-600 bg-green-100'
-      case 'processing': return 'text-blue-600 bg-blue-100'
-      case 'failed': return 'text-red-600 bg-red-100'
-      default: return 'text-yellow-600 bg-yellow-100'
+      case 'completed': return 'text-success bg-success/10'
+      case 'processing': return 'text-info bg-info/10'
+      case 'failed': return 'text-destructive bg-destructive/10'
+      default: return 'text-warning bg-warning/10'
     }
   }
 

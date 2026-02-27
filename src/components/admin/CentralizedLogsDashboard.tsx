@@ -127,9 +127,9 @@ export function CentralizedLogsDashboard() {
   const getLevelIcon = (level: string) => {
     switch (level) {
       case 'error': return <AlertCircle className="h-3.5 w-3.5 text-destructive" />;
-      case 'warn': return <AlertTriangle className="h-3.5 w-3.5 text-yellow-500" />;
-      case 'success': return <CheckCircle className="h-3.5 w-3.5 text-green-500" />;
-      default: return <Info className="h-3.5 w-3.5 text-blue-500" />;
+      case 'warn': return <AlertTriangle className="h-3.5 w-3.5 text-warning" />;
+      case 'success': return <CheckCircle className="h-3.5 w-3.5 text-success" />;
+      default: return <Info className="h-3.5 w-3.5 text-info" />;
     }
   };
 
@@ -168,7 +168,7 @@ export function CentralizedLogsDashboard() {
         {[
           { label: 'Total', value: stats.total, icon: FileText },
           { label: 'Erreurs', value: stats.errors, icon: AlertCircle, className: 'text-destructive' },
-          { label: 'Warnings', value: stats.warnings, icon: AlertTriangle, className: 'text-yellow-500' },
+          { label: 'Warnings', value: stats.warnings, icon: AlertTriangle, className: 'text-warning' },
           { label: 'Activité', value: stats.activity, icon: FileText },
           { label: 'API', value: stats.api, icon: Globe },
           { label: 'Audit', value: stats.audit, icon: Shield },
@@ -255,7 +255,7 @@ export function CentralizedLogsDashboard() {
                   <div
                     key={log.id}
                     className={`flex items-start gap-2 px-2 py-1.5 rounded hover:bg-muted/50 transition-colors ${
-                      log.level === 'error' ? 'bg-destructive/5' : log.level === 'warn' ? 'bg-yellow-500/5' : ''
+                      log.level === 'error' ? 'bg-destructive/5' : log.level === 'warn' ? 'bg-warning/5' : ''
                     }`}
                   >
                     <span className="text-muted-foreground whitespace-nowrap flex items-center gap-1 shrink-0">
