@@ -108,7 +108,7 @@ Génère un JSON avec:
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            model: 'openai/gpt-5-mini',
+            model: 'openai/gpt-5-nano',
             messages: [
               { role: 'system', content: 'Tu es un expert SEO e-commerce. Réponds uniquement en JSON valide.' },
               { role: 'user', content: prompt }

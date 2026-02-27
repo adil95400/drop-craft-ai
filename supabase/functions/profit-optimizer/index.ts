@@ -46,7 +46,7 @@ Return ONLY a JSON array of strings (no markdown, no code blocks):
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'openai/gpt-5-mini',
+        model: 'openai/gpt-5-nano',
         messages: [
           { 
             role: 'system', 

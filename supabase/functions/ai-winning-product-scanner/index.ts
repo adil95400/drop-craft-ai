@@ -71,7 +71,7 @@ For each product, provide realistic data based on current TikTok Shop trends.`
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      model: 'openai/gpt-5-mini',
+      model: 'openai/gpt-5-nano',
       messages: [
         { role: 'system', content: 'You are a TikTok advertising and dropshipping product research AI. You analyze market trends, ad performance data, and consumer behavior to identify winning products.' },
         { role: 'user', content: prompt },
@@ -198,7 +198,7 @@ async function scoreProductsWithAI(params: any, userId: string, supabase: any) {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      model: 'openai/gpt-5-mini',
+      model: 'openai/gpt-5-nano',
       messages: [
         { role: 'system', content: 'You are an expert dropshipping product scorer for TikTok Shop.' },
         { role: 'user', content: `Score these products for TikTok Shop potential (0-100):\n${productList}` },

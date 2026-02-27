@@ -1,7 +1,7 @@
 /**
  * AI Assistant Edge Function - Powered by Lovable AI Gateway
  * Conversational AI for product analysis, strategy, and e-commerce guidance
- * Uses OpenAI GPT-5-mini for fast, intelligent responses
+ * Uses OpenAI GPT-5-nano for fast, intelligent responses
  */
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
@@ -60,7 +60,7 @@ ${context ? JSON.stringify(context) : "Aucun contexte spécifique fourni."}
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "openai/gpt-5-mini",
+        model: "openai/gpt-5-nano",
         messages: [
           { role: "system", content: systemPrompt },
           ...sanitizedMessages,

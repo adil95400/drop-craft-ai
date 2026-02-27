@@ -137,7 +137,7 @@ Types de recommandations attendus:
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      model: "openai/gpt-5-mini",
+      model: "openai/gpt-5-nano",
       messages: [
         { role: "system", content: "Tu es un moteur de recommandation e-commerce. Réponds toujours en JSON valide, sans markdown." },
         { role: "user", content: prompt },

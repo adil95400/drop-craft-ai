@@ -61,7 +61,7 @@ Format de réponse (JSON strict):
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'openai/gpt-5-mini',
+        model: 'openai/gpt-5-nano',
         messages: [
           { role: 'system', content: 'Tu es un expert en e-commerce et catégorisation de produits. Réponds uniquement en JSON valide.' },
           { role: 'user', content: prompt }

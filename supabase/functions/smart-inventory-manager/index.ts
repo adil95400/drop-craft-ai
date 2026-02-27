@@ -103,7 +103,7 @@ async function analyzeDemand(productData: any) {
       method: 'POST',
       headers: { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        model: 'openai/gpt-5-mini',
+        model: 'openai/gpt-5-nano',
         messages: [
           { role: 'system', content: 'Expert en gestion de stock. Analyse et retourne du JSON uniquement.' },
           { role: 'user', content: `Analyse demande: stock=${productData.currentStock}, commandes=${productData.orderHistory.length}. Retourne JSON: { "trend": "stable|up|down", "avgDemandPerDay": number, "seasonality": {}, "forecast": { "next7Days": number, "next30Days": number }, "variability": "low|medium|high", "accuracy": number }` }

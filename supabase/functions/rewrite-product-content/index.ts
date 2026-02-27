@@ -79,7 +79,7 @@ Format de réponse (JSON strict):
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'openai/gpt-5-mini',
+        model: 'openai/gpt-5-nano',
         messages: [
           { role: 'system', content: 'Tu es un expert copywriter e-commerce. Réponds uniquement en JSON valide.' },
           { role: 'user', content: prompt }
@@ -166,7 +166,7 @@ Deno.serve(async (req) => {
         rewritten_title: rewrittenContent.title || null,
         rewritten_description: rewrittenContent.description || null,
         was_applied: false,
-        ai_model: 'openai/gpt-5-mini',
+        ai_model: 'openai/gpt-5-nano',
       })
       .select()
       .single()
