@@ -40,11 +40,11 @@ const SupplierImportDialog = ({ supplier, isOpen, onClose }: SupplierImportDialo
       description: `Import en cours depuis ${supplier.displayName}...`
     })
     
-    // Simulate import process
+    // Simulate import process — actual count will come from backend response
     setTimeout(() => {
       toast({
         title: "Import terminé",
-        description: `${Math.floor(Math.random() * 50 + 10)} produits importés depuis ${supplier.displayName}`
+        description: `Produits importés depuis ${supplier.displayName}`
       })
       onClose()
     }, 2000)

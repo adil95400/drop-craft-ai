@@ -91,8 +91,8 @@ export const RealTimeSupplierMonitor = () => {
         name: s.name,
         status: isActive ? 'online' : 'error',
         lastSync: new Date(s.updated_at || s.created_at),
-        responseTime: Math.floor(Math.random() * 300 + 100), // Real API monitoring would provide this
-        uptime: isActive ? 99 + Math.random() : 80 + Math.random() * 10,
+        responseTime: isActive ? 200 : 0, // Placeholder until real API monitoring is wired
+        uptime: isActive ? 99.9 : 0,
         productsCount: productCounts[s.id] || 0,
         ordersToday: 0,
         performanceScore: Math.min(100, rating * 20 || 75),
@@ -138,7 +138,7 @@ export const RealTimeSupplierMonitor = () => {
     return times.map(time => {
       const entry: Record<string, any> = { time }
       suppliers.slice(0, 4).forEach(s => {
-        entry[s.name] = Math.floor(s.responseTime + (Math.random() - 0.5) * 100)
+        entry[s.name] = s.responseTime
       })
       return entry
     })

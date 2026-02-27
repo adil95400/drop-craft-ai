@@ -63,8 +63,8 @@ export function SupportAvailabilityIndicator({
 
       if (todaySchedule && currentHour >= todaySchedule.start && currentHour < todaySchedule.end) {
         setIsHumanAvailable(true);
-        // Simulate agent count (in production, this would come from backend)
-        setCurrentAgents(Math.floor(Math.random() * 3) + (isVIP ? 2 : 1));
+        // Fixed agent count based on tier (real count would come from backend)
+        setCurrentAgents(isVIP ? 3 : 1);
       } else {
         setIsHumanAvailable(false);
         setCurrentAgents(0);

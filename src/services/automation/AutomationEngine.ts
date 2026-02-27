@@ -187,9 +187,15 @@ export class AutomationEngine {
   }
 
   private async evaluateCondition(config: Record<string, any>, execution: AutomationExecution): Promise<Record<string, any>> {
-    // Simulate condition evaluation
-    const result = Math.random() > 0.3; // 70% success rate
-    
+    // Evaluate condition based on actual config values
+    let result = true;
+    if (config.condition_type === 'threshold' && config.threshold != null && config.current_value != null) {
+      result = config.current_value >= config.threshold;
+    } else if (config.condition_type === 'equals' && config.expected != null && config.actual != null) {
+      result = config.expected === config.actual;
+    }
+    // Default to true if no evaluable condition is provided
+
     return {
       condition_met: result,
       condition_type: config.condition_type,

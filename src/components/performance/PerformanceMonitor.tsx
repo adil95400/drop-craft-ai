@@ -49,8 +49,7 @@ export function PerformanceMonitor({ children, showWidget = false }: Performance
         setMetrics(prev => ({
           ...prev,
           memoryUsage: Math.round((performanceMemory.usedJSHeapSize / performanceMemory.jsHeapSizeLimit) * 100),
-          fps: Math.floor(Math.random() * 10) + 55, // 55-65 FPS
-          renderCount: prev.renderCount + Math.floor(Math.random() * 3) + 1
+          renderCount: prev.renderCount + 1,
         }))
       }
     }

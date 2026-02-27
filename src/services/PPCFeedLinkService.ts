@@ -242,14 +242,19 @@ export const PPCFeedLinkService = {
 
     const startTime = Date.now();
 
-    // Simulate sync process
-    const productsProcessed = Math.floor(Math.random() * 500) + 50;
-    const productsAdded = Math.floor(productsProcessed * 0.1);
-    const productsUpdated = Math.floor(productsProcessed * 0.6);
-    const productsRemoved = Math.floor(productsProcessed * 0.05);
-    const errorsCount = Math.floor(Math.random() * 5);
+    // Count real products for this user to base sync stats on actual data
+    const { count: productsProcessed } = await supabase
+      .from('products')
+      .select('id', { count: 'exact', head: true })
+      .eq('user_id', userData.user!.id);
 
-    const duration = Date.now() - startTime + Math.floor(Math.random() * 2000);
+    const total = productsProcessed || 0;
+    const productsAdded = 0; // real additions would come from diff logic
+    const productsUpdated = total;
+    const productsRemoved = 0;
+    const errorsCount = 0;
+
+    const duration = Date.now() - startTime;
 
     // Create sync log
     const { data: syncLog, error: logError } = await supabase
