@@ -92,6 +92,10 @@ serve(async (req) => {
           if (contentTypes.includes('bullet_points')) {
             toolParams.bullet_points = { type: "array", items: { type: "string" }, description: "5-7 points clés/bénéfices produit" };
           }
+          if (contentTypes.includes('alt_text')) {
+            toolParams.alt_text = { type: "string", description: "Texte alternatif descriptif et optimisé SEO pour l'image principale du produit (max 125 caractères)" };
+            toolParams.alt_text_variants = { type: "array", items: { type: "string" }, description: "3 variantes de texte alternatif pour les images secondaires du produit" };
+          }
 
           const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
             method: 'POST',
@@ -147,6 +151,8 @@ serve(async (req) => {
               ? JSON.stringify({ meta_title: generated.meta_title, meta_description: generated.meta_description, seo_keywords: generated.seo_keywords })
               : contentType === 'bullet_points'
               ? JSON.stringify(generated.bullet_points)
+              : contentType === 'alt_text'
+              ? JSON.stringify({ main: generated.alt_text, variants: generated.alt_text_variants })
               : generated[contentType] || '';
 
             if (contentValue) {
