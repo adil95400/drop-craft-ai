@@ -4,6 +4,7 @@
  */
 
 import { supabase } from '@/integrations/supabase/client'
+import { logger } from '@/utils/logger'
 import type { FulfillmentShipment, FulfillmentCarrier, FulfillmentStats } from '@/types/marketplace-fulfillment'
 
 export class FulfillmentService {
@@ -14,9 +15,9 @@ export class FulfillmentService {
     orderId: string,
     carrierId: string
   ): Promise<{ labelUrl: string; trackingNumber: string }> {
-    const trackingNumber = `TR${Date.now()}${Math.floor(Math.random() * 1000)}`
+    const trackingNumber = `TR${Date.now()}${crypto.getRandomValues(new Uint32Array(1))[0] % 1000}`
     const labelUrl = `https://labels.example.com/${trackingNumber}.pdf`
-    console.log('Generating label for order', orderId, 'with carrier', carrierId)
+    logger.info('Generating shipping label', { component: 'FulfillmentService', metadata: { orderId, carrierId } })
     return { labelUrl, trackingNumber }
   }
 

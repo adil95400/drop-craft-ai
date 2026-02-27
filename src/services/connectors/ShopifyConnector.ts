@@ -1,4 +1,5 @@
 import { BaseConnector, SupplierProduct, SupplierCredentials, SyncResult, FetchOptions } from './BaseConnector';
+import { logger } from '@/utils/logger';
 
 export class ShopifyConnector extends BaseConnector {
   constructor(credentials: SupplierCredentials) {
@@ -33,7 +34,7 @@ export class ShopifyConnector extends BaseConnector {
       let hasNextPage = true;
       const limit = options?.limit || 250; // Use 250 as max per page
 
-      console.log('Starting Shopify product fetch with pagination...');
+      logger.info('Starting Shopify product fetch with pagination', { component: 'ShopifyConnector' });
 
       // Paginate through all products
       while (hasNextPage) {
@@ -43,7 +44,7 @@ export class ShopifyConnector extends BaseConnector {
         const products = response.products || [];
         allProducts = allProducts.concat(products);
         
-        console.log(`Fetched ${products.length} products. Total so far: ${allProducts.length}`);
+        logger.debug(`Fetched ${products.length} products, total: ${allProducts.length}`, { component: 'ShopifyConnector' });
 
         // Check for next page using Link header
         const linkHeader = response.headers?.get?.('Link');
@@ -61,7 +62,7 @@ export class ShopifyConnector extends BaseConnector {
         }
       }
 
-      console.log(`✅ Completed fetching ${allProducts.length} products from Shopify`);
+      logger.info(`Completed fetching ${allProducts.length} products from Shopify`, { component: 'ShopifyConnector' });
       return allProducts.map((product: any) => this.normalizeShopifyProduct(product));
     } catch (error) {
       this.handleError(error, 'Fetch products');

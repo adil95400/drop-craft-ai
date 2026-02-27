@@ -1,11 +1,44 @@
 /**
  * API V1 Client — Centralized HTTP client for /v1 REST endpoints
- * Handles auth (JWT from Supabase session), error parsing, pagination.
+ * Handles auth (JWT from Supabase session), error parsing, pagination,
+ * rate limiting, and input sanitization.
  */
 import { supabase } from '@/integrations/supabase/client'
 import { SUPABASE_URL, SUPABASE_ANON_KEY } from '@/lib/supabase-env'
+import { checkRateLimit, RATE_LIMITS, formatResetTime } from '@/lib/rate-limit'
+import { logger } from '@/utils/logger'
 
 const BASE_URL = `${SUPABASE_URL}/functions/v1/api-v1/v1`
+
+// ── Rate limit key resolver ──
+function getRateLimitConfig(method: string, path: string) {
+  if (path.includes('/import')) return RATE_LIMITS.IMPORT
+  if (path.includes('/ai/')) return RATE_LIMITS.AI_ANALYSIS
+  if (method === 'GET' && path.includes('?q=')) return RATE_LIMITS.SEARCH
+  if (method === 'POST' || method === 'PUT' || method === 'DELETE') return RATE_LIMITS.FORM_SUBMIT
+  return RATE_LIMITS.API_CALL
+}
+
+// ── Deep sanitize object values ──
+function sanitizeBody(body: any): any {
+  if (body === null || body === undefined) return body
+  if (typeof body === 'string') {
+    // Strip script tags and event handlers
+    return body
+      .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+      .replace(/on\w+\s*=\s*["'][^"']*["']/gi, '')
+      .replace(/javascript\s*:/gi, '')
+  }
+  if (Array.isArray(body)) return body.map(sanitizeBody)
+  if (typeof body === 'object') {
+    const clean: Record<string, any> = {}
+    for (const [k, v] of Object.entries(body)) {
+      clean[k] = sanitizeBody(v)
+    }
+    return clean
+  }
+  return body
+}
 
 export interface ApiError {
   code: string
@@ -42,8 +75,22 @@ async function request<T>(
     body?: any
     params?: Record<string, string | number | undefined>
     idempotencyKey?: string
+    skipRateLimit?: boolean
   }
 ): Promise<T> {
+  // ── Rate limit check ──
+  if (!options?.skipRateLimit) {
+    const { data: { session } } = await supabase.auth.getSession()
+    const userId = session?.user?.id ?? 'anon'
+    const config = getRateLimitConfig(method, path)
+    const rl = checkRateLimit(userId, `api:${method}:${path}`, config)
+    if (!rl.allowed) {
+      const waitMsg = `Rate limit exceeded. Retry in ${formatResetTime(rl.resetTime)}`
+      logger.warn(waitMsg, { component: 'ApiClient', action: 'rate_limit', metadata: { path, method } })
+      throw new Error(waitMsg)
+    }
+  }
+
   const headers = await getAuthHeaders()
   
   if (options?.idempotencyKey) {
@@ -62,13 +109,21 @@ async function request<T>(
     if (qs) url += `?${qs}`
   }
 
+  // ── Sanitize mutation bodies ──
+  const sanitizedBody = (method !== 'GET' && options?.body) ? sanitizeBody(options.body) : options?.body
+
+  const startTime = performance.now()
   const resp = await fetch(url, {
     method,
     headers,
-    body: options?.body ? JSON.stringify(options.body) : undefined,
+    body: sanitizedBody ? JSON.stringify(sanitizedBody) : undefined,
   })
 
   const data = await resp.json()
+  const duration = Math.round(performance.now() - startTime)
+
+  // ── Structured logging ──
+  logger.logApiCall(path, method, duration, resp.status, { component: 'ApiClient' })
 
   if (!resp.ok) {
     const err = data?.error as ApiError | undefined
