@@ -5,7 +5,7 @@ import { useToast } from '@/hooks/use-toast';
 export interface BulkJob {
   id: string;
   user_id: string;
-  job_type: 'videos' | 'images' | 'social_posts';
+  job_type: 'videos' | 'images' | 'social_posts' | 'descriptions';
   status: 'pending' | 'processing' | 'completed' | 'failed' | 'cancelled';
   total_items: number;
   completed_items: number;
@@ -20,7 +20,7 @@ export interface BulkJob {
 }
 
 export interface CreateBulkJobParams {
-  jobType: 'videos' | 'images' | 'social_posts';
+  jobType: 'videos' | 'images' | 'social_posts' | 'descriptions';
   inputData: any;
 }
 
