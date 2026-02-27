@@ -88,7 +88,7 @@ Respond in JSON format with these exact fields:
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'openai/gpt-5-mini',
+        model: 'openai/gpt-5-nano',
         messages: [
           {
             role: 'system',

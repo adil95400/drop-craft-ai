@@ -66,7 +66,7 @@ Analyse et retourne:
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'openai/gpt-5-mini',
+        model: 'openai/gpt-5-nano',
         messages: [
           { role: 'system', content: 'Tu es un expert en optimisation e-commerce pour Google et ChatGPT Shopping. Réponds uniquement en JSON valide.' },
           { role: 'user', content: prompt }

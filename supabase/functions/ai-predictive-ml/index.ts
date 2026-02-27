@@ -53,7 +53,7 @@ Deno.serve(async (req) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'openai/gpt-5-mini',
+        model: 'openai/gpt-5-nano',
         messages: [
           { role: 'system', content: prompts.system },
           { role: 'user', content: prompts.user }
@@ -98,7 +98,7 @@ Deno.serve(async (req) => {
         success: true,
         analysis_type: analysisType,
         predictions: mlPredictions,
-        model: 'openai/gpt-5-mini',
+        model: 'openai/gpt-5-nano',
         confidence: 0.85
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }

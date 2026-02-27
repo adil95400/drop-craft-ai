@@ -156,7 +156,7 @@ Return as JSON with structure: {"title", "metaDescription", "intro", "sections",
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'openai/gpt-5-mini',
+        model: 'openai/gpt-5-nano',
         messages: [
           { role: 'system', content: 'You are an expert digital marketing content creator with expertise in conversion optimization. Always respond in valid JSON.' },
           { role: 'user', content: prompt }

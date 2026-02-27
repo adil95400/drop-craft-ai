@@ -233,7 +233,7 @@ serve(async (req) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'openai/gpt-5-mini',
+        model: 'openai/gpt-5-nano',
         messages: [
           {
             role: 'user',
@@ -283,7 +283,7 @@ serve(async (req) => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          model: 'openai/gpt-5-mini',
+          model: 'openai/gpt-5-nano',
           messages: [
             {
               role: 'user',
@@ -323,7 +323,7 @@ serve(async (req) => {
         enhancementType,
         qualityAnalysis,
         processing: {
-          model: 'openai/gpt-5-mini',
+          model: 'openai/gpt-5-nano',
           method: 'ai-enhancement'
         }
       }),

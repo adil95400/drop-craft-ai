@@ -69,7 +69,7 @@ Réponds UNIQUEMENT en JSON valide avec ce format:
         'Authorization': `Bearer ${supabaseKey}`,
       },
       body: JSON.stringify({
-        model: 'openai/gpt-5-mini',
+        model: 'openai/gpt-5-nano',
         messages: [
           { role: 'system', content: 'Tu es un rédacteur SEO expert. Réponds uniquement en JSON valide.' },
           { role: 'user', content: prompt }

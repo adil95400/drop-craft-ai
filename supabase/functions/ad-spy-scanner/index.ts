@@ -74,7 +74,7 @@ async function aiCall(apiKey: string, system: string, prompt: string) {
     method: 'POST',
     headers: { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      model: 'openai/gpt-5-mini',
+      model: 'openai/gpt-5-nano',
       messages: [{ role: 'system', content: system }, { role: 'user', content: prompt }],
       temperature: 0.8,
     }),

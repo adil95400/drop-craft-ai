@@ -113,7 +113,7 @@ Réponds UNIQUEMENT avec un JSON valide contenant un tableau "products".`
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          model: 'openai/gpt-5-mini',
+          model: 'openai/gpt-5-nano',
           messages: [
             { role: 'system', content: 'Tu es un assistant spécialisé en analyse de tendances e-commerce et dropshipping. Tu fournis des données structurées et réalistes sur les produits tendance.' },
             { role: 'user', content: aiPrompt }
@@ -184,7 +184,7 @@ Réponds UNIQUEMENT avec un JSON valide contenant un tableau "products".`
           category,
           timestamp: new Date().toISOString(),
           source: 'ai_powered_trends',
-          ai_model: 'gpt-5-mini'
+          ai_model: 'gpt-5-nano'
         }
       }
 

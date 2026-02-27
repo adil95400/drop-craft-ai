@@ -104,7 +104,7 @@ Return ONLY the translated text, no explanations or additional text.`;
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "openai/gpt-5-mini",
+        model: "openai/gpt-5-nano",
         messages: [
           { role: "system", content: systemPrompt },
           { role: "user", content: text }
