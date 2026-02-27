@@ -22,6 +22,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { useDateFnsLocale } from '@/hooks/useDateFnsLocale';
 import { SegmentTemplatesModal } from './SegmentTemplatesModal';
 import { SegmentTemplate } from '@/services/CustomerSegmentationService';
+import { ReportingTab } from './ReportingTab';
 import { toast } from 'sonner';
 
 export function CustomerSegmentationDashboard() {
@@ -162,6 +163,7 @@ export function CustomerSegmentationDashboard() {
           <TabsList>
             <TabsTrigger value="segments">Segments</TabsTrigger>
             <TabsTrigger value="rfm">Analyse RFM</TabsTrigger>
+            <TabsTrigger value="reporting">Reporting</TabsTrigger>
           </TabsList>
 
           <div className="flex gap-2">
@@ -311,6 +313,10 @@ export function CustomerSegmentationDashboard() {
               </Table>
             </CardContent>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="reporting">
+          <ReportingTab />
         </TabsContent>
       </Tabs>
 
