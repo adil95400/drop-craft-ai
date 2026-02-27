@@ -1,6 +1,6 @@
 /**
  * AI Assistant Page - Chat conversationnel IA pour l'analyse produits et la stratégie
- * Powered by Lovable AI (Gemini 3 Flash)
+ * Powered by Lovable AI (OpenAI GPT-5-mini)
  */
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
@@ -127,7 +127,7 @@ export default function AIAssistantPage() {
       subtitle="Votre expert e-commerce"
       description="Posez vos questions sur vos produits, votre stratégie et vos performances"
       heroImage="ai"
-      badge={{ label: 'Gemini 3', icon: Sparkles }}
+      badge={{ label: 'GPT-5', icon: Sparkles }}
     >
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 h-[calc(100vh-320px)] min-h-[500px]">
         {/* Chat Panel */}
@@ -247,7 +247,7 @@ export default function AIAssistantPage() {
             <CardContent className="p-4">
               <h4 className="font-semibold mb-2 text-sm">🤖 Modèle IA</h4>
               <p className="text-xs text-muted-foreground">
-                Propulsé par <span className="font-medium">Gemini 3 Flash</span> — 
+                Propulsé par <span className="font-medium">OpenAI GPT-5-mini</span> — 
                 réponses rapides et intelligentes pour votre business e-commerce.
               </p>
             </CardContent>

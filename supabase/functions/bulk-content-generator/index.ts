@@ -104,7 +104,7 @@ serve(async (req) => {
               'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-              model: 'google/gemini-3-flash-preview',
+              model: 'openai/gpt-5-mini',
               messages: [
                 { role: 'system', content: systemPrompt },
                 { role: 'user', content: userPrompt }
@@ -187,7 +187,7 @@ serve(async (req) => {
               'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-              model: 'google/gemini-2.5-flash',
+              model: 'openai/gpt-5-mini',
               messages: [
                 { role: 'system', content: 'You are a viral video script creator. Return only valid JSON.' },
                 { role: 'user', content: videoPrompt }

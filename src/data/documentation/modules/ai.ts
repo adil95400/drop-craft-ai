@@ -225,7 +225,7 @@ export const aiDocumentation: ModuleDocumentation = {
     },
     {
       question: 'Quel modèle IA est utilisé ?',
-      answer: 'ShopOpti+ utilise les derniers modèles (GPT-4, Claude, Gemini) selon la tâche. Le meilleur modèle est sélectionné automatiquement.'
+      answer: 'ShopOpti+ utilise les derniers modèles OpenAI (GPT-5, GPT-5-mini) via le gateway Lovable AI. Le meilleur modèle est sélectionné automatiquement.'
     },
     {
       question: 'Mes données sont-elles utilisées pour entraîner l\'IA ?',

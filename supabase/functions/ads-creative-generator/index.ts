@@ -79,7 +79,7 @@ Return only a number between 0-100.`;
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'google/gemini-2.5-flash',
+        model: 'openai/gpt-5-mini',
         messages: [
           { role: 'system', content: 'You are an advertising expert. Return only numbers.' },
           { role: 'user', content: scorePrompt }

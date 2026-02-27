@@ -93,7 +93,7 @@ Return ONLY a JSON object with these exact keys:
                 'Content-Type': 'application/json',
               },
               body: JSON.stringify({
-                model: 'google/gemini-2.5-flash',
+                model: 'openai/gpt-5-mini',
                 messages: [
                   { 
                     role: 'system', 
@@ -147,7 +147,7 @@ Return ONLY a JSON object with these exact keys:
                 translation_quality_score: 0.85,
                 ai_translation_metadata: {
                   provider: 'lovable_ai',
-                  model: 'google/gemini-2.5-flash',
+                  model: 'openai/gpt-5-mini',
                   source_locale: sourceLocale,
                   timestamp: new Date().toISOString()
                 }
