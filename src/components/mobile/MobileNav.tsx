@@ -173,10 +173,10 @@ export function MobileNav({ notifications = 0 }: MobileNavProps) {
   const mobileNavGroups = useMobileNavGroups();
 
   const bottomNavItems = [
-    { icon: Home, label: 'Accueil', path: '/dashboard', color: 'text-blue-500' },
-    { icon: Package, label: 'Catalogue', path: '/products', color: 'text-green-500' },
-    { icon: ShoppingCart, label: 'Ventes', path: '/orders', color: 'text-orange-500' },
-    { icon: BarChart3, label: 'Performance', path: '/analytics', color: 'text-purple-500' }
+    { icon: Home, label: 'Accueil', path: '/dashboard' },
+    { icon: Package, label: 'Catalogue', path: '/products' },
+    { icon: ShoppingCart, label: 'Ventes', path: '/orders' },
+    { icon: BarChart3, label: 'Performance', path: '/analytics' }
   ];
 
   const isActive = (path: string) => location.pathname === path || location.pathname.startsWith(path + '/');
@@ -226,7 +226,7 @@ export function MobileNav({ notifications = 0 }: MobileNavProps) {
                 )}
               >
                 <div className="relative">
-                  <Icon className={cn("h-5 w-5", active && item.color)} />
+                  <Icon className={cn("h-5 w-5", active && "text-primary")} />
                   {item.label === 'Accueil' && notifications > 0 && (
                     <Badge 
                       variant="destructive" 

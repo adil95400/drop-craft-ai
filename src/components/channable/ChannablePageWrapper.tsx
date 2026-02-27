@@ -120,7 +120,7 @@ export function ChannablePageWrapper({
         </div>
         
         {/* Content */}
-        <div className="relative z-10 p-6 md:p-8 lg:p-10">
+        <div className="relative z-10 p-4 sm:p-6 md:p-8 lg:p-10">
           <div className="max-w-3xl">
             {/* Badge */}
             {badge && <motion.div initial={{
@@ -147,7 +147,7 @@ export function ChannablePageWrapper({
             y: 0
           }} transition={{
             delay: 0.2
-          }} className="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight mb-4">
+          }} className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight mb-3 sm:mb-4">
               <span className="bg-gradient-to-r from-foreground via-foreground to-foreground/70 bg-clip-text">
                 {title}
               </span>
@@ -160,7 +160,7 @@ export function ChannablePageWrapper({
             opacity: 1
           }} transition={{
             delay: 0.25
-          }} className="text-muted-foreground text-base md:text-lg max-w-2xl leading-relaxed">
+          }} className="text-muted-foreground text-sm sm:text-base md:text-lg max-w-2xl leading-relaxed">
                 {description}
               </motion.p>}
             
