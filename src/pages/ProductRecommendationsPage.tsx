@@ -3,8 +3,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Sparkles, TrendingUp, ShoppingCart, Target, Zap, BarChart3, RefreshCw, Loader2, CheckCircle, XCircle } from 'lucide-react';
+import { Sparkles, TrendingUp, ShoppingCart, Target, Zap, BarChart3, RefreshCw, Loader2, CheckCircle, XCircle, Settings } from 'lucide-react';
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
+import { RecommendationWidgetConfig } from '@/components/recommendations/RecommendationWidgetConfig';
 import { useProductRecommendations } from '@/hooks/useProductRecommendations';
 import { Progress } from '@/components/ui/progress';
 
@@ -94,6 +95,10 @@ const ProductRecommendationsPage: React.FC = () => {
           <TabsTrigger value="recommendations">Recommandations IA</TabsTrigger>
           <TabsTrigger value="strategies">Stratégies</TabsTrigger>
           <TabsTrigger value="performance">Performance</TabsTrigger>
+          <TabsTrigger value="config" className="flex items-center gap-1">
+            <Settings className="h-3 w-3" />
+            Configuration
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="recommendations" className="space-y-4">
@@ -287,6 +292,10 @@ const ProductRecommendationsPage: React.FC = () => {
               </div>
             </CardContent>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="config">
+          <RecommendationWidgetConfig />
         </TabsContent>
       </Tabs>
     </ChannablePageWrapper>

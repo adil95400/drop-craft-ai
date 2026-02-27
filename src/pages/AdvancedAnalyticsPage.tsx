@@ -15,6 +15,7 @@ const CustomReportsBuilder = lazy(() => import('@/components/analytics/CustomRep
 const TeamManager = lazy(() => import('@/components/teams/TeamManager').then(m => ({ default: m.TeamManager })))
 const KPIsDashboard = lazy(() => import('@/components/analytics/KPIsDashboard').then(m => ({ default: m.KPIsDashboard })))
 const ActivityLog = lazy(() => import('@/components/analytics/ActivityLog').then(m => ({ default: m.ActivityLog })))
+const UnifiedPerformanceOverview = lazy(() => import('@/components/analytics/UnifiedPerformanceOverview').then(m => ({ default: m.UnifiedPerformanceOverview })))
 
 const TabSkeleton = () => (
   <div className="space-y-4">
@@ -64,13 +65,15 @@ export default function AdvancedAnalyticsPage() {
         </>
       }
     >
-      <Tabs defaultValue="reports" className="space-y-6">
-        <TabsList className="grid w-full max-w-lg grid-cols-4">
+      <Tabs defaultValue="overview" className="space-y-6">
+        <TabsList className="grid w-full max-w-2xl grid-cols-5">
+          <TabsTrigger value="overview" className="flex items-center gap-2"><TrendingUp className="h-4 w-4" />Vue d'ensemble</TabsTrigger>
           <TabsTrigger value="reports" className="flex items-center gap-2"><BarChart className="h-4 w-4" />Rapports</TabsTrigger>
           <TabsTrigger value="kpis" className="flex items-center gap-2"><Target className="h-4 w-4" />KPIs</TabsTrigger>
           <TabsTrigger value="teams" className="flex items-center gap-2"><Users className="h-4 w-4" />Équipes</TabsTrigger>
           <TabsTrigger value="activity" className="flex items-center gap-2"><Activity className="h-4 w-4" />Activité</TabsTrigger>
         </TabsList>
+        <TabsContent value="overview"><Suspense fallback={<TabSkeleton />}><UnifiedPerformanceOverview /></Suspense></TabsContent>
         <TabsContent value="reports"><Suspense fallback={<TabSkeleton />}><CustomReportsBuilder /></Suspense></TabsContent>
         <TabsContent value="kpis"><Suspense fallback={<TabSkeleton />}><KPIsDashboard /></Suspense></TabsContent>
         <TabsContent value="teams"><Suspense fallback={<TabSkeleton />}><TeamManager /></Suspense></TabsContent>

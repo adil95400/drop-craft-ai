@@ -67,6 +67,7 @@ export function BulkTextGenerator() {
   const [contentTypes, setContentTypes] = useState<ContentType[]>(['description', 'title']);
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedProductIds, setSelectedProductIds] = useState<string[]>([]);
+  const [autoUpdate, setAutoUpdate] = useState(false);
   const [saveDialogOpen, setSaveDialogOpen] = useState(false);
   const [templateName, setTemplateName] = useState('');
   const [templateDesc, setTemplateDesc] = useState('');
@@ -408,6 +409,28 @@ export function BulkTextGenerator() {
           />
         </div>
       </div>
+
+      {/* Auto-update option */}
+      <Card className="border-dashed">
+        <CardContent className="p-4">
+          <div className="flex items-start gap-3">
+            <Checkbox
+              checked={autoUpdate}
+              onCheckedChange={(v) => setAutoUpdate(!!v)}
+            />
+            <div>
+              <div className="font-medium text-sm flex items-center gap-2">
+                <Sparkles className="h-4 w-4 text-primary" />
+                Mise à jour automatique
+              </div>
+              <p className="text-xs text-muted-foreground mt-1">
+                Régénère automatiquement le contenu lorsque les fiches produits sont modifiées (prix, description, attributs).
+                Le contenu existant sera remplacé par la nouvelle version.
+              </p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       <Button onClick={handleGenerate} disabled={isCreatingJob} size="lg" className="w-full">
         {isCreatingJob ? (
