@@ -839,6 +839,84 @@ export type Database = {
         }
         Relationships: []
       }
+      ai_recommendations: {
+        Row: {
+          applied_at: string | null
+          confidence_score: number
+          created_at: string
+          description: string | null
+          dismissed_at: string | null
+          expires_at: string | null
+          id: string
+          impact_estimate: string | null
+          impact_value: number | null
+          metadata: Json | null
+          reasoning: string | null
+          recommendation_type: string
+          source_product_id: string | null
+          status: string
+          target_product_id: string | null
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          applied_at?: string | null
+          confidence_score?: number
+          created_at?: string
+          description?: string | null
+          dismissed_at?: string | null
+          expires_at?: string | null
+          id?: string
+          impact_estimate?: string | null
+          impact_value?: number | null
+          metadata?: Json | null
+          reasoning?: string | null
+          recommendation_type: string
+          source_product_id?: string | null
+          status?: string
+          target_product_id?: string | null
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          applied_at?: string | null
+          confidence_score?: number
+          created_at?: string
+          description?: string | null
+          dismissed_at?: string | null
+          expires_at?: string | null
+          id?: string
+          impact_estimate?: string | null
+          impact_value?: number | null
+          metadata?: Json | null
+          reasoning?: string | null
+          recommendation_type?: string
+          source_product_id?: string | null
+          status?: string
+          target_product_id?: string | null
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_recommendations_source_product_id_fkey"
+            columns: ["source_product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ai_recommendations_target_product_id_fkey"
+            columns: ["target_product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       alert_configurations: {
         Row: {
           alert_type: string
@@ -9382,6 +9460,54 @@ export type Database = {
         }
         Relationships: []
       }
+      product_affinities: {
+        Row: {
+          affinity_score: number
+          co_occurrence_count: number
+          created_at: string
+          id: string
+          last_computed_at: string
+          product_a_id: string
+          product_b_id: string
+          user_id: string
+        }
+        Insert: {
+          affinity_score?: number
+          co_occurrence_count?: number
+          created_at?: string
+          id?: string
+          last_computed_at?: string
+          product_a_id: string
+          product_b_id: string
+          user_id: string
+        }
+        Update: {
+          affinity_score?: number
+          co_occurrence_count?: number
+          created_at?: string
+          id?: string
+          last_computed_at?: string
+          product_a_id?: string
+          product_b_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_affinities_product_a_id_fkey"
+            columns: ["product_a_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "product_affinities_product_b_id_fkey"
+            columns: ["product_b_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       product_ai_attributes: {
         Row: {
           attribute_key: string
@@ -9953,6 +10079,50 @@ export type Database = {
             columns: ["variant_id"]
             isOneToOne: false
             referencedRelation: "product_variants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      product_interactions: {
+        Row: {
+          created_at: string
+          id: string
+          interaction_type: string
+          metadata: Json | null
+          product_id: string | null
+          quantity: number | null
+          revenue: number | null
+          session_id: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          interaction_type: string
+          metadata?: Json | null
+          product_id?: string | null
+          quantity?: number | null
+          revenue?: number | null
+          session_id?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          interaction_type?: string
+          metadata?: Json | null
+          product_id?: string | null
+          quantity?: number | null
+          revenue?: number | null
+          session_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_interactions_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
             referencedColumns: ["id"]
           },
         ]
@@ -11395,6 +11565,54 @@ export type Database = {
           request_count?: number | null
           user_id?: string | null
           window_start?: string
+        }
+        Relationships: []
+      }
+      recommendation_metrics: {
+        Row: {
+          actual_revenue_impact: number | null
+          avg_confidence: number | null
+          created_at: string
+          estimated_revenue_impact: number | null
+          id: string
+          period_end: string
+          period_start: string
+          top_category: string | null
+          total_accepted: number
+          total_applied: number
+          total_dismissed: number
+          total_generated: number
+          user_id: string
+        }
+        Insert: {
+          actual_revenue_impact?: number | null
+          avg_confidence?: number | null
+          created_at?: string
+          estimated_revenue_impact?: number | null
+          id?: string
+          period_end: string
+          period_start: string
+          top_category?: string | null
+          total_accepted?: number
+          total_applied?: number
+          total_dismissed?: number
+          total_generated?: number
+          user_id: string
+        }
+        Update: {
+          actual_revenue_impact?: number | null
+          avg_confidence?: number | null
+          created_at?: string
+          estimated_revenue_impact?: number | null
+          id?: string
+          period_end?: string
+          period_start?: string
+          top_category?: string | null
+          total_accepted?: number
+          total_applied?: number
+          total_dismissed?: number
+          total_generated?: number
+          user_id?: string
         }
         Relationships: []
       }

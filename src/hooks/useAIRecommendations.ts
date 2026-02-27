@@ -1,5 +1,5 @@
 /**
- * useAIRecommendations — Clean re-export (replaces useRealAIRecommendations)
+ * useAIRecommendations — Clean re-export
  */
 export { useRealAIRecommendations as useAIRecommendations } from './useRealAIRecommendations'
-export type { AIRecommendation } from './useRealAIRecommendations'
+export type { AIRecommendation, ProductAffinity } from './useRealAIRecommendations'
