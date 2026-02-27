@@ -50,9 +50,15 @@ export const PrestaShopConfigDialog = ({ open, onOpenChange }: PrestaShopConfigD
       return;
     }
 
-    // Simulation du test de connexion
-    setTimeout(() => {
-      const success = Math.random() > 0.3; // 70% de chance de succès
+    // Test de connexion via fetch HEAD vers l'URL fournie
+    setTimeout(async () => {
+      let success = false;
+      try {
+        await fetch(formData.shopUrl, { method: 'HEAD', mode: 'no-cors' });
+        success = true; // no-cors won't throw if reachable
+      } catch {
+        success = false;
+      }
       setConnectionTest({
         tested: true,
         success,

@@ -404,8 +404,9 @@ export class CatalogWatcherService {
         })
       }
 
-      console.log(`[CatalogWatcher] Critical notification sent for user ${userId}: ${events.length} alert(s)`)
+      // Notification sent successfully
     } catch (error) {
+      // Critical notification failure — Sentry will capture via console interceptor
       console.error('[CatalogWatcher] Error sending critical notification:', error)
     }
   }

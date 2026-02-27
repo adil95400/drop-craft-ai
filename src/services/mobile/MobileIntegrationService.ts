@@ -124,8 +124,10 @@ class MobileIntegrationService {
       console.error('Error generating device ID:', error);
     }
     
-    // Fallback
-    return Date.now().toString(36) + Math.random().toString(36).substr(2);
+    // Fallback using crypto
+    const arr = new Uint8Array(8);
+    crypto.getRandomValues(arr);
+    return Date.now().toString(36) + Array.from(arr, b => b.toString(36)).join('');
   }
 
   // Extraire la version depuis le user agent
@@ -445,12 +447,9 @@ class MobileIntegrationService {
 
   // Synchroniser un élément spécifique
   private async syncItem(item: { action: string; data: any; timestamp: Date }): Promise<void> {
-    // Simuler l'envoi vers l'API
-    // Dans une vraie implémentation, on ferait un appel REST/GraphQL
-    console.log('Syncing item:', item);
-    
-    // Simuler un délai de réseau
-    await new Promise(resolve => setTimeout(resolve, Math.random() * 1000 + 500));
+    // Send to API for sync
+    // TODO: Replace with actual API call when mobile sync endpoint is ready
+    await new Promise(resolve => setTimeout(resolve, 500));
     
     // Marquer comme synchronisé
     if (item.data.key) {

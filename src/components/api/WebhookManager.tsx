@@ -74,7 +74,9 @@ export function WebhookManager() {
 
   const createWebhookMutation = useMutation({
     mutationFn: async () => {
-      const secret = `whsec_${Math.random().toString(36).substring(2, 15)}${Math.random().toString(36).substring(2, 15)}`;
+      const arr = new Uint8Array(24);
+      crypto.getRandomValues(arr);
+      const secret = `whsec_${Array.from(arr, b => b.toString(16).padStart(2, '0')).join('')}`;
       const { data: { user } } = await supabase.auth.getUser();
       
       const { error } = await supabase.from('webhook_subscriptions').insert({
