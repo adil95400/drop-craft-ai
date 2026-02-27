@@ -69,36 +69,36 @@ export function ChannelSyncStatus({
         return {
           icon: <Loader2 className="h-4 w-4 animate-spin" />,
           label: t('common:syncing'),
-          color: 'bg-blue-500/20 text-blue-700 border-blue-500/30',
-          bgColor: 'bg-blue-500'
+          color: 'bg-info/20 text-info border-info/30',
+          bgColor: 'bg-info'
         }
       case 'success':
         return {
           icon: <CheckCircle2 className="h-4 w-4" />,
           label: t('common:synced'),
-          color: 'bg-green-500/20 text-green-700 border-green-500/30',
-          bgColor: 'bg-green-500'
+          color: 'bg-success/20 text-success border-success/30',
+          bgColor: 'bg-success'
         }
       case 'error':
         return {
           icon: <AlertCircle className="h-4 w-4" />,
           label: t('common:error'),
-          color: 'bg-red-500/20 text-red-700 border-red-500/30',
-          bgColor: 'bg-red-500'
+          color: 'bg-destructive/20 text-destructive border-destructive/30',
+          bgColor: 'bg-destructive'
         }
       case 'pending':
         return {
           icon: <Clock className="h-4 w-4" />,
           label: t('common:pending'),
-          color: 'bg-yellow-500/20 text-yellow-700 border-yellow-500/30',
-          bgColor: 'bg-yellow-500'
+          color: 'bg-warning/20 text-warning border-warning/30',
+          bgColor: 'bg-warning'
         }
       default:
         return {
           icon: <Wifi className="h-4 w-4" />,
           label: t('common:active'),
-          color: 'bg-gray-500/20 text-gray-700 border-gray-500/30',
-          bgColor: 'bg-gray-500'
+          color: 'bg-muted text-muted-foreground border-border',
+          bgColor: 'bg-muted-foreground'
         }
     }
   }

@@ -25,14 +25,14 @@ export function SupplierHealthIndicator({ supplierId, showDetails = false }: Sup
   const statusConfig = {
     healthy: {
       icon: CheckCircle2,
-      color: 'text-green-600',
-      bgColor: 'bg-green-500/10',
+      color: 'text-success',
+      bgColor: 'bg-success/10',
       label: 'Opérationnel'
     },
     degraded: {
       icon: AlertCircle,
-      color: 'text-yellow-600',
-      bgColor: 'bg-yellow-500/10',
+      color: 'text-warning',
+      bgColor: 'bg-warning/10',
       label: 'Dégradé'
     },
     down: {
