@@ -31,13 +31,13 @@ export function ReturnsManager() {
   const getStatusInfo = (status: string) => {
     const statusMap: Record<string, { label: string; variant: any; icon: any; color: string }> = {
       requested: { label: 'Demandé', variant: 'outline', icon: Clock, color: 'text-muted-foreground' },
-      approved: { label: 'Approuvé', variant: 'default', icon: CheckCircle, color: 'text-green-500' },
-      rejected: { label: 'Refusé', variant: 'destructive', icon: AlertTriangle, color: 'text-red-500' },
-      shipped_back: { label: 'Expédié', variant: 'default', icon: Package, color: 'text-blue-500' },
-      received: { label: 'Reçu', variant: 'default', icon: Package, color: 'text-purple-500' },
-      inspected: { label: 'Inspecté', variant: 'outline', icon: Eye, color: 'text-orange-500' },
-      refunded: { label: 'Remboursé', variant: 'default', icon: CheckCircle, color: 'text-green-500' },
-      exchanged: { label: 'Échangé', variant: 'default', icon: RotateCcw, color: 'text-green-500' },
+      approved: { label: 'Approuvé', variant: 'default', icon: CheckCircle, color: 'text-success' },
+      rejected: { label: 'Refusé', variant: 'destructive', icon: AlertTriangle, color: 'text-destructive' },
+      shipped_back: { label: 'Expédié', variant: 'default', icon: Package, color: 'text-info' },
+      received: { label: 'Reçu', variant: 'default', icon: Package, color: 'text-primary' },
+      inspected: { label: 'Inspecté', variant: 'outline', icon: Eye, color: 'text-warning' },
+      refunded: { label: 'Remboursé', variant: 'default', icon: CheckCircle, color: 'text-success' },
+      exchanged: { label: 'Échangé', variant: 'default', icon: RotateCcw, color: 'text-success' },
       closed: { label: 'Fermé', variant: 'secondary', icon: CheckCircle, color: 'text-muted-foreground' }
     };
     return statusMap[status] || { label: status, variant: 'secondary', icon: Clock, color: 'text-muted-foreground' };

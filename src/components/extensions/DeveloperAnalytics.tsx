@@ -115,7 +115,7 @@ export const DeveloperAnalytics = () => {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-gradient-to-r from-blue-600 to-purple-600">
+            <div className="p-2 rounded-lg bg-gradient-to-r from-primary to-accent">
               <BarChart3 className="w-8 h-8 text-white" />
             </div>
             Analytics Développeur
@@ -153,12 +153,12 @@ export const DeveloperAnalytics = () => {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <Card>
           <CardContent className="p-4 text-center">
-            <DollarSign className="w-8 h-8 text-green-600 mx-auto mb-2" />
-            <div className="text-2xl font-bold text-green-600">
+            <DollarSign className="w-8 h-8 text-success mx-auto mb-2" />
+            <div className="text-2xl font-bold text-success">
               {totalRevenue.toLocaleString()}€
             </div>
             <div className="text-sm text-muted-foreground">Revenus totaux</div>
-            <div className="text-xs text-green-600 mt-1">
+            <div className="text-xs text-success mt-1">
               +{growthRate.toFixed(1)}% vs période précédente
             </div>
           </CardContent>
@@ -166,12 +166,12 @@ export const DeveloperAnalytics = () => {
 
         <Card>
           <CardContent className="p-4 text-center">
-            <Download className="w-8 h-8 text-blue-600 mx-auto mb-2" />
-            <div className="text-2xl font-bold text-blue-600">
+            <Download className="w-8 h-8 text-info mx-auto mb-2" />
+            <div className="text-2xl font-bold text-info">
               {totalDownloads.toLocaleString()}
             </div>
             <div className="text-sm text-muted-foreground">Téléchargements</div>
-            <div className="text-xs text-blue-600 mt-1">
+            <div className="text-xs text-info mt-1">
               +18% ce mois
             </div>
           </CardContent>
@@ -179,12 +179,12 @@ export const DeveloperAnalytics = () => {
 
         <Card>
           <CardContent className="p-4 text-center">
-            <Users className="w-8 h-8 text-purple-600 mx-auto mb-2" />
-            <div className="text-2xl font-bold text-purple-600">
+            <Users className="w-8 h-8 text-primary mx-auto mb-2" />
+            <div className="text-2xl font-bold text-primary">
               {totalUsers.toLocaleString()}
             </div>
             <div className="text-sm text-muted-foreground">Utilisateurs actifs</div>
-            <div className="text-xs text-purple-600 mt-1">
+            <div className="text-xs text-primary mt-1">
               +12% ce mois
             </div>
           </CardContent>
@@ -192,12 +192,12 @@ export const DeveloperAnalytics = () => {
 
         <Card>
           <CardContent className="p-4 text-center">
-            <TrendingUp className="w-8 h-8 text-orange-600 mx-auto mb-2" />
-            <div className="text-2xl font-bold text-orange-600">
+            <TrendingUp className="w-8 h-8 text-warning mx-auto mb-2" />
+            <div className="text-2xl font-bold text-warning">
               {averageRevenue.toFixed(0)}€
             </div>
             <div className="text-sm text-muted-foreground">Revenu moyen/mois</div>
-            <div className="text-xs text-orange-600 mt-1">
+            <div className="text-xs text-warning mt-1">
               Tendance: +{growthRate > 0 ? '+' : ''}{growthRate.toFixed(1)}%
             </div>
           </CardContent>
@@ -281,31 +281,31 @@ export const DeveloperAnalytics = () => {
               <CardContent className="space-y-4">
                 <div className="flex justify-between items-center">
                   <span className="flex items-center gap-2">
-                    <Target className="w-4 h-4 text-blue-600" />
+                    <Target className="w-4 h-4 text-info" />
                     Taux de conversion moyen
                   </span>
-                  <span className="font-bold text-blue-600">13.2%</span>
+                  <span className="font-bold text-info">13.2%</span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="flex items-center gap-2">
-                    <Star className="w-4 h-4 text-yellow-600" />
+                    <Star className="w-4 h-4 text-warning" />
                     Note moyenne
                   </span>
-                  <span className="font-bold text-yellow-600">4.7/5</span>
+                  <span className="font-bold text-warning">4.7/5</span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="flex items-center gap-2">
-                    <RefreshCw className="w-4 h-4 text-red-600" />
+                    <RefreshCw className="w-4 h-4 text-destructive" />
                     Taux de remboursement
                   </span>
-                  <span className="font-bold text-red-600">2.4%</span>
+                  <span className="font-bold text-destructive">2.4%</span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="flex items-center gap-2">
-                    <Clock className="w-4 h-4 text-green-600" />
+                    <Clock className="w-4 h-4 text-success" />
                     Temps de réponse support
                   </span>
-                  <span className="font-bold text-green-600">4.2h</span>
+                  <span className="font-bold text-success">4.2h</span>
                 </div>
               </CardContent>
             </Card>
@@ -326,32 +326,32 @@ export const DeveloperAnalytics = () => {
                   <div key={ext.id} className="p-4 border rounded-lg space-y-3">
                     <div className="flex items-center justify-between">
                       <h3 className="font-semibold text-lg">{ext.name}</h3>
-                      <Badge className={ext.trend.startsWith('+') ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}>
+                      <Badge className={ext.trend.startsWith('+') ? 'bg-success/10 text-success' : 'bg-destructive/10 text-destructive'}>
                         {ext.trend}
                       </Badge>
                     </div>
                     
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                       <div className="text-center">
-                        <div className="text-2xl font-bold text-green-600">
+                        <div className="text-2xl font-bold text-success">
                           {ext.revenue.toLocaleString()}€
                         </div>
                         <div className="text-muted-foreground">Revenus</div>
                       </div>
                       <div className="text-center">
-                        <div className="text-2xl font-bold text-blue-600">
+                        <div className="text-2xl font-bold text-info">
                           {ext.downloads.toLocaleString()}
                         </div>
                         <div className="text-muted-foreground">Téléchargements</div>
                       </div>
                       <div className="text-center">
-                        <div className="text-2xl font-bold text-yellow-600">
+                        <div className="text-2xl font-bold text-warning">
                           {ext.rating}
                         </div>
                         <div className="text-muted-foreground">{ext.reviews} avis</div>
                       </div>
                       <div className="text-center">
-                        <div className="text-2xl font-bold text-purple-600">
+                        <div className="text-2xl font-bold text-primary">
                           {ext.conversion}%
                         </div>
                         <div className="text-muted-foreground">Conversion</div>
@@ -400,7 +400,7 @@ export const DeveloperAnalytics = () => {
                   <span>Nouveaux utilisateurs</span>
                   <div className="flex items-center gap-2">
                     <div className="w-20 bg-muted rounded-full h-2">
-                      <div className="bg-blue-600 h-2 rounded-full" style={{width: '65%'}}></div>
+                      <div className="bg-info h-2 rounded-full" style={{width: '65%'}}></div>
                     </div>
                     <span className="font-bold">65%</span>
                   </div>
@@ -409,7 +409,7 @@ export const DeveloperAnalytics = () => {
                   <span>Utilisateurs récurrents</span>
                   <div className="flex items-center gap-2">
                     <div className="w-20 bg-muted rounded-full h-2">
-                      <div className="bg-green-600 h-2 rounded-full" style={{width: '25%'}}></div>
+                      <div className="bg-success h-2 rounded-full" style={{width: '25%'}}></div>
                     </div>
                     <span className="font-bold">25%</span>
                   </div>
@@ -418,7 +418,7 @@ export const DeveloperAnalytics = () => {
                   <span>Utilisateurs premium</span>
                   <div className="flex items-center gap-2">
                     <div className="w-20 bg-muted rounded-full h-2">
-                      <div className="bg-purple-600 h-2 rounded-full" style={{width: '10%'}}></div>
+                      <div className="bg-primary h-2 rounded-full" style={{width: '10%'}}></div>
                     </div>
                     <span className="font-bold">10%</span>
                   </div>
@@ -444,7 +444,7 @@ export const DeveloperAnalytics = () => {
                 {geographicData.map((country, index) => (
                   <div key={country.country} className="flex items-center justify-between p-3 border rounded-lg">
                     <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-full bg-gradient-to-r from-blue-600 to-purple-600 flex items-center justify-center text-white text-sm font-bold">
+                      <div className="w-8 h-8 rounded-full bg-gradient-to-r from-primary to-accent flex items-center justify-center text-primary-foreground text-sm font-bold">
                         {index + 1}
                       </div>
                       <div>
@@ -455,7 +455,7 @@ export const DeveloperAnalytics = () => {
                       </div>
                     </div>
                     <div className="text-right">
-                      <div className="font-bold text-green-600">
+                      <div className="font-bold text-success">
                         {country.revenue.toLocaleString()}€
                       </div>
                       <div className="text-sm text-muted-foreground">
@@ -479,23 +479,23 @@ export const DeveloperAnalytics = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                  <div className="font-medium text-blue-900 mb-1">Optimisation des prix</div>
-                  <div className="text-sm text-blue-700">
+                <div className="p-3 bg-info/10 border border-info/20 rounded-lg">
+                  <div className="font-medium text-info mb-1">Optimisation des prix</div>
+                  <div className="text-sm text-info/80">
                     Augmentez le prix de "AI Product Optimizer" de 15% pour maximiser les revenus sans impact sur les ventes.
                   </div>
                 </div>
                 
-                <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
-                  <div className="font-medium text-green-900 mb-1">Nouvelle fonctionnalité</div>
-                  <div className="text-sm text-green-700">
+                <div className="p-3 bg-success/10 border border-success/20 rounded-lg">
+                  <div className="font-medium text-success mb-1">Nouvelle fonctionnalité</div>
+                  <div className="text-sm text-success/80">
                     78% des utilisateurs demandent une intégration Shopify dans vos extensions d'inventaire.
                   </div>
                 </div>
                 
-                <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-                  <div className="font-medium text-yellow-900 mb-1">Support client</div>
-                  <div className="text-sm text-yellow-700">
+                <div className="p-3 bg-warning/10 border border-warning/20 rounded-lg">
+                  <div className="font-medium text-warning mb-1">Support client</div>
+                  <div className="text-sm text-warning/80">
                     Réduisez le temps de réponse support pour améliorer la satisfaction de 23%.
                   </div>
                 </div>
@@ -513,14 +513,14 @@ export const DeveloperAnalytics = () => {
                     <span className="font-bold">85%</span>
                   </div>
                   <div className="w-full bg-muted rounded-full h-2">
-                    <div className="bg-green-600 h-2 rounded-full" style={{width: '85%'}}></div>
+                    <div className="bg-success h-2 rounded-full" style={{width: '85%'}}></div>
                   </div>
                 </div>
                 
                 <div>
                   <div className="flex justify-between items-center mb-2">
                     <span>Prédiction fin d'année</span>
-                    <span className="font-bold text-green-600">95K€</span>
+                    <span className="font-bold text-success">95K€</span>
                   </div>
                   <div className="text-sm text-muted-foreground">
                     Basé sur la tendance actuelle +18% MoM
@@ -530,7 +530,7 @@ export const DeveloperAnalytics = () => {
                 <div>
                   <div className="flex justify-between items-center mb-2">
                     <span>Croissance utilisateurs</span>
-                    <span className="font-bold text-blue-600">+24%</span>
+                    <span className="font-bold text-info">+24%</span>
                   </div>
                   <div className="text-sm text-muted-foreground">
                     Estimation pour les 3 prochains mois
