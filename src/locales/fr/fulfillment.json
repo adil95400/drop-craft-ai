@@ -1,10 +1,10 @@
 {
-  "title": "Auto-Fulfillment",
+  "title": "Exécution automatique",
   "description": "Automatisez vos commandes et suivez vos livraisons",
   "tabs": {
-    "dashboard": "Dashboard",
+    "dashboard": "Vue d'ensemble",
     "suppliers": "Fournisseurs",
-    "routing": "Routing",
+    "routing": "Acheminement",
     "orders": "Commandes"
   },
   "dashboard": {

@@ -1,9 +1,9 @@
 {
-  "title": "CRM",
+  "title": "Relation Client",
   "subtitle": "Gestion de la relation client",
   "leads": {
-    "title": "Leads",
-    "new": "Nouveau lead",
+    "title": "Prospects",
+    "new": "Nouveau prospect",
     "qualified": "Qualifié",
     "contacted": "Contacté",
     "converted": "Converti",
@@ -12,8 +12,8 @@
     "source": "Source"
   },
   "deals": {
-    "title": "Deals",
-    "pipeline": "Pipeline",
+    "title": "Opportunités",
+    "pipeline": "Tunnel de ventes",
     "value": "Valeur",
     "stage": "Étape",
     "probability": "Probabilité",
@@ -37,8 +37,8 @@
     "completed": "Terminée"
   },
   "emails": {
-    "title": "Emails",
-    "compose": "Composer",
+    "title": "E-mails",
+    "compose": "Rédiger",
     "templates": "Modèles",
     "campaigns": "Campagnes",
     "openRate": "Taux d'ouverture",
@@ -50,6 +50,6 @@
     "note": "Note",
     "call": "Appel",
     "meeting": "Réunion",
-    "email": "Email"
+    "email": "E-mail"
   }
 }

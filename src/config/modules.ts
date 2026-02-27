@@ -86,13 +86,13 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
   
   dashboard: {
     id: 'dashboard',
-    name: 'Dashboard',
+    name: 'Tableau de bord',
     icon: 'LayoutDashboard',
     enabled: true,
     minPlan: 'standard',
     route: '/dashboard',
     features: ['overview', 'quick-stats', 'recent-activity', 'widgets', 'shortcuts', 'quick-actions', 'kpi-cards'],
-    description: 'Vue d\'ensemble, widgets et raccourcis',
+    description: 'Vue d\'ensemble, indicateurs et raccourcis',
     category: 'core',
     order: 1,
     groupId: 'home'
@@ -145,9 +145,9 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     subModules: [
       { id: 'suppliers-overview', name: 'Vue d\'ensemble', route: '/suppliers', icon: 'LayoutDashboard', description: 'Dashboard fournisseurs', features: ['overview'], order: 1 },
       { id: 'suppliers-catalog', name: 'Catalogue Unifié', route: '/suppliers/catalog', icon: 'Package', description: 'Tous les produits', features: ['catalog'], order: 2 },
-      { id: 'suppliers-engine', name: 'Moteur Avancé', route: '/suppliers/engine', icon: 'Zap', description: 'Auto-import & fulfillment', features: ['advanced'], order: 3 },
+      { id: 'suppliers-engine', name: 'Moteur Avancé', route: '/suppliers/engine', icon: 'Zap', description: 'Auto-import & exécution', features: ['advanced'], order: 3 },
       { id: 'suppliers-my', name: 'Mes Fournisseurs', route: '/suppliers/my', icon: 'Truck', description: 'Fournisseurs connectés', features: ['list'], order: 4 },
-      { id: 'suppliers-analytics', name: 'Analytics', route: '/suppliers/analytics', icon: 'BarChart3', description: 'Performance fournisseurs', features: ['analytics'], order: 5 },
+      { id: 'suppliers-analytics', name: 'Statistiques', route: '/suppliers/analytics', icon: 'BarChart3', description: 'Performance fournisseurs', features: ['analytics'], order: 5 },
     ]
   },
 
@@ -333,7 +333,7 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     order: 1,
     groupId: 'performance',
     subModules: [
-      { id: 'quality-dashboard', name: 'Dashboard', route: '/audit', icon: 'LayoutDashboard', description: 'Vue d\'ensemble', features: ['overview'], order: 1 },
+      { id: 'quality-dashboard', name: 'Vue d\'ensemble', route: '/audit', icon: 'LayoutDashboard', description: 'Vue d\'ensemble', features: ['overview'], order: 1 },
       { id: 'quality-products', name: 'Audit Produits', route: '/audit/products', icon: 'Package', description: 'Auditer les produits', features: ['products'], order: 2 },
       { id: 'quality-scoring', name: 'Scoring', route: '/audit/scoring', icon: 'Star', description: 'Score qualité', features: ['scoring'], order: 3 },
       { id: 'quality-seo', name: 'Audit SEO', route: '/audit/seo', icon: 'Search', description: 'Audit référencement', features: ['seo'], order: 4 },
@@ -357,7 +357,7 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     order: 2,
     groupId: 'performance',
     subModules: [
-      { id: 'pricing-hub', name: 'Hub Tarification', route: '/pricing-manager', icon: 'LayoutDashboard', description: 'Vue d\'ensemble et KPIs', features: ['overview', 'kpis'], order: 1 },
+      { id: 'pricing-hub', name: 'Vue d\'ensemble', route: '/pricing-manager', icon: 'LayoutDashboard', description: 'Vue d\'ensemble et indicateurs', features: ['overview', 'kpis'], order: 1 },
       { id: 'pricing-rules', name: 'Règles de Prix', route: '/pricing-manager/rules', icon: 'GitBranch', description: 'Règles statiques (markup, marge, arrondi)', features: ['rules'], order: 2 },
       { id: 'pricing-automation', name: 'Repricing Auto', route: '/pricing-manager/repricing', icon: 'Zap', description: 'Repricing temps réel vers boutiques', features: ['repricing', 'sync'], order: 3 },
       { id: 'pricing-monitoring', name: 'Veille Prix', route: '/pricing-manager/monitoring', icon: 'Eye', description: 'Surveillance concurrence et auto-pricing', features: ['monitoring', 'competitors'], order: 4 },
@@ -404,18 +404,18 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     order: 1,
     groupId: 'sales',
     subModules: [
-      { id: 'stores-hub', name: 'Hub', route: '/stores-channels', icon: 'Store', description: 'Vue d\'ensemble', features: ['overview'], order: 1 },
+      { id: 'stores-hub', name: 'Vue d\'ensemble', route: '/stores-channels', icon: 'Store', description: 'Vue d\'ensemble', features: ['overview'], order: 1 },
       { id: 'stores-shopify', name: 'Shopify', route: '/import/shopify', icon: 'Store', description: 'Import depuis Shopify', features: ['shopify'], order: 2 },
       { id: 'stores-connect', name: 'Connecter', route: '/stores-channels/connect', icon: 'Plug', description: 'Ajouter une boutique', features: ['oauth'], order: 3 },
       { id: 'stores-sync', name: 'Synchronisation', route: '/stores-channels/sync', icon: 'RefreshCw', description: 'État des syncs', features: ['sync-status'], order: 4 },
-      { id: 'stores-analytics', name: 'Analytics', route: '/stores-channels/analytics', icon: 'BarChart3', description: 'Performances', features: ['analytics'], order: 5 },
+      { id: 'stores-analytics', name: 'Statistiques', route: '/stores-channels/analytics', icon: 'BarChart3', description: 'Performances', features: ['analytics'], order: 5 },
       { id: 'stores-diagnostic', name: 'Diagnostic Shopify', route: '/stores-channels/shopify-diagnostic', icon: 'Stethoscope', description: 'Tester et diagnostiquer Shopify', features: ['diagnostic'], order: 6 },
     ]
   },
   
   feeds: {
     id: 'feeds',
-    name: 'Feeds',
+    name: 'Flux produits',
     icon: 'Rss',
     enabled: true,
     minPlan: 'standard',
@@ -507,17 +507,17 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     minPlan: 'pro',
     route: '/automation',
     features: ['workflows', 'triggers'],
-    description: 'Workflows automatisés',
+    description: 'Scénarios automatisés',
     category: 'automation',
     order: 7,
     groupId: 'sales',
     badge: 'pro',
     subModules: [
-      { id: 'automation-hub', name: 'Hub', route: '/automation', icon: 'Zap', description: 'Vue d\'ensemble', features: ['overview'], order: 1 },
-      { id: 'automation-workflows', name: 'Workflows', route: '/automation/workflows', icon: 'Workflow', description: 'Créer des workflows', features: ['workflows'], order: 2 },
-      { id: 'automation-triggers', name: 'Déclencheurs', route: '/automation/triggers', icon: 'Play', description: 'Gérer les triggers', features: ['triggers'], order: 3 },
-      { id: 'automation-studio', name: 'Studio', route: '/automation/studio', icon: 'Palette', description: 'Studio automation', features: ['studio'], order: 4 },
-      { id: 'automation-ai-hub', name: 'AI Hub', route: '/automation/ai-hub', icon: 'Brain', description: 'Hub IA', features: ['ai'], order: 5 },
+      { id: 'automation-hub', name: 'Vue d\'ensemble', route: '/automation', icon: 'Zap', description: 'Vue d\'ensemble', features: ['overview'], order: 1 },
+      { id: 'automation-workflows', name: 'Scénarios', route: '/automation/workflows', icon: 'Workflow', description: 'Créer des scénarios', features: ['workflows'], order: 2 },
+      { id: 'automation-triggers', name: 'Déclencheurs', route: '/automation/triggers', icon: 'Play', description: 'Gérer les déclencheurs', features: ['triggers'], order: 3 },
+      { id: 'automation-studio', name: 'Studio', route: '/automation/studio', icon: 'Palette', description: 'Studio d\'automatisation', features: ['studio'], order: 4 },
+      { id: 'automation-ai-hub', name: 'Hub IA', route: '/automation/ai-hub', icon: 'Brain', description: 'Hub Intelligence Artificielle', features: ['ai'], order: 5 },
     ]
   },
 
@@ -529,22 +529,22 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
   
   analytics: {
     id: 'analytics',
-    name: 'Analytics',
+    name: 'Statistiques',
     icon: 'BarChart3',
     enabled: true,
     minPlan: 'standard',
     route: '/analytics',
     features: ['dashboards', 'reports', 'charts'],
-    description: 'Tableaux de bord et rapports',
+    description: 'Tableaux de bord, rapports et indicateurs',
     category: 'analytics',
     order: 3,
     groupId: 'performance',
     subModules: [
-      { id: 'analytics-dashboard', name: 'Dashboard', route: '/analytics', icon: 'LayoutDashboard', description: 'Vue d\'ensemble', features: ['overview'], order: 1 },
-      { id: 'analytics-advanced', name: 'Avancé', route: '/analytics/advanced', icon: 'TrendingUp', description: 'Analytics avancés', features: ['advanced'], order: 2 },
+      { id: 'analytics-dashboard', name: 'Vue d\'ensemble', route: '/analytics', icon: 'LayoutDashboard', description: 'Vue d\'ensemble', features: ['overview'], order: 1 },
+      { id: 'analytics-advanced', name: 'Avancé', route: '/analytics/advanced', icon: 'TrendingUp', description: 'Statistiques avancées', features: ['advanced'], order: 2 },
       { id: 'analytics-reports', name: 'Rapports', route: '/analytics/reports', icon: 'FileText', description: 'Rapports personnalisés', features: ['reports'], order: 3 },
-      { id: 'analytics-bi', name: 'Business Intelligence', route: '/analytics/bi', icon: 'Brain', description: 'BI avancée', features: ['bi'], order: 4 },
-      { id: 'analytics-predictive', name: 'Prédictif', route: '/analytics/predictive', icon: 'TrendingUp', description: 'Analytics prédictifs', features: ['predictive'], order: 5 },
+      { id: 'analytics-bi', name: 'Intelligence Commerciale', route: '/analytics/bi', icon: 'Brain', description: 'BI avancée', features: ['bi'], order: 4 },
+      { id: 'analytics-predictive', name: 'Prédictif', route: '/analytics/predictive', icon: 'TrendingUp', description: 'Statistiques prédictives', features: ['predictive'], order: 5 },
       { id: 'analytics-real-data', name: 'Temps Réel', route: '/analytics/real-data', icon: 'Activity', description: 'Données temps réel', features: ['real-data'], order: 6 },
     ]
   },
@@ -563,24 +563,24 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     groupId: 'performance',
     badge: 'pro',
     subModules: [
-      { id: 'marketing-dashboard', name: 'Dashboard', route: '/marketing', icon: 'LayoutDashboard', description: 'Vue d\'ensemble', features: ['overview'], order: 1 },
-      { id: 'marketing-ads', name: 'Campagnes Ads', route: '/marketing/ads', icon: 'Megaphone', description: 'Publicités', features: ['ads'], order: 2 },
-      { id: 'marketing-email', name: 'Email', route: '/marketing/email', icon: 'Mail', description: 'Email marketing', features: ['email'], order: 3 },
+      { id: 'marketing-dashboard', name: 'Vue d\'ensemble', route: '/marketing', icon: 'LayoutDashboard', description: 'Vue d\'ensemble', features: ['overview'], order: 1 },
+      { id: 'marketing-ads', name: 'Campagnes publicitaires', route: '/marketing/ads', icon: 'Megaphone', description: 'Publicités', features: ['ads'], order: 2 },
+      { id: 'marketing-email', name: 'E-mailing', route: '/marketing/email', icon: 'Mail', description: 'Marketing par e-mail', features: ['email'], order: 3 },
       { id: 'marketing-promotions', name: 'Promotions', route: '/marketing/promotions', icon: 'Tag', description: 'Codes promo', features: ['coupons'], order: 4 },
       { id: 'marketing-abandoned', name: 'Paniers Abandonnés', route: '/marketing/abandoned-cart', icon: 'ShoppingCart', description: 'Récupération paniers', features: ['abandoned'], order: 5 },
       { id: 'marketing-loyalty', name: 'Fidélité', route: '/marketing/loyalty', icon: 'Award', description: 'Programme fidélité', features: ['loyalty'], order: 6 },
       { id: 'marketing-flash', name: 'Ventes Flash', route: '/marketing/flash-sales', icon: 'Zap', description: 'Ventes flash', features: ['flash-sales'], order: 7 },
-      { id: 'marketing-social', name: 'Social Commerce', route: '/marketing/social-commerce', icon: 'Share2', description: 'Réseaux sociaux', features: ['social'], order: 8 },
+      { id: 'marketing-social', name: 'Commerce social', route: '/marketing/social-commerce', icon: 'Share2', description: 'Réseaux sociaux', features: ['social'], order: 8 },
       { id: 'marketing-affiliate', name: 'Affiliation', route: '/marketing/affiliate', icon: 'Users', description: 'Programme affiliés', features: ['affiliate'], order: 9 },
       { id: 'marketing-calendar', name: 'Calendrier', route: '/marketing/calendar', icon: 'Calendar', description: 'Planification campagnes', features: ['calendar'], order: 10 },
       { id: 'marketing-ab-testing', name: 'A/B Testing', route: '/marketing/ab-testing', icon: 'BarChart3', description: 'Tests A/B', features: ['ab-testing'], order: 11 },
-      { id: 'marketing-content', name: 'Contenu IA', route: '/marketing/content-generation', icon: 'Sparkles', description: 'Génération contenu', features: ['ai-content'], order: 12 },
+      { id: 'marketing-content', name: 'Contenu IA', route: '/marketing/content-generation', icon: 'Sparkles', description: 'Génération de contenu', features: ['ai-content'], order: 12 },
     ]
   },
 
   crm: {
     id: 'crm',
-    name: 'CRM',
+    name: 'Relation Client',
     icon: 'Contact',
     enabled: true,
     minPlan: 'pro',
@@ -592,11 +592,11 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     groupId: 'sales',
     badge: 'pro',
     subModules: [
-      { id: 'crm-dashboard', name: 'Dashboard', route: '/crm', icon: 'LayoutDashboard', description: 'Vue d\'ensemble', features: ['overview'], order: 1 },
-      { id: 'crm-leads', name: 'Leads', route: '/crm/leads', icon: 'UserPlus', description: 'Gestion des leads', features: ['leads'], order: 2 },
-      { id: 'crm-pipeline', name: 'Pipeline', route: '/crm/pipeline', icon: 'GitBranch', description: 'Pipeline de ventes', features: ['pipeline'], order: 3 },
-      { id: 'crm-emails', name: 'Emails', route: '/crm/emails', icon: 'Mail', description: 'Historique emails', features: ['emails'], order: 4 },
-      { id: 'crm-scoring', name: 'Lead Scoring', route: '/crm/scoring', icon: 'Target', description: 'Notation des leads', features: ['scoring'], order: 5 },
+      { id: 'crm-dashboard', name: 'Vue d\'ensemble', route: '/crm', icon: 'LayoutDashboard', description: 'Vue d\'ensemble', features: ['overview'], order: 1 },
+      { id: 'crm-leads', name: 'Prospects', route: '/crm/leads', icon: 'UserPlus', description: 'Gestion des prospects', features: ['leads'], order: 2 },
+      { id: 'crm-pipeline', name: 'Tunnel de ventes', route: '/crm/pipeline', icon: 'GitBranch', description: 'Tunnel de ventes', features: ['pipeline'], order: 3 },
+      { id: 'crm-emails', name: 'E-mails', route: '/crm/emails', icon: 'Mail', description: 'Historique e-mails', features: ['emails'], order: 4 },
+      { id: 'crm-scoring', name: 'Notation prospects', route: '/crm/scoring', icon: 'Target', description: 'Notation des prospects', features: ['scoring'], order: 5 },
     ]
   },
 
@@ -613,9 +613,9 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     order: 5,
     groupId: 'performance',
     subModules: [
-      { id: 'seo-manager', name: 'Manager', route: '/marketing/seo', icon: 'Search', description: 'Gestion SEO', features: ['manager'], order: 1 },
-      { id: 'seo-keywords', name: 'Mots-clés', route: '/marketing/seo/keywords', icon: 'Key', description: 'Recherche mots-clés', features: ['keywords'], order: 2 },
-      { id: 'seo-rank', name: 'Rankings', route: '/marketing/seo/rank-tracker', icon: 'TrendingUp', description: 'Suivi positions', features: ['rankings'], order: 3 },
+      { id: 'seo-manager', name: 'Gestionnaire', route: '/marketing/seo', icon: 'Search', description: 'Gestion SEO', features: ['manager'], order: 1 },
+      { id: 'seo-keywords', name: 'Mots-clés', route: '/marketing/seo/keywords', icon: 'Key', description: 'Recherche de mots-clés', features: ['keywords'], order: 2 },
+      { id: 'seo-rank', name: 'Classements', route: '/marketing/seo/rank-tracker', icon: 'TrendingUp', description: 'Suivi des positions', features: ['rankings'], order: 3 },
     ]
   },
 
@@ -720,7 +720,7 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
   
   academy: {
     id: 'academy',
-    name: 'Academy',
+    name: 'Académie',
     icon: 'GraduationCap',
     enabled: true,
     minPlan: 'standard',
@@ -748,7 +748,7 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
 
   apiDocs: {
     id: 'apiDocs',
-    name: 'API & Docs',
+    name: 'API & Documentation',
     icon: 'Code',
     enabled: true,
     minPlan: 'pro',

@@ -70,7 +70,7 @@ const ChannableLogo = memo(({
               ShopOpti+
             </span>
             <span className="text-[10px] text-muted-foreground/70 font-medium tracking-wider uppercase">
-              Premium Platform
+              Plateforme Premium
             </span>
           </motion.div>}
       </AnimatePresence>
@@ -395,7 +395,7 @@ const ChannableFooter = memo(({
     'ultra_pro': 'Ultra Pro',
     'pro': 'Pro',
     'standard': 'Standard',
-    'free': 'Free'
+    'free': 'Gratuit'
   }[profile?.plan || 'standard'] || 'Standard';
   return <SidebarFooter className="border-t border-sidebar-border/50 p-3 bg-sidebar-muted/20 dark:bg-sidebar-muted/10">
       <div className={cn("flex items-center gap-3", collapsed && "justify-center")}>
