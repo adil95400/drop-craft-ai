@@ -6,6 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Sparkles, TrendingUp, ShoppingCart, Target, Zap, BarChart3, RefreshCw, Loader2, CheckCircle, XCircle, Settings } from 'lucide-react';
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
 import { RecommendationWidgetConfig } from '@/components/recommendations/RecommendationWidgetConfig';
+import { RecommendationPerformanceChart } from '@/components/recommendations/RecommendationPerformanceChart';
 import { useProductRecommendations } from '@/hooks/useProductRecommendations';
 import { Progress } from '@/components/ui/progress';
 
@@ -239,59 +240,7 @@ const ProductRecommendationsPage: React.FC = () => {
         </TabsContent>
 
         <TabsContent value="performance">
-          <Card>
-            <CardHeader>
-              <CardTitle>Analyse de performance</CardTitle>
-              <CardDescription>Métriques temps réel du moteur de recommandation</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="grid gap-6 md:grid-cols-2">
-                <div className="space-y-4">
-                  <h4 className="font-semibold">Entonnoir de conversion</h4>
-                  {[
-                    { label: 'Impressions', value: stats?.impressions || 0, pct: 100 },
-                    { label: 'Clics', value: stats?.clicks || 0, pct: stats?.impressions ? (stats.clicks / stats.impressions) * 100 : 0 },
-                    { label: 'Ajouts panier', value: stats?.add_to_cart || 0, pct: stats?.impressions ? (stats.add_to_cart / stats.impressions) * 100 : 0 },
-                    { label: 'Achats', value: stats?.purchases || 0, pct: stats?.impressions ? (stats.purchases / stats.impressions) * 100 : 0 },
-                  ].map((step, i) => (
-                    <div key={step.label}>
-                      <div className="flex justify-between text-sm mb-1">
-                        <span>{step.label}</span>
-                        <span className="font-medium">{step.value} ({step.pct.toFixed(1)}%)</span>
-                      </div>
-                      <Progress value={step.pct} className="h-2" />
-                    </div>
-                  ))}
-                </div>
-
-                <div className="space-y-4">
-                  <h4 className="font-semibold">Modèle IA</h4>
-                  <div className="p-4 border rounded-lg space-y-3">
-                    <div className="flex justify-between text-sm">
-                      <span className="text-muted-foreground">Algorithme</span>
-                      <span className="font-medium">Collaborative Filtering + IA</span>
-                    </div>
-                    <div className="flex justify-between text-sm">
-                      <span className="text-muted-foreground">Moteur</span>
-                      <span className="font-medium">OpenAI GPT-5</span>
-                    </div>
-                    <div className="flex justify-between text-sm">
-                      <span className="text-muted-foreground">Recommandations actives</span>
-                      <span className="font-medium">{recommendations.length}</span>
-                    </div>
-                    <div className="flex justify-between text-sm">
-                      <span className="text-muted-foreground">Score moyen</span>
-                      <span className="font-medium">
-                        {recommendations.length > 0
-                          ? (recommendations.reduce((s: number, r: any) => s + (r.confidence_score || 0), 0) / recommendations.length * 100).toFixed(0)
-                          : 0}%
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+          <RecommendationPerformanceChart stats={stats} recommendations={recommendations} />
         </TabsContent>
 
         <TabsContent value="config">
