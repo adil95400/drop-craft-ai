@@ -143,9 +143,9 @@ export function CommandCenterSection({
             transition={{ duration: 2, repeat: Infinity }}
           >
             {hasIssues ? (
-              <AlertTriangle className="h-5 w-5 sm:h-6 sm:w-6 text-orange-500" />
+              <AlertTriangle className="h-5 w-5 sm:h-6 sm:w-6 text-warning" />
             ) : (
-              <CheckCircle2 className="h-5 w-5 sm:h-6 sm:w-6 text-emerald-500" />
+              <CheckCircle2 className="h-5 w-5 sm:h-6 sm:w-6 text-success" />
             )}
           </motion.div>
           <div>

@@ -78,14 +78,14 @@ export function CompetitivePositioning({ analyses }: CompetitivePositioningProps
 
           <div className="grid gap-6 md:grid-cols-2">
             <div className="space-y-3">
-              <h4 className="font-semibold text-green-600 flex items-center gap-2">
+              <h4 className="font-semibold text-success flex items-center gap-2">
                 <TrendingUp className="w-4 h-4" />
                 Forces
               </h4>
               <ul className="space-y-2">
                 {yourPosition.strengths.map((strength, idx) => (
                   <li key={idx} className="flex items-start gap-2 text-sm">
-                    <span className="text-green-500">✓</span>
+                    <span className="text-success">✓</span>
                     <span>{strength}</span>
                   </li>
                 ))}
@@ -93,14 +93,14 @@ export function CompetitivePositioning({ analyses }: CompetitivePositioningProps
             </div>
 
             <div className="space-y-3">
-              <h4 className="font-semibold text-amber-600 flex items-center gap-2">
+              <h4 className="font-semibold text-warning flex items-center gap-2">
                 <TrendingDown className="w-4 h-4" />
                 Axes d'amélioration
               </h4>
               <ul className="space-y-2">
                 {yourPosition.weaknesses.map((weakness, idx) => (
                   <li key={idx} className="flex items-start gap-2 text-sm">
-                    <span className="text-amber-500">⚠</span>
+                    <span className="text-warning">⚠</span>
                     <span>{weakness}</span>
                   </li>
                 ))}

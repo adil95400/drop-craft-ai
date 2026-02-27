@@ -45,28 +45,28 @@ export const ReviewManagementHub = () => {
       title: 'Total des avis',
       value: analytics?.total_reviews || 0,
       icon: MessageSquare,
-      color: 'text-blue-500',
+      color: 'text-info',
       href: '/reviews'
     },
     {
       title: 'Note moyenne',
       value: analytics?.average_rating?.toFixed(1) || '0.0',
       icon: Star,
-      color: 'text-yellow-500',
+      color: 'text-warning',
       href: '/reviews'
     },
     {
       title: 'En attente',
       value: analytics?.by_status?.pending || 0,
       icon: Clock,
-      color: 'text-orange-500',
+      color: 'text-warning',
       href: '/reviews'
     },
     {
       title: 'Approuvés',
       value: analytics?.by_status?.approved || 0,
       icon: CheckCircle,
-      color: 'text-green-500',
+      color: 'text-success',
       href: '/reviews'
     }
   ];
@@ -191,8 +191,8 @@ export const ReviewManagementHub = () => {
                               key={star}
                               className={`h-4 w-4 ${
                                 star <= review.rating
-                                  ? 'fill-yellow-500 text-yellow-500'
-                                  : 'text-gray-300'
+                                  ? 'fill-warning text-warning'
+                                  : 'text-muted-foreground'
                               }`}
                             />
                           ))}
@@ -225,14 +225,14 @@ export const ReviewManagementHub = () => {
                           variant="outline"
                           onClick={() => manualModerate.mutate({ id: review.id, status: 'approved' })}
                         >
-                          <CheckCircle className="h-4 w-4 text-green-500" />
+                          <CheckCircle className="h-4 w-4 text-success" />
                         </Button>
                         <Button
                           size="sm"
                           variant="outline"
                           onClick={() => manualModerate.mutate({ id: review.id, status: 'rejected' })}
                         >
-                          <XCircle className="h-4 w-4 text-red-500" />
+                          <XCircle className="h-4 w-4 text-destructive" />
                         </Button>
                       </div>
                     </div>
@@ -256,7 +256,7 @@ export const ReviewManagementHub = () => {
                     <div className="flex items-center justify-between">
                       <div>
                         <p className="text-sm text-muted-foreground">Positifs</p>
-                        <h3 className="text-2xl font-bold text-green-500">
+                        <h3 className="text-2xl font-bold text-success">
                           {moderationStats?.sentiment?.positive || 0}
                         </h3>
                       </div>
@@ -269,7 +269,7 @@ export const ReviewManagementHub = () => {
                     <div className="flex items-center justify-between">
                       <div>
                         <p className="text-sm text-muted-foreground">Neutres</p>
-                        <h3 className="text-2xl font-bold text-yellow-500">
+                        <h3 className="text-2xl font-bold text-warning">
                           {moderationStats?.sentiment?.neutral || 0}
                         </h3>
                       </div>
@@ -282,7 +282,7 @@ export const ReviewManagementHub = () => {
                     <div className="flex items-center justify-between">
                       <div>
                         <p className="text-sm text-muted-foreground">Négatifs</p>
-                        <h3 className="text-2xl font-bold text-red-500">
+                        <h3 className="text-2xl font-bold text-destructive">
                           {moderationStats?.sentiment?.negative || 0}
                         </h3>
                       </div>
@@ -383,7 +383,7 @@ export const ReviewManagementHub = () => {
                   <CardContent className="p-4">
                     <h4 className="font-semibold mb-4">Tendance (30 jours)</h4>
                     <div className="flex items-center gap-2">
-                      <TrendingUp className="h-8 w-8 text-green-500" />
+                      <TrendingUp className="h-8 w-8 text-success" />
                       <div>
                         <p className="text-2xl font-bold">{analytics?.recent_trend || 0}</p>
                         <p className="text-sm text-muted-foreground">Nouveaux avis</p>

@@ -39,10 +39,10 @@ interface PredictiveAlertsPanelProps {
 
 const alertTypeConfig = {
   stockout: { icon: Package, color: 'text-destructive', bgColor: 'bg-destructive/10', label: 'Rupture' },
-  margin_decline: { icon: TrendingDown, color: 'text-orange-600 dark:text-orange-400', bgColor: 'bg-orange-500/10', label: 'Marge' },
-  opportunity: { icon: Sparkles, color: 'text-emerald-600 dark:text-emerald-400', bgColor: 'bg-emerald-500/10', label: 'Opportunité' },
-  trend_up: { icon: TrendingUp, color: 'text-blue-600 dark:text-blue-400', bgColor: 'bg-blue-500/10', label: 'Tendance ↑' },
-  trend_down: { icon: TrendingDown, color: 'text-amber-600 dark:text-amber-400', bgColor: 'bg-amber-500/10', label: 'Tendance ↓' }
+  margin_decline: { icon: TrendingDown, color: 'text-warning', bgColor: 'bg-warning/10', label: 'Marge' },
+  opportunity: { icon: Sparkles, color: 'text-success', bgColor: 'bg-success/10', label: 'Opportunité' },
+  trend_up: { icon: TrendingUp, color: 'text-info', bgColor: 'bg-info/10', label: 'Tendance ↑' },
+  trend_down: { icon: TrendingDown, color: 'text-warning', bgColor: 'bg-warning/10', label: 'Tendance ↓' }
 } as const
 
 const urgencyConfig = {

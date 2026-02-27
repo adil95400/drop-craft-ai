@@ -140,9 +140,9 @@ export function PredictiveKPIPanel({ revenue, orders, customers, avgMargin, prod
                     variant="outline"
                     className={cn(
                       'text-[10px] px-1.5',
-                      kpi.confidence >= 75 ? 'border-green-500/30 text-green-600' :
-                      kpi.confidence >= 60 ? 'border-amber-500/30 text-amber-600' :
-                      'border-red-500/30 text-red-600'
+                      kpi.confidence >= 75 ? 'border-success/30 text-success' :
+                      kpi.confidence >= 60 ? 'border-warning/30 text-warning' :
+                      'border-destructive/30 text-destructive'
                     )}
                   >
                     {kpi.confidence}%
@@ -158,7 +158,7 @@ export function PredictiveKPIPanel({ revenue, orders, customers, avgMargin, prod
                   </div>
                   <div className={cn(
                     'flex items-center gap-0.5 text-xs font-semibold',
-                    kpi.delta > 0 ? 'text-green-600' : kpi.delta < 0 ? 'text-red-500' : 'text-muted-foreground'
+                    kpi.delta > 0 ? 'text-success' : kpi.delta < 0 ? 'text-destructive' : 'text-muted-foreground'
                   )}>
                     <TrendIcon className="h-3 w-3" />
                     {kpi.delta > 0 ? '+' : ''}{kpi.delta.toFixed(1)}%
@@ -170,8 +170,8 @@ export function PredictiveKPIPanel({ revenue, orders, customers, avgMargin, prod
                   <div
                     className={cn(
                       'h-full rounded-full transition-all',
-                      kpi.confidence >= 75 ? 'bg-green-500' :
-                      kpi.confidence >= 60 ? 'bg-amber-500' : 'bg-red-500'
+                      kpi.confidence >= 75 ? 'bg-success' :
+                      kpi.confidence >= 60 ? 'bg-warning' : 'bg-destructive'
                     )}
                     style={{ width: `${kpi.confidence}%` }}
                   />
