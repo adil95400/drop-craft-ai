@@ -82,6 +82,7 @@ import { OnboardingWidget, OnboardingModal } from '@/components/onboarding/Unifi
 import { DashboardEmptyState } from './DashboardEmptyState';
 import { useDashboardEmptyState } from '@/hooks/useDashboardEmptyState';
 import { ActiveJobsBanner } from '@/components/jobs';
+import { GuidedTour } from '@/components/onboarding/GuidedTour';
 
 // Widget loading skeleton
 const WidgetSkeleton = () => (
@@ -700,6 +701,9 @@ export function ChannableDashboard() {
 
       {/* Widget Library Dialog */}
       <WidgetLibrary open={showWidgetLibrary} onOpenChange={setShowWidgetLibrary} />
+
+      {/* Guided Tour for new users */}
+      <GuidedTour />
     </ChannablePageWrapper>
   );
 }

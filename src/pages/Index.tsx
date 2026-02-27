@@ -718,6 +718,36 @@ const Index = () => {
         description="Automatisez votre e-commerce avec ShopOpti+. 99+ fournisseurs, IA avancée, gestion multi-plateformes Shopify, Amazon, eBay. Essai gratuit 14 jours."
         path="/"
         keywords="dropshipping, e-commerce IA, automatisation, SaaS, Shopify, AliExpress, BigBuy, gestion produits, analytics, multichannel"
+        jsonLd={{
+          "@context": "https://schema.org",
+          "@type": "FAQPage",
+          "mainEntity": [
+            {
+              "@type": "Question",
+              "name": "Qu'est-ce que ShopOpti+ ?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "ShopOpti+ est une plateforme SaaS d'automatisation e-commerce propulsée par l'IA, connectant 99+ fournisseurs avec gestion multi-marketplaces."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "Combien coûte ShopOpti+ ?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "ShopOpti+ propose un plan Starter gratuit, un plan Pro à 29€/mois et un plan Enterprise sur mesure. Essai gratuit de 14 jours inclus."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "Quelles plateformes sont supportées ?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "ShopOpti+ supporte Shopify, WooCommerce, PrestaShop, Amazon, eBay, Etsy, TikTok Shop et plus de 24 plateformes e-commerce."
+              }
+            }
+          ]
+        }}
       />
       <OrganizationSchema />
       <SoftwareAppSchema />
