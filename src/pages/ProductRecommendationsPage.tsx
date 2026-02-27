@@ -3,310 +3,231 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Sparkles, TrendingUp, ShoppingCart, Target, Zap, BarChart3 } from 'lucide-react';
+import { Sparkles, TrendingUp, ShoppingCart, Target, Zap, BarChart3, RefreshCw, Loader2, CheckCircle, XCircle } from 'lucide-react';
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
+import { useProductRecommendations } from '@/hooks/useProductRecommendations';
+import { Progress } from '@/components/ui/progress';
 
 const ProductRecommendationsPage: React.FC = () => {
-  const strategies = [
-    {
-      id: 1,
-      name: 'Produits similaires',
-      type: 'similar',
-      status: 'active',
-      conversions: 234,
-      revenue: 12456,
-      ctr: 8.5,
-    },
-    {
-      id: 2,
-      name: 'Souvent achetés ensemble',
-      type: 'bundle',
-      status: 'active',
-      conversions: 189,
-      revenue: 9876,
-      ctr: 6.2,
-    },
-    {
-      id: 3,
-      name: 'Basé sur l\'historique',
-      type: 'personalized',
-      status: 'active',
-      conversions: 456,
-      revenue: 23456,
-      ctr: 12.3,
-    },
-  ];
+  const { stats, recommendations, isLoading, generate, isGenerating } = useProductRecommendations();
+
+  const ctr = stats?.impressions > 0 ? ((stats.clicks / stats.impressions) * 100).toFixed(1) : '0';
+  const conversionRate = stats?.clicks > 0 ? ((stats.purchases / stats.clicks) * 100).toFixed(1) : '0';
+
+  const strategyLabels: Record<string, string> = {
+    cross_sell: 'Cross-sell',
+    upsell: 'Up-sell',
+    bundle: 'Bundle',
+    similar: 'Similaire',
+    personalized: 'Personnalisé',
+  };
+
+  const strategyIcons: Record<string, React.ReactNode> = {
+    cross_sell: <Target className="h-5 w-5 text-primary" />,
+    upsell: <Zap className="h-5 w-5 text-primary" />,
+    bundle: <ShoppingCart className="h-5 w-5 text-primary" />,
+    similar: <Sparkles className="h-5 w-5 text-primary" />,
+  };
 
   return (
     <ChannablePageWrapper
       title="Recommandations produits"
-      description="Augmentez vos ventes avec des recommandations IA"
+      description="Moteur IA de recommandation avec collaborative filtering"
       heroImage="ai"
-      badge={{ label: 'Recommandations', icon: Sparkles }}
+      badge={{ label: 'Recommandations IA', icon: Sparkles }}
       actions={
-        <Button>
-          <Sparkles className="mr-2 h-4 w-4" />
-          Nouvelle stratégie
+        <Button onClick={() => generate()} disabled={isGenerating}>
+          {isGenerating ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <RefreshCw className="mr-2 h-4 w-4" />}
+          {isGenerating ? 'Analyse en cours...' : 'Générer des recommandations'}
         </Button>
       }
     >
-
+      {/* KPIs */}
       <div className="grid gap-4 md:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Revenue généré</CardTitle>
+            <CardTitle className="text-sm font-medium">Impressions</CardTitle>
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">€45,788</div>
-            <p className="text-xs text-muted-foreground flex items-center gap-1">
-              <TrendingUp className="h-3 w-3 text-green-500" />
-              +24% ce mois
-            </p>
+            <div className="text-2xl font-bold">{stats?.impressions || 0}</div>
+            <p className="text-xs text-muted-foreground">Recommandations affichées</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Clics</CardTitle>
+            <ShoppingCart className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats?.clicks || 0}</div>
+            <p className="text-xs text-muted-foreground">CTR: {ctr}%</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Conversions</CardTitle>
-            <ShoppingCart className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">879</div>
-            <p className="text-xs text-muted-foreground">Ce mois</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Taux de clic</CardTitle>
             <Target className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">9.2%</div>
-            <p className="text-xs text-muted-foreground">Moyenne globale</p>
+            <div className="text-2xl font-bold">{stats?.purchases || 0}</div>
+            <p className="text-xs text-muted-foreground">Taux: {conversionRate}%</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Panier moyen</CardTitle>
+            <CardTitle className="text-sm font-medium">Ajouts panier</CardTitle>
             <BarChart3 className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">+€12.50</div>
-            <p className="text-xs text-muted-foreground">Gain moyen par commande</p>
+            <div className="text-2xl font-bold">{stats?.add_to_cart || 0}</div>
+            <p className="text-xs text-muted-foreground">Via recommandations</p>
           </CardContent>
         </Card>
       </div>
 
-      <Tabs defaultValue="strategies" className="space-y-4">
+      <Tabs defaultValue="recommendations" className="space-y-4">
         <TabsList>
+          <TabsTrigger value="recommendations">Recommandations IA</TabsTrigger>
           <TabsTrigger value="strategies">Stratégies</TabsTrigger>
-          <TabsTrigger value="ai">IA & ML</TabsTrigger>
           <TabsTrigger value="performance">Performance</TabsTrigger>
-          <TabsTrigger value="settings">Paramètres</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="strategies" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Stratégies de recommandation</CardTitle>
-              <CardDescription>Gérez vos moteurs de recommandation</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {strategies.map((strategy) => (
-                  <div
-                    key={strategy.id}
-                    className="flex items-center justify-between p-4 border rounded-lg"
-                  >
-                    <div className="flex items-center gap-4">
-                      <div className="p-2 bg-primary/10 rounded-lg">
-                        <Sparkles className="h-5 w-5 text-primary" />
+        <TabsContent value="recommendations" className="space-y-4">
+          {isLoading ? (
+            <Card>
+              <CardContent className="flex items-center justify-center py-12">
+                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+              </CardContent>
+            </Card>
+          ) : recommendations.length === 0 ? (
+            <Card>
+              <CardContent className="py-12 text-center">
+                <Sparkles className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+                <h3 className="text-lg font-semibold mb-2">Aucune recommandation</h3>
+                <p className="text-muted-foreground mb-4">
+                  Cliquez sur "Générer des recommandations" pour analyser vos produits et historique de commandes.
+                </p>
+                <Button onClick={() => generate()} disabled={isGenerating}>
+                  {isGenerating ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
+                  Lancer l'analyse IA
+                </Button>
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="space-y-3">
+              {recommendations.map((rec: any) => (
+                <Card key={rec.id} className="hover:shadow-md transition-shadow">
+                  <CardContent className="p-4">
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="flex items-start gap-3 flex-1">
+                        <div className="p-2 bg-primary/10 rounded-lg mt-1">
+                          {strategyIcons[rec.recommendation_type] || <Sparkles className="h-5 w-5 text-primary" />}
+                        </div>
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-1">
+                            <h4 className="font-semibold">{rec.title}</h4>
+                            <Badge variant="secondary" className="text-xs">
+                              {strategyLabels[rec.recommendation_type] || rec.recommendation_type}
+                            </Badge>
+                          </div>
+                          <p className="text-sm text-muted-foreground">{rec.description}</p>
+                        </div>
                       </div>
-                      <div>
-                        <h3 className="font-semibold">{strategy.name}</h3>
-                        <p className="text-sm text-muted-foreground capitalize">
-                          Type: {strategy.type}
-                        </p>
+                      <div className="flex items-center gap-4 shrink-0">
+                        <div className="text-center">
+                          <div className="text-sm font-semibold">{Math.round((rec.confidence_score || 0) * 100)}%</div>
+                          <div className="text-xs text-muted-foreground">Confiance</div>
+                          <Progress value={(rec.confidence_score || 0) * 100} className="h-1 w-16 mt-1" />
+                        </div>
+                        {rec.impact_value > 0 && (
+                          <div className="text-center">
+                            <div className="text-sm font-semibold text-primary">+€{rec.impact_value?.toFixed(0)}</div>
+                            <div className="text-xs text-muted-foreground">Impact</div>
+                          </div>
+                        )}
+                        <div className="flex gap-1">
+                          <Button size="sm" variant="default">
+                            <CheckCircle className="h-3 w-3 mr-1" /> Appliquer
+                          </Button>
+                          <Button size="sm" variant="ghost">
+                            <XCircle className="h-3 w-3" />
+                          </Button>
+                        </div>
                       </div>
                     </div>
-                    <div className="flex items-center gap-6">
-                      <div className="text-center">
-                        <div className="text-sm font-semibold">{strategy.conversions}</div>
-                        <div className="text-xs text-muted-foreground">Conversions</div>
-                      </div>
-                      <div className="text-center">
-                        <div className="text-sm font-semibold">€{strategy.revenue}</div>
-                        <div className="text-xs text-muted-foreground">Revenue</div>
-                      </div>
-                      <div className="text-center">
-                        <div className="text-sm font-semibold">{strategy.ctr}%</div>
-                        <div className="text-xs text-muted-foreground">CTR</div>
-                      </div>
-                      <Badge variant="default">{strategy.status}</Badge>
-                      <Button size="sm" variant="outline">
-                        Configurer
-                      </Button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-
-          <div className="grid gap-4 md:grid-cols-3">
-            <Card>
-              <CardHeader>
-                <div className="flex items-center gap-2">
-                  <Target className="h-5 w-5 text-primary" />
-                  <CardTitle className="text-lg">Cross-sell</CardTitle>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-muted-foreground mb-4">
-                  Recommandez des produits complémentaires pendant l'achat
-                </p>
-                <div className="space-y-2">
-                  <div className="flex justify-between text-sm">
-                    <span>Taux d'adoption</span>
-                    <span className="font-semibold">18%</span>
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span>Revenue moyen</span>
-                    <span className="font-semibold">€15.20</span>
-                  </div>
-                </div>
-                <Button className="w-full mt-4" size="sm">Activer</Button>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <div className="flex items-center gap-2">
-                  <Zap className="h-5 w-5 text-primary" />
-                  <CardTitle className="text-lg">Up-sell</CardTitle>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-muted-foreground mb-4">
-                  Suggérez des versions premium ou améliorées
-                </p>
-                <div className="space-y-2">
-                  <div className="flex justify-between text-sm">
-                    <span>Taux d'adoption</span>
-                    <span className="font-semibold">12%</span>
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span>Revenue moyen</span>
-                    <span className="font-semibold">€28.50</span>
-                  </div>
-                </div>
-                <Button className="w-full mt-4" size="sm">Activer</Button>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <div className="flex items-center gap-2">
-                  <Sparkles className="h-5 w-5 text-primary" />
-                  <CardTitle className="text-lg">Personnalisé</CardTitle>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-muted-foreground mb-4">
-                  Recommandations basées sur le comportement utilisateur
-                </p>
-                <div className="space-y-2">
-                  <div className="flex justify-between text-sm">
-                    <span>Taux d'adoption</span>
-                    <span className="font-semibold">22%</span>
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span>Revenue moyen</span>
-                    <span className="font-semibold">€19.80</span>
-                  </div>
-                </div>
-                <Button className="w-full mt-4" size="sm" variant="default">Actif</Button>
-              </CardContent>
-            </Card>
-          </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
         </TabsContent>
 
-        <TabsContent value="ai">
+        <TabsContent value="strategies" className="space-y-4">
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+            {Object.entries(stats?.by_strategy || {}).map(([strategy, data]: [string, any]) => (
+              <Card key={strategy}>
+                <CardHeader className="pb-2">
+                  <div className="flex items-center gap-2">
+                    {strategyIcons[strategy] || <Sparkles className="h-4 w-4 text-primary" />}
+                    <CardTitle className="text-base">{strategyLabels[strategy] || strategy}</CardTitle>
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-2">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">Impressions</span>
+                    <span className="font-medium">{data.impressions}</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">Clics</span>
+                    <span className="font-medium">{data.clicks}</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">Conversions</span>
+                    <span className="font-medium">{data.purchases}</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">CTR</span>
+                    <span className="font-medium">
+                      {data.impressions > 0 ? ((data.clicks / data.impressions) * 100).toFixed(1) : 0}%
+                    </span>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+            {Object.keys(stats?.by_strategy || {}).length === 0 && (
+              <Card className="col-span-full">
+                <CardContent className="py-8 text-center text-muted-foreground">
+                  Aucune donnée de stratégie disponible. Générez des recommandations pour commencer.
+                </CardContent>
+              </Card>
+            )}
+          </div>
+
           <Card>
             <CardHeader>
-              <CardTitle>Configuration IA & Machine Learning</CardTitle>
-              <CardDescription>Optimisez les algorithmes de recommandation</CardDescription>
+              <CardTitle>Configuration des stratégies</CardTitle>
+              <CardDescription>Activez ou désactivez les types de recommandation</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="space-y-6">
-                <div className="p-4 border rounded-lg">
-                  <div className="flex items-center justify-between mb-3">
-                    <h4 className="font-semibold">Apprentissage automatique</h4>
-                    <Badge variant="default">Actif</Badge>
+              <div className="grid gap-4 md:grid-cols-3">
+                {[
+                  { key: 'cross_sell', title: 'Cross-sell', desc: 'Produits complémentaires', icon: Target },
+                  { key: 'upsell', title: 'Up-sell', desc: 'Versions premium', icon: Zap },
+                  { key: 'bundle', title: 'Bundles', desc: 'Lots de produits', icon: ShoppingCart },
+                ].map(s => (
+                  <div key={s.key} className="p-4 border rounded-lg">
+                    <div className="flex items-center gap-2 mb-2">
+                      <s.icon className="h-4 w-4 text-primary" />
+                      <span className="font-semibold">{s.title}</span>
+                      <Badge variant="default" className="ml-auto text-xs">Actif</Badge>
+                    </div>
+                    <p className="text-sm text-muted-foreground">{s.desc}</p>
                   </div>
-                  <p className="text-sm text-muted-foreground mb-3">
-                    Le système apprend continuellement des interactions utilisateurs pour améliorer les recommandations
-                  </p>
-                  <div className="grid gap-2 text-sm">
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Modèle actuel:</span>
-                      <span className="font-medium">Collaborative Filtering v2.3</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Précision:</span>
-                      <span className="font-medium">87.5%</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Dernière mise à jour:</span>
-                      <span className="font-medium">Il y a 2h</span>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="p-4 border rounded-lg">
-                  <h4 className="font-semibold mb-3">Facteurs de recommandation</h4>
-                  <div className="space-y-3">
-                    <div>
-                      <div className="flex justify-between text-sm mb-1">
-                        <span>Historique d'achat</span>
-                        <span className="font-medium">40%</span>
-                      </div>
-                      <div className="h-2 bg-muted rounded-full overflow-hidden">
-                        <div className="h-full bg-primary" style={{ width: '40%' }} />
-                      </div>
-                    </div>
-                    <div>
-                      <div className="flex justify-between text-sm mb-1">
-                        <span>Navigation produits</span>
-                        <span className="font-medium">30%</span>
-                      </div>
-                      <div className="h-2 bg-muted rounded-full overflow-hidden">
-                        <div className="h-full bg-primary" style={{ width: '30%' }} />
-                      </div>
-                    </div>
-                    <div>
-                      <div className="flex justify-between text-sm mb-1">
-                        <span>Similarité produits</span>
-                        <span className="font-medium">20%</span>
-                      </div>
-                      <div className="h-2 bg-muted rounded-full overflow-hidden">
-                        <div className="h-full bg-primary" style={{ width: '20%' }} />
-                      </div>
-                    </div>
-                    <div>
-                      <div className="flex justify-between text-sm mb-1">
-                        <span>Tendances globales</span>
-                        <span className="font-medium">10%</span>
-                      </div>
-                      <div className="h-2 bg-muted rounded-full overflow-hidden">
-                        <div className="h-full bg-primary" style={{ width: '10%' }} />
-                      </div>
-                    </div>
-                  </div>
-                </div>
+                ))}
               </div>
             </CardContent>
           </Card>
@@ -316,22 +237,54 @@ const ProductRecommendationsPage: React.FC = () => {
           <Card>
             <CardHeader>
               <CardTitle>Analyse de performance</CardTitle>
-              <CardDescription>Métriques détaillées par stratégie</CardDescription>
+              <CardDescription>Métriques temps réel du moteur de recommandation</CardDescription>
             </CardHeader>
             <CardContent>
-              <p className="text-muted-foreground">Graphiques et analyses de performance...</p>
-            </CardContent>
-          </Card>
-        </TabsContent>
+              <div className="grid gap-6 md:grid-cols-2">
+                <div className="space-y-4">
+                  <h4 className="font-semibold">Entonnoir de conversion</h4>
+                  {[
+                    { label: 'Impressions', value: stats?.impressions || 0, pct: 100 },
+                    { label: 'Clics', value: stats?.clicks || 0, pct: stats?.impressions ? (stats.clicks / stats.impressions) * 100 : 0 },
+                    { label: 'Ajouts panier', value: stats?.add_to_cart || 0, pct: stats?.impressions ? (stats.add_to_cart / stats.impressions) * 100 : 0 },
+                    { label: 'Achats', value: stats?.purchases || 0, pct: stats?.impressions ? (stats.purchases / stats.impressions) * 100 : 0 },
+                  ].map((step, i) => (
+                    <div key={step.label}>
+                      <div className="flex justify-between text-sm mb-1">
+                        <span>{step.label}</span>
+                        <span className="font-medium">{step.value} ({step.pct.toFixed(1)}%)</span>
+                      </div>
+                      <Progress value={step.pct} className="h-2" />
+                    </div>
+                  ))}
+                </div>
 
-        <TabsContent value="settings">
-          <Card>
-            <CardHeader>
-              <CardTitle>Paramètres généraux</CardTitle>
-              <CardDescription>Configuration des recommandations</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground">Paramètres de configuration...</p>
+                <div className="space-y-4">
+                  <h4 className="font-semibold">Modèle IA</h4>
+                  <div className="p-4 border rounded-lg space-y-3">
+                    <div className="flex justify-between text-sm">
+                      <span className="text-muted-foreground">Algorithme</span>
+                      <span className="font-medium">Collaborative Filtering + IA</span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-muted-foreground">Moteur</span>
+                      <span className="font-medium">Gemini Flash</span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-muted-foreground">Recommandations actives</span>
+                      <span className="font-medium">{recommendations.length}</span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-muted-foreground">Score moyen</span>
+                      <span className="font-medium">
+                        {recommendations.length > 0
+                          ? (recommendations.reduce((s: number, r: any) => s + (r.confidence_score || 0), 0) / recommendations.length * 100).toFixed(0)
+                          : 0}%
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </CardContent>
           </Card>
         </TabsContent>

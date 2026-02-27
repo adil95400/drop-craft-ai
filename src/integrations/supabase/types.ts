@@ -9700,6 +9700,54 @@ export type Database = {
           },
         ]
       }
+      product_associations: {
+        Row: {
+          associated_product_id: string
+          association_type: string
+          co_purchase_count: number | null
+          id: string
+          product_id: string
+          score: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          associated_product_id: string
+          association_type?: string
+          co_purchase_count?: number | null
+          id?: string
+          product_id: string
+          score?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          associated_product_id?: string
+          association_type?: string
+          co_purchase_count?: number | null
+          id?: string
+          product_id?: string
+          score?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_associations_associated_product_id_fkey"
+            columns: ["associated_product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "product_associations_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       product_attributes: {
         Row: {
           confidence: number | null
@@ -11620,6 +11668,64 @@ export type Database = {
           window_start?: string
         }
         Relationships: []
+      }
+      recommendation_events: {
+        Row: {
+          created_at: string
+          event_type: string
+          id: string
+          metadata: Json | null
+          product_id: string | null
+          recommendation_id: string | null
+          recommended_product_id: string | null
+          strategy: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          event_type: string
+          id?: string
+          metadata?: Json | null
+          product_id?: string | null
+          recommendation_id?: string | null
+          recommended_product_id?: string | null
+          strategy?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          event_type?: string
+          id?: string
+          metadata?: Json | null
+          product_id?: string | null
+          recommendation_id?: string | null
+          recommended_product_id?: string | null
+          strategy?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "recommendation_events_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "recommendation_events_recommendation_id_fkey"
+            columns: ["recommendation_id"]
+            isOneToOne: false
+            referencedRelation: "ai_recommendations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "recommendation_events_recommended_product_id_fkey"
+            columns: ["recommended_product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       recommendation_metrics: {
         Row: {
