@@ -309,6 +309,44 @@ export default function ProductPreviewPage() {
     setIsImporting(true)
     try {
       const finalProduct = { ...editedProduct, images: filtered }
+
+      // If no source_url, save directly to DB instead of calling the scraper
+      if (!finalProduct.source_url) {
+        const { data: { user } } = await supabase.auth.getUser()
+        if (!user) throw new Error('Non authentifié')
+
+        const marginVal = finalProduct.suggested_price > 0 && finalProduct.price > 0
+          ? ((finalProduct.suggested_price - finalProduct.price) / finalProduct.suggested_price * 100)
+          : 0
+
+        const productData = {
+          title: finalProduct.title,
+          description: finalProduct.description,
+          price: finalProduct.suggested_price || finalProduct.price,
+          compare_at_price: finalProduct.price,
+          cost_price: finalProduct.price,
+          image_url: filtered[0] || null,
+          images: filtered,
+          brand: finalProduct.brand || null,
+          sku: finalProduct.sku || null,
+          source_url: null,
+          category: category || null,
+          status: productStatus,
+          profit_margin: marginVal,
+          user_id: user.id,
+        }
+
+        const { error: dbError } = await supabase.from('products').insert(productData)
+        if (dbError) throw dbError
+
+        toast({
+          title: '✅ Produit importé avec succès',
+          description: `"${finalProduct.title}" ajouté au catalogue`,
+        })
+        navigate('/products')
+        return
+      }
+
       const { data, error } = await supabase.functions.invoke('quick-import-url', {
         body: {
           url: finalProduct.source_url,
