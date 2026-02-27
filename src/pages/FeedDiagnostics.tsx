@@ -1,6 +1,5 @@
 import { useState } from 'react'
-import { ChannablePageLayout } from '@/components/channable/ChannablePageLayout'
-import { ChannablePageHero } from '@/components/channable/ChannablePageHero'
+import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -36,12 +35,12 @@ export default function FeedDiagnostics() {
   }
 
   return (
-    <ChannablePageLayout>
-      <ChannablePageHero
-        title="Diagnostics Feed"
-        description="Analysez la qualité de votre catalogue par canal de vente"
-        category="analytics"
-      />
+    <ChannablePageWrapper
+      title="Diagnostics Feed"
+      description="Analysez la qualité de votre catalogue par canal de vente"
+      heroImage="analytics"
+      badge={{ label: 'Analytics' }}
+    >
 
       <div className="px-6 py-6 space-y-6">
         {/* Actions */}
@@ -170,6 +169,6 @@ export default function FeedDiagnostics() {
           </Card>
         )}
       </div>
-    </ChannablePageLayout>
+    </ChannablePageWrapper>
   )
 }

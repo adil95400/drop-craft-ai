@@ -22,7 +22,6 @@ import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
-  ChannablePageLayout,
   ChannableStatsGrid,
   ChannableBulkActions,
 } from "@/components/channable";

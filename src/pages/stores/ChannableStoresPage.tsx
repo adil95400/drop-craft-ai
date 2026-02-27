@@ -7,8 +7,6 @@ import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { Link, useNavigate } from 'react-router-dom'
 import { useIntegrationsUnified } from '@/hooks/unified'
 import { 
-  ChannablePageLayout,
-  ChannableHeroSection,
   ChannableStatsGrid,
   ChannableSearchBar,
   ChannableCategoryFilter,
@@ -16,6 +14,7 @@ import {
   ChannableEmptyState,
   ChannableQuickActions
 } from '@/components/channable'
+import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -147,22 +146,21 @@ export default function ChannableStoresPage() {
 
   if (loading) {
     return (
-      <ChannablePageLayout>
+      <ChannablePageWrapper title="Chargement..." heroImage="integrations">
         <div className="flex items-center justify-center py-24">
           <Loader2 className="w-8 h-8 animate-spin text-primary" />
         </div>
-      </ChannablePageLayout>
+      </ChannablePageWrapper>
     )
   }
 
   return (
-    <ChannablePageLayout>
-      {/* Hero */}
-      <ChannableHeroSection
-        title="Gestion des Boutiques"
-        subtitle="Connectez et gérez toutes vos boutiques e-commerce depuis un seul endroit"
-        icon={Store}
-      />
+    <ChannablePageWrapper
+      title="Gestion des Boutiques"
+      description="Connectez et gérez toutes vos boutiques e-commerce depuis un seul endroit"
+      heroImage="integrations"
+      badge={{ label: 'Boutiques', icon: Store }}
+    >
 
       {/* Stats */}
       <ChannableStatsGrid stats={stats} />
@@ -333,6 +331,6 @@ export default function ChannableStoresPage() {
         variant="destructive"
         onConfirm={confirmDisconnect}
       />
-    </ChannablePageLayout>
+    </ChannablePageWrapper>
   )
 }

@@ -1,6 +1,5 @@
 import { useState } from 'react'
-import { ChannablePageLayout } from '@/components/channable/ChannablePageLayout'
-import { ChannablePageHero } from '@/components/channable/ChannablePageHero'
+import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -37,12 +36,12 @@ export default function AIAutoActions() {
   }
 
   return (
-    <ChannablePageLayout>
-      <ChannablePageHero
-        title="IA Actionnable"
-        description="Appliquez automatiquement les optimisations IA sur votre catalogue"
-        category="ai"
-      />
+    <ChannablePageWrapper
+      title="IA Actionnable"
+      description="Appliquez automatiquement les optimisations IA sur votre catalogue"
+      heroImage="ai"
+      badge={{ label: 'IA', icon: Bot }}
+    >
 
       <div className="px-6 py-6 space-y-6">
         <Tabs defaultValue="config">
@@ -184,6 +183,6 @@ export default function AIAutoActions() {
           </TabsContent>
         </Tabs>
       </div>
-    </ChannablePageLayout>
+    </ChannablePageWrapper>
   )
 }
