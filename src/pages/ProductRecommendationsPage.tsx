@@ -7,6 +7,8 @@ import { Sparkles, TrendingUp, ShoppingCart, Target, Zap, BarChart3, RefreshCw, 
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
 import { RecommendationWidgetConfig } from '@/components/recommendations/RecommendationWidgetConfig';
 import { RecommendationPerformanceChart } from '@/components/recommendations/RecommendationPerformanceChart';
+import { StorefrontWidgetPreview } from '@/components/recommendations/StorefrontWidgetPreview';
+import { EmbedCodeGenerator } from '@/components/recommendations/EmbedCodeGenerator';
 import { useProductRecommendations } from '@/hooks/useProductRecommendations';
 import { Progress } from '@/components/ui/progress';
 
@@ -92,10 +94,12 @@ const ProductRecommendationsPage: React.FC = () => {
       </div>
 
       <Tabs defaultValue="recommendations" className="space-y-4">
-        <TabsList>
+        <TabsList className="flex-wrap">
           <TabsTrigger value="recommendations">Recommandations IA</TabsTrigger>
           <TabsTrigger value="strategies">Stratégies</TabsTrigger>
           <TabsTrigger value="performance">Performance</TabsTrigger>
+          <TabsTrigger value="storefront">Widgets Storefront</TabsTrigger>
+          <TabsTrigger value="embed">Code d'intégration</TabsTrigger>
           <TabsTrigger value="config" className="flex items-center gap-1">
             <Settings className="h-3 w-3" />
             Configuration
@@ -241,6 +245,14 @@ const ProductRecommendationsPage: React.FC = () => {
 
         <TabsContent value="performance">
           <RecommendationPerformanceChart stats={stats} recommendations={recommendations} />
+        </TabsContent>
+
+        <TabsContent value="storefront">
+          <StorefrontWidgetPreview />
+        </TabsContent>
+
+        <TabsContent value="embed">
+          <EmbedCodeGenerator />
         </TabsContent>
 
         <TabsContent value="config">
