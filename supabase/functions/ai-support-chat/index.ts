@@ -27,6 +27,11 @@ serve(async (req) => {
   }
 
   try {
+    const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY')
+    if (!LOVABLE_API_KEY) {
+      throw new Error('LOVABLE_API_KEY not configured')
+    }
+
     const { message, history = [] } = await req.json()
 
     const messages = [
@@ -35,21 +40,31 @@ serve(async (req) => {
       { role: 'user', content: message }
     ]
 
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${Deno.env.get('OPENAI_API_KEY')}`,
+        'Authorization': `Bearer ${LOVABLE_API_KEY}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4o-mini',
+        model: 'openai/gpt-5-nano',
         messages,
-        max_tokens: 300,
         temperature: 0.7,
       })
     })
 
     if (!response.ok) {
+      if (response.status === 429) {
+        return new Response(JSON.stringify({ response: 'Limite de requêtes atteinte. Réessayez dans quelques instants.' }), {
+          status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        })
+      }
+      if (response.status === 402) {
+        return new Response(JSON.stringify({ response: 'Crédits IA épuisés. Veuillez recharger.' }), {
+          status: 402, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        })
+      }
+
       // Fallback to simple responses
       const fallbackResponses: Record<string, string> = {
         'import': 'Pour importer des produits, allez dans Catalogue > Importer. Vous pouvez coller des URLs AliExpress ou uploader un CSV.',

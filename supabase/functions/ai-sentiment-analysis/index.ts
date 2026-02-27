@@ -52,20 +52,20 @@ Return as JSON:
   "summary": string
 }`;
 
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
+    const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${OPENAI_API_KEY}`,
+        'Authorization': `Bearer ${LOVABLE_API_KEY}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-5-2025-08-07',
+        model: 'openai/gpt-5-nano',
         messages: [
           { role: 'system', content: 'You are an expert in sentiment analysis and customer feedback interpretation for e-commerce. Provide data-driven, actionable insights.' },
           { role: 'user', content: prompt }
         ],
         temperature: 0.2,
-        max_completion_tokens: 2500,
       }),
     });
 
