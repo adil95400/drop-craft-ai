@@ -1,5 +1,6 @@
 import { lazy, Suspense } from 'react';
 import { useModalContext } from '@/hooks/useModalHelpers';
+import { Loader2 } from 'lucide-react';
 
 // Lazy load all modals for better performance
 const CreateProductDialog = lazy(() => import('../products/CreateProductDialog').then(m => ({ default: m.CreateProductDialog })));
@@ -25,10 +26,26 @@ const ConfigAutomationDialog = lazy(() => import('./ConfigAutomationDialog').the
 const AIInsightsDialog = lazy(() => import('./AIInsightsDialog').then(m => ({ default: m.AIInsightsDialog })));
 const ProductDetailsDialog = lazy(() => import('./ProductDetailsDialog').then(m => ({ default: m.ProductDetailsDialog })));
 
+/** Loading fallback for lazy-loaded modals */
+function ModalLoadingFallback() {
+  return (
+    <div 
+      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm"
+      role="status"
+      aria-label="Chargement de la fenêtre"
+    >
+      <div className="flex flex-col items-center gap-3 rounded-xl bg-background p-6 shadow-2xl border border-border">
+        <Loader2 className="h-6 w-6 animate-spin text-primary" aria-hidden="true" />
+        <span className="text-sm text-muted-foreground font-medium">Chargement…</span>
+      </div>
+    </div>
+  );
+}
+
 /** Renders a lazy modal only when it's open */
 function LazyModal({ isOpen, children }: { isOpen: boolean; children: React.ReactNode }) {
   if (!isOpen) return null;
-  return <Suspense fallback={null}>{children}</Suspense>;
+  return <Suspense fallback={<ModalLoadingFallback />}>{children}</Suspense>;
 }
 
 export function ModalManager() {
