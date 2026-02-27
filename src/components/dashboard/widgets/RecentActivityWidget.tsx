@@ -46,7 +46,7 @@ export function RecentActivityWidget({ settings }: RecentActivityWidgetProps) {
         time: formatDistanceToNow(new Date(order.created_at || ''), { addSuffix: true, locale: getDateFnsLocale() }),
         timestamp: new Date(order.created_at || ''),
         icon: ShoppingCart,
-        color: 'text-blue-500'
+        color: 'text-info'
       });
     });
 
@@ -59,7 +59,7 @@ export function RecentActivityWidget({ settings }: RecentActivityWidgetProps) {
         time: formatDistanceToNow(new Date(customer.created_at || ''), { addSuffix: true, locale: getDateFnsLocale() }),
         timestamp: new Date(customer.created_at || ''),
         icon: UserPlus,
-        color: 'text-green-500'
+        color: 'text-success'
       });
     });
 
@@ -72,7 +72,7 @@ export function RecentActivityWidget({ settings }: RecentActivityWidgetProps) {
         time: formatDistanceToNow(new Date(shipment.created_at || ''), { addSuffix: true, locale: getDateFnsLocale() }),
         timestamp: new Date(shipment.created_at || ''),
         icon: Package,
-        color: 'text-orange-500'
+        color: 'text-warning'
       });
     });
 

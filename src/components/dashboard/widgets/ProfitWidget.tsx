@@ -66,20 +66,20 @@ export function ProfitWidget({ settings }: ProfitWidgetProps) {
     <Card className="h-full">
       <CardHeader className="pb-2">
         <CardTitle className="flex items-center gap-2 text-base">
-          <Wallet className="h-4 w-4 text-green-500" />
+          <Wallet className="h-4 w-4 text-success" />
           Marges & Profits
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-2xl font-bold text-green-500">
+            <p className="text-2xl font-bold text-success">
               {totalProfit.toLocaleString('fr-FR')} €
             </p>
             <p className="text-xs text-muted-foreground">Profit net</p>
           </div>
           <div className="text-right">
-            <div className="flex items-center gap-1 text-green-500">
+            <div className="flex items-center gap-1 text-success">
               <TrendingUp className="h-4 w-4" />
               <span className="text-lg font-semibold">{profitMargin}%</span>
             </div>
@@ -90,14 +90,14 @@ export function ProfitWidget({ settings }: ProfitWidgetProps) {
         {showBreakdown && (
           <div className="grid grid-cols-2 gap-3 p-3 bg-muted/50 rounded-lg">
             <div className="flex items-center gap-2">
-              <ArrowUpRight className="h-4 w-4 text-green-500" />
+              <ArrowUpRight className="h-4 w-4 text-success" />
               <div>
                 <p className="text-sm font-medium">{totalRevenue.toLocaleString('fr-FR')} €</p>
                 <p className="text-xs text-muted-foreground">Revenus</p>
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <ArrowDownRight className="h-4 w-4 text-red-500" />
+              <ArrowDownRight className="h-4 w-4 text-destructive" />
               <div>
                 <p className="text-sm font-medium">{totalCosts.toLocaleString('fr-FR')} €</p>
                 <p className="text-xs text-muted-foreground">Coûts</p>
@@ -124,7 +124,7 @@ export function ProfitWidget({ settings }: ProfitWidgetProps) {
                   {profitData.map((entry, index) => (
                     <Cell 
                       key={`cell-${index}`} 
-                      fill={entry.profit > 0 ? 'hsl(142 76% 36%)' : 'hsl(0 84% 60%)'} 
+                      fill={entry.profit > 0 ? 'hsl(var(--success))' : 'hsl(var(--destructive))'} 
                     />
                   ))}
                 </Bar>
