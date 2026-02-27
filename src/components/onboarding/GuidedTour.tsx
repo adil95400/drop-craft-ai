@@ -23,7 +23,7 @@ interface TourStep {
   tip?: string
 }
 
-const TOUR_STEPS: TourStep[] = [
+const TOUR_STEPS_BASE: TourStep[] = [
   {
     id: 'welcome',
     title: 'Bienvenue sur ShopOpti+ ! 🎉',
@@ -38,6 +38,14 @@ const TOUR_STEPS: TourStep[] = [
     icon: Package,
     action: { label: 'Importer un produit', route: '/import' },
     tip: 'Astuce : utilisez l\'import par URL pour le plus rapide'
+  },
+  {
+    id: 'store',
+    title: 'Connectez votre boutique',
+    description: 'Reliez Shopify, WooCommerce ou PrestaShop pour synchroniser automatiquement vos produits, commandes et stock en temps réel.',
+    icon: ShoppingCart,
+    action: { label: 'Connecter une boutique', route: '/integrations' },
+    tip: 'La synchronisation bidirectionnelle est incluse dans tous les plans'
   },
   {
     id: 'orders',
@@ -70,8 +78,45 @@ const TOUR_STEPS: TourStep[] = [
     icon: Zap,
     action: { label: 'Créer une automation', route: '/automations' },
     tip: 'Économisez jusqu\'à 20h par semaine avec l\'automatisation'
+  },
+  {
+    id: 'support',
+    title: 'Besoin d\'aide ? On est là !',
+    description: 'Chat IA 24/7, centre d\'aide complet, tutoriels vidéo et guides pas-à-pas. Notre équipe est disponible pour vous accompagner.',
+    icon: Rocket,
+    action: { label: 'Voir le centre d\'aide', route: '/help-center' },
+    tip: 'Le chatbot IA répond instantanément à 90% des questions'
   }
 ]
+
+// Personalized tips by business type
+const BUSINESS_TYPE_TIPS: Record<string, Partial<Record<string, string>>> = {
+  dropshipping: {
+    products: 'Pour le dropshipping, privilégiez l\'import par URL AliExpress',
+    orders: 'Activez l\'auto-fulfillment pour traiter les commandes automatiquement',
+    ai: 'L\'IA optimise vos fiches pour maximiser les conversions',
+  },
+  ecommerce: {
+    products: 'Importez votre catalogue existant via CSV pour gagner du temps',
+    analytics: 'Suivez vos marges brutes et nettes en temps réel',
+    automation: 'Automatisez les alertes de stock bas pour éviter les ruptures',
+  },
+  marketplace: {
+    store: 'Connectez plusieurs boutiques pour centraliser la gestion',
+    analytics: 'Comparez les performances par canal de vente',
+    automation: 'Synchronisez les prix et stocks sur toutes vos plateformes',
+  },
+}
+
+function getPersonalizedSteps(businessType?: string): TourStep[] {
+  if (!businessType || !BUSINESS_TYPE_TIPS[businessType]) return TOUR_STEPS_BASE;
+  
+  const tips = BUSINESS_TYPE_TIPS[businessType];
+  return TOUR_STEPS_BASE.map(step => ({
+    ...step,
+    tip: tips[step.id] || step.tip,
+  }));
+}
 
 const STORAGE_KEY = 'shopopti_tour_completed'
 const STORAGE_DISMISSED_KEY = 'shopopti_tour_dismissed'
@@ -81,11 +126,14 @@ export function GuidedTour() {
   const [currentStep, setCurrentStep] = useState(0)
   const navigate = useNavigate()
 
+  // Get business type from localStorage (set during onboarding wizard)
+  const businessType = localStorage.getItem('shopopti_business_type') || undefined
+  const TOUR_STEPS = getPersonalizedSteps(businessType)
+
   useEffect(() => {
     const completed = localStorage.getItem(STORAGE_KEY)
     const dismissed = localStorage.getItem(STORAGE_DISMISSED_KEY)
     if (!completed && !dismissed) {
-      // Show tour after a short delay for the dashboard to load
       const timer = setTimeout(() => setIsActive(true), 1500)
       return () => clearTimeout(timer)
     }

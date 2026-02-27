@@ -1,7 +1,10 @@
-import { memo, ReactNode } from 'react';
+import { memo, ReactNode, lazy, Suspense } from 'react';
 import { useUnifiedPerformance } from '@/hooks/useUnifiedPerformance';
 import { PerformanceMonitorWidget } from '@/components/monitoring/PerformanceMonitorWidget';
-import { useUserPreferencesStore } from '@/stores/userPreferencesStore';
+
+const CoreWebVitalsWidget = lazy(() => 
+  import('@/components/monitoring/CoreWebVitalsWidget').then(m => ({ default: m.CoreWebVitalsWidget }))
+);
 
 interface PerformanceProviderProps {
   children: ReactNode;
@@ -27,8 +30,11 @@ export const PerformanceProvider = memo(function PerformanceProvider({
       
       {/* Widget de monitoring en dev mode ou si activé */}
       {(showWidget || isDev) && (
-        <div className="fixed bottom-4 right-4 z-50 pointer-events-auto">
+        <div className="fixed bottom-4 right-4 z-50 pointer-events-auto flex flex-col gap-2">
           <PerformanceMonitorWidget compact />
+          <Suspense fallback={null}>
+            <CoreWebVitalsWidget className="w-64" />
+          </Suspense>
         </div>
       )}
     </>

@@ -64,7 +64,7 @@ const FAQ_ITEMS: FAQItem[] = [
   {
     id: '4',
     question: 'Comment utiliser l\'IA pour optimiser mes descriptions ?',
-    answer: 'Dans la section IA > Optimisation, sélectionnez vos produits et choisissez "Optimiser descriptions". L\'IA analysera et améliorera automatiquement vos contenus.',
+    answer: 'Dans la section IA > Optimisation, sélectionnez vos produits et choisissez "Optimiser descriptions". L\'IA analysera et améliorera automatiquement vos contenus pour le SEO et la conversion.',
     category: 'IA',
     helpful: 52,
     views: 287
@@ -76,6 +76,78 @@ const FAQ_ITEMS: FAQItem[] = [
     category: 'Gestion',
     helpful: 29,
     views: 145
+  },
+  {
+    id: '6',
+    question: 'Comment connecter ma boutique Shopify ?',
+    answer: 'Rendez-vous dans Intégrations > Shopify, entrez l\'URL de votre boutique et autorisez la connexion OAuth. La synchronisation bidirectionnelle se configure automatiquement.',
+    category: 'Synchronisation',
+    helpful: 73,
+    views: 512
+  },
+  {
+    id: '7',
+    question: 'Comment fonctionne le repricing automatique ?',
+    answer: 'Le repricing analyse les prix concurrents et ajuste automatiquement vos tarifs selon vos règles (marge minimale, prix max, etc). Activez-le dans Pricing > Repricing automatique.',
+    category: 'Gestion',
+    helpful: 41,
+    views: 203
+  },
+  {
+    id: '8',
+    question: 'Comment traduire mes produits en plusieurs langues ?',
+    answer: 'Utilisez l\'outil de traduction automatique dans Catalogue > Traduction. L\'IA traduit titres, descriptions et attributs dans 50+ langues avec préservation du contexte SEO.',
+    category: 'IA',
+    helpful: 35,
+    views: 178
+  },
+  {
+    id: '9',
+    question: 'Comment créer un workflow d\'automatisation ?',
+    answer: 'Dans Automation > Workflows, cliquez "Nouveau workflow". Choisissez un déclencheur (nouveau produit, stock bas, commande reçue), puis ajoutez des actions (notification, mise à jour, email).',
+    category: 'Gestion',
+    helpful: 48,
+    views: 267
+  },
+  {
+    id: '10',
+    question: 'Comment exporter mes données en Excel ?',
+    answer: 'Chaque section (produits, commandes, clients) dispose d\'un bouton "Exporter". Choisissez le format Excel (.xlsx) ou CSV, filtrez les données souhaitées et lancez l\'export.',
+    category: 'Gestion',
+    helpful: 33,
+    views: 189
+  },
+  {
+    id: '11',
+    question: 'Comment fonctionne l\'A/B testing des fiches produit ?',
+    answer: 'Dans Marketing > A/B Testing, créez un test en sélectionnant un produit et deux variantes (titre, image, description). L\'IA analyse les performances et recommande le gagnant.',
+    category: 'Analytics',
+    helpful: 27,
+    views: 134
+  },
+  {
+    id: '12',
+    question: 'Comment configurer les webhooks pour mon API ?',
+    answer: 'Accédez à Paramètres > API > Webhooks. Ajoutez une URL de callback, sélectionnez les événements à écouter (commande créée, stock modifié, etc.) et testez la connexion.',
+    category: 'Synchronisation',
+    helpful: 22,
+    views: 98
+  },
+  {
+    id: '13',
+    question: 'Quelle est la différence entre les plans Free, Pro et Ultra Pro ?',
+    answer: 'Free: 50 produits, import basique. Pro: 5000 produits, IA illimitée, multi-boutiques, repricing. Ultra Pro: illimité, API, support prioritaire, fonctions enterprise. Voir la page Tarifs.',
+    category: 'Gestion',
+    helpful: 85,
+    views: 623
+  },
+  {
+    id: '14',
+    question: 'Comment suivre les expéditions et tracking ?',
+    answer: 'Les numéros de tracking sont synchronisés automatiquement depuis vos fournisseurs. Consultez Commandes > Suivi pour voir le statut en temps réel de chaque expédition.',
+    category: 'Gestion',
+    helpful: 44,
+    views: 256
   }
 ]
 
@@ -119,10 +191,70 @@ const GUIDES: GuideItem[] = [
     category: 'Analytics',
     url: '/guides/analytics',
     type: 'article'
+  },
+  {
+    id: '5',
+    title: 'Connecter Shopify pas à pas',
+    description: 'Guide complet pour relier votre boutique Shopify et synchroniser vos données',
+    duration: '15 min',
+    level: 'Débutant',
+    category: 'Synchronisation',
+    url: '/guides/shopify-connect',
+    type: 'tutorial'
+  },
+  {
+    id: '6',
+    title: 'Optimisation SEO des fiches produit',
+    description: 'Boostez vos titres, méta-descriptions et images avec l\'IA SEO',
+    duration: '20 min',
+    level: 'Intermédiaire',
+    category: 'IA',
+    url: '/guides/seo-optimization',
+    type: 'video'
+  },
+  {
+    id: '7',
+    title: 'Gestion multi-boutiques avancée',
+    description: 'Centralisez la gestion de plusieurs boutiques et marketplaces',
+    duration: '35 min',
+    level: 'Avancé',
+    category: 'Synchronisation',
+    url: '/guides/multi-store',
+    type: 'tutorial'
+  },
+  {
+    id: '8',
+    title: 'Repricing et stratégie de prix',
+    description: 'Configurez le repricing automatique pour rester compétitif',
+    duration: '25 min',
+    level: 'Intermédiaire',
+    category: 'Gestion',
+    url: '/guides/repricing',
+    type: 'article'
+  },
+  {
+    id: '9',
+    title: 'Traduction multilingue avec l\'IA',
+    description: 'Traduisez vos catalogues en 50+ langues automatiquement',
+    duration: '15 min',
+    level: 'Débutant',
+    category: 'IA',
+    url: '/guides/translation',
+    type: 'video'
+  },
+  {
+    id: '10',
+    title: 'API et webhooks pour développeurs',
+    description: 'Intégrez ShopOpti+ dans votre stack technique via l\'API REST',
+    duration: '45 min',
+    level: 'Avancé',
+    category: 'Synchronisation',
+    url: '/guides/api-webhooks',
+    type: 'tutorial'
   }
 ]
 
-const CATEGORIES = ['Tous', 'Import', 'Synchronisation', 'Analytics', 'IA', 'Gestion']
+const CATEGORIES = ['Tous', 'Import', 'Synchronisation', 'Analytics', 'IA', 'Gestion', 'Démarrage']
 
 export function HelpCenter() {
   const navigate = useNavigate()

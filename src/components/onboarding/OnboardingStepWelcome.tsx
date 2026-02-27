@@ -24,6 +24,8 @@ export default function OnboardingStepWelcome({ onSave }: { onSave: () => void }
 
   const handleContinue = () => {
     setBusinessInfo(name.trim(), type);
+    // Persist business type for personalized guided tour
+    localStorage.setItem('shopopti_business_type', type);
     completeStep(1);
     onSave();
     nextStep();

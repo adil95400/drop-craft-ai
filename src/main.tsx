@@ -32,13 +32,17 @@ logger.info('Application started', { component: 'main' })
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 5 * 60 * 1000, // 5 minutes
-      gcTime: 10 * 60 * 1000,   // 10 minutes
+      staleTime: 5 * 60 * 1000,  // 5 minutes
+      gcTime: 30 * 60 * 1000,    // 30 minutes (increased for better cache retention)
       retry: 1,
       refetchOnWindowFocus: false,
+      refetchOnReconnect: 'always',
+      // Serve stale data while revalidating in background
+      networkMode: 'offlineFirst',
     },
     mutations: {
       retry: 1,
+      networkMode: 'offlineFirst',
     },
   },
 })
