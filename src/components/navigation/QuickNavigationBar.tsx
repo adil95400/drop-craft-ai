@@ -62,16 +62,18 @@ export function QuickNavigationBar({ className }: QuickNavigationBarProps) {
     <>
       <Button
         variant="outline"
+        role="search"
+        aria-label="Rechercher un module — raccourci Ctrl+K"
         className={cn(
-          'relative h-9 w-full justify-start rounded-md bg-muted/50 text-sm font-normal text-muted-foreground shadow-none sm:w-64 md:w-40 lg:w-64',
+          'relative h-11 min-h-[44px] w-full justify-start rounded-md bg-muted/50 text-sm font-normal text-muted-foreground shadow-none sm:w-64 md:w-40 lg:w-64',
           className
         )}
         onClick={() => setOpen(true)}
       >
-        <Search className="mr-2 h-4 w-4" />
+        <Search className="mr-2 h-4 w-4" aria-hidden="true" />
         <span className="hidden lg:inline-flex">{t('header.search')}</span>
         <span className="inline-flex lg:hidden">{t('search')}</span>
-        <kbd className="pointer-events-none absolute right-1.5 top-1.5 hidden h-6 select-none items-center gap-1 rounded border bg-background px-1.5 font-mono text-[10px] font-medium opacity-100 sm:flex">
+        <kbd className="pointer-events-none absolute right-1.5 top-2.5 hidden h-6 select-none items-center gap-1 rounded border bg-background px-1.5 font-mono text-[10px] font-medium opacity-100 sm:flex" aria-hidden="true">
           <span className="text-xs">⌘</span>K
         </kbd>
       </Button>
