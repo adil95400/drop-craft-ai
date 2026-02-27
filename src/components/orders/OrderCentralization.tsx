@@ -149,8 +149,8 @@ export function OrderCentralization() {
     switch (status) {
       case 'pending': return 'bg-warning/10 text-warning'
       case 'confirmed': return 'bg-primary/10 text-primary'
-      case 'processing': return 'bg-orange-500/10 text-orange-500'
-      case 'shipped': return 'bg-purple-500/10 text-purple-500'
+      case 'processing': return 'bg-info/10 text-info'
+      case 'shipped': return 'bg-primary/10 text-primary'
       case 'delivered': return 'bg-success/10 text-success'
       case 'cancelled': return 'bg-destructive/10 text-destructive'
       default: return 'bg-muted text-muted-foreground'
@@ -228,9 +228,9 @@ export function OrderCentralization() {
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center gap-2">
-              <Clock className="w-8 h-8 text-yellow-600" />
+              <Clock className="w-8 h-8 text-warning" />
               <div>
-                <div className="text-2xl font-bold text-yellow-600">{stats.pending}</div>
+                <div className="text-2xl font-bold text-warning">{stats.pending}</div>
                 <p className="text-xs text-muted-foreground">En attente</p>
               </div>
             </div>
@@ -239,9 +239,9 @@ export function OrderCentralization() {
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center gap-2">
-              <Package className="w-8 h-8 text-orange-600" />
+              <Package className="w-8 h-8 text-info" />
               <div>
-                <div className="text-2xl font-bold text-orange-600">{stats.processing}</div>
+                <div className="text-2xl font-bold text-info">{stats.processing}</div>
                 <p className="text-xs text-muted-foreground">En traitement</p>
               </div>
             </div>
@@ -250,9 +250,9 @@ export function OrderCentralization() {
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center gap-2">
-              <CheckCircle className="w-8 h-8 text-green-600" />
+              <CheckCircle className="w-8 h-8 text-success" />
               <div>
-                <div className="text-2xl font-bold text-green-600">{stats.revenue.toFixed(0)}€</div>
+                <div className="text-2xl font-bold text-success">{stats.revenue.toFixed(0)}€</div>
                 <p className="text-xs text-muted-foreground">Chiffre d'affaires</p>
               </div>
             </div>
@@ -417,8 +417,8 @@ function OrderDetailsView({ order, onUpdate }: { order: CentralizedOrder; onUpda
     switch (status) {
       case 'pending': return 'bg-warning/10 text-warning'
       case 'confirmed': return 'bg-primary/10 text-primary'
-      case 'processing': return 'bg-orange-500/10 text-orange-500'
-      case 'shipped': return 'bg-purple-500/10 text-purple-500'
+      case 'processing': return 'bg-info/10 text-info'
+      case 'shipped': return 'bg-primary/10 text-primary'
       case 'delivered': return 'bg-success/10 text-success'
       case 'cancelled': return 'bg-destructive/10 text-destructive'
       case 'ordered': return 'bg-primary/10 text-primary'

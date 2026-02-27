@@ -20,19 +20,19 @@ const statusConfig = {
     label: 'En attente',
     icon: Clock,
     variant: 'outline' as const,
-    className: 'border-yellow-500/50 text-yellow-600 dark:text-yellow-400',
+    className: 'border-warning/50 text-warning',
   },
   in_progress: {
     label: 'En cours',
     icon: Loader2,
     variant: 'outline' as const,
-    className: 'border-blue-500/50 text-blue-600 dark:text-blue-400',
+    className: 'border-info/50 text-info',
   },
   success: {
     label: 'Enrichi',
     icon: Sparkles,
     variant: 'default' as const,
-    className: 'bg-green-500/10 text-green-600 dark:text-green-400 border-green-500/30',
+    className: 'bg-success/10 text-success border-success/30',
   },
   failed: {
     label: 'Échec',

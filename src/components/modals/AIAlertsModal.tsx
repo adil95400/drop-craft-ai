@@ -36,10 +36,10 @@ export function AIAlertsModal({ open, onOpenChange, alerts = [] }: AIAlertsModal
 
   const getIcon = (type: Alert['type']) => {
     switch (type) {
-      case 'warning': return <AlertTriangle className="h-4 w-4 text-amber-500" />;
-      case 'error': return <AlertTriangle className="h-4 w-4 text-red-500" />;
-      case 'success': return <CheckCircle className="h-4 w-4 text-green-500" />;
-      default: return <Info className="h-4 w-4 text-blue-500" />;
+      case 'warning': return <AlertTriangle className="h-4 w-4 text-warning" />;
+      case 'error': return <AlertTriangle className="h-4 w-4 text-destructive" />;
+      case 'success': return <CheckCircle className="h-4 w-4 text-success" />;
+      default: return <Info className="h-4 w-4 text-info" />;
     }
   };
 
@@ -57,7 +57,7 @@ export function AIAlertsModal({ open, onOpenChange, alerts = [] }: AIAlertsModal
       <DialogContent className="max-w-2xl">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <AlertTriangle className="h-5 w-5 text-amber-500" />
+            <AlertTriangle className="h-5 w-5 text-warning" />
             Alertes IA Prédictives
           </DialogTitle>
         </DialogHeader>
