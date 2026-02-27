@@ -1,4 +1,5 @@
 import { supabase } from '@/integrations/supabase/client'
+import { logger } from '@/utils/logger'
 import Papa from 'papaparse'
 
 interface Product {
@@ -74,7 +75,7 @@ class ImportExportService {
     try {
       const csvContent = await file.text()
       
-      console.log('📤 Envoi du CSV vers l\'edge function...')
+      logger.info('Sending CSV to edge function', { component: 'ImportExport', action: 'csv_import' })
       
       const { data, error } = await supabase.functions.invoke('csv-import', {
         body: {
@@ -90,7 +91,7 @@ class ImportExportService {
       }
 
       if (data?.success) {
-        console.log(`✅ Import réussi: ${data.imported} produits`)
+        logger.info(`Import successful: ${data.imported} products`, { component: 'ImportExport' })
         return {
           success: true,
           imported: data.imported || 0,
@@ -213,7 +214,7 @@ class ImportExportService {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) throw new Error('Non authentifié')
 
-      console.log(`🗑️ Suppression en masse de ${productIds.length} produit(s):`, productIds)
+      logger.info(`Bulk deleting ${productIds.length} product(s)`, { component: 'ImportExport', action: 'bulk_delete' })
 
       // Delete via API
       const { productsApi } = await import('@/services/api/client')
@@ -227,10 +228,10 @@ class ImportExportService {
       
       results.forEach((result, index) => {
         if (result.status === 'fulfilled' && !result.value.error) {
-          console.log(`✓ Suppression réussie de la table ${tableNames[index]}`)
+          logger.debug(`Delete succeeded for table ${tableNames[index]}`, { component: 'ImportExport' })
           totalDeleted++
         } else if (result.status === 'fulfilled' && result.value.error) {
-          console.log(`✗ Erreur sur la table ${tableNames[index]}:`, result.value.error.message)
+          logger.warn(`Delete failed for table ${tableNames[index]}`, { component: 'ImportExport', metadata: { error: result.value.error.message } })
         }
       })
       
@@ -240,7 +241,7 @@ class ImportExportService {
         throw new Error('Les produits sélectionnés n\'existent pas dans la base de données ou vous n\'avez pas les permissions nécessaires.')
       }
       
-      console.log(`✅ Suppression réussie: ${productIds.length} produit(s) supprimé(s) de ${totalDeleted} table(s)`)
+      logger.info(`Bulk delete completed: ${productIds.length} product(s) from ${totalDeleted} table(s)`, { component: 'ImportExport' })
       return true
     } catch (error) {
       console.error('❌ Erreur lors de la suppression en masse:', error)

@@ -1,4 +1,5 @@
 import { supabase } from '@/integrations/supabase/client'
+import { logger } from '@/utils/logger'
 
 export interface BusinessInsight {
   id: string;
@@ -219,12 +220,18 @@ export class BusinessIntelligenceService {
   }
 
   static async acknowledgeInsight(insightId: string): Promise<void> {
-    // Mock implementation - in a real app this would update the database
-    console.log(`Acknowledging insight ${insightId}`);
+    const { error } = await supabase
+      .from('analytics_insights')
+      .update({ metadata: { acknowledged: true, acknowledged_at: new Date().toISOString() } })
+      .eq('id', insightId)
+    if (error) logger.warn('Failed to acknowledge insight', { component: 'BI', metadata: { insightId, error: error.message } })
   }
 
   static async dismissInsight(insightId: string): Promise<void> {
-    // Mock implementation - in a real app this would update the database
-    console.log(`Dismissing insight ${insightId}`);
+    const { error } = await supabase
+      .from('analytics_insights')
+      .update({ metadata: { dismissed: true, dismissed_at: new Date().toISOString() } })
+      .eq('id', insightId)
+    if (error) logger.warn('Failed to dismiss insight', { component: 'BI', metadata: { insightId, error: error.message } })
   }
 }

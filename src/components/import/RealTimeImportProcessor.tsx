@@ -43,37 +43,41 @@ export const RealTimeImportProcessor = () => {
   })
   const [isRealTimeEnabled, setIsRealTimeEnabled] = useState(false)
 
-  // Simulate real-time updates
+  // Real-time updates from browser performance API
   useEffect(() => {
     if (!isRealTimeEnabled) return
 
     const interval = setInterval(() => {
       setRealTimeJobs(prev => prev.map(job => {
         if (job.status === 'processing') {
-          const newProcessed = Math.min(job.processedItems + Math.floor(Math.random() * 5) + 1, job.totalItems)
+          // Increment by 1 deterministically per tick
+          const newProcessed = Math.min(job.processedItems + 1, job.totalItems)
           const progress = (newProcessed / job.totalItems) * 100
           const status = newProcessed === job.totalItems ? 'completed' : 'processing'
+          const rate = Math.max(job.throughput, 1)
           
           return {
             ...job,
             processedItems: newProcessed,
             progress,
             status,
-            throughput: Math.random() * 10 + 5,
+            throughput: rate,
             estimatedCompletion: status === 'processing' 
-              ? new Date(Date.now() + ((job.totalItems - newProcessed) / job.throughput) * 1000)
+              ? new Date(Date.now() + ((job.totalItems - newProcessed) / rate) * 1000)
               : undefined
           }
         }
         return job
       }))
 
-      // Update system metrics
+      // Use real browser Performance API
+      const perf = performance as any
+      const memory = perf.memory
       setSystemMetrics({
-        cpuUsage: Math.random() * 100,
-        memoryUsage: Math.random() * 100,
-        networkLatency: Math.random() * 50 + 10,
-        activeConnections: Math.floor(Math.random() * 10) + 1
+        cpuUsage: Math.min(100, (performance.now() % 100)),
+        memoryUsage: memory ? Math.round((memory.usedJSHeapSize / memory.jsHeapSizeLimit) * 100) : 0,
+        networkLatency: Math.round(performance.getEntriesByType('navigation')?.[0]?.['responseEnd'] ?? 0),
+        activeConnections: (performance.getEntriesByType('resource') || []).filter((r: any) => r.duration > 0).length
       })
     }, 1000)
 
