@@ -60,25 +60,40 @@ export function ProductOptimizationPanel() {
 
       // Enrichir avec des données simulées d'analyse (car ces métriques complexes n'existent pas encore toutes en base)
       // En prod, cela viendrait d'une table `product_analytics` ou d'une Edge Function ML
-      return (dbProducts || []).map((p: any) => ({
-        id: p.id,
-        name: p.name || p.title || 'Produit sans nom',
-        category: p.category || 'Non catégorisé',
-        current_price: Number(p.price) || 0,
-        suggested_price: Number(p.price) * (1 + (Math.random() * 0.2 - 0.05)), // Simulé: +/- 5-15%
-        demand_score: Math.floor(Math.random() * 40) + 60, // Simulé: 60-100
-        competition_score: Math.floor(Math.random() * 50) + 30, // Simulé: 30-80
-        profit_margin: p.profit_margin || Math.floor(Math.random() * 30) + 15,
-        sales_velocity: Math.floor(Math.random() * 10),
-        stock_level: p.stock_quantity || 0,
-        optimization_potential: Math.floor(Math.random() * 40) + 50,
-        ai_recommendations: [
-          'Ajuster le prix pour maximiser la marge',
-          'Optimiser les mots-clés du titre'
-        ],
-        risk_factors: p.stock_quantity < 5 ? ['Stock critique'] : [],
-        performance_trend: Math.random() > 0.5 ? 'improving' : 'stable',
-      }));
+      return (dbProducts || []).map((p: any) => {
+        const price = Number(p.price) || 0;
+        const costPrice = Number(p.cost_price) || price * 0.6;
+        const margin = price > 0 ? Math.round(((price - costPrice) / price) * 100) : 0;
+        const stock = p.stock_quantity || 0;
+        // Deterministic score based on product data completeness
+        const hasImage = p.image_url ? 15 : 0;
+        const hasDescription = p.description?.length > 50 ? 20 : (p.description?.length > 0 ? 10 : 0);
+        const hasCategory = p.category ? 10 : 0;
+        const stockScore = stock > 20 ? 20 : (stock > 5 ? 10 : 0);
+        const priceScore = price > 0 ? 15 : 0;
+        const optimizationScore = Math.min(100, 20 + hasImage + hasDescription + hasCategory + stockScore + priceScore);
+
+        return {
+          id: p.id,
+          name: p.name || p.title || 'Produit sans nom',
+          category: p.category || 'Non catégorisé',
+          current_price: price,
+          suggested_price: price, // No simulated pricing — requires ML model
+          demand_score: optimizationScore, // Based on data completeness
+          competition_score: 50, // Neutral — requires market data
+          profit_margin: margin,
+          sales_velocity: 0, // Requires order_items aggregation
+          stock_level: stock,
+          optimization_potential: 100 - optimizationScore,
+          ai_recommendations: [
+            ...(hasImage === 0 ? ['Ajouter une image produit'] : []),
+            ...(hasDescription < 20 ? ['Enrichir la description produit'] : []),
+            ...(margin < 20 ? ['Revoir la marge bénéficiaire'] : []),
+          ],
+          risk_factors: stock < 5 ? ['Stock critique'] : [],
+          performance_trend: 'stable' as const,
+        };
+      });
     },
     enabled: !!user,
     staleTime: 60000,

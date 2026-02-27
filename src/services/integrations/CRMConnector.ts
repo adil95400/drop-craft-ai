@@ -304,9 +304,9 @@ export class CRMConnector {
     }
   }
 
-  private async updateLocalData(data: any): Promise<void> {
+  private async updateLocalData(_data: any): Promise<void> {
     // Update local database based on CRM changes
-    console.log('Updating local data from CRM webhook:', data);
+    // TODO: Implement actual CRM data sync to local DB
   }
 }
 

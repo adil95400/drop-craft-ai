@@ -187,8 +187,6 @@ export const UnifiedAuthProvider: React.FC<{ children: React.ReactNode }> = ({ c
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        console.log('Auth state changed:', event, session?.user?.id);
-        
         setSession(session);
         setUser(session?.user ?? null);
         
@@ -200,7 +198,7 @@ export const UnifiedAuthProvider: React.FC<{ children: React.ReactNode }> = ({ c
             // Check subscription status on login
             supabase.functions.invoke('check-subscription').then(({ data, error }) => {
               if (!error && data) {
-                console.log('[subscription-check] Plan:', data.plan);
+                // Subscription plan loaded silently
               }
             }).catch(() => {});
             
@@ -213,7 +211,6 @@ export const UnifiedAuthProvider: React.FC<{ children: React.ReactNode }> = ({ c
                   body: { trialDays: 14, plan: 'pro' },
                 }).then(({ error }) => {
                   if (error) console.warn('[trial-auto-activate] Failed:', error);
-                  else console.log('[trial-auto-activate] Trial activated for new user');
                 });
               }
             } catch {
