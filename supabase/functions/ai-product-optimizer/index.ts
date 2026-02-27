@@ -66,8 +66,9 @@ function validateRequest(body: any) {
 }
 
 serve(async (req) => {
-  const preflightResponse = handleCorsPreflightSecure(req);
-  if (preflightResponse) return preflightResponse;
+  if (req.method === 'OPTIONS') {
+    return handleCorsPreflightSecure(req);
+  }
 
   const corsHeaders = getSecureCorsHeaders(req);
 
