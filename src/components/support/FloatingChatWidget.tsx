@@ -28,6 +28,8 @@ const QUICK_ACTIONS = [
   { label: 'Traduction & i18n', icon: Globe, message: 'Comment traduire mes produits en plusieurs langues automatiquement ?' },
   { label: 'Analytics & KPIs', icon: BarChart3, message: 'Comment suivre les performances de mes produits et ventes ?' },
   { label: 'Automatisations', icon: ShoppingCart, message: 'Quelles automatisations sont disponibles (pricing, stock, commandes) ?' },
+  { label: 'Guide démarrage', icon: HelpCircle, message: 'Quel est le meilleur parcours pour démarrer rapidement avec ShopOpti+ ?' },
+  { label: 'Résoudre un problème', icon: FileText, message: 'J\'ai un problème technique, pouvez-vous m\'aider à le diagnostiquer ?' },
 ]
 
 export function FloatingChatWidget() {
@@ -63,7 +65,11 @@ export function FloatingChatWidget() {
         body: { 
           message: text,
           history: messages.slice(-10).map(m => ({ role: m.role, content: m.content })),
-          userId: user?.id
+          userId: user?.id,
+          context: {
+            currentPage: window.location.pathname,
+            businessType: localStorage.getItem('shopopti_business_type') || undefined,
+          }
         }
       })
 
