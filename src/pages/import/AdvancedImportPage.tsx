@@ -13,8 +13,7 @@ import {
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { cn } from '@/lib/utils'
-import { ChannablePageLayout } from '@/components/channable/ChannablePageLayout'
-import { ChannableHeroSection } from '@/components/channable/ChannableHeroSection'
+import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper'
 import { XMLFeedImporter } from '@/components/import/XMLFeedImporter'
 import { useUnifiedAuth } from '@/contexts/UnifiedAuthContext'
 import { useUnifiedPlan } from '@/lib/unified-plan-system'
@@ -175,33 +174,19 @@ export default function AdvancedImportPage() {
   }
 
   return (
-    <ChannablePageLayout
+    <ChannablePageWrapper
       title="Import Avancé"
-      metaTitle="Import Avancé - ShopOpti"
-      metaDescription="Importez vos produits depuis multiple sources avec mapping avancé et API"
-      maxWidth="2xl"
-      padding="md"
-      backTo="/import"
-      backLabel="Retour à l'Import"
+      subtitle="Pro"
+      description="Importez depuis CSV, API REST, webhooks ou bases de données avec mapping intelligent"
+      heroImage="import"
+      badge={{ icon: Code, label: 'Pro' }}
+      actions={
+        <Button variant="outline" onClick={() => navigate('/import/autods')} className="gap-2">
+          <Zap className="h-4 w-4" />
+          Import rapide
+        </Button>
+      }
     >
-      {/* Hero Section */}
-      <ChannableHeroSection
-        badge={{ icon: Code, label: 'Pro' }}
-        title="Import Avancé"
-        subtitle="Importez depuis CSV, API REST, webhooks ou bases de données avec mapping intelligent"
-        variant="compact"
-        showHexagons={!reducedMotion}
-        stats={[
-          { label: 'Jobs totaux', value: stats.total.toString(), icon: Package },
-          { label: 'En cours', value: stats.processing.toString(), icon: RefreshCw },
-          { label: 'Produits', value: stats.totalProducts.toString(), icon: TrendingUp },
-        ]}
-        primaryAction={{
-          label: 'Import rapide',
-          onClick: () => navigate('/import/autods'),
-          icon: Zap,
-        }}
-      />
 
       {/* Stats Grid */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -447,6 +432,6 @@ export default function AdvancedImportPage() {
           )}
         </CardContent>
       </Card>
-    </ChannablePageLayout>
+    </ChannablePageWrapper>
   )
 }

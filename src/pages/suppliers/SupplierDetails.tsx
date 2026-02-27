@@ -13,7 +13,7 @@ import { Progress } from '@/components/ui/progress'
 import { useSuppliersUnified } from '@/hooks/unified'
 import { useSupplierProducts, useSupplierProductCount } from '@/hooks/useSupplierProducts'
 import { motion } from 'framer-motion'
-import { ChannablePageLayout } from '@/components/channable/ChannablePageLayout'
+import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper'
 import {
   Edit,
   MoreVertical,
@@ -46,12 +46,7 @@ export default function SupplierDetails() {
 
   if (isLoading) {
     return (
-      <ChannablePageLayout
-        title="Chargement..."
-        showBackButton
-        backTo="/suppliers"
-        backLabel="Retour aux fournisseurs"
-      >
+      <ChannablePageWrapper title="Chargement..." heroImage="suppliers">
         <div className="animate-pulse space-y-6">
           <div className="h-32 bg-muted rounded-lg"></div>
           <div className="grid grid-cols-4 gap-4">
@@ -60,18 +55,13 @@ export default function SupplierDetails() {
             ))}
           </div>
         </div>
-      </ChannablePageLayout>
+      </ChannablePageWrapper>
     )
   }
 
   if (!supplier) {
     return (
-      <ChannablePageLayout
-        title="Fournisseur introuvable"
-        showBackButton
-        backTo="/suppliers"
-        backLabel="Retour aux fournisseurs"
-      >
+      <ChannablePageWrapper title="Fournisseur introuvable" heroImage="suppliers">
         <Card className="backdrop-blur-sm bg-white/80 dark:bg-gray-900/80">
           <CardContent className="flex flex-col items-center justify-center py-12">
             <AlertCircle className="h-12 w-12 text-muted-foreground mb-4" />
@@ -81,7 +71,7 @@ export default function SupplierDetails() {
             </Button>
           </CardContent>
         </Card>
-      </ChannablePageLayout>
+      </ChannablePageWrapper>
     )
   }
 
@@ -121,13 +111,12 @@ export default function SupplierDetails() {
   }
 
   return (
-    <ChannablePageLayout
+    <ChannablePageWrapper
       title={supplier.name}
-      metaTitle={`${supplier.name} - Détails Fournisseur`}
-      metaDescription={`Informations détaillées sur ${supplier.name}`}
-      showBackButton
-      backTo="/suppliers"
-      backLabel="Retour aux fournisseurs"
+      subtitle="Détails Fournisseur"
+      description={`Informations détaillées sur ${supplier.name}`}
+      heroImage="suppliers"
+      badge={{ label: supplier.status === 'active' ? 'Actif' : 'Inactif' }}
     >
       {/* Hero Header */}
       <motion.div
@@ -439,6 +428,6 @@ export default function SupplierDetails() {
           </Card>
         </TabsContent>
       </Tabs>
-    </ChannablePageLayout>
+    </ChannablePageWrapper>
   )
 }

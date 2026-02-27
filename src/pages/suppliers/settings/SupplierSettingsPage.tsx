@@ -17,8 +17,7 @@ import { Separator } from '@/components/ui/separator'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '@/integrations/supabase/client'
 import { useToast } from '@/hooks/use-toast'
-import { ChannablePageLayout } from '@/components/channable/ChannablePageLayout'
-import { ChannableHeroSection } from '@/components/channable/ChannableHeroSection'
+import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper'
 import { 
   Settings, Key, RefreshCw, CheckCircle, XCircle,
   Plus, Trash2, Eye, EyeOff, Clock, Loader2, Shield,
@@ -188,32 +187,19 @@ export default function SupplierSettingsPage() {
   const activeCredentials = credentials.filter((c: any) => c.connection_status === 'active' || c.connection_status === 'connected').length
 
   return (
-    <ChannablePageLayout
+    <ChannablePageWrapper
       title="Paramètres Fournisseurs"
-      metaTitle="Paramètres Fournisseurs"
-      metaDescription="Gérez vos clés API et configurations fournisseurs"
-      showBackButton
-      backTo="/suppliers"
-      backLabel="Retour aux fournisseurs"
+      subtitle="Configuration"
+      description="Gérez vos credentials, webhooks et paramètres de synchronisation fournisseurs."
+      heroImage="settings"
+      badge={{ label: 'Configuration' }}
+      actions={
+        <Button onClick={() => setShowAddDialog(true)} className="gap-2">
+          <Plus className="h-4 w-4" />
+          Ajouter une clé API
+        </Button>
+      }
     >
-      <ChannableHeroSection
-        badge={{ label: "Configuration", variant: "default" }}
-        title="Paramètres"
-        subtitle="Clés API et configurations"
-        description="Gérez vos credentials, webhooks et paramètres de synchronisation fournisseurs."
-        primaryAction={{
-          label: "Ajouter une clé API",
-          icon: Plus,
-          onClick: () => setShowAddDialog(true)
-        }}
-        stats={[
-          { value: credentials.length.toString(), label: "Credentials", icon: Key },
-          { value: activeCredentials.toString(), label: "Actifs", icon: CheckCircle },
-          { value: "Secure", label: "Vault", icon: Shield },
-          { value: "Auto", label: "Sync", icon: RefreshCw }
-        ]}
-        variant="compact"
-      />
 
       <Tabs defaultValue="credentials" className="space-y-6">
         <TabsList className="grid w-full grid-cols-3 lg:w-auto lg:inline-grid backdrop-blur-sm bg-white/80 dark:bg-gray-900/80">
@@ -547,6 +533,6 @@ export default function SupplierSettingsPage() {
         variant="destructive"
         onConfirm={() => { if (deleteCredentialId) { deleteCredentialMutation.mutate(deleteCredentialId); setDeleteCredentialId(null) } }}
       />
-    </ChannablePageLayout>
+    </ChannablePageWrapper>
   )
 }

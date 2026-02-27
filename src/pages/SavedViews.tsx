@@ -1,6 +1,5 @@
 import { useState } from 'react'
-import { ChannablePageLayout } from '@/components/channable/ChannablePageLayout'
-import { ChannablePageHero } from '@/components/channable/ChannablePageHero'
+import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -38,12 +37,12 @@ export default function SavedViews() {
   }
 
   return (
-    <ChannablePageLayout>
-      <ChannablePageHero
-        title="Vues Produits"
-        description="Filtres prédéfinis métier et vues personnalisées pour votre catalogue"
-        category="products"
-      />
+    <ChannablePageWrapper
+      title="Vues Produits"
+      description="Filtres prédéfinis métier et vues personnalisées pour votre catalogue"
+      heroImage="products"
+      badge={{ label: 'Produits' }}
+    >
 
       <div className="px-6 py-6 space-y-6">
         {/* Preset Views */}
@@ -144,6 +143,6 @@ export default function SavedViews() {
           )}
         </div>
       </div>
-    </ChannablePageLayout>
+    </ChannablePageWrapper>
   )
 }

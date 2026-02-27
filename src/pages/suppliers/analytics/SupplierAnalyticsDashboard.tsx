@@ -10,8 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Progress } from '@/components/ui/progress'
 import { useQuery } from '@tanstack/react-query'
 import { supabase } from '@/integrations/supabase/client'
-import { ChannablePageLayout } from '@/components/channable/ChannablePageLayout'
-import { ChannableHeroSection } from '@/components/channable/ChannableHeroSection'
+import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper'
 import { motion } from 'framer-motion'
 import {
   BarChart3, TrendingUp, Package, DollarSign,
@@ -163,40 +162,28 @@ export default function SupplierAnalyticsDashboard() {
   ]
 
   return (
-    <ChannablePageLayout
+    <ChannablePageWrapper
       title="Analytics Fournisseurs"
-      metaTitle="Analytics Fournisseurs"
-      metaDescription="Performances et KPIs de vos fournisseurs"
-      showBackButton
-      backTo="/suppliers"
-      backLabel="Retour aux fournisseurs"
+      subtitle="KPIs et métriques en temps réel"
+      description="Analysez les performances de vos fournisseurs, marges et tendances de vente."
+      heroImage="analytics"
+      badge={{ label: 'Analytics' }}
+      actions={
+        <Button variant="outline" onClick={() => {
+          const csvData = `Métrique,Valeur\nRevenus,${analyticsData?.totalRevenue || 0}€\nCommandes,${analyticsData?.totalOrders || 0}\nMarge Moyenne,${analyticsData?.avgMargin || 0}%\nFournisseurs Actifs,${analyticsData?.activeSuppliers || 0}`;
+          const blob = new Blob([csvData], { type: 'text/csv;charset=utf-8;' });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `supplier-analytics-${new Date().toISOString().split('T')[0]}.csv`;
+          a.click();
+          URL.revokeObjectURL(url);
+        }} className="gap-2">
+          <Download className="h-4 w-4" />
+          Exporter
+        </Button>
+      }
     >
-      <ChannableHeroSection
-        badge={{ label: "Analytics", variant: "default" }}
-        title="Performances"
-        subtitle="KPIs et métriques en temps réel"
-        description="Analysez les performances de vos fournisseurs, marges et tendances de vente."
-        secondaryAction={{
-          label: "Exporter",
-          onClick: () => {
-            const csvData = `Métrique,Valeur\nRevenus,${analyticsData?.totalRevenue || 0}€\nCommandes,${analyticsData?.totalOrders || 0}\nMarge Moyenne,${analyticsData?.avgMargin || 0}%\nFournisseurs Actifs,${analyticsData?.activeSuppliers || 0}`;
-            const blob = new Blob([csvData], { type: 'text/csv;charset=utf-8;' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `supplier-analytics-${new Date().toISOString().split('T')[0]}.csv`;
-            a.click();
-            URL.revokeObjectURL(url);
-          }
-        }}
-        stats={[
-          { value: `${(analyticsData?.totalRevenue || 0).toLocaleString()}€`, label: "Revenus", icon: DollarSign },
-          { value: (analyticsData?.totalOrders || 0).toString(), label: "Commandes", icon: ShoppingCart },
-          { value: `${analyticsData?.avgMargin || 0}%`, label: "Marge", icon: TrendingUp },
-          { value: (analyticsData?.activeSuppliers || 0).toString(), label: "Fournisseurs", icon: Store }
-        ]}
-        variant="compact"
-      />
 
       {/* Period Selector */}
       <div className="flex justify-end">
@@ -385,6 +372,6 @@ export default function SupplierAnalyticsDashboard() {
           </Card>
         </>
       )}
-    </ChannablePageLayout>
+    </ChannablePageWrapper>
   )
 }

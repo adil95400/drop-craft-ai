@@ -52,11 +52,10 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import {
-  ChannablePageLayout,
-  ChannableHeroSection,
   ChannableStatsGrid,
   ChannableBulkActions,
 } from "@/components/channable";
+import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper'
 import type { ChannableStat } from "@/components/channable/types";
 
 interface CatalogProduct {
@@ -576,29 +575,24 @@ export function UnifiedCatalog({ supplierId }: UnifiedCatalogProps) {
   ];
 
   return (
-    <ChannablePageLayout 
-      title="Catalogue Optimisé" 
-      metaDescription="Gestion intelligente avec scores IA et optimisation automatique"
-      maxWidth="full"
-      padding="md"
+    <ChannablePageWrapper
+      title="Catalogue Optimisé"
+      description="Gestion intelligente avec scores IA et optimisation automatique"
+      heroImage="products"
+      badge={{ label: 'IA' }}
+      actions={
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={handleDuplicatesCheck} className="gap-2">
+            <Layers className="h-4 w-4" />
+            Détecter doublons
+          </Button>
+          <Button variant="outline" onClick={handleCalculateScores} className="gap-2">
+            <Sparkles className="h-4 w-4" />
+            Calculer scores IA
+          </Button>
+        </div>
+      }
     >
-      {/* Hero Section */}
-      <ChannableHeroSection
-        title="Catalogue Optimisé"
-        subtitle="Gestion intelligente avec scores IA et optimisation automatique"
-        badge={{ label: "IA", variant: "secondary" }}
-        variant="compact"
-        showHexagons={false}
-        primaryAction={{
-          label: "Détecter doublons",
-          onClick: handleDuplicatesCheck,
-          icon: Layers,
-        }}
-        secondaryAction={{
-          label: "Calculer scores IA",
-          onClick: handleCalculateScores,
-        }}
-      />
 
       {/* Stats Grid */}
       <ChannableStatsGrid stats={heroStats} columns={3} compact />
@@ -1603,6 +1597,6 @@ export function UnifiedCatalog({ supplierId }: UnifiedCatalogProps) {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </ChannablePageLayout>
+    </ChannablePageWrapper>
   );
 }

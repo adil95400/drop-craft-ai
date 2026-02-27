@@ -13,7 +13,8 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '@/integrations/supabase/client'
 import { useToast } from '@/hooks/use-toast'
 import { BarChart3, Package, Code2, FileText, Settings, Loader2, AlertCircle, ShoppingCart, Activity, Shield } from 'lucide-react'
-import { ChannablePageLayout, ChannableEmptyState } from '@/components/channable'
+import { ChannableEmptyState } from '@/components/channable'
+import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper'
 import { ProductMappingEditor } from '@/components/channels/ProductMappingEditor'
 import { TransformationRulesEditor } from '@/components/channels/TransformationRulesEditor'
 import { VisualMappingEditor } from '@/components/channels/VisualMappingEditor'
@@ -238,20 +239,20 @@ export default function ChannelDetailPage() {
 
   if (isLoading) {
     return (
-      <ChannablePageLayout title="Chargement...">
+      <ChannablePageWrapper title="Chargement..." heroImage="integrations">
         <div className="flex items-center justify-center min-h-[400px]">
           <div className="text-center space-y-3">
             <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto" />
             <p className="text-sm text-muted-foreground">Chargement du canal...</p>
           </div>
         </div>
-      </ChannablePageLayout>
+      </ChannablePageWrapper>
     )
   }
 
   if (!channel) {
     return (
-      <ChannablePageLayout title="Canal introuvable">
+      <ChannablePageWrapper title="Canal introuvable" heroImage="integrations">
         <ChannableEmptyState
           icon={AlertCircle}
           title="Canal introuvable"
@@ -261,7 +262,7 @@ export default function ChannelDetailPage() {
             onClick: () => navigate('/stores-channels')
           }}
         />
-      </ChannablePageLayout>
+      </ChannablePageWrapper>
     )
   }
 
@@ -280,7 +281,7 @@ export default function ChannelDetailPage() {
         <title>{channel.platform_name || 'Canal'} - Détail du canal</title>
       </Helmet>
 
-      <ChannablePageLayout className="space-y-0">
+      <ChannablePageWrapper title={channel.platform_name || 'Canal'} heroImage="integrations" className="space-y-0">
         {/* Header Section */}
         <ChannelHeader
           channel={channel}
@@ -462,7 +463,7 @@ export default function ChannelDetailPage() {
             </TabsContent>
           </Tabs>
         </div>
-      </ChannablePageLayout>
+      </ChannablePageWrapper>
 
       <ConfirmDialog
         open={showDisconnectConfirm}
