@@ -66,11 +66,11 @@ export function NotificationDialog({ open, onOpenChange }: NotificationDialogPro
       {selectedType && (
         <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}
           className={cn("p-4 rounded-xl border-2 border-dashed",
-            formData.type === "success" && "border-green-500/30 bg-green-500/5",
-            formData.type === "error" && "border-red-500/30 bg-red-500/5",
-            formData.type === "warning" && "border-amber-500/30 bg-amber-500/5",
-            formData.type === "info" && "border-blue-500/30 bg-blue-500/5",
-            formData.type === "promotion" && "border-purple-500/30 bg-purple-500/5",
+            formData.type === "success" && "border-success/30 bg-success/5",
+            formData.type === "error" && "border-destructive/30 bg-destructive/5",
+            formData.type === "warning" && "border-warning/30 bg-warning/5",
+            formData.type === "info" && "border-info/30 bg-info/5",
+            formData.type === "promotion" && "border-primary/30 bg-primary/5",
           )}>
           <div className="flex items-center gap-3">
             <span className="text-2xl">{selectedType.icon}</span>
