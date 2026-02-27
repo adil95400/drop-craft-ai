@@ -100,16 +100,16 @@ export function EnrichmentDashboardWidget() {
 
         {/* Stats Grid */}
         <div className="grid grid-cols-2 gap-3">
-          <div className="flex items-center gap-2 p-2 rounded-lg bg-green-500/10">
-            <CheckCircle className="h-4 w-4 text-green-500" />
+          <div className="flex items-center gap-2 p-2 rounded-lg bg-success/10">
+            <CheckCircle className="h-4 w-4 text-success" />
             <div>
               <p className="text-lg font-bold">{stats?.applied_enrichments || 0}</p>
               <p className="text-xs text-muted-foreground">Appliqués</p>
             </div>
           </div>
           
-          <div className="flex items-center gap-2 p-2 rounded-lg bg-yellow-500/10">
-            <Zap className="h-4 w-4 text-yellow-500" />
+          <div className="flex items-center gap-2 p-2 rounded-lg bg-warning/10">
+            <Zap className="h-4 w-4 text-warning" />
             <div>
               <p className="text-lg font-bold">{stats?.pending_enrichments || 0}</p>
               <p className="text-xs text-muted-foreground">En attente</p>
