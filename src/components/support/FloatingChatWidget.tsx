@@ -5,12 +5,14 @@ import { Badge } from '@/components/ui/badge'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { 
   MessageCircle, X, Send, Bot, User, Minimize2, 
-  Maximize2, Sparkles, HelpCircle, FileText, Loader2
+  Maximize2, Sparkles, HelpCircle, FileText, Loader2,
+  Package, BarChart3, Globe, Zap, ShoppingCart
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { motion, AnimatePresence } from 'framer-motion'
 import { supabase } from '@/integrations/supabase/client'
 import { useAuth } from '@/contexts/AuthContext'
+import ReactMarkdown from 'react-markdown'
 
 interface ChatMessage {
   id: string
@@ -20,9 +22,12 @@ interface ChatMessage {
 }
 
 const QUICK_ACTIONS = [
-  { label: 'Comment importer ?', icon: HelpCircle, message: 'Comment importer des produits depuis AliExpress ?' },
-  { label: 'Aide SEO', icon: Sparkles, message: 'Comment optimiser le SEO de mes produits ?' },
-  { label: 'Documentation', icon: FileText, message: 'Où trouver la documentation complète ?' },
+  { label: 'Importer des produits', icon: Package, message: 'Comment importer des produits depuis AliExpress ou un fichier CSV ?' },
+  { label: 'Optimiser le SEO', icon: Sparkles, message: 'Comment optimiser le SEO de mes produits (titres, descriptions, ALT-text) ?' },
+  { label: 'Recommandations IA', icon: Zap, message: 'Comment fonctionne le moteur de recommandation IA et comment l\'activer ?' },
+  { label: 'Traduction & i18n', icon: Globe, message: 'Comment traduire mes produits en plusieurs langues automatiquement ?' },
+  { label: 'Analytics & KPIs', icon: BarChart3, message: 'Comment suivre les performances de mes produits et ventes ?' },
+  { label: 'Automatisations', icon: ShoppingCart, message: 'Quelles automatisations sont disponibles (pricing, stock, commandes) ?' },
 ]
 
 export function FloatingChatWidget() {
@@ -181,7 +186,11 @@ export function FloatingChatWidget() {
                           ? 'bg-primary text-primary-foreground rounded-tr-sm' 
                           : 'bg-muted rounded-tl-sm'
                       )}>
-                        {msg.content}
+                        {msg.role === 'assistant' ? (
+                          <div className="prose prose-sm dark:prose-invert max-w-none [&_p]:mb-1 [&_ul]:mb-1 [&_li]:mb-0.5">
+                            <ReactMarkdown>{msg.content}</ReactMarkdown>
+                          </div>
+                        ) : msg.content}
                       </div>
                     </div>
                   ))}
