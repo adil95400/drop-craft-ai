@@ -407,7 +407,7 @@ export function ChannableDashboard() {
       description={t('description')}
       heroImage="dashboard"
       badge={{
-        label: autoRefresh ? `Auto-refresh ${refreshInterval}s` : t('realtime'),
+        label: autoRefresh ? `Rafraîchissement auto ${refreshInterval}s` : t('realtime'),
         icon: RefreshCw
       }}
       actions={
