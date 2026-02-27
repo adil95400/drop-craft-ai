@@ -57,7 +57,7 @@ export const ProductStatusBadges = memo(function ProductStatusBadges({
       icon: AlertTriangle,
       label: 'Stock critique',
       tooltip: `Stock: ${status.stockQuantity ?? 0} unités - Risque de rupture`,
-      className: 'bg-red-500/10 text-red-600 border-red-500/30 hover:bg-red-500/20',
+      className: 'bg-destructive/10 text-destructive border-destructive/30 hover:bg-destructive/20',
       priority: 1
     },
     {
@@ -66,7 +66,7 @@ export const ProductStatusBadges = memo(function ProductStatusBadges({
       icon: Zap,
       label: 'Qualité faible',
       tooltip: `Score qualité: ${status.qualityScore ?? 0}/100 - À optimiser`,
-      className: 'bg-amber-500/10 text-amber-600 border-amber-500/30 hover:bg-amber-500/20',
+      className: 'bg-warning/10 text-warning border-warning/30 hover:bg-warning/20',
       priority: 2
     },
     {
@@ -75,7 +75,7 @@ export const ProductStatusBadges = memo(function ProductStatusBadges({
       icon: TrendingDown,
       label: 'Marge faible',
       tooltip: 'Marge inférieure au seuil recommandé (15%)',
-      className: 'bg-orange-500/10 text-orange-600 border-orange-500/30 hover:bg-orange-500/20',
+      className: 'bg-warning/10 text-warning border-warning/30 hover:bg-warning/20',
       priority: 3
     },
     {
@@ -84,7 +84,7 @@ export const ProductStatusBadges = memo(function ProductStatusBadges({
       icon: Sparkles,
       label: 'Optimisé IA',
       tooltip: 'Ce produit a été optimisé par l\'IA',
-      className: 'bg-emerald-500/10 text-emerald-600 border-emerald-500/30 hover:bg-emerald-500/20',
+      className: 'bg-success/10 text-success border-success/30 hover:bg-success/20',
       priority: 4
     },
     {
@@ -93,7 +93,7 @@ export const ProductStatusBadges = memo(function ProductStatusBadges({
       icon: DollarSign,
       label: 'Règle prix',
       tooltip: 'Une règle de tarification est appliquée',
-      className: 'bg-blue-500/10 text-blue-600 border-blue-500/30 hover:bg-blue-500/20',
+      className: 'bg-info/10 text-info border-info/30 hover:bg-info/20',
       priority: 5
     },
     {
@@ -102,7 +102,7 @@ export const ProductStatusBadges = memo(function ProductStatusBadges({
       icon: RefreshCw,
       label: 'Synchronisé',
       tooltip: 'Synchronisé récemment avec les boutiques',
-      className: 'bg-purple-500/10 text-purple-600 border-purple-500/30 hover:bg-purple-500/20',
+      className: 'bg-primary/10 text-primary border-primary/30 hover:bg-primary/20',
       priority: 6
     },
     {
@@ -111,7 +111,7 @@ export const ProductStatusBadges = memo(function ProductStatusBadges({
       icon: RefreshCw,
       label: 'Non sync',
       tooltip: 'Non synchronisé depuis plus de 24h',
-      className: 'bg-gray-400/10 text-gray-500 border-gray-400/30 hover:bg-gray-400/20',
+      className: 'bg-muted text-muted-foreground border-border hover:bg-muted/80',
       priority: 7
     }
   ]

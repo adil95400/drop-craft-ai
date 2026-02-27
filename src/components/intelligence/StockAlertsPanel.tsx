@@ -23,13 +23,13 @@ export function StockAlertsPanel() {
   const getAlertIcon = (level: string) => {
     switch (level) {
       case 'critical':
-        return <AlertTriangle className="h-5 w-5 text-red-500" />;
+        return <AlertTriangle className="h-5 w-5 text-destructive" />;
       case 'high':
-        return <AlertCircle className="h-5 w-5 text-orange-500" />;
+        return <AlertCircle className="h-5 w-5 text-warning" />;
       case 'medium':
-        return <AlertCircle className="h-5 w-5 text-yellow-500" />;
+        return <AlertCircle className="h-5 w-5 text-warning" />;
       default:
-        return <Info className="h-5 w-5 text-blue-500" />;
+        return <Info className="h-5 w-5 text-info" />;
     }
   };
 
@@ -38,9 +38,9 @@ export function StockAlertsPanel() {
       case 'critical':
         return <Badge variant="destructive">Critique</Badge>;
       case 'high':
-        return <Badge className="bg-orange-500">Urgent</Badge>;
+        return <Badge className="bg-warning text-warning-foreground">Urgent</Badge>;
       case 'medium':
-        return <Badge className="bg-yellow-500 text-black">Moyen</Badge>;
+        return <Badge className="bg-warning/80 text-warning-foreground">Moyen</Badge>;
       default:
         return <Badge variant="secondary">Info</Badge>;
     }
@@ -118,13 +118,13 @@ function AlertCard({
   const getAlertBorderColor = (level: string) => {
     switch (level) {
       case 'critical':
-        return 'border-l-red-500';
+        return 'border-l-destructive';
       case 'high':
-        return 'border-l-orange-500';
+        return 'border-l-warning';
       case 'medium':
-        return 'border-l-yellow-500';
+        return 'border-l-warning';
       default:
-        return 'border-l-blue-500';
+        return 'border-l-info';
     }
   };
 
@@ -133,10 +133,10 @@ function AlertCard({
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-start gap-3 flex-1">
           <div className="mt-0.5">
-            {alert.alert_level === 'critical' && <AlertTriangle className="h-5 w-5 text-red-500" />}
-            {alert.alert_level === 'high' && <AlertCircle className="h-5 w-5 text-orange-500" />}
-            {alert.alert_level === 'medium' && <AlertCircle className="h-5 w-5 text-yellow-500" />}
-            {alert.alert_level === 'low' && <Info className="h-5 w-5 text-blue-500" />}
+            {alert.alert_level === 'critical' && <AlertTriangle className="h-5 w-5 text-destructive" />}
+            {alert.alert_level === 'high' && <AlertCircle className="h-5 w-5 text-warning" />}
+            {alert.alert_level === 'medium' && <AlertCircle className="h-5 w-5 text-warning" />}
+            {alert.alert_level === 'low' && <Info className="h-5 w-5 text-info" />}
           </div>
           <div className="flex-1">
             <h4 className="font-medium text-sm">{alert.title}</h4>

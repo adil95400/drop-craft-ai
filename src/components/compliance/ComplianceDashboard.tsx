@@ -80,9 +80,9 @@ export function ComplianceDashboard() {
   const getRiskColor = (risk: string) => {
     switch (risk) {
       case 'critical': return 'text-destructive';
-      case 'high': return 'text-orange-500';
-      case 'medium': return 'text-yellow-500';
-      default: return 'text-green-500';
+      case 'high': return 'text-warning';
+      case 'medium': return 'text-warning';
+      default: return 'text-success';
     }
   };
 

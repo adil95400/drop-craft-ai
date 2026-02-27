@@ -100,18 +100,18 @@ export const IntegrationHealthMonitor = () => {
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'healthy': return <CheckCircle2 className="w-4 h-4 text-green-600" />
-      case 'warning': return <AlertTriangle className="w-4 h-4 text-yellow-600" />
-      case 'critical': return <XCircle className="w-4 h-4 text-red-600" />
-      default: return <Clock className="w-4 h-4 text-gray-400" />
+      case 'healthy': return <CheckCircle2 className="w-4 h-4 text-success" />
+      case 'warning': return <AlertTriangle className="w-4 h-4 text-warning" />
+      case 'critical': return <XCircle className="w-4 h-4 text-destructive" />
+      default: return <Clock className="w-4 h-4 text-muted-foreground" />
     }
   }
 
   const getStatusBadge = (status: string) => {
     switch (status) {
-      case 'healthy': return <Badge className="bg-green-100 text-green-800">En ligne</Badge>
-      case 'warning': return <Badge className="bg-yellow-100 text-yellow-800">Attention</Badge>
-      case 'critical': return <Badge className="bg-red-100 text-red-800">Critique</Badge>
+      case 'healthy': return <Badge className="bg-success/10 text-success">En ligne</Badge>
+      case 'warning': return <Badge className="bg-warning/10 text-warning">Attention</Badge>
+      case 'critical': return <Badge className="bg-destructive/10 text-destructive">Critique</Badge>
       default: return <Badge variant="outline">Inconnu</Badge>
     }
   }
