@@ -148,7 +148,7 @@ serve(async (req) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'openai/gpt-5-nano',
+        model: 'google/gemini-2.5-flash',
         messages: [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: userPrompt }
@@ -159,7 +159,8 @@ serve(async (req) => {
     });
 
     if (!response.ok) {
-      console.error('[AI-OPTIMIZER] AI Gateway error:', response.status);
+      const errorBody = await response.text();
+      console.error('[AI-OPTIMIZER] AI Gateway error:', response.status, errorBody);
       if (response.status === 429) {
         return new Response(
           JSON.stringify({ error: 'Limite de requêtes IA atteinte.' }),
