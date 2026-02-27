@@ -3454,6 +3454,59 @@ export type Database = {
         }
         Relationships: []
       }
+      content_auto_update_configs: {
+        Row: {
+          content_types: string[]
+          created_at: string
+          id: string
+          is_enabled: boolean
+          language: string
+          last_triggered_at: string | null
+          product_id: string | null
+          template_prompt: string | null
+          tone: string
+          trigger_count: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          content_types?: string[]
+          created_at?: string
+          id?: string
+          is_enabled?: boolean
+          language?: string
+          last_triggered_at?: string | null
+          product_id?: string | null
+          template_prompt?: string | null
+          tone?: string
+          trigger_count?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          content_types?: string[]
+          created_at?: string
+          id?: string
+          is_enabled?: boolean
+          language?: string
+          last_triggered_at?: string | null
+          product_id?: string | null
+          template_prompt?: string | null
+          tone?: string
+          trigger_count?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "content_auto_update_configs_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       content_calendar: {
         Row: {
           color: string | null
