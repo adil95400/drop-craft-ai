@@ -1,207 +1,206 @@
-import { useQuery } from '@tanstack/react-query'
+/**
+ * useRealAIRecommendations — Powered by ai-recommendations-engine Edge Function
+ * Real collaborative filtering, AI-driven insights, and cross-sell analysis
+ */
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useToast } from '@/hooks/use-toast'
 import { supabase } from '@/integrations/supabase/client'
-import { getProductList } from '@/services/api/productHelpers'
 
 export interface AIRecommendation {
   id: string
-  type: 'product' | 'pricing' | 'marketing' | 'inventory' | 'seo'
+  type: string
+  recommendation_type: string
   priority: 'high' | 'medium' | 'low'
   title: string
   description: string
   impact: string
   confidence: number
-  actions: Array<{
-    label: string
-    action: string
-    data?: any
-  }>
+  confidence_score: number
+  impact_estimate: string | null
+  impact_value: number | null
+  reasoning: string | null
+  status: 'pending' | 'accepted' | 'dismissed' | 'applied' | 'expired'
+  source_product_id: string | null
+  target_product_id: string | null
+  actions: Array<{ label: string; action: string; data?: any }>
   metrics?: {
     potential_revenue?: number
     time_savings?: string
     conversion_lift?: number
   }
   createdAt: string
+  created_at: string
+  expires_at: string | null
 }
 
-export const useRealAIRecommendations = (limit = 6, types?: string[]) => {
-  const { toast } = useToast()
+export interface ProductAffinity {
+  id: string
+  product_a_id: string
+  product_b_id: string
+  co_occurrence_count: number
+  affinity_score: number
+  product_a?: { id: string; title: string; sale_price: number; image_url: string | null }
+  product_b?: { id: string; title: string; sale_price: number; image_url: string | null }
+}
 
+function mapPriority(confidence: number): 'high' | 'medium' | 'low' {
+  if (confidence >= 80) return 'high'
+  if (confidence >= 60) return 'medium'
+  return 'low'
+}
+
+function mapTypeToLegacy(type: string): string {
+  const map: Record<string, string> = {
+    trending: 'product', cross_sell: 'product', upsell: 'product',
+    restock: 'inventory', pricing: 'pricing', bundle: 'marketing',
+  }
+  return map[type] || 'product'
+}
+
+export const useRealAIRecommendations = (limit = 10, types?: string[]) => {
+  const { toast } = useToast()
+  const queryClient = useQueryClient()
+
+  // Fetch stored recommendations from DB
   const { data: recommendations, isLoading, error, refetch } = useQuery({
     queryKey: ['ai-recommendations', limit, types],
     queryFn: async (): Promise<AIRecommendation[]> => {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) throw new Error('User not authenticated')
+      const { data, error } = await (supabase.from('ai_recommendations') as any)
+        .select('*')
+        .in('status', ['pending', 'accepted'])
+        .order('confidence_score', { ascending: false })
+        .limit(limit)
 
-      // Fetch real data
-      const [
-        productsList,
-        { data: orders },
-        { data: customers }
-      ] = await Promise.all([
-        getProductList(500),
-        supabase.from('orders').select('*').eq('user_id', user.id),
-        supabase.from('customers').select('*').eq('user_id', user.id)
-      ])
-      const products = productsList as any[]
+      if (error) throw error
 
-      const recommendations: AIRecommendation[] = []
-
-      // 1. Pricing Optimization
-      const lowMarginProducts = products?.filter(p => {
-        const margin = p.cost_price ? ((p.price - p.cost_price) / p.cost_price) * 100 : 0
-        return margin < 30 && p.status === 'active'
-      }) || []
-
-      if (lowMarginProducts.length > 0) {
-        const potentialRevenue = lowMarginProducts.reduce((sum, p) => sum + (p.price * 0.15), 0)
-        recommendations.push({
-          id: 'pricing_opt',
-          type: 'pricing',
-          priority: 'high',
-          title: 'Optimisation Prix Automatique Détectée',
-          description: `L'IA a identifié ${lowMarginProducts.length} produits avec un potentiel d'augmentation de marge`,
-          impact: `Augmentation estimée du CA : +€${potentialRevenue.toFixed(0)}/mois`,
-          confidence: 87,
-          actions: [
-            { label: 'Appliquer les prix optimisés', action: 'apply_pricing', data: lowMarginProducts },
-            { label: 'Voir les détails', action: 'view_pricing_details' }
-          ],
-          metrics: {
-            potential_revenue: potentialRevenue,
-            conversion_lift: 15
-          },
-          createdAt: new Date().toISOString()
-        })
-      }
-
-      // 2. Low Stock Warning
-      const lowStockProducts = products?.filter(p => 
-        (p.stock_quantity || 0) < 10 && p.status === 'active'
-      ) || []
-
-      if (lowStockProducts.length > 0) {
-        const potentialLoss = lowStockProducts.reduce((sum, p) => sum + (p.price * 5), 0)
-        recommendations.push({
-          id: 'inventory_warning',
-          type: 'inventory',
-          priority: 'high',
-          title: 'Risque de Rupture de Stock',
-          description: `L'IA prédit des ruptures de stock sur ${lowStockProducts.length} produits performants`,
-          impact: `Éviter une perte de €${potentialLoss.toFixed(0)} en ventes`,
-          confidence: 78,
-          actions: [
-            { label: 'Réapprovisionner maintenant', action: 'restock_products', data: lowStockProducts },
-            { label: 'Configurer les alertes', action: 'setup_alerts' }
-          ],
-          metrics: {
-            potential_revenue: potentialLoss,
-            time_savings: '2h par semaine'
-          },
-          createdAt: new Date().toISOString()
-        })
-      }
-
-      // 3. SEO Optimization
-      const poorSeoProducts = products?.filter(p => 
-        !p.seo_description || !p.seo_title || p.seo_description?.length < 50
-      ) || []
-
-      if (poorSeoProducts.length > 0) {
-        recommendations.push({
-          id: 'seo_opt',
-          type: 'seo',
-          priority: 'medium',
-          title: 'Optimisation SEO Intelligente',
-          description: `L'IA a identifié ${poorSeoProducts.length} produits avec faible visibilité SEO`,
-          impact: 'Amélioration estimée du trafic organique : +35%',
-          confidence: 83,
-          actions: [
-            { label: 'Appliquer les descriptions IA', action: 'apply_seo_content', data: poorSeoProducts },
-            { label: 'Prévisualiser les changements', action: 'preview_seo' }
-          ],
-          metrics: {
-            conversion_lift: 35,
-            time_savings: '5h de rédaction'
-          },
-          createdAt: new Date().toISOString()
-        })
-      }
-
-      // 4. Customer Segmentation
-      if ((customers?.length || 0) > 10) {
-        const highValueCustomers = customers?.filter(c => c.total_spent > 500).length || 0
-        recommendations.push({
-          id: 'marketing_segments',
-          type: 'marketing',
-          priority: 'medium',
-          title: 'Opportunité de Segmentation Client',
-          description: `L'IA a identifié ${highValueCustomers} clients à forte valeur pour des campagnes ciblées`,
-          impact: 'Amélioration ROI marketing : +28%',
-          confidence: 71,
-          actions: [
-            { label: 'Créer les segments', action: 'create_segments' },
-            { label: 'Lancer campagne test', action: 'test_campaign' }
-          ],
-          metrics: {
-            conversion_lift: 28,
-            potential_revenue: 850
-          },
-          createdAt: new Date().toISOString()
-        })
-      }
-
-      // 5. Product Trends
-      const recentOrders = orders?.filter(o => {
-        const orderDate = new Date(o.created_at)
-        const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
-        return orderDate > weekAgo
-      }) || []
-
-      if (recentOrders.length > 5) {
-        recommendations.push({
-          id: 'trending_products',
-          type: 'product',
-          priority: 'low',
-          title: 'Produits en Tendance Détectés',
-          description: 'Analyse des ventes récentes pour identifier de nouvelles opportunités',
-          impact: `${recentOrders.length} commandes cette semaine`,
-          confidence: 92,
-          actions: [
-            { label: 'Voir les tendances', action: 'view_trending_products' },
-            { label: 'Créer bundle', action: 'create_bundle' }
-          ],
-          metrics: {
-            potential_revenue: recentOrders.reduce((sum, o) => sum + o.total_amount, 0) * 1.2
-          },
-          createdAt: new Date().toISOString()
-        })
-      }
-
-      // Filter by types if specified
-      let filteredRecommendations = recommendations
-      if (types && types.length > 0) {
-        filteredRecommendations = recommendations.filter(r => types.includes(r.type))
-      }
-
-      return filteredRecommendations.slice(0, limit)
+      return (data || []).map((rec: any) => ({
+        ...rec,
+        type: mapTypeToLegacy(rec.recommendation_type),
+        priority: mapPriority(rec.confidence_score),
+        impact: rec.impact_estimate || '',
+        confidence: rec.confidence_score,
+        actions: [
+          { label: 'Appliquer', action: 'apply' },
+          { label: 'Ignorer', action: 'dismiss' },
+        ],
+        createdAt: rec.created_at,
+      }))
     },
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    meta: {
-      onError: () => {
-        toast({
-          title: "Erreur de chargement",
-          description: "Impossible de charger les recommandations IA",
-          variant: "destructive"
-        })
+    staleTime: 60_000,
+  })
+
+  // Fetch cross-sell affinities
+  const { data: affinities, isLoading: affinitiesLoading } = useQuery({
+    queryKey: ['product-affinities'],
+    queryFn: async (): Promise<ProductAffinity[]> => {
+      const { data, error } = await (supabase.from('product_affinities') as any)
+        .select(`
+          *,
+          product_a:products!product_affinities_product_a_id_fkey(id, title, sale_price, image_url),
+          product_b:products!product_affinities_product_b_id_fkey(id, title, sale_price, image_url)
+        `)
+        .order('affinity_score', { ascending: false })
+        .limit(10)
+
+      if (error) throw error
+      return data || []
+    },
+    staleTime: 120_000,
+  })
+
+  // Fetch metrics
+  const { data: metrics } = useQuery({
+    queryKey: ['recommendation-metrics'],
+    queryFn: async () => {
+      const { data, error } = await (supabase.from('recommendation_metrics') as any)
+        .select('*')
+        .order('period_start', { ascending: false })
+        .limit(30)
+      if (error) throw error
+      return data || []
+    },
+    staleTime: 300_000,
+  })
+
+  // Generate new recommendations via AI
+  const generate = useMutation({
+    mutationFn: async () => {
+      const { data, error } = await supabase.functions.invoke('ai-recommendations-engine', {
+        body: { action: 'generate_all' },
+      })
+      if (error) throw error
+      if (!data?.success) throw new Error(data?.error || 'Generation failed')
+      return data
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['ai-recommendations'] })
+      queryClient.invalidateQueries({ queryKey: ['recommendation-metrics'] })
+      toast({
+        title: '🤖 Recommandations IA générées',
+        description: `${data.recommendations?.length || 0} insights basés sur ${data.stats?.products_analyzed || 0} produits et ${data.stats?.orders_analyzed || 0} commandes`,
+      })
+    },
+    onError: (err: any) => {
+      toast({
+        title: 'Erreur de génération',
+        description: err.message?.includes('429') 
+          ? 'Trop de requêtes, réessayez dans quelques instants' 
+          : err.message?.includes('402')
+            ? 'Crédits IA épuisés, rechargez votre compte'
+            : err.message || 'Erreur inattendue',
+        variant: 'destructive',
+      })
+    },
+  })
+
+  // Compute cross-sell
+  const computeCrossSell = useMutation({
+    mutationFn: async () => {
+      const { data, error } = await supabase.functions.invoke('ai-recommendations-engine', {
+        body: { action: 'cross_sell' },
+      })
+      if (error) throw error
+      if (!data?.success) throw new Error(data?.error || 'Failed')
+      return data
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['product-affinities'] })
+      toast({ title: 'Affinités produits calculées', description: 'Paires fréquemment achetées ensemble identifiées' })
+    },
+    onError: (err: any) => {
+      toast({ title: 'Erreur', description: err.message, variant: 'destructive' })
+    },
+  })
+
+  // Update status (accept/dismiss)
+  const updateStatus = useMutation({
+    mutationFn: async ({ id, action }: { id: string; action: 'accept' | 'dismiss' }) => {
+      const updates: any = {
+        status: action === 'accept' ? 'accepted' : 'dismissed',
+        ...(action === 'dismiss' 
+          ? { dismissed_at: new Date().toISOString() } 
+          : { applied_at: new Date().toISOString() }),
       }
-    }
+      const { error } = await (supabase.from('ai_recommendations') as any)
+        .update(updates)
+        .eq('id', id)
+      if (error) throw error
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['ai-recommendations'] })
+    },
   })
 
   return {
     recommendations: recommendations || [],
+    affinities: affinities || [],
+    affinitiesLoading,
+    metrics: metrics || [],
     isLoading,
     error,
-    refetch
+    refetch,
+    generate,
+    computeCrossSell,
+    updateStatus,
   }
 }
