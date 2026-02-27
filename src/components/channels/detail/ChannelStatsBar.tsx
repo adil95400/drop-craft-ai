@@ -1,12 +1,11 @@
 /**
- * ChannelStatsBar - Shopify Admin Style Stats Cards
- * Clean metric cards with subtle styling
+ * ChannelStatsBar - Channable-style compact metrics
+ * Data-dense stat cards with trends
  */
 import { Package, ShoppingCart, TrendingUp, Clock, ArrowUpRight, ArrowDownRight } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { cn } from '@/lib/utils'
 import { useTranslation } from 'react-i18next'
-import { Card, CardContent } from '@/components/ui/card'
 
 interface ChannelStatsBarProps {
   productCount: number
@@ -38,24 +37,28 @@ export function ChannelStatsBar({ productCount, orderCount, revenue, lastSync }:
       value: productCount.toLocaleString(locale),
       icon: Package,
       trend: productCount > 0 ? { value: 12, positive: true } : null,
+      iconBg: 'bg-blue-500/10 text-blue-600 dark:text-blue-400',
     },
     {
       label: 'Commandes',
       value: orderCount.toLocaleString(locale),
       icon: ShoppingCart,
       trend: orderCount > 0 ? { value: 8, positive: true } : null,
+      iconBg: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400',
     },
     {
       label: 'Chiffre d\'affaires',
       value: `€${revenue.toLocaleString(locale, { minimumFractionDigits: 2 })}`,
       icon: TrendingUp,
       trend: revenue > 0 ? { value: 15, positive: true } : null,
+      iconBg: 'bg-purple-500/10 text-purple-600 dark:text-purple-400',
     },
     {
       label: 'Dernière sync',
       value: formatLastSync(lastSync),
       icon: Clock,
       trend: null,
+      iconBg: 'bg-muted text-muted-foreground',
     },
   ]
 
@@ -66,38 +69,35 @@ export function ChannelStatsBar({ productCount, orderCount, revenue, lastSync }:
         return (
           <motion.div
             key={stat.label}
-            initial={{ opacity: 0, y: 12 }}
+            initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: index * 0.08, duration: 0.3 }}
+            transition={{ delay: index * 0.06, duration: 0.25 }}
+            className="group relative p-4 rounded-lg border border-border bg-card hover:border-primary/30 transition-colors"
           >
-            <Card className="border-border/60 shadow-none hover:shadow-sm transition-shadow">
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between mb-3">
-                  <div className="p-2 rounded-lg bg-muted">
-                    <Icon className="h-4 w-4 text-muted-foreground" />
-                  </div>
-                  {stat.trend && (
-                    <span className={cn(
-                      "flex items-center gap-0.5 text-xs font-medium",
-                      stat.trend.positive ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"
-                    )}>
-                      {stat.trend.positive ? (
-                        <ArrowUpRight className="h-3 w-3" />
-                      ) : (
-                        <ArrowDownRight className="h-3 w-3" />
-                      )}
-                      {stat.trend.value}%
-                    </span>
+            <div className="flex items-center justify-between mb-2.5">
+              <div className={cn("p-1.5 rounded-md", stat.iconBg)}>
+                <Icon className="h-3.5 w-3.5" />
+              </div>
+              {stat.trend && (
+                <span className={cn(
+                  "flex items-center gap-0.5 text-[11px] font-semibold tabular-nums",
+                  stat.trend.positive ? "text-emerald-600 dark:text-emerald-400" : "text-destructive"
+                )}>
+                  {stat.trend.positive ? (
+                    <ArrowUpRight className="h-3 w-3" />
+                  ) : (
+                    <ArrowDownRight className="h-3 w-3" />
                   )}
-                </div>
-                <p className="text-2xl font-semibold tracking-tight">
-                  {stat.value}
-                </p>
-                <p className="text-xs text-muted-foreground mt-1">
-                  {stat.label}
-                </p>
-              </CardContent>
-            </Card>
+                  {stat.trend.value}%
+                </span>
+              )}
+            </div>
+            <p className="text-xl font-bold tracking-tight text-foreground tabular-nums">
+              {stat.value}
+            </p>
+            <p className="text-[11px] text-muted-foreground mt-0.5 font-medium uppercase tracking-wider">
+              {stat.label}
+            </p>
           </motion.div>
         )
       })}

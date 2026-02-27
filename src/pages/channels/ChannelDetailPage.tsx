@@ -1,6 +1,6 @@
 /**
- * Page de détail d'un canal connecté - Shopify Admin Style
- * Design épuré, professionnel et modulaire
+ * Page de détail d'un canal - Style Channable avancé
+ * Interface data-dense, professionnelle et 100% fonctionnelle
  */
 
 import { useState } from 'react'
@@ -12,7 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '@/integrations/supabase/client'
 import { useToast } from '@/hooks/use-toast'
-import { BarChart3, Package, Code2, FileText, Settings, Loader2, AlertCircle, Bell, ShoppingCart } from 'lucide-react'
+import { BarChart3, Package, Code2, FileText, Settings, Loader2, AlertCircle, ShoppingCart, Activity, Shield } from 'lucide-react'
 import { ChannablePageLayout, ChannableEmptyState } from '@/components/channable'
 import { ProductMappingEditor } from '@/components/channels/ProductMappingEditor'
 import { TransformationRulesEditor } from '@/components/channels/TransformationRulesEditor'
@@ -24,7 +24,8 @@ import { ChannelHeader, ChannelStatsBar, ChannelOverviewTab, ChannelProductsTab,
 import { motion } from 'framer-motion'
 import { Button } from '@/components/ui/button'
 import { AlertTriangle, Unplug } from 'lucide-react'
-import { Separator } from '@/components/ui/separator'
+import { Badge } from '@/components/ui/badge'
+import { cn } from '@/lib/utils'
 
 export default function ChannelDetailPage() {
   const { channelId } = useParams<{ channelId: string }>()
@@ -239,8 +240,8 @@ export default function ChannelDetailPage() {
     return (
       <ChannablePageLayout title="Chargement...">
         <div className="flex items-center justify-center min-h-[400px]">
-          <div className="text-center">
-            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground mx-auto mb-3" />
+          <div className="text-center space-y-3">
+            <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto" />
             <p className="text-sm text-muted-foreground">Chargement du canal...</p>
           </div>
         </div>
@@ -265,22 +266,22 @@ export default function ChannelDetailPage() {
   }
 
   const tabItems = [
-    { value: 'overview', icon: BarChart3, label: "Vue d'ensemble" },
-    { value: 'products', icon: Package, label: 'Produits' },
-    { value: 'orders', icon: ShoppingCart, label: 'Commandes' },
-    { value: 'rules', icon: Code2, label: 'Règles' },
-    { value: 'mapping', icon: FileText, label: 'Mapping' },
-    { value: 'settings', icon: Settings, label: 'Paramètres' },
+    { value: 'overview', icon: BarChart3, label: "Vue d'ensemble", count: null },
+    { value: 'products', icon: Package, label: 'Produits', count: channelStats?.products || null },
+    { value: 'orders', icon: ShoppingCart, label: 'Commandes', count: channelStats?.orders || null },
+    { value: 'rules', icon: Code2, label: 'Règles', count: null },
+    { value: 'mapping', icon: FileText, label: 'Mapping', count: null },
+    { value: 'settings', icon: Settings, label: 'Paramètres', count: null },
   ]
 
   return (
     <>
       <Helmet>
-        <title>{channel.platform_name || 'Canal'} - ShopOpti+</title>
+        <title>{channel.platform_name || 'Canal'} - Détail du canal</title>
       </Helmet>
 
-      <ChannablePageLayout className="space-y-6">
-        {/* Shopify-style Header */}
+      <ChannablePageLayout className="space-y-0">
+        {/* Header Section */}
         <ChannelHeader
           channel={channel}
           webhooksConnected={webhooksConnected}
@@ -289,163 +290,178 @@ export default function ChannelDetailPage() {
           onSync={() => syncMutation.mutate()}
         />
 
-        <Separator className="my-2" />
-
         {/* Stats Bar */}
-        <ChannelStatsBar
-          productCount={channelStats?.products || 0}
-          orderCount={channelStats?.orders || 0}
-          revenue={channelStats?.revenue || 0}
-          lastSync={channel.last_sync_at}
-        />
+        <div className="mt-5">
+          <ChannelStatsBar
+            productCount={channelStats?.products || 0}
+            orderCount={channelStats?.orders || 0}
+            revenue={channelStats?.revenue || 0}
+            lastSync={channel.last_sync_at}
+          />
+        </div>
 
-        {/* Realtime Indicator */}
+        {/* Realtime Banner */}
         {webhooksConnected && eventCount > 0 && (
           <motion.div 
-            initial={{ opacity: 0, y: -8 }}
+            initial={{ opacity: 0, y: -4 }}
             animate={{ opacity: 1, y: 0 }}
-            className="flex items-center gap-2.5 text-sm px-4 py-2.5 bg-green-50 dark:bg-green-500/10 border border-green-200 dark:border-green-500/20 rounded-lg"
+            className="mt-4 flex items-center gap-2.5 text-sm px-4 py-2.5 bg-primary/5 border border-primary/20 rounded-lg"
           >
             <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500" />
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75" />
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-primary" />
             </span>
-            <span className="text-green-700 dark:text-green-400 font-medium">
+            <span className="text-primary font-medium">
               {eventCount} événement{eventCount !== 1 ? 's' : ''} reçu{eventCount !== 1 ? 's' : ''} en temps réel
             </span>
           </motion.div>
         )}
 
-        {/* Shopify-style Tabs */}
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="bg-transparent border-b border-border rounded-none h-auto p-0 w-full justify-start gap-0">
-            {tabItems.map((tab) => (
-              <TabsTrigger
-                key={tab.value}
-                value={tab.value}
-                className="gap-2 rounded-none border-b-2 border-transparent px-4 py-3 data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-foreground text-muted-foreground hover:text-foreground transition-colors"
-              >
-                <tab.icon className="h-4 w-4" />
-                <span className="hidden sm:inline text-sm">{tab.label}</span>
-              </TabsTrigger>
-            ))}
-          </TabsList>
+        {/* Tabs Navigation - Channable style with counters */}
+        <div className="mt-6">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-5">
+            <div className="border-b border-border">
+              <TabsList className="bg-transparent rounded-none h-auto p-0 w-full justify-start gap-0 overflow-x-auto">
+                {tabItems.map((tab) => (
+                  <TabsTrigger
+                    key={tab.value}
+                    value={tab.value}
+                    className={cn(
+                      "relative gap-2 rounded-none border-b-2 border-transparent px-4 py-3",
+                      "data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none",
+                      "data-[state=active]:text-foreground text-muted-foreground",
+                      "hover:text-foreground hover:bg-muted/40 transition-all",
+                      "text-sm font-medium whitespace-nowrap"
+                    )}
+                  >
+                    <tab.icon className="h-4 w-4" />
+                    <span>{tab.label}</span>
+                    {tab.count !== null && tab.count > 0 && (
+                      <Badge variant="secondary" className="h-5 min-w-[20px] px-1.5 text-[10px] font-semibold rounded-full">
+                        {tab.count > 999 ? `${(tab.count / 1000).toFixed(1)}k` : tab.count}
+                      </Badge>
+                    )}
+                  </TabsTrigger>
+                ))}
+              </TabsList>
+            </div>
 
-          {/* Overview Tab */}
-          <TabsContent value="overview" className="m-0 space-y-6">
-            <div className="grid gap-6 lg:grid-cols-2">
-              <ChannelAlertsPanel />
-              <ChannelSyncHistory 
-                channelId={channelId || ''} 
-                onSync={async () => { syncMutation.mutate() }}
+            {/* Overview Tab */}
+            <TabsContent value="overview" className="m-0 space-y-5">
+              <div className="grid gap-5 lg:grid-cols-2">
+                <ChannelAlertsPanel />
+                <ChannelSyncHistory 
+                  channelId={channelId || ''} 
+                  onSync={async () => { syncMutation.mutate() }}
+                  isSyncing={syncMutation.isPending}
+                />
+              </div>
+              
+              <ChannelOverviewTab
+                syncSettings={syncSettings}
+                onSyncSettingsChange={setSyncSettings}
+                retryCount={retryCount}
+                onRetryCountChange={setRetryCount}
+                onSync={() => syncMutation.mutate()}
+                onSave={handleSaveConfig}
+                isSyncing={syncMutation.isPending}
+                lastEvent={lastEvent}
+              />
+            </TabsContent>
+
+            {/* Products Tab */}
+            <TabsContent value="products" className="m-0">
+              <ChannelProductsTab
+                products={syncedProducts || []}
+                totalCount={channelStats?.products || 0}
+                isLoading={productsLoading}
+                onRefresh={() => { refetchProducts() }}
+                onSync={() => syncMutation.mutate()}
                 isSyncing={syncMutation.isPending}
               />
-            </div>
-            
-            <ChannelOverviewTab
-              syncSettings={syncSettings}
-              onSyncSettingsChange={setSyncSettings}
-              retryCount={retryCount}
-              onRetryCountChange={setRetryCount}
-              onSync={() => syncMutation.mutate()}
-              onSave={handleSaveConfig}
-              isSyncing={syncMutation.isPending}
-              lastEvent={lastEvent}
-            />
-          </TabsContent>
+            </TabsContent>
 
-          {/* Products Tab */}
-          <TabsContent value="products" className="m-0">
-            <ChannelProductsTab
-              products={syncedProducts || []}
-              totalCount={channelStats?.products || 0}
-              isLoading={productsLoading}
-              onRefresh={() => { refetchProducts() }}
-              onSync={() => syncMutation.mutate()}
-              isSyncing={syncMutation.isPending}
-            />
-          </TabsContent>
+            {/* Orders Tab */}
+            <TabsContent value="orders" className="m-0">
+              <ChannelOrdersPanel channelId={channelId || ''} />
+            </TabsContent>
 
-          {/* Orders Tab */}
-          <TabsContent value="orders" className="m-0">
-            <ChannelOrdersPanel channelId={channelId || ''} />
-          </TabsContent>
+            {/* Rules Tab */}
+            <TabsContent value="rules" className="m-0">
+              <Card className="shadow-none border-border">
+                <CardContent className="p-6">
+                  <TransformationRulesEditor
+                    channelId={channelId || ''}
+                    onSave={(rules) => {
+                      toast({ title: 'Règles enregistrées', description: `${rules.length} règle(s) configurée(s)` })
+                    }}
+                  />
+                </CardContent>
+              </Card>
+            </TabsContent>
 
-          {/* Rules Tab */}
-          <TabsContent value="rules" className="m-0">
-            <Card className="shadow-none border-border/60">
-              <CardContent className="p-6">
-                <TransformationRulesEditor
-                  channelId={channelId || ''}
-                  onSave={(rules) => {
-                    toast({ title: 'Règles enregistrées', description: `${rules.length} règle(s) configurée(s)` })
-                  }}
-                />
-              </CardContent>
-            </Card>
-          </TabsContent>
+            {/* Mapping Tab */}
+            <TabsContent value="mapping" className="m-0 space-y-5">
+              <VisualMappingEditor 
+                channelId={channelId || ''}
+                platform={channel.platform?.toLowerCase() || 'default'}
+                mappings={[]}
+                onSave={async () => {
+                  toast({ title: 'Mapping visuel mis à jour' })
+                }}
+              />
+              
+              <ProductMappingEditor
+                platform={channel.platform?.toLowerCase() || 'default'}
+                platformName={channel.platform_name || 'Canal'}
+                onSave={(mappings) => {
+                  toast({ title: 'Mapping enregistré', description: `${mappings.filter(m => m.enabled).length} champs mappés` })
+                }}
+              />
+            </TabsContent>
 
-          {/* Mapping Tab */}
-          <TabsContent value="mapping" className="m-0 space-y-6">
-            <VisualMappingEditor 
-              channelId={channelId || ''}
-              platform={channel.platform?.toLowerCase() || 'default'}
-              mappings={[]}
-              onSave={async () => {
-                toast({ title: 'Mapping visuel mis à jour' })
-              }}
-            />
-            
-            <ProductMappingEditor
-              platform={channel.platform?.toLowerCase() || 'default'}
-              platformName={channel.platform_name || 'Canal'}
-              onSave={(mappings) => {
-                toast({ title: 'Mapping enregistré', description: `${mappings.filter(m => m.enabled).length} champs mappés` })
-              }}
-            />
-          </TabsContent>
+            {/* Settings Tab */}
+            <TabsContent value="settings" className="m-0 space-y-5">
+              <AutoSyncSettings 
+                channelId={channelId || ''}
+                platform={channel.platform?.toLowerCase() || 'default'}
+                onConfigChange={() => {
+                  toast({ title: 'Paramètres de sync enregistrés' })
+                }}
+              />
 
-          {/* Settings Tab */}
-          <TabsContent value="settings" className="m-0 space-y-6">
-            <AutoSyncSettings 
-              channelId={channelId || ''}
-              platform={channel.platform?.toLowerCase() || 'default'}
-              onConfigChange={() => {
-                toast({ title: 'Paramètres de sync enregistrés' })
-              }}
-            />
+              <WebhookEventsLog channelId={channelId || ''} />
 
-            <WebhookEventsLog channelId={channelId || ''} />
-
-            {/* Danger Zone */}
-            <Card className="border-red-200 dark:border-red-500/30 shadow-none">
-              <div className="p-6">
-                <div className="flex items-center gap-2 mb-4">
-                  <AlertTriangle className="h-5 w-5 text-red-600 dark:text-red-400" />
-                  <h3 className="text-base font-semibold text-red-600 dark:text-red-400">Zone de danger</h3>
-                </div>
-                
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-lg border border-red-200 dark:border-red-500/30 bg-red-50 dark:bg-red-500/5">
-                  <div>
-                    <p className="font-medium text-sm">Déconnecter ce canal</p>
-                    <p className="text-sm text-muted-foreground">
-                      Cette action est irréversible. Toutes les données de synchronisation seront perdues.
-                    </p>
+              {/* Danger Zone */}
+              <Card className="border-destructive/30 shadow-none">
+                <div className="p-5">
+                  <div className="flex items-center gap-2 mb-4">
+                    <Shield className="h-4 w-4 text-destructive" />
+                    <h3 className="text-sm font-semibold text-destructive">Zone de danger</h3>
                   </div>
-                  <Button 
-                    variant="destructive"
-                    size="sm"
-                    className="gap-2 shrink-0"
-                    onClick={() => setShowDisconnectConfirm(true)}
-                  >
-                    <Unplug className="h-4 w-4" />
-                    Déconnecter
-                  </Button>
+                  
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-lg border border-destructive/20 bg-destructive/5">
+                    <div>
+                      <p className="font-medium text-sm">Déconnecter ce canal</p>
+                      <p className="text-sm text-muted-foreground mt-0.5">
+                        Cette action est irréversible. Toutes les données de synchronisation seront perdues.
+                      </p>
+                    </div>
+                    <Button 
+                      variant="destructive"
+                      size="sm"
+                      className="gap-2 shrink-0"
+                      onClick={() => setShowDisconnectConfirm(true)}
+                    >
+                      <Unplug className="h-4 w-4" />
+                      Déconnecter
+                    </Button>
+                  </div>
                 </div>
-              </div>
-            </Card>
-          </TabsContent>
-        </Tabs>
+              </Card>
+            </TabsContent>
+          </Tabs>
+        </div>
       </ChannablePageLayout>
 
       <ConfirmDialog
@@ -455,7 +471,7 @@ export default function ChannelDetailPage() {
         description="Cette action est irréversible. Toutes les données seront perdues."
         confirmText="Déconnecter"
         variant="destructive"
-        onConfirm={() => { disconnectMutation.mutate(); setShowDisconnectConfirm(false) }}
+        onConfirm={() => disconnectMutation.mutate()}
       />
     </>
   )
