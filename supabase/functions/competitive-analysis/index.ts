@@ -153,18 +153,17 @@ Répondez UNIQUEMENT en JSON valide:
 }
 `;
 
-    console.log('[COMPETITIVE-ANALYSIS] Calling OpenAI for analysis');
+    console.log('[COMPETITIVE-ANALYSIS] Calling AI Gateway for analysis');
 
-    const openAIResponse = await fetch('https://api.openai.com/v1/chat/completions', {
+    const openAIResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${Deno.env.get('OPENAI_API_KEY')}`,
+        'Authorization': `Bearer ${Deno.env.get('LOVABLE_API_KEY')}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-5-2025-08-07',
+        model: 'openai/gpt-5-nano',
         messages: [{ role: 'user', content: prompt }],
-        max_completion_tokens: 3000,
       }),
     });
 

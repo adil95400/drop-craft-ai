@@ -7,7 +7,7 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
+const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
 const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
 const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 
@@ -166,14 +166,14 @@ Pour chaque insight, fournissez: type, category, title, description, severity, c
 Répondez en JSON array d'insights.
 `;
 
-  const response = await fetch('https://api.openai.com/v1/chat/completions', {
+  const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
     method: 'POST',
     headers: {
-      'Authorization': `Bearer ${openAIApiKey}`,
+      'Authorization': `Bearer ${LOVABLE_API_KEY}`,
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      model: 'gpt-5-2025-08-07',
+      model: 'openai/gpt-5-nano',
       messages: [
         { 
           role: 'system', 
@@ -318,14 +318,14 @@ Générez un rapport exécutif avec:
 Répondez en JSON avec: executiveSummary, keyPoints[], priorityRecommendations[], nextSteps[]
 `;
 
-  const response = await fetch('https://api.openai.com/v1/chat/completions', {
+  const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
     method: 'POST',
     headers: {
-      'Authorization': `Bearer ${openAIApiKey}`,
+      'Authorization': `Bearer ${LOVABLE_API_KEY}`,
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      model: 'gpt-5-2025-08-07',
+      model: 'openai/gpt-5-nano',
       messages: [
         { 
           role: 'system', 

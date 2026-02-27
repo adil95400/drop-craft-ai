@@ -13,9 +13,9 @@ serve(async (req) => {
   }
 
   try {
-    const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
-    if (!openAIApiKey) {
-      throw new Error('OPENAI_API_KEY not configured');
+    const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
+    if (!LOVABLE_API_KEY) {
+      throw new Error('LOVABLE_API_KEY not configured');
     }
 
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
@@ -58,26 +58,35 @@ Provide:
 
 Format as JSON with: recommendedPrice, minPrice, maxPrice, reasoning, margin, strategy`;
 
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${openAIApiKey}`,
+        'Authorization': `Bearer ${LOVABLE_API_KEY}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4.1-mini',
+        model: 'openai/gpt-5-nano',
         messages: [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: userPrompt }
         ],
         temperature: 0.3,
-        max_tokens: 800,
       }),
     });
 
     if (!response.ok) {
+      if (response.status === 429) {
+        return new Response(JSON.stringify({ error: 'Rate limit exceeded' }), {
+          status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+      if (response.status === 402) {
+        return new Response(JSON.stringify({ error: 'Payment required' }), {
+          status: 402, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
       const error = await response.text();
-      console.error('OpenAI API error:', error);
+      console.error('AI Gateway error:', error);
       throw new Error('Failed to generate pricing recommendation');
     }
 
@@ -89,7 +98,6 @@ Format as JSON with: recommendedPrice, minPrice, maxPrice, reasoning, margin, st
     try {
       pricingData = JSON.parse(content);
     } catch {
-      // If not JSON, wrap in structure
       pricingData = {
         recommendedPrice: currentPrice,
         reasoning: content,
@@ -105,12 +113,12 @@ Format as JSON with: recommendedPrice, minPrice, maxPrice, reasoning, margin, st
       input_data: { productId, currentPrice, costPrice, competitorPrices },
       output_data: pricingData,
       status: 'completed',
-      tokens_used: data.usage.total_tokens,
+      tokens_used: data.usage?.total_tokens || 0,
     });
 
     return new Response(JSON.stringify({ 
       pricing: pricingData, 
-      tokensUsed: data.usage.total_tokens 
+      tokensUsed: data.usage?.total_tokens || 0 
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });

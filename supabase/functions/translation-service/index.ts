@@ -51,13 +51,12 @@ serve(async (req) => {
     let translations: string[] = []
 
     if (provider === 'openai') {
-      // Use OpenAI for translation
-      const openaiKey = Deno.env.get('OPENAI_API_KEY')
-      if (!openaiKey) {
-        throw new Error('OpenAI API key not configured')
+      const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY')
+      if (!LOVABLE_API_KEY) {
+        throw new Error('LOVABLE_API_KEY not configured')
       }
 
-      console.log('Using OpenAI for translation...')
+      console.log('Using Lovable AI Gateway for translation...')
 
       const prompt = `You are a professional translator specializing in ${context} content. 
       Translate the following texts to ${targetLanguage}, maintaining the original meaning and commercial appeal.
@@ -68,14 +67,14 @@ serve(async (req) => {
       
       Provide only the translations, numbered in the same order, without any additional text.`
 
-      const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${openaiKey}`,
+          'Authorization': `Bearer ${LOVABLE_API_KEY}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          model: 'gpt-4',
+          model: 'openai/gpt-5-nano',
           messages: [
             {
               role: 'system',
@@ -87,7 +86,6 @@ serve(async (req) => {
             }
           ],
           temperature: 0.3,
-          max_tokens: 2000
         })
       })
 
