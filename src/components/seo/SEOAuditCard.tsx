@@ -38,45 +38,45 @@ export const SEOAuditCard: React.FC<SEOAuditCardProps> = ({
   loading = false
 }) => {
   const getScoreColor = (score: number) => {
-    if (score >= 90) return "text-green-600";
-    if (score >= 80) return "text-blue-600";
-    if (score >= 70) return "text-yellow-600";
-    if (score >= 60) return "text-orange-600";
-    return "text-red-600";
+    if (score >= 90) return "text-success";
+    if (score >= 80) return "text-info";
+    if (score >= 70) return "text-warning";
+    if (score >= 60) return "text-warning";
+    return "text-destructive";
   };
 
   const getScoreBgColor = (score: number) => {
-    if (score >= 90) return "bg-green-50 border-green-200";
-    if (score >= 80) return "bg-blue-50 border-blue-200";
-    if (score >= 70) return "bg-yellow-50 border-yellow-200";
-    if (score >= 60) return "bg-orange-50 border-orange-200";
-    return "bg-red-50 border-red-200";
+    if (score >= 90) return "bg-success/10 border-success/20";
+    if (score >= 80) return "bg-info/10 border-info/20";
+    if (score >= 70) return "bg-warning/10 border-warning/20";
+    if (score >= 60) return "bg-warning/10 border-warning/20";
+    return "bg-destructive/10 border-destructive/20";
   };
 
   const getIssueIcon = (type: string) => {
     switch (type) {
-      case 'critical': return <XCircle className="w-4 h-4 text-red-500" />;
-      case 'warning': return <AlertTriangle className="w-4 h-4 text-yellow-500" />;
-      case 'info': return <CheckCircle className="w-4 h-4 text-blue-500" />;
-      default: return <AlertTriangle className="w-4 h-4 text-gray-500" />;
+      case 'critical': return <XCircle className="w-4 h-4 text-destructive" />;
+      case 'warning': return <AlertTriangle className="w-4 h-4 text-warning" />;
+      case 'info': return <CheckCircle className="w-4 h-4 text-info" />;
+      default: return <AlertTriangle className="w-4 h-4 text-muted-foreground" />;
     }
   };
 
   const getIssueColor = (type: string) => {
     switch (type) {
-      case 'critical': return "bg-red-100 text-red-800 border-red-200";
-      case 'warning': return "bg-yellow-100 text-yellow-800 border-yellow-200";
-      case 'info': return "bg-blue-100 text-blue-800 border-blue-200";
-      default: return "bg-gray-100 text-gray-800 border-gray-200";
+      case 'critical': return "bg-destructive/10 text-destructive border-destructive/20";
+      case 'warning': return "bg-warning/10 text-warning border-warning/20";
+      case 'info': return "bg-info/10 text-info border-info/20";
+      default: return "bg-muted text-muted-foreground border-border";
     }
   };
 
   const getImpactColor = (impact: string) => {
     switch (impact) {
-      case 'high': return "bg-red-100 text-red-800";
-      case 'medium': return "bg-orange-100 text-orange-800";
-      case 'low': return "bg-green-100 text-green-800";
-      default: return "bg-gray-100 text-gray-800";
+      case 'high': return "bg-destructive/10 text-destructive";
+      case 'medium': return "bg-warning/10 text-warning";
+      case 'low': return "bg-success/10 text-success";
+      default: return "bg-muted text-muted-foreground";
     }
   };
 
@@ -136,15 +136,15 @@ export const SEOAuditCard: React.FC<SEOAuditCardProps> = ({
         {/* Résumé des problèmes */}
         <div className="grid grid-cols-3 gap-4">
           <div className="text-center p-3 bg-background rounded-lg">
-            <div className="text-2xl font-bold text-red-600">{criticalIssues.length}</div>
+            <div className="text-2xl font-bold text-destructive">{criticalIssues.length}</div>
             <div className="text-sm text-muted-foreground">Critiques</div>
           </div>
           <div className="text-center p-3 bg-background rounded-lg">
-            <div className="text-2xl font-bold text-yellow-600">{warningIssues.length}</div>
+            <div className="text-2xl font-bold text-warning">{warningIssues.length}</div>
             <div className="text-sm text-muted-foreground">Avertissements</div>
           </div>
           <div className="text-center p-3 bg-background rounded-lg">
-            <div className="text-2xl font-bold text-green-600">{infoIssues.length}</div>
+            <div className="text-2xl font-bold text-success">{infoIssues.length}</div>
             <div className="text-sm text-muted-foreground">Améliorations</div>
           </div>
         </div>

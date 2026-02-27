@@ -209,21 +209,21 @@ export function AutomationHub() {
 
   const getCategoryColor = (category: AutomationRule['category']) => {
     switch (category) {
-      case 'inventory': return 'bg-blue-500'
-      case 'marketing': return 'bg-green-500'
-      case 'customer': return 'bg-purple-500'
-      case 'orders': return 'bg-orange-500'
-      case 'analytics': return 'bg-pink-500'
-      default: return 'bg-gray-500'
+      case 'inventory': return 'bg-info'
+      case 'marketing': return 'bg-success'
+      case 'customer': return 'bg-primary'
+      case 'orders': return 'bg-warning'
+      case 'analytics': return 'bg-accent'
+      default: return 'bg-muted'
     }
   }
 
   const getPriorityColor = (priority: AutomationRule['priority']) => {
     switch (priority) {
-      case 'high': return 'text-red-600 bg-red-50'
-      case 'medium': return 'text-yellow-600 bg-yellow-50'
-      case 'low': return 'text-green-600 bg-green-50'
-      default: return 'text-gray-600 bg-gray-50'
+      case 'high': return 'text-destructive bg-destructive/10'
+      case 'medium': return 'text-warning bg-warning/10'
+      case 'low': return 'text-success bg-success/10'
+      default: return 'text-muted-foreground bg-muted'
     }
   }
 
@@ -233,32 +233,32 @@ export function AutomationHub() {
       <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
         <Card>
           <CardContent className="pt-6">
-            <div className="text-2xl font-bold text-blue-600">{stats.totalAutomations}</div>
-            <div className="text-sm text-gray-500">Automations Total</div>
+            <div className="text-2xl font-bold text-info">{stats.totalAutomations}</div>
+            <div className="text-sm text-muted-foreground">Automations Total</div>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="pt-6">
-            <div className="text-2xl font-bold text-green-600">{stats.activeAutomations}</div>
-            <div className="text-sm text-gray-500">Actives</div>
+            <div className="text-2xl font-bold text-success">{stats.activeAutomations}</div>
+            <div className="text-sm text-muted-foreground">Actives</div>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="pt-6">
-            <div className="text-2xl font-bold text-purple-600">{stats.totalExecutions}</div>
-            <div className="text-sm text-gray-500">Exécutions</div>
+            <div className="text-2xl font-bold text-primary">{stats.totalExecutions}</div>
+            <div className="text-sm text-muted-foreground">Exécutions</div>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="pt-6">
-            <div className="text-2xl font-bold text-orange-600">{stats.avgSuccessRate.toFixed(1)}%</div>
-            <div className="text-sm text-gray-500">Taux de Réussite</div>
+            <div className="text-2xl font-bold text-warning">{stats.avgSuccessRate.toFixed(1)}%</div>
+            <div className="text-sm text-muted-foreground">Taux de Réussite</div>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="pt-6">
-            <div className="text-2xl font-bold text-pink-600">{stats.timeSavedHours}h</div>
-            <div className="text-sm text-gray-500">Temps Économisé/sem.</div>
+            <div className="text-2xl font-bold text-accent-foreground">{stats.timeSavedHours}h</div>
+            <div className="text-sm text-muted-foreground">Temps Économisé/sem.</div>
           </CardContent>
         </Card>
       </div>

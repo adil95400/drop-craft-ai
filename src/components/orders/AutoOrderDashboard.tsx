@@ -82,7 +82,7 @@ export function AutoOrderDashboard() {
           </CardHeader>
           <CardContent>
             <div className="flex items-center gap-2">
-              <Clock className="h-5 w-5 text-yellow-500" />
+              <Clock className="h-5 w-5 text-warning" />
               <span className="text-2xl font-bold">{stats.pending}</span>
             </div>
           </CardContent>
@@ -96,7 +96,7 @@ export function AutoOrderDashboard() {
           </CardHeader>
           <CardContent>
             <div className="flex items-center gap-2">
-              <RefreshCw className="h-5 w-5 text-blue-500 animate-spin" />
+              <RefreshCw className="h-5 w-5 text-info animate-spin" />
               <span className="text-2xl font-bold">{stats.processing}</span>
             </div>
           </CardContent>
@@ -110,7 +110,7 @@ export function AutoOrderDashboard() {
           </CardHeader>
           <CardContent>
             <div className="flex items-center gap-2">
-              <CheckCircle2 className="h-5 w-5 text-green-500" />
+              <CheckCircle2 className="h-5 w-5 text-success" />
               <span className="text-2xl font-bold">{stats.completed}</span>
             </div>
           </CardContent>
@@ -124,7 +124,7 @@ export function AutoOrderDashboard() {
           </CardHeader>
           <CardContent>
             <div className="flex items-center gap-2">
-              <XCircle className="h-5 w-5 text-red-500" />
+              <XCircle className="h-5 w-5 text-destructive" />
               <span className="text-2xl font-bold">{stats.failed}</span>
             </div>
           </CardContent>

@@ -178,13 +178,13 @@ export function RealTimeMonitoring() {
     switch (status) {
       case 'healthy':
       case 'online':
-        return <CheckCircle2 className="h-4 w-4 text-green-500" />
+        return <CheckCircle2 className="h-4 w-4 text-success" />
       case 'warning':
       case 'slow':
-        return <AlertTriangle className="h-4 w-4 text-yellow-500" />
+        return <AlertTriangle className="h-4 w-4 text-warning" />
       case 'critical':
       case 'error':
-        return <AlertTriangle className="h-4 w-4 text-red-500" />
+        return <AlertTriangle className="h-4 w-4 text-destructive" />
       default:
         return <Activity className="h-4 w-4 text-muted-foreground" />
     }
@@ -194,13 +194,13 @@ export function RealTimeMonitoring() {
     switch (status) {
       case 'healthy':
       case 'online':
-        return 'bg-green-500'
+        return 'bg-success'
       case 'warning':
       case 'slow':
-        return 'bg-yellow-500'
+        return 'bg-warning'
       case 'critical':
       case 'error':
-        return 'bg-red-500'
+        return 'bg-destructive'
       default:
         return 'bg-muted'
     }
@@ -209,9 +209,9 @@ export function RealTimeMonitoring() {
   const getTrendIcon = (trend: string) => {
     switch (trend) {
       case 'up':
-        return <TrendingUp className="h-3 w-3 text-green-500" />
+        return <TrendingUp className="h-3 w-3 text-success" />
       case 'down':
-        return <TrendingUp className="h-3 w-3 text-red-500 rotate-180" />
+        return <TrendingUp className="h-3 w-3 text-destructive rotate-180" />
       default:
         return <div className="h-3 w-3 rounded-full bg-muted" />
     }
@@ -227,8 +227,8 @@ export function RealTimeMonitoring() {
             <div className="flex items-center gap-2 ml-auto">
               {isMonitoring && (
                 <div className="flex items-center gap-1">
-                  <div className="h-2 w-2 bg-green-500 rounded-full animate-pulse" />
-                  <span className="text-xs text-green-600">LIVE</span>
+                  <div className="h-2 w-2 bg-success rounded-full animate-pulse" />
+                  <span className="text-xs text-success">LIVE</span>
                 </div>
               )}
               <Button variant="outline" size="sm" onClick={() => setIsMonitoring(!isMonitoring)}>
@@ -271,7 +271,7 @@ export function RealTimeMonitoring() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Wifi className="h-5 w-5 text-green-500" />
+            <Wifi className="h-5 w-5 text-success" />
             État du Réseau
           </CardTitle>
           <CardDescription>Performance des API et endpoints</CardDescription>
@@ -301,7 +301,7 @@ export function RealTimeMonitoring() {
 
           <div className="grid grid-cols-3 gap-4 text-center">
             <div>
-              <div className="text-2xl font-bold text-green-600">
+              <div className="text-2xl font-bold text-success">
                 {networkMetrics.length > 0 
                   ? (networkMetrics.reduce((sum, m) => sum + m.uptime, 0) / networkMetrics.length).toFixed(1)
                   : '—'}%
@@ -317,7 +317,7 @@ export function RealTimeMonitoring() {
               <div className="text-xs text-muted-foreground">Latence Moy.</div>
             </div>
             <div>
-              <div className="text-2xl font-bold text-purple-600">
+              <div className="text-2xl font-bold text-destructive">
                 {metrics.find(m => m.id === 'error_rate')?.value.toFixed(1) ?? '—'}%
               </div>
               <div className="text-xs text-muted-foreground">Taux d'Erreur</div>
