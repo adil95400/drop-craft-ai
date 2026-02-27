@@ -7,7 +7,7 @@
 export { ChannablePageLayout } from './ChannablePageLayout'
 export { ChannableHeroSection } from './ChannableHeroSection'
 export { ChannablePageHero, type HeroCategory, type ChannablePageHeroProps } from './ChannablePageHero'
-export { ChannablePageWrapper, heroImages, type HeroImageKey } from './ChannablePageWrapper'
+export { ChannablePageWrapper, heroImageKeys, type HeroImageKey } from './ChannablePageWrapper'
 export { ChannableCard } from './ChannableCard'
 
 // Data Display

@@ -1,51 +1,60 @@
 /**
  * Wrapper de page Channable avec hero image et design professionnel
+ * Performance: hero images are lazy-loaded on demand instead of eagerly imported
  */
 
-import { ReactNode } from 'react';
+import { ReactNode, useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Badge } from '@/components/ui/badge';
 import { LucideIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-// Import des images hero
-import heroDashboard from '@/assets/images/hero-dashboard.png';
-import heroStock from '@/assets/images/hero-stock.png';
-import heroSettings from '@/assets/images/hero-settings.png';
-import heroSupport from '@/assets/images/hero-support.png';
-import heroAutomation from '@/assets/images/hero-automation.png';
-import heroIntegrations from '@/assets/images/hero-integrations.png';
-import heroAnalytics from '@/assets/images/hero-analytics.png';
-import heroSchema from '@/assets/images/hero-schema.png';
-import heroProducts from '@/assets/images/hero-products.png';
-import heroMarketing from '@/assets/images/hero-marketing.png';
-import heroOrders from '@/assets/images/hero-orders.png';
-import heroAi from '@/assets/images/hero-ai.png';
-import heroSuppliers from '@/assets/images/hero-suppliers.png';
-import heroExtensions from '@/assets/images/hero-extensions.png';
-import heroResearch from '@/assets/images/hero-research.png';
-import heroImport from '@/assets/images/hero-import.png';
-import heroNotifications from '@/assets/images/hero-notifications.png';
-export const heroImages = {
-  dashboard: heroDashboard,
-  stock: heroStock,
-  settings: heroSettings,
-  support: heroSupport,
-  automation: heroAutomation,
-  integrations: heroIntegrations,
-  analytics: heroAnalytics,
-  schema: heroSchema,
-  products: heroProducts,
-  marketing: heroMarketing,
-  orders: heroOrders,
-  ai: heroAi,
-  suppliers: heroSuppliers,
-  extensions: heroExtensions,
-  research: heroResearch,
-  import: heroImport,
-  notifications: heroNotifications
-} as const;
-export type HeroImageKey = keyof typeof heroImages;
+// Lazy-load hero images on demand to avoid importing all 17 at once
+const heroImageImports: Record<string, () => Promise<{ default: string }>> = {
+  dashboard: () => import('@/assets/images/hero-dashboard.png'),
+  stock: () => import('@/assets/images/hero-stock.png'),
+  settings: () => import('@/assets/images/hero-settings.png'),
+  support: () => import('@/assets/images/hero-support.png'),
+  automation: () => import('@/assets/images/hero-automation.png'),
+  integrations: () => import('@/assets/images/hero-integrations.png'),
+  analytics: () => import('@/assets/images/hero-analytics.png'),
+  schema: () => import('@/assets/images/hero-schema.png'),
+  products: () => import('@/assets/images/hero-products.png'),
+  marketing: () => import('@/assets/images/hero-marketing.png'),
+  orders: () => import('@/assets/images/hero-orders.png'),
+  ai: () => import('@/assets/images/hero-ai.png'),
+  suppliers: () => import('@/assets/images/hero-suppliers.png'),
+  extensions: () => import('@/assets/images/hero-extensions.png'),
+  research: () => import('@/assets/images/hero-research.png'),
+  import: () => import('@/assets/images/hero-import.png'),
+  notifications: () => import('@/assets/images/hero-notifications.png'),
+};
+
+// Cache loaded images to avoid re-fetching
+const imageCache: Record<string, string> = {};
+
+function useHeroImage(key: string) {
+  const [src, setSrc] = useState<string | undefined>(imageCache[key]);
+  
+  useEffect(() => {
+    if (imageCache[key]) {
+      setSrc(imageCache[key]);
+      return;
+    }
+    const loader = heroImageImports[key];
+    if (loader) {
+      loader().then(mod => {
+        imageCache[key] = mod.default;
+        setSrc(mod.default);
+      });
+    }
+  }, [key]);
+  
+  return src;
+}
+
+export const heroImageKeys = Object.keys(heroImageImports);
+export type HeroImageKey = keyof typeof heroImageImports;
 interface ChannablePageWrapperProps {
   children: ReactNode;
   title: string;
@@ -70,7 +79,7 @@ export function ChannablePageWrapper({
   actions,
   className
 }: ChannablePageWrapperProps) {
-  const backgroundImage = heroImages[heroImage];
+  const backgroundImage = useHeroImage(heroImage);
   return <div className={cn("space-y-6", className)}>
       {/* Hero Section avec image de fond */}
       <motion.div initial={{
@@ -82,10 +91,18 @@ export function ChannablePageWrapper({
     }} transition={{
       duration: 0.5
     }} className="relative overflow-hidden rounded-2xl">
-        {/* Background Image */}
-        <div className="absolute inset-0 bg-cover bg-center" style={{
-        backgroundImage: `url(${backgroundImage})`
-      }} />
+        {/* Background Image - lazy loaded */}
+        <div 
+          className={cn(
+            "absolute inset-0 bg-cover bg-center transition-opacity duration-500",
+            backgroundImage ? "opacity-100" : "opacity-0"
+          )}
+          style={backgroundImage ? { backgroundImage: `url(${backgroundImage})` } : undefined}
+        />
+        {/* Fallback gradient while image loads */}
+        {!backgroundImage && (
+          <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-background to-secondary/10" />
+        )}
         
         {/* Overlay Gradient */}
         <div className="absolute inset-0 bg-gradient-to-r from-background/95 via-background/80 to-background/40" />
