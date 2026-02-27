@@ -3,21 +3,15 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import {
-  Dialog, DialogContent, DialogDescription, DialogFooter,
-  DialogHeader, DialogTitle, DialogTrigger
-} from '@/components/ui/dialog';
 import {
   Clock, Plus, Trash2, CheckCircle2,
-  XCircle, Loader2, CalendarClock, Link2, FileSpreadsheet, Play
+  XCircle, Loader2, CalendarClock, Play
 } from 'lucide-react';
 import { useScheduledImports, type ScheduledImport } from '@/hooks/useScheduledImports';
 import { formatDistanceToNow, format } from 'date-fns';
 import { getDateFnsLocale } from '@/utils/dateFnsLocale';
 import { cn } from '@/lib/utils';
+import { ScheduleFormDialog, type ScheduleFormData } from './ScheduleFormDialog';
 
 const FREQUENCY_OPTIONS = [
   { value: 'hourly', label: 'Toutes les heures' },
@@ -26,39 +20,23 @@ const FREQUENCY_OPTIONS = [
   { value: 'monthly', label: 'Mensuel' },
 ] as const;
 
-const SOURCE_TYPE_OPTIONS = [
-  { value: 'url', label: 'URL produit', icon: Link2 },
-  { value: 'feed', label: 'Feed CSV/XML', icon: FileSpreadsheet },
-  { value: 'csv', label: 'CSV', icon: FileSpreadsheet },
-  { value: 'api', label: 'API', icon: Link2 },
-] as const;
-
 export function ImportScheduler() {
   const {
     schedules, isLoading, createSchedule, isCreating,
     toggleActive, deleteSchedule, executeNow, isExecuting,
   } = useScheduledImports();
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [form, setForm] = useState({
-    name: '',
-    source_type: 'url' as 'url' | 'csv' | 'xml' | 'api' | 'feed',
-    source_url: '',
-    frequency: 'daily' as 'hourly' | 'daily' | 'weekly' | 'monthly',
-    description: '',
-  });
 
-  const handleCreate = () => {
-    if (!form.name || !form.source_url) return;
+  const handleCreate = (data: ScheduleFormData) => {
     createSchedule({
-      name: form.name,
-      source_type: form.source_type,
-      source_url: form.source_url,
-      frequency: form.frequency,
-      description: form.description,
-      is_active: true,
+      name: data.name,
+      source_type: data.source_type as ScheduledImport['source_type'],
+      source_url: data.source_url,
+      frequency: data.frequency as ScheduledImport['frequency'],
+      description: data.description,
+      is_active: data.active,
     });
     setDialogOpen(false);
-    setForm({ name: '', source_type: 'url', source_url: '', frequency: 'daily', description: '' });
   };
 
   const activeCount = schedules.filter(s => s.is_active).length;
@@ -80,62 +58,15 @@ export function ImportScheduler() {
               </CardDescription>
             </div>
           </div>
-          <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-            <DialogTrigger asChild>
-              <Button size="sm"><Plus className="h-4 w-4 mr-1" /> Planifier</Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-lg">
-              <DialogHeader>
-                <DialogTitle>Nouvel import planifié</DialogTitle>
-                <DialogDescription>Configurez un import récurrent automatique</DialogDescription>
-              </DialogHeader>
-              <div className="space-y-4 py-4">
-                <div className="space-y-2">
-                  <Label>Nom</Label>
-                  <Input placeholder="Ex: Sync catalogue AliExpress" value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} />
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label>Type de source</Label>
-                    <Select value={form.source_type} onValueChange={(v: any) => setForm(f => ({ ...f, source_type: v }))}>
-                      <SelectTrigger><SelectValue /></SelectTrigger>
-                      <SelectContent>
-                        {SOURCE_TYPE_OPTIONS.map(o => (
-                          <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Fréquence</Label>
-                    <Select value={form.frequency} onValueChange={(v: any) => setForm(f => ({ ...f, frequency: v }))}>
-                      <SelectTrigger><SelectValue /></SelectTrigger>
-                      <SelectContent>
-                        {FREQUENCY_OPTIONS.map(o => (
-                          <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <Label>URL source</Label>
-                  <Input placeholder="https://example.com/products.csv" value={form.source_url} onChange={e => setForm(f => ({ ...f, source_url: e.target.value }))} />
-                </div>
-                <div className="space-y-2">
-                  <Label>Description (optionnel)</Label>
-                  <Input placeholder="Mise à jour quotidienne du catalogue" value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} />
-                </div>
-              </div>
-              <DialogFooter>
-                <Button variant="outline" onClick={() => setDialogOpen(false)}>Annuler</Button>
-                <Button onClick={handleCreate} disabled={isCreating || !form.name || !form.source_url}>
-                  {isCreating ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Plus className="h-4 w-4 mr-2" />}
-                  Créer
-                </Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
+          <Button size="sm" onClick={() => setDialogOpen(true)}>
+            <Plus className="h-4 w-4 mr-1" /> Planifier
+          </Button>
+          <ScheduleFormDialog
+            open={dialogOpen}
+            onOpenChange={setDialogOpen}
+            onSubmit={handleCreate}
+            mode="create"
+          />
         </div>
       </CardHeader>
       <CardContent>
@@ -200,7 +131,7 @@ function ScheduleRow({
           {schedule.last_run_at && (
             <span className="flex items-center gap-1">
               {schedule.last_run_status === 'completed' ? (
-                <CheckCircle2 className="h-3 w-3 text-green-500" />
+                <CheckCircle2 className="h-3 w-3 text-emerald-500" />
               ) : schedule.last_run_status === 'failed' ? (
                 <XCircle className="h-3 w-3 text-destructive" />
               ) : null}
