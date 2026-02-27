@@ -22,22 +22,22 @@ export function StoreSyncStatus({ stats, isLoading }: StoreSyncStatusProps) {
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'connected':
-        return <CheckCircle2 className="h-4 w-4 text-green-500" />;
+        return <CheckCircle2 className="h-4 w-4 text-success" />;
       case 'syncing':
-        return <RefreshCw className="h-4 w-4 text-blue-500 animate-spin" />;
+        return <RefreshCw className="h-4 w-4 text-info animate-spin" />;
       case 'error':
-        return <AlertCircle className="h-4 w-4 text-red-500" />;
+        return <AlertCircle className="h-4 w-4 text-destructive" />;
       default:
-        return <Clock className="h-4 w-4 text-gray-500" />;
+        return <Clock className="h-4 w-4 text-muted-foreground" />;
     }
   };
 
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'connected':
-        return <Badge className="bg-green-500">Connecté</Badge>;
+        return <Badge className="bg-success text-success-foreground">Connecté</Badge>;
       case 'syncing':
-        return <Badge className="bg-blue-500">Synchronisation</Badge>;
+        return <Badge className="bg-info text-info-foreground">Synchronisation</Badge>;
       case 'error':
         return <Badge variant="destructive">Erreur</Badge>;
       default:
