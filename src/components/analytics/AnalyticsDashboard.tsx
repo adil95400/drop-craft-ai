@@ -107,7 +107,7 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
   const formatChange = (change: number) => {
     const isPositive = change > 0;
     return (
-      <div className={cn("flex items-center gap-1 text-sm", isPositive ? "text-green-600" : "text-red-600")}>
+      <div className={cn("flex items-center gap-1 text-sm", isPositive ? "text-success" : "text-destructive")}>
         {isPositive ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
         {Math.abs(change)}%
       </div>
