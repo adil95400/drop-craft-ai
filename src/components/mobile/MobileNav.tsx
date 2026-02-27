@@ -268,8 +268,8 @@ export function MobileNav({ notifications = 0 }: MobileNavProps) {
                 <div className="p-4 border-b bg-gradient-to-br from-primary/5 to-background">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-gradient-to-br from-primary to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
-                        <ShoppingCart className="h-5 w-5 text-white" />
+                      <div className="w-10 h-10 bg-gradient-to-br from-primary to-primary-dark rounded-xl flex items-center justify-center shadow-lg">
+                        <ShoppingCart className="h-5 w-5 text-primary-foreground" />
                       </div>
                       <div>
                         <h1 className="font-bold text-lg bg-gradient-to-r from-primary via-primary-glow to-primary bg-clip-text text-transparent">ShopOpti+</h1>
@@ -396,7 +396,7 @@ export function MobileNav({ notifications = 0 }: MobileNavProps) {
                 {/* Footer */}
                 <div className="p-3 border-t bg-muted/30">
                   <div className="flex items-center justify-between">
-                    <span className="text-xs text-muted-foreground">© 2024 ShopOpti</span>
+                    <span className="text-xs text-muted-foreground">© {new Date().getFullYear()} ShopOpti</span>
                     <Badge variant="outline" className="text-[10px]">
                       <Crown className="h-3 w-3 mr-1" />
                       {effectivePlan || 'Standard'}
@@ -422,8 +422,8 @@ export function MobileHeader() {
     >
       <div className="flex items-center justify-between px-4 py-3 gap-3">
         <div className="flex items-center space-x-3">
-          <div className="w-9 h-9 bg-gradient-to-br from-primary to-purple-600 rounded-xl flex items-center justify-center shadow-md">
-            <ShoppingCart className="h-4 w-4 text-white" />
+          <div className="w-9 h-9 bg-gradient-to-br from-primary to-primary-dark rounded-xl flex items-center justify-center shadow-md">
+            <ShoppingCart className="h-4 w-4 text-primary-foreground" />
           </div>
           <div>
             <h1 className="font-bold text-base bg-gradient-to-r from-primary via-primary-glow to-primary bg-clip-text text-transparent">ShopOpti+</h1>
