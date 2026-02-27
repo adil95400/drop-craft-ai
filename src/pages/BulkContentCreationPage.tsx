@@ -3,28 +3,33 @@ import { Card } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { BulkVideoGenerator } from '@/components/bulk-content/BulkVideoGenerator';
 import { BulkImageGenerator } from '@/components/bulk-content/BulkImageGenerator';
+import { BulkTextGenerator } from '@/components/bulk-content/BulkTextGenerator';
 import { BulkJobsMonitor } from '@/components/bulk-content/BulkJobsMonitor';
 import { CanvaDesignStudio } from '@/components/bulk-content/CanvaDesignStudio';
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
-import { Video, Images, Activity, Palette, Sparkles } from 'lucide-react';
+import { Video, Images, Activity, Palette, Sparkles, FileText } from 'lucide-react';
 
 export default function BulkContentCreationPage() {
   return (
     <>
       <Helmet>
-        <title>Génération en Masse - Vidéos & Images IA</title>
-        <meta name="description" content="Générez des centaines de vidéos et images pour vos produits en quelques clics avec l'IA" />
+        <title>Génération en Masse | DropShipper</title>
+        <meta name="description" content="Générez descriptions, titres SEO, vidéos et images pour vos produits en masse avec l'IA" />
       </Helmet>
 
       <ChannablePageWrapper
         title="AI Content Creation Suite"
         subtitle="Génération en Masse"
-        description="Génération en masse de vidéos TikTok, images produits et designs Canva"
+        description="Descriptions, titres SEO, vidéos et images — générés par l'IA pour tout votre catalogue"
         heroImage="ai"
         badge={{ label: 'IA Créative', icon: Sparkles }}
       >
-        <Tabs defaultValue="videos" className="w-full">
-          <TabsList className="grid grid-cols-4 w-full max-w-2xl">
+        <Tabs defaultValue="descriptions" className="w-full">
+          <TabsList className="grid grid-cols-5 w-full max-w-3xl">
+            <TabsTrigger value="descriptions" className="flex items-center gap-2">
+              <FileText className="h-4 w-4" />
+              Descriptions
+            </TabsTrigger>
             <TabsTrigger value="videos" className="flex items-center gap-2">
               <Video className="h-4 w-4" />
               Vidéos
@@ -35,13 +40,19 @@ export default function BulkContentCreationPage() {
             </TabsTrigger>
             <TabsTrigger value="canva" className="flex items-center gap-2">
               <Palette className="h-4 w-4" />
-              Design Canva
+              Design
             </TabsTrigger>
             <TabsTrigger value="jobs" className="flex items-center gap-2">
               <Activity className="h-4 w-4" />
               Jobs
             </TabsTrigger>
           </TabsList>
+
+          <TabsContent value="descriptions" className="mt-6">
+            <Card className="p-6">
+              <BulkTextGenerator />
+            </Card>
+          </TabsContent>
 
           <TabsContent value="videos" className="mt-6">
             <Card className="p-6">
