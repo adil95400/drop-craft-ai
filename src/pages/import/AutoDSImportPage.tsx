@@ -22,11 +22,10 @@ import { getPlatformColor, getPlatformName } from '@/utils/platformLogos'
 import { useDropzone } from 'react-dropzone'
 import { motion } from 'framer-motion'
 import { 
-  ChannablePageLayout, 
-  ChannableHeroSection, 
   ChannableCard, 
   ChannableStatsGrid 
 } from '@/components/channable'
+import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper'
 import { ProfitCalculator } from '@/components/import/ProfitCalculator'
 import { ImportSuccessAnimation } from '@/components/ui/import-success-animation'
 import { useImportSuccessAnimation } from '@/hooks/useImportSuccessAnimation'
@@ -280,28 +279,19 @@ export default function AutoDSImportPage() {
   const errorUrls = queuedUrls.filter(q => q.status === 'error')
 
   return (
-    <ChannablePageLayout
-      title="Import Rapide"
-      metaTitle="Import Rapide - AutoDS Style"
-      metaDescription="Importez des produits depuis URLs ou images"
-      maxWidth="2xl"
-      padding="md"
-      backTo="/import"
-      backLabel="Retour à l'Import"
+    <ChannablePageWrapper
+      title="Import en masse ultra-rapide"
+      subtitle="Import Rapide"
+      description="Importez depuis URLs ou images, analysez et ajoutez à votre catalogue en quelques secondes"
+      heroImage="import"
+      badge={{ label: 'Import Rapide', icon: Zap }}
+      actions={
+        <Button variant="outline" onClick={() => navigate('/import/history')} className="gap-2">
+          <History className="h-4 w-4" />
+          Historique des imports
+        </Button>
+      }
     >
-      {/* Hero */}
-      <ChannableHeroSection
-        badge={{ icon: Zap, label: 'Import Rapide' }}
-        title="Import en masse ultra-rapide"
-        description="Importez depuis URLs ou images, analysez et ajoutez à votre catalogue en quelques secondes"
-        variant="compact"
-        showHexagons={!reducedMotion}
-        primaryAction={{
-          label: 'Historique des imports',
-          onClick: () => navigate('/import/history'),
-          icon: History,
-        }}
-      />
 
       {/* Stats Grid */}
       <ChannableStatsGrid
@@ -660,6 +650,6 @@ export default function AutoDSImportPage() {
         onContinue={handleContinueImport}
         onClose={hideSuccessAnimation}
       />
-    </ChannablePageLayout>
+    </ChannablePageWrapper>
   )
 }
