@@ -21,6 +21,13 @@ const AVAILABLE_PLATFORMS = [
   { key: 'cdiscount', name: 'Cdiscount', type: 'marketplace' },
   { key: 'allegro', name: 'Allegro', type: 'marketplace' },
   { key: 'manomano', name: 'ManoMano', type: 'marketplace' },
+  { key: 'instagram', name: 'Instagram Shopping', type: 'social' },
+  { key: 'facebook', name: 'Facebook Shops', type: 'social' },
+  { key: 'pinterest', name: 'Pinterest', type: 'social' },
+  { key: 'google_shopping', name: 'Google Shopping', type: 'marketplace' },
+  { key: 'prestashop', name: 'PrestaShop', type: 'e-commerce' },
+  { key: 'mailchimp', name: 'Mailchimp', type: 'email' },
+  { key: 'klaviyo', name: 'Klaviyo', type: 'email' },
 ];
 
 const MultiChannelManagementPage: React.FC = () => {
