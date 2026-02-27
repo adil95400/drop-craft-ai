@@ -1,12 +1,12 @@
 /**
- * Page de détail d'un canal connecté - Design Premium Optimisé
- * Architecture modulaire avec composants réutilisables
+ * Page de détail d'un canal connecté - Shopify Admin Style
+ * Design épuré, professionnel et modulaire
  */
 
 import { useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { Helmet } from 'react-helmet-async'
-import { Card, CardContent } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
@@ -24,6 +24,7 @@ import { ChannelHeader, ChannelStatsBar, ChannelOverviewTab, ChannelProductsTab,
 import { motion } from 'framer-motion'
 import { Button } from '@/components/ui/button'
 import { AlertTriangle, Unplug } from 'lucide-react'
+import { Separator } from '@/components/ui/separator'
 
 export default function ChannelDetailPage() {
   const { channelId } = useParams<{ channelId: string }>()
@@ -34,7 +35,6 @@ export default function ChannelDetailPage() {
   const [activeTab, setActiveTab] = useState('overview')
   const [showDisconnectConfirm, setShowDisconnectConfirm] = useState(false)
   
-  // Data sync settings state
   const [syncSettings, setSyncSettings] = useState({
     products: true,
     orders: true,
@@ -45,7 +45,6 @@ export default function ChannelDetailPage() {
     autoRetry: true,
   })
 
-  // Real-time webhooks
   const { isConnected: webhooksConnected, lastEvent, eventCount } = useChannelWebhooks({
     channelId,
     enableNotifications: true,
@@ -66,11 +65,10 @@ export default function ChannelDetailPage() {
     enabled: !!channelId
   })
 
-  // Fetch products directly from Shopify for this channel
+  // Fetch products from Shopify
   const { data: syncedProducts, isLoading: productsLoading, refetch: refetchProducts } = useQuery({
     queryKey: ['channel-products', channelId],
     queryFn: async () => {
-      // Get channel config with Shopify credentials
       const { data: integration } = await supabase
         .from('integrations')
         .select('*')
@@ -79,7 +77,6 @@ export default function ChannelDetailPage() {
       
       if (!integration) return []
       
-      // Get credentials from the connected integration
       const config = integration.config as any
       const credentials = config?.credentials || {}
       const shopDomain = credentials.shop_domain || integration.store_url
@@ -89,22 +86,14 @@ export default function ChannelDetailPage() {
         throw new Error("Configuration de boutique manquante")
       }
       
-      console.log(`Fetching products from ${shopDomain}`)
-      
-      // Fetch from Shopify Admin API (works with admin tokens)
       const response = await supabase.functions.invoke('shopify-admin-products', {
-        body: {
-          shopDomain,
-          accessToken,
-          limit: 100
-        }
+        body: { shopDomain, accessToken, limit: 100 }
       })
       
       if (response.error) throw response.error
       
       const products = response.data?.products || []
       
-      // Map Shopify products to our format
       return products.map((p: any) => ({
         id: p.id,
         title: p.title,
@@ -118,7 +107,7 @@ export default function ChannelDetailPage() {
     enabled: !!channelId
   })
 
-  // Count total products from Shopify and orders from local DB
+  // Channel stats
   const { data: channelStats } = useQuery({
     queryKey: ['channel-stats', channelId],
     queryFn: async () => {
@@ -130,7 +119,6 @@ export default function ChannelDetailPage() {
       
       if (!integration?.user_id) return { products: 0, orders: 0, revenue: 0 }
       
-      // Get real product count from Shopify API
       let shopifyProductCount = 0
       const config = integration.config as any
       const credentials = config?.credentials || {}
@@ -148,7 +136,6 @@ export default function ChannelDetailPage() {
         }
       }
       
-      // Get orders and revenue from local database
       const [ordersResult, revenueResult] = await Promise.all([
         supabase
           .from('orders')
@@ -162,11 +149,7 @@ export default function ChannelDetailPage() {
       
       const revenue = (revenueResult.data || []).reduce((sum, o) => sum + (o.total_amount || 0), 0)
       
-      return {
-        products: shopifyProductCount,
-        orders: ordersResult.count || 0,
-        revenue
-      }
+      return { products: shopifyProductCount, orders: ordersResult.count || 0, revenue }
     },
     enabled: !!channelId
   })
@@ -176,35 +159,21 @@ export default function ChannelDetailPage() {
     mutationFn: async () => {
       await supabase
         .from('integrations')
-        .update({ 
-          connection_status: 'connecting',
-          last_sync_at: new Date().toISOString()
-        })
+        .update({ connection_status: 'connecting', last_sync_at: new Date().toISOString() })
         .eq('id', channelId)
       
       const { data, error } = await supabase.functions.invoke('shopify-complete-import', {
-        body: { 
-          historyId: `sync-${Date.now()}`,
-          includeVariants: true
-        }
+        body: { historyId: `sync-${Date.now()}`, includeVariants: true }
       })
       
       if (error) {
-        await supabase
-          .from('integrations')
-          .update({ connection_status: 'error' })
-          .eq('id', channelId)
+        await supabase.from('integrations').update({ connection_status: 'error' }).eq('id', channelId)
         throw error
       }
       
-      const { count } = await supabase
-        .from('products')
-        .select('*', { count: 'exact', head: true })
+      const { count } = await supabase.from('products').select('*', { count: 'exact', head: true })
       
-      await supabase
-        .from('integrations')
-        .update({ connection_status: 'connected' })
-        .eq('id', channelId)
+      await supabase.from('integrations').update({ connection_status: 'connected' }).eq('id', channelId)
       
       return { productCount: count || 0 }
     },
@@ -212,27 +181,17 @@ export default function ChannelDetailPage() {
       queryClient.invalidateQueries({ queryKey: ['channel', channelId] })
       queryClient.invalidateQueries({ queryKey: ['channel-products', channelId] })
       queryClient.invalidateQueries({ queryKey: ['channel-product-count', channelId] })
-      toast({ 
-        title: 'Synchronisation terminée', 
-        description: `${data.productCount} produits synchronisés`
-      })
+      toast({ title: 'Synchronisation terminée', description: `${data.productCount} produits synchronisés` })
     },
     onError: (error) => {
-      toast({ 
-        title: 'Erreur de synchronisation', 
-        description: error.message,
-        variant: 'destructive'
-      })
+      toast({ title: 'Erreur de synchronisation', description: error.message, variant: 'destructive' })
     }
   })
 
   // Disconnect mutation
   const disconnectMutation = useMutation({
     mutationFn: async () => {
-      await supabase
-        .from('integrations')
-        .update({ connection_status: 'disconnected', is_active: false })
-        .eq('id', channelId)
+      await supabase.from('integrations').update({ connection_status: 'disconnected', is_active: false }).eq('id', channelId)
     },
     onSuccess: () => {
       toast({ title: 'Canal déconnecté' })
@@ -240,7 +199,7 @@ export default function ChannelDetailPage() {
     }
   })
 
-  // Save configuration handler
+  // Save config
   const handleSaveConfig = async () => {
     try {
       const newSyncSettings = {
@@ -264,25 +223,15 @@ export default function ChannelDetailPage() {
 
       const { error } = await supabase
         .from('integrations')
-        .update({ 
-          sync_settings: newSyncSettings,
-          updated_at: new Date().toISOString()
-        })
+        .update({ sync_settings: newSyncSettings, updated_at: new Date().toISOString() })
         .eq('id', channelId)
 
       if (error) throw error
 
       queryClient.invalidateQueries({ queryKey: ['channel', channelId] })
-      toast({ 
-        title: 'Configuration sauvegardée',
-        description: 'Vos paramètres ont été enregistrés avec succès'
-      })
+      toast({ title: 'Configuration sauvegardée', description: 'Vos paramètres ont été enregistrés avec succès' })
     } catch (error) {
-      toast({ 
-        title: 'Erreur',
-        description: 'Impossible de sauvegarder la configuration',
-        variant: 'destructive'
-      })
+      toast({ title: 'Erreur', description: 'Impossible de sauvegarder la configuration', variant: 'destructive' })
     }
   }
 
@@ -291,7 +240,7 @@ export default function ChannelDetailPage() {
       <ChannablePageLayout title="Chargement...">
         <div className="flex items-center justify-center min-h-[400px]">
           <div className="text-center">
-            <Loader2 className="h-10 w-10 animate-spin text-primary mx-auto mb-4" />
+            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground mx-auto mb-3" />
             <p className="text-sm text-muted-foreground">Chargement du canal...</p>
           </div>
         </div>
@@ -315,6 +264,15 @@ export default function ChannelDetailPage() {
     )
   }
 
+  const tabItems = [
+    { value: 'overview', icon: BarChart3, label: "Vue d'ensemble" },
+    { value: 'products', icon: Package, label: 'Produits' },
+    { value: 'orders', icon: ShoppingCart, label: 'Commandes' },
+    { value: 'rules', icon: Code2, label: 'Règles' },
+    { value: 'mapping', icon: FileText, label: 'Mapping' },
+    { value: 'settings', icon: Settings, label: 'Paramètres' },
+  ]
+
   return (
     <>
       <Helmet>
@@ -322,7 +280,7 @@ export default function ChannelDetailPage() {
       </Helmet>
 
       <ChannablePageLayout className="space-y-6">
-        {/* Premium Header */}
+        {/* Shopify-style Header */}
         <ChannelHeader
           channel={channel}
           webhooksConnected={webhooksConnected}
@@ -330,6 +288,8 @@ export default function ChannelDetailPage() {
           onBack={() => navigate('/stores-channels')}
           onSync={() => syncMutation.mutate()}
         />
+
+        <Separator className="my-2" />
 
         {/* Stats Bar */}
         <ChannelStatsBar
@@ -342,45 +302,37 @@ export default function ChannelDetailPage() {
         {/* Realtime Indicator */}
         {webhooksConnected && eventCount > 0 && (
           <motion.div 
-            initial={{ opacity: 0, y: -10 }}
+            initial={{ opacity: 0, y: -8 }}
             animate={{ opacity: 1, y: 0 }}
-            className="flex items-center gap-3 text-sm px-4 py-3 bg-green-500/10 border border-green-500/20 rounded-xl"
+            className="flex items-center gap-2.5 text-sm px-4 py-2.5 bg-green-50 dark:bg-green-500/10 border border-green-200 dark:border-green-500/20 rounded-lg"
           >
-            <span className="relative flex h-3 w-3">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500" />
             </span>
-            <span className="text-green-700 dark:text-green-400">
+            <span className="text-green-700 dark:text-green-400 font-medium">
               {eventCount} événement{eventCount !== 1 ? 's' : ''} reçu{eventCount !== 1 ? 's' : ''} en temps réel
             </span>
           </motion.div>
         )}
 
-        {/* Tabs with Premium Design */}
+        {/* Shopify-style Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="bg-muted/50 p-1.5 rounded-2xl h-auto flex-wrap gap-1 w-full sm:w-auto">
-            {[
-              { value: 'overview', icon: BarChart3, label: "Vue d'ensemble" },
-              { value: 'products', icon: Package, label: 'Produits' },
-              { value: 'orders', icon: ShoppingCart, label: 'Commandes' },
-              { value: 'rules', icon: Code2, label: 'Règles' },
-              { value: 'mapping', icon: FileText, label: 'Mapping' },
-              { value: 'settings', icon: Settings, label: 'Paramètres' },
-            ].map((tab) => (
-              <TabsTrigger 
+          <TabsList className="bg-transparent border-b border-border rounded-none h-auto p-0 w-full justify-start gap-0">
+            {tabItems.map((tab) => (
+              <TabsTrigger
                 key={tab.value}
-                value={tab.value} 
-                className="gap-2 rounded-xl px-4 py-2.5 data-[state=active]:bg-background data-[state=active]:shadow-sm transition-all"
+                value={tab.value}
+                className="gap-2 rounded-none border-b-2 border-transparent px-4 py-3 data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-foreground text-muted-foreground hover:text-foreground transition-colors"
               >
                 <tab.icon className="h-4 w-4" />
-                <span className="hidden sm:inline">{tab.label}</span>
+                <span className="hidden sm:inline text-sm">{tab.label}</span>
               </TabsTrigger>
             ))}
           </TabsList>
 
           {/* Overview Tab */}
           <TabsContent value="overview" className="m-0 space-y-6">
-            {/* Alerts & Sync Row */}
             <div className="grid gap-6 lg:grid-cols-2">
               <ChannelAlertsPanel />
               <ChannelSyncHistory 
@@ -421,7 +373,7 @@ export default function ChannelDetailPage() {
 
           {/* Rules Tab */}
           <TabsContent value="rules" className="m-0">
-            <Card className="border-border/50 shadow-sm overflow-hidden">
+            <Card className="shadow-none border-border/60">
               <CardContent className="p-6">
                 <TransformationRulesEditor
                   channelId={channelId || ''}
@@ -439,7 +391,7 @@ export default function ChannelDetailPage() {
               channelId={channelId || ''}
               platform={channel.platform?.toLowerCase() || 'default'}
               mappings={[]}
-              onSave={async (mappings) => {
+              onSave={async () => {
                 toast({ title: 'Mapping visuel mis à jour' })
               }}
             />
@@ -458,7 +410,7 @@ export default function ChannelDetailPage() {
             <AutoSyncSettings 
               channelId={channelId || ''}
               platform={channel.platform?.toLowerCase() || 'default'}
-              onConfigChange={(config) => {
+              onConfigChange={() => {
                 toast({ title: 'Paramètres de sync enregistrés' })
               }}
             />
@@ -466,25 +418,24 @@ export default function ChannelDetailPage() {
             <WebhookEventsLog channelId={channelId || ''} />
 
             {/* Danger Zone */}
-            <Card className="border-destructive/30 shadow-sm overflow-hidden">
+            <Card className="border-red-200 dark:border-red-500/30 shadow-none">
               <div className="p-6">
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="p-2 rounded-xl bg-destructive/10">
-                    <AlertTriangle className="h-5 w-5 text-destructive" />
-                  </div>
-                  <h3 className="text-lg font-semibold text-destructive">Zone de danger</h3>
+                <div className="flex items-center gap-2 mb-4">
+                  <AlertTriangle className="h-5 w-5 text-red-600 dark:text-red-400" />
+                  <h3 className="text-base font-semibold text-red-600 dark:text-red-400">Zone de danger</h3>
                 </div>
                 
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-xl border border-destructive/30 bg-destructive/5">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-lg border border-red-200 dark:border-red-500/30 bg-red-50 dark:bg-red-500/5">
                   <div>
-                    <p className="font-medium">Déconnecter ce canal</p>
+                    <p className="font-medium text-sm">Déconnecter ce canal</p>
                     <p className="text-sm text-muted-foreground">
-                      Cette action est irréversible. Toutes les données seront perdues.
+                      Cette action est irréversible. Toutes les données de synchronisation seront perdues.
                     </p>
                   </div>
                   <Button 
                     variant="destructive"
-                    className="gap-2 shrink-0 rounded-xl"
+                    size="sm"
+                    className="gap-2 shrink-0"
                     onClick={() => setShowDisconnectConfirm(true)}
                   >
                     <Unplug className="h-4 w-4" />
@@ -496,6 +447,7 @@ export default function ChannelDetailPage() {
           </TabsContent>
         </Tabs>
       </ChannablePageLayout>
+
       <ConfirmDialog
         open={showDisconnectConfirm}
         onOpenChange={setShowDisconnectConfirm}
