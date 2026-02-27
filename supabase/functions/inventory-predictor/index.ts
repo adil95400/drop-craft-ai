@@ -73,7 +73,7 @@ Return ONLY valid JSON in this exact format:
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'google/gemini-2.5-flash',
+        model: 'openai/gpt-5-mini',
         messages: [
           { role: 'system', content: 'You are an expert inventory analyst. Always return valid JSON only.' },
           { role: 'user', content: prompt }

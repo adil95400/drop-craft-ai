@@ -3,7 +3,7 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.53.0'
 
 // ── Versioned prompts ──────────────────────────────────────────────────
 const PROMPT_VERSION = '1.3.0'
-const MODEL = 'google/gemini-2.5-flash'
+const MODEL = 'openai/gpt-5-mini'
 
 const SYSTEM_PROMPT = `Tu es un expert en e-commerce et SEO. Tu enrichis les fiches produits pour maximiser les conversions et le référencement naturel. Tu retournes uniquement du JSON valide structuré.`
 

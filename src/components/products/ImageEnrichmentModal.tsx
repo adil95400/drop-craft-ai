@@ -42,7 +42,7 @@ export function ImageEnrichmentModal({
     {
       id: 'ai' as const,
       title: 'Génération IA uniquement',
-      description: 'Créer des images supplémentaires basées sur le produit existant avec l\'IA générative Gemini',
+      description: 'Créer des images supplémentaires basées sur le produit existant avec l\'IA générative',
       icon: Wand2,
       recommended: false,
       available: selectedCount,

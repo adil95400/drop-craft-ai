@@ -51,7 +51,7 @@ Deno.serve(async (req) => {
           method: 'POST',
           headers: { Authorization: `Bearer ${LOVABLE_API_KEY}`, 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            model: 'google/gemini-2.5-flash',
+            model: 'openai/gpt-5-mini',
             messages: [
               { role: 'system', content: 'You are a CRM expert specializing in lead scoring.' },
               { role: 'user', content: `Analyze lead: ${contact.name}, ${contact.company}, score: ${contact.lead_score}, tags: ${contact.tags?.join(', ')}. Provide recommended score (0-100) and next actions.` },
@@ -77,7 +77,7 @@ Deno.serve(async (req) => {
           method: 'POST',
           headers: { Authorization: `Bearer ${LOVABLE_API_KEY}`, 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            model: 'google/gemini-2.5-flash',
+            model: 'openai/gpt-5-mini',
             messages: [
               { role: 'system', content: 'You are an expert email marketing copywriter for French e-commerce.' },
               { role: 'user', content: `Create email template for ${data.template_type || 'marketing'}, segment: ${data.target_segment || 'general'}, product: ${data.product_info || 'e-commerce'}. Include subject, body, CTA.` },
@@ -90,7 +90,7 @@ Deno.serve(async (req) => {
 
         const { data: saved } = await supabase.from('generated_content').insert({
           user_id: userId, content_type: 'email', target_keyword: data.target_segment,
-          generated_content: template, ai_model: 'gemini-2.5-flash', tokens_used: aiResult.usage?.total_tokens || 0,
+          generated_content: template, ai_model: 'gpt-5-mini', tokens_used: aiResult.usage?.total_tokens || 0,
         }).select().single()
 
         return successResponse({ template, template_id: saved?.id }, corsHeaders)

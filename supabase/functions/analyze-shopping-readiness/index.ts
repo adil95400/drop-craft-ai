@@ -66,7 +66,7 @@ Analyse et retourne:
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'google/gemini-2.5-flash',
+        model: 'openai/gpt-5-mini',
         messages: [
           { role: 'system', content: 'Tu es un expert en optimisation e-commerce pour Google et ChatGPT Shopping. Réponds uniquement en JSON valide.' },
           { role: 'user', content: prompt }

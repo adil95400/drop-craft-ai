@@ -268,7 +268,7 @@ const ProductRecommendationsPage: React.FC = () => {
                     </div>
                     <div className="flex justify-between text-sm">
                       <span className="text-muted-foreground">Moteur</span>
-                      <span className="font-medium">Gemini Flash</span>
+                      <span className="font-medium">OpenAI GPT-5</span>
                     </div>
                     <div className="flex justify-between text-sm">
                       <span className="text-muted-foreground">Recommandations actives</span>

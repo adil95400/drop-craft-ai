@@ -273,7 +273,7 @@ Format de réponse (JSON strict):
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'google/gemini-2.5-flash',
+        model: 'openai/gpt-5-mini',
         messages: [
           { role: 'system', content: 'Tu es un expert en e-commerce et SEO. Réponds uniquement en JSON valide.' },
           { role: 'user', content: prompt }

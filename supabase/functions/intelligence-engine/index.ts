@@ -34,7 +34,7 @@ serve(async (req) => {
           method: "POST",
           headers: { Authorization: `Bearer ${lovableKey}`, "Content-Type": "application/json" },
           body: JSON.stringify({
-            model: "google/gemini-2.5-flash",
+            model: "openai/gpt-5-mini",
             messages: [
               { role: "system", content: "You are a demand forecasting analyst. Analyze sales data and provide 30-day demand predictions. Return JSON with tool call." },
               { role: "user", content: `Product: ${product.title}, Price: ${product.price}€, Stock: ${product.stock_quantity}, Sales: ${product.sales_count || 0}. Recent orders: ${JSON.stringify(orders?.slice(0, 20) || [])}. Provide 30-day forecast.` }

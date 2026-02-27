@@ -254,7 +254,7 @@ async function aiCallGateway(systemPrompt: string, userPrompt: string, reqId: st
   if (!apiKey) return errorResponse("CONFIG_ERROR", "LOVABLE_API_KEY not configured", 500, reqId);
   const resp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
     method: "POST", headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
-    body: JSON.stringify({ model: "google/gemini-2.5-flash", messages: [{ role: "system", content: systemPrompt }, { role: "user", content: userPrompt }], temperature: 0.4 }),
+    body: JSON.stringify({ model: "openai/gpt-5-mini", messages: [{ role: "system", content: systemPrompt }, { role: "user", content: userPrompt }], temperature: 0.4 }),
   });
   if (!resp.ok) {
     if (resp.status === 429) return errorResponse("RATE_LIMITED", "AI rate limited", 429, reqId);
