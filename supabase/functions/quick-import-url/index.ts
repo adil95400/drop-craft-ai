@@ -2181,7 +2181,6 @@ serve(async (req) => {
         .insert({
           user_id,
           title: finalTitle,
-          name: finalTitle,
           description: finalDescription,
           price: suggestedPrice,
           cost_price: costPrice,
