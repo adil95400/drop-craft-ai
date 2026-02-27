@@ -95,7 +95,7 @@ export const ICON_MAP: Record<string, React.ComponentType<{ className?: string }
   'Palette': Palette,
 } as const
 
-// Static group colors - 6 groupes consolidés
+// Static group colors - 10 pôles métier
 export const GROUP_COLORS: Partial<Record<NavGroupId, { 
   bg: string
   text: string
@@ -104,7 +104,7 @@ export const GROUP_COLORS: Partial<Record<NavGroupId, {
   icon: string
   gradient: string 
 }>> = {
-  home: { 
+  dashboard: { 
     bg: 'bg-blue-500/8', 
     text: 'text-blue-600 dark:text-blue-400', 
     accent: 'hover:bg-blue-500/12', 
@@ -120,7 +120,23 @@ export const GROUP_COLORS: Partial<Record<NavGroupId, {
     icon: 'text-emerald-500',
     gradient: 'from-emerald-500 to-teal-500'
   },
-  sourcing: { 
+  orders: { 
+    bg: 'bg-amber-500/8', 
+    text: 'text-amber-600 dark:text-amber-400', 
+    accent: 'hover:bg-amber-500/12', 
+    border: 'border-amber-500/20',
+    icon: 'text-amber-500',
+    gradient: 'from-amber-500 to-orange-500'
+  },
+  customers: { 
+    bg: 'bg-rose-500/8', 
+    text: 'text-rose-600 dark:text-rose-400', 
+    accent: 'hover:bg-rose-500/12', 
+    border: 'border-rose-500/20',
+    icon: 'text-rose-500',
+    gradient: 'from-rose-500 to-pink-500'
+  },
+  marketing: { 
     bg: 'bg-violet-500/8', 
     text: 'text-violet-600 dark:text-violet-400', 
     accent: 'hover:bg-violet-500/12', 
@@ -128,29 +144,45 @@ export const GROUP_COLORS: Partial<Record<NavGroupId, {
     icon: 'text-violet-500',
     gradient: 'from-violet-500 to-purple-500'
   },
-  sales: { 
+  automation: { 
     bg: 'bg-orange-500/8', 
     text: 'text-orange-600 dark:text-orange-400', 
     accent: 'hover:bg-orange-500/12', 
     border: 'border-orange-500/20',
     icon: 'text-orange-500',
-    gradient: 'from-orange-500 to-amber-500'
+    gradient: 'from-orange-500 to-red-500'
   },
-  performance: { 
+  integrations: { 
+    bg: 'bg-indigo-500/8', 
+    text: 'text-indigo-600 dark:text-indigo-400', 
+    accent: 'hover:bg-indigo-500/12', 
+    border: 'border-indigo-500/20',
+    icon: 'text-indigo-500',
+    gradient: 'from-indigo-500 to-blue-500'
+  },
+  reports: { 
     bg: 'bg-cyan-500/8', 
     text: 'text-cyan-600 dark:text-cyan-400', 
     accent: 'hover:bg-cyan-500/12', 
     border: 'border-cyan-500/20',
     icon: 'text-cyan-500',
-    gradient: 'from-cyan-500 to-blue-500'
+    gradient: 'from-cyan-500 to-teal-500'
   },
-  config: { 
+  settings: { 
     bg: 'bg-slate-500/8', 
     text: 'text-slate-600 dark:text-slate-400', 
     accent: 'hover:bg-slate-500/12', 
     border: 'border-slate-500/20',
     icon: 'text-slate-500',
     gradient: 'from-slate-500 to-zinc-500'
+  },
+  help: { 
+    bg: 'bg-teal-500/8', 
+    text: 'text-teal-600 dark:text-teal-400', 
+    accent: 'hover:bg-teal-500/12', 
+    border: 'border-teal-500/20',
+    icon: 'text-teal-500',
+    gradient: 'from-teal-500 to-green-500'
   },
 } as const
 
@@ -162,7 +194,7 @@ export const ROUTE_LABELS: Record<string, string> = {
   'stores-channels': 'Boutiques',
   'analytics': 'Statistiques',
   'settings': 'Paramètres',
-  'import': 'Import',
+  'import': 'Importation',
   'autods': 'Import Rapide',
   'feeds': 'Flux produits',
   'ai': 'Intelligence IA',
@@ -174,8 +206,8 @@ export const ROUTE_LABELS: Record<string, string> = {
   'fulfillment': 'Exécution',
   'suppliers': 'Fournisseurs',
   'audit': 'Qualité & Audit',
-  'research': 'Veille',
-  'crm': 'Relation Client',
+  'research': 'Veille Publicitaire',
+  'crm': 'Service Client',
   'integrations': 'Intégrations',
   'marketing': 'Marketing',
   'automation': 'Automatisation',
@@ -187,7 +219,7 @@ export const ROUTE_LABELS: Record<string, string> = {
   'extensions': 'Extensions',
   'support': 'Support',
   'reports': 'Rapports',
-  'academy': 'Académie',
+  'academy': 'Centre d\'Aide',
   'notifications': 'Notifications',
 } as const
 
@@ -196,8 +228,8 @@ export const QUICK_TABS = [
   { id: 'dashboard', label: 'Tableau de bord', icon: Home, route: '/dashboard', gradient: 'from-blue-500 to-cyan-500', iconColor: 'text-blue-500' },
   { id: 'products', label: 'Produits', icon: Package, route: '/products', gradient: 'from-emerald-500 to-teal-500', iconColor: 'text-emerald-500' },
   { id: 'orders', label: 'Commandes', icon: ShoppingCart, route: '/orders', gradient: 'from-amber-500 to-orange-500', iconColor: 'text-amber-500' },
-  { id: 'analytics', label: 'Statistiques', icon: BarChart3, route: '/analytics', gradient: 'from-violet-500 to-purple-500', iconColor: 'text-violet-500' },
-  { id: 'stores', label: 'Boutiques', icon: Store, route: '/stores-channels', gradient: 'from-rose-500 to-pink-500', iconColor: 'text-rose-500' },
+  { id: 'analytics', label: 'Statistiques', icon: BarChart3, route: '/analytics', gradient: 'from-cyan-500 to-teal-500', iconColor: 'text-cyan-500' },
+  { id: 'stores', label: 'Boutiques', icon: Store, route: '/stores-channels', gradient: 'from-indigo-500 to-blue-500', iconColor: 'text-indigo-500' },
 ] as const
 
 // Badge styles for modules

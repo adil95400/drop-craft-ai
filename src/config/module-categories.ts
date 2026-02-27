@@ -1,5 +1,5 @@
 /**
- * Catégories de modules consolidées - Architecture 6 pôles
+ * Catégories de modules consolidées - Architecture 10 pôles métier
  * Aligné avec NAV_GROUPS dans modules.ts
  */
 
@@ -12,51 +12,79 @@ export interface ModuleCategory {
 }
 
 /**
- * 6 pôles de navigation essentiels
+ * 10 pôles de navigation métier
  * Structure: 1 fonctionnalité = 1 endroit clair
  */
 export const MODULE_CATEGORIES: Record<string, ModuleCategory> = {
-  home: {
-    id: 'home',
-    name: 'Accueil',
-    icon: 'Home',
+  dashboard: {
+    id: 'dashboard',
+    name: 'Tableau de bord',
+    icon: 'LayoutDashboard',
     order: 1,
-    description: 'Dashboard & Vue d\'ensemble'
+    description: 'Vue d\'ensemble & alertes'
   },
   catalog: {
     id: 'catalog',
     name: 'Catalogue',
     icon: 'Package',
     order: 2,
-    description: 'Gestion produits & Exécution quotidienne'
+    description: 'Produits, catégories & fournisseurs'
   },
-  sourcing: {
-    id: 'sourcing',
-    name: 'Sourcing',
-    icon: 'Truck',
-    order: 3,
-    description: 'Import, Fournisseurs & Veille'
-  },
-  sales: {
-    id: 'sales',
-    name: 'Ventes',
+  orders: {
+    id: 'orders',
+    name: 'Commandes & Expéditions',
     icon: 'ShoppingCart',
+    order: 3,
+    description: 'Commandes, livraisons & stock'
+  },
+  customers: {
+    id: 'customers',
+    name: 'Clients',
+    icon: 'Users',
     order: 4,
-    description: 'Boutiques, Commandes & Clients'
+    description: 'CRM, fidélité & avis'
   },
-  performance: {
-    id: 'performance',
-    name: 'Performance',
-    icon: 'BarChart3',
+  marketing: {
+    id: 'marketing',
+    name: 'Marketing & Ventes',
+    icon: 'Megaphone',
     order: 5,
-    description: 'Analytics, Audit & Marketing'
+    description: 'Campagnes, SEO & promotions'
   },
-  config: {
-    id: 'config',
-    name: 'Configuration',
-    icon: 'Settings',
+  automation: {
+    id: 'automation',
+    name: 'Automatisation',
+    icon: 'Zap',
     order: 6,
-    description: 'Paramètres, IA & Administration'
+    description: 'Scénarios IA & workflows'
+  },
+  integrations: {
+    id: 'integrations',
+    name: 'Extensions & Intégrations',
+    icon: 'Plug',
+    order: 7,
+    description: 'Boutiques, flux & connecteurs'
+  },
+  reports: {
+    id: 'reports',
+    name: 'Rapports & Analyses',
+    icon: 'BarChart3',
+    order: 8,
+    description: 'Statistiques & audit'
+  },
+  settings: {
+    id: 'settings',
+    name: 'Paramètres',
+    icon: 'Settings',
+    order: 9,
+    description: 'Configuration & administration'
+  },
+  help: {
+    id: 'help',
+    name: 'Aide & Support',
+    icon: 'HelpCircle',
+    order: 10,
+    description: 'Formation, support & docs'
   }
 };
 
@@ -78,29 +106,34 @@ export function getAllCategories(): ModuleCategory[] {
  * Mapping des anciennes catégories vers les nouveaux pôles
  */
 const LEGACY_CATEGORY_MAP: Record<string, string> = {
-  core: 'home',
+  core: 'dashboard',
   product: 'catalog',
-  learning: 'config',
-  analytics: 'performance',
-  automation: 'sales',
-  customer: 'sales',
-  enterprise: 'config',
-  integrations: 'sourcing',
-  system: 'config'
+  learning: 'help',
+  analytics: 'reports',
+  automation: 'automation',
+  customer: 'customers',
+  enterprise: 'settings',
+  integrations: 'integrations',
+  system: 'settings',
+  // Ancien mapping 6-pôles → 10-pôles
+  home: 'dashboard',
+  catalog: 'catalog',
+  sourcing: 'catalog',
+  sales: 'orders',
+  performance: 'reports',
+  config: 'settings'
 };
 
 /**
  * Convertir une ancienne catégorie vers le nouveau pôle
  */
 export function mapLegacyCategory(legacyCategory: string): string {
-  return LEGACY_CATEGORY_MAP[legacyCategory] || 'config';
+  return LEGACY_CATEGORY_MAP[legacyCategory] || 'settings';
 }
 
 /**
  * Obtenir les catégories pour un plan spécifique
  */
 export function getCategoriesForPlan(plan: 'standard' | 'pro' | 'ultra_pro'): ModuleCategory[] {
-  // Tous les plans ont accès aux 6 pôles de base
-  // La restriction se fait au niveau des modules individuels
   return getAllCategories();
 }
