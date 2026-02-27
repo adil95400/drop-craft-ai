@@ -159,9 +159,9 @@ export function KPIWidgets() {
       })
 
       const conversionData = [
-        { name: 'Produits', value: products.length, fill: '#3b82f6' },
-        { name: 'Commandes', value: totalOrders, fill: '#10b981' },
-        { name: 'Clients', value: newCustomers, fill: '#f59e0b' }
+        { name: 'Produits', value: products.length, fill: 'hsl(var(--info))' },
+        { name: 'Commandes', value: totalOrders, fill: 'hsl(var(--success))' },
+        { name: 'Clients', value: newCustomers, fill: 'hsl(var(--warning))' }
       ]
 
       const realKPIs: KPIData[] = [
@@ -178,7 +178,7 @@ export function KPIWidgets() {
           unit: '€',
           format: 'currency',
           icon: DollarSign,
-          color: 'text-green-600',
+          color: 'text-success',
           chartData: chartData7Days
         },
         {
@@ -194,7 +194,7 @@ export function KPIWidgets() {
           unit: '',
           format: 'number',
           icon: Users,
-          color: 'text-blue-600',
+          color: 'text-info',
           chartData: chartData7Days
         },
         {
@@ -210,7 +210,7 @@ export function KPIWidgets() {
           unit: '',
           format: 'number',
           icon: ShoppingCart,
-          color: 'text-purple-600',
+          color: 'text-primary',
           chartData: chartData7Days
         },
         {
@@ -226,7 +226,7 @@ export function KPIWidgets() {
           unit: '%',
           format: 'percentage',
           icon: Target,
-          color: 'text-orange-600',
+          color: 'text-warning',
           chartData: conversionData
         },
         {
@@ -242,7 +242,7 @@ export function KPIWidgets() {
           unit: '€',
           format: 'currency',
           icon: BarChart3,
-          color: 'text-pink-600',
+          color: 'text-primary',
           chartData: chartData7Days
         },
         {
@@ -258,7 +258,7 @@ export function KPIWidgets() {
           unit: '',
           format: 'number',
           icon: Activity,
-          color: 'text-cyan-600',
+          color: 'text-info',
           chartData: chartData7Days
         }
       ]
@@ -356,15 +356,15 @@ export function KPIWidgets() {
                   </div>
                   <div className="flex items-center gap-1">
                     {kpi.trend === 'up' ? (
-                      <TrendingUp className="h-4 w-4 text-green-500" />
+                      <TrendingUp className="h-4 w-4 text-success" />
                     ) : kpi.trend === 'down' ? (
-                      <TrendingDown className="h-4 w-4 text-red-500" />
+                      <TrendingDown className="h-4 w-4 text-destructive" />
                     ) : (
                       <div className="h-4 w-4 rounded-full bg-muted" />
                     )}
                     <Badge 
                       className={`${
-                        kpi.changeType === 'increase' ? 'bg-green-500' : 'bg-red-500'
+                        kpi.changeType === 'increase' ? 'bg-success' : 'bg-destructive'
                       } text-white text-xs`}
                     >
                       {kpi.changeType === 'increase' ? '+' : '-'}{kpi.change.toFixed(1)}%
