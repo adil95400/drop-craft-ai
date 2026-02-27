@@ -41,7 +41,7 @@ export function StockAlertsPanel({ limit, compact }: StockAlertsPanelProps) {
 
         if (error) throw error;
 
-        const mockAlerts: StockAlert[] = (products || []).map(product => ({
+        const stockAlerts: StockAlert[] = (products || []).map(product => ({
           id: product.id,
           severity: product.stock_quantity === 0 ? 'critical' : product.stock_quantity < 5 ? 'high' : 'medium',
           alert_type: product.stock_quantity === 0 ? 'out_of_stock' : 'low_stock',
@@ -54,7 +54,7 @@ export function StockAlertsPanel({ limit, compact }: StockAlertsPanelProps) {
           created_at: new Date().toISOString()
         }));
 
-        setAlerts(mockAlerts);
+        setAlerts(stockAlerts);
       } catch (error) {
         console.error('Error loading stock alerts:', error);
       } finally {

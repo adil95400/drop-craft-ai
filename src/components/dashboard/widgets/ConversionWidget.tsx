@@ -29,7 +29,12 @@ export function ConversionWidget({ timeRange, settings, lastRefresh }: Conversio
     const purchases = totalOrders;
 
     const rate = estimatedVisitors > 0 ? (purchases / estimatedVisitors) * 100 : 0;
-    const prevRate = rate * 0.85; // Simulated previous rate
+    // Previous rate based on older orders (before this month)
+    const monthStart = new Date();
+    monthStart.setDate(1);
+    monthStart.setHours(0, 0, 0, 0);
+    const prevMonthOrders = (orders || []).filter(o => new Date(o.created_at || '') < monthStart).length;
+    const prevRate = estimatedVisitors > 0 ? (prevMonthOrders / estimatedVisitors) * 100 : rate * 0.85;
 
     return {
       conversionRate: rate.toFixed(2),
