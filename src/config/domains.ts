@@ -4,6 +4,7 @@ export const DOMAINS = {
   production: {
     canonical: 'shopopti.io',
     www: 'www.shopopti.io',
+    app: 'app.shopopti.io',
     siteUrl: 'https://shopopti.io',
   },
   staging: {
@@ -20,6 +21,7 @@ export const DOMAINS = {
 export const AUTH_REDIRECT_URLS = [
   'https://shopopti.io/*',
   'https://www.shopopti.io/*',
+  'https://app.shopopti.io/*',
   'https://drop-craft-ai.lovable.app/*',
   'http://localhost:5173/*',
   'http://localhost:3000/*',
