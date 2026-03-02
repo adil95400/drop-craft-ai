@@ -77,8 +77,8 @@ export const AdvancedSettings = () => {
   const [config, setConfig] = useState<SystemConfig>({
     general: {
       siteName: 'Shopopti+',
-      siteUrl: 'https://app.shopopti.com',
-      adminEmail: 'admin@shopopti.com',
+      siteUrl: 'https://shopopti.io',
+      adminEmail: 'admin@shopopti.io',
       timezone: 'Europe/Paris',
       language: 'fr',
       maintenanceMode: false,
@@ -92,7 +92,7 @@ export const AdvancedSettings = () => {
       requireStrongPassword: true,
       apiRateLimit: 1000,
       corsEnabled: true,
-      allowedOrigins: 'https://app.shopopti.com',
+      allowedOrigins: 'https://shopopti.io, https://app.shopopti.io',
     },
     email: {
       smtpHost: 'smtp.gmail.com',
@@ -100,7 +100,7 @@ export const AdvancedSettings = () => {
       smtpUser: '',
       smtpPassword: '',
       smtpEncryption: 'tls',
-      fromEmail: 'noreply@shopopti.com',
+      fromEmail: 'noreply@shopopti.io',
       fromName: 'Shopopti+',
     },
     backup: {
