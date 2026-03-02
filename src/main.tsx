@@ -80,6 +80,8 @@ requestAnimationFrame(() => {
   }
 });
 
+import { CookieBanner } from './components/CookieBanner';
+
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <HelmetProvider>
@@ -87,6 +89,7 @@ createRoot(document.getElementById('root')!).render(
         <BrowserRouter>
           <SentryErrorBoundary />
           <Toaster />
+          <CookieBanner />
         </BrowserRouter>
       </QueryClientProvider>
     </HelmetProvider>

@@ -18,6 +18,7 @@ const Contact = lazy(() => import('@/pages/Contact'));
 const FAQ = lazy(() => import('@/pages/FAQ'));
 const PrivacyPolicy = lazy(() => import('@/pages/PrivacyPolicy'));
 const TermsOfService = lazy(() => import('@/pages/TermsOfService'));
+const CGV = lazy(() => import('@/pages/CGV'));
 const About = lazy(() => import('@/pages/About'));
 const PerformanceMonitoringPage = lazy(() => import('@/pages/PerformanceMonitoringPage'));
 const BlogPage = lazy(() => import('@/pages/public/BlogPage'));
@@ -90,6 +91,8 @@ export function PublicRoutes() {
       <Route path="privacy-policy" element={<PrivacyPolicy />} />
       <Route path="terms" element={<TermsOfService />} />
       <Route path="terms-of-service" element={<TermsOfService />} />
+      <Route path="cgu" element={<TermsOfService />} />
+      <Route path="cgv" element={<CGV />} />
       <Route path="about" element={<About />} />
       
       {/* Payment */}
