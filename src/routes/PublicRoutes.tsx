@@ -37,6 +37,10 @@ const OptimisationShopifyPage = lazy(() => import('@/pages/public/OptimisationSh
 const GestionCatalogueEcommercePage = lazy(() => import('@/pages/public/GestionCatalogueEcommercePage'));
 const ImportProduitsAliexpressPage = lazy(() => import('@/pages/public/ImportProduitsAliexpressPage'));
 const AutomatisationEcommercePage = lazy(() => import('@/pages/public/AutomatisationEcommercePage'));
+const AutomatisationShopifyPage = lazy(() => import('@/pages/public/AutomatisationShopifyPage'));
+const OutilPricingShopifyPage = lazy(() => import('@/pages/public/OutilPricingShopifyPage'));
+const ImportProduitShopifyPage = lazy(() => import('@/pages/public/ImportProduitShopifyPage'));
+const AnalyseBoutiqueShopifyPage = lazy(() => import('@/pages/public/AnalyseBoutiqueShopifyPage'));
 
 // Feature pages
 const AIOptimizationPage = lazy(() => import('@/pages/features/AIOptimizationPage'));
