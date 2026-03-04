@@ -239,12 +239,11 @@ serve(async (req) => {
       .select('*')
       .eq('is_active', true)
 
+    // SECURITY: Always use the verified user's ID, never trust body-supplied userId
+    query = query.eq('user_id', user.id)
+
     if (channelId) {
       query = query.eq('id', channelId)
-    } else if (userId) {
-      query = query.eq('user_id', userId)
-    } else {
-      query = query.eq('user_id', user.id)
     }
 
     const { data: channels, error: fetchError } = await query.limit(50)
