@@ -1,6 +1,6 @@
 /**
  * useUrlImport - Shared hook for real URL-based product imports
- * Used by all platform import pages (AliExpress, Amazon, Temu, eBay, etc.)
+ * Uses preview-first flow: scrape → preview page → confirm import
  */
 import { useState, useCallback } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
@@ -10,6 +10,7 @@ import { useNavigate } from 'react-router-dom'
 
 export interface ImportResult {
   success: boolean
+  data?: any
   product?: any
   saved_id?: string
   error?: string
@@ -29,10 +30,11 @@ export function useUrlImport(platformName: string) {
       setProgress(25)
       setProgressMessage(`Extraction des données ${platformName}...`)
 
+      // Step 1: Preview — scrape product data without saving
       const { data, error } = await supabase.functions.invoke('quick-import-url', {
         body: {
           url,
-          action: 'import',
+          action: 'preview',
           price_multiplier: 1.5,
         },
       })
@@ -40,29 +42,53 @@ export function useUrlImport(platformName: string) {
       if (error) throw new Error(error.message || 'Erreur serveur')
 
       setProgress(80)
-      setProgressMessage('Sauvegarde du produit...')
+      setProgressMessage('Données extraites...')
 
       if (!data?.success) {
         throw new Error(data?.error || `Import ${platformName} échoué`)
       }
 
       setProgress(100)
-      setProgressMessage('Import terminé !')
+      setProgressMessage('Redirection vers l\'aperçu...')
 
       return data as ImportResult
     },
     onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ['imported-products'] })
-      queryClient.invalidateQueries({ queryKey: ['catalog-products'] })
-      queryClient.invalidateQueries({ queryKey: ['products-unified'] })
-      queryClient.invalidateQueries({ queryKey: ['import-jobs'] })
-      const title = data.product?.title || 'Produit'
-      toast.success(`${title} importé depuis ${platformName} !`, {
-        action: {
-          label: 'Voir le catalogue',
-          onClick: () => navigate('/products'),
-        },
-      })
+      // Navigate to preview page with extracted product data
+      const productData = data.data || data.product
+      if (productData) {
+        navigate('/import/preview', {
+          state: {
+            product: {
+              title: productData.title || 'Produit importé',
+              description: productData.description || '',
+              price: productData.price || 0,
+              currency: productData.currency || 'EUR',
+              suggested_price: productData.suggested_price || Math.ceil((productData.price || 0) * 1.5 * 100) / 100,
+              profit_margin: productData.profit_margin || 0,
+              images: productData.images || [],
+              brand: productData.brand || productData.vendor || '',
+              vendor: productData.vendor || productData.brand || '',
+              sku: productData.sku || '',
+              platform_detected: productData.platform_detected || productData.platform || platformName.toLowerCase(),
+              source_url: productData.source_url || '',
+              variants: productData.variants || [],
+              videos: productData.videos || [],
+              extracted_reviews: productData.extracted_reviews || [],
+              reviews: productData.reviews || { rating: null, count: null },
+              specifications: productData.specifications || {},
+              category: productData.category || productData.product_type || '',
+              product_type: productData.product_type || '',
+              tags: productData.tags || [],
+              original_price: productData.original_price || null,
+              handle: productData.handle || '',
+            },
+            returnTo: `/import/${platformName.toLowerCase().replace(/\s+/g, '-')}`,
+          },
+        })
+      } else {
+        toast.error('Aucune donnée produit extraite')
+      }
     },
     onError: (error: Error) => {
       setProgress(0)

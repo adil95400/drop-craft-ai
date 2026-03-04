@@ -36,6 +36,7 @@ interface ProductPreviewData {
   profit_margin: number
   images: string[]
   brand: string
+  vendor?: string
   sku: string
   platform_detected: string
   source_url: string
@@ -44,6 +45,11 @@ interface ProductPreviewData {
   extracted_reviews?: any[]
   reviews?: { rating: number | null; count: number | null }
   specifications?: Record<string, string>
+  category?: string
+  product_type?: string
+  tags?: string[]
+  original_price?: number | null
+  handle?: string
 }
 
 // --- Image utilities ---
@@ -150,8 +156,9 @@ export default function ProductPreviewPage() {
   const [isImporting, setIsImporting] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
   const [productStatus, setProductStatus] = useState('draft')
-  const [category, setCategory] = useState('')
+  const [category, setCategory] = useState(product?.category || product?.product_type || '')
   const [subcategory, setSubcategory] = useState('')
+  const [tags, setTags] = useState<string[]>(product?.tags || [])
   const [suggestedCategories, setSuggestedCategories] = useState<{category: string, subcategory: string, confidence: number}[]>([])
 
   useEffect(() => {
@@ -328,9 +335,13 @@ export default function ProductPreviewPage() {
           image_url: filtered[0] || null,
           images: filtered,
           brand: finalProduct.brand || null,
+          vendor: finalProduct.vendor || finalProduct.brand || null,
           sku: finalProduct.sku || null,
           source_url: null,
           category: category || null,
+          product_type: category || null,
+          tags: tags.length > 0 ? tags : null,
+          variants: finalProduct.variants || null,
           status: productStatus,
           profit_margin: marginVal,
           user_id: user.id,
@@ -367,6 +378,8 @@ export default function ProductPreviewPage() {
             subcategory,
             variants: finalProduct.variants,
             videos: finalProduct.videos,
+            tags,
+            product_type: category,
           }
         }
       })
@@ -414,9 +427,13 @@ export default function ProductPreviewPage() {
         image_url: filtered[0] || null,
         images: filtered,
         brand: editedProduct.brand || null,
+        vendor: editedProduct.vendor || editedProduct.brand || null,
         sku: editedProduct.sku || null,
         source_url: editedProduct.source_url || null,
         category: category || null,
+        product_type: category || null,
+        tags: tags.length > 0 ? tags : null,
+        variants: editedProduct.variants || null,
         status: productStatus,
         profit_margin: marginVal,
         user_id: user.id,
@@ -1032,6 +1049,33 @@ export default function ProductPreviewPage() {
                       onChange={e => handleFieldChange('sku', e.target.value)}
                       className="font-mono text-sm"
                       placeholder="SKU-001"
+                    />
+                  </div>
+                  {/* Tags */}
+                  <div className="space-y-1.5">
+                    <label className="text-xs text-muted-foreground">Tags</label>
+                    <div className="flex flex-wrap gap-1.5">
+                      {tags.length > 0 ? tags.map((tag, i) => (
+                        <Badge key={i} variant="secondary" className="text-xs gap-1">
+                          {tag}
+                          <button onClick={() => setTags(prev => prev.filter((_, idx) => idx !== i))} className="ml-0.5 hover:text-destructive">
+                            <X className="h-2.5 w-2.5" />
+                          </button>
+                        </Badge>
+                      )) : (
+                        <span className="text-xs text-muted-foreground">Aucun tag</span>
+                      )}
+                    </div>
+                    <Input
+                      placeholder="Ajouter un tag (Entrée)"
+                      className="text-xs"
+                      onKeyDown={e => {
+                        if (e.key === 'Enter' && (e.target as HTMLInputElement).value.trim()) {
+                          setTags(prev => [...prev, (e.target as HTMLInputElement).value.trim()])
+                          ;(e.target as HTMLInputElement).value = ''
+                          e.preventDefault()
+                        }
+                      }}
                     />
                   </div>
                   <div className="space-y-1.5">
