@@ -193,9 +193,9 @@ serve(async (req) => {
     if (authError || !user) throw new Error('Non authentifié')
 
     const body = await req.json().catch(() => ({}))
-    const { action, channelId, userId, syncType = 'all', intervalMinutes } = body
+    const { action, channelId, syncType = 'all', intervalMinutes } = body
 
-    console.log('[Auto-Sync] Starting', { action, channelId, userId, syncType })
+    console.log('[Auto-Sync] Starting', { action, channelId, syncType })
 
     // Handle schedule action
     if (action === 'schedule') {
@@ -239,12 +239,11 @@ serve(async (req) => {
       .select('*')
       .eq('is_active', true)
 
+    // SECURITY: Always use the verified user's ID, never trust body-supplied userId
+    query = query.eq('user_id', user.id)
+
     if (channelId) {
       query = query.eq('id', channelId)
-    } else if (userId) {
-      query = query.eq('user_id', userId)
-    } else {
-      query = query.eq('user_id', user.id)
     }
 
     const { data: channels, error: fetchError } = await query.limit(50)
