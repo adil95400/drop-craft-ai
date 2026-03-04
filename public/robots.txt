@@ -3,29 +3,56 @@
 
 User-agent: *
 Allow: /
+
+# Block private/app routes
 Disallow: /dashboard/
+Disallow: /dashboard
 Disallow: /admin/
 Disallow: /api/
+Disallow: /auth
 Disallow: /auth/
 Disallow: /settings/
+Disallow: /products/
+Disallow: /orders/
+Disallow: /customers/
+Disallow: /suppliers/
+Disallow: /analytics/
+Disallow: /payment/
+
+# Block URL parameters (duplicate content)
 Disallow: /*?sort=
 Disallow: /*?filter=
 Disallow: /*?page=
 Disallow: /*?search=
+Disallow: /*?tab=
+Disallow: /*?ref=
 
-# Allow search engines to index public pages
+# Allow marketing & SEO pages
 Allow: /pricing
 Allow: /features
+Allow: /features/
 Allow: /about
 Allow: /contact
 Allow: /blog
+Allow: /blog/
 Allow: /documentation
 Allow: /faq
 Allow: /integrations
+Allow: /testimonials
+Allow: /changelog
+
+# SEO landing pages
 Allow: /logiciel-dropshipping
 Allow: /alternative-autods
+Allow: /alternative-dsers
 Allow: /optimisation-shopify
+Allow: /automatisation-shopify
+Allow: /outil-pricing-shopify
+Allow: /import-produit-shopify
+Allow: /analyse-boutique-shopify
 Allow: /gestion-catalogue-ecommerce
+Allow: /import-produits-aliexpress
+Allow: /automatisation-ecommerce
 
 # Sitemaps
 Sitemap: https://shopopti.io/sitemap.xml
