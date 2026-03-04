@@ -124,7 +124,7 @@ function App() {
         {/* LightAuthProvider provides quick session check without loading supabase */}
         <LightAuthProvider>
           {/* UnifiedAuthProvider lazy loaded - only loads supabase when needed */}
-          <Suspense fallback={null}>
+          <Suspense fallback={<div className="min-h-screen bg-background" />}>
             <UnifiedAuthProvider>
               <Suspense fallback={null}>
                 <UnifiedProvider>
