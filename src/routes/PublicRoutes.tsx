@@ -42,6 +42,16 @@ const OutilPricingShopifyPage = lazy(() => import('@/pages/public/OutilPricingSh
 const ImportProduitShopifyPage = lazy(() => import('@/pages/public/ImportProduitShopifyPage'));
 const AnalyseBoutiqueShopifyPage = lazy(() => import('@/pages/public/AnalyseBoutiqueShopifyPage'));
 
+// EN SEO pages
+const ShopifyAutomationToolPage = lazy(() => import('@/pages/public/en/ShopifyAutomationToolPage'));
+const ShopifyAIOptimizationPage = lazy(() => import('@/pages/public/en/ShopifyAIOptimizationPage'));
+const ShopifyPricingAutomationPage = lazy(() => import('@/pages/public/en/ShopifyPricingAutomationPage'));
+const ShopifyProductImportToolPage = lazy(() => import('@/pages/public/en/ShopifyProductImportToolPage'));
+const ShopifyAnalyticsSoftwarePage = lazy(() => import('@/pages/public/en/ShopifyAnalyticsSoftwarePage'));
+const ShopoptiVsAutodsPage = lazy(() => import('@/pages/public/en/ShopoptiVsAutodsPage'));
+const ShopoptiVsDsersPage = lazy(() => import('@/pages/public/en/ShopoptiVsDsersPage'));
+const ShopoptiVsZendropPage = lazy(() => import('@/pages/public/en/ShopoptiVsZendropPage'));
+
 // Feature pages
 const AIOptimizationPage = lazy(() => import('@/pages/features/AIOptimizationPage'));
 const MultiMarketplacePage = lazy(() => import('@/pages/features/MultiMarketplacePage'));
@@ -77,7 +87,7 @@ export function PublicRoutes() {
       <Route path="testimonials" element={<TestimonialsPage />} />
       <Route path="integrations" element={<Integrations />} />
       
-      {/* SEO SaaS Pages */}
+      {/* SEO SaaS Pages (FR) */}
       <Route path="logiciel-dropshipping" element={<LogicielDropshippingPage />} />
       <Route path="alternative-autods" element={<AlternativeAutodsPage />} />
       <Route path="alternative-dsers" element={<AlternativeDsersPage />} />
@@ -90,9 +100,17 @@ export function PublicRoutes() {
       <Route path="import-produit-shopify" element={<ImportProduitShopifyPage />} />
       <Route path="analyse-boutique-shopify" element={<AnalyseBoutiqueShopifyPage />} />
       
-      {/* Comparative redirects */}
-      <Route path="shopopti-vs-autods" element={<Navigate to="/alternative-autods" replace />} />
-      <Route path="shopopti-vs-dsers" element={<Navigate to="/alternative-dsers" replace />} />
+      {/* SEO SaaS Pages (EN — International) */}
+      <Route path="shopify-automation-tool" element={<ShopifyAutomationToolPage />} />
+      <Route path="shopify-ai-optimization" element={<ShopifyAIOptimizationPage />} />
+      <Route path="shopify-pricing-automation" element={<ShopifyPricingAutomationPage />} />
+      <Route path="shopify-product-import-tool" element={<ShopifyProductImportToolPage />} />
+      <Route path="shopify-analytics-software" element={<ShopifyAnalyticsSoftwarePage />} />
+      
+      {/* Comparison Pages (EN) */}
+      <Route path="shopopti-vs-autods" element={<ShopoptiVsAutodsPage />} />
+      <Route path="shopopti-vs-dsers" element={<ShopoptiVsDsersPage />} />
+      <Route path="shopopti-vs-zendrop" element={<ShopoptiVsZendropPage />} />
       
       {/* Support */}
       <Route path="contact" element={<Contact />} />
