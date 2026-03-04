@@ -714,10 +714,10 @@ const Index = () => {
   return (
     <PublicLayout>
       <SEO
-        title="ShopOpti+ | Plateforme E-commerce IA - Dropshipping Automatisé"
-        description="Automatisez votre e-commerce avec ShopOpti+. 99+ fournisseurs, IA avancée, gestion multi-plateformes Shopify, Amazon, eBay. Essai gratuit 14 jours."
+        title="ShopOpti+ | Optimisation Shopify & Automatisation E-commerce IA"
+        description="Optimisez votre boutique Shopify avec ShopOpti+. Automatisation IA, import 99+ fournisseurs, pricing dynamique, SEO automatisé. Essai gratuit 14 jours."
         path="/"
-        keywords="dropshipping, e-commerce IA, automatisation, SaaS, Shopify, AliExpress, BigBuy, gestion produits, analytics, multichannel"
+        keywords="optimisation shopify, automatisation shopify, dropshipping IA, import produit shopify, pricing shopify, SaaS e-commerce, outil shopify"
         jsonLd={{
           "@context": "https://schema.org",
           "@type": "FAQPage",
