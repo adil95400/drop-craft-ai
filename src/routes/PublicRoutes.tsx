@@ -52,6 +52,13 @@ const ShopoptiVsAutodsPage = lazy(() => import('@/pages/public/en/ShopoptiVsAuto
 const ShopoptiVsDsersPage = lazy(() => import('@/pages/public/en/ShopoptiVsDsersPage'));
 const ShopoptiVsZendropPage = lazy(() => import('@/pages/public/en/ShopoptiVsZendropPage'));
 
+// EN Mid-tail SEO pages
+const HowToAutomateShopifyPage = lazy(() => import('@/pages/public/en/HowToAutomateShopifyPage'));
+const HowToOptimizeShopifyPage = lazy(() => import('@/pages/public/en/HowToOptimizeShopifyPage'));
+const ShopifyDropshippingAutomationPage = lazy(() => import('@/pages/public/en/ShopifyDropshippingAutomationPage'));
+const AIToolForShopifyPage = lazy(() => import('@/pages/public/en/AIToolForShopifyPage'));
+const ShopifyAutoProductUpdaterPage = lazy(() => import('@/pages/public/en/ShopifyAutoProductUpdaterPage'));
+
 // Feature pages
 const AIOptimizationPage = lazy(() => import('@/pages/features/AIOptimizationPage'));
 const MultiMarketplacePage = lazy(() => import('@/pages/features/MultiMarketplacePage'));
