@@ -61,9 +61,9 @@ const HeroSection = memo(() => {
             </div>
             
             <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight leading-[1.1]">
-              Automatisez votre
+              Optimisez votre
               <span className="block bg-gradient-to-r from-primary via-primary/70 to-primary bg-clip-text text-transparent animate-gradient bg-[length:200%_auto]">
-                e-commerce avec l'IA
+                Shopify avec l'IA
               </span>
             </h1>
             
