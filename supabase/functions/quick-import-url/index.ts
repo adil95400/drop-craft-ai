@@ -2190,6 +2190,8 @@ serve(async (req) => {
           sku: finalSku,
           brand: finalBrand,
           category: finalCategory,
+          product_type: finalProductType,
+          tags: finalTags.length > 0 ? finalTags : null,
           status: finalStatus,
           stock_quantity: 999,
           images: finalImages,
@@ -2204,6 +2206,7 @@ serve(async (req) => {
           source_url: url,
           source_type: platform,
           vendor: finalBrand || platform,
+          compare_at_price: productData.original_price || null,
         })
         .select()
         .single()
