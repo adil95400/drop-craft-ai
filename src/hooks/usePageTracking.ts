@@ -8,7 +8,11 @@ import { useAnalyticsConsent } from '@/hooks/useAnalyticsConsent'
  * - Only loads GA4/analytics AFTER cookie consent
  * - Excludes private routes (/dashboard, /app, /settings, /auth, etc.)
  */
-const PRIVATE_PREFIXES = ['/dashboard', '/app', '/settings', '/auth', '/admin', '/onboarding']
+const PRIVATE_PREFIXES = [
+  '/dashboard', '/app', '/settings', '/auth', '/admin', '/onboarding',
+  '/products', '/orders', '/customers', '/suppliers', '/analytics',
+  '/payment', '/api/', '/invoices', '/fulfillment', '/sync',
+]
 
 function isPrivateRoute(path: string): boolean {
   return PRIVATE_PREFIXES.some((p) => path.startsWith(p))
