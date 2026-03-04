@@ -37,6 +37,10 @@ const OptimisationShopifyPage = lazy(() => import('@/pages/public/OptimisationSh
 const GestionCatalogueEcommercePage = lazy(() => import('@/pages/public/GestionCatalogueEcommercePage'));
 const ImportProduitsAliexpressPage = lazy(() => import('@/pages/public/ImportProduitsAliexpressPage'));
 const AutomatisationEcommercePage = lazy(() => import('@/pages/public/AutomatisationEcommercePage'));
+const AutomatisationShopifyPage = lazy(() => import('@/pages/public/AutomatisationShopifyPage'));
+const OutilPricingShopifyPage = lazy(() => import('@/pages/public/OutilPricingShopifyPage'));
+const ImportProduitShopifyPage = lazy(() => import('@/pages/public/ImportProduitShopifyPage'));
+const AnalyseBoutiqueShopifyPage = lazy(() => import('@/pages/public/AnalyseBoutiqueShopifyPage'));
 
 // Feature pages
 const AIOptimizationPage = lazy(() => import('@/pages/features/AIOptimizationPage'));
@@ -81,6 +85,14 @@ export function PublicRoutes() {
       <Route path="gestion-catalogue-ecommerce" element={<GestionCatalogueEcommercePage />} />
       <Route path="import-produits-aliexpress" element={<ImportProduitsAliexpressPage />} />
       <Route path="automatisation-ecommerce" element={<AutomatisationEcommercePage />} />
+      <Route path="automatisation-shopify" element={<AutomatisationShopifyPage />} />
+      <Route path="outil-pricing-shopify" element={<OutilPricingShopifyPage />} />
+      <Route path="import-produit-shopify" element={<ImportProduitShopifyPage />} />
+      <Route path="analyse-boutique-shopify" element={<AnalyseBoutiqueShopifyPage />} />
+      
+      {/* Comparative redirects */}
+      <Route path="shopopti-vs-autods" element={<Navigate to="/alternative-autods" replace />} />
+      <Route path="shopopti-vs-dsers" element={<Navigate to="/alternative-dsers" replace />} />
       
       {/* Support */}
       <Route path="contact" element={<Contact />} />

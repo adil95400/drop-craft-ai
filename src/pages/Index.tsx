@@ -61,9 +61,9 @@ const HeroSection = memo(() => {
             </div>
             
             <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight leading-[1.1]">
-              Automatisez votre
+              Optimisez votre
               <span className="block bg-gradient-to-r from-primary via-primary/70 to-primary bg-clip-text text-transparent animate-gradient bg-[length:200%_auto]">
-                e-commerce avec l'IA
+                Shopify avec l'IA
               </span>
             </h1>
             
@@ -714,10 +714,10 @@ const Index = () => {
   return (
     <PublicLayout>
       <SEO
-        title="ShopOpti+ | Plateforme E-commerce IA - Dropshipping Automatisé"
-        description="Automatisez votre e-commerce avec ShopOpti+. 99+ fournisseurs, IA avancée, gestion multi-plateformes Shopify, Amazon, eBay. Essai gratuit 14 jours."
+        title="ShopOpti+ | Optimisation Shopify & Automatisation E-commerce IA"
+        description="Optimisez votre boutique Shopify avec ShopOpti+. Automatisation IA, import 99+ fournisseurs, pricing dynamique, SEO automatisé. Essai gratuit 14 jours."
         path="/"
-        keywords="dropshipping, e-commerce IA, automatisation, SaaS, Shopify, AliExpress, BigBuy, gestion produits, analytics, multichannel"
+        keywords="optimisation shopify, automatisation shopify, dropshipping IA, import produit shopify, pricing shopify, SaaS e-commerce, outil shopify"
         jsonLd={{
           "@context": "https://schema.org",
           "@type": "FAQPage",
