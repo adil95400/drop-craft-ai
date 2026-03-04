@@ -374,6 +374,8 @@ export default function ProductPreviewPage() {
             subcategory,
             variants: finalProduct.variants,
             videos: finalProduct.videos,
+            tags,
+            product_type: category,
           }
         }
       })
