@@ -36,6 +36,7 @@ interface ProductPreviewData {
   profit_margin: number
   images: string[]
   brand: string
+  vendor?: string
   sku: string
   platform_detected: string
   source_url: string
@@ -44,6 +45,11 @@ interface ProductPreviewData {
   extracted_reviews?: any[]
   reviews?: { rating: number | null; count: number | null }
   specifications?: Record<string, string>
+  category?: string
+  product_type?: string
+  tags?: string[]
+  original_price?: number | null
+  handle?: string
 }
 
 // --- Image utilities ---
