@@ -385,7 +385,7 @@ export default function ShopifyImportPage() {
           <Card className="border-dashed">
             <CardContent className="p-4">
               <div className="flex items-start gap-3">
-                <AlertCircle className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
+                <AlertCircle className="w-5 h-5 text-destructive shrink-0 mt-0.5" />
                 <div className="space-y-1">
                   <p className="text-sm font-medium">Conseils pour l'import en masse</p>
                   <ul className="text-sm text-muted-foreground space-y-1">
