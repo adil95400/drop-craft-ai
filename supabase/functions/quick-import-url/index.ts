@@ -1861,7 +1861,8 @@ async function scrapeShopifyProduct(url: string, productHandle: string | null): 
       original_price: originalPrice,
       currency: 'EUR', // Shopify JSON doesn't include currency, default to EUR
       sku: product.variants?.[0]?.sku || product.handle || `SHOPIFY-${product.id}`,
-      brand: product.vendor || 'Shopify Store',
+      brand: product.vendor || '',
+      category: product.product_type || '',
       images,
       videos: [], // Will be populated from HTML if needed
       variants,
@@ -1871,8 +1872,9 @@ async function scrapeShopifyProduct(url: string, productHandle: string | null): 
         'Tags': tagsArray.join(', ')
       },
       handle: product.handle,
-      product_type: product.product_type,
+      product_type: product.product_type || '',
       tags: tagsArray,
+      vendor: product.vendor || '',
       created_at: product.created_at,
       updated_at: product.updated_at
     }
