@@ -5,20 +5,8 @@ import { componentTagger } from "lovable-tagger";
 import { VitePWA } from 'vite-plugin-pwa';
 import { ViteImageOptimizer } from 'vite-plugin-image-optimizer';
 
-// Custom plugin to defer non-critical CSS loading
-function deferCssPlugin(): Plugin {
-  return {
-    name: 'defer-css',
-    enforce: 'post',
-    transformIndexHtml(html) {
-      // Match various stylesheet link formats Vite may produce
-      return html.replace(
-        /<link\s+rel="stylesheet"(\s+crossorigin)?\s+href="(\/assets\/[^"]+\.css)">/g,
-        `<link rel="stylesheet" href="$2" media="print" onload="this.media='all'"><noscript><link rel="stylesheet" href="$2"></noscript>`
-      );
-    },
-  };
-}
+// CSS deferring removed — it caused blank pages in production
+// when JS failed to load or execute (CSS stayed as media="print")
 
 // Custom plugin to add modulepreload hints for critical chunks
 // This breaks the network dependency tree by preloading JS in parallel with HTML parsing
