@@ -1,5 +1,6 @@
 import { SEO } from "@/components/SEO";
 import { FAQSchema, BreadcrumbSchema } from "@/components/seo/StructuredData";
+import { HreflangTags } from "@/components/seo/HreflangTags";
 import { PublicLayout } from "@/layouts/PublicLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
