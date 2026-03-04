@@ -17,7 +17,7 @@ export interface AnalyticsConfig {
 
 export function getAnalyticsConfig(): AnalyticsConfig {
   return {
-    ga4MeasurementId: import.meta.env.VITE_GA_MEASUREMENT_ID || undefined,
+    ga4MeasurementId: import.meta.env.VITE_GA_MEASUREMENT_ID || 'G-BBYNCHQNP8',
     mixpanelToken: import.meta.env.VITE_MIXPANEL_TOKEN || undefined,
     hotjarSiteId: import.meta.env.VITE_HOTJAR_SITE_ID || undefined,
     debug: import.meta.env.DEV,
