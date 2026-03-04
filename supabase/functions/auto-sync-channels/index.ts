@@ -193,9 +193,9 @@ serve(async (req) => {
     if (authError || !user) throw new Error('Non authentifié')
 
     const body = await req.json().catch(() => ({}))
-    const { action, channelId, userId, syncType = 'all', intervalMinutes } = body
+    const { action, channelId, syncType = 'all', intervalMinutes } = body
 
-    console.log('[Auto-Sync] Starting', { action, channelId, userId, syncType })
+    console.log('[Auto-Sync] Starting', { action, channelId, syncType })
 
     // Handle schedule action
     if (action === 'schedule') {
