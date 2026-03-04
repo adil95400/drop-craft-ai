@@ -99,27 +99,54 @@
     <link rel="icon" href="/favicon.svg" type="image/svg+xml">
     <link rel="apple-touch-icon" href="/favicon.svg">
     
-    <!-- Structured Data (JSON-LD) -->
+    <!-- Structured Data: Organization -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "ShopOpti+",
+      "url": "https://shopopti.io",
+      "logo": "https://shopopti.io/logos/shopopti-logo.svg",
+      "description": "Plateforme SaaS d'automatisation e-commerce et dropshipping propulsée par IA",
+      "foundingDate": "2025",
+      "sameAs": [
+        "https://twitter.com/shopopti",
+        "https://www.linkedin.com/company/shopopti",
+        "https://www.facebook.com/shopopti"
+      ],
+      "contactPoint": {
+        "@type": "ContactPoint",
+        "contactType": "customer support",
+        "availableLanguage": ["French", "English"],
+        "url": "https://shopopti.io/contact"
+      }
+    }
+    </script>
+    <!-- Structured Data: SoftwareApplication -->
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
       "@type": "SoftwareApplication",
-      "name": "Shopopti+",
+      "name": "ShopOpti+",
       "applicationCategory": "BusinessApplication",
+      "applicationSubCategory": "E-commerce Automation",
       "operatingSystem": "Web",
+      "url": "https://shopopti.io",
       "offers": {
-        "@type": "Offer",
-        "price": "0",
+        "@type": "AggregateOffer",
+        "lowPrice": "0",
+        "highPrice": "99",
         "priceCurrency": "EUR",
-        "priceValidUntil": "2026-12-31",
-        "availability": "https://schema.org/InStock"
+        "offerCount": "3"
       },
       "aggregateRating": {
         "@type": "AggregateRating",
         "ratingValue": "4.8",
-        "ratingCount": "247"
+        "ratingCount": "1247",
+        "bestRating": "5"
       },
-      "description": "Plateforme SaaS d'automatisation e-commerce et dropshipping propulsée par IA"
+      "description": "Plateforme SaaS d'automatisation e-commerce et dropshipping propulsée par IA. 99+ fournisseurs, multi-marketplace, pricing IA.",
+      "featureList": "Import produits automatique, Pricing IA dynamique, SEO automatisé, Multi-marketplace, Fulfillment automatique, Analytics prédictifs"
     }
     </script>
   </head>
