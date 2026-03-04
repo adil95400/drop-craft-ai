@@ -85,6 +85,14 @@ export function PublicRoutes() {
       <Route path="gestion-catalogue-ecommerce" element={<GestionCatalogueEcommercePage />} />
       <Route path="import-produits-aliexpress" element={<ImportProduitsAliexpressPage />} />
       <Route path="automatisation-ecommerce" element={<AutomatisationEcommercePage />} />
+      <Route path="automatisation-shopify" element={<AutomatisationShopifyPage />} />
+      <Route path="outil-pricing-shopify" element={<OutilPricingShopifyPage />} />
+      <Route path="import-produit-shopify" element={<ImportProduitShopifyPage />} />
+      <Route path="analyse-boutique-shopify" element={<AnalyseBoutiqueShopifyPage />} />
+      
+      {/* Comparative redirects */}
+      <Route path="shopopti-vs-autods" element={<Navigate to="/alternative-autods" replace />} />
+      <Route path="shopopti-vs-dsers" element={<Navigate to="/alternative-dsers" replace />} />
       
       {/* Support */}
       <Route path="contact" element={<Contact />} />

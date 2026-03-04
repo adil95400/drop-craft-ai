@@ -66,3 +66,21 @@
 
 /settings/*
   X-Robots-Tag: noindex, nofollow
+
+/auth
+  X-Robots-Tag: noindex, nofollow
+
+/auth/*
+  X-Robots-Tag: noindex, nofollow
+
+/customers/*
+  X-Robots-Tag: noindex, nofollow
+
+/suppliers/*
+  X-Robots-Tag: noindex, nofollow
+
+/analytics/*
+  X-Robots-Tag: noindex, nofollow
+
+/payment/*
+  X-Robots-Tag: noindex, nofollow
