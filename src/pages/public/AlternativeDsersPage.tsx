@@ -54,6 +54,10 @@ const AlternativeDsersPage = () => {
         { name: "Alternative DSers", url: "https://shopopti.io/alternative-dsers" },
       ]} />
       <FAQSchema questions={faqItems} />
+      <HreflangTags entries={[
+        { lang: "fr", href: "https://shopopti.io/alternative-dsers" },
+        { lang: "en", href: "https://shopopti.io/shopopti-vs-dsers" },
+      ]} xDefault="https://shopopti.io/shopopti-vs-dsers" />
 
       <article>
         {/* Hero */}
