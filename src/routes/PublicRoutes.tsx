@@ -119,6 +119,13 @@ export function PublicRoutes() {
       <Route path="shopopti-vs-dsers" element={<ShopoptiVsDsersPage />} />
       <Route path="shopopti-vs-zendrop" element={<ShopoptiVsZendropPage />} />
       
+      {/* Mid-tail SEO Pages (EN) */}
+      <Route path="how-to-automate-shopify-store" element={<HowToAutomateShopifyPage />} />
+      <Route path="how-to-optimize-shopify-store" element={<HowToOptimizeShopifyPage />} />
+      <Route path="shopify-dropshipping-automation" element={<ShopifyDropshippingAutomationPage />} />
+      <Route path="ai-tool-for-shopify" element={<AIToolForShopifyPage />} />
+      <Route path="shopify-auto-product-updater" element={<ShopifyAutoProductUpdaterPage />} />
+      
       {/* Support */}
       <Route path="contact" element={<Contact />} />
       <Route path="faq" element={<FAQ />} />
