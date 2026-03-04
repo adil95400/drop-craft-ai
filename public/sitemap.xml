@@ -214,6 +214,38 @@
     <priority>0.5</priority>
   </url>
 
+  <!-- EN Mid-tail SEO Pages -->
+  <url>
+    <loc>https://shopopti.io/how-to-automate-shopify-store</loc>
+    <lastmod>2026-03-04</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://shopopti.io/how-to-optimize-shopify-store</loc>
+    <lastmod>2026-03-04</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://shopopti.io/shopify-dropshipping-automation</loc>
+    <lastmod>2026-03-04</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://shopopti.io/ai-tool-for-shopify</loc>
+    <lastmod>2026-03-04</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://shopopti.io/shopify-auto-product-updater</loc>
+    <lastmod>2026-03-04</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
   <!-- Legal -->
   <url>
     <loc>https://shopopti.io/privacy-policy</loc>

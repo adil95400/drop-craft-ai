@@ -52,6 +52,13 @@ const ShopoptiVsAutodsPage = lazy(() => import('@/pages/public/en/ShopoptiVsAuto
 const ShopoptiVsDsersPage = lazy(() => import('@/pages/public/en/ShopoptiVsDsersPage'));
 const ShopoptiVsZendropPage = lazy(() => import('@/pages/public/en/ShopoptiVsZendropPage'));
 
+// EN Mid-tail SEO pages
+const HowToAutomateShopifyPage = lazy(() => import('@/pages/public/en/HowToAutomateShopifyPage'));
+const HowToOptimizeShopifyPage = lazy(() => import('@/pages/public/en/HowToOptimizeShopifyPage'));
+const ShopifyDropshippingAutomationPage = lazy(() => import('@/pages/public/en/ShopifyDropshippingAutomationPage'));
+const AIToolForShopifyPage = lazy(() => import('@/pages/public/en/AIToolForShopifyPage'));
+const ShopifyAutoProductUpdaterPage = lazy(() => import('@/pages/public/en/ShopifyAutoProductUpdaterPage'));
+
 // Feature pages
 const AIOptimizationPage = lazy(() => import('@/pages/features/AIOptimizationPage'));
 const MultiMarketplacePage = lazy(() => import('@/pages/features/MultiMarketplacePage'));
@@ -111,6 +118,13 @@ export function PublicRoutes() {
       <Route path="shopopti-vs-autods" element={<ShopoptiVsAutodsPage />} />
       <Route path="shopopti-vs-dsers" element={<ShopoptiVsDsersPage />} />
       <Route path="shopopti-vs-zendrop" element={<ShopoptiVsZendropPage />} />
+      
+      {/* Mid-tail SEO Pages (EN) */}
+      <Route path="how-to-automate-shopify-store" element={<HowToAutomateShopifyPage />} />
+      <Route path="how-to-optimize-shopify-store" element={<HowToOptimizeShopifyPage />} />
+      <Route path="shopify-dropshipping-automation" element={<ShopifyDropshippingAutomationPage />} />
+      <Route path="ai-tool-for-shopify" element={<AIToolForShopifyPage />} />
+      <Route path="shopify-auto-product-updater" element={<ShopifyAutoProductUpdaterPage />} />
       
       {/* Support */}
       <Route path="contact" element={<Contact />} />
