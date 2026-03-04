@@ -1041,6 +1041,33 @@ export default function ProductPreviewPage() {
                       placeholder="SKU-001"
                     />
                   </div>
+                  {/* Tags */}
+                  <div className="space-y-1.5">
+                    <label className="text-xs text-muted-foreground">Tags</label>
+                    <div className="flex flex-wrap gap-1.5">
+                      {tags.length > 0 ? tags.map((tag, i) => (
+                        <Badge key={i} variant="secondary" className="text-xs gap-1">
+                          {tag}
+                          <button onClick={() => setTags(prev => prev.filter((_, idx) => idx !== i))} className="ml-0.5 hover:text-destructive">
+                            <X className="h-2.5 w-2.5" />
+                          </button>
+                        </Badge>
+                      )) : (
+                        <span className="text-xs text-muted-foreground">Aucun tag</span>
+                      )}
+                    </div>
+                    <Input
+                      placeholder="Ajouter un tag (Entrée)"
+                      className="text-xs"
+                      onKeyDown={e => {
+                        if (e.key === 'Enter' && (e.target as HTMLInputElement).value.trim()) {
+                          setTags(prev => [...prev, (e.target as HTMLInputElement).value.trim()])
+                          ;(e.target as HTMLInputElement).value = ''
+                          e.preventDefault()
+                        }
+                      }}
+                    />
+                  </div>
                   <div className="space-y-1.5">
                     <label className="text-xs text-muted-foreground">Source</label>
                     <div className="flex items-center gap-2 p-2 rounded-lg border border-border/40 bg-muted/20">
