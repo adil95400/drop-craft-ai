@@ -51,7 +51,7 @@ const AppContent = memo(() => {
   }, []);
   
   return (
-    <Suspense fallback={null}>
+    <Suspense fallback={<div className="min-h-screen" />}>
       <MobileGlobalOptimizer>
         {/* Skip link for keyboard navigation (WCAG 2.4.1) */}
         <a href="#main-content" className="skip-link">
