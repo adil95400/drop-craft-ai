@@ -10,6 +10,7 @@ import { useNavigate } from 'react-router-dom'
 
 export interface ImportResult {
   success: boolean
+  data?: any
   product?: any
   saved_id?: string
   error?: string
