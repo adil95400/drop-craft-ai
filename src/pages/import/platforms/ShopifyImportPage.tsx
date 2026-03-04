@@ -619,10 +619,10 @@ export default function ShopifyImportPage() {
 
       {/* ═══ Active Jobs ═══ */}
       {importJobs && importJobs.filter(j => j.status === 'processing').length > 0 && (
-        <Card className="border-blue-200 dark:border-blue-800">
+        <Card className="border-primary/30">
           <CardHeader className="pb-3">
             <CardTitle className="text-lg flex items-center gap-2">
-              <RefreshCw className="w-5 h-5 text-blue-500 animate-spin" />
+              <RefreshCw className="w-5 h-5 text-primary animate-spin" />
               Jobs en cours
             </CardTitle>
           </CardHeader>
