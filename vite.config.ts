@@ -61,7 +61,7 @@ export default defineConfig(({ mode }) => ({
   plugins: [
     react(),
     mode === 'development' && componentTagger(),
-    mode === 'production' && deferCssPlugin(),
+    // deferCssPlugin removed — caused blank pages in production
     mode === 'production' && modulePreloadPlugin(),
     // Optimize images at build time - compress JPG/PNG and convert to WebP
     ViteImageOptimizer({
