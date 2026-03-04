@@ -54,6 +54,16 @@ Allow: /gestion-catalogue-ecommerce
 Allow: /import-produits-aliexpress
 Allow: /automatisation-ecommerce
 
+# EN SEO landing pages
+Allow: /shopify-automation-tool
+Allow: /shopify-ai-optimization
+Allow: /shopify-pricing-automation
+Allow: /shopify-product-import-tool
+Allow: /shopify-analytics-software
+Allow: /shopopti-vs-autods
+Allow: /shopopti-vs-dsers
+Allow: /shopopti-vs-zendrop
+
 # Sitemaps
 Sitemap: https://shopopti.io/sitemap.xml
 
