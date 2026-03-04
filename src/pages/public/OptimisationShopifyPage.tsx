@@ -32,6 +32,10 @@ const OptimisationShopifyPage = () => {
         { name: "Optimisation Shopify", url: "https://shopopti.io/optimisation-shopify" },
       ]} />
       <FAQSchema questions={faqItems} />
+      <HreflangTags entries={[
+        { lang: "fr", href: "https://shopopti.io/optimisation-shopify" },
+        { lang: "en", href: "https://shopopti.io/shopify-ai-optimization" },
+      ]} xDefault="https://shopopti.io/shopify-ai-optimization" />
 
       <article>
         {/* Hero */}

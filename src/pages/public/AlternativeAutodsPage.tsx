@@ -45,6 +45,10 @@ const AlternativeAutodsPage = () => {
         { name: "Alternative AutoDS", url: "https://shopopti.io/alternative-autods" },
       ]} />
       <FAQSchema questions={faqItems} />
+      <HreflangTags entries={[
+        { lang: "fr", href: "https://shopopti.io/alternative-autods" },
+        { lang: "en", href: "https://shopopti.io/shopopti-vs-autods" },
+      ]} xDefault="https://shopopti.io/shopopti-vs-autods" />
 
       <article>
         {/* Hero */}

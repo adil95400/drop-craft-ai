@@ -30,6 +30,10 @@ export default function ImportProduitShopifyPage() {
         { name: "Import Produit Shopify", url: "https://shopopti.io/import-produit-shopify" },
       ]} />
       <FAQSchema questions={faqItems} />
+      <HreflangTags entries={[
+        { lang: "fr", href: "https://shopopti.io/import-produit-shopify" },
+        { lang: "en", href: "https://shopopti.io/shopify-product-import-tool" },
+      ]} xDefault="https://shopopti.io/shopify-product-import-tool" />
 
       <article className="container max-w-4xl mx-auto py-12 px-4 space-y-12">
         <header className="text-center space-y-6">

@@ -30,6 +30,10 @@ export default function OutilPricingShopifyPage() {
         { name: "Outil Pricing Shopify", url: "https://shopopti.io/outil-pricing-shopify" },
       ]} />
       <FAQSchema questions={faqItems} />
+      <HreflangTags entries={[
+        { lang: "fr", href: "https://shopopti.io/outil-pricing-shopify" },
+        { lang: "en", href: "https://shopopti.io/shopify-pricing-automation" },
+      ]} xDefault="https://shopopti.io/shopify-pricing-automation" />
 
       <article className="container max-w-4xl mx-auto py-12 px-4 space-y-12">
         <header className="text-center space-y-6">
