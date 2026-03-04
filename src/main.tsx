@@ -22,9 +22,7 @@ PWAService.init()
 // 3. Initialize error monitoring
 initSentry()
 
-// 4. Initialize analytics (GA4, Mixpanel, Hotjar)
-import { initAnalytics } from '@/lib/analytics'
-initAnalytics()
+// 4. Analytics is now initialized lazily via usePageTracking (consent-gated)
 
 // Log application start
 logger.info('Application started', { component: 'main' })
