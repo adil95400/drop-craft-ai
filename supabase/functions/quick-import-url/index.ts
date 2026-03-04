@@ -1861,7 +1861,8 @@ async function scrapeShopifyProduct(url: string, productHandle: string | null): 
       original_price: originalPrice,
       currency: 'EUR', // Shopify JSON doesn't include currency, default to EUR
       sku: product.variants?.[0]?.sku || product.handle || `SHOPIFY-${product.id}`,
-      brand: product.vendor || 'Shopify Store',
+      brand: product.vendor || '',
+      category: product.product_type || '',
       images,
       videos: [], // Will be populated from HTML if needed
       variants,
@@ -1871,8 +1872,9 @@ async function scrapeShopifyProduct(url: string, productHandle: string | null): 
         'Tags': tagsArray.join(', ')
       },
       handle: product.handle,
-      product_type: product.product_type,
+      product_type: product.product_type || '',
       tags: tagsArray,
+      vendor: product.vendor || '',
       created_at: product.created_at,
       updated_at: product.updated_at
     }
@@ -2168,9 +2170,11 @@ serve(async (req) => {
       const finalBrand = overrideData.brand || productData.brand
       const finalSku = overrideData.sku || productData.sku
       const finalStatus = overrideData.status || 'draft'
-      const finalCategory = overrideData.category || 'Importé'
+      const finalCategory = overrideData.category || productData.product_type || productData.category || 'Importé'
       const finalVariants = overrideData.variants || productData.variants
       const finalVideos = overrideData.videos || productData.videos
+      const finalTags = overrideData.tags || productData.tags || []
+      const finalProductType = overrideData.product_type || productData.product_type || ''
       const suggestedPrice = overrideData.suggested_price || Math.ceil(productData.price * price_multiplier * 100) / 100
       const costPrice = overrideData.price || productData.price
       const importReviews = productData.extracted_reviews?.length > 0
@@ -2188,6 +2192,8 @@ serve(async (req) => {
           sku: finalSku,
           brand: finalBrand,
           category: finalCategory,
+          product_type: finalProductType,
+          tags: finalTags.length > 0 ? finalTags : null,
           status: finalStatus,
           stock_quantity: 999,
           images: finalImages,
@@ -2202,6 +2208,7 @@ serve(async (req) => {
           source_url: url,
           source_type: platform,
           vendor: finalBrand || platform,
+          compare_at_price: productData.original_price || null,
         })
         .select()
         .single()
