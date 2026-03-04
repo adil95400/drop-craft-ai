@@ -62,9 +62,9 @@ function useRecentImports() {
         .from('products')
         .select('id, name, image_url, price, status, created_at, brand, category, source_url')
         .eq('user_id', user.id)
-        .eq('source_platform', 'shopify')
+        .eq('source_type', 'shopify' as any)
         .order('created_at', { ascending: false })
-        .limit(8);
+        .limit(8) as any;
       return data || [];
     },
   });
