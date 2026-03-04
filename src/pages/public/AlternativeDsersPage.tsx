@@ -1,5 +1,6 @@
 import { SEO } from "@/components/SEO";
 import { FAQSchema, BreadcrumbSchema } from "@/components/seo/StructuredData";
+import { HreflangTags } from "@/components/seo/HreflangTags";
 import { PublicLayout } from "@/layouts/PublicLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -53,6 +54,10 @@ const AlternativeDsersPage = () => {
         { name: "Alternative DSers", url: "https://shopopti.io/alternative-dsers" },
       ]} />
       <FAQSchema questions={faqItems} />
+      <HreflangTags entries={[
+        { lang: "fr", href: "https://shopopti.io/alternative-dsers" },
+        { lang: "en", href: "https://shopopti.io/shopopti-vs-dsers" },
+      ]} xDefault="https://shopopti.io/shopopti-vs-dsers" />
 
       <article>
         {/* Hero */}

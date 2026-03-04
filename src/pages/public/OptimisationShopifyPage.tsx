@@ -1,5 +1,6 @@
 import { SEO } from "@/components/SEO";
 import { FAQSchema, BreadcrumbSchema } from "@/components/seo/StructuredData";
+import { HreflangTags } from "@/components/seo/HreflangTags";
 import { PublicLayout } from "@/layouts/PublicLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -31,6 +32,10 @@ const OptimisationShopifyPage = () => {
         { name: "Optimisation Shopify", url: "https://shopopti.io/optimisation-shopify" },
       ]} />
       <FAQSchema questions={faqItems} />
+      <HreflangTags entries={[
+        { lang: "fr", href: "https://shopopti.io/optimisation-shopify" },
+        { lang: "en", href: "https://shopopti.io/shopify-ai-optimization" },
+      ]} xDefault="https://shopopti.io/shopify-ai-optimization" />
 
       <article>
         {/* Hero */}

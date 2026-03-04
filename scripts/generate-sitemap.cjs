@@ -24,6 +24,16 @@ const routes = [
   { path: "/alternative-autods", changefreq: "monthly", priority: "0.9" },
   { path: "/optimisation-shopify", changefreq: "monthly", priority: "0.9" },
   { path: "/gestion-catalogue-ecommerce", changefreq: "monthly", priority: "0.9" },
+  // EN SEO pages
+  { path: "/shopify-automation-tool", changefreq: "monthly", priority: "0.9" },
+  { path: "/shopify-ai-optimization", changefreq: "monthly", priority: "0.9" },
+  { path: "/shopify-pricing-automation", changefreq: "monthly", priority: "0.9" },
+  { path: "/shopify-product-import-tool", changefreq: "monthly", priority: "0.9" },
+  { path: "/shopify-analytics-software", changefreq: "monthly", priority: "0.9" },
+  // Comparison pages (EN)
+  { path: "/shopopti-vs-autods", changefreq: "monthly", priority: "0.8" },
+  { path: "/shopopti-vs-dsers", changefreq: "monthly", priority: "0.8" },
+  { path: "/shopopti-vs-zendrop", changefreq: "monthly", priority: "0.8" },
   // Legal
   { path: "/privacy-policy", changefreq: "yearly", priority: "0.3" },
   { path: "/terms-of-service", changefreq: "yearly", priority: "0.3" },

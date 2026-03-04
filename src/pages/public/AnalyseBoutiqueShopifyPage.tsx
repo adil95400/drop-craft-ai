@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import { PublicLayout } from '@/layouts/PublicLayout';
 import { SEO } from '@/components/SEO';
 import { BreadcrumbSchema, FAQSchema } from '@/components/seo/StructuredData';
+import { HreflangTags } from '@/components/seo/HreflangTags';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -29,6 +30,10 @@ export default function AnalyseBoutiqueShopifyPage() {
         { name: "Analyse Boutique Shopify", url: "https://shopopti.io/analyse-boutique-shopify" },
       ]} />
       <FAQSchema questions={faqItems} />
+      <HreflangTags entries={[
+        { lang: "fr", href: "https://shopopti.io/analyse-boutique-shopify" },
+        { lang: "en", href: "https://shopopti.io/shopify-analytics-software" },
+      ]} xDefault="https://shopopti.io/shopify-analytics-software" />
 
       <article className="container max-w-4xl mx-auto py-12 px-4 space-y-12">
         <header className="text-center space-y-6">
