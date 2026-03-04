@@ -2222,37 +2222,32 @@ serve(async (req) => {
       if (importReviews && productData.extracted_reviews.length > 0) {
         console.log(`📝 Importing ${productData.extracted_reviews.length} reviews...`)
         
-        const reviewsToInsert = productData.extracted_reviews.map((review: any) => ({
+        // Insert into product_reviews table (canonical, used by the app)
+        const productReviewsToInsert = productData.extracted_reviews.map((review: any) => ({
           user_id,
-          imported_product_id: insertedProduct.id,
-          product_name: finalTitle,
-          product_sku: finalSku,
-          customer_name: review.customer_name || 'Client',
-          rating: review.rating || 5,
-          title: review.title || '',
-          comment: review.comment || '',
+          product_id: insertedProduct.id,
+          author: review.customer_name || 'Client',
+          rating: Math.min(5, Math.max(1, Math.round(review.rating || 5))),
+          text: [review.title, review.comment].filter(Boolean).join('\n\n') || 'Avis importé',
           verified_purchase: review.verified_purchase || false,
           helpful_count: review.helpful_count || 0,
           review_date: review.review_date || null,
-          source: platform,
+          source_platform: platform,
           source_url: url,
-          images: review.images || [],
-          metadata: {
-            source_review_id: review.source_review_id,
-            imported_at: new Date().toISOString()
-          }
+          images: review.images?.length > 0 ? review.images : null,
+          external_id: review.source_review_id || null,
         }))
         
         const { data: insertedReviews, error: reviewsError } = await supabaseAdmin
-          .from('imported_reviews')
-          .insert(reviewsToInsert)
-          .select()
+          .from('product_reviews')
+          .insert(productReviewsToInsert)
+          .select('id')
         
         if (reviewsError) {
-          console.error('Error importing reviews:', reviewsError)
+          console.error('Error importing reviews to product_reviews:', reviewsError)
         } else {
           reviewsImported = insertedReviews?.length || 0
-          console.log(`✅ Imported ${reviewsImported} reviews`)
+          console.log(`✅ Imported ${reviewsImported} reviews to product_reviews`)
         }
       }
       
