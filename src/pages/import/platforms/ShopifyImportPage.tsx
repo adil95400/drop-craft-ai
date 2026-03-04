@@ -36,8 +36,8 @@ function useShopifyStats() {
       if (!user) return { total: 0, shopify: 0, reviews: 0, lastImport: null };
 
       const [productsRes, reviewsRes] = await Promise.all([
-        supabase.from('products').select('id, source_platform, created_at', { count: 'exact' })
-          .eq('user_id', user.id).eq('source_platform', 'shopify'),
+        supabase.from('products').select('id, source_type, created_at', { count: 'exact' })
+          .eq('user_id', user.id).eq('source_type', 'shopify'),
         supabase.from('product_reviews').select('id', { count: 'exact' })
           .eq('user_id', user.id),
       ]);
