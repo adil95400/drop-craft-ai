@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import { PublicLayout } from '@/layouts/PublicLayout';
 import { SEO } from '@/components/SEO';
 import { BreadcrumbSchema, FAQSchema } from '@/components/seo/StructuredData';
+import { HreflangTags } from '@/components/seo/HreflangTags';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
