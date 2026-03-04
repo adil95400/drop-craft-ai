@@ -30,6 +30,13 @@ export default function AutomatisationShopifyPage() {
         { name: "Automatisation Shopify", url: "https://shopopti.io/automatisation-shopify" },
       ]} />
       <FAQSchema questions={faqItems} />
+      <HreflangTags
+        entries={[
+          { lang: "fr", href: "https://shopopti.io/automatisation-shopify" },
+          { lang: "en", href: "https://shopopti.io/shopify-automation-tool" },
+        ]}
+        xDefault="https://shopopti.io/shopify-automation-tool"
+      />
 
       <article className="container max-w-4xl mx-auto py-12 px-4 space-y-12">
         {/* Hero */}
