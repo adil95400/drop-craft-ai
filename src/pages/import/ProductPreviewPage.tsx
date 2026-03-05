@@ -158,7 +158,7 @@ export default function ProductPreviewPage() {
   const [isSaving, setIsSaving] = useState(false)
   const [productStatus, setProductStatus] = useState('draft')
   const [category, setCategory] = useState(product?.category || product?.product_type || '')
-  const [subcategory, setSubcategory] = useState('')
+  const [subcategory, setSubcategory] = useState(product?.subcategory || '')
   const [tags, setTags] = useState<string[]>(product?.tags || [])
   const [suggestedCategories, setSuggestedCategories] = useState<{category: string, subcategory: string, confidence: number}[]>([])
   const [showAddReview, setShowAddReview] = useState(false)
