@@ -43,28 +43,51 @@ serve(async (req) => {
       throw new Error(`Product not found: ${productError?.message || 'unknown'}`)
     }
 
-    // 2. Fetch the target stores with their integrations
+    // 2. Fetch the target stores from both `stores` and `integrations` tables
     const { data: stores, error: storesError } = await supabase
       .from('stores')
       .select('*')
       .eq('user_id', user.id)
       .in('id', storeIds)
 
-    if (storesError || !stores?.length) {
-      throw new Error(`No stores found: ${storesError?.message || 'no matching stores'}`)
-    }
-
-    // 3. Fetch store_integrations for credentials
-    const { data: integrations } = await supabase
-      .from('store_integrations')
+    // Also check integrations table (for Shopify, etc.)
+    const { data: integrationStores, error: intStoresError } = await supabase
+      .from('integrations')
       .select('*')
       .eq('user_id', user.id)
-      .eq('is_active', true)
-      .in('id', stores.map((s: any) => s.id))
+      .in('id', storeIds)
 
+    // Merge both sources into a unified list
+    const allStores: any[] = [
+      ...(stores || []).map((s: any) => ({ ...s, _source: 'stores' })),
+      ...(integrationStores || []).map((i: any) => ({
+        id: i.id,
+        name: i.platform_name || i.platform,
+        platform: i.platform,
+        store_url: i.store_url,
+        user_id: i.user_id,
+        _source: 'integrations',
+      })),
+    ]
+
+    if (!allStores.length) {
+      throw new Error(`No stores found: ${storesError?.message || intStoresError?.message || 'no matching stores'}`)
+    }
+
+    // 3. Fetch store_integrations for credentials (for stores-based entries)
+    const storeOnlyIds = allStores.filter((s: any) => s._source === 'stores').map((s: any) => s.id)
     const integrationMap = new Map()
-    for (const integ of (integrations || [])) {
-      integrationMap.set(integ.id, integ)
+    if (storeOnlyIds.length > 0) {
+      const { data: storeIntegrations } = await supabase
+        .from('store_integrations')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('is_active', true)
+        .in('id', storeOnlyIds)
+
+      for (const integ of (storeIntegrations || [])) {
+        integrationMap.set(integ.id, integ)
+      }
     }
 
     const results: Array<{
