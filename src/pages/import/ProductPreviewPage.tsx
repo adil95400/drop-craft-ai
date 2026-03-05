@@ -1136,6 +1136,15 @@ export default function ProductPreviewPage() {
                       {(editedProduct.suggested_price - editedProduct.price).toFixed(2)} €
                     </span>
                   </div>
+                  <div className="space-y-1.5">
+                    <label className="text-xs text-muted-foreground">Stock</label>
+                    <Input
+                      type="number"
+                      min="0"
+                      value={editedProduct.stock_quantity ?? 0}
+                      onChange={e => handleFieldChange('stock_quantity', parseInt(e.target.value) || 0)}
+                    />
+                  </div>
                 </CardContent>
               </Card>
 
