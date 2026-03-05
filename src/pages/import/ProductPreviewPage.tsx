@@ -436,6 +436,7 @@ export default function ProductPreviewPage() {
             variants: finalProduct.variants,
             videos: finalProduct.videos,
             tags,
+            stock_quantity: finalProduct.stock_quantity ?? 0,
             product_type: category,
           }
         }
