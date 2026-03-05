@@ -330,6 +330,28 @@ export default function ProductPreviewPage() {
     return data?.length || 0
   }
 
+  const createImportJobRecord = async (userId: string, platform: string, sourceUrl: string, productTitle: string, reviewsCount: number, success: boolean, errorMsg?: string) => {
+    try {
+      await supabase.from('jobs').insert({
+        user_id: userId,
+        job_type: 'import',
+        job_subtype: platform || 'url',
+        name: productTitle ? `Import: ${productTitle.slice(0, 80)}` : `Import ${platform}`,
+        status: success ? 'completed' : 'failed',
+        total_items: 1,
+        processed_items: success ? 1 : 0,
+        failed_items: success ? 0 : 1,
+        started_at: new Date().toISOString(),
+        completed_at: new Date().toISOString(),
+        error_message: errorMsg || null,
+        input_data: { source_url: sourceUrl, platform } as any,
+        metadata: { reviews_imported: reviewsCount } as any,
+      })
+    } catch (e) {
+      console.error('Failed to create job record:', e)
+    }
+  }
+
   const handleConfirm = async () => {
     if (!editedProduct) return
     const filtered = editedProduct.images.filter((_, i) => selectedImages.has(i) && !failedImages.has(i))
