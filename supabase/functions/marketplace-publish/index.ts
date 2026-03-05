@@ -100,7 +100,7 @@ serve(async (req) => {
     }> = []
 
     // 4. Publish to each store
-    for (const store of stores) {
+    for (const store of allStores) {
       try {
         console.log(`[marketplace-publish] Publishing to store ${store.name} (${store.platform})`)
 
