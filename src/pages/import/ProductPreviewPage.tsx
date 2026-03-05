@@ -50,6 +50,7 @@ interface ProductPreviewData {
   tags?: string[]
   original_price?: number | null
   handle?: string
+  stock_quantity?: number
 }
 
 // --- Image utilities ---
