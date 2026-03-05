@@ -2138,6 +2138,11 @@ serve(async (req) => {
     if (action === 'preview') {
       const suggestedPrice = Math.ceil(productData.price * price_multiplier * 100) / 100
       
+      // Calculate total stock from variants
+      const totalStock = productData.variants?.length > 0
+        ? productData.variants.reduce((sum: number, v: any) => sum + (typeof v.stock === 'number' ? v.stock : 0), 0)
+        : (typeof productData.inventory_quantity === 'number' ? productData.inventory_quantity : 0)
+      
       return new Response(
         JSON.stringify({
           success: true,
@@ -2145,6 +2150,7 @@ serve(async (req) => {
           data: {
             ...productData,
             suggested_price: suggestedPrice,
+            stock_quantity: totalStock,
             profit_margin: productData.price > 0 ? Math.round(((suggestedPrice - productData.price) / suggestedPrice) * 100) : 0,
             platform_detected: platform,
             product_id: productId,
@@ -2195,7 +2201,14 @@ serve(async (req) => {
           product_type: finalProductType,
           tags: finalTags.length > 0 ? finalTags : null,
           status: finalStatus,
-          stock_quantity: 999,
+          stock_quantity: (() => {
+            const ov = overrideData.stock_quantity
+            if (typeof ov === 'number') return ov
+            if (finalVariants?.length > 0) {
+              return finalVariants.reduce((s: number, v: any) => s + (typeof v.stock === 'number' ? v.stock : 0), 0)
+            }
+            return typeof productData.inventory_quantity === 'number' ? productData.inventory_quantity : 0
+          })(),
           images: finalImages,
           image_url: finalImages?.[0] || null,
           primary_image_url: finalImages?.[0] || null,

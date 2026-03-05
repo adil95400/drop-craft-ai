@@ -82,6 +82,7 @@ export function useUrlImport(platformName: string) {
               tags: productData.tags || [],
               original_price: productData.original_price || null,
               handle: productData.handle || '',
+              stock_quantity: productData.stock_quantity ?? 0,
             },
             returnTo: `/import/${platformName.toLowerCase().replace(/\s+/g, '-')}`,
           },
