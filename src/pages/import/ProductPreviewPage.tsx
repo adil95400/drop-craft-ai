@@ -309,6 +309,27 @@ export default function ProductPreviewPage() {
     setNewImageUrl('')
   }
 
+  const saveReviewsToDb = async (productId: string, userId: string, reviews: any[], sourceUrl: string, platform: string) => {
+    if (!reviews || reviews.length === 0) return 0
+    const reviewsToInsert = reviews.map((review: any) => ({
+      user_id: userId,
+      product_id: productId,
+      author: review.customer_name || 'Client',
+      rating: Math.min(5, Math.max(1, Math.round(review.rating || 5))),
+      text: [review.title, review.comment].filter(Boolean).join('\n\n') || 'Avis importé',
+      verified_purchase: review.verified_purchase || false,
+      helpful_count: review.helpful_count || 0,
+      review_date: review.review_date || null,
+      source_platform: platform,
+      source_url: sourceUrl,
+      images: review.images?.length > 0 ? review.images : null,
+      external_id: review.source_review_id || null,
+    }))
+    const { data, error } = await supabase.from('product_reviews' as any).insert(reviewsToInsert).select('id')
+    if (error) console.error('Error importing reviews:', error)
+    return data?.length || 0
+  }
+
   const handleConfirm = async () => {
     if (!editedProduct) return
     const filtered = editedProduct.images.filter((_, i) => selectedImages.has(i) && !failedImages.has(i))
@@ -349,12 +370,19 @@ export default function ProductPreviewPage() {
           user_id: user.id,
         }
 
-        const { error: dbError } = await supabase.from('products').insert(productData)
+        const { data: insertedProduct, error: dbError } = await supabase.from('products').insert(productData).select('id').single()
         if (dbError) throw dbError
+
+        // Save reviews
+        const reviewsCount = await saveReviewsToDb(
+          insertedProduct.id, user.id,
+          finalProduct.extracted_reviews || [],
+          '', finalProduct.platform_detected
+        )
 
         toast({
           title: '✅ Produit importé avec succès',
-          description: `"${finalProduct.title}" ajouté au catalogue`,
+          description: `"${finalProduct.title}" ajouté au catalogue${reviewsCount > 0 ? ` avec ${reviewsCount} avis` : ''}`,
         })
         navigate('/products')
         return
