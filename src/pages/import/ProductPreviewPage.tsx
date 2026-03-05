@@ -160,6 +160,8 @@ export default function ProductPreviewPage() {
   const [subcategory, setSubcategory] = useState('')
   const [tags, setTags] = useState<string[]>(product?.tags || [])
   const [suggestedCategories, setSuggestedCategories] = useState<{category: string, subcategory: string, confidence: number}[]>([])
+  const [showAddReview, setShowAddReview] = useState(false)
+  const [newReview, setNewReview] = useState({ customer_name: '', rating: 5, title: '', comment: '', verified_purchase: false })
 
   useEffect(() => {
     if (!product) {
@@ -307,6 +309,27 @@ export default function ProductPreviewPage() {
     setNewImageUrl('')
   }
 
+  const saveReviewsToDb = async (productId: string, userId: string, reviews: any[], sourceUrl: string, platform: string) => {
+    if (!reviews || reviews.length === 0) return 0
+    const reviewsToInsert = reviews.map((review: any) => ({
+      user_id: userId,
+      product_id: productId,
+      author: review.customer_name || 'Client',
+      rating: Math.min(5, Math.max(1, Math.round(review.rating || 5))),
+      text: [review.title, review.comment].filter(Boolean).join('\n\n') || 'Avis importé',
+      verified_purchase: review.verified_purchase || false,
+      helpful_count: review.helpful_count || 0,
+      review_date: review.review_date || null,
+      source_platform: platform,
+      source_url: sourceUrl,
+      images: review.images?.length > 0 ? review.images : null,
+      external_id: review.source_review_id || null,
+    }))
+    const { data, error } = await supabase.from('product_reviews' as any).insert(reviewsToInsert).select('id')
+    if (error) console.error('Error importing reviews:', error)
+    return data?.length || 0
+  }
+
   const handleConfirm = async () => {
     if (!editedProduct) return
     const filtered = editedProduct.images.filter((_, i) => selectedImages.has(i) && !failedImages.has(i))
@@ -347,12 +370,19 @@ export default function ProductPreviewPage() {
           user_id: user.id,
         }
 
-        const { error: dbError } = await supabase.from('products').insert(productData)
+        const { data: insertedProduct, error: dbError } = await supabase.from('products').insert(productData).select('id').single()
         if (dbError) throw dbError
+
+        // Save reviews
+        const reviewsCount = await saveReviewsToDb(
+          insertedProduct.id, user.id,
+          finalProduct.extracted_reviews || [],
+          '', finalProduct.platform_detected
+        )
 
         toast({
           title: '✅ Produit importé avec succès',
-          description: `"${finalProduct.title}" ajouté au catalogue`,
+          description: `"${finalProduct.title}" ajouté au catalogue${reviewsCount > 0 ? ` avec ${reviewsCount} avis` : ''}`,
         })
         navigate('/products')
         return
@@ -439,12 +469,19 @@ export default function ProductPreviewPage() {
         user_id: user.id,
       }
 
-      const { error } = await supabase.from('products').insert(productData)
+      const { data: insertedProduct, error } = await supabase.from('products').insert(productData).select('id').single()
       if (error) throw error
+
+      // Save reviews
+      const reviewsCount = await saveReviewsToDb(
+        insertedProduct.id, user.id,
+        editedProduct.extracted_reviews || [],
+        editedProduct.source_url || '', editedProduct.platform_detected
+      )
 
       toast({
         title: '✅ Produit sauvegardé',
-        description: `"${editedProduct.title}" a été enregistré dans le catalogue`,
+        description: `"${editedProduct.title}" a été enregistré${reviewsCount > 0 ? ` avec ${reviewsCount} avis` : ''}`,
       })
       navigate(returnTo || '/products')
     } catch (err) {
@@ -823,58 +860,161 @@ export default function ProductPreviewPage() {
                     </Badge>
                   </div>
                 }
-                defaultOpen={!!(editedProduct.extracted_reviews && editedProduct.extracted_reviews.length > 0)}
+                defaultOpen={true}
               >
-                {editedProduct.extracted_reviews && editedProduct.extracted_reviews.length > 0 ? (
-                  <div className="space-y-2 max-h-72 overflow-y-auto">
-                    {editedProduct.extracted_reviews.slice(0, 10).map((review: any, i: number) => (
-                      <div key={i} className="p-3 rounded-lg border border-border/30 bg-muted/10 space-y-1.5">
-                        <div className="flex items-center justify-between">
-                          <span className="text-xs font-medium">{review.customer_name || 'Client'}</span>
-                          <div className="flex items-center gap-0.5">
-                            {Array.from({ length: 5 }).map((_, s) => (
-                              <Star key={s} className={cn("h-3 w-3", s < (review.rating || 0) ? "fill-amber-500 text-amber-500" : "text-muted-foreground/20")} />
-                            ))}
+                <div className="space-y-3">
+                  {/* Extracted reviews list */}
+                  {editedProduct.extracted_reviews && editedProduct.extracted_reviews.length > 0 ? (
+                    <div className="space-y-2 max-h-72 overflow-y-auto">
+                      {editedProduct.extracted_reviews.map((review: any, i: number) => (
+                        <div key={i} className="p-3 rounded-lg border border-border/30 bg-muted/10 space-y-1.5 group relative">
+                          <div className="flex items-center justify-between">
+                            <span className="text-xs font-medium">{review.customer_name || 'Client'}</span>
+                            <div className="flex items-center gap-1.5">
+                              <div className="flex items-center gap-0.5">
+                                {Array.from({ length: 5 }).map((_, s) => (
+                                  <Star key={s} className={cn("h-3 w-3", s < (review.rating || 0) ? "fill-amber-500 text-amber-500" : "text-muted-foreground/20")} />
+                                ))}
+                              </div>
+                              <button
+                                onClick={() => {
+                                  setEditedProduct(prev => prev ? {
+                                    ...prev,
+                                    extracted_reviews: prev.extracted_reviews?.filter((_: any, idx: number) => idx !== i)
+                                  } : null)
+                                }}
+                                className="opacity-0 group-hover:opacity-100 transition-opacity p-0.5 rounded hover:bg-destructive/10"
+                              >
+                                <X className="h-3 w-3 text-destructive" />
+                              </button>
+                            </div>
+                          </div>
+                          {review.title && <p className="text-xs font-medium">{review.title}</p>}
+                          {review.comment && <p className="text-xs text-muted-foreground line-clamp-2">{review.comment}</p>}
+                          <div className="flex items-center gap-2 text-[10px] text-muted-foreground/60">
+                            {review.verified_purchase && (
+                              <Badge variant="outline" className="text-[10px] h-4 px-1 border-green-500/30 text-green-600">Vérifié</Badge>
+                            )}
+                            {review.review_date && <span>{new Date(review.review_date).toLocaleDateString('fr-FR')}</span>}
                           </div>
                         </div>
-                        {review.title && <p className="text-xs font-medium">{review.title}</p>}
-                        {review.comment && <p className="text-xs text-muted-foreground line-clamp-2">{review.comment}</p>}
-                        <div className="flex items-center gap-2 text-[10px] text-muted-foreground/60">
-                          {review.verified_purchase && (
-                            <Badge variant="outline" className="text-[10px] h-4 px-1 border-green-500/30 text-green-600">Vérifié</Badge>
-                          )}
-                          {review.review_date && <span>{new Date(review.review_date).toLocaleDateString('fr-FR')}</span>}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="p-4 rounded-lg border border-dashed border-border/50 bg-muted/10 text-muted-foreground space-y-2">
-                    {editedProduct.reviews?.rating ? (
-                      <>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="p-4 rounded-lg border border-dashed border-border/50 bg-muted/10 text-muted-foreground space-y-2">
+                      {editedProduct.reviews?.rating ? (
+                        <>
+                          <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-0.5">
+                              {Array.from({ length: 5 }).map((_, s) => (
+                                <Star key={s} className={cn("h-4 w-4", s < Math.round(editedProduct.reviews?.rating || 0) ? "fill-amber-500 text-amber-500" : "text-muted-foreground/20")} />
+                              ))}
+                            </div>
+                            <span className="text-sm font-semibold text-foreground">{editedProduct.reviews.rating.toFixed(1)}/5</span>
+                            {editedProduct.reviews.count != null && (
+                              <span className="text-xs">({editedProduct.reviews.count} avis sur le site source)</span>
+                            )}
+                          </div>
+                          <p className="text-xs text-muted-foreground">
+                            Les avis individuels n'ont pas pu être extraits (chargement dynamique). Ajoutez-les manuellement ci-dessous.
+                          </p>
+                        </>
+                      ) : (
                         <div className="flex items-center gap-2">
-                          <div className="flex items-center gap-0.5">
-                            {Array.from({ length: 5 }).map((_, s) => (
-                              <Star key={s} className={cn("h-4 w-4", s < Math.round(editedProduct.reviews?.rating || 0) ? "fill-amber-500 text-amber-500" : "text-muted-foreground/20")} />
-                            ))}
-                          </div>
-                          <span className="text-sm font-semibold text-foreground">{editedProduct.reviews.rating.toFixed(1)}/5</span>
-                          {editedProduct.reviews.count != null && (
-                            <span className="text-xs">({editedProduct.reviews.count} avis sur le site source)</span>
-                          )}
+                          <MessageSquare className="h-4 w-4 opacity-40" />
+                          <span className="text-sm">Aucun avis détecté — ajoutez-en manuellement</span>
                         </div>
-                        <p className="text-xs text-muted-foreground">
-                          Les avis individuels n'ont pas pu être extraits (chargement dynamique). La note globale provient de la page source.
-                        </p>
-                      </>
-                    ) : (
-                      <div className="flex items-center gap-2">
-                        <MessageSquare className="h-4 w-4 opacity-40" />
-                        <span className="text-sm">Aucun avis détecté sur cette fiche</span>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Add review form */}
+                  {showAddReview ? (
+                    <div className="p-3 rounded-lg border border-primary/20 bg-primary/5 space-y-2.5">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-semibold">Ajouter un avis</span>
+                        <button onClick={() => setShowAddReview(false)} className="text-muted-foreground hover:text-foreground">
+                          <X className="h-3.5 w-3.5" />
+                        </button>
                       </div>
-                    )}
-                  </div>
-                )}
+                      <Input
+                        placeholder="Nom du client"
+                        value={newReview.customer_name}
+                        onChange={e => setNewReview(prev => ({ ...prev, customer_name: e.target.value }))}
+                        className="text-xs h-8"
+                      />
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs text-muted-foreground">Note :</span>
+                        <div className="flex items-center gap-0.5">
+                          {Array.from({ length: 5 }).map((_, s) => (
+                            <button key={s} onClick={() => setNewReview(prev => ({ ...prev, rating: s + 1 }))}>
+                              <Star className={cn("h-4 w-4 cursor-pointer transition-colors", s < newReview.rating ? "fill-amber-500 text-amber-500" : "text-muted-foreground/30 hover:text-amber-400")} />
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                      <Input
+                        placeholder="Titre de l'avis (optionnel)"
+                        value={newReview.title}
+                        onChange={e => setNewReview(prev => ({ ...prev, title: e.target.value }))}
+                        className="text-xs h-8"
+                      />
+                      <Textarea
+                        placeholder="Commentaire..."
+                        value={newReview.comment}
+                        onChange={e => setNewReview(prev => ({ ...prev, comment: e.target.value }))}
+                        rows={3}
+                        className="text-xs resize-none"
+                      />
+                      <div className="flex items-center justify-between">
+                        <label className="flex items-center gap-1.5 text-xs text-muted-foreground cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={newReview.verified_purchase}
+                            onChange={e => setNewReview(prev => ({ ...prev, verified_purchase: e.target.checked }))}
+                            className="rounded"
+                          />
+                          Achat vérifié
+                        </label>
+                        <Button
+                          size="sm"
+                          className="h-7 text-xs gap-1"
+                          disabled={!newReview.customer_name.trim() || !newReview.comment.trim()}
+                          onClick={() => {
+                            const review = {
+                              customer_name: newReview.customer_name.trim(),
+                              rating: newReview.rating,
+                              title: newReview.title.trim() || null,
+                              comment: newReview.comment.trim(),
+                              verified_purchase: newReview.verified_purchase,
+                              review_date: new Date().toISOString(),
+                              helpful_count: 0,
+                              images: [],
+                            }
+                            setEditedProduct(prev => prev ? {
+                              ...prev,
+                              extracted_reviews: [...(prev.extracted_reviews || []), review]
+                            } : null)
+                            setNewReview({ customer_name: '', rating: 5, title: '', comment: '', verified_purchase: false })
+                            setShowAddReview(false)
+                            toast({ title: 'Avis ajouté à la liste' })
+                          }}
+                        >
+                          <Plus className="h-3 w-3" /> Ajouter
+                        </Button>
+                      </div>
+                    </div>
+                  ) : (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="w-full h-8 text-xs gap-1.5"
+                      onClick={() => setShowAddReview(true)}
+                    >
+                      <Plus className="h-3 w-3" /> Ajouter un avis manuellement
+                    </Button>
+                  )}
+                </div>
               </CollapsibleCard>
 
               {/* ── SEO Preview ── */}
