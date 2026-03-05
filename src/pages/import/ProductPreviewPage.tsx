@@ -172,7 +172,14 @@ export default function ProductPreviewPage() {
     const originalCount = product.images?.length || 0
     const uniqueImages = deduplicateImages(product.images || [])
     setDuplicatesRemoved(originalCount - uniqueImages.length)
-    const cleanedBrand = product.brand ? cleanHtmlEntities(product.brand) : ''
+    const rawBrand = product.brand ? cleanHtmlEntities(product.brand) : ''
+    const cleanedBrand = rawBrand
+      .replace(/^Marque\s*:\s*/i, '')
+      .replace(/^Brand\s*:\s*/i, '')
+      .replace(/^Visiter\s*la\s*boutique\s*/i, '')
+      .replace(/^Visit\s*the\s*/i, '')
+      .replace(/\s*Store$/i, '')
+      .trim()
     setEditedProduct({ ...product, images: uniqueImages, brand: cleanedBrand })
     setSelectedImages(new Set(uniqueImages.map((_, i) => i)))
     setMainImageIndex(0)

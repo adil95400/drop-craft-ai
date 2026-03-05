@@ -2057,6 +2057,17 @@ async function scrapeProductData(url: string, platform: string, externalProductI
     productData.specifications = extractSpecifications(html, platform)
     console.log(`📋 Found ${Object.keys(productData.specifications).length} specifications`)
     
+    // Extract tags, category, subcategory
+    productData.tags = extractTags(html, markdown, platform)
+    productData.category = extractCategory(html, markdown, platform)
+    productData.subcategory = extractSubcategory(html, markdown, platform)
+    productData.product_type = productData.category || ''
+    console.log(`🏷️ Tags: ${productData.tags?.length || 0}, Category: ${productData.category}, Subcategory: ${productData.subcategory}`)
+    
+    // Extract real stock/inventory
+    productData.inventory_quantity = extractStock(html, markdown, platform)
+    console.log(`📦 Stock: ${productData.inventory_quantity}`)
+
     // Extract shipping info
     productData.shipping = extractShippingInfo(html, platform)
     
