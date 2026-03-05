@@ -65,6 +65,7 @@ import { BulkEditPanel } from '@/components/products/BulkEditPanel';
 
 import { PlatformExportDialog } from '@/components/products/export/PlatformExportDialog';
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
+import { PublishDialog } from '@/components/publication/PublishDialog';
 
 // ============= Types =============
 type StatusFilter = 'all' | 'active' | 'paused' | 'draft' | 'archived';
@@ -107,6 +108,7 @@ export default function CatalogProductsPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(50);
   const [showJobTracker, setShowJobTracker] = useState(false);
+  const [showPublishDialog, setShowPublishDialog] = useState(false);
 
   // === DATA (reads via Supabase, mutations via FastAPI) ===
   const { products, stats, isLoading, refetch } = useProductsUnified();
@@ -320,8 +322,8 @@ export default function CatalogProductsPage() {
 
   const handleBulkPublish = useCallback(() => {
     if (selectedProducts.length === 0) return;
-    bulkPublish(selectedProducts);
-  }, [selectedProducts, bulkPublish]);
+    setShowPublishDialog(true);
+  }, [selectedProducts]);
 
   // Export CSV client-side
   const handleExportCSV = useCallback(async () => {
@@ -817,6 +819,13 @@ export default function CatalogProductsPage() {
         confirmText="Supprimer"
         variant="destructive"
         onConfirm={confirmDelete} />
+
+      <PublishDialog
+        open={showPublishDialog}
+        onOpenChange={setShowPublishDialog}
+        productIds={selectedProducts}
+        onComplete={() => setSelectedProducts([])}
+      />
 
     </ChannablePageWrapper>);
 
