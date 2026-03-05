@@ -137,16 +137,38 @@ export class PublishProductsService {
   }
 
   /**
-   * Get user's available stores
+   * Get user's available stores (from stores table + integrations table)
    */
   static async getUserStores(userId: string) {
-    const { data, error } = await supabase
+    // Fetch from stores table
+    const { data: stores } = await supabase
       .from('stores')
-      .select('*')
+      .select('id, name, platform, status')
       .eq('user_id', userId)
       .eq('status', 'active');
 
-    if (error) throw new Error('Erreur lors de la récupération des boutiques');
-    return data || [];
+    // Also fetch from integrations table (connected platforms like Shopify)
+    const { data: integrations } = await supabase
+      .from('integrations')
+      .select('id, platform_name, platform, store_url, connection_status')
+      .eq('user_id', userId)
+      .eq('connection_status', 'connected');
+
+    const result = [
+      ...(stores || []).map(s => ({
+        id: s.id,
+        name: s.name,
+        platform: s.platform,
+        status: s.status,
+      })),
+      ...(integrations || []).map(i => ({
+        id: i.id,
+        name: i.platform_name || i.platform,
+        platform: i.platform,
+        status: 'active' as const,
+      })),
+    ];
+
+    return result;
   }
 }
