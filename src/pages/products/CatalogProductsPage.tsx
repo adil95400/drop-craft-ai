@@ -820,6 +820,13 @@ export default function CatalogProductsPage() {
         variant="destructive"
         onConfirm={confirmDelete} />
 
+      <PublishDialog
+        open={showPublishDialog}
+        onOpenChange={setShowPublishDialog}
+        productIds={selectedProducts}
+        onComplete={() => setSelectedProducts([])}
+      />
+
     </ChannablePageWrapper>);
 
 }
