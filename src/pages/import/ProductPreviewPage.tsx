@@ -46,6 +46,7 @@ interface ProductPreviewData {
   reviews?: { rating: number | null; count: number | null }
   specifications?: Record<string, string>
   category?: string
+  subcategory?: string
   product_type?: string
   tags?: string[]
   original_price?: number | null
