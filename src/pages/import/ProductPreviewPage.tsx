@@ -388,6 +388,7 @@ export default function ProductPreviewPage() {
           product_type: category || null,
           tags: tags.length > 0 ? tags : null,
           variants: finalProduct.variants || null,
+          stock_quantity: finalProduct.stock_quantity ?? 0,
           status: productStatus,
           profit_margin: marginVal,
           user_id: user.id,
