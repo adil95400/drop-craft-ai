@@ -510,6 +510,9 @@ export default function ProductPreviewPage() {
         editedProduct.source_url || '', editedProduct.platform_detected
       )
 
+      // Create job record for history
+      await createImportJobRecord(user.id, editedProduct.platform_detected, editedProduct.source_url || '', editedProduct.title, reviewsCount, true)
+
       toast({
         title: '✅ Produit sauvegardé',
         description: `"${editedProduct.title}" a été enregistré${reviewsCount > 0 ? ` avec ${reviewsCount} avis` : ''}`,
