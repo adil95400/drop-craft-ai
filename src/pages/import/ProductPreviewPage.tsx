@@ -469,12 +469,19 @@ export default function ProductPreviewPage() {
         user_id: user.id,
       }
 
-      const { error } = await supabase.from('products').insert(productData)
+      const { data: insertedProduct, error } = await supabase.from('products').insert(productData).select('id').single()
       if (error) throw error
+
+      // Save reviews
+      const reviewsCount = await saveReviewsToDb(
+        insertedProduct.id, user.id,
+        editedProduct.extracted_reviews || [],
+        editedProduct.source_url || '', editedProduct.platform_detected
+      )
 
       toast({
         title: '✅ Produit sauvegardé',
-        description: `"${editedProduct.title}" a été enregistré dans le catalogue`,
+        description: `"${editedProduct.title}" a été enregistré${reviewsCount > 0 ? ` avec ${reviewsCount} avis` : ''}`,
       })
       navigate(returnTo || '/products')
     } catch (err) {
