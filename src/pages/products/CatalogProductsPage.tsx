@@ -65,6 +65,7 @@ import { BulkEditPanel } from '@/components/products/BulkEditPanel';
 
 import { PlatformExportDialog } from '@/components/products/export/PlatformExportDialog';
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
+import { PublishDialog } from '@/components/publication/PublishDialog';
 
 // ============= Types =============
 type StatusFilter = 'all' | 'active' | 'paused' | 'draft' | 'archived';
