@@ -402,6 +402,9 @@ export default function ProductPreviewPage() {
           '', finalProduct.platform_detected
         )
 
+        // Create job record for history
+        await createImportJobRecord(user.id, finalProduct.platform_detected, '', finalProduct.title, reviewsCount, true)
+
         toast({
           title: '✅ Produit importé avec succès',
           description: `"${finalProduct.title}" ajouté au catalogue${reviewsCount > 0 ? ` avec ${reviewsCount} avis` : ''}`,
