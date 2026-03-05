@@ -1897,6 +1897,138 @@ async function scrapeShopifyProduct(url: string, productHandle: string | null): 
   }
 }
 
+// Extract tags from product page
+function extractTags(html: string, markdown: string, platform: string): string[] {
+  const tags: string[] = []
+  
+  if (platform === 'amazon') {
+    // Breadcrumb categories as tags
+    const breadcrumbMatch = html.match(/id="wayfinding-breadcrumbs[^"]*"([\s\S]{0,3000}?)<\/div>\s*<\/div>/i)
+    if (breadcrumbMatch) {
+      const links = breadcrumbMatch[1].matchAll(/<a[^>]*>\s*([^<]+)/gi)
+      for (const m of links) {
+        const tag = m[1].trim()
+        if (tag && tag.length > 1 && tag.length < 60 && !tags.includes(tag)) tags.push(tag)
+      }
+    }
+    // JSON-LD keywords
+    const keywordsMatch = html.match(/"keywords"\s*:\s*"([^"]+)"/i)
+    if (keywordsMatch) {
+      const kws = keywordsMatch[1].split(',').map((k: string) => k.trim()).filter((k: string) => k.length > 1 && k.length < 50)
+      for (const k of kws) { if (!tags.includes(k)) tags.push(k) }
+    }
+  }
+  
+  // Generic: meta keywords
+  const metaKw = html.match(/name="keywords"[^>]*content="([^"]+)"/i)
+  if (metaKw) {
+    const kws = metaKw[1].split(',').map((k: string) => k.trim()).filter((k: string) => k.length > 1 && k.length < 50)
+    for (const k of kws) { if (!tags.includes(k)) tags.push(k) }
+  }
+
+  // Markdown tags
+  if (markdown) {
+    const mdTags = markdown.match(/Tags?\s*[:|]\s*([^\n]+)/i)
+    if (mdTags) {
+      const kws = mdTags[1].split(',').map((k: string) => k.trim()).filter((k: string) => k.length > 1 && k.length < 50)
+      for (const k of kws) { if (!tags.includes(k)) tags.push(k) }
+    }
+  }
+
+  return tags.slice(0, 20)
+}
+
+// Extract category from product page
+function extractCategory(html: string, markdown: string, platform: string): string {
+  if (platform === 'amazon') {
+    const breadcrumbMatch = html.match(/id="wayfinding-breadcrumbs[^"]*"([\s\S]{0,3000}?)<\/div>\s*<\/div>/i)
+    if (breadcrumbMatch) {
+      const links = breadcrumbMatch[1].matchAll(/<a[^>]*>\s*([^<]+)/gi)
+      const catList: string[] = []
+      for (const m of links) {
+        const c = m[1].trim()
+        if (c && c.length > 1 && c.length < 80) catList.push(c)
+      }
+      if (catList.length > 0) return catList[0]
+    }
+    const ptMatch = html.match(/"product_type_name"\s*:\s*"([^"]+)"/i)
+    if (ptMatch) return ptMatch[1].trim()
+  }
+  
+  const ogType = html.match(/og:product:category"[^>]*content="([^"]+)"/i) ||
+                 html.match(/product:category"[^>]*content="([^"]+)"/i)
+  if (ogType) return ogType[1].trim()
+  
+  const jsonCat = html.match(/"category"\s*:\s*"([^"]+)"/i)
+  if (jsonCat) return jsonCat[1].trim()
+
+  if (markdown) {
+    const mdCat = markdown.match(/Cat[ée]gorie\s*[:|]\s*([^\n]+)/i) ||
+                  markdown.match(/Category\s*[:|]\s*([^\n]+)/i)
+    if (mdCat) return mdCat[1].trim()
+  }
+  
+  return ''
+}
+
+// Extract subcategory from product page
+function extractSubcategory(html: string, markdown: string, platform: string): string {
+  if (platform === 'amazon') {
+    const breadcrumbMatch = html.match(/id="wayfinding-breadcrumbs[^"]*"([\s\S]{0,3000}?)<\/div>\s*<\/div>/i)
+    if (breadcrumbMatch) {
+      const links = breadcrumbMatch[1].matchAll(/<a[^>]*>\s*([^<]+)/gi)
+      const catList: string[] = []
+      for (const m of links) {
+        const c = m[1].trim()
+        if (c && c.length > 1 && c.length < 80) catList.push(c)
+      }
+      if (catList.length > 1) return catList[catList.length - 1]
+    }
+  }
+  
+  const jsonSub = html.match(/"subcategory"\s*:\s*"([^"]+)"/i)
+  if (jsonSub) return jsonSub[1].trim()
+
+  if (markdown) {
+    const mdSub = markdown.match(/Sous[- ]?cat[ée]gorie\s*[:|]\s*([^\n]+)/i) ||
+                  markdown.match(/Sub[- ]?category\s*[:|]\s*([^\n]+)/i)
+    if (mdSub) return mdSub[1].trim()
+  }
+  
+  return ''
+}
+
+// Extract real stock/inventory from product page
+function extractStock(html: string, markdown: string, platform: string): number {
+  if (platform === 'amazon') {
+    const inStockMatch = html.match(/id="availability"[\s\S]{0,500}/i)
+    if (inStockMatch) {
+      const stockText = inStockMatch[0]
+      const qtyMatch = stockText.match(/(\d+)\s*(?:exemplaire|left|restant|en stock)/i)
+      if (qtyMatch) return parseInt(qtyMatch[1])
+      if (/en\s+stock|in\s+stock|disponible/i.test(stockText)) return 99
+      if (/indisponible|unavailable|rupture/i.test(stockText)) return 0
+    }
+    const qtySelect = html.match(/id="quantity"[\s\S]{0,1000}/i)
+    if (qtySelect) {
+      const options = qtySelect[0].matchAll(/value="(\d+)"/gi)
+      let maxQty = 0
+      for (const m of options) { maxQty = Math.max(maxQty, parseInt(m[1])) }
+      if (maxQty > 0) return maxQty
+    }
+  }
+  
+  const invMatch = html.match(/"inventory"\s*:\s*(\d+)/i) ||
+                   html.match(/"stock_quantity"\s*:\s*(\d+)/i) ||
+                   html.match(/"inventoryLevel"[\s\S]*?"value"\s*:\s*(\d+)/i)
+  if (invMatch) return parseInt(invMatch[1])
+
+  if (/in\s*stock|en\s*stock|disponible/i.test(html)) return 99
+  if (/out\s*of\s*stock|rupture|indisponible/i.test(html)) return 0
+  
+  return 0
+}
+
 // Scrape product data using Firecrawl if available, otherwise fallback
 async function scrapeProductData(url: string, platform: string, externalProductId?: string | null): Promise<any> {
   // Amazon links with many params often lead to bot/error/offline pages; canonicalize early.
