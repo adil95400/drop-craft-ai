@@ -322,8 +322,8 @@ export default function CatalogProductsPage() {
 
   const handleBulkPublish = useCallback(() => {
     if (selectedProducts.length === 0) return;
-    bulkPublish(selectedProducts);
-  }, [selectedProducts, bulkPublish]);
+    setShowPublishDialog(true);
+  }, [selectedProducts]);
 
   // Export CSV client-side
   const handleExportCSV = useCallback(async () => {
