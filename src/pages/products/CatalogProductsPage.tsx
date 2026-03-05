@@ -108,6 +108,7 @@ export default function CatalogProductsPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(50);
   const [showJobTracker, setShowJobTracker] = useState(false);
+  const [showPublishDialog, setShowPublishDialog] = useState(false);
 
   // === DATA (reads via Supabase, mutations via FastAPI) ===
   const { products, stats, isLoading, refetch } = useProductsUnified();
