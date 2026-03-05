@@ -46,6 +46,7 @@ interface ProductPreviewData {
   reviews?: { rating: number | null; count: number | null }
   specifications?: Record<string, string>
   category?: string
+  subcategory?: string
   product_type?: string
   tags?: string[]
   original_price?: number | null
@@ -158,7 +159,7 @@ export default function ProductPreviewPage() {
   const [isSaving, setIsSaving] = useState(false)
   const [productStatus, setProductStatus] = useState('draft')
   const [category, setCategory] = useState(product?.category || product?.product_type || '')
-  const [subcategory, setSubcategory] = useState('')
+  const [subcategory, setSubcategory] = useState(product?.subcategory || '')
   const [tags, setTags] = useState<string[]>(product?.tags || [])
   const [suggestedCategories, setSuggestedCategories] = useState<{category: string, subcategory: string, confidence: number}[]>([])
   const [showAddReview, setShowAddReview] = useState(false)
@@ -172,7 +173,14 @@ export default function ProductPreviewPage() {
     const originalCount = product.images?.length || 0
     const uniqueImages = deduplicateImages(product.images || [])
     setDuplicatesRemoved(originalCount - uniqueImages.length)
-    const cleanedBrand = product.brand ? cleanHtmlEntities(product.brand) : ''
+    const rawBrand = product.brand ? cleanHtmlEntities(product.brand) : ''
+    const cleanedBrand = rawBrand
+      .replace(/^Marque\s*:\s*/i, '')
+      .replace(/^Brand\s*:\s*/i, '')
+      .replace(/^Visiter\s*la\s*boutique\s*/i, '')
+      .replace(/^Visit\s*the\s*/i, '')
+      .replace(/\s*Store$/i, '')
+      .trim()
     setEditedProduct({ ...product, images: uniqueImages, brand: cleanedBrand })
     setSelectedImages(new Set(uniqueImages.map((_, i) => i)))
     setMainImageIndex(0)
