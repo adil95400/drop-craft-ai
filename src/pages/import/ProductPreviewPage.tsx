@@ -441,6 +441,12 @@ export default function ProductPreviewPage() {
       if (error) throw error
       if (!data?.success) throw new Error(data?.error || 'Erreur lors de l\'import')
       
+      // Create job record for history
+      const { data: { user: currentUser } } = await supabase.auth.getUser()
+      if (currentUser) {
+        await createImportJobRecord(currentUser.id, finalProduct.platform_detected, finalProduct.source_url, finalProduct.title, data.summary?.reviews || 0, true)
+      }
+
       toast({
         title: '✅ Produit importé avec succès',
         description: data.message || `"${finalProduct.title}" ajouté au catalogue`,
