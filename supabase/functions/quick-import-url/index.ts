@@ -711,13 +711,26 @@ function extractAmazonVariants(html: string, markdown: string = ''): any[] {
     return null
   }
 
+  const cleanAttrKey = (k: string): string => {
+    // Convert internal Amazon keys like "color_name", "size_name" to readable labels
+    return k.replace(/_name$/i, '').replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
+  }
+
   const pushVariant = (attrs: Record<string, any>, asin?: string) => {
     const key = JSON.stringify({ asin: asin || '', attrs })
     if (seen.has(key)) return
     seen.add(key)
+    // Build a readable name from attribute values
+    const displayValues = Object.entries(attrs)
+      .map(([k, v]) => {
+        const val = typeof v === 'string' ? v.trim() : String(v ?? '')
+        return val || null
+      })
+      .filter(Boolean)
+    const name = displayValues.join(' / ') || asin || 'Variante'
     variants.push({
       sku: asin || '',
-      name: Object.values(attrs).filter(Boolean).join(' / ') || 'Variante',
+      name,
       price: 0,
       stock: 0,
       image: null,

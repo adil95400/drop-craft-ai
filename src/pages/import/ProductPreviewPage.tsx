@@ -846,21 +846,30 @@ export default function ProductPreviewPage() {
                           </tr>
                         </thead>
                         <tbody>
-                          {editedProduct.variants.slice(0, 20).map((v: any, i: number) => (
+                          {editedProduct.variants.slice(0, 20).map((v: any, i: number) => {
+                            // Build display name from attributes if name is generic
+                            const displayName = (v.name && v.name !== 'Variante' && v.name !== 'Variant')
+                              ? v.name
+                              : v.attributes
+                                ? Object.values(v.attributes).filter(Boolean).join(' / ') || v.title || `Option ${i + 1}`
+                                : v.title || `Option ${i + 1}`
+                            const displayPrice = v.price > 0 ? v.price : null
+                            return (
                             <tr key={i} className="border-t border-border/30 hover:bg-muted/20 transition-colors">
                               <td className="p-2.5">
                                 <div className="flex items-center gap-2">
                                   {v.image && (
                                     <img src={v.image} alt="" className="w-8 h-8 rounded object-cover" />
                                   )}
-                                  <span className="font-medium text-xs">{v.title || v.name || `Option ${i + 1}`}</span>
+                                  <span className="font-medium text-xs">{displayName}</span>
                                 </div>
                               </td>
-                              <td className="p-2.5 text-xs">{v.price ? `${v.price} ${editedProduct.currency}` : '—'}</td>
-                              <td className="p-2.5 text-xs">{v.stock ?? v.inventory_quantity ?? '∞'}</td>
+                              <td className="p-2.5 text-xs">{displayPrice ? `${displayPrice} ${editedProduct.currency}` : '—'}</td>
+                              <td className="p-2.5 text-xs">{v.stock ?? v.inventory_quantity ?? 0}</td>
                               <td className="p-2.5 text-xs font-mono text-muted-foreground">{v.sku || '—'}</td>
                             </tr>
-                          ))}
+                            )
+                          })}
                         </tbody>
                       </table>
                     </div>
