@@ -160,6 +160,8 @@ export default function ProductPreviewPage() {
   const [subcategory, setSubcategory] = useState('')
   const [tags, setTags] = useState<string[]>(product?.tags || [])
   const [suggestedCategories, setSuggestedCategories] = useState<{category: string, subcategory: string, confidence: number}[]>([])
+  const [showAddReview, setShowAddReview] = useState(false)
+  const [newReview, setNewReview] = useState({ customer_name: '', rating: 5, title: '', comment: '', verified_purchase: false })
 
   useEffect(() => {
     if (!product) {
