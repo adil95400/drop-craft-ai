@@ -330,6 +330,28 @@ export default function ProductPreviewPage() {
     return data?.length || 0
   }
 
+  const createImportJobRecord = async (userId: string, platform: string, sourceUrl: string, productTitle: string, reviewsCount: number, success: boolean, errorMsg?: string) => {
+    try {
+      await supabase.from('jobs').insert({
+        user_id: userId,
+        job_type: 'import',
+        job_subtype: platform || 'url',
+        name: productTitle ? `Import: ${productTitle.slice(0, 80)}` : `Import ${platform}`,
+        status: success ? 'completed' : 'failed',
+        total_items: 1,
+        processed_items: success ? 1 : 0,
+        failed_items: success ? 0 : 1,
+        started_at: new Date().toISOString(),
+        completed_at: new Date().toISOString(),
+        error_message: errorMsg || null,
+        input_data: { source_url: sourceUrl, platform } as any,
+        metadata: { reviews_imported: reviewsCount } as any,
+      })
+    } catch (e) {
+      console.error('Failed to create job record:', e)
+    }
+  }
+
   const handleConfirm = async () => {
     if (!editedProduct) return
     const filtered = editedProduct.images.filter((_, i) => selectedImages.has(i) && !failedImages.has(i))
@@ -380,6 +402,9 @@ export default function ProductPreviewPage() {
           '', finalProduct.platform_detected
         )
 
+        // Create job record for history
+        await createImportJobRecord(user.id, finalProduct.platform_detected, '', finalProduct.title, reviewsCount, true)
+
         toast({
           title: '✅ Produit importé avec succès',
           description: `"${finalProduct.title}" ajouté au catalogue${reviewsCount > 0 ? ` avec ${reviewsCount} avis` : ''}`,
@@ -416,6 +441,12 @@ export default function ProductPreviewPage() {
       if (error) throw error
       if (!data?.success) throw new Error(data?.error || 'Erreur lors de l\'import')
       
+      // Create job record for history
+      const { data: { user: currentUser } } = await supabase.auth.getUser()
+      if (currentUser) {
+        await createImportJobRecord(currentUser.id, finalProduct.platform_detected, finalProduct.source_url, finalProduct.title, data.summary?.reviews || 0, true)
+      }
+
       toast({
         title: '✅ Produit importé avec succès',
         description: data.message || `"${finalProduct.title}" ajouté au catalogue`,
@@ -478,6 +509,9 @@ export default function ProductPreviewPage() {
         editedProduct.extracted_reviews || [],
         editedProduct.source_url || '', editedProduct.platform_detected
       )
+
+      // Create job record for history
+      await createImportJobRecord(user.id, editedProduct.platform_detected, editedProduct.source_url || '', editedProduct.title, reviewsCount, true)
 
       toast({
         title: '✅ Produit sauvegardé',
