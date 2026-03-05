@@ -15,35 +15,24 @@ export function UpdateNotification({ className }: UpdateNotificationProps) {
   useEffect(() => {
     if (!('serviceWorker' in navigator)) return;
 
-    const handleMessage = (event: MessageEvent) => {
-      if (event.data?.type === 'SW_UPDATED') {
-        console.log('[Update] New version available:', event.data.version);
-        setUpdateAvailable(true);
-      }
-      if (event.data?.type === 'RELOAD_PAGE') {
-        window.location.reload();
-      }
-    };
-
-    navigator.serviceWorker.addEventListener('message', handleMessage);
-
-    // Vérifier les mises à jour au démarrage
+    // Listen for new SW installing (with skipWaiting, it will auto-activate and trigger controllerchange reload)
+    // This notification is shown briefly before the auto-reload happens
     navigator.serviceWorker.ready.then((registration) => {
-      // Vérifier immédiatement
+      // Check for updates immediately
       registration.update().catch(console.error);
       
-      // Puis toutes les 5 minutes
+      // Then every 5 minutes
       const interval = setInterval(() => {
         registration.update().catch(console.error);
       }, 5 * 60 * 1000);
 
-      // Écouter les nouveaux SW
+      // Listen for new SW
       registration.addEventListener('updatefound', () => {
         const newWorker = registration.installing;
         if (newWorker) {
           newWorker.addEventListener('statechange', () => {
             if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-              console.log('[Update] New service worker installed');
+              console.log('[Update] New service worker installed, will reload shortly');
               setUpdateAvailable(true);
             }
           });
@@ -52,10 +41,6 @@ export function UpdateNotification({ className }: UpdateNotificationProps) {
 
       return () => clearInterval(interval);
     });
-
-    return () => {
-      navigator.serviceWorker.removeEventListener('message', handleMessage);
-    };
   }, []);
 
   const handleUpdate = useCallback(async () => {

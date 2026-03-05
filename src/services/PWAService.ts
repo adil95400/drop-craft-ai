@@ -4,6 +4,16 @@ export class PWAService {
   static init() {
     // Register service worker
     if ('serviceWorker' in navigator) {
+      // Force reload when a new SW takes control (ensures latest version is shown)
+      let refreshing = false;
+      navigator.serviceWorker.addEventListener('controllerchange', () => {
+        if (!refreshing) {
+          refreshing = true;
+          console.log('🔄 New Service Worker active, reloading...');
+          window.location.reload();
+        }
+      });
+
       window.addEventListener('load', () => {
         navigator.serviceWorker.register('/sw.js')
           .then(registration => {
