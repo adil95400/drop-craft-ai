@@ -155,7 +155,7 @@ export class GoogleAdsConnector {
         costPerConversion: metrics?.costPerConversion ? parseInt(metrics.costPerConversion) / 1000000 : 0,
       }
     } catch (error) {
-      console.error('Failed to fetch Google Ads metrics:', error)
+      logger.error('Failed to fetch Google Ads metrics', error instanceof Error ? error : undefined, LOG_CTX)
       throw new Error('Failed to fetch metrics from Google Ads')
     }
   }
