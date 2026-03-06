@@ -40,10 +40,14 @@ export function initAnalytics() {
 
 /** Track a virtual page view across all providers */
 export function trackPageView(path: string, title?: string) {
-  log('pageview', path)
-  trackGA4PageView(path, title)
-  trackMixpanelPageView(path)
-  trackHotjarPageView(path)
+  try {
+    log('pageview', path)
+    trackGA4PageView(path, title)
+    trackMixpanelPageView(path)
+    trackHotjarPageView(path)
+  } catch (e) {
+    log('pageview error', e)
+  }
 }
 
 /** Track a custom event across GA4 + Mixpanel + Hotjar */
