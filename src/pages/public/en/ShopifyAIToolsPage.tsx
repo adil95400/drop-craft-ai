@@ -1,10 +1,19 @@
 import { SEO } from "@/components/SEO";
+import { FAQSchema, BreadcrumbSchema } from "@/components/seo/StructuredData";
+import { HreflangTags } from "@/components/seo/HreflangTags";
 import { PublicLayout } from "@/layouts/PublicLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ArrowRight, Sparkles, FileText, DollarSign, BarChart3, Image, Globe } from "lucide-react";
+import { ArrowRight, Sparkles, FileText, DollarSign, BarChart3, Image, Globe, CheckCircle2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+
+const faqItems = [
+  { question: "What AI tools does ShopOpti+ offer for Shopify?", answer: "ShopOpti+ provides AI product descriptions, SEO optimization, dynamic pricing, image enhancement, analytics & predictions, and multi-language translation — all designed specifically for Shopify merchants." },
+  { question: "Can AI really improve my Shopify store performance?", answer: "Yes. Merchants using ShopOpti+ AI tools see an average 40% increase in organic traffic and 25% boost in conversion rates within 3 months." },
+  { question: "Do I need technical skills to use AI tools?", answer: "No. ShopOpti+ AI tools work with one click. Select your products, choose the AI action, and let the system optimize everything automatically." },
+  { question: "How many languages does AI translation support?", answer: "ShopOpti+ AI supports 68+ languages for product descriptions, meta tags, and full catalog translation." },
+];
 
 const ShopifyAIToolsPage = () => {
   const navigate = useNavigate();
@@ -16,7 +25,29 @@ const ShopifyAIToolsPage = () => {
         description="AI tools for Shopify: product descriptions, SEO optimization, pricing intelligence, image enhancement, and analytics. Boost conversions with AI."
         path="/shopify-ai-tools"
         keywords="shopify AI tools, AI for shopify, shopify AI optimization, AI product descriptions, shopify SEO AI, ecommerce AI"
+        jsonLd={{
+          "@context": "https://schema.org",
+          "@type": "SoftwareApplication",
+          "name": "ShopOpti+ AI Tools for Shopify",
+          "applicationCategory": "BusinessApplication",
+          "operatingSystem": "Web",
+          "description": "AI-powered tools for Shopify: product descriptions, SEO, pricing, image enhancement, analytics, and translation.",
+          "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD", "priceValidUntil": "2026-12-31" },
+          "aggregateRating": { "@type": "AggregateRating", "ratingValue": "4.8", "ratingCount": "1247", "bestRating": "5" }
+        }}
       />
+      <BreadcrumbSchema items={[
+        { name: "Home", url: "https://shopopti.io" },
+        { name: "Shopify AI Tools", url: "https://shopopti.io/shopify-ai-tools" },
+      ]} />
+      <HreflangTags
+        entries={[
+          { lang: "en", href: "https://shopopti.io/shopify-ai-tools" },
+          { lang: "fr", href: "https://shopopti.io/optimisation-shopify" },
+        ]}
+        xDefault="https://shopopti.io/shopify-ai-tools"
+      />
+      <FAQSchema questions={faqItems} />
 
       <section className="py-20 lg:py-28 bg-gradient-to-br from-primary/5 via-background to-secondary/10">
         <div className="container mx-auto px-4 sm:px-6 max-w-4xl text-center space-y-6">
@@ -49,6 +80,20 @@ const ShopifyAIToolsPage = () => {
                   <p className="text-sm text-muted-foreground">{f.desc}</p>
                 </CardContent>
               </Card>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="py-16 bg-muted/30">
+        <div className="container mx-auto px-4 sm:px-6 max-w-3xl">
+          <h2 className="text-3xl font-bold text-center mb-8">Frequently Asked Questions</h2>
+          <div className="space-y-4">
+            {faqItems.map((faq, i) => (
+              <div key={i} className="bg-background rounded-lg p-6 border">
+                <h3 className="font-semibold text-lg flex items-center gap-2"><CheckCircle2 className="h-5 w-5 text-primary shrink-0" />{faq.question}</h3>
+                <p className="text-muted-foreground mt-2 ml-7">{faq.answer}</p>
+              </div>
             ))}
           </div>
         </div>

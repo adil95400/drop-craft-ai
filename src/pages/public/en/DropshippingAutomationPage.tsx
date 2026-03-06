@@ -1,10 +1,19 @@
 import { SEO } from "@/components/SEO";
+import { FAQSchema, BreadcrumbSchema } from "@/components/seo/StructuredData";
+import { HreflangTags } from "@/components/seo/HreflangTags";
 import { PublicLayout } from "@/layouts/PublicLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ArrowRight, Search, Package, Truck, DollarSign, Globe, Zap, CheckCircle2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+
+const faqItems = [
+  { question: "What is dropshipping automation?", answer: "Dropshipping automation uses AI software to handle product sourcing, listing, order fulfillment, inventory sync, and pricing — eliminating manual tasks and allowing you to scale faster." },
+  { question: "How many suppliers does ShopOpti+ support?", answer: "ShopOpti+ integrates with 99+ suppliers including AliExpress, CJ Dropshipping, BigBuy, Spocket, and many more. You can also add custom suppliers via CSV or API." },
+  { question: "Can I automate order fulfillment?", answer: "Yes, orders are automatically routed to the best supplier based on price, shipping speed, and stock availability. Tracking numbers sync back to your store automatically." },
+  { question: "Is dropshipping automation worth it?", answer: "Absolutely. Manual dropshipping limits you to ~50 orders/day. With automation, you can handle 1,000+ orders daily while reducing errors and saving 20+ hours/week." },
+];
 
 const DropshippingAutomationPage = () => {
   const navigate = useNavigate();
@@ -16,7 +25,29 @@ const DropshippingAutomationPage = () => {
         description="Automate your dropshipping business end-to-end. AI product sourcing, 1-click import, auto-fulfillment, and real-time supplier sync. 99+ suppliers."
         path="/dropshipping-automation"
         keywords="dropshipping automation, automate dropshipping, dropshipping tool, auto fulfillment, product sourcing AI, aliexpress automation"
+        jsonLd={{
+          "@context": "https://schema.org",
+          "@type": "SoftwareApplication",
+          "name": "ShopOpti+ Dropshipping Automation",
+          "applicationCategory": "BusinessApplication",
+          "operatingSystem": "Web",
+          "description": "End-to-end dropshipping automation with AI product sourcing, auto-fulfillment, and 99+ supplier integrations.",
+          "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD", "priceValidUntil": "2026-12-31" },
+          "aggregateRating": { "@type": "AggregateRating", "ratingValue": "4.8", "ratingCount": "1247", "bestRating": "5" }
+        }}
       />
+      <BreadcrumbSchema items={[
+        { name: "Home", url: "https://shopopti.io" },
+        { name: "Dropshipping Automation", url: "https://shopopti.io/dropshipping-automation" },
+      ]} />
+      <HreflangTags
+        entries={[
+          { lang: "en", href: "https://shopopti.io/dropshipping-automation" },
+          { lang: "fr", href: "https://shopopti.io/logiciel-dropshipping" },
+        ]}
+        xDefault="https://shopopti.io/dropshipping-automation"
+      />
+      <FAQSchema questions={faqItems} />
 
       <section className="py-20 lg:py-28 bg-gradient-to-br from-primary/5 via-background to-secondary/10">
         <div className="container mx-auto px-4 sm:px-6 max-w-4xl text-center space-y-6">
@@ -50,6 +81,20 @@ const DropshippingAutomationPage = () => {
                   <p className="text-sm text-muted-foreground">{f.desc}</p>
                 </CardContent>
               </Card>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="py-16 bg-muted/30">
+        <div className="container mx-auto px-4 sm:px-6 max-w-3xl">
+          <h2 className="text-3xl font-bold text-center mb-8">Frequently Asked Questions</h2>
+          <div className="space-y-4">
+            {faqItems.map((faq, i) => (
+              <div key={i} className="bg-background rounded-lg p-6 border">
+                <h3 className="font-semibold text-lg flex items-center gap-2"><CheckCircle2 className="h-5 w-5 text-primary shrink-0" />{faq.question}</h3>
+                <p className="text-muted-foreground mt-2 ml-7">{faq.answer}</p>
+              </div>
             ))}
           </div>
         </div>

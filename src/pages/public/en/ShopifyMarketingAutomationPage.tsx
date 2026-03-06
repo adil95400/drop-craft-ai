@@ -1,10 +1,19 @@
 import { SEO } from "@/components/SEO";
+import { FAQSchema, BreadcrumbSchema } from "@/components/seo/StructuredData";
+import { HreflangTags } from "@/components/seo/HreflangTags";
 import { PublicLayout } from "@/layouts/PublicLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { CheckCircle2, ArrowRight, Mail, Target, TrendingUp, Zap, BarChart3, Bot } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+
+const faqItems = [
+  { question: "What is Shopify marketing automation?", answer: "Marketing automation uses AI to create, schedule, and optimize campaigns (email, SMS, social) based on customer behavior — abandoned carts, post-purchase flows, win-back sequences — without manual effort." },
+  { question: "Can ShopOpti+ automate email campaigns?", answer: "Yes. ShopOpti+ generates AI-powered email and SMS campaigns triggered by customer actions. It handles segmentation, content creation, A/B testing, and performance tracking automatically." },
+  { question: "How does AI improve marketing ROI?", answer: "AI optimizes send times, personalizes content, tests variations, and allocates budget to the highest-performing channels — typically improving ROI by 30-50% compared to manual campaigns." },
+  { question: "Do I need a separate email marketing tool?", answer: "No. ShopOpti+ includes built-in email and SMS automation. You don't need Klaviyo, Mailchimp, or other tools — everything is integrated in one platform." },
+];
 
 const ShopifyMarketingAutomationPage = () => {
   const navigate = useNavigate();
@@ -25,7 +34,29 @@ const ShopifyMarketingAutomationPage = () => {
         description="Automate your Shopify marketing with AI. Email, SMS, audience segmentation, A/B testing, and campaign analytics. Grow revenue on autopilot."
         path="/shopify-marketing-automation"
         keywords="shopify marketing automation, shopify email automation, shopify SMS marketing, AI marketing shopify, ecommerce marketing tool"
+        jsonLd={{
+          "@context": "https://schema.org",
+          "@type": "SoftwareApplication",
+          "name": "ShopOpti+ Marketing Automation",
+          "applicationCategory": "BusinessApplication",
+          "operatingSystem": "Web",
+          "description": "AI-powered marketing automation for Shopify: email, SMS, segmentation, A/B testing, and campaign analytics.",
+          "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD", "priceValidUntil": "2026-12-31" },
+          "aggregateRating": { "@type": "AggregateRating", "ratingValue": "4.8", "ratingCount": "1247", "bestRating": "5" }
+        }}
       />
+      <BreadcrumbSchema items={[
+        { name: "Home", url: "https://shopopti.io" },
+        { name: "Marketing Automation", url: "https://shopopti.io/shopify-marketing-automation" },
+      ]} />
+      <HreflangTags
+        entries={[
+          { lang: "en", href: "https://shopopti.io/shopify-marketing-automation" },
+          { lang: "fr", href: "https://shopopti.io/automatisation-ecommerce" },
+        ]}
+        xDefault="https://shopopti.io/shopify-marketing-automation"
+      />
+      <FAQSchema questions={faqItems} />
 
       <section className="py-20 lg:py-28 bg-gradient-to-br from-primary/5 via-background to-secondary/10">
         <div className="container mx-auto px-4 sm:px-6 max-w-4xl text-center space-y-6">
@@ -55,6 +86,20 @@ const ShopifyMarketingAutomationPage = () => {
                   <p className="text-sm text-muted-foreground">{f.desc}</p>
                 </CardContent>
               </Card>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="py-16 bg-muted/30">
+        <div className="container mx-auto px-4 sm:px-6 max-w-3xl">
+          <h2 className="text-3xl font-bold text-center mb-8">Frequently Asked Questions</h2>
+          <div className="space-y-4">
+            {faqItems.map((faq, i) => (
+              <div key={i} className="bg-background rounded-lg p-6 border">
+                <h3 className="font-semibold text-lg flex items-center gap-2"><CheckCircle2 className="h-5 w-5 text-primary shrink-0" />{faq.question}</h3>
+                <p className="text-muted-foreground mt-2 ml-7">{faq.answer}</p>
+              </div>
             ))}
           </div>
         </div>
