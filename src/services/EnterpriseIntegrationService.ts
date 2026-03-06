@@ -126,7 +126,7 @@ export class EnterpriseIntegrationService {
       if (error) throw error;
       return data || [];
     } catch (error) {
-      console.error('Error fetching integrations:', error);
+      logger.error('Error fetching integrations', error instanceof Error ? error : undefined, LOG_CTX);
       throw error;
     }
   }
