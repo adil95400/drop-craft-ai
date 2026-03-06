@@ -1,5 +1,6 @@
 import { BaseConnector, FetchOptions, SyncResult } from './BaseConnector';
 import { SupplierCredentials, SupplierProduct } from '@/types/suppliers';
+import { logger } from '@/utils/logger';
 
 interface AmazonCredentials extends SupplierCredentials {
   sellerId: string;
@@ -108,7 +109,7 @@ export class AmazonAdvancedConnector extends BaseConnector {
             products.push(product);
           }
         } catch (inventoryError) {
-          console.warn(`Failed to fetch inventory for SKU ${item.sku}:`, inventoryError);
+          logger.warn(`Failed to fetch inventory for SKU ${item.sku}`, { component: 'AmazonAdvancedConnector' });
         }
       }
 
@@ -210,7 +211,7 @@ export class AmazonAdvancedConnector extends BaseConnector {
         supplierProductId: catalogItem.asin
       };
     } catch (error) {
-      console.error('Error converting Amazon product:', error);
+      logger.error('Error converting Amazon product', error instanceof Error ? error : undefined, { component: 'AmazonAdvancedConnector' });
       return null;
     }
   }

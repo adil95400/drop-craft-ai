@@ -1,4 +1,7 @@
 import { supabase } from '@/integrations/supabase/client';
+import { logger } from '@/utils/logger';
+
+const LOG_CTX = { component: 'ERPConnector' };
 
 export interface ERPIntegration {
   id: string;
@@ -48,7 +51,7 @@ export class ERPConnector {
       
       return data.integration;
     } catch (error) {
-      console.error('ERP connection failed:', error);
+      logger.error('ERP connection failed', error instanceof Error ? error : undefined, LOG_CTX);
       throw error;
     }
   }
@@ -68,7 +71,7 @@ export class ERPConnector {
       
       return data.sync_result;
     } catch (error) {
-      console.error('ERP sync failed:', error);
+      logger.error('ERP sync failed', error instanceof Error ? error : undefined, LOG_CTX);
       throw error;
     }
   }
@@ -161,7 +164,7 @@ export class ERPConnector {
         configuration: (item.config || {}) as any
       }));
     } catch (error) {
-      console.error('Failed to fetch ERP integrations:', error);
+      logger.error('Failed to fetch ERP integrations', error instanceof Error ? error : undefined, LOG_CTX);
       return [];
     }
   }
@@ -176,7 +179,7 @@ export class ERPConnector {
         }
       });
     } catch (error) {
-      console.error('Failed to start realtime sync:', error);
+      logger.error('Failed to start realtime sync', error instanceof Error ? error : undefined, LOG_CTX);
       throw error;
     }
   }
@@ -261,16 +264,15 @@ export class ERPConnector {
 
   // Error handling and retry logic
   async handleSyncError(integrationId: string, error: any): Promise<void> {
-    console.error(`ERP sync error for integration ${integrationId}:`, error);
+    logger.error(`ERP sync error for integration ${integrationId}`, error instanceof Error ? error : undefined, LOG_CTX);
     
     // Log error to system logs
-    console.log('Integration error logged:', {
+    logger.info('Integration error logged', { ...LOG_CTX, metadata: {
       integration_id: integrationId,
       error_type: 'sync_error',
       error_message: error.message,
-      error_details: error,
       occurred_at: new Date().toISOString()
-    });
+    }});
 
     // Notify admin users via notifications service
     try {
@@ -282,7 +284,7 @@ export class ERPConnector {
         }
       });
     } catch (notificationError) {
-      console.error('Failed to send error notification:', notificationError);
+      logger.error('Failed to send error notification', notificationError instanceof Error ? notificationError : undefined, LOG_CTX);
     }
   }
 }

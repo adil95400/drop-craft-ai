@@ -9,6 +9,9 @@ import { auditProduct } from '@/lib/audit/auditProduct'
 import { ProductRule } from '@/lib/rules/ruleTypes'
 import { ProductRuleEngine } from '@/lib/rules/ProductRuleEngine'
 import { supabase } from '@/integrations/supabase/client'
+import { logger } from '@/utils/logger'
+
+const LOG_CTX = { component: 'CatalogWatcher' }
 
 export type CatalogEventType =
   | 'product_created'
@@ -184,7 +187,7 @@ export class CatalogWatcherService {
       }
 
     } catch (error) {
-      console.error('[CatalogWatcher] Error watching product change:', error)
+      logger.error('Error watching product change', error instanceof Error ? error : undefined, LOG_CTX)
     }
   }
 
@@ -272,7 +275,7 @@ export class CatalogWatcherService {
     const { data, error } = await query
 
     if (error) {
-      console.error('[CatalogWatcher] Error fetching events:', error)
+      logger.error('Error fetching events', error instanceof Error ? error : undefined, LOG_CTX)
       return []
     }
 
@@ -353,7 +356,7 @@ export class CatalogWatcherService {
       .insert(logsToInsert)
 
     if (error) {
-      console.error('[CatalogWatcher] Error logging events:', error)
+      logger.error('Error logging events', error instanceof Error ? error : undefined, LOG_CTX)
     }
   }
 
@@ -376,7 +379,7 @@ export class CatalogWatcherService {
         .insert(alertsToInsert)
 
       if (alertError) {
-        console.error('[CatalogWatcher] Error creating in-app alerts:', alertError)
+        logger.error('Error creating in-app alerts', alertError instanceof Error ? alertError : undefined, LOG_CTX)
       }
 
       // 2. Check for webhook configuration
@@ -407,7 +410,7 @@ export class CatalogWatcherService {
       // Notification sent successfully
     } catch (error) {
       // Critical notification failure — Sentry will capture via console interceptor
-      console.error('[CatalogWatcher] Error sending critical notification:', error)
+      logger.error('Error sending critical notification', error instanceof Error ? error : undefined, LOG_CTX)
     }
   }
 

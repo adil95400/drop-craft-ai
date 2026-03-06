@@ -1,3 +1,7 @@
+import { logger } from '@/utils/logger';
+
+const LOG_CTX = { component: 'FacebookAdsConnector' };
+
 export interface FacebookAdsConfig {
   accessToken: string
   appId: string
@@ -68,7 +72,7 @@ export class FacebookAdsConnector {
       await this.makeRequest('me')
       return true
     } catch (error) {
-      console.error('Facebook Ads connection test failed:', error)
+      logger.error('Facebook Ads connection test failed', error instanceof Error ? error : undefined, LOG_CTX)
       return false
     }
   }
@@ -103,7 +107,7 @@ export class FacebookAdsConnector {
         createdTime: campaign.created_time,
       }))
     } catch (error) {
-      console.error('Failed to fetch Facebook campaigns:', error)
+      logger.error('Failed to fetch Facebook campaigns', error instanceof Error ? error : undefined, LOG_CTX)
       throw new Error('Failed to fetch campaigns from Facebook Ads')
     }
   }
@@ -150,7 +154,7 @@ export class FacebookAdsConnector {
         roas: conversionValue / parseFloat(insights.spend || '1'),
       }
     } catch (error) {
-      console.error('Failed to fetch Facebook campaign metrics:', error)
+      logger.error('Failed to fetch Facebook campaign metrics', error instanceof Error ? error : undefined, LOG_CTX)
       throw new Error('Failed to fetch metrics from Facebook Ads')
     }
   }
@@ -197,7 +201,7 @@ export class FacebookAdsConnector {
 
       return response.id
     } catch (error) {
-      console.error('Failed to create Facebook campaign:', error)
+      logger.error('Failed to create Facebook campaign', error instanceof Error ? error : undefined, LOG_CTX)
       throw new Error('Failed to create campaign in Facebook Ads')
     }
   }
@@ -207,7 +211,7 @@ export class FacebookAdsConnector {
       await this.makeRequest(`${campaignId}`, 'POST', { status })
       return true
     } catch (error) {
-      console.error('Failed to update Facebook campaign status:', error)
+      logger.error('Failed to update Facebook campaign status', error instanceof Error ? error : undefined, LOG_CTX)
       return false
     }
   }
@@ -233,7 +237,7 @@ export class FacebookAdsConnector {
 
       return response.id
     } catch (error) {
-      console.error('Failed to create Facebook product catalog:', error)
+      logger.error('Failed to create Facebook product catalog', error instanceof Error ? error : undefined, LOG_CTX)
       throw new Error('Failed to create product catalog')
     }
   }
@@ -283,7 +287,7 @@ export class FacebookAdsConnector {
 
       return true
     } catch (error) {
-      console.error('Failed to upload Facebook product feed:', error)
+      logger.error('Failed to upload Facebook product feed', error instanceof Error ? error : undefined, LOG_CTX)
       return false
     }
   }
@@ -295,7 +299,7 @@ export class FacebookAdsConnector {
       )
       return response.data
     } catch (error) {
-      console.error('Failed to fetch Facebook ad accounts:', error)
+      logger.error('Failed to fetch Facebook ad accounts', error instanceof Error ? error : undefined, LOG_CTX)
       throw new Error('Failed to fetch ad accounts')
     }
   }
@@ -332,7 +336,7 @@ export class FacebookAdsConnector {
       const response = await this.makeRequest(`${endpoint}?${params}`)
       return response.data
     } catch (error) {
-      console.error('Failed to fetch Facebook insights:', error)
+      logger.error('Failed to fetch Facebook insights', error instanceof Error ? error : undefined, LOG_CTX)
       throw new Error('Failed to fetch insights')
     }
   }

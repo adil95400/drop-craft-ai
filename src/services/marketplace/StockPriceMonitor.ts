@@ -4,6 +4,9 @@
  */
 
 import { supabase } from '@/integrations/supabase/client'
+import { logger } from '@/utils/logger'
+
+const LOG_CTX = { component: 'StockPriceMonitor' }
 
 export interface MonitoringConfig {
   enabled: boolean
@@ -105,7 +108,7 @@ export class StockPriceMonitor {
   }
 
   async updateConfig(userId: string, config: MonitoringConfig): Promise<void> {
-    console.log('Config updated for user', userId, config)
+    logger.debug('Config updated', { ...LOG_CTX, metadata: { userId, config } })
   }
 }
 

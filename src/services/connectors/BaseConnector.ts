@@ -1,4 +1,5 @@
 import { SupplierCredentials, SupplierProduct } from '@/types/suppliers';
+import { logger } from '@/utils/logger';
 
 export type { SupplierCredentials, SupplierProduct } from '@/types/suppliers';
 
@@ -49,12 +50,12 @@ export abstract class BaseConnector {
   
   // Optional methods with default implementations
   async fetchOrders(options?: any): Promise<ConnectorOrder[]> {
-    console.warn(`fetchOrders not implemented for ${this.getSupplierName()}`);
+    logger.warn(`fetchOrders not implemented for ${this.getSupplierName()}`, { component: this.getSupplierName() });
     return [];
   }
   
   async updatePrices(products: { sku: string; price: number }[]): Promise<SyncResult> {
-    console.warn(`updatePrices not implemented for ${this.getSupplierName()}`);
+    logger.warn(`updatePrices not implemented for ${this.getSupplierName()}`, { component: this.getSupplierName() });
     return { total: products.length, imported: 0, updated: 0, duplicates: 0, errors: ['Not implemented'] };
   }
   
@@ -63,7 +64,7 @@ export abstract class BaseConnector {
   }
   
   async updateOrderStatus(orderId: string, status: string): Promise<boolean> {
-    console.warn(`updateOrderStatus not implemented for ${this.getSupplierName()}`);
+    logger.warn(`updateOrderStatus not implemented for ${this.getSupplierName()}`, { component: this.getSupplierName() });
     return false;
   }
 
@@ -104,7 +105,7 @@ export abstract class BaseConnector {
   }
 
   protected handleError(error: any, context: string): void {
-    console.error(`${this.getSupplierName()} ${context} error:`, error);
+    logger.error(`${this.getSupplierName()} ${context} error`, error instanceof Error ? error : undefined, { component: this.getSupplierName() });
   }
 
   protected async delay(ms: number = this.rateLimitDelay): Promise<void> {

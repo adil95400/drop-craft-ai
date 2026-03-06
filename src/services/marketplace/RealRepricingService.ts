@@ -3,7 +3,10 @@
  */
 
 import { supabase } from '@/integrations/supabase/client';
+import { logger } from '@/utils/logger';
 import type { RepricingRule, RepricingExecution, MarketplacePriceData, RepricingDashboard } from '@/types/marketplace-repricing';
+
+const LOG_CTX = { component: 'RealRepricingService' };
 
 export interface PricingRule {
   id: string;
@@ -37,7 +40,7 @@ export class RealRepricingService {
       .order('priority', { ascending: true });
 
     if (error) {
-      console.error('Error fetching pricing rules:', error);
+      logger.error('Error fetching pricing rules', error instanceof Error ? error : undefined, LOG_CTX);
       return [];
     }
 
@@ -77,7 +80,7 @@ export class RealRepricingService {
       .single();
 
     if (error) {
-      console.error('Error creating pricing rule:', error);
+      logger.error('Error creating pricing rule', error instanceof Error ? error : undefined, LOG_CTX);
       return null;
     }
 
