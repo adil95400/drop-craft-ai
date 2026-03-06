@@ -40,7 +40,7 @@ export class RealRepricingService {
       .order('priority', { ascending: true });
 
     if (error) {
-      console.error('Error fetching pricing rules:', error);
+      logger.error('Error fetching pricing rules', error instanceof Error ? error : undefined, LOG_CTX);
       return [];
     }
 
