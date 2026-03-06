@@ -97,7 +97,7 @@ export class AIAnalyticsService {
         }
       }).sort((a, b) => b.score - a.score)
     } catch (error) {
-      console.error('Error fetching trending products:', error)
+      logger.error('Error fetching trending products', error instanceof Error ? error : undefined, LOG_CTX)
       return []
     }
   }
