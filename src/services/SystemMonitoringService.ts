@@ -196,7 +196,7 @@ export class SystemMonitoringService {
       if (error) throw error;
       return (data || []) as SystemHealthMonitoring[];
     } catch (error) {
-      console.error('Error fetching health monitoring data:', error);
+      logger.error('Error fetching health monitoring data', error instanceof Error ? error : undefined, LOG_CTX);
       throw error;
     }
   }
