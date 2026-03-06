@@ -220,7 +220,7 @@ class ProductScraperService {
         productId: data.id
       };
     } catch (error) {
-      console.error('❌ Import error:', error);
+      logger.error('Import error', error instanceof Error ? error : undefined, { ...LOG_CTX, action: 'importToCatalog' });
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Erreur lors de l\'import'
