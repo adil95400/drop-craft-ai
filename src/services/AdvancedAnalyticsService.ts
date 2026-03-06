@@ -8,6 +8,9 @@
  * breaking the UI when analytics data is unavailable.
  */
 import { advancedAnalyticsApi } from '@/services/api/client';
+import { logger } from '@/utils/logger';
+
+const LOG_CTX = { component: 'AdvancedAnalyticsService' };
 
 /** A single recorded performance metric (e.g. page load time, TTFB). */
 interface PerformanceMetric {
@@ -48,76 +51,50 @@ interface ABTestExperiment {
 }
 
 export class AdvancedAnalyticsService {
-  /**
-   * Fetch all performance metrics for the current user.
-   * @returns Array of {@link PerformanceMetric}, or `[]` on error.
-   */
   static async getPerformanceMetrics(): Promise<PerformanceMetric[]> {
     try {
       const resp = await advancedAnalyticsApi.performanceMetrics();
       return resp.items;
     } catch (error) {
-      console.error('Error fetching performance metrics:', error);
+      logger.error('Error fetching performance metrics', error instanceof Error ? error : undefined, LOG_CTX);
       return [];
     }
   }
 
-  /**
-   * Fetch all advanced reports (PDF exports, scheduled reports, etc.).
-   * @returns Array of {@link AdvancedReport}, or `[]` on error.
-   */
   static async getAdvancedReports(): Promise<AdvancedReport[]> {
     try {
       const resp = await advancedAnalyticsApi.listReports();
       return resp.items;
     } catch (error) {
-      console.error('Error fetching advanced reports:', error);
+      logger.error('Error fetching advanced reports', error instanceof Error ? error : undefined, LOG_CTX);
       return [];
     }
   }
 
-  /**
-   * Retrieve predictive analytics results (churn, demand forecasting, etc.).
-   * @returns Array of {@link PredictiveAnalysis}, or `[]` on error.
-   */
   static async getPredictiveAnalytics(): Promise<PredictiveAnalysis[]> {
     try {
       const resp = await advancedAnalyticsApi.predictiveAnalytics();
       return resp.items;
     } catch (error) {
-      console.error('Error fetching predictive analytics:', error);
+      logger.error('Error fetching predictive analytics', error instanceof Error ? error : undefined, LOG_CTX);
       return [];
     }
   }
 
-  /**
-   * List all A/B test experiments.
-   * @returns Array of {@link ABTestExperiment}, or `[]` on error.
-   */
   static async getABTests(): Promise<ABTestExperiment[]> {
     try {
       const resp = await advancedAnalyticsApi.listABTests();
       return resp.items;
     } catch (error) {
-      console.error('Error fetching AB tests:', error);
+      logger.error('Error fetching AB tests', error instanceof Error ? error : undefined, LOG_CTX);
       return [];
     }
   }
 
-  /**
-   * Generate a new advanced report asynchronously.
-   * @param config.reportType - Type of report (e.g. "sales_summary", "inventory").
-   * @param config.config     - Report-specific options (date range, filters…).
-   */
   static async generateAdvancedReport(config: { reportType: string; config: any }) {
     return advancedAnalyticsApi.generateReport(config);
   }
 
-  /**
-   * Create and start a new A/B test experiment.
-   * @param testConfig - Full experiment configuration including variants,
-   *                     success metrics, and traffic allocation.
-   */
   static async createABTest(testConfig: {
     experimentName: string;
     experimentType: string;
@@ -130,10 +107,6 @@ export class AdvancedAnalyticsService {
     return advancedAnalyticsApi.createABTest(testConfig);
   }
 
-  /**
-   * Trigger a new predictive analysis run across all user data.
-   * Results are stored and retrievable via {@link getPredictiveAnalytics}.
-   */
   static async runPredictiveAnalysis() {
     return advancedAnalyticsApi.runPredictive();
   }

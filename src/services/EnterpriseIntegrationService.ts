@@ -1,5 +1,8 @@
 import { supabase } from "@/integrations/supabase/client";
 import type { Database } from "@/integrations/supabase/types";
+import { logger } from '@/utils/logger';
+
+const LOG_CTX = { component: 'EnterpriseIntegrationService' };
 
 type EnterpriseIntegrations = Database['public']['Tables']['enterprise_integrations']['Row'];
 
@@ -57,7 +60,7 @@ export class EnterpriseIntegrationService {
 
   static async updateEnterpriseSetting(key: string, value: any, category: string): Promise<EnterpriseSetting> {
     // Since enterprise_settings table doesn't exist, just return the setting
-    console.log('Setting updated:', { key, value, category })
+    logger.debug('Setting updated', { ...LOG_CTX, metadata: { key, category } });
     return { key, value, category }
   }
 
@@ -90,7 +93,7 @@ export class EnterpriseIntegrationService {
       if (error) throw error;
       return data;
     } catch (error) {
-      console.error('Error testing connection:', error);
+      logger.error('Error testing connection', error instanceof Error ? error : undefined, LOG_CTX);
       throw error;
     }
   }
@@ -108,7 +111,7 @@ export class EnterpriseIntegrationService {
       if (error) throw error;
       return data;
     } catch (error) {
-      console.error('Error syncing integration:', error);
+      logger.error('Error syncing integration', error instanceof Error ? error : undefined, LOG_CTX);
       throw error;
     }
   }
@@ -123,7 +126,7 @@ export class EnterpriseIntegrationService {
       if (error) throw error;
       return data || [];
     } catch (error) {
-      console.error('Error fetching integrations:', error);
+      logger.error('Error fetching integrations', error instanceof Error ? error : undefined, LOG_CTX);
       throw error;
     }
   }
@@ -139,7 +142,7 @@ export class EnterpriseIntegrationService {
       if (error) throw error;
       return data;
     } catch (error) {
-      console.error('Error fetching integration:', error);
+      logger.error('Error fetching integration', error instanceof Error ? error : undefined, LOG_CTX);
       throw error;
     }
   }
@@ -164,7 +167,7 @@ export class EnterpriseIntegrationService {
       if (error) throw error;
       return data;
     } catch (error) {
-      console.error('Error creating integration:', error);
+      logger.error('Error creating integration', error instanceof Error ? error : undefined, LOG_CTX);
       throw error;
     }
   }
@@ -181,7 +184,7 @@ export class EnterpriseIntegrationService {
       if (error) throw error;
       return data;
     } catch (error) {
-      console.error('Error updating integration:', error);
+      logger.error('Error updating integration', error instanceof Error ? error : undefined, LOG_CTX);
       throw error;
     }
   }
@@ -196,7 +199,7 @@ export class EnterpriseIntegrationService {
       if (error) throw error;
       return { success: true };
     } catch (error) {
-      console.error('Error deleting integration:', error);
+      logger.error('Error deleting integration', error instanceof Error ? error : undefined, LOG_CTX);
       throw error;
     }
   }
@@ -254,7 +257,7 @@ export class EnterpriseIntegrationService {
       
       return { success: true, message: `Sync scheduled to run ${frequency}` };
     } catch (error) {
-      console.error('Error scheduling sync job:', error);
+      logger.error('Error scheduling sync job', error instanceof Error ? error : undefined, LOG_CTX);
       throw error;
     }
   }
@@ -278,7 +281,7 @@ export class EnterpriseIntegrationService {
 
       return health;
     } catch (error) {
-      console.error('Error getting integration health:', error);
+      logger.error('Error getting integration health', error instanceof Error ? error : undefined, LOG_CTX);
       throw error;
     }
   }

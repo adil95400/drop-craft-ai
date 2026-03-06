@@ -3,6 +3,9 @@
  * Replaces broken API V1 proxy (/v1/orders not implemented) with direct DB access.
  */
 import { supabase } from '@/integrations/supabase/client'
+import { logger } from '@/utils/logger'
+
+const LOG_CTX = { component: 'OrdersService' }
 
 export class OrdersService {
   static async getOrders(userId: string) {
@@ -12,7 +15,7 @@ export class OrdersService {
       .eq('user_id', userId)
       .order('created_at', { ascending: false })
       .limit(100)
-    if (error) { console.warn('OrdersService.getOrders error:', error); return [] }
+    if (error) { logger.warn('getOrders failed', { ...LOG_CTX, action: 'getOrders', metadata: { error: error.message } }); return [] }
     return data ?? []
   }
 
@@ -84,7 +87,7 @@ export class OrdersService {
       .select('status, total_amount, payment_status')
       .eq('user_id', userId)
 
-    if (error) { console.warn('OrdersService.getOrderStats error:', error); return { total: 0, pending: 0, processing: 0, shipped: 0, delivered: 0, cancelled: 0, revenue: 0 } }
+    if (error) { logger.warn('getOrderStats failed', { ...LOG_CTX, action: 'getOrderStats', metadata: { error: error.message } }); return { total: 0, pending: 0, processing: 0, shipped: 0, delivered: 0, cancelled: 0, revenue: 0 } }
 
     const orders = data ?? []
     return {
@@ -106,7 +109,7 @@ export class OrdersService {
       .or(`order_number.ilike.%${searchTerm}%,tracking_number.ilike.%${searchTerm}%`)
       .order('created_at', { ascending: false })
       .limit(100)
-    if (error) { console.warn('OrdersService.searchOrders error:', error); return [] }
+    if (error) { logger.warn('searchOrders failed', { ...LOG_CTX, action: 'searchOrders', metadata: { error: error.message } }); return [] }
     return data ?? []
   }
 

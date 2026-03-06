@@ -4,6 +4,9 @@
  */
 
 import { supabase } from '@/integrations/supabase/client';
+import { logger } from '@/utils/logger';
+
+const LOG_CTX = { component: 'ProductScraperService' };
 
 export interface ScrapedProduct {
   name: string;
@@ -88,7 +91,7 @@ class ProductScraperService {
    */
   async scrapeProductFromUrl(url: string): Promise<ScrapeResult> {
     try {
-      console.log('🔍 Scraping product from URL:', url);
+      logger.debug('Scraping product from URL', { ...LOG_CTX, action: 'scrape', metadata: { url } });
       
       // Validate URL first
       const validation = this.validateUrl(url);
@@ -105,7 +108,7 @@ class ProductScraperService {
       });
 
       if (error) {
-        console.error('❌ Scraping error:', error);
+        logger.error('Scraping error', error instanceof Error ? error : undefined, { ...LOG_CTX, action: 'scrape', metadata: { url } });
         return {
           success: false,
           error: error.message || 'Erreur lors du scraping du produit'
@@ -113,7 +116,7 @@ class ProductScraperService {
       }
 
       if (data?.success && data?.product) {
-        console.log('✅ Product scraped successfully:', data.product);
+        logger.info('Product scraped successfully', { ...LOG_CTX, action: 'scrape', metadata: { title: data.product?.name } });
         return {
           success: true,
           product: data.product,
@@ -126,7 +129,7 @@ class ProductScraperService {
         error: data?.error || 'Impossible d\'extraire les données du produit'
       };
     } catch (error) {
-      console.error('❌ Unexpected error during scraping:', error);
+      logger.error('Unexpected error during scraping', error instanceof Error ? error : undefined, { ...LOG_CTX, action: 'scrape' });
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Erreur inattendue'
@@ -191,14 +194,14 @@ class ProductScraperService {
         .single();
 
       if (error) {
-        console.error('❌ Database insertion error:', error);
+        logger.error('Database insertion error', error instanceof Error ? error : undefined, { ...LOG_CTX, action: 'importToCatalog' });
         return {
           success: false,
           error: error.message
         };
       }
 
-      console.log('✅ Product imported to catalog:', data.id);
+      logger.info('Product imported to catalog', { ...LOG_CTX, action: 'importToCatalog', metadata: { productId: data.id } });
 
       // Log activity
       await supabase.from('activity_logs').insert({
@@ -217,7 +220,7 @@ class ProductScraperService {
         productId: data.id
       };
     } catch (error) {
-      console.error('❌ Import error:', error);
+      logger.error('Import error', error instanceof Error ? error : undefined, { ...LOG_CTX, action: 'importToCatalog' });
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Erreur lors de l\'import'

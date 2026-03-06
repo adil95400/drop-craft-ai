@@ -1,4 +1,7 @@
 import { supabase } from '@/integrations/supabase/client'
+import { logger } from '@/utils/logger'
+
+const LOG_CTX = { component: 'PublicationService' }
 
 export interface PublishOptions {
   autoPublish?: boolean
@@ -60,7 +63,7 @@ export class PublicationService {
         results: data.results
       }
     } catch (error: any) {
-      console.error('Publication error:', error)
+      logger.error('Publication error', error instanceof Error ? error : undefined, { ...LOG_CTX, action: 'publishProduct' })
       throw new Error(`Failed to publish product: ${error.message}`)
     }
   }
@@ -111,7 +114,7 @@ export class PublicationService {
         await this.delay(1000)
 
       } catch (error: any) {
-        console.error(`Error publishing product ${productId}:`, error)
+        logger.error(`Error publishing product ${productId}`, error instanceof Error ? error : undefined, { ...LOG_CTX, action: 'publishMultiple' })
         result.failCount++
         result.results.push({
           productId,
@@ -138,7 +141,7 @@ export class PublicationService {
       .order('created_at', { ascending: false })
 
     if (error) {
-      console.error('Error fetching published products:', error)
+      logger.warn('Error fetching published products', { ...LOG_CTX, action: 'getPublished', metadata: { error: error.message } })
       return []
     }
 
@@ -165,7 +168,7 @@ export class PublicationService {
 
       return true
     } catch (error) {
-      console.error('Error unpublishing product:', error)
+      logger.error('Error unpublishing product', error instanceof Error ? error : undefined, { ...LOG_CTX, action: 'unpublish' })
       return false
     }
   }
@@ -195,7 +198,7 @@ export class PublicationService {
         }
       })
     } catch (error) {
-      console.error('Error syncing inventory:', error)
+      logger.error('Error syncing inventory', error instanceof Error ? error : undefined, { ...LOG_CTX, action: 'syncInventory' })
       throw error
     }
   }
