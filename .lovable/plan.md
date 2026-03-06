@@ -1,156 +1,88 @@
 
-# Plan de mise en production ShopOpti
 
-## Contexte
+# Performance & Bundle Optimization Plan
 
-L'application ShopOpti est deja tres avancee avec une architecture solide. Ce plan identifie les ajustements necessaires pour un lancement production securise.
+## Current State
 
-## Etat actuel (deja implemente)
+After analyzing the codebase, the main performance bottlenecks are:
 
-- Pages legales : CGU, CGV, Politique de confidentialite
-- Banniere cookies RGPD conforme
-- Suppression de compte (RGPD)
-- Export de donnees utilisateur (RGPD)
-- Stripe : checkout, webhooks, portail client, plans (Standard/Pro/Ultra Pro)
-- Securite : RLS 100%, JWT, CORS securise, audit logs, RBAC
-- SEO : sitemap, robots.txt, JSON-LD, meta tags Helmet, pages SEO dediees
-- Lazy loading sur 150+ pages
-- PWA configure
-- Sentry integre
-- Edge functions deployees (300+)
+1. **framer-motion imported in 322 files** — even though it's in `vendor-heavy` chunk, it gets pulled into the initial load because the dashboard (ChannableDashboard) and many core components import it directly
+2. **ChannableLayout eagerly imports** `DiagnosticWidget` and `OnboardingModal` on every protected page load
+3. **cdn.tailwindcss.com loaded at runtime** (visible in console logs) — this is a massive script meant only for dev, adds ~300KB+
+4. **main.tsx synchronously imports** Sentry, PWAService, consoleInterceptor, and CookieBanner before any rendering
+5. **No route prefetching** — navigation between modules triggers full chunk loads with no preloading
+6. **Radix UI in a single mega-chunk** (`vendor-ui`) — all Radix components bundled together even if only a few are used on a given page
 
-## Ajustements a implementer
+## Plan
 
-### Phase 1 — Configuration domaine et routing (Priorite haute)
+### 1. Remove cdn.tailwindcss.com (Critical — immediate perf win)
+Search for any `<script>` tag loading `cdn.tailwindcss.com` in the codebase (likely in index.html or a component). Remove it — Tailwind is already compiled via PostCSS/Vite. This alone could save 300KB+ on every page load.
 
-**1.1 Corriger les references de domaine**
+### 2. Defer main.tsx initialization
+Move Sentry, PWAService, and consoleInterceptor to async initialization after first render:
+```typescript
+// Defer non-critical initialization
+requestIdleCallback(() => {
+  initSentry();
+  PWAService.init();
+  installConsoleInterceptor();
+});
+```
+Lazy-load `CookieBanner` instead of importing it at top level.
 
-Le code contient des references obsoletes (`app.shopopti.com` au lieu de `shopopti.io`). A corriger dans :
-- `src/components/admin/AdvancedSettings.tsx` : mettre a jour `siteUrl` et `allowedOrigins`
-- `src/config/domains.ts` : ajouter `app.shopopti.io` dans la config production
-- `supabase/functions/_shared/cors.ts` et `secure-cors.ts` : verifier que `app.shopopti.io` est dans les origines autorisees
-
-**1.2 Architecture marketing vs app**
-
-> Note importante : Lovable ne supporte pas le hosting multi-sous-domaine. Le projet deploye sur `shopopti.io` servira a la fois le site marketing (pages publiques) et l'application (routes protegees). La separation se fait par le routing, pas par sous-domaine.
-
-Le routing actuel est deja bien structure :
-- Pages publiques (marketing) : `/`, `/pricing`, `/features`, `/blog`, etc.
-- Application protegee : `/dashboard/*`, `/products/*`, `/orders/*`, etc.
-
-Ajout a faire : redirection `app.shopopti.io` vers `shopopti.io/dashboard` via un enregistrement DNS CNAME + regle de redirection.
-
-### Phase 2 — Securite production
-
-**2.1 Headers de securite**
-
-Le fichier `src/lib/security-headers.ts` est deja bien configure avec CSP, X-Frame-Options, HSTS. A verifier :
-- Ajouter la directive `Strict-Transport-Security` (HSTS) dans les headers
-- S'assurer que les headers sont appliques via `vercel.json` ou `_headers`
-
-**2.2 Verification des variables d'environnement**
-
-- `VITE_SUPABASE_URL` et `VITE_SUPABASE_PUBLISHABLE_KEY` : OK, deja configurees
-- Verifier qu'aucune `SERVICE_ROLE_KEY` n'est exposee cote client (verification deja faite, conforme)
-- Ajouter un fichier `public/_headers` pour les headers de securite en production
-
-**2.3 Protection anti-scraping**
-
-Ajouter des headers `X-Robots-Tag` sur les routes protegees et un rate limiting cote edge functions (deja en place sur les fonctions critiques).
-
-### Phase 3 — Stripe et abonnements (verification)
-
-L'integration est deja complete. Verifications :
-- `stripe-webhook/index.ts` : signature Stripe verifiee, mise a jour du profil via SERVICE_ROLE
-- `check-subscription/index.ts` : synchronisation du plan
-- `create-checkout-session` : creation de session securisee
-- `customer-portal` : gestion des abonnements
-
-Action : verifier que les secrets `STRIPE_SECRET_KEY` et `STRIPE_WEBHOOK_SECRET` sont bien configures dans les secrets du projet.
-
-### Phase 4 — Performance et SEO
-
-**4.1 SEO landing page**
-
-La page `Index.tsx` utilise deja `<Helmet>`, `<SEO>`, `SoftwareAppSchema`, `OrganizationSchema`. Optimisations supplementaires :
-- Verifier les balises Open Graph et Twitter Card
-- S'assurer que le `canonical` pointe vers `https://shopopti.io`
-- Verifier que `robots.txt` et `sitemap.xml` sont accessibles en production
-
-**4.2 Performance mobile**
-
-- Le lazy loading est deja en place sur toutes les routes
-- Les images utilisent des variantes `-sm` pour mobile
-- PWA est configure via `vite-plugin-pwa`
-- Image optimizer via `vite-plugin-image-optimizer`
-
-### Phase 5 — Monitoring et analytics
-
-**5.1 Sentry**
-
-Deja integre (`@sentry/react`). Verifier que le DSN de production est configure.
-
-**5.2 Analytics**
-
-Creer un composant d'integration analytics qui respecte le consentement cookies :
-- Lire les preferences du `CookieBanner` (`shopopti_cookie_consent`)
-- Ne charger les scripts analytics que si `analytics: true`
-- Support PostHog ou GA4 (a configurer via secret)
-
-**5.3 Logs production**
-
-L'intercepteur de console (`consoleInterceptor.ts`) est en place et redirige vers Sentry en production. Les edge functions ont un logging structure.
-
-### Phase 6 — Fichier de headers production
-
-Creer `public/_headers` pour Lovable/Vercel avec :
-
-```text
-/*
-  X-Content-Type-Options: nosniff
-  X-Frame-Options: SAMEORIGIN
-  X-XSS-Protection: 1; mode=block
-  Referrer-Policy: strict-origin-when-cross-origin
-  Strict-Transport-Security: max-age=31536000; includeSubDomains
-  Permissions-Policy: accelerometer=(), camera=(), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), payment=(), usb=()
+### 3. Lazy-load ChannableLayout heavy children
+In `ChannableLayout.tsx`, lazy-load `DiagnosticWidget` and `OnboardingModal` — these are not needed for initial page render:
+```typescript
+const DiagnosticWidget = lazy(() => import('@/components/support/DiagnosticWidget'));
+const OnboardingModal = lazy(() => import('@/components/onboarding/UnifiedOnboarding'));
 ```
 
-## Details techniques
+### 4. Add route prefetching on hover/focus
+Create a `usePrefetchRoute` hook that triggers `import()` when sidebar links are hovered, so chunks load before navigation:
+```typescript
+const prefetchMap = {
+  '/products': () => import('@/routes/ProductRoutes'),
+  '/orders': () => import('@/routes/OrderRoutes'),
+  // etc.
+};
+```
+Integrate into sidebar navigation items with `onMouseEnter`.
 
-### Fichiers a modifier
+### 5. Split vendor-heavy chunk
+The current `vendor-heavy` groups framer-motion + i18next + Sentry together. Split them:
+- `vendor-animation` — framer-motion (loaded only when animated pages are visited)
+- `vendor-i18n` — i18next (defer until first translation needed)  
+- `vendor-monitoring` — Sentry (load after first render)
 
-| Fichier | Action |
-|---------|--------|
-| `src/config/domains.ts` | Ajouter `app.shopopti.io`, verifier config |
-| `src/components/admin/AdvancedSettings.tsx` | Corriger `app.shopopti.com` → `shopopti.io` |
-| `supabase/functions/_shared/cors.ts` | Verifier origines autorisees |
-| `supabase/functions/_shared/secure-cors.ts` | Verifier origines autorisees |
-| `public/_headers` | Creer avec headers de securite + HSTS |
-| `src/lib/security-headers.ts` | Ajouter HSTS |
+### 6. Optimize framer-motion imports
+In the 322 files using framer-motion, many only need `motion.div`. Use the lighter `m` import with `LazyMotion` + `domAnimation` feature bundle to reduce the framer-motion footprint by ~60%:
+```typescript
+import { LazyMotion, domAnimation, m } from 'framer-motion';
+// Wrap app section with <LazyMotion features={domAnimation}>
+// Replace <motion.div> with <m.div>
+```
 
-### Fichiers a creer
+### 7. Implement dynamic imports for dashboard widgets
+The dashboard loads all widget components eagerly. Wrap each widget card in a lazy boundary so only visible widgets load.
 
-| Fichier | Description |
-|---------|-------------|
-| `src/hooks/useAnalyticsConsent.ts` | Hook pour charger analytics selon consentement cookies |
+## Expected Impact
 
-### Verifications a effectuer
+| Optimization | Estimated Savings |
+|---|---|
+| Remove cdn.tailwindcss.com | ~300KB |
+| Defer Sentry/PWA init | ~150ms TTI |
+| Split vendor-heavy | ~80KB initial |
+| LazyMotion | ~40KB per page |
+| Route prefetching | Perceived 0ms navigation |
+| Lazy layout widgets | ~50KB initial |
 
-1. Secrets Stripe configures (`STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`)
-2. DSN Sentry de production configure
-3. DNS `shopopti.io` pointe vers `185.158.133.1` (A records OK)
-4. TXT `_lovable` ajoute pour verification domaine
-5. Publication du projet via le bouton Publish de Lovable
+**Total estimated reduction**: ~400-500KB initial bundle, ~200ms faster TTI
 
-## Checklist pre-lancement
+## Implementation Order
+1. Remove cdn.tailwindcss.com (5 min, biggest win)
+2. Defer main.tsx initialization (15 min)
+3. Lazy-load ChannableLayout widgets (10 min)
+4. Split vendor chunks in vite.config.ts (10 min)
+5. Add route prefetching hook + sidebar integration (30 min)
+6. LazyMotion migration for top-used components (45 min)
 
-- [ ] DNS verifie et domaine connecte dans Lovable
-- [ ] Headers de securite deployes
-- [ ] Secrets Stripe en production
-- [ ] Pages legales accessibles (`/terms`, `/privacy`, `/cgv`)
-- [ ] Banniere cookies fonctionnelle
-- [ ] Suppression de compte fonctionnelle
-- [ ] Webhooks Stripe enregistres avec l'URL de production
-- [ ] Sentry DSN configure
-- [ ] Analytics respectant le consentement
-- [ ] Test complet du flow d'inscription → paiement → dashboard
