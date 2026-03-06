@@ -168,7 +168,7 @@ export class PublicationService {
 
       return true
     } catch (error) {
-      console.error('Error unpublishing product:', error)
+      logger.error('Error unpublishing product', error instanceof Error ? error : undefined, { ...LOG_CTX, action: 'unpublish' })
       return false
     }
   }
