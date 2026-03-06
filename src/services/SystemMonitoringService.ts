@@ -240,7 +240,7 @@ export class SystemMonitoringService {
       );
       return { success: true, monitored_components: componentsToMonitor, results };
     } catch (error) {
-      console.error('Error starting real-time monitoring:', error);
+      logger.error('Error starting real-time monitoring', error instanceof Error ? error : undefined, LOG_CTX);
       throw error;
     }
   }
