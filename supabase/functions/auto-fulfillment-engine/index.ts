@@ -347,8 +347,94 @@ async function placeSupplierOrder(
       }
     }
 
+    case 'aliexpress': {
+      const appKey = credentials?.appKey
+      const sessionKey = credentials?.sessionKey || credentials?.accessToken
+      if (!appKey || !sessionKey) throw new Error('AliExpress app key or session key missing')
+
+      const payload_items = items.map(i => ({
+        product_id: i.supplier_product_id,
+        product_count: i.quantity,
+        logistics_service_name: 'CAINIAO_STANDARD',
+      }))
+
+      const addr = {
+        full_name: shippingAddress?.name || '',
+        phone_country: '+1',
+        mobile_no: shippingAddress?.phone || '',
+        address: shippingAddress?.address1 || shippingAddress?.address || '',
+        city: shippingAddress?.city || '',
+        province: shippingAddress?.state || '',
+        zip: shippingAddress?.zipCode || shippingAddress?.postal_code || '',
+        country: shippingAddress?.countryCode || shippingAddress?.country || 'US',
+      }
+
+      const resp = await fetch(`https://api-sg.aliexpress.com/sync`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          method: 'aliexpress.ds.order.create',
+          app_key: appKey,
+          session: sessionKey,
+          sign_method: 'sha256',
+          timestamp: new Date().toISOString(),
+          param_place_order_request4_open_api_d_t_o: JSON.stringify({
+            product_items: payload_items,
+            logistics_address: addr,
+          }),
+        }),
+      })
+      if (!resp.ok) throw new Error(`AliExpress API error: ${await resp.text()}`)
+      const data = await resp.json()
+      const orderIds = data?.aliexpress_ds_order_create_response?.result?.order_list || []
+      return {
+        supplierOrderId: orderIds[0]?.order_id?.toString() || `ae-${Date.now()}`,
+        status: 'pending',
+        trackingNumber: null,
+        carrier: null,
+        estimatedDelivery: null,
+      }
+    }
+
+    case 'printful': {
+      const apiKey = credentials?.apiKey
+      if (!apiKey) throw new Error('Printful API key missing')
+
+      const resp = await fetch('https://api.printful.com/orders', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${apiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          recipient: {
+            name: shippingAddress?.name,
+            address1: shippingAddress?.address1 || shippingAddress?.address,
+            city: shippingAddress?.city,
+            state_code: shippingAddress?.state,
+            country_code: shippingAddress?.countryCode || shippingAddress?.country,
+            zip: shippingAddress?.zipCode || shippingAddress?.postal_code,
+            phone: shippingAddress?.phone,
+          },
+          items: items.map(i => ({
+            sync_variant_id: i.supplier_product_id,
+            quantity: i.quantity,
+          })),
+        }),
+      })
+      if (!resp.ok) throw new Error(`Printful API error: ${await resp.text()}`)
+      const data = await resp.json()
+      return {
+        supplierOrderId: data.result?.id?.toString() || `pf-${Date.now()}`,
+        status: 'pending',
+        trackingNumber: null,
+        carrier: null,
+        estimatedDelivery: null,
+      }
+    }
+
     default:
-      throw new Error(`Supplier "${supplierType}" not supported for auto-order.`)
+      throw new Error(`Supplier "${supplierType}" not supported for auto-order. Supported: cj-dropshipping, bigbuy, aliexpress, printful.`)
   }
 }
 
