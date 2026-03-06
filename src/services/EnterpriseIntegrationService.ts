@@ -60,7 +60,7 @@ export class EnterpriseIntegrationService {
 
   static async updateEnterpriseSetting(key: string, value: any, category: string): Promise<EnterpriseSetting> {
     // Since enterprise_settings table doesn't exist, just return the setting
-    console.log('Setting updated:', { key, value, category })
+    logger.debug('Setting updated', { ...LOG_CTX, metadata: { key, category } });
     return { key, value, category }
   }
 
