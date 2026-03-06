@@ -54,7 +54,6 @@ export function trackMixpanelEvent(name: string, props?: Record<string, unknown>
     window.mixpanel.track(name, props)
   }
 }
-}
 
 export function identifyMixpanelUser(userId: string, traits?: Record<string, unknown>) {
   if (!initialised || !window.mixpanel) return
