@@ -194,7 +194,7 @@ class ProductScraperService {
         .single();
 
       if (error) {
-        console.error('❌ Database insertion error:', error);
+        logger.error('Database insertion error', error instanceof Error ? error : undefined, { ...LOG_CTX, action: 'importToCatalog' });
         return {
           success: false,
           error: error.message
