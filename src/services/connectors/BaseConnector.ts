@@ -1,4 +1,5 @@
 import { SupplierCredentials, SupplierProduct } from '@/types/suppliers';
+import { logger } from '@/utils/logger';
 
 export type { SupplierCredentials, SupplierProduct } from '@/types/suppliers';
 
