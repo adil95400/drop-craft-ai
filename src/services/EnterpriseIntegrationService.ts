@@ -111,7 +111,7 @@ export class EnterpriseIntegrationService {
       if (error) throw error;
       return data;
     } catch (error) {
-      console.error('Error syncing integration:', error);
+      logger.error('Error syncing integration', error instanceof Error ? error : undefined, LOG_CTX);
       throw error;
     }
   }
