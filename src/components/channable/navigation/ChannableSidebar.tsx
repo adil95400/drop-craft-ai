@@ -499,6 +499,7 @@ export function ChannableSidebar() {
   const [searchQuery, setSearchQuery] = useState("");
   const [openGroups, setOpenGroups] = useState<NavGroupId[]>([]);
   const [openSubMenus, setOpenSubMenus] = useState<Record<string, boolean>>({});
+  const { prefetch: handlePrefetch } = useRoutePrefetch();
 
   // Debounce search for better performance
   const debouncedSearchQuery = useDebouncedValue(searchQuery, 150);
