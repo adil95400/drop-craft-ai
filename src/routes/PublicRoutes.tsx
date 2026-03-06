@@ -129,6 +129,15 @@ export function PublicRoutes() {
       <Route path="shopopti-vs-autods" element={<ShopoptiVsAutodsPage />} />
       <Route path="shopopti-vs-dsers" element={<ShopoptiVsDsersPage />} />
       <Route path="shopopti-vs-zendrop" element={<ShopoptiVsZendropPage />} />
+      <Route path="shopopti-vs-sellthetrend" element={<ShopoptiVsSellTheTrendPage />} />
+      
+      {/* NEW SEO Pillar Pages (EN) */}
+      <Route path="shopify-automation" element={<ShopifyAutomationPage />} />
+      <Route path="dropshipping-automation" element={<DropshippingAutomationPage />} />
+      <Route path="shopify-ai-tools" element={<ShopifyAIToolsPage />} />
+      <Route path="product-research-ai" element={<ProductResearchAIPage />} />
+      <Route path="shopify-analytics" element={<ShopifyAnalyticsPage />} />
+      <Route path="shopify-marketing-automation" element={<ShopifyMarketingAutomationPage />} />
       
       {/* Mid-tail SEO Pages (EN) */}
       <Route path="how-to-automate-shopify-store" element={<HowToAutomateShopifyPage />} />
