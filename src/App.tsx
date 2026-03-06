@@ -83,7 +83,7 @@ const AuthenticatedShell = memo(({ children }: { children: React.ReactNode }) =>
         <Suspense fallback={null}>
           <UnifiedProvider>
             <Suspense fallback={null}>
-              <ModalContextProvider>
+              <LazyModalContextProvider>
                 <a href="#main-content" className="skip-link">Aller au contenu principal</a>
                 <div id="a11y-announcer" aria-live="polite" aria-atomic="true" className="sr-only" role="status" />
                 <OfflineIndicatorLite />
