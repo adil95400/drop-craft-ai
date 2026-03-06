@@ -4,6 +4,9 @@
  */
 
 import { supabase } from '@/integrations/supabase/client'
+import { logger } from '@/utils/logger'
+
+const LOG_CTX = { component: 'StockPriceMonitor' }
 
 export interface MonitoringConfig {
   enabled: boolean
