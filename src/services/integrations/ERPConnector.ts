@@ -71,7 +71,7 @@ export class ERPConnector {
       
       return data.sync_result;
     } catch (error) {
-      console.error('ERP sync failed:', error);
+      logger.error('ERP sync failed', error instanceof Error ? error : undefined, LOG_CTX);
       throw error;
     }
   }
