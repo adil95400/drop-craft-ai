@@ -1,8 +1,11 @@
 import { supabase } from '@/integrations/supabase/client'
 import { ExportConfig } from '@/lib/validation/orderSchema'
+import { logger } from '@/utils/logger'
 import Papa from 'papaparse'
 import * as XLSX from 'xlsx'
 import { saveAs } from 'file-saver'
+
+const LOG_CTX = { component: 'ExportService' }
 
 export interface ExportResult {
   success: boolean
@@ -44,7 +47,7 @@ export class ExportService {
 
       return { success: true, filename, recordCount: filteredData.length }
     } catch (error) {
-      console.error('Export error:', error)
+      logger.error('Export error', error instanceof Error ? error : undefined, { ...LOG_CTX, action: 'exportData' })
       return { 
         success: false, 
         filename: '', 

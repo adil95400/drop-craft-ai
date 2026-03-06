@@ -4,6 +4,9 @@
  */
 import { supabase } from '@/integrations/supabase/client';
 import { getProductCount, getProductList, getProductStats } from '@/services/api/productHelpers';
+import { logger } from '@/utils/logger';
+
+const LOG_CTX = { component: 'AdminService' };
 
 export interface AdminActionResult {
   success: boolean;
@@ -654,7 +657,7 @@ export const AdminService = {
         });
       }
     } catch (error) {
-      console.error('Error logging admin action:', error);
+      logger.error('Error logging admin action', error instanceof Error ? error : undefined, { ...LOG_CTX, action: 'logAdminAction' });
     }
   },
 

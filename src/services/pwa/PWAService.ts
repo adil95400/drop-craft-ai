@@ -1,4 +1,8 @@
 // Service PWA pour ShopOpti
+import { logger } from '@/utils/logger';
+
+const LOG_CTX = { component: 'PWAService' };
+
 class PWAService {
   private static instance: PWAService;
   private registration: ServiceWorkerRegistration | null = null;
@@ -11,96 +15,79 @@ class PWAService {
     return PWAService.instance;
   }
 
-  // Initialisation du PWA
   async initialize(): Promise<void> {
     try {
-      // Enregistrement du Service Worker
       await this.registerServiceWorker();
-      
-      // Configuration des notifications push
       await this.setupPushNotifications();
-      
-      // Gestion de l'installation PWA
       this.setupInstallPrompt();
-      
-      // Synchronisation en arrière-plan
       this.setupBackgroundSync();
       
-      console.log('PWA Service initialized successfully');
+      logger.info('PWA Service initialized successfully', LOG_CTX);
     } catch (error) {
-      console.error('Error initializing PWA Service:', error);
+      logger.error('Error initializing PWA Service', error instanceof Error ? error : undefined, LOG_CTX);
     }
   }
 
-  // Enregistrement du Service Worker
   private async registerServiceWorker(): Promise<void> {
     if ('serviceWorker' in navigator) {
       try {
         this.registration = await navigator.serviceWorker.register('/sw.js');
-        console.log('Service Worker registered:', this.registration);
+        logger.debug('Service Worker registered', { ...LOG_CTX, action: 'registerServiceWorker' });
         
-        // Écouter les mises à jour
         this.registration.addEventListener('updatefound', () => {
-          console.log('New service worker available');
+          logger.info('New service worker available', { ...LOG_CTX, action: 'updateFound' });
           this.notifyUpdate();
         });
       } catch (error) {
-        console.error('Service Worker registration failed:', error);
+        logger.error('Service Worker registration failed', error instanceof Error ? error : undefined, { ...LOG_CTX, action: 'registerServiceWorker' });
       }
     }
   }
 
-  // Configuration des notifications push
   async setupPushNotifications(): Promise<boolean> {
     if (!this.registration) return false;
 
     try {
-      // Demander la permission
       const permission = await Notification.requestPermission();
       
       if (permission !== 'granted') {
-        console.log('Notification permission denied');
+        logger.debug('Notification permission denied', { ...LOG_CTX, action: 'setupPushNotifications' });
         return false;
       }
 
-      // S'abonner aux notifications push
       const subscription = await (this.registration as any).pushManager.subscribe({
         userVisibleOnly: true,
         applicationServerKey: this.urlBase64ToUint8Array(
-          // Clé publique VAPID (à configurer avec Firebase)
           'BEl62iUYgUivxIkv69yViEuiBIa40HI80NqIHHNiLqkxaaNXXJf4GJiN8JuHvBqQMZYFCFa2ezgWkGLLvJrTBWBqLPD_7A'
         ) as BufferSource
       });
 
-      // Envoyer l'abonnement au serveur
       await this.sendSubscriptionToServer(subscription);
       
-      console.log('Push notifications configured');
+      logger.info('Push notifications configured', { ...LOG_CTX, action: 'setupPushNotifications' });
       return true;
     } catch (error) {
-      console.error('Error setting up push notifications:', error);
+      logger.error('Error setting up push notifications', error instanceof Error ? error : undefined, { ...LOG_CTX, action: 'setupPushNotifications' });
       return false;
     }
   }
 
-  // Gestion de l'installation PWA
   private setupInstallPrompt(): void {
     window.addEventListener('beforeinstallprompt', (e) => {
       e.preventDefault();
       this.deferredPrompt = e;
-      console.log('PWA install prompt ready');
+      logger.debug('PWA install prompt ready', { ...LOG_CTX, action: 'setupInstallPrompt' });
     });
 
     window.addEventListener('appinstalled', () => {
-      console.log('PWA was installed');
+      logger.info('PWA was installed', { ...LOG_CTX, action: 'appInstalled' });
       this.deferredPrompt = null;
     });
   }
 
-  // Proposer l'installation PWA
   async promptInstall(): Promise<boolean> {
     if (!this.deferredPrompt) {
-      console.log('PWA already installed or prompt not available');
+      logger.debug('PWA already installed or prompt not available', { ...LOG_CTX, action: 'promptInstall' });
       return false;
     }
 
@@ -108,40 +95,35 @@ class PWAService {
       this.deferredPrompt.prompt();
       const { outcome } = await this.deferredPrompt.userChoice;
       
-      console.log(`PWA install outcome: ${outcome}`);
+      logger.info(`PWA install outcome: ${outcome}`, { ...LOG_CTX, action: 'promptInstall' });
       this.deferredPrompt = null;
       
       return outcome === 'accepted';
     } catch (error) {
-      console.error('Error prompting PWA install:', error);
+      logger.error('Error prompting PWA install', error instanceof Error ? error : undefined, { ...LOG_CTX, action: 'promptInstall' });
       return false;
     }
   }
 
-  // Vérifier si PWA est installable
   canInstall(): boolean {
     return this.deferredPrompt !== null;
   }
 
-  // Vérifier si PWA est installé
   isInstalled(): boolean {
     return window.matchMedia('(display-mode: standalone)').matches ||
            window.matchMedia('(display-mode: fullscreen)').matches ||
            document.referrer.includes('android-app://');
   }
 
-  // Configuration de la synchronisation en arrière-plan
   private setupBackgroundSync(): void {
     if ('serviceWorker' in navigator && 'sync' in (window as any).ServiceWorkerRegistration.prototype) {
-      console.log('Background sync supported');
+      logger.debug('Background sync supported', { ...LOG_CTX, action: 'setupBackgroundSync' });
       
-      // Programmer des synchronisations périodiques
-      this.scheduleSync('sync-orders', 30000); // Toutes les 30 secondes
-      this.scheduleSync('sync-inventory', 300000); // Toutes les 5 minutes
+      this.scheduleSync('sync-orders', 30000);
+      this.scheduleSync('sync-inventory', 300000);
     }
   }
 
-  // Programmer une synchronisation
   async scheduleSync(tag: string, delay: number = 0): Promise<void> {
     if (!this.registration) return;
 
@@ -154,20 +136,17 @@ class PWAService {
         await (this.registration as any).sync.register(tag);
       }
       
-      console.log(`Background sync scheduled: ${tag}`);
+      logger.debug(`Background sync scheduled: ${tag}`, { ...LOG_CTX, action: 'scheduleSync' });
     } catch (error) {
-      console.error(`Error scheduling sync ${tag}:`, error);
+      logger.error(`Error scheduling sync ${tag}`, error instanceof Error ? error : undefined, { ...LOG_CTX, action: 'scheduleSync' });
     }
   }
 
-  // Envoyer l'abonnement push au serveur
   private async sendSubscriptionToServer(subscription: PushSubscription): Promise<void> {
     try {
       const response = await fetch('/api/push-subscription', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           subscription,
           userAgent: navigator.userAgent,
@@ -179,18 +158,15 @@ class PWAService {
         throw new Error('Failed to send subscription to server');
       }
 
-      console.log('Push subscription sent to server');
+      logger.debug('Push subscription sent to server', { ...LOG_CTX, action: 'sendSubscription' });
     } catch (error) {
-      console.error('Error sending subscription to server:', error);
+      logger.error('Error sending subscription to server', error instanceof Error ? error : undefined, { ...LOG_CTX, action: 'sendSubscription' });
     }
   }
 
-  // Notifier d'une mise à jour disponible
   private notifyUpdate(): void {
-    // Afficher une notification ou un toast pour informer l'utilisateur
-    console.log('App update available');
+    logger.info('App update available', { ...LOG_CTX, action: 'notifyUpdate' });
     
-    // Ici on pourrait utiliser un toast service
     if ('Notification' in window && Notification.permission === 'granted') {
       new Notification('ShopOpti', {
         body: 'Une mise à jour est disponible',
@@ -200,7 +176,6 @@ class PWAService {
     }
   }
 
-  // Forcer la mise à jour
   async forceUpdate(): Promise<void> {
     if (this.registration && this.registration.waiting) {
       this.registration.waiting.postMessage({ action: 'skipWaiting' });
@@ -208,7 +183,6 @@ class PWAService {
     }
   }
 
-  // Utilitaire pour convertir la clé VAPID
   private urlBase64ToUint8Array(base64String: string): Uint8Array {
     const padding = '='.repeat((4 - base64String.length % 4) % 4);
     const base64 = (base64String + padding)
@@ -224,7 +198,6 @@ class PWAService {
     return outputArray;
   }
 
-  // Envoyer une notification push locale
   async sendLocalNotification(title: string, options: NotificationOptions = {}): Promise<void> {
     if ('Notification' in window && Notification.permission === 'granted') {
       try {
@@ -239,14 +212,13 @@ class PWAService {
           notification.close();
         };
 
-        console.log('Local notification sent:', title);
+        logger.debug(`Local notification sent: ${title}`, { ...LOG_CTX, action: 'sendLocalNotification' });
       } catch (error) {
-        console.error('Error sending local notification:', error);
+        logger.error('Error sending local notification', error instanceof Error ? error : undefined, { ...LOG_CTX, action: 'sendLocalNotification' });
       }
     }
   }
 
-  // Notifications métier
   async notifyNewOrder(orderNumber: string): Promise<void> {
     await this.sendLocalNotification('Nouvelle commande reçue', {
       body: `Commande #${orderNumber} a été créée`,

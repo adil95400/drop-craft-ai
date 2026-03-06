@@ -1,5 +1,8 @@
 import { supabase } from '@/integrations/supabase/client'
+import { logger } from '@/utils/logger'
 import type { UnifiedProduct } from './ProductsUnifiedService'
+
+const LOG_CTX = { component: 'ProductHistoryService' }
 
 export interface ProductHistoryEntry {
   id: string
@@ -45,7 +48,7 @@ export class ProductHistoryService {
 
       if (error) throw error
     } catch (error) {
-      console.error('Failed to record product history:', error)
+      logger.warn('Failed to record product history', { ...LOG_CTX, action: 'recordChange', metadata: { error } })
       // Ne pas bloquer l'opération principale si l'historique échoue
     }
   }

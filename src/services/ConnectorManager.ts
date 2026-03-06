@@ -2,6 +2,9 @@ import { AdvancedBaseConnector, PlatformCredentials } from './connectors/Advance
 import { ShopifyAdvancedConnector } from './connectors/ShopifyAdvancedConnector';
 import { WooCommerceAdvancedConnector } from './connectors/WooCommerceAdvancedConnector';
 import { supabase } from '@/integrations/supabase/client';
+import { logger } from '@/utils/logger';
+
+const LOG_CTX = { component: 'ConnectorManager' };
 
 export interface ConnectorConfig {
   id: string;
@@ -53,7 +56,6 @@ export class ConnectorManager {
     return ConnectorManager.instance;
   }
 
-  // Plateformes supportées
   getSupportedPlatforms(): PlatformInfo[] {
     return [
       {
@@ -66,13 +68,7 @@ export class ConnectorManager {
         auth_type: 'api_key',
         required_credentials: ['shop_url', 'accessToken'],
         optional_credentials: ['api_version', 'webhook_secret'],
-        features: {
-          products: true,
-          orders: true,
-          customers: true,
-          inventory: true,
-          webhooks: true
-        },
+        features: { products: true, orders: true, customers: true, inventory: true, webhooks: true },
         documentation_url: 'https://shopify.dev/docs',
         setup_guide_url: 'https://help.shopify.com/en/api'
       },
@@ -86,20 +82,13 @@ export class ConnectorManager {
         auth_type: 'credentials',
         required_credentials: ['shop_url', 'clientId', 'clientSecret'],
         optional_credentials: ['webhook_secret', 'api_version'],
-        features: {
-          products: true,
-          orders: true,
-          customers: true,
-          inventory: true,
-          webhooks: true
-        },
+        features: { products: true, orders: true, customers: true, inventory: true, webhooks: true },
         documentation_url: 'https://woocommerce.github.io/woocommerce-rest-api-docs/',
         setup_guide_url: 'https://woocommerce.com/document/woocommerce-rest-api/'
       }
     ];
   }
 
-  // Création d'un connecteur (version mémoire pour test)
   async createConnector(
     userId: string,
     platform: string,
@@ -107,10 +96,8 @@ export class ConnectorManager {
     config: Partial<ConnectorConfig> = {}
   ): Promise<string> {
     try {
-      // Validation des credentials
       await this.validateCredentials(platform, credentials);
 
-      // Créer la configuration en mémoire
       const connectorConfig: ConnectorConfig = {
         id: crypto.randomUUID(),
         user_id: userId,
@@ -125,34 +112,27 @@ export class ConnectorManager {
         ...config
       };
 
-      // Stocker en mémoire
       this.configs.set(connectorConfig.id, connectorConfig);
-
-      // Créer l'instance du connecteur
       const connector = this.instantiateConnector(connectorConfig);
       this.connectors.set(connectorConfig.id, connector);
 
       return connectorConfig.id;
     } catch (error) {
-      console.error('Error creating connector:', error);
+      logger.error('Error creating connector', error instanceof Error ? error : undefined, { ...LOG_CTX, action: 'createConnector' });
       throw error;
     }
   }
 
-  // Récupération des connecteurs d'un utilisateur (version mémoire)
   async getUserConnectors(userId: string): Promise<ConnectorConfig[]> {
     try {
-      const configs = Array.from(this.configs.values())
+      return Array.from(this.configs.values())
         .filter(config => config.user_id === userId && config.is_active);
-      
-      return configs;
     } catch (error) {
-      console.error('Error fetching user connectors:', error);
+      logger.error('Error fetching user connectors', error instanceof Error ? error : undefined, { ...LOG_CTX, action: 'getUserConnectors' });
       return [];
     }
   }
 
-  // Obtenir un connecteur par ID (version mémoire)
   async getConnector(connectorId: string): Promise<AdvancedBaseConnector | null> {
     try {
       if (this.connectors.has(connectorId)) {
@@ -164,15 +144,13 @@ export class ConnectorManager {
 
       const connector = this.instantiateConnector(config);
       this.connectors.set(connectorId, connector);
-
       return connector;
     } catch (error) {
-      console.error('Error getting connector:', error);
+      logger.error('Error getting connector', error instanceof Error ? error : undefined, { ...LOG_CTX, action: 'getConnector' });
       return null;
     }
   }
 
-  // Test de connexion
   async testConnection(connectorId: string): Promise<boolean> {
     try {
       const connector = await this.getConnector(connectorId);
@@ -180,7 +158,6 @@ export class ConnectorManager {
 
       const isValid = await connector.testConnection();
       
-      // Mettre à jour le statut en mémoire
       const config = this.configs.get(connectorId);
       if (config) {
         config.is_active = isValid;
@@ -194,7 +171,7 @@ export class ConnectorManager {
       
       return isValid;
     } catch (error) {
-      console.error('Error testing connection:', error);
+      logger.error('Error testing connection', error instanceof Error ? error : undefined, { ...LOG_CTX, action: 'testConnection' });
       const config = this.configs.get(connectorId);
       if (config) {
         config.is_active = false;
@@ -206,7 +183,6 @@ export class ConnectorManager {
     }
   }
 
-  // Synchronisation
   async syncConnector(
     connectorId: string,
     entities: ('products' | 'orders' | 'customers')[] = ['products'],
@@ -232,7 +208,6 @@ export class ConnectorManager {
         }
       }
 
-      // Mettre à jour la date de dernière sync
       const config = this.configs.get(connectorId);
       if (config) {
         config.last_sync_at = new Date().toISOString();
@@ -242,7 +217,7 @@ export class ConnectorManager {
 
       return results;
     } catch (error) {
-      console.error('Error syncing connector:', error);
+      logger.error('Error syncing connector', error instanceof Error ? error : undefined, { ...LOG_CTX, action: 'syncConnector' });
       const config = this.configs.get(connectorId);
       if (config) {
         config.error_count += 1;
@@ -253,7 +228,6 @@ export class ConnectorManager {
     }
   }
 
-  // Configuration des webhooks (simulé)
   async setupWebhooksForConnector(connectorId: string): Promise<void> {
     try {
       const connector = await this.getConnector(connectorId);
@@ -261,22 +235,18 @@ export class ConnectorManager {
       
       if (!connector || !config) return;
 
-      // Simulation de la configuration des webhooks
       const events = ['products/create', 'products/update', 'orders/create', 'orders/update'];
       const webhookIds = await connector.setupWebhooks(events);
 
-      // Mettre à jour la configuration
       config.webhook_endpoints = webhookIds;
       config.updated_at = new Date().toISOString();
       this.configs.set(connectorId, config);
-
     } catch (error) {
-      console.error('Error setting up webhooks:', error);
+      logger.error('Error setting up webhooks', error instanceof Error ? error : undefined, { ...LOG_CTX, action: 'setupWebhooks' });
       throw error;
     }
   }
 
-  // Traitement des webhooks (simulé)
   async processWebhook(
     platform: string,
     event: any,
@@ -291,7 +261,7 @@ export class ConnectorManager {
         if (!connector) continue;
 
         if (signature && !connector.verifyWebhook(JSON.stringify(event), signature)) {
-          console.warn(`Invalid webhook signature for connector ${config.id}`);
+          logger.warn(`Invalid webhook signature for connector ${config.id}`, { ...LOG_CTX, action: 'processWebhook' });
           continue;
         }
 
@@ -305,16 +275,13 @@ export class ConnectorManager {
           retry_count: 0
         });
 
-        // Logger l'événement en mémoire
-        console.log(`Processed webhook for connector ${config.id}:`, event);
+        logger.debug(`Processed webhook for connector ${config.id}`, { ...LOG_CTX, action: 'processWebhook', metadata: { event } });
       }
     } catch (error) {
-      console.error('Error processing webhook:', error);
+      logger.error('Error processing webhook', error instanceof Error ? error : undefined, { ...LOG_CTX, action: 'processWebhook' });
       throw error;
     }
   }
-
-  // Méthodes privées
 
   private instantiateConnector(config: ConnectorConfig): AdvancedBaseConnector {
     switch (config.platform) {
@@ -340,7 +307,6 @@ export class ConnectorManager {
     }
   }
 
-  // Méthodes utilitaires pour l'encryption (simulées)
   private encryptCredentials(credentials: PlatformCredentials): string {
     return Buffer.from(JSON.stringify(credentials)).toString('base64');
   }
@@ -349,7 +315,6 @@ export class ConnectorManager {
     return JSON.parse(Buffer.from(encrypted, 'base64').toString());
   }
 
-  // Méthodes pour la gestion des statistiques
   getConnectorStats(userId: string): any {
     const userConfigs = Array.from(this.configs.values())
       .filter(config => config.user_id === userId);
@@ -368,7 +333,6 @@ export class ConnectorManager {
     };
   }
 
-  // Nettoyage des ressources
   clearConnectors(userId: string): void {
     const userConfigs = Array.from(this.configs.entries())
       .filter(([_, config]) => config.user_id === userId);
