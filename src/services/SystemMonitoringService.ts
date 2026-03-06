@@ -126,7 +126,7 @@ export class SystemMonitoringService {
       if (error) throw error;
       return data;
     } catch (error) {
-      console.error('Error creating system alert:', error);
+      logger.error('Error creating system alert', error instanceof Error ? error : undefined, LOG_CTX);
       throw error;
     }
   }
