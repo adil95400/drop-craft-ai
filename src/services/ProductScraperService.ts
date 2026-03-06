@@ -91,7 +91,7 @@ class ProductScraperService {
    */
   async scrapeProductFromUrl(url: string): Promise<ScrapeResult> {
     try {
-      console.log('🔍 Scraping product from URL:', url);
+      logger.debug('Scraping product from URL', { ...LOG_CTX, action: 'scrape', metadata: { url } });
       
       // Validate URL first
       const validation = this.validateUrl(url);
