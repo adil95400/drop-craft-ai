@@ -264,16 +264,15 @@ export class ERPConnector {
 
   // Error handling and retry logic
   async handleSyncError(integrationId: string, error: any): Promise<void> {
-    console.error(`ERP sync error for integration ${integrationId}:`, error);
+    logger.error(`ERP sync error for integration ${integrationId}`, error instanceof Error ? error : undefined, LOG_CTX);
     
     // Log error to system logs
-    console.log('Integration error logged:', {
+    logger.info('Integration error logged', { ...LOG_CTX, metadata: {
       integration_id: integrationId,
       error_type: 'sync_error',
       error_message: error.message,
-      error_details: error,
       occurred_at: new Date().toISOString()
-    });
+    }});
 
     // Notify admin users via notifications service
     try {
