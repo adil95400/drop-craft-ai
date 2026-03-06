@@ -60,6 +60,15 @@ const ShopifyDropshippingAutomationPage = lazy(() => import('@/pages/public/en/S
 const AIToolForShopifyPage = lazy(() => import('@/pages/public/en/AIToolForShopifyPage'));
 const ShopifyAutoProductUpdaterPage = lazy(() => import('@/pages/public/en/ShopifyAutoProductUpdaterPage'));
 
+// NEW SEO pillar pages (EN)
+const ShopifyAutomationPage = lazy(() => import('@/pages/public/en/ShopifyAutomationPage'));
+const DropshippingAutomationPage = lazy(() => import('@/pages/public/en/DropshippingAutomationPage'));
+const ShopifyAIToolsPage = lazy(() => import('@/pages/public/en/ShopifyAIToolsPage'));
+const ProductResearchAIPage = lazy(() => import('@/pages/public/en/ProductResearchAIPage'));
+const ShopifyAnalyticsPage = lazy(() => import('@/pages/public/en/ShopifyAnalyticsPage'));
+const ShopifyMarketingAutomationPage = lazy(() => import('@/pages/public/en/ShopifyMarketingAutomationPage'));
+const ShopoptiVsSellTheTrendPage = lazy(() => import('@/pages/public/en/ShopoptiVsSellTheTrendPage'));
+
 // Feature pages
 const AIOptimizationPage = lazy(() => import('@/pages/features/AIOptimizationPage'));
 const MultiMarketplacePage = lazy(() => import('@/pages/features/MultiMarketplacePage'));
