@@ -70,6 +70,7 @@ const OnboardingWizardPage = lazy(() => import('@/pages/OnboardingWizardPage'));
 const FreelanceMarketplacePage = lazy(() => import('@/pages/FreelanceMarketplacePage'));
 const GettingStartedPage = lazy(() => import('@/pages/guides/GettingStartedPage'));
 const AcademyHomePage = lazy(() => import('@/pages/academy/AcademyHomePage'));
+const AcademyCoursePage = lazy(() => import('@/pages/academy/AcademyCoursePage'));
 const SupportMainPage = lazy(() => import('@/pages/support/SupportMainPage'));
 const CatalogIntelligencePage = lazy(() => import('@/pages/catalog/CatalogIntelligencePage'));
 const ABTestingPage = lazy(() => import('@/pages/ABTestingPage'));
@@ -138,7 +139,7 @@ export function AppRoutes() {
           {/* Public pages */}
           <Route path="/guides/getting-started" element={<GettingStartedPage />} />
           <Route path="/academy" element={<AcademyHomePage />} />
-          <Route path="/academy/course/:id" element={<AcademyHomePage />} />
+          <Route path="/academy/course/:id" element={<AcademyCoursePage />} />
           <Route path="/pwa-install" element={<PWAInstallPage />} />
 
           {/* ═══════════════════════════════════════════════════════════════
