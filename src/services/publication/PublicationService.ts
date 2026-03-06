@@ -63,7 +63,7 @@ export class PublicationService {
         results: data.results
       }
     } catch (error: any) {
-      console.error('Publication error:', error)
+      logger.error('Publication error', error instanceof Error ? error : undefined, { ...LOG_CTX, action: 'publishProduct' })
       throw new Error(`Failed to publish product: ${error.message}`)
     }
   }
