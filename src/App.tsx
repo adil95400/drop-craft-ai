@@ -20,7 +20,7 @@ const UnifiedAuthProvider = lazy(() =>
   import('@/contexts/UnifiedAuthContext').then(m => ({ default: m.UnifiedAuthProvider }))
 );
 const UnifiedProvider = lazy(() => import('@/components/unified/UnifiedProvider').then(m => ({ default: m.UnifiedProvider })));
-const ModalContextProvider = lazy(() => import('@/hooks/useModalHelpers').then(m => ({ default: m.ModalContextProvider })));
+const LazyModalContextProvider = lazy(() => import('@/hooks/useModalHelpers').then(m => ({ default: m.ModalContextProvider })));
 const GlobalModals = lazy(() => import('@/components/GlobalModals').then(m => ({ default: m.GlobalModals })));
 const ModalManager = lazy(() => import('@/components/modals/ModalManager').then(m => ({ default: m.ModalManager })));
 const PWAInstallBanner = lazy(() => import('@/components/mobile/PWAInstallBanner').then(m => ({ default: m.PWAInstallBanner })));
