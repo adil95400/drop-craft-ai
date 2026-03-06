@@ -299,7 +299,7 @@ export class FacebookAdsConnector {
       )
       return response.data
     } catch (error) {
-      console.error('Failed to fetch Facebook ad accounts:', error)
+      logger.error('Failed to fetch Facebook ad accounts', error instanceof Error ? error : undefined, LOG_CTX)
       throw new Error('Failed to fetch ad accounts')
     }
   }
