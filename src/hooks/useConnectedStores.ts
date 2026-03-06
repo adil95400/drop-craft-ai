@@ -97,7 +97,7 @@ export function useConnectedStores() {
             sales_volume: stats.revenue
           })
         } catch (integrationError) {
-          console.error(`Erreur lors de la récupération des stats pour ${(integration as any).platform_name || (integration as any).platform}:`, integrationError)
+          logger.error(`Erreur récupération stats pour ${(integration as any).platform_name || (integration as any).platform}`, integrationError instanceof Error ? integrationError : undefined, LOG_CTX)
           const fallbackData = integration as any
           
           // En cas d'erreur, ajouter quand même l'intégration avec des stats à 0
