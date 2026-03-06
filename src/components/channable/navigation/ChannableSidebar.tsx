@@ -10,6 +10,7 @@
  * - Memoization optimisée
  */
 import { useState, useMemo, useCallback, useEffect, memo } from "react";
+import { useRoutePrefetch } from "@/hooks/useRoutePrefetch";
 import { useHeaderNotifications } from "@/hooks/useHeaderNotifications";
 import shopoptiLogo from "@/assets/logo-shopopti.png";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -118,6 +119,7 @@ const ChannableNavItem = memo(({
   groupColor,
   isFavorite,
   onNavigate,
+  onPrefetch,
   onFavoriteToggle,
   subModules,
   isSubOpen,
@@ -132,6 +134,7 @@ const ChannableNavItem = memo(({
   groupColor: typeof GROUP_COLORS.dashboard;
   isFavorite: boolean;
   onNavigate: (route: string) => void;
+  onPrefetch?: (route: string) => void;
   onFavoriteToggle: () => void;
   subModules: any[];
   isSubOpen: boolean;
@@ -155,7 +158,7 @@ const ChannableNavItem = memo(({
     ease: "easeOut"
   }}>
       <SidebarMenuItem className="group/menu-item">
-        <SidebarMenuButton onClick={() => hasSubModules ? onSubToggle() : isClickable && onNavigate(module.route)} tooltip={collapsed ? module.name : undefined} className={cn("w-full rounded-xl transition-all duration-200 relative overflow-hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 peer/menu-button", isActive ? `bg-gradient-to-r ${groupColor?.gradient || 'from-primary to-primary/80'} text-white shadow-lg shadow-primary/20` : "hover:bg-sidebar-accent/50 dark:hover:bg-sidebar-accent/30", (!hasAccess || isComingSoon) && "opacity-40 cursor-not-allowed")} aria-current={isActive ? "page" : undefined} aria-disabled={!isClickable} aria-expanded={hasSubModules ? isSubOpen : undefined}>
+        <SidebarMenuButton onClick={() => hasSubModules ? onSubToggle() : isClickable && onNavigate(module.route)} onPointerEnter={() => isClickable && module.route && onPrefetch?.(module.route)} tooltip={collapsed ? module.name : undefined} className={cn("w-full rounded-xl transition-all duration-200 relative overflow-hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 peer/menu-button", isActive ? `bg-gradient-to-r ${groupColor?.gradient || 'from-primary to-primary/80'} text-white shadow-lg shadow-primary/20` : "hover:bg-sidebar-accent/50 dark:hover:bg-sidebar-accent/30", (!hasAccess || isComingSoon) && "opacity-40 cursor-not-allowed")} aria-current={isActive ? "page" : undefined} aria-disabled={!isClickable} aria-expanded={hasSubModules ? isSubOpen : undefined}>
           {/* Active indicator glow */}
           {isActive && <motion.div className="absolute inset-0 bg-gradient-to-r from-white/10 to-transparent" initial={prefersReducedMotion ? false : {
           opacity: 0
@@ -253,6 +256,7 @@ const ChannableNavGroup = memo(({
   canAccess,
   favorites,
   onNavigate,
+  onPrefetch,
   onFavoriteToggle,
   openSubMenus,
   onSubMenuToggle,
@@ -271,6 +275,7 @@ const ChannableNavGroup = memo(({
     isFavorite: (id: string) => boolean;
   };
   onNavigate: (route: string) => void;
+  onPrefetch?: (route: string) => void;
   onFavoriteToggle: (id: string) => void;
   openSubMenus: Record<string, boolean>;
   onSubMenuToggle: (id: string) => void;
@@ -316,7 +321,7 @@ const ChannableNavGroup = memo(({
       }} className="mt-1 space-y-0.5 px-1" role="group" aria-label={group.label}>
             <SidebarGroupContent>
               <SidebarMenu className="gap-0.5">
-                {modules.map(module => <ChannableNavItem key={module.id} module={module} isActive={activeRoute(module.route)} hasAccess={canAccess(module.id)} collapsed={collapsed} groupColor={color} isFavorite={favorites.isFavorite(module.id)} onNavigate={onNavigate} onFavoriteToggle={() => onFavoriteToggle(module.id)} subModules={module.subModules || []} isSubOpen={openSubMenus[module.id] || false} onSubToggle={() => onSubMenuToggle(module.id)} t={t} badgeCount={badgeCounts?.[module.id]} />)}
+                {modules.map(module => <ChannableNavItem key={module.id} module={module} isActive={activeRoute(module.route)} hasAccess={canAccess(module.id)} collapsed={collapsed} groupColor={color} isFavorite={favorites.isFavorite(module.id)} onNavigate={onNavigate} onPrefetch={onPrefetch} onFavoriteToggle={() => onFavoriteToggle(module.id)} subModules={module.subModules || []} isSubOpen={openSubMenus[module.id] || false} onSubToggle={() => onSubMenuToggle(module.id)} t={t} badgeCount={badgeCounts?.[module.id]} />)}
               </SidebarMenu>
             </SidebarGroupContent>
           </motion.div>}
@@ -494,6 +499,7 @@ export function ChannableSidebar() {
   const [searchQuery, setSearchQuery] = useState("");
   const [openGroups, setOpenGroups] = useState<NavGroupId[]>([]);
   const [openSubMenus, setOpenSubMenus] = useState<Record<string, boolean>>({});
+  const { prefetch: handlePrefetch } = useRoutePrefetch();
 
   // Debounce search for better performance
   const debouncedSearchQuery = useDebouncedValue(searchQuery, 150);
@@ -596,7 +602,7 @@ export function ChannableSidebar() {
           
           {/* Navigation Groups */}
           <nav aria-label={t('navigation', { ns: 'navigation' })}>
-            {filteredGroups.map(group => <ChannableNavGroup key={group.id} group={group} modules={modulesByGroup[group.id] || []} isOpen={openGroups.includes(group.id)} onToggle={() => toggleGroup(group.id)} collapsed={collapsed} activeRoute={isActive} canAccess={canAccess} favorites={favorites} onNavigate={handleNavigate} onFavoriteToggle={handleFavoriteToggle} openSubMenus={openSubMenus} onSubMenuToggle={toggleSubMenu} currentPlan={currentPlan} t={t} badgeCounts={badgeCounts} />)}
+            {filteredGroups.map(group => <ChannableNavGroup key={group.id} group={group} modules={modulesByGroup[group.id] || []} isOpen={openGroups.includes(group.id)} onToggle={() => toggleGroup(group.id)} collapsed={collapsed} activeRoute={isActive} canAccess={canAccess} favorites={favorites} onNavigate={handleNavigate} onPrefetch={handlePrefetch} onFavoriteToggle={handleFavoriteToggle} openSubMenus={openSubMenus} onSubMenuToggle={toggleSubMenu} currentPlan={currentPlan} t={t} badgeCounts={badgeCounts} />)}
           </nav>
         </ScrollArea>
       </SidebarContent>

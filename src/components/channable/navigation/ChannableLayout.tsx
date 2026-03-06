@@ -2,17 +2,19 @@
  * ChannableLayout - Layout principal avec navigation Channable
  * Intègre sidebar + header avec design cohérent
  */
-import React from 'react'
+import React, { lazy, Suspense } from 'react'
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar'
 import { ChannableSidebar } from './ChannableSidebar'
 import { ChannableHeader } from './ChannableHeader'
-import { OnboardingModal } from '@/components/onboarding/UnifiedOnboarding'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { MobileHeader, MobileNav } from '@/components/mobile/MobileNav'
 import { SkipToContent } from '@/components/a11y/SkipToContent'
 import { cn } from '@/lib/utils'
-import { DiagnosticWidget } from '@/components/support/DiagnosticWidget'
 import { useRetentionTracking } from '@/hooks/useRetentionTracking'
+
+// Lazy-load non-critical overlay components
+const OnboardingModal = lazy(() => import('@/components/onboarding/UnifiedOnboarding').then(m => ({ default: m.OnboardingModal })));
+const DiagnosticWidget = lazy(() => import('@/components/support/DiagnosticWidget').then(m => ({ default: m.DiagnosticWidget })));
 
 interface ChannableLayoutProps {
   children: React.ReactNode
@@ -35,8 +37,8 @@ export function ChannableLayout({ children, className }: ChannableLayoutProps) {
           </div>
         </main>
         <MobileNav />
-        <OnboardingModal />
-        <DiagnosticWidget />
+        <Suspense fallback={null}><OnboardingModal /></Suspense>
+        <Suspense fallback={null}><DiagnosticWidget /></Suspense>
       </div>
     )
   }
@@ -60,8 +62,8 @@ export function ChannableLayout({ children, className }: ChannableLayoutProps) {
         </SidebarInset>
       </div>
       
-      <OnboardingModal />
-      <DiagnosticWidget />
+      <Suspense fallback={null}><OnboardingModal /></Suspense>
+      <Suspense fallback={null}><DiagnosticWidget /></Suspense>
     </SidebarProvider>
   )
 }

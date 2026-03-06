@@ -222,12 +222,19 @@ export default defineConfig(({ mode }) => ({
             return 'vendor-backend';
           }
           
-          // Heavy deps - framer-motion, i18n, sentry - defer until needed
-          if (id.includes('framer-motion') || 
-              id.includes('i18next') || 
-              id.includes('react-i18next') ||
-              id.includes('@sentry/')) {
-            return 'vendor-heavy';
+          // Animation - framer-motion (defer until animated page visited)
+          if (id.includes('framer-motion')) {
+            return 'vendor-animation';
+          }
+          
+          // i18n - defer until first translation needed
+          if (id.includes('i18next') || id.includes('react-i18next')) {
+            return 'vendor-i18n';
+          }
+          
+          // Monitoring - Sentry (load after first render)
+          if (id.includes('@sentry/')) {
+            return 'vendor-monitoring';
           }
           
           // All Radix UI components in single chunk to avoid cross-chunk dependencies
