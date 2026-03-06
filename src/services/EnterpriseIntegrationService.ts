@@ -281,7 +281,7 @@ export class EnterpriseIntegrationService {
 
       return health;
     } catch (error) {
-      console.error('Error getting integration health:', error);
+      logger.error('Error getting integration health', error instanceof Error ? error : undefined, LOG_CTX);
       throw error;
     }
   }
