@@ -1,5 +1,8 @@
 import { BaseConnector } from './BaseConnector'
 import { SupplierProduct, SupplierCredentials } from '@/types/suppliers'
+import { logger } from '@/utils/logger'
+
+const LOG_CTX = { component: 'MarketplaceConnector' }
 
 // Common interface for marketplace connectors
 export interface MarketplaceCredentials extends SupplierCredentials {
