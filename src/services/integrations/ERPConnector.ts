@@ -51,7 +51,7 @@ export class ERPConnector {
       
       return data.integration;
     } catch (error) {
-      console.error('ERP connection failed:', error);
+      logger.error('ERP connection failed', error instanceof Error ? error : undefined, LOG_CTX);
       throw error;
     }
   }
