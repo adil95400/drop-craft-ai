@@ -8,6 +8,7 @@ import { lazy } from 'react';
 // Fulfillment & Tracking
 const AutoFulfillmentPage = lazy(() => import('@/pages/AutoFulfillmentPage'));
 const AutoTrackingPage = lazy(() => import('@/pages/AutoTrackingPage'));
+const AutoOrderSystem = lazy(() => import('@/pages/AutoOrderSystem'));
 
 // Automation
 const AutomationPage = lazy(() => import('@/pages/AutomationPage'));
@@ -49,6 +50,7 @@ export function AutomationRoutes() {
       {/* Auto-Fulfillment */}
       <Route path="fulfillment" element={<AutoFulfillmentPage />} />
       <Route path="fulfillment/dashboard" element={<AutoFulfillmentPage />} />
+      <Route path="auto-orders" element={<AutoOrderSystem />} />
       <Route path="tracking" element={<AutoTrackingPage />} />
       
       {/* Phase 2 - Marketplace Avancée - Redirect to pricing-manager */}
