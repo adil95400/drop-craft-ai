@@ -201,7 +201,7 @@ export class FacebookAdsConnector {
 
       return response.id
     } catch (error) {
-      console.error('Failed to create Facebook campaign:', error)
+      logger.error('Failed to create Facebook campaign', error instanceof Error ? error : undefined, LOG_CTX)
       throw new Error('Failed to create campaign in Facebook Ads')
     }
   }
