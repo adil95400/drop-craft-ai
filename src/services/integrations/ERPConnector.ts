@@ -164,7 +164,7 @@ export class ERPConnector {
         configuration: (item.config || {}) as any
       }));
     } catch (error) {
-      console.error('Failed to fetch ERP integrations:', error);
+      logger.error('Failed to fetch ERP integrations', error instanceof Error ? error : undefined, LOG_CTX);
       return [];
     }
   }
