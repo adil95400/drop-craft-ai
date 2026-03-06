@@ -104,7 +104,7 @@ export class GoogleAdsConnector {
         endDate: result.campaign.endDate,
       })) || []
     } catch (error) {
-      console.error('Failed to fetch Google Ads campaigns:', error)
+      logger.error('Failed to fetch Google Ads campaigns', error instanceof Error ? error : undefined, LOG_CTX)
       throw new Error('Failed to fetch campaigns from Google Ads')
     }
   }
