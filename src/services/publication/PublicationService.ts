@@ -114,7 +114,7 @@ export class PublicationService {
         await this.delay(1000)
 
       } catch (error: any) {
-        console.error(`Error publishing product ${productId}:`, error)
+        logger.error(`Error publishing product ${productId}`, error instanceof Error ? error : undefined, { ...LOG_CTX, action: 'publishMultiple' })
         result.failCount++
         result.results.push({
           productId,
