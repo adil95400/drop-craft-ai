@@ -494,19 +494,13 @@ export const UnifiedAuthProvider: React.FC<{ children: React.ReactNode }> = ({ c
     return profile.plan || 'standard';
   }, [profile]);
 
-  // OAuth methods
+  // OAuth methods - using Lovable Cloud managed Google OAuth
   const signInWithGoogle = async () => {
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: {
-        redirectTo: `${window.location.origin}/`,
-        queryParams: {
-          access_type: 'offline',
-          prompt: 'consent',
-        },
-      },
+    const { lovable } = await import('@/integrations/lovable/index');
+    const result = await lovable.auth.signInWithOAuth('google', {
+      redirect_uri: window.location.origin,
     });
-    return { error };
+    return { error: result.error || null };
   };
 
   /**
