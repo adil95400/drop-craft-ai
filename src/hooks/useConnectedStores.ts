@@ -68,7 +68,7 @@ export function useConnectedStores() {
                 }
               }
             } catch (statsError) {
-              console.error('Erreur récupération stats Shopify:', statsError)
+              logger.error('Erreur récupération stats Shopify', statsError instanceof Error ? statsError : undefined, LOG_CTX)
             }
           }
           
