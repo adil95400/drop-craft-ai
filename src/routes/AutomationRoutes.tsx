@@ -29,6 +29,7 @@ const ProductRecommendationsPage = lazy(() => import('@/pages/ProductRecommendat
 const ContentGenerationPage = lazy(() => import('@/pages/ContentGenerationPage'));
 const WorkflowStudioPage = lazy(() => import('@/pages/automation/WorkflowStudioPage'));
 const WorkflowHistoryPage = lazy(() => import('@/pages/automation/WorkflowHistoryPage'));
+const WorkflowBuilderPage = lazy(() => import('@/pages/automation/WorkflowBuilderPage'));
 
 // Price Rules - centralized pricing
 const PriceRulesPage = lazy(() => import('@/pages/products/PriceRulesPage'));
@@ -66,8 +67,8 @@ export function AutomationRoutes() {
       <Route path="sourcing-assistant" element={<ProductSourcingAssistant />} />
       
       {/* Advanced Automation */}
-      <Route path="workflow-builder" element={<AutomationPage />} />
-      <Route path="workflow-editor" element={<AutomationPage />} />
+      <Route path="workflow-builder" element={<WorkflowBuilderPage />} />
+      <Route path="workflow-editor" element={<WorkflowBuilderPage />} />
       <Route path="price-optimization" element={<Navigate to="/pricing-manager/optimization" replace />} />
       <Route path="pricing-automation" element={<Navigate to="/pricing-manager" replace />} />
       <Route path="recommendations" element={<ProductRecommendationsPage />} />
