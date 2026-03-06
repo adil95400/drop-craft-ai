@@ -379,7 +379,7 @@ export class CatalogWatcherService {
         .insert(alertsToInsert)
 
       if (alertError) {
-        console.error('[CatalogWatcher] Error creating in-app alerts:', alertError)
+        logger.error('Error creating in-app alerts', alertError instanceof Error ? alertError : undefined, LOG_CTX)
       }
 
       // 2. Check for webhook configuration
