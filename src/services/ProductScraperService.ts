@@ -116,7 +116,7 @@ class ProductScraperService {
       }
 
       if (data?.success && data?.product) {
-        console.log('✅ Product scraped successfully:', data.product);
+        logger.info('Product scraped successfully', { ...LOG_CTX, action: 'scrape', metadata: { title: data.product?.name } });
         return {
           success: true,
           product: data.product,
