@@ -31,11 +31,11 @@ export class SecureAdminService {
       });
 
       if (error) {
-        logger.error('Role change error', error instanceof Error ? error : new Error(error.message), { ...LOG_CTX, action: 'changeUserRole' });
+        logger.error('Role change error', new Error(String(error.message || error)), { ...LOG_CTX, action: 'changeUserRole' });
         return {
           success: false,
           message: 'Failed to change user role',
-          error: error.message
+          error: String(error.message || error)
         };
       }
 
