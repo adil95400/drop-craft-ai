@@ -107,7 +107,7 @@ export class FacebookAdsConnector {
         createdTime: campaign.created_time,
       }))
     } catch (error) {
-      console.error('Failed to fetch Facebook campaigns:', error)
+      logger.error('Failed to fetch Facebook campaigns', error instanceof Error ? error : undefined, LOG_CTX)
       throw new Error('Failed to fetch campaigns from Facebook Ads')
     }
   }
