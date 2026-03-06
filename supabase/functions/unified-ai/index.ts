@@ -2,340 +2,489 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { authenticateUser } from '../_shared/secure-auth.ts'
 import { getCorsHeaders, handleCorsPreflightRequest } from '../_shared/secure-cors.ts'
-import { checkRateLimit, createRateLimitResponse, RATE_LIMITS } from '../_shared/rate-limit.ts'
+import { checkRateLimit, createRateLimitResponse } from '../_shared/rate-limit.ts'
 import { secureUpdate } from '../_shared/db-helpers.ts'
 
 /**
- * Unified AI - Enterprise-Safe
+ * Unified AI - Real GPT-5-nano via Lovable AI Gateway
  * 
- * Security:
- * - JWT authentication required
- * - Rate limiting per user per endpoint
- * - Product/entity ownership verification
- * - User data scoping
+ * Endpoints:
+ * - optimize-product: AI-powered product optimization (title, description, SEO)
+ * - generate-description: Batch AI description generation
+ * - price-optimization: AI pricing strategy
+ * - automation: AI automation tasks
+ * - predictive-analytics: AI-powered sales predictions
+ * - generate-marketing: AI marketing content generation
  */
 
 const supabaseUrl = Deno.env.get('SUPABASE_URL')!
 const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY')!
+const AI_GATEWAY_URL = 'https://ai.gateway.lovable.dev/v1/chat/completions'
+
+async function callAI(systemPrompt: string, userPrompt: string, options: { temperature?: number; maxTokens?: number; useToolCalling?: boolean; tools?: any[] } = {}) {
+  if (!LOVABLE_API_KEY) throw new Error('AI service not configured')
+
+  const body: any = {
+    model: 'openai/gpt-5-nano',
+    messages: [
+      { role: 'system', content: systemPrompt },
+      { role: 'user', content: userPrompt }
+    ],
+    temperature: options.temperature ?? 0.7,
+    max_tokens: options.maxTokens ?? 1500,
+  }
+
+  if (options.tools) {
+    body.tools = options.tools
+    body.tool_choice = { type: 'function', function: { name: options.tools[0].function.name } }
+  }
+
+  const response = await fetch(AI_GATEWAY_URL, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${LOVABLE_API_KEY}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(body),
+  })
+
+  if (!response.ok) {
+    if (response.status === 429) throw new Error('RATE_LIMITED')
+    if (response.status === 402) throw new Error('CREDITS_EXHAUSTED')
+    const errorText = await response.text()
+    console.error('AI Gateway error:', response.status, errorText)
+    throw new Error(`AI API error: ${response.status}`)
+  }
+
+  const data = await response.json()
+  
+  // Handle tool calling response
+  if (options.tools && data.choices?.[0]?.message?.tool_calls?.[0]) {
+    const toolCall = data.choices[0].message.tool_calls[0]
+    return JSON.parse(toolCall.function.arguments)
+  }
+
+  const content = data.choices?.[0]?.message?.content
+  if (!content) throw new Error('Empty AI response')
+  
+  // Try to parse as JSON
+  try {
+    const jsonMatch = content.match(/\{[\s\S]*\}|\[[\s\S]*\]/)
+    return jsonMatch ? JSON.parse(jsonMatch[0]) : { content }
+  } catch {
+    return { content }
+  }
+}
 
 serve(async (req) => {
   const corsHeaders = getCorsHeaders(req)
-  
   const preflightResponse = handleCorsPreflightRequest(req, corsHeaders)
   if (preflightResponse) return preflightResponse
 
   try {
     const supabase = createClient(supabaseUrl, supabaseKey)
-    
-    // Authenticate user
     const { user } = await authenticateUser(req, supabase)
     const userId = user.id
-    
+
     const url = new URL(req.url)
     const endpoint = url.pathname.split('/').pop()
     const body = await req.json()
 
-    console.log('Processing AI endpoint:', endpoint, 'for user:', userId)
-
     // Rate limit per endpoint
     const rateLimitResult = await checkRateLimit(
-      supabase,
-      userId,
+      supabase, userId,
       `unified_ai:${endpoint}`,
-      { maxRequests: 30, windowMinutes: 60 } // 30 AI operations per hour per endpoint
+      { maxRequests: 30, windowMinutes: 60 }
     )
     if (!rateLimitResult.allowed) {
       return createRateLimitResponse(rateLimitResult, corsHeaders)
     }
 
+    let result: any
+
     switch (endpoint) {
       case 'optimize-product':
-        return await handleProductOptimization(supabase, body, userId, corsHeaders)
-      
+        result = await handleProductOptimization(supabase, body, userId)
+        break
       case 'generate-description':
-        return await handleDescriptionGeneration(supabase, body, userId, corsHeaders)
-      
+        result = await handleDescriptionGeneration(supabase, body, userId)
+        break
       case 'price-optimization':
-        return await handlePriceOptimization(supabase, body, userId, corsHeaders)
-      
+        result = await handlePriceOptimization(supabase, body, userId)
+        break
       case 'automation':
-        return await handleAIAutomation(supabase, body, userId, corsHeaders)
-      
+        result = await handleAIAutomation(supabase, body, userId)
+        break
+      case 'predictive-analytics':
+        result = await handlePredictiveAnalytics(supabase, body, userId)
+        break
+      case 'generate-marketing':
+        result = await handleMarketingContent(body)
+        break
       default:
         return new Response(
           JSON.stringify({ error: 'Unknown AI endpoint' }),
           { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         )
     }
+
+    return new Response(JSON.stringify(result), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+    })
   } catch (error) {
     console.error('Error in unified AI:', error)
+    
+    if (error.message === 'RATE_LIMITED') {
+      return new Response(
+        JSON.stringify({ error: 'Trop de requêtes IA. Réessayez dans quelques instants.' }),
+        { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+    if (error.message === 'CREDITS_EXHAUSTED') {
+      return new Response(
+        JSON.stringify({ error: 'Crédits IA épuisés. Rechargez vos crédits.' }),
+        { status: 402, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
     return new Response(
-      JSON.stringify({ 
-        error: error instanceof Error ? error.message : 'Unknown error',
-        details: error instanceof Error ? error.stack : undefined
-      }),
+      JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error' }),
       { 
-        status: error instanceof Error && error.message.includes('Unauthorized') ? 401 : 500, 
-        headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } 
+        status: error instanceof Error && error.message.includes('Unauthorized') ? 401 : 500,
+        headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' }
       }
     )
   }
 })
 
-async function handleProductOptimization(
-  supabase: any, 
-  body: any, 
-  userId: string,
-  corsHeaders: Record<string, string>
-) {
+// ─── PRODUCT OPTIMIZATION ──────────────────────────────────────
+async function handleProductOptimization(supabase: any, body: any, userId: string) {
   const { productId, optimizationType } = body
-  
-  if (!productId) {
-    return new Response(
-      JSON.stringify({ error: 'productId is required' }),
-      { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    )
-  }
+  if (!productId) throw new Error('productId is required')
 
-  console.log(`Optimizing product ${productId} (${optimizationType}) for user ${userId}`)
-
-  // Fetch product - VERIFY OWNERSHIP
-  const { data: product, error: fetchError } = await supabase
+  const { data: product, error } = await supabase
     .from('products')
     .select('*')
     .eq('id', productId)
-    .eq('user_id', userId) // CRITICAL: Verify ownership
+    .eq('user_id', userId)
     .single()
 
-  if (fetchError || !product) {
-    return new Response(
-      JSON.stringify({ error: 'Product not found or not authorized' }),
-      { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    )
+  if (error || !product) throw new Error('Product not found or not authorized')
+
+  const systemPrompt = `Tu es un expert en optimisation de fiches produits e-commerce.
+Ton objectif: maximiser le taux de conversion, le référencement SEO et l'attractivité du produit.
+Réponds UNIQUEMENT en JSON valide.`
+
+  const optimizationPrompts: Record<string, string> = {
+    title: `Optimise le titre produit pour le SEO et la conversion.
+Produit actuel: "${product.name}"
+Catégorie: ${product.category || 'Non spécifiée'}
+Prix: ${product.price}€
+
+Retourne: {"optimized_title": "...", "seo_title": "...", "seo_keywords": ["..."], "improvements": ["..."], "confidence": 0.0-1.0}`,
+
+    description: `Réécris la description produit pour maximiser la conversion.
+Produit: "${product.name}"
+Description actuelle: "${product.description || 'Aucune'}"
+Catégorie: ${product.category || 'Non spécifiée'}
+
+Retourne: {"optimized_description": "...", "bullet_points": ["..."], "seo_meta_description": "...", "improvements": ["..."], "confidence": 0.0-1.0}`,
+
+    full: `Optimise complètement cette fiche produit.
+Nom: "${product.name}"
+Description: "${product.description || 'Aucune'}"
+Catégorie: ${product.category || 'Non spécifiée'}
+Prix: ${product.price}€
+Tags: ${product.tags?.join(', ') || 'Aucun'}
+
+Retourne: {"optimized_title": "...", "optimized_description": "...", "seo_title": "...", "seo_description": "...", "suggested_tags": ["..."], "bullet_points": ["..."], "improvements": ["..."], "confidence": 0.0-1.0}`,
+
+    price: `Analyse et recommande un prix optimal.
+Produit: "${product.name}"
+Prix actuel: ${product.price}€
+Coût fournisseur: ${product.cost_price || 'Inconnu'}€
+Catégorie: ${product.category || 'Non spécifiée'}
+
+Retourne: {"recommended_price": 0, "min_price": 0, "max_price": 0, "margin_percentage": 0, "strategy": "...", "reasoning": "...", "confidence": 0.0-1.0}`
   }
 
-  // Simulate AI optimization
-  const optimizations: Record<string, any> = {
-    title: {
-      seo_title: `${product.name} - Meilleur Prix | Livraison Rapide`,
-      seo_keywords: [product.name, product.category, 'pas cher', 'qualité'].filter(Boolean)
-    },
-    description: {
-      description: `${product.description || ''}\n\nCaractéristiques:\n- Haute qualité\n- Livraison rapide\n- Garantie satisfait ou remboursé`
-    },
-    price: {
-      price: Math.round(product.price * 1.15 * 100) / 100,
-      profit_margin: 15
-    }
+  const prompt = optimizationPrompts[optimizationType] || optimizationPrompts.full
+  const aiResult = await callAI(systemPrompt, prompt, { temperature: 0.6 })
+
+  // Apply optimizations to product
+  const updates: Record<string, any> = {}
+  if (aiResult.optimized_title) updates.name = aiResult.optimized_title
+  if (aiResult.optimized_description) updates.description = aiResult.optimized_description
+  if (aiResult.seo_title) updates.seo_title = aiResult.seo_title
+  if (aiResult.seo_description) updates.seo_description = aiResult.seo_description
+  if (aiResult.suggested_tags) updates.tags = aiResult.suggested_tags
+  if (aiResult.recommended_price && optimizationType === 'price') {
+    updates.price = aiResult.recommended_price
   }
 
-  const updates = optimizations[optimizationType] || {}
-  
   if (Object.keys(updates).length > 0) {
     await secureUpdate(supabase, 'products', productId, updates, userId)
   }
 
-  return new Response(
-    JSON.stringify({
-      success: true,
-      message: 'Product optimization completed',
-      data: {
-        productId,
-        optimizationType,
-        improvements: Object.keys(updates),
-        confidence: 0.85,
-        timestamp: new Date().toISOString()
-      }
-    }),
-    { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-  )
+  // Log the AI generation
+  await supabase.from('ai_generations').insert({
+    user_id: userId,
+    target_type: 'product',
+    target_id: productId,
+    task: `optimize_${optimizationType}`,
+    provider: 'openai',
+    model: 'gpt-5-nano',
+    input_json: { product_name: product.name, type: optimizationType },
+    output_json: aiResult,
+    language: 'fr'
+  }).catch(() => {}) // Non-blocking
+
+  return {
+    success: true,
+    productId,
+    optimizationType,
+    data: aiResult,
+    fieldsUpdated: Object.keys(updates),
+    timestamp: new Date().toISOString()
+  }
 }
 
-async function handleDescriptionGeneration(
-  supabase: any, 
-  body: any, 
-  userId: string,
-  corsHeaders: Record<string, string>
-) {
-  const { productIds, template } = body
-  
-  if (!productIds || !Array.isArray(productIds) || productIds.length === 0) {
-    return new Response(
-      JSON.stringify({ error: 'productIds array is required' }),
-      { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    )
+// ─── DESCRIPTION GENERATION ────────────────────────────────────
+async function handleDescriptionGeneration(supabase: any, body: any, userId: string) {
+  const { productIds, template, tone } = body
+  if (!productIds?.length) throw new Error('productIds array is required')
+
+  const limitedIds = productIds.slice(0, 10) // Max 10 per batch
+
+  const { data: products, error } = await supabase
+    .from('products')
+    .select('id, name, description, category, price, tags')
+    .in('id', limitedIds)
+    .eq('user_id', userId)
+
+  if (error || !products?.length) throw new Error('Products not found or not authorized')
+
+  const systemPrompt = `Tu es un copywriter e-commerce expert en conversion.
+Génère des descriptions produits engageantes, SEO-optimisées et persuasives.
+Ton: ${tone || 'professionnel et engageant'}
+${template ? `Template à suivre: ${template}` : ''}
+Réponds en JSON avec un tableau de résultats.`
+
+  const productList = products.map((p: any) =>
+    `- ID: ${p.id} | Nom: ${p.name} | Catégorie: ${p.category || 'N/A'} | Prix: ${p.price}€`
+  ).join('\n')
+
+  const userPrompt = `Génère des descriptions optimisées pour ces ${products.length} produits:
+
+${productList}
+
+Retourne: [{"id": "...", "description": "...", "bullet_points": ["..."], "seo_meta": "..."}]`
+
+  const aiResult = await callAI(systemPrompt, userPrompt, { maxTokens: 3000 })
+
+  // Apply descriptions
+  const results = Array.isArray(aiResult) ? aiResult : aiResult.products || [aiResult]
+  let updated = 0
+
+  for (const result of results) {
+    if (result.id && result.description) {
+      const updateData: any = { description: result.description }
+      if (result.seo_meta) updateData.seo_description = result.seo_meta
+      await secureUpdate(supabase, 'products', result.id, updateData, userId)
+      updated++
+    }
   }
 
-  // Limit batch size
+  return {
+    success: true,
+    productsUpdated: updated,
+    totalProducts: products.length,
+    data: results,
+    timestamp: new Date().toISOString()
+  }
+}
+
+// ─── PRICE OPTIMIZATION ────────────────────────────────────────
+async function handlePriceOptimization(supabase: any, body: any, userId: string) {
+  const { productIds, strategy } = body
+  if (!productIds?.length) throw new Error('productIds array is required')
+
   const limitedIds = productIds.slice(0, 20)
 
-  console.log(`Generating descriptions for ${limitedIds.length} products for user ${userId}`)
-
-  // Fetch products - VERIFY OWNERSHIP
-  const { data: products, error: fetchError } = await supabase
+  const { data: products, error } = await supabase
     .from('products')
-    .select('*')
+    .select('id, name, price, cost_price, category, stock_quantity')
     .in('id', limitedIds)
-    .eq('user_id', userId) // CRITICAL: Verify ownership
+    .eq('user_id', userId)
 
-  if (fetchError || !products || products.length === 0) {
-    return new Response(
-      JSON.stringify({ error: 'Products not found or not authorized' }),
-      { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    )
+  if (error || !products?.length) throw new Error('Products not found or not authorized')
+
+  const systemPrompt = `Tu es un expert en pricing e-commerce et stratégie de marge.
+Analyse les produits et recommande des prix optimaux selon la stratégie demandée.
+Réponds UNIQUEMENT en JSON valide.`
+
+  const productList = products.map((p: any) =>
+    `- ID: ${p.id} | ${p.name} | Prix: ${p.price}€ | Coût: ${p.cost_price || '?'}€ | Stock: ${p.stock_quantity || '?'} | Cat: ${p.category || 'N/A'}`
+  ).join('\n')
+
+  const userPrompt = `Stratégie de pricing: ${strategy || 'balanced'}
+
+Produits:
+${productList}
+
+Pour chaque produit, recommande un prix optimal.
+Retourne: [{"id": "...", "current_price": 0, "recommended_price": 0, "margin_pct": 0, "reasoning": "..."}]`
+
+  const aiResult = await callAI(systemPrompt, userPrompt, { temperature: 0.4 })
+
+  const results = Array.isArray(aiResult) ? aiResult : aiResult.products || [aiResult]
+  let updated = 0
+
+  for (const result of results) {
+    if (result.id && result.recommended_price && result.recommended_price > 0) {
+      await secureUpdate(supabase, 'products', result.id, {
+        price: result.recommended_price,
+        profit_margin: result.margin_pct || null
+      }, userId)
+      updated++
+    }
   }
 
-  // Generate descriptions
-  const updates = []
-  for (const product of products) {
-    const description = `${product.name} - Un produit de qualité supérieure
-
-Caractéristiques principales:
-- Matériau premium
-- Design moderne et élégant
-- Utilisation facile
-- Livraison rapide
-
-Parfait pour ${product.category || 'tous les usages'}. Commandez maintenant!`
-
-    updates.push(
-      secureUpdate(supabase, 'products', product.id, { description }, userId)
-    )
+  return {
+    success: true,
+    productsUpdated: updated,
+    strategy: strategy || 'balanced',
+    data: results,
+    timestamp: new Date().toISOString()
   }
-
-  await Promise.all(updates)
-
-  return new Response(
-    JSON.stringify({
-      success: true,
-      message: 'Descriptions generated',
-      data: {
-        productsUpdated: products.length,
-        timestamp: new Date().toISOString()
-      }
-    }),
-    { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-  )
 }
 
-async function handlePriceOptimization(
-  supabase: any, 
-  body: any, 
-  userId: string,
-  corsHeaders: Record<string, string>
-) {
-  const { productIds, strategy } = body
-  
-  if (!productIds || !Array.isArray(productIds) || productIds.length === 0) {
-    return new Response(
-      JSON.stringify({ error: 'productIds array is required' }),
-      { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    )
-  }
-
-  // Limit batch size
-  const limitedIds = productIds.slice(0, 50)
-
-  console.log(`Optimizing prices for ${limitedIds.length} products with strategy: ${strategy}`)
-
-  // Fetch products - VERIFY OWNERSHIP
-  const { data: products, error: fetchError } = await supabase
-    .from('products')
-    .select('*')
-    .in('id', limitedIds)
-    .eq('user_id', userId) // CRITICAL: Verify ownership
-
-  if (fetchError || !products || products.length === 0) {
-    return new Response(
-      JSON.stringify({ error: 'Products not found or not authorized' }),
-      { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    )
-  }
-
-  const strategies: Record<string, number> = {
-    aggressive: 1.20,
-    balanced: 1.15,
-    conservative: 1.10
-  }
-
-  const multiplier = strategies[strategy] || 1.15
-
-  const updates = products.map(product => {
-    const newPrice = Math.round(product.price * multiplier * 100) / 100
-    const profit = product.cost_price ? newPrice - product.cost_price : 0
-    
-    return secureUpdate(supabase, 'products', product.id, {
-      price: newPrice,
-      profit_margin: product.cost_price ? Math.round((profit / product.cost_price) * 100) : null
-    }, userId)
-  })
-
-  await Promise.all(updates)
-
-  return new Response(
-    JSON.stringify({
-      success: true,
-      message: 'Price optimization completed',
-      data: {
-        productsUpdated: products.length,
-        strategy,
-        averageIncrease: `${Math.round((multiplier - 1) * 100)}%`,
-        timestamp: new Date().toISOString()
-      }
-    }),
-    { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-  )
-}
-
-async function handleAIAutomation(
-  supabase: any, 
-  body: any, 
-  userId: string,
-  corsHeaders: Record<string, string>
-) {
+// ─── AI AUTOMATION ─────────────────────────────────────────────
+async function handleAIAutomation(supabase: any, body: any, userId: string) {
   const { automationType, config } = body
-  
-  if (!automationType) {
-    return new Response(
-      JSON.stringify({ error: 'automationType is required' }),
-      { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    )
+  if (!automationType) throw new Error('automationType is required')
+
+  const systemPrompt = `Tu es un assistant d'automatisation e-commerce IA.
+Analyse la demande et fournis des recommandations d'automatisation concrètes.
+Réponds en JSON.`
+
+  const userPrompt = `Type d'automatisation: ${automationType}
+Configuration: ${JSON.stringify(config || {})}
+
+Analyse et retourne: {"recommendations": ["..."], "estimated_impact": "...", "steps": ["..."], "priority": "high|medium|low"}`
+
+  const aiResult = await callAI(systemPrompt, userPrompt)
+
+  // Log automation
+  await supabase.from('ai_optimization_jobs').insert({
+    user_id: userId,
+    job_type: automationType,
+    input_data: config,
+    output_data: aiResult,
+    status: 'completed',
+  }).catch(() => {})
+
+  return {
+    success: true,
+    automationType,
+    data: aiResult,
+    timestamp: new Date().toISOString()
+  }
+}
+
+// ─── PREDICTIVE ANALYTICS ──────────────────────────────────────
+async function handlePredictiveAnalytics(supabase: any, body: any, userId: string) {
+  const { metric, period } = body
+
+  // Fetch real user data for predictions
+  const { data: orders } = await supabase
+    .from('orders')
+    .select('total_amount, created_at, status')
+    .eq('user_id', userId)
+    .order('created_at', { ascending: false })
+    .limit(100)
+
+  const { data: products } = await supabase
+    .from('products')
+    .select('price, stock_quantity, category, created_at')
+    .eq('user_id', userId)
+    .limit(50)
+
+  const orderSummary = orders?.length
+    ? `${orders.length} commandes récentes, CA total: ${orders.reduce((s: number, o: any) => s + (o.total_amount || 0), 0).toFixed(2)}€`
+    : 'Aucune commande récente'
+
+  const productSummary = products?.length
+    ? `${products.length} produits, stock moyen: ${Math.round(products.reduce((s: number, p: any) => s + (p.stock_quantity || 0), 0) / products.length)}`
+    : 'Aucun produit'
+
+  const systemPrompt = `Tu es un analyste IA spécialisé en e-commerce prédictif.
+Analyse les données et fournis des prédictions actionables.
+Réponds en JSON.`
+
+  const userPrompt = `Données du vendeur:
+- ${orderSummary}
+- ${productSummary}
+- Métrique demandée: ${metric || 'revenue'}
+- Période: ${period || '30 jours'}
+
+Retourne: {
+  "predictions": [{"date": "...", "value": 0, "confidence": 0.0-1.0}],
+  "trend": "up|down|stable",
+  "trend_percentage": 0,
+  "insights": ["..."],
+  "recommendations": ["..."],
+  "risk_factors": ["..."]
+}`
+
+  const aiResult = await callAI(systemPrompt, userPrompt, { temperature: 0.3 })
+
+  return {
+    success: true,
+    metric: metric || 'revenue',
+    period: period || '30 jours',
+    data: aiResult,
+    timestamp: new Date().toISOString()
+  }
+}
+
+// ─── MARKETING CONTENT ─────────────────────────────────────────
+async function handleMarketingContent(body: any) {
+  const { contentType, productName, productDescription, platform, goal } = body
+  if (!contentType || !productName) throw new Error('contentType and productName required')
+
+  const systemPrompt = `Tu es un expert en marketing digital et copywriting e-commerce.
+Génère du contenu marketing persuasif et optimisé pour la conversion.
+Réponds en JSON.`
+
+  const prompts: Record<string, string> = {
+    email: `Crée une campagne email pour "${productName}".
+Description: ${productDescription || 'N/A'}
+Objectif: ${goal || 'Augmenter les ventes'}
+Retourne: {"subject": "...", "preview_text": "...", "body_html": "...", "cta_text": "...", "cta_url_suggestion": "..."}`,
+
+    social: `Crée 3 posts réseaux sociaux pour "${productName}" sur ${platform || 'Instagram'}.
+Description: ${productDescription || 'N/A'}
+Objectif: ${goal || 'Engagement'}
+Retourne: [{"text": "...", "hashtags": ["..."], "cta": "...", "best_time": "..."}]`,
+
+    ad: `Crée des textes publicitaires pour "${productName}" sur ${platform || 'Facebook Ads'}.
+Description: ${productDescription || 'N/A'}
+Retourne: {"headline": "...", "description": "...", "long_description": "...", "cta": "...", "target_audience": "..."}`,
+
+    blog: `Crée un article de blog SEO pour promouvoir "${productName}".
+Description: ${productDescription || 'N/A'}
+Retourne: {"title": "...", "meta_description": "...", "introduction": "...", "sections": [{"heading": "...", "content": "..."}], "conclusion": "...", "keywords": ["..."]}`
   }
 
-  console.log(`Running AI automation: ${automationType} for user ${userId}`)
+  const aiResult = await callAI(systemPrompt, prompts[contentType] || prompts.social, { temperature: 0.8 })
 
-  // Create automation log - SCOPED TO USER
-  const { error: logError } = await supabase
-    .from('ai_tasks')
-    .insert({
-      user_id: userId, // CRITICAL: Always use authenticated userId
-      task_type: automationType,
-      input_data: config,
-      status: 'completed',
-      output_data: {
-        tasksCompleted: [
-          'Product analysis completed',
-          'Optimizations applied',
-          'Data synchronized'
-        ]
-      }
-    })
-
-  if (logError) {
-    console.error('Error logging automation:', logError)
+  return {
+    success: true,
+    contentType,
+    platform: platform || 'general',
+    data: aiResult,
+    timestamp: new Date().toISOString()
   }
-
-  return new Response(
-    JSON.stringify({
-      success: true,
-      message: 'AI automation executed',
-      data: {
-        automationType,
-        tasksCompleted: 3,
-        nextExecution: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
-        timestamp: new Date().toISOString()
-      }
-    }),
-    { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-  )
 }
