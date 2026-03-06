@@ -152,7 +152,7 @@ export class EproloConnector extends BaseConnector {
 
       return data.data.order_id;
     } catch (error) {
-      console.error('Error creating Eprolo order:', error);
+      logger.error('Error creating Eprolo order', error instanceof Error ? error : undefined, LOG_CTX);
       throw error;
     }
   }
