@@ -55,7 +55,7 @@ export abstract class BaseConnector {
   }
   
   async updatePrices(products: { sku: string; price: number }[]): Promise<SyncResult> {
-    console.warn(`updatePrices not implemented for ${this.getSupplierName()}`);
+    logger.warn(`updatePrices not implemented for ${this.getSupplierName()}`, { component: this.getSupplierName() });
     return { total: products.length, imported: 0, updated: 0, duplicates: 0, errors: ['Not implemented'] };
   }
   
