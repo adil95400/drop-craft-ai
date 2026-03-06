@@ -154,7 +154,7 @@ export class FacebookAdsConnector {
         roas: conversionValue / parseFloat(insights.spend || '1'),
       }
     } catch (error) {
-      console.error('Failed to fetch Facebook campaign metrics:', error)
+      logger.error('Failed to fetch Facebook campaign metrics', error instanceof Error ? error : undefined, LOG_CTX)
       throw new Error('Failed to fetch metrics from Facebook Ads')
     }
   }
