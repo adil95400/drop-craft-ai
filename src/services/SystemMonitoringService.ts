@@ -87,7 +87,7 @@ export class SystemMonitoringService {
       if (error) throw error;
       return data;
     } catch (error) {
-      console.error('Error getting system health:', error);
+      logger.error('Error getting system health', error instanceof Error ? error : undefined, LOG_CTX);
       throw error;
     }
   }
