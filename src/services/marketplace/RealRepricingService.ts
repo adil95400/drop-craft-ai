@@ -3,7 +3,10 @@
  */
 
 import { supabase } from '@/integrations/supabase/client';
+import { logger } from '@/utils/logger';
 import type { RepricingRule, RepricingExecution, MarketplacePriceData, RepricingDashboard } from '@/types/marketplace-repricing';
+
+const LOG_CTX = { component: 'RealRepricingService' };
 
 export interface PricingRule {
   id: string;
