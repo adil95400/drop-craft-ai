@@ -287,7 +287,7 @@ export class FacebookAdsConnector {
 
       return true
     } catch (error) {
-      console.error('Failed to upload Facebook product feed:', error)
+      logger.error('Failed to upload Facebook product feed', error instanceof Error ? error : undefined, LOG_CTX)
       return false
     }
   }
