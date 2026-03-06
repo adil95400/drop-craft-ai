@@ -257,7 +257,7 @@ export class EnterpriseIntegrationService {
       
       return { success: true, message: `Sync scheduled to run ${frequency}` };
     } catch (error) {
-      console.error('Error scheduling sync job:', error);
+      logger.error('Error scheduling sync job', error instanceof Error ? error : undefined, LOG_CTX);
       throw error;
     }
   }
