@@ -1,4 +1,7 @@
 import { supabase } from '@/integrations/supabase/client';
+import { logger } from '@/utils/logger';
+
+const LOG_CTX = { component: 'SimplifiedSyncEngine' };
 
 export interface SyncConfiguration {
   id: string;
@@ -217,7 +220,7 @@ export class SimplifiedSyncEngine {
 
   // Real-time event processing
   processWebhookEvent(event: any): void {
-    console.log('Processing webhook event:', event);
+    logger.debug('Processing webhook event', { ...LOG_CTX, metadata: { event } });
   }
 }
 

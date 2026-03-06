@@ -1,6 +1,9 @@
 import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '@/integrations/supabase/client'
 import { useToast } from '@/hooks/use-toast'
+import { logger } from '@/utils/logger'
+
+const LOG_CTX = { component: 'useConnectedStores' }
 
 export interface ConnectedStore {
   id: string
@@ -65,7 +68,7 @@ export function useConnectedStores() {
                 }
               }
             } catch (statsError) {
-              console.error('Erreur récupération stats Shopify:', statsError)
+              logger.error('Erreur récupération stats Shopify', statsError instanceof Error ? statsError : undefined, LOG_CTX)
             }
           }
           
@@ -94,7 +97,7 @@ export function useConnectedStores() {
             sales_volume: stats.revenue
           })
         } catch (integrationError) {
-          console.error(`Erreur lors de la récupération des stats pour ${(integration as any).platform_name || (integration as any).platform}:`, integrationError)
+          logger.error(`Erreur récupération stats pour ${(integration as any).platform_name || (integration as any).platform}`, integrationError instanceof Error ? integrationError : undefined, LOG_CTX)
           const fallbackData = integration as any
           
           // En cas d'erreur, ajouter quand même l'intégration avec des stats à 0
@@ -117,7 +120,7 @@ export function useConnectedStores() {
       setStores(connectedStores)
       setError(null)
     } catch (err) {
-      console.error('Error fetching stores:', err)
+      logger.error('Error fetching stores', err instanceof Error ? err : undefined, LOG_CTX)
       setError('Erreur lors du chargement des boutiques')
       
       // No fallback mock data — show empty state
@@ -173,7 +176,7 @@ export function useConnectedStores() {
       }, 1000)
 
     } catch (err) {
-      console.error('Error syncing store:', err)
+      logger.error('Error syncing store', err instanceof Error ? err : undefined, LOG_CTX)
       toast({
         title: "Erreur de synchronisation",
         description: err instanceof Error ? err.message : "Impossible de synchroniser la boutique.",
@@ -201,7 +204,7 @@ export function useConnectedStores() {
         description: "La boutique a été déconnectée avec succès.",
       })
     } catch (err) {
-      console.error('Error disconnecting store:', err)
+      logger.error('Error disconnecting store', err instanceof Error ? err : undefined, LOG_CTX)
       toast({
         title: "Erreur",
         description: "Impossible de déconnecter la boutique.",

@@ -17,6 +17,10 @@ export interface GoogleAdsCampaign {
   endDate?: string
 }
 
+import { logger } from '@/utils/logger'
+
+const LOG_CTX = { component: 'GoogleAdsConnector' }
+
 export interface GoogleAdsMetrics {
   impressions: number
   clicks: number
@@ -54,7 +58,7 @@ export class GoogleAdsConnector {
       const data = await response.json()
       return data.access_token
     } catch (error) {
-      console.error('Google Ads authentication failed:', error)
+      logger.error('Google Ads authentication failed', error instanceof Error ? error : undefined, LOG_CTX)
       throw new Error('Failed to authenticate with Google Ads')
     }
   }
@@ -100,7 +104,7 @@ export class GoogleAdsConnector {
         endDate: result.campaign.endDate,
       })) || []
     } catch (error) {
-      console.error('Failed to fetch Google Ads campaigns:', error)
+      logger.error('Failed to fetch Google Ads campaigns', error instanceof Error ? error : undefined, LOG_CTX)
       throw new Error('Failed to fetch campaigns from Google Ads')
     }
   }
@@ -151,7 +155,7 @@ export class GoogleAdsConnector {
         costPerConversion: metrics?.costPerConversion ? parseInt(metrics.costPerConversion) / 1000000 : 0,
       }
     } catch (error) {
-      console.error('Failed to fetch Google Ads metrics:', error)
+      logger.error('Failed to fetch Google Ads metrics', error instanceof Error ? error : undefined, LOG_CTX)
       throw new Error('Failed to fetch metrics from Google Ads')
     }
   }
@@ -196,7 +200,7 @@ export class GoogleAdsConnector {
       const data = await response.json()
       return data.results?.[0]?.resourceName?.split('/').pop() || ''
     } catch (error) {
-      console.error('Failed to create Google Ads campaign:', error)
+      logger.error('Failed to create Google Ads campaign', error instanceof Error ? error : undefined, LOG_CTX)
       throw new Error('Failed to create campaign in Google Ads')
     }
   }
@@ -239,7 +243,7 @@ export class GoogleAdsConnector {
 
       return response.ok
     } catch (error) {
-      console.error(`Failed to ${status.toLowerCase()} Google Ads campaign:`, error)
+      logger.error(`Failed to ${status.toLowerCase()} Google Ads campaign`, error instanceof Error ? error : undefined, LOG_CTX)
       return false
     }
   }

@@ -1,5 +1,8 @@
 import { BaseConnector, FetchOptions, SyncResult } from './BaseConnector';
 import { SupplierCredentials, SupplierProduct } from '@/types/suppliers';
+import { logger } from '@/utils/logger';
+
+const LOG_CTX = { component: 'EproloConnector' };
 
 interface EproloProduct {
   id: string;
@@ -55,7 +58,7 @@ export class EproloConnector extends BaseConnector {
       await this.makeRequest('/account/info');
       return true;
     } catch (error) {
-      console.error('Eprolo credential validation failed:', error);
+      logger.error('Eprolo credential validation failed', error instanceof Error ? error : undefined, LOG_CTX);
       return false;
     }
   }
@@ -97,7 +100,7 @@ export class EproloConnector extends BaseConnector {
 
       return this.transformProduct(data.data);
     } catch (error) {
-      console.error('Error fetching Eprolo product:', error);
+      logger.error('Error fetching Eprolo product', error instanceof Error ? error : undefined, LOG_CTX);
       return null;
     }
   }
@@ -121,7 +124,7 @@ export class EproloConnector extends BaseConnector {
         errors: [],
       };
     } catch (error) {
-      console.error('Error updating Eprolo inventory:', error);
+      logger.error('Error updating Eprolo inventory', error instanceof Error ? error : undefined, LOG_CTX);
       return {
         total: products.length,
         imported: 0,
@@ -149,7 +152,7 @@ export class EproloConnector extends BaseConnector {
 
       return data.data.order_id;
     } catch (error) {
-      console.error('Error creating Eprolo order:', error);
+      logger.error('Error creating Eprolo order', error instanceof Error ? error : undefined, LOG_CTX);
       throw error;
     }
   }
@@ -164,7 +167,7 @@ export class EproloConnector extends BaseConnector {
 
       return data.data.status || 'unknown';
     } catch (error) {
-      console.error('Error getting Eprolo order status:', error);
+      logger.error('Error getting Eprolo order status', error instanceof Error ? error : undefined, LOG_CTX);
       throw error;
     }
   }

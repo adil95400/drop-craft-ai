@@ -1,5 +1,8 @@
 import { supabase } from "@/integrations/supabase/client";
 import { cacheService } from "./cache/CacheService";
+import { logger } from '@/utils/logger';
+
+const LOG_CTX = { component: 'LibreTranslateService' };
 
 interface TranslationResult {
   translations: string[];
@@ -52,7 +55,7 @@ export class LibreTranslateService {
     
     // Validate target language
     if (!this.SUPPORTED_LANGUAGES.includes(targetLang)) {
-      console.warn(`Unsupported language: ${targetLang}, falling back to 'en'`);
+      logger.warn(`Unsupported language: ${targetLang}, falling back to 'en'`, LOG_CTX);
       targetLang = 'en';
     }
 
@@ -128,7 +131,7 @@ export class LibreTranslateService {
         });
 
         if (error) {
-          console.error('Translation error:', error);
+          logger.error('Translation error', error instanceof Error ? error : undefined, LOG_CTX);
           // Keep original texts on error
           continue;
         }
@@ -150,7 +153,7 @@ export class LibreTranslateService {
           totalTranslated += data.stats?.translated || 0;
         }
       } catch (err) {
-        console.error('Batch translation failed:', err);
+        logger.error('Batch translation failed', err instanceof Error ? err : undefined, LOG_CTX);
       }
 
       // Small delay between batches

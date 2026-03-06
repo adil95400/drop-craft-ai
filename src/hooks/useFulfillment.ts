@@ -1,6 +1,9 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { logger } from '@/utils/logger';
+
+const LOG_CTX = { component: 'useFulfillment' };
 
 async function getCurrentUser() {
   const { data: { user } } = await supabase.auth.getUser();
@@ -89,13 +92,13 @@ export function useCarriers() {
           .order('name', { ascending: true });
         
         if (error) {
-          console.warn('Carriers table not available, using defaults:', error.message);
+          logger.warn(`Carriers table not available, using defaults: ${error.message}`, LOG_CTX);
           return defaultCarriers;
         }
         
         return data && data.length > 0 ? (data as Carrier[]) : defaultCarriers;
       } catch (e) {
-        console.warn('Error fetching carriers, using defaults');
+        logger.warn('Error fetching carriers, using defaults', LOG_CTX);
         return defaultCarriers;
       }
     }
@@ -218,7 +221,7 @@ export function useShipments(status?: string) {
         
         const { data, error } = await query;
         if (error) {
-          console.warn('Shipments query error:', error.message);
+          logger.warn(`Shipments query error: ${error.message}`, LOG_CTX);
           return [];
         }
         
@@ -234,7 +237,7 @@ export function useShipments(status?: string) {
           updated_at: order.updated_at as string
         }));
       } catch (e) {
-        console.warn('Error fetching shipments');
+        logger.warn('Error fetching shipments', LOG_CTX);
         return [];
       }
     }
@@ -297,7 +300,7 @@ export function useReturns(status?: string) {
       
       const { data, error } = await query;
       if (error) {
-        console.error('Returns error:', error);
+        logger.error('Returns error', error instanceof Error ? error : undefined, LOG_CTX);
         return [];
       }
       
@@ -462,7 +465,7 @@ export function useFulfillmentStats() {
           delivery_rate: Math.round(deliveryRate * 100) / 100
         };
       } catch (e) {
-        console.warn('Error fetching fulfillment stats');
+        logger.warn('Error fetching fulfillment stats', LOG_CTX);
         return defaultStats;
       }
     }

@@ -1,4 +1,7 @@
 import { supabase } from '@/integrations/supabase/client'
+import { logger } from '@/utils/logger'
+
+const LOG_CTX = { component: 'AIAnalyticsService' }
 
 export interface TrendingProduct {
   produit: string
@@ -94,7 +97,7 @@ export class AIAnalyticsService {
         }
       }).sort((a, b) => b.score - a.score)
     } catch (error) {
-      console.error('Error fetching trending products:', error)
+      logger.error('Error fetching trending products', error instanceof Error ? error : undefined, LOG_CTX)
       return []
     }
   }
@@ -157,7 +160,7 @@ export class AIAnalyticsService {
 
       return opportunities.sort((a, b) => a.saturation - b.saturation).slice(0, 5)
     } catch (error) {
-      console.error('Error fetching market opportunities:', error)
+      logger.error('Error fetching market opportunities', error instanceof Error ? error : undefined, LOG_CTX)
       return []
     }
   }
@@ -193,7 +196,7 @@ export class AIAnalyticsService {
         }
       })
     } catch (error) {
-      console.error('Error fetching optimal margins:', error)
+      logger.error('Error fetching optimal margins', error instanceof Error ? error : undefined, LOG_CTX)
       return []
     }
   }
@@ -241,7 +244,7 @@ export class AIAnalyticsService {
 
       return predictions
     } catch (error) {
-      console.error('Error generating sales predictions:', error)
+      logger.error('Error generating sales predictions', error instanceof Error ? error : undefined, LOG_CTX)
       return []
     }
   }

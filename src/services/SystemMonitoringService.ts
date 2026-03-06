@@ -12,6 +12,9 @@
  *  - `system-monitoring` edge function
  */
 import { supabase } from "@/integrations/supabase/client";
+import { logger } from '@/utils/logger';
+
+const LOG_CTX = { component: 'SystemMonitoringService' };
 
 /** Health snapshot for a single infrastructure component. */
 interface SystemHealthMonitoring {
@@ -84,7 +87,7 @@ export class SystemMonitoringService {
       if (error) throw error;
       return data;
     } catch (error) {
-      console.error('Error getting system health:', error);
+      logger.error('Error getting system health', error instanceof Error ? error : undefined, LOG_CTX);
       throw error;
     }
   }
@@ -102,7 +105,7 @@ export class SystemMonitoringService {
       if (error) throw error;
       return data;
     } catch (error) {
-      console.error('Error getting performance metrics:', error);
+      logger.error('Error getting performance metrics', error instanceof Error ? error : undefined, LOG_CTX);
       throw error;
     }
   }
@@ -123,7 +126,7 @@ export class SystemMonitoringService {
       if (error) throw error;
       return data;
     } catch (error) {
-      console.error('Error creating system alert:', error);
+      logger.error('Error creating system alert', error instanceof Error ? error : undefined, LOG_CTX);
       throw error;
     }
   }
@@ -142,7 +145,7 @@ export class SystemMonitoringService {
       if (error) throw error;
       return data;
     } catch (error) {
-      console.error('Error getting system alerts:', error);
+      logger.error('Error getting system alerts', error instanceof Error ? error : undefined, LOG_CTX);
       throw error;
     }
   }
@@ -178,7 +181,7 @@ export class SystemMonitoringService {
       if (error) throw error;
       return data;
     } catch (error) {
-      console.error('Error updating component health:', error);
+      logger.error('Error updating component health', error instanceof Error ? error : undefined, LOG_CTX);
       throw error;
     }
   }
@@ -193,7 +196,7 @@ export class SystemMonitoringService {
       if (error) throw error;
       return (data || []) as SystemHealthMonitoring[];
     } catch (error) {
-      console.error('Error fetching health monitoring data:', error);
+      logger.error('Error fetching health monitoring data', error instanceof Error ? error : undefined, LOG_CTX);
       throw error;
     }
   }
@@ -212,7 +215,7 @@ export class SystemMonitoringService {
       if (error) throw error;
       return data as SystemHealthMonitoring | null;
     } catch (error) {
-      console.error('Error fetching component health:', error);
+      logger.error('Error fetching component health', error instanceof Error ? error : undefined, LOG_CTX);
       throw error;
     }
   }
@@ -237,7 +240,7 @@ export class SystemMonitoringService {
       );
       return { success: true, monitored_components: componentsToMonitor, results };
     } catch (error) {
-      console.error('Error starting real-time monitoring:', error);
+      logger.error('Error starting real-time monitoring', error instanceof Error ? error : undefined, LOG_CTX);
       throw error;
     }
   }
@@ -327,7 +330,7 @@ export class SystemMonitoringService {
       if (error) throw error;
       return { success: true, resolved_alert: alertType };
     } catch (error) {
-      console.error('Error resolving alert:', error);
+      logger.error('Error resolving alert', error instanceof Error ? error : undefined, LOG_CTX);
       throw error;
     }
   }
