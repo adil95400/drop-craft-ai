@@ -237,7 +237,7 @@ export class FacebookAdsConnector {
 
       return response.id
     } catch (error) {
-      console.error('Failed to create Facebook product catalog:', error)
+      logger.error('Failed to create Facebook product catalog', error instanceof Error ? error : undefined, LOG_CTX)
       throw new Error('Failed to create product catalog')
     }
   }
