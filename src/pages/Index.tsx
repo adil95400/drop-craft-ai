@@ -176,7 +176,7 @@ const StatsSection = () => {
     { value: "24+", label: "Plateformes supportées", icon: Globe },
     { value: "99+", label: "Fournisseurs connectés", icon: Users },
     { value: "IA", label: "Optimisation intelligente", icon: Sparkles },
-    { value: "2025", label: "Lancement officiel", icon: Rocket },
+    { value: "2026", label: "Lancement officiel", icon: Rocket },
   ];
   
   return (

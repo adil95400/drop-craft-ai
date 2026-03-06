@@ -24,7 +24,7 @@ const FooterNavigation = () => {
         { name: t('footer.features'), href: "/features" },
         { name: t('footer.pricing'), href: "/pricing" },
         { name: t('footer.documentation'), href: "/documentation" },
-        { name: t('footer.api'), href: "/integrations/api/documentation" },
+        { name: t('footer.api'), href: "/api-docs" },
         { name: t('footer.gettingStarted'), href: "/guides/getting-started" }
       ]
     },
