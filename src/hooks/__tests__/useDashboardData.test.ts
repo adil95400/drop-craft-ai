@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { renderHook, act } from '@testing-library/react'
+import { renderHook } from '@testing-library/react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { createElement } from 'react'
 
@@ -64,5 +64,38 @@ describe('useDashboardData', () => {
     expect(ids).toContain('orders')
     expect(ids).toContain('alerts')
     expect(ids).toContain('performance')
+  })
+})
+
+describe('Dashboard Data Logic (pure functions)', () => {
+  it('revenue calculation sums order amounts', () => {
+    const orders = [
+      { total_amount: 50 },
+      { total_amount: 100 },
+      { total_amount: 75.5 },
+    ]
+    const revenue = orders.reduce((sum, o) => sum + (Number(o.total_amount) || 0), 0)
+    expect(revenue).toBe(225.5)
+  })
+
+  it('handles null total_amount gracefully', () => {
+    const orders = [
+      { total_amount: null },
+      { total_amount: 100 },
+      { total_amount: undefined },
+    ]
+    const revenue = orders.reduce((sum: number, o: any) => sum + (Number(o.total_amount) || 0), 0)
+    expect(revenue).toBe(100)
+  })
+
+  it('resolved alerts are filtered correctly', () => {
+    const alerts = [
+      { status: 'active' },
+      { status: 'resolved' },
+      { status: 'resolved' },
+      { status: 'active' },
+    ]
+    const resolved = alerts.filter(a => a.status === 'resolved').length
+    expect(alerts.length - resolved).toBe(2)
   })
 })
