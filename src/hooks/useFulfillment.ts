@@ -300,7 +300,7 @@ export function useReturns(status?: string) {
       
       const { data, error } = await query;
       if (error) {
-        console.error('Returns error:', error);
+        logger.error('Returns error', error instanceof Error ? error : undefined, LOG_CTX);
         return [];
       }
       
