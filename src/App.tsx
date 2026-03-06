@@ -9,8 +9,7 @@ import { useLocation } from 'react-router-dom';
 import { Toaster } from '@/components/ui/toaster';
 import { Toaster as SonnerToaster } from '@/components/ui/sonner';
 import { ErrorBoundary } from '@/components/common/ErrorBoundary';
-import { ModalContextProvider } from '@/hooks/useModalHelpers';
-import { ThemeProvider } from 'next-themes';
+// ModalContextProvider is imported directly (not lazy) since it's a named export
 import { AppRoutes } from '@/routes';
 import { useAutoTheme } from '@/hooks/useAutoTheme';
 import { OfflineIndicatorLite } from '@/components/offline/OfflineIndicatorLite';
