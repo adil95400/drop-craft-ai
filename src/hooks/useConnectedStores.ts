@@ -176,7 +176,7 @@ export function useConnectedStores() {
       }, 1000)
 
     } catch (err) {
-      console.error('Error syncing store:', err)
+      logger.error('Error syncing store', err instanceof Error ? err : undefined, LOG_CTX)
       toast({
         title: "Erreur de synchronisation",
         description: err instanceof Error ? err.message : "Impossible de synchroniser la boutique.",
