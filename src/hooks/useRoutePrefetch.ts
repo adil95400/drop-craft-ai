@@ -12,7 +12,6 @@ const prefetchMap: Record<string, () => Promise<unknown>> = {
   '/automation': () => import('@/routes/AutomationRoutes'),
   '/marketing': () => import('@/routes/MarketingRoutes'),
   '/settings': () => import('@/routes/SettingsRoutes'),
-  '/inventory': () => import('@/routes/InventoryRoutes'),
   '/import': () => import('@/routes/ImportRoutes'),
   '/ai': () => import('@/routes/AIRoutes'),
 };
