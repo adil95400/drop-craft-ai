@@ -330,7 +330,7 @@ export class SystemMonitoringService {
       if (error) throw error;
       return { success: true, resolved_alert: alertType };
     } catch (error) {
-      console.error('Error resolving alert:', error);
+      logger.error('Error resolving alert', error instanceof Error ? error : undefined, LOG_CTX);
       throw error;
     }
   }

@@ -243,7 +243,7 @@ export class GoogleAdsConnector {
 
       return response.ok
     } catch (error) {
-      console.error(`Failed to ${status.toLowerCase()} Google Ads campaign:`, error)
+      logger.error(`Failed to ${status.toLowerCase()} Google Ads campaign`, error instanceof Error ? error : undefined, LOG_CTX)
       return false
     }
   }

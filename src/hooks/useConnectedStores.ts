@@ -204,7 +204,7 @@ export function useConnectedStores() {
         description: "La boutique a été déconnectée avec succès.",
       })
     } catch (err) {
-      console.error('Error disconnecting store:', err)
+      logger.error('Error disconnecting store', err instanceof Error ? err : undefined, LOG_CTX)
       toast({
         title: "Erreur",
         description: "Impossible de déconnecter la boutique.",

@@ -167,7 +167,7 @@ export class EproloConnector extends BaseConnector {
 
       return data.data.status || 'unknown';
     } catch (error) {
-      console.error('Error getting Eprolo order status:', error);
+      logger.error('Error getting Eprolo order status', error instanceof Error ? error : undefined, LOG_CTX);
       throw error;
     }
   }

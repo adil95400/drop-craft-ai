@@ -465,7 +465,7 @@ export function useFulfillmentStats() {
           delivery_rate: Math.round(deliveryRate * 100) / 100
         };
       } catch (e) {
-        console.warn('Error fetching fulfillment stats');
+        logger.warn('Error fetching fulfillment stats', LOG_CTX);
         return defaultStats;
       }
     }

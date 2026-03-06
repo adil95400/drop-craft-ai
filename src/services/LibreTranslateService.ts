@@ -153,7 +153,7 @@ export class LibreTranslateService {
           totalTranslated += data.stats?.translated || 0;
         }
       } catch (err) {
-        console.error('Batch translation failed:', err);
+        logger.error('Batch translation failed', err instanceof Error ? err : undefined, LOG_CTX);
       }
 
       // Small delay between batches

@@ -244,7 +244,7 @@ export class AIAnalyticsService {
 
       return predictions
     } catch (error) {
-      console.error('Error generating sales predictions:', error)
+      logger.error('Error generating sales predictions', error instanceof Error ? error : undefined, LOG_CTX)
       return []
     }
   }
