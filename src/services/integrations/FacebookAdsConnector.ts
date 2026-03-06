@@ -211,7 +211,7 @@ export class FacebookAdsConnector {
       await this.makeRequest(`${campaignId}`, 'POST', { status })
       return true
     } catch (error) {
-      console.error('Failed to update Facebook campaign status:', error)
+      logger.error('Failed to update Facebook campaign status', error instanceof Error ? error : undefined, LOG_CTX)
       return false
     }
   }
