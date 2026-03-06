@@ -199,7 +199,7 @@ export class EnterpriseIntegrationService {
       if (error) throw error;
       return { success: true };
     } catch (error) {
-      console.error('Error deleting integration:', error);
+      logger.error('Error deleting integration', error instanceof Error ? error : undefined, LOG_CTX);
       throw error;
     }
   }
