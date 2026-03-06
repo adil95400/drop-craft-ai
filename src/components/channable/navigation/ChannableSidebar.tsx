@@ -602,7 +602,7 @@ export function ChannableSidebar() {
           
           {/* Navigation Groups */}
           <nav aria-label={t('navigation', { ns: 'navigation' })}>
-            {filteredGroups.map(group => <ChannableNavGroup key={group.id} group={group} modules={modulesByGroup[group.id] || []} isOpen={openGroups.includes(group.id)} onToggle={() => toggleGroup(group.id)} collapsed={collapsed} activeRoute={isActive} canAccess={canAccess} favorites={favorites} onNavigate={handleNavigate} onFavoriteToggle={handleFavoriteToggle} openSubMenus={openSubMenus} onSubMenuToggle={toggleSubMenu} currentPlan={currentPlan} t={t} badgeCounts={badgeCounts} />)}
+            {filteredGroups.map(group => <ChannableNavGroup key={group.id} group={group} modules={modulesByGroup[group.id] || []} isOpen={openGroups.includes(group.id)} onToggle={() => toggleGroup(group.id)} collapsed={collapsed} activeRoute={isActive} canAccess={canAccess} favorites={favorites} onNavigate={handleNavigate} onPrefetch={handlePrefetch} onFavoriteToggle={handleFavoriteToggle} openSubMenus={openSubMenus} onSubMenuToggle={toggleSubMenu} currentPlan={currentPlan} t={t} badgeCounts={badgeCounts} />)}
           </nav>
         </ScrollArea>
       </SidebarContent>
