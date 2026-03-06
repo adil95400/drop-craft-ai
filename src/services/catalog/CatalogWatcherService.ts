@@ -275,7 +275,7 @@ export class CatalogWatcherService {
     const { data, error } = await query
 
     if (error) {
-      console.error('[CatalogWatcher] Error fetching events:', error)
+      logger.error('Error fetching events', error instanceof Error ? error : undefined, LOG_CTX)
       return []
     }
 
