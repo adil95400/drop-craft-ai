@@ -108,7 +108,7 @@ class ProductScraperService {
       });
 
       if (error) {
-        console.error('❌ Scraping error:', error);
+        logger.error('Scraping error', error instanceof Error ? error : undefined, { ...LOG_CTX, action: 'scrape', metadata: { url } });
         return {
           success: false,
           error: error.message || 'Erreur lors du scraping du produit'
