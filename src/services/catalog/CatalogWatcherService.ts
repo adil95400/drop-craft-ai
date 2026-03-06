@@ -356,7 +356,7 @@ export class CatalogWatcherService {
       .insert(logsToInsert)
 
     if (error) {
-      console.error('[CatalogWatcher] Error logging events:', error)
+      logger.error('Error logging events', error instanceof Error ? error : undefined, LOG_CTX)
     }
   }
 
