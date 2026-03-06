@@ -40,7 +40,12 @@ export function initMixpanel(token: string) {
 
 export function trackMixpanelPageView(path: string) {
   if (!initialised || !window.mixpanel) return
-  window.mixpanel.track_pageview({ page: path })
+  if (typeof window.mixpanel.track_pageview === 'function') {
+    window.mixpanel.track_pageview({ page: path })
+  } else {
+    // Fallback: use regular track if track_pageview not yet available
+    window.mixpanel.track('$mp_web_page_view', { page: path })
+  }
 }
 
 export function trackMixpanelEvent(name: string, props?: Record<string, unknown>) {
