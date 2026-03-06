@@ -119,6 +119,7 @@ const ChannableNavItem = memo(({
   groupColor,
   isFavorite,
   onNavigate,
+  onPrefetch,
   onFavoriteToggle,
   subModules,
   isSubOpen,
@@ -133,6 +134,7 @@ const ChannableNavItem = memo(({
   groupColor: typeof GROUP_COLORS.dashboard;
   isFavorite: boolean;
   onNavigate: (route: string) => void;
+  onPrefetch?: (route: string) => void;
   onFavoriteToggle: () => void;
   subModules: any[];
   isSubOpen: boolean;
