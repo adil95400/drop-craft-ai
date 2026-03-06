@@ -55,7 +55,7 @@ export class LibreTranslateService {
     
     // Validate target language
     if (!this.SUPPORTED_LANGUAGES.includes(targetLang)) {
-      console.warn(`Unsupported language: ${targetLang}, falling back to 'en'`);
+      logger.warn(`Unsupported language: ${targetLang}, falling back to 'en'`, LOG_CTX);
       targetLang = 'en';
     }
 
