@@ -37,8 +37,8 @@ export function ChannableLayout({ children, className }: ChannableLayoutProps) {
           </div>
         </main>
         <MobileNav />
-        <OnboardingModal />
-        <DiagnosticWidget />
+        <Suspense fallback={null}><OnboardingModal /></Suspense>
+        <Suspense fallback={null}><DiagnosticWidget /></Suspense>
       </div>
     )
   }
@@ -62,8 +62,8 @@ export function ChannableLayout({ children, className }: ChannableLayoutProps) {
         </SidebarInset>
       </div>
       
-      <OnboardingModal />
-      <DiagnosticWidget />
+      <Suspense fallback={null}><OnboardingModal /></Suspense>
+      <Suspense fallback={null}><DiagnosticWidget /></Suspense>
     </SidebarProvider>
   )
 }
