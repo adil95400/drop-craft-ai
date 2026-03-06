@@ -17,6 +17,10 @@ export interface GoogleAdsCampaign {
   endDate?: string
 }
 
+import { logger } from '@/utils/logger'
+
+const LOG_CTX = { component: 'GoogleAdsConnector' }
+
 export interface GoogleAdsMetrics {
   impressions: number
   clicks: number

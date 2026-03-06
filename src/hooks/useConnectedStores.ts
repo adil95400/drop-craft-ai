@@ -1,6 +1,9 @@
 import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '@/integrations/supabase/client'
 import { useToast } from '@/hooks/use-toast'
+import { logger } from '@/utils/logger'
+
+const LOG_CTX = { component: 'useConnectedStores' }
 
 export interface ConnectedStore {
   id: string

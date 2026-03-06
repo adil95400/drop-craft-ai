@@ -1,5 +1,8 @@
 import { BaseConnector, FetchOptions, SyncResult } from './BaseConnector';
 import { SupplierCredentials, SupplierProduct } from '@/types/suppliers';
+import { logger } from '@/utils/logger';
+
+const LOG_CTX = { component: 'EproloConnector' };
 
 interface EproloProduct {
   id: string;

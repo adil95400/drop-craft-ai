@@ -12,6 +12,9 @@
  *  - `system-monitoring` edge function
  */
 import { supabase } from "@/integrations/supabase/client";
+import { logger } from '@/utils/logger';
+
+const LOG_CTX = { component: 'SystemMonitoringService' };
 
 /** Health snapshot for a single infrastructure component. */
 interface SystemHealthMonitoring {

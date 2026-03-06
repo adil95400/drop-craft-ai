@@ -1,5 +1,8 @@
 import { supabase } from "@/integrations/supabase/client";
 import { cacheService } from "./cache/CacheService";
+import { logger } from '@/utils/logger';
+
+const LOG_CTX = { component: 'LibreTranslateService' };
 
 interface TranslationResult {
   translations: string[];
