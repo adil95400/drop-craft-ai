@@ -198,7 +198,7 @@ export class PublicationService {
         }
       })
     } catch (error) {
-      console.error('Error syncing inventory:', error)
+      logger.error('Error syncing inventory', error instanceof Error ? error : undefined, { ...LOG_CTX, action: 'syncInventory' })
       throw error
     }
   }
