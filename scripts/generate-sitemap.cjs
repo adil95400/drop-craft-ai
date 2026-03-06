@@ -34,7 +34,14 @@ const routes = [
   { path: "/shopopti-vs-autods", changefreq: "monthly", priority: "0.8" },
   { path: "/shopopti-vs-dsers", changefreq: "monthly", priority: "0.8" },
   { path: "/shopopti-vs-zendrop", changefreq: "monthly", priority: "0.8" },
-  // Legal
+  { path: "/shopopti-vs-sellthetrend", changefreq: "monthly", priority: "0.8" },
+  // NEW SEO pillar pages (EN)
+  { path: "/shopify-automation", changefreq: "monthly", priority: "0.9" },
+  { path: "/dropshipping-automation", changefreq: "monthly", priority: "0.9" },
+  { path: "/shopify-ai-tools", changefreq: "monthly", priority: "0.9" },
+  { path: "/product-research-ai", changefreq: "monthly", priority: "0.9" },
+  { path: "/shopify-analytics", changefreq: "monthly", priority: "0.9" },
+  { path: "/shopify-marketing-automation", changefreq: "monthly", priority: "0.9" },
   { path: "/privacy-policy", changefreq: "yearly", priority: "0.3" },
   { path: "/terms-of-service", changefreq: "yearly", priority: "0.3" },
 ];
