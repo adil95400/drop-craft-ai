@@ -64,7 +64,7 @@ export abstract class BaseConnector {
   }
   
   async updateOrderStatus(orderId: string, status: string): Promise<boolean> {
-    console.warn(`updateOrderStatus not implemented for ${this.getSupplierName()}`);
+    logger.warn(`updateOrderStatus not implemented for ${this.getSupplierName()}`, { component: this.getSupplierName() });
     return false;
   }
 
