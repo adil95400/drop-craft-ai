@@ -131,7 +131,7 @@ export class LibreTranslateService {
         });
 
         if (error) {
-          console.error('Translation error:', error);
+          logger.error('Translation error', error instanceof Error ? error : undefined, LOG_CTX);
           // Keep original texts on error
           continue;
         }
