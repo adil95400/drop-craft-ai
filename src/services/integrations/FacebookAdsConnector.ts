@@ -1,3 +1,7 @@
+import { logger } from '@/utils/logger';
+
+const LOG_CTX = { component: 'FacebookAdsConnector' };
+
 export interface FacebookAdsConfig {
   accessToken: string
   appId: string
