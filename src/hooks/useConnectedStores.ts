@@ -120,7 +120,7 @@ export function useConnectedStores() {
       setStores(connectedStores)
       setError(null)
     } catch (err) {
-      console.error('Error fetching stores:', err)
+      logger.error('Error fetching stores', err instanceof Error ? err : undefined, LOG_CTX)
       setError('Erreur lors du chargement des boutiques')
       
       // No fallback mock data — show empty state
