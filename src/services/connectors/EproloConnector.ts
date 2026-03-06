@@ -124,7 +124,7 @@ export class EproloConnector extends BaseConnector {
         errors: [],
       };
     } catch (error) {
-      console.error('Error updating Eprolo inventory:', error);
+      logger.error('Error updating Eprolo inventory', error instanceof Error ? error : undefined, LOG_CTX);
       return {
         total: products.length,
         imported: 0,
