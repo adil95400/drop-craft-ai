@@ -50,7 +50,10 @@ export function trackMixpanelPageView(path: string) {
 
 export function trackMixpanelEvent(name: string, props?: Record<string, unknown>) {
   if (!initialised || !window.mixpanel) return
-  window.mixpanel.track(name, props)
+  if (typeof window.mixpanel.track === 'function') {
+    window.mixpanel.track(name, props)
+  }
+}
 }
 
 export function identifyMixpanelUser(userId: string, traits?: Record<string, unknown>) {
