@@ -112,7 +112,7 @@ export abstract class MarketplaceConnector extends BaseConnector {
         await this.handleInventoryUpdated(payload)
         break
       default:
-        console.log(`Unhandled ${this.marketplace} webhook: ${webhookType}`)
+        logger.debug(`Unhandled ${this.marketplace} webhook: ${webhookType}`, { ...LOG_CTX, action: 'handleWebhook' })
     }
   }
 

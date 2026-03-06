@@ -1,4 +1,7 @@
 import { supabase } from '@/integrations/supabase/client';
+import { logger } from '@/utils/logger';
+
+const LOG_CTX = { component: 'SecureAdminService' };
 
 export interface AdminActionResult {
   success: boolean;
@@ -28,7 +31,7 @@ export class SecureAdminService {
       });
 
       if (error) {
-        console.error('Role change error:', error);
+        logger.error('Role change error', error instanceof Error ? error : new Error(error.message), { ...LOG_CTX, action: 'changeUserRole' });
         return {
           success: false,
           message: 'Failed to change user role',
@@ -42,7 +45,7 @@ export class SecureAdminService {
         data: { target_user_id: targetUserId, new_role: newRole }
       };
     } catch (error: any) {
-      console.error('Role change exception:', error);
+      logger.error('Role change exception', error instanceof Error ? error : new Error(error.message), { ...LOG_CTX, action: 'changeUserRole' });
       return {
         success: false,
         message: 'An unexpected error occurred',
@@ -111,7 +114,7 @@ export class SecureAdminService {
         metadata: metadata || {}
       });
     } catch (error) {
-      console.error('Failed to log admin action:', error);
+      logger.error('Failed to log admin action', error instanceof Error ? error : undefined, { ...LOG_CTX, action: 'logAdminAction' });
     }
   }
 
@@ -164,7 +167,7 @@ export class SecureAdminService {
       if (error) return false;
       return Boolean(data);
     } catch (error) {
-      console.error('Error checking admin status:', error);
+      logger.error('Error checking admin status', error instanceof Error ? error : undefined, { ...LOG_CTX, action: 'isCurrentUserAdmin' });
       return false;
     }
   }

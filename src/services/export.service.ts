@@ -47,7 +47,7 @@ export class ExportService {
 
       return { success: true, filename, recordCount: filteredData.length }
     } catch (error) {
-      console.error('Export error:', error)
+      logger.error('Export error', error instanceof Error ? error : undefined, { ...LOG_CTX, action: 'exportData' })
       return { 
         success: false, 
         filename: '', 

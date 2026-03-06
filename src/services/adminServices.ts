@@ -657,7 +657,7 @@ export const AdminService = {
         });
       }
     } catch (error) {
-      console.error('Error logging admin action:', error);
+      logger.error('Error logging admin action', error instanceof Error ? error : undefined, { ...LOG_CTX, action: 'logAdminAction' });
     }
   },
 
