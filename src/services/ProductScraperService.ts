@@ -129,7 +129,7 @@ class ProductScraperService {
         error: data?.error || 'Impossible d\'extraire les données du produit'
       };
     } catch (error) {
-      console.error('❌ Unexpected error during scraping:', error);
+      logger.error('Unexpected error during scraping', error instanceof Error ? error : undefined, { ...LOG_CTX, action: 'scrape' });
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Erreur inattendue'
