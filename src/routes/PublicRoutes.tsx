@@ -24,6 +24,7 @@ const PerformanceMonitoringPage = lazy(() => import('@/pages/PerformanceMonitori
 const BlogPage = lazy(() => import('@/pages/public/BlogPage'));
 const BlogArticlePage = lazy(() => import('@/pages/public/BlogArticlePage'));
 const DocumentationPage = lazy(() => import('@/pages/public/DocumentationPage'));
+const DocArticlePage = lazy(() => import('@/pages/public/DocArticlePage'));
 const TestimonialsPage = lazy(() => import('@/pages/public/TestimonialsPage'));
 const ChangelogPage = lazy(() => import('@/pages/public/ChangelogPage'));
 const StatusPage = lazy(() => import('@/pages/public/StatusPage'));
@@ -86,6 +87,7 @@ export function PublicRoutes() {
       
       {/* Content */}
       <Route path="documentation" element={<DocumentationPage />} />
+      <Route path="documentation/:slug" element={<DocArticlePage />} />
       <Route path="docs" element={<DocumentationPage />} />
       <Route path="blog" element={<BlogPage />} />
       <Route path="blog/:slug" element={<BlogArticlePage />} />
