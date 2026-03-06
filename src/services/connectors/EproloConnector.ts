@@ -58,7 +58,7 @@ export class EproloConnector extends BaseConnector {
       await this.makeRequest('/account/info');
       return true;
     } catch (error) {
-      console.error('Eprolo credential validation failed:', error);
+      logger.error('Eprolo credential validation failed', error instanceof Error ? error : undefined, LOG_CTX);
       return false;
     }
   }
