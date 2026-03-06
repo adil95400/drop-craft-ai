@@ -410,7 +410,7 @@ export class CatalogWatcherService {
       // Notification sent successfully
     } catch (error) {
       // Critical notification failure — Sentry will capture via console interceptor
-      console.error('[CatalogWatcher] Error sending critical notification:', error)
+      logger.error('Error sending critical notification', error instanceof Error ? error : undefined, LOG_CTX)
     }
   }
 

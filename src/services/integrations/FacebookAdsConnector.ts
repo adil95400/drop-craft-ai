@@ -336,7 +336,7 @@ export class FacebookAdsConnector {
       const response = await this.makeRequest(`${endpoint}?${params}`)
       return response.data
     } catch (error) {
-      console.error('Failed to fetch Facebook insights:', error)
+      logger.error('Failed to fetch Facebook insights', error instanceof Error ? error : undefined, LOG_CTX)
       throw new Error('Failed to fetch insights')
     }
   }

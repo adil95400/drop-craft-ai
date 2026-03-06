@@ -1,5 +1,6 @@
 import { BaseConnector, FetchOptions, SyncResult } from './BaseConnector';
 import { SupplierCredentials, SupplierProduct } from '@/types/suppliers';
+import { logger } from '@/utils/logger';
 
 interface AmazonCredentials extends SupplierCredentials {
   sellerId: string;

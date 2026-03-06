@@ -80,7 +80,7 @@ export class RealRepricingService {
       .single();
 
     if (error) {
-      console.error('Error creating pricing rule:', error);
+      logger.error('Error creating pricing rule', error instanceof Error ? error : undefined, LOG_CTX);
       return null;
     }
 

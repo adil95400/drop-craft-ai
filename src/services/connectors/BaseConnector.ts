@@ -105,7 +105,7 @@ export abstract class BaseConnector {
   }
 
   protected handleError(error: any, context: string): void {
-    console.error(`${this.getSupplierName()} ${context} error:`, error);
+    logger.error(`${this.getSupplierName()} ${context} error`, error instanceof Error ? error : undefined, { component: this.getSupplierName() });
   }
 
   protected async delay(ms: number = this.rateLimitDelay): Promise<void> {

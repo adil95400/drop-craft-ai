@@ -284,7 +284,7 @@ export class ERPConnector {
         }
       });
     } catch (notificationError) {
-      console.error('Failed to send error notification:', notificationError);
+      logger.error('Failed to send error notification', notificationError instanceof Error ? notificationError : undefined, LOG_CTX);
     }
   }
 }
