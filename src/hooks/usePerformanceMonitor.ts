@@ -49,15 +49,18 @@ export function usePerformanceMonitor(enabled = true) {
       fidObs.observe({ type: 'first-input', buffered: true });
       observers.push(fidObs);
 
-      // Cumulative Layout Shift
+      // Cumulative Layout Shift - debounced to avoid console spam
       let clsValue = 0;
+      let clsTimeout: ReturnType<typeof setTimeout> | null = null;
       const clsObs = new PerformanceObserver((list) => {
         for (const entry of list.getEntries()) {
           if (!(entry as any).hadRecentInput) {
             clsValue += (entry as any).value;
           }
         }
-        reportMetric('CLS', clsValue * 1000); // multiply for readability
+        // Debounce CLS reporting to avoid spamming console
+        if (clsTimeout) clearTimeout(clsTimeout);
+        clsTimeout = setTimeout(() => reportMetric('CLS', clsValue * 1000), 2000);
       });
       clsObs.observe({ type: 'layout-shift', buffered: true });
       observers.push(clsObs);
