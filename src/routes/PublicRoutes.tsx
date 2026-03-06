@@ -87,6 +87,7 @@ export function PublicRoutes() {
       
       {/* Content */}
       <Route path="documentation" element={<DocumentationPage />} />
+      <Route path="documentation/:slug" element={<DocArticlePage />} />
       <Route path="docs" element={<DocumentationPage />} />
       <Route path="blog" element={<BlogPage />} />
       <Route path="blog/:slug" element={<BlogArticlePage />} />
