@@ -10,6 +10,7 @@
  * - Memoization optimisée
  */
 import { useState, useMemo, useCallback, useEffect, memo } from "react";
+import { useRoutePrefetch } from "@/hooks/useRoutePrefetch";
 import { useHeaderNotifications } from "@/hooks/useHeaderNotifications";
 import shopoptiLogo from "@/assets/logo-shopopti.png";
 import { useLocation, useNavigate } from "react-router-dom";
