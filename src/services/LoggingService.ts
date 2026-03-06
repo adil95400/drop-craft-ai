@@ -59,10 +59,10 @@ class LoggingService {
         );
 
       if (error) {
-        console.error('Failed to flush logs to database:', error);
+        logger.warn('Failed to flush logs to database', { component: 'LoggingService', metadata: { error: (error as any).message } });
       }
-    } catch (error) {
-      console.error('Error flushing logs:', error);
+    } catch (err) {
+      logger.warn('Error flushing logs', { component: 'LoggingService', metadata: { error: (err as any)?.message } });
     }
   }
 
