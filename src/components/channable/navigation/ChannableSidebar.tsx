@@ -321,7 +321,7 @@ const ChannableNavGroup = memo(({
       }} className="mt-1 space-y-0.5 px-1" role="group" aria-label={group.label}>
             <SidebarGroupContent>
               <SidebarMenu className="gap-0.5">
-                {modules.map(module => <ChannableNavItem key={module.id} module={module} isActive={activeRoute(module.route)} hasAccess={canAccess(module.id)} collapsed={collapsed} groupColor={color} isFavorite={favorites.isFavorite(module.id)} onNavigate={onNavigate} onFavoriteToggle={() => onFavoriteToggle(module.id)} subModules={module.subModules || []} isSubOpen={openSubMenus[module.id] || false} onSubToggle={() => onSubMenuToggle(module.id)} t={t} badgeCount={badgeCounts?.[module.id]} />)}
+                {modules.map(module => <ChannableNavItem key={module.id} module={module} isActive={activeRoute(module.route)} hasAccess={canAccess(module.id)} collapsed={collapsed} groupColor={color} isFavorite={favorites.isFavorite(module.id)} onNavigate={onNavigate} onPrefetch={onPrefetch} onFavoriteToggle={() => onFavoriteToggle(module.id)} subModules={module.subModules || []} isSubOpen={openSubMenus[module.id] || false} onSubToggle={() => onSubMenuToggle(module.id)} t={t} badgeCount={badgeCounts?.[module.id]} />)}
               </SidebarMenu>
             </SidebarGroupContent>
           </motion.div>}
