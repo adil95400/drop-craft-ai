@@ -221,7 +221,7 @@ export function useShipments(status?: string) {
         
         const { data, error } = await query;
         if (error) {
-          console.warn('Shipments query error:', error.message);
+          logger.warn(`Shipments query error: ${error.message}`, LOG_CTX);
           return [];
         }
         
