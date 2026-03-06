@@ -141,7 +141,7 @@ export class PublicationService {
       .order('created_at', { ascending: false })
 
     if (error) {
-      console.error('Error fetching published products:', error)
+      logger.warn('Error fetching published products', { ...LOG_CTX, action: 'getPublished', metadata: { error: error.message } })
       return []
     }
 
