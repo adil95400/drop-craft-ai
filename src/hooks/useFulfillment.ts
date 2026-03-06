@@ -92,7 +92,7 @@ export function useCarriers() {
           .order('name', { ascending: true });
         
         if (error) {
-          console.warn('Carriers table not available, using defaults:', error.message);
+          logger.warn(`Carriers table not available, using defaults: ${error.message}`, LOG_CTX);
           return defaultCarriers;
         }
         
