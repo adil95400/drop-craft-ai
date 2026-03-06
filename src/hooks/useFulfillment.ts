@@ -237,7 +237,7 @@ export function useShipments(status?: string) {
           updated_at: order.updated_at as string
         }));
       } catch (e) {
-        console.warn('Error fetching shipments');
+        logger.warn('Error fetching shipments', LOG_CTX);
         return [];
       }
     }
