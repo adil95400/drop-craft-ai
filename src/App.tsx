@@ -4,11 +4,12 @@
  * PERFORMANCE: Public pages (landing, SEO) load WITHOUT heavy auth/plan providers.
  * Only authenticated routes load Supabase, modals, widgets etc.
  */
-import { memo, useEffect, lazy, Suspense } from 'react';
+import React, { memo, useEffect, lazy, Suspense } from 'react';
 import { useLocation } from 'react-router-dom';
 import { Toaster } from '@/components/ui/toaster';
 import { Toaster as SonnerToaster } from '@/components/ui/sonner';
 import { ErrorBoundary } from '@/components/common/ErrorBoundary';
+import { ModalContextProvider } from '@/hooks/useModalHelpers';
 import { ThemeProvider } from 'next-themes';
 import { AppRoutes } from '@/routes';
 import { useAutoTheme } from '@/hooks/useAutoTheme';
