@@ -210,7 +210,7 @@ export class AmazonAdvancedConnector extends BaseConnector {
         supplierProductId: catalogItem.asin
       };
     } catch (error) {
-      console.error('Error converting Amazon product:', error);
+      logger.error('Error converting Amazon product', error instanceof Error ? error : undefined, { component: 'AmazonAdvancedConnector' });
       return null;
     }
   }
