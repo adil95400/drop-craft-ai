@@ -1,116 +1,145 @@
 /**
  * Application principale - Architecture simplifiée et modulaire
- * Routing délégué aux modules spécialisés pour une meilleure maintenance
  * 
- * PERFORMANCE: Heavy dependencies (supabase, framer-motion, i18n) are lazy loaded
- * to improve initial page load for public pages like the landing page.
+ * PERFORMANCE: Public pages (landing, SEO) load WITHOUT heavy auth/plan providers.
+ * Only authenticated routes load Supabase, modals, widgets etc.
  */
-import { memo, useEffect, lazy, Suspense } from 'react';
-import { usePageTracking } from '@/hooks/usePageTracking';
+import React, { memo, useEffect, lazy, Suspense } from 'react';
+import { useLocation } from 'react-router-dom';
 import { Toaster } from '@/components/ui/toaster';
 import { Toaster as SonnerToaster } from '@/components/ui/sonner';
 import { ErrorBoundary } from '@/components/common/ErrorBoundary';
 import { ThemeProvider } from 'next-themes';
-import { ModalContextProvider } from '@/hooks/useModalHelpers';
 import { AppRoutes } from '@/routes';
 import { useAutoTheme } from '@/hooks/useAutoTheme';
-import { usePerformanceMonitor } from '@/hooks/usePerformanceMonitor';
 import { OfflineIndicatorLite } from '@/components/offline/OfflineIndicatorLite';
-import { LightAuthProvider } from '@/contexts/LightAuthContext';
+import { LightAuthProvider, useLightAuth } from '@/contexts/LightAuthContext';
 
-// Lazy load auth provider (pulls in supabase ~30KB)
+// Lazy load heavy providers & widgets — only for authenticated users
 const UnifiedAuthProvider = lazy(() => 
   import('@/contexts/UnifiedAuthContext').then(m => ({ default: m.UnifiedAuthProvider }))
 );
-
-// Lazy load heavy components to reduce initial bundle
+const UnifiedProvider = lazy(() => import('@/components/unified/UnifiedProvider').then(m => ({ default: m.UnifiedProvider })));
+const LazyModalContextProvider = lazy(() => import('@/hooks/useModalHelpers').then(m => ({ default: m.ModalContextProvider })));
+const GlobalModals = lazy(() => import('@/components/GlobalModals').then(m => ({ default: m.GlobalModals })));
+const ModalManager = lazy(() => import('@/components/modals/ModalManager').then(m => ({ default: m.ModalManager })));
 const PWAInstallBanner = lazy(() => import('@/components/mobile/PWAInstallBanner').then(m => ({ default: m.PWAInstallBanner })));
-const FeedbackWidget = lazy(() => import('@/components/feedback/FeedbackWidget').then(m => ({ default: m.FeedbackWidget })));
 const UpdateNotification = lazy(() => import('@/components/pwa/UpdateNotification').then(m => ({ default: m.UpdateNotification })));
-const MobileGlobalOptimizer = lazy(() => import('@/components/mobile/MobileGlobalOptimizer').then(m => ({ default: m.MobileGlobalOptimizer })));
 const OnboardingTour = lazy(() => import('@/components/onboarding/OnboardingTour').then(m => ({ default: m.OnboardingTour })));
 const NotificationProvider = lazy(() => import('@/components/notifications/NotificationService').then(m => ({ default: m.NotificationProvider })));
 const GlobalAIAssistant = lazy(() => import('@/components/ai/GlobalAIAssistant').then(m => ({ default: m.GlobalAIAssistant })));
+const FeedbackWidget = lazy(() => import('@/components/feedback/FeedbackWidget').then(m => ({ default: m.FeedbackWidget })));
 
-// Lazy load modal systems (pulls in many dialog components with supabase/heavy deps)
-const GlobalModals = lazy(() => import('@/components/GlobalModals').then(m => ({ default: m.GlobalModals })));
-const ModalManager = lazy(() => import('@/components/modals/ModalManager').then(m => ({ default: m.ModalManager })));
-const UnifiedProvider = lazy(() => import('@/components/unified/UnifiedProvider').then(m => ({ default: m.UnifiedProvider })));
-
-// Initialize i18n lazily to reduce initial bundle
+// Initialize i18n lazily
 const initI18n = () => import('@/lib/i18n');
 
-const AppContent = memo(() => {
+// List of public route prefixes that DON'T need heavy providers
+const PUBLIC_PREFIXES = [
+  '/', '/auth', '/pricing', '/features', '/contact', '/faq', '/about',
+  '/privacy', '/terms', '/cgv', '/blog', '/documentation', '/docs',
+  '/changelog', '/status', '/testimonials', '/integrations',
+  '/logiciel-', '/alternative-', '/optimisation-', '/gestion-',
+  '/import-produits-', '/automatisation-', '/outil-pricing-',
+  '/analyse-boutique-', '/shopify-', '/shopopti-vs-', '/dropshipping-',
+  '/product-research-', '/how-to-', '/ai-tool-for-', '/payment/',
+  '/enterprise/observability', '/guides', '/academy', '/pwa-install',
+  '/store', '/pricing-plans',
+];
+
+function isPublicRoute(pathname: string): boolean {
+  if (pathname === '/') return true;
+  return PUBLIC_PREFIXES.some(prefix => prefix !== '/' && pathname.startsWith(prefix));
+}
+
+/**
+ * Lightweight shell for public pages — no Supabase, no modals, no widgets
+ */
+const PublicShell = memo(({ children }: { children: React.ReactNode }) => {
   useAutoTheme();
-  usePerformanceMonitor();
-  usePageTracking();
-  
-  useEffect(() => {
-    // Initialize i18n lazily
-    initI18n();
-  }, []);
-  
+  useEffect(() => { initI18n(); }, []);
+
   return (
-    <Suspense fallback={<div className="min-h-screen" />}>
-      <MobileGlobalOptimizer>
-        {/* Skip link for keyboard navigation (WCAG 2.4.1) */}
-        <a href="#main-content" className="skip-link">
-          Aller au contenu principal
-        </a>
-        
-        {/* ARIA live region for dynamic announcements (WCAG 4.1.3) */}
-        <div id="a11y-announcer" aria-live="polite" aria-atomic="true" className="sr-only" role="status" />
-        
-        {/* Lightweight offline status indicator (no framer-motion) */}
-        {/* Analytics tracking is handled by usePageTracking + initAnalytics */}
-        <OfflineIndicatorLite />
-        
-        <div className="pb-20 md:pb-0">
-          <Suspense fallback={null}>
-            <NotificationProvider>
-              <AppRoutes />
-            </NotificationProvider>
-          </Suspense>
-        </div>
-        
+    <>
+      <a href="#main-content" className="skip-link">Aller au contenu principal</a>
+      <OfflineIndicatorLite />
+      {children}
+      <Toaster />
+      <SonnerToaster position="top-right" />
+    </>
+  );
+});
+PublicShell.displayName = 'PublicShell';
+
+/**
+ * Full shell for authenticated pages — loads all heavy providers & widgets
+ */
+const AuthenticatedShell = memo(({ children }: { children: React.ReactNode }) => {
+  useAutoTheme();
+  useEffect(() => { initI18n(); }, []);
+
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-background" />}>
+      <UnifiedAuthProvider>
         <Suspense fallback={null}>
-          <GlobalModals />
+          <UnifiedProvider>
+            <Suspense fallback={null}>
+              <LazyModalContextProvider>
+                <a href="#main-content" className="skip-link">Aller au contenu principal</a>
+                <div id="a11y-announcer" aria-live="polite" aria-atomic="true" className="sr-only" role="status" />
+                <OfflineIndicatorLite />
+                
+                <div className="pb-20 md:pb-0">
+                  <Suspense fallback={null}>
+                    <NotificationProvider>
+                      {children}
+                    </NotificationProvider>
+                  </Suspense>
+                </div>
+                
+                <Suspense fallback={null}><GlobalModals /></Suspense>
+                <Suspense fallback={null}><ModalManager /></Suspense>
+                <Toaster />
+                <SonnerToaster position="top-right" />
+                <Suspense fallback={null}><PWAInstallBanner /></Suspense>
+                <Suspense fallback={null}><UpdateNotification /></Suspense>
+                <Suspense fallback={null}><OnboardingTour /></Suspense>
+                <Suspense fallback={null}><FeedbackWidget /></Suspense>
+                <Suspense fallback={null}><GlobalAIAssistant /></Suspense>
+              </LazyModalContextProvider>
+            </Suspense>
+          </UnifiedProvider>
         </Suspense>
-        <Suspense fallback={null}>
-          <ModalManager />
-        </Suspense>
-        <Toaster />
-        <SonnerToaster position="top-right" />
-        <Suspense fallback={null}>
-          <PWAInstallBanner />
-        </Suspense>
-        
-        {/* Notification de mise à jour PWA */}
-        <Suspense fallback={null}>
-          <UpdateNotification />
-        </Suspense>
-        
-        {/* Onboarding tour for new users */}
-        <Suspense fallback={null}>
-          <OnboardingTour />
-        </Suspense>
-        
-        {/* Feedback widget for continuous user feedback */}
-        <Suspense fallback={null}>
-          <FeedbackWidget />
-        </Suspense>
-        
-        {/* Global AI Assistant with Lovable AI */}
-        <Suspense fallback={null}>
-          <GlobalAIAssistant />
-        </Suspense>
-        
-      </MobileGlobalOptimizer>
+      </UnifiedAuthProvider>
     </Suspense>
   );
 });
+AuthenticatedShell.displayName = 'AuthenticatedShell';
 
-AppContent.displayName = 'AppContent';
+/**
+ * Smart router that picks the right shell based on the current route
+ */
+const SmartShell = memo(() => {
+  const location = useLocation();
+  const { isAuthenticated } = useLightAuth();
+  const isPublic = isPublicRoute(location.pathname);
+  
+  // Public route AND not authenticated → lightweight shell
+  if (isPublic && !isAuthenticated) {
+    return (
+      <PublicShell>
+        <AppRoutes />
+      </PublicShell>
+    );
+  }
+  
+  // Authenticated or protected route → full shell
+  return (
+    <AuthenticatedShell>
+      <AppRoutes />
+    </AuthenticatedShell>
+  );
+});
+SmartShell.displayName = 'SmartShell';
 
 function App() {
   return (
@@ -121,20 +150,8 @@ function App() {
       disableTransitionOnChange
     >
       <ErrorBoundary>
-        {/* LightAuthProvider provides quick session check without loading supabase */}
         <LightAuthProvider>
-          {/* UnifiedAuthProvider lazy loaded - only loads supabase when needed */}
-          <Suspense fallback={<div className="min-h-screen bg-background" />}>
-            <UnifiedAuthProvider>
-              <Suspense fallback={null}>
-                <UnifiedProvider>
-                  <ModalContextProvider>
-                    <AppContent />
-                  </ModalContextProvider>
-                </UnifiedProvider>
-              </Suspense>
-            </UnifiedAuthProvider>
-          </Suspense>
+          <SmartShell />
         </LightAuthProvider>
       </ErrorBoundary>
     </ThemeProvider>
