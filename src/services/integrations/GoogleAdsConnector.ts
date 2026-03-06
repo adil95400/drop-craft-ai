@@ -200,7 +200,7 @@ export class GoogleAdsConnector {
       const data = await response.json()
       return data.results?.[0]?.resourceName?.split('/').pop() || ''
     } catch (error) {
-      console.error('Failed to create Google Ads campaign:', error)
+      logger.error('Failed to create Google Ads campaign', error instanceof Error ? error : undefined, LOG_CTX)
       throw new Error('Failed to create campaign in Google Ads')
     }
   }
