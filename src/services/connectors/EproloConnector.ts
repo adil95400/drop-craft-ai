@@ -100,7 +100,7 @@ export class EproloConnector extends BaseConnector {
 
       return this.transformProduct(data.data);
     } catch (error) {
-      console.error('Error fetching Eprolo product:', error);
+      logger.error('Error fetching Eprolo product', error instanceof Error ? error : undefined, LOG_CTX);
       return null;
     }
   }
