@@ -1,5 +1,8 @@
 import { supabase } from '@/integrations/supabase/client'
+import { logger } from '@/utils/logger'
 import type { UnifiedProduct } from './ProductsUnifiedService'
+
+const LOG_CTX = { component: 'ProductHistoryService' }
 
 export interface ProductHistoryEntry {
   id: string
