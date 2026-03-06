@@ -187,7 +187,7 @@ export class CatalogWatcherService {
       }
 
     } catch (error) {
-      console.error('[CatalogWatcher] Error watching product change:', error)
+      logger.error('Error watching product change', error instanceof Error ? error : undefined, LOG_CTX)
     }
   }
 
