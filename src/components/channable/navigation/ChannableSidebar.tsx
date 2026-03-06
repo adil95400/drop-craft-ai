@@ -256,6 +256,7 @@ const ChannableNavGroup = memo(({
   canAccess,
   favorites,
   onNavigate,
+  onPrefetch,
   onFavoriteToggle,
   openSubMenus,
   onSubMenuToggle,
@@ -274,6 +275,7 @@ const ChannableNavGroup = memo(({
     isFavorite: (id: string) => boolean;
   };
   onNavigate: (route: string) => void;
+  onPrefetch?: (route: string) => void;
   onFavoriteToggle: (id: string) => void;
   openSubMenus: Record<string, boolean>;
   onSubMenuToggle: (id: string) => void;
