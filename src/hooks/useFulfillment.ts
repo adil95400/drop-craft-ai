@@ -98,7 +98,7 @@ export function useCarriers() {
         
         return data && data.length > 0 ? (data as Carrier[]) : defaultCarriers;
       } catch (e) {
-        console.warn('Error fetching carriers, using defaults');
+        logger.warn('Error fetching carriers, using defaults', LOG_CTX);
         return defaultCarriers;
       }
     }
