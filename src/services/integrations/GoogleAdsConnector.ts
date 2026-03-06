@@ -58,7 +58,7 @@ export class GoogleAdsConnector {
       const data = await response.json()
       return data.access_token
     } catch (error) {
-      console.error('Google Ads authentication failed:', error)
+      logger.error('Google Ads authentication failed', error instanceof Error ? error : undefined, LOG_CTX)
       throw new Error('Failed to authenticate with Google Ads')
     }
   }
