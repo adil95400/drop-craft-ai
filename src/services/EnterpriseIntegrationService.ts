@@ -93,7 +93,7 @@ export class EnterpriseIntegrationService {
       if (error) throw error;
       return data;
     } catch (error) {
-      console.error('Error testing connection:', error);
+      logger.error('Error testing connection', error instanceof Error ? error : undefined, LOG_CTX);
       throw error;
     }
   }
