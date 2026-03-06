@@ -167,7 +167,7 @@ export class EnterpriseIntegrationService {
       if (error) throw error;
       return data;
     } catch (error) {
-      console.error('Error creating integration:', error);
+      logger.error('Error creating integration', error instanceof Error ? error : undefined, LOG_CTX);
       throw error;
     }
   }
