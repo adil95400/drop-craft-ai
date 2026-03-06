@@ -50,7 +50,7 @@ export abstract class BaseConnector {
   
   // Optional methods with default implementations
   async fetchOrders(options?: any): Promise<ConnectorOrder[]> {
-    console.warn(`fetchOrders not implemented for ${this.getSupplierName()}`);
+    logger.warn(`fetchOrders not implemented for ${this.getSupplierName()}`, { component: this.getSupplierName() });
     return [];
   }
   
