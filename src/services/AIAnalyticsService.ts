@@ -196,7 +196,7 @@ export class AIAnalyticsService {
         }
       })
     } catch (error) {
-      console.error('Error fetching optimal margins:', error)
+      logger.error('Error fetching optimal margins', error instanceof Error ? error : undefined, LOG_CTX)
       return []
     }
   }
