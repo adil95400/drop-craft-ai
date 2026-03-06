@@ -72,7 +72,7 @@ export class FacebookAdsConnector {
       await this.makeRequest('me')
       return true
     } catch (error) {
-      console.error('Facebook Ads connection test failed:', error)
+      logger.error('Facebook Ads connection test failed', error instanceof Error ? error : undefined, LOG_CTX)
       return false
     }
   }
