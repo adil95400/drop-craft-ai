@@ -138,7 +138,7 @@ export function AppRoutes() {
           {/* Public pages */}
           <Route path="/guides/getting-started" element={<GettingStartedPage />} />
           <Route path="/academy" element={<AcademyHomePage />} />
-          <Route path="/academy/course/:id" element={<AcademyHomePage />} />
+          <Route path="/academy/course/:id" element={<AcademyCoursePage />} />
           <Route path="/pwa-install" element={<PWAInstallPage />} />
 
           {/* ═══════════════════════════════════════════════════════════════
