@@ -179,7 +179,7 @@ export class ERPConnector {
         }
       });
     } catch (error) {
-      console.error('Failed to start realtime sync:', error);
+      logger.error('Failed to start realtime sync', error instanceof Error ? error : undefined, LOG_CTX);
       throw error;
     }
   }
