@@ -201,7 +201,7 @@ class ProductScraperService {
         };
       }
 
-      console.log('✅ Product imported to catalog:', data.id);
+      logger.info('Product imported to catalog', { ...LOG_CTX, action: 'importToCatalog', metadata: { productId: data.id } });
 
       // Log activity
       await supabase.from('activity_logs').insert({
