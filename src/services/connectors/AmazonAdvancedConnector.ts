@@ -108,7 +108,7 @@ export class AmazonAdvancedConnector extends BaseConnector {
             products.push(product);
           }
         } catch (inventoryError) {
-          console.warn(`Failed to fetch inventory for SKU ${item.sku}:`, inventoryError);
+          logger.warn(`Failed to fetch inventory for SKU ${item.sku}`, { component: 'AmazonAdvancedConnector' });
         }
       }
 
