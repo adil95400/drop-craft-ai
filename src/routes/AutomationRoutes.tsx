@@ -29,6 +29,7 @@ const ProductRecommendationsPage = lazy(() => import('@/pages/ProductRecommendat
 const ContentGenerationPage = lazy(() => import('@/pages/ContentGenerationPage'));
 const WorkflowStudioPage = lazy(() => import('@/pages/automation/WorkflowStudioPage'));
 const WorkflowHistoryPage = lazy(() => import('@/pages/automation/WorkflowHistoryPage'));
+const WorkflowBuilderPage = lazy(() => import('@/pages/automation/WorkflowBuilderPage'));
 
 // Price Rules - centralized pricing
 const PriceRulesPage = lazy(() => import('@/pages/products/PriceRulesPage'));
