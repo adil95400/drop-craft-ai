@@ -4,6 +4,9 @@
  */
 import { supabase } from '@/integrations/supabase/client';
 import { getProductCount, getProductList, getProductStats } from '@/services/api/productHelpers';
+import { logger } from '@/utils/logger';
+
+const LOG_CTX = { component: 'AdminService' };
 
 export interface AdminActionResult {
   success: boolean;
