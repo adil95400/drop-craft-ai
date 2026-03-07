@@ -1,14 +1,6 @@
-import { render } from '@testing-library/react'
+import { render, screen, fireEvent } from '@testing-library/react'
 import { describe, it, expect, vi } from 'vitest'
-import '@testing-library/jest-dom'
 import { Button } from '../ui/button'
-
-// Mock fireEvent and screen for testing
-const fireEvent = { click: vi.fn() };
-const screen = { 
-  getByRole: vi.fn(), 
-  getByText: vi.fn() 
-};
 
 describe('Button', () => {
   it('renders correctly', () => {
@@ -20,24 +12,17 @@ describe('Button', () => {
   it('handles click events', () => {
     const handleClick = vi.fn()
     render(<Button onClick={handleClick}>Click me</Button>)
-    
-    const button = screen.getByRole('button')
-    fireEvent.click(button)
-    
+    fireEvent.click(screen.getByRole('button'))
     expect(handleClick).toHaveBeenCalledTimes(1)
   })
 
   it('can be disabled', () => {
     render(<Button disabled>Disabled Button</Button>)
-    
-    const button = screen.getByRole('button')
-    expect(button).toBeDisabled()
+    expect(screen.getByRole('button')).toBeDisabled()
   })
 
   it('applies variant styles correctly', () => {
     render(<Button variant="destructive">Delete</Button>)
-    
-    const button = screen.getByRole('button')
-    expect(button).toHaveClass('bg-destructive')
+    expect(screen.getByRole('button')).toHaveClass('bg-destructive')
   })
 })
