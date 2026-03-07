@@ -67,8 +67,8 @@ export class PerformanceService {
   preloadComponent(importFn: () => Promise<any>, componentName: string): void {
     const preload = () => {
       importFn()
-        .then(() => console.log(`[Preload] ${componentName} preloaded`))
-        .catch((error) => console.error(`[Preload] Failed to preload ${componentName}:`, error));
+        .then(() => { /* preloaded */ })
+        .catch((_error) => { /* preload failed silently */ });
     };
 
     if ('requestIdleCallback' in window) {
