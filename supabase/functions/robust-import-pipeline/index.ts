@@ -8,10 +8,7 @@ import { z } from 'https://deno.land/x/zod@v3.22.4/mod.ts'
 const supabaseUrl = Deno.env.get('SUPABASE_URL')!
 const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-}
+import { getSecureCorsHeaders, handleCorsPreflightSecure } from '../_shared/secure-cors.ts'
 
 // Schemas
 const ImportItemSchema = z.object({
@@ -407,8 +404,9 @@ async function getItems(supabase: any, userId: string, jobId: string, page: numb
 
 // ── Main handler ─────────────────────────────────────────────────────────────
 Deno.serve(async (req) => {
+  const corsHeaders = getSecureCorsHeaders(req)
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders })
+    return handleCorsPreflightSecure(req)
   }
 
   try {
