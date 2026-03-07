@@ -50,7 +50,7 @@ class MobileIntegrationService {
       await this.setupOfflineCapabilities();
       await this.initializeNativeFeatures();
       
-      console.log('Mobile Integration Service initialized', this.device);
+      // Mobile Integration Service initialized
     } catch (error) {
       console.error('Error initializing Mobile Integration Service:', error);
     }
