@@ -43,7 +43,7 @@ export class MobileService {
 
       // Listen for push notifications
       PushNotifications.addListener('pushNotificationReceived', (notification) => {
-        console.log('Push received: ', notification);
+        // Push notification received
         this.handleNotificationReceived(notification);
       });
 
