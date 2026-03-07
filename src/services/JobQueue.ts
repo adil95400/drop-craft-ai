@@ -197,7 +197,7 @@ export class JobQueueManager {
       await this.simulateJobExecution(job);
 
     } catch (error) {
-      console.error(`Job ${job.id} failed:`, error);
+      logger.error(`Job ${job.id} failed`, error instanceof Error ? error : undefined, { ...LOG_CTX, action: 'executeJob' });
       job.status = 'failed';
       job.errors.push(error.message);
       job.completedAt = new Date();
