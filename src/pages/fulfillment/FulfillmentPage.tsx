@@ -42,6 +42,7 @@ import { TrackingDashboardContent } from '@/components/fulfillment/TrackingDashb
 import { NotificationsContent } from '@/components/fulfillment/NotificationsContent';
 import { FulfillmentProDashboard } from '@/components/fulfillment/FulfillmentProDashboard';
 import { FulfillmentOrdersEnhanced } from '@/components/fulfillment/FulfillmentOrdersEnhanced';
+import { PickingPackingWorkflow } from '@/components/fulfillment/PickingPackingWorkflow';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
