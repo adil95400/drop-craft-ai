@@ -171,7 +171,7 @@ export class PlanService {
         users: 1,
       };
     } catch (error) {
-      console.error('Failed to refresh usage:', error);
+      logger.error('Failed to refresh usage', error instanceof Error ? error : undefined, { ...LOG_CTX, action: 'refreshUsage' });
       this.usage = {
         products: 0,
         stores: 0,
