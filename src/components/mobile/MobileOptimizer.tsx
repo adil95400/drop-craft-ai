@@ -77,7 +77,7 @@ export function MobileOptimizer() {
     try {
       // Simulate native device info for now
       setDeviceInfo({
-        platform: Capacitor.getPlatform(),
+        platform: getCapacitorPlatform(),
         model: 'Mobile Device',
         osVersion: '15.0',
         manufacturer: 'Unknown',
