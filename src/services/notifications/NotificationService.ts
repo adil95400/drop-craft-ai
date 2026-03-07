@@ -38,7 +38,7 @@ class NotificationService {
       // Configurer les gestionnaires d'événements
       this.setupEventHandlers();
       
-      console.log('Notification Service initialized');
+      // Notification Service initialized
     } catch (error) {
       console.error('Error initializing Notification Service:', error);
     }
