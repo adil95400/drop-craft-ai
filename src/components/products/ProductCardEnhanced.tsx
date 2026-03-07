@@ -46,7 +46,8 @@ export function ProductCardEnhanced({
   
   const { data: comparisonData, isLoading: isLoadingComparison } = useSupplierComparison(
     product.id, 
-    userId
+    userId,
+    product.title || product.name
   )
   const { trackView } = useProductTracking()
 
