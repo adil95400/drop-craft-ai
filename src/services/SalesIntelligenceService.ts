@@ -131,7 +131,7 @@ export class SalesIntelligenceService {
 
       if (error) throw error;
 
-      console.log('[SalesIntelligenceService] Forecast deleted successfully');
+      logger.info('Forecast deleted successfully');
     } catch (error) {
       console.error('[SalesIntelligenceService] Error deleting forecast:', error);
       throw error;

@@ -495,7 +495,7 @@ class SupplierHubService {
   }
 
   async scheduleSync(connectorId: string, schedule: any): Promise<boolean> {
-    console.log(`Scheduling sync for ${connectorId}`, schedule);
+    // Sync scheduled
     return true;
   }
 

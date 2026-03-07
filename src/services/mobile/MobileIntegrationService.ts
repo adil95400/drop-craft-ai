@@ -205,7 +205,7 @@ class MobileIntegrationService {
       if (!('credentials' in navigator)) return;
 
       // Vérifier si des credentials existent déjà
-      console.log('Biometric authentication available');
+      // Biometric authentication available
       
       // Cette fonctionnalité nécessiterait une configuration plus avancée
       // avec des clés publiques/privées côté serveur

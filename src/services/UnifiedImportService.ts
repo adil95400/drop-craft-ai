@@ -248,7 +248,7 @@ class UnifiedImportService {
     if (interval) {
       clearInterval(interval)
       this.pollingIntervals.delete(jobId)
-      console.log('[UnifiedImport] Stopped monitoring', { job_id: jobId })
+      logger.debug('Stopped monitoring', { job_id: jobId })
     }
   }
 

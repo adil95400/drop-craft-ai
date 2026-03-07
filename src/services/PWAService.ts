@@ -68,7 +68,7 @@ export class PWAService {
         userVisibleOnly: true
       });
 
-      console.log('✅ Push subscription:', subscription);
+      // Push subscription active
       return subscription;
     } catch (error) {
       console.error('❌ Failed to subscribe to push notifications:', error);

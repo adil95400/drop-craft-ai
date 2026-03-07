@@ -34,7 +34,7 @@ export class DeduplicationService {
     // Résoudre les doublons
     const uniqueProducts = await this.resolveDuplicates(products, duplicateGroups)
 
-    console.log(`Deduplication completed: ${products.length} -> ${uniqueProducts.length} products`)
+    logger.info(`Deduplication completed: ${products.length} -> ${uniqueProducts.length} products`)
     
     return uniqueProducts
   }
