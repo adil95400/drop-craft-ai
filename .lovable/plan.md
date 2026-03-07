@@ -252,4 +252,4 @@ Transformer DropCraft AI en plateforme SaaS leader du dropshipping automatisé a
 
 ---
 
-*Dernière mise à jour : 6 mars 2026*
+*Dernière mise à jour : 7 mars 2026*
