@@ -103,9 +103,6 @@ export class PerformanceTracker {
 
   mark(name: string): void {
     this.marks.set(name, performance.now());
-    if (import.meta.env.DEV) {
-      console.log(`📍 Mark: ${name}`);
-    }
   }
 
   measure(name: string, startMark: string, endMark?: string): number {
