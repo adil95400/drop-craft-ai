@@ -57,7 +57,7 @@ export function useRealProductResearch(filters: RealProductFilters) {
   const searchQuery = useQuery({
     queryKey: ['real-product-research', filters],
     queryFn: async (): Promise<WinnerProduct[]> => {
-      console.log('Fetching real products with filters:', filters);
+      logger.debug('Fetching real products', { filters });
       
       // Call the winners-aggregator for comprehensive results
       const { data, error } = await supabase.functions.invoke('winners-aggregator', {
