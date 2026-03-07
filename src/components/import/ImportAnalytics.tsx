@@ -374,8 +374,8 @@ export const ImportAnalytics = () => {
                     <div key={cat.category} className="flex items-center justify-between">
                       <span>{cat.category}</span>
                       <div className="flex items-center gap-2">
-                        <TrendingUp className="w-4 h-4 text-green-500" />
-                        <span className="text-sm text-green-600">+{Math.floor(Math.random() * 20 + 5)}%</span>
+                        <TrendingUp className="w-4 h-4 text-success" />
+                        <span className="text-sm text-success">{cat.count} produits</span>
                       </div>
                     </div>
                   ))}
