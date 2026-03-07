@@ -334,7 +334,6 @@ export class MultiTenantService {
         if (value !== undefined && value !== null) {
           query = query.eq(key, value as any);
         }
-        }
       }
 
       const { data, error } = await query;
