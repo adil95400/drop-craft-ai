@@ -388,7 +388,7 @@ export const RealtimeAIAssistant: React.FC = () => {
 
   // Disconnect WebSocket
   const disconnectWebSocket = useCallback(() => {
-    console.log('🔌 Disconnecting from AI assistant...')
+    // Disconnecting from AI assistant
     
     if (audioRecorderRef.current) {
       audioRecorderRef.current.stop()
