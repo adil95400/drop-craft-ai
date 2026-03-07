@@ -29,8 +29,13 @@ const QuotaManagerPage = lazy(() => import('@/pages/QuotaManagerPage'));
 const MultiChannelManagementPage = lazy(() => import('@/pages/MultiChannelManagementPage'));
 const ComplianceCenter = lazy(() => import('@/pages/ComplianceCenter'));
 
-// Subscription - Use consolidated SubscriptionDashboard
+// Subscription
 const SubscriptionDashboard = lazy(() => import('@/pages/SubscriptionDashboard'));
+
+// Phase 6 - Production Readiness
+const ObservabilityDashboard = lazy(() => import('@/pages/ObservabilityDashboard'));
+const PublicApiDashboard = lazy(() => import('@/pages/PublicApiDashboard'));
+const DeploymentHealthPage = lazy(() => import('@/pages/DeploymentHealthPage'));
 
 export function EnterpriseRoutes() {
   return (
@@ -45,11 +50,18 @@ export function EnterpriseRoutes() {
       {/* Monitoring & Observability */}
       <Route path="monitoring" element={<PerformanceMonitoringPage />} />
       <Route path="monitoring/advanced" element={<AdvancedMonitoringPage />} />
+      <Route path="observability" element={<ObservabilityDashboard />} />
       
       {/* Platform */}
       <Route path="platform" element={<PlatformManagementPage />} />
       
-      {/* System Management - status redirects to public /status */}
+      {/* Public API */}
+      <Route path="api" element={<PublicApiDashboard />} />
+      
+      {/* Deployment & Infrastructure */}
+      <Route path="deployment" element={<DeploymentHealthPage />} />
+      
+      {/* System Management */}
       <Route path="status" element={<Navigate to="/status" replace />} />
       <Route path="tax" element={<TaxManagementPage />} />
       <Route path="team" element={<CollaborationPage />} />

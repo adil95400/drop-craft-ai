@@ -114,6 +114,9 @@ export const ROUTES_REGISTRY: RouteConfig[] = [
 
   // ===== ENTERPRISE =====
   { path: '/enterprise', protected: true, category: 'enterprise', description: 'Enterprise', implemented: true },
+  { path: '/enterprise/observability', protected: true, category: 'enterprise', description: 'Observabilité & Monitoring', implemented: true },
+  { path: '/enterprise/api', protected: true, category: 'enterprise', description: 'API Publique', implemented: true },
+  { path: '/enterprise/deployment', protected: true, category: 'enterprise', description: 'Déploiement & Infrastructure', implemented: true },
 
   // ===== ADMIN =====
   { path: '/admin', protected: true, adminOnly: true, category: 'enterprise', description: 'Administration', implemented: true },
