@@ -461,7 +461,7 @@ class SupplierHubService {
     // Simulate API call
     return new Promise((resolve) => {
       setTimeout(() => {
-        console.log(`Connecting to ${connectorId} with credentials:`, credentials);
+        // Connecting to connector
         resolve(Math.random() > 0.1); // 90% success rate
       }, 1000);
     });
