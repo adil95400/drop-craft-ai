@@ -94,7 +94,7 @@ export class StockSyncService {
 
       if (suppliersError) throw suppliersError;
 
-      console.log(`📦 Syncing from ${suppliers?.length || 0} suppliers`);
+      // Syncing from suppliers
 
       for (const supplier of suppliers || []) {
         try {
