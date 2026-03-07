@@ -429,9 +429,9 @@ function ProductCard({ product, onImport, isImporting }: {
 
         {/* Actions */}
         <div className="flex gap-2 pt-2">
-          <Button size="sm" className="flex-1" onClick={onImport}>
+          <Button size="sm" className="flex-1" onClick={onImport} disabled={isImporting}>
             <ShoppingCart className="h-4 w-4 mr-2" />
-            Importer
+            {isImporting ? 'Import...' : 'Importer'}
           </Button>
           <Button variant="outline" size="sm">
             <Eye className="h-4 w-4" />
