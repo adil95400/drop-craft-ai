@@ -1,13 +1,18 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
-// Mock supabase
-const mockListFactors = vi.fn()
-const mockEnroll = vi.fn()
-const mockChallengeAndVerify = vi.fn()
-const mockUnenroll = vi.fn()
-const mockChallenge = vi.fn()
-const mockVerify = vi.fn()
-const mockGetAAL = vi.fn()
+// Mock supabase - use vi.hoisted to avoid TDZ issues
+const {
+  mockListFactors, mockEnroll, mockChallengeAndVerify,
+  mockUnenroll, mockChallenge, mockVerify, mockGetAAL
+} = vi.hoisted(() => ({
+  mockListFactors: vi.fn(),
+  mockEnroll: vi.fn(),
+  mockChallengeAndVerify: vi.fn(),
+  mockUnenroll: vi.fn(),
+  mockChallenge: vi.fn(),
+  mockVerify: vi.fn(),
+  mockGetAAL: vi.fn(),
+}))
 
 vi.mock('@/integrations/supabase/client', () => ({
   supabase: {
