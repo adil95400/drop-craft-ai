@@ -94,8 +94,8 @@ const CoreSyncDashboard: React.FC = () => {
 
   const handleManualSync = async (configId: string) => {
     try {
-      const mockUserId = '123e4567-e89b-12d3-a456-426614174000';
-      await syncEngine.triggerManualSync(configId, mockUserId);
+      if (!user?.id) return;
+      await syncEngine.triggerManualSync(configId, user.id);
       toast({
         title: "Sync Started",
         description: "Manual sync has been triggered",
