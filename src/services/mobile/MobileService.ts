@@ -49,7 +49,7 @@ export class MobileService {
 
       // Listen for notification actions
       PushNotifications.addListener('pushNotificationActionPerformed', (action) => {
-        console.log('Push action performed: ', action);
+        // Push action performed
         this.handleNotificationAction(action);
       });
     } else {
