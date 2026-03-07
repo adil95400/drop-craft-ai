@@ -58,12 +58,7 @@ export class PerformanceService {
    */
   private trackComponentLoad(componentName: string, loadTime: number): void {
     this.componentLoadTimes.set(componentName, loadTime);
-    
-    console.log(`[Performance] ${componentName} loaded in ${loadTime.toFixed(2)}ms`);
-    
-    if (loadTime > 1000) {
-      console.warn(`[Performance] ${componentName} took ${loadTime.toFixed(2)}ms to load (>1s)`);
-    }
+    // Performance data tracked internally
   }
 
   /**
