@@ -21,6 +21,7 @@ import { socialMediaAnalysisService } from '@/services/SocialMediaAnalysisServic
 export function WinningProductsMarketplace() {
   const [products, setProducts] = useState<WinningProductIntelligence[]>([])
   const [loading, setLoading] = useState(true)
+  const [importingId, setImportingId] = useState<string | null>(null)
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedCategory, setSelectedCategory] = useState<string>('')
   const [priceRange, setPriceRange] = useState([0, 1000])
@@ -28,6 +29,7 @@ export function WinningProductsMarketplace() {
   const [sortBy, setSortBy] = useState('ai_score')
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
   const { toast } = useToast()
+  const { user } = useAuth()
 
   const categories = [
     'Tech & Electronics', 'Fashion & Beauty', 'Home & Garden', 
