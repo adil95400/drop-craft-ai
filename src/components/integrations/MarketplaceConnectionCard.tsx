@@ -468,4 +468,4 @@ export function MarketplaceConnectionCard({ platform }: MarketplaceConnectionCar
   );
 }
 
-export { MARKETPLACE_CONFIGS };
+// MARKETPLACE_CONFIGS is already exported at declaration
