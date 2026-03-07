@@ -134,7 +134,7 @@ class AudioQueue implements AudioQueueClass {
     const audioData = this.queue.shift()!
 
     try {
-      console.log('🎵 Playing audio chunk, size:', audioData.length)
+      // Playing audio chunk
       const wavData = this.createWavFromPCM(audioData)
       // Convert ArrayBufferLike to ArrayBuffer for decodeAudioData
       const audioBuffer = await this.audioContext.decodeAudioData(
