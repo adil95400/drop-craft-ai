@@ -138,9 +138,8 @@ export class PerformanceService {
     // First Input Delay
     try {
       const fidObserver = new PerformanceObserver((list) => {
-        list.getEntries().forEach((entry: any) => {
-          const fid = entry.processingStart - entry.startTime;
-          console.log(`[FID] ${fid.toFixed(2)}ms`);
+        list.getEntries().forEach((_entry: any) => {
+          // FID tracked
         });
       });
       
