@@ -3,6 +3,7 @@
  * Migré vers ChannablePageWrapper pour conformité Design System
  */
 import { useParams, useNavigate } from 'react-router-dom';
+import { useAutoFulfillment } from '@/hooks/useAutoFulfillment';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Helmet } from 'react-helmet-async';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -25,6 +26,7 @@ export default function OrderDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const { processOrder, isProcessingOrder } = useAutoFulfillment();
 
   const { data: order, isLoading } = useQuery({
     queryKey: ['order', id],
@@ -173,6 +175,16 @@ export default function OrderDetail() {
               <FileText className="mr-2 h-4 w-4" />
               Étiquette
             </Button>
+            {order.status === 'pending' && (
+              <Button
+                size="sm"
+                onClick={() => id && processOrder(id)}
+                disabled={isProcessingOrder}
+              >
+                <Truck className="mr-2 h-4 w-4" />
+                Auto-Fulfill
+              </Button>
+            )}
           </>
         }
       >

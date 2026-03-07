@@ -1,18 +1,62 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { useAutoFulfillment } from '@/hooks/useAutoFulfillment';
-import { Package, TrendingUp, Clock, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
+import { Package, TrendingUp, Clock, CheckCircle, XCircle, AlertCircle, RefreshCw, Play, Upload } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
 
 export function FulfillmentDashboard() {
-  const { stats, isLoadingStats } = useAutoFulfillment();
+  const {
+    stats,
+    isLoadingStats,
+    processPending,
+    isProcessingPending,
+    retryFailed,
+    isRetrying,
+    syncTracking,
+    isSyncingTracking,
+  } = useAutoFulfillment();
 
   if (isLoadingStats) {
     return <div className="p-4 text-center text-muted-foreground">Chargement...</div>;
   }
 
+  const bySupplier = stats?.bySupplier || {};
+  const supplierEntries = Object.entries(bySupplier);
+  const totalSupplierOrders = supplierEntries.reduce((s, [, c]) => s + (c as number), 0) || 1;
+
   return (
     <div className="space-y-4 md:space-y-6">
-      {/* Stats Grid - 2 cols on mobile, 4 on desktop */}
+      {/* Action Buttons */}
+      <div className="flex flex-wrap gap-2">
+        <Button
+          size="sm"
+          onClick={() => processPending()}
+          disabled={isProcessingPending || (stats?.pendingOrders || 0) === 0}
+        >
+          <Play className="w-4 h-4 mr-2" />
+          Traiter en attente ({stats?.pendingOrders || 0})
+        </Button>
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={() => retryFailed(undefined)}
+          disabled={isRetrying || (stats?.failed || 0) === 0}
+        >
+          <RefreshCw className="w-4 h-4 mr-2" />
+          Relancer échouées ({stats?.failed || 0})
+        </Button>
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={() => syncTracking()}
+          disabled={isSyncingTracking || (stats?.unsyncedTracking || 0) === 0}
+        >
+          <Upload className="w-4 h-4 mr-2" />
+          Sync tracking ({stats?.unsyncedTracking || 0})
+        </Button>
+      </div>
+
+      {/* Stats Grid */}
       <div className="grid grid-cols-2 gap-3 md:gap-4 lg:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 p-3 md:p-6 pb-2">
@@ -23,9 +67,7 @@ export function FulfillmentDashboard() {
           </CardHeader>
           <CardContent className="p-3 md:p-6 pt-0">
             <div className="text-xl md:text-2xl font-bold">{stats?.todayOrders || 0}</div>
-            <p className="text-[10px] md:text-xs text-muted-foreground">
-              Traitement auto
-            </p>
+            <p className="text-[10px] md:text-xs text-muted-foreground">Traitement auto</p>
           </CardContent>
         </Card>
 
@@ -46,10 +88,8 @@ export function FulfillmentDashboard() {
             <Clock className="h-4 w-4 text-muted-foreground shrink-0" />
           </CardHeader>
           <CardContent className="p-3 md:p-6 pt-0">
-            <div className="text-xl md:text-2xl font-bold">{stats?.avgProcessingTime || 0}s</div>
-            <p className="text-[10px] md:text-xs text-muted-foreground truncate">
-              Traitement auto
-            </p>
+            <div className="text-xl md:text-2xl font-bold">{stats?.avgProcessingTime || 0} min</div>
+            <p className="text-[10px] md:text-xs text-muted-foreground truncate">Traitement auto</p>
           </CardContent>
         </Card>
 
@@ -60,14 +100,12 @@ export function FulfillmentDashboard() {
           </CardHeader>
           <CardContent className="p-3 md:p-6 pt-0">
             <div className="text-xl md:text-2xl font-bold">{stats?.pendingOrders || 0}</div>
-            <p className="text-[10px] md:text-xs text-muted-foreground truncate">
-              Nécessitent attention
-            </p>
+            <p className="text-[10px] md:text-xs text-muted-foreground truncate">Nécessitent attention</p>
           </CardContent>
         </Card>
       </div>
 
-      {/* Status and Suppliers Cards */}
+      {/* Status and Suppliers */}
       <div className="grid gap-4 md:grid-cols-2">
         <Card>
           <CardHeader className="p-4 md:p-6">
@@ -85,9 +123,9 @@ export function FulfillmentDashboard() {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Package className="w-4 h-4 text-blue-600 shrink-0" />
-                <span className="text-xs md:text-sm">Expédiées</span>
+                <span className="text-xs md:text-sm">Tracking à sync</span>
               </div>
-              <span className="font-bold text-sm md:text-base">{(stats as any)?.unsyncedTracking || 0}</span>
+              <span className="font-bold text-sm md:text-base">{stats?.unsyncedTracking || 0}</span>
             </div>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
@@ -98,7 +136,7 @@ export function FulfillmentDashboard() {
             </div>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <XCircle className="w-4 h-4 text-red-600 shrink-0" />
+                <XCircle className="w-4 h-4 text-destructive shrink-0" />
                 <span className="text-xs md:text-sm">Échouées</span>
               </div>
               <span className="font-bold text-sm md:text-base">{stats?.failed || 0}</span>
@@ -109,22 +147,27 @@ export function FulfillmentDashboard() {
         <Card>
           <CardHeader className="p-4 md:p-6">
             <CardTitle className="text-base md:text-lg">Fournisseurs Actifs</CardTitle>
-            <CardDescription className="text-xs md:text-sm">Performance par fournisseur</CardDescription>
+            <CardDescription className="text-xs md:text-sm">Répartition par fournisseur</CardDescription>
           </CardHeader>
           <CardContent className="p-4 md:p-6 pt-0 space-y-3 md:space-y-4">
-            {stats?.topSuppliers?.map((supplier: any) => (
-              <div key={supplier.id} className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs md:text-sm font-medium truncate pr-2">{supplier.name}</span>
-                  <span className="text-xs md:text-sm text-muted-foreground shrink-0">
-                    {supplier.orders} cmd
-                  </span>
+            {supplierEntries.length > 0 ? (
+              supplierEntries.map(([name, count]) => (
+                <div key={name} className="space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs md:text-sm font-medium capitalize truncate pr-2">{name}</span>
+                    <span className="text-xs md:text-sm text-muted-foreground shrink-0">
+                      {count as number} cmd
+                    </span>
+                  </div>
+                  <Progress
+                    value={Math.round(((count as number) / totalSupplierOrders) * 100)}
+                    className="h-1.5 md:h-2"
+                  />
                 </div>
-                <Progress value={supplier.successRate} className="h-1.5 md:h-2" />
-              </div>
-            )) || (
+              ))
+            ) : (
               <p className="text-xs md:text-sm text-muted-foreground">
-                Aucun fournisseur connecté
+                Aucune commande fournisseur
               </p>
             )}
           </CardContent>
