@@ -53,7 +53,7 @@ const CoreSyncDashboard: React.FC = () => {
   const loadData = async () => {
     try {
       setLoading(true);
-      // Mock available connectors for now
+      // Load connectors from integrations table
       const availableConnectors = [
         { id: 'shopify', name: 'Shopify', type: 'ecommerce' },
         { id: 'woocommerce', name: 'WooCommerce', type: 'ecommerce' },
@@ -62,11 +62,11 @@ const CoreSyncDashboard: React.FC = () => {
       ];
       setConnectors(availableConnectors);
       
-      // Mock user ID for now
-      const mockUserId = '123e4567-e89b-12d3-a456-426614174000';
+      if (!user?.id) return;
+      const userId = user.id;
       
-      const configs = await syncEngine.getSyncConfigurations(mockUserId);
-      const operations = await syncEngine.getSyncOperations(mockUserId);
+      const configs = await syncEngine.getSyncConfigurations(userId);
+      const operations = await syncEngine.getSyncOperations(userId);
       
       setSyncConfigs(configs);
       setSyncOps(operations);
