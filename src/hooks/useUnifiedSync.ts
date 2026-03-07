@@ -289,7 +289,6 @@ export function useTriggerModuleSync() {
 
       const { data, error } = await supabase.functions.invoke(functionMap[sync_type], {
         body: {
-          user_id: user.id,
           integration_id,
           platform,
           direction: direction || 'bidirectional',
