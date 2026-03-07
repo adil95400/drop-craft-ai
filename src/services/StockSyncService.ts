@@ -166,7 +166,7 @@ export class StockSyncService {
         const int = integration as Record<string, unknown>;
         const platformType = (int.platform || int.platform_name || 'unknown') as string;
         try {
-          console.log(`📤 Syncing to ${platformType}`);
+          // Syncing to platform
 
           // Get products that have been updated locally
           const { data: products, error: productsError } = await fromTable('products')
