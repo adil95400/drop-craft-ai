@@ -87,7 +87,7 @@ class UnifiedImportService {
 
       if (jobError) throw jobError
 
-      console.log('[UnifiedImport] Job created', { job_id: job.id })
+      logger.info('Import job created', { job_id: job.id })
 
       // Trigger appropriate edge function
       let edgeFunction: string
