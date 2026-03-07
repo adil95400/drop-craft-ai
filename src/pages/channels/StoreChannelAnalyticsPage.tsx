@@ -196,7 +196,7 @@ export default function StoreChannelAnalyticsPage() {
                 <CardContent>
                   <ResponsiveContainer width="100%" height={200}>
                     <PieChart>
-                      <Pie data={PIE_DATA} cx="50%" cy="50%" outerRadius={80} dataKey="value" label={({ name, percent }: { name: string; percent: number }) => `${name} ${(percent * 100).toFixed(0)}%`}>
+                      <Pie data={PIE_DATA} cx="50%" cy="50%" outerRadius={80} dataKey="value" label={({ name, percent }: any) => `${name} ${(Number(percent) * 100).toFixed(0)}%`}>
                         {PIE_DATA.map((_, i) => (
                           <Cell key={i} fill={PIE_COLORS[i]} />
                         ))}
