@@ -56,103 +56,57 @@ export const RealTimeMonitor = () => {
     refetchInterval: 30000 // Refresh every 30 seconds
   })
 
+  // Fetch real sync activity from activity_logs
+  const { data: realLogs = [] } = useQuery({
+    queryKey: ['integration-activity-logs'],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from('activity_logs')
+        .select('id, action, description, entity_type, entity_id, created_at, severity, source')
+        .in('entity_type', ['integration', 'sync', 'webhook', 'connection'])
+        .order('created_at', { ascending: false })
+        .limit(50)
+      return (data || []).map((log: any): ActivityLog => ({
+        id: log.id,
+        timestamp: log.created_at,
+        type: (['sync', 'webhook', 'connection'].includes(log.entity_type) ? log.entity_type : 'sync') as ActivityLog['type'],
+        integration_name: log.source || 'Système',
+        integration_id: log.entity_id || 'system',
+        status: log.severity === 'error' ? 'error' : log.severity === 'warn' ? 'warning' : 'success',
+        message: log.description || log.action,
+      }))
+    },
+    refetchInterval: 15000,
+  })
+
   // Generate system status from real data
   const systemStatus: SystemStatus = {
     integrations_online: integrations.filter((i: any) => i.connection_status === 'connected').length,
     integrations_total: integrations.length,
-    active_syncs: Math.floor(Math.random() * 5), // Simulated active syncs
-    webhooks_active: Math.floor(Math.random() * 10) + 5, // Simulated webhooks
-    last_activity: new Date().toISOString(),
+    active_syncs: integrations.filter((i: any) => i.is_active && i.connection_status === 'connected').length,
+    webhooks_active: integrations.filter((i: any) => i.is_active).length,
+    last_activity: realLogs[0]?.timestamp || new Date().toISOString(),
     system_health: getSystemHealth(integrations as any[])
   }
 
-  // Simulate real-time activity logs
+  // Use real logs instead of simulated ones
   useEffect(() => {
-    const generateActivityLog = (): ActivityLog => {
-      const integration = integrations[Math.floor(Math.random() * integrations.length)]
-      const types = ['sync', 'webhook', 'test', 'connection'] as const
-      const type = types[Math.floor(Math.random() * types.length)]
-      
-      const activities = {
-        sync: {
-          messages: [
-            'Synchronisation des produits terminée',
-            'Import de nouvelles commandes',
-            'Mise à jour du stock en cours',
-            'Synchronisation client complète'
-          ],
-          statuses: ['success', 'success', 'success', 'error'] as const
-        },
-        webhook: {
-          messages: [
-            'Webhook reçu avec succès',
-            'Notification de commande traitée',
-            'Événement produit déclenché',
-            'Webhook en échec - retry programmé'
-          ],
-          statuses: ['success', 'success', 'success', 'warning'] as const
-        },
-        test: {
-          messages: [
-            'Test de connexion réussi',
-            'Validation des identifiants OK',
-            'Test API terminé avec succès',
-            'Erreur de test - identifiants invalides'
-          ],
-          statuses: ['success', 'success', 'success', 'error'] as const
-        },
-        connection: {
-          messages: [
-            'Connexion établie',
-            'Reconnexion automatique réussie',
-            'Connexion interrompue',
-            'Tentative de reconnexion en cours'
-          ],
-          statuses: ['success', 'success', 'warning', 'pending'] as const
-        }
-      }
-
-      const activity = activities[type]
-      const messageIndex = Math.floor(Math.random() * activity.messages.length)
-      
-      return {
-        id: crypto.randomUUID(),
-        timestamp: new Date().toISOString(),
-        type,
-        integration_name: (integration as any)?.platform_name || (integration as any)?.platform || 'Système',
-        integration_id: (integration as any)?.id || 'system',
-        status: activity.statuses[messageIndex],
-        message: activity.messages[messageIndex],
-        duration_ms: type === 'sync' ? Math.floor(Math.random() * 5000) + 1000 : undefined,
-        details: generateDetails(type)
+    if (realLogs.length > 0 && activityLogs.length === 0) {
+      setActivityLogs(realLogs)
+    } else if (realLogs.length > 0) {
+      // Merge new logs
+      const existingIds = new Set(activityLogs.map(l => l.id))
+      const newLogs = realLogs.filter(l => !existingIds.has(l.id))
+      if (newLogs.length > 0) {
+        setActivityLogs(prev => [...newLogs, ...prev].slice(0, 50))
       }
     }
+  }, [realLogs])
 
-    // Add initial logs
-    if (integrations.length > 0 && activityLogs.length === 0) {
-      const initialLogs = Array.from({ length: 20 }, generateActivityLog)
-      setActivityLogs(initialLogs.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()))
-    }
-
-    // Simulate real-time updates
-    const interval = setInterval(() => {
-      if (integrations.length > 0) {
-        const newLog = generateActivityLog()
-        setActivityLogs(prev => [newLog, ...prev.slice(0, 49)]) // Keep last 50 logs
-      }
-    }, Math.random() * 5000 + 2000) // Random interval between 2-7 seconds
-
-    return () => clearInterval(interval)
+  // Connection status based on real data
+  useEffect(() => {
+    setIsConnected(integrations.some((i: any) => i.connection_status === 'connected'))
   }, [integrations])
-
-  // Simulate connection status
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setIsConnected(Math.random() > 0.05) // 95% uptime simulation
-    }, 10000)
-
-    return () => clearInterval(interval)
-  }, [])
 
   function getSystemHealth(integrations: any[]): SystemStatus['system_health'] {
     if (integrations.length === 0) return 'warning'
@@ -166,29 +120,6 @@ export const RealTimeMonitor = () => {
     if (overallHealth >= 0.7) return 'good'
     if (overallHealth >= 0.5) return 'warning'
     return 'critical'
-  }
-
-  function generateDetails(type: ActivityLog['type']) {
-    switch (type) {
-      case 'sync':
-        return {
-          items_processed: Math.floor(Math.random() * 1000) + 10,
-          items_success: Math.floor(Math.random() * 950) + 10,
-          items_error: Math.floor(Math.random() * 5)
-        }
-      case 'webhook':
-        return {
-          event_type: ['order.created', 'product.updated', 'customer.created'][Math.floor(Math.random() * 3)],
-          payload_size: Math.floor(Math.random() * 5000) + 500
-        }
-      case 'test':
-        return {
-          endpoint: '/api/test',
-          response_time: Math.floor(Math.random() * 2000) + 100
-        }
-      default:
-        return {}
-    }
   }
 
   const getStatusIcon = (status: ActivityLog['status']) => {

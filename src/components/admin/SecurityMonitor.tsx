@@ -142,17 +142,28 @@ export const SecurityMonitor = () => {
   };
 
   const loadSecurityMetrics = async (): Promise<SecurityMetrics> => {
-    await new Promise(resolve => setTimeout(resolve, 200));
-    
+    // Query real security events from DB
+    const { supabase } = await import('@/integrations/supabase/client')
+    const now = new Date()
+    const dayAgo = new Date(now.getTime() - 86400000).toISOString()
+
+    const [eventsRes, criticalRes] = await Promise.all([
+      supabase.from('security_events').select('id', { count: 'exact', head: true }).gte('created_at', dayAgo),
+      supabase.from('security_events').select('id', { count: 'exact', head: true }).eq('severity', 'critical').gte('created_at', dayAgo),
+    ])
+
+    const totalEvents = eventsRes.count ?? 0
+    const criticalEvents = criticalRes.count ?? 0
+
     return {
-      totalEvents: Math.floor(Math.random() * 1000) + 2500,
-      criticalEvents: Math.floor(Math.random() * 20) + 5,
-      blockedAttacks: Math.floor(Math.random() * 100) + 250,
-      successRate: Math.random() * 5 + 95,
-      responseTime: Math.random() * 2 + 1.5,
-      vulnerabilities: Math.floor(Math.random() * 5) + 2,
-      patchLevel: Math.random() * 10 + 90,
-      complianceScore: Math.random() * 10 + 85
+      totalEvents,
+      criticalEvents,
+      blockedAttacks: 0,
+      successRate: totalEvents > 0 ? Math.round(((totalEvents - criticalEvents) / totalEvents) * 1000) / 10 : 100,
+      responseTime: 0,
+      vulnerabilities: 0,
+      patchLevel: 100,
+      complianceScore: 100
     };
   };
 

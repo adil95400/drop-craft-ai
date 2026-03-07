@@ -90,7 +90,7 @@ export function SupplierAnalyticsDashboard() {
         success_rate: item.total_orders > 0 
           ? ((item.total_orders - item.error_count) / item.total_orders * 100) 
           : 100,
-        avg_delivery_days: 5 // Mock pour le moment
+        avg_delivery_days: item.avg_delivery_days || 0
       }))
 
       setAnalytics(analyticsArray)

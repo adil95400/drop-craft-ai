@@ -49,7 +49,7 @@ export const IntegrationHealthMonitor = () => {
           healthMap[integration.id] = {
             ...integration,
             uptime: calculateUptime(integration.last_sync_at, integration.connection_status),
-            responseTime: Math.random() * 200 + 50, // Simulate response time
+            responseTime: 0, // Real response time not tracked yet
             lastCheck: new Date().toISOString()
           }
         })

@@ -199,36 +199,8 @@ export const RealTimeMarketingHub: React.FC = () => {
     setLiveMetrics(initialMetrics);
 
     if (isLive) {
-      const interval = setInterval(() => {
-        // Simulate new activity
-        const types: LiveActivity['type'][] = ['email_open', 'click', 'conversion', 'visit', 'signup', 'purchase'];
-        const campaigns = ['Black Friday 2024', 'Retargeting Q4', 'Social Media Boost', 'Newsletter Hebdo'];
-        const users = ['Marie L.', 'Jean D.', 'Sophie M.', 'Pierre R.', 'Alice B.', 'Marc V.'];
-        const locations = ['Paris, FR', 'Lyon, FR', 'Marseille, FR', 'Toulouse, FR', 'Nice, FR'];
-        const devices = ['Mobile', 'Desktop', 'Tablet'];
-
-        const newActivity: LiveActivity = {
-          id: Math.random().toString(36).substr(2, 9),
-          type: types[Math.floor(Math.random() * types.length)],
-          timestamp: new Date(),
-          campaign: campaigns[Math.floor(Math.random() * campaigns.length)],
-          user: users[Math.floor(Math.random() * users.length)],
-          value: Math.random() > 0.7 ? Math.round(Math.random() * 200 + 50) : undefined,
-          location: locations[Math.floor(Math.random() * locations.length)],
-          device: devices[Math.floor(Math.random() * devices.length)]
-        };
-
-        setActivities(prev => [newActivity, ...prev.slice(0, 19)]);
-
-        // Update metrics
-        setLiveMetrics(prev => prev.map(metric => ({
-          ...metric,
-          value: metric.value + Math.round(Math.random() * 10 - 5),
-          change: Math.round((Math.random() - 0.5) * 50)
-        })));
-      }, 5000);
-
-      return () => clearInterval(interval);
+      // Real-time: no simulation — metrics stay static until real events arrive
+      // Future: connect to realtime channel for marketing events
     }
   }, [isLive]);
 
@@ -465,12 +437,8 @@ export const RealTimeMarketingHub: React.FC = () => {
                 {['Black Friday', 'Retargeting', 'Social Media', 'Newsletter'].map((campaign, campaignIndex) => (
                   <div 
                     key={campaignIndex}
-                    className={`h-4 mb-1 rounded ${
-                      Math.random() > 0.7 ? 'bg-green-500' :
-                      Math.random() > 0.4 ? 'bg-yellow-500' :
-                      Math.random() > 0.2 ? 'bg-orange-500' : 'bg-red-500'
-                    } opacity-${Math.floor(Math.random() * 5 + 1) * 20}`}
-                    title={`${campaign} - ${hour}h`}
+                    className="h-4 mb-1 rounded bg-muted opacity-40"
+                    title={`${campaign} - ${hour}h — Aucune donnée`}
                   />
                 ))}
               </div>

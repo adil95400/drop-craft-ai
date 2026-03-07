@@ -97,9 +97,9 @@ export function ComparisonTable({ analyses }: ComparisonTableProps) {
                       } else if (feature.key === 'seo_score' || feature.key === 'competitiveness') {
                         value = comp.competitive_data?.quality_score || 70;
                       } else if (feature.type === 'boolean') {
-                        value = Math.random() > 0.5;
+                        value = false;
                       } else if (feature.type === 'number') {
-                        value = Math.floor(Math.random() * 100) + 50;
+                        value = 0;
                       }
                     }
                     

@@ -26,7 +26,7 @@ import {
 import { toast } from 'sonner'
 import { productionLogger } from '@/utils/productionLogger'
 
-// Mock developer data
+// Demo data — Developer Marketplace not yet backed by production tables
 const DEVELOPER_DATA = {
   profile: {
     id: 'dev-123',

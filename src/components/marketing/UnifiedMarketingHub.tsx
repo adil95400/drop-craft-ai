@@ -53,7 +53,7 @@ export function UnifiedMarketingHub() {
       campaigns: 1,
       budget: campaign.budget_total || 0,
       spent: campaign.budget_spent || 0,
-      conversions: metrics.conversions || Math.floor(Math.random() * 100),
+      conversions: metrics.conversions || 0,
       impressions: metrics.impressions || 0,
       clicks: metrics.clicks || 0
     }

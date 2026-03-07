@@ -158,9 +158,9 @@ export function SocialMediaManager() {
 
       if (action === 'publish') {
         postData.engagement = {
-          likes: Math.floor(Math.random() * 100) + 10,
-          comments: Math.floor(Math.random() * 20) + 1,
-          shares: Math.floor(Math.random() * 15) + 1
+          likes: 0,
+          comments: 0,
+          shares: 0
         }
       }
 
