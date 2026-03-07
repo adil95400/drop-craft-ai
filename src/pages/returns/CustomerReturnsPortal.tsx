@@ -113,24 +113,29 @@ export default function CustomerReturnsPortal() {
         }
       }
 
+      // Generate RMA number
+      const { data: rmaData } = await supabase.rpc('generate_rma_number')
+      const generatedRma = rmaData || `RMA-${Date.now()}`
+
+      const refundTotal = order.order_items
+        ?.filter((i: any) => selectedItems.includes(i.id))
+        .reduce((sum: number, i: any) => sum + (i.total_price || i.unit_price * i.quantity || 0), 0) || 0
+
       const { data, error } = await supabase.from('returns').insert({
+        rma_number: generatedRma,
         order_id: order.id,
         user_id: order.user_id,
-        customer_name: order.customer_name || order.shipping_name || 'Client',
-        customer_email: email,
-        order_number: orderNumber,
         reason: RETURN_REASONS.find(r => r.id === reason)?.label || reason,
-        reason_code: reason,
-        details,
+        reason_category: reason,
+        description: details || null,
         items: selectedItems.map(id => {
           const item = order.order_items?.find((i: any) => i.id === id)
           return { id, title: item?.product_title, quantity: item?.quantity }
         }),
-        photo_urls: photoUrls,
+        images: photoUrls.length > 0 ? photoUrls : null,
         status: 'pending',
-        refund_amount: order.order_items
-          ?.filter((i: any) => selectedItems.includes(i.id))
-          .reduce((sum: number, i: any) => sum + (i.total_price || i.unit_price * i.quantity || 0), 0),
+        refund_amount: refundTotal,
+        notes: `Email: ${email} | Commande: ${orderNumber}`,
       }).select().single()
 
       if (error) throw error

@@ -79,7 +79,7 @@ export function PickingPackingWorkflow() {
           barcode: item.barcode || item.product_sku || null,
         })),
         status: 'ready' as const,
-        priority: order.shipping_method === 'express' ? 'express' : 'normal',
+        priority: (order.shipping_method === 'express' ? 'express' : 'normal') as PickingOrder['priority'],
         created_at: order.created_at,
       }))
     },
