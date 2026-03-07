@@ -138,7 +138,7 @@ export class PlanService {
         .maybeSingle();
 
       if (error) {
-        console.error('Error fetching profile:', error);
+        logger.error('Error fetching profile', undefined, { ...LOG_CTX, action: 'initialize', metadata: { error } });
         this.currentPlan = 'free';
         return;
       }
