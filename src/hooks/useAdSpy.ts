@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { logger } from '@/lib/logger';
 
 export interface AdSpyResult {
   id: string;
@@ -48,7 +49,7 @@ export function useAdSpy() {
   // Search ads mutation
   const searchAdsMutation = useMutation({
     mutationFn: async (filters: AdSpyFilters) => {
-      console.log('[Ad Spy] Searching ads:', filters);
+      logger.debug('Searching ads', { filters });
       
       const { data, error } = await supabase.functions.invoke('ad-spy-scanner', {
         body: {

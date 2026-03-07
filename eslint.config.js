@@ -101,7 +101,7 @@ export default tseslint.config(
       "import/newline-after-import": "error",
       
       // General rules
-      "no-console": ["warn", { allow: ["warn", "error"] }],
+      "no-console": ["error", { allow: ["warn", "error"] }],
       "no-debugger": "error",
       "no-unused-expressions": "error",
       "prefer-const": "error",

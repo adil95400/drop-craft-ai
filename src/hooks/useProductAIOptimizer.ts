@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { productsApi } from '@/services/api/client';
 import { toast } from 'sonner';
+import { logger } from '@/lib/logger';
 
 export interface AIOptimizationRequest {
   productId: string;
@@ -40,7 +41,7 @@ export function useProductAIOptimizer() {
 
   const optimizeProductMutation = useMutation({
     mutationFn: async (request: AIOptimizationRequest): Promise<AIOptimizationResult> => {
-      console.log('[AI Optimizer] Starting optimization:', request.optimizationType);
+      logger.info('Starting AI optimization', { type: request.optimizationType });
 
       const resp = await productsApi.optimize(request.productId, {
         language: 'fr',

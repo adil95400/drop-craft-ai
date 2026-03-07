@@ -9,7 +9,7 @@ export class PWAService {
       navigator.serviceWorker.addEventListener('controllerchange', () => {
         if (!refreshing) {
           refreshing = true;
-          console.log('🔄 New Service Worker active, reloading...');
+          // New Service Worker active, reloading
           window.location.reload();
         }
       });
@@ -17,7 +17,7 @@ export class PWAService {
       window.addEventListener('load', () => {
         navigator.serviceWorker.register('/sw.js')
           .then(registration => {
-            console.log('✅ Service Worker registered:', registration);
+            // Service Worker registered
           })
           .catch(error => {
             console.error('❌ Service Worker registration failed:', error);
@@ -29,13 +29,13 @@ export class PWAService {
     window.addEventListener('beforeinstallprompt', (e) => {
       e.preventDefault();
       this.deferredPrompt = e;
-      console.log('💾 PWA install prompt captured');
+      // PWA install prompt captured
     });
   }
 
   static async installPWA(): Promise<boolean> {
     if (!this.deferredPrompt) {
-      console.log('⚠️ No install prompt available');
+      // No install prompt available
       return false;
     }
 
@@ -68,7 +68,7 @@ export class PWAService {
         userVisibleOnly: true
       });
 
-      console.log('✅ Push subscription:', subscription);
+      // Push subscription active
       return subscription;
     } catch (error) {
       console.error('❌ Failed to subscribe to push notifications:', error);

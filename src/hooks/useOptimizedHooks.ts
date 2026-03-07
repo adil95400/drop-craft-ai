@@ -40,11 +40,11 @@ export function usePerformanceMonitor(options: UsePerformanceMonitorOptions = {}
         }
 
         if (entry.entryType === 'largest-contentful-paint') {
-          console.log(`LCP: ${entry.startTime}ms`);
+          // LCP metric captured
         }
 
         if (entry.entryType === 'first-input') {
-          console.log(`FID: ${(entry as any).processingStart - entry.startTime}ms`);
+          // FID metric captured
         }
       });
     });

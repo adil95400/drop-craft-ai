@@ -5,6 +5,7 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { logger } from '@/lib/logger';
 
 interface EdgeFunctionOptions {
   timeout?: number;
@@ -76,7 +77,7 @@ export function useUnifiedEdgeFunction<T = any>(
 
       while (attempts <= retries) {
         try {
-          console.log(`[EdgeFunction] Calling ${functionName} (attempt ${attempts + 1})`);
+          logger.debug(`Calling ${functionName} (attempt ${attempts + 1})`, { functionName, attempt: attempts + 1 });
 
           // Create timeout promise
           const timeoutPromise = new Promise<never>((_, reject) => {
@@ -100,7 +101,7 @@ export function useUnifiedEdgeFunction<T = any>(
             throw new Error(error.message);
           }
 
-          console.log(`[EdgeFunction] ${functionName} success:`, data);
+          logger.debug(`${functionName} success`, { functionName });
 
           if (isMountedRef.current) {
             setState({

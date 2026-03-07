@@ -1,6 +1,7 @@
 import { supabase } from '@/integrations/supabase/client'
 import { toast } from 'sonner'
 import { importRateLimiter } from './importRateLimiter'
+import { logger } from '@/lib/logger'
 
 type ImportStatus = 'pending' | 'processing' | 'completed' | 'failed'
 type ImportSourceType = 'url' | 'csv' | 'xml' | 'json' | 'api' | 'ftp'
@@ -59,7 +60,7 @@ class UnifiedImportService {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) throw new Error('Utilisateur non authentifié')
 
-      console.log('[UnifiedImport] Starting import', config)
+      logger.info('Starting import', { source: config.source_type })
 
       // Create job in database
       const { data: job, error: jobError } = await supabase
@@ -86,7 +87,7 @@ class UnifiedImportService {
 
       if (jobError) throw jobError
 
-      console.log('[UnifiedImport] Job created', { job_id: job.id })
+      logger.info('Import job created', { job_id: job.id })
 
       // Trigger appropriate edge function
       let edgeFunction: string
@@ -208,7 +209,7 @@ class UnifiedImportService {
 
       // Notify progress
       if (status.status === 'processing' && status.progress > 0) {
-        console.log(`[UnifiedImport] Job ${jobId} progress: ${status.progress}%`)
+        logger.debug(`Import job ${jobId} progress: ${status.progress}%`)
       }
 
       // Stop if completed or failed
@@ -247,7 +248,7 @@ class UnifiedImportService {
     if (interval) {
       clearInterval(interval)
       this.pollingIntervals.delete(jobId)
-      console.log('[UnifiedImport] Stopped monitoring', { job_id: jobId })
+      logger.debug('Stopped monitoring', { job_id: jobId })
     }
   }
 

@@ -2,6 +2,7 @@ import { useState, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { logger } from '@/lib/logger';
 import { WinnerProduct } from '@/components/product-research/WinnerProductCard';
 
 export interface RealProductFilters {
@@ -56,7 +57,7 @@ export function useRealProductResearch(filters: RealProductFilters) {
   const searchQuery = useQuery({
     queryKey: ['real-product-research', filters],
     queryFn: async (): Promise<WinnerProduct[]> => {
-      console.log('Fetching real products with filters:', filters);
+      logger.debug('Fetching real products', { filters });
       
       // Call the winners-aggregator for comprehensive results
       const { data, error } = await supabase.functions.invoke('winners-aggregator', {
@@ -75,7 +76,7 @@ export function useRealProductResearch(filters: RealProductFilters) {
         throw error;
       }
 
-      console.log('Aggregator response:', data);
+      logger.debug('Aggregator response received', { count: data?.products?.length });
 
       // Transform products
       const products = (data?.products || []).map((p: any) => 

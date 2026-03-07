@@ -39,7 +39,7 @@ export const useWinnersOptimized = () => {
       const cached = clientCache.get(cacheKey);
       
       if (cached && Date.now() - cached.timestamp < CLIENT_CACHE_TTL) {
-        console.log('Using client cache');
+        // Using client cache
         return cached.data;
       }
 

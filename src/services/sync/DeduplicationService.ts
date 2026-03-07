@@ -1,5 +1,6 @@
 import { supabase } from '@/integrations/supabase/client'
 import { SupplierProduct } from '@/types/suppliers'
+import { logger } from '@/lib/logger'
 
 interface DuplicateGroup {
   products: SupplierProduct[]
@@ -21,7 +22,7 @@ export class DeduplicationService {
 
   // Déduplication principale
   async deduplicateProducts(products: SupplierProduct[]): Promise<SupplierProduct[]> {
-    console.log(`Starting deduplication for ${products.length} products`)
+    logger.info(`Starting deduplication for ${products.length} products`)
 
     // Récupérer les produits existants pour comparaison
     const existingProducts = await this.getExistingProducts()
@@ -33,7 +34,7 @@ export class DeduplicationService {
     // Résoudre les doublons
     const uniqueProducts = await this.resolveDuplicates(products, duplicateGroups)
 
-    console.log(`Deduplication completed: ${products.length} -> ${uniqueProducts.length} products`)
+    logger.info(`Deduplication completed: ${products.length} -> ${uniqueProducts.length} products`)
     
     return uniqueProducts
   }

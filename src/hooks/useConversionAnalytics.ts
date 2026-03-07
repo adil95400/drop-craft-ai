@@ -64,7 +64,7 @@ export function useConversionAnalytics(params: {
   const trackProductView = useMutation({
     mutationFn: async ({ productId }: { productId: string; marketplace?: string; source?: string }) => {
       // Product view tracking would require a dedicated table
-      console.log('Track product view:', productId);
+      // Product view tracking — no-op until dedicated table exists
     }
   });
 

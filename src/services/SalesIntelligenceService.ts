@@ -1,4 +1,5 @@
 import { supabase } from '@/integrations/supabase/client';
+import { logger } from '@/lib/logger';
 
 export interface SalesIntelligenceData {
   id: string;
@@ -67,7 +68,7 @@ export class SalesIntelligenceService {
 
   async generateForecast(params: ForecastRequest): Promise<SalesIntelligenceData> {
     try {
-      console.log('[SalesIntelligenceService] Generating forecast', params);
+      logger.info('Generating forecast', { params });
 
       const { data, error } = await supabase.functions.invoke('sales-forecast', {
         body: params
@@ -79,7 +80,7 @@ export class SalesIntelligenceService {
         throw new Error(data.error || 'Failed to generate forecast');
       }
 
-      console.log('[SalesIntelligenceService] Forecast generated successfully');
+      logger.info('Forecast generated successfully');
       return data.analysis;
     } catch (error) {
       console.error('[SalesIntelligenceService] Error generating forecast:', error);
@@ -130,7 +131,7 @@ export class SalesIntelligenceService {
 
       if (error) throw error;
 
-      console.log('[SalesIntelligenceService] Forecast deleted successfully');
+      logger.info('Forecast deleted successfully');
     } catch (error) {
       console.error('[SalesIntelligenceService] Error deleting forecast:', error);
       throw error;

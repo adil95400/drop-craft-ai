@@ -6,7 +6,6 @@ export function initSentry() {
   const dsn = import.meta.env.VITE_SENTRY_DSN;
   
   if (!dsn || import.meta.env.DEV) {
-    console.log('Sentry: Skipped initialization (dev mode or no DSN)');
     return;
   }
 
@@ -50,8 +49,6 @@ export function initSentry() {
     attachStacktrace: true,
     normalizeDepth: 5,
   });
-
-  console.log('✅ Sentry initialized for error monitoring');
 }
 
 // Utility functions for manual error reporting

@@ -99,7 +99,7 @@
     "import/no-duplicates": "error",
     
     // General rules
-    "no-console": "warn",
+    "no-console": ["error", { "allow": ["warn", "error"] }],
     "no-debugger": "error",
     "prefer-const": "error",
     "no-var": "error",

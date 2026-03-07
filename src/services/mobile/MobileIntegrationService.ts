@@ -50,7 +50,7 @@ class MobileIntegrationService {
       await this.setupOfflineCapabilities();
       await this.initializeNativeFeatures();
       
-      console.log('Mobile Integration Service initialized', this.device);
+      // Mobile Integration Service initialized
     } catch (error) {
       console.error('Error initializing Mobile Integration Service:', error);
     }
@@ -176,7 +176,7 @@ class MobileIntegrationService {
       window.addEventListener('online', () => this.handleOnline());
       window.addEventListener('offline', () => this.handleOffline());
       
-      console.log('Offline capabilities configured');
+      // Offline capabilities configured
     } catch (error) {
       console.error('Error setting up offline capabilities:', error);
     }
@@ -196,7 +196,7 @@ class MobileIntegrationService {
       await this.setupBiometricAuth();
     }
 
-    console.log('Native features initialized');
+    // Native features initialized
   }
 
   // Configurer l'authentification biométrique
@@ -205,7 +205,7 @@ class MobileIntegrationService {
       if (!('credentials' in navigator)) return;
 
       // Vérifier si des credentials existent déjà
-      console.log('Biometric authentication available');
+      // Biometric authentication available
       
       // Cette fonctionnalité nécessiterait une configuration plus avancée
       // avec des clés publiques/privées côté serveur

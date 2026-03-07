@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useUnifiedAuth } from '@/contexts/UnifiedAuthContext'
 import { supabase } from '@/integrations/supabase/client'
 import { useToast } from '@/hooks/use-toast'
+import { logger } from '@/lib/logger'
 
 export interface AdminUser {
   id: string
@@ -75,7 +76,7 @@ export const useAdminRole = () => {
         throw error
       }
       
-      console.log('Fetched users data:', data)
+      logger.debug('Fetched users data', { count: data?.length })
       
       const formattedUsers = data?.map((user: any) => ({
         id: user.id,
@@ -92,7 +93,7 @@ export const useAdminRole = () => {
         login_count: user.login_count || 0
       })) || []
       
-      console.log('Formatted users:', formattedUsers)
+      logger.debug('Formatted users', { count: formattedUsers.length })
       setUsers(formattedUsers)
       return { success: true, data: formattedUsers }
     } catch (error: any) {

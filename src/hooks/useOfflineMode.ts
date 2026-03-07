@@ -97,7 +97,7 @@ export function useOfflineMode() {
       const registration = await navigator.serviceWorker.ready;
       try {
         await (registration as any).sync.register('sync-pending-actions');
-        console.log('Background sync registered');
+        // Background sync registered
       } catch (error) {
         console.error('Background sync failed:', error);
       }

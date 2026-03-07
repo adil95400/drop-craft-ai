@@ -314,7 +314,7 @@ export class WooCommerceAdvancedConnector extends AdvancedBaseConnector {
 
   async processWebhookEvent(event: WebhookEvent): Promise<void> {
     try {
-      console.log(`Processing WooCommerce webhook: ${(event as any).type}`, (event as any).data);
+      // Processing WooCommerce webhook event
       // Implement webhook processing logic here
     } catch (error) {
       console.error('Failed to process webhook event:', error);
