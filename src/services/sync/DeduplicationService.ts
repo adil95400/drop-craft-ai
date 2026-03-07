@@ -22,7 +22,7 @@ export class DeduplicationService {
 
   // Déduplication principale
   async deduplicateProducts(products: SupplierProduct[]): Promise<SupplierProduct[]> {
-    console.log(`Starting deduplication for ${products.length} products`)
+    logger.info(`Starting deduplication for ${products.length} products`)
 
     // Récupérer les produits existants pour comparaison
     const existingProducts = await this.getExistingProducts()
