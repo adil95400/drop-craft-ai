@@ -57,10 +57,8 @@ class PerformanceMonitoringService {
   }
 
   // Web Vitals reporting
-  reportWebVitals(metric: any) {
-    if (import.meta.env.PROD) {
-      console.log('Web Vital:', metric);
-    }
+  reportWebVitals(_metric: any) {
+    // Web vitals are reported via Sentry in production
   }
 
   // Image preloading
