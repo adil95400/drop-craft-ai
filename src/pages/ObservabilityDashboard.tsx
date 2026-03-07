@@ -265,7 +265,7 @@ export default function ObservabilityDashboard() {
           </TabsContent>
         </Tabs>
       </div>
-    </DashboardLayout>
+    </ChannablePageWrapper>
   );
 }
 

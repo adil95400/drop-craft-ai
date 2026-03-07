@@ -220,6 +220,6 @@ export default function PublicApiDashboard() {
           </TabsContent>
         </Tabs>
       </div>
-    </DashboardLayout>
+    </ChannablePageWrapper>
   );
 }

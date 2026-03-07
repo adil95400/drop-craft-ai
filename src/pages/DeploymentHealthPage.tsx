@@ -288,6 +288,6 @@ export default function DeploymentHealthPage() {
           </TabsContent>
         </Tabs>
       </div>
-    </DashboardLayout>
+    </ChannablePageWrapper>
   );
 }
