@@ -252,7 +252,7 @@ export default function StoreChannelAnalyticsPage() {
                       <YAxis className="text-xs" />
                       <Tooltip />
                       {integrations.map(int => (
-                        <Bar key={int.id} dataKey={int.platform || 'other'} name={int.store_name || int.platform} fill={getPlatformColor(int.platform || '')} radius={[2, 2, 0, 0]} />
+                        <Bar key={int.id} dataKey={int.platform || 'other'} name={int.platform_name || int.platform} fill={getPlatformColor(int.platform || '')} radius={[2, 2, 0, 0]} />
                       ))}
                     </BarChart>
                   </ResponsiveContainer>
