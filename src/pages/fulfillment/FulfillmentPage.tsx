@@ -31,7 +31,8 @@ import {
   Clock,
   Zap,
   Shield,
-  Info
+  Info,
+  ClipboardCheck
 } from 'lucide-react';
 import { useFulfillmentStats, useCarriers, useCreateCarrier } from '@/hooks/useFulfillment';
 import { CarriersManager } from '@/components/fulfillment/CarriersManager';
