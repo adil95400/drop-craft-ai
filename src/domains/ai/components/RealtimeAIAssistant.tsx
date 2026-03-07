@@ -289,7 +289,7 @@ export const RealtimeAIAssistant: React.FC = () => {
     wsRef.current = new WebSocket(wsUrl)
 
     wsRef.current.onopen = () => {
-      console.log('✅ WebSocket connected to AI assistant')
+      // WebSocket connected
       setIsConnected(true)
       setConnectionStatus('connected')
       
