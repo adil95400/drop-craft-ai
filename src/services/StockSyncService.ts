@@ -245,7 +245,7 @@ export class StockSyncService {
   private async syncProductToPlatform(product: any, integration: any): Promise<{success: boolean, error?: string}> {
     try {
       // Simulate platform API call
-      console.log(`📤 Syncing ${product.sku} to ${integration.platform_type}`);
+      // Syncing product to platform
 
       switch (integration.platform_type) {
         case 'shopify':
