@@ -32,7 +32,7 @@ import {
   RefreshCw, Trash2, MoreVertical, CheckCircle2, AlertTriangle, 
   Share2, Download, Eye, Clock, FileText, Video, Truck,
   Lightbulb, AlertCircle, ImagePlus, DollarSign, FileSearch,
-  Loader2
+  Loader2, Palette
 } from 'lucide-react'
 import { useNavigate, useParams, useLocation } from 'react-router-dom'
 import { useProduct } from '@/hooks/useUnifiedProducts'
