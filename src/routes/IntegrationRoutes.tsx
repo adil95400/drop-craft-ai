@@ -10,6 +10,10 @@ import { lazy } from 'react';
 const ChannableStyleIntegrationsPage = lazy(() => import('@/pages/integrations/ChannableStyleIntegrationsPage'));
 const TikTokShopPage = lazy(() => import('@/pages/integrations/TikTokShopPage'));
 const MarketplaceConnectorsPage = lazy(() => import('@/pages/integrations/MarketplaceConnectorsPage'));
+const AmazonSellerPage = lazy(() => import('@/pages/integrations/AmazonSellerPage'));
+const CDiscountPage = lazy(() => import('@/pages/integrations/CDiscountPage'));
+const PrintifyPage = lazy(() => import('@/pages/integrations/PrintifyPage'));
+const PrintfulPage = lazy(() => import('@/pages/integrations/PrintfulPage'));
 
 // Marketplace (consolidated)
 const MarketplaceHubPage = lazy(() => import('@/pages/MarketplaceHubPage'));
@@ -52,6 +56,10 @@ export function IntegrationRoutes() {
       <Route path="unified" element={<Navigate to="/integrations" replace />} />
       <Route path="sync-config" element={<SyncConfigPage />} />
       <Route path="tiktok-shop" element={<TikTokShopPage />} />
+      <Route path="amazon-seller" element={<AmazonSellerPage />} />
+      <Route path="cdiscount" element={<CDiscountPage />} />
+      <Route path="printify" element={<PrintifyPage />} />
+      <Route path="printful" element={<PrintfulPage />} />
       <Route path="connectors" element={<MarketplaceConnectorsPage />} />
       
       {/* Marketplace - Consolidated */}
