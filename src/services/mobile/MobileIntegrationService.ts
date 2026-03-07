@@ -216,7 +216,7 @@ class MobileIntegrationService {
 
   // Gérer la connexion
   private async handleOnline(): Promise<void> {
-    console.log('Device is online');
+    // Device is online
     
     await notificationService.sendNotification({
       title: '📶 Connexion rétablie',
