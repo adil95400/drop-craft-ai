@@ -40,7 +40,7 @@ export async function fetchAllRows<T>(
   let iteration = 0;
   const maxIterations = 200; // Safety limit (100,000 products max)
 
-  console.log(`📦 Starting paginated fetch for ${tableName}...`);
+  // Starting paginated fetch
 
   while (hasMore && iteration < maxIterations) {
     iteration++;
