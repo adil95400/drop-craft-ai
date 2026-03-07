@@ -84,10 +84,10 @@ export function useStripeSubscription() {
       setSubscription(data);
       
       if (data?.subscribed) {
-        console.log('[Stripe] Subscription verified:', data.plan, 'until', data.subscription_end);
+        logger.info('Subscription verified', { ...LOG_CTX, action: 'checkSubscription', metadata: { plan: data.plan } });
       }
     } catch (error) {
-      console.error('Error checking subscription:', error);
+      logger.error('Error checking subscription', error instanceof Error ? error : undefined, { ...LOG_CTX, action: 'checkSubscription' });
     } finally {
       if (isMountedRef.current) {
         setLoading(false);
