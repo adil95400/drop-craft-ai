@@ -26,6 +26,7 @@ export default function OrderDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const { processOrder, isProcessingOrder } = useAutoFulfillment();
 
   const { data: order, isLoading } = useQuery({
     queryKey: ['order', id],
