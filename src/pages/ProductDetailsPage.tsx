@@ -1171,6 +1171,27 @@ export default function ProductDetailsPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Image Editor */}
+      {editingImageUrl && (
+        <ProductImageEditor
+          imageUrl={editingImageUrl}
+          open={showImageEditor}
+          onOpenChange={setShowImageEditor}
+          onSave={(dataUrl) => {
+            // Update the product's first image with the edited version
+            if (product && id) {
+              const newImages = [...(product.images || [])]
+              const idx = newImages.indexOf(editingImageUrl)
+              if (idx >= 0) newImages[idx] = dataUrl
+              updateProduct.mutate({
+                id,
+                updates: { images: newImages }
+              })
+            }
+          }}
+        />
+      )}
     </>
   )
 }
