@@ -29,7 +29,7 @@ export class PWAService {
     window.addEventListener('beforeinstallprompt', (e) => {
       e.preventDefault();
       this.deferredPrompt = e;
-      console.log('💾 PWA install prompt captured');
+      // PWA install prompt captured
     });
   }
 
