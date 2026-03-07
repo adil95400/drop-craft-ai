@@ -689,6 +689,9 @@ export function ChannableDashboard() {
             </CollapsibleContent>
           </Collapsible>
 
+          {/* Cross-Module Suggestions */}
+          <CrossModuleSuggestions maxItems={3} />
+
           {/* Loading Indicator */}
           {dataLoading && (
             <div className="flex items-center justify-center p-4 text-muted-foreground">
