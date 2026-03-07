@@ -66,7 +66,7 @@ export function MobileOptimizer() {
   const { isMobile, isTablet } = useResponsive();
 
   useEffect(() => {
-    if (Capacitor.isNativePlatform()) {
+    if (isNativePlatform()) {
       loadNativeInfo();
     } else {
       loadWebMetrics();
