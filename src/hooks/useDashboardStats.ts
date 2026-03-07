@@ -110,10 +110,15 @@ export function useDashboardStats() {
           console.warn('Failed to fetch previous month revenue:', e)
         }
 
-        // Simplified previous month counts (avoid complex queries)
-        const prevMonthProductsCount = Math.max(0, totalProductsCount - Math.floor(totalProductsCount * 0.1))
-        const prevMonthOrdersCount = Math.max(0, ordersCount - Math.floor(ordersCount * 0.05))
-        const prevMonthCustomersCount = Math.max(0, customersCount - Math.floor(customersCount * 0.03))
+        // Real previous month counts
+        const [prevProductsCount, prevOrdersCount, prevCustomersCount] = await Promise.all([
+          supabase.from('products').select('*', { count: 'exact', head: true }).eq('user_id', user.id).gte('created_at', startOfPrevMonth.toISOString()).lte('created_at', endOfPrevMonth.toISOString()).then(r => r.count ?? 0),
+          supabase.from('orders').select('*', { count: 'exact', head: true }).eq('user_id', user.id).gte('created_at', startOfPrevMonth.toISOString()).lte('created_at', endOfPrevMonth.toISOString()).then(r => r.count ?? 0),
+          supabase.from('customers').select('*', { count: 'exact', head: true }).eq('user_id', user.id).gte('created_at', startOfPrevMonth.toISOString()).lte('created_at', endOfPrevMonth.toISOString()).then(r => r.count ?? 0),
+        ])
+        const prevMonthProductsCount = prevProductsCount
+        const prevMonthOrdersCount = prevOrdersCount
+        const prevMonthCustomersCount = prevCustomersCount
 
         // Calculate percentage changes
         const calculateChange = (current: number, previous: number) => {

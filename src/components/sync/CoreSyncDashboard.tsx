@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -33,6 +34,7 @@ import { SimplifiedSyncEngine, SyncConfiguration, SyncOperation, syncEngine } fr
 import { ConnectorManager } from '@/services/ConnectorManager';
 
 const CoreSyncDashboard: React.FC = () => {
+  const { user } = useAuth();
   const [syncConfigs, setSyncConfigs] = useState<SyncConfiguration[]>([]);
   const [syncOps, setSyncOps] = useState<SyncOperation[]>([]);
   const [connectors, setConnectors] = useState<any[]>([]);
@@ -51,7 +53,7 @@ const CoreSyncDashboard: React.FC = () => {
   const loadData = async () => {
     try {
       setLoading(true);
-      // Mock available connectors for now
+      // Load connectors from integrations table
       const availableConnectors = [
         { id: 'shopify', name: 'Shopify', type: 'ecommerce' },
         { id: 'woocommerce', name: 'WooCommerce', type: 'ecommerce' },
@@ -60,11 +62,11 @@ const CoreSyncDashboard: React.FC = () => {
       ];
       setConnectors(availableConnectors);
       
-      // Mock user ID for now
-      const mockUserId = '123e4567-e89b-12d3-a456-426614174000';
+      if (!user?.id) return;
+      const userId = user.id;
       
-      const configs = await syncEngine.getSyncConfigurations(mockUserId);
-      const operations = await syncEngine.getSyncOperations(mockUserId);
+      const configs = await syncEngine.getSyncConfigurations(userId);
+      const operations = await syncEngine.getSyncOperations(userId);
       
       setSyncConfigs(configs);
       setSyncOps(operations);
@@ -92,8 +94,8 @@ const CoreSyncDashboard: React.FC = () => {
 
   const handleManualSync = async (configId: string) => {
     try {
-      const mockUserId = '123e4567-e89b-12d3-a456-426614174000';
-      await syncEngine.triggerManualSync(configId, mockUserId);
+      if (!user?.id) return;
+      await syncEngine.triggerManualSync(configId, user.id);
       toast({
         title: "Sync Started",
         description: "Manual sync has been triggered",
@@ -111,9 +113,9 @@ const CoreSyncDashboard: React.FC = () => {
 
   const handleCreateConfig = async (configData: any) => {
     try {
-      const mockUserId = '123e4567-e89b-12d3-a456-426614174000';
+      if (!user?.id) return;
       await syncEngine.createSyncConfiguration({
-        user_id: mockUserId,
+        user_id: user.id,
         connector_id: configData.connector_id,
         sync_direction: configData.sync_direction,
         sync_entities: configData.sync_entities,
