@@ -35,6 +35,9 @@ const BIAdvancedDashboardPage = lazy(() => import('@/pages/analytics/BIAdvancedD
 // Performance (Sprint 18)
 const PerformanceDashboardPage = lazy(() => import('@/pages/analytics/PerformanceDashboardPage'));
 
+// Real-Time (Sprint 19)
+const RealTimeAnalyticsPage = lazy(() => import('@/pages/analytics/RealTimeAnalyticsPage'));
+
 export function AnalyticsRoutes() {
   return (
     <Routes>
