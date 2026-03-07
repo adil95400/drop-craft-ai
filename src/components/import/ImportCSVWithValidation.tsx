@@ -65,7 +65,7 @@ export function ImportCSVWithValidation() {
             .replace(/\s+/g, '_')
             .replace(/[()]/g, '')
           
-          console.log('Transforming CSV header:', header, '→', normalized)
+          // Transforming CSV header
           
           // Try to find matching field in PRODUCT_COLUMN_MAPPINGS
           for (const [fieldName, possibleNames] of Object.entries(PRODUCT_COLUMN_MAPPINGS)) {
