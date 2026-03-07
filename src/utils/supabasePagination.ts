@@ -233,7 +233,7 @@ export async function batchInsert<T extends Record<string, any>>(
     }
   }
 
-  console.log(`✅ Batch insert complete: ${success} success, ${failed} failed`);
+  // Batch insert complete
   return { success, failed, errors };
 }
 
