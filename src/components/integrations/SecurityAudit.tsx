@@ -210,19 +210,28 @@ export const SecurityAudit = () => {
   }
 
   const fetchAccessLogs = async () => {
-    // Simulation des logs d'accès
-    const mockAccessLogs = Array.from({ length: 20 }, (_, i) => ({
-      id: `access_${i}`,
-      user_id: `user_${Math.floor(Math.random() * 100)}`,
-      action: ['login', 'api_access', 'data_export', 'integration_config'][Math.floor(Math.random() * 4)],
-      resource: ['shopify_products', 'amazon_orders', 'stripe_payments', 'user_settings'][Math.floor(Math.random() * 4)],
-      ip_address: `192.168.${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}`,
-      user_agent: 'Mozilla/5.0 (compatible browser)',
-      timestamp: new Date(Date.now() - Math.random() * 86400000).toISOString(),
-      success: Math.random() > 0.1
-    }))
+    try {
+      const { data } = await supabase
+        .from('activity_logs')
+        .select('id, user_id, action, entity_type, ip_address, user_agent, created_at, severity')
+        .order('created_at', { ascending: false })
+        .limit(20)
 
-    setAccessLogs(mockAccessLogs)
+      const logs = (data || []).map(log => ({
+        id: log.id,
+        user_id: log.user_id || 'system',
+        action: log.action || 'unknown',
+        resource: log.entity_type || 'general',
+        ip_address: log.ip_address || '-',
+        user_agent: log.user_agent || '-',
+        timestamp: log.created_at || new Date().toISOString(),
+        success: log.severity !== 'error'
+      }))
+
+      setAccessLogs(logs)
+    } catch {
+      setAccessLogs([])
+    }
   }
 
   const runSecurityScan = async () => {

@@ -164,7 +164,7 @@ export const AdvancedSupplierIntegration = () => {
     setTimeout(() => {
       setSuppliers(prev => prev.map(s => 
         s.id === configDialog.supplier!.id 
-          ? { ...s, status: 'connected' as const, products: Math.floor(Math.random() * 2000) + 500 }
+          ? { ...s, status: 'connected' as const, products: 0 }
           : s
       ))
       setConnectingSupplier(null)
