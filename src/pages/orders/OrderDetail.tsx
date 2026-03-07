@@ -175,6 +175,16 @@ export default function OrderDetail() {
               <FileText className="mr-2 h-4 w-4" />
               Étiquette
             </Button>
+            {order.status === 'pending' && (
+              <Button
+                size="sm"
+                onClick={() => id && processOrder(id)}
+                disabled={isProcessingOrder}
+              >
+                <Truck className="mr-2 h-4 w-4" />
+                Auto-Fulfill
+              </Button>
+            )}
           </>
         }
       >
