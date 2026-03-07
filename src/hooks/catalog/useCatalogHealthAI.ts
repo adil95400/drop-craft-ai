@@ -330,7 +330,7 @@ export function useApplyHealthRecommendation() {
 
   return useMutation({
     mutationFn: async (recommendation: HealthRecommendation) => {
-      console.log('[Health AI] Applying recommendation:', recommendation.actionType)
+      // Applying health recommendation
       
       const { data, error } = await supabase.functions.invoke('catalog-ai-hub', {
         body: {

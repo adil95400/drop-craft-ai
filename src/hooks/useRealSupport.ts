@@ -60,7 +60,7 @@ export const useRealSupport = () => {
 
       if (error) {
         // Table doesn't exist or other error - return empty array
-        console.log('Support tickets table not available:', error.message)
+        // Table doesn't exist — return empty
         return []
       }
 

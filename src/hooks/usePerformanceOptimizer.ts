@@ -205,7 +205,7 @@ export const usePerformanceOptimizer = () => {
           body: { type: 'security_events' }
         });
       } catch (e) {
-        console.log('Cleanup function not available');
+        // Cleanup function not available — silently ignore
       }
       
       // Update cache hit rate

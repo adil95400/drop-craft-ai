@@ -37,7 +37,7 @@ export const useProfileRefresh = () => {
           filter: `id=eq.${user.id}`
         },
         async (payload) => {
-          console.log('Profil modifié:', payload);
+          // Profile changed — refresh
           await refreshProfile();
         }
       )

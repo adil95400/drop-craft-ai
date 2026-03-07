@@ -44,7 +44,7 @@ export function usePerformanceMonitor(options: UsePerformanceMonitorOptions = {}
         }
 
         if (entry.entryType === 'first-input') {
-          console.log(`FID: ${(entry as any).processingStart - entry.startTime}ms`);
+          // FID metric captured
         }
       });
     });

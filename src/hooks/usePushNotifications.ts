@@ -24,7 +24,7 @@ export function usePushNotifications() {
       return data;
     },
     onSuccess: (data) => {
-      console.log('Push notification sent:', data);
+      // Push notification sent successfully
     },
     onError: (error: Error) => {
       console.error('Error sending push notification:', error);
