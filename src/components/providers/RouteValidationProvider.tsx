@@ -80,14 +80,15 @@ export function RouteValidationProvider({
                 <Button 
                   variant="outline" 
                   onClick={() => {
-                    console.log('=== Détails des erreurs de routes ===');
-                    validationResults?.issues.forEach((issue, idx) => {
-                      console.group(`❌ Erreur ${idx + 1}: ${issue.name}`);
-                      console.log('Route:', issue.route);
-                      console.log('Catégorie:', issue.category);
-                      console.log('Problème:', issue.issue);
-                      if (issue.suggestion) console.log('💡 Suggestion:', issue.suggestion);
-                      console.groupEnd();
+                    logger.debug('Détails des erreurs de routes', {
+                      issues: validationResults?.issues.map((issue, idx) => ({
+                        index: idx + 1,
+                        name: issue.name,
+                        route: issue.route,
+                        category: issue.category,
+                        issue: issue.issue,
+                        suggestion: issue.suggestion,
+                      }))
                     });
                   }} 
                   className="flex-1"
