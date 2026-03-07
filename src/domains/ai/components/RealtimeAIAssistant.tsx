@@ -277,7 +277,7 @@ export const RealtimeAIAssistant: React.FC = () => {
   // Connect to WebSocket
   const connectWebSocket = useCallback(() => {
     if (!hasFeature('ai_realtime_chat')) {
-      console.log('❌ AI Realtime Chat not available in current plan')
+      // AI Realtime Chat not available
       return
     }
 
