@@ -18,7 +18,7 @@ export function RouteValidationProvider({
   useEffect(() => {
     // Ne valider qu'en mode développement
     if (import.meta.env.DEV) {
-      console.log('🚀 Démarrage de la validation des routes...');
+      logger.debug('Démarrage de la validation des routes...');
       const results = validateAllRoutes();
       setValidationResults(results);
       logValidationResults(results);
