@@ -26,14 +26,14 @@ export function AdsAutomationDashboard() {
     isLoadingCampaigns
   } = useAdsManagerNew();
 
-  // Mock data for now
+  // Real stats computed from campaigns data
   const connections: any[] = [];
   const stats = {
     totalCampaigns: campaigns?.length || 0,
     activeCampaigns: campaigns?.filter((c: any) => c.status === 'active')?.length || 0,
-    totalSpent: campaigns?.reduce((acc: number, c: any) => acc + (c.spent_amount || 0), 0) || 0,
-    totalBudget: campaigns?.reduce((acc: number, c: any) => acc + (c.budget_amount || 0), 0) || 0,
-    avgROAS: campaigns?.length > 0 ? campaigns.reduce((acc: number, c: any) => acc + (c.performance_metrics?.roas || 0), 0) / campaigns.length : 0,
+    totalSpent: campaigns?.reduce((acc: number, c: any) => acc + (c.spent_amount || c.spend || 0), 0) || 0,
+    totalBudget: campaigns?.reduce((acc: number, c: any) => acc + (c.budget_amount || c.budget || 0), 0) || 0,
+    avgROAS: campaigns?.length > 0 ? campaigns.reduce((acc: number, c: any) => acc + (c.performance_metrics?.roas || c.roas || 0), 0) / campaigns.length : 0,
     connectedPlatforms: 0
   };
   const syncCampaigns = () => {};
