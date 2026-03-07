@@ -41,7 +41,7 @@ export function useProductAIOptimizer() {
 
   const optimizeProductMutation = useMutation({
     mutationFn: async (request: AIOptimizationRequest): Promise<AIOptimizationResult> => {
-      console.log('[AI Optimizer] Starting optimization:', request.optimizationType);
+      logger.info('Starting AI optimization', { type: request.optimizationType });
 
       const resp = await productsApi.optimize(request.productId, {
         language: 'fr',

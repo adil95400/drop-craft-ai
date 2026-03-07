@@ -93,7 +93,7 @@ export const useAdminRole = () => {
         login_count: user.login_count || 0
       })) || []
       
-      console.log('Formatted users:', formattedUsers)
+      logger.debug('Formatted users', { count: formattedUsers.length })
       setUsers(formattedUsers)
       return { success: true, data: formattedUsers }
     } catch (error: any) {

@@ -101,7 +101,7 @@ export function useUnifiedEdgeFunction<T = any>(
             throw new Error(error.message);
           }
 
-          console.log(`[EdgeFunction] ${functionName} success:`, data);
+          logger.debug(`${functionName} success`, { functionName });
 
           if (isMountedRef.current) {
             setState({

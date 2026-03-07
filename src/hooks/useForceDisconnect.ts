@@ -30,7 +30,7 @@ export const useForceDisconnect = () => {
         return { success: false, error };
       }
 
-      console.log('User disconnected successfully:', data);
+      logger.info('User disconnected successfully', { targetUserId });
       
       toast({
         title: 'Utilisateur déconnecté',

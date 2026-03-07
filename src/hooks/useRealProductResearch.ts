@@ -76,7 +76,7 @@ export function useRealProductResearch(filters: RealProductFilters) {
         throw error;
       }
 
-      console.log('Aggregator response:', data);
+      logger.debug('Aggregator response received', { count: data?.products?.length });
 
       // Transform products
       const products = (data?.products || []).map((p: any) => 

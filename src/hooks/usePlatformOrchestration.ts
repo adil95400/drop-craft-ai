@@ -21,7 +21,7 @@ export const usePlatformOrchestration = () => {
       platformOrchestrationService.initializePlatform(user.id)
         .then(() => {
           setIsInitialized(true)
-          console.log('Platform initialized for user:', user.id)
+          logger.info('Platform initialized', { userId: user.id })
         })
         .catch((error) => {
           console.error('Failed to initialize platform:', error)

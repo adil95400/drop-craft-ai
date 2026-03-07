@@ -49,7 +49,7 @@ export function useAdSpy() {
   // Search ads mutation
   const searchAdsMutation = useMutation({
     mutationFn: async (filters: AdSpyFilters) => {
-      console.log('[Ad Spy] Searching ads:', filters);
+      logger.debug('Searching ads', { filters });
       
       const { data, error } = await supabase.functions.invoke('ad-spy-scanner', {
         body: {
