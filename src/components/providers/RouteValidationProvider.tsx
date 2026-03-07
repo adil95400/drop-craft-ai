@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { validateAllRoutes, logValidationResults } from '@/utils/routeValidator';
+import { logger } from '@/lib/logger';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { AlertTriangle, CheckCircle, X } from 'lucide-react';
