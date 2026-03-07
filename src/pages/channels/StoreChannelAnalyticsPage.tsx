@@ -94,16 +94,16 @@ export default function StoreChannelAnalyticsPage() {
     );
     const revenue = platformOrders.reduce((s, o) => s + (Number(o.total_amount) || 0), 0);
     const orders = platformOrders.length;
-    const products = productLinks.filter(pl => pl.integration_id === int.id).length;
-    const syncedProducts = productLinks.filter(pl => pl.integration_id === int.id && pl.sync_status === 'synced').length;
+    const products = productLinks.filter(pl => pl.store_id === int.id).length;
+    const syncedProducts = productLinks.filter(pl => pl.store_id === int.id && pl.sync_status === 'synced').length;
     const syncHealth = products > 0 ? Math.round((syncedProducts / products) * 100) : 100;
     const avgOrderValue = orders > 0 ? revenue / orders : 0;
 
     return {
       id: int.id,
-      name: int.store_name || int.platform,
+      name: int.platform_name || int.platform,
       platform: int.platform || 'unknown',
-      status: int.sync_status === 'error' ? 'warning' : 'active',
+      status: int.connection_status === 'error' ? 'warning' : 'active',
       revenue,
       orders,
       products,
