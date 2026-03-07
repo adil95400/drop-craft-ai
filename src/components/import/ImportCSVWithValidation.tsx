@@ -73,7 +73,7 @@ export function ImportCSVWithValidation() {
               const normalizedName = name.toLowerCase().replace(/\s+/g, '_').replace(/[()]/g, '')
               return normalized === normalizedName || normalized.includes(normalizedName)
             })) {
-              console.log('  → Mapped to:', fieldName)
+              // Mapped to fieldName
               return fieldName
             }
           }
