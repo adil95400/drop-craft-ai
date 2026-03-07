@@ -96,8 +96,8 @@ Deno.serve(async (req) => {
     const categories = template.config.category ? [template.config.category] : ['fashion', 'electronics', 'home']
     
     for (let i = 0; i < Math.min(template.config.limit, 20); i++) {
-      const category = categories[Math.floor(Math.random() * categories.length)]
-      const basePrice = 15 + Math.random() * 100
+      const category = categories[i % categories.length]
+      const basePrice = 15 + (i * 5)
       const margin = automationRules?.targetMargin || 30
       const sellPrice = basePrice * (1 + margin / 100)
 

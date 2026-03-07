@@ -63,7 +63,7 @@ async function fetchFacebookAds(keyword: string, firecrawlApiKey: string): Promi
         
         // Calculate engagement metrics based on ad visibility
         const estimatedReach = 50000 + (i * 10000)
-        const engagementRate = 2 + (Math.random() * 3) // 2-5% typical for FB ads
+        const engagementRate = 3.5 // average FB engagement rate
         const likes = Math.floor(estimatedReach * (engagementRate / 100) * 0.7)
         const comments = Math.floor(likes * 0.15)
         const shares = Math.floor(likes * 0.1)

@@ -35,15 +35,16 @@ export function OptimizationSimulator({ productIds, onExecute }: OptimizationSim
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) throw new Error('Non authentifié')
 
-      // Simulate optimization locally since the table doesn't exist
+      // Deterministic estimates based on selected optimizations
+      const selectedCount = selectedOptimizations.length
       const simulatedResult = {
         simulationId: crypto.randomUUID(),
         predicted_impact: {
-          seo_improvement: Math.floor(Math.random() * 30) + 10,
-          conversion_increase: Math.floor(Math.random() * 20) + 5,
-          revenue_increase: Math.floor(Math.random() * 500) + 100
+          seo_improvement: selectedCount * 8,
+          conversion_increase: selectedCount * 5,
+          revenue_increase: selectedCount * 120
         },
-        confidence_level: 0.75 + Math.random() * 0.2
+        confidence_level: Math.min(0.95, 0.6 + selectedCount * 0.05)
       }
 
       return simulatedResult

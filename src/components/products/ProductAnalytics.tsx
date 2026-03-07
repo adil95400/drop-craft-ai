@@ -454,8 +454,8 @@ const ProductAnalytics = ({ productId }: ProductAnalyticsProps) => {
                 <div className="space-y-2">
                   {Array.from({ length: 24 }, (_, i) => {
                     const hour = i;
-                    const purchases = Math.floor(Math.random() * 20) + 1;
-                    const maxPurchases = 20;
+                    const purchases = 0; // Real data when order timestamps available
+                    const maxPurchases = 1;
                     return (
                       <div key={hour} className="flex items-center gap-2">
                         <span className="text-xs w-8">{hour}h</span>

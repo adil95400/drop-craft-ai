@@ -276,10 +276,15 @@ export class SystemMonitoringService {
     const base = baseMetrics[componentName as keyof typeof baseMetrics] || 
                 { baseScore: 80, baseResponseTime: 200, baseErrorRate: 3 };
 
-    const performanceScore = Math.max(0, Math.min(100, base.baseScore + (Math.random() - 0.5) * 20));
-    const responseTime = Math.max(10, base.baseResponseTime + (Math.random() - 0.5) * base.baseResponseTime * 0.5);
-    const errorRate = Math.max(0, base.baseErrorRate + (Math.random() - 0.5) * base.baseErrorRate);
-    const uptime = Math.max(80, Math.min(100, 98 + (Math.random() - 0.5) * 4));
+    // Use deterministic values based on component baseline instead of random
+    const performanceScore = base.baseScore;
+    const responseTime = base.baseResponseTime;
+    const errorRate = base.baseErrorRate;
+    const uptime = 99.5;
+
+    // Use real browser performance metrics where available
+    const perfMemory = (performance as any).memory;
+    const memoryUsage = perfMemory ? Math.round((perfMemory.usedJSHeapSize / perfMemory.jsHeapSizeLimit) * 100) : 0;
 
     let healthStatus: 'healthy' | 'warning' | 'critical' = 'healthy';
     if (performanceScore < 70 || errorRate > 5 || uptime < 90) {
@@ -295,12 +300,12 @@ export class SystemMonitoringService {
       responseTime: Math.round(responseTime),
       uptime: Math.round(uptime * 100) / 100,
       additionalMetrics: {
-        cpu_usage: Math.random() * 80 + 10,
-        memory_usage: Math.random() * 70 + 20,
-        disk_usage: Math.random() * 50 + 10,
-        network_latency: Math.random() * 100 + 20,
-        active_connections: Math.floor(Math.random() * 1000 + 100),
-        throughput: Math.floor(Math.random() * 10000 + 1000)
+        cpu_usage: 0,
+        memory_usage: memoryUsage,
+        disk_usage: 0,
+        network_latency: responseTime,
+        active_connections: 0,
+        throughput: 0
       }
     };
   }

@@ -162,7 +162,7 @@ export const ExtensionSecurity = () => {
       }
 
       const duration = Date.now() - startTime
-      const issuesCount = Math.floor(Math.random() * 3) + 1
+      const issuesCount = SECURITY_ISSUES.length
       
       setSecurityScans(prev => 
         prev.map(s => s.id === scan.id ? { 
