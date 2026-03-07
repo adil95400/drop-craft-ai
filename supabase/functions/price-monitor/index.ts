@@ -60,8 +60,8 @@ serve(async (req) => {
       const results = []
       for (const monitor of monitors || []) {
         try {
-          // Simulate price scraping (in production, use real scraper)
-          const newPrice = monitor.current_price * (0.95 + Math.random() * 0.1)
+          // Keep current price unchanged until real scraper is integrated
+          const newPrice = monitor.current_price
           const priceChange = newPrice - monitor.current_price
           const changePercentage = monitor.current_price > 0 
             ? (priceChange / monitor.current_price) * 100 
