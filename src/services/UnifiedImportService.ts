@@ -1,6 +1,7 @@
 import { supabase } from '@/integrations/supabase/client'
 import { toast } from 'sonner'
 import { importRateLimiter } from './importRateLimiter'
+import { logger } from '@/lib/logger'
 
 type ImportStatus = 'pending' | 'processing' | 'completed' | 'failed'
 type ImportSourceType = 'url' | 'csv' | 'xml' | 'json' | 'api' | 'ftp'
