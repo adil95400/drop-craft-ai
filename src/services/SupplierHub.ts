@@ -471,7 +471,7 @@ class SupplierHubService {
     // Simulate API call
     return new Promise((resolve) => {
       setTimeout(() => {
-        console.log(`Disconnecting from ${connectorId}`);
+        // Disconnecting connector
         resolve(true);
       }, 500);
     });
