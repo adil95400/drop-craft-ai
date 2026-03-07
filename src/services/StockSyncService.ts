@@ -341,7 +341,7 @@ export class StockSyncService {
     const errors: string[] = [];
 
     try {
-      console.log('💰 Auto-adjusting prices based on stock levels...');
+      // Auto-adjusting prices based on stock levels
 
       // Get products that might need price adjustment
       const { data: products, error: productsError } = await (supabase as any)
