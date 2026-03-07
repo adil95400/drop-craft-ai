@@ -80,7 +80,7 @@ export class SalesIntelligenceService {
         throw new Error(data.error || 'Failed to generate forecast');
       }
 
-      console.log('[SalesIntelligenceService] Forecast generated successfully');
+      logger.info('Forecast generated successfully');
       return data.analysis;
     } catch (error) {
       console.error('[SalesIntelligenceService] Error generating forecast:', error);
