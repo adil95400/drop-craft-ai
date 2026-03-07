@@ -18,8 +18,9 @@ const logStep = (step: string, details?: Record<string, unknown>) => {
 
 serve(
   withErrorHandler(async (req) => {
+    const corsHeaders = getSecureCorsHeaders(req);
     if (req.method === "OPTIONS") {
-      return new Response(null, { headers: corsHeaders });
+      return handleCorsPreflightSecure(req);
     }
 
     logStep("Function started");

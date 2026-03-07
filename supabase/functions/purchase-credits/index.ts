@@ -1,11 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
-};
+import { getSecureCorsHeaders, handleCorsPreflightSecure, isAllowedOrigin } from '../_shared/secure-cors.ts';
 
 const CREDIT_PACKS = {
   small: { credits: 50, label: "50 crédits IA", price_amount: 499 },
@@ -14,8 +10,9 @@ const CREDIT_PACKS = {
 };
 
 serve(async (req) => {
+  const corsHeaders = getSecureCorsHeaders(req);
   if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+    return handleCorsPreflightSecure(req);
   }
 
   const supabaseClient = createClient(
@@ -24,7 +21,13 @@ serve(async (req) => {
   );
 
   try {
-    const authHeader = req.headers.get("Authorization")!;
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader?.startsWith("Bearer ")) {
+      return new Response(JSON.stringify({ error: "Authorization required" }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 401,
+      });
+    }
     const token = authHeader.replace("Bearer ", "");
     const { data } = await supabaseClient.auth.getUser(token);
     const user = data.user;
@@ -71,6 +74,10 @@ serve(async (req) => {
       customerId = customers.data[0].id;
     }
 
+    // SECURITY: Validate redirect origin
+    const origin = req.headers.get("origin") || "";
+    const safeOrigin = isAllowedOrigin(origin) ? origin : "https://drop-craft-ai.lovable.app";
+
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
       customer_email: customerId ? undefined : user.email,
@@ -93,8 +100,8 @@ serve(async (req) => {
         pack_id,
         credits: pack.credits.toString(),
       },
-      success_url: `${req.headers.get("origin")}/dashboard/consumption?credits_purchased=${pack.credits}`,
-      cancel_url: `${req.headers.get("origin")}/dashboard/consumption`,
+      success_url: `${safeOrigin}/dashboard/consumption?credits_purchased=${pack.credits}`,
+      cancel_url: `${safeOrigin}/dashboard/consumption`,
     });
 
     return new Response(JSON.stringify({ url: session.url }), {
