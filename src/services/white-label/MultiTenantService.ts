@@ -324,7 +324,7 @@ export class MultiTenantService {
     try {
       // Build query — RLS on the Supabase client already enforces user_id isolation.
       // We additionally filter by the tenant's owner_id for multi-tenant scoping.
-      let query = supabase
+      let query = (supabase as any)
         .from(table)
         .select('*')
         .eq('user_id', tenant.owner_id);
@@ -332,7 +332,8 @@ export class MultiTenantService {
       // Apply additional filters
       for (const [key, value] of Object.entries(filters)) {
         if (value !== undefined && value !== null) {
-          query = query.eq(key, value);
+          query = query.eq(key, value as any);
+        }
         }
       }
 
