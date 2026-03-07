@@ -67,6 +67,8 @@ export default function ProductDetailsPage() {
   const [showDescriptionFull, setShowDescriptionFull] = useState(false)
   const [activeTab, setActiveTab] = useState('audit')
   const [aiGeneratingField, setAiGeneratingField] = useState<string | null>(null)
+  const [showImageEditor, setShowImageEditor] = useState(false)
+  const [editingImageUrl, setEditingImageUrl] = useState('')
 
   // Edit form state
   const [editForm, setEditForm] = useState({
