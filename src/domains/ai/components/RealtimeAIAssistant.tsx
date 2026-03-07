@@ -281,7 +281,7 @@ export const RealtimeAIAssistant: React.FC = () => {
       return
     }
 
-    console.log('🔗 Connecting to realtime AI assistant...')
+    // Connecting to realtime AI assistant
     setConnectionStatus('connecting')
 
     // Use the full URL to the Supabase edge function
