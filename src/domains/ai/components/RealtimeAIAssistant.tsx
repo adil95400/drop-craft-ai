@@ -146,7 +146,7 @@ class AudioQueue implements AudioQueueClass {
       source.connect(this.audioContext.destination)
       
       source.onended = () => {
-        console.log('🎵 Audio chunk finished, playing next...')
+        // Audio chunk finished, playing next
         this.playNext()
       }
       source.start(0)
