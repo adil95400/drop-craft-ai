@@ -349,7 +349,7 @@ export const RealtimeChatInterface: React.FC = () => {
       wsRef.current.onmessage = handleMessage
 
       wsRef.current.onclose = (event) => {
-        console.log('🔌 WebSocket closed:', event.code, event.reason)
+        // WebSocket closed
         setIsConnected(false)
         setIsConnecting(false)
         setIsRecording(false)

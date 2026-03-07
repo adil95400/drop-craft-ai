@@ -400,11 +400,10 @@ export const startTransaction = (name: string, operation: string) => {
     const start = performance.now();
     return {
       finish: () => {
-        const duration = performance.now() - start;
-        console.log(`[TRANSACTION] ${name} (${operation}): ${duration.toFixed(2)}ms`);
+        // No Sentry, skip transaction tracking
       },
-      setTag: (key: string, value: string) => {
-        console.log(`[TRANSACTION TAG] ${key}: ${value}`);
+      setTag: (_key: string, _value: string) => {
+        // No-op without Sentry
       }
     };
   }

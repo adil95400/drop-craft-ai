@@ -84,8 +84,7 @@ export function ImportCSVWithValidation() {
         complete: (results) => {
           setProgress(50)
           
-          console.log('Parsed headers:', results.meta.fields)
-          console.log('First row sample:', results.data[0])
+          // CSV parsed successfully
           
           // Validate each row
           const validated: ParsedRow[] = results.data.map((row: any, index: number) => {

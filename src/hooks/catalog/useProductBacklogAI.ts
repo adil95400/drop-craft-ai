@@ -225,7 +225,7 @@ export function useApplyBacklogRecommendation() {
 
   return useMutation({
     mutationFn: async (recommendation: BacklogRecommendation) => {
-      console.log('[Backlog AI] Applying recommendation:', recommendation.type)
+      // Applying backlog recommendation
       
       const { data, error } = await supabase.functions.invoke('catalog-ai-hub', {
         body: {

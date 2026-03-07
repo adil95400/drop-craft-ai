@@ -65,7 +65,7 @@ export class QueueService {
     if (error) throw error
 
     const jobId = data.id
-    console.log(`Added job ${jobId} to queue: ${type}`)
+    // Job added to queue
     return jobId
   }
 

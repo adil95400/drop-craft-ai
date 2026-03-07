@@ -115,10 +115,6 @@ export class PerformanceTracker {
     }
 
     const duration = (end || performance.now()) - start;
-    
-    if (import.meta.env.DEV) {
-      console.log(`⏱️ ${name}: ${duration.toFixed(2)}ms`);
-    }
 
     performanceMonitoring.measurePerformance(name).end();
     
