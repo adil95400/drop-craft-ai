@@ -1,6 +1,6 @@
 /**
  * Pricing Manager Hub — Vue d'ensemble de la tarification
- * Centralise les accès aux sous-modules pricing
+ * Centralise les accès aux sous-modules pricing + actions cross-module
  */
 import { Helmet } from 'react-helmet-async';
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
@@ -12,9 +12,10 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import {
   DollarSign, TrendingUp, Shield, Calculator, Brain,
-  ArrowRight, BarChart3, Zap, Target, Eye, RefreshCw
+  ArrowRight, BarChart3, Zap, Target, Eye, RefreshCw, Loader2
 } from 'lucide-react';
 import { ModuleInterconnectionBanner } from '@/components/cross-module/ModuleInterconnectionBanner';
+import { useApplyPricingRules, useAutoRepriceFromCompetitors } from '@/hooks/useCrossModuleSync';
 
 const PRICING_MODULES = [
   {
@@ -66,7 +67,8 @@ const PRICING_MODULES = [
 
 export default function PricingManagerHub() {
   const navigate = useNavigate();
-
+  const applyRules = useApplyPricingRules();
+  const autoReprice = useAutoRepriceFromCompetitors();
   const { data: stats } = useQuery({
     queryKey: ['pricing-hub-stats'],
     queryFn: async () => {
@@ -120,6 +122,25 @@ export default function PricingManagerHub() {
               </div>
             </Card>
           ))}
+        </div>
+        {/* Quick cross-module actions */}
+        <div className="flex flex-wrap gap-3 mb-8">
+          <Button
+            variant="outline"
+            onClick={() => applyRules.mutate()}
+            disabled={applyRules.isPending}
+          >
+            {applyRules.isPending ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Zap className="h-4 w-4 mr-2" />}
+            Appliquer les règles de prix
+          </Button>
+          <Button
+            variant="outline"
+            onClick={() => autoReprice.mutate()}
+            disabled={autoReprice.isPending}
+          >
+            {autoReprice.isPending ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Target className="h-4 w-4 mr-2" />}
+            Repricing concurrentiel auto
+          </Button>
         </div>
 
         {/* Modules grid */}
