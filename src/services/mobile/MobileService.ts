@@ -37,7 +37,7 @@ export class MobileService {
       
       // Listen for registration
       PushNotifications.addListener('registration', (token) => {
-        console.log('Push registration success, token: ', token.value);
+        // Push registration success
         this.sendTokenToServer(token.value);
       });
 
