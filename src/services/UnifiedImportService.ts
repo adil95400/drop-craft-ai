@@ -209,7 +209,7 @@ class UnifiedImportService {
 
       // Notify progress
       if (status.status === 'processing' && status.progress > 0) {
-        console.log(`[UnifiedImport] Job ${jobId} progress: ${status.progress}%`)
+        logger.debug(`Import job ${jobId} progress: ${status.progress}%`)
       }
 
       // Stop if completed or failed
