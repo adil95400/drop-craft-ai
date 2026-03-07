@@ -12,31 +12,33 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import { lazy } from 'react';
 
 // Pricing pages
+const PricingManagerHub = lazy(() => import('@/pages/pricing/PricingManagerHub'));
 const PriceRulesPage = lazy(() => import('@/pages/products/PriceRulesPage'));
 const LiveRepricingPage = lazy(() => import('@/pages/pricing/LiveRepricingPage'));
 const PriceMonitoringPage = lazy(() => import('@/pages/products/PriceMonitoringPage'));
 const PricingEnginePage = lazy(() => import('@/pages/products/PricingEnginePage'));
+const PricingOptimizationPage = lazy(() => import('@/pages/pricing/PricingOptimizationPage'));
 
 export function PricingRoutes() {
   return (
     <Routes>
       {/* Hub Tarification - Vue d'ensemble */}
-      <Route index element={<PriceRulesPage />} />
+      <Route index element={<PricingManagerHub />} />
       
-      {/* Règles de Prix - Règles statiques */}
+      {/* Règles de Prix */}
       <Route path="rules" element={<PriceRulesPage />} />
       
-      {/* Repricing Auto - Temps réel + Sync boutiques */}
+      {/* Repricing Auto */}
       <Route path="repricing" element={<LiveRepricingPage />} />
       
-      {/* Veille Prix - Monitoring P1-1 */}
+      {/* Veille Prix */}
       <Route path="monitoring" element={<PriceMonitoringPage />} />
       
-      {/* Moteur de règles P1-3 */}
+      {/* Moteur de règles */}
       <Route path="engine" element={<PricingEnginePage />} />
       
-      {/* Optimisation IA - Recommandations */}
-      <Route path="optimization" element={<PriceRulesPage />} />
+      {/* Optimisation IA */}
+      <Route path="optimization" element={<PricingOptimizationPage />} />
       
       {/* Legacy redirects */}
       <Route path="automation" element={<Navigate to="/pricing-manager" replace />} />
