@@ -449,7 +449,7 @@ export class StockSyncService {
       metadata: { import_settings: config, sync_frequency: config.sync_frequency }
     });
 
-    console.log(`⏰ Stock sync scheduled for ${config.sync_frequency} intervals`);
+    // Stock sync scheduled
   }
 
   private getNextScheduleTime(frequency: string): Date {

@@ -310,7 +310,7 @@ class NotificationService {
   async clearOldNotifications(olderThanHours: number = 24): Promise<void> {
     // Cette fonctionnalité nécessiterait l'accès au service worker
     // pour nettoyer les notifications système
-    console.log(`Clearing notifications older than ${olderThanHours} hours`);
+    // TODO: Implement notification cleanup via service worker
   }
 
   // Planifier des notifications
