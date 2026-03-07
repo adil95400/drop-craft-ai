@@ -33,6 +33,7 @@ import { SimplifiedSyncEngine, SyncConfiguration, SyncOperation, syncEngine } fr
 import { ConnectorManager } from '@/services/ConnectorManager';
 
 const CoreSyncDashboard: React.FC = () => {
+  const { user } = useAuth();
   const [syncConfigs, setSyncConfigs] = useState<SyncConfiguration[]>([]);
   const [syncOps, setSyncOps] = useState<SyncOperation[]>([]);
   const [connectors, setConnectors] = useState<any[]>([]);
