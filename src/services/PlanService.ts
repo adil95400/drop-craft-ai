@@ -146,7 +146,7 @@ export class PlanService {
       this.currentPlan = (profile?.subscription_plan as PlanTier) || 'free';
       await this.refreshUsage(userId);
     } catch (error) {
-      console.error('Failed to initialize PlanService:', error);
+      logger.error('Failed to initialize PlanService', error instanceof Error ? error : undefined, { ...LOG_CTX, action: 'initialize' });
       this.currentPlan = 'free';
     }
   }
