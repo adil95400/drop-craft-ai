@@ -79,7 +79,7 @@ export class CreativeStudioService {
         campaign_id: log.metadata?.campaign_id
       }))
     } catch (error) {
-      console.error('Error fetching creative assets:', error)
+      logger.error('Error fetching creative assets', error instanceof Error ? error : undefined, { ...LOG_CTX, action: 'getAssets' })
       return []
     }
   }
