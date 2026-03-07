@@ -379,7 +379,7 @@ export const securityAlerts = {
  */
 export const trackMetric = (name: string, value: number, unit: string = '', tags: Record<string, string> = {}) => {
   if (!import.meta.env.VITE_SENTRY_DSN) {
-    console.log(`[METRIC] ${name}: ${value}${unit}`, tags);
+    // No Sentry DSN configured, skip metric tracking
     return;
   }
 
@@ -400,11 +400,10 @@ export const startTransaction = (name: string, operation: string) => {
     const start = performance.now();
     return {
       finish: () => {
-        const duration = performance.now() - start;
-        console.log(`[TRANSACTION] ${name} (${operation}): ${duration.toFixed(2)}ms`);
+        // No Sentry, skip transaction tracking
       },
-      setTag: (key: string, value: string) => {
-        console.log(`[TRANSACTION TAG] ${key}: ${value}`);
+      setTag: (_key: string, _value: string) => {
+        // No-op without Sentry
       }
     };
   }

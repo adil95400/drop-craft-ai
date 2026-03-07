@@ -386,8 +386,7 @@ export const useStores = () => {
           table: 'integrations',
           filter: `user_id=eq.${user?.id}`
         },
-        (payload) => {
-          console.log('Store change received:', payload)
+        (_payload) => {
           fetchStores() // Refetch on any change
         }
       )

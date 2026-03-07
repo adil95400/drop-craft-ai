@@ -57,10 +57,8 @@ class PerformanceMonitoringService {
   }
 
   // Web Vitals reporting
-  reportWebVitals(metric: any) {
-    if (import.meta.env.PROD) {
-      console.log('Web Vital:', metric);
-    }
+  reportWebVitals(_metric: any) {
+    // Web vitals are reported via Sentry in production
   }
 
   // Image preloading
@@ -105,9 +103,6 @@ export class PerformanceTracker {
 
   mark(name: string): void {
     this.marks.set(name, performance.now());
-    if (import.meta.env.DEV) {
-      console.log(`📍 Mark: ${name}`);
-    }
   }
 
   measure(name: string, startMark: string, endMark?: string): number {
@@ -120,10 +115,6 @@ export class PerformanceTracker {
     }
 
     const duration = (end || performance.now()) - start;
-    
-    if (import.meta.env.DEV) {
-      console.log(`⏱️ ${name}: ${duration.toFixed(2)}ms`);
-    }
 
     performanceMonitoring.measurePerformance(name).end();
     

@@ -233,7 +233,7 @@ export const RealtimeChatInterface: React.FC = () => {
   const handleMessage = useCallback((event: MessageEvent) => {
     try {
       const data = JSON.parse(event.data)
-      console.log('📨 Received message type:', data.type)
+      // Message received
 
       switch (data.type) {
         case 'connection_status':
@@ -331,11 +331,11 @@ export const RealtimeChatInterface: React.FC = () => {
       const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
       const wsUrl = `${protocol}//dtozyrmmekdnvekissuh.functions.supabase.co/ai-realtime-chat`
       
-      console.log('🔗 Connecting to:', wsUrl)
+      // Connecting to WebSocket
       wsRef.current = new WebSocket(wsUrl)
 
       wsRef.current.onopen = () => {
-        console.log('✅ WebSocket connected')
+        // WebSocket connected
         setIsConnected(true)
         setIsConnecting(false)
         setConnectionStatus({ status: 'connected', message: 'Connecté au chat IA' })
@@ -349,7 +349,7 @@ export const RealtimeChatInterface: React.FC = () => {
       wsRef.current.onmessage = handleMessage
 
       wsRef.current.onclose = (event) => {
-        console.log('🔌 WebSocket closed:', event.code, event.reason)
+        // WebSocket closed
         setIsConnected(false)
         setIsConnecting(false)
         setIsRecording(false)

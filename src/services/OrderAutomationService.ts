@@ -90,7 +90,7 @@ export class OrderAutomationService {
     })
 
     if (error) throw error
-    console.log('Order automation processed:', data)
+    // Order automation processed
   }
 
   async getAutomationStats(): Promise<{

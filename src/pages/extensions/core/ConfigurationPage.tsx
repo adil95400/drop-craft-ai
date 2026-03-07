@@ -47,8 +47,7 @@ export default function ConfigurationPage() {
   ]
 
   const handleSaveConfig = () => {
-    // Simulate save
-    console.log('Configuration saved:', configs)
+    // TODO: Implement save
   }
 
   const handleResetConfig = () => {

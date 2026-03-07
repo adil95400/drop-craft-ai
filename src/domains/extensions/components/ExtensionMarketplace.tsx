@@ -167,8 +167,7 @@ export const ExtensionMarketplace: React.FC = () => {
       return
     }
 
-    console.log('Installing extension:', extensionId)
-    // Logique d'installation
+    // TODO: Logique d'installation
   }
 
   const handleToggleFavorite = (extensionId: string) => {
@@ -333,7 +332,7 @@ export const ExtensionMarketplace: React.FC = () => {
                       key={extension.id}
                       extension={extension}
                       onInstall={handleInstall}
-                      onViewDetails={(id) => console.log('View details:', id)}
+                      onViewDetails={(_id) => { /* TODO: view details */ }}
                       isFavorite={favorites.includes(extension.id)}
                       onToggleFavorite={handleToggleFavorite}
                     />
@@ -359,7 +358,7 @@ export const ExtensionMarketplace: React.FC = () => {
                   key={extension.id}
                   extension={extension}
                   onInstall={handleInstall}
-                  onViewDetails={(id) => console.log('View details:', id)}
+                  onViewDetails={(_id) => { /* TODO: view details */ }}
                   isFavorite={favorites.includes(extension.id)}
                   onToggleFavorite={handleToggleFavorite}
                 />

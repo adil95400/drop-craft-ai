@@ -64,14 +64,12 @@ export function UnifiedCatalog() {
     })
   }
 
-  const handleViewAnalytics = (productId: string) => {
-    console.log('View analytics for product:', productId)
-    // Redirection vers analytics du produit
+  const handleViewAnalytics = (_productId: string) => {
+    // TODO: Redirection vers analytics du produit
   }
 
-  const handleDuplicateProduct = (product: Product) => {
-    console.log('Duplicate product:', product.id)
-    // Logique de duplication
+  const handleDuplicateProduct = (_product: Product) => {
+    // TODO: Logique de duplication
   }
 
   const filteredProducts = products.filter(product =>

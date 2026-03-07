@@ -14,7 +14,7 @@ export async function seedSampleProducts() {
     .limit(1)
 
   if (existingProducts && existingProducts.length > 0) {
-    console.log('Products already seeded')
+    // Products already seeded
     return
   }
 
@@ -93,6 +93,6 @@ export async function seedSampleProducts() {
   if (error) {
     console.error('Error seeding products:', error)
   } else {
-    console.log('Sample products seeded successfully')
+    // Sample products seeded successfully
   }
 }

@@ -31,7 +31,7 @@ export class ApiConnector extends BaseConnector {
       const response = await this.makeRequest('/health');
       return true;
     } catch (error) {
-      console.log('Connection test failed', error);
+      // Connection test failed
       return false;
     }
   }
@@ -62,7 +62,7 @@ export class ApiConnector extends BaseConnector {
 
       return this.transformProduct(response);
     } catch (error) {
-      console.log('Failed to get product', error);
+      // Failed to get product
       return null;
     }
   }

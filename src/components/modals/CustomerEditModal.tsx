@@ -56,8 +56,7 @@ export function CustomerEditModal({ customer, open, onOpenChange }: CustomerEdit
   const [newTag, setNewTag] = useState('')
 
   const handleSave = () => {
-    // Implement save logic here
-    console.log('Saving customer data:', formData)
+    // TODO: Implement save logic here
     onOpenChange(false)
   }
 

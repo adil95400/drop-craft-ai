@@ -40,7 +40,7 @@ export const RealtimePresence: React.FC<RealtimePresenceProps> = ({
     if (!user) return
 
     // Using Supabase Realtime presence instead of database table
-    console.log('Presence updated for user:', user.id)
+    // Presence updated
   }, [user, channelName])
 
   const fetchPresenceUsers = useCallback(async () => {
@@ -80,11 +80,11 @@ export const RealtimePresence: React.FC<RealtimePresenceProps> = ({
         }))
         setCurrentUsers(users)
       })
-      .on('presence', { event: 'join' }, ({ key, newPresences }) => {
-        console.log('👋 User joined:', key, newPresences)
+      .on('presence', { event: 'join' }, ({ key: _key, newPresences: _newPresences }) => {
+        // User joined
       })
-      .on('presence', { event: 'leave' }, ({ key, leftPresences }) => {
-        console.log('👋 User left:', key, leftPresences)
+      .on('presence', { event: 'leave' }, ({ key: _key, leftPresences: _leftPresences }) => {
+        // User left
       })
       .subscribe(async (status) => {
         if (status !== 'SUBSCRIBED') return

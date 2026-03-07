@@ -149,16 +149,16 @@ export default function WishlistPage() {
     return matchesSearch && matchesCategory
   })
 
-  const handleRemoveFromWishlist = (itemId: string) => {
-    console.log('Removing from wishlist:', itemId)
+  const handleRemoveFromWishlist = (_itemId: string) => {
+    // TODO: remove from wishlist
   }
 
-  const handleInstallExtension = (itemId: string) => {
-    console.log('Installing extension:', itemId)
+  const handleInstallExtension = (_itemId: string) => {
+    // TODO: install extension
   }
 
   const handleShareWishlist = () => {
-    console.log('Sharing wishlist')
+    // TODO: share wishlist
   }
 
   return (

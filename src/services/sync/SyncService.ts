@@ -40,7 +40,7 @@ export class SyncService {
 
   // Sync BigBuy products using real API
   async syncBigBuyProducts(integration: any): Promise<void> {
-    console.log(`Syncing BigBuy products for integration ${integration.id}`)
+    // Syncing BigBuy products
 
     try {
       // Use supplier-sync-products edge function for real sync
@@ -53,7 +53,7 @@ export class SyncService {
 
       if (error) throw error
 
-      console.log(`Sync completed: ${data?.syncStats?.imported || 0} products imported`)
+      // Sync completed
     } catch (error) {
       console.error('BigBuy sync error:', error)
       throw error

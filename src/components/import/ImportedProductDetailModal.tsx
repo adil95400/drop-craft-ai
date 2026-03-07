@@ -120,7 +120,6 @@ export function ImportedProductDetailModal({
           .limit(50);
         
         if (error || !reviewsData) {
-          console.log('No reviews found or table does not exist:', error?.message);
           return [];
         }
         
@@ -133,8 +132,7 @@ export function ImportedProductDetailModal({
           is_verified: r.is_verified,
           images: r.images as string[] | null
         }));
-      } catch (e) {
-        console.log('Error fetching reviews:', e);
+      } catch (_e) {
         return [];
       }
     },

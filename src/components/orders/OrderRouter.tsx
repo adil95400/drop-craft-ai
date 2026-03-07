@@ -222,13 +222,13 @@ export const OrderRouter = () => {
     if (!rule.api_endpoint) throw new Error('API endpoint not configured')
     
     // Simulate API call
-    console.log('Routing via API:', rule.api_endpoint, data)
+    // Routing via API
     await new Promise(resolve => setTimeout(resolve, 1000))
   }
 
   const routeViaEDI = async (rule: OrderRoutingRule, data: any) => {
     // Simulate EDI processing
-    console.log('Routing via EDI:', rule.edi_config, data)
+    // Routing via EDI
     await new Promise(resolve => setTimeout(resolve, 1000))
   }
 
@@ -236,7 +236,7 @@ export const OrderRouter = () => {
     if (!rule.email_address) throw new Error('Email address not configured')
 
     // Simulate email sending
-    console.log('Routing via Email:', rule.email_address, data)
+    // Routing via Email
     await new Promise(resolve => setTimeout(resolve, 1000))
   }
 

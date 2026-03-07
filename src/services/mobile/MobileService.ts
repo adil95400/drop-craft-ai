@@ -24,7 +24,7 @@ export class MobileService {
   // Push Notifications
   async initializePushNotifications(): Promise<void> {
     if (!this.isNative()) {
-      console.log('Push notifications only available on native platforms');
+      // Push notifications only available on native platforms
       return;
     }
 
@@ -37,23 +37,23 @@ export class MobileService {
       
       // Listen for registration
       PushNotifications.addListener('registration', (token) => {
-        console.log('Push registration success, token: ', token.value);
+        // Push registration success
         this.sendTokenToServer(token.value);
       });
 
       // Listen for push notifications
       PushNotifications.addListener('pushNotificationReceived', (notification) => {
-        console.log('Push received: ', notification);
+        // Push notification received
         this.handleNotificationReceived(notification);
       });
 
       // Listen for notification actions
       PushNotifications.addListener('pushNotificationActionPerformed', (action) => {
-        console.log('Push action performed: ', action);
+        // Push action performed
         this.handleNotificationAction(action);
       });
     } else {
-      console.log('Push notification permission denied');
+      // Push notification permission denied
     }
   }
 
@@ -177,7 +177,7 @@ export class MobileService {
     };
 
     // Send to analytics service
-    console.log('Mobile Analytics Event:', eventName, mobileProperties);
+    // TODO: Send to analytics provider (e.g. mixpanel)
     
     // In production, send to your analytics provider
     // Example: mixpanel.track(eventName, mobileProperties);

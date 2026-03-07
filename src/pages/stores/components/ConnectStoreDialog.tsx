@@ -133,7 +133,7 @@ export function ConnectStoreDialog({ open, onOpenChange }: ConnectStoreDialogPro
   }
 
   const handleFieldMappingSave = (mappings: any[]) => {
-    console.log('Field mappings saved:', mappings)
+    // Field mappings saved
     toast({
       title: "Mapping sauvegardé",
       description: `${mappings.length} mappings de champs configurés`

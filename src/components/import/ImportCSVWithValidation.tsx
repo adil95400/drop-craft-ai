@@ -65,7 +65,7 @@ export function ImportCSVWithValidation() {
             .replace(/\s+/g, '_')
             .replace(/[()]/g, '')
           
-          console.log('Transforming CSV header:', header, '→', normalized)
+          // Transforming CSV header
           
           // Try to find matching field in PRODUCT_COLUMN_MAPPINGS
           for (const [fieldName, possibleNames] of Object.entries(PRODUCT_COLUMN_MAPPINGS)) {
@@ -73,19 +73,18 @@ export function ImportCSVWithValidation() {
               const normalizedName = name.toLowerCase().replace(/\s+/g, '_').replace(/[()]/g, '')
               return normalized === normalizedName || normalized.includes(normalizedName)
             })) {
-              console.log('  → Mapped to:', fieldName)
+              // Mapped to fieldName
               return fieldName
             }
           }
           
-          console.log('  → No mapping found, keeping:', normalized)
+          // No mapping found, keeping original
           return normalized
         },
         complete: (results) => {
           setProgress(50)
           
-          console.log('Parsed headers:', results.meta.fields)
-          console.log('First row sample:', results.data[0])
+          // CSV parsed successfully
           
           // Validate each row
           const validated: ParsedRow[] = results.data.map((row: any, index: number) => {

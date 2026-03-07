@@ -40,7 +40,7 @@ export async function fetchAllRows<T>(
   let iteration = 0;
   const maxIterations = 200; // Safety limit (100,000 products max)
 
-  console.log(`📦 Starting paginated fetch for ${tableName}...`);
+  // Starting paginated fetch
 
   while (hasMore && iteration < maxIterations) {
     iteration++;
@@ -89,10 +89,10 @@ export async function fetchAllRows<T>(
       onProgress(allData.length);
     }
 
-    console.log(`✅ Page ${iteration}: fetched ${data.length} rows (total: ${allData.length})`);
+    // Page fetched
   }
 
-  console.log(`🎉 Completed fetch: ${allData.length} total rows from ${tableName}`);
+  // Fetch completed
   return allData;
 }
 
@@ -200,7 +200,7 @@ export async function batchInsert<T extends Record<string, any>>(
   let failed = 0;
   const errors: string[] = [];
 
-  console.log(`📤 Starting batch insert of ${items.length} items to ${tableName}...`);
+  // Starting batch insert
 
   for (let i = 0; i < items.length; i += batchSize) {
     const batch = items.slice(i, i + batchSize);
@@ -233,7 +233,7 @@ export async function batchInsert<T extends Record<string, any>>(
     }
   }
 
-  console.log(`✅ Batch insert complete: ${success} success, ${failed} failed`);
+  // Batch insert complete
   return { success, failed, errors };
 }
 
@@ -251,7 +251,7 @@ export async function batchUpsert<T extends Record<string, any>>(
   let failed = 0;
   const errors: string[] = [];
 
-  console.log(`📤 Starting batch upsert of ${items.length} items to ${tableName}...`);
+  // Starting batch upsert
 
   for (let i = 0; i < items.length; i += batchSize) {
     const batch = items.slice(i, i + batchSize);
@@ -287,6 +287,6 @@ export async function batchUpsert<T extends Record<string, any>>(
     }
   }
 
-  console.log(`✅ Batch upsert complete: ${success} success, ${failed} failed`);
+  // Batch upsert complete
   return { success, failed, errors };
 }

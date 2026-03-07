@@ -123,9 +123,8 @@ export function AdvancedProductCatalog() {
     }
   }
 
-  const executeBulkAction = (actionId: string) => {
-    console.log(`Executing ${actionId} on ${selectedProducts.length} products`)
-    // Ici, implémentation des actions bulk
+  const executeBulkAction = (_actionId: string) => {
+    // TODO: Implement bulk actions
     setSelectedProducts([])
     setShowBulkActions(false)
   }

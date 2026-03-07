@@ -38,7 +38,7 @@ class NotificationService {
       // Configurer les gestionnaires d'événements
       this.setupEventHandlers();
       
-      console.log('Notification Service initialized');
+      // Notification Service initialized
     } catch (error) {
       console.error('Error initializing Notification Service:', error);
     }
@@ -86,7 +86,7 @@ class NotificationService {
       // Notifier les abonnés
       this.notifySubscribers('notification_sent', config);
       
-      console.log('Notification sent:', config.title);
+      // Notification sent successfully
     } catch (error) {
       console.error('Error sending notification:', error);
     }
@@ -220,7 +220,7 @@ class NotificationService {
 
   // Gérer les clics sur les notifications
   private handleNotificationClick(action: string, data: any): void {
-    console.log('Notification clicked:', action, data);
+    // Handle notification click action
     
     switch (action) {
       case 'view':
@@ -242,7 +242,7 @@ class NotificationService {
         }
         break;
       default:
-        console.log('Unknown notification action:', action);
+        // Unknown notification action - no-op
     }
 
     // Notifier les abonnés
@@ -310,7 +310,7 @@ class NotificationService {
   async clearOldNotifications(olderThanHours: number = 24): Promise<void> {
     // Cette fonctionnalité nécessiterait l'accès au service worker
     // pour nettoyer les notifications système
-    console.log(`Clearing notifications older than ${olderThanHours} hours`);
+    // TODO: Implement notification cleanup via service worker
   }
 
   // Planifier des notifications

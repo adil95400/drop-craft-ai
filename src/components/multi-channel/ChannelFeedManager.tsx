@@ -121,20 +121,20 @@ export function ChannelFeedManager() {
     ? Math.round(qualityMetrics.reduce((sum, m) => sum + m.score, 0) / qualityMetrics.length)
     : 0;
 
-  const handleChannelSync = (channelId: string) => {
-    console.log('Syncing channel:', channelId);
+  const handleChannelSync = (_channelId: string) => {
+    // TODO: sync channel
   };
 
   const handleChannelSettings = (channelId: string) => {
     setSelectedChannel(channelId);
   };
 
-  const handleViewIssue = (issueId: string) => {
-    console.log('Viewing issue:', issueId);
+  const handleViewIssue = (_issueId: string) => {
+    // TODO: view issue
   };
 
-  const handleFixIssue = (issueId: string) => {
-    console.log('Fixing issue:', issueId);
+  const handleFixIssue = (_issueId: string) => {
+    // TODO: fix issue
   };
 
   if (isLoading) {

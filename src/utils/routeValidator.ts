@@ -330,32 +330,27 @@ export function validateAllRoutes(): {
  * Affiche les résultats de validation dans la console
  */
 export function logValidationResults(results: ReturnType<typeof validateAllRoutes>): void {
-  console.group('🔍 Validation des Routes');
+  if (!import.meta.env.DEV) return;
   
-  console.log(`📊 Résumé:`);
-  console.log(`  - Modules: ${results.summary.totalModules}`);
-  console.log(`  - Sous-modules: ${results.summary.totalSubModules}`);
-  console.log(`  - Erreurs: ${results.summary.errors}`);
-  console.log(`  - Avertissements: ${results.summary.warnings}`);
+  // eslint-disable-next-line no-console
+  console.group('🔍 Validation des Routes');
+  // eslint-disable-next-line no-console
+  console.log(`📊 Résumé: Modules: ${results.summary.totalModules}, Sous-modules: ${results.summary.totalSubModules}, Erreurs: ${results.summary.errors}, Avertissements: ${results.summary.warnings}`);
   
   if (results.isValid) {
+    // eslint-disable-next-line no-console
     console.log('✅ Toutes les routes sont valides!');
   } else {
+    // eslint-disable-next-line no-console
     console.error('❌ Des erreurs ont été détectées dans la configuration des routes');
     
     results.issues.forEach((issue, index) => {
       const icon = issue.type === 'error' ? '❌' : '⚠️';
       const categoryLabel = issue.category === 'module' ? 'MODULE' : 'SUB-MODULE';
-      
-      console.group(`${icon} ${index + 1}. [${categoryLabel}] ${issue.name}`);
-      console.log(`Route: ${issue.route}`);
-      console.log(`Problème: ${issue.issue}`);
-      if (issue.suggestion) {
-        console.log(`💡 Suggestion: ${issue.suggestion}`);
-      }
-      console.groupEnd();
+      // eslint-disable-next-line no-console
+      console.log(`${icon} ${index + 1}. [${categoryLabel}] ${issue.name} | Route: ${issue.route} | ${issue.issue}${issue.suggestion ? ` | 💡 ${issue.suggestion}` : ''}`);
     });
   }
-  
+  // eslint-disable-next-line no-console
   console.groupEnd();
 }

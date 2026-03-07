@@ -216,7 +216,7 @@ class MobileIntegrationService {
 
   // Gérer la connexion
   private async handleOnline(): Promise<void> {
-    console.log('Device is online');
+    // Device is online
     
     await notificationService.sendNotification({
       title: '📶 Connexion rétablie',
@@ -230,7 +230,7 @@ class MobileIntegrationService {
 
   // Gérer la déconnexion
   private async handleOffline(): Promise<void> {
-    console.log('Device is offline');
+    // Device is offline
     
     await notificationService.sendNotification({
       title: '📶 Mode hors-ligne',
@@ -377,7 +377,7 @@ class MobileIntegrationService {
         }));
       }
 
-      console.log('Data saved offline:', key);
+      // Data saved offline
     } catch (error) {
       console.error('Error saving offline data:', error);
     }
@@ -503,7 +503,7 @@ class MobileIntegrationService {
       }
     }
 
-    console.log('Offline data cleanup completed');
+    // Offline data cleanup completed
   }
 
   // Forcer une synchronisation

@@ -51,7 +51,7 @@ class AudioRecorder implements AudioRecorderClass {
 
   async start() {
     try {
-      console.log('🎤 Starting audio recording...')
+      // Starting audio recording
       this.stream = await navigator.mediaDevices.getUserMedia({
         audio: {
           sampleRate: 24000,
@@ -77,7 +77,7 @@ class AudioRecorder implements AudioRecorderClass {
       this.source.connect(this.processor)
       this.processor.connect(this.audioContext.destination)
       
-      console.log('✅ Audio recording started successfully')
+      // Audio recording started
     } catch (error) {
       console.error('❌ Error accessing microphone:', error)
       throw error
@@ -85,7 +85,7 @@ class AudioRecorder implements AudioRecorderClass {
   }
 
   stop() {
-    console.log('🛑 Stopping audio recording...')
+    // Stopping audio recording
     
     if (this.source) {
       this.source.disconnect()
@@ -104,7 +104,7 @@ class AudioRecorder implements AudioRecorderClass {
       this.audioContext = null
     }
     
-    console.log('✅ Audio recording stopped')
+    // Audio recording stopped
   }
 }
 
@@ -116,7 +116,7 @@ class AudioQueue implements AudioQueueClass {
   constructor(private audioContext: AudioContext) {}
 
   async addToQueue(audioData: Uint8Array) {
-    console.log('🔊 Adding audio chunk to queue, size:', audioData.length)
+    // Adding audio chunk to queue
     this.queue.push(audioData)
     if (!this.isPlaying) {
       await this.playNext()
@@ -126,7 +126,7 @@ class AudioQueue implements AudioQueueClass {
   private async playNext() {
     if (this.queue.length === 0) {
       this.isPlaying = false
-      console.log('🔇 Audio queue empty, playback finished')
+      // Audio queue empty
       return
     }
 
@@ -134,7 +134,7 @@ class AudioQueue implements AudioQueueClass {
     const audioData = this.queue.shift()!
 
     try {
-      console.log('🎵 Playing audio chunk, size:', audioData.length)
+      // Playing audio chunk
       const wavData = this.createWavFromPCM(audioData)
       // Convert ArrayBufferLike to ArrayBuffer for decodeAudioData
       const audioBuffer = await this.audioContext.decodeAudioData(
@@ -146,7 +146,7 @@ class AudioQueue implements AudioQueueClass {
       source.connect(this.audioContext.destination)
       
       source.onended = () => {
-        console.log('🎵 Audio chunk finished, playing next...')
+        // Audio chunk finished, playing next
         this.playNext()
       }
       source.start(0)
@@ -157,7 +157,7 @@ class AudioQueue implements AudioQueueClass {
   }
 
   private createWavFromPCM(pcmData: Uint8Array): Uint8Array {
-    console.log('🎼 Converting PCM to WAV, size:', pcmData.length)
+    // Converting PCM to WAV
     
     // Convert bytes to 16-bit samples (little endian)
     const int16Data = new Int16Array(pcmData.length / 2)
@@ -206,7 +206,7 @@ class AudioQueue implements AudioQueueClass {
   }
 
   clear() {
-    console.log('🗑️ Clearing audio queue')
+    // Clearing audio queue
     this.queue = []
     this.isPlaying = false
   }
@@ -256,10 +256,10 @@ export const RealtimeAIAssistant: React.FC = () => {
   useEffect(() => {
     const initAudio = async () => {
       try {
-        console.log('🔧 Initializing audio context...')
+        // Initializing audio context
         audioContextRef.current = new AudioContext({ sampleRate: 24000 })
         audioQueueRef.current = new AudioQueue(audioContextRef.current)
-        console.log('✅ Audio context initialized')
+        // Audio context initialized
       } catch (error) {
         console.error('❌ Failed to initialize audio context:', error)
       }
@@ -277,11 +277,11 @@ export const RealtimeAIAssistant: React.FC = () => {
   // Connect to WebSocket
   const connectWebSocket = useCallback(() => {
     if (!hasFeature('ai_realtime_chat')) {
-      console.log('❌ AI Realtime Chat not available in current plan')
+      // AI Realtime Chat not available
       return
     }
 
-    console.log('🔗 Connecting to realtime AI assistant...')
+    // Connecting to realtime AI assistant
     setConnectionStatus('connecting')
 
     // Use the full URL to the Supabase edge function
@@ -289,7 +289,7 @@ export const RealtimeAIAssistant: React.FC = () => {
     wsRef.current = new WebSocket(wsUrl)
 
     wsRef.current.onopen = () => {
-      console.log('✅ WebSocket connected to AI assistant')
+      // WebSocket connected
       setIsConnected(true)
       setConnectionStatus('connected')
       
@@ -305,7 +305,7 @@ export const RealtimeAIAssistant: React.FC = () => {
     wsRef.current.onmessage = async (event) => {
       try {
         const data = JSON.parse(event.data)
-        console.log('📨 Received message type:', data.type)
+        // Message received
 
         switch (data.type) {
           case 'response.audio.delta':
@@ -339,16 +339,16 @@ export const RealtimeAIAssistant: React.FC = () => {
             break
 
           case 'input_audio_buffer.speech_started':
-            console.log('🎤 User started speaking')
+            // User started speaking
             break
 
           case 'input_audio_buffer.speech_stopped':
-            console.log('🎤 User stopped speaking')
+            // User stopped speaking
             break
 
           case 'response.function_call_arguments.done':
             // Handle function call completion
-            console.log('🛠️ Function call completed:', data.name)
+            // Function call completed
             setMessages(prev => [...prev, {
               id: Date.now().toString(),
               type: 'function_call',
@@ -379,7 +379,7 @@ export const RealtimeAIAssistant: React.FC = () => {
     }
 
     wsRef.current.onclose = (event) => {
-      console.log('🔌 WebSocket closed:', event.code, event.reason)
+      // WebSocket closed
       setIsConnected(false)
       setConnectionStatus('disconnected')
       setIsRecording(false)
@@ -388,7 +388,7 @@ export const RealtimeAIAssistant: React.FC = () => {
 
   // Disconnect WebSocket
   const disconnectWebSocket = useCallback(() => {
-    console.log('🔌 Disconnecting from AI assistant...')
+    // Disconnecting from AI assistant
     
     if (audioRecorderRef.current) {
       audioRecorderRef.current.stop()
@@ -406,13 +406,13 @@ export const RealtimeAIAssistant: React.FC = () => {
   // Start/stop recording
   const toggleRecording = useCallback(async () => {
     if (!isConnected || !wsRef.current) {
-      console.log('❌ Not connected to AI assistant')
+      // Not connected
       return
     }
 
     try {
       if (!isRecording) {
-        console.log('🎤 Starting voice recording...')
+        // Starting voice recording
         
         audioRecorderRef.current = new AudioRecorder((audioData: Float32Array) => {
           if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
@@ -435,7 +435,7 @@ export const RealtimeAIAssistant: React.FC = () => {
         }])
         
       } else {
-        console.log('🛑 Stopping voice recording...')
+        // Stopping voice recording
         
         if (audioRecorderRef.current) {
           audioRecorderRef.current.stop()
@@ -452,7 +452,7 @@ export const RealtimeAIAssistant: React.FC = () => {
   const sendTextMessage = useCallback(() => {
     if (!inputText.trim() || !isConnected || !wsRef.current) return
 
-    console.log('📤 Sending text message:', inputText)
+    // Sending text message
 
     // Add user message to UI
     setMessages(prev => [...prev, {

@@ -34,7 +34,7 @@ export class StockSyncService {
     let productsSynced = 0;
 
     try {
-      console.log('🔄 Starting bidirectional stock sync...');
+      // Starting bidirectional stock sync
 
       // 1. Sync FROM suppliers TO local inventory
       const supplierSyncResult = await this.syncFromSuppliers(userId, config);
@@ -94,11 +94,11 @@ export class StockSyncService {
 
       if (suppliersError) throw suppliersError;
 
-      console.log(`📦 Syncing from ${suppliers?.length || 0} suppliers`);
+      // Syncing from suppliers
 
       for (const supplier of suppliers || []) {
         try {
-          console.log(`🔗 Syncing supplier: ${supplier.name}`);
+          // Syncing supplier
 
           // Get products that need updates (older than threshold)
           const thresholdDate = new Date();
@@ -160,13 +160,13 @@ export class StockSyncService {
 
       if (integrationsError) throw integrationsError;
 
-      console.log(`🛍️ Syncing to ${integrations?.length || 0} platforms`);
+      // Syncing to platforms
 
       for (const integration of integrations || []) {
         const int = integration as Record<string, unknown>;
         const platformType = (int.platform || int.platform_name || 'unknown') as string;
         try {
-          console.log(`📤 Syncing to ${platformType}`);
+          // Syncing to platform
 
           // Get products that have been updated locally
           const { data: products, error: productsError } = await fromTable('products')
@@ -245,7 +245,7 @@ export class StockSyncService {
   private async syncProductToPlatform(product: any, integration: any): Promise<{success: boolean, error?: string}> {
     try {
       // Simulate platform API call
-      console.log(`📤 Syncing ${product.sku} to ${integration.platform_type}`);
+      // Syncing product to platform
 
       switch (integration.platform_type) {
         case 'shopify':
@@ -341,7 +341,7 @@ export class StockSyncService {
     const errors: string[] = [];
 
     try {
-      console.log('💰 Auto-adjusting prices based on stock levels...');
+      // Auto-adjusting prices based on stock levels
 
       // Get products that might need price adjustment
       const { data: products, error: productsError } = await (supabase as any)
@@ -384,7 +384,7 @@ export class StockSyncService {
             if (updateError) {
               errors.push(`Failed to update price for ${p.sku || p.id}: ${updateError?.message || 'Unknown error'}`);
             } else {
-              console.log(`💲 ${p.sku || p.id}: ${p.price} → ${newPrice} (${reason})`);
+              // Price adjusted successfully
 
               // Log price change
               await supabase.from('activity_logs').insert({
@@ -449,7 +449,7 @@ export class StockSyncService {
       metadata: { import_settings: config, sync_frequency: config.sync_frequency }
     });
 
-    console.log(`⏰ Stock sync scheduled for ${config.sync_frequency} intervals`);
+    // Stock sync scheduled
   }
 
   private getNextScheduleTime(frequency: string): Date {

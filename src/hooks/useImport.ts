@@ -308,7 +308,7 @@ export const useImport = () => {
     startImport: startImport.mutate,
     importFromCsv: importFromCsv.mutate,
     addImportRecord: (data: any) => ({ id: 'temp-' + Date.now(), ...data }),
-    updateImportRecord: (id: string, updates: any) => console.log('Update import record:', id, updates),
+    updateImportRecord: (_id: string, _updates: any) => { /* TODO: implement */ },
     urlImport: urlImport.mutate,
     generateMapping,
     isImporting: startImport.isPending || importFromCsv.isPending,

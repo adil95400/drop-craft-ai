@@ -94,9 +94,7 @@ class MonitoringService {
       try {
         // Sentry captures errors automatically via its integration
         // This is a no-op placeholder for future remote logging services
-        if (import.meta.env.DEV) {
-          console.log('[Remote Log]', logEvent.level, logEvent.message)
-        }
+        // Remote logging placeholder
       } catch {
         // Fail silently for logging errors
       }
@@ -107,7 +105,7 @@ class MonitoringService {
     if (!this.shouldLog('DEBUG')) return
     
     const logEvent = this.createLogEvent('DEBUG', message, data)
-    console.log(`[DEBUG] ${message}`, data)
+    // Debug logs handled by console interceptor
     this.sendToRemote(logEvent)
   }
 

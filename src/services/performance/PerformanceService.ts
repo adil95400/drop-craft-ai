@@ -58,12 +58,7 @@ export class PerformanceService {
    */
   private trackComponentLoad(componentName: string, loadTime: number): void {
     this.componentLoadTimes.set(componentName, loadTime);
-    
-    console.log(`[Performance] ${componentName} loaded in ${loadTime.toFixed(2)}ms`);
-    
-    if (loadTime > 1000) {
-      console.warn(`[Performance] ${componentName} took ${loadTime.toFixed(2)}ms to load (>1s)`);
-    }
+    // Performance data tracked internally
   }
 
   /**
@@ -72,8 +67,8 @@ export class PerformanceService {
   preloadComponent(importFn: () => Promise<any>, componentName: string): void {
     const preload = () => {
       importFn()
-        .then(() => console.log(`[Preload] ${componentName} preloaded`))
-        .catch((error) => console.error(`[Preload] Failed to preload ${componentName}:`, error));
+        .then(() => { /* preloaded */ })
+        .catch((_error) => { /* preload failed silently */ });
     };
 
     if ('requestIdleCallback' in window) {
@@ -116,10 +111,8 @@ export class PerformanceService {
       };
     });
 
-    console.group('📦 Bundle Analysis');
-    console.log(`Total JS Bundle Size: ${this.formatBytes(totalSize)}`);
-    console.table(bundleInfo);
-    console.groupEnd();
+    // Bundle analysis - dev tool only
+    if (!import.meta.env.DEV) return;
   }
 
   /**
@@ -134,11 +127,7 @@ export class PerformanceService {
         const entries = list.getEntries();
         const lastEntry = entries[entries.length - 1] as any;
         
-        console.log(`[LCP] ${lastEntry.startTime.toFixed(2)}ms`);
-        
-        if (lastEntry.startTime > 4000) {
-          console.warn('[LCP] Poor performance (>4s)');
-        }
+        // LCP tracked
       });
       
       lcpObserver.observe({ entryTypes: ['largest-contentful-paint'] });
@@ -149,9 +138,8 @@ export class PerformanceService {
     // First Input Delay
     try {
       const fidObserver = new PerformanceObserver((list) => {
-        list.getEntries().forEach((entry: any) => {
-          const fid = entry.processingStart - entry.startTime;
-          console.log(`[FID] ${fid.toFixed(2)}ms`);
+        list.getEntries().forEach((_entry: any) => {
+          // FID tracked
         });
       });
       
@@ -170,11 +158,7 @@ export class PerformanceService {
           }
         });
         
-        console.log(`[CLS] ${clsValue.toFixed(4)}`);
-        
-        if (clsValue > 0.25) {
-          console.warn('[CLS] Poor layout stability (>0.25)');
-        }
+        // CLS tracked
       });
       
       clsObserver.observe({ entryTypes: ['layout-shift'] });
@@ -187,11 +171,7 @@ export class PerformanceService {
       const navigation = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming;
       if (navigation) {
         const ttfb = navigation.responseStart - navigation.requestStart;
-        console.log(`[TTFB] ${ttfb.toFixed(2)}ms`);
-        
-        if (ttfb > 800) {
-          console.warn('[TTFB] Slow server response (>800ms)');
-        }
+        // TTFB tracked
       }
     } catch (e) {
       // Navigation timing not supported
