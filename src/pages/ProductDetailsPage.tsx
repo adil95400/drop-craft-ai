@@ -751,8 +751,17 @@ export default function ProductDetailsPage() {
                       </Button>
                       <Button variant="outline" size="sm" className="gap-2" onClick={handleEditImages}>
                         <Images className="h-4 w-4" />
-                        Éditer images
+                        Gérer images
                       </Button>
+                      {product?.images?.[0] && (
+                        <Button variant="outline" size="sm" className="gap-2" onClick={() => {
+                          setEditingImageUrl(product.images[0])
+                          setShowImageEditor(true)
+                        }}>
+                          <Palette className="h-4 w-4" />
+                          Éditeur
+                        </Button>
+                      )}
                     </div>
                     <div className="flex items-center gap-2 text-sm text-muted-foreground">
                       <Clock className="h-4 w-4" />
