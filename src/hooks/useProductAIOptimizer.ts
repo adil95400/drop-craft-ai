@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { productsApi } from '@/services/api/client';
 import { toast } from 'sonner';
+import { logger } from '@/lib/logger';
 
 export interface AIOptimizationRequest {
   productId: string;
