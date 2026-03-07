@@ -56,6 +56,10 @@ export function IntegrationRoutes() {
       <Route path="unified" element={<Navigate to="/integrations" replace />} />
       <Route path="sync-config" element={<SyncConfigPage />} />
       <Route path="tiktok-shop" element={<TikTokShopPage />} />
+      <Route path="amazon-seller" element={<AmazonSellerPage />} />
+      <Route path="cdiscount" element={<CDiscountPage />} />
+      <Route path="printify" element={<PrintifyPage />} />
+      <Route path="printful" element={<PrintfulPage />} />
       <Route path="connectors" element={<MarketplaceConnectorsPage />} />
       
       {/* Marketplace - Consolidated */}
