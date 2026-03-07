@@ -16,7 +16,6 @@ import { winningProductsIntelligenceService, type WinningProductIntelligence } f
 import { socialMediaAnalysisService } from '@/services/SocialMediaAnalysisService'
 import { supabase } from '@/integrations/supabase/client'
 import { useAuth } from '@/contexts/AuthContext'
-import { socialMediaAnalysisService } from '@/services/SocialMediaAnalysisService'
 
 export function WinningProductsMarketplace() {
   const [products, setProducts] = useState<WinningProductIntelligence[]>([])
