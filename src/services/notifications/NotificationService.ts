@@ -242,7 +242,7 @@ class NotificationService {
         }
         break;
       default:
-        console.log('Unknown notification action:', action);
+        // Unknown notification action - no-op
     }
 
     // Notifier les abonnés
