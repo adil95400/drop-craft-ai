@@ -126,7 +126,7 @@ class AudioQueue implements AudioQueueClass {
   private async playNext() {
     if (this.queue.length === 0) {
       this.isPlaying = false
-      console.log('🔇 Audio queue empty, playback finished')
+      // Audio queue empty
       return
     }
 
