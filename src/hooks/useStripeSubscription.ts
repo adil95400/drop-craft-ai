@@ -163,7 +163,7 @@ export function useStripeSubscription() {
         throw new Error('URL du portail non reçue');
       }
     } catch (error) {
-      console.error('Error opening customer portal:', error);
+      logger.error('Error opening customer portal', error instanceof Error ? error : undefined, { ...LOG_CTX, action: 'openPortal' });
       toast({
         title: "Erreur",
         description: error instanceof Error ? error.message : "Impossible d'ouvrir le portail client",
