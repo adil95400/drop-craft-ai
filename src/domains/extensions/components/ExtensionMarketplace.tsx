@@ -332,7 +332,7 @@ export const ExtensionMarketplace: React.FC = () => {
                       key={extension.id}
                       extension={extension}
                       onInstall={handleInstall}
-                      onViewDetails={(id) => console.log('View details:', id)}
+                      onViewDetails={(_id) => { /* TODO: view details */ }}
                       isFavorite={favorites.includes(extension.id)}
                       onToggleFavorite={handleToggleFavorite}
                     />
