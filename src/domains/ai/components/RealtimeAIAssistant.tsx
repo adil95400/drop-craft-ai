@@ -51,7 +51,7 @@ class AudioRecorder implements AudioRecorderClass {
 
   async start() {
     try {
-      console.log('🎤 Starting audio recording...')
+      // Starting audio recording
       this.stream = await navigator.mediaDevices.getUserMedia({
         audio: {
           sampleRate: 24000,
