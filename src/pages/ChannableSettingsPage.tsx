@@ -43,7 +43,6 @@ import { TwoFactorSetup } from '@/components/settings/TwoFactorSetup'
 import { ActiveSessionsManager } from '@/components/settings/ActiveSessionsManager'
 import { useTheme } from 'next-themes'
 import { Helmet } from 'react-helmet-async'
-import { Helmet } from 'react-helmet-async'
 
 export default function ChannableSettingsPage() {
   const { user, profile, signOut } = useAuth()
