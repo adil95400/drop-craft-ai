@@ -1,4 +1,5 @@
 import { useEffect, useCallback } from 'react';
+import { logger } from '@/lib/logger';
 
 interface PerformanceMetrics {
   lcp: number | null;
