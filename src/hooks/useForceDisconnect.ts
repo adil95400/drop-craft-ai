@@ -11,7 +11,7 @@ export const useForceDisconnect = () => {
     setIsDisconnecting(true);
     
     try {
-      console.log('Attempting to disconnect user:', targetUserId);
+      logger.info('Attempting to disconnect user', { targetUserId });
       
       const { data, error } = await supabase.functions.invoke('force-disconnect-user', {
         body: {
