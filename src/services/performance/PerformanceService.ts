@@ -158,11 +158,7 @@ export class PerformanceService {
           }
         });
         
-        console.log(`[CLS] ${clsValue.toFixed(4)}`);
-        
-        if (clsValue > 0.25) {
-          console.warn('[CLS] Poor layout stability (>0.25)');
-        }
+        // CLS tracked
       });
       
       clsObserver.observe({ entryTypes: ['layout-shift'] });
