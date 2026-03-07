@@ -9,6 +9,7 @@ const StoreDashboard = lazy(() => import('@/pages/stores/StoreDashboard'));
 const APIManagementPage = lazy(() => import('@/pages/APIManagementPage'));
 const BillingPage = lazy(() => import('@/pages/BillingPage'));
 const SecurityDashboard = lazy(() => import('@/pages/SecurityDashboard'));
+const TwoFactorSettingsPage = lazy(() => import('@/pages/settings/TwoFactorSettingsPage'));
 const WhiteLabelPage = lazy(() => import('@/pages/settings/WhiteLabelPage'));
 const DomainRegistrationPage = lazy(() => import('@/pages/settings/DomainRegistrationPage'));
 const WebhookManagementPage = lazy(() => import('@/pages/settings/WebhookManagementPage'));
