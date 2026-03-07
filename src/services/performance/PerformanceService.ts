@@ -127,11 +127,7 @@ export class PerformanceService {
         const entries = list.getEntries();
         const lastEntry = entries[entries.length - 1] as any;
         
-        console.log(`[LCP] ${lastEntry.startTime.toFixed(2)}ms`);
-        
-        if (lastEntry.startTime > 4000) {
-          console.warn('[LCP] Poor performance (>4s)');
-        }
+        // LCP tracked
       });
       
       lcpObserver.observe({ entryTypes: ['largest-contentful-paint'] });
