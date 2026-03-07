@@ -17,8 +17,17 @@ import {
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useResponsive } from '@/hooks/useResponsive';
-import { Capacitor } from '@capacitor/core';
 import { productionLogger } from '@/utils/productionLogger';
+
+const isNativePlatform = (): boolean =>
+  typeof (window as any).Capacitor !== 'undefined' && (window as any).Capacitor.isNativePlatform?.();
+
+const getCapacitorPlatform = (): string => {
+  if (isNativePlatform()) return (window as any).Capacitor.getPlatform?.() ?? 'web';
+  if (/iPhone|iPad|iPod/.test(navigator.userAgent)) return 'ios-web';
+  if (/Android/.test(navigator.userAgent)) return 'android-web';
+  return 'web';
+};
 
 interface DeviceInfo {
   platform: string;
