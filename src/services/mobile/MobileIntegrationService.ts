@@ -377,7 +377,7 @@ class MobileIntegrationService {
         }));
       }
 
-      console.log('Data saved offline:', key);
+      // Data saved offline
     } catch (error) {
       console.error('Error saving offline data:', error);
     }
