@@ -60,7 +60,7 @@ class UnifiedImportService {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) throw new Error('Utilisateur non authentifié')
 
-      console.log('[UnifiedImport] Starting import', config)
+      logger.info('Starting import', { source: config.source_type })
 
       // Create job in database
       const { data: job, error: jobError } = await supabase
