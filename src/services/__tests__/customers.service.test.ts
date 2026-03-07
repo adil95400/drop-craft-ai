@@ -1,11 +1,13 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
-const mockList = vi.fn()
-const mockGet = vi.fn()
-const mockCreate = vi.fn()
-const mockUpdate = vi.fn()
-const mockDel = vi.fn()
-const mockStats = vi.fn()
+const { mockList, mockGet, mockCreate, mockUpdate, mockDel, mockStats } = vi.hoisted(() => ({
+  mockList: vi.fn(),
+  mockGet: vi.fn(),
+  mockCreate: vi.fn(),
+  mockUpdate: vi.fn(),
+  mockDel: vi.fn(),
+  mockStats: vi.fn(),
+}))
 
 vi.mock('@/services/api/client', () => ({
   customersApi: {

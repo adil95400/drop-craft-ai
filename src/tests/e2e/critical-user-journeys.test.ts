@@ -4,35 +4,38 @@
  */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
-// Comprehensive Supabase mock
-const mockUser = { id: 'test-uid-123', email: 'test@shopopti.com' };
-const mockProducts = [
-  { id: 'p1', title: 'Wireless Earbuds', price: 29.99, status: 'active', user_id: mockUser.id },
-  { id: 'p2', title: 'Phone Case', price: 9.99, status: 'draft', user_id: mockUser.id },
-];
+// Use vi.hoisted to avoid TDZ issues with mock factory
+const { mockUser, mockProducts, createChainMock } = vi.hoisted(() => {
+  const mockUser = { id: 'test-uid-123', email: 'test@shopopti.com' };
+  const mockProducts = [
+    { id: 'p1', title: 'Wireless Earbuds', price: 29.99, status: 'active', user_id: mockUser.id },
+    { id: 'p2', title: 'Phone Case', price: 9.99, status: 'draft', user_id: mockUser.id },
+  ];
 
-const createChainMock = (data: any = null, error: any = null) => {
-  const chain: any = {
-    select: vi.fn(() => chain),
-    eq: vi.fn(() => chain),
-    neq: vi.fn(() => chain),
-    gte: vi.fn(() => chain),
-    lte: vi.fn(() => chain),
-    order: vi.fn(() => chain),
-    limit: vi.fn(() => chain),
-    range: vi.fn(() => chain),
-    single: vi.fn(() => Promise.resolve({ data, error })),
-    maybeSingle: vi.fn(() => Promise.resolve({ data, error })),
-    insert: vi.fn(() => chain),
-    update: vi.fn(() => chain),
-    delete: vi.fn(() => chain),
-    upsert: vi.fn(() => chain),
-    then: (resolve: any) => resolve({ data: Array.isArray(data) ? data : [data], error }),
+  const createChainMock = (data: any = null, error: any = null) => {
+    const chain: any = {
+      select: vi.fn(() => chain),
+      eq: vi.fn(() => chain),
+      neq: vi.fn(() => chain),
+      gte: vi.fn(() => chain),
+      lte: vi.fn(() => chain),
+      order: vi.fn(() => chain),
+      limit: vi.fn(() => chain),
+      range: vi.fn(() => chain),
+      single: vi.fn(() => Promise.resolve({ data, error })),
+      maybeSingle: vi.fn(() => Promise.resolve({ data, error })),
+      insert: vi.fn(() => chain),
+      update: vi.fn(() => chain),
+      delete: vi.fn(() => chain),
+      upsert: vi.fn(() => chain),
+      then: (resolve: any) => resolve({ data: Array.isArray(data) ? data : [data], error }),
+    };
+    chain[Symbol.iterator] = function* () { yield* (Array.isArray(data) ? data : [data]); };
+    return chain;
   };
-  // Make chain thenable for .from().select() without .single()
-  chain[Symbol.iterator] = function* () { yield* (Array.isArray(data) ? data : [data]); };
-  return chain;
-};
+
+  return { mockUser, mockProducts, createChainMock };
+});
 
 vi.mock('@/integrations/supabase/client', () => ({
   supabase: {
