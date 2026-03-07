@@ -379,7 +379,7 @@ export const RealtimeAIAssistant: React.FC = () => {
     }
 
     wsRef.current.onclose = (event) => {
-      console.log('🔌 WebSocket closed:', event.code, event.reason)
+      // WebSocket closed
       setIsConnected(false)
       setConnectionStatus('disconnected')
       setIsRecording(false)
