@@ -35,7 +35,7 @@ const initI18n = () => import('@/lib/i18n');
 
 // List of public route prefixes that DON'T need heavy providers
 const PUBLIC_PREFIXES = [
-  '/', '/auth', '/pricing', '/features', '/contact', '/faq', '/about',
+  '/', '/pricing', '/features', '/contact', '/faq', '/about',
   '/privacy', '/terms', '/cgv', '/blog', '/documentation', '/docs',
   '/changelog', '/status', '/testimonials', '/integrations',
   '/logiciel-', '/alternative-', '/optimisation-', '/gestion-',
