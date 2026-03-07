@@ -285,7 +285,7 @@ export async function generateExtensionZip(): Promise<void> {
     throw new Error('Not enough extension files could be loaded');
   }
   
-  console.log(`Loaded ${filesLoaded}/${EXTENSION_FILES.length} files (${filesFailed} failed)`);
+  // Extension files loaded
   if (filesFailed > 0) {
     console.warn('Some optional extension files could not be loaded:', failedFiles);
   }

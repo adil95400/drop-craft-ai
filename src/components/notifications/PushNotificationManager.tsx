@@ -138,7 +138,7 @@ export function PushNotificationManager() {
         // Register service worker
         if ('serviceWorker' in navigator) {
           const registration = await navigator.serviceWorker.ready;
-          console.log('Service Worker ready:', registration);
+          // Service Worker ready
         }
       } else {
         toast({

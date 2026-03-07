@@ -287,6 +287,6 @@ export async function batchUpsert<T extends Record<string, any>>(
     }
   }
 
-  console.log(`✅ Batch upsert complete: ${success} success, ${failed} failed`);
+  // Batch upsert complete
   return { success, failed, errors };
 }

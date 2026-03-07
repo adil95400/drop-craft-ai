@@ -93,6 +93,6 @@ export async function seedSampleProducts() {
   if (error) {
     console.error('Error seeding products:', error)
   } else {
-    console.log('Sample products seeded successfully')
+    // Sample products seeded successfully
   }
 }

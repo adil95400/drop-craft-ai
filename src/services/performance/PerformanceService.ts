@@ -171,11 +171,7 @@ export class PerformanceService {
       const navigation = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming;
       if (navigation) {
         const ttfb = navigation.responseStart - navigation.requestStart;
-        console.log(`[TTFB] ${ttfb.toFixed(2)}ms`);
-        
-        if (ttfb > 800) {
-          console.warn('[TTFB] Slow server response (>800ms)');
-        }
+        // TTFB tracked
       }
     } catch (e) {
       // Navigation timing not supported

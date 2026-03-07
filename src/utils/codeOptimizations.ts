@@ -50,9 +50,6 @@ export const registerServiceWorker = async (): Promise<ServiceWorkerRegistration
 
   try {
     const registration = await navigator.serviceWorker.register('/sw.js');
-    if (import.meta.env.DEV) {
-      console.log('SW registered:', registration);
-    }
     return registration;
   } catch (error) {
     console.error('SW registration failed:', error);

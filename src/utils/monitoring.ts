@@ -105,7 +105,7 @@ class MonitoringService {
     if (!this.shouldLog('DEBUG')) return
     
     const logEvent = this.createLogEvent('DEBUG', message, data)
-    console.log(`[DEBUG] ${message}`, data)
+    // Debug logs handled by console interceptor
     this.sendToRemote(logEvent)
   }
 
