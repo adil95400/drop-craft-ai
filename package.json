@@ -12,7 +12,6 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@capacitor/local-notifications": "^7.0.2",
     "@capacitor/push-notifications": "^7.0.2",
     "@dnd-kit/core": "^6.3.1",
     "@dnd-kit/sortable": "^10.0.0",
