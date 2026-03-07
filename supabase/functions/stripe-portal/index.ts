@@ -97,5 +97,5 @@ serve(
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,
     });
-  }, corsHeaders)
+  }, (req: Request) => getSecureCorsHeaders(req))
 );
