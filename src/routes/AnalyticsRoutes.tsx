@@ -74,6 +74,10 @@ export function AnalyticsRoutes() {
       {/* Real-Time */}
       <Route path="realtime" element={<RealTimeAnalyticsPage />} />
 
+      {/* AI BI & Predictive Demand */}
+      <Route path="ai-insights" element={<AIBusinessInsightsPage />} />
+      <Route path="demand-forecast" element={<PredictiveDemandPage />} />
+
       {/* === Redirects: merged/obsolete routes === */}
       <Route path="unified" element={<Navigate to="/analytics" replace />} />
       <Route path="studio" element={<Navigate to="/analytics" replace />} />
