@@ -348,7 +348,7 @@ export const RealtimeAIAssistant: React.FC = () => {
 
           case 'response.function_call_arguments.done':
             // Handle function call completion
-            console.log('🛠️ Function call completed:', data.name)
+            // Function call completed
             setMessages(prev => [...prev, {
               id: Date.now().toString(),
               type: 'function_call',
