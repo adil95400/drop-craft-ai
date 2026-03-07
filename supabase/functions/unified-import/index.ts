@@ -10,8 +10,9 @@ import { getSecureCorsHeaders, handleCorsPreflightSecure } from '../_shared/secu
 const supabaseUrl = Deno.env.get('SUPABASE_URL')!
 
 Deno.serve(async (req) => {
+  const corsHeaders = getSecureCorsHeaders(req)
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders })
+    return handleCorsPreflightSecure(req)
   }
 
   try {
