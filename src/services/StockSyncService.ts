@@ -98,7 +98,7 @@ export class StockSyncService {
 
       for (const supplier of suppliers || []) {
         try {
-          console.log(`🔗 Syncing supplier: ${supplier.name}`);
+          // Syncing supplier
 
           // Get products that need updates (older than threshold)
           const thresholdDate = new Date();
