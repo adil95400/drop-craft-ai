@@ -35,7 +35,7 @@ export class PWAService {
 
   static async installPWA(): Promise<boolean> {
     if (!this.deferredPrompt) {
-      console.log('⚠️ No install prompt available');
+      // No install prompt available
       return false;
     }
 
