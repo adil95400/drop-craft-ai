@@ -406,7 +406,7 @@ export const RealtimeAIAssistant: React.FC = () => {
   // Start/stop recording
   const toggleRecording = useCallback(async () => {
     if (!isConnected || !wsRef.current) {
-      console.log('❌ Not connected to AI assistant')
+      // Not connected
       return
     }
 
