@@ -78,7 +78,7 @@ export function ImportCSVWithValidation() {
             }
           }
           
-          console.log('  → No mapping found, keeping:', normalized)
+          // No mapping found, keeping original
           return normalized
         },
         complete: (results) => {
