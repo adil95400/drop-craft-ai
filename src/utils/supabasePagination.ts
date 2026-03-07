@@ -92,7 +92,7 @@ export async function fetchAllRows<T>(
     // Page fetched
   }
 
-  console.log(`🎉 Completed fetch: ${allData.length} total rows from ${tableName}`);
+  // Fetch completed
   return allData;
 }
 
