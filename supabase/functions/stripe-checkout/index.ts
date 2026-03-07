@@ -5,7 +5,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@14.21.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
-import { corsHeaders } from '../_shared/cors.ts';
+import { getSecureCorsHeaders, handleCorsPreflightSecure } from '../_shared/secure-cors.ts';
 import { withErrorHandler, ValidationError } from '../_shared/error-handler.ts';
 import { parseJsonValidated, z } from '../_shared/validators.ts';
 import { checkRateLimit } from '../_shared/rate-limiter.ts';
@@ -27,8 +27,9 @@ const logStep = (step: string, details?: Record<string, unknown>) => {
 
 serve(
   withErrorHandler(async (req) => {
+    const corsHeaders = getSecureCorsHeaders(req);
     if (req.method === "OPTIONS") {
-      return new Response(null, { headers: corsHeaders });
+      return handleCorsPreflightSecure(req);
     }
 
     const supabase = createClient(
@@ -152,5 +153,5 @@ serve(
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,
     });
-  }, corsHeaders)
+  }, (req: Request) => getSecureCorsHeaders(req))
 );
