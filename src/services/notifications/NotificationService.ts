@@ -86,7 +86,7 @@ class NotificationService {
       // Notifier les abonnés
       this.notifySubscribers('notification_sent', config);
       
-      console.log('Notification sent:', config.title);
+      // Notification sent successfully
     } catch (error) {
       console.error('Error sending notification:', error);
     }
