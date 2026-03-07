@@ -174,8 +174,7 @@ export function ExtensionBidirectionalSync() {
           table: 'extension_data',
           filter: `user_id=eq.${user.id}`
         },
-        (payload) => {
-          console.log('Sync event received:', payload);
+        (_payload) => {
           queryClient.invalidateQueries({ queryKey: ['extension-sync-events'] });
           queryClient.invalidateQueries({ queryKey: ['extension-sync-stats'] });
         }

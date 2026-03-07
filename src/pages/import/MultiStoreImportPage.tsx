@@ -82,8 +82,8 @@ export default function MultiStoreImportPage() {
           transition={{ delay: 0.1 }}
         >
           <MultiStoreUrlImport 
-            onImportComplete={(results) => {
-              console.log('Import complete:', results)
+            onImportComplete={(_results) => {
+              // TODO: handle import complete
             }}
           />
         </motion.div>

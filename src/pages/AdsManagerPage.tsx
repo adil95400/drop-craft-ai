@@ -25,7 +25,7 @@ export default function AdsManagerPage() {
     avgCTR: metrics.avg_ctr,
     avgROAS: metrics.avg_roas
   } : null;
-  const toggleCampaign = (id: string, status: string) => console.log('Toggle', id, status);
+  const toggleCampaign = (_id: string, _status: string) => { /* TODO: toggle campaign */ };
   const [showCreateDialog, setShowCreateDialog] = useState(false);
 
   const formatCurrency = (value: number) => {

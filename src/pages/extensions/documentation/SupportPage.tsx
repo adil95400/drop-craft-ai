@@ -149,8 +149,7 @@ export default function SupportPage() {
 
   const handleTicketSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    // Simulate ticket creation
-    console.log('Ticket created:', { ticketSubject, ticketMessage, ticketPriority })
+    // TODO: Implement ticket creation
     setTicketSubject('')
     setTicketMessage('')
     setTicketPriority('')

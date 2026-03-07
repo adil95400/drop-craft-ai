@@ -158,18 +158,17 @@ export default function CollectionsPage() {
   })
 
   const handleCreateCollection = () => {
-    // Simulate collection creation
-    console.log('Creating collection:', { newCollectionName, newCollectionDescription })
+    // TODO: Implement collection creation
     setNewCollectionName('')
     setNewCollectionDescription('')
   }
 
-  const handleFollowCollection = (collectionId: string) => {
-    console.log('Following collection:', collectionId)
+  const handleFollowCollection = (_collectionId: string) => {
+    // TODO: follow collection
   }
 
-  const handleLikeCollection = (collectionId: string) => {
-    console.log('Liking collection:', collectionId)
+  const handleLikeCollection = (_collectionId: string) => {
+    // TODO: like collection
   }
 
   return (
