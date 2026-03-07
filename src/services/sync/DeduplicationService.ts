@@ -1,5 +1,6 @@
 import { supabase } from '@/integrations/supabase/client'
 import { SupplierProduct } from '@/types/suppliers'
+import { logger } from '@/lib/logger'
 
 interface DuplicateGroup {
   products: SupplierProduct[]
