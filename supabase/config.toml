@@ -747,3 +747,6 @@ verify_jwt = false
 
 [functions.ai-recommendations-engine]
 verify_jwt = false
+
+[functions.supplier-compare]
+verify_jwt = false
