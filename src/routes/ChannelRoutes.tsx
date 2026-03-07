@@ -11,7 +11,7 @@ const ManageIntegrationPage = lazy(() => import('@/pages/stores/ManageIntegratio
 const ShopifyDiagnostic = lazy(() => import('@/pages/ShopifyDiagnostic'));
 const ShopifyManagementPage = lazy(() => import('@/pages/ShopifyManagementPage'));
 const StoreSyncDashboard = lazy(() => import('@/pages/StoreSyncDashboard'));
-const AdvancedAnalyticsPage = lazy(() => import('@/pages/AdvancedAnalyticsPage'));
+const StoreChannelAnalyticsPage = lazy(() => import('@/pages/channels/StoreChannelAnalyticsPage'));
 
 export function ChannelRoutes() {
   return (
