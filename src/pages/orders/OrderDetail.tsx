@@ -414,6 +414,32 @@ export default function OrderDetail() {
               }}
             />
           </TabsContent>
+
+          <TabsContent value="split">
+            <SplitOrderPanel
+              orderId={order.id}
+              orderNumber={order.order_number}
+              items={fulfillmentItems.map((item: any) => ({
+                ...item,
+                sku: item.sku || '',
+                unit_price: item.unit_price || 0,
+              }))}
+              customerName={order.customer_name || 'Client'}
+              shippingAddress={order.shipping_address}
+              onSplitComplete={() => queryClient.invalidateQueries({ queryKey: ['order-detail'] })}
+            />
+          </TabsContent>
+
+          <TabsContent value="shipping">
+            <ShippingEstimator
+              defaultCountry={order.shipping_address?.country || 'FR'}
+              defaultPostalCode={order.shipping_address?.zip || order.shipping_address?.postal_code || ''}
+              orderValue={order.total_amount}
+              onSelectRate={(rate) => {
+                toast.success(`${rate.carrier} sélectionné — ${rate.price.toFixed(2)} €`);
+              }}
+            />
+          </TabsContent>
         </Tabs>
       </ChannablePageWrapper>
     </>
