@@ -379,7 +379,7 @@ export const securityAlerts = {
  */
 export const trackMetric = (name: string, value: number, unit: string = '', tags: Record<string, string> = {}) => {
   if (!import.meta.env.VITE_SENTRY_DSN) {
-    console.log(`[METRIC] ${name}: ${value}${unit}`, tags);
+    // No Sentry DSN configured, skip metric tracking
     return;
   }
 
