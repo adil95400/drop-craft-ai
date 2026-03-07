@@ -263,6 +263,21 @@ export function ChannableDashboard() {
   useKeyboardShortcut({ key: 'r', onTrigger: handleRefresh });
   useKeyboardShortcut({ key: 'e', onTrigger: () => setIsCustomizing(!isCustomizing) });
 
+  // Seed cross-module suggestions on first load for demo
+  const emitEvent = useCrossModuleEvents(s => s.emit);
+  const eventsCount = useCrossModuleEvents(s => s.events.length);
+  useEffect(() => {
+    if (eventsCount === 0 && !dataLoading && rawStats) {
+      // Auto-seed based on actual data conditions
+      if (rawStats.products.active > 0) {
+        emitEvent('ai.recommendation_ready', 'ai', { count: Math.min(rawStats.products.active, 12) });
+      }
+      if (rawStats.orders.today > 0) {
+        emitEvent('orders.created', 'orders', { count: rawStats.orders.today });
+      }
+    }
+  }, [eventsCount, dataLoading, rawStats, emitEvent]);
+
   // Auto-refresh
   useEffect(() => {
     if (!autoRefresh) return;
