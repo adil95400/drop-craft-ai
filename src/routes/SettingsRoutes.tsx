@@ -27,6 +27,7 @@ export function SettingsRoutes() {
       <Route path="api" element={<APIManagementPage />} />
       <Route path="billing" element={<BillingPage />} />
       <Route path="security" element={<SecurityDashboard />} />
+      <Route path="2fa" element={<TwoFactorSettingsPage />} />
       <Route path="white-label" element={<WhiteLabelPage />} />
       <Route path="domains" element={<DomainRegistrationPage />} />
       <Route path="webhooks" element={<WebhookManagementPage />} />
