@@ -34,7 +34,7 @@ export class StockSyncService {
     let productsSynced = 0;
 
     try {
-      console.log('🔄 Starting bidirectional stock sync...');
+      // Starting bidirectional stock sync
 
       // 1. Sync FROM suppliers TO local inventory
       const supplierSyncResult = await this.syncFromSuppliers(userId, config);
