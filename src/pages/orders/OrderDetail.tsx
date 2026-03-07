@@ -19,6 +19,8 @@ import {
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { OrderFulfillmentPanel } from '@/components/orders/OrderFulfillmentPanel';
+import { SplitOrderPanel } from '@/components/orders/SplitOrderPanel';
+import { ShippingEstimator } from '@/components/orders/ShippingEstimator';
 import { TrackingTimeline } from '@/components/tracking';
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
 
@@ -201,6 +203,14 @@ export default function OrderDetail() {
             <TabsTrigger value="fulfillment" className="gap-2">
               <Truck className="h-4 w-4" />
               Fulfillment
+            </TabsTrigger>
+            <TabsTrigger value="split" className="gap-2">
+              <Split className="h-4 w-4" />
+              Split Order
+            </TabsTrigger>
+            <TabsTrigger value="shipping" className="gap-2">
+              <Package className="h-4 w-4" />
+              Expédition
             </TabsTrigger>
           </TabsList>
 
@@ -401,6 +411,32 @@ export default function OrderDetail() {
               onFulfill={handleFulfill}
               onPrintLabel={(items) => {
                 toast.success(`Impression de ${items.length} étiquette(s)...`);
+              }}
+            />
+          </TabsContent>
+
+          <TabsContent value="split">
+            <SplitOrderPanel
+              orderId={order.id}
+              orderNumber={order.order_number}
+              items={fulfillmentItems.map((item: any) => ({
+                ...item,
+                sku: item.sku || '',
+                unit_price: item.unit_price || 0,
+              }))}
+              customerName={order.customer_name || 'Client'}
+              shippingAddress={order.shipping_address}
+              onSplitComplete={() => queryClient.invalidateQueries({ queryKey: ['order-detail'] })}
+            />
+          </TabsContent>
+
+          <TabsContent value="shipping">
+            <ShippingEstimator
+              defaultCountry={(order.shipping_address as any)?.country || 'FR'}
+              defaultPostalCode={(order.shipping_address as any)?.zip || (order.shipping_address as any)?.postal_code || ''}
+              orderValue={order.total_amount}
+              onSelectRate={(rate) => {
+                toast.success(`${rate.carrier} sélectionné — ${rate.price.toFixed(2)} €`);
               }}
             />
           </TabsContent>
