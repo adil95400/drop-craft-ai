@@ -70,7 +70,7 @@ export function BTSWholesalerTestConnection() {
       localStorage.setItem(`bts_connection_${user.id}`, JSON.stringify(connectionData))
 
       // Call edge function to test and import
-      console.log('🔗 Calling premium-supplier-connect...')
+      // Calling premium-supplier-connect
       const { data, error } = await supabase.functions.invoke('premium-supplier-connect', {
         body: {
           userId: user.id,
