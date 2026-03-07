@@ -356,7 +356,7 @@ export function ABTestManager() {
                         {variants.map((v) => {
                           const perf = (v.performance_data || {}) as Record<string, number>;
                           return (
-                            <Card key={v.id} className={`p-4 border ${v.is_winner ? 'border-green-400 bg-green-50/50 dark:bg-green-950/20' : ''}`}>
+                            <Card key={v.id} className={`p-4 border ${v.is_winner ? 'border-primary bg-primary/5' : ''}`}>
                               <div className="flex items-center justify-between mb-2">
                                 <div className="flex items-center gap-2">
                                   <span className="font-medium text-sm">{v.variant_name}</span>
