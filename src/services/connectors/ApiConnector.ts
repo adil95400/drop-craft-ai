@@ -62,7 +62,7 @@ export class ApiConnector extends BaseConnector {
 
       return this.transformProduct(response);
     } catch (error) {
-      console.log('Failed to get product', error);
+      // Failed to get product
       return null;
     }
   }

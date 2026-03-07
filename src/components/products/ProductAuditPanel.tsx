@@ -53,7 +53,7 @@ export function ProductAuditPanel({
       });
 
       // Show result
-      console.log('AI Optimization result:', result);
+      // AI Optimization result received
       
       // Show success with a preview of the result
       if (result.result.optimized_title) {

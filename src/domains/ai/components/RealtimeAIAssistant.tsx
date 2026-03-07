@@ -452,7 +452,7 @@ export const RealtimeAIAssistant: React.FC = () => {
   const sendTextMessage = useCallback(() => {
     if (!inputText.trim() || !isConnected || !wsRef.current) return
 
-    console.log('📤 Sending text message:', inputText)
+    // Sending text message
 
     // Add user message to UI
     setMessages(prev => [...prev, {

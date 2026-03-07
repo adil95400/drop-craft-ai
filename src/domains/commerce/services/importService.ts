@@ -260,7 +260,7 @@ class ImportService {
   }
 
   clearCache() {
-    console.log('Cache cleared')
+    // Cache cleared
   }
 }
 
