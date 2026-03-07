@@ -107,6 +107,10 @@ export function useFulfillmentProStats() {
         .gte('updated_at', todayStart);
 
       const returns = returnsData || [];
+
+      // Calculate stats
+      const fulfilled = orders.filter(o => ['shipped', 'delivered'].includes(o.status));
+      const prevFulfilled = prev.filter(o => ['shipped', 'delivered'].includes(o.status));
       
       const fulfillmentRate = orders.length ? Math.round((fulfilled.length / orders.length) * 100) : 0;
       const prevFulfillmentRate = prev.length ? Math.round((prevFulfilled.length / prev.length) * 100) : 0;
