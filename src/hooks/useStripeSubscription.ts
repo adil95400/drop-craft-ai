@@ -128,7 +128,7 @@ export function useStripeSubscription() {
         throw new Error('URL de checkout non reçue');
       }
     } catch (error) {
-      console.error('Error creating checkout:', error);
+      logger.error('Error creating checkout', error instanceof Error ? error : undefined, { ...LOG_CTX, action: 'createCheckout' });
       toast({
         title: "Erreur",
         description: error instanceof Error ? error.message : "Impossible de créer la session de paiement",
