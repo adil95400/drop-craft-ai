@@ -64,7 +64,11 @@ export function AnalyticsRoutes() {
       <Route path="bi-advanced" element={<BIAdvancedDashboardPage />} />
 
       {/* Performance */}
+      {/* Performance */}
       <Route path="performance" element={<PerformanceDashboardPage />} />
+
+      {/* Real-Time */}
+      <Route path="realtime" element={<RealTimeAnalyticsPage />} />
 
       {/* === Redirects: merged/obsolete routes === */}
       <Route path="unified" element={<Navigate to="/analytics" replace />} />
