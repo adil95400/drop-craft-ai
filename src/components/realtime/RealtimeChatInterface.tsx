@@ -335,7 +335,7 @@ export const RealtimeChatInterface: React.FC = () => {
       wsRef.current = new WebSocket(wsUrl)
 
       wsRef.current.onopen = () => {
-        console.log('✅ WebSocket connected')
+        // WebSocket connected
         setIsConnected(true)
         setIsConnecting(false)
         setConnectionStatus({ status: 'connected', message: 'Connecté au chat IA' })
