@@ -167,8 +167,7 @@ export const ExtensionMarketplace: React.FC = () => {
       return
     }
 
-    console.log('Installing extension:', extensionId)
-    // Logique d'installation
+    // TODO: Logique d'installation
   }
 
   const handleToggleFavorite = (extensionId: string) => {
