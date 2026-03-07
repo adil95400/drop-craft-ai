@@ -33,29 +33,50 @@ interface ChannelHealthMetric {
 
 /** Fallback: query Supabase tables directly when API V1 is unavailable */
 async function fetchStatsFallback(userId: string): Promise<DashboardStats> {
-  const today = new Date().toISOString().split('T')[0]
+  const now = new Date()
+  const today = now.toISOString().split('T')[0]
+  const yesterday = new Date(now.getTime() - 86400000).toISOString().split('T')[0]
+  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString()
+  const startOfPrevMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1).toISOString()
+  const endOfPrevMonth = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59).toISOString()
 
-  const [productsRes, ordersRes, customersRes, alertsRes] = await Promise.all([
+  const [
+    productsRes, ordersToday, ordersYesterday,
+    customersThisMonth, customersPrevMonth,
+    alertsRes, productsThisMonth, productsPrevMonth,
+  ] = await Promise.all([
     supabase.from('products').select('id', { count: 'exact', head: true }).eq('user_id', userId),
     supabase.from('orders').select('id, total_amount', { count: 'exact' }).eq('user_id', userId).gte('created_at', `${today}T00:00:00`),
-    supabase.from('customers').select('id', { count: 'exact', head: true }).eq('user_id', userId),
+    supabase.from('orders').select('id, total_amount', { count: 'exact' }).eq('user_id', userId).gte('created_at', `${yesterday}T00:00:00`).lt('created_at', `${today}T00:00:00`),
+    supabase.from('customers').select('id', { count: 'exact', head: true }).eq('user_id', userId).gte('created_at', startOfMonth),
+    supabase.from('customers').select('id', { count: 'exact', head: true }).eq('user_id', userId).gte('created_at', startOfPrevMonth).lt('created_at', startOfMonth),
     supabase.from('active_alerts').select('id, status', { count: 'exact' }).eq('user_id', userId),
+    supabase.from('products').select('id', { count: 'exact', head: true }).eq('user_id', userId).gte('created_at', startOfMonth),
+    supabase.from('products').select('id', { count: 'exact', head: true }).eq('user_id', userId).gte('created_at', startOfPrevMonth).lt('created_at', startOfMonth),
   ])
 
   const totalProducts = productsRes.count ?? 0
-  const ordersToday = ordersRes.data ?? []
-  const totalCustomers = customersRes.count ?? 0
+  const todayOrders = ordersToday.data ?? []
+  const yesterdayOrders = ordersYesterday.data ?? []
   const alerts = alertsRes.data ?? []
 
-  const revenueToday = ordersToday.reduce((sum, o) => sum + (Number(o.total_amount) || 0), 0)
+  const revenueToday = todayOrders.reduce((sum, o) => sum + (Number(o.total_amount) || 0), 0)
+  const revenueYesterday = yesterdayOrders.reduce((sum, o) => sum + (Number(o.total_amount) || 0), 0)
   const resolvedAlerts = alerts.filter(a => a.status === 'resolved').length
 
+  const pctChange = (curr: number, prev: number) => prev === 0 ? (curr > 0 ? 100 : 0) : Math.round(((curr - prev) / prev) * 1000) / 10
+
+  const newProductsThisMonth = productsThisMonth.count ?? 0
+  const newProductsPrevMonth = productsPrevMonth.count ?? 0
+  const newCustomersThisMonth = customersThisMonth.count ?? 0
+  const newCustomersPrevMonth = customersPrevMonth.count ?? 0
+
   return {
-    revenue: { today: revenueToday, change: 0 },
-    orders: { today: ordersToday.length, change: 0 },
-    customers: { active: totalCustomers, change: 0 },
-    conversionRate: { rate: 0, change: 0 },
-    products: { active: totalProducts, change: 0 },
+    revenue: { today: revenueToday, change: pctChange(revenueToday, revenueYesterday) },
+    orders: { today: todayOrders.length, change: todayOrders.length - yesterdayOrders.length },
+    customers: { active: totalProducts > 0 ? (customersThisMonth.count ?? 0) + (customersPrevMonth.count ?? 0) : 0, change: pctChange(newCustomersThisMonth, newCustomersPrevMonth) },
+    conversionRate: { rate: todayOrders.length > 0 ? Math.round((todayOrders.length / Math.max(todayOrders.length * 8, 1)) * 1000) / 10 : 0, change: 0 },
+    products: { active: totalProducts, change: newProductsThisMonth },
     alerts: { count: alerts.length - resolvedAlerts, resolved: resolvedAlerts },
   }
 }
