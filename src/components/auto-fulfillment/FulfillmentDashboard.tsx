@@ -39,7 +39,7 @@ export function FulfillmentDashboard() {
         <Button
           size="sm"
           variant="outline"
-          onClick={() => retryFailed()}
+          onClick={() => retryFailed(undefined)}
           disabled={isRetrying || (stats?.failed || 0) === 0}
         >
           <RefreshCw className="w-4 h-4 mr-2" />
