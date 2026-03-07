@@ -17177,8 +17177,10 @@ export type Database = {
       webhook_events: {
         Row: {
           created_at: string | null
+          endpoint_id: string | null
           error_message: string | null
           event_type: string
+          headers: Json
           id: string
           integration_id: string | null
           payload: Json | null
@@ -17193,8 +17195,10 @@ export type Database = {
         }
         Insert: {
           created_at?: string | null
+          endpoint_id?: string | null
           error_message?: string | null
           event_type: string
+          headers?: Json
           id?: string
           integration_id?: string | null
           payload?: Json | null
@@ -17209,8 +17213,10 @@ export type Database = {
         }
         Update: {
           created_at?: string | null
+          endpoint_id?: string | null
           error_message?: string | null
           event_type?: string
+          headers?: Json
           id?: string
           integration_id?: string | null
           payload?: Json | null
@@ -17224,6 +17230,13 @@ export type Database = {
           webhook_data?: Json | null
         }
         Relationships: [
+          {
+            foreignKeyName: "webhook_events_endpoint_id_fkey"
+            columns: ["endpoint_id"]
+            isOneToOne: false
+            referencedRelation: "webhook_endpoints"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "webhook_events_integration_id_fkey"
             columns: ["integration_id"]
