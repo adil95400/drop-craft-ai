@@ -123,6 +123,25 @@ export default function PricingManagerHub() {
             </Card>
           ))}
         </div>
+        {/* Quick cross-module actions */}
+        <div className="flex flex-wrap gap-3 mb-8">
+          <Button
+            variant="outline"
+            onClick={() => applyRules.mutate()}
+            disabled={applyRules.isPending}
+          >
+            {applyRules.isPending ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Zap className="h-4 w-4 mr-2" />}
+            Appliquer les règles de prix
+          </Button>
+          <Button
+            variant="outline"
+            onClick={() => autoReprice.mutate()}
+            disabled={autoReprice.isPending}
+          >
+            {autoReprice.isPending ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Target className="h-4 w-4 mr-2" />}
+            Repricing concurrentiel auto
+          </Button>
+        </div>
 
         {/* Modules grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
