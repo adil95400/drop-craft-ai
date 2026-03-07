@@ -82,9 +82,31 @@ export function useFulfillmentProStats() {
       const orders = currentOrders || [];
       const prev = prevOrders || [];
 
-      // Calculate stats
-      const fulfilled = orders.filter(o => ['shipped', 'delivered'].includes(o.status));
-      const prevFulfilled = prev.filter(o => ['shipped', 'delivered'].includes(o.status));
+      // Fetch returns stats
+      const { data: returnsData } = await supabase
+        .from('returns')
+        .select('id, status, refund_amount, created_at')
+        .eq('user_id', user.id)
+        .gte('created_at', thirtyDaysAgo.toISOString());
+
+      // Fetch pending picking count
+      const { count: pickingCount } = await supabase
+        .from('orders')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', user.id)
+        .in('status', ['processing', 'confirmed', 'paid'])
+        .is('fulfillment_status', null);
+
+      // Fetch packed today
+      const todayStart = startOfDay(now).toISOString();
+      const { count: packedToday } = await supabase
+        .from('orders')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', user.id)
+        .eq('fulfillment_status', 'packed')
+        .gte('updated_at', todayStart);
+
+      const returns = returnsData || [];
       
       const fulfillmentRate = orders.length ? Math.round((fulfilled.length / orders.length) * 100) : 0;
       const prevFulfillmentRate = prev.length ? Math.round((prevFulfilled.length / prev.length) * 100) : 0;
