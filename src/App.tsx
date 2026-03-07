@@ -29,6 +29,7 @@ const OnboardingTour = lazy(() => import('@/components/onboarding/OnboardingTour
 const NotificationProvider = lazy(() => import('@/components/notifications/NotificationService').then(m => ({ default: m.NotificationProvider })));
 const GlobalAIAssistant = lazy(() => import('@/components/ai/GlobalAIAssistant').then(m => ({ default: m.GlobalAIAssistant })));
 const FeedbackWidget = lazy(() => import('@/components/feedback/FeedbackWidget').then(m => ({ default: m.FeedbackWidget })));
+const CrossModuleMonitor = lazy(() => import('@/components/cross-module/CrossModuleMonitor').then(m => ({ default: m.CrossModuleMonitor })));
 
 // Initialize i18n lazily
 const initI18n = () => import('@/lib/i18n');
@@ -105,6 +106,7 @@ const AuthenticatedShell = memo(({ children }: { children: React.ReactNode }) =>
                 <Suspense fallback={null}><OnboardingTour /></Suspense>
                 <Suspense fallback={null}><FeedbackWidget /></Suspense>
                 <Suspense fallback={null}><GlobalAIAssistant /></Suspense>
+                <Suspense fallback={null}><CrossModuleMonitor /></Suspense>
               </LazyModalContextProvider>
             </Suspense>
           </UnifiedProvider>

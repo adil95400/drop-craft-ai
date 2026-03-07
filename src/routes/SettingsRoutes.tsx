@@ -9,6 +9,7 @@ const StoreDashboard = lazy(() => import('@/pages/stores/StoreDashboard'));
 const APIManagementPage = lazy(() => import('@/pages/APIManagementPage'));
 const BillingPage = lazy(() => import('@/pages/BillingPage'));
 const SecurityDashboard = lazy(() => import('@/pages/SecurityDashboard'));
+const TwoFactorSettingsPage = lazy(() => import('@/pages/settings/TwoFactorSettingsPage'));
 const WhiteLabelPage = lazy(() => import('@/pages/settings/WhiteLabelPage'));
 const DomainRegistrationPage = lazy(() => import('@/pages/settings/DomainRegistrationPage'));
 const WebhookManagementPage = lazy(() => import('@/pages/settings/WebhookManagementPage'));
@@ -26,6 +27,7 @@ export function SettingsRoutes() {
       <Route path="api" element={<APIManagementPage />} />
       <Route path="billing" element={<BillingPage />} />
       <Route path="security" element={<SecurityDashboard />} />
+      <Route path="2fa" element={<TwoFactorSettingsPage />} />
       <Route path="white-label" element={<WhiteLabelPage />} />
       <Route path="domains" element={<DomainRegistrationPage />} />
       <Route path="webhooks" element={<WebhookManagementPage />} />
