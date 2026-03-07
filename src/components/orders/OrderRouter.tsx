@@ -222,7 +222,7 @@ export const OrderRouter = () => {
     if (!rule.api_endpoint) throw new Error('API endpoint not configured')
     
     // Simulate API call
-    console.log('Routing via API:', rule.api_endpoint, data)
+    // Routing via API
     await new Promise(resolve => setTimeout(resolve, 1000))
   }
 
