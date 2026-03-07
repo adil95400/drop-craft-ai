@@ -1,6 +1,6 @@
 /**
  * Pricing Manager Hub — Vue d'ensemble de la tarification
- * Centralise les accès aux sous-modules pricing
+ * Centralise les accès aux sous-modules pricing + actions cross-module
  */
 import { Helmet } from 'react-helmet-async';
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
@@ -12,9 +12,10 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import {
   DollarSign, TrendingUp, Shield, Calculator, Brain,
-  ArrowRight, BarChart3, Zap, Target, Eye, RefreshCw
+  ArrowRight, BarChart3, Zap, Target, Eye, RefreshCw, Loader2
 } from 'lucide-react';
 import { ModuleInterconnectionBanner } from '@/components/cross-module/ModuleInterconnectionBanner';
+import { useApplyPricingRules, useAutoRepriceFromCompetitors } from '@/hooks/useCrossModuleSync';
 
 const PRICING_MODULES = [
   {
