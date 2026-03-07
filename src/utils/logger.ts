@@ -6,4 +6,3 @@ import { logger } from '@/lib/logger';
 
 export { logger };
 export type { LogLevel, LogMeta as LogContext } from '@/lib/logger';
-export { LogLevel as LogLevelEnum } from '@/lib/logger';
