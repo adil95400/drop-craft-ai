@@ -220,7 +220,7 @@ class NotificationService {
 
   // Gérer les clics sur les notifications
   private handleNotificationClick(action: string, data: any): void {
-    console.log('Notification clicked:', action, data);
+    // Handle notification click action
     
     switch (action) {
       case 'view':
