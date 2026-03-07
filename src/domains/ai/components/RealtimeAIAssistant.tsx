@@ -305,7 +305,7 @@ export const RealtimeAIAssistant: React.FC = () => {
     wsRef.current.onmessage = async (event) => {
       try {
         const data = JSON.parse(event.data)
-        console.log('📨 Received message type:', data.type)
+        // Message received
 
         switch (data.type) {
           case 'response.audio.delta':
