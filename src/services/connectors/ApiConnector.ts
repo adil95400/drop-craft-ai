@@ -31,7 +31,7 @@ export class ApiConnector extends BaseConnector {
       const response = await this.makeRequest('/health');
       return true;
     } catch (error) {
-      console.log('Connection test failed', error);
+      // Connection test failed
       return false;
     }
   }
