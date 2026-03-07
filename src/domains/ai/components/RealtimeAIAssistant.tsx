@@ -116,7 +116,7 @@ class AudioQueue implements AudioQueueClass {
   constructor(private audioContext: AudioContext) {}
 
   async addToQueue(audioData: Uint8Array) {
-    console.log('🔊 Adding audio chunk to queue, size:', audioData.length)
+    // Adding audio chunk to queue
     this.queue.push(audioData)
     if (!this.isPlaying) {
       await this.playNext()
