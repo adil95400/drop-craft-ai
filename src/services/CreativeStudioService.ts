@@ -143,7 +143,7 @@ export class CreativeStudioService {
         performance_metrics: log.metadata?.performance_metrics || {}
       }))
     } catch (error) {
-      console.error('Error fetching marketing campaigns:', error)
+      logger.error('Error fetching marketing campaigns', error instanceof Error ? error : undefined, { ...LOG_CTX, action: 'getCampaigns' })
       return []
     }
   }
