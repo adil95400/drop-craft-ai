@@ -161,8 +161,8 @@ describe('SubModule Configuration', () => {
 });
 
 describe('Navigation Groups', () => {
-  it('should have 6 navigation groups', () => {
-    expect(NAV_GROUPS).toHaveLength(6);
+  it('should have 10 navigation groups', () => {
+    expect(NAV_GROUPS).toHaveLength(10);
   });
 
   it('should have modules distributed across all groups', () => {
