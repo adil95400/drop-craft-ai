@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -14,10 +14,13 @@ import {
 import { useToast } from '@/hooks/use-toast'
 import { winningProductsIntelligenceService, type WinningProductIntelligence } from '@/services/WinningProductsIntelligenceService'
 import { socialMediaAnalysisService } from '@/services/SocialMediaAnalysisService'
+import { supabase } from '@/integrations/supabase/client'
+import { useAuth } from '@/contexts/AuthContext'
 
 export function WinningProductsMarketplace() {
   const [products, setProducts] = useState<WinningProductIntelligence[]>([])
   const [loading, setLoading] = useState(true)
+  const [importingId, setImportingId] = useState<string | null>(null)
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedCategory, setSelectedCategory] = useState<string>('')
   const [priceRange, setPriceRange] = useState([0, 1000])
@@ -25,6 +28,7 @@ export function WinningProductsMarketplace() {
   const [sortBy, setSortBy] = useState('ai_score')
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
   const { toast } = useToast()
+  const { user } = useAuth()
 
   const categories = [
     'Tech & Electronics', 'Fashion & Beauty', 'Home & Garden', 
@@ -59,21 +63,49 @@ export function WinningProductsMarketplace() {
     }
   }
 
-  const handleProductImport = async (product: WinningProductIntelligence) => {
+  const handleProductImport = useCallback(async (product: WinningProductIntelligence) => {
+    if (!user) {
+      toast({ title: "Connexion requise", description: "Veuillez vous connecter pour importer", variant: "destructive" })
+      return
+    }
+    
+    setImportingId(product.product_id)
     try {
-      // Import logic here
+      const estimatedCost = product.price * 0.4
+      const { error } = await supabase
+        .from('products')
+        .insert({
+          user_id: user.id,
+          title: product.name,
+          description: `Produit gagnant (Score: ${product.ai_score}/100) — ${product.category || 'Général'}`,
+          price: product.suggested_pricing?.optimal || product.price * 2.5,
+          cost_price: product.price,
+          category: product.category || 'Imported Winners',
+          supplier: product.supplier || product.data_sources?.[0] || 'marketplace',
+          tags: ['winner', 'imported', `score-${product.ai_score}`],
+          status: 'draft',
+          sku: `WIN-${Date.now()}`,
+          stock_quantity: 100,
+          image_url: null,
+        })
+
+      if (error) throw error
+
       toast({
-        title: "Produit importé",
-        description: `${product.name} a été ajouté à votre catalogue`,
+        title: "✅ Produit importé",
+        description: `${product.name} ajouté à votre catalogue (prix suggéré: ${(product.suggested_pricing?.optimal || product.price * 2.5).toFixed(2)}€)`,
       })
     } catch (error) {
+      console.error('Import failed:', error)
       toast({
         title: "Erreur d'importation",
-        description: "Impossible d'importer le produit",
+        description: error instanceof Error ? error.message : "Impossible d'importer le produit",
         variant: "destructive"
       })
+    } finally {
+      setImportingId(null)
     }
-  }
+  }, [user, toast])
 
   const getScoreColor = (score: number) => {
     if (score >= 80) return 'text-green-600 bg-green-100'
@@ -300,6 +332,7 @@ export function WinningProductsMarketplace() {
                   key={`${product.product_id}-${index}`}
                   product={product}
                   onImport={() => handleProductImport(product)}
+                  isImporting={importingId === product.product_id}
                 />
               ))}
             </div>
@@ -310,9 +343,10 @@ export function WinningProductsMarketplace() {
   )
 }
 
-function ProductCard({ product, onImport }: { 
+function ProductCard({ product, onImport, isImporting }: { 
   product: WinningProductIntelligence
-  onImport: () => void 
+  onImport: () => void
+  isImporting?: boolean
 }) {
   const getScoreColor = (score: number) => {
     if (score >= 80) return 'text-green-600 bg-green-100'
@@ -395,9 +429,9 @@ function ProductCard({ product, onImport }: {
 
         {/* Actions */}
         <div className="flex gap-2 pt-2">
-          <Button size="sm" className="flex-1" onClick={onImport}>
+          <Button size="sm" className="flex-1" onClick={onImport} disabled={isImporting}>
             <ShoppingCart className="h-4 w-4 mr-2" />
-            Importer
+            {isImporting ? 'Import...' : 'Importer'}
           </Button>
           <Button variant="outline" size="sm">
             <Eye className="h-4 w-4" />
