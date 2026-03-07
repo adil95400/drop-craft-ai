@@ -10,6 +10,7 @@ const SecurityDashboard = lazy(() => import('@/pages/SecurityDashboard'));
 const VideoTutorialsPage = lazy(() => import('@/pages/admin/VideoTutorialsPage'));
 const ChannableStyleSuppliersPage = lazy(() => import('@/pages/suppliers/ChannableStyleSuppliersPage'));
 const AdminConsumptionPage = lazy(() => import('@/pages/admin/AdminConsumptionPage'));
+const AdminSecurityPage = lazy(() => import('@/pages/admin/AdminSecurityPage'));
 
 export function AdminRoutes() {
   return (
@@ -17,8 +18,11 @@ export function AdminRoutes() {
       {/* Admin Panel */}
       <Route index element={<AdminPanel />} />
       
-      {/* Security */}
-      <Route path="security" element={<SecurityDashboard />} />
+      {/* Security - Full dashboard */}
+      <Route path="security" element={<AdminSecurityPage />} />
+      
+      {/* Legacy security route */}
+      <Route path="security-legacy" element={<SecurityDashboard />} />
       
       {/* Video Tutorials Management */}
       <Route path="video-tutorials" element={<VideoTutorialsPage />} />
