@@ -36,9 +36,7 @@ export const cleanupUnusedData = async (): Promise<void> => {
     
     await Promise.all(oldCaches.map(name => caches.delete(name)));
     
-    if (import.meta.env.DEV && oldCaches.length > 0) {
-      console.log(`Cleaned up ${oldCaches.length} old cache entries`);
-    }
+    // Old caches cleaned up
   } catch (error) {
     console.error('Cache cleanup failed:', error);
   }
