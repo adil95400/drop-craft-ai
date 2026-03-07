@@ -54,7 +54,7 @@ export function useStripeSubscription() {
     // Rate limiting: prevent multiple calls within 60 seconds unless forced
     const now = Date.now();
     if (!force && now - lastCheckRef.current < 60000) {
-      console.log('[Stripe] Skipping check - rate limited');
+      logger.debug('Skipping subscription check - rate limited', { ...LOG_CTX, action: 'checkSubscription' });
       return;
     }
     lastCheckRef.current = now;
