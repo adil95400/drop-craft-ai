@@ -270,7 +270,7 @@ export class PlanService {
       this.currentPlan = newPlan;
       return true;
     } catch (error) {
-      console.error('Failed to upgrade plan:', error);
+      logger.error('Failed to upgrade plan', error instanceof Error ? error : undefined, { ...LOG_CTX, action: 'upgradePlan' });
       return false;
     }
   }
