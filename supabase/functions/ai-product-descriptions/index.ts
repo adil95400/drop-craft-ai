@@ -1,114 +1,144 @@
-import "https://deno.land/x/xhr@0.1.0/mod.ts";
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
+/**
+ * AI Product Descriptions — Multi-langue, SEO-optimized
+ * JWT-first auth, structured output via tool calling
+ */
+import { requireAuth, handlePreflight, errorResponse, successResponse } from '../_shared/jwt-auth.ts'
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3'
+import { AI_MODEL, AI_GATEWAY_URL } from '../_shared/ai-config.ts'
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
-
-serve(async (req) => {
-  if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
-  }
+Deno.serve(async (req) => {
+  const preflight = handlePreflight(req)
+  if (preflight) return preflight
 
   try {
-    const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
-    if (!LOVABLE_API_KEY) {
-      throw new Error('LOVABLE_API_KEY not configured');
+    const { userId, supabase, corsHeaders } = await requireAuth(req)
+
+    const {
+      productName, category, features = [], tone = 'professional', length = 'medium',
+      languages = ['fr'], // array of ISO codes
+      product_id,
+      include_seo = true, // generate meta title/desc
+      include_bullets = true, // generate bullet points
+    } = await req.json()
+
+    if (!productName) {
+      return errorResponse('productName is required', corsHeaders)
     }
 
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-    const supabase = createClient(supabaseUrl, supabaseKey);
+    const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY')
+    if (!LOVABLE_API_KEY) throw new Error('LOVABLE_API_KEY not configured')
 
-    const authHeader = req.headers.get('Authorization')!;
-    const token = authHeader.replace('Bearer ', '');
-    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
-
-    if (authError || !user) {
-      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
-        status: 401,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
+    const lengthMap: Record<string, string> = {
+      short: '50-100 words', medium: '100-200 words', long: '200-350 words'
     }
 
-    const { productName, category, features, tone = 'professional', length = 'medium' } = await req.json();
+    const langNames: Record<string, string> = {
+      fr: 'French', en: 'English', de: 'German', es: 'Spanish', it: 'Italian',
+      pt: 'Portuguese', nl: 'Dutch', ar: 'Arabic', ja: 'Japanese', zh: 'Chinese',
+      ko: 'Korean', pl: 'Polish', sv: 'Swedish', da: 'Danish', fi: 'Finnish',
+      no: 'Norwegian', cs: 'Czech', ro: 'Romanian', tr: 'Turkish', ru: 'Russian',
+    }
 
-    const lengthMapping = {
-      short: '50-100 words',
-      medium: '100-200 words',
-      long: '200-300 words'
-    };
+    const results: Record<string, any> = {}
 
-    const systemPrompt = `You are an expert e-commerce copywriter specializing in product descriptions. 
-Create compelling, SEO-optimized product descriptions that drive conversions.`;
+    for (const lang of languages.slice(0, 5)) { // max 5 languages per call
+      const langLabel = langNames[lang] || lang
 
-    const userPrompt = `Generate a ${tone} product description for:
+      const systemPrompt = `You are an expert e-commerce SEO copywriter. Write in ${langLabel}. 
+Generate compelling, conversion-optimized product content.
+Use natural keyword integration, not keyword stuffing.
+Adapt cultural tone for ${langLabel}-speaking markets.`
+
+      const response = await fetch(AI_GATEWAY_URL, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${LOVABLE_API_KEY}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: AI_MODEL,
+          messages: [
+            { role: 'system', content: systemPrompt },
+            { role: 'user', content: `Generate product content for:
 Product: ${productName}
-Category: ${category}
-Key Features: ${features.join(', ')}
-Length: ${lengthMapping[length as keyof typeof lengthMapping]}
+Category: ${category || 'General'}
+Features: ${features.join(', ') || 'N/A'}
+Tone: ${tone}
+Description length: ${lengthMap[length] || '100-200 words'}` }
+          ],
+          tools: [{
+            type: 'function',
+            function: {
+              name: 'product_content',
+              description: 'Returns structured product content',
+              parameters: {
+                type: 'object',
+                properties: {
+                  title: { type: 'string', description: 'SEO-optimized product title (max 70 chars)' },
+                  description: { type: 'string', description: 'Full product description with HTML formatting' },
+                  meta_title: { type: 'string', description: 'SEO meta title (max 60 chars)' },
+                  meta_description: { type: 'string', description: 'SEO meta description (max 155 chars)' },
+                  bullet_points: { type: 'array', items: { type: 'string' }, description: '5 key selling points' },
+                  keywords: { type: 'array', items: { type: 'string' }, description: '8-10 relevant SEO keywords' },
+                  short_description: { type: 'string', description: 'One-liner summary (max 100 chars)' },
+                },
+                required: ['title', 'description', 'meta_title', 'meta_description', 'bullet_points', 'keywords', 'short_description'],
+                additionalProperties: false,
+              }
+            }
+          }],
+          tool_choice: { type: 'function', function: { name: 'product_content' } },
+          temperature: 0.7,
+        }),
+      })
 
-Include:
-- Attention-grabbing headline
-- Key benefits and features
-- Call-to-action
-- SEO keywords naturally integrated`;
-
-    const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${LOVABLE_API_KEY}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'openai/gpt-5-nano',
-        messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: userPrompt }
-        ],
-        temperature: 0.7,
-      }),
-    });
-
-    if (!response.ok) {
-      if (response.status === 429) {
-        return new Response(JSON.stringify({ error: 'Rate limit exceeded, please try again later.' }), {
-          status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        });
+      if (!response.ok) {
+        if (response.status === 429) return errorResponse('Rate limit exceeded', corsHeaders, 429)
+        if (response.status === 402) return errorResponse('Credits exhausted', corsHeaders, 402)
+        console.error(`AI error for lang ${lang}:`, response.status)
+        results[lang] = { error: `Generation failed (${response.status})` }
+        continue
       }
-      if (response.status === 402) {
-        return new Response(JSON.stringify({ error: 'Payment required, please add credits.' }), {
-          status: 402, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        });
+
+      const data = await response.json()
+      const toolCall = data.choices?.[0]?.message?.tool_calls?.[0]
+      if (toolCall?.function?.arguments) {
+        try {
+          results[lang] = JSON.parse(toolCall.function.arguments)
+        } catch {
+          results[lang] = { error: 'Failed to parse AI response' }
+        }
+      } else {
+        // Fallback: try to use content directly
+        results[lang] = { description: data.choices?.[0]?.message?.content || '' }
       }
-      const error = await response.text();
-      console.error('AI Gateway error:', error);
-      throw new Error('Failed to generate description');
     }
 
-    const data = await response.json();
-    const description = data.choices[0].message.content;
+    // Log generation
+    const serviceSupabase = createClient(
+      Deno.env.get('SUPABASE_URL')!,
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
+    )
+    await serviceSupabase.from('ai_generations').insert({
+      user_id: userId,
+      target_type: 'product',
+      target_id: product_id || userId,
+      task: 'multilang_description',
+      provider: 'openai',
+      model: 'gpt-5-nano',
+      input_json: { productName, category, features, tone, length, languages },
+      output_json: results,
+      language: languages.join(','),
+    }).catch(() => {})
 
-    // Log AI task
-    await supabase.from('ai_tasks').insert({
-      user_id: user.id,
-      task_type: 'product_description',
-      input_data: { productName, category, features, tone, length },
-      output_data: { description },
-      status: 'completed',
-      tokens_used: data.usage?.total_tokens || 0,
-    });
+    return successResponse({
+      descriptions: results,
+      languages_generated: Object.keys(results).filter(k => !results[k].error),
+      languages_failed: Object.keys(results).filter(k => results[k].error),
+    }, corsHeaders)
 
-    return new Response(JSON.stringify({ description, tokensUsed: data.usage?.total_tokens || 0 }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
   } catch (error) {
-    console.error('Error in ai-product-descriptions:', error);
+    console.error('ai-product-descriptions error:', error)
     return new Response(JSON.stringify({ error: error.message }), {
       status: 500,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
+      headers: { 'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json' },
+    })
   }
-});
+})
