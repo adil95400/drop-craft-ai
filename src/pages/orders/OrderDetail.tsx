@@ -19,6 +19,8 @@ import {
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { OrderFulfillmentPanel } from '@/components/orders/OrderFulfillmentPanel';
+import { SplitOrderPanel } from '@/components/orders/SplitOrderPanel';
+import { ShippingEstimator } from '@/components/orders/ShippingEstimator';
 import { TrackingTimeline } from '@/components/tracking';
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
 
