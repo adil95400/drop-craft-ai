@@ -200,7 +200,7 @@ export async function batchInsert<T extends Record<string, any>>(
   let failed = 0;
   const errors: string[] = [];
 
-  console.log(`📤 Starting batch insert of ${items.length} items to ${tableName}...`);
+  // Starting batch insert
 
   for (let i = 0; i < items.length; i += batchSize) {
     const batch = items.slice(i, i + batchSize);
