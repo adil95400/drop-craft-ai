@@ -434,9 +434,7 @@ export default function ChannableSettingsPage() {
                     >
                       <div className="flex items-center gap-2">
                         <Badge variant="outline">{t('security.twoFactor.recommended')}</Badge>
-                        <Button variant="outline" size="sm" disabled>
-                          {t('security.twoFactor.comingSoon')}
-                        </Button>
+                        <TwoFactorSetup />
                       </div>
                     </SettingRow>
 
@@ -445,9 +443,7 @@ export default function ChannableSettingsPage() {
                       label={t('security.sessions.label')} 
                       description={t('security.sessions.description')}
                     >
-                      <Button variant="outline" size="sm" disabled>
-                        {t('security.sessions.comingSoon')}
-                      </Button>
+                      <ActiveSessionsManager />
                     </SettingRow>
                   </CardContent>
                 </Card>
