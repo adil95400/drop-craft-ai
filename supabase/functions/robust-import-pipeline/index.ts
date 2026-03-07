@@ -404,8 +404,9 @@ async function getItems(supabase: any, userId: string, jobId: string, page: numb
 
 // ── Main handler ─────────────────────────────────────────────────────────────
 Deno.serve(async (req) => {
+  const corsHeaders = getSecureCorsHeaders(req)
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders })
+    return handleCorsPreflightSecure(req)
   }
 
   try {
