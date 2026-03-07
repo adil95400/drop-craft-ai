@@ -3092,6 +3092,111 @@ export type Database = {
         }
         Relationships: []
       }
+      competitor_prices: {
+        Row: {
+          competitor_id: string | null
+          competitor_price: number
+          created_at: string | null
+          id: string
+          in_stock: boolean | null
+          last_updated: string | null
+          our_price: number
+          price_diff: number | null
+          price_diff_percent: number | null
+          product_id: string | null
+          product_title: string
+          source_url: string | null
+          trend: string | null
+          user_id: string
+        }
+        Insert: {
+          competitor_id?: string | null
+          competitor_price?: number
+          created_at?: string | null
+          id?: string
+          in_stock?: boolean | null
+          last_updated?: string | null
+          our_price?: number
+          price_diff?: number | null
+          price_diff_percent?: number | null
+          product_id?: string | null
+          product_title: string
+          source_url?: string | null
+          trend?: string | null
+          user_id: string
+        }
+        Update: {
+          competitor_id?: string | null
+          competitor_price?: number
+          created_at?: string | null
+          id?: string
+          in_stock?: boolean | null
+          last_updated?: string | null
+          our_price?: number
+          price_diff?: number | null
+          price_diff_percent?: number | null
+          product_id?: string | null
+          product_title?: string
+          source_url?: string | null
+          trend?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "competitor_prices_competitor_id_fkey"
+            columns: ["competitor_id"]
+            isOneToOne: false
+            referencedRelation: "competitor_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "competitor_prices_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      competitor_profiles: {
+        Row: {
+          avg_price_diff: number | null
+          created_at: string | null
+          id: string
+          is_active: boolean | null
+          last_scraped_at: string | null
+          name: string
+          products_tracked: number | null
+          updated_at: string | null
+          user_id: string
+          website: string
+        }
+        Insert: {
+          avg_price_diff?: number | null
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          last_scraped_at?: string | null
+          name: string
+          products_tracked?: number | null
+          updated_at?: string | null
+          user_id: string
+          website: string
+        }
+        Update: {
+          avg_price_diff?: number | null
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          last_scraped_at?: string | null
+          name?: string
+          products_tracked?: number | null
+          updated_at?: string | null
+          user_id?: string
+          website?: string
+        }
+        Relationships: []
+      }
       compliance_checks: {
         Row: {
           created_at: string
@@ -12001,6 +12106,66 @@ export type Database = {
           suggested_reorder_point?: number | null
           supplier_id?: string | null
           updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      repricing_rules: {
+        Row: {
+          competitor_ids: string[] | null
+          created_at: string | null
+          description: string | null
+          id: string
+          is_active: boolean | null
+          last_executed_at: string | null
+          max_discount: number | null
+          min_margin: number | null
+          name: string
+          offset_type: string | null
+          price_offset: number | null
+          product_filter: Json | null
+          products_affected: number | null
+          schedule: string | null
+          strategy: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          competitor_ids?: string[] | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          last_executed_at?: string | null
+          max_discount?: number | null
+          min_margin?: number | null
+          name: string
+          offset_type?: string | null
+          price_offset?: number | null
+          product_filter?: Json | null
+          products_affected?: number | null
+          schedule?: string | null
+          strategy?: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          competitor_ids?: string[] | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          last_executed_at?: string | null
+          max_discount?: number | null
+          min_margin?: number | null
+          name?: string
+          offset_type?: string | null
+          price_offset?: number | null
+          product_filter?: Json | null
+          products_affected?: number | null
+          schedule?: string | null
+          strategy?: string
+          updated_at?: string | null
           user_id?: string
         }
         Relationships: []

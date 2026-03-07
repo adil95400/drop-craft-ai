@@ -1,7 +1,9 @@
 /**
  * Competitor Pricing Service
- * Service pour le repricing concurrentiel
+ * Service pour le repricing concurrentiel — données réelles via Supabase
  */
+
+import { supabase } from '@/integrations/supabase/client';
 
 export interface Competitor {
   id: string;
@@ -61,207 +63,308 @@ export interface RepricingStats {
   competitivePosition: 'leader' | 'competitive' | 'behind';
 }
 
-// Mock data
-const mockCompetitors: Competitor[] = [
-  { id: 'c1', name: 'Amazon', website: 'amazon.fr', isActive: true, lastScraped: new Date(Date.now() - 30 * 60 * 1000).toISOString(), productsTracked: 234, avgPriceDiff: -5.2 },
-  { id: 'c2', name: 'Cdiscount', website: 'cdiscount.com', isActive: true, lastScraped: new Date(Date.now() - 45 * 60 * 1000).toISOString(), productsTracked: 189, avgPriceDiff: 2.1 },
-  { id: 'c3', name: 'Fnac', website: 'fnac.com', isActive: true, lastScraped: new Date(Date.now() - 1 * 60 * 60 * 1000).toISOString(), productsTracked: 156, avgPriceDiff: 8.5 },
-  { id: 'c4', name: 'Darty', website: 'darty.com', isActive: false, lastScraped: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(), productsTracked: 98, avgPriceDiff: 12.3 },
-];
+function mapCompetitor(row: any): Competitor {
+  return {
+    id: row.id,
+    name: row.name,
+    website: row.website,
+    isActive: row.is_active,
+    lastScraped: row.last_scraped_at,
+    productsTracked: row.products_tracked || 0,
+    avgPriceDiff: Number(row.avg_price_diff) || 0,
+  };
+}
 
-const mockPrices: CompetitorPrice[] = [
-  { id: 'p1', productId: 'prod1', productTitle: 'iPhone 15 Pro 256GB', competitorId: 'c1', competitorName: 'Amazon', ourPrice: 1199, competitorPrice: 1149, priceDiff: -50, priceDiffPercent: -4.2, lastUpdated: new Date(Date.now() - 30 * 60 * 1000).toISOString(), trend: 'down', inStock: true },
-  { id: 'p2', productId: 'prod1', productTitle: 'iPhone 15 Pro 256GB', competitorId: 'c2', competitorName: 'Cdiscount', ourPrice: 1199, competitorPrice: 1189, priceDiff: -10, priceDiffPercent: -0.8, lastUpdated: new Date(Date.now() - 45 * 60 * 1000).toISOString(), trend: 'stable', inStock: true },
-  { id: 'p3', productId: 'prod2', productTitle: 'Samsung Galaxy S24 Ultra', competitorId: 'c1', competitorName: 'Amazon', ourPrice: 1299, competitorPrice: 1349, priceDiff: 50, priceDiffPercent: 3.9, lastUpdated: new Date(Date.now() - 1 * 60 * 60 * 1000).toISOString(), trend: 'up', inStock: true },
-  { id: 'p4', productId: 'prod3', productTitle: 'MacBook Air M3', competitorId: 'c3', competitorName: 'Fnac', ourPrice: 1299, competitorPrice: 1399, priceDiff: 100, priceDiffPercent: 7.7, lastUpdated: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(), trend: 'stable', inStock: false },
-  { id: 'p5', productId: 'prod4', productTitle: 'Sony WH-1000XM5', competitorId: 'c1', competitorName: 'Amazon', ourPrice: 379, competitorPrice: 349, priceDiff: -30, priceDiffPercent: -7.9, lastUpdated: new Date(Date.now() - 15 * 60 * 1000).toISOString(), trend: 'down', inStock: true },
-  { id: 'p6', productId: 'prod5', productTitle: 'iPad Pro 12.9"', competitorId: 'c2', competitorName: 'Cdiscount', ourPrice: 1199, competitorPrice: 1149, priceDiff: -50, priceDiffPercent: -4.2, lastUpdated: new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString(), trend: 'down', inStock: true },
-];
+function mapPrice(row: any, competitorName: string): CompetitorPrice {
+  return {
+    id: row.id,
+    productId: row.product_id,
+    productTitle: row.product_title,
+    competitorId: row.competitor_id,
+    competitorName,
+    ourPrice: Number(row.our_price),
+    competitorPrice: Number(row.competitor_price),
+    priceDiff: Number(row.price_diff),
+    priceDiffPercent: Number(row.price_diff_percent),
+    lastUpdated: row.last_updated,
+    trend: (row.trend as 'up' | 'down' | 'stable') || 'stable',
+    inStock: row.in_stock ?? true,
+  };
+}
 
-const mockRules: RepricingRule[] = [
-  {
-    id: 'r1',
-    name: 'Aligner sur Amazon',
-    description: 'Aligne les prix sur Amazon avec une marge minimum de 10%',
-    isActive: true,
-    strategy: 'match',
-    offset: 0,
-    offsetType: 'percentage',
-    minMargin: 10,
-    maxDiscount: 15,
-    competitorIds: ['c1'],
-    schedule: 'hourly',
-    createdAt: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
-    updatedAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-    lastExecutedAt: new Date(Date.now() - 1 * 60 * 60 * 1000).toISOString(),
-    productsAffected: 145
-  },
-  {
-    id: 'r2',
-    name: 'Battre Cdiscount -2%',
-    description: 'Prix inférieur de 2% à Cdiscount',
-    isActive: true,
-    strategy: 'undercut',
-    offset: 2,
-    offsetType: 'percentage',
-    minMargin: 8,
-    maxDiscount: 20,
-    competitorIds: ['c2'],
-    schedule: 'daily',
-    createdAt: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000).toISOString(),
-    updatedAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
-    lastExecutedAt: new Date(Date.now() - 12 * 60 * 60 * 1000).toISOString(),
-    productsAffected: 89
-  },
-  {
-    id: 'r3',
-    name: 'Premium Fnac +5%',
-    description: 'Prix supérieur de 5% à la Fnac pour les produits premium',
-    isActive: false,
-    strategy: 'premium',
-    offset: 5,
-    offsetType: 'percentage',
-    minMargin: 15,
-    maxDiscount: 0,
-    competitorIds: ['c3'],
-    productFilter: { categories: ['Audio Premium', 'Apple'] },
-    schedule: 'weekly',
-    createdAt: new Date(Date.now() - 60 * 24 * 60 * 60 * 1000).toISOString(),
-    updatedAt: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
-    productsAffected: 34
-  }
-];
+function mapRule(row: any): RepricingRule {
+  return {
+    id: row.id,
+    name: row.name,
+    description: row.description,
+    isActive: row.is_active,
+    strategy: row.strategy,
+    offset: Number(row.price_offset),
+    offsetType: row.offset_type,
+    minMargin: Number(row.min_margin),
+    maxDiscount: Number(row.max_discount),
+    competitorIds: row.competitor_ids || [],
+    productFilter: row.product_filter || {},
+    schedule: row.schedule,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+    lastExecutedAt: row.last_executed_at,
+    productsAffected: row.products_affected || 0,
+  };
+}
 
 export const CompetitorPricingService = {
   async getCompetitors(): Promise<Competitor[]> {
-    await new Promise(resolve => setTimeout(resolve, 300));
-    return [...mockCompetitors];
+    const { data, error } = await supabase
+      .from('competitor_profiles')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+    return (data || []).map(mapCompetitor);
   },
 
   async addCompetitor(competitor: Omit<Competitor, 'id' | 'productsTracked' | 'avgPriceDiff'>): Promise<Competitor> {
-    await new Promise(resolve => setTimeout(resolve, 400));
-    const newCompetitor: Competitor = {
-      ...competitor,
-      id: `comp_${Date.now()}`,
-      productsTracked: 0,
-      avgPriceDiff: 0
-    };
-    mockCompetitors.push(newCompetitor);
-    return newCompetitor;
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('Non authentifié');
+
+    const { data, error } = await supabase
+      .from('competitor_profiles')
+      .insert({
+        user_id: user.id,
+        name: competitor.name,
+        website: competitor.website,
+        is_active: competitor.isActive,
+      })
+      .select()
+      .single();
+
+    if (error) throw error;
+    return mapCompetitor(data);
   },
 
   async removeCompetitor(id: string): Promise<void> {
-    await new Promise(resolve => setTimeout(resolve, 200));
-    const index = mockCompetitors.findIndex(c => c.id === id);
-    if (index !== -1) mockCompetitors.splice(index, 1);
+    const { error } = await supabase
+      .from('competitor_profiles')
+      .delete()
+      .eq('id', id);
+
+    if (error) throw error;
   },
 
   async toggleCompetitor(id: string): Promise<Competitor> {
-    await new Promise(resolve => setTimeout(resolve, 200));
-    const competitor = mockCompetitors.find(c => c.id === id);
-    if (!competitor) throw new Error('Competitor not found');
-    competitor.isActive = !competitor.isActive;
-    return competitor;
+    // First get current state
+    const { data: current, error: fetchError } = await supabase
+      .from('competitor_profiles')
+      .select('is_active')
+      .eq('id', id)
+      .single();
+
+    if (fetchError) throw fetchError;
+
+    const { data, error } = await supabase
+      .from('competitor_profiles')
+      .update({ is_active: !current.is_active })
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return mapCompetitor(data);
   },
 
   async getCompetitorPrices(filters?: { competitorId?: string; productId?: string }): Promise<CompetitorPrice[]> {
-    await new Promise(resolve => setTimeout(resolve, 300));
-    let prices = [...mockPrices];
+    let query = supabase
+      .from('competitor_prices')
+      .select('*, competitor_profiles(name)')
+      .order('last_updated', { ascending: false });
+
     if (filters?.competitorId) {
-      prices = prices.filter(p => p.competitorId === filters.competitorId);
+      query = query.eq('competitor_id', filters.competitorId);
     }
     if (filters?.productId) {
-      prices = prices.filter(p => p.productId === filters.productId);
+      query = query.eq('product_id', filters.productId);
     }
-    return prices;
+
+    const { data, error } = await query;
+    if (error) throw error;
+
+    return (data || []).map((row: any) => 
+      mapPrice(row, row.competitor_profiles?.name || 'Inconnu')
+    );
   },
 
   async refreshPrices(competitorId?: string): Promise<{ updated: number; failed: number }> {
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    return { updated: Math.floor(Math.random() * 50) + 20, failed: Math.floor(Math.random() * 5) };
+    // Invoke the edge function to scrape competitor prices
+    const { data, error } = await supabase.functions.invoke('competitor-tracker', {
+      body: { action: 'refresh', competitor_id: competitorId }
+    });
+
+    if (error) {
+      console.warn('Competitor tracker invoke failed, returning partial result');
+      return { updated: 0, failed: 0 };
+    }
+
+    return data || { updated: 0, failed: 0 };
   },
 
   async getRepricingRules(): Promise<RepricingRule[]> {
-    await new Promise(resolve => setTimeout(resolve, 300));
-    return [...mockRules];
+    const { data, error } = await supabase
+      .from('repricing_rules')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+    return (data || []).map(mapRule);
   },
 
   async createRepricingRule(rule: Omit<RepricingRule, 'id' | 'createdAt' | 'updatedAt' | 'productsAffected'>): Promise<RepricingRule> {
-    await new Promise(resolve => setTimeout(resolve, 400));
-    const newRule: RepricingRule = {
-      ...rule,
-      id: `rule_${Date.now()}`,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      productsAffected: 0
-    };
-    mockRules.push(newRule);
-    return newRule;
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('Non authentifié');
+
+    const { data, error } = await supabase
+      .from('repricing_rules')
+      .insert({
+        user_id: user.id,
+        name: rule.name,
+        description: rule.description,
+        is_active: rule.isActive,
+        strategy: rule.strategy,
+        price_offset: rule.offset,
+        offset_type: rule.offsetType,
+        min_margin: rule.minMargin,
+        max_discount: rule.maxDiscount,
+        competitor_ids: rule.competitorIds,
+        product_filter: rule.productFilter || {},
+        schedule: rule.schedule,
+      })
+      .select()
+      .single();
+
+    if (error) throw error;
+    return mapRule(data);
   },
 
   async updateRepricingRule(id: string, updates: Partial<RepricingRule>): Promise<RepricingRule> {
-    await new Promise(resolve => setTimeout(resolve, 300));
-    const index = mockRules.findIndex(r => r.id === id);
-    if (index === -1) throw new Error('Rule not found');
-    mockRules[index] = { ...mockRules[index], ...updates, updatedAt: new Date().toISOString() };
-    return mockRules[index];
+    const dbUpdates: Record<string, any> = { updated_at: new Date().toISOString() };
+    if (updates.name !== undefined) dbUpdates.name = updates.name;
+    if (updates.description !== undefined) dbUpdates.description = updates.description;
+    if (updates.isActive !== undefined) dbUpdates.is_active = updates.isActive;
+    if (updates.strategy !== undefined) dbUpdates.strategy = updates.strategy;
+    if (updates.offset !== undefined) dbUpdates.price_offset = updates.offset;
+    if (updates.offsetType !== undefined) dbUpdates.offset_type = updates.offsetType;
+    if (updates.minMargin !== undefined) dbUpdates.min_margin = updates.minMargin;
+    if (updates.maxDiscount !== undefined) dbUpdates.max_discount = updates.maxDiscount;
+    if (updates.competitorIds !== undefined) dbUpdates.competitor_ids = updates.competitorIds;
+    if (updates.productFilter !== undefined) dbUpdates.product_filter = updates.productFilter;
+    if (updates.schedule !== undefined) dbUpdates.schedule = updates.schedule;
+
+    const { data, error } = await supabase
+      .from('repricing_rules')
+      .update(dbUpdates)
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return mapRule(data);
   },
 
   async deleteRepricingRule(id: string): Promise<void> {
-    await new Promise(resolve => setTimeout(resolve, 200));
-    const index = mockRules.findIndex(r => r.id === id);
-    if (index !== -1) mockRules.splice(index, 1);
+    const { error } = await supabase
+      .from('repricing_rules')
+      .delete()
+      .eq('id', id);
+
+    if (error) throw error;
   },
 
   async toggleRepricingRule(id: string): Promise<RepricingRule> {
-    const rule = mockRules.find(r => r.id === id);
-    if (!rule) throw new Error('Rule not found');
-    return this.updateRepricingRule(id, { isActive: !rule.isActive });
+    const { data: current, error: fetchError } = await supabase
+      .from('repricing_rules')
+      .select('is_active')
+      .eq('id', id)
+      .single();
+
+    if (fetchError) throw fetchError;
+
+    return this.updateRepricingRule(id, { isActive: !current.is_active });
   },
 
   async executeRepricingRule(id: string): Promise<{ success: boolean; priceChanges: number; errors: number }> {
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    const rule = mockRules.find(r => r.id === id);
-    if (!rule) throw new Error('Rule not found');
-    
-    const changes = Math.floor(Math.random() * 30) + 5;
-    rule.lastExecutedAt = new Date().toISOString();
-    rule.productsAffected = changes;
-    
-    return { success: true, priceChanges: changes, errors: Math.floor(Math.random() * 3) };
+    const { data, error } = await supabase.functions.invoke('repricing-engine', {
+      body: { action: 'apply_rule', rule_id: id }
+    });
+
+    if (error) throw error;
+
+    // Update last_executed_at
+    await supabase
+      .from('repricing_rules')
+      .update({ last_executed_at: new Date().toISOString() })
+      .eq('id', id);
+
+    return {
+      success: data?.success ?? true,
+      priceChanges: data?.products_updated ?? 0,
+      errors: data?.products_failed ?? 0,
+    };
   },
 
   async getStats(): Promise<RepricingStats> {
-    await new Promise(resolve => setTimeout(resolve, 200));
-    const activeCompetitors = mockCompetitors.filter(c => c.isActive);
-    const activeRules = mockRules.filter(r => r.isActive);
-    
+    const [competitorsRes, rulesRes, pricesRes, changesRes] = await Promise.all([
+      supabase.from('competitor_profiles').select('id, is_active'),
+      supabase.from('repricing_rules').select('id, is_active'),
+      supabase.from('competitor_prices').select('id, price_diff_percent'),
+      supabase.from('price_change_history').select('id').gte('changed_at', new Date(Date.now() - 86400000).toISOString()),
+    ]);
+
+    const activeCompetitors = (competitorsRes.data || []).filter((c: any) => c.is_active).length;
+    const activeRules = (rulesRes.data || []).filter((r: any) => r.is_active).length;
+    const prices = pricesRes.data || [];
+    const todayChanges = changesRes.data?.length || 0;
+
+    const avgDiff = prices.length > 0
+      ? prices.reduce((sum: number, p: any) => sum + Math.abs(Number(p.price_diff_percent || 0)), 0) / prices.length
+      : 0;
+
+    let position: 'leader' | 'competitive' | 'behind' = 'competitive';
+    if (avgDiff < 3) position = 'leader';
+    else if (avgDiff > 10) position = 'behind';
+
     return {
-      totalCompetitors: activeCompetitors.length,
-      activeRules: activeRules.length,
-      productsMonitored: mockPrices.length,
-      priceChangesToday: Math.floor(Math.random() * 50) + 10,
-      avgSavings: 4.5,
-      competitivePosition: 'competitive'
+      totalCompetitors: activeCompetitors,
+      activeRules,
+      productsMonitored: prices.length,
+      priceChangesToday: todayChanges,
+      avgSavings: parseFloat(avgDiff.toFixed(1)),
+      competitivePosition: position,
     };
   },
 
-  async simulatePriceChange(productId: string, newPrice: number): Promise<{ 
-    currentMargin: number; 
-    newMargin: number; 
-    competitorComparison: { name: string; theirPrice: number; difference: number }[] 
-  }> {
-    await new Promise(resolve => setTimeout(resolve, 500));
-    const productPrices = mockPrices.filter(p => p.productId === productId);
-    
+  async simulatePriceChange(productId: string, newPrice: number) {
+    const { data: prices } = await supabase
+      .from('competitor_prices')
+      .select('*, competitor_profiles(name)')
+      .eq('product_id', productId);
+
+    const { data: product } = await supabase
+      .from('products')
+      .select('cost_price, price')
+      .eq('id', productId)
+      .single();
+
+    const costPrice = product?.cost_price || 0;
+    const currentPrice = product?.price || 0;
+
     return {
-      currentMargin: 25,
-      newMargin: 22,
-      competitorComparison: productPrices.map(p => ({
-        name: p.competitorName,
-        theirPrice: p.competitorPrice,
-        difference: newPrice - p.competitorPrice
-      }))
+      currentMargin: costPrice > 0 ? ((currentPrice - costPrice) / currentPrice * 100) : 0,
+      newMargin: costPrice > 0 ? ((newPrice - costPrice) / newPrice * 100) : 0,
+      competitorComparison: (prices || []).map((p: any) => ({
+        name: p.competitor_profiles?.name || 'Inconnu',
+        theirPrice: Number(p.competitor_price),
+        difference: newPrice - Number(p.competitor_price),
+      })),
     };
-  }
+  },
 };
