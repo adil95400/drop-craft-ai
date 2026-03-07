@@ -148,7 +148,7 @@ export const AdvancedSupplierIntegration = () => {
     setTimeout(() => {
       setSuppliers(prev => prev.map(s => 
         s.id === supplier.id 
-          ? { ...s, status: 'connected' as const, products: Math.floor(Math.random() * 1000) + 100 }
+          ? { ...s, status: 'connected' as const, products: 0 }
           : s
       ))
       setConnectingSupplier(null)
