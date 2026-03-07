@@ -412,7 +412,7 @@ export const RealtimeAIAssistant: React.FC = () => {
 
     try {
       if (!isRecording) {
-        console.log('🎤 Starting voice recording...')
+        // Starting voice recording
         
         audioRecorderRef.current = new AudioRecorder((audioData: Float32Array) => {
           if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
