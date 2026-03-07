@@ -435,7 +435,7 @@ export const RealtimeAIAssistant: React.FC = () => {
         }])
         
       } else {
-        console.log('🛑 Stopping voice recording...')
+        // Stopping voice recording
         
         if (audioRecorderRef.current) {
           audioRecorderRef.current.stop()
