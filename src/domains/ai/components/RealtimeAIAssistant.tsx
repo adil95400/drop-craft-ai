@@ -85,7 +85,7 @@ class AudioRecorder implements AudioRecorderClass {
   }
 
   stop() {
-    console.log('🛑 Stopping audio recording...')
+    // Stopping audio recording
     
     if (this.source) {
       this.source.disconnect()
