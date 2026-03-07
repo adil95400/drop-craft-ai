@@ -58,7 +58,8 @@ async function callAI(systemPrompt: string, userPrompt: string) {
 }
 
 serve(async (req) => {
-  if (req.method === 'OPTIONS') return new Response(null, { headers: corsHeaders });
+  const corsHeaders = getSecureCorsHeaders(req)
+  if (req.method === 'OPTIONS') return handleCorsPreflightSecure(req)
 
   try {
     const { user, supabase } = await requireAuth(req);
