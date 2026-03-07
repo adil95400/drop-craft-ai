@@ -14,6 +14,8 @@ const AutoOrderSystem = lazy(() => import('@/pages/AutoOrderSystem'));
 const AutomationPage = lazy(() => import('@/pages/AutomationPage'));
 const PredictiveAnalyticsPage = lazy(() => import('@/pages/PredictiveAnalyticsPage'));
 const PromotionsAutomationPage = lazy(() => import('@/pages/PromotionsAutomationPage'));
+const AIAutomationHubPage = lazy(() => import('@/pages/automation/AIAutomationHubPage'));
+const TriggersManagerPage = lazy(() => import('@/pages/automation/TriggersManagerPage'));
 
 // Optimization
 const OptimizationHub = lazy(() => import('@/pages/OptimizationHub'));
