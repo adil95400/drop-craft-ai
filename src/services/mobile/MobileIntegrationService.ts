@@ -230,7 +230,7 @@ class MobileIntegrationService {
 
   // Gérer la déconnexion
   private async handleOffline(): Promise<void> {
-    console.log('Device is offline');
+    // Device is offline
     
     await notificationService.sendNotification({
       title: '📶 Mode hors-ligne',
