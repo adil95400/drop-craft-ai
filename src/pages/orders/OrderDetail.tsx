@@ -3,6 +3,7 @@
  * Migré vers ChannablePageWrapper pour conformité Design System
  */
 import { useParams, useNavigate } from 'react-router-dom';
+import { useAutoFulfillment } from '@/hooks/useAutoFulfillment';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Helmet } from 'react-helmet-async';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
