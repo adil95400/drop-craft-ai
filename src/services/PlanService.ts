@@ -5,6 +5,9 @@
 
 import { supabase } from '@/integrations/supabase/client';
 import { getProductCount } from '@/services/api/productHelpers';
+import { logger } from '@/utils/logger';
+
+const LOG_CTX = { component: 'PlanService' };
 
 export type PlanTier = 'free' | 'starter' | 'pro' | 'enterprise';
 

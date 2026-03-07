@@ -1,4 +1,7 @@
 import { supabase } from '@/integrations/supabase/client'
+import { logger } from '@/utils/logger'
+
+const LOG_CTX = { component: 'CreativeStudioService' }
 
 export interface CreativeAsset {
   id: string

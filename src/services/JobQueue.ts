@@ -1,5 +1,8 @@
 import { ImportJob, JobQueue } from '@/types/suppliers';
 import { supabase } from '@/integrations/supabase/client';
+import { logger } from '@/utils/logger';
+
+const LOG_CTX = { component: 'JobQueueManager' };
 
 export class JobQueueManager {
   private static instance: JobQueueManager;

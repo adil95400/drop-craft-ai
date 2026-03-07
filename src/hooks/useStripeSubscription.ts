@@ -2,6 +2,9 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
+import { logger } from '@/utils/logger';
+
+const LOG_CTX = { component: 'useStripeSubscription' };
 
 export type PlanType = 'free' | 'standard' | 'pro' | 'ultra_pro';
 
