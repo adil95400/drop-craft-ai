@@ -213,8 +213,8 @@ export function ABTestManager() {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         {[
           { label: 'Tests totaux', value: totalTests, icon: BarChart3, color: 'text-primary' },
-          { label: 'En cours', value: running, icon: Play, color: 'text-green-500' },
-          { label: 'Terminés', value: completed, icon: Trophy, color: 'text-blue-500' },
+          { label: 'En cours', value: running, icon: Play, color: 'text-chart-2' },
+          { label: 'Terminés', value: completed, icon: Trophy, color: 'text-chart-1' },
           { label: 'Variants', value: allVariants.length, icon: Users, color: 'text-chart-4' },
         ].map((kpi) => (
           <Card key={kpi.label} className="p-4">
