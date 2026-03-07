@@ -49,8 +49,6 @@ export function initSentry() {
     attachStacktrace: true,
     normalizeDepth: 5,
   });
-
-  console.log('✅ Sentry initialized for error monitoring');
 }
 
 // Utility functions for manual error reporting
