@@ -206,7 +206,7 @@ class AudioQueue implements AudioQueueClass {
   }
 
   clear() {
-    console.log('🗑️ Clearing audio queue')
+    // Clearing audio queue
     this.queue = []
     this.isPlaying = false
   }
