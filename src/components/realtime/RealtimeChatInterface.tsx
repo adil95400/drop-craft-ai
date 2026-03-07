@@ -331,7 +331,7 @@ export const RealtimeChatInterface: React.FC = () => {
       const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
       const wsUrl = `${protocol}//dtozyrmmekdnvekissuh.functions.supabase.co/ai-realtime-chat`
       
-      console.log('🔗 Connecting to:', wsUrl)
+      // Connecting to WebSocket
       wsRef.current = new WebSocket(wsUrl)
 
       wsRef.current.onopen = () => {
