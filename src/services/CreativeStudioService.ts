@@ -268,9 +268,9 @@ export class CreativeStudioService {
           description: `Updated campaign performance metrics`
         }])
 
-      console.log('Campaign performance updated:', campaignId, metrics)
+      logger.info('Campaign performance updated', { ...LOG_CTX, action: 'updatePerformance', metadata: { campaignId } })
     } catch (error) {
-      console.error('Error updating campaign performance:', error)
+      logger.error('Error updating campaign performance', error instanceof Error ? error : undefined, { ...LOG_CTX, action: 'updatePerformance' })
       throw error
     }
   }
