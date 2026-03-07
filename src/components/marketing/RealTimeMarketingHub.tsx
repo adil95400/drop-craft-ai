@@ -437,12 +437,8 @@ export const RealTimeMarketingHub: React.FC = () => {
                 {['Black Friday', 'Retargeting', 'Social Media', 'Newsletter'].map((campaign, campaignIndex) => (
                   <div 
                     key={campaignIndex}
-                    className={`h-4 mb-1 rounded ${
-                      Math.random() > 0.7 ? 'bg-green-500' :
-                      Math.random() > 0.4 ? 'bg-yellow-500' :
-                      Math.random() > 0.2 ? 'bg-orange-500' : 'bg-red-500'
-                    } opacity-${Math.floor(Math.random() * 5 + 1) * 20}`}
-                    title={`${campaign} - ${hour}h`}
+                    className="h-4 mb-1 rounded bg-muted opacity-40"
+                    title={`${campaign} - ${hour}h — Aucune donnée`}
                   />
                 ))}
               </div>
