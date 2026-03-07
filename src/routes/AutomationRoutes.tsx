@@ -14,6 +14,8 @@ const AutoOrderSystem = lazy(() => import('@/pages/AutoOrderSystem'));
 const AutomationPage = lazy(() => import('@/pages/AutomationPage'));
 const PredictiveAnalyticsPage = lazy(() => import('@/pages/PredictiveAnalyticsPage'));
 const PromotionsAutomationPage = lazy(() => import('@/pages/PromotionsAutomationPage'));
+const AIAutomationHubPage = lazy(() => import('@/pages/automation/AIAutomationHubPage'));
+const TriggersManagerPage = lazy(() => import('@/pages/automation/TriggersManagerPage'));
 
 // Optimization
 const OptimizationHub = lazy(() => import('@/pages/OptimizationHub'));
@@ -41,8 +43,8 @@ export function AutomationRoutes() {
       <Route index element={<AutomationPage />} />
       <Route path="studio" element={<WorkflowStudioPage />} />
       <Route path="history" element={<WorkflowHistoryPage />} />
-      <Route path="ai-hub" element={<AutomationPage />} />
-      <Route path="triggers" element={<AutomationPage />} />
+      <Route path="ai-hub" element={<AIAutomationHubPage />} />
+      <Route path="triggers" element={<TriggersManagerPage />} />
       
       {/* AI Tools - Redirect to content generation */}
       <Route path="ai" element={<ContentGenerationPage />} />
