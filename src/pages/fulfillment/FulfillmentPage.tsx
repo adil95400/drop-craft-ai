@@ -55,7 +55,7 @@ export default function FulfillmentPage() {
   // Sync tab with URL
   useEffect(() => {
     const tab = searchParams.get('tab');
-    if (tab && ['dashboard', 'overview', 'carriers', 'returns', 'tracking', 'notifications', 'automation'].includes(tab)) {
+    if (tab && ['dashboard', 'overview', 'picking', 'carriers', 'returns', 'tracking', 'notifications', 'automation'].includes(tab)) {
       setActiveTab(tab);
     }
   }, [searchParams]);
