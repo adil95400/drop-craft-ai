@@ -1,4 +1,4 @@
-import { logger } from '@/utils/logger';
+import { logger } from '@/lib/logger';
 import { supabase } from '@/integrations/supabase/client';
 
 export interface LogEntry {
