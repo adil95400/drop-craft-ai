@@ -2,10 +2,7 @@ import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { AI_MODEL, AI_GATEWAY_URL } from '../_shared/ai-config.ts';
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+import { getSecureCorsHeaders, handleCorsPreflightSecure } from '../_shared/secure-cors.ts'
 
 interface PricingRequest {
   action: 'competitor_monitor' | 'margin_calculate' | 'price_history' | 'auto_pricing_rules';
