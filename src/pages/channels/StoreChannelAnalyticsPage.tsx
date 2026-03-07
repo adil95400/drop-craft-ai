@@ -43,7 +43,7 @@ export default function StoreChannelAnalyticsPage() {
     queryFn: async () => {
       const { data } = await supabase
         .from('integrations')
-        .select('id, platform, store_name, store_url, is_active, sync_status, last_sync_at, created_at')
+        .select('id, platform, platform_name, store_url, is_active, connection_status, last_sync_at, created_at')
         .eq('is_active', true)
         .order('created_at', { ascending: false });
       return data || [];
