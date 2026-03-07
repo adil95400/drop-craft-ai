@@ -85,6 +85,18 @@ class AppLogger {
     this.log('critical', message, err, { ...meta, rawError: error instanceof Error ? undefined : error });
   }
 
+  /** Log an API call with structured metadata */
+  logApiCall(endpoint: string, method: string, duration: number, status: number, meta?: LogMeta) {
+    const message = `API ${method} ${endpoint} — ${status} (${duration}ms)`;
+    if (status >= 500) {
+      this.error(message, undefined, { ...meta, endpoint, method, duration, status });
+    } else if (status >= 400) {
+      this.warn(message, { ...meta, endpoint, method, duration, status });
+    } else {
+      this.debug(message, { ...meta, endpoint, method, duration, status });
+    }
+  }
+
   // ── Internal ─────────────────────────────────────────────────────────
 
   private log(level: LogLevel, message: string, error?: Error, meta?: LogMeta) {

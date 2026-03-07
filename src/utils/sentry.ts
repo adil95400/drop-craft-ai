@@ -1,9 +1,13 @@
+/**
+ * Sentry initialization & helpers.
+ * Error/event logging delegates to the canonical logger in src/lib/logger.ts
+ */
 import * as Sentry from "@sentry/react";
+import { logger } from '@/lib/logger';
 
-// Initialize Sentry with advanced configuration
 export const initSentry = () => {
   const sentryDsn = import.meta.env.VITE_SENTRY_DSN;
-  
+
   if (sentryDsn) {
     Sentry.init({
       dsn: sentryDsn,
@@ -11,7 +15,7 @@ export const initSentry = () => {
       tracesSampleRate: import.meta.env.PROD ? 0.1 : 1.0,
       replaysSessionSampleRate: import.meta.env.PROD ? 0.1 : 0,
       replaysOnErrorSampleRate: import.meta.env.PROD ? 1.0 : 0,
-      
+
       integrations: [
         Sentry.browserTracingIntegration(),
         Sentry.replayIntegration({
@@ -21,41 +25,25 @@ export const initSentry = () => {
       ],
 
       beforeSend(event, hint) {
-        // Filter out development errors
-        if (import.meta.env.DEV) {
-          console.warn('Sentry event (dev mode):', event, hint);
-          return null;
-        }
+        if (import.meta.env.DEV) return null;
 
-        // Filter out certain error types
         const error = hint.originalException;
         if (error instanceof Error) {
-          // Ignore network errors that are user-caused
-          if (error.message.includes('NetworkError') || 
-              error.message.includes('Failed to fetch')) {
+          if (error.message.includes('NetworkError') || error.message.includes('Failed to fetch')) {
             return null;
           }
         }
 
-        // Add custom tags
-        event.tags = {
-          ...event.tags,
-          buildTime: import.meta.env.VITE_BUILD_TIME || 'unknown',
-        };
-
+        event.tags = { ...event.tags, buildTime: import.meta.env.VITE_BUILD_TIME || 'unknown' };
         return event;
       },
 
       beforeBreadcrumb(breadcrumb) {
-        // Filter out noisy breadcrumbs
-        if (breadcrumb.category === 'console' && breadcrumb.level === 'log') {
-          return null;
-        }
+        if (breadcrumb.category === 'console' && breadcrumb.level === 'log') return null;
         return breadcrumb;
       },
     });
 
-    // Set initial context
     Sentry.setContext('app', {
       version: import.meta.env.VITE_APP_VERSION || '1.0.0',
       environment: import.meta.env.MODE,
@@ -63,46 +51,26 @@ export const initSentry = () => {
   }
 };
 
-// Custom error boundary with Sentry integration
 export const SentryErrorBoundary = Sentry.withErrorBoundary;
 
-// Log custom errors
-export const logError = (error: Error, context?: Record<string, any>) => {
-  if (import.meta.env.VITE_SENTRY_DSN) {
-    Sentry.captureException(error, {
-      extra: context,
-      tags: {
-        section: context?.section || 'unknown'
-      }
-    });
+export const logError = (error: Error, context?: Record<string, unknown>) => {
+  logger.error(error.message, error, context);
+};
+
+export const logEvent = (message: string, level: Sentry.SeverityLevel = 'info', extra?: Record<string, unknown>) => {
+  if (level === 'error' || level === 'fatal') {
+    logger.error(message, undefined, extra);
+  } else if (level === 'warning') {
+    logger.warn(message, extra);
   } else {
-    console.error('Error:', error, context);
+    logger.info(message, extra);
   }
 };
 
-// Log custom events
-export const logEvent = (message: string, level: Sentry.SeverityLevel = 'info', extra?: Record<string, any>) => {
-  if (import.meta.env.VITE_SENTRY_DSN) {
-    Sentry.captureMessage(message, level);
-  } else {
-    console.log(`[${level.toUpperCase()}]`, message, extra);
-  }
-};
-
-// User identification
 export const setUser = (user: { id: string; email?: string; role?: string }) => {
-  if (import.meta.env.VITE_SENTRY_DSN) {
-    Sentry.setUser({
-      id: user.id,
-      email: user.email,
-      role: user.role,
-    });
-  }
+  logger.setUser(user.id, user.email);
 };
 
-// Clear user on logout
 export const clearUser = () => {
-  if (import.meta.env.VITE_SENTRY_DSN) {
-    Sentry.setUser(null);
-  }
+  logger.clearUser();
 };
