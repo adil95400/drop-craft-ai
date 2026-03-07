@@ -196,7 +196,7 @@ class MobileIntegrationService {
       await this.setupBiometricAuth();
     }
 
-    console.log('Native features initialized');
+    // Native features initialized
   }
 
   // Configurer l'authentification biométrique
