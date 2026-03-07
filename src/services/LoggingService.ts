@@ -199,7 +199,7 @@ class LoggingService {
   }
 
   logUserAction(action: string, component: string, metadata?: Record<string, any>) {
-    logger.logUserAction(action, component, metadata);
+    logger.info(`User action: ${action}`, { component, ...metadata });
     
     this.addToQueue({
       level: 'info',
