@@ -113,9 +113,9 @@ const CoreSyncDashboard: React.FC = () => {
 
   const handleCreateConfig = async (configData: any) => {
     try {
-      const mockUserId = '123e4567-e89b-12d3-a456-426614174000';
+      if (!user?.id) return;
       await syncEngine.createSyncConfiguration({
-        user_id: mockUserId,
+        user_id: user.id,
         connector_id: configData.connector_id,
         sync_direction: configData.sync_direction,
         sync_entities: configData.sync_entities,
