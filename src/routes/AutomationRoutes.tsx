@@ -43,8 +43,8 @@ export function AutomationRoutes() {
       <Route index element={<AutomationPage />} />
       <Route path="studio" element={<WorkflowStudioPage />} />
       <Route path="history" element={<WorkflowHistoryPage />} />
-      <Route path="ai-hub" element={<AutomationPage />} />
-      <Route path="triggers" element={<AutomationPage />} />
+      <Route path="ai-hub" element={<AIAutomationHubPage />} />
+      <Route path="triggers" element={<TriggersManagerPage />} />
       
       {/* AI Tools - Redirect to content generation */}
       <Route path="ai" element={<ContentGenerationPage />} />

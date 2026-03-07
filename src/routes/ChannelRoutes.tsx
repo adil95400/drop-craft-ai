@@ -27,7 +27,7 @@ export function ChannelRoutes() {
       <Route path="shopify-management" element={<ShopifyManagementPage />} />
       <Route path="sync" element={<StoreSyncDashboard />} />
       <Route path="stock-intelligence" element={<Navigate to="/stock" replace />} />
-      <Route path="analytics" element={<AdvancedAnalyticsPage />} />
+      <Route path="analytics" element={<StoreChannelAnalyticsPage />} />
     </Routes>
   );
 }
