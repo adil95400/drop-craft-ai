@@ -32,7 +32,7 @@ export default function ObservabilityDashboard() {
   const { data: logs } = useLogAggregationV2("activity");
 
   return (
-    <DashboardLayout>
+    <ChannablePageWrapper>
       <div className="space-y-6">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
