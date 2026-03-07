@@ -14,6 +14,7 @@ import {
   DollarSign, TrendingUp, Shield, Calculator, Brain,
   ArrowRight, BarChart3, Zap, Target, Eye, RefreshCw
 } from 'lucide-react';
+import { ModuleInterconnectionBanner } from '@/components/cross-module/ModuleInterconnectionBanner';
 
 const PRICING_MODULES = [
   {
