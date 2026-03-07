@@ -14,6 +14,7 @@ import {
   DollarSign, TrendingUp, Shield, Calculator, Brain,
   ArrowRight, BarChart3, Zap, Target, Eye, RefreshCw
 } from 'lucide-react';
+import { ModuleInterconnectionBanner } from '@/components/cross-module/ModuleInterconnectionBanner';
 
 const PRICING_MODULES = [
   {
@@ -98,6 +99,9 @@ export default function PricingManagerHub() {
         heroImage="products"
         badge={{ label: 'Pricing', icon: DollarSign }}
       >
+        {/* Cross-module interconnection banner */}
+        <ModuleInterconnectionBanner currentModule="pricing" />
+
         {/* KPIs */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
           {[

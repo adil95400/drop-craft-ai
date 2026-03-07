@@ -129,6 +129,9 @@ export default function ShopifyImportPage() {
     
     if (success > 0) {
       toast.success(`${success} produit(s) importé(s) avec succès${failed > 0 ? `, ${failed} erreur(s)` : ''}`);
+      // Emit cross-module event
+      const { useCrossModuleEvents } = await import('@/services/cross-module/CrossModuleEventBus');
+      useCrossModuleEvents.getState().emit('products.imported', 'import', { count: success, source: 'shopify' });
     } else {
       toast.error(`Import échoué : ${failed} erreur(s)`);
     }
