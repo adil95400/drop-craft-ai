@@ -40,7 +40,7 @@ export const RealtimePresence: React.FC<RealtimePresenceProps> = ({
     if (!user) return
 
     // Using Supabase Realtime presence instead of database table
-    console.log('Presence updated for user:', user.id)
+    // Presence updated
   }, [user, channelName])
 
   const fetchPresenceUsers = useCallback(async () => {
