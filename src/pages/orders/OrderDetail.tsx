@@ -432,8 +432,8 @@ export default function OrderDetail() {
 
           <TabsContent value="shipping">
             <ShippingEstimator
-              defaultCountry={order.shipping_address?.country || 'FR'}
-              defaultPostalCode={order.shipping_address?.zip || order.shipping_address?.postal_code || ''}
+              defaultCountry={(order.shipping_address as any)?.country || 'FR'}
+              defaultPostalCode={(order.shipping_address as any)?.zip || (order.shipping_address as any)?.postal_code || ''}
               orderValue={order.total_amount}
               onSelectRate={(rate) => {
                 toast.success(`${rate.carrier} sélectionné — ${rate.price.toFixed(2)} €`);
