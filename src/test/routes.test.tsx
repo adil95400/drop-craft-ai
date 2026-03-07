@@ -184,6 +184,6 @@ describe('Navigation Stats', () => {
     expect(stats.totalModules).toBeGreaterThanOrEqual(30);
     expect(stats.totalSubModules).toBeGreaterThan(0);
     expect(stats.totalEntries).toBeGreaterThan(stats.totalModules);
-    expect(stats.byGroup).toHaveLength(6);
+    expect(stats.byGroup).toHaveLength(10);
   });
 });
