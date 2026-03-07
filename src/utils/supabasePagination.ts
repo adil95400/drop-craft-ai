@@ -251,7 +251,7 @@ export async function batchUpsert<T extends Record<string, any>>(
   let failed = 0;
   const errors: string[] = [];
 
-  console.log(`📤 Starting batch upsert of ${items.length} items to ${tableName}...`);
+  // Starting batch upsert
 
   for (let i = 0; i < items.length; i += batchSize) {
     const batch = items.slice(i, i + batchSize);
