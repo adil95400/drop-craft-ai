@@ -83,6 +83,8 @@ import { DashboardEmptyState } from './DashboardEmptyState';
 import { useDashboardEmptyState } from '@/hooks/useDashboardEmptyState';
 import { ActiveJobsBanner } from '@/components/jobs';
 import { GuidedTour } from '@/components/onboarding/GuidedTour';
+import { CrossModuleSuggestions } from '@/components/cross-module/CrossModuleSuggestions';
+import { useCrossModuleEvents } from '@/services/cross-module/CrossModuleEventBus';
 
 // Widget loading skeleton
 const WidgetSkeleton = () => (
