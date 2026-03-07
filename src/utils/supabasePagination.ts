@@ -89,7 +89,7 @@ export async function fetchAllRows<T>(
       onProgress(allData.length);
     }
 
-    console.log(`✅ Page ${iteration}: fetched ${data.length} rows (total: ${allData.length})`);
+    // Page fetched
   }
 
   console.log(`🎉 Completed fetch: ${allData.length} total rows from ${tableName}`);
