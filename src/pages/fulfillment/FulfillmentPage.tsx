@@ -31,7 +31,8 @@ import {
   Clock,
   Zap,
   Shield,
-  Info
+  Info,
+  ClipboardCheck
 } from 'lucide-react';
 import { useFulfillmentStats, useCarriers, useCreateCarrier } from '@/hooks/useFulfillment';
 import { CarriersManager } from '@/components/fulfillment/CarriersManager';
@@ -42,6 +43,7 @@ import { TrackingDashboardContent } from '@/components/fulfillment/TrackingDashb
 import { NotificationsContent } from '@/components/fulfillment/NotificationsContent';
 import { FulfillmentProDashboard } from '@/components/fulfillment/FulfillmentProDashboard';
 import { FulfillmentOrdersEnhanced } from '@/components/fulfillment/FulfillmentOrdersEnhanced';
+import { PickingPackingWorkflow } from '@/components/fulfillment/PickingPackingWorkflow';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
@@ -54,7 +56,7 @@ export default function FulfillmentPage() {
   // Sync tab with URL
   useEffect(() => {
     const tab = searchParams.get('tab');
-    if (tab && ['dashboard', 'overview', 'carriers', 'returns', 'tracking', 'notifications', 'automation'].includes(tab)) {
+    if (tab && ['dashboard', 'overview', 'picking', 'carriers', 'returns', 'tracking', 'notifications', 'automation'].includes(tab)) {
       setActiveTab(tab);
     }
   }, [searchParams]);
@@ -288,7 +290,7 @@ export default function FulfillmentPage() {
       
       {/* Main Tabs */}
       <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-4">
-        <TabsList className="grid w-full grid-cols-3 md:grid-cols-7 h-auto bg-muted/50">
+        <TabsList className="grid w-full grid-cols-4 md:grid-cols-8 h-auto bg-muted/50">
           <TabsTrigger value="dashboard" className="text-xs md:text-sm py-2 data-[state=active]:bg-background">
             <BarChart3 className="h-4 w-4 mr-1 md:mr-2" />
             <span className="hidden sm:inline">Dashboard</span>
@@ -298,6 +300,11 @@ export default function FulfillmentPage() {
             <Package className="h-4 w-4 mr-1 md:mr-2" />
             <span className="hidden sm:inline">Commandes</span>
             <span className="sm:hidden">Cmd</span>
+          </TabsTrigger>
+          <TabsTrigger value="picking" className="text-xs md:text-sm py-2 data-[state=active]:bg-background">
+            <ClipboardCheck className="h-4 w-4 mr-1 md:mr-2" />
+            <span className="hidden sm:inline">Picking</span>
+            <span className="sm:hidden">Pick</span>
           </TabsTrigger>
           <TabsTrigger value="carriers" className="text-xs md:text-sm py-2 data-[state=active]:bg-background">
             <Truck className="h-4 w-4 mr-1 md:mr-2" />
@@ -332,6 +339,10 @@ export default function FulfillmentPage() {
         
         <TabsContent value="overview">
           <FulfillmentOrdersEnhanced />
+        </TabsContent>
+        
+        <TabsContent value="picking">
+          <PickingPackingWorkflow />
         </TabsContent>
         
         <TabsContent value="carriers">
