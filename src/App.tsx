@@ -106,6 +106,7 @@ const AuthenticatedShell = memo(({ children }: { children: React.ReactNode }) =>
                 <Suspense fallback={null}><OnboardingTour /></Suspense>
                 <Suspense fallback={null}><FeedbackWidget /></Suspense>
                 <Suspense fallback={null}><GlobalAIAssistant /></Suspense>
+                <Suspense fallback={null}><CrossModuleMonitor /></Suspense>
               </LazyModalContextProvider>
             </Suspense>
           </UnifiedProvider>
