@@ -176,7 +176,7 @@ class MobileIntegrationService {
       window.addEventListener('online', () => this.handleOnline());
       window.addEventListener('offline', () => this.handleOffline());
       
-      console.log('Offline capabilities configured');
+      // Offline capabilities configured
     } catch (error) {
       console.error('Error setting up offline capabilities:', error);
     }
