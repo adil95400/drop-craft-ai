@@ -384,7 +384,7 @@ export class StockSyncService {
             if (updateError) {
               errors.push(`Failed to update price for ${p.sku || p.id}: ${updateError?.message || 'Unknown error'}`);
             } else {
-              console.log(`💲 ${p.sku || p.id}: ${p.price} → ${newPrice} (${reason})`);
+              // Price adjusted successfully
 
               // Log price change
               await supabase.from('activity_logs').insert({
