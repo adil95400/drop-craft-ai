@@ -44,7 +44,7 @@ const PUBLIC_PREFIXES = [
   '/analyse-boutique-', '/shopify-', '/shopopti-vs-', '/dropshipping-',
   '/product-research-', '/how-to-', '/ai-tool-for-', '/payment/',
   '/enterprise/observability', '/guides', '/academy', '/pwa-install',
-  '/store', '/pricing-plans',
+  '/store', '/pricing-plans', '/integrations-public',
 ];
 
 function isPublicRoute(pathname: string): boolean {
