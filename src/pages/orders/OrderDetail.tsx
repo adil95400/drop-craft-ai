@@ -204,6 +204,14 @@ export default function OrderDetail() {
               <Truck className="h-4 w-4" />
               Fulfillment
             </TabsTrigger>
+            <TabsTrigger value="split" className="gap-2">
+              <Split className="h-4 w-4" />
+              Split Order
+            </TabsTrigger>
+            <TabsTrigger value="shipping" className="gap-2">
+              <Package className="h-4 w-4" />
+              Expédition
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="details">
