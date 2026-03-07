@@ -18,10 +18,7 @@ export function usePerformanceMonitor(enabled = true) {
   const reportMetric = useCallback((name: string, value: number) => {
     if (import.meta.env.DEV) {
       const color = value > getThreshold(name) ? '#ef4444' : '#22c55e';
-      console.log(
-        `%c[Perf] ${name}: ${Math.round(value)}ms`,
-        `color: ${color}; font-weight: bold;`
-      );
+      logger.debug(`[Perf] ${name}: ${Math.round(value)}ms`);
     }
   }, []);
 
