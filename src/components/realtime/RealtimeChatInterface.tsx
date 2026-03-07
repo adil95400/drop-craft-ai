@@ -233,7 +233,7 @@ export const RealtimeChatInterface: React.FC = () => {
   const handleMessage = useCallback((event: MessageEvent) => {
     try {
       const data = JSON.parse(event.data)
-      console.log('📨 Received message type:', data.type)
+      // Message received
 
       switch (data.type) {
         case 'connection_status':
