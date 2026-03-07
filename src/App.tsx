@@ -38,7 +38,7 @@ const initI18n = () => import('@/lib/i18n');
 const PUBLIC_PREFIXES = [
   '/', '/pricing', '/features', '/contact', '/faq', '/about',
   '/privacy', '/terms', '/cgv', '/blog', '/documentation', '/docs',
-  '/changelog', '/status', '/testimonials', '/integrations',
+  '/changelog', '/status', '/testimonials',
   '/logiciel-', '/alternative-', '/optimisation-', '/gestion-',
   '/import-produits-', '/automatisation-', '/outil-pricing-',
   '/analyse-boutique-', '/shopify-', '/shopopti-vs-', '/dropshipping-',
