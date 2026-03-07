@@ -393,6 +393,32 @@ export const UnifiedAuthProvider = ({ children }: { children: React.ReactNode })
     }
   }, [user, toast]);
 
+  // ── Derived values ────────────────────────────────────────────────
+  const isAdmin = profile?.is_admin === true;
+  const effectivePlan = profile?.subscription_plan || profile?.plan || 'standard';
+
+  const updateProfile = useCallback(async (data: Record<string, any>) => {
+    if (!user) return;
+    const { error } = await supabase
+      .from('profiles')
+      .update(data)
+      .eq('id', user.id);
+    if (error) {
+      logger.error('Failed to update profile', error);
+      throw error;
+    }
+    await refetchProfile();
+  }, [user, refetchProfile]);
+
+  const hasRole = useCallback((role: string) => {
+    if (role === 'admin') return isAdmin;
+    return !!profile;
+  }, [isAdmin, profile]);
+
+  const canAccess = useCallback((_feature: string) => {
+    return !!profile;
+  }, [profile]);
+
   // ── Context value ────────────────────────────────────────────────
   const value = useMemo<UnifiedAuthContextType>(
     () => ({
@@ -400,22 +426,27 @@ export const UnifiedAuthProvider = ({ children }: { children: React.ReactNode })
       session,
       profile,
       loading,
+      isAdmin,
+      effectivePlan,
       signIn,
       signUp,
       signOut,
       signInWithGoogle,
       resetPassword,
+      updateProfile,
       refetchProfile,
       getUserSessions,
       revokeUserSessions,
+      hasRole,
+      canAccess,
       sessionInfo,
       refreshSession,
     }),
     [
-      user, session, profile, loading,
+      user, session, profile, loading, isAdmin, effectivePlan,
       signIn, signUp, signOut, signInWithGoogle, resetPassword,
-      refetchProfile, getUserSessions, revokeUserSessions,
-      sessionInfo, refreshSession,
+      updateProfile, refetchProfile, getUserSessions, revokeUserSessions,
+      hasRole, canAccess, sessionInfo, refreshSession,
     ]
   );
 
