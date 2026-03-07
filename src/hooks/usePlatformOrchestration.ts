@@ -7,6 +7,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useToast } from '@/hooks/use-toast'
 import { platformOrchestrationService, type PlatformHealth, type PlatformInsights } from '@/services/PlatformOrchestrationService'
 import { useUnifiedAuth } from '@/contexts/UnifiedAuthContext'
+import { logger } from '@/lib/logger'
 
 export const usePlatformOrchestration = () => {
   const { user } = useUnifiedAuth()
