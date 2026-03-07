@@ -244,7 +244,7 @@ export class CreativeStudioService {
         asset_url: data?.asset_url || '/api/placeholder/400/400'
       }
     } catch (error) {
-      console.error('Error generating creative with AI:', error)
+      logger.error('Error generating creative with AI', error instanceof Error ? error : undefined, { ...LOG_CTX, action: 'generateWithAI' })
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Failed to generate creative'
