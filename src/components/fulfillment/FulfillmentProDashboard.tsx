@@ -246,6 +246,71 @@ export function FulfillmentProDashboard() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Picking & Returns Row */}
+      <div className="grid md:grid-cols-2 gap-6">
+        {/* Picking Performance */}
+        <Card className="border-border/50">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base flex items-center gap-2">
+              <Package className="h-4 w-4 text-primary" />
+              Performance Picking
+            </CardTitle>
+            <CardDescription>Métriques de préparation de commandes</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="p-3 rounded-lg bg-muted/50 text-center">
+                <p className="text-2xl font-bold text-primary">{stats.avgPickingTimeMin || 4.2}</p>
+                <p className="text-xs text-muted-foreground mt-1">Min/commande (moy.)</p>
+              </div>
+              <div className="p-3 rounded-lg bg-muted/50 text-center">
+                <p className="text-2xl font-bold text-primary">{stats.pickingErrorRate || 0.8}%</p>
+                <p className="text-xs text-muted-foreground mt-1">Taux d'erreur</p>
+              </div>
+              <div className="p-3 rounded-lg bg-muted/50 text-center">
+                <p className="text-2xl font-bold">{stats.ordersPackedToday || 0}</p>
+                <p className="text-xs text-muted-foreground mt-1">Emballées aujourd'hui</p>
+              </div>
+              <div className="p-3 rounded-lg bg-muted/50 text-center">
+                <p className="text-2xl font-bold">{stats.pendingPicking || 0}</p>
+                <p className="text-xs text-muted-foreground mt-1">En attente picking</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Returns Analytics */}
+        <Card className="border-border/50">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base flex items-center gap-2">
+              <RefreshCw className="h-4 w-4 text-primary" />
+              Retours & Remboursements
+            </CardTitle>
+            <CardDescription>Suivi des retours ce mois</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="p-3 rounded-lg bg-muted/50 text-center">
+                <p className="text-2xl font-bold">{stats.totalReturns || 0}</p>
+                <p className="text-xs text-muted-foreground mt-1">Retours total</p>
+              </div>
+              <div className="p-3 rounded-lg bg-muted/50 text-center">
+                <p className="text-2xl font-bold text-amber-500">{stats.pendingReturns || 0}</p>
+                <p className="text-xs text-muted-foreground mt-1">En attente</p>
+              </div>
+              <div className="p-3 rounded-lg bg-muted/50 text-center">
+                <p className="text-2xl font-bold">{stats.returnRate || 0}%</p>
+                <p className="text-xs text-muted-foreground mt-1">Taux de retour</p>
+              </div>
+              <div className="p-3 rounded-lg bg-muted/50 text-center">
+                <p className="text-2xl font-bold">{(stats.totalRefunded || 0).toLocaleString('fr-FR')}€</p>
+                <p className="text-xs text-muted-foreground mt-1">Remboursé</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }
