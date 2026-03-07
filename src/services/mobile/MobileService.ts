@@ -53,7 +53,7 @@ export class MobileService {
         this.handleNotificationAction(action);
       });
     } else {
-      console.log('Push notification permission denied');
+      // Push notification permission denied
     }
   }
 
