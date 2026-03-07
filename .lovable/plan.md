@@ -1,7 +1,38 @@
 # DropCraft AI — Roadmap Stratégique Complète
 
+> Last updated: 2026-03-07
+
 ## Vision
 Transformer DropCraft AI en plateforme SaaS leader du dropshipping automatisé avec IA, surpassant AutoDS, DSers, Spocket, Zendrop et Dropship.io.
+
+---
+
+## 📊 Audit TODO — Résultats (7 mars 2026)
+
+**Total TODOs trouvés:** ~125 (105 dans `src/`, 20 dans `supabase/functions/`)
+**FIXME/HACK:** 0 actionable
+
+### 🔴 P0 — Sécurité & Intégrité (Résoudre immédiatement)
+| Fichier | TODO | Risque |
+|---------|------|--------|
+| `supabase/functions/store-webhook/index.ts` | Vérification HMAC non implémentée (Shopify + WooCommerce) | **Falsification de webhooks** |
+| `supabase/functions/platform-sync/index.ts` | Appels API réels manquants | Sync est un no-op |
+| `src/services/white-label/MultiTenantService.ts` | Isolation tenant non implémentée | **Fuite de données cross-tenant** |
+
+### 🟠 P1 — Fonctionnalités bloquantes
+| Fichier | TODO | Impact |
+|---------|------|--------|
+| `src/components/modals/CustomerEditModal.tsx` | Logique de sauvegarde manquante | Éditions client silencieusement perdues |
+| `src/components/multi-channel/ChannelFeedManager.tsx` | Sync, view/fix issue manquants | Gestion multi-canal non fonctionnelle |
+| `src/components/products/AdvancedProductCatalog.tsx` | Actions en masse non implémentées | Échec silencieux |
+| `src/pages/import/MultiStoreImportPage.tsx` | Handler d'import complet manquant | Résultats non traités |
+| `src/services/integrations/CRMConnector.ts` | Sync CRM vers DB locale manquante | CRM unidirectionnel |
+| `src/pages/AdsManagerPage.tsx` | Toggle campaign non implémenté | Gestion campagnes non fonctionnelle |
+
+### 🟡 P2 — Améliorations (Non bloquant, 12 items)
+- Background removal serveur, notification cleanup, mobile sync, analytics produit, duplication produit, wishlist, collections, support tickets, config save, extension install
+
+---
 
 ## État Actuel (Mars 2026)
 
@@ -9,19 +40,20 @@ Transformer DropCraft AI en plateforme SaaS leader du dropshipping automatisé a
 | Domaine | Détails |
 |---------|---------|
 | **Architecture** | 26 modules de routes, 120+ pages lazy-loaded, 145+ edge functions |
-| **Sécurité** | RLS 100%, RBAC 4 niveaux, JWT, CORS sécurisé, audit logs immutables, XSS sanitization, rate limiting API |
+| **Sécurité** | RLS 100%, RBAC 4 niveaux, JWT-first, CORS sécurisé, audit logs immutables, XSS sanitization, rate limiting API |
 | **Auth** | Email + Google OAuth (Lovable Cloud), 2FA infrastructure |
 | **IA** | Lovable AI Gateway (GPT-5-nano, Gemini), AI product optimizer, content generator |
 | **i18n** | 68+ langues, 58+ devises, conversion temps réel |
 | **Intégrations** | Shopify, WooCommerce, Amazon, eBay, CJ, BigBuy, AliExpress, Mirakl, Rakuten, Zalando, Wish |
-| **PWA** | Service Worker, push notifications, offline mode, Capacitor mobile |
-| **Monitoring** | Sentry, logger centralisé (migration ~60%), console interceptor |
+| **PWA** | Service Worker, push notifications, offline mode, Web APIs (navigator.vibrate, Notification) |
+| **Monitoring** | Sentry, logger centralisé (100% consolidé), console interceptor, Web Vitals |
 | **Paiement** | Stripe (checkout, webhooks, portail, plans Free/Standard/Pro/Ultra Pro) |
 | **SEO** | Sitemap, robots.txt, JSON-LD, meta tags, scoring temps réel |
 | **Design System** | shadcn/ui, tokens HSL, animations framer-motion |
 | **Marketing** | GA4, Mixpanel, Hotjar (GDPR-gated), email marketing, automation |
 | **Tests** | 23 fichiers de test, Vitest + Playwright configurés |
 | **Feature Flags** | Système DB-driven par plan utilisateur |
+| **Performance** | Code splitting, route prefetch, OptimizedImage, bundle optimization |
 
 ---
 
