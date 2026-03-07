@@ -98,6 +98,9 @@ export default function PricingManagerHub() {
         heroImage="products"
         badge={{ label: 'Pricing', icon: DollarSign }}
       >
+        {/* Cross-module interconnection banner */}
+        <ModuleInterconnectionBanner currentModule="pricing" />
+
         {/* KPIs */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
           {[
