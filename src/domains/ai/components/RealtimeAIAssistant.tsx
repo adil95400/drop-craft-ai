@@ -104,7 +104,7 @@ class AudioRecorder implements AudioRecorderClass {
       this.audioContext = null
     }
     
-    console.log('✅ Audio recording stopped')
+    // Audio recording stopped
   }
 }
 
