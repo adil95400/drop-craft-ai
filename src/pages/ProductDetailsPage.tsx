@@ -1186,7 +1186,7 @@ export default function ProductDetailsPage() {
               if (idx >= 0) newImages[idx] = dataUrl
               updateProduct.mutate({
                 id,
-                updates: { images: newImages }
+                updates: { images: newImages } as any
               })
             }
           }}
