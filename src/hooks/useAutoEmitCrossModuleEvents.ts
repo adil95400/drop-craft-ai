@@ -77,14 +77,14 @@ export function useAutoEmitCrossModuleEvents() {
     refetchInterval: 300_000, // 5 min
   });
 
-  // Watch price sync queue
+  // Watch pending sync queue via unified_sync_queue
   const { data: syncQueueCount = 0 } = useQuery({
     queryKey: ['cross-module-sync-queue'],
     queryFn: async () => {
       const { count } = await supabase
-        .from('price_sync_queue')
+        .from('unified_sync_queue')
         .select('id', { count: 'exact', head: true })
-        .eq('sync_status', 'pending');
+        .eq('status', 'pending');
       return count || 0;
     },
     refetchInterval: 60_000,
