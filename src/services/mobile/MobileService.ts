@@ -24,7 +24,7 @@ export class MobileService {
   // Push Notifications
   async initializePushNotifications(): Promise<void> {
     if (!this.isNative()) {
-      console.log('Push notifications only available on native platforms');
+      // Push notifications only available on native platforms
       return;
     }
 
