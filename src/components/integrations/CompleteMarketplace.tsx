@@ -206,7 +206,80 @@ const COMPLETE_MARKETPLACE = [
     isConnected: false
   },
 
-  // Marketing & Advertising
+  // Print-on-Demand
+  {
+    id: 'printify',
+    name: 'Printify',
+    category: 'Fournisseurs',
+    description: 'Print-on-demand leader. Créez et vendez vos designs sur 800+ produits.',
+    logo: 'https://printify.com/favicon.ico',
+    status: 'available',
+    popularity: 'POD Leader',
+    rating: 4.6,
+    users: '2M+ boutiques',
+    features: ['800+ produits', 'Mockup generator', 'Multi-boutiques', 'Production mondiale'],
+    pricing: 'Par commande',
+    setupTime: '3 min',
+    difficulty: 'Facile',
+    tags: ['Print-on-demand', 'Custom', 'No inventory'],
+    isConnected: false
+  },
+  {
+    id: 'printful',
+    name: 'Printful',
+    category: 'Fournisseurs',
+    description: 'Fulfillment et print-on-demand premium. Entrepôts EU/US avec branding personnalisé.',
+    logo: 'https://www.printful.com/static/favicon-32x32.png',
+    status: 'available',
+    popularity: 'Premium POD',
+    rating: 4.7,
+    users: '1M+ boutiques',
+    features: ['Branding personnalisé', 'Entrepôts EU/US', 'Embroidery', 'Design maker'],
+    pricing: 'Par commande',
+    setupTime: '4 min',
+    difficulty: 'Facile',
+    tags: ['POD', 'Branding', 'EU/US fulfillment'],
+    isConnected: false
+  },
+
+  // Sourcing Asie
+  {
+    id: 'alibaba',
+    name: 'Alibaba / 1688',
+    category: 'Fournisseurs',
+    description: 'Sourcing B2B depuis la Chine. Accès aux usines et grossistes via l\'API officielle.',
+    logo: 'https://cdn.worldvectorlogo.com/logos/alibaba-group.svg',
+    status: 'available',
+    popularity: 'B2B Leader',
+    rating: 4.4,
+    users: '10M+ fournisseurs',
+    features: ['API B2B', 'Trade Assurance', 'RFQ system', '1688 intégré'],
+    pricing: 'Commission',
+    setupTime: '10 min',
+    difficulty: 'Moyen',
+    tags: ['B2B', 'Chine', 'Manufacturing'],
+    isConnected: false
+  },
+
+  // Social Commerce
+  {
+    id: 'tiktok-shop',
+    name: 'TikTok Shop',
+    category: 'Marketplace',
+    description: 'Vendez directement sur TikTok. Intégration native avec le social commerce.',
+    logo: 'https://cdn.worldvectorlogo.com/logos/tiktok-icon-2.svg',
+    status: 'available',
+    popularity: 'Social commerce',
+    rating: 4.5,
+    users: '500K+ vendeurs',
+    features: ['Live shopping', 'Product showcase', 'Affiliate program', 'Video commerce'],
+    pricing: 'Commission',
+    setupTime: '8 min',
+    difficulty: 'Moyen',
+    tags: ['Social', 'Video', 'Gen Z'],
+    isConnected: false
+  },
+
   {
     id: 'google-ads',
     name: 'Google Ads',
