@@ -67,7 +67,8 @@ const PRICING_MODULES = [
 
 export default function PricingManagerHub() {
   const navigate = useNavigate();
-
+  const applyRules = useApplyPricingRules();
+  const autoReprice = useAutoRepriceFromCompetitors();
   const { data: stats } = useQuery({
     queryKey: ['pricing-hub-stats'],
     queryFn: async () => {
