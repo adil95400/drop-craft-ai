@@ -289,7 +289,7 @@ export default function FulfillmentPage() {
       
       {/* Main Tabs */}
       <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-4">
-        <TabsList className="grid w-full grid-cols-3 md:grid-cols-7 h-auto bg-muted/50">
+        <TabsList className="grid w-full grid-cols-4 md:grid-cols-8 h-auto bg-muted/50">
           <TabsTrigger value="dashboard" className="text-xs md:text-sm py-2 data-[state=active]:bg-background">
             <BarChart3 className="h-4 w-4 mr-1 md:mr-2" />
             <span className="hidden sm:inline">Dashboard</span>
@@ -299,6 +299,11 @@ export default function FulfillmentPage() {
             <Package className="h-4 w-4 mr-1 md:mr-2" />
             <span className="hidden sm:inline">Commandes</span>
             <span className="sm:hidden">Cmd</span>
+          </TabsTrigger>
+          <TabsTrigger value="picking" className="text-xs md:text-sm py-2 data-[state=active]:bg-background">
+            <ClipboardCheck className="h-4 w-4 mr-1 md:mr-2" />
+            <span className="hidden sm:inline">Picking</span>
+            <span className="sm:hidden">Pick</span>
           </TabsTrigger>
           <TabsTrigger value="carriers" className="text-xs md:text-sm py-2 data-[state=active]:bg-background">
             <Truck className="h-4 w-4 mr-1 md:mr-2" />
