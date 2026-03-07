@@ -32,7 +32,7 @@ export function UpdateNotification({ className }: UpdateNotificationProps) {
         if (newWorker) {
           newWorker.addEventListener('statechange', () => {
             if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-              console.log('[Update] New service worker installed, will reload shortly');
+              // New service worker installed
               setUpdateAvailable(true);
             }
           });

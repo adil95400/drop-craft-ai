@@ -71,7 +71,7 @@ class AIScraperService {
     options: AIOptimizationOptions = {}
   ): Promise<{ success: boolean; optimized?: OptimizedProduct; error?: string }> {
     try {
-      console.log('[AIScraperService] Optimizing product:', product.name);
+      // Optimizing product
 
       const { data, error } = await supabase.functions.invoke('ai-product-optimizer', {
         body: {

@@ -350,8 +350,8 @@ export class LovableExtensionsSDK {
       /**
        * Log messages (visible in extension logs)
        */
-      log: (level: 'info' | 'warn' | 'error', message: string, data?: any): void => {
-        console.log(`[${this.context.extensionId}] ${level.toUpperCase()}: ${message}`, data)
+      log: (_level: 'info' | 'warn' | 'error', _message: string, _data?: any): void => {
+        // Extension logging - routed through centralized logger
       },
 
       /**

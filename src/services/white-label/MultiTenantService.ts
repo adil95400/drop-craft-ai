@@ -314,7 +314,7 @@ export class MultiTenantService {
 
     try {
       // For now, just return mock data since we need proper tenant isolation
-      console.log(`Getting tenant data from ${table} for tenant ${tenant.id}`, filters);
+      // TODO: Implement proper tenant isolation
       
       return [];
     } catch (error) {

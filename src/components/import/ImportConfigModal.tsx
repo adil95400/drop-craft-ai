@@ -71,7 +71,7 @@ export const ImportConfigModal = ({ open, onOpenChange, method }: ImportConfigMo
     setIsLoading(true)
     
     try {
-      console.log('[ImportConfigModal] Starting import:', { method: method.id, url: trimmedUrl })
+      // Starting import
       
       await unifiedImportService.startImport({
         source_type: method.id as any,

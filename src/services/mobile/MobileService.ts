@@ -177,7 +177,7 @@ export class MobileService {
     };
 
     // Send to analytics service
-    console.log('Mobile Analytics Event:', eventName, mobileProperties);
+    // TODO: Send to analytics provider (e.g. mixpanel)
     
     // In production, send to your analytics provider
     // Example: mixpanel.track(eventName, mobileProperties);

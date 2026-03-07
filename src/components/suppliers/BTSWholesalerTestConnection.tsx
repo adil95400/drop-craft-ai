@@ -83,7 +83,7 @@ export function BTSWholesalerTestConnection() {
         throw error
       }
 
-      console.log('✅ Connection result:', data)
+      // Connection successful
       setConnectionResult(data)
 
       toast({
