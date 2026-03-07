@@ -269,10 +269,10 @@ export class JobQueueManager {
         .eq('id', job.id);
 
       if (error) {
-        console.error('Failed to update job in database:', error);
+        logger.error('Failed to update job in database', undefined, { ...LOG_CTX, action: 'updateJob', metadata: { error } });
       }
     } catch (error) {
-      console.error('Database error:', error);
+      logger.error('Database error', error instanceof Error ? error : undefined, { ...LOG_CTX, action: 'updateJob' });
     }
   }
 
