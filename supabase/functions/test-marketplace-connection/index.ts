@@ -124,6 +124,15 @@ async function testAPIConnection(
       case 'tiktok':
         return await testTikTokShopConnection(credentials)
       
+      case 'alibaba':
+        return await testAlibabaConnection(credentials)
+      
+      case 'printify':
+        return await testPrintifyConnection(credentials)
+      
+      case 'printful':
+        return await testPrintfulConnection(credentials)
+      
       // For platforms without specific tests yet, validate format only
       default:
         return { 
