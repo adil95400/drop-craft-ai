@@ -256,10 +256,10 @@ export const RealtimeAIAssistant: React.FC = () => {
   useEffect(() => {
     const initAudio = async () => {
       try {
-        console.log('🔧 Initializing audio context...')
+        // Initializing audio context
         audioContextRef.current = new AudioContext({ sampleRate: 24000 })
         audioQueueRef.current = new AudioQueue(audioContextRef.current)
-        console.log('✅ Audio context initialized')
+        // Audio context initialized
       } catch (error) {
         console.error('❌ Failed to initialize audio context:', error)
       }
