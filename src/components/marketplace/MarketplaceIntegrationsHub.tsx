@@ -292,7 +292,7 @@ export function MarketplaceIntegrationsHub() {
           user_id: user.id,
           platform: platform,
           platform_name: MARKETPLACE_CONFIGS[platform]?.name || platform,
-          store_url: `https://${platform}-shop-${Math.random().toString(36).substr(2, 9)}.com`,
+          store_url: `https://${platform}-shop-${Date.now().toString(36)}.com`,
           is_active: true,
           connection_status: 'connected'
         })

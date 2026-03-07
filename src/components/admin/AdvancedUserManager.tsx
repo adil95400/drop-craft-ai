@@ -86,7 +86,7 @@ export const AdvancedUserManager = () => {
       premiumUsers: userData.filter(u => u.plan && u.plan !== 'free').length,
       suspendedUsers: userData.filter(u => u.subscription_status === 'suspended').length,
       newUsersToday: userData.filter(u => new Date(u.created_at) >= today).length,
-      revenuePerUser: Math.random() * 50 + 25 // Simulation
+      revenuePerUser: userData.length > 0 ? 0 : 0 // Calculated from real billing data when available
     };
 
     setUserStats(stats);
