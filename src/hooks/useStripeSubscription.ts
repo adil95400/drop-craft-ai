@@ -67,11 +67,11 @@ export function useStripeSubscription() {
 
       if (error) {
         if (error.message?.includes('Rate limit')) {
-          console.warn('[Stripe] Rate limit hit');
+          logger.warn('Rate limit hit', { ...LOG_CTX, action: 'checkSubscription' });
         } else if (error.message?.includes('network') || error.message?.includes('fetch')) {
-          console.warn('[Stripe] Network error');
+          logger.warn('Network error', { ...LOG_CTX, action: 'checkSubscription' });
         } else {
-          console.error('Subscription check error:', error);
+          logger.error('Subscription check error', undefined, { ...LOG_CTX, action: 'checkSubscription', metadata: { error: error.message } });
         }
         return;
       }
