@@ -228,7 +228,7 @@ export const OrderRouter = () => {
 
   const routeViaEDI = async (rule: OrderRoutingRule, data: any) => {
     // Simulate EDI processing
-    console.log('Routing via EDI:', rule.edi_config, data)
+    // Routing via EDI
     await new Promise(resolve => setTimeout(resolve, 1000))
   }
 
