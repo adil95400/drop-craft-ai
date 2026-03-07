@@ -3,121 +3,134 @@ name: Deploy to Vercel
 on:
   push:
     branches: [main]
+  pull_request:
+    branches: [main]
   workflow_dispatch:
 
 permissions:
   contents: read
   deployments: write
 
+concurrency:
+  group: deploy-${{ github.ref }}
+  cancel-in-progress: true
+
 env:
+  NODE_VERSION: "20"
   NODE_ENV: production
 
 jobs:
+  # ------------------------------------------------
+  # Lint + tests
+  # ------------------------------------------------
+
   lint-and-test:
-    name: Lint & Test
+    name: Lint & Tests
     runs-on: ubuntu-latest
+    timeout-minutes: 10
+
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4
         with:
-          node-version: '20'
-          cache: 'npm'
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
 
-      - name: Install dependencies
-        run: npm ci --frozen-lockfile
+      - run: npm ci --prefer-offline --no-audit --progress=false
 
-      - name: Type check
-        run: npx tsc --noEmit
+      - run: npx tsc --noEmit
 
-      - name: Lint
-        run: npx eslint src --ext .ts,.tsx --max-warnings 0 || true
+      - run: npx eslint src --ext .ts,.tsx --max-warnings 0 || true
 
-      - name: Run tests
-        run: npx vitest run --passWithNoTests
+      - run: npx vitest run --passWithNoTests
 
-  deploy-preview:
-    name: Deploy Preview
-    needs: [lint-and-test]
-    if: github.event_name == 'pull_request'
+  # ------------------------------------------------
+  # Build
+  # ------------------------------------------------
+
+  build:
+    name: Build app
     runs-on: ubuntu-latest
+    needs: lint-and-test
+
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4
         with:
-          node-version: '20'
-          cache: 'npm'
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
 
-      - name: Install dependencies
-        run: npm ci --frozen-lockfile
-
-      - name: Build
-        run: npm run build
-
-      - name: Deploy to Vercel (Preview)
-        uses: amondnet/vercel-action@v25
-        with:
-          vercel-token: ${{ secrets.VERCEL_TOKEN }}
-          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
-          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
-
-  deploy-production:
-    name: Deploy Production
-    needs: [lint-and-test]
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-    runs-on: ubuntu-latest
-    environment: production
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          cache: 'npm'
-
-      - name: Install dependencies
-        run: npm ci --frozen-lockfile
+      - run: npm ci --prefer-offline --no-audit --progress=false
 
       - name: Build
         run: npm run build
         env:
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
-          VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
-          VITE_SUPABASE_PROJECT_ID: ${{ secrets.VITE_SUPABASE_PROJECT_ID }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
 
-      - name: Deploy to Vercel (Production)
-        uses: amondnet/vercel-action@v25
-        id: vercel-deploy
+      - uses: actions/upload-artifact@v4
         with:
-          vercel-token: ${{ secrets.VERCEL_TOKEN }}
-          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
-          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
-          vercel-args: '--prod'
+          name: dist
+          path: dist/
 
-      - name: Post-deploy health check
-        run: |
-          echo "🏥 Running health check..."
-          DEPLOY_URL="${{ steps.vercel-deploy.outputs.preview-url }}"
-          if [ -n "$DEPLOY_URL" ]; then
-            STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$DEPLOY_URL" || echo "000")
-            if [ "$STATUS" = "200" ]; then
-              echo "✅ Health check passed (HTTP $STATUS)"
-            else
-              echo "⚠️ Health check returned HTTP $STATUS"
-            fi
-          else
-            echo "⚠️ No deploy URL available for health check"
-          fi
+  # ------------------------------------------------
+  # Preview deploy (PR)
+  # ------------------------------------------------
 
-      - name: Notify success
-        if: success()
+  deploy-preview:
+    name: Deploy Preview
+    needs: build
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    environment: preview
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+      - run: npm install -g vercel
+
+      - run: vercel pull --yes --environment=preview --token=${{ secrets.VERCEL_TOKEN }}
+
+      - run: vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }}
+
+  # ------------------------------------------------
+  # Production deploy
+  # ------------------------------------------------
+
+  deploy-production:
+    name: Deploy Production
+    needs: build
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    environment: production
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+      - run: npm install -g vercel
+
+      - run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
+
+      - name: Deploy
+        id: deploy
         run: |
-          echo "🚀 Production deployment successful!"
-          echo "URL: ${{ steps.vercel-deploy.outputs.preview-url }}"
+          url=$(vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }})
+          echo "url=$url" >> $GITHUB_OUTPUT
+
+      - name: Health check
+        run: |
+          echo "Checking deployment..."
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" "${{ steps.deploy.outputs.url }}")
+          echo "HTTP status: $STATUS"
