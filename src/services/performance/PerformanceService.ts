@@ -111,10 +111,8 @@ export class PerformanceService {
       };
     });
 
-    console.group('📦 Bundle Analysis');
-    console.log(`Total JS Bundle Size: ${this.formatBytes(totalSize)}`);
-    console.table(bundleInfo);
-    console.groupEnd();
+    // Bundle analysis - dev tool only
+    if (!import.meta.env.DEV) return;
   }
 
   /**
