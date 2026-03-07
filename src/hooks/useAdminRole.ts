@@ -76,7 +76,7 @@ export const useAdminRole = () => {
         throw error
       }
       
-      console.log('Fetched users data:', data)
+      logger.debug('Fetched users data', { count: data?.length })
       
       const formattedUsers = data?.map((user: any) => ({
         id: user.id,
