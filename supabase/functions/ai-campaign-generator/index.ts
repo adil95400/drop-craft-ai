@@ -46,7 +46,7 @@ Deno.serve(async (req) => {
       method: 'POST',
       headers: { 'Authorization': `Bearer ${LOVABLE_API_KEY}`, 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        model: 'google/gemini-3-flash-preview',
+        model: 'openai/gpt-5-nano',
         tools: [{
           type: 'function',
           function: {
@@ -146,8 +146,8 @@ Génère du contenu prêt à utiliser avec des sujets accrocheurs, des CTA effic
       target_type: 'campaign',
       target_id: userId,
       task: `generate_campaign_${campaign_type}`,
-      provider: 'google',
-      model: 'gemini-3-flash-preview',
+      provider: 'openai',
+      model: 'gpt-5-nano',
       input_json: { campaign_type, goal, tone, product_ids },
       output_json: campaign,
       language: language || 'fr'

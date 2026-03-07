@@ -34,7 +34,7 @@ Deno.serve(async (req) => {
       method: 'POST',
       headers: { 'Authorization': `Bearer ${LOVABLE_API_KEY}`, 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        model: 'google/gemini-3-flash-preview',
+        model: 'openai/gpt-5-nano',
         tools: [{
           type: 'function',
           function: {
@@ -129,8 +129,8 @@ Favorise les produits avec une marge > 30%, une demande prouvée et une concurre
       target_type: 'research',
       target_id: userId,
       task: 'product_research',
-      provider: 'google',
-      model: 'gemini-3-flash-preview',
+      provider: 'openai',
+      model: 'gpt-5-nano',
       input_json: { query, niche, budget_range, target_market },
       output_json: result,
       language: 'fr'

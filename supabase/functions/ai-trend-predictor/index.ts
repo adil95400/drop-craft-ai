@@ -41,7 +41,7 @@ Deno.serve(async (req) => {
       method: 'POST',
       headers: { 'Authorization': `Bearer ${LOVABLE_API_KEY}`, 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        model: 'google/gemini-3-flash-preview',
+        model: 'openai/gpt-5-nano',
         messages: [
           { role: 'system', content: `Tu es un analyste de tendances e-commerce expert. Analyse les signaux de marché et prédit la trajectoire d'un produit. Réponds UNIQUEMENT en JSON valide.` },
           { role: 'user', content: `Analyse la tendance pour le produit "${product_name}".
