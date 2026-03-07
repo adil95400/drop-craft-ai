@@ -332,6 +332,7 @@ export function WinningProductsMarketplace() {
                   key={`${product.product_id}-${index}`}
                   product={product}
                   onImport={() => handleProductImport(product)}
+                  isImporting={importingId === product.product_id}
                 />
               ))}
             </div>
