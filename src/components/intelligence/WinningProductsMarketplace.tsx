@@ -64,21 +64,49 @@ export function WinningProductsMarketplace() {
     }
   }
 
-  const handleProductImport = async (product: WinningProductIntelligence) => {
+  const handleProductImport = useCallback(async (product: WinningProductIntelligence) => {
+    if (!user) {
+      toast({ title: "Connexion requise", description: "Veuillez vous connecter pour importer", variant: "destructive" })
+      return
+    }
+    
+    setImportingId(product.product_id)
     try {
-      // Import logic here
+      const estimatedCost = product.price * 0.4
+      const { error } = await supabase
+        .from('products')
+        .insert({
+          user_id: user.id,
+          title: product.name,
+          description: `Produit gagnant (Score: ${product.ai_score}/100) — ${product.category || 'Général'}`,
+          price: product.suggested_pricing?.optimal || product.price * 2.5,
+          cost_price: product.price,
+          category: product.category || 'Imported Winners',
+          supplier: product.supplier || product.data_sources?.[0] || 'marketplace',
+          tags: ['winner', 'imported', `score-${product.ai_score}`],
+          status: 'draft',
+          sku: `WIN-${Date.now()}`,
+          stock_quantity: 100,
+          image_url: null,
+        })
+
+      if (error) throw error
+
       toast({
-        title: "Produit importé",
-        description: `${product.name} a été ajouté à votre catalogue`,
+        title: "✅ Produit importé",
+        description: `${product.name} ajouté à votre catalogue (prix suggéré: ${(product.suggested_pricing?.optimal || product.price * 2.5).toFixed(2)}€)`,
       })
     } catch (error) {
+      console.error('Import failed:', error)
       toast({
         title: "Erreur d'importation",
-        description: "Impossible d'importer le produit",
+        description: error instanceof Error ? error.message : "Impossible d'importer le produit",
         variant: "destructive"
       })
+    } finally {
+      setImportingId(null)
     }
-  }
+  }, [user, toast])
 
   const getScoreColor = (score: number) => {
     if (score >= 80) return 'text-green-600 bg-green-100'
