@@ -157,7 +157,7 @@ class AudioQueue implements AudioQueueClass {
   }
 
   private createWavFromPCM(pcmData: Uint8Array): Uint8Array {
-    console.log('🎼 Converting PCM to WAV, size:', pcmData.length)
+    // Converting PCM to WAV
     
     // Convert bytes to 16-bit samples (little endian)
     const int16Data = new Int16Array(pcmData.length / 2)
