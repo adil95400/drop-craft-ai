@@ -343,9 +343,10 @@ export function WinningProductsMarketplace() {
   )
 }
 
-function ProductCard({ product, onImport }: { 
+function ProductCard({ product, onImport, isImporting }: { 
   product: WinningProductIntelligence
-  onImport: () => void 
+  onImport: () => void
+  isImporting?: boolean
 }) {
   const getScoreColor = (score: number) => {
     if (score >= 80) return 'text-green-600 bg-green-100'
