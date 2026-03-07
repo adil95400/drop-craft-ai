@@ -98,6 +98,9 @@ const AIGenerationPage: React.FC = () => {
       await importProduct(p);
     }
     toast.success(`${generatedProducts.length} produits importés`);
+    // Emit cross-module event for interconnection
+    const { useCrossModuleEvents } = await import('@/services/cross-module/CrossModuleEventBus');
+    useCrossModuleEvents.getState().emit('products.imported', 'import', { count: generatedProducts.length });
   };
 
   const presetPrompts = [
