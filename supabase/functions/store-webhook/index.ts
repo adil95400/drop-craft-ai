@@ -114,25 +114,76 @@ async function verifySignature(
   req: Request, body: string, platform: string,
   supabase: any, storeId: string
 ): Promise<boolean> {
-  // In production, verify HMAC signatures per platform
-  // For now, accept if store_id exists
   if (!storeId) return false;
+
+  // Fetch the webhook secret for this store
+  const { data: store } = await supabase
+    .from("store_connections")
+    .select("webhook_secret")
+    .eq("store_id", storeId)
+    .maybeSingle();
+
+  // Fallback to global secrets if no per-store secret
+  const globalShopifySecret = Deno.env.get("SHOPIFY_WEBHOOK_SECRET");
 
   if (platform === "shopify") {
     const hmac = req.headers.get("x-shopify-hmac-sha256");
     if (!hmac) return false;
-    // TODO: Verify HMAC with shared secret from store credentials
-    return true;
+
+    const secret = store?.webhook_secret || globalShopifySecret;
+    if (!secret) {
+      log("WARN: No Shopify webhook secret configured", { storeId });
+      return false;
+    }
+
+    const key = await crypto.subtle.importKey(
+      "raw",
+      new TextEncoder().encode(secret),
+      { name: "HMAC", hash: "SHA-256" },
+      false,
+      ["sign"]
+    );
+    const sig = await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(body));
+    const computed = btoa(String.fromCharCode(...new Uint8Array(sig)));
+
+    return timingSafeEqual(computed, hmac);
   }
 
   if (platform === "woocommerce") {
     const sig = req.headers.get("x-wc-webhook-signature");
     if (!sig) return false;
-    // TODO: Verify signature with webhook secret
-    return true;
+
+    const secret = store?.webhook_secret;
+    if (!secret) {
+      log("WARN: No WooCommerce webhook secret configured", { storeId });
+      return false;
+    }
+
+    const key = await crypto.subtle.importKey(
+      "raw",
+      new TextEncoder().encode(secret),
+      { name: "HMAC", hash: "SHA-256" },
+      false,
+      ["sign"]
+    );
+    const sigBytes = await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(body));
+    const computed = btoa(String.fromCharCode(...new Uint8Array(sigBytes)));
+
+    return timingSafeEqual(computed, sig);
   }
 
-  return true;
+  // Unknown platform — reject by default
+  return false;
+}
+
+/** Constant-time string comparison to prevent timing attacks */
+function timingSafeEqual(a: string, b: string): boolean {
+  if (a.length !== b.length) return false;
+  let result = 0;
+  for (let i = 0; i < a.length; i++) {
+    result |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  }
+  return result === 0;
 }
 
 async function routeEvent(

@@ -301,22 +301,49 @@ export class MultiTenantService {
     return user.permissions.includes(permission);
   }
 
-  private getCurrentTenantUser(): TenantUser | null {
-    // This would be fetched from current auth context
-    // For now, return mock data
-    return null;
+  private currentTenantUser: TenantUser | null = null;
+
+  /** Set current tenant user from auth context */
+  setCurrentTenantUser(user: TenantUser | null): void {
+    this.currentTenantUser = user;
   }
 
-  // Data Isolation
+  private getCurrentTenantUser(): TenantUser | null {
+    return this.currentTenantUser;
+  }
+
+  /**
+   * Tenant-isolated data access.
+   * Queries are scoped by the authenticated user's RLS context (via supabase client)
+   * AND filtered by tenant owner_id to enforce cross-tenant isolation.
+   */
   async getTenantData(table: string, filters: Record<string, any> = {}): Promise<any[]> {
     const tenant = this.getCurrentTenant();
     if (!tenant) throw new Error('No tenant context');
 
     try {
-      // For now, just return mock data since we need proper tenant isolation
-      // TODO: Implement proper tenant isolation
-      
-      return [];
+      // Build query — RLS on the Supabase client already enforces user_id isolation.
+      // We additionally filter by the tenant's owner_id for multi-tenant scoping.
+      let query = (supabase as any)
+        .from(table)
+        .select('*')
+        .eq('user_id', tenant.owner_id);
+
+      // Apply additional filters
+      for (const [key, value] of Object.entries(filters)) {
+        if (value !== undefined && value !== null) {
+          query = query.eq(key, value as any);
+        }
+      }
+
+      const { data, error } = await query;
+
+      if (error) {
+        console.error(`Tenant data query failed [${table}]:`, error);
+        throw error;
+      }
+
+      return data || [];
     } catch (error) {
       console.error(`Failed to get tenant data from ${table}:`, error);
       throw error;
