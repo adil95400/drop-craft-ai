@@ -120,7 +120,6 @@ export function ImportedProductDetailModal({
           .limit(50);
         
         if (error || !reviewsData) {
-          console.log('No reviews found or table does not exist:', error?.message);
           return [];
         }
         
