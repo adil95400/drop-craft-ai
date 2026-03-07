@@ -243,10 +243,10 @@ export class JobQueueManager {
           });
 
       if (error) {
-        console.error('Failed to save job to database:', error);
+        logger.error('Failed to save job to database', undefined, { ...LOG_CTX, action: 'saveJob', metadata: { error } });
       }
     } catch (error) {
-      console.error('Database error:', error);
+      logger.error('Database error', error instanceof Error ? error : undefined, { ...LOG_CTX, action: 'saveJob' });
     }
   }
 
