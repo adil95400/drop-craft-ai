@@ -1,4 +1,7 @@
 import { supabase } from '@/integrations/supabase/client'
+import { logger } from '@/utils/logger'
+
+const LOG_CTX = { component: 'CreativeStudioService' }
 
 export interface CreativeAsset {
   id: string
@@ -76,7 +79,7 @@ export class CreativeStudioService {
         campaign_id: log.metadata?.campaign_id
       }))
     } catch (error) {
-      console.error('Error fetching creative assets:', error)
+      logger.error('Error fetching creative assets', error instanceof Error ? error : undefined, { ...LOG_CTX, action: 'getAssets' })
       return []
     }
   }
@@ -107,7 +110,7 @@ export class CreativeStudioService {
         ...asset
       }
     } catch (error) {
-      console.error('Error creating creative asset:', error)
+      logger.error('Error creating creative asset', error instanceof Error ? error : undefined, { ...LOG_CTX, action: 'createAsset' })
       throw error
     }
   }
@@ -140,7 +143,7 @@ export class CreativeStudioService {
         performance_metrics: log.metadata?.performance_metrics || {}
       }))
     } catch (error) {
-      console.error('Error fetching marketing campaigns:', error)
+      logger.error('Error fetching marketing campaigns', error instanceof Error ? error : undefined, { ...LOG_CTX, action: 'getCampaigns' })
       return []
     }
   }
@@ -172,7 +175,7 @@ export class CreativeStudioService {
         ...campaign
       }
     } catch (error) {
-      console.error('Error creating marketing campaign:', error)
+      logger.error('Error creating marketing campaign', error instanceof Error ? error : undefined, { ...LOG_CTX, action: 'createCampaign' })
       throw error
     }
   }
@@ -241,7 +244,7 @@ export class CreativeStudioService {
         asset_url: data?.asset_url || '/api/placeholder/400/400'
       }
     } catch (error) {
-      console.error('Error generating creative with AI:', error)
+      logger.error('Error generating creative with AI', error instanceof Error ? error : undefined, { ...LOG_CTX, action: 'generateWithAI' })
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Failed to generate creative'
@@ -265,9 +268,9 @@ export class CreativeStudioService {
           description: `Updated campaign performance metrics`
         }])
 
-      console.log('Campaign performance updated:', campaignId, metrics)
+      logger.info('Campaign performance updated', { ...LOG_CTX, action: 'updatePerformance', metadata: { campaignId } })
     } catch (error) {
-      console.error('Error updating campaign performance:', error)
+      logger.error('Error updating campaign performance', error instanceof Error ? error : undefined, { ...LOG_CTX, action: 'updatePerformance' })
       throw error
     }
   }

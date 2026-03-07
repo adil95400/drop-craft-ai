@@ -2,6 +2,9 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
+import { logger } from '@/utils/logger';
+
+const LOG_CTX = { component: 'useStripeSubscription' };
 
 export type PlanType = 'free' | 'standard' | 'pro' | 'ultra_pro';
 
@@ -51,7 +54,7 @@ export function useStripeSubscription() {
     // Rate limiting: prevent multiple calls within 60 seconds unless forced
     const now = Date.now();
     if (!force && now - lastCheckRef.current < 60000) {
-      console.log('[Stripe] Skipping check - rate limited');
+      logger.debug('Skipping subscription check - rate limited', { ...LOG_CTX, action: 'checkSubscription' });
       return;
     }
     lastCheckRef.current = now;
@@ -64,11 +67,11 @@ export function useStripeSubscription() {
 
       if (error) {
         if (error.message?.includes('Rate limit')) {
-          console.warn('[Stripe] Rate limit hit');
+          logger.warn('Rate limit hit', { ...LOG_CTX, action: 'checkSubscription' });
         } else if (error.message?.includes('network') || error.message?.includes('fetch')) {
-          console.warn('[Stripe] Network error');
+          logger.warn('Network error', { ...LOG_CTX, action: 'checkSubscription' });
         } else {
-          console.error('Subscription check error:', error);
+          logger.error('Subscription check error', undefined, { ...LOG_CTX, action: 'checkSubscription', metadata: { error: error.message } });
         }
         return;
       }
@@ -81,10 +84,10 @@ export function useStripeSubscription() {
       setSubscription(data);
       
       if (data?.subscribed) {
-        console.log('[Stripe] Subscription verified:', data.plan, 'until', data.subscription_end);
+        logger.info('Subscription verified', { ...LOG_CTX, action: 'checkSubscription', metadata: { plan: data.plan } });
       }
     } catch (error) {
-      console.error('Error checking subscription:', error);
+      logger.error('Error checking subscription', error instanceof Error ? error : undefined, { ...LOG_CTX, action: 'checkSubscription' });
     } finally {
       if (isMountedRef.current) {
         setLoading(false);
@@ -125,7 +128,7 @@ export function useStripeSubscription() {
         throw new Error('URL de checkout non reçue');
       }
     } catch (error) {
-      console.error('Error creating checkout:', error);
+      logger.error('Error creating checkout', error instanceof Error ? error : undefined, { ...LOG_CTX, action: 'createCheckout' });
       toast({
         title: "Erreur",
         description: error instanceof Error ? error.message : "Impossible de créer la session de paiement",
@@ -160,7 +163,7 @@ export function useStripeSubscription() {
         throw new Error('URL du portail non reçue');
       }
     } catch (error) {
-      console.error('Error opening customer portal:', error);
+      logger.error('Error opening customer portal', error instanceof Error ? error : undefined, { ...LOG_CTX, action: 'openPortal' });
       toast({
         title: "Erreur",
         description: error instanceof Error ? error.message : "Impossible d'ouvrir le portail client",

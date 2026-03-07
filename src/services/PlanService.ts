@@ -5,6 +5,9 @@
 
 import { supabase } from '@/integrations/supabase/client';
 import { getProductCount } from '@/services/api/productHelpers';
+import { logger } from '@/utils/logger';
+
+const LOG_CTX = { component: 'PlanService' };
 
 export type PlanTier = 'free' | 'starter' | 'pro' | 'enterprise';
 
@@ -135,7 +138,7 @@ export class PlanService {
         .maybeSingle();
 
       if (error) {
-        console.error('Error fetching profile:', error);
+        logger.error('Error fetching profile', undefined, { ...LOG_CTX, action: 'initialize', metadata: { error } });
         this.currentPlan = 'free';
         return;
       }
@@ -143,7 +146,7 @@ export class PlanService {
       this.currentPlan = (profile?.subscription_plan as PlanTier) || 'free';
       await this.refreshUsage(userId);
     } catch (error) {
-      console.error('Failed to initialize PlanService:', error);
+      logger.error('Failed to initialize PlanService', error instanceof Error ? error : undefined, { ...LOG_CTX, action: 'initialize' });
       this.currentPlan = 'free';
     }
   }
@@ -168,7 +171,7 @@ export class PlanService {
         users: 1,
       };
     } catch (error) {
-      console.error('Failed to refresh usage:', error);
+      logger.error('Failed to refresh usage', error instanceof Error ? error : undefined, { ...LOG_CTX, action: 'refreshUsage' });
       this.usage = {
         products: 0,
         stores: 0,
@@ -267,7 +270,7 @@ export class PlanService {
       this.currentPlan = newPlan;
       return true;
     } catch (error) {
-      console.error('Failed to upgrade plan:', error);
+      logger.error('Failed to upgrade plan', error instanceof Error ? error : undefined, { ...LOG_CTX, action: 'upgradePlan' });
       return false;
     }
   }

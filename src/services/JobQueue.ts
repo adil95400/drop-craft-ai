@@ -1,5 +1,8 @@
 import { ImportJob, JobQueue } from '@/types/suppliers';
 import { supabase } from '@/integrations/supabase/client';
+import { logger } from '@/utils/logger';
+
+const LOG_CTX = { component: 'JobQueueManager' };
 
 export class JobQueueManager {
   private static instance: JobQueueManager;
@@ -194,7 +197,7 @@ export class JobQueueManager {
       await this.simulateJobExecution(job);
 
     } catch (error) {
-      console.error(`Job ${job.id} failed:`, error);
+      logger.error(`Job ${job.id} failed`, error instanceof Error ? error : undefined, { ...LOG_CTX, action: 'executeJob' });
       job.status = 'failed';
       job.errors.push(error.message);
       job.completedAt = new Date();
@@ -240,10 +243,10 @@ export class JobQueueManager {
           });
 
       if (error) {
-        console.error('Failed to save job to database:', error);
+        logger.error('Failed to save job to database', undefined, { ...LOG_CTX, action: 'saveJob', metadata: { error } });
       }
     } catch (error) {
-      console.error('Database error:', error);
+      logger.error('Database error', error instanceof Error ? error : undefined, { ...LOG_CTX, action: 'saveJob' });
     }
   }
 
@@ -266,10 +269,10 @@ export class JobQueueManager {
         .eq('id', job.id);
 
       if (error) {
-        console.error('Failed to update job in database:', error);
+        logger.error('Failed to update job in database', undefined, { ...LOG_CTX, action: 'updateJob', metadata: { error } });
       }
     } catch (error) {
-      console.error('Database error:', error);
+      logger.error('Database error', error instanceof Error ? error : undefined, { ...LOG_CTX, action: 'updateJob' });
     }
   }
 
