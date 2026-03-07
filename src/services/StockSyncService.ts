@@ -160,7 +160,7 @@ export class StockSyncService {
 
       if (integrationsError) throw integrationsError;
 
-      console.log(`🛍️ Syncing to ${integrations?.length || 0} platforms`);
+      // Syncing to platforms
 
       for (const integration of integrations || []) {
         const int = integration as Record<string, unknown>;
