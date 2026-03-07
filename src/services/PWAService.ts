@@ -9,7 +9,7 @@ export class PWAService {
       navigator.serviceWorker.addEventListener('controllerchange', () => {
         if (!refreshing) {
           refreshing = true;
-          console.log('🔄 New Service Worker active, reloading...');
+          // New Service Worker active, reloading
           window.location.reload();
         }
       });
