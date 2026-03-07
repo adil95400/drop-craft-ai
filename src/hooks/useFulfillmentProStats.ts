@@ -14,6 +14,15 @@ interface FulfillmentStats {
   successRate: number;
   autoFulfillRate: number;
   avgCostPerShipment: number;
+  // Picking & Returns
+  avgPickingTimeMin: number;
+  pickingErrorRate: number;
+  ordersPackedToday: number;
+  pendingPicking: number;
+  totalReturns: number;
+  pendingReturns: number;
+  returnRate: number;
+  totalRefunded: number;
 }
 
 interface TrendPoint {
