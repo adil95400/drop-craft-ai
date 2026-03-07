@@ -68,7 +68,7 @@ export class SalesIntelligenceService {
 
   async generateForecast(params: ForecastRequest): Promise<SalesIntelligenceData> {
     try {
-      console.log('[SalesIntelligenceService] Generating forecast', params);
+      logger.info('Generating forecast', { params });
 
       const { data, error } = await supabase.functions.invoke('sales-forecast', {
         body: params
