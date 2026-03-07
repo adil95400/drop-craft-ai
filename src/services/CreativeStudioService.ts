@@ -110,7 +110,7 @@ export class CreativeStudioService {
         ...asset
       }
     } catch (error) {
-      console.error('Error creating creative asset:', error)
+      logger.error('Error creating creative asset', error instanceof Error ? error : undefined, { ...LOG_CTX, action: 'createAsset' })
       throw error
     }
   }
