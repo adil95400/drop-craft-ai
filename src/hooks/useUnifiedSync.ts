@@ -238,8 +238,9 @@ export function useTriggerFullSync() {
 
       const { data, error } = await supabase.functions.invoke('unified-sync-orchestrator', {
         body: {
-          user_id: user.id,
-          ...options,
+          sync_types: options?.sync_types,
+          platforms: options?.platforms,
+          force_full_sync: options?.force_full_sync,
         }
       });
 
@@ -288,7 +289,6 @@ export function useTriggerModuleSync() {
 
       const { data, error } = await supabase.functions.invoke(functionMap[sync_type], {
         body: {
-          user_id: user.id,
           integration_id,
           platform,
           direction: direction || 'bidirectional',
