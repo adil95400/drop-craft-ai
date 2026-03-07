@@ -40,7 +40,7 @@ serve(async (req) => {
     console.log(`[TEST-CONNECTION] Testing ${body.platform} for user ${user.id}`)
 
     // Validate platform
-    const validPlatforms = ['shopify', 'woocommerce', 'etsy', 'cdiscount', 'allegro', 'manomano', 'amazon', 'ebay', 'prestashop', 'rakuten', 'fnac', 'google', 'facebook', 'tiktok', 'magento', 'wix']
+    const validPlatforms = ['shopify', 'woocommerce', 'etsy', 'cdiscount', 'allegro', 'manomano', 'amazon', 'ebay', 'prestashop', 'rakuten', 'fnac', 'google', 'facebook', 'tiktok', 'magento', 'wix', 'alibaba', 'printify', 'printful']
     if (!validPlatforms.includes(body.platform)) {
       return new Response(
         JSON.stringify({ 
