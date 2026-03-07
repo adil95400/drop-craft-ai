@@ -97,6 +97,9 @@ export function IntegrationRoutes() {
       
       {/* Multi-Store Sync */}
       <Route path="multi-store-sync" element={<MultiStoreSyncPage />} />
+      
+      {/* Webhooks Entrants */}
+      <Route path="webhooks" element={<InboundWebhooksPage />} />
     </Routes>
   );
 }
