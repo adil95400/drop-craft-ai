@@ -38,7 +38,7 @@ class AIScraperService {
    */
   async scrapeWithAI(url: string): Promise<{ success: boolean; products: ScrapedProduct[]; error?: string }> {
     try {
-      console.log('[AIScraperService] Starting AI scraping for:', url);
+      // Starting AI scraping
 
       const { data, error } = await supabase.functions.invoke('ai-scraper', {
         body: { url, useAI: true }
