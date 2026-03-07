@@ -77,7 +77,7 @@ class AudioRecorder implements AudioRecorderClass {
       this.source.connect(this.processor)
       this.processor.connect(this.audioContext.destination)
       
-      console.log('✅ Audio recording started successfully')
+      // Audio recording started
     } catch (error) {
       console.error('❌ Error accessing microphone:', error)
       throw error
