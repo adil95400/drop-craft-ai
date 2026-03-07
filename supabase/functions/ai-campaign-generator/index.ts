@@ -146,8 +146,8 @@ Génère du contenu prêt à utiliser avec des sujets accrocheurs, des CTA effic
       target_type: 'campaign',
       target_id: userId,
       task: `generate_campaign_${campaign_type}`,
-      provider: 'google',
-      model: 'gemini-3-flash-preview',
+      provider: 'openai',
+      model: 'gpt-5-nano',
       input_json: { campaign_type, goal, tone, product_ids },
       output_json: campaign,
       language: language || 'fr'

@@ -26,7 +26,7 @@ async function callAI(systemPrompt: string, userPrompt: string, options: { tempe
   if (!LOVABLE_API_KEY) throw new Error('AI service not configured')
 
   const body: any = {
-    model: 'google/gemini-3-flash-preview',
+    model: 'openai/gpt-5-nano',
     messages: [
       { role: 'system', content: systemPrompt },
       { role: 'user', content: userPrompt }
