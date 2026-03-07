@@ -25,7 +25,16 @@ export default function AdsManagerPage() {
     avgCTR: metrics.avg_ctr,
     avgROAS: metrics.avg_roas
   } : null;
-  const toggleCampaign = (_id: string, _status: string) => { /* TODO: toggle campaign */ };
+  const toggleCampaign = async (id: string, currentStatus: string) => {
+    const newStatus = currentStatus === 'active' ? 'paused' : 'active';
+    try {
+      const { supabase } = await import('@/integrations/supabase/client');
+      await supabase.from('ad_campaigns').update({ status: newStatus }).eq('id', id);
+      refetch();
+    } catch (err) {
+      console.error('Toggle campaign failed:', err);
+    }
+  };
   const [showCreateDialog, setShowCreateDialog] = useState(false);
 
   const formatCurrency = (value: number) => {

@@ -14,6 +14,7 @@ import { ProductAuditBlock } from '@/components/products/ProductAuditBlock'
 import { ProductPerformanceMetrics } from '@/components/products/ProductPerformanceMetrics'
 import { OptimizationHistory } from '@/components/products/OptimizationHistory'
 import { MultiChannelReadiness } from '@/components/products/MultiChannelReadiness'
+import { ProductImageEditor } from '@/components/products/ProductImageEditor'
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -31,7 +32,7 @@ import {
   RefreshCw, Trash2, MoreVertical, CheckCircle2, AlertTriangle, 
   Share2, Download, Eye, Clock, FileText, Video, Truck,
   Lightbulb, AlertCircle, ImagePlus, DollarSign, FileSearch,
-  Loader2
+  Loader2, Palette
 } from 'lucide-react'
 import { useNavigate, useParams, useLocation } from 'react-router-dom'
 import { useProduct } from '@/hooks/useUnifiedProducts'
@@ -66,6 +67,8 @@ export default function ProductDetailsPage() {
   const [showDescriptionFull, setShowDescriptionFull] = useState(false)
   const [activeTab, setActiveTab] = useState('audit')
   const [aiGeneratingField, setAiGeneratingField] = useState<string | null>(null)
+  const [showImageEditor, setShowImageEditor] = useState(false)
+  const [editingImageUrl, setEditingImageUrl] = useState('')
 
   // Edit form state
   const [editForm, setEditForm] = useState({
@@ -748,8 +751,17 @@ export default function ProductDetailsPage() {
                       </Button>
                       <Button variant="outline" size="sm" className="gap-2" onClick={handleEditImages}>
                         <Images className="h-4 w-4" />
-                        Éditer images
+                        Gérer images
                       </Button>
+                      {product?.images?.[0] && (
+                        <Button variant="outline" size="sm" className="gap-2" onClick={() => {
+                          setEditingImageUrl(product.images[0])
+                          setShowImageEditor(true)
+                        }}>
+                          <Palette className="h-4 w-4" />
+                          Éditeur
+                        </Button>
+                      )}
                     </div>
                     <div className="flex items-center gap-2 text-sm text-muted-foreground">
                       <Clock className="h-4 w-4" />
@@ -1159,6 +1171,27 @@ export default function ProductDetailsPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Image Editor */}
+      {editingImageUrl && (
+        <ProductImageEditor
+          imageUrl={editingImageUrl}
+          open={showImageEditor}
+          onOpenChange={setShowImageEditor}
+          onSave={(dataUrl) => {
+            // Update the product's first image with the edited version
+            if (product && id) {
+              const newImages = [...(product.images || [])]
+              const idx = newImages.indexOf(editingImageUrl)
+              if (idx >= 0) newImages[idx] = dataUrl
+              updateProduct.mutate({
+                id,
+                updates: { images: newImages } as any
+              })
+            }
+          }}
+        />
+      )}
     </>
   )
 }
