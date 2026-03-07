@@ -340,6 +340,10 @@ export default function FulfillmentPage() {
           <FulfillmentOrdersEnhanced />
         </TabsContent>
         
+        <TabsContent value="picking">
+          <PickingPackingWorkflow />
+        </TabsContent>
+        
         <TabsContent value="carriers">
           <CarriersManager 
             carriers={carriers} 
