@@ -38,13 +38,13 @@ const initI18n = () => import('@/lib/i18n');
 const PUBLIC_PREFIXES = [
   '/', '/pricing', '/features', '/contact', '/faq', '/about',
   '/privacy', '/terms', '/cgv', '/blog', '/documentation', '/docs',
-  '/changelog', '/status', '/testimonials', '/integrations',
+  '/changelog', '/status', '/testimonials',
   '/logiciel-', '/alternative-', '/optimisation-', '/gestion-',
   '/import-produits-', '/automatisation-', '/outil-pricing-',
   '/analyse-boutique-', '/shopify-', '/shopopti-vs-', '/dropshipping-',
   '/product-research-', '/how-to-', '/ai-tool-for-', '/payment/',
   '/enterprise/observability', '/guides', '/academy', '/pwa-install',
-  '/store', '/pricing-plans', '/integrations-public',
+  '/store', '/pricing-plans',
 ];
 
 function isPublicRoute(pathname: string): boolean {
