@@ -43,6 +43,7 @@ const ContentManagementPage = lazy(() => import('@/pages/ContentManagementPage')
 // Multi-Channel
 const MultiChannelPage = lazy(() => import('@/pages/integrations/MultiChannelPage'));
 const MultiStoreSyncPage = lazy(() => import('@/pages/integrations/MultiStoreSyncPage'));
+const InboundWebhooksPage = lazy(() => import('@/pages/integrations/InboundWebhooksPage'));
 
 export function IntegrationRoutes() {
   return (
