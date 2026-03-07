@@ -1,156 +1,223 @@
+# DropCraft AI — Roadmap Stratégique Complète
 
-# Plan de mise en production ShopOpti
+## Vision
+Transformer DropCraft AI en plateforme SaaS leader du dropshipping automatisé avec IA, surpassant AutoDS, DSers, Spocket, Zendrop et Dropship.io.
 
-## Contexte
+## État Actuel (Mars 2026)
 
-L'application ShopOpti est deja tres avancee avec une architecture solide. Ce plan identifie les ajustements necessaires pour un lancement production securise.
+### ✅ Déjà Implémenté
+| Domaine | Détails |
+|---------|---------|
+| **Architecture** | 26 modules de routes, 120+ pages lazy-loaded, 145+ edge functions |
+| **Sécurité** | RLS 100%, RBAC 4 niveaux, JWT, CORS sécurisé, audit logs immutables, XSS sanitization, rate limiting API |
+| **Auth** | Email + Google OAuth (Lovable Cloud), 2FA infrastructure |
+| **IA** | Lovable AI Gateway (GPT-5-nano, Gemini), AI product optimizer, content generator |
+| **i18n** | 68+ langues, 58+ devises, conversion temps réel |
+| **Intégrations** | Shopify, WooCommerce, Amazon, eBay, CJ, BigBuy, AliExpress, Mirakl, Rakuten, Zalando, Wish |
+| **PWA** | Service Worker, push notifications, offline mode, Capacitor mobile |
+| **Monitoring** | Sentry, logger centralisé (migration ~60%), console interceptor |
+| **Paiement** | Stripe (checkout, webhooks, portail, plans Free/Standard/Pro/Ultra Pro) |
+| **SEO** | Sitemap, robots.txt, JSON-LD, meta tags, scoring temps réel |
+| **Design System** | shadcn/ui, tokens HSL, animations framer-motion |
+| **Marketing** | GA4, Mixpanel, Hotjar (GDPR-gated), email marketing, automation |
+| **Tests** | 23 fichiers de test, Vitest + Playwright configurés |
+| **Feature Flags** | Système DB-driven par plan utilisateur |
 
-## Etat actuel (deja implemente)
+---
 
-- Pages legales : CGU, CGV, Politique de confidentialite
-- Banniere cookies RGPD conforme
-- Suppression de compte (RGPD)
-- Export de donnees utilisateur (RGPD)
-- Stripe : checkout, webhooks, portail client, plans (Standard/Pro/Ultra Pro)
-- Securite : RLS 100%, JWT, CORS securise, audit logs, RBAC
-- SEO : sitemap, robots.txt, JSON-LD, meta tags Helmet, pages SEO dediees
-- Lazy loading sur 150+ pages
-- PWA configure
-- Sentry integre
-- Edge functions deployees (300+)
+## Phase 1 — Stabilisation & Qualité (Semaines 1-3)
+*Objectif : Fondations solides avant d'ajouter des features*
 
-## Ajustements a implementer
+### 1.1 Tests & CI/CD ⭐ PRIORITÉ HAUTE
+- [ ] Lancer et corriger les 23 fichiers de test existants
+- [ ] Ajouter tests unitaires pour les services critiques :
+  - `ProductsUnifiedService`
+  - `OrderService`
+  - `ConnectorManager`
+  - `ExportService`
+- [ ] Tests E2E Playwright pour les parcours critiques :
+  - Auth flow (signup → login → dashboard)
+  - Import produit (URL → catalogue)
+  - Tunnel commande
+  - Connexion marketplace
+- [ ] GitHub Actions pipeline : lint → typecheck → vitest → playwright
+- [ ] Coverage minimale : 70% services, 50% hooks
 
-### Phase 1 — Configuration domaine et routing (Priorite haute)
+### 1.2 Migration Logger (Finaliser)
+- [ ] Migrer les ~1500 `console.*` restants dans 55+ fichiers services
+- [ ] Migrer les hooks critiques
+- [ ] Vérifier que le console interceptor couvre bien la production
 
-**1.1 Corriger les references de domaine**
+### 1.3 Nettoyage Code
+- [ ] Supprimer les routes mortes / pages vides
+- [ ] Consolider les services dupliqués
+- [ ] Auditer les dépendances inutilisées
+- [ ] Corriger les erreurs TypeScript résiduelles
 
-Le code contient des references obsoletes (`app.shopopti.com` au lieu de `shopopti.io`). A corriger dans :
-- `src/components/admin/AdvancedSettings.tsx` : mettre a jour `siteUrl` et `allowedOrigins`
-- `src/config/domains.ts` : ajouter `app.shopopti.io` dans la config production
-- `supabase/functions/_shared/cors.ts` et `secure-cors.ts` : verifier que `app.shopopti.io` est dans les origines autorisees
+### 1.4 Sécurité Edge Functions
+- [ ] Vérifier `SET search_path TO 'public'` sur toutes les DB functions
+- [ ] Audit des edge functions sans validation JWT
+- [ ] Vérifier qu'aucun `SERVICE_ROLE_KEY` n'est exposé côté client
 
-**1.2 Architecture marketing vs app**
+---
 
-> Note importante : Lovable ne supporte pas le hosting multi-sous-domaine. Le projet deploye sur `shopopti.io` servira a la fois le site marketing (pages publiques) et l'application (routes protegees). La separation se fait par le routing, pas par sous-domaine.
+## Phase 2 — Core Product Excellence (Semaines 4-8)
+*Objectif : Rendre les fonctionnalités existantes production-ready*
 
-Le routing actuel est deja bien structure :
-- Pages publiques (marketing) : `/`, `/pricing`, `/features`, `/blog`, etc.
-- Application protegee : `/dashboard/*`, `/products/*`, `/orders/*`, etc.
+### 2.1 Données Réelles Partout
+- [ ] Remplacer toutes les données mockées par des appels API réels
+- [ ] Dashboard KPIs depuis les tables réelles (orders, products, customers)
+- [ ] Métriques de performance système réelles (latence, mémoire)
+- [ ] Scoring produit basé sur complétude réelle des données
 
-Ajout a faire : redirection `app.shopopti.io` vers `shopopti.io/dashboard` via un enregistrement DNS CNAME + regle de redirection.
+### 2.2 Product Sourcing Amélioré
+- [ ] Fiabiliser le scraping Firecrawl (AliExpress, Amazon, eBay, Temu)
+- [ ] Scoring "Winning Product" pondéré (marge 35%, note 25%, demande 20%)
+- [ ] Import one-click depuis URL → catalogue avec enrichissement IA
+- [ ] Comparateur de prix multi-fournisseurs
 
-### Phase 2 — Securite production
+### 2.3 Order Fulfillment Robuste
+- [ ] Auto-order placement (CJ, BigBuy, AliExpress)
+- [ ] Auto-tracking sync
+- [ ] Retry mechanism pour commandes échouées
+- [ ] Queue de commandes avec monitoring
 
-**2.1 Headers de securite**
+### 2.4 Sync Multi-Boutique Fiable
+- [ ] Sync bidirectionnelle prix/stock (Shopify, WooCommerce)
+- [ ] Résolution de conflits (local_wins, remote_wins, newest_wins)
+- [ ] Webhooks entrants normalisés
+- [ ] Dashboard sync avec historique et alertes
 
-Le fichier `src/lib/security-headers.ts` est deja bien configure avec CSP, X-Frame-Options, HSTS. A verifier :
-- Ajouter la directive `Strict-Transport-Security` (HSTS) dans les headers
-- S'assurer que les headers sont appliques via `vercel.json` ou `_headers`
+---
 
-**2.2 Verification des variables d'environnement**
+## Phase 3 — Différenciation IA (Semaines 9-14)
+*Objectif : Devenir une AI-first platform*
 
-- `VITE_SUPABASE_URL` et `VITE_SUPABASE_PUBLISHABLE_KEY` : OK, deja configurees
-- Verifier qu'aucune `SERVICE_ROLE_KEY` n'est exposee cote client (verification deja faite, conforme)
-- Ajouter un fichier `public/_headers` pour les headers de securite en production
+### 3.1 IA Produit
+- [ ] AI Product Research : analyse tendances + scoring automatique
+- [ ] AI Product Description : génération multi-langue optimisée SEO
+- [ ] AI Image Enhancement : amélioration automatique des visuels produit
+- [ ] AI Ad Creative Generator : créatifs pub automatiques
 
-**2.3 Protection anti-scraping**
+### 3.2 IA Marketing
+- [ ] AI Campaign Generator : campagnes email/SMS automatiques
+- [ ] AI Funnel Builder : tunnels de vente pré-optimisés
+- [ ] AI SEO Optimizer : suggestions de mots-clés et méta-données
+- [ ] AI Copywriter : descriptions, titres, bullet points
 
-Ajouter des headers `X-Robots-Tag` sur les routes protegees et un rate limiting cote edge functions (deja en place sur les fonctions critiques).
+### 3.3 IA Prédictive
+- [ ] Product Trend Prediction : analyse de tendances marché
+- [ ] Revenue Forecasting : prévisions de CA basées sur historique
+- [ ] Demand Prediction : anticipation des ruptures de stock
+- [ ] Dynamic Pricing : ajustement automatique des prix selon la demande
 
-### Phase 3 — Stripe et abonnements (verification)
+---
 
-L'integration est deja complete. Verifications :
-- `stripe-webhook/index.ts` : signature Stripe verifiee, mise a jour du profil via SERVICE_ROLE
-- `check-subscription/index.ts` : synchronisation du plan
-- `create-checkout-session` : creation de session securisee
-- `customer-portal` : gestion des abonnements
+## Phase 4 — Parité Concurrentielle (Semaines 15-20)
+*Objectif : Fonctionnalités attendues par le marché*
 
-Action : verifier que les secrets `STRIPE_SECRET_KEY` et `STRIPE_WEBHOOK_SECRET` sont bien configures dans les secrets du projet.
+### 4.1 Pricing Intelligence
+- [ ] Competitor price monitoring
+- [ ] Margin calculator avec simulateur temps réel
+- [ ] Price history avec graphiques de tendance
+- [ ] Règles de pricing automatiques (arrondis psychologiques)
 
-### Phase 4 — Performance et SEO
+### 4.2 Shipping System
+- [ ] Intégrations : UPS, DHL, FedEx, Colissimo
+- [ ] Shipping rules engine (par poids, destination, valeur)
+- [ ] Shipping calculator intégré
+- [ ] Label generation
 
-**4.1 SEO landing page**
+### 4.3 Customer Service
+- [ ] Ticket system avec historique client
+- [ ] Live chat widget
+- [ ] Returns portal (RMA automatisé)
+- [ ] Refund automation avec règles configurables
 
-La page `Index.tsx` utilise deja `<Helmet>`, `<SEO>`, `SoftwareAppSchema`, `OrganizationSchema`. Optimisations supplementaires :
-- Verifier les balises Open Graph et Twitter Card
-- S'assurer que le `canonical` pointe vers `https://shopopti.io`
-- Verifier que `robots.txt` et `sitemap.xml` sont accessibles en production
+### 4.4 Ads Manager
+- [ ] Facebook Ads : campagnes, audiences, reporting
+- [ ] Google Ads : search, shopping, display
+- [ ] TikTok Ads : créatifs, audiences
+- [ ] ROI tracking cross-platform
 
-**4.2 Performance mobile**
+---
 
-- Le lazy loading est deja en place sur toutes les routes
-- Les images utilisent des variantes `-sm` pour mobile
-- PWA est configure via `vite-plugin-pwa`
-- Image optimizer via `vite-plugin-image-optimizer`
+## Phase 5 — Scale & Enterprise (Semaines 21-28)
+*Objectif : Prêt pour la croissance*
 
-### Phase 5 — Monitoring et analytics
+### 5.1 Performance & Architecture
+- [ ] Bundle splitting optimisé (vendor, core, features)
+- [ ] React Query cache strategy par entité
+- [ ] Virtual scrolling pour listes de produits (>10K)
+- [ ] Image optimization pipeline (WebP, lazy, blur-up)
 
-**5.1 Sentry**
+### 5.2 Social Commerce
+- [ ] Instagram Shop sync
+- [ ] TikTok Shop sync
+- [ ] Facebook Shop sync
+- [ ] Multi-channel listing management
 
-Deja integre (`@sentry/react`). Verifier que le DSN de production est configure.
+### 5.3 Advanced Analytics
+- [ ] Custom dashboards builder (drag & drop widgets)
+- [ ] Cohort analysis
+- [ ] Attribution modeling
+- [ ] Export automatisé (PDF, Excel schedulé)
 
-**5.2 Analytics**
+### 5.4 Enterprise Features
+- [ ] Multi-workspace (organisations)
+- [ ] SSO (SAML/OIDC)
+- [ ] API marketplace (webhooks sortants)
+- [ ] White-label option
 
-Creer un composant d'integration analytics qui respecte le consentement cookies :
-- Lire les preferences du `CookieBanner` (`shopopti_cookie_consent`)
-- Ne charger les scripts analytics que si `analytics: true`
-- Support PostHog ou GA4 (a configurer via secret)
+---
 
-**5.3 Logs production**
+## Phase 6 — Go-to-Market (Semaines 29-32)
+*Objectif : Lancement public*
 
-L'intercepteur de console (`consoleInterceptor.ts`) est en place et redirige vers Sentry en production. Les edge functions ont un logging structure.
+### 6.1 Onboarding
+- [ ] Wizard de configuration (3 étapes : boutique → fournisseur → premier produit)
+- [ ] Templates pré-configurés par niche
+- [ ] Vidéos tutorielles intégrées
+- [ ] Checklist de démarrage interactive
 
-### Phase 6 — Fichier de headers production
+### 6.2 Documentation
+- [ ] Centre d'aide complet
+- [ ] API documentation interactive
+- [ ] SDK examples (JS, Python, PHP)
+- [ ] Blog avec guides de dropshipping
 
-Creer `public/_headers` pour Lovable/Vercel avec :
+### 6.3 Conformité Production
+- [ ] Headers sécurité (_headers file)
+- [ ] RGPD complet (CGU, CGV, cookies, suppression, export)
+- [ ] Stripe webhooks production
+- [ ] Sentry DSN production
+- [ ] DNS + domaine custom
 
-```text
-/*
-  X-Content-Type-Options: nosniff
-  X-Frame-Options: SAMEORIGIN
-  X-XSS-Protection: 1; mode=block
-  Referrer-Policy: strict-origin-when-cross-origin
-  Strict-Transport-Security: max-age=31536000; includeSubDomains
-  Permissions-Policy: accelerometer=(), camera=(), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), payment=(), usb=()
-```
+---
 
-## Details techniques
+## Métriques de Succès
 
-### Fichiers a modifier
+| Phase | KPI | Cible |
+|-------|-----|-------|
+| Phase 1 | Test coverage | >70% services |
+| Phase 1 | Console.* restants | 0 |
+| Phase 2 | Données mockées | 0 |
+| Phase 3 | Features IA actives | 8+ |
+| Phase 4 | Parité AutoDS | >80% |
+| Phase 5 | Lighthouse score | >90 |
+| Phase 6 | Temps onboarding | <5 min |
 
-| Fichier | Action |
-|---------|--------|
-| `src/config/domains.ts` | Ajouter `app.shopopti.io`, verifier config |
-| `src/components/admin/AdvancedSettings.tsx` | Corriger `app.shopopti.com` → `shopopti.io` |
-| `supabase/functions/_shared/cors.ts` | Verifier origines autorisees |
-| `supabase/functions/_shared/secure-cors.ts` | Verifier origines autorisees |
-| `public/_headers` | Creer avec headers de securite + HSTS |
-| `src/lib/security-headers.ts` | Ajouter HSTS |
+---
 
-### Fichiers a creer
+## Dépendances & Risques
 
-| Fichier | Description |
-|---------|-------------|
-| `src/hooks/useAnalyticsConsent.ts` | Hook pour charger analytics selon consentement cookies |
+| Risque | Impact | Mitigation |
+|--------|--------|------------|
+| APIs fournisseurs instables | Fulfillment bloqué | Retry + fallback fournisseur |
+| Coûts IA élevés | Marge réduite | Quotas par plan + caching |
+| Rate limiting plateformes | Sync lente | Queues + batch processing |
+| Complexité croissante | Bugs | Tests automatisés + CI/CD |
 
-### Verifications a effectuer
+---
 
-1. Secrets Stripe configures (`STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`)
-2. DSN Sentry de production configure
-3. DNS `shopopti.io` pointe vers `185.158.133.1` (A records OK)
-4. TXT `_lovable` ajoute pour verification domaine
-5. Publication du projet via le bouton Publish de Lovable
-
-## Checklist pre-lancement
-
-- [ ] DNS verifie et domaine connecte dans Lovable
-- [ ] Headers de securite deployes
-- [ ] Secrets Stripe en production
-- [ ] Pages legales accessibles (`/terms`, `/privacy`, `/cgv`)
-- [ ] Banniere cookies fonctionnelle
-- [ ] Suppression de compte fonctionnelle
-- [ ] Webhooks Stripe enregistres avec l'URL de production
-- [ ] Sentry DSN configure
-- [ ] Analytics respectant le consentement
-- [ ] Test complet du flow d'inscription → paiement → dashboard
+*Dernière mise à jour : 6 mars 2026*
