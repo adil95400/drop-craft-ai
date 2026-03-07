@@ -175,7 +175,7 @@ export class CreativeStudioService {
         ...campaign
       }
     } catch (error) {
-      console.error('Error creating marketing campaign:', error)
+      logger.error('Error creating marketing campaign', error instanceof Error ? error : undefined, { ...LOG_CTX, action: 'createCampaign' })
       throw error
     }
   }
