@@ -236,7 +236,7 @@ export const OrderRouter = () => {
     if (!rule.email_address) throw new Error('Email address not configured')
 
     // Simulate email sending
-    console.log('Routing via Email:', rule.email_address, data)
+    // Routing via Email
     await new Promise(resolve => setTimeout(resolve, 1000))
   }
 

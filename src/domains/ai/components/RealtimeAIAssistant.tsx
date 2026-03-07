@@ -339,11 +339,11 @@ export const RealtimeAIAssistant: React.FC = () => {
             break
 
           case 'input_audio_buffer.speech_started':
-            console.log('🎤 User started speaking')
+            // User started speaking
             break
 
           case 'input_audio_buffer.speech_stopped':
-            console.log('🎤 User stopped speaking')
+            // User stopped speaking
             break
 
           case 'response.function_call_arguments.done':

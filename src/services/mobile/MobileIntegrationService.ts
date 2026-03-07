@@ -503,7 +503,7 @@ class MobileIntegrationService {
       }
     }
 
-    console.log('Offline data cleanup completed');
+    // Offline data cleanup completed
   }
 
   // Forcer une synchronisation
