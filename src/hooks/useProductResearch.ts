@@ -57,10 +57,12 @@ interface SavedProduct {
 export function useProductResearch() {
   const [isScanning, setIsScanning] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [isResearching, setIsResearching] = useState(false);
   const [trends, setTrends] = useState<TrendData[]>([]);
   const [viralProducts, setViralProducts] = useState<ViralProduct[]>([]);
   const [saturationData, setSaturationData] = useState<SaturationData | null>(null);
   const [savedProducts, setSavedProducts] = useState<SavedProduct[]>([]);
+  const [researchResults, setResearchResults] = useState<any>(null);
   const { toast } = useToast();
 
   const scanTrends = async ({ keyword, category }: { keyword: string; category: string }) => {
@@ -111,6 +113,27 @@ export function useProductResearch() {
     }
   };
 
+  // NEW: AI-powered deep product research
+  const aiResearch = async ({ query, niche, budget_range, target_market }: { query?: string; niche?: string; budget_range?: string; target_market?: string }) => {
+    setIsResearching(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('ai-product-research', {
+        body: { query, niche, budget_range, target_market }
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      setResearchResults(data.research);
+      toast({ title: "✅ Recherche IA terminée", description: `${data.research?.product_opportunities?.length || 0} opportunités trouvées` });
+      return data.research;
+    } catch (error: any) {
+      const msg = error.message || "Impossible de lancer la recherche IA";
+      toast({ title: "Erreur", description: msg, variant: "destructive" });
+      return null;
+    } finally {
+      setIsResearching(false);
+    }
+  };
+
   const loadSavedProducts = async () => {
     try {
       const { data: session } = await supabase.auth.getSession();
@@ -141,8 +164,8 @@ export function useProductResearch() {
   };
 
   return {
-    isScanning, isAnalyzing, trends, viralProducts, saturationData, savedProducts,
-    scanTrends, analyzeViralProduct, analyzeSaturation, loadSavedProducts,
+    isScanning, isAnalyzing, isResearching, trends, viralProducts, saturationData, savedProducts, researchResults,
+    scanTrends, analyzeViralProduct, analyzeSaturation, loadSavedProducts, aiResearch,
   };
 }
 
