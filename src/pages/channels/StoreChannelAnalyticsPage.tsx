@@ -69,7 +69,7 @@ export default function StoreChannelAnalyticsPage() {
     queryFn: async () => {
       const { data } = await supabase
         .from('product_store_links')
-        .select('integration_id, sync_status');
+        .select('store_id, sync_status');
       return data || [];
     },
   });
