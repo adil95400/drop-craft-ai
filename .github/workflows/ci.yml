@@ -10,239 +10,433 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+permissions:
+  contents: read
+  actions: read
+  security-events: write
+  pull-requests: write
+
 env:
-  NODE_VERSION: '20'
+  NODE_VERSION: "20"
+  CI: true
+  VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL || 'https://placeholder.supabase.co' }}
+  VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY || 'placeholder' }}
+
+defaults:
+  run:
+    shell: bash
 
 jobs:
-  # ── Lint & Type Check ──────────────────────────────────────────────────────
   lint:
     name: 🔍 Lint & Types
     runs-on: ubuntu-latest
+    timeout-minutes: 10
+
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: npm
-      - run: npm ci
+
+      - name: Cache Vite
+        uses: actions/cache@v4
+        with:
+          path: |
+            node_modules/.vite
+            .vite
+          key: ${{ runner.os }}-vite-lint-${{ hashFiles('package-lock.json') }}-${{ hashFiles('vite.config.*', 'src/**/*', 'index.html') }}
+          restore-keys: |
+            ${{ runner.os }}-vite-lint-${{ hashFiles('package-lock.json') }}-
+            ${{ runner.os }}-vite-lint-
+
+      - name: Install dependencies
+        run: npm ci --prefer-offline --no-audit --progress=false
+
       - name: TypeScript
         run: npx tsc --noEmit
-      - name: ESLint
-        run: npx eslint src/ --max-warnings 50
-        continue-on-error: true
 
-  # ── Unit Tests ─────────────────────────────────────────────────────────────
-  test:
+      - name: ESLint
+        run: npx eslint src/ --max-warnings 0
+
+  unit-tests:
     name: 🧪 Unit Tests (Vitest)
     runs-on: ubuntu-latest
+    timeout-minutes: 15
+
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: npm
-      - run: npm ci
-      - name: Vitest
-        run: npx vitest run --coverage --reporter=github-actions
-        env:
-          CI: true
-          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL || 'https://placeholder.supabase.co' }}
-          VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY || 'placeholder' }}
-      - uses: actions/upload-artifact@v4
+
+      - name: Cache Vite
+        uses: actions/cache@v4
+        with:
+          path: |
+            node_modules/.vite
+            .vite
+          key: ${{ runner.os }}-vite-test-${{ hashFiles('package-lock.json') }}-${{ hashFiles('vite.config.*', 'vitest.config.*', 'src/**/*', 'tests/**/*') }}
+          restore-keys: |
+            ${{ runner.os }}-vite-test-${{ hashFiles('package-lock.json') }}-
+            ${{ runner.os }}-vite-test-
+
+      - name: Install dependencies
+        run: npm ci --prefer-offline --no-audit --progress=false
+
+      - name: Run Vitest
+        run: npm run test -- --coverage --reporter=github-actions
+
+      - name: Upload coverage
         if: always()
+        uses: actions/upload-artifact@v4
         with:
           name: coverage
           path: coverage/
           retention-days: 14
 
-  # ── Security ───────────────────────────────────────────────────────────────
-  security:
-    name: 🔒 Security Audit
+  security-secrets:
+    name: 🔒 Secrets & License Checks
     runs-on: ubuntu-latest
+    timeout-minutes: 10
+
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: npm
-      - run: npm ci
-      - name: npm audit
-        run: npm audit --audit-level=high
-        continue-on-error: true
+
+      - name: Install dependencies
+        run: npm ci --prefer-offline --no-audit --progress=false
+
       - name: Hardcoded secrets check
         run: |
-          if grep -rE "(api[_-]?key|secret[_-]?key|password)\s*[:=]\s*['\"][a-zA-Z0-9]{10,}['\"]" src/ --include="*.ts" --include="*.tsx" | grep -v ".test." | grep -v "placeholder" | grep -v "example"; then
-            echo "⚠️ Potential hardcoded secrets found"
+          if grep -rE "(api[_-]?key|secret[_-]?key|password|token)\s*[:=]\s*['\"][a-zA-Z0-9_\-]{10,}['\"]" src/ --include="*.ts" --include="*.tsx" \
+            | grep -v ".test." \
+            | grep -v "placeholder" \
+            | grep -v "example"; then
+            echo "Potential hardcoded secrets found"
             exit 1
           else
-            echo "✅ No hardcoded secrets"
+            echo "No hardcoded secrets found"
           fi
+
       - name: License check
-        run: npx license-checker --onlyAllow 'MIT;ISC;BSD-2-Clause;BSD-3-Clause;Apache-2.0;0BSD;CC0-1.0;CC-BY-3.0;CC-BY-4.0;Unlicense;Python-2.0;BlueOak-1.0.0' --excludePrivatePackages
+        run: npx license-checker --onlyAllow 'MIT;ISC;BSD-2-Clause;BSD-3-Clause;Apache-2.0;0BSD;CC0-1.0;CC-BY-3.0;CC-BY-4.0;Unlicense;Python-2.0;BlueOak-1.0.0'
         continue-on-error: true
 
-  # ── Build ──────────────────────────────────────────────────────────────────
-  build:
-    name: 🏗️ Build
+  dependency-review:
+    name: 🧾 Dependency Review
+    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
-    needs: [lint, test]
+    timeout-minutes: 10
+
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Dependency review
+        uses: actions/dependency-review-action@v4
+        with:
+          fail-on-severity: high
+
+  codeql:
+    name: 🛡️ CodeQL (SAST)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+
+    strategy:
+      fail-fast: false
+      matrix:
+        language: [javascript-typescript]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Init CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: ${{ matrix.language }}
+          queries: security-extended,security-and-quality
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: npm
-      - run: npm ci
-      - run: npm run build
+
+      - name: Install dependencies
+        run: npm ci --prefer-offline --no-audit --progress=false
+
+      - name: Build for CodeQL
+        run: npm run build
+
+      - name: Analyze
+        uses: github/codeql-action/analyze@v3
+
+  build:
+    name: 🏗️ Build Production
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    needs: [lint, unit-tests]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - name: Cache Vite
+        uses: actions/cache@v4
+        with:
+          path: |
+            node_modules/.vite
+            .vite
+          key: ${{ runner.os }}-vite-build-${{ hashFiles('package-lock.json') }}-${{ hashFiles('vite.config.*', 'src/**/*', 'public/**/*', 'index.html') }}
+          restore-keys: |
+            ${{ runner.os }}-vite-build-${{ hashFiles('package-lock.json') }}-
+            ${{ runner.os }}-vite-build-
+
+      - name: Install dependencies
+        run: npm ci --prefer-offline --no-audit --progress=false
+
+      - name: Build app
+        run: npm run build
         env:
           NODE_ENV: production
-          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL || 'https://placeholder.supabase.co' }}
-          VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY || 'placeholder' }}
+
       - name: Bundle size report
         run: |
-          echo "## 🏗️ Build Summary" >> $GITHUB_STEP_SUMMARY
-          echo "| Metric | Size |" >> $GITHUB_STEP_SUMMARY
-          echo "|--------|------|" >> $GITHUB_STEP_SUMMARY
-          echo "| Total | $(du -sh dist/ | cut -f1) |" >> $GITHUB_STEP_SUMMARY
-          echo "| JS | $(find dist -name '*.js' -exec du -ch {} + 2>/dev/null | tail -1 | cut -f1) |" >> $GITHUB_STEP_SUMMARY
-          echo "| CSS | $(find dist -name '*.css' -exec du -ch {} + 2>/dev/null | tail -1 | cut -f1) |" >> $GITHUB_STEP_SUMMARY
-      - uses: actions/upload-artifact@v4
+          echo "## Build Summary" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Metric | Size |" >> "$GITHUB_STEP_SUMMARY"
+          echo "|--------|------|" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Total | $(du -sh dist | cut -f1) |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| JS | $(find dist -name '*.js' -type f -exec du -ch {} + 2>/dev/null | tail -1 | cut -f1) |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| CSS | $(find dist -name '*.css' -type f -exec du -ch {} + 2>/dev/null | tail -1 | cut -f1) |" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload dist
+        uses: actions/upload-artifact@v4
         with:
           name: dist
           path: dist/
           retention-days: 7
 
-  # ── E2E (Playwright) ──────────────────────────────────────────────────────
   e2e:
     name: 🎭 E2E (Playwright)
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     needs: [build]
+
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: npm
-      - run: npm ci
-      - run: npx playwright install --with-deps chromium
-      - uses: actions/download-artifact@v4
+
+      - name: Cache Playwright
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-playwright-
+
+      - name: Install dependencies
+        run: npm ci --prefer-offline --no-audit --progress=false
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: Download dist
+        uses: actions/download-artifact@v4
         with:
           name: dist
           path: dist/
-      - name: Serve & test
+
+      - name: Serve app and run tests
         run: |
           npx serve dist -l 8080 &
-          npx wait-on http://localhost:8080 --timeout 30000
+          npx wait-on http://127.0.0.1:8080 --timeout 60000
           npx playwright test --project=chromium
         env:
-          PLAYWRIGHT_BASE_URL: http://localhost:8080
-          CI: true
-      - uses: actions/upload-artifact@v4
+          PLAYWRIGHT_BASE_URL: http://127.0.0.1:8080
+
+      - name: Upload Playwright report
         if: failure()
+        uses: actions/upload-artifact@v4
         with:
           name: playwright-report
-          path: playwright-report/
+          path: |
+            playwright-report/
+            test-results/
           retention-days: 14
 
-  # ── Lighthouse ─────────────────────────────────────────────────────────────
   lighthouse:
     name: 🔦 Lighthouse
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     needs: [build]
     if: github.event_name == 'pull_request'
+
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: npm
-      - run: npm ci
-      - uses: actions/download-artifact@v4
+
+      - name: Install dependencies
+        run: npm ci --prefer-offline --no-audit --progress=false
+
+      - name: Download dist
+        uses: actions/download-artifact@v4
         with:
           name: dist
           path: dist/
-      - name: Lighthouse audit
+
+      - name: Run Lighthouse
         run: |
           npx serve dist -l 8080 &
-          npx wait-on http://localhost:8080 --timeout 30000
-          npx lighthouse http://localhost:8080 --chrome-flags="--headless --no-sandbox" --output=json --output-path=lighthouse.json --quiet
+          npx wait-on http://127.0.0.1:8080 --timeout 60000
+          npx lighthouse http://127.0.0.1:8080 \
+            --chrome-flags="--headless --no-sandbox" \
+            --output=json \
+            --output-path=lighthouse.json \
+            --quiet
         continue-on-error: true
-      - name: Report scores
+
+      - name: Publish Lighthouse scores
         if: always()
         run: |
           if [ -f lighthouse.json ]; then
             node -e "
-              const r = require('./lighthouse.json');
+              const fs = require('fs');
+              const r = JSON.parse(fs.readFileSync('lighthouse.json', 'utf8'));
               const s = r.categories;
-              console.log('## 🔦 Lighthouse Scores');
+              console.log('## Lighthouse Scores');
               console.log('| Category | Score |');
               console.log('|----------|-------|');
-              Object.entries(s).forEach(([k,v]) => console.log('| ' + v.title + ' | ' + Math.round(v.score*100) + ' |'));
-            " >> $GITHUB_STEP_SUMMARY
+              Object.values(s).forEach(v => console.log('| ' + v.title + ' | ' + Math.round(v.score * 100) + ' |'));
+            " >> "$GITHUB_STEP_SUMMARY"
           fi
 
-  # ── Load Tests (k6) ───────────────────────────────────────────────────────
-  load-test:
-    name: 📊 Load Test (k6)
+  deploy-vercel:
+    name: 🚀 Deploy to Vercel
     runs-on: ubuntu-latest
-    needs: [build]
-    if: github.ref == 'refs/heads/main'
-    steps:
-      - uses: actions/checkout@v4
-      - uses: grafana/setup-k6-action@v1
-      - uses: actions/download-artifact@v4
-        with:
-          name: dist
-          path: dist/
-      - name: Start server
-        run: |
-          npx serve dist -l 8080 &
-          npx wait-on http://localhost:8080 --timeout 30000
-      - name: k6 smoke
-        run: k6 run --vus 5 --duration 30s tests/k6/load-test.js
-        env:
-          BASE_URL: http://localhost:8080
-        continue-on-error: true
-
-  # ── Deploy ─────────────────────────────────────────────────────────────────
-  deploy:
-    name: 🚀 Deploy
-    runs-on: ubuntu-latest
-    needs: [build, e2e, security]
+    timeout-minutes: 15
+    needs: [build, e2e, security-secrets]
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     environment: production
+    env:
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/download-artifact@v4
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Ensure Vercel secrets exist
+        run: |
+          if [ -z "$VERCEL_TOKEN" ] || [ -z "$VERCEL_ORG_ID" ] || [ -z "$VERCEL_PROJECT_ID" ]; then
+            echo "Missing Vercel secrets."
+            exit 1
+          fi
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci --prefer-offline --no-audit --progress=false
+
+      - name: Download dist
+        uses: actions/download-artifact@v4
         with:
           name: dist
           path: dist/
-      - name: Deploy info
-        run: |
-          echo "## 🚀 Deployment" >> $GITHUB_STEP_SUMMARY
-          echo "- **Commit:** ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
-          echo "- **Branch:** ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
-          echo "- **Actor:** ${{ github.actor }}" >> $GITHUB_STEP_SUMMARY
-          echo "- **Deployed at:** $(date -u)" >> $GITHUB_STEP_SUMMARY
 
-  # ── Merge Gate ─────────────────────────────────────────────────────────────
+      - name: Install Vercel CLI
+        run: npm install -g vercel@latest
+
+      - name: Pull Vercel environment
+        run: vercel pull --yes --environment=production --token="$VERCEL_TOKEN"
+
+      - name: Deploy prebuilt output
+        run: vercel deploy --prebuilt --prod --token="$VERCEL_TOKEN"
+
+      - name: Deployment summary
+        run: |
+          echo "## Deployment" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Commit: ${{ github.sha }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Branch: ${{ github.ref_name }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Actor: ${{ github.actor }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Date: $(date -u)" >> "$GITHUB_STEP_SUMMARY"
+
   merge-gate:
     name: ✅ Merge Gate
     runs-on: ubuntu-latest
-    needs: [lint, test, build, security]
     if: always()
+    needs:
+      - lint
+      - unit-tests
+      - security-secrets
+      - dependency-review
+      - codeql
+      - build
+      - e2e
+
     steps:
-      - name: Evaluate
+      - name: Evaluate pipeline
         run: |
-          echo "## Pipeline Summary" >> $GITHUB_STEP_SUMMARY
-          echo "| Job | Result |" >> $GITHUB_STEP_SUMMARY
-          echo "|-----|--------|" >> $GITHUB_STEP_SUMMARY
-          echo "| Lint | ${{ needs.lint.result }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| Test | ${{ needs.test.result }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| Build | ${{ needs.build.result }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| Security | ${{ needs.security.result }} |" >> $GITHUB_STEP_SUMMARY
-          if [ "${{ needs.lint.result }}" != "success" ] || [ "${{ needs.build.result }}" != "success" ]; then
-            echo "❌ Merge blocked" >> $GITHUB_STEP_SUMMARY
+          echo "## Pipeline Summary" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Job | Result |" >> "$GITHUB_STEP_SUMMARY"
+          echo "|-----|--------|" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Lint | ${{ needs.lint.result }} |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Unit Tests | ${{ needs.unit-tests.result }} |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Secrets Check | ${{ needs.security-secrets.result }} |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Dependency Review | ${{ needs.dependency-review.result || 'skipped' }} |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| CodeQL | ${{ needs.codeql.result }} |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Build | ${{ needs.build.result }} |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| E2E | ${{ needs.e2e.result }} |" >> "$GITHUB_STEP_SUMMARY"
+
+          if [ "${{ needs.lint.result }}" != "success" ] || \
+             [ "${{ needs.unit-tests.result }}" != "success" ] || \
+             [ "${{ needs.build.result }}" != "success" ] || \
+             [ "${{ needs.e2e.result }}" != "success" ] || \
+             [ "${{ needs.security-secrets.result }}" != "success" ] || \
+             [ "${{ needs.codeql.result }}" != "success" ]; then
+            echo "❌ Merge blocked" >> "$GITHUB_STEP_SUMMARY"
             exit 1
           fi
-          echo "✅ All checks passed" >> $GITHUB_STEP_SUMMARY
+
+          echo "✅ All required checks passed" >> "$GITHUB_STEP_SUMMARY"
