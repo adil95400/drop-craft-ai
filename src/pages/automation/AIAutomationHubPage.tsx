@@ -1,6 +1,5 @@
 /**
- * AI Automation Hub - Centre de commande IA pour l'automatisation
- * Regroupe les actions IA automatisées, les recommandations et le monitoring
+ * AI Automation Hub - Données réelles depuis ai_auto_action_configs + ai_auto_action_logs
  */
 import { useState } from 'react';
 import { Helmet } from 'react-helmet-async';
@@ -11,94 +10,105 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Progress } from '@/components/ui/progress';
+import { Skeleton } from '@/components/ui/skeleton';
 import {
   Brain, Sparkles, Zap, TrendingUp, Bot, RefreshCw,
   CheckCircle2, XCircle, Clock, Activity, BarChart3,
-  Wand2, FileText, DollarSign, Package, Target
+  FileText, DollarSign, Package, Target, Loader2, Plus
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import { useUnifiedAuth } from '@/contexts/UnifiedAuthContext';
+import { toast } from 'sonner';
+import { formatDistanceToNow } from 'date-fns';
+import { fr } from 'date-fns/locale';
+import { ModuleInterconnectionBanner } from '@/components/cross-module/ModuleInterconnectionBanner';
 
-// Mock data pour les agents IA
-const AI_AGENTS = [
-  {
-    id: 'content-optimizer',
-    name: 'Optimiseur de Contenu',
-    description: 'Améliore automatiquement les titres et descriptions produits pour le SEO',
-    icon: FileText,
-    status: 'active' as const,
-    actionsToday: 47,
-    successRate: 94.2,
-    lastRun: '2026-03-07T14:30:00Z',
-    category: 'content'
-  },
-  {
-    id: 'price-optimizer',
-    name: 'Optimiseur de Prix',
-    description: 'Ajuste les prix en fonction de la concurrence et de la demande',
-    icon: DollarSign,
-    status: 'active' as const,
-    actionsToday: 23,
-    successRate: 97.8,
-    lastRun: '2026-03-07T15:00:00Z',
-    category: 'pricing'
-  },
-  {
-    id: 'stock-predictor',
-    name: 'Prédicteur de Stock',
-    description: 'Anticipe les ruptures et déclenche les réapprovisionnements',
-    icon: Package,
-    status: 'paused' as const,
-    actionsToday: 0,
-    successRate: 91.5,
-    lastRun: '2026-03-06T18:00:00Z',
-    category: 'inventory'
-  },
-  {
-    id: 'ad-optimizer',
-    name: 'Optimiseur Publicitaire',
-    description: 'Gère automatiquement les enchères et budgets publicitaires',
-    icon: Target,
-    status: 'active' as const,
-    actionsToday: 156,
-    successRate: 88.3,
-    lastRun: '2026-03-07T15:15:00Z',
-    category: 'marketing'
-  },
-  {
-    id: 'quality-auditor',
-    name: 'Auditeur Qualité',
-    description: 'Détecte et corrige les problèmes de qualité dans le catalogue',
-    icon: CheckCircle2,
-    status: 'active' as const,
-    actionsToday: 12,
-    successRate: 96.1,
-    lastRun: '2026-03-07T12:00:00Z',
-    category: 'quality'
-  },
-];
-
-const RECENT_ACTIONS = [
-  { id: '1', agent: 'Optimiseur de Contenu', action: 'Titre optimisé', target: 'Casque Bluetooth Pro X3', result: 'success', time: 'Il y a 5 min', impact: '+12% CTR estimé' },
-  { id: '2', agent: 'Optimiseur de Prix', action: 'Prix ajusté', target: 'Chargeur USB-C 65W', result: 'success', time: 'Il y a 12 min', impact: '+3.2€ marge' },
-  { id: '3', agent: 'Optimiseur Publicitaire', action: 'Budget réalloué', target: 'Campagne Black Friday', result: 'success', time: 'Il y a 18 min', impact: '+15% ROAS' },
-  { id: '4', agent: 'Auditeur Qualité', action: 'Image manquante détectée', target: 'Montre Connectée Sport', result: 'warning', time: 'Il y a 25 min', impact: 'Action requise' },
-  { id: '5', agent: 'Optimiseur de Contenu', action: 'Description enrichie', target: 'Écouteurs Sans Fil ANC', result: 'success', time: 'Il y a 32 min', impact: '+8% conversion' },
-];
+const ACTION_TYPE_META: Record<string, { icon: any; label: string; color: string }> = {
+  'content-optimizer': { icon: FileText, label: 'Optimiseur de Contenu', color: 'text-blue-500' },
+  'price-optimizer': { icon: DollarSign, label: 'Optimiseur de Prix', color: 'text-green-500' },
+  'stock-predictor': { icon: Package, label: 'Prédicteur de Stock', color: 'text-amber-500' },
+  'ad-optimizer': { icon: Target, label: 'Optimiseur Publicitaire', color: 'text-purple-500' },
+  'quality-auditor': { icon: CheckCircle2, label: 'Auditeur Qualité', color: 'text-primary' },
+};
 
 export default function AIAutomationHubPage() {
-  const [agents, setAgents] = useState(AI_AGENTS);
+  const { user } = useUnifiedAuth();
+  const queryClient = useQueryClient();
 
-  const toggleAgent = (agentId: string) => {
-    setAgents(prev => prev.map(a =>
-      a.id === agentId
-        ? { ...a, status: a.status === 'active' ? 'paused' as const : 'active' as const }
-        : a
-    ));
-  };
+  // Fetch AI agent configs from DB
+  const { data: configs = [], isLoading } = useQuery({
+    queryKey: ['ai-automation-configs'],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from('ai_auto_action_configs')
+        .select('*')
+        .order('created_at', { ascending: false });
+      return data || [];
+    },
+  });
 
-  const totalActions = agents.reduce((sum, a) => sum + a.actionsToday, 0);
-  const activeAgents = agents.filter(a => a.status === 'active').length;
-  const avgSuccess = agents.reduce((sum, a) => sum + a.successRate, 0) / agents.length;
+  // Fetch recent action logs
+  const { data: recentLogs = [] } = useQuery({
+    queryKey: ['ai-automation-logs'],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from('ai_auto_action_logs')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(20);
+      return data || [];
+    },
+  });
+
+  // Fetch AI recommendations
+  const { data: recommendations = [] } = useQuery({
+    queryKey: ['ai-automation-recommendations'],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from('ai_recommendations')
+        .select('*')
+        .eq('status', 'pending')
+        .order('confidence_score', { ascending: false })
+        .limit(10);
+      return data || [];
+    },
+  });
+
+  // Toggle agent
+  const toggleMutation = useMutation({
+    mutationFn: async ({ id, enabled }: { id: string; enabled: boolean }) => {
+      const { error } = await supabase
+        .from('ai_auto_action_configs')
+        .update({ is_enabled: enabled, updated_at: new Date().toISOString() })
+        .eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['ai-automation-configs'] });
+      toast.success('Agent mis à jour');
+    },
+  });
+
+  // Stats from real data
+  const activeAgents = configs.filter(c => c.is_enabled).length;
+  const totalActionsToday = configs.reduce((s, c) => s + (c.actions_today || 0), 0);
+  const successfulLogs = recentLogs.filter(l => l.status === 'applied');
+  const avgSuccess = recentLogs.length > 0
+    ? Math.round((successfulLogs.length / recentLogs.length) * 100)
+    : 0;
+
+  if (isLoading) {
+    return (
+      <ChannablePageWrapper title="Hub IA" description="Chargement..." heroImage="ai" badge={{ label: 'IA Pro', icon: Brain }}>
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+          {[1, 2, 3, 4].map(i => <Skeleton key={i} className="h-20" />)}
+        </div>
+        <Skeleton className="h-96" />
+      </ChannablePageWrapper>
+    );
+  }
 
   return (
     <>
@@ -113,6 +123,8 @@ export default function AIAutomationHubPage() {
         heroImage="ai"
         badge={{ label: 'IA Pro', icon: Brain }}
       >
+        <ModuleInterconnectionBanner currentModule="automation" />
+
         {/* KPIs */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
           <Card>
@@ -120,7 +132,7 @@ export default function AIAutomationHubPage() {
               <div className="flex items-center gap-2 text-muted-foreground text-sm mb-1">
                 <Bot className="h-4 w-4" /> Agents actifs
               </div>
-              <div className="text-2xl font-bold text-foreground">{activeAgents}/{agents.length}</div>
+              <div className="text-2xl font-bold text-foreground">{activeAgents}/{configs.length}</div>
             </CardContent>
           </Card>
           <Card>
@@ -128,7 +140,7 @@ export default function AIAutomationHubPage() {
               <div className="flex items-center gap-2 text-muted-foreground text-sm mb-1">
                 <Zap className="h-4 w-4" /> Actions aujourd'hui
               </div>
-              <div className="text-2xl font-bold text-foreground">{totalActions}</div>
+              <div className="text-2xl font-bold text-foreground">{totalActionsToday}</div>
             </CardContent>
           </Card>
           <Card>
@@ -136,82 +148,96 @@ export default function AIAutomationHubPage() {
               <div className="flex items-center gap-2 text-muted-foreground text-sm mb-1">
                 <TrendingUp className="h-4 w-4" /> Taux de succès
               </div>
-              <div className="text-2xl font-bold text-foreground">{avgSuccess.toFixed(1)}%</div>
+              <div className="text-2xl font-bold text-foreground">{avgSuccess}%</div>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="pt-4 pb-3">
               <div className="flex items-center gap-2 text-muted-foreground text-sm mb-1">
-                <Activity className="h-4 w-4" /> Économies estimées
+                <Sparkles className="h-4 w-4" /> Recommandations
               </div>
-              <div className="text-2xl font-bold text-green-600">+2 340€</div>
+              <div className="text-2xl font-bold text-foreground">{recommendations.length}</div>
             </CardContent>
           </Card>
         </div>
 
         <Tabs defaultValue="agents" className="space-y-4">
           <TabsList>
-            <TabsTrigger value="agents" className="gap-1.5">
-              <Bot className="h-4 w-4" /> Agents IA
-            </TabsTrigger>
-            <TabsTrigger value="activity" className="gap-1.5">
-              <Activity className="h-4 w-4" /> Activité
-            </TabsTrigger>
-            <TabsTrigger value="insights" className="gap-1.5">
-              <Sparkles className="h-4 w-4" /> Insights
-            </TabsTrigger>
+            <TabsTrigger value="agents" className="gap-1.5"><Bot className="h-4 w-4" /> Agents IA</TabsTrigger>
+            <TabsTrigger value="activity" className="gap-1.5"><Activity className="h-4 w-4" /> Activité</TabsTrigger>
+            <TabsTrigger value="insights" className="gap-1.5"><Sparkles className="h-4 w-4" /> Insights</TabsTrigger>
           </TabsList>
 
           {/* Agents IA */}
           <TabsContent value="agents">
-            <div className="grid gap-4">
-              {agents.map(agent => {
-                const Icon = agent.icon;
-                return (
-                  <Card key={agent.id}>
-                    <CardContent className="py-4">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-4 flex-1">
-                          <div className={cn(
-                            'p-2.5 rounded-lg',
-                            agent.status === 'active' ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'
-                          )}>
-                            <Icon className="h-5 w-5" />
-                          </div>
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2">
-                              <h3 className="font-semibold text-foreground">{agent.name}</h3>
-                              <Badge variant={agent.status === 'active' ? 'default' : 'secondary'} className="text-xs">
-                                {agent.status === 'active' ? 'Actif' : 'En pause'}
-                              </Badge>
+            {configs.length === 0 ? (
+              <Card>
+                <CardContent className="py-12 text-center">
+                  <Bot className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                  <h3 className="text-lg font-semibold text-foreground mb-2">Aucun agent configuré</h3>
+                  <p className="text-muted-foreground mb-4">Configurez vos premiers agents IA pour automatiser votre boutique.</p>
+                </CardContent>
+              </Card>
+            ) : (
+              <div className="grid gap-4">
+                {configs.map(config => {
+                  const meta = ACTION_TYPE_META[config.action_type] || {
+                    icon: Brain,
+                    label: config.action_type,
+                    color: 'text-muted-foreground',
+                  };
+                  const Icon = meta.icon;
+                  const isActive = config.is_enabled;
+
+                  return (
+                    <Card key={config.id}>
+                      <CardContent className="py-4">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-4 flex-1">
+                            <div className={cn(
+                              'p-2.5 rounded-lg',
+                              isActive ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'
+                            )}>
+                              <Icon className="h-5 w-5" />
                             </div>
-                            <p className="text-sm text-muted-foreground mt-0.5">{agent.description}</p>
-                            <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground">
-                              <span className="flex items-center gap-1">
-                                <Zap className="h-3 w-3" /> {agent.actionsToday} actions
-                              </span>
-                              <span className="flex items-center gap-1">
-                                <CheckCircle2 className="h-3 w-3" /> {agent.successRate}% succès
-                              </span>
+                            <div className="flex-1">
+                              <div className="flex items-center gap-2">
+                                <h3 className="font-semibold text-foreground">{meta.label}</h3>
+                                <Badge variant={isActive ? 'default' : 'secondary'} className="text-xs">
+                                  {isActive ? 'Actif' : 'En pause'}
+                                </Badge>
+                              </div>
+                              <p className="text-sm text-muted-foreground mt-0.5">
+                                Scope: {config.scope || 'global'} · Seuil: {(config.threshold_score || 0) * 100}%
+                              </p>
+                              <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground">
+                                <span className="flex items-center gap-1">
+                                  <Zap className="h-3 w-3" /> {config.actions_today || 0} actions aujourd'hui
+                                </span>
+                                <span className="flex items-center gap-1">
+                                  <Clock className="h-3 w-3" /> Max {config.max_daily_actions || '∞'}/jour
+                                </span>
+                                {config.last_run_at && (
+                                  <span className="flex items-center gap-1">
+                                    <RefreshCw className="h-3 w-3" />
+                                    {formatDistanceToNow(new Date(config.last_run_at), { addSuffix: true, locale: fr })}
+                                  </span>
+                                )}
+                              </div>
                             </div>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-3">
-                          <div className="text-right hidden md:block">
-                            <div className="text-xs text-muted-foreground">Taux de succès</div>
-                            <Progress value={agent.successRate} className="w-24 h-1.5 mt-1" />
                           </div>
                           <Switch
-                            checked={agent.status === 'active'}
-                            onCheckedChange={() => toggleAgent(agent.id)}
+                            checked={isActive}
+                            onCheckedChange={(checked) => toggleMutation.mutate({ id: config.id, enabled: checked })}
+                            disabled={toggleMutation.isPending}
                           />
                         </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                );
-              })}
-            </div>
+                      </CardContent>
+                    </Card>
+                  );
+                })}
+              </div>
+            )}
           </TabsContent>
 
           {/* Activité récente */}
@@ -219,31 +245,42 @@ export default function AIAutomationHubPage() {
             <Card>
               <CardHeader>
                 <CardTitle className="text-lg">Actions récentes</CardTitle>
-                <CardDescription>Historique des actions automatisées par les agents IA</CardDescription>
+                <CardDescription>Historique des {recentLogs.length} dernières actions automatisées</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="space-y-3">
-                  {RECENT_ACTIONS.map(action => (
-                    <div key={action.id} className="flex items-center justify-between py-2 border-b border-border last:border-0">
-                      <div className="flex items-center gap-3">
-                        {action.result === 'success' ? (
-                          <CheckCircle2 className="h-4 w-4 text-green-500" />
-                        ) : (
-                          <Clock className="h-4 w-4 text-amber-500" />
-                        )}
-                        <div>
-                          <div className="text-sm font-medium text-foreground">
-                            {action.action} — <span className="text-muted-foreground">{action.target}</span>
+                {recentLogs.length === 0 ? (
+                  <div className="text-center py-8 text-muted-foreground">
+                    Aucune action enregistrée
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {recentLogs.map(log => (
+                      <div key={log.id} className="flex items-center justify-between py-2 border-b border-border last:border-0">
+                        <div className="flex items-center gap-3">
+                          {log.status === 'applied' ? (
+                            <CheckCircle2 className="h-4 w-4 text-green-500 shrink-0" />
+                          ) : log.status === 'reverted' ? (
+                            <XCircle className="h-4 w-4 text-destructive shrink-0" />
+                          ) : (
+                            <Clock className="h-4 w-4 text-amber-500 shrink-0" />
+                          )}
+                          <div>
+                            <div className="text-sm font-medium text-foreground">
+                              {log.action_type} — {log.field_name || 'N/A'}
+                            </div>
+                            <div className="text-xs text-muted-foreground">
+                              {log.old_value && `${log.old_value} → `}{log.new_value || ''}
+                              {log.confidence_score && ` · Confiance: ${Math.round(log.confidence_score * 100)}%`}
+                            </div>
                           </div>
-                          <div className="text-xs text-muted-foreground">{action.agent} · {action.time}</div>
+                        </div>
+                        <div className="text-xs text-muted-foreground">
+                          {formatDistanceToNow(new Date(log.created_at), { addSuffix: true, locale: fr })}
                         </div>
                       </div>
-                      <Badge variant="outline" className="text-xs">
-                        {action.impact}
-                      </Badge>
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
@@ -254,47 +291,65 @@ export default function AIAutomationHubPage() {
               <Card>
                 <CardHeader>
                   <CardTitle className="text-lg flex items-center gap-2">
-                    <Sparkles className="h-5 w-5 text-primary" /> Recommandations
+                    <Sparkles className="h-5 w-5 text-primary" /> Recommandations actives
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
-                  {[
-                    { text: '23 produits pourraient bénéficier d\'une réécriture IA des descriptions', priority: 'high' },
-                    { text: 'L\'agent de pricing a identifié 8 produits sous-évalués', priority: 'medium' },
-                    { text: 'Activez le prédicteur de stock pour éviter les ruptures du week-end', priority: 'low' },
-                  ].map((rec, i) => (
-                    <div key={i} className="flex items-start gap-2 p-2 rounded-md bg-muted/50">
-                      <div className={cn(
-                        'w-2 h-2 rounded-full mt-1.5 shrink-0',
-                        rec.priority === 'high' ? 'bg-destructive' : rec.priority === 'medium' ? 'bg-amber-500' : 'bg-blue-500'
-                      )} />
-                      <span className="text-sm text-foreground">{rec.text}</span>
+                  {recommendations.length === 0 ? (
+                    <div className="text-center py-4 text-muted-foreground text-sm">
+                      Aucune recommandation en attente
                     </div>
-                  ))}
+                  ) : (
+                    recommendations.slice(0, 5).map(rec => (
+                      <div key={rec.id} className="flex items-start gap-2 p-2 rounded-md bg-muted/50">
+                        <div className={cn(
+                          'w-2 h-2 rounded-full mt-1.5 shrink-0',
+                          rec.confidence_score >= 0.8 ? 'bg-destructive' :
+                            rec.confidence_score >= 0.5 ? 'bg-amber-500' : 'bg-blue-500'
+                        )} />
+                        <div className="flex-1">
+                          <span className="text-sm font-medium text-foreground">{rec.title}</span>
+                          {rec.description && (
+                            <p className="text-xs text-muted-foreground mt-0.5">{rec.description}</p>
+                          )}
+                          <div className="text-xs text-muted-foreground mt-1">
+                            Confiance: {Math.round(rec.confidence_score * 100)}%
+                            {rec.impact_estimate && ` · Impact: ${rec.impact_estimate}`}
+                          </div>
+                        </div>
+                      </div>
+                    ))
+                  )}
                 </CardContent>
               </Card>
               <Card>
                 <CardHeader>
                   <CardTitle className="text-lg flex items-center gap-2">
-                    <BarChart3 className="h-5 w-5 text-primary" /> Performance 7 jours
+                    <BarChart3 className="h-5 w-5 text-primary" /> Statistiques agents
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    {[
-                      { label: 'Actions exécutées', value: '1 247', trend: '+18%' },
-                      { label: 'Taux de succès moyen', value: '93.6%', trend: '+2.1%' },
-                      { label: 'Revenus générés (IA)', value: '4 820€', trend: '+34%' },
-                      { label: 'Temps économisé', value: '42h', trend: '+12h' },
-                    ].map((stat, i) => (
-                      <div key={i} className="flex items-center justify-between">
-                        <span className="text-sm text-muted-foreground">{stat.label}</span>
-                        <div className="flex items-center gap-2">
-                          <span className="font-semibold text-foreground">{stat.value}</span>
-                          <Badge variant="outline" className="text-xs text-green-600">{stat.trend}</Badge>
-                        </div>
-                      </div>
-                    ))}
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-muted-foreground">Agents configurés</span>
+                      <span className="font-semibold text-foreground">{configs.length}</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-muted-foreground">Agents actifs</span>
+                      <span className="font-semibold text-foreground">{activeAgents}</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-muted-foreground">Actions totales (logs)</span>
+                      <span className="font-semibold text-foreground">{recentLogs.length}</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-muted-foreground">Taux de succès</span>
+                      <span className="font-semibold text-foreground">{avgSuccess}%</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-muted-foreground">Recommandations en attente</span>
+                      <span className="font-semibold text-foreground">{recommendations.length}</span>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
