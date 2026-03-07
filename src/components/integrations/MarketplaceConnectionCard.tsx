@@ -34,7 +34,7 @@ interface MarketplaceConfig {
   }[];
 }
 
-const MARKETPLACE_CONFIGS: MarketplaceConfig[] = [
+export const MARKETPLACE_CONFIGS: MarketplaceConfig[] = [
   {
     id: 'amazon',
     name: 'Amazon Seller',
@@ -91,7 +91,65 @@ const MARKETPLACE_CONFIGS: MarketplaceConfig[] = [
       { key: 'apiKey', label: 'API Key', type: 'text', required: true },
       { key: 'sellerId', label: 'Seller ID', type: 'text', required: true },
     ]
-  }
+  },
+  {
+    id: 'woocommerce',
+    name: 'WooCommerce',
+    icon: '🔷',
+    color: 'bg-violet-500',
+    credentialFields: [
+      { key: 'storeUrl', label: 'URL de la boutique', type: 'text', required: true, placeholder: 'https://monsite.com' },
+      { key: 'consumerKey', label: 'Consumer Key', type: 'text', required: true, placeholder: 'ck_...' },
+      { key: 'consumerSecret', label: 'Consumer Secret', type: 'password', required: true, placeholder: 'cs_...' },
+    ]
+  },
+  {
+    id: 'tiktok',
+    name: 'TikTok Shop',
+    icon: '🎵',
+    color: 'bg-black',
+    regions: [
+      { code: 'US', name: 'TikTok Shop US' },
+      { code: 'GB', name: 'TikTok Shop UK' },
+      { code: 'ID', name: 'TikTok Shop ID' },
+      { code: 'TH', name: 'TikTok Shop TH' },
+      { code: 'MY', name: 'TikTok Shop MY' },
+    ],
+    credentialFields: [
+      { key: 'appId', label: 'App ID', type: 'text', required: true },
+      { key: 'appSecret', label: 'App Secret', type: 'password', required: true },
+      { key: 'accessToken', label: 'Access Token', type: 'password', required: true },
+    ]
+  },
+  {
+    id: 'alibaba',
+    name: 'Alibaba / 1688',
+    icon: '🏭',
+    color: 'bg-amber-500',
+    credentialFields: [
+      { key: 'appKey', label: 'App Key', type: 'text', required: true },
+      { key: 'appSecret', label: 'App Secret', type: 'password', required: true },
+      { key: 'memberId', label: 'Member ID', type: 'text', required: false, placeholder: 'Optionnel' },
+    ]
+  },
+  {
+    id: 'printify',
+    name: 'Printify',
+    icon: '🎨',
+    color: 'bg-green-500',
+    credentialFields: [
+      { key: 'personalAccessToken', label: 'Personal Access Token', type: 'password', required: true, placeholder: 'Depuis Printify > Settings > Connections' },
+    ]
+  },
+  {
+    id: 'printful',
+    name: 'Printful',
+    icon: '👕',
+    color: 'bg-indigo-500',
+    credentialFields: [
+      { key: 'personalAccessToken', label: 'API Key', type: 'password', required: true, placeholder: 'Depuis Printful > Dashboard > API' },
+    ]
+  },
 ];
 
 interface MarketplaceConnectionCardProps {
@@ -410,4 +468,4 @@ export function MarketplaceConnectionCard({ platform }: MarketplaceConnectionCar
   );
 }
 
-export { MARKETPLACE_CONFIGS };
+// MARKETPLACE_CONFIGS is already exported at declaration

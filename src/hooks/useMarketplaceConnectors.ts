@@ -2,7 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
-export type MarketplaceType = 'amazon' | 'ebay' | 'aliexpress' | 'cdiscount';
+export type MarketplaceType = 'amazon' | 'ebay' | 'aliexpress' | 'cdiscount' | 'woocommerce' | 'tiktok' | 'alibaba' | 'printify' | 'printful';
 
 export interface MarketplaceCredentials {
   // Amazon
@@ -23,6 +23,16 @@ export interface MarketplaceCredentials {
   // Cdiscount
   apiKey?: string;
   sellerId?: string;
+  // WooCommerce
+  storeUrl?: string;
+  consumerKey?: string;
+  consumerSecret?: string;
+  // TikTok Shop
+  appId?: string;
+  // Alibaba / 1688
+  memberId?: string;
+  // Printify / Printful
+  personalAccessToken?: string;
 }
 
 export interface MarketplaceConnection {
