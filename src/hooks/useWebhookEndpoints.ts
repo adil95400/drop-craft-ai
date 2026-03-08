@@ -32,6 +32,9 @@ export interface WebhookEvent {
   error_message: string | null;
   processed_at: string | null;
   created_at: string;
+  retry_count: number;
+  max_retries: number;
+  next_retry_at: string | null;
 }
 
 export function useWebhookEndpoints() {

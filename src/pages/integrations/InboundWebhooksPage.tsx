@@ -37,6 +37,7 @@ const STATUS_CONFIG: Record<string, { icon: React.ReactNode; color: string }> = 
   processing: { icon: <RefreshCw className="h-3 w-3 animate-spin" />, color: 'bg-yellow-500/10 text-yellow-500' },
   processed: { icon: <CheckCircle2 className="h-3 w-3" />, color: 'bg-green-500/10 text-green-500' },
   failed: { icon: <XCircle className="h-3 w-3" />, color: 'bg-destructive/10 text-destructive' },
+  retrying: { icon: <RefreshCw className="h-3 w-3 animate-spin" />, color: 'bg-orange-500/10 text-orange-500' },
 };
 
 function getWebhookUrl(endpointId: string) {
@@ -179,7 +180,8 @@ function EndpointCard({ endpoint, onToggle, onDelete }: {
 
 function EventRow({ event }: { event: WebhookEvent }) {
   const [expanded, setExpanded] = useState(false);
-  const statusCfg = STATUS_CONFIG[event.status] || STATUS_CONFIG.received;
+  const displayStatus = event.status === 'failed' && event.next_retry_at ? 'retrying' : event.status;
+  const statusCfg = STATUS_CONFIG[displayStatus] || STATUS_CONFIG.received;
 
   return (
     <div className="border-b border-border/40 last:border-0">
@@ -190,10 +192,16 @@ function EventRow({ event }: { event: WebhookEvent }) {
         <div className="flex items-center gap-3 min-w-0">
           <Badge className={`text-xs gap-1 ${statusCfg.color}`}>
             {statusCfg.icon}
-            {event.status}
+            {displayStatus}
           </Badge>
           <Badge variant="outline" className="text-xs">{event.platform}</Badge>
           <span className="text-sm font-mono truncate">{event.event_type}</span>
+          {event.retry_count > 0 && (
+            <Badge variant="secondary" className="text-xs gap-1">
+              <RefreshCw className="h-3 w-3" />
+              {event.retry_count}/{event.max_retries}
+            </Badge>
+          )}
         </div>
         <span className="text-xs text-muted-foreground whitespace-nowrap ml-2">
           {formatDistanceToNow(new Date(event.created_at), { addSuffix: true, locale: fr })}
@@ -205,6 +213,12 @@ function EventRow({ event }: { event: WebhookEvent }) {
             <div className="flex items-center gap-2 text-destructive text-sm">
               <AlertTriangle className="h-4 w-4" />
               {event.error_message}
+            </div>
+          )}
+          {event.next_retry_at && (
+            <div className="flex items-center gap-2 text-orange-600 text-sm">
+              <Clock className="h-4 w-4" />
+              Prochain retry : {formatDistanceToNow(new Date(event.next_retry_at), { addSuffix: true, locale: fr })}
             </div>
           )}
           <div>
