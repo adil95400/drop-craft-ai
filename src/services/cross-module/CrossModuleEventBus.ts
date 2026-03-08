@@ -21,7 +21,11 @@ export type CrossModuleEventType =
   | 'sync.completed'
   | 'sync.failed'
   | 'ai.content_generated'
-  | 'ai.recommendation_ready';
+  | 'ai.recommendation_ready'
+  | 'webhook.order_received'
+  | 'webhook.product_updated'
+  | 'webhook.inventory_changed'
+  | 'webhook.received';
 
 export interface CrossModuleEvent {
   id: string;
