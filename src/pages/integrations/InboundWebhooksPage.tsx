@@ -37,6 +37,7 @@ const STATUS_CONFIG: Record<string, { icon: React.ReactNode; color: string }> = 
   processing: { icon: <RefreshCw className="h-3 w-3 animate-spin" />, color: 'bg-yellow-500/10 text-yellow-500' },
   processed: { icon: <CheckCircle2 className="h-3 w-3" />, color: 'bg-green-500/10 text-green-500' },
   failed: { icon: <XCircle className="h-3 w-3" />, color: 'bg-destructive/10 text-destructive' },
+  retrying: { icon: <RefreshCw className="h-3 w-3 animate-spin" />, color: 'bg-orange-500/10 text-orange-500' },
 };
 
 function getWebhookUrl(endpointId: string) {
