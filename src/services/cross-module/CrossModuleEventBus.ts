@@ -21,11 +21,7 @@ export type CrossModuleEventType =
   | 'sync.completed'
   | 'sync.failed'
   | 'ai.content_generated'
-  | 'ai.recommendation_ready'
-  | 'webhook.order_received'
-  | 'webhook.product_updated'
-  | 'webhook.inventory_changed'
-  | 'webhook.received';
+  | 'ai.recommendation_ready';
 
 export interface CrossModuleEvent {
   id: string;
@@ -181,95 +177,6 @@ function generateSuggestions(type: CrossModuleEventType, data: Record<string, an
           description: `${data.count || 0} recommandations prêtes à appliquer`,
           priority: 'medium',
           actionLabel: 'Voir',
-        }
-      );
-      break;
-    case 'webhook.order_received':
-      suggestions.push(
-        {
-          id: `${Date.now()}-fulfill-webhook`,
-          targetModule: 'fulfillment',
-          targetRoute: '/orders/fulfillment',
-          icon: 'PackageCheck',
-          title: 'Nouvelle commande marketplace',
-          description: `Commande reçue via ${data.platform || 'webhook'} — à traiter`,
-          priority: 'high',
-          actionLabel: 'Traiter la commande',
-        },
-        {
-          id: `${Date.now()}-orders-view`,
-          targetModule: 'orders',
-          targetRoute: '/orders',
-          icon: 'ShoppingCart',
-          title: 'Voir les commandes',
-          description: 'Consultez le détail de la commande reçue',
-          priority: 'medium',
-          actionLabel: 'Voir',
-        }
-      );
-      break;
-
-    case 'webhook.product_updated':
-      suggestions.push(
-        {
-          id: `${Date.now()}-sync-product`,
-          targetModule: 'products',
-          targetRoute: '/products',
-          icon: 'RefreshCw',
-          title: 'Produit mis à jour',
-          description: `Un produit a été modifié sur ${data.platform || 'la marketplace'} — vérifiez la synchronisation`,
-          priority: 'medium',
-          actionLabel: 'Voir les produits',
-        },
-        {
-          id: `${Date.now()}-repricing-webhook`,
-          targetModule: 'pricing',
-          targetRoute: '/pricing-manager/repricing',
-          icon: 'DollarSign',
-          title: 'Vérifier le pricing',
-          description: 'Le produit modifié peut nécessiter un ajustement de prix',
-          priority: 'low',
-          actionLabel: 'Repricing',
-        }
-      );
-      break;
-
-    case 'webhook.inventory_changed':
-      suggestions.push(
-        {
-          id: `${Date.now()}-stock-check`,
-          targetModule: 'stock',
-          targetRoute: '/stock',
-          icon: 'Package',
-          title: 'Stock mis à jour',
-          description: `Changement de stock détecté via ${data.platform || 'webhook'} — vérifiez les niveaux`,
-          priority: 'high',
-          actionLabel: 'Voir le stock',
-        },
-        {
-          id: `${Date.now()}-supplier-reorder`,
-          targetModule: 'suppliers',
-          targetRoute: '/suppliers',
-          icon: 'Truck',
-          title: 'Réapprovisionner ?',
-          description: 'Vérifiez si un réapprovisionnement est nécessaire',
-          priority: 'medium',
-          actionLabel: 'Fournisseurs',
-        }
-      );
-      break;
-
-    case 'webhook.received':
-      suggestions.push(
-        {
-          id: `${Date.now()}-webhook-logs`,
-          targetModule: 'webhooks',
-          targetRoute: '/integrations/webhooks',
-          icon: 'Webhook',
-          title: 'Webhook reçu',
-          description: `Notification ${data.event_type || ''} reçue de ${data.platform || 'une marketplace'}`,
-          priority: 'low',
-          actionLabel: 'Voir les logs',
         }
       );
       break;

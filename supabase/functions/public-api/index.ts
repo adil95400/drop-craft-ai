@@ -230,7 +230,7 @@ Deno.serve(async (req) => {
 
       if (method === 'GET') {
         if (!hasScope(scopes, 'stock:read')) return new Response(JSON.stringify({ error: 'Scope stock:read required' }), { status: 403, headers })
-        let q = supabase.from('product_variants').select('id, sku, inventory_qty, price, product_id').eq('user_id', userId).limit(200)
+        let q = supabase.from('product_variants').select('id, sku, inventory_qty, price, product_id').limit(200)
         if (sku) q = q.eq('sku', sku)
         const { data, error } = await q
         if (error) throw error
@@ -241,7 +241,7 @@ Deno.serve(async (req) => {
           return new Response(JSON.stringify({ error: 'Scope stock:write required' }), { status: 403, headers })
         }
         const body = await req.json()
-        const { data, error } = await supabase.from('product_variants').update({ inventory_qty: body.quantity }).eq('sku', sku).eq('user_id', userId).select().single()
+        const { data, error } = await supabase.from('product_variants').update({ inventory_qty: body.quantity }).eq('sku', sku).select().single()
         if (error) throw error
         response = { variant: data }
         triggerWebhooks(supabase, userId, 'stock.updated', { sku, quantity: body.quantity })

@@ -218,16 +218,9 @@ async function processEvent(
       .eq('id', eventId)
 
   } catch (err) {
-    // Schedule first retry with exponential backoff (30s initial delay)
-    const nextRetryAt = new Date(Date.now() + 30 * 1000).toISOString()
     await supabase
       .from('webhook_events')
-      .update({
-        status: 'failed',
-        error_message: String(err),
-        retry_count: 0,
-        next_retry_at: nextRetryAt,
-      })
+      .update({ status: 'failed', error_message: String(err) })
       .eq('id', eventId)
   }
 }
