@@ -21,7 +21,11 @@ export type CrossModuleEventType =
   | 'sync.completed'
   | 'sync.failed'
   | 'ai.content_generated'
-  | 'ai.recommendation_ready';
+  | 'ai.recommendation_ready'
+  | 'webhook.order_received'
+  | 'webhook.product_updated'
+  | 'webhook.inventory_changed'
+  | 'webhook.refund_received';
 
 export interface CrossModuleEvent {
   id: string;
@@ -176,6 +180,66 @@ function generateSuggestions(type: CrossModuleEventType, data: Record<string, an
           title: 'Appliquer les recommandations IA',
           description: `${data.count || 0} recommandations prêtes à appliquer`,
           priority: 'medium',
+          actionLabel: 'Voir',
+        }
+      );
+      break;
+
+    case 'webhook.order_received':
+      suggestions.push(
+        {
+          id: `${Date.now()}-wh-order`,
+          targetModule: 'orders',
+          targetRoute: '/orders/fulfillment',
+          icon: 'PackageCheck',
+          title: 'Nouvelle commande marketplace',
+          description: `Commande reçue via ${data.platform || 'webhook'} — à traiter`,
+          priority: 'high',
+          actionLabel: 'Traiter',
+        }
+      );
+      break;
+
+    case 'webhook.product_updated':
+      suggestions.push(
+        {
+          id: `${Date.now()}-wh-product`,
+          targetModule: 'pricing',
+          targetRoute: '/pricing-manager/rules',
+          icon: 'DollarSign',
+          title: 'Produit mis à jour externalement',
+          description: `Un produit a été modifié sur ${data.platform || 'la marketplace'} — vérifiez les prix`,
+          priority: 'medium',
+          actionLabel: 'Vérifier les prix',
+        }
+      );
+      break;
+
+    case 'webhook.inventory_changed':
+      suggestions.push(
+        {
+          id: `${Date.now()}-wh-stock`,
+          targetModule: 'stock',
+          targetRoute: '/stock',
+          icon: 'AlertTriangle',
+          title: 'Stock modifié externalement',
+          description: `Changement de stock détecté sur ${data.platform || 'la marketplace'}`,
+          priority: 'high',
+          actionLabel: 'Voir le stock',
+        }
+      );
+      break;
+
+    case 'webhook.refund_received':
+      suggestions.push(
+        {
+          id: `${Date.now()}-wh-refund`,
+          targetModule: 'orders',
+          targetRoute: '/orders',
+          icon: 'RefreshCw',
+          title: 'Remboursement reçu',
+          description: `Un remboursement a été émis sur ${data.platform || 'la marketplace'}`,
+          priority: 'high',
           actionLabel: 'Voir',
         }
       );
