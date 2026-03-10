@@ -213,6 +213,15 @@ export const UnifiedAuthProvider = ({ children }: { children: React.ReactNode })
 
   // ── Initialize auth state ────────────────────────────────────────
   useEffect(() => {
+    // Safety timeout: if auth never resolves (backend down), stop loading after 8s
+    const safetyTimeout = setTimeout(() => {
+      if (!initializedRef.current) {
+        initializedRef.current = true;
+        setLoading(false);
+        logger.warn('Auth initialization timed out — backend may be unreachable');
+      }
+    }, 8000);
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         setSession(session);
@@ -251,6 +260,7 @@ export const UnifiedAuthProvider = ({ children }: { children: React.ReactNode })
         if (!initializedRef.current) {
           initializedRef.current = true;
           setLoading(false);
+          clearTimeout(safetyTimeout);
         }
       }
     );
@@ -268,6 +278,14 @@ export const UnifiedAuthProvider = ({ children }: { children: React.ReactNode })
       if (!initializedRef.current) {
         initializedRef.current = true;
         setLoading(false);
+        clearTimeout(safetyTimeout);
+      }
+    }).catch((error) => {
+      logger.warn('getSession failed', { error });
+      if (!initializedRef.current) {
+        initializedRef.current = true;
+        setLoading(false);
+        clearTimeout(safetyTimeout);
       }
     });
 
@@ -277,6 +295,7 @@ export const UnifiedAuthProvider = ({ children }: { children: React.ReactNode })
     return () => {
       subscription.unsubscribe();
       clearInterval(interval);
+      clearTimeout(safetyTimeout);
     };
   }, [checkSessionExpiry, fetchProfile, logLoginActivity]);
 
