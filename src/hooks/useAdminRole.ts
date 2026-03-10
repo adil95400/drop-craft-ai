@@ -43,7 +43,7 @@ export const useAdminRole = () => {
         
         if (error) {
           console.error('Admin check error:', error)
-          setIsAdmin(clientCheck) // Fallback sur client en cas d'erreur
+          setIsAdmin(false) // Fail closed — deny access on server error
         } else {
           // Si incohérence, utiliser la vérification serveur (source de vérité)
           const isAdminStatus = serverCheck === true
