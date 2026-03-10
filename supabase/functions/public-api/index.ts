@@ -230,7 +230,7 @@ Deno.serve(async (req) => {
 
       if (method === 'GET') {
         if (!hasScope(scopes, 'stock:read')) return new Response(JSON.stringify({ error: 'Scope stock:read required' }), { status: 403, headers })
-        let q = supabase.from('product_variants').select('id, sku, inventory_qty, price, product_id').limit(200)
+        let q = supabase.from('product_variants').select('id, sku, inventory_qty, price, product_id').eq('user_id', userId).limit(200)
         if (sku) q = q.eq('sku', sku)
         const { data, error } = await q
         if (error) throw error
