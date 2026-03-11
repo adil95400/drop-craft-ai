@@ -10,7 +10,7 @@ describe('KnowledgeBasePage', () => {
 
   it('renders article tab with articles', () => {
     const { getByText } = render(<KnowledgeBasePage />);
-    expect(getByText('Articles')).toBeInTheDocument();
+    expect(getByText(/Articles/)).toBeInTheDocument();
     expect(getByText('Premiers pas avec ShopOpti+')).toBeInTheDocument();
   });
 

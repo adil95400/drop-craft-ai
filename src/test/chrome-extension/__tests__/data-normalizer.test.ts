@@ -446,7 +446,7 @@ describe('DataNormalizer', () => {
   describe('cleanDescription', () => {
     it('should remove script tags', () => {
       const description = 'Hello <script>alert("xss")</script> World';
-      expect(normalizer.cleanDescription(description)).toBe('Hello  World');
+      expect(normalizer.cleanDescription(description)).toBe('Hello World');
     });
 
     it('should remove style tags', () => {

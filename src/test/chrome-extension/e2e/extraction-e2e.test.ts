@@ -404,7 +404,7 @@ describe('E2E: Extraction Pipeline', () => {
       // Platform-specific HD upgrades
       switch (platform) {
         case 'amazon':
-          processed = processed.replace(/\._[A-Z]+_[0-9]+_\./, '._AC_SL1500_.');
+          processed = processed.replace(/\._[A-Z]+_[A-Z0-9]+_\./, '._AC_SL1500_.');
           break;
         case 'aliexpress':
           processed = processed.replace(/_\d+x\d+/, '_800x800');
