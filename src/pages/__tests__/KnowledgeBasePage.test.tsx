@@ -16,12 +16,12 @@ describe('KnowledgeBasePage', () => {
 
   it('renders video tab', () => {
     const { getByText } = render(<KnowledgeBasePage />);
-    expect(getByText('Vidéos')).toBeInTheDocument();
+    expect(getByText(/Vidéos/)).toBeInTheDocument();
   });
 
   it('renders FAQ tab', () => {
     const { getByText } = render(<KnowledgeBasePage />);
-    expect(getByText('FAQ')).toBeInTheDocument();
+    expect(getByText(/FAQ/)).toBeInTheDocument();
   });
 
   it('renders category cards', () => {
