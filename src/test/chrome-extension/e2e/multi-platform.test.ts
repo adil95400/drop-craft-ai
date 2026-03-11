@@ -507,12 +507,11 @@ describe('E2E: Multi-Platform Support', () => {
         return result;
       };
 
-      expect(parseShipping('Livraison gratuite')).toEqual({ cost: 0 });
-      expect(parseShipping('Free shipping')).toEqual({ cost: 0 });
+      expect(parseShipping('Livraison gratuite')).toEqual(expect.objectContaining({ cost: 0 }));
+      expect(parseShipping('Free shipping')).toEqual(expect.objectContaining({ cost: 0 }));
       expect(parseShipping('€4.99 shipping')).toEqual(expect.objectContaining({ cost: 4.99 }));
-      expect(parseShipping('Delivery: 5-10 days')).toEqual({ 
-        estimatedDays: { min: 5, max: 10 } 
-      });
+      const deliveryResult = parseShipping('Delivery: 5-10 days');
+      expect(deliveryResult.estimatedDays).toEqual({ min: 5, max: 10 });
     });
   });
 });

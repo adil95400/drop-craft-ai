@@ -20,8 +20,9 @@ describe('KnowledgeBasePage', () => {
   });
 
   it('renders FAQ tab', () => {
-    const { getByText } = render(<KnowledgeBasePage />);
-    expect(getByText(/FAQ/)).toBeInTheDocument();
+    const { container } = render(<KnowledgeBasePage />);
+    const faqTab = container.querySelector('[value="faq"]');
+    expect(faqTab).toBeInTheDocument();
   });
 
   it('renders category cards', () => {
