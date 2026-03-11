@@ -89,7 +89,7 @@ export class ApiService {
   // Customers — delegates to API V1
   static async getCustomers(filters?: any) {
     try {
-      const params: any = { per_page: 500 }
+      const params: any = { per_page: 50 }
       if (filters?.search) params.q = filters.search
       const resp = await customersApi.list(params)
       return resp.items ?? []
