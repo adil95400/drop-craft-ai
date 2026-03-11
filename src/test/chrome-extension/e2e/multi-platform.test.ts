@@ -307,7 +307,7 @@ describe('E2E: Multi-Platform Support', () => {
           
           switch (plat) {
             case 'amazon':
-              result = url.replace(/\._[A-Z]+_[A-Z0-9]+_\./, '._SL1500_.');
+              result = url.replace(/\._[A-Z][A-Z0-9_]+_\./, '._SL1500_.');
               break;
             case 'aliexpress':
               result = url.replace(/_\d+x\d+/, '_800x800');
