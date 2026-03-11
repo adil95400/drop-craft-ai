@@ -10,7 +10,7 @@ export class ApiService {
   // Products — delegates to API V1
   static async getProducts(filters?: any) {
     try {
-      const params: any = { per_page: 500 }
+      const params: any = { per_page: 50 }
       if (filters?.search) params.q = filters.search
       if (filters?.category) params.category = filters.category
       if (filters?.status) params.status = filters.status
@@ -61,7 +61,7 @@ export class ApiService {
   // Orders — delegates to API V1
   static async getOrders(filters?: any) {
     try {
-      const params: any = { per_page: 500 }
+      const params: any = { per_page: 50 }
       if (filters?.status) params.status = filters.status
       const resp = await ordersApi.list(params)
       return resp.items ?? []
@@ -89,7 +89,7 @@ export class ApiService {
   // Customers — delegates to API V1
   static async getCustomers(filters?: any) {
     try {
-      const params: any = { per_page: 500 }
+      const params: any = { per_page: 50 }
       if (filters?.search) params.q = filters.search
       const resp = await customersApi.list(params)
       return resp.items ?? []

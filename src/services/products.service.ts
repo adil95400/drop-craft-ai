@@ -6,7 +6,7 @@ import { productsApi, type ProductRecord } from '@/services/api/client'
 
 export class ProductsService {
   static async getProducts(_userId: string): Promise<any[]> {
-    const resp = await productsApi.list({ per_page: 500 })
+    const resp = await productsApi.list({ per_page: 50 })
     return resp.items ?? []
   }
 
