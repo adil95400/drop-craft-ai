@@ -296,7 +296,8 @@ export const useUnifiedPlan = create<UnifiedPlanState>()(
   }))
 )
 
-// Hook de convenance pour les composants
+// Hook de convenance — use selectors for performance: useUnifiedPlan(s => s.hasFeature)
+// WARNING: calling usePlanSystem() without selector subscribes to full store and may cause re-render loops
 export function usePlanSystem() {
   return useUnifiedPlan()
 }
