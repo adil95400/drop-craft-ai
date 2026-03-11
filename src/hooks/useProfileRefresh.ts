@@ -2,28 +2,25 @@
  * Hook pour rafraîchir automatiquement le profil et les plans
  */
 import { useEffect } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useUnifiedPlan } from '@/lib/unified-plan-system';
 
 export const useProfileRefresh = () => {
   const { user, refetchProfile } = useAuth();
-  const { loadUserPlan } = useUnifiedPlan();
+  const loadUserPlan = useUnifiedPlan(s => s.loadUserPlan);
 
   const refreshProfile = async () => {
     if (!user?.id) return;
     
     try {
-      // Rafraîchir le profil dans AuthContext
       await refetchProfile();
-      
-      // Rafraîchir le plan dans UnifiedPlan
       await loadUserPlan(user.id);
     } catch (error) {
       console.error('Erreur lors du rafraîchissement du profil:', error);
     }
   };
 
-  // Écouter les changements dans la base de données
   useEffect(() => {
     if (!user?.id) return;
 
@@ -36,8 +33,7 @@ export const useProfileRefresh = () => {
           table: 'profiles',
           filter: `id=eq.${user.id}`
         },
-        async (payload) => {
-          // Profile changed — refresh
+        async () => {
           await refreshProfile();
         }
       )
@@ -50,6 +46,3 @@ export const useProfileRefresh = () => {
 
   return { refreshProfile };
 };
-
-// Import Supabase pour les changements en temps réel
-import { supabase } from '@/integrations/supabase/client';

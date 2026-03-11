@@ -6,7 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import { useUnifiedPlan } from '@/lib/unified-plan-system';
 
 export function FreeTrialBanner() {
-  const { currentPlan } = useUnifiedPlan();
+  const currentPlan = useUnifiedPlan(s => s.currentPlan);
   const navigate = useNavigate();
 
   // Only show for free users

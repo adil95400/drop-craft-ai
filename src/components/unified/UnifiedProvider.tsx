@@ -24,7 +24,10 @@ export function UnifiedProvider({ children }: UnifiedProviderProps) {
   const authContext = useContext(UnifiedAuthContext)
   const user = authContext?.user ?? null
   
-  const { loadUserPlan, loading, error } = useUnifiedPlan()
+  // Use selectors to avoid subscribing to full store (prevents infinite re-render loops)
+  const loadUserPlan = useUnifiedPlan(s => s.loadUserPlan)
+  const loading = useUnifiedPlan(s => s.loading)
+  const error = useUnifiedPlan(s => s.error)
   const { toast } = useToast()
   const loadedRef = useRef(false)
   
@@ -32,7 +35,8 @@ export function UnifiedProvider({ children }: UnifiedProviderProps) {
   useEffect(() => {
     if (user?.id && !loadedRef.current) {
       loadedRef.current = true
-      loadUserPlan(user.id)
+      // Defer to avoid synchronous state updates during React commit phase
+      queueMicrotask(() => loadUserPlan(user.id))
     }
   }, [user?.id, loadUserPlan])
   
@@ -63,15 +67,31 @@ export function useAuthWithPlan() {
   const authContext = useContext(UnifiedAuthContext)
   const user = authContext?.user ?? null
   const authLoading = authContext?.loading ?? true
-  const planStore = useUnifiedPlan()
+  // Use individual selectors to prevent full-store subscription loops
+  const planLoading = useUnifiedPlan(s => s.loading)
+  const effectivePlan = useUnifiedPlan(s => s.effectivePlan)
+  const currentPlan = useUnifiedPlan(s => s.currentPlan)
+  const hasFeature = useUnifiedPlan(s => s.hasFeature)
+  const hasPlan = useUnifiedPlan(s => s.hasPlan)
+  const isPro = useUnifiedPlan(s => s.isPro)
+  const isUltraPro = useUnifiedPlan(s => s.isUltraPro)
+  const isAdmin = useUnifiedPlan(s => s.isAdmin)
+  const canBypass = useUnifiedPlan(s => s.canBypass)
   const { initialized } = useUnifiedContext()
   
   return {
     user,
     authLoading,
-    planLoading: planStore.loading,
-    loading: authLoading || planStore.loading,
+    planLoading,
+    loading: authLoading || planLoading,
     initialized: initialized && !!user,
-    ...planStore
+    effectivePlan,
+    currentPlan,
+    hasFeature,
+    hasPlan,
+    isPro,
+    isUltraPro,
+    isAdmin,
+    canBypass,
   }
 }
