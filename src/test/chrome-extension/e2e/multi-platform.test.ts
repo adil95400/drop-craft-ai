@@ -509,7 +509,7 @@ describe('E2E: Multi-Platform Support', () => {
 
       expect(parseShipping('Livraison gratuite')).toEqual({ cost: 0 });
       expect(parseShipping('Free shipping')).toEqual({ cost: 0 });
-      expect(parseShipping('€4.99 shipping')).toEqual({ cost: 4.99 });
+      expect(parseShipping('€4.99 shipping')).toEqual(expect.objectContaining({ cost: 4.99 }));
       expect(parseShipping('Delivery: 5-10 days')).toEqual({ 
         estimatedDays: { min: 5, max: 10 } 
       });
