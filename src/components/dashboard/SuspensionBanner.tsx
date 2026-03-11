@@ -6,6 +6,7 @@ import { useStripeSubscription } from '@/hooks/useStripeSubscription'
 export function SuspensionBanner() {
   const subscriptionStatus = useUnifiedPlan(s => s.subscriptionStatus)
   const isSuspended = useUnifiedPlan(s => s.isSuspended)
+  const { openCustomerPortal } = useStripeSubscription()
 
   if (!isSuspended()) return null
 
