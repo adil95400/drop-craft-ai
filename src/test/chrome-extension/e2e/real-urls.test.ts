@@ -484,7 +484,7 @@ describe('ShopOpti+ Real URL E2E Tests', () => {
       switch (platform) {
         case 'amazon':
           // Force high resolution
-          url = url.replace(/\._[A-Z]{2}[\d_,]+_\./, '._AC_SL1500_.');
+          url = url.replace(/\._[A-Z]{2}[A-Z0-9_,]+_\./, '._AC_SL1500_.');
           url = url.replace(/\._S[XY]\d+_\./, '._AC_SL1500_.');
           break;
         case 'aliexpress':

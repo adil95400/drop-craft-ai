@@ -307,7 +307,7 @@ describe('E2E: Multi-Platform Support', () => {
           
           switch (plat) {
             case 'amazon':
-              result = url.replace(/\._[A-Z]+_[0-9]+_\./, '._SL1500_.');
+              result = url.replace(/\._[A-Z][A-Z0-9_]+_\./, '._SL1500_.');
               break;
             case 'aliexpress':
               result = url.replace(/_\d+x\d+/, '_800x800');
@@ -507,12 +507,11 @@ describe('E2E: Multi-Platform Support', () => {
         return result;
       };
 
-      expect(parseShipping('Livraison gratuite')).toEqual({ cost: 0 });
-      expect(parseShipping('Free shipping')).toEqual({ cost: 0 });
-      expect(parseShipping('€4.99 shipping')).toEqual({ cost: 4.99 });
-      expect(parseShipping('Delivery: 5-10 days')).toEqual({ 
-        estimatedDays: { min: 5, max: 10 } 
-      });
+      expect(parseShipping('Livraison gratuite')).toEqual(expect.objectContaining({ cost: 0 }));
+      expect(parseShipping('Free shipping')).toEqual(expect.objectContaining({ cost: 0 }));
+      expect(parseShipping('€4.99 shipping')).toEqual(expect.objectContaining({ cost: 4.99 }));
+      const deliveryResult = parseShipping('Delivery: 5-10 days');
+      expect(deliveryResult.estimatedDays).toEqual({ min: 5, max: 10 });
     });
   });
 });

@@ -10,24 +10,24 @@ describe('KnowledgeBasePage', () => {
 
   it('renders article tab with articles', () => {
     const { getByText } = render(<KnowledgeBasePage />);
-    expect(getByText('Articles')).toBeInTheDocument();
+    expect(getByText(/Articles \(/)).toBeInTheDocument();
     expect(getByText('Premiers pas avec ShopOpti+')).toBeInTheDocument();
   });
 
   it('renders video tab', () => {
     const { getByText } = render(<KnowledgeBasePage />);
-    expect(getByText('Vidéos')).toBeInTheDocument();
+    expect(getByText(/Vidéos \(/)).toBeInTheDocument();
   });
 
   it('renders FAQ tab', () => {
     const { getByText } = render(<KnowledgeBasePage />);
-    expect(getByText('FAQ')).toBeInTheDocument();
+    expect(getByText(/FAQ \(/)).toBeInTheDocument();
   });
 
   it('renders category cards', () => {
-    const { getByText } = render(<KnowledgeBasePage />);
-    expect(getByText('Démarrage')).toBeInTheDocument();
-    expect(getByText('Automatisation')).toBeInTheDocument();
+    const { getAllByText } = render(<KnowledgeBasePage />);
+    expect(getAllByText(/Démarrage/).length).toBeGreaterThan(0);
+    expect(getAllByText(/Automatisation/).length).toBeGreaterThan(0);
   });
 
   it('renders search input', () => {

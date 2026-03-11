@@ -23,6 +23,7 @@ adapters.set('xml', new CSVAdapter()) // XML via CSVAdapter avec parsing différ
 adapters.set('json', new CSVAdapter())
 adapters.set('api', new GenericURLAdapter())
 adapters.set('extension', new GenericURLAdapter())
+adapters.set('feed', new GenericURLAdapter())
 
 /**
  * Récupère l'adaptateur pour une source donnée
