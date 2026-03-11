@@ -24,7 +24,10 @@ export function UnifiedProvider({ children }: UnifiedProviderProps) {
   const authContext = useContext(UnifiedAuthContext)
   const user = authContext?.user ?? null
   
-  const { loadUserPlan, loading, error } = useUnifiedPlan()
+  // Use selectors to avoid subscribing to full store (prevents infinite re-render loops)
+  const loadUserPlan = useUnifiedPlan(s => s.loadUserPlan)
+  const loading = useUnifiedPlan(s => s.loading)
+  const error = useUnifiedPlan(s => s.error)
   const { toast } = useToast()
   const loadedRef = useRef(false)
   
@@ -32,7 +35,8 @@ export function UnifiedProvider({ children }: UnifiedProviderProps) {
   useEffect(() => {
     if (user?.id && !loadedRef.current) {
       loadedRef.current = true
-      loadUserPlan(user.id)
+      // Defer to avoid synchronous state updates during React commit phase
+      queueMicrotask(() => loadUserPlan(user.id))
     }
   }, [user?.id, loadUserPlan])
   
