@@ -4,8 +4,8 @@ import { useUnifiedPlan } from '@/lib/unified-plan-system'
 import { useStripeSubscription } from '@/hooks/useStripeSubscription'
 
 export function SuspensionBanner() {
-  const { subscriptionStatus, isSuspended } = useUnifiedPlan()
-  const { openCustomerPortal } = useStripeSubscription()
+  const subscriptionStatus = useUnifiedPlan(s => s.subscriptionStatus)
+  const isSuspended = useUnifiedPlan(s => s.isSuspended)
 
   if (!isSuspended()) return null
 
