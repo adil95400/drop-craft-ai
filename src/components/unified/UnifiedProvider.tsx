@@ -67,15 +67,31 @@ export function useAuthWithPlan() {
   const authContext = useContext(UnifiedAuthContext)
   const user = authContext?.user ?? null
   const authLoading = authContext?.loading ?? true
-  const planStore = useUnifiedPlan()
+  // Use individual selectors to prevent full-store subscription loops
+  const planLoading = useUnifiedPlan(s => s.loading)
+  const effectivePlan = useUnifiedPlan(s => s.effectivePlan)
+  const currentPlan = useUnifiedPlan(s => s.currentPlan)
+  const hasFeature = useUnifiedPlan(s => s.hasFeature)
+  const hasPlan = useUnifiedPlan(s => s.hasPlan)
+  const isPro = useUnifiedPlan(s => s.isPro)
+  const isUltraPro = useUnifiedPlan(s => s.isUltraPro)
+  const isAdmin = useUnifiedPlan(s => s.isAdmin)
+  const canBypass = useUnifiedPlan(s => s.canBypass)
   const { initialized } = useUnifiedContext()
   
   return {
     user,
     authLoading,
-    planLoading: planStore.loading,
-    loading: authLoading || planStore.loading,
+    planLoading,
+    loading: authLoading || planLoading,
     initialized: initialized && !!user,
-    ...planStore
+    effectivePlan,
+    currentPlan,
+    hasFeature,
+    hasPlan,
+    isPro,
+    isUltraPro,
+    isAdmin,
+    canBypass,
   }
 }
