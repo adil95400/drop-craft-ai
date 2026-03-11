@@ -3,10 +3,9 @@
  * and emits corresponding CrossModuleEventBus events to trigger
  * automatic actions (repricing, stock alerts, order fulfillment).
  */
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useCrossModuleEvents, type CrossModuleEventType } from '@/services/cross-module/CrossModuleEventBus';
-import { useApplyPricingRules, useSyncStockAlerts } from '@/hooks/useCrossModuleSync';
 
 interface WebhookEventPayload {
   id: string;
@@ -26,7 +25,6 @@ function mapWebhookToModuleEvent(
 ): { moduleEvent: CrossModuleEventType; source: string } | null {
   const key = `${platform}:${eventType}`.toLowerCase();
 
-  // Order events
   if (
     key.includes('orders/create') ||
     key.includes('order.created') ||
@@ -36,7 +34,6 @@ function mapWebhookToModuleEvent(
     return { moduleEvent: 'webhook.order_received', source: `webhook-${platform}` };
   }
 
-  // Product update events
   if (
     key.includes('products/update') ||
     key.includes('product.updated') ||
@@ -46,7 +43,6 @@ function mapWebhookToModuleEvent(
     return { moduleEvent: 'webhook.product_updated', source: `webhook-${platform}` };
   }
 
-  // Inventory / stock events
   if (
     key.includes('inventory_levels') ||
     key.includes('stock') ||
@@ -55,7 +51,6 @@ function mapWebhookToModuleEvent(
     return { moduleEvent: 'webhook.inventory_changed', source: `webhook-${platform}` };
   }
 
-  // Refund events
   if (key.includes('refund') || key.includes('orders/cancelled')) {
     return { moduleEvent: 'webhook.refund_received', source: `webhook-${platform}` };
   }
@@ -66,8 +61,27 @@ function mapWebhookToModuleEvent(
 export function useWebhookCrossModuleBridge() {
   const emit = useCrossModuleEvents((s) => s.emit);
   const processedIds = useRef<Set<string>>(new Set());
-  const applyPricing = useApplyPricingRules();
-  const syncStockAlerts = useSyncStockAlerts();
+
+  // Use refs for mutation-like actions to avoid re-subscribing on every render
+  const triggerPricingSync = useCallback(async () => {
+    try {
+      await supabase.functions.invoke('cross-module-sync', {
+        body: { action: 'apply_pricing_rules' },
+      });
+    } catch {
+      // Silent — non-critical background sync
+    }
+  }, []);
+
+  const triggerStockSync = useCallback(async () => {
+    try {
+      await supabase.functions.invoke('cross-module-sync', {
+        body: { action: 'sync_stock_alerts' },
+      });
+    } catch {
+      // Silent — non-critical background sync
+    }
+  }, []);
 
   useEffect(() => {
     const channel = supabase
@@ -105,17 +119,14 @@ export function useWebhookCrossModuleBridge() {
           // Trigger automatic actions based on event type
           switch (mapping.moduleEvent) {
             case 'webhook.inventory_changed':
-              // Auto-check stock alerts when inventory changes
-              syncStockAlerts.mutate();
+              triggerStockSync();
               break;
 
             case 'webhook.product_updated':
-              // Auto-apply pricing rules when products are updated
-              applyPricing.mutate();
+              triggerPricingSync();
               break;
 
             case 'webhook.order_received':
-              // Also emit the generic orders.created for existing suggestions
               emit('orders.created', mapping.source, {
                 count: 1,
                 platform: event.platform,
@@ -130,5 +141,5 @@ export function useWebhookCrossModuleBridge() {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [emit, applyPricing, syncStockAlerts]);
+  }, [emit, triggerPricingSync, triggerStockSync]);
 }

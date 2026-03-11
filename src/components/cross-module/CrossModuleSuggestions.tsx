@@ -2,11 +2,12 @@
  * CrossModuleSuggestions - Widget de suggestions inter-modules
  * Affiche des actions suggérées basées sur les événements récents
  */
+import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { useCrossModuleEvents, type ModuleSuggestion } from '@/services/cross-module/CrossModuleEventBus';
+import { useCrossModuleEvents } from '@/services/cross-module/CrossModuleEventBus';
 import {
   DollarSign, Sparkles, Megaphone, Truck, TrendingUp,
   Target, Zap, Brain, RefreshCw, PackageCheck, X,
@@ -33,9 +34,16 @@ interface CrossModuleSuggestionsProps {
 
 export function CrossModuleSuggestions({ maxItems = 4, className, compact = false }: CrossModuleSuggestionsProps) {
   const navigate = useNavigate();
-  const suggestions = useCrossModuleEvents(s => s.getLatestSuggestions(maxItems));
+  // Subscribe to raw events array — stable reference when unchanged
   const events = useCrossModuleEvents(s => s.events);
   const dismissSuggestion = useCrossModuleEvents(s => s.dismissSuggestion);
+
+  // Derive suggestions in component with useMemo (avoids new-array-per-selector issue)
+  const suggestions = useMemo(() => {
+    return events
+      .flatMap(e => e.suggestions)
+      .slice(0, maxItems);
+  }, [events, maxItems]);
 
   // Find event ID for a suggestion
   const findEventForSuggestion = (suggestionId: string) => {
