@@ -30,6 +30,7 @@ import {
   type ProductReview,
 } from '@/hooks/reviews/useProductReviews';
 import { AdvancedReviewsImportModal } from '@/components/import/reviews/AdvancedReviewsImportModal';
+import { ReviewAIPanel } from '@/components/reviews/ReviewAIPanel';
 import { format } from 'date-fns';
 import { getDateFnsLocale } from '@/utils/dateFnsLocale';
 
