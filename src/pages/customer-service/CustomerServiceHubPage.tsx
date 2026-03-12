@@ -25,7 +25,7 @@ export default function CustomerServiceHubPage() {
     isLoadingTickets, isLoadingSurveys, isLoadingRefunds,
     createSurvey, createRefund, updateRefundStatus, scheduleReminder,
     isCreatingSurvey, isCreatingRefund,
-  } = useCustomerService();
+  } = useCustomerServiceHub();
 
   const [refundDialog, setRefundDialog] = useState(false);
   const [surveyDialog, setSurveyDialog] = useState(false);
