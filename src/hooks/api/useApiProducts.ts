@@ -88,7 +88,7 @@ export function useApiProducts() {
       adjustmentValue: number
     }) => {
       // Fetch current prices via API
-      const resp = await productsApi.list({ per_page: 100 })
+      const resp = await productsApi.list({ per_page: 30 })
       const products = (resp.items ?? []).filter(p => productIds.includes(p.id))
 
       // Update each product via API

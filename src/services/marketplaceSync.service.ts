@@ -199,7 +199,7 @@ export class MarketplaceSyncService {
 
       if (connError || !connection) throw new Error('Connection not found');
 
-      const resp = await productsApi.list({ per_page: 50 });
+      const resp = await productsApi.list({ per_page: 30 });
       const products = (resp.items ?? []).filter((p: any) => productIds.includes(p.id));
 
       let successCount = 0;
