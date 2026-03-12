@@ -72,3 +72,4 @@ export function resetAnalyticsUser() {
 }
 
 export type { AnalyticsConfig } from './config'
+export * from './conversions'
