@@ -10,7 +10,7 @@ export class ApiService {
   // Products — delegates to API V1
   static async getProducts(filters?: any) {
     try {
-      const params: any = { per_page: 50 }
+      const params: any = { per_page: 30 }
       if (filters?.search) params.q = filters.search
       if (filters?.category) params.category = filters.category
       if (filters?.status) params.status = filters.status
