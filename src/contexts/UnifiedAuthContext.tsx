@@ -312,6 +312,9 @@ export const UnifiedAuthProvider = ({ children }: { children: React.ReactNode })
       provider: 'google',
       options: { redirectTo: `${window.location.origin}/dashboard` },
     });
+    if (!error) {
+      try { const { trackLogin } = await import('@/lib/analytics/conversions'); trackLogin('google'); } catch {}
+    }
     return { error };
   }, []);
 
