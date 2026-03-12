@@ -98,6 +98,66 @@ export type Database = {
         }
         Relationships: []
       }
+      abandoned_carts: {
+        Row: {
+          abandoned_at: string
+          cart_items: Json
+          cart_value: number
+          created_at: string
+          currency: string
+          customer_email: string
+          customer_name: string | null
+          id: string
+          last_contacted_at: string | null
+          metadata: Json | null
+          order_id: string | null
+          recovered_at: string | null
+          recovery_attempts: number
+          recovery_status: string
+          source_platform: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          abandoned_at?: string
+          cart_items?: Json
+          cart_value?: number
+          created_at?: string
+          currency?: string
+          customer_email: string
+          customer_name?: string | null
+          id?: string
+          last_contacted_at?: string | null
+          metadata?: Json | null
+          order_id?: string | null
+          recovered_at?: string | null
+          recovery_attempts?: number
+          recovery_status?: string
+          source_platform?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          abandoned_at?: string
+          cart_items?: Json
+          cart_value?: number
+          created_at?: string
+          currency?: string
+          customer_email?: string
+          customer_name?: string | null
+          id?: string
+          last_contacted_at?: string | null
+          metadata?: Json | null
+          order_id?: string | null
+          recovered_at?: string | null
+          recovery_attempts?: number
+          recovery_status?: string
+          source_platform?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       active_alerts: {
         Row: {
           acknowledged: boolean | null
@@ -16572,6 +16632,74 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      upsell_rules: {
+        Row: {
+          conversions: number
+          created_at: string
+          discount_percent: number | null
+          display_location: string
+          id: string
+          impressions: number
+          is_active: boolean
+          min_cart_value: number | null
+          name: string
+          priority: number
+          recommended_product_ids: string[] | null
+          revenue_generated: number
+          rule_type: string
+          trigger_category: string | null
+          trigger_product_id: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          conversions?: number
+          created_at?: string
+          discount_percent?: number | null
+          display_location?: string
+          id?: string
+          impressions?: number
+          is_active?: boolean
+          min_cart_value?: number | null
+          name: string
+          priority?: number
+          recommended_product_ids?: string[] | null
+          revenue_generated?: number
+          rule_type?: string
+          trigger_category?: string | null
+          trigger_product_id?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          conversions?: number
+          created_at?: string
+          discount_percent?: number | null
+          display_location?: string
+          id?: string
+          impressions?: number
+          is_active?: boolean
+          min_cart_value?: number | null
+          name?: string
+          priority?: number
+          recommended_product_ids?: string[] | null
+          revenue_generated?: number
+          rule_type?: string
+          trigger_category?: string | null
+          trigger_product_id?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "upsell_rules_trigger_product_id_fkey"
+            columns: ["trigger_product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       usage_counters: {
         Row: {
