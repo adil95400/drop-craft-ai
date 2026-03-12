@@ -67,6 +67,9 @@ import { BulkEditPanel } from '@/components/products/BulkEditPanel';
 import { PlatformExportDialog } from '@/components/products/export/PlatformExportDialog';
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
 import { PublishDialog } from '@/components/publication/PublishDialog';
+import { CatalogSourcingPanel } from '@/components/catalog/CatalogSourcingPanel';
+import { CatalogAutoOrderPanel } from '@/components/catalog/CatalogAutoOrderPanel';
+import { CatalogPricingPanel } from '@/components/catalog/CatalogPricingPanel';
 
 // ============= Types =============
 type StatusFilter = 'all' | 'active' | 'paused' | 'draft' | 'archived';
