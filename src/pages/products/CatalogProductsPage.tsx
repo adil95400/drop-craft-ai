@@ -67,6 +67,9 @@ import { BulkEditPanel } from '@/components/products/BulkEditPanel';
 import { PlatformExportDialog } from '@/components/products/export/PlatformExportDialog';
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
 import { PublishDialog } from '@/components/publication/PublishDialog';
+import { CatalogSourcingPanel } from '@/components/catalog/CatalogSourcingPanel';
+import { CatalogAutoOrderPanel } from '@/components/catalog/CatalogAutoOrderPanel';
+import { CatalogPricingPanel } from '@/components/catalog/CatalogPricingPanel';
 
 // ============= Types =============
 type StatusFilter = 'all' | 'active' | 'paused' | 'draft' | 'archived';
@@ -110,6 +113,9 @@ export default function CatalogProductsPage() {
   const [itemsPerPage, setItemsPerPage] = useState(50);
   const [showJobTracker, setShowJobTracker] = useState(false);
   const [showPublishDialog, setShowPublishDialog] = useState(false);
+  const [showSourcingPanel, setShowSourcingPanel] = useState(false);
+  const [showAutoOrderPanel, setShowAutoOrderPanel] = useState(false);
+  const [showPricingPanel, setShowPricingPanel] = useState(false);
 
   // === DATA (reads via Supabase, mutations via FastAPI) ===
   const { products, stats, isLoading, refetch } = useProductsUnified();
@@ -668,19 +674,19 @@ export default function CatalogProductsPage() {
             <div className="flex-1" />
             <Button
               variant="outline" size="sm" className="gap-2"
-              onClick={() => navigate('/sourcing', { state: { productIds: selectedProducts } })}>
+              onClick={() => setShowSourcingPanel(true)}>
               <Globe className="h-4 w-4" />
               Trouver fournisseur
             </Button>
             <Button
               variant="outline" size="sm" className="gap-2"
-              onClick={() => navigate('/orders/fulfillment', { state: { productIds: selectedProducts } })}>
+              onClick={() => setShowAutoOrderPanel(true)}>
               <ShoppingCart className="h-4 w-4" />
               Commander
             </Button>
             <Button
               variant="outline" size="sm" className="gap-2"
-              onClick={() => navigate('/pricing-manager', { state: { productIds: selectedProducts } })}>
+              onClick={() => setShowPricingPanel(true)}>
               <Tag className="h-4 w-4" />
               Pricing
             </Button>
@@ -871,6 +877,45 @@ export default function CatalogProductsPage() {
         productIds={selectedProducts}
         onComplete={() => setSelectedProducts([])}
       />
+
+      {/* Sourcing Panel */}
+      <Sheet open={showSourcingPanel} onOpenChange={setShowSourcingPanel}>
+        <SheetContent side="right" className="w-full sm:max-w-lg overflow-y-auto">
+          <CatalogSourcingPanel
+            selectedProducts={products.filter(p => selectedProducts.includes(p.id)).map(p => ({
+              id: p.id, name: p.name, price: p.price, cost_price: p.cost_price, sku: p.sku
+            }))}
+            onClose={() => setShowSourcingPanel(false)}
+          />
+        </SheetContent>
+      </Sheet>
+
+      {/* Auto-Order Panel */}
+      <Sheet open={showAutoOrderPanel} onOpenChange={setShowAutoOrderPanel}>
+        <SheetContent side="right" className="w-full sm:max-w-lg overflow-y-auto">
+          <CatalogAutoOrderPanel
+            selectedProducts={products.filter(p => selectedProducts.includes(p.id)).map(p => ({
+              id: p.id, name: p.name, price: p.price, cost_price: p.cost_price,
+              stock_quantity: p.stock_quantity, sku: p.sku, supplier_name: p.supplier_name
+            }))}
+            onClose={() => setShowAutoOrderPanel(false)}
+            onRefresh={handleRefresh}
+          />
+        </SheetContent>
+      </Sheet>
+
+      {/* Pricing Panel */}
+      <Sheet open={showPricingPanel} onOpenChange={setShowPricingPanel}>
+        <SheetContent side="right" className="w-full sm:max-w-lg overflow-y-auto">
+          <CatalogPricingPanel
+            selectedProducts={products.filter(p => selectedProducts.includes(p.id)).map(p => ({
+              id: p.id, name: p.name, price: p.price, cost_price: p.cost_price
+            }))}
+            onClose={() => setShowPricingPanel(false)}
+            onRefresh={handleRefresh}
+          />
+        </SheetContent>
+      </Sheet>
 
     </ChannablePageWrapper>);
 
