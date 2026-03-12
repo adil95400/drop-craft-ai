@@ -81,6 +81,9 @@ export const ROUTES_REGISTRY: RouteConfig[] = [
   { path: '/marketing/email', protected: true, category: 'marketing', description: 'Email marketing', implemented: true },
   { path: '/marketing/seo', protected: true, category: 'marketing', description: 'SEO', implemented: true },
   { path: '/marketing/automation', protected: true, category: 'marketing', description: 'Marketing automation', implemented: true },
+  { path: '/marketing/upsell', protected: true, category: 'marketing', description: 'Upsell & Cross-sell', implemented: true },
+  { path: '/marketing/abandoned-cart', protected: true, category: 'marketing', description: 'Paniers abandonnés', implemented: true },
+  { path: '/marketing/loyalty', protected: true, category: 'marketing', description: 'Programme fidélité', implemented: true },
 
   // ===== PRICING =====
   { path: '/pricing-manager', protected: true, category: 'tools', description: 'Gestionnaire prix', implemented: true },

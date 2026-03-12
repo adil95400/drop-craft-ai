@@ -74,6 +74,7 @@ export function MarketingRoutes() {
       <Route path="creative-studio" element={<CreativeStudioPage />} />
       <Route path="content-generation" element={<ContentGenerationPage />} />
       <Route path="automation" element={<MarketingAutomationPage />} />
+      <Route path="upsell" element={<UpsellCrossSellPage />} />
       
       {/* SEO Tools */}
       <Route path="seo/keywords" element={<KeywordResearch />} />
