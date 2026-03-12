@@ -167,6 +167,7 @@ export function AppRoutes() {
           {/* Stores & Channels */}
           <Route path="/stores-channels/*" element={<Protected><ChannelRoutes /></Protected>} />
           <Route path="/channels/*" element={<Protected><ChannelRoutes /></Protected>} />
+          <Route path="/multi-canal" element={<Protected><MultiCanalHubPage /></Protected>} />
           
           {/* Sources & Import */}
           <Route path="/import/*" element={<Protected><ImportRoutes /></Protected>} />
