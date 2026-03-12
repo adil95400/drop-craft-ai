@@ -48,6 +48,7 @@ export const ROUTES_REGISTRY: RouteConfig[] = [
   { path: '/notifications', protected: true, category: 'core', description: 'Notifications', implemented: true },
   { path: '/alerts', protected: true, category: 'core', description: 'Centre d\'alertes', implemented: true },
   { path: '/reports', protected: true, category: 'core', description: 'Rapports', implemented: true },
+  { path: '/finance', protected: true, category: 'core', description: 'Finance - P&L, dépenses, taxes', implemented: true },
   { path: '/customer-service', protected: true, category: 'core', description: 'Service client', implemented: true },
 
   // ===== ANALYTICS =====

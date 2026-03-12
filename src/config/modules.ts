@@ -678,6 +678,25 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     order: 4,
     groupId: 'reports'
   },
+  finance: {
+    id: 'finance',
+    name: 'Finance',
+    icon: 'DollarSign',
+    enabled: true,
+    minPlan: 'standard',
+    route: '/finance',
+    features: ['pnl', 'expenses', 'taxes', 'invoices', 'forecasts'],
+    description: 'P&L, dépenses, taxes et prévisions',
+    category: 'analytics',
+    order: 5,
+    groupId: 'reports',
+    subModules: [
+      { id: 'finance-dashboard', name: 'Vue d\'ensemble', route: '/finance', icon: 'DollarSign', description: 'P&L et KPIs financiers', features: ['pnl'], order: 1 },
+      { id: 'finance-transactions', name: 'Transactions', route: '/finance/transactions', icon: 'Receipt', description: 'Dépenses et revenus', features: ['transactions'], order: 2 },
+      { id: 'finance-expenses', name: 'Dépenses', route: '/finance/expenses', icon: 'TrendingDown', description: 'Analyse des dépenses', features: ['expenses'], order: 3 },
+      { id: 'finance-taxes', name: 'Taxes', route: '/finance/taxes', icon: 'Calculator', description: 'Configuration fiscale', features: ['taxes'], order: 4 },
+    ]
+  },
 
   // ═══════════════════════════════════════════════════════════════════════════
   // 9. PARAMÈTRES & ADMINISTRATION
