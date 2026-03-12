@@ -9,6 +9,7 @@ import { lazy } from 'react';
 const AutoFulfillmentPage = lazy(() => import('@/pages/AutoFulfillmentPage'));
 const AutoTrackingPage = lazy(() => import('@/pages/AutoTrackingPage'));
 const AutoOrderSystem = lazy(() => import('@/pages/AutoOrderSystem'));
+const OrderFulfillmentHubPage = lazy(() => import('@/pages/fulfillment/OrderFulfillmentHubPage'));
 
 // Automation
 const AutomationPage = lazy(() => import('@/pages/AutomationPage'));
