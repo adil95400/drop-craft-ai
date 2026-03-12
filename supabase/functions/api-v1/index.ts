@@ -226,16 +226,33 @@ async function jobAction(action: string, jobId: string, req: Request, auth: Auth
 
 // ── Products ────────────────────────────────────────────────────────────────
 async function listProducts(url: URL, auth: Auth, reqId: string) {
-  const { page, perPage, from, to } = parsePagination(url);
+  const { page, perPage } = parsePagination(url);
+  const safePerPage = Math.min(perPage, PRODUCTS_LIST_MAX_PER_PAGE);
+  const from = (page - 1) * safePerPage;
+  const to = from + safePerPage - 1;
+
   const q_param = url.searchParams.get("q");
   const status = url.searchParams.get("status");
   const admin = serviceClient();
-  let q = admin.from("products").select("*", { count: "exact" }).eq("user_id", auth.user.id).order("created_at", { ascending: false }).range(from, to);
+
+  let q = admin
+    .from("products")
+    .select(PRODUCTS_LIST_COLUMNS, { count: "exact" })
+    .eq("user_id", auth.user.id)
+    .order("created_at", { ascending: false })
+    .range(from, to);
+
   if (status) q = q.eq("status", status);
   if (q_param) q = q.or(`title.ilike.%${q_param}%,sku.ilike.%${q_param}%`);
+
   const { data, count, error } = await q;
   if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
-  return json({ items: data ?? [], meta: { page, per_page: perPage, total: count ?? 0 } }, 200, reqId);
+
+  return json(
+    { items: sanitizeProductListItems(data ?? []), meta: { page, per_page: safePerPage, total: count ?? 0 } },
+    200,
+    reqId,
+  );
 }
 
 async function getProduct(id: string, auth: Auth, reqId: string) {
