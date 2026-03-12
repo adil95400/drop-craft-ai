@@ -191,6 +191,8 @@ export const ContentGenerator = ({ className }: ContentGeneratorProps) => {
         description: `${response.data.metadata.wordCount} mots générés avec succès`
       });
 
+      import('@/lib/analytics/conversions').then(m => m.trackAIFeatureUsed(`content_generator_${selectedContentType.id}`));
+
     } catch (error: any) {
       productionLogger.error('Failed to generate content', error, 'ContentGenerator');
       toast({

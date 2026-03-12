@@ -57,6 +57,7 @@ export function useUrlImport(platformName: string) {
       // Navigate to preview page with extracted product data
       const productData = data.data || data.product
       if (productData) {
+        import('@/lib/analytics/conversions').then(m => m.trackImportCompleted(platformName, 1));
         navigate('/import/preview', {
           state: {
             product: {

@@ -187,9 +187,10 @@ export function useProductsUnified(options: UseProductsUnifiedOptions = {}) {
         images: newProduct.image_url ? [newProduct.image_url] : [],
       } as any)
     },
-    onSuccess: () => {
+    onSuccess: (_data, variables) => {
       invalidateAll()
       toast({ title: 'Succès', description: 'Produit ajouté avec succès' })
+      import('@/lib/analytics/conversions').then(m => m.trackFirstProductAdded(variables.name || 'unknown'))
     },
     onError: () => toast({ title: 'Erreur', description: "Impossible d'ajouter le produit", variant: 'destructive' }),
   })
