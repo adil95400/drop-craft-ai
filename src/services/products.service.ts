@@ -43,7 +43,7 @@ export class ProductsService {
   }
 
   static async searchProducts(_userId: string, searchTerm: string) {
-    const resp = await productsApi.list({ q: searchTerm, per_page: 100 })
+    const resp = await productsApi.list({ q: searchTerm, per_page: 50 })
     return resp.items ?? []
   }
 
