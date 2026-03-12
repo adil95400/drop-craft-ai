@@ -48,6 +48,7 @@ const IntelligenceHubPage = lazy(() => import('@/pages/intelligence/Intelligence
 const BusinessIntelligencePage = lazy(() => import('@/pages/intelligence/BusinessIntelligencePage'));
 const ProductSourcingHub = lazy(() => import('@/pages/ProductSourcingHub'));
 const ShippingHubPage = lazy(() => import('@/pages/shipping/ShippingHubPage'));
+const CustomerServiceHubPage = lazy(() => import('@/pages/customer-service/CustomerServiceHubPage'));
 
 // Pages directes (lazy loaded)
 const NotFoundPage = lazy(() => import('@/pages/NotFoundPage'));
