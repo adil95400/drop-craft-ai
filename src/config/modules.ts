@@ -307,11 +307,20 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     enabled: true,
     minPlan: 'standard',
     route: '/stock',
-    features: ['stock-alerts', 'restock'],
-    description: 'Alertes de stock et réapprovisionnement',
+    features: ['stock-alerts', 'restock', 'warehouses', 'movements'],
+    description: 'Alertes de stock, multi-entrepôts et mouvements',
     category: 'product',
     order: 2,
-    groupId: 'orders'
+    groupId: 'orders',
+    subModules: [
+      { id: 'stock-overview', name: 'Vue d\'ensemble', route: '/stock', icon: 'Boxes', description: 'Dashboard stock', features: ['overview'], order: 1 },
+      { id: 'stock-inventory-hub', name: 'Hub Inventaire', route: '/stock/inventory-hub', icon: 'Warehouse', description: 'Niveaux, entrepôts, alertes, mouvements', features: ['inventory'], order: 2 },
+      { id: 'stock-warehouses', name: 'Entrepôts', route: '/stock/warehouses', icon: 'MapPin', description: 'Gestion multi-entrepôts', features: ['warehouses'], order: 3 },
+      { id: 'stock-movements', name: 'Mouvements', route: '/stock/movements', icon: 'ArrowDownUp', description: 'Audit des mouvements de stock', features: ['movements'], order: 4 },
+      { id: 'stock-alerts', name: 'Alertes', route: '/stock/alerts', icon: 'AlertTriangle', description: 'Alertes de rupture', features: ['alerts'], order: 5 },
+      { id: 'stock-repricing', name: 'Repricing', route: '/stock/repricing', icon: 'TrendingUp', description: 'Tarification dynamique', features: ['repricing'], order: 6 },
+      { id: 'stock-price-monitor', name: 'Prix concurrents', route: '/stock/price-monitor', icon: 'Eye', description: 'Surveillance des prix', features: ['price-monitor'], order: 7 },
+    ]
   },
 
   // ═══════════════════════════════════════════════════════════════════════════
