@@ -19,6 +19,10 @@ const queryClient = new QueryClient({
       refetchOnWindowFocus: false,
       refetchOnReconnect: 'always',
       networkMode: 'offlineFirst',
+      // Structural sharing reduces re-renders when data hasn't changed
+      structuralSharing: true,
+      // Deduplicate in-flight requests automatically
+      refetchOnMount: 'always',
     },
     mutations: {
       retry: 1,
