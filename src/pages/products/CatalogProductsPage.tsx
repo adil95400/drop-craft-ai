@@ -54,7 +54,8 @@ import {
   Plus, Search, Upload, Download, RefreshCw, Trash2,
   Edit3, Loader2, Package, Filter, X, Brain, Zap,
   ChevronDown, LayoutGrid, List, DollarSign, TrendingUp,
-  BarChart3, AlertTriangle, ArrowUpDown } from
+  BarChart3, AlertTriangle, ArrowUpDown, ShoppingCart, Globe,
+  Truck, Tag, Eye as EyeIcon } from
 'lucide-react';
 
 // Product components
@@ -466,10 +467,36 @@ export default function CatalogProductsPage() {
                 <Plus className="h-4 w-4" />
                 Nouveau produit
               </Button>
-              
-
-
-
+              <Button variant="outline" size="sm" className="gap-2" onClick={() => navigate('/sourcing')}>
+                <Globe className="h-4 w-4" />
+                Sourcer
+              </Button>
+              <Button variant="outline" size="sm" className="gap-2" onClick={() => navigate('/orders/fulfillment')}>
+                <Truck className="h-4 w-4" />
+                Auto-Order
+              </Button>
+              <Button variant="outline" size="sm" className="gap-2" onClick={() => navigate('/pricing-manager')}>
+                <Tag className="h-4 w-4" />
+                Pricing
+              </Button>
+              <Button
+                variant="outline" size="sm" className="gap-2"
+                onClick={handleSync}
+                disabled={isSyncing}>
+                <RefreshCw className={`h-4 w-4 ${isSyncing ? 'animate-spin' : ''}`} />
+                Sync
+              </Button>
+              <Button variant="outline" size="sm" className="gap-2" onClick={() => navigate('/import/quick')}>
+                <Upload className="h-4 w-4" />
+                Importer
+              </Button>
+              <Button
+                variant="outline" size="sm" className="gap-2"
+                onClick={handleExportCSV}
+                disabled={isExporting}>
+                {isExporting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
+                Exporter
+              </Button>
 
 
 
@@ -639,6 +666,24 @@ export default function CatalogProductsPage() {
               {selectedProducts.length} sélectionné(s)
             </Badge>
             <div className="flex-1" />
+            <Button
+              variant="outline" size="sm" className="gap-2"
+              onClick={() => navigate('/sourcing', { state: { productIds: selectedProducts } })}>
+              <Globe className="h-4 w-4" />
+              Trouver fournisseur
+            </Button>
+            <Button
+              variant="outline" size="sm" className="gap-2"
+              onClick={() => navigate('/orders/fulfillment', { state: { productIds: selectedProducts } })}>
+              <ShoppingCart className="h-4 w-4" />
+              Commander
+            </Button>
+            <Button
+              variant="outline" size="sm" className="gap-2"
+              onClick={() => navigate('/pricing-manager', { state: { productIds: selectedProducts } })}>
+              <Tag className="h-4 w-4" />
+              Pricing
+            </Button>
             <Button
             variant="outline" size="sm" className="gap-2"
             onClick={handleEnrichAI}
