@@ -467,10 +467,36 @@ export default function CatalogProductsPage() {
                 <Plus className="h-4 w-4" />
                 Nouveau produit
               </Button>
-              
-
-
-
+              <Button variant="outline" size="sm" className="gap-2" onClick={() => navigate('/sourcing')}>
+                <Globe className="h-4 w-4" />
+                Sourcer
+              </Button>
+              <Button variant="outline" size="sm" className="gap-2" onClick={() => navigate('/orders/fulfillment')}>
+                <Truck className="h-4 w-4" />
+                Auto-Order
+              </Button>
+              <Button variant="outline" size="sm" className="gap-2" onClick={() => navigate('/pricing-manager')}>
+                <Tag className="h-4 w-4" />
+                Pricing
+              </Button>
+              <Button
+                variant="outline" size="sm" className="gap-2"
+                onClick={handleSync}
+                disabled={isSyncing}>
+                <RefreshCw className={`h-4 w-4 ${isSyncing ? 'animate-spin' : ''}`} />
+                Sync
+              </Button>
+              <Button variant="outline" size="sm" className="gap-2" onClick={() => navigate('/import/quick')}>
+                <Upload className="h-4 w-4" />
+                Importer
+              </Button>
+              <Button
+                variant="outline" size="sm" className="gap-2"
+                onClick={handleExportCSV}
+                disabled={isExporting}>
+                {isExporting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
+                Exporter
+              </Button>
 
 
 
