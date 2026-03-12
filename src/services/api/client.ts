@@ -134,15 +134,72 @@ async function request<T>(
     body: sanitizedBody ? JSON.stringify(sanitizedBody) : undefined,
   })
 
-  const data = await resp.json()
+  let data: any = null
+  try {
+    data = await resp.json()
+  } catch {
+    data = null
+  }
+
   const duration = Math.round(performance.now() - startTime)
 
   // ── Structured logging ──
   logger.logApiCall(path, method, duration, resp.status, { component: 'ApiClient' })
 
   if (!resp.ok) {
+    const isOfflineFallback =
+      resp.status === 503 &&
+      method === 'GET' &&
+      data?.error === 'offline' &&
+      data?.cached === true
+
+    if (isOfflineFallback && path === '/products') {
+      const page = normalizePage(options?.params?.page)
+      const perPage = normalizeProductsPerPage(options?.params?.per_page)
+
+      logger.warn('Offline fallback served for products list', {
+        component: 'ApiClient',
+        action: 'offline_fallback',
+        metadata: { path, page, perPage },
+      })
+
+      return {
+        items: [],
+        meta: { page, per_page: perPage, total: 0 },
+      } as T
+    }
+
+    if (isOfflineFallback && path === '/products/stats') {
+      logger.warn('Offline fallback served for product stats', {
+        component: 'ApiClient',
+        action: 'offline_fallback',
+        metadata: { path },
+      })
+
+      return {
+        total: 0,
+        active: 0,
+        draft: 0,
+        inactive: 0,
+        archived: 0,
+        low_stock: 0,
+        out_of_stock: 0,
+        total_value: 0,
+        total_cost: 0,
+        total_profit: 0,
+        avg_price: 0,
+        profit_margin: 0,
+        by_status: {},
+      } as T
+    }
+
     const err = data?.error as ApiError | undefined
-    throw new Error(err?.message ?? `API error ${resp.status}`)
+    const message =
+      err?.message ??
+      (typeof data?.message === 'string' ? data.message : undefined) ??
+      `API error ${resp.status}`
+
+    throw new Error(message)
   }
 
   return data as T
