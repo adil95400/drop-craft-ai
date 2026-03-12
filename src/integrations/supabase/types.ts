@@ -6812,6 +6812,126 @@ export type Database = {
         }
         Relationships: []
       }
+      financial_summaries: {
+        Row: {
+          avg_order_value: number | null
+          breakdown: Json | null
+          created_at: string
+          currency: string
+          id: string
+          net_profit: number | null
+          order_count: number | null
+          period_end: string
+          period_start: string
+          period_type: string
+          profit_margin: number | null
+          total_expenses: number | null
+          total_refunds: number | null
+          total_revenue: number | null
+          total_taxes: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          avg_order_value?: number | null
+          breakdown?: Json | null
+          created_at?: string
+          currency?: string
+          id?: string
+          net_profit?: number | null
+          order_count?: number | null
+          period_end: string
+          period_start: string
+          period_type?: string
+          profit_margin?: number | null
+          total_expenses?: number | null
+          total_refunds?: number | null
+          total_revenue?: number | null
+          total_taxes?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          avg_order_value?: number | null
+          breakdown?: Json | null
+          created_at?: string
+          currency?: string
+          id?: string
+          net_profit?: number | null
+          order_count?: number | null
+          period_end?: string
+          period_start?: string
+          period_type?: string
+          profit_margin?: number | null
+          total_expenses?: number | null
+          total_refunds?: number | null
+          total_revenue?: number | null
+          total_taxes?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      financial_transactions: {
+        Row: {
+          amount: number
+          category: string
+          created_at: string
+          currency: string
+          description: string | null
+          id: string
+          is_recurring: boolean | null
+          metadata: Json | null
+          notes: string | null
+          recurrence_period: string | null
+          reference_id: string | null
+          reference_type: string | null
+          tags: string[] | null
+          transaction_date: string
+          transaction_type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount?: number
+          category?: string
+          created_at?: string
+          currency?: string
+          description?: string | null
+          id?: string
+          is_recurring?: boolean | null
+          metadata?: Json | null
+          notes?: string | null
+          recurrence_period?: string | null
+          reference_id?: string | null
+          reference_type?: string | null
+          tags?: string[] | null
+          transaction_date?: string
+          transaction_type?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          category?: string
+          created_at?: string
+          currency?: string
+          description?: string | null
+          id?: string
+          is_recurring?: boolean | null
+          metadata?: Json | null
+          notes?: string | null
+          recurrence_period?: string | null
+          reference_id?: string | null
+          reference_type?: string | null
+          tags?: string[] | null
+          transaction_date?: string
+          transaction_type?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       free_trial_subscriptions: {
         Row: {
           coupon_code: string | null
@@ -16681,6 +16801,45 @@ export type Database = {
           service_name?: string
           status?: string | null
           updated_at?: string | null
+        }
+        Relationships: []
+      }
+      tax_configurations: {
+        Row: {
+          applies_to: string | null
+          country: string | null
+          created_at: string
+          id: string
+          is_active: boolean | null
+          region: string | null
+          tax_name: string
+          tax_rate: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          applies_to?: string | null
+          country?: string | null
+          created_at?: string
+          id?: string
+          is_active?: boolean | null
+          region?: string | null
+          tax_name: string
+          tax_rate?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          applies_to?: string | null
+          country?: string | null
+          created_at?: string
+          id?: string
+          is_active?: boolean | null
+          region?: string | null
+          tax_name?: string
+          tax_rate?: number
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }

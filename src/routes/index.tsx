@@ -49,6 +49,7 @@ const BusinessIntelligencePage = lazy(() => import('@/pages/intelligence/Busines
 const ProductSourcingHub = lazy(() => import('@/pages/ProductSourcingHub'));
 const ShippingHubPage = lazy(() => import('@/pages/shipping/ShippingHubPage'));
 const CustomerServiceHubPage = lazy(() => import('@/pages/customer-service/CustomerServiceHubPage'));
+const FinancialHubPage = lazy(() => import('@/pages/finance/FinancialHubPage'));
 
 // Pages directes (lazy loaded)
 const NotFoundPage = lazy(() => import('@/pages/NotFoundPage'));
@@ -197,9 +198,10 @@ export function AppRoutes() {
           <Route path="/tools/*" element={<Protected><ToolsRoutes /></Protected>} />
           <Route path="/stock/*" element={<Protected><StockRoutes /></Protected>} />
           
-          {/* Shipping */}
+          {/* Shipping & Finance */}
           <Route path="/shipping/*" element={<Protected><ShippingHubPage /></Protected>} />
           <Route path="/customer-service" element={<Protected><CustomerServiceHubPage /></Protected>} />
+          <Route path="/finance/*" element={<Protected><FinancialHubPage /></Protected>} />
           
           {/* Integrations & Extensions */}
           <Route path="/integrations/*" element={<Protected><IntegrationRoutes /></Protected>} />
