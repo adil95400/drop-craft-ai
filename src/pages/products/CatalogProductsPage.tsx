@@ -54,7 +54,8 @@ import {
   Plus, Search, Upload, Download, RefreshCw, Trash2,
   Edit3, Loader2, Package, Filter, X, Brain, Zap,
   ChevronDown, LayoutGrid, List, DollarSign, TrendingUp,
-  BarChart3, AlertTriangle, ArrowUpDown } from
+  BarChart3, AlertTriangle, ArrowUpDown, ShoppingCart, Globe,
+  Truck, Tag, Eye as EyeIcon } from
 'lucide-react';
 
 // Product components
