@@ -13754,6 +13754,159 @@ export type Database = {
         }
         Relationships: []
       }
+      shipping_rates: {
+        Row: {
+          base_rate: number
+          carrier_id: string | null
+          created_at: string | null
+          currency: string | null
+          estimated_days_max: number | null
+          estimated_days_min: number | null
+          free_shipping_threshold: number | null
+          id: string
+          is_active: boolean | null
+          max_weight: number | null
+          min_weight: number | null
+          name: string
+          per_kg_rate: number | null
+          rate_type: string
+          updated_at: string | null
+          user_id: string
+          zone_id: string
+        }
+        Insert: {
+          base_rate?: number
+          carrier_id?: string | null
+          created_at?: string | null
+          currency?: string | null
+          estimated_days_max?: number | null
+          estimated_days_min?: number | null
+          free_shipping_threshold?: number | null
+          id?: string
+          is_active?: boolean | null
+          max_weight?: number | null
+          min_weight?: number | null
+          name: string
+          per_kg_rate?: number | null
+          rate_type?: string
+          updated_at?: string | null
+          user_id: string
+          zone_id: string
+        }
+        Update: {
+          base_rate?: number
+          carrier_id?: string | null
+          created_at?: string | null
+          currency?: string | null
+          estimated_days_max?: number | null
+          estimated_days_min?: number | null
+          free_shipping_threshold?: number | null
+          id?: string
+          is_active?: boolean | null
+          max_weight?: number | null
+          min_weight?: number | null
+          name?: string
+          per_kg_rate?: number | null
+          rate_type?: string
+          updated_at?: string | null
+          user_id?: string
+          zone_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "shipping_rates_carrier_id_fkey"
+            columns: ["carrier_id"]
+            isOneToOne: false
+            referencedRelation: "fulfillment_carriers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "shipping_rates_zone_id_fkey"
+            columns: ["zone_id"]
+            isOneToOne: false
+            referencedRelation: "shipping_zones"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      shipping_rules: {
+        Row: {
+          action_config: Json
+          action_type: string
+          conditions: Json
+          created_at: string | null
+          id: string
+          is_active: boolean | null
+          last_triggered_at: string | null
+          name: string
+          priority: number | null
+          trigger_count: number | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          action_config?: Json
+          action_type?: string
+          conditions?: Json
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          last_triggered_at?: string | null
+          name: string
+          priority?: number | null
+          trigger_count?: number | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          action_config?: Json
+          action_type?: string
+          conditions?: Json
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          last_triggered_at?: string | null
+          name?: string
+          priority?: number | null
+          trigger_count?: number | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      shipping_zones: {
+        Row: {
+          countries: string[]
+          created_at: string | null
+          id: string
+          is_active: boolean | null
+          name: string
+          regions: string[] | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          countries?: string[]
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          name: string
+          regions?: string[] | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          countries?: string[]
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          regions?: string[] | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       smart_alerts: {
         Row: {
           actions: Json | null

@@ -33,7 +33,7 @@ export function OrderRoutes() {
       <Route path="fulfillment/rules" element={<Navigate to="/orders/fulfillment?tab=automation" replace />} />
       
       {/* Redirections legacy */}
-      <Route path="shipping" element={<Navigate to="/orders/fulfillment" replace />} />
+      <Route path="shipping" element={<Navigate to="/shipping" replace />} />
       <Route path="exécution" element={<Navigate to="/orders/fulfillment" replace />} />
       <Route path="execution" element={<Navigate to="/orders/fulfillment" replace />} />
     </Routes>
