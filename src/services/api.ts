@@ -61,7 +61,7 @@ export class ApiService {
   // Orders — delegates to API V1
   static async getOrders(filters?: any) {
     try {
-      const params: any = { per_page: 50 }
+      const params: any = { per_page: 30 }
       if (filters?.status) params.status = filters.status
       const resp = await ordersApi.list(params)
       return resp.items ?? []
