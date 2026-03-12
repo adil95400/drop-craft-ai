@@ -81,6 +81,8 @@ export const WinnersBatchImport = ({ products, isOpen, onClose, onConfirm }: Win
     }
 
     setIsImporting(false);
+
+    import('@/lib/analytics/conversions').then(m => m.trackBulkImportCompleted('winners', imported.length + 1));
     
     toast({
       title: "🎉 Import terminé !",

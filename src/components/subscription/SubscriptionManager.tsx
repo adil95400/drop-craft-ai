@@ -21,6 +21,7 @@ export const SubscriptionManager = () => {
 
   const handleUpgrade = async (plan: 'pro' | 'ultra_pro') => {
     try {
+      import('@/lib/analytics/conversions').then(m => m.trackCheckoutStarted(plan, 0))
       await createCheckout(plan)
     } catch (error) {
       toast({
