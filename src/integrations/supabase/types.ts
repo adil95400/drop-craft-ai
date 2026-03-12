@@ -8932,6 +8932,72 @@ export type Database = {
           },
         ]
       }
+      packing_slip_templates: {
+        Row: {
+          brand_color: string | null
+          company_address: string | null
+          company_name: string | null
+          created_at: string
+          custom_css: string | null
+          footer_text: string | null
+          id: string
+          insert_image_url: string | null
+          insert_message: string | null
+          is_default: boolean | null
+          logo_url: string | null
+          name: string
+          show_barcode: boolean | null
+          show_prices: boolean | null
+          show_return_label: boolean | null
+          template_style: string | null
+          thank_you_message: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          brand_color?: string | null
+          company_address?: string | null
+          company_name?: string | null
+          created_at?: string
+          custom_css?: string | null
+          footer_text?: string | null
+          id?: string
+          insert_image_url?: string | null
+          insert_message?: string | null
+          is_default?: boolean | null
+          logo_url?: string | null
+          name: string
+          show_barcode?: boolean | null
+          show_prices?: boolean | null
+          show_return_label?: boolean | null
+          template_style?: string | null
+          thank_you_message?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          brand_color?: string | null
+          company_address?: string | null
+          company_name?: string | null
+          created_at?: string
+          custom_css?: string | null
+          footer_text?: string | null
+          id?: string
+          insert_image_url?: string | null
+          insert_message?: string | null
+          is_default?: boolean | null
+          logo_url?: string | null
+          name?: string
+          show_barcode?: boolean | null
+          show_prices?: boolean | null
+          show_return_label?: boolean | null
+          template_style?: string | null
+          thank_you_message?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       page_components: {
         Row: {
           category: string
@@ -14362,6 +14428,69 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      split_orders: {
+        Row: {
+          carrier: string | null
+          created_at: string
+          delivered_at: string | null
+          error_message: string | null
+          id: string
+          items: Json
+          parent_order_id: string
+          processed_at: string | null
+          shipped_at: string | null
+          shipping_cost: number | null
+          status: string
+          subtotal: number | null
+          supplier_id: string | null
+          supplier_name: string
+          supplier_order_id: string | null
+          tracking_number: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          carrier?: string | null
+          created_at?: string
+          delivered_at?: string | null
+          error_message?: string | null
+          id?: string
+          items?: Json
+          parent_order_id: string
+          processed_at?: string | null
+          shipped_at?: string | null
+          shipping_cost?: number | null
+          status?: string
+          subtotal?: number | null
+          supplier_id?: string | null
+          supplier_name: string
+          supplier_order_id?: string | null
+          tracking_number?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          carrier?: string | null
+          created_at?: string
+          delivered_at?: string | null
+          error_message?: string | null
+          id?: string
+          items?: Json
+          parent_order_id?: string
+          processed_at?: string | null
+          shipped_at?: string | null
+          shipping_cost?: number | null
+          status?: string
+          subtotal?: number | null
+          supplier_id?: string | null
+          supplier_name?: string
+          supplier_order_id?: string | null
+          tracking_number?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       stock_alerts: {
         Row: {
