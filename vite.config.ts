@@ -31,7 +31,15 @@ export default defineConfig(({ mode }) => ({
           if (id.includes('framer-motion')) return 'vendor-animation';
           if (id.includes('@radix-ui/')) return 'vendor-ui';
           if (id.includes('@tanstack/')) return 'vendor-data';
-          if (id.includes('lucide-react')) return 'vendor-utils';
+          if (id.includes('lucide-react')) return 'vendor-icons';
+          // Heavy export/data libs - lazy loaded only when needed
+          if (id.includes('xlsx') || id.includes('jspdf') || id.includes('jszip')) return 'vendor-export';
+          if (id.includes('papaparse')) return 'vendor-csv';
+          if (id.includes('i18next') || id.includes('react-i18next')) return 'vendor-i18n';
+          if (id.includes('zod') || id.includes('react-hook-form') || id.includes('@hookform')) return 'vendor-forms';
+          if (id.includes('date-fns')) return 'vendor-dates';
+          if (id.includes('react-markdown') || id.includes('dompurify')) return 'vendor-content';
+          if (id.includes('@sentry/')) return 'vendor-monitoring';
         },
       },
     },
