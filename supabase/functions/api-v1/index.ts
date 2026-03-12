@@ -23,15 +23,6 @@ function parsePagination(url: URL) {
 }
 
 const PRODUCTS_LIST_MAX_PER_PAGE = 50;
-const PRODUCTS_LIST_COLUMNS = [
-  "id", "user_id", "title", "description", "sku", "barcode", "price", "compare_at_price", "cost_price",
-  "category", "brand", "supplier", "supplier_url", "supplier_product_id", "status", "stock_quantity",
-  "weight", "weight_unit", "images", "tags", "seo_title", "seo_description", "shopify_product_id",
-  "google_product_id", "is_published", "created_at", "updated_at", "name", "image_url", "view_count",
-  "product_type", "vendor", "default_language", "description_html", "primary_image_url", "currency",
-  "source_type", "source_url", "supplier_name", "profit_margin", "main_image_url", "source_of_truth",
-  "fallback_supplier_id"
-].join(",");
 const DATA_URL_RE = /^data:/i;
 
 function safeRemoteUrl(value: unknown): string | null {
@@ -46,82 +37,60 @@ function sanitizeProductListItems(items: any[]) {
     const images = Array.isArray(item.images)
       ? item.images.map(safeRemoteUrl).filter(Boolean).slice(0, 8)
       : [];
-
-    const imageUrl = safeRemoteUrl(item.image_url) ?? images[0] ?? null;
-    const primaryImageUrl = safeRemoteUrl(item.primary_image_url) ?? images[0] ?? null;
-    const mainImageUrl = safeRemoteUrl(item.main_image_url) ?? images[0] ?? null;
-
     return {
       ...item,
       images,
-      image_url: imageUrl,
-      primary_image_url: primaryImageUrl,
-      main_image_url: mainImageUrl,
+      image_url: safeRemoteUrl(item.image_url) ?? images[0] ?? null,
+      primary_image_url: safeRemoteUrl(item.primary_image_url) ?? images[0] ?? null,
+      main_image_url: safeRemoteUrl(item.main_image_url) ?? images[0] ?? null,
       variants: [],
     };
   });
 }
 
-function sanitizeString(input: string, maxLength = 1000): string {
-  if (typeof input !== "string") return "";
-  return input.slice(0, maxLength).replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, "").trim();
-}
-
-// ── Rate Limiting ───────────────────────────────────────────────────────────
-const rateLimitStore = new Map<string, { count: number; resetAt: number }>();
-function checkRateLimit(userId: string, endpoint: string, maxRequests = 60, windowMs = 60000): boolean {
-  const key = `${userId}:${endpoint}`; const now = Date.now(); const entry = rateLimitStore.get(key);
-  if (!entry || now >= entry.resetAt) { rateLimitStore.set(key, { count: 1, resetAt: now + windowMs }); return true; }
-  entry.count++; return entry.count <= maxRequests;
-}
-
-// ── Auth & Client (with TTL cache) ──────────────────────────────────────────
-const authCache = new Map<string, { user: any; supabase: any; expiresAt: number }>();
-const AUTH_CACHE_TTL = 5 * 60 * 1000; // 5 minutes
-
+// ── Auth (no global cache — avoids memory leaks) ────────────────────────────
 async function authenticate(req: Request) {
   const authHeader = req.headers.get("authorization");
   if (!authHeader) return null;
-  const token = authHeader.replace("Bearer ", "");
-
-  const cached = authCache.get(token);
-  if (cached && cached.expiresAt > Date.now()) {
-    return { user: cached.user, supabase: cached.supabase };
-  }
-
-  const supabase = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_ANON_KEY")!, { global: { headers: { Authorization: authHeader } } });
+  const supabase = createClient(
+    Deno.env.get("SUPABASE_URL")!,
+    Deno.env.get("SUPABASE_ANON_KEY")!,
+    { global: { headers: { Authorization: authHeader } } }
+  );
   const { data: { user }, error } = await supabase.auth.getUser();
   if (error || !user) return null;
-
-  authCache.set(token, { user, supabase, expiresAt: Date.now() + AUTH_CACHE_TTL });
-  if (authCache.size > 200) {
-    const now = Date.now();
-    for (const [k, v] of authCache) { if (v.expiresAt < now) authCache.delete(k); }
-  }
-
   return { user, supabase };
 }
-function serviceClient() { return createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!); }
+function serviceClient() {
+  return createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
+}
 type Auth = NonNullable<Awaited<ReturnType<typeof authenticate>>>;
 
 function matchRoute(pattern: string, path: string): Record<string, string> | null {
-  const pp = pattern.split("/").filter(Boolean); const pathParts = path.split("/").filter(Boolean);
+  const pp = pattern.split("/").filter(Boolean);
+  const pathParts = path.split("/").filter(Boolean);
   if (pp.length !== pathParts.length) return null;
   const params: Record<string, string> = {};
-  for (let i = 0; i < pp.length; i++) { if (pp[i].startsWith(":")) params[pp[i].slice(1)] = pathParts[i]; else if (pp[i] !== pathParts[i]) return null; }
+  for (let i = 0; i < pp.length; i++) {
+    if (pp[i].startsWith(":")) params[pp[i].slice(1)] = pathParts[i];
+    else if (pp[i] !== pathParts[i]) return null;
+  }
   return params;
 }
 
-// ── SHA-256 helper ──────────────────────────────────────────────────────────
-async function sha256(input: string): Promise<string> {
-  const data = new TextEncoder().encode(input);
-  const hashBuffer = await crypto.subtle.digest("SHA-256", data);
-  return Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, "0")).join("");
-}
-
-// ── Import Jobs (unified: writes to `jobs` table) ───────────────────────────
+// ── Import Jobs ─────────────────────────────────────────────────────────────
 function mapJobRow(row: any) {
-  return { job_id: row.id, status: row.status, job_type: row.job_subtype ?? row.job_type, name: row.name, progress: { total: row.total_items ?? 0, processed: row.processed_items ?? 0, success: (row.processed_items ?? 0) - (row.failed_items ?? 0), failed: row.failed_items ?? 0, percent: row.progress_percent ?? 0 }, created_at: row.created_at, started_at: row.started_at, completed_at: row.completed_at, error_message: row.error_message };
+  return {
+    job_id: row.id, status: row.status, job_type: row.job_subtype ?? row.job_type,
+    name: row.name,
+    progress: {
+      total: row.total_items ?? 0, processed: row.processed_items ?? 0,
+      success: (row.processed_items ?? 0) - (row.failed_items ?? 0),
+      failed: row.failed_items ?? 0, percent: row.progress_percent ?? 0,
+    },
+    created_at: row.created_at, started_at: row.started_at, completed_at: row.completed_at,
+    error_message: row.error_message,
+  };
 }
 
 async function createImportJob(req: Request, auth: Auth, reqId: string) {
@@ -129,16 +98,10 @@ async function createImportJob(req: Request, auth: Auth, reqId: string) {
   if (!body.source?.type) return errorResponse("VALIDATION_ERROR", "source.type is required", 400, reqId);
   const admin = serviceClient();
   const { data: job, error } = await admin.from("jobs").insert({
-    user_id: auth.user.id,
-    job_type: "import",
-    job_subtype: body.source.type,
-    status: "pending",
-    name: `Import ${body.source.type}`,
+    user_id: auth.user.id, job_type: "import", job_subtype: body.source.type,
+    status: "pending", name: `Import ${body.source.type}`,
     input_data: { source: body.source, preset_id: body.preset_id, options: body.options },
-    total_items: 0,
-    processed_items: 0,
-    failed_items: 0,
-    progress_percent: 0
+    total_items: 0, processed_items: 0, failed_items: 0, progress_percent: 0,
   }).select("id, status").single();
   if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
   return json({ job_id: job.id, status: job.status }, 201, reqId);
@@ -187,9 +150,11 @@ async function jobAction(action: string, jobId: string, req: Request, auth: Auth
   if (!job) return errorResponse("NOT_FOUND", "Job not found", 404, reqId);
   const now = new Date().toISOString();
   if (action === "retry") {
-    const body = await req.json().catch(() => ({})); const onlyFailed = body.only_failed !== false;
+    const body = await req.json().catch(() => ({}));
+    const onlyFailed = body.only_failed !== false;
     const uq = admin.from("job_items").update({ status: "pending", error_code: null, updated_at: now } as any).eq("job_id", jobId);
-    if (onlyFailed) uq.eq("status", "error"); await uq;
+    if (onlyFailed) uq.eq("status", "error");
+    await uq;
     await admin.from("jobs").update({ status: "pending", updated_at: now }).eq("id", jobId);
     return json({ job_id: jobId, status: "pending" }, 200, reqId);
   }
@@ -206,17 +171,11 @@ async function jobAction(action: string, jobId: string, req: Request, auth: Auth
   }
   if (action === "replay") {
     const { data: newJob, error } = await admin.from("jobs").insert({
-      user_id: auth.user.id,
-      job_type: job.job_type,
-      job_subtype: job.job_subtype,
-      status: "pending",
-      name: `Replay: ${job.name || job.job_subtype}`,
+      user_id: auth.user.id, job_type: job.job_type, job_subtype: job.job_subtype,
+      status: "pending", name: `Replay: ${job.name || job.job_subtype}`,
       input_data: job.input_data,
       metadata: { ...((job.metadata as any) || {}), replayed_from: jobId },
-      total_items: 0,
-      processed_items: 0,
-      failed_items: 0,
-      progress_percent: 0
+      total_items: 0, processed_items: 0, failed_items: 0, progress_percent: 0,
     }).select("id, status").single();
     if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
     return json({ job_id: newJob.id, status: newJob.status, replayed_from: jobId }, 201, reqId);
@@ -230,14 +189,13 @@ async function listProducts(url: URL, auth: Auth, reqId: string) {
   const safePerPage = Math.min(perPage, PRODUCTS_LIST_MAX_PER_PAGE);
   const from = (page - 1) * safePerPage;
   const to = from + safePerPage - 1;
-
   const q_param = url.searchParams.get("q");
   const status = url.searchParams.get("status");
   const admin = serviceClient();
 
   let q = admin
     .from("products")
-    .select(PRODUCTS_LIST_COLUMNS, { count: "exact" })
+    .select("id, user_id, title, description, sku, barcode, price, compare_at_price, cost_price, category, brand, supplier, status, stock_quantity, weight, weight_unit, images, tags, seo_title, seo_description, is_published, created_at, updated_at, name, image_url, view_count, product_type, vendor, profit_margin, main_image_url, primary_image_url, currency", { count: "exact" })
     .eq("user_id", auth.user.id)
     .order("created_at", { ascending: false })
     .range(from, to);
@@ -247,12 +205,7 @@ async function listProducts(url: URL, auth: Auth, reqId: string) {
 
   const { data, count, error } = await q;
   if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
-
-  return json(
-    { items: sanitizeProductListItems(data ?? []), meta: { page, per_page: safePerPage, total: count ?? 0 } },
-    200,
-    reqId,
-  );
+  return json({ items: sanitizeProductListItems(data ?? []), meta: { page, per_page: safePerPage, total: count ?? 0 } }, 200, reqId);
 }
 
 async function getProduct(id: string, auth: Auth, reqId: string) {
@@ -264,7 +217,6 @@ async function getProduct(id: string, auth: Auth, reqId: string) {
 
 async function createProduct(req: Request, auth: Auth, reqId: string) {
   const raw = await req.json();
-  // Strip generated column "name" and read-only fields
   delete raw.name; delete raw.id; delete raw.user_id; delete raw.created_at; delete raw.updated_at;
   const admin = serviceClient();
   const { data, error } = await admin.from("products").insert({ ...raw, user_id: auth.user.id }).select().single();
@@ -272,7 +224,6 @@ async function createProduct(req: Request, auth: Auth, reqId: string) {
   return json(data, 201, reqId);
 }
 
-// "name" is a GENERATED column (= title), never include it in updates
 const PRODUCT_ALLOWED_FIELDS = new Set([
   "title","description","description_html","sku","barcode","price","compare_at_price",
   "cost_price","category","brand","supplier","supplier_url","supplier_product_id","status",
@@ -284,21 +235,14 @@ const PRODUCT_ALLOWED_FIELDS = new Set([
 
 async function updateProduct(id: string, req: Request, auth: Auth, reqId: string) {
   const raw = await req.json();
-  // Only allow known product columns
   const body: Record<string, unknown> = {};
   for (const [k, v] of Object.entries(raw)) {
     if (PRODUCT_ALLOWED_FIELDS.has(k)) body[k] = v;
   }
-  if (Object.keys(body).length === 0) {
-    return errorResponse("VALIDATION", "No valid fields to update", 400, reqId);
-  }
+  if (Object.keys(body).length === 0) return errorResponse("VALIDATION", "No valid fields to update", 400, reqId);
   const admin = serviceClient();
-  console.log(`[updateProduct] id=${id}, user=${auth.user.id}, fields=${Object.keys(body).join(",")}`);
   const { data, error } = await admin.from("products").update(body).eq("id", id).eq("user_id", auth.user.id).select().single();
-  if (error) {
-    console.error(`[updateProduct] DB error: ${error.message}`, error.details, error.hint);
-    return errorResponse("DB_ERROR", error.message, 400, reqId);
-  }
+  if (error) return errorResponse("DB_ERROR", error.message, 400, reqId);
   if (!data) return errorResponse("NOT_FOUND", "Product not found", 404, reqId);
   return json(data, 200, reqId);
 }
@@ -331,13 +275,9 @@ async function productStats(auth: Auth, reqId: string) {
     if (stock === 0) outOfStock++;
   }
   return json({
-    total,
-    active: counts["active"] ?? 0,
-    draft: counts["draft"] ?? 0,
-    inactive: counts["inactive"] ?? 0,
-    archived: counts["archived"] ?? 0,
-    low_stock: lowStock,
-    out_of_stock: outOfStock,
+    total, active: counts["active"] ?? 0, draft: counts["draft"] ?? 0,
+    inactive: counts["inactive"] ?? 0, archived: counts["archived"] ?? 0,
+    low_stock: lowStock, out_of_stock: outOfStock,
     total_value: Math.round(totalValue * 100) / 100,
     total_cost: Math.round(totalCost * 100) / 100,
     total_profit: Math.round(totalProfit * 100) / 100,
@@ -374,9 +314,8 @@ async function proxyEdgeFunction(fnName: string, req: Request, auth: Auth, reqId
   const targetUrl = `${supabaseUrl}/functions/v1/${fnName}${new URL(req.url).pathname.replace(/^\/api-v1/, "")}${new URL(req.url).search}`;
   const headers = new Headers(req.headers);
   headers.set("x-request-id", reqId);
-  const proxyReq = new Request(targetUrl, { method: req.method, headers, body: req.body, });
   try {
-    const resp = await fetch(proxyReq);
+    const resp = await fetch(new Request(targetUrl, { method: req.method, headers, body: req.body }));
     const respHeaders = new Headers(resp.headers);
     Object.entries(corsHeaders).forEach(([k, v]) => respHeaders.set(k, v));
     return new Response(resp.body, { status: resp.status, headers: respHeaders });
@@ -385,208 +324,8 @@ async function proxyEdgeFunction(fnName: string, req: Request, auth: Auth, reqId
   }
 }
 
-// ── SEO ─────────────────────────────────────────────────────────────────────
-
-async function listSeoAudits(url: URL, auth: Auth, reqId: string) {
-  const { page, perPage, from, to } = parsePagination(url);
-  const status = url.searchParams.get("status");
-  const targetType = url.searchParams.get("target_type");
-  const admin = serviceClient();
-  let q = admin.from("seo_audits").select("*", { count: "exact" }).eq("user_id", auth.user.id).order("created_at", { ascending: false }).range(from, to);
-  if (status) q = q.eq("status", status);
-  if (targetType) q = q.eq("target_type", targetType);
-  const { data, count, error } = await q;
-  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
-  const items = (data ?? []).map((a: any) => ({
-    audit_id: a.id,
-    target_type: a.target_type ?? "url",
-    target_id: a.target_id,
-    url: a.url,
-    score: a.score,
-    status: a.status ?? "completed",
-    provider: a.provider ?? "internal",
-    language: a.language ?? "fr",
-    summary: a.summary,
-    created_at: a.created_at,
-    completed_at: a.completed_at,
-  }));
-  return json({ items, meta: { page, per_page: perPage, total: count ?? 0 } }, 200, reqId);
-}
-
-async function getSeoAudit(auditId: string, auth: Auth, reqId: string) {
-  const admin = serviceClient();
-  const { data, error } = await admin.from("seo_audits").select("*").eq("id", auditId).eq("user_id", auth.user.id).single();
-  if (error || !data) return errorResponse("NOT_FOUND", "Audit not found", 404, reqId);
-  // Fetch issues
-  const { data: pages } = await admin.from("seo_audit_pages").select("id").eq("audit_id", auditId);
-  const pageIds = (pages ?? []).map((p: any) => p.id);
-  let issues: any[] = [];
-  if (pageIds.length > 0) {
-    const { data: issueRows } = await admin.from("seo_issues").select("*").in("page_id", pageIds);
-    issues = issueRows ?? [];
-  }
-  return json({
-    audit_id: data.id,
-    target_type: data.target_type ?? "url",
-    target_id: data.target_id,
-    url: data.url,
-    score: data.score,
-    status: data.status ?? "completed",
-    provider: data.provider ?? "internal",
-    language: data.language ?? "fr",
-    summary: data.summary,
-    error_message: data.error_message,
-    issues,
-    created_at: data.created_at,
-    completed_at: data.completed_at,
-  }, 200, reqId);
-}
-
-async function createSeoAudit(req: Request, auth: Auth, reqId: string) {
-  const body = await req.json();
-  if (!body.url) return errorResponse("VALIDATION_ERROR", "url is required", 400, reqId);
-  const admin = serviceClient();
-  const { data, error } = await admin.from("seo_audits").insert({
-    user_id: auth.user.id,
-    url: body.url,
-    target_type: body.scope ?? "url",
-    target_id: body.target_id ?? null,
-    language: body.language ?? "fr",
-    provider: body.provider ?? "internal",
-    status: "pending",
-    options: body.options ?? {},
-  }).select("id, status").single();
-  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
-  return json({ audit_id: data.id, status: data.status }, 201, reqId);
-}
-
-async function listProductSeoScores(url: URL, auth: Auth, reqId: string) {
-  const { page, perPage, from, to } = parsePagination(url);
-  const status = url.searchParams.get("status");
-  const sort = url.searchParams.get("sort");
-  const admin = serviceClient();
-  let q = admin.from("products").select("id, title, seo_title, seo_description, description, images, status, price, category", { count: "exact" }).eq("user_id", auth.user.id).range(from, to);
-  if (status === "active") q = q.eq("status", "active");
-  
-  const { data, count, error } = await q;
-  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
-  
-  const items = (data ?? []).map((p: any) => {
-    // Compute a simple SEO score
-    let score = 0;
-    const issues: any[] = [];
-    const strengths: string[] = [];
-    
-    if (p.seo_title && p.seo_title.length >= 10) { score += 20; strengths.push("Titre SEO présent"); }
-    else issues.push({ id: "no_seo_title", severity: "critical", category: "title", message: "Titre SEO manquant", recommendation: "Ajoutez un titre SEO de 50-60 caractères" });
-    
-    if (p.seo_description && p.seo_description.length >= 20) { score += 20; strengths.push("Meta description présente"); }
-    else issues.push({ id: "no_seo_desc", severity: "critical", category: "meta", message: "Meta description manquante", recommendation: "Ajoutez une meta description de 150-160 caractères" });
-    
-    if (p.title && p.title.length >= 5) { score += 20; strengths.push("Titre produit présent"); }
-    else issues.push({ id: "no_title", severity: "warning", category: "content", message: "Titre produit trop court" });
-    
-    if (p.description && p.description.length >= 50) { score += 20; strengths.push("Description détaillée"); }
-    else issues.push({ id: "short_desc", severity: "warning", category: "content", message: "Description trop courte", recommendation: "Minimum 150 caractères recommandés" });
-    
-    const imgs = Array.isArray(p.images) ? p.images : [];
-    if (imgs.length > 0) { score += 20; strengths.push("Images présentes"); }
-    else issues.push({ id: "no_images", severity: "warning", category: "images", message: "Aucune image produit" });
-    
-    const statusLabel = score >= 80 ? "optimized" : score >= 50 ? "needs_work" : "critical";
-    
-    return {
-      product_id: p.id,
-      product_name: p.title ?? "Sans titre",
-      current: { seo_title: p.seo_title, seo_description: p.seo_description, title: p.title, description: p.description },
-      score: { global: score, seo: (p.seo_title ? 50 : 0) + (p.seo_description ? 50 : 0), content: p.description?.length > 50 ? 80 : 30, images: imgs.length > 0 ? 100 : 0, data: score, ai_readiness: score },
-      status: statusLabel,
-      issues,
-      strengths,
-      business_impact: { traffic_impact: score < 50 ? "high" : "medium", conversion_impact: score < 50 ? "high" : "low", estimated_traffic_gain_percent: Math.max(0, 80 - score), estimated_conversion_gain_percent: Math.max(0, 40 - score / 2), priority: score < 40 ? "urgent" : score < 70 ? "high" : "normal" },
-    };
-  });
-  
-  // Sort
-  if (sort === "score_asc") items.sort((a: any, b: any) => a.score.global - b.score.global);
-  else if (sort === "score_desc") items.sort((a: any, b: any) => b.score.global - a.score.global);
-  
-  const stats = {
-    avg_score: items.length > 0 ? Math.round(items.reduce((s: number, i: any) => s + i.score.global, 0) / items.length) : 0,
-    critical: items.filter((i: any) => i.status === "critical").length,
-    needs_work: items.filter((i: any) => i.status === "needs_work").length,
-    optimized: items.filter((i: any) => i.status === "optimized").length,
-    total: count ?? 0,
-  };
-  
-  return json({ items, stats, meta: { page, per_page: perPage, total: count ?? 0 } }, 200, reqId);
-}
-
-async function auditProductsSeo(req: Request, auth: Auth, reqId: string) {
-  const body = await req.json();
-  const productIds = body.product_ids;
-  if (!Array.isArray(productIds) || productIds.length === 0) return errorResponse("VALIDATION_ERROR", "product_ids array required", 400, reqId);
-  // Reuse scores logic for specific products
-  const admin = serviceClient();
-  const { data, error } = await admin.from("products").select("id, title, seo_title, seo_description, description, images").eq("user_id", auth.user.id).in("id", productIds);
-  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
-  
-  const products = (data ?? []).map((p: any) => {
-    let score = 0;
-    if (p.seo_title && p.seo_title.length >= 10) score += 25;
-    if (p.seo_description && p.seo_description.length >= 20) score += 25;
-    if (p.title && p.title.length >= 5) score += 25;
-    if (p.description && p.description.length >= 50) score += 25;
-    return {
-      product_id: p.id,
-      product_name: p.title ?? "Sans titre",
-      current: { seo_title: p.seo_title, seo_description: p.seo_description, title: p.title, description: p.description },
-      score: { global: score, seo: (p.seo_title ? 50 : 0) + (p.seo_description ? 50 : 0), content: p.description?.length > 50 ? 80 : 30, images: Array.isArray(p.images) && p.images.length > 0 ? 100 : 0, data: score, ai_readiness: score },
-      status: score >= 80 ? "optimized" : score >= 50 ? "needs_work" : "critical",
-      issues: [],
-      strengths: [],
-      business_impact: { traffic_impact: "medium", conversion_impact: "low", estimated_traffic_gain_percent: 0, estimated_conversion_gain_percent: 0, priority: "normal" },
-    };
-  });
-  
-  return json({ products, total: products.length, audited_at: new Date().toISOString() }, 200, reqId);
-}
-
-async function seoGenerate(req: Request, auth: Auth, reqId: string) {
-  const body = await req.json();
-  if (!body.target_id) return errorResponse("VALIDATION_ERROR", "target_id is required", 400, reqId);
-  const admin = serviceClient();
-  const { data: job, error } = await admin.from("jobs").insert({
-    user_id: auth.user.id,
-    job_type: "seo",
-    job_subtype: "generate",
-    status: "pending",
-    name: `SEO Generate: ${body.target_type ?? "product"}`,
-    input_data: body,
-  }).select("id, status").single();
-  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
-  return json({ job_id: job.id, status: job.status }, 201, reqId);
-}
-
-async function seoApply(req: Request, auth: Auth, reqId: string) {
-  const body = await req.json();
-  if (!body.target_id || !body.fields) return errorResponse("VALIDATION_ERROR", "target_id and fields required", 400, reqId);
-  const admin = serviceClient();
-  // Apply SEO fields to the product
-  const updates: Record<string, unknown> = {};
-  const appliedFields: string[] = [];
-  for (const [k, v] of Object.entries(body.fields)) {
-    if (PRODUCT_ALLOWED_FIELDS.has(k)) { updates[k] = v; appliedFields.push(k); }
-  }
-  if (Object.keys(updates).length > 0) {
-    const { error } = await admin.from("products").update(updates).eq("id", body.target_id).eq("user_id", auth.user.id);
-    if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
-  }
-  return json({ success: true, target_id: body.target_id, applied_fields: appliedFields }, 200, reqId);
-}
-
 // ── Router ──────────────────────────────────────────────────────────────────
-const EXT_PREFIXES = ["/v1/automation", "/v1/marketing", "/v1/ads", "/v1/crm", "/v1/finance", "/v1/monetization", "/v1/ai", "/v1/bi"];
+const EXT_PREFIXES = ["/v1/automation", "/v1/marketing", "/v1/ads", "/v1/crm", "/v1/finance", "/v1/monetization", "/v1/ai", "/v1/bi", "/v1/seo"];
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
@@ -595,7 +334,7 @@ Deno.serve(async (req) => {
     const url = new URL(req.url);
     const path = url.pathname.replace(/^\/api-v1/, "");
 
-    // Proxy to api-v1-ext for extension domains
+    // Proxy to api-v1-ext for extension domains (including SEO)
     if (EXT_PREFIXES.some(p => path.startsWith(p))) {
       const auth = await authenticate(req);
       if (!auth) return errorResponse("UNAUTHORIZED", "Authentication required", 401, reqId);
@@ -609,52 +348,14 @@ Deno.serve(async (req) => {
     const auth = await authenticate(req);
     if (!auth) return errorResponse("UNAUTHORIZED", "Authentication required", 401, reqId);
 
-    // Rate limiting
-    if (!checkRateLimit(auth.user.id, path)) return errorResponse("RATE_LIMITED", "Too many requests", 429, reqId);
-
     const m = req.method;
-
-    // ── SEO
-    if (path === "/v1/seo/audits" && m === "GET") return listSeoAudits(url, auth, reqId);
-    if (path === "/v1/seo/audit" && m === "POST") return createSeoAudit(req, auth, reqId);
-    if (path === "/v1/seo/products/scores" && m === "GET") return listProductSeoScores(url, auth, reqId);
-    if (path === "/v1/seo/products/audit" && m === "POST") return auditProductsSeo(req, auth, reqId);
-    if (path === "/v1/seo/generate" && m === "POST") return seoGenerate(req, auth, reqId);
-    if (path === "/v1/seo/apply" && m === "POST") return seoApply(req, auth, reqId);
-    let params = matchRoute("/v1/seo/audits/:id", path);
-    if (params && m === "GET") return getSeoAudit(params.id, auth, reqId);
-    params = matchRoute("/v1/seo/generate/:id", path);
-    if (params && m === "GET") {
-      const admin = serviceClient();
-      const { data, error } = await admin.from("jobs").select("*").eq("id", params.id).eq("user_id", auth.user.id).single();
-      if (error || !data) return errorResponse("NOT_FOUND", "Generation job not found", 404, reqId);
-      return json({ job_id: data.id, status: data.status, target_type: data.input_data?.target_type, target_id: data.input_data?.target_id, result: data.output_data, created_at: data.created_at }, 200, reqId);
-    }
-    params = matchRoute("/v1/seo/products/:id/score", path);
-    if (params && m === "GET") {
-      const admin = serviceClient();
-      const { data: p, error } = await admin.from("products").select("id, title, seo_title, seo_description, description, images").eq("id", params.id).eq("user_id", auth.user.id).single();
-      if (error || !p) return errorResponse("NOT_FOUND", "Product not found", 404, reqId);
-      let score = 0;
-      if (p.seo_title && p.seo_title.length >= 10) score += 25;
-      if (p.seo_description && p.seo_description.length >= 20) score += 25;
-      if (p.title && p.title.length >= 5) score += 25;
-      if (p.description && p.description.length >= 50) score += 25;
-      return json({ product_id: p.id, product_name: p.title, score: { global: score }, status: score >= 80 ? "optimized" : score >= 50 ? "needs_work" : "critical", issues: [], strengths: [] }, 200, reqId);
-    }
-    params = matchRoute("/v1/seo/products/:id/history", path);
-    if (params && m === "GET") {
-      const admin = serviceClient();
-      const { data } = await admin.from("seo_history_snapshots").select("*").eq("product_id", params.id).order("created_at", { ascending: false }).limit(20);
-      return json({ items: data ?? [], meta: { page: 1, per_page: 20, total: (data ?? []).length } }, 200, reqId);
-    }
 
     // ── Products
     if (path === "/v1/products/stats" && m === "GET") return productStats(auth, reqId);
     if (path === "/v1/products/bulk" && (m === "PATCH" || m === "POST")) return bulkUpdateProducts(req, auth, reqId);
     if (path === "/v1/products" && m === "GET") return listProducts(url, auth, reqId);
     if (path === "/v1/products" && m === "POST") return createProduct(req, auth, reqId);
-    params = matchRoute("/v1/products/:id", path);
+    let params = matchRoute("/v1/products/:id", path);
     if (params && m === "GET") return getProduct(params.id, auth, reqId);
     if (params && m === "PUT") return updateProduct(params.id, req, auth, reqId);
     if (params && m === "PATCH") return updateProduct(params.id, req, auth, reqId);
@@ -664,7 +365,6 @@ Deno.serve(async (req) => {
     if (path === "/v1/integrations" && m === "GET") return listIntegrations(url, auth, reqId);
 
     // ── Import Jobs
-    // Support both /imports/jobs and /import/jobs paths
     if ((path === "/v1/imports/jobs" || path === "/v1/import/jobs") && m === "POST") return createImportJob(req, auth, reqId);
     if ((path === "/v1/imports/jobs" || path === "/v1/import/jobs") && m === "GET") return listImportJobs(url, auth, reqId);
     params = matchRoute("/v1/imports/jobs/:id", path) ?? matchRoute("/v1/import/jobs/:id", path);
