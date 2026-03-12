@@ -273,8 +273,13 @@ export interface ProductStats {
 }
 
 export const productsApi = {
-  list: (params?: PaginationParams & { status?: string; category?: string; q?: string; low_stock?: string }) =>
-    api.get<PaginatedResponse<ProductRecord>>('/products', params as any),
+  list: (params?: PaginationParams & { status?: string; category?: string; q?: string; low_stock?: string }) => {
+    const normalizedParams = {
+      ...(params ?? {}),
+      per_page: normalizeProductsPerPage(params?.per_page),
+    }
+    return api.get<PaginatedResponse<ProductRecord>>('/products', normalizedParams as any)
+  },
 
   get: (id: string) =>
     api.get<ProductRecord>(`/products/${id}`),
