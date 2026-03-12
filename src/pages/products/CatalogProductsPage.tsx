@@ -674,19 +674,19 @@ export default function CatalogProductsPage() {
             <div className="flex-1" />
             <Button
               variant="outline" size="sm" className="gap-2"
-              onClick={() => navigate('/sourcing', { state: { productIds: selectedProducts } })}>
+              onClick={() => setShowSourcingPanel(true)}>
               <Globe className="h-4 w-4" />
               Trouver fournisseur
             </Button>
             <Button
               variant="outline" size="sm" className="gap-2"
-              onClick={() => navigate('/orders/fulfillment', { state: { productIds: selectedProducts } })}>
+              onClick={() => setShowAutoOrderPanel(true)}>
               <ShoppingCart className="h-4 w-4" />
               Commander
             </Button>
             <Button
               variant="outline" size="sm" className="gap-2"
-              onClick={() => navigate('/pricing-manager', { state: { productIds: selectedProducts } })}>
+              onClick={() => setShowPricingPanel(true)}>
               <Tag className="h-4 w-4" />
               Pricing
             </Button>
