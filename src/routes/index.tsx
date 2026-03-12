@@ -197,9 +197,10 @@ export function AppRoutes() {
           <Route path="/tools/*" element={<Protected><ToolsRoutes /></Protected>} />
           <Route path="/stock/*" element={<Protected><StockRoutes /></Protected>} />
           
-          {/* Shipping */}
+          {/* Shipping & Finance */}
           <Route path="/shipping/*" element={<Protected><ShippingHubPage /></Protected>} />
           <Route path="/customer-service" element={<Protected><CustomerServiceHubPage /></Protected>} />
+          <Route path="/finance/*" element={<Protected><FinancialHubPage /></Protected>} />
           
           {/* Integrations & Extensions */}
           <Route path="/integrations/*" element={<Protected><IntegrationRoutes /></Protected>} />
