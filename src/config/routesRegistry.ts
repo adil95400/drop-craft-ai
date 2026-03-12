@@ -64,6 +64,7 @@ export const ROUTES_REGISTRY: RouteConfig[] = [
   { path: '/automation/studio', protected: true, category: 'automation', description: 'Workflow Studio', implemented: true },
   { path: '/automation/history', protected: true, category: 'automation', description: 'Historique workflows', implemented: true },
   { path: '/automation/fulfillment', protected: true, category: 'automation', description: 'Auto-fulfillment', implemented: true },
+  { path: '/automation/fulfillment-hub', protected: true, category: 'automation', description: 'Fulfillment Hub: split orders, bordereaux, batch', implemented: true },
   { path: '/automation/tracking', protected: true, category: 'automation', description: 'Suivi automatique', implemented: true },
   { path: '/automation/promotions', protected: true, category: 'automation', description: 'Promotions auto', implemented: true },
 
