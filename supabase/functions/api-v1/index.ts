@@ -22,7 +22,7 @@ function parsePagination(url: URL) {
   return { page, perPage, from: (page - 1) * perPage, to: page * perPage - 1 };
 }
 
-const PRODUCTS_LIST_MAX_PER_PAGE = 50;
+const PRODUCTS_LIST_MAX_PER_PAGE = 30;
 const DATA_URL_RE = /^data:/i;
 
 function safeRemoteUrl(value: unknown): string | null {
