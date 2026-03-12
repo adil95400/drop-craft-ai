@@ -1055,6 +1055,9 @@ export function FulfillmentAutomation() {
           })}
         </div>
       )}
+
+      {/* Execution Log */}
+      <AutomationExecutionLog />
     </div>
   );
 }
