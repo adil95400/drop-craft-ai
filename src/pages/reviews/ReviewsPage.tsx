@@ -187,81 +187,101 @@ export default function ReviewsPage() {
         </Card>
       )}
 
-      {/* Filters & Reviews */}
-      <Tabs defaultValue="all" className="space-y-4" onValueChange={v => setRatingFilter(v)}>
-        <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-          <TabsList>
-            <TabsTrigger value="all">Tous ({reviews.length})</TabsTrigger>
-            <TabsTrigger value="positive">Positifs ({positiveReviews.length})</TabsTrigger>
-            <TabsTrigger value="negative">Négatifs ({negativeReviews.length})</TabsTrigger>
-          </TabsList>
-          <div className="flex gap-2">
-            <div className="relative">
-              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Rechercher..."
-                value={search}
-                onChange={e => setSearch(e.target.value)}
-                className="w-48 pl-8"
-              />
-            </div>
-            <Select value={platformFilter} onValueChange={setPlatformFilter}>
-              <SelectTrigger className="w-36"><SelectValue placeholder="Plateforme" /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Toutes</SelectItem>
-                <SelectItem value="manual">Manuel</SelectItem>
-                <SelectItem value="aliexpress">AliExpress</SelectItem>
-                <SelectItem value="amazon">Amazon</SelectItem>
-                <SelectItem value="tiktok">TikTok</SelectItem>
-                <SelectItem value="shopify">Shopify</SelectItem>
-                <SelectItem value="ebay">eBay</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
+      {/* Main Tabs: Reviews + AI */}
+      <Tabs value={mainTab} onValueChange={v => setMainTab(v as 'reviews' | 'ai')}>
+        <TabsList className="mb-4">
+          <TabsTrigger value="reviews" className="gap-2">
+            <MessageSquare className="h-4 w-4" />
+            Avis ({stats?.total || 0})
+          </TabsTrigger>
+          <TabsTrigger value="ai" className="gap-2">
+            <Sparkles className="h-4 w-4" />
+            Analyse IA
+          </TabsTrigger>
+        </TabsList>
 
-        {isLoading ? (
-          <div className="space-y-3 py-4">
-            {[1,2,3,4].map(i => (
-              <div key={i} className="h-24 bg-muted animate-pulse rounded-lg" />
-            ))}
-          </div>
-        ) : reviews.length === 0 ? (
-          <Card>
-            <CardContent className="py-12 text-center">
-              <Star className="h-12 w-12 mx-auto mb-3 text-muted-foreground/30" />
-              <p className="text-muted-foreground mb-4">Aucun avis trouvé</p>
-              <div className="flex gap-2 justify-center">
-                <Button variant="outline" onClick={() => setImportModalOpen(true)} className="gap-2">
-                  <Upload className="h-4 w-4" />
-                  Importer des avis
-                </Button>
-                <Button onClick={() => setCreateModalOpen(true)} className="gap-2">
-                  <Plus className="h-4 w-4" />
-                  Créer un avis
-                </Button>
+        <TabsContent value="reviews" className="space-y-4 mt-0">
+          {/* Filters & Reviews */}
+          <Tabs defaultValue="all" className="space-y-4" onValueChange={v => setRatingFilter(v)}>
+            <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+              <TabsList>
+                <TabsTrigger value="all">Tous ({reviews.length})</TabsTrigger>
+                <TabsTrigger value="positive">Positifs ({positiveReviews.length})</TabsTrigger>
+                <TabsTrigger value="negative">Négatifs ({negativeReviews.length})</TabsTrigger>
+              </TabsList>
+              <div className="flex gap-2">
+                <div className="relative">
+                  <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Rechercher..."
+                    value={search}
+                    onChange={e => setSearch(e.target.value)}
+                    className="w-48 pl-8"
+                  />
+                </div>
+                <Select value={platformFilter} onValueChange={setPlatformFilter}>
+                  <SelectTrigger className="w-36"><SelectValue placeholder="Plateforme" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Toutes</SelectItem>
+                    <SelectItem value="manual">Manuel</SelectItem>
+                    <SelectItem value="aliexpress">AliExpress</SelectItem>
+                    <SelectItem value="amazon">Amazon</SelectItem>
+                    <SelectItem value="tiktok">TikTok</SelectItem>
+                    <SelectItem value="shopify">Shopify</SelectItem>
+                    <SelectItem value="ebay">eBay</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
-            </CardContent>
-          </Card>
-        ) : (
-          <>
-            <TabsContent value="all" className="space-y-3 mt-0">
-              {reviews.map(review => (
-                <ReviewCard key={review.id} review={review} onDelete={deleteReview.mutate} />
-              ))}
-            </TabsContent>
-            <TabsContent value="positive" className="space-y-3 mt-0">
-              {positiveReviews.map(review => (
-                <ReviewCard key={review.id} review={review} onDelete={deleteReview.mutate} />
-              ))}
-            </TabsContent>
-            <TabsContent value="negative" className="space-y-3 mt-0">
-              {negativeReviews.map(review => (
-                <ReviewCard key={review.id} review={review} onDelete={deleteReview.mutate} />
-              ))}
-            </TabsContent>
-          </>
-        )}
+            </div>
+
+            {isLoading ? (
+              <div className="space-y-3 py-4">
+                {[1,2,3,4].map(i => (
+                  <div key={i} className="h-24 bg-muted animate-pulse rounded-lg" />
+                ))}
+              </div>
+            ) : reviews.length === 0 ? (
+              <Card>
+                <CardContent className="py-12 text-center">
+                  <Star className="h-12 w-12 mx-auto mb-3 text-muted-foreground/30" />
+                  <p className="text-muted-foreground mb-4">Aucun avis trouvé</p>
+                  <div className="flex gap-2 justify-center">
+                    <Button variant="outline" onClick={() => setImportModalOpen(true)} className="gap-2">
+                      <Upload className="h-4 w-4" />
+                      Importer des avis
+                    </Button>
+                    <Button onClick={() => setCreateModalOpen(true)} className="gap-2">
+                      <Plus className="h-4 w-4" />
+                      Créer un avis
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            ) : (
+              <>
+                <TabsContent value="all" className="space-y-3 mt-0">
+                  {reviews.map(review => (
+                    <ReviewCard key={review.id} review={review} onDelete={deleteReview.mutate} />
+                  ))}
+                </TabsContent>
+                <TabsContent value="positive" className="space-y-3 mt-0">
+                  {positiveReviews.map(review => (
+                    <ReviewCard key={review.id} review={review} onDelete={deleteReview.mutate} />
+                  ))}
+                </TabsContent>
+                <TabsContent value="negative" className="space-y-3 mt-0">
+                  {negativeReviews.map(review => (
+                    <ReviewCard key={review.id} review={review} onDelete={deleteReview.mutate} />
+                  ))}
+                </TabsContent>
+              </>
+            )}
+          </Tabs>
+        </TabsContent>
+
+        <TabsContent value="ai" className="mt-0">
+          <ReviewAIPanel />
+        </TabsContent>
       </Tabs>
 
       {/* Import Modal */}
