@@ -100,6 +100,7 @@ export const ROUTES_REGISTRY: RouteConfig[] = [
 
   // ===== TOOLS =====
   { path: '/tools', protected: true, category: 'tools', description: 'Outils', implemented: true },
+  { path: '/shipping', protected: true, category: 'core', description: 'Expédition & Tarifs', implemented: true, label: 'Expédition' },
   { path: '/sync-manager', protected: true, category: 'tools', description: 'Sync manager', implemented: true },
   { path: '/reviews', protected: true, category: 'tools', description: 'Avis', implemented: true },
   { path: '/coupons', protected: true, category: 'tools', description: 'Coupons', implemented: true },
