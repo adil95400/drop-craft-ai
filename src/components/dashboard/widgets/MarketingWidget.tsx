@@ -31,12 +31,16 @@ export function MarketingWidget({ settings }: MarketingWidgetProps) {
     }
   });
 
-  const campaignData = campaigns.slice(0, 4).map(campaign => ({
-    name: campaign.name?.substring(0, 12) || 'Campagne',
-    spend: Number(campaign.budget_spent || 0),
-    revenue: Number(campaign.budget_spent || 0) * 3.2, // Estimated ROAS
-    roas: 3.2
-  }));
+  const campaignData = campaigns.slice(0, 4).map(campaign => {
+    const spend = Number(campaign.budget_spent || 0);
+    const revenue = Number(campaign.revenue_generated || 0);
+    return {
+      name: campaign.name?.substring(0, 12) || 'Campagne',
+      spend,
+      revenue,
+      roas: spend > 0 ? Number((revenue / spend).toFixed(1)) : 0,
+    };
+  });
 
   const totalSpend = campaignData.reduce((sum, d) => sum + d.spend, 0);
   const totalRevenue = campaignData.reduce((sum, d) => sum + d.revenue, 0);
