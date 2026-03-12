@@ -283,6 +283,9 @@ export const UnifiedAuthProvider = ({ children }: { children: React.ReactNode })
   // ── Auth actions ─────────────────────────────────────────────────
   const signIn = useCallback(async (email: string, password: string) => {
     const { error } = await supabase.auth.signInWithPassword({ email, password });
+    if (!error) {
+      try { const { trackLogin } = await import('@/lib/analytics/conversions'); trackLogin('email'); } catch {}
+    }
     return { error };
   }, []);
 
