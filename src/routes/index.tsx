@@ -47,7 +47,6 @@ const ToolsRoutes = lazy(() => import('./ToolsRoutes').then(m => ({ default: m.T
 const IntelligenceHubPage = lazy(() => import('@/pages/intelligence/IntelligenceHubPage'));
 const BusinessIntelligencePage = lazy(() => import('@/pages/intelligence/BusinessIntelligencePage'));
 const ProductSourcingHub = lazy(() => import('@/pages/ProductSourcingHub'));
-const BusinessIntelligencePage = lazy(() => import('@/pages/intelligence/BusinessIntelligencePage'));
 
 // Pages directes (lazy loaded)
 const NotFoundPage = lazy(() => import('@/pages/NotFoundPage'));
