@@ -403,6 +403,13 @@ export default function CatalogProductsPage() {
         <ActiveJobsBanner />
         <CatalogHealthBanner />
 
+        {/* === STOCK ALERTS === */}
+        <CatalogStockAlerts
+          products={products}
+          onSelectProducts={setSelectedProducts}
+          onOpenAutoOrder={() => setShowAutoOrderPanel(true)}
+        />
+
         {/* === KPI STAT CARDS === */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
           <Card className="border-border/50 cursor-pointer hover:border-primary/30 transition-colors" onClick={() => navigate('/products?status=active')}>
@@ -462,6 +469,9 @@ export default function CatalogProductsPage() {
             </CardContent>
           </Card>
         </div>
+
+        {/* === FINANCIAL KPIs === */}
+        <CatalogFinancialKPIs products={products} />
 
         {/* === TOOLBAR === */}
         <div className="flex flex-col gap-3">
