@@ -7,18 +7,17 @@ import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Progress } from '@/components/ui/progress';
 import { useSEOContentHub } from '@/hooks/useSEOContentHub';
 import {
   FileText, Search as SearchIcon, TrendingUp, Sparkles, BarChart3,
-  Eye, Trash2, Send, PenLine, Loader2, Globe, BookOpen, Zap
+  Trash2, Send, PenLine, Loader2, Globe, BookOpen, Zap, Package, AlertTriangle, CheckCircle2
 } from 'lucide-react';
 
 export default function SEOContentHubPage() {
   const {
-    posts, audits, stats, isLoading,
+    posts, audits, productScores, aiContent, stats, isLoading,
     generatePost, isGenerating, updatePost, deletePost,
   } = useSEOContentHub();
 
@@ -27,11 +26,18 @@ export default function SEOContentHubPage() {
   const [tone, setTone] = useState('professional');
   const [category, setCategory] = useState('ecommerce');
   const [search, setSearch] = useState('');
+  const [productSearch, setProductSearch] = useState('');
   const [showGenDialog, setShowGenDialog] = useState(false);
 
   const filteredPosts = posts.filter(p =>
     p.title.toLowerCase().includes(search.toLowerCase())
   );
+
+  const filteredProducts = productScores.filter(p => {
+    if (!productSearch) return true;
+    const q = productSearch.toLowerCase();
+    return p.product?.title?.toLowerCase().includes(q) || p.product?.sku?.toLowerCase().includes(q);
+  });
 
   const handleGenerate = () => {
     if (!topic) return;
@@ -46,36 +52,60 @@ export default function SEOContentHubPage() {
     setShowGenDialog(false);
   };
 
+  const getScoreColor = (score: number | null) => {
+    const s = score ?? 0;
+    if (s >= 80) return 'text-success';
+    if (s >= 50) return 'text-warning';
+    return 'text-destructive';
+  };
+
+  const getScoreBadge = (score: number | null) => {
+    const s = score ?? 0;
+    if (s >= 80) return <Badge className="bg-success/10 text-success border-success/20">Bon</Badge>;
+    if (s >= 50) return <Badge className="bg-warning/10 text-warning border-warning/20">Moyen</Badge>;
+    return <Badge variant="destructive">Faible</Badge>;
+  };
+
   return (
     <ChannablePageWrapper
-      title="SEO & Content Marketing"
-      description="Audit SEO automatisé, générateur de contenu IA et optimisation des fiches produits."
+      title="SEO & Content Hub"
+      description="Audit SEO produits, génération de contenu IA et optimisation des fiches"
+      badge={{ label: 'SEO', icon: SearchIcon }}
     >
       {/* KPI Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
+        <Card>
+          <CardContent className="pt-4 pb-3">
+            <div className="flex items-center gap-2 text-muted-foreground text-xs mb-1">
+              <BarChart3 className="h-3.5 w-3.5" /> Score SEO moyen
+            </div>
+            <p className="text-2xl font-bold">{stats.avgSeoScore}<span className="text-sm text-muted-foreground">/100</span></p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="pt-4 pb-3">
+            <div className="flex items-center gap-2 text-muted-foreground text-xs mb-1">
+              <Package className="h-3.5 w-3.5" /> Produits scorés
+            </div>
+            <p className="text-2xl font-bold">{stats.totalProductsScored}</p>
+            <p className="text-xs text-muted-foreground">{stats.goodSeoProducts} bons · {stats.lowSeoProducts} faibles</p>
+          </CardContent>
+        </Card>
         <Card>
           <CardContent className="pt-4 pb-3">
             <div className="flex items-center gap-2 text-muted-foreground text-xs mb-1">
               <FileText className="h-3.5 w-3.5" /> Articles
             </div>
             <p className="text-2xl font-bold">{stats.totalPosts}</p>
-            <p className="text-xs text-muted-foreground">{stats.publishedPosts} publiés · {stats.draftPosts} brouillons</p>
+            <p className="text-xs text-muted-foreground">{stats.publishedPosts} publiés</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="pt-4 pb-3">
             <div className="flex items-center gap-2 text-muted-foreground text-xs mb-1">
-              <Sparkles className="h-3.5 w-3.5" /> Générés par IA
+              <Sparkles className="h-3.5 w-3.5" /> Contenu IA
             </div>
-            <p className="text-2xl font-bold">{stats.aiGenerated}</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-4 pb-3">
-            <div className="flex items-center gap-2 text-muted-foreground text-xs mb-1">
-              <BarChart3 className="h-3.5 w-3.5" /> Score SEO Moyen
-            </div>
-            <p className="text-2xl font-bold">{stats.avgSeoScore}<span className="text-sm text-muted-foreground">/100</span></p>
+            <p className="text-2xl font-bold">{stats.aiContentCount}</p>
           </CardContent>
         </Card>
         <Card>
@@ -88,11 +118,117 @@ export default function SEOContentHubPage() {
         </Card>
       </div>
 
-      <Tabs defaultValue="blog" className="space-y-4">
+      <Tabs defaultValue="products" className="space-y-4">
         <TabsList>
+          <TabsTrigger value="products"><Package className="h-4 w-4 mr-1" /> Produits SEO ({stats.totalProductsScored})</TabsTrigger>
           <TabsTrigger value="blog"><BookOpen className="h-4 w-4 mr-1" /> Blog ({posts.length})</TabsTrigger>
-          <TabsTrigger value="audits"><BarChart3 className="h-4 w-4 mr-1" /> Audits SEO ({audits.length})</TabsTrigger>
+          <TabsTrigger value="ai-content"><Sparkles className="h-4 w-4 mr-1" /> Contenu IA ({stats.aiContentCount})</TabsTrigger>
+          <TabsTrigger value="audits"><BarChart3 className="h-4 w-4 mr-1" /> Audits ({audits.length})</TabsTrigger>
         </TabsList>
+
+        {/* === PRODUCT SEO TAB === */}
+        <TabsContent value="products" className="space-y-4">
+          <div className="relative max-w-md">
+            <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input placeholder="Rechercher par produit ou SKU..." value={productSearch} onChange={e => setProductSearch(e.target.value)} className="pl-9" />
+          </div>
+
+          <Card>
+            <CardContent className="p-0">
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead className="border-b bg-muted/50">
+                    <tr>
+                      <th className="text-left p-3 font-medium">Produit</th>
+                      <th className="text-center p-3 font-medium">SEO</th>
+                      <th className="text-center p-3 font-medium">Titre</th>
+                      <th className="text-center p-3 font-medium">Description</th>
+                      <th className="text-center p-3 font-medium">Images</th>
+                      <th className="text-center p-3 font-medium">Global</th>
+                      <th className="text-center p-3 font-medium">Statut</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredProducts.length === 0 && (
+                      <tr><td colSpan={7} className="text-center p-8 text-muted-foreground">
+                        <Package className="h-10 w-10 mx-auto mb-3 opacity-30" />
+                        <p>Aucun score SEO produit</p>
+                        <p className="text-xs mt-1">Lancez un audit depuis le module Qualité pour scorer vos produits</p>
+                      </td></tr>
+                    )}
+                    {filteredProducts.map(ps => (
+                      <tr key={ps.id} className="border-b hover:bg-muted/30 transition-colors">
+                        <td className="p-3">
+                          <div className="flex items-center gap-2">
+                            {ps.product?.image_url && (
+                              <img src={ps.product.image_url} className="w-8 h-8 rounded object-cover" alt="" />
+                            )}
+                            <div>
+                              <p className="font-medium truncate max-w-[200px]">{ps.product?.title ?? '—'}</p>
+                              <p className="text-xs text-muted-foreground">{ps.product?.sku}</p>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="p-3 text-center">
+                          <span className={`font-mono font-bold ${getScoreColor(ps.seo_score)}`}>{ps.seo_score ?? '—'}</span>
+                        </td>
+                        <td className="p-3 text-center">
+                          <span className={`font-mono ${getScoreColor(ps.title_score)}`}>{ps.title_score ?? '—'}</span>
+                        </td>
+                        <td className="p-3 text-center">
+                          <span className={`font-mono ${getScoreColor(ps.description_score)}`}>{ps.description_score ?? '—'}</span>
+                        </td>
+                        <td className="p-3 text-center">
+                          <span className={`font-mono ${getScoreColor(ps.images_score)}`}>{ps.images_score ?? '—'}</span>
+                        </td>
+                        <td className="p-3 text-center">
+                          <div className="flex items-center gap-2 justify-center">
+                            <Progress value={ps.overall_score ?? 0} className="h-2 w-16" />
+                            <span className="font-mono text-xs">{ps.overall_score ?? 0}</span>
+                          </div>
+                        </td>
+                        <td className="p-3 text-center">{getScoreBadge(ps.seo_score)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Score distribution */}
+          {productScores.length > 0 && (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <Card>
+                <CardContent className="p-4 flex items-center gap-3">
+                  <CheckCircle2 className="h-8 w-8 text-success" />
+                  <div>
+                    <p className="text-2xl font-bold text-success">{stats.goodSeoProducts}</p>
+                    <p className="text-xs text-muted-foreground">Score ≥ 80 — Bien optimisés</p>
+                  </div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent className="p-4 flex items-center gap-3">
+                  <TrendingUp className="h-8 w-8 text-warning" />
+                  <div>
+                    <p className="text-2xl font-bold text-warning">{stats.totalProductsScored - stats.goodSeoProducts - stats.lowSeoProducts}</p>
+                    <p className="text-xs text-muted-foreground">Score 50-79 — À améliorer</p>
+                  </div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent className="p-4 flex items-center gap-3">
+                  <AlertTriangle className="h-8 w-8 text-destructive" />
+                  <div>
+                    <p className="text-2xl font-bold text-destructive">{stats.lowSeoProducts}</p>
+                    <p className="text-xs text-muted-foreground">Score &lt; 50 — Action requise</p>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          )}
+        </TabsContent>
 
         {/* === BLOG TAB === */}
         <TabsContent value="blog" className="space-y-4">
@@ -192,6 +328,64 @@ export default function SEOContentHubPage() {
           )}
         </TabsContent>
 
+        {/* === AI CONTENT TAB === */}
+        <TabsContent value="ai-content" className="space-y-4">
+          <Card>
+            <CardContent className="p-0">
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead className="border-b bg-muted/50">
+                    <tr>
+                      <th className="text-left p-3 font-medium">Produit</th>
+                      <th className="text-left p-3 font-medium">Type</th>
+                      <th className="text-left p-3 font-medium">Contenu généré</th>
+                      <th className="text-center p-3 font-medium">Score</th>
+                      <th className="text-center p-3 font-medium">Statut</th>
+                      <th className="text-left p-3 font-medium">Date</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {aiContent.length === 0 && (
+                      <tr><td colSpan={6} className="text-center p-8 text-muted-foreground">
+                        <Sparkles className="h-10 w-10 mx-auto mb-3 opacity-30" />
+                        <p>Aucun contenu IA généré</p>
+                        <p className="text-xs mt-1">Utilisez l'IA pour optimiser vos fiches produits</p>
+                      </td></tr>
+                    )}
+                    {aiContent.map((item: any) => (
+                      <tr key={item.id} className="border-b hover:bg-muted/30 transition-colors">
+                        <td className="p-3">
+                          <p className="font-medium truncate max-w-[180px]">{(item.products as any)?.title ?? '—'}</p>
+                          <p className="text-xs text-muted-foreground">{(item.products as any)?.sku}</p>
+                        </td>
+                        <td className="p-3">
+                          <Badge variant="outline" className="capitalize text-xs">{item.content_type}</Badge>
+                        </td>
+                        <td className="p-3">
+                          <p className="text-xs truncate max-w-[300px]">{item.generated_content?.substring(0, 100)}...</p>
+                        </td>
+                        <td className="p-3 text-center">
+                          {item.quality_score ? (
+                            <span className={`font-mono font-medium ${getScoreColor(item.quality_score)}`}>{item.quality_score}</span>
+                          ) : '—'}
+                        </td>
+                        <td className="p-3 text-center">
+                          <Badge variant={item.status === 'applied' ? 'default' : item.status === 'approved' ? 'secondary' : 'outline'}>
+                            {item.status === 'applied' ? 'Appliqué' : item.status === 'approved' ? 'Approuvé' : item.status ?? 'Généré'}
+                          </Badge>
+                        </td>
+                        <td className="p-3 text-xs text-muted-foreground">
+                          {new Date(item.created_at).toLocaleDateString('fr-FR')}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
         {/* === AUDITS TAB === */}
         <TabsContent value="audits" className="space-y-4">
           {audits.length === 0 ? (
@@ -209,13 +403,13 @@ export default function SEOContentHubPage() {
                       <TrendingUp className="h-4 w-4" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="font-medium text-sm">Audit #{audit.id.substring(0, 8)}</p>
+                      <p className="font-medium text-sm">{audit.base_url || `Audit #${audit.id.substring(0, 8)}`}</p>
                       <p className="text-xs text-muted-foreground">
-                        {new Date(audit.created_at).toLocaleDateString('fr-FR')} · Score: {audit.overall_score || 'N/A'}
+                        {new Date(audit.created_at).toLocaleDateString('fr-FR')} · Score: {audit.score ?? audit.overall_score ?? 'N/A'}/100
                       </p>
                     </div>
                     <div className="w-24">
-                      <Progress value={audit.overall_score || 0} className="h-2" />
+                      <Progress value={audit.score ?? audit.overall_score ?? 0} className="h-2" />
                     </div>
                     <Badge variant={audit.status === 'completed' ? 'default' : 'secondary'}>
                       {audit.status === 'completed' ? 'Terminé' : audit.status || 'En cours'}

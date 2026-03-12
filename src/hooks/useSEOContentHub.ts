@@ -20,6 +20,27 @@ export interface BlogPost {
   updated_at: string;
 }
 
+export interface ProductSEOScore {
+  id: string;
+  product_id: string | null;
+  overall_score: number | null;
+  seo_score: number | null;
+  title_score: number | null;
+  description_score: number | null;
+  images_score: number | null;
+  attributes_score: number | null;
+  pricing_score: number | null;
+  issues: any;
+  recommendations: any;
+  last_analyzed_at: string | null;
+  product?: {
+    title: string;
+    sku: string | null;
+    image_url: string | null;
+    description: string | null;
+  };
+}
+
 export function useSEOContentHub() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
@@ -57,16 +78,38 @@ export function useSEOContentHub() {
     enabled: !!user?.id,
   });
 
-  // Product SEO scores
+  // Product SEO scores with product details
   const { data: productScores = [], isLoading: isLoadingScores } = useQuery({
     queryKey: ['product-seo-scores', user?.id],
     queryFn: async () => {
       if (!user?.id) return [];
       const { data, error } = await supabase
         .from('product_scores')
-        .select('product_id, overall_score, seo_score')
-        .limit(50);
+        .select('*, products(title, sku, image_url, description)')
+        .eq('user_id', user.id)
+        .order('seo_score', { ascending: true })
+        .limit(100);
       if (error) { console.warn('product_scores error:', error); return []; }
+      return (data ?? []).map(d => ({
+        ...d,
+        product: d.products as any,
+      })) as ProductSEOScore[];
+    },
+    enabled: !!user?.id,
+  });
+
+  // AI-generated content history
+  const { data: aiContent = [], isLoading: isLoadingAI } = useQuery({
+    queryKey: ['ai-generated-content', user?.id],
+    queryFn: async () => {
+      if (!user?.id) return [];
+      const { data, error } = await supabase
+        .from('ai_generated_content')
+        .select('*, products(title, sku)')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+        .limit(50);
+      if (error) { console.warn('ai_generated_content error:', error); return []; }
       return data ?? [];
     },
     enabled: !!user?.id,
@@ -123,11 +166,15 @@ export function useSEOContentHub() {
     ? Math.round(productScores.reduce((a, s) => a + (s.seo_score || 0), 0) / productScores.length)
     : 0;
 
+  const lowSeoProducts = productScores.filter(p => (p.seo_score ?? 0) < 50).length;
+  const goodSeoProducts = productScores.filter(p => (p.seo_score ?? 0) >= 80).length;
+
   return {
     posts,
     audits,
     productScores,
-    isLoading: isLoadingPosts || isLoadingAudits || isLoadingScores,
+    aiContent,
+    isLoading: isLoadingPosts || isLoadingAudits || isLoadingScores || isLoadingAI,
     generatePost: generatePost.mutate,
     isGenerating: generatePost.isPending,
     updatePost: updatePost.mutate,
@@ -139,6 +186,10 @@ export function useSEOContentHub() {
       aiGenerated: posts.filter(p => p.ai_generated).length,
       avgSeoScore,
       totalAudits: audits.length,
+      totalProductsScored: productScores.length,
+      lowSeoProducts,
+      goodSeoProducts,
+      aiContentCount: aiContent.length,
     },
   };
 }
