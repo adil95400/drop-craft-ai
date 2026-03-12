@@ -32,13 +32,13 @@ export function ReviewAIPanel() {
 
   const runFakeDetection = async () => {
     setActiveAnalysis('fake');
-    const result = await fakeDetection.mutateAsync();
+    const result = await fakeDetection.mutateAsync(undefined);
     setFakeResults(result);
   };
 
   const runSentiment = async () => {
     setActiveAnalysis('sentiment');
-    const result = await sentimentAnalysis.mutateAsync();
+    const result = await sentimentAnalysis.mutateAsync(undefined);
     setSentimentResults(result);
   };
 
