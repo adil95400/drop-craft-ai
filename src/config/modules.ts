@@ -427,9 +427,11 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     order: 2,
     groupId: 'marketing',
     subModules: [
-      { id: 'seo-manager', name: 'Gestionnaire', route: '/marketing/seo', icon: 'Search', description: 'Gestion SEO', features: ['manager'], order: 1 },
-      { id: 'seo-keywords', name: 'Mots-clés', route: '/marketing/seo/keywords', icon: 'Key', description: 'Recherche de mots-clés', features: ['keywords'], order: 2 },
-      { id: 'seo-rank', name: 'Classements', route: '/marketing/seo/rank-tracker', icon: 'TrendingUp', description: 'Suivi des positions', features: ['rankings'], order: 3 },
+      { id: 'seo-content-hub', name: 'Content Hub', route: '/seo/content-hub', icon: 'FileText', description: 'Audit SEO produits, contenu IA, blog', features: ['content-hub'], order: 1 },
+      { id: 'seo-manager', name: 'Gestionnaire', route: '/marketing/seo', icon: 'Search', description: 'Gestion SEO', features: ['manager'], order: 2 },
+      { id: 'seo-keywords', name: 'Mots-clés', route: '/marketing/seo/keywords', icon: 'Key', description: 'Recherche de mots-clés', features: ['keywords'], order: 3 },
+      { id: 'seo-rank', name: 'Classements', route: '/marketing/seo/rank-tracker', icon: 'TrendingUp', description: 'Suivi des positions', features: ['rankings'], order: 4 },
+      { id: 'seo-schema', name: 'Schema Generator', route: '/marketing/seo/schema', icon: 'Code', description: 'Données structurées', features: ['schema'], order: 5 },
     ]
   },
 
