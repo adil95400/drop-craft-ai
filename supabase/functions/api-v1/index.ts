@@ -35,10 +35,14 @@ function safeRemoteUrl(value: unknown): string | null {
 function sanitizeProductListItems(items: any[]) {
   return items.map((item) => {
     const images = Array.isArray(item.images)
-      ? item.images.map(safeRemoteUrl).filter(Boolean).slice(0, 8)
+      ? item.images.map(safeRemoteUrl).filter(Boolean).slice(0, 5)
       : [];
+    // Strip heavy fields from list responses to avoid memory overflow
+    const { description, description_html, bullet_points, collections, supplier_url, source_url, ...light } = item;
     return {
-      ...item,
+      ...light,
+      // Truncate description to 200 chars for list view
+      description: typeof description === "string" ? description.slice(0, 200) : null,
       images,
       image_url: safeRemoteUrl(item.image_url) ?? images[0] ?? null,
       primary_image_url: safeRemoteUrl(item.primary_image_url) ?? images[0] ?? null,
