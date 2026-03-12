@@ -667,6 +667,24 @@ export default function CatalogProductsPage() {
             </Badge>
             <div className="flex-1" />
             <Button
+              variant="outline" size="sm" className="gap-2"
+              onClick={() => navigate('/sourcing', { state: { productIds: selectedProducts } })}>
+              <Globe className="h-4 w-4" />
+              Trouver fournisseur
+            </Button>
+            <Button
+              variant="outline" size="sm" className="gap-2"
+              onClick={() => navigate('/orders/fulfillment', { state: { productIds: selectedProducts } })}>
+              <ShoppingCart className="h-4 w-4" />
+              Commander
+            </Button>
+            <Button
+              variant="outline" size="sm" className="gap-2"
+              onClick={() => navigate('/pricing-manager', { state: { productIds: selectedProducts } })}>
+              <Tag className="h-4 w-4" />
+              Pricing
+            </Button>
+            <Button
             variant="outline" size="sm" className="gap-2"
             onClick={handleEnrichAI}
             disabled={isBulkEnriching}>
