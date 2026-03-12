@@ -553,6 +553,24 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     ]
   },
 
+  multiCanal: {
+    id: 'multiCanal',
+    name: 'Multi-Canal Hub',
+    icon: 'Globe',
+    enabled: true,
+    minPlan: 'pro',
+    route: '/multi-canal',
+    features: ['multi-channel', 'sync-bidirectional', 'queue', 'health'],
+    description: 'Sync bidirectionnelle, queue, santé et logs de tous vos canaux',
+    category: 'integrations',
+    order: 1.5,
+    groupId: 'integrations',
+    badge: 'pro',
+    subModules: [
+      { id: 'mc-hub', name: 'Hub', route: '/multi-canal', icon: 'Globe', description: 'Vue unifiée', features: ['overview'], order: 1 },
+    ]
+  },
+
   feeds: {
     id: 'feeds',
     name: 'Flux Produits',
