@@ -469,6 +469,7 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
       { id: 'automation-triggers', name: 'Déclencheurs', route: '/automation/triggers', icon: 'Play', description: 'Gérer les déclencheurs', features: ['triggers'], order: 3 },
       { id: 'automation-studio', name: 'Studio', route: '/automation/studio', icon: 'Palette', description: 'Studio d\'automatisation', features: ['studio'], order: 4 },
       { id: 'automation-ai-hub', name: 'Hub IA', route: '/automation/ai-hub', icon: 'Brain', description: 'Hub Intelligence Artificielle', features: ['ai'], order: 5 },
+      { id: 'automation-fulfillment-hub', name: 'Fulfillment Hub', route: '/automation/fulfillment-hub', icon: 'PackageCheck', description: 'Commandes par lots, split orders, bordereaux', features: ['fulfillment', 'split-orders', 'packing-slips'], order: 6 },
     ]
   },
 
