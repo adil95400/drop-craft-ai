@@ -6,12 +6,12 @@ import { productsApi, type ProductRecord } from '@/services/api/client'
 
 export class ProductsService {
   static async getProducts(_userId: string): Promise<any[]> {
-    const resp = await productsApi.list({ per_page: 50 })
+    const resp = await productsApi.list({ per_page: 30 })
     return resp.items ?? []
   }
 
-  static async getProductsPage(_userId: string, page = 0, pageSize = 50) {
-    const safePageSize = Math.min(50, Math.max(1, Math.floor(pageSize || 50)))
+  static async getProductsPage(_userId: string, page = 0, pageSize = 30) {
+    const safePageSize = Math.min(30, Math.max(1, Math.floor(pageSize || 30)))
     const resp = await productsApi.list({ page: page + 1, per_page: safePageSize })
     return {
       data: resp.items ?? [],
