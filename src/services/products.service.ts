@@ -11,13 +11,14 @@ export class ProductsService {
   }
 
   static async getProductsPage(_userId: string, page = 0, pageSize = 50) {
-    const resp = await productsApi.list({ page: page + 1, per_page: pageSize })
+    const safePageSize = Math.min(50, Math.max(1, Math.floor(pageSize || 50)))
+    const resp = await productsApi.list({ page: page + 1, per_page: safePageSize })
     return {
       data: resp.items ?? [],
       total: resp.meta?.total ?? 0,
       page,
-      pageSize,
-      totalPages: Math.ceil((resp.meta?.total ?? 0) / pageSize),
+      pageSize: safePageSize,
+      totalPages: Math.ceil((resp.meta?.total ?? 0) / safePageSize),
     }
   }
 
