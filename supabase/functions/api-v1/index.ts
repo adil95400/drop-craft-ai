@@ -21,6 +21,47 @@ function parsePagination(url: URL) {
   const perPage = Math.min(100, Math.max(1, parseInt(url.searchParams.get("per_page") ?? "20", 10)));
   return { page, perPage, from: (page - 1) * perPage, to: page * perPage - 1 };
 }
+
+const PRODUCTS_LIST_MAX_PER_PAGE = 50;
+const PRODUCTS_LIST_COLUMNS = [
+  "id", "user_id", "title", "description", "sku", "barcode", "price", "compare_at_price", "cost_price",
+  "category", "brand", "supplier", "supplier_url", "supplier_product_id", "status", "stock_quantity",
+  "weight", "weight_unit", "images", "tags", "seo_title", "seo_description", "shopify_product_id",
+  "google_product_id", "is_published", "created_at", "updated_at", "name", "image_url", "view_count",
+  "product_type", "vendor", "default_language", "description_html", "primary_image_url", "currency",
+  "source_type", "source_url", "supplier_name", "profit_margin", "main_image_url", "source_of_truth",
+  "fallback_supplier_id"
+].join(",");
+const DATA_URL_RE = /^data:/i;
+
+function safeRemoteUrl(value: unknown): string | null {
+  if (typeof value !== "string") return null;
+  const normalized = value.trim();
+  if (!normalized || DATA_URL_RE.test(normalized)) return null;
+  return normalized.slice(0, 2048);
+}
+
+function sanitizeProductListItems(items: any[]) {
+  return items.map((item) => {
+    const images = Array.isArray(item.images)
+      ? item.images.map(safeRemoteUrl).filter(Boolean).slice(0, 8)
+      : [];
+
+    const imageUrl = safeRemoteUrl(item.image_url) ?? images[0] ?? null;
+    const primaryImageUrl = safeRemoteUrl(item.primary_image_url) ?? images[0] ?? null;
+    const mainImageUrl = safeRemoteUrl(item.main_image_url) ?? images[0] ?? null;
+
+    return {
+      ...item,
+      images,
+      image_url: imageUrl,
+      primary_image_url: primaryImageUrl,
+      main_image_url: mainImageUrl,
+      variants: [],
+    };
+  });
+}
+
 function sanitizeString(input: string, maxLength = 1000): string {
   if (typeof input !== "string") return "";
   return input.slice(0, maxLength).replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, "").trim();
