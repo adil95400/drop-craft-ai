@@ -55,6 +55,7 @@ export function AutomationRoutes() {
       <Route path="fulfillment" element={<AutoFulfillmentPage />} />
       <Route path="fulfillment/dashboard" element={<AutoFulfillmentPage />} />
       <Route path="auto-orders" element={<AutoOrderSystem />} />
+      <Route path="fulfillment-hub" element={<OrderFulfillmentHubPage />} />
       <Route path="tracking" element={<AutoTrackingPage />} />
       
       {/* Phase 2 - Marketplace Avancée - Redirect to pricing-manager */}
