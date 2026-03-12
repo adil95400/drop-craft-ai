@@ -878,6 +878,45 @@ export default function CatalogProductsPage() {
         onComplete={() => setSelectedProducts([])}
       />
 
+      {/* Sourcing Panel */}
+      <Sheet open={showSourcingPanel} onOpenChange={setShowSourcingPanel}>
+        <SheetContent side="right" className="w-full sm:max-w-lg overflow-y-auto">
+          <CatalogSourcingPanel
+            selectedProducts={products.filter(p => selectedProducts.includes(p.id)).map(p => ({
+              id: p.id, name: p.name, price: p.price, cost_price: p.cost_price, sku: p.sku
+            }))}
+            onClose={() => setShowSourcingPanel(false)}
+          />
+        </SheetContent>
+      </Sheet>
+
+      {/* Auto-Order Panel */}
+      <Sheet open={showAutoOrderPanel} onOpenChange={setShowAutoOrderPanel}>
+        <SheetContent side="right" className="w-full sm:max-w-lg overflow-y-auto">
+          <CatalogAutoOrderPanel
+            selectedProducts={products.filter(p => selectedProducts.includes(p.id)).map(p => ({
+              id: p.id, name: p.name, price: p.price, cost_price: p.cost_price,
+              stock_quantity: p.stock_quantity, sku: p.sku, supplier_name: p.supplier_name
+            }))}
+            onClose={() => setShowAutoOrderPanel(false)}
+            onRefresh={handleRefresh}
+          />
+        </SheetContent>
+      </Sheet>
+
+      {/* Pricing Panel */}
+      <Sheet open={showPricingPanel} onOpenChange={setShowPricingPanel}>
+        <SheetContent side="right" className="w-full sm:max-w-lg overflow-y-auto">
+          <CatalogPricingPanel
+            selectedProducts={products.filter(p => selectedProducts.includes(p.id)).map(p => ({
+              id: p.id, name: p.name, price: p.price, cost_price: p.cost_price
+            }))}
+            onClose={() => setShowPricingPanel(false)}
+            onRefresh={handleRefresh}
+          />
+        </SheetContent>
+      </Sheet>
+
     </ChannablePageWrapper>);
 
 }
