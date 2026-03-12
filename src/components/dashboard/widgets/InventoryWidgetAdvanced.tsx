@@ -1,9 +1,11 @@
 import { CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Package, TrendingDown, Loader2, AlertTriangle, CheckCircle } from 'lucide-react';
+import { Package, Loader2, AlertTriangle, CheckCircle } from 'lucide-react';
 import { TimeRange } from '@/hooks/useDashboardConfig';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { useDashboardStats } from '@/hooks/useDashboardStats';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface InventoryWidgetAdvancedProps {
   timeRange: TimeRange;
@@ -13,19 +15,55 @@ interface InventoryWidgetAdvancedProps {
   lastRefresh: Date;
 }
 
+const LOW_STOCK_THRESHOLD = 10;
+
 export function InventoryWidgetAdvanced({ timeRange, settings, lastRefresh }: InventoryWidgetAdvancedProps) {
-  const { data: stats, isLoading } = useDashboardStats();
+  const { user } = useAuth();
 
-  // Mock inventory data
-  const inventoryStats = {
-    totalProducts: stats?.productsCount || 0,
-    inStock: Math.floor((stats?.productsCount || 0) * 0.75),
-    lowStock: Math.floor((stats?.productsCount || 0) * 0.15),
-    outOfStock: Math.floor((stats?.productsCount || 0) * 0.10),
-    stockValue: 45680,
-  };
+  const { data: inventoryStats, isLoading } = useQuery({
+    queryKey: ['inventory-real-stats', user?.id, lastRefresh.getTime()],
+    queryFn: async () => {
+      if (!user?.id) return { totalProducts: 0, inStock: 0, lowStock: 0, outOfStock: 0, stockValue: 0 };
 
-  const stockHealth = (inventoryStats.inStock / (inventoryStats.totalProducts || 1)) * 100;
+      const { data: products, error } = await supabase
+        .from('products')
+        .select('stock_quantity, price')
+        .eq('user_id', user.id);
+
+      if (error) {
+        console.warn('Inventory query error:', error.message);
+        return { totalProducts: 0, inStock: 0, lowStock: 0, outOfStock: 0, stockValue: 0 };
+      }
+
+      const all = products || [];
+      const totalProducts = all.length;
+      let inStock = 0;
+      let lowStock = 0;
+      let outOfStock = 0;
+      let stockValue = 0;
+
+      for (const p of all) {
+        const qty = p.stock_quantity ?? 0;
+        const price = Number(p.price) || 0;
+        stockValue += qty * price;
+
+        if (qty <= 0) {
+          outOfStock++;
+        } else if (qty <= LOW_STOCK_THRESHOLD) {
+          lowStock++;
+        } else {
+          inStock++;
+        }
+      }
+
+      return { totalProducts, inStock, lowStock, outOfStock, stockValue };
+    },
+    enabled: !!user?.id,
+    staleTime: 2 * 60 * 1000,
+  });
+
+  const stats = inventoryStats ?? { totalProducts: 0, inStock: 0, lowStock: 0, outOfStock: 0, stockValue: 0 };
+  const stockHealth = stats.totalProducts > 0 ? (stats.inStock / stats.totalProducts) * 100 : 0;
 
   if (isLoading) {
     return (
@@ -52,7 +90,7 @@ export function InventoryWidgetAdvanced({ timeRange, settings, lastRefresh }: In
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="flex items-baseline gap-2">
-          <span className="text-3xl font-bold">{inventoryStats.totalProducts}</span>
+          <span className="text-3xl font-bold">{stats.totalProducts}</span>
           <span className="text-sm text-muted-foreground">produits</span>
         </div>
 
@@ -67,17 +105,17 @@ export function InventoryWidgetAdvanced({ timeRange, settings, lastRefresh }: In
         <div className="grid grid-cols-3 gap-2 pt-2 border-t">
           <div className="text-center">
             <CheckCircle className="h-4 w-4 mx-auto text-green-500" />
-            <p className="text-lg font-bold">{inventoryStats.inStock}</p>
+            <p className="text-lg font-bold">{stats.inStock}</p>
             <p className="text-[10px] text-muted-foreground">En stock</p>
           </div>
           <div className="text-center">
             <AlertTriangle className="h-4 w-4 mx-auto text-yellow-500" />
-            <p className="text-lg font-bold">{inventoryStats.lowStock}</p>
+            <p className="text-lg font-bold">{stats.lowStock}</p>
             <p className="text-[10px] text-muted-foreground">Stock bas</p>
           </div>
           <div className="text-center">
             <Package className="h-4 w-4 mx-auto text-red-500" />
-            <p className="text-lg font-bold">{inventoryStats.outOfStock}</p>
+            <p className="text-lg font-bold">{stats.outOfStock}</p>
             <p className="text-[10px] text-muted-foreground">Rupture</p>
           </div>
         </div>
@@ -85,7 +123,7 @@ export function InventoryWidgetAdvanced({ timeRange, settings, lastRefresh }: In
         <div className="pt-2 border-t text-sm">
           <div className="flex justify-between">
             <span className="text-muted-foreground">Valeur stock</span>
-            <span className="font-semibold">{inventoryStats.stockValue.toLocaleString('fr-FR')}€</span>
+            <span className="font-semibold">{stats.stockValue.toLocaleString('fr-FR', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}€</span>
           </div>
         </div>
       </CardContent>

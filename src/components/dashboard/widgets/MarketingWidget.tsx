@@ -4,6 +4,7 @@ import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recha
 import { Badge } from '@/components/ui/badge';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface MarketingWidgetProps {
   timeRange: string;
@@ -14,29 +15,39 @@ interface MarketingWidgetProps {
 }
 
 export function MarketingWidget({ settings }: MarketingWidgetProps) {
+  const { user } = useAuth();
   const showChart = settings?.showChart ?? true;
   const showCampaigns = settings?.showCampaigns ?? true;
 
   const { data: campaigns = [], isLoading } = useQuery({
-    queryKey: ['marketing-campaigns'],
+    queryKey: ['marketing-campaigns', user?.id],
     queryFn: async () => {
+      if (!user?.id) return [];
       const { data, error } = await supabase
         .from('marketing_campaigns')
         .select('*')
+        .eq('user_id', user.id)
         .order('created_at', { ascending: false })
         .limit(10);
       
       if (error) throw error;
       return data || [];
-    }
+    },
+    enabled: !!user?.id,
   });
 
-  const campaignData = campaigns.slice(0, 4).map(campaign => ({
-    name: campaign.name?.substring(0, 12) || 'Campagne',
-    spend: Number(campaign.budget_spent || 0),
-    revenue: Number(campaign.budget_spent || 0) * 3.2, // Estimated ROAS
-    roas: 3.2
-  }));
+  const campaignData = campaigns.slice(0, 4).map(campaign => {
+    const spend = Number(campaign.budget_spent || 0);
+    // Extract revenue from metrics JSON if available, otherwise estimate from budget
+    const metrics = (campaign.metrics || {}) as Record<string, unknown>;
+    const revenue = Number(metrics.revenue || metrics.total_revenue || 0);
+    return {
+      name: campaign.name?.substring(0, 12) || 'Campagne',
+      spend,
+      revenue,
+      roas: spend > 0 ? Number((revenue / spend).toFixed(1)) : 0,
+    };
+  });
 
   const totalSpend = campaignData.reduce((sum, d) => sum + d.spend, 0);
   const totalRevenue = campaignData.reduce((sum, d) => sum + d.revenue, 0);
