@@ -195,6 +195,9 @@ export function AppRoutes() {
           <Route path="/tools/*" element={<Protected><ToolsRoutes /></Protected>} />
           <Route path="/stock/*" element={<Protected><StockRoutes /></Protected>} />
           
+          {/* Shipping */}
+          <Route path="/shipping/*" element={<Protected><ShippingHubPage /></Protected>} />
+          
           {/* Integrations & Extensions */}
           <Route path="/integrations/*" element={<Protected><IntegrationRoutes /></Protected>} />
           <Route path="/extensions/*" element={<Protected><ExtensionRoutes /></Protected>} />
