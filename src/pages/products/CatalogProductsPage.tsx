@@ -516,30 +516,23 @@ export default function CatalogProductsPage() {
                 {isExporting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
                 Exporter
               </Button>
-
-
-
-
-              <Button
-                variant="outline" size="sm" className="gap-2"
-                onClick={handleSync}
-                disabled={isSyncing}>
-
-                <RefreshCw className={`h-4 w-4 ${isSyncing ? 'animate-spin' : ''}`} />
-                Sync
-              </Button>
-              <Button variant="outline" size="sm" className="gap-2" onClick={() => navigate('/import/quick')}>
-                <Upload className="h-4 w-4" />
-                Importer
-              </Button>
-              <Button
-                variant="outline" size="sm" className="gap-2"
-                onClick={handleExportCSV}
-                disabled={isExporting}>
-
-                {isExporting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
-                Exporter
-              </Button>
+              <CatalogSavedViews
+                currentState={{
+                  search, statusFilter, categoryFilter, sourceFilter,
+                  sortField, sortDirection, viewMode, itemsPerPage
+                }}
+                onApply={(state: CatalogViewState) => {
+                  setSearch(state.search);
+                  setStatusFilter(state.statusFilter as StatusFilter);
+                  setCategoryFilter(state.categoryFilter);
+                  setSourceFilter(state.sourceFilter);
+                  setSortField(state.sortField as SortField);
+                  setSortDirection(state.sortDirection as SortDirection);
+                  setViewMode(state.viewMode as ViewMode);
+                  setItemsPerPage(state.itemsPerPage);
+                  setCurrentPage(1);
+                }}
+              />
             </div>
             <div className="flex items-center gap-2">
               {/* View Toggle */}
