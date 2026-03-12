@@ -199,6 +199,7 @@ export function AppRoutes() {
           
           {/* Shipping */}
           <Route path="/shipping/*" element={<Protected><ShippingHubPage /></Protected>} />
+          <Route path="/customer-service" element={<Protected><CustomerServiceHubPage /></Protected>} />
           
           {/* Integrations & Extensions */}
           <Route path="/integrations/*" element={<Protected><IntegrationRoutes /></Protected>} />
