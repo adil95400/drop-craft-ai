@@ -10,6 +10,21 @@ import { logger } from '@/utils/logger'
 
 const BASE_URL = `${SUPABASE_URL}/functions/v1/api-v1/v1`
 
+const PRODUCTS_MAX_PER_PAGE = 50
+const PRODUCTS_DEFAULT_PER_PAGE = 50
+
+function normalizeProductsPerPage(rawValue: unknown): number {
+  const parsed = Number(rawValue)
+  if (!Number.isFinite(parsed)) return PRODUCTS_DEFAULT_PER_PAGE
+  return Math.min(PRODUCTS_MAX_PER_PAGE, Math.max(1, Math.floor(parsed)))
+}
+
+function normalizePage(rawValue: unknown): number {
+  const parsed = Number(rawValue)
+  if (!Number.isFinite(parsed)) return 1
+  return Math.max(1, Math.floor(parsed))
+}
+
 // ── Rate limit key resolver ──
 function getRateLimitConfig(method: string, path: string) {
   if (path.includes('/import')) return RATE_LIMITS.IMPORT
