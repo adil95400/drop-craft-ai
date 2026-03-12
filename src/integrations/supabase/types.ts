@@ -12041,6 +12041,80 @@ export type Database = {
           },
         ]
       }
+      refund_requests: {
+        Row: {
+          amount: number
+          approved_at: string | null
+          auto_approved: boolean
+          created_at: string
+          currency: string
+          customer_email: string
+          customer_id: string | null
+          customer_name: string | null
+          evidence_urls: string[] | null
+          id: string
+          notes: string | null
+          order_id: string | null
+          reason: string
+          reason_category: string | null
+          refunded_at: string | null
+          rejected_at: string | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          approved_at?: string | null
+          auto_approved?: boolean
+          created_at?: string
+          currency?: string
+          customer_email: string
+          customer_id?: string | null
+          customer_name?: string | null
+          evidence_urls?: string[] | null
+          id?: string
+          notes?: string | null
+          order_id?: string | null
+          reason: string
+          reason_category?: string | null
+          refunded_at?: string | null
+          rejected_at?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          approved_at?: string | null
+          auto_approved?: boolean
+          created_at?: string
+          currency?: string
+          customer_email?: string
+          customer_id?: string | null
+          customer_name?: string | null
+          evidence_urls?: string[] | null
+          id?: string
+          notes?: string | null
+          order_id?: string | null
+          reason?: string
+          reason_category?: string | null
+          refunded_at?: string | null
+          rejected_at?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "refund_requests_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       renewal_alert_preferences: {
         Row: {
           alert_1_day: boolean
@@ -12639,6 +12713,78 @@ export type Database = {
           },
         ]
       }
+      review_reminders: {
+        Row: {
+          created_at: string
+          customer_email: string
+          customer_id: string | null
+          customer_name: string | null
+          id: string
+          max_reminders: number
+          order_id: string | null
+          product_id: string | null
+          reminder_count: number
+          review_rating: number | null
+          review_received: boolean
+          scheduled_at: string
+          sent_at: string | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          customer_email: string
+          customer_id?: string | null
+          customer_name?: string | null
+          id?: string
+          max_reminders?: number
+          order_id?: string | null
+          product_id?: string | null
+          reminder_count?: number
+          review_rating?: number | null
+          review_received?: boolean
+          scheduled_at?: string
+          sent_at?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          customer_email?: string
+          customer_id?: string | null
+          customer_name?: string | null
+          id?: string
+          max_reminders?: number
+          order_id?: string | null
+          product_id?: string | null
+          reminder_count?: number
+          review_rating?: number | null
+          review_received?: boolean
+          scheduled_at?: string
+          sent_at?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "review_reminders_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "review_reminders_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       sales_channels: {
         Row: {
           api_credentials: Json | null
@@ -12689,6 +12835,74 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      satisfaction_surveys: {
+        Row: {
+          created_at: string
+          customer_id: string | null
+          feedback: string | null
+          id: string
+          last_reminder_at: string | null
+          metadata: Json | null
+          order_id: string | null
+          rating: number | null
+          reminder_count: number
+          responded_at: string | null
+          sent_at: string | null
+          sentiment: string | null
+          status: string
+          survey_type: string
+          tags: string[] | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          customer_id?: string | null
+          feedback?: string | null
+          id?: string
+          last_reminder_at?: string | null
+          metadata?: Json | null
+          order_id?: string | null
+          rating?: number | null
+          reminder_count?: number
+          responded_at?: string | null
+          sent_at?: string | null
+          sentiment?: string | null
+          status?: string
+          survey_type?: string
+          tags?: string[] | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          customer_id?: string | null
+          feedback?: string | null
+          id?: string
+          last_reminder_at?: string | null
+          metadata?: Json | null
+          order_id?: string | null
+          rating?: number | null
+          reminder_count?: number
+          responded_at?: string | null
+          sent_at?: string | null
+          sentiment?: string | null
+          status?: string
+          survey_type?: string
+          tags?: string[] | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "satisfaction_surveys_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       saved_catalog_filters: {
         Row: {
