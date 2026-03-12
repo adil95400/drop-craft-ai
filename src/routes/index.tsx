@@ -168,6 +168,7 @@ export function AppRoutes() {
           {/* Sources & Import */}
           <Route path="/import/*" element={<Protected><ImportRoutes /></Protected>} />
           <Route path="/suppliers/*" element={<Protected><SupplierRoutes /></Protected>} />
+          <Route path="/sourcing" element={<Protected><ProductSourcingHub /></Protected>} />
           <Route path="/feeds/*" element={<Protected><FeedRoutes /></Protected>} />
           
           {/* Analytics & Insights */}
