@@ -85,7 +85,7 @@ const AlertCenterPage = lazy(() => import('@/pages/alerts/AlertCenterPage'));
 const Reports = lazy(() => import('@/pages/Reports'));
 const KnowledgeBasePage = lazy(() => import('@/pages/KnowledgeBasePage'));
 const ReviewsPage = lazy(() => import('@/pages/reviews/ReviewsPage'));
-const CRMDashboardPage = lazy(() => import('@/pages/crm/CRMDashboardPage'));
+const CRMDashboardPage = lazy(() => import('@/pages/crm/CRMHubPage'));
 const Sitemap = lazy(() => import('@/pages/Sitemap'));
 const DocumentationPage = lazy(() => import('@/pages/documentation/DocumentationPage'));
 const SEOContentHubPage = lazy(() => import('@/pages/seo/SEOContentHubPage'));

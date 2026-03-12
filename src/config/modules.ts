@@ -347,23 +347,24 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
 
   crm: {
     id: 'crm',
-    name: 'Service Client',
+    name: 'CRM Avancé',
     icon: 'Contact',
     enabled: true,
     minPlan: 'pro',
     route: '/crm',
-    features: ['leads', 'pipeline', 'contacts'],
-    description: 'Messagerie, tickets et réponses IA',
+    features: ['leads', 'pipeline', 'contacts', 'scoring', 'activities', 'analytics'],
+    description: 'Pipeline deals, scoring leads, timeline interactions et analytics de conversion',
     category: 'customer',
     order: 2,
     groupId: 'customers',
     badge: 'pro',
     subModules: [
-      { id: 'crm-dashboard', name: 'Vue d\'ensemble', route: '/crm', icon: 'LayoutDashboard', description: 'Vue d\'ensemble', features: ['overview'], order: 1 },
+      { id: 'crm-hub', name: 'Hub CRM', route: '/crm', icon: 'LayoutDashboard', description: 'Vue unifiée CRM', features: ['overview'], order: 1 },
       { id: 'crm-leads', name: 'Prospects', route: '/crm/leads', icon: 'UserPlus', description: 'Gestion des prospects', features: ['leads'], order: 2 },
-      { id: 'crm-pipeline', name: 'Tunnel de ventes', route: '/crm/pipeline', icon: 'GitBranch', description: 'Tunnel de ventes', features: ['pipeline'], order: 3 },
-      { id: 'crm-emails', name: 'E-mails', route: '/crm/emails', icon: 'Mail', description: 'Historique e-mails', features: ['emails'], order: 4 },
-      { id: 'crm-scoring', name: 'Notation prospects', route: '/crm/scoring', icon: 'Target', description: 'Notation des prospects', features: ['scoring'], order: 5 },
+      { id: 'crm-pipeline', name: 'Pipeline Deals', route: '/crm/pipeline', icon: 'GitBranch', description: 'Kanban deals', features: ['pipeline'], order: 3 },
+      { id: 'crm-timeline', name: 'Interactions', route: '/crm/activity', icon: 'Clock', description: 'Historique activités', features: ['activities'], order: 4 },
+      { id: 'crm-scoring', name: 'Lead Scoring', route: '/crm/scoring', icon: 'Target', description: 'Notation automatique', features: ['scoring'], order: 5 },
+      { id: 'crm-analytics', name: 'Analytics', route: '/crm/analytics', icon: 'BarChart3', description: 'Funnel & vélocité', features: ['analytics'], order: 6 },
     ]
   },
 
