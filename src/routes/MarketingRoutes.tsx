@@ -29,6 +29,7 @@ const MarketingCalendarPage = lazy(() => import('@/pages/MarketingCalendarPage')
 const SocialCommercePage = lazy(() => import('@/pages/SocialCommercePage'));
 const CreativeStudioPage = lazy(() => import('@/pages/ContentGenerationPage'));
 const ContentGenerationPage = lazy(() => import('@/pages/ContentGenerationPage'));
+const UpsellCrossSellPage = lazy(() => import('@/pages/marketing/UpsellCrossSellPage'));
 
 // SEO Tools
 const KeywordResearch = lazy(() => import('@/pages/KeywordResearch'));
