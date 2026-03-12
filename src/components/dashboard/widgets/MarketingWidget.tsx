@@ -20,17 +20,20 @@ export function MarketingWidget({ settings }: MarketingWidgetProps) {
   const showCampaigns = settings?.showCampaigns ?? true;
 
   const { data: campaigns = [], isLoading } = useQuery({
-    queryKey: ['marketing-campaigns'],
+    queryKey: ['marketing-campaigns', user?.id],
     queryFn: async () => {
+      if (!user?.id) return [];
       const { data, error } = await supabase
         .from('marketing_campaigns')
         .select('*')
+        .eq('user_id', user.id)
         .order('created_at', { ascending: false })
         .limit(10);
       
       if (error) throw error;
       return data || [];
-    }
+    },
+    enabled: !!user?.id,
   });
 
   const campaignData = campaigns.slice(0, 4).map(campaign => {
