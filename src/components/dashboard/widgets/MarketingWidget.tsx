@@ -33,7 +33,9 @@ export function MarketingWidget({ settings }: MarketingWidgetProps) {
 
   const campaignData = campaigns.slice(0, 4).map(campaign => {
     const spend = Number(campaign.budget_spent || 0);
-    const revenue = Number(campaign.revenue_generated || 0);
+    // Extract revenue from metrics JSON if available, otherwise estimate from budget
+    const metrics = (campaign.metrics || {}) as Record<string, unknown>;
+    const revenue = Number(metrics.revenue || metrics.total_revenue || 0);
     return {
       name: campaign.name?.substring(0, 12) || 'Campagne',
       spend,
