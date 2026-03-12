@@ -513,6 +513,104 @@ Deno.serve(async (req) => {
     if (m === "GET" && matchRoute("/v1/suppliers/premium", apiPath)) { const { data } = await serviceClient().from("premium_suppliers").select("*").eq("is_active", true).order("name"); return json({ items: data || [] }, 200, reqId); }
     p = matchRoute("/v1/suppliers/premium/:id", apiPath); if (m === "GET" && p) { const { data, error } = await serviceClient().from("premium_suppliers").select("*").eq("id", p.id).single(); if (error) return errorResponse("NOT_FOUND", "Supplier not found", 404, reqId); return json(data, 200, reqId); }
 
+    // ── SEO ───────────────────────────────────────────────────
+    if (m === "GET" && matchRoute("/v1/seo/audits", apiPath)) {
+      const { page, perPage, from, to } = parsePagination(url);
+      const admin = serviceClient();
+      let q = admin.from("seo_audits").select("*", { count: "exact" }).eq("user_id", auth.user.id).order("created_at", { ascending: false }).range(from, to);
+      const status = url.searchParams.get("status"); if (status) q = q.eq("status", status);
+      const { data, count, error } = await q;
+      if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
+      return json({ items: (data ?? []).map((a: any) => ({ audit_id: a.id, target_type: a.target_type ?? "url", target_id: a.target_id, url: a.url, score: a.score, status: a.status ?? "completed", language: a.language ?? "fr", summary: a.summary, created_at: a.created_at, completed_at: a.completed_at })), meta: { page, per_page: perPage, total: count ?? 0 } }, 200, reqId);
+    }
+    if (m === "POST" && matchRoute("/v1/seo/audit", apiPath)) {
+      const body = await req.json();
+      if (!body.url) return errorResponse("VALIDATION_ERROR", "url is required", 400, reqId);
+      const admin = serviceClient();
+      const { data, error } = await admin.from("seo_audits").insert({ user_id: auth.user.id, url: body.url, target_type: body.scope ?? "url", target_id: body.target_id ?? null, language: body.language ?? "fr", provider: body.provider ?? "internal", status: "pending", options: body.options ?? {} }).select("id, status").single();
+      if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
+      return json({ audit_id: data.id, status: data.status }, 201, reqId);
+    }
+    p = matchRoute("/v1/seo/audits/:id", apiPath);
+    if (p && m === "GET") {
+      const admin = serviceClient();
+      const { data, error } = await admin.from("seo_audits").select("*").eq("id", p.id).eq("user_id", auth.user.id).single();
+      if (error || !data) return errorResponse("NOT_FOUND", "Audit not found", 404, reqId);
+      return json({ audit_id: data.id, url: data.url, score: data.score, status: data.status ?? "completed", summary: data.summary, created_at: data.created_at }, 200, reqId);
+    }
+    if (m === "GET" && matchRoute("/v1/seo/products/scores", apiPath)) {
+      const { page, perPage, from, to } = parsePagination(url);
+      const admin = serviceClient();
+      const { data, count, error } = await admin.from("products").select("id, title, seo_title, seo_description, description, images, status", { count: "exact" }).eq("user_id", auth.user.id).range(from, to);
+      if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
+      const items = (data ?? []).map((p: any) => {
+        let score = 0;
+        if (p.seo_title && p.seo_title.length >= 10) score += 25;
+        if (p.seo_description && p.seo_description.length >= 20) score += 25;
+        if (p.title && p.title.length >= 5) score += 25;
+        if (p.description && p.description.length >= 50) score += 25;
+        return { product_id: p.id, product_name: p.title ?? "Sans titre", score: { global: score }, status: score >= 80 ? "optimized" : score >= 50 ? "needs_work" : "critical" };
+      });
+      return json({ items, stats: { avg_score: items.length > 0 ? Math.round(items.reduce((s: number, i: any) => s + i.score.global, 0) / items.length) : 0, total: count ?? 0 }, meta: { page, per_page: perPage, total: count ?? 0 } }, 200, reqId);
+    }
+    if (m === "POST" && matchRoute("/v1/seo/products/audit", apiPath)) {
+      const body = await req.json();
+      if (!Array.isArray(body.product_ids)) return errorResponse("VALIDATION_ERROR", "product_ids array required", 400, reqId);
+      const admin = serviceClient();
+      const { data } = await admin.from("products").select("id, title, seo_title, seo_description, description, images").eq("user_id", auth.user.id).in("id", body.product_ids);
+      const products = (data ?? []).map((p: any) => {
+        let score = 0;
+        if (p.seo_title && p.seo_title.length >= 10) score += 25;
+        if (p.seo_description && p.seo_description.length >= 20) score += 25;
+        if (p.title && p.title.length >= 5) score += 25;
+        if (p.description && p.description.length >= 50) score += 25;
+        return { product_id: p.id, product_name: p.title, score: { global: score }, status: score >= 80 ? "optimized" : score >= 50 ? "needs_work" : "critical" };
+      });
+      return json({ products, total: products.length, audited_at: new Date().toISOString() }, 200, reqId);
+    }
+    if (m === "POST" && matchRoute("/v1/seo/generate", apiPath)) {
+      const body = await req.json();
+      if (!body.target_id) return errorResponse("VALIDATION_ERROR", "target_id is required", 400, reqId);
+      const admin = serviceClient();
+      const { data: job, error } = await admin.from("jobs").insert({ user_id: auth.user.id, job_type: "seo", job_subtype: "generate", status: "pending", name: `SEO Generate`, input_data: body }).select("id, status").single();
+      if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
+      return json({ job_id: job.id, status: job.status }, 201, reqId);
+    }
+    if (m === "POST" && matchRoute("/v1/seo/apply", apiPath)) {
+      const body = await req.json();
+      if (!body.target_id || !body.fields) return errorResponse("VALIDATION_ERROR", "target_id and fields required", 400, reqId);
+      const allowed = new Set(["seo_title","seo_description","title","description"]);
+      const updates: Record<string, unknown> = {};
+      for (const [k, v] of Object.entries(body.fields)) { if (allowed.has(k)) updates[k] = v; }
+      if (Object.keys(updates).length > 0) {
+        const { error } = await serviceClient().from("products").update(updates).eq("id", body.target_id).eq("user_id", auth.user.id);
+        if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
+      }
+      return json({ success: true, target_id: body.target_id, applied_fields: Object.keys(updates) }, 200, reqId);
+    }
+    p = matchRoute("/v1/seo/generate/:id", apiPath);
+    if (p && m === "GET") {
+      const { data, error } = await serviceClient().from("jobs").select("*").eq("id", p.id).eq("user_id", auth.user.id).single();
+      if (error || !data) return errorResponse("NOT_FOUND", "Job not found", 404, reqId);
+      return json({ job_id: data.id, status: data.status, result: data.output_data, created_at: data.created_at }, 200, reqId);
+    }
+    p = matchRoute("/v1/seo/products/:id/score", apiPath);
+    if (p && m === "GET") {
+      const { data: prod, error } = await serviceClient().from("products").select("id, title, seo_title, seo_description, description").eq("id", p.id).eq("user_id", auth.user.id).single();
+      if (error || !prod) return errorResponse("NOT_FOUND", "Product not found", 404, reqId);
+      let score = 0;
+      if (prod.seo_title && prod.seo_title.length >= 10) score += 25;
+      if (prod.seo_description && prod.seo_description.length >= 20) score += 25;
+      if (prod.title && prod.title.length >= 5) score += 25;
+      if (prod.description && prod.description.length >= 50) score += 25;
+      return json({ product_id: prod.id, product_name: prod.title, score: { global: score }, status: score >= 80 ? "optimized" : score >= 50 ? "needs_work" : "critical" }, 200, reqId);
+    }
+    p = matchRoute("/v1/seo/products/:id/history", apiPath);
+    if (p && m === "GET") {
+      const { data } = await serviceClient().from("seo_history_snapshots").select("*").eq("product_id", p.id).order("created_at", { ascending: false }).limit(20);
+      return json({ items: data ?? [], meta: { page: 1, per_page: 20, total: (data ?? []).length } }, 200, reqId);
+    }
+
     return errorResponse("NOT_FOUND", `Route ${m} ${apiPath} not found`, 404, reqId);
   } catch (err: any) {
     console.error("api-v1-ext error:", err);
