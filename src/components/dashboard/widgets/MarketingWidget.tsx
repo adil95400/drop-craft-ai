@@ -15,6 +15,7 @@ interface MarketingWidgetProps {
 }
 
 export function MarketingWidget({ settings }: MarketingWidgetProps) {
+  const { user } = useAuth();
   const showChart = settings?.showChart ?? true;
   const showCampaigns = settings?.showCampaigns ?? true;
 
