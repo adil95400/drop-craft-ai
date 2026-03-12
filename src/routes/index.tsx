@@ -46,6 +46,7 @@ const ResearchRoutes = lazy(() => import('./ResearchRoutes').then(m => ({ defaul
 const ToolsRoutes = lazy(() => import('./ToolsRoutes').then(m => ({ default: m.ToolsRoutes })));
 const IntelligenceHubPage = lazy(() => import('@/pages/intelligence/IntelligenceHubPage'));
 const BusinessIntelligencePage = lazy(() => import('@/pages/intelligence/BusinessIntelligencePage'));
+const ProductSourcingHub = lazy(() => import('@/pages/ProductSourcingHub'));
 
 // Pages directes (lazy loaded)
 const NotFoundPage = lazy(() => import('@/pages/NotFoundPage'));
@@ -166,6 +167,7 @@ export function AppRoutes() {
           {/* Sources & Import */}
           <Route path="/import/*" element={<Protected><ImportRoutes /></Protected>} />
           <Route path="/suppliers/*" element={<Protected><SupplierRoutes /></Protected>} />
+          <Route path="/sourcing" element={<Protected><ProductSourcingHub /></Protected>} />
           <Route path="/feeds/*" element={<Protected><FeedRoutes /></Protected>} />
           
           {/* Analytics & Insights */}
