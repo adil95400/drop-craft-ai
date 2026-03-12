@@ -70,6 +70,9 @@ import { PublishDialog } from '@/components/publication/PublishDialog';
 import { CatalogSourcingPanel } from '@/components/catalog/CatalogSourcingPanel';
 import { CatalogAutoOrderPanel } from '@/components/catalog/CatalogAutoOrderPanel';
 import { CatalogPricingPanel } from '@/components/catalog/CatalogPricingPanel';
+import { CatalogSavedViews, CatalogViewState } from '@/components/catalog/CatalogSavedViews';
+import { CatalogStockAlerts } from '@/components/catalog/CatalogStockAlerts';
+import { CatalogFinancialKPIs } from '@/components/catalog/CatalogFinancialKPIs';
 
 // ============= Types =============
 type StatusFilter = 'all' | 'active' | 'paused' | 'draft' | 'archived';
