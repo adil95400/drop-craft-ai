@@ -50,6 +50,7 @@ const ProductSourcingHub = lazy(() => import('@/pages/ProductSourcingHub'));
 const ShippingHubPage = lazy(() => import('@/pages/shipping/ShippingHubPage'));
 const CustomerServiceHubPage = lazy(() => import('@/pages/customer-service/CustomerServiceHubPage'));
 const FinancialHubPage = lazy(() => import('@/pages/finance/FinancialHubPage'));
+const MultiCanalHubPage = lazy(() => import('@/pages/channels/MultiCanalHubPage'));
 
 // Pages directes (lazy loaded)
 const NotFoundPage = lazy(() => import('@/pages/NotFoundPage'));
