@@ -292,6 +292,9 @@ export const UnifiedAuthProvider = ({ children }: { children: React.ReactNode })
       password,
       options: { data: metadata },
     });
+    if (!error) {
+      try { const { trackSignUp } = await import('@/lib/analytics/conversions'); trackSignUp('email'); } catch {}
+    }
     return { error };
   }, []);
 
