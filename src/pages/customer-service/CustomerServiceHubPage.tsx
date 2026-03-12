@@ -15,7 +15,7 @@ import {
   Mail, TrendingUp, Users, BarChart3, Bell
 } from 'lucide-react';
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
-import { useCustomerService } from '@/hooks/useCustomerService';
+import { useCustomerServiceHub } from '@/hooks/useCustomerServiceHub';
 import { formatDistanceToNow } from 'date-fns';
 import { fr } from 'date-fns/locale';
 
