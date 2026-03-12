@@ -50,6 +50,7 @@ const ProductSourcingHub = lazy(() => import('@/pages/ProductSourcingHub'));
 const ShippingHubPage = lazy(() => import('@/pages/shipping/ShippingHubPage'));
 const CustomerServiceHubPage = lazy(() => import('@/pages/customer-service/CustomerServiceHubPage'));
 const FinancialHubPage = lazy(() => import('@/pages/finance/FinancialHubPage'));
+const MultiCanalHubPage = lazy(() => import('@/pages/channels/MultiCanalHubPage'));
 
 // Pages directes (lazy loaded)
 const NotFoundPage = lazy(() => import('@/pages/NotFoundPage'));
@@ -166,6 +167,7 @@ export function AppRoutes() {
           {/* Stores & Channels */}
           <Route path="/stores-channels/*" element={<Protected><ChannelRoutes /></Protected>} />
           <Route path="/channels/*" element={<Protected><ChannelRoutes /></Protected>} />
+          <Route path="/multi-canal" element={<Protected><MultiCanalHubPage /></Protected>} />
           
           {/* Sources & Import */}
           <Route path="/import/*" element={<Protected><ImportRoutes /></Protected>} />
