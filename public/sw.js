@@ -1,7 +1,7 @@
 // Service Worker pour PWA ShopOpti - Mise à jour automatique intelligente
 // IMPORTANT: Le navigateur ne met à jour le SW que si le fichier sw.js change.
 // -> Incrémentez SW_SCRIPT_VERSION à chaque release pour forcer le refresh.
-const SW_SCRIPT_VERSION = '3.0.1';
+const SW_SCRIPT_VERSION = '3.0.2';
 
 // VERSION AUTO-INCREMENTÉE À CHAQUE ACTIVATION
 const CACHE_VERSION = `${SW_SCRIPT_VERSION}-` + Date.now();

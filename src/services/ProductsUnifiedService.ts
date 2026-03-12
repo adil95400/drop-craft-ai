@@ -121,9 +121,12 @@ export class ProductsUnifiedService {
     },
     options?: { page?: number; perPage?: number }
   ): Promise<UnifiedProduct[]> {
+    const rawPerPage = Number(options?.perPage ?? 50)
+    const safePerPage = Math.min(50, Math.max(1, Number.isFinite(rawPerPage) ? Math.floor(rawPerPage) : 50))
+
     const params: Record<string, string | number | undefined> = {
       page: options?.page ?? 1,
-      per_page: options?.perPage ?? 100,
+      per_page: safePerPage,
     }
 
     if (filters?.search) params.q = filters.search
