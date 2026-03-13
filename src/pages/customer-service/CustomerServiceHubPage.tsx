@@ -21,6 +21,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { fr } from 'date-fns/locale';
 
 export default function CustomerServiceHubPage() {
+  const navigate = useNavigate();
   const {
     tickets, surveys, reminders, refunds, stats,
     isLoadingTickets, isLoadingSurveys, isLoadingRefunds,
