@@ -500,7 +500,7 @@ function AutoOrderRulesTab() {
                       size="sm"
                       variant="ghost"
                       className="h-7 text-destructive hover:text-destructive"
-                      onClick={() => deleteRule.mutate(rule.id)}
+                      onClick={() => deleteRule(rule.id)}
                     >
                       <Trash2 className="h-3 w-3" />
                     </Button>
