@@ -14,11 +14,24 @@ import { Progress } from '@/components/ui/progress'
 import { 
   TrendingUp, TrendingDown, DollarSign, Eye, Zap, Shield, 
   ArrowUpDown, RefreshCw, Bell, Settings, Target, BarChart3,
-  AlertTriangle, CheckCircle, Clock, ArrowUp, ArrowDown, Minus, Loader2
+  AlertTriangle, CheckCircle, Clock, ArrowUp, ArrowDown, Minus, Loader2, Plus
 } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 import { supabase } from '@/integrations/supabase/client'
 import { pricingApi } from '@/services/api/client'
+import { CreateRepricingRuleDialog } from '@/components/pricing/CreateRepricingRuleDialog'
+
+function CreateRepricingRuleButton() {
+  const [open, setOpen] = useState(false)
+  return (
+    <>
+      <Button variant="outline" className="w-full" onClick={() => setOpen(true)}>
+        <Plus className="h-4 w-4 mr-2" /> Créer une règle de repricing
+      </Button>
+      <CreateRepricingRuleDialog open={open} onOpenChange={setOpen} />
+    </>
+  )
+}
 
 export default function LiveRepricingPage() {
   const { toast } = useToast()
