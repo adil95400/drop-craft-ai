@@ -81,6 +81,7 @@ export function MarketingRoutes() {
       <Route path="seo/keywords" element={<KeywordResearch />} />
       <Route path="seo/rank-tracker" element={<RankTracker />} />
       <Route path="seo/schema" element={<SchemaGenerator />} />
+      <Route path="seo/multilingual" element={<MultilingualSEOPage />} />
       
       {/* Creative Studio */}
       <Route path="creative-studio" element={<CreativeStudioPage />} />
