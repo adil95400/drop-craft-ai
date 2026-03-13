@@ -7,6 +7,8 @@
  * - /pricing-manager/repricing → Repricing auto + sync boutiques
  * - /pricing-manager/monitoring → Veille concurrence + auto-pricing
  * - /pricing-manager/optimization → Optimisation IA + élasticité
+ * - /pricing-manager/calculator → Calculateur de marge interactif
+ * - /pricing-manager/history → Historique des prix
  */
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { lazy } from 'react';
@@ -18,6 +20,8 @@ const LiveRepricingPage = lazy(() => import('@/pages/pricing/LiveRepricingPage')
 const PriceMonitoringPage = lazy(() => import('@/pages/products/PriceMonitoringPage'));
 const PricingEnginePage = lazy(() => import('@/pages/products/PricingEnginePage'));
 const PricingOptimizationPage = lazy(() => import('@/pages/pricing/PricingOptimizationPage'));
+const MarginCalculatorPage = lazy(() => import('@/pages/pricing/MarginCalculatorPage'));
+const PriceHistoryPage = lazy(() => import('@/pages/pricing/PriceHistoryPage'));
 
 export function PricingRoutes() {
   return (
@@ -39,6 +43,12 @@ export function PricingRoutes() {
       
       {/* Optimisation IA */}
       <Route path="optimization" element={<PricingOptimizationPage />} />
+      
+      {/* Calculateur de marge */}
+      <Route path="calculator" element={<MarginCalculatorPage />} />
+      
+      {/* Historique des prix */}
+      <Route path="history" element={<PriceHistoryPage />} />
       
       {/* Legacy redirects */}
       <Route path="automation" element={<Navigate to="/pricing-manager" replace />} />
