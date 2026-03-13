@@ -227,7 +227,7 @@ function RealTimeSyncTab() {
 
       {/* Actions */}
       <div className="flex items-center gap-3">
-        <Button onClick={() => syncAll.mutate()} disabled={isSyncingAll} size="sm">
+        <Button onClick={() => syncAll()} disabled={isSyncingAll} size="sm">
           <RefreshCw className={`h-4 w-4 mr-2 ${isSyncingAll ? 'animate-spin' : ''}`} />
           Synchroniser tout
         </Button>
