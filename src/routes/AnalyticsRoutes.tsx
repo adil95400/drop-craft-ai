@@ -31,6 +31,7 @@ const InteractiveAnalyticsPage = lazy(() => import('@/pages/analytics/Interactiv
 
 // BI Advanced (Sprint 17)
 const BIAdvancedDashboardPage = lazy(() => import('@/pages/analytics/BIAdvancedDashboardPage'));
+const BusinessIntelligenceCenterPage = lazy(() => import('@/pages/analytics/BusinessIntelligenceCenterPage'));
 
 // Performance (Sprint 18)
 const PerformanceDashboardPage = lazy(() => import('@/pages/analytics/PerformanceDashboardPage'));
