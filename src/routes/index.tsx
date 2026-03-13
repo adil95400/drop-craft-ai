@@ -206,6 +206,9 @@ export function AppRoutes() {
           {/* Shipping & Finance */}
           <Route path="/shipping/*" element={<Protected><ShippingHubPage /></Protected>} />
           <Route path="/customer-service" element={<Protected><CustomerServiceHubPage /></Protected>} />
+          <Route path="/customer-service/live-chat" element={<Protected><LiveChatPage /></Protected>} />
+          <Route path="/customer-service/returns" element={<Protected><AdvancedReturnsPage /></Protected>} />
+          <Route path="/customer-service/tickets" element={<Protected><AdvancedTicketsPage /></Protected>} />
           <Route path="/finance/*" element={<Protected><FinancialHubPage /></Protected>} />
           
           {/* Integrations & Extensions */}
