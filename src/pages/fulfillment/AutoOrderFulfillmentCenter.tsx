@@ -643,7 +643,7 @@ function FulfillmentAnalyticsTab() {
             {analyticsData.supplierDist.length > 0 ? (
               <ResponsiveContainer width="100%" height={240}>
                 <PieChart>
-                  <Pie data={analyticsData.supplierDist} cx="50%" cy="50%" outerRadius={80} dataKey="value" label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}>
+                  <Pie data={analyticsData.supplierDist} cx="50%" cy="50%" outerRadius={80} dataKey="value" label={({ name, percent }: any) => `${name} ${((percent as number) * 100).toFixed(0)}%`}>
                     {analyticsData.supplierDist.map((_: any, i: number) => (
                       <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />
                     ))}
