@@ -506,17 +506,23 @@ export default function BusinessIntelligenceCenterPage() {
       </div>
 
       <Tabs defaultValue="executive" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="executive" className="gap-2"><BarChart3 className="h-4 w-4" />Dashboard</TabsTrigger>
-          <TabsTrigger value="customers" className="gap-2"><Users className="h-4 w-4" />Clients</TabsTrigger>
-          <TabsTrigger value="products" className="gap-2"><Package className="h-4 w-4" />Produits</TabsTrigger>
-          <TabsTrigger value="predictions" className="gap-2"><Brain className="h-4 w-4" />Prédictions IA</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-4 lg:grid-cols-7">
+          <TabsTrigger value="executive" className="gap-1.5 text-xs"><BarChart3 className="h-3.5 w-3.5" />Dashboard</TabsTrigger>
+          <TabsTrigger value="pnl" className="gap-1.5 text-xs"><FileText className="h-3.5 w-3.5" />P&L</TabsTrigger>
+          <TabsTrigger value="kpis" className="gap-1.5 text-xs"><Gauge className="h-3.5 w-3.5" />KPIs</TabsTrigger>
+          <TabsTrigger value="customers" className="gap-1.5 text-xs"><Users className="h-3.5 w-3.5" />Clients</TabsTrigger>
+          <TabsTrigger value="products" className="gap-1.5 text-xs"><Package className="h-3.5 w-3.5" />Produits</TabsTrigger>
+          <TabsTrigger value="predictions" className="gap-1.5 text-xs"><Brain className="h-3.5 w-3.5" />Prédictions</TabsTrigger>
+          <TabsTrigger value="forecast" className="gap-1.5 text-xs"><Sparkles className="h-3.5 w-3.5" />Forecast IA</TabsTrigger>
         </TabsList>
 
         <TabsContent value="executive"><ExecutiveDashboard period={period} /></TabsContent>
+        <TabsContent value="pnl"><DetailedPnLDashboard /></TabsContent>
+        <TabsContent value="kpis"><AdvancedKPIsDashboard period={period} /></TabsContent>
         <TabsContent value="customers"><CustomerIntelligenceTab /></TabsContent>
         <TabsContent value="products"><ProductPerformanceTab /></TabsContent>
         <TabsContent value="predictions"><AIPredictionsTab /></TabsContent>
+        <TabsContent value="forecast"><AIRevenueForecastDashboard /></TabsContent>
       </Tabs>
     </ChannablePageWrapper>
   );
