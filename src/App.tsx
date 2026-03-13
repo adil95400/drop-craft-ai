@@ -126,6 +126,9 @@ const SmartShell = memo(() => {
   const { isAuthenticated } = useLightAuth();
   const isPublic = isPublicRoute(location.pathname);
   
+  // Initialize GA4 & track page views (respects cookie consent)
+  usePageTracking();
+  
   // Public route AND not authenticated → lightweight shell
   if (isPublic && !isAuthenticated) {
     return (
