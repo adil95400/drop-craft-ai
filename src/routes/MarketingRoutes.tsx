@@ -13,6 +13,7 @@ const MarketingAutomationPage = lazy(() => import('@/pages/marketing/MarketingAu
 // SEO - Use SEOManagerPage only
 const SEOManagerPage = lazy(() => import('@/pages/SEOManagerPage'));
 const SeoDashboardPage = lazy(() => import('@/pages/seo/SeoDashboardPage'));
+const SEOHubPage = lazy(() => import('@/pages/seo/SEOHubPage'));
 
 // Ads
 const AdsManagerPage = lazy(() => import('@/pages/AdsManagerPage'));
