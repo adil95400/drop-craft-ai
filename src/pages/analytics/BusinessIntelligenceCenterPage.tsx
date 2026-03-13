@@ -272,9 +272,10 @@ function ProductPerformanceTab() {
 
   if (isLoading || !analytics) return <div className="space-y-4">{[1,2].map(i => <Skeleton key={i} className="h-40 w-full" />)}</div>;
 
+  const avgMarginNum = typeof analytics.avgMargin === 'number' ? analytics.avgMargin : 0;
   const healthScore = Math.round(
     (analytics.activeProducts / Math.max(analytics.totalProducts, 1)) * 40 +
-    (analytics.avgMargin > 0 ? Math.min(analytics.avgMargin / 50 * 30, 30) : 0) +
+    (avgMarginNum > 0 ? Math.min(avgMarginNum / 50 * 30, 30) : 0) +
     (analytics.outOfStock === 0 ? 30 : Math.max(0, 30 - analytics.outOfStock * 5))
   );
 
