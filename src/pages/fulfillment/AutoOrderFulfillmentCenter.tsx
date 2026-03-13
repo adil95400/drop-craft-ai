@@ -555,7 +555,9 @@ function FulfillmentAnalyticsTab() {
       const withProcessing = items.filter((i: any) => i.processed_at && i.created_at);
       const avgTime = withProcessing.length > 0
         ? Math.round(withProcessing.reduce((acc: number, i: any) => {
-            return acc + (new Date(i.processed_at).getTime() - new Date(i.created_at).getTime()) / 60000;
+            const procTime = new Date(i.processed_at).getTime();
+            const createTime = new Date(i.created_at).getTime();
+            return acc + (procTime - createTime) / 60000;
           }, 0) / withProcessing.length)
         : 0;
 
