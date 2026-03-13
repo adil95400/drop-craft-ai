@@ -49,6 +49,9 @@ const BusinessIntelligencePage = lazy(() => import('@/pages/intelligence/Busines
 const ProductSourcingHub = lazy(() => import('@/pages/ProductSourcingHub'));
 const ShippingHubPage = lazy(() => import('@/pages/shipping/ShippingHubPage'));
 const CustomerServiceHubPage = lazy(() => import('@/pages/customer-service/CustomerServiceHubPage'));
+const LiveChatPage = lazy(() => import('@/pages/customer-service/LiveChatPage'));
+const AdvancedReturnsPage = lazy(() => import('@/pages/customer-service/AdvancedReturnsPage'));
+const AdvancedTicketsPage = lazy(() => import('@/pages/customer-service/AdvancedTicketsPage'));
 const FinancialHubPage = lazy(() => import('@/pages/finance/FinancialHubPage'));
 const MultiCanalHubPage = lazy(() => import('@/pages/channels/MultiCanalHubPage'));
 
@@ -203,6 +206,9 @@ export function AppRoutes() {
           {/* Shipping & Finance */}
           <Route path="/shipping/*" element={<Protected><ShippingHubPage /></Protected>} />
           <Route path="/customer-service" element={<Protected><CustomerServiceHubPage /></Protected>} />
+          <Route path="/customer-service/live-chat" element={<Protected><LiveChatPage /></Protected>} />
+          <Route path="/customer-service/returns" element={<Protected><AdvancedReturnsPage /></Protected>} />
+          <Route path="/customer-service/tickets" element={<Protected><AdvancedTicketsPage /></Protected>} />
           <Route path="/finance/*" element={<Protected><FinancialHubPage /></Protected>} />
           
           {/* Integrations & Extensions */}

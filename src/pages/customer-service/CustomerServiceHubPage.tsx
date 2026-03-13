@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Helmet } from 'react-helmet-async';
+import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -12,7 +13,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Dialog
 import {
   Headphones, MessageSquare, RotateCcw, Star, Send,
   Clock, CheckCircle, XCircle, AlertCircle, Plus,
-  Mail, TrendingUp, Users, BarChart3, Bell
+  Mail, TrendingUp, Users, BarChart3, Bell, ArrowRight, Ticket
 } from 'lucide-react';
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
 import { useCustomerServiceHub } from '@/hooks/useCustomerServiceHub';
@@ -20,6 +21,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { fr } from 'date-fns/locale';
 
 export default function CustomerServiceHubPage() {
+  const navigate = useNavigate();
   const {
     tickets, surveys, reminders, refunds, stats,
     isLoadingTickets, isLoadingSurveys, isLoadingRefunds,
@@ -67,6 +69,28 @@ export default function CustomerServiceHubPage() {
         heroImage="customers"
         badge={{ label: "Support", icon: Headphones }}
       >
+        {/* Quick Access Modules */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+          {[
+            { title: 'Chat en direct', desc: 'Messagerie temps réel avec vos clients', icon: MessageSquare, path: '/customer-service/live-chat', color: 'text-emerald-500' },
+            { title: 'Tickets avancés', desc: 'Suivi SLA, priorités et assignation', icon: Ticket, path: '/customer-service/tickets', color: 'text-blue-500' },
+            { title: 'Retours & Réclamations', desc: 'Gestion RMA et remboursements automatisés', icon: RotateCcw, path: '/customer-service/returns', color: 'text-amber-500' },
+          ].map((mod, i) => (
+            <Card key={i} className="cursor-pointer hover:shadow-md transition-shadow group" onClick={() => navigate(mod.path)}>
+              <CardContent className="p-5 flex items-start gap-4">
+                <div className="p-2 rounded-lg bg-muted">
+                  <mod.icon className={`h-5 w-5 ${mod.color}`} />
+                </div>
+                <div className="flex-1">
+                  <h3 className="font-semibold text-sm">{mod.title}</h3>
+                  <p className="text-xs text-muted-foreground mt-0.5">{mod.desc}</p>
+                </div>
+                <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors mt-1" />
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+
         {/* KPIs */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <Card className="p-4">
