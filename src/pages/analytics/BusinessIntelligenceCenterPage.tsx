@@ -355,14 +355,13 @@ function ProductPerformanceTab() {
 // ─── AI Predictions Tab ─────────────────────────────────────────────
 
 function AIPredictionsTab() {
-  const { insights, salesData, generateInsights, isGenerating, isLoading } = useRealPredictiveAI();
+  const { insights, salesData, generatePrediction, isGenerating, isLoading } = useRealPredictiveAI();
 
   const revenueForecasts = useMemo(() => {
     if (!salesData || salesData.length === 0) return [];
-    // Simple 30d forecast from sales trend
     const recent = salesData.slice(-14);
-    const avgDaily = recent.reduce((s, d) => s + d.revenue, 0) / recent.length;
-    const trend = recent.length > 1 ? (recent[recent.length - 1].revenue - recent[0].revenue) / recent.length : 0;
+    const avgDaily = recent.reduce((s, d) => s + d.actual, 0) / recent.length;
+    const trend = recent.length > 1 ? (recent[recent.length - 1].actual - recent[0].actual) / recent.length : 0;
 
     return Array.from({ length: 30 }, (_, i) => ({
       day: `J+${i + 1}`,
