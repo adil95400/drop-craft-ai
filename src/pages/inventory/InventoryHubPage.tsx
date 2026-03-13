@@ -272,7 +272,7 @@ function RealTimeSyncTab() {
                       checked={config.sync_enabled}
                       onCheckedChange={(v) => upsertConfig({ supplier_id: config.supplier_id, sync_enabled: v } as any)}
                     />
-                    <Button variant="outline" size="sm" className="h-7 text-xs" onClick={() => syncSupplier.mutate(config.supplier_id)}>
+                    <Button variant="outline" size="sm" className="h-7 text-xs" onClick={() => syncSupplier(config.supplier_id)}>
                       <RefreshCw className="h-3 w-3 mr-1" />Sync
                     </Button>
                   </div>
