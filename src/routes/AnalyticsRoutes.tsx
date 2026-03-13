@@ -84,7 +84,7 @@ export function AnalyticsRoutes() {
       <Route path="studio" element={<Navigate to="/analytics" replace />} />
       <Route path="advanced" element={<Navigate to="/analytics" replace />} />
       <Route path="advanced-dashboard" element={<Navigate to="/analytics" replace />} />
-      <Route path="business-intelligence" element={<Navigate to="/intelligence/bi" replace />} />
+      <Route path="business-intelligence" element={<BusinessIntelligenceCenterPage />} />
       <Route path="ultra-pro" element={<Navigate to="/analytics" replace />} />
       <Route path="ai-intelligence" element={<Navigate to="/analytics/predictive" replace />} />
       <Route path="customer-intelligence" element={<Navigate to="/analytics/predictive" replace />} />
