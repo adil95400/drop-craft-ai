@@ -13,6 +13,7 @@ const MarketingAutomationPage = lazy(() => import('@/pages/marketing/MarketingAu
 // SEO - Use SEOManagerPage only
 const SEOManagerPage = lazy(() => import('@/pages/SEOManagerPage'));
 const SeoDashboardPage = lazy(() => import('@/pages/seo/SeoDashboardPage'));
+const SEOHubPage = lazy(() => import('@/pages/seo/SEOHubPage'));
 
 // Ads
 const AdsManagerPage = lazy(() => import('@/pages/AdsManagerPage'));
@@ -35,6 +36,7 @@ const UpsellCrossSellPage = lazy(() => import('@/pages/marketing/UpsellCrossSell
 const KeywordResearch = lazy(() => import('@/pages/KeywordResearch'));
 const RankTracker = lazy(() => import('@/pages/RankTracker'));
 const SchemaGenerator = lazy(() => import('@/pages/SchemaGenerator'));
+const MultilingualSEOPage = lazy(() => import('@/pages/seo/MultilingualSEOPage'));
 
 export function MarketingRoutes() {
   return (
@@ -54,7 +56,8 @@ export function MarketingRoutes() {
       <Route path="crm/scoring" element={<CrmPage />} />
       
       {/* SEO */}
-      <Route path="seo" element={<SEOManagerPage />} />
+      <Route path="seo" element={<SEOHubPage />} />
+      <Route path="seo/manager" element={<SEOManagerPage />} />
       <Route path="seo/dashboard" element={<SeoDashboardPage />} />
       <Route path="seo/tools" element={<SEOManagerPage />} />
       
@@ -80,6 +83,7 @@ export function MarketingRoutes() {
       <Route path="seo/keywords" element={<KeywordResearch />} />
       <Route path="seo/rank-tracker" element={<RankTracker />} />
       <Route path="seo/schema" element={<SchemaGenerator />} />
+      <Route path="seo/multilingual" element={<MultilingualSEOPage />} />
       
       {/* Creative Studio */}
       <Route path="creative-studio" element={<CreativeStudioPage />} />
