@@ -186,14 +186,14 @@ export default function MarketingAutomationPage() {
         name: formData.name,
         trigger_type: formData.trigger_type,
         is_active: false,
-        actions: {
+        actions: JSON.parse(JSON.stringify({
           steps: formData.steps,
           segment_ids: formData.segment_ids,
           description: formData.description,
-        },
-        trigger_config: {
+        })),
+        trigger_config: JSON.parse(JSON.stringify({
           type: formData.trigger_type,
-        },
+        })),
       };
 
       if (editingCampaign) {
