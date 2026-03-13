@@ -56,7 +56,8 @@ export function MarketingRoutes() {
       <Route path="crm/scoring" element={<CrmPage />} />
       
       {/* SEO */}
-      <Route path="seo" element={<SEOManagerPage />} />
+      <Route path="seo" element={<SEOHubPage />} />
+      <Route path="seo/manager" element={<SEOManagerPage />} />
       <Route path="seo/dashboard" element={<SeoDashboardPage />} />
       <Route path="seo/tools" element={<SEOManagerPage />} />
       
