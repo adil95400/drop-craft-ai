@@ -2481,6 +2481,45 @@ export type Database = {
           },
         ]
       }
+      canned_responses: {
+        Row: {
+          category: string | null
+          content: string
+          created_at: string
+          id: string
+          is_active: boolean | null
+          shortcut: string | null
+          title: string
+          updated_at: string
+          usage_count: number | null
+          user_id: string
+        }
+        Insert: {
+          category?: string | null
+          content: string
+          created_at?: string
+          id?: string
+          is_active?: boolean | null
+          shortcut?: string | null
+          title: string
+          updated_at?: string
+          usage_count?: number | null
+          user_id: string
+        }
+        Update: {
+          category?: string | null
+          content?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean | null
+          shortcut?: string | null
+          title?: string
+          updated_at?: string
+          usage_count?: number | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       canva_designs: {
         Row: {
           canva_design_id: string | null
@@ -8098,6 +8137,113 @@ export type Database = {
           updated_at?: string
           user_id?: string
           version?: number | null
+        }
+        Relationships: []
+      }
+      live_chat_messages: {
+        Row: {
+          attachments: Json | null
+          content: string
+          created_at: string
+          id: string
+          is_read: boolean | null
+          message_type: string | null
+          metadata: Json | null
+          sender_id: string | null
+          sender_type: string
+          session_id: string
+        }
+        Insert: {
+          attachments?: Json | null
+          content: string
+          created_at?: string
+          id?: string
+          is_read?: boolean | null
+          message_type?: string | null
+          metadata?: Json | null
+          sender_id?: string | null
+          sender_type: string
+          session_id: string
+        }
+        Update: {
+          attachments?: Json | null
+          content?: string
+          created_at?: string
+          id?: string
+          is_read?: boolean | null
+          message_type?: string | null
+          metadata?: Json | null
+          sender_id?: string | null
+          sender_type?: string
+          session_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "live_chat_messages_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "live_chat_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      live_chat_sessions: {
+        Row: {
+          assigned_to: string | null
+          channel: string
+          closed_at: string | null
+          created_at: string
+          customer_email: string | null
+          customer_name: string | null
+          id: string
+          last_message_at: string | null
+          metadata: Json | null
+          priority: string | null
+          satisfaction_rating: number | null
+          started_at: string
+          status: string
+          subject: string | null
+          tags: string[] | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          assigned_to?: string | null
+          channel?: string
+          closed_at?: string | null
+          created_at?: string
+          customer_email?: string | null
+          customer_name?: string | null
+          id?: string
+          last_message_at?: string | null
+          metadata?: Json | null
+          priority?: string | null
+          satisfaction_rating?: number | null
+          started_at?: string
+          status?: string
+          subject?: string | null
+          tags?: string[] | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          assigned_to?: string | null
+          channel?: string
+          closed_at?: string | null
+          created_at?: string
+          customer_email?: string | null
+          customer_name?: string | null
+          id?: string
+          last_message_at?: string | null
+          metadata?: Json | null
+          priority?: string | null
+          satisfaction_rating?: number | null
+          started_at?: string
+          status?: string
+          subject?: string | null
+          tags?: string[] | null
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }
@@ -14363,6 +14509,45 @@ export type Database = {
           name?: string
           regions?: string[] | null
           updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      sla_configurations: {
+        Row: {
+          created_at: string
+          escalation_minutes: number | null
+          first_response_minutes: number
+          id: string
+          is_active: boolean | null
+          name: string
+          priority: string
+          resolution_minutes: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          escalation_minutes?: number | null
+          first_response_minutes?: number
+          id?: string
+          is_active?: boolean | null
+          name: string
+          priority: string
+          resolution_minutes?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          escalation_minutes?: number | null
+          first_response_minutes?: number
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          priority?: string
+          resolution_minutes?: number
+          updated_at?: string
           user_id?: string
         }
         Relationships: []
