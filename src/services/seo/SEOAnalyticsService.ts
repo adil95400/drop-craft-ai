@@ -95,13 +95,13 @@ class SEOAnalyticsService {
         keywords: keywords.map(k => k.keyword),
       });
 
-      const positionsMap = new Map(
+      const positionsMap = new Map<string, any>(
         (result.positions || []).map((p: any) => [p.keyword, p])
       );
 
       // Update each keyword with AI-estimated positions
       for (const kw of keywords) {
-        const pos = positionsMap.get(kw.keyword);
+        const pos = positionsMap.get(kw.keyword) as any;
         if (pos) {
           await (supabase.from('seo_tracked_keywords') as any)
             .update({
