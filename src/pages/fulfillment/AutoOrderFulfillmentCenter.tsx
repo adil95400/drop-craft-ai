@@ -113,11 +113,11 @@ function OrderPipelineTab() {
 
       {/* Action bar */}
       <div className="flex flex-wrap items-center gap-3">
-        <Button onClick={() => processPending?.()} disabled={isProcessingPending || (stats?.pending || 0) === 0} size="sm">
+        <Button onClick={() => processPending?.(undefined as any)} disabled={isProcessingPending || (stats?.pending || 0) === 0} size="sm">
           <Play className="h-4 w-4 mr-2" />
           Traiter en attente ({stats?.pending || 0})
         </Button>
-        <Button variant="outline" onClick={() => retryFailed?.()} disabled={isRetrying || (stats?.failed || 0) === 0} size="sm">
+        <Button variant="outline" onClick={() => retryFailed?.(undefined as any)} disabled={isRetrying || (stats?.failed || 0) === 0} size="sm">
           <RotateCcw className="h-4 w-4 mr-2" />
           Retry échoués ({stats?.failed || 0})
         </Button>
