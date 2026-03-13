@@ -67,7 +67,24 @@ export default function AdvancedReturnsPage() {
         .order('created_at', { ascending: false })
         .limit(100);
       if (error) throw error;
-      return (data || []) as ReturnItem[];
+      return (data || []).map((d: any) => ({
+        id: d.id,
+        rma_number: d.rma_number || '',
+        order_id: d.order_id,
+        customer_name: d.customer_name || d.customer_id || '',
+        customer_email: d.customer_email || '',
+        reason: d.reason || d.description || '',
+        reason_category: d.reason_category || 'other',
+        status: d.status || 'requested',
+        items: d.items,
+        refund_amount: d.refund_amount || 0,
+        refund_method: d.refund_method || 'original',
+        tracking_number: d.tracking_number,
+        carrier: d.carrier,
+        resolution: d.resolution || null,
+        notes: d.notes,
+        created_at: d.created_at,
+      })) as ReturnItem[];
     },
     enabled: !!user?.id,
   });

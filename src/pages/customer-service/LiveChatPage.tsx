@@ -113,7 +113,7 @@ export default function LiveChatPage() {
       <ChannablePageWrapper
         title="Chat en direct"
         description="Messagerie temps réel avec vos clients"
-        icon={<MessageSquare className="h-5 w-5" />}
+        badge={{ label: 'Live', icon: MessageSquare }}
       >
         <div className="flex h-[calc(100vh-220px)] border border-border rounded-xl overflow-hidden bg-card">
           {/* Sidebar - Sessions list */}

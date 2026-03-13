@@ -101,7 +101,7 @@ export default function AdvancedTicketsPage() {
       <ChannablePageWrapper
         title="Gestion avancée des tickets"
         description="Suivi SLA, file de priorité et assignation intelligente"
-        icon={<Ticket className="h-5 w-5" />}
+        badge={{ label: 'Tickets', icon: Ticket }}
       >
         {/* Stats */}
         <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-6">
