@@ -14,6 +14,7 @@ import { AppRoutes } from '@/routes';
 import { useAutoTheme } from '@/hooks/useAutoTheme';
 import { OfflineIndicatorLite } from '@/components/offline/OfflineIndicatorLite';
 import { LightAuthProvider, useLightAuth } from '@/contexts/LightAuthContext';
+import { usePageTracking } from '@/hooks/usePageTracking';
 
 // Lazy load heavy providers & widgets — only for authenticated users
 const UnifiedAuthProvider = lazy(() => 
@@ -124,6 +125,9 @@ const SmartShell = memo(() => {
   const location = useLocation();
   const { isAuthenticated } = useLightAuth();
   const isPublic = isPublicRoute(location.pathname);
+  
+  // Initialize GA4 & track page views (respects cookie consent)
+  usePageTracking();
   
   // Public route AND not authenticated → lightweight shell
   if (isPublic && !isAuthenticated) {
