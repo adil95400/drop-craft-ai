@@ -383,7 +383,7 @@ function AIPredictionsTab() {
           </h3>
           <p className="text-sm text-muted-foreground">Analyses prédictives basées sur vos données réelles</p>
         </div>
-        <Button onClick={() => generateInsights()} disabled={isGenerating} size="sm">
+        <Button onClick={() => generatePrediction()} disabled={isGenerating} size="sm">
           <Zap className={`h-4 w-4 mr-2 ${isGenerating ? 'animate-pulse' : ''}`} />
           {isGenerating ? 'Analyse...' : 'Générer des insights'}
         </Button>
