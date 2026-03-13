@@ -14,6 +14,7 @@ import { AppRoutes } from '@/routes';
 import { useAutoTheme } from '@/hooks/useAutoTheme';
 import { OfflineIndicatorLite } from '@/components/offline/OfflineIndicatorLite';
 import { LightAuthProvider, useLightAuth } from '@/contexts/LightAuthContext';
+import { usePageTracking } from '@/hooks/usePageTracking';
 
 // Lazy load heavy providers & widgets — only for authenticated users
 const UnifiedAuthProvider = lazy(() => 
