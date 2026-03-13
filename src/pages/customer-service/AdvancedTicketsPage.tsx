@@ -30,7 +30,8 @@ const SLA_DEFAULTS = {
 };
 
 export default function AdvancedTicketsPage() {
-  const { tickets, isLoading, updateTicketStatus } = useSupportTickets();
+  const { tickets, isLoadingTickets: isLoading, updateTicket } = useSupportTickets();
+  const updateTicketStatus = ({ id, status }: { id: string; status: string }) => updateTicket({ id, updates: { status } });
   const [searchTerm, setSearchTerm] = useState('');
   const [priorityFilter, setPriorityFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
