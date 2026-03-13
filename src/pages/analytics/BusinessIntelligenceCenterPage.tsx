@@ -211,7 +211,7 @@ function CustomerIntelligenceTab() {
             {segmentData.length > 0 ? (
               <ResponsiveContainer width="100%" height={240}>
                 <RPieChart>
-                  <Pie data={segmentData} cx="50%" cy="50%" innerRadius={60} outerRadius={90} dataKey="value" label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}>
+                  <Pie data={segmentData} cx="50%" cy="50%" innerRadius={60} outerRadius={90} dataKey="value" label={({ name, percent }: any) => `${name} ${(percent * 100).toFixed(0)}%`}>
                     {segmentData.map((entry, i) => (
                       <Cell key={i} fill={entry.color} />
                     ))}
