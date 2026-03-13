@@ -132,10 +132,13 @@ function StockLevelsTab() {
 function RealTimeSyncTab() {
   const { user } = useUnifiedAuth();
   const {
-    configs, configsLoading,
-    history, historyLoading,
+    configs,
+    stockHistory: history,
     alerts,
-    syncAll, syncSupplier, upsertConfig,
+    syncAll,
+    syncSupplier,
+    upsertConfig,
+    isLoading: configsLoading,
     isSyncingAll
   } = useStockSync();
 
