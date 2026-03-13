@@ -10,10 +10,13 @@ import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrappe
 import { useBusinessMetrics, useProductAnalytics, useCustomerAnalytics } from '@/hooks/useBIMetrics';
 import { useFinancialManagement } from '@/hooks/useFinancialManagement';
 import { useRealPredictiveAI } from '@/hooks/useRealPredictiveAI';
+import { DetailedPnLDashboard } from '@/components/bi/DetailedPnLDashboard';
+import { AdvancedKPIsDashboard } from '@/components/bi/AdvancedKPIsDashboard';
+import { AIRevenueForecastDashboard } from '@/components/bi/AIRevenueForecastDashboard';
 import {
   BarChart3, TrendingUp, TrendingDown, DollarSign, Users, Package, ShoppingCart,
   ArrowUpRight, ArrowDownRight, Brain, Target, Zap, PieChart, Activity,
-  AlertTriangle, CheckCircle2, Crown, Repeat, Eye, Clock
+  AlertTriangle, CheckCircle2, Crown, Repeat, Eye, Clock, FileText, Gauge, Sparkles
 } from 'lucide-react';
 import {
   AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
