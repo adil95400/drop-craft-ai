@@ -398,9 +398,8 @@ function AutoOrderRulesTab() {
   });
 
   const handleCreate = () => {
-    createRule.mutate(newRule as any, {
-      onSuccess: () => setShowNew(false),
-    });
+    createRule(newRule as any);
+    setShowNew(false);
   };
 
   return (
