@@ -208,9 +208,7 @@ export default function LiveRepricingPage() {
               )}
             </div>
           )}
-          <Button variant="outline" className="w-full" disabled>
-            + Créer une règle de repricing (bientôt)
-          </Button>
+          <CreateRepricingRuleButton />
         </TabsContent>
 
         <TabsContent value="alerts" className="space-y-4">
