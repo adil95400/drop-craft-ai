@@ -148,7 +148,7 @@ export default function AdvancedReturnsPage() {
       <ChannablePageWrapper
         title="Retours & Réclamations"
         description="Gérez les retours produits, réclamations et remboursements"
-        icon={<RotateCcw className="h-5 w-5" />}
+        badge={{ label: 'Retours', icon: RotateCcw }}
       >
         {/* Stats */}
         <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-6">
