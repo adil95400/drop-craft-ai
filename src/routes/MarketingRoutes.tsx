@@ -35,6 +35,7 @@ const UpsellCrossSellPage = lazy(() => import('@/pages/marketing/UpsellCrossSell
 const KeywordResearch = lazy(() => import('@/pages/KeywordResearch'));
 const RankTracker = lazy(() => import('@/pages/RankTracker'));
 const SchemaGenerator = lazy(() => import('@/pages/SchemaGenerator'));
+const MultilingualSEOPage = lazy(() => import('@/pages/seo/MultilingualSEOPage'));
 
 export function MarketingRoutes() {
   return (
