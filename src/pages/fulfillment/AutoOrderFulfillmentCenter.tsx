@@ -293,21 +293,21 @@ function MultiCarrierTrackingTab() {
         </Card>
         <Card>
           <CardContent className="p-4 text-center">
-            <Globe className="h-5 w-5 mx-auto mb-1 text-blue-600" />
+            <Globe className="h-5 w-5 mx-auto mb-1 text-primary" />
             <p className="text-xl font-bold">{carrierStats.length}</p>
             <p className="text-xs text-muted-foreground">Transporteurs</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-4 text-center">
-            <CheckCircle2 className="h-5 w-5 mx-auto mb-1 text-green-600" />
+            <CheckCircle2 className="h-5 w-5 mx-auto mb-1 text-primary" />
             <p className="text-xl font-bold">{trackingData.filter((t: any) => t.status === 'completed').length}</p>
             <p className="text-xs text-muted-foreground">Livrés</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-4 text-center">
-            <Timer className="h-5 w-5 mx-auto mb-1 text-yellow-600" />
+            <Timer className="h-5 w-5 mx-auto mb-1 text-muted-foreground" />
             <p className="text-xl font-bold">{trackingData.filter((t: any) => t.status === 'processing').length}</p>
             <p className="text-xs text-muted-foreground">En transit</p>
           </CardContent>
