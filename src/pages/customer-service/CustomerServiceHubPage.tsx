@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Helmet } from 'react-helmet-async';
+import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -12,7 +13,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Dialog
 import {
   Headphones, MessageSquare, RotateCcw, Star, Send,
   Clock, CheckCircle, XCircle, AlertCircle, Plus,
-  Mail, TrendingUp, Users, BarChart3, Bell
+  Mail, TrendingUp, Users, BarChart3, Bell, ArrowRight, Ticket
 } from 'lucide-react';
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
 import { useCustomerServiceHub } from '@/hooks/useCustomerServiceHub';
