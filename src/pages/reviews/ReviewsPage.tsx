@@ -8,7 +8,7 @@ import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrappe
 import {
   Star, Download, Upload, Plus, Filter, MessageSquare,
   ThumbsUp, ThumbsDown, AlertTriangle, Trash2, CheckCircle,
-  Image as ImageIcon, Globe, MoreHorizontal, Search, Sparkles
+  Image as ImageIcon, Globe, MoreHorizontal, Search, Sparkles, Code
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
