@@ -239,6 +239,7 @@ export function AppRoutes() {
           <Route path="/api-docs" element={<Protected><ApiDocsPage /></Protected>} />
           <Route path="/sync-manager" element={<Protected><SyncManagerPage /></Protected>} />
           <Route path="/reviews" element={<Protected><ReviewsPage /></Protected>} />
+          <Route path="/media-editor" element={<Protected><AdvancedMediaEditorPage /></Protected>} />
           <Route path="/advanced" element={<Protected><AdvancedAnalyticsPage /></Protected>} />
           <Route path="/monitoring" element={<Protected><PerformanceMonitoringPage /></Protected>} />
           <Route path="/catalog-intelligence" element={<Protected><CatalogIntelligencePage /></Protected>} />

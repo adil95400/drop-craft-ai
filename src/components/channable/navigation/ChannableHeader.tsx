@@ -723,6 +723,7 @@ export const ChannableHeader = memo(() => {
           <GlobalSearch />
           <QuickActionsButton />
           <ConsumptionAlertBadge />
+          <LanguageSwitcher compact />
           <NotificationsDropdown />
           <Separator orientation="vertical" className="h-6 mx-1 hidden sm:block bg-border/40" aria-hidden="true" />
           <UserMenuDropdown />
