@@ -19,6 +19,7 @@ import {
   MessageSquare, ArrowLeft
 } from "lucide-react"
 import { ConsumptionAlertBadge } from "@/components/consumption/ConsumptionAlertBadge"
+import { LanguageSwitcher } from "@/components/internationalization/LanguageSwitcher"
 import { SidebarTrigger } from "@/components/ui/sidebar"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
