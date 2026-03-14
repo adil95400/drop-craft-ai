@@ -189,7 +189,7 @@ export default function ReviewsPage() {
       )}
 
       {/* Main Tabs: Reviews + AI */}
-      <Tabs value={mainTab} onValueChange={v => setMainTab(v as 'reviews' | 'ai')}>
+      <Tabs value={mainTab} onValueChange={v => setMainTab(v as 'reviews' | 'ai' | 'widgets')}>
         <TabsList className="mb-4">
           <TabsTrigger value="reviews" className="gap-2">
             <MessageSquare className="h-4 w-4" />
@@ -198,6 +198,10 @@ export default function ReviewsPage() {
           <TabsTrigger value="ai" className="gap-2">
             <Sparkles className="h-4 w-4" />
             Analyse IA
+          </TabsTrigger>
+          <TabsTrigger value="widgets" className="gap-2">
+            <Code className="h-4 w-4" />
+            Widgets
           </TabsTrigger>
         </TabsList>
 
