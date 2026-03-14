@@ -287,6 +287,10 @@ export default function ReviewsPage() {
         <TabsContent value="ai" className="mt-0">
           <ReviewAIPanel />
         </TabsContent>
+
+        <TabsContent value="widgets" className="mt-0">
+          <ReviewWidgetGenerator />
+        </TabsContent>
       </Tabs>
 
       {/* Import Modal */}
