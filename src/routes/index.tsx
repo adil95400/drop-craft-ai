@@ -94,6 +94,7 @@ const Sitemap = lazy(() => import('@/pages/Sitemap'));
 const DocumentationPage = lazy(() => import('@/pages/documentation/DocumentationPage'));
 const SEOContentHubPage = lazy(() => import('@/pages/seo/SEOContentHubPage'));
 const CustomerReturnsPortal = lazy(() => import('@/pages/returns/CustomerReturnsPortal'));
+const AdvancedMediaEditorPage = lazy(() => import('@/pages/media/AdvancedMediaEditorPage'));
 
 // Profile & Subscription (Settings group)
 const SubscriptionDashboard = lazy(() => import('@/pages/SubscriptionDashboard'));
