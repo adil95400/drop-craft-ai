@@ -19,6 +19,7 @@ import {
   MessageSquare, ArrowLeft
 } from "lucide-react"
 import { ConsumptionAlertBadge } from "@/components/consumption/ConsumptionAlertBadge"
+import { LanguageSwitcher } from "@/components/internationalization/LanguageSwitcher"
 import { SidebarTrigger } from "@/components/ui/sidebar"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -722,6 +723,7 @@ export const ChannableHeader = memo(() => {
           <GlobalSearch />
           <QuickActionsButton />
           <ConsumptionAlertBadge />
+          <LanguageSwitcher compact />
           <NotificationsDropdown />
           <Separator orientation="vertical" className="h-6 mx-1 hidden sm:block bg-border/40" aria-hidden="true" />
           <UserMenuDropdown />

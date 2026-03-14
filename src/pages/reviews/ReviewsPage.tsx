@@ -8,7 +8,7 @@ import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrappe
 import {
   Star, Download, Upload, Plus, Filter, MessageSquare,
   ThumbsUp, ThumbsDown, AlertTriangle, Trash2, CheckCircle,
-  Image as ImageIcon, Globe, MoreHorizontal, Search, Sparkles
+  Image as ImageIcon, Globe, MoreHorizontal, Search, Sparkles, Code
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -31,6 +31,7 @@ import {
 } from '@/hooks/reviews/useProductReviews';
 import { AdvancedReviewsImportModal } from '@/components/import/reviews/AdvancedReviewsImportModal';
 import { ReviewAIPanel } from '@/components/reviews/ReviewAIPanel';
+import { ReviewWidgetGenerator } from '@/components/reviews/ReviewWidgetGenerator';
 import { format } from 'date-fns';
 import { getDateFnsLocale } from '@/utils/dateFnsLocale';
 
@@ -83,7 +84,7 @@ export default function ReviewsPage() {
   const [ratingFilter, setRatingFilter] = useState('all');
   const [importModalOpen, setImportModalOpen] = useState(false);
   const [createModalOpen, setCreateModalOpen] = useState(false);
-  const [mainTab, setMainTab] = useState<'reviews' | 'ai'>('reviews');
+  const [mainTab, setMainTab] = useState<'reviews' | 'ai' | 'widgets'>('reviews');
 
   // New review form
   const [newReview, setNewReview] = useState({
@@ -188,7 +189,7 @@ export default function ReviewsPage() {
       )}
 
       {/* Main Tabs: Reviews + AI */}
-      <Tabs value={mainTab} onValueChange={v => setMainTab(v as 'reviews' | 'ai')}>
+      <Tabs value={mainTab} onValueChange={v => setMainTab(v as 'reviews' | 'ai' | 'widgets')}>
         <TabsList className="mb-4">
           <TabsTrigger value="reviews" className="gap-2">
             <MessageSquare className="h-4 w-4" />
@@ -197,6 +198,10 @@ export default function ReviewsPage() {
           <TabsTrigger value="ai" className="gap-2">
             <Sparkles className="h-4 w-4" />
             Analyse IA
+          </TabsTrigger>
+          <TabsTrigger value="widgets" className="gap-2">
+            <Code className="h-4 w-4" />
+            Widgets
           </TabsTrigger>
         </TabsList>
 
@@ -281,6 +286,10 @@ export default function ReviewsPage() {
 
         <TabsContent value="ai" className="mt-0">
           <ReviewAIPanel />
+        </TabsContent>
+
+        <TabsContent value="widgets" className="mt-0">
+          <ReviewWidgetGenerator />
         </TabsContent>
       </Tabs>
 
