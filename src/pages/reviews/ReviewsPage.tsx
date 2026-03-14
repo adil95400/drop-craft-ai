@@ -31,6 +31,7 @@ import {
 } from '@/hooks/reviews/useProductReviews';
 import { AdvancedReviewsImportModal } from '@/components/import/reviews/AdvancedReviewsImportModal';
 import { ReviewAIPanel } from '@/components/reviews/ReviewAIPanel';
+import { ReviewWidgetGenerator } from '@/components/reviews/ReviewWidgetGenerator';
 import { format } from 'date-fns';
 import { getDateFnsLocale } from '@/utils/dateFnsLocale';
 
