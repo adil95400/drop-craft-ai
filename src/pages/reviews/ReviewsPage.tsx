@@ -84,7 +84,7 @@ export default function ReviewsPage() {
   const [ratingFilter, setRatingFilter] = useState('all');
   const [importModalOpen, setImportModalOpen] = useState(false);
   const [createModalOpen, setCreateModalOpen] = useState(false);
-  const [mainTab, setMainTab] = useState<'reviews' | 'ai'>('reviews');
+  const [mainTab, setMainTab] = useState<'reviews' | 'ai' | 'widgets'>('reviews');
 
   // New review form
   const [newReview, setNewReview] = useState({
