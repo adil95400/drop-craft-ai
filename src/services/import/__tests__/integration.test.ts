@@ -4,11 +4,12 @@
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { importGateway, getSupportedSources } from '../index'
 import type { ImportRequest } from '../types'
 
-// Mock Supabase with realistic edge function responses
-const mockInvoke = vi.fn()
+// Use vi.hoisted to avoid TDZ issues
+const { mockInvoke } = vi.hoisted(() => ({
+  mockInvoke: vi.fn()
+}))
 
 vi.mock('@/integrations/supabase/client', () => ({
   supabase: {
