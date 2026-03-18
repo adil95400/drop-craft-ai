@@ -34,7 +34,7 @@ export function ChannableLayout({ children, className }: ChannableLayoutProps) {
         <SkipToContent />
         <MobileHeader />
         <main id="main-content" className="flex-1 pb-20 overflow-auto" role="main">
-          <div className="container max-w-screen-sm mx-auto px-3 py-3">
+          <div className="w-full px-3 py-3">
             {children}
           </div>
         </main>
