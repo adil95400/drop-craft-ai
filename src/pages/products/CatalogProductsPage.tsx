@@ -411,9 +411,9 @@ export default function CatalogProductsPage() {
         />
 
         {/* === KPI STAT CARDS === */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3">
           <Card className="border-border/50 cursor-pointer hover:border-primary/30 transition-colors" onClick={() => navigate('/products?status=active')}>
-            <CardContent className="p-4 flex items-center gap-3">
+            <CardContent className="p-3 sm:p-4 flex items-center gap-2 sm:gap-3">
               <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
                 <Package className="h-5 w-5 text-primary" />
               </div>
