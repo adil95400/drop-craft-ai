@@ -262,32 +262,33 @@ const SuperAdminDashboard = () => {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="page-header">
         <div>
-          <h1 className="text-3xl font-bold flex items-center gap-2">
-            <Shield className="h-8 w-8 text-primary" />
+          <h1 className="page-title flex items-center gap-2">
+            <Shield className="h-6 w-6 sm:h-8 sm:w-8 text-primary" />
             Super Admin Dashboard
           </h1>
-          <p className="text-muted-foreground mt-1">
+          <p className="page-subtitle">
             Contrôle total du système • Dernière mise à jour: {lastUpdate.toLocaleTimeString()}
           </p>
         </div>
-        <div className="flex gap-2">
-          <Button onClick={loadDashboardData} disabled={loading} variant="outline">
+        <div className="flex gap-2 flex-wrap">
+          <Button size="sm" onClick={loadDashboardData} disabled={loading} variant="outline">
             <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
-            Actualiser
+            <span className="hidden sm:inline">Actualiser</span>
           </Button>
-          <Badge variant="outline" className="flex items-center gap-1">
-            <Activity className="h-4 w-4" />
-            {metrics.onlineUsers} utilisateurs en ligne
+          <Badge variant="outline" className="flex items-center gap-1 text-xs">
+            <Activity className="h-3 w-3 sm:h-4 sm:w-4" />
+            <span className="hidden sm:inline">{metrics.onlineUsers} utilisateurs en ligne</span>
+            <span className="sm:hidden">{metrics.onlineUsers} en ligne</span>
           </Badge>
         </div>
       </div>
 
       {/* Métriques principales */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6">
         <Card className="border-0 shadow-lg">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Utilisateurs Total</CardTitle>
