@@ -50,7 +50,7 @@ export function ChannableLayout({ children, className }: ChannableLayoutProps) {
   return (
     <SidebarProvider defaultOpen={!isTablet}>
       <SkipToContent />
-      <div className="min-h-screen flex w-full">
+      <div className="min-h-screen flex w-full overflow-x-hidden">
         <ChannableSidebar />
         
         <SidebarInset className="flex-1 flex flex-col min-w-0">
