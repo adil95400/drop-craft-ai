@@ -36,7 +36,7 @@ describe('ProductsService', () => {
 
       const result = await ProductsService.getProducts('user-123')
       expect(result).toEqual(products)
-      expect(mockList).toHaveBeenCalledWith({ per_page: 50 })
+      expect(mockList).toHaveBeenCalledWith({ per_page: 30 })
     })
 
     it('returns empty array when null', async () => {
@@ -50,18 +50,18 @@ describe('ProductsService', () => {
     it('returns paginated results', async () => {
       mockList.mockResolvedValue({ items: [{ id: '1' }], meta: { total: 100 } })
 
-      const result = await ProductsService.getProductsPage('user-123', 0, 50)
+      const result = await ProductsService.getProductsPage('user-123', 0, 30)
       expect(result.data).toHaveLength(1)
       expect(result.total).toBe(100)
-      expect(result.totalPages).toBe(2)
+      expect(result.totalPages).toBe(4)
       expect(result.page).toBe(0)
-      expect(result.pageSize).toBe(50)
+      expect(result.pageSize).toBe(30)
     })
 
     it('handles missing meta', async () => {
       mockList.mockResolvedValue({ items: [], meta: null })
 
-      const result = await ProductsService.getProductsPage('user-123', 0, 50)
+      const result = await ProductsService.getProductsPage('user-123', 0, 30)
       expect(result.total).toBe(0)
       expect(result.totalPages).toBe(0)
     })
@@ -72,7 +72,7 @@ describe('ProductsService', () => {
       mockList.mockResolvedValue({ items: [{ id: '1', title: 'Blue Widget' }] })
 
       const result = await ProductsService.searchProducts('user-123', 'blue')
-      expect(mockList).toHaveBeenCalledWith({ q: 'blue', per_page: 50 })
+      expect(mockList).toHaveBeenCalledWith({ q: 'blue', per_page: 30 })
       expect(result).toHaveLength(1)
     })
   })

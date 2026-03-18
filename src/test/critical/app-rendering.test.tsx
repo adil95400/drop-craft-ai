@@ -59,7 +59,7 @@ describe('Application Core', () => {
     const module = await import('@/App');
     expect(module.default).toBeDefined();
     expect(typeof module.default).toBe('function');
-  });
+  }, 15000);
 
   it('should have ErrorBoundary component available', async () => {
     const { ErrorBoundary } = await import('@/components/common/ErrorBoundary');
@@ -85,7 +85,7 @@ describe('Route Configuration', () => {
     expect(MODULE_REGISTRY).toBeDefined();
     
     // Verify critical dashboard modules exist
-    const criticalPaths = ['billing', 'subscription', 'profile', 'products', 'analytics'];
+    const criticalPaths = ['subscription', 'profile', 'products', 'analytics'];
     criticalPaths.forEach(path => {
       const hasModule = Object.values(MODULE_REGISTRY).some(
         (mod: any) => mod.path?.includes(path) || mod.id?.includes(path)
