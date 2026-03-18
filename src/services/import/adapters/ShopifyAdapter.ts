@@ -37,8 +37,7 @@ export class ShopifyAdapter extends BaseAdapter {
   normalize(raw: any): NormalizedProduct {
     const images = this.extractImages(raw)
     const variants = this.extractVariants(raw)
-    const rawFirstVariant = raw.variants?.[0] || {}
-    const firstVariant = variants?.[0] || {}
+    const rawFirstVariant = raw.variants?.[0] || {} as any
     const price = this.parsePrice(rawFirstVariant.price || raw.price || 0)
 
     return this.finalize({
@@ -47,15 +46,15 @@ export class ShopifyAdapter extends BaseAdapter {
       price,
       costPrice: this.parsePrice(rawFirstVariant.compare_at_price || raw.compare_at_price),
       compareAtPrice: this.parsePrice(rawFirstVariant.compare_at_price || raw.compare_at_price),
-      sku: firstVariant.sku || raw.sku,
-      barcode: firstVariant.barcode || raw.barcode,
+      sku: rawFirstVariant.sku || raw.sku,
+      barcode: rawFirstVariant.barcode || raw.barcode,
       images: images.map(url => this.upgradeImageUrl(url, 'shopify')),
       category: this.mapCategory(raw.product_type || raw.category),
       tags: raw.tags ? (typeof raw.tags === 'string' ? raw.tags.split(',').map((t: string) => t.trim()) : raw.tags) : [],
       brand: raw.vendor || raw.brand,
-      stock: this.parseStock(firstVariant.inventory_quantity || raw.inventory_quantity),
-      weight: firstVariant.weight || raw.weight,
-      weightUnit: (firstVariant.weight_unit || raw.weight_unit || 'kg') as any,
+      stock: this.parseStock(rawFirstVariant.inventory_quantity || raw.inventory_quantity),
+      weight: rawFirstVariant.weight || raw.weight,
+      weightUnit: (rawFirstVariant.weight_unit || raw.weight_unit || 'kg') as any,
       variants,
       options: this.extractOptions(raw),
       seoTitle: raw.metafields_global_title_tag || raw.title,
