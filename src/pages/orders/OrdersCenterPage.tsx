@@ -79,20 +79,20 @@ function StatCard({
     >
       <Card className={cn("relative overflow-hidden border-0 shadow-md hover:shadow-lg transition-shadow", onClick && "cursor-pointer")} onClick={onClick}>
         <div className={cn("absolute inset-0 opacity-5", colorClasses[color].split(' ')[0])} />
-        <CardContent className="p-4">
+        <CardContent className="p-3 sm:p-4">
           <div className="flex items-center justify-between">
-            <div className={cn("p-2.5 rounded-xl border", colorClasses[color])}>
-              <Icon className="h-5 w-5" />
+            <div className={cn("p-2 sm:p-2.5 rounded-lg sm:rounded-xl border", colorClasses[color])}>
+              <Icon className="h-4 w-4 sm:h-5 sm:w-5" />
             </div>
             {trend && (
-              <Badge variant="secondary" className="text-xs font-medium bg-green-500/10 text-green-600 border-0">
+              <Badge variant="secondary" className="text-[10px] sm:text-xs font-medium bg-green-500/10 text-green-600 border-0">
                 {trend}
               </Badge>
             )}
           </div>
-          <div className="mt-3">
-            <p className="text-2xl font-bold tracking-tight">{value}</p>
-            <p className="text-sm text-muted-foreground mt-0.5">{label}</p>
+          <div className="mt-2 sm:mt-3">
+            <p className="text-lg sm:text-2xl font-bold tracking-tight">{value}</p>
+            <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">{label}</p>
           </div>
         </CardContent>
       </Card>
