@@ -51,6 +51,7 @@ function sanitizeProductListItems(items: any[]) {
       created_at: item.created_at,
       updated_at: item.updated_at,
       currency: item.currency,
+      source_type: item.source_type ?? 'manual',
       images: mainImage ? [mainImage] : [],
       image_url: mainImage,
       primary_image_url: mainImage,
@@ -207,7 +208,7 @@ async function listProducts(url: URL, auth: Auth, reqId: string) {
 
   let q = admin
     .from("products")
-    .select("id, title, sku, price, compare_at_price, cost_price, category, brand, status, stock_quantity, tags, is_published, created_at, updated_at, image_url, primary_image_url, main_image_url, currency", { count: "exact" })
+    .select("id, title, sku, price, compare_at_price, cost_price, category, brand, status, stock_quantity, tags, is_published, created_at, updated_at, image_url, primary_image_url, main_image_url, currency, source_type", { count: "exact" })
     .eq("user_id", auth.user.id)
     .order("created_at", { ascending: false })
     .range(from, to);

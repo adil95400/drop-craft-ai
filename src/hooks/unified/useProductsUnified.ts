@@ -104,7 +104,7 @@ function mapRecord(r: ProductRecord): UnifiedProduct {
     is_published: r.is_published,
     view_count: r.view_count,
     compare_at_price: r.compare_at_price ?? undefined,
-    source: 'products',
+    source: (r as any).source_type ?? 'products',
     user_id: '', // Not exposed by API
     created_at: r.created_at,
     updated_at: r.updated_at,
