@@ -424,41 +424,41 @@ export default function CatalogProductsPage() {
             </CardContent>
           </Card>
           <Card className="border-border/50 cursor-pointer hover:border-primary/30 transition-colors" onClick={() => {setStatusFilter('all');setSearch('');}}>
-            <CardContent className="p-4 flex items-center gap-3">
-              <div className="h-10 w-10 rounded-lg bg-accent/50 flex items-center justify-center shrink-0">
-                <BarChart3 className="h-5 w-5 text-accent-foreground" />
+            <CardContent className="p-3 sm:p-4 flex items-center gap-2 sm:gap-3">
+              <div className="h-8 w-8 sm:h-10 sm:w-10 rounded-lg bg-accent/50 flex items-center justify-center shrink-0">
+                <BarChart3 className="h-4 w-4 sm:h-5 sm:w-5 text-accent-foreground" />
               </div>
               <div className="min-w-0">
-                <p className="text-2xl font-bold leading-none">{kpis.totalStock.toLocaleString()}</p>
-                <p className="text-xs text-muted-foreground mt-1">Stock total</p>
+                <p className="text-lg sm:text-2xl font-bold leading-none">{kpis.totalStock.toLocaleString()}</p>
+                <p className="text-[10px] sm:text-xs text-muted-foreground mt-0.5 sm:mt-1">Stock total</p>
               </div>
             </CardContent>
           </Card>
           <Card className="border-border/50 cursor-pointer hover:border-primary/30 transition-colors" onClick={() => navigate('/analytics')}>
-            <CardContent className="p-4 flex items-center gap-3">
-              <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-                <DollarSign className="h-5 w-5 text-primary" />
+            <CardContent className="p-3 sm:p-4 flex items-center gap-2 sm:gap-3">
+              <div className="h-8 w-8 sm:h-10 sm:w-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                <DollarSign className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
               </div>
               <div className="min-w-0">
-                <p className="text-2xl font-bold leading-none">{kpis.totalValue.toLocaleString('fr-FR', { maximumFractionDigits: 0 })} €</p>
-                <p className="text-xs text-muted-foreground mt-1">Valeur stock</p>
+                <p className="text-lg sm:text-2xl font-bold leading-none">{kpis.totalValue.toLocaleString('fr-FR', { maximumFractionDigits: 0 })} €</p>
+                <p className="text-[10px] sm:text-xs text-muted-foreground mt-0.5 sm:mt-1">Valeur stock</p>
               </div>
             </CardContent>
           </Card>
           <Card className="border-border/50 cursor-pointer hover:border-primary/30 transition-colors" onClick={() => navigate('/products/scoring')}>
-            <CardContent className="p-4 flex items-center gap-3">
+            <CardContent className="p-3 sm:p-4 flex items-center gap-2 sm:gap-3">
               <div className={cn(
-                "h-10 w-10 rounded-lg flex items-center justify-center shrink-0",
+                "h-8 w-8 sm:h-10 sm:w-10 rounded-lg flex items-center justify-center shrink-0",
                 kpis.avgMargin >= 30 ? 'bg-primary/10' : kpis.avgMargin >= 15 ? 'bg-accent/50' : 'bg-destructive/10'
               )}>
                 <TrendingUp className={cn(
-                  "h-5 w-5",
+                  "h-4 w-4 sm:h-5 sm:w-5",
                   kpis.avgMargin >= 30 ? 'text-primary' : kpis.avgMargin >= 15 ? 'text-accent-foreground' : 'text-destructive'
                 )} />
               </div>
               <div className="min-w-0">
-                <p className="text-2xl font-bold leading-none">{kpis.avgMargin.toFixed(1)}%</p>
-                <p className="text-xs text-muted-foreground mt-1">Marge moyenne</p>
+                <p className="text-lg sm:text-2xl font-bold leading-none">{kpis.avgMargin.toFixed(1)}%</p>
+                <p className="text-[10px] sm:text-xs text-muted-foreground mt-0.5 sm:mt-1">Marge moyenne</p>
               </div>
               {kpis.lowStockCount > 0 &&
               <Badge variant="destructive" className="ml-auto text-[10px] shrink-0">
