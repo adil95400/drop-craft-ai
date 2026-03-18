@@ -36,7 +36,7 @@ describe('ProductsService', () => {
 
       const result = await ProductsService.getProducts('user-123')
       expect(result).toEqual(products)
-      expect(mockList).toHaveBeenCalledWith({ per_page: 50 })
+      expect(mockList).toHaveBeenCalledWith({ per_page: 30 })
     })
 
     it('returns empty array when null', async () => {
