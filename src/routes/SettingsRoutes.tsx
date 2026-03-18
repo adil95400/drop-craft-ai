@@ -17,6 +17,7 @@ const DataExportCenterPage = lazy(() => import('@/pages/settings/DataExportCente
 const NotificationPreferencesPage = lazy(() => import('@/pages/settings/NotificationPreferencesPage'));
 const TeamManagementPage = lazy(() => import('@/pages/settings/TeamManagementPage'));
 const OnboardingRetentionPage = lazy(() => import('@/pages/settings/OnboardingRetentionPage'));
+const LegalCompliancePage = lazy(() => import('@/pages/settings/LegalCompliancePage'));
 
 export function SettingsRoutes() {
   return (
