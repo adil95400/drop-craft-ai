@@ -58,10 +58,7 @@ export function ChannableLayout({ children, className }: ChannableLayoutProps) {
           
           {/* Contenu scrollable - responsive padding */}
           <main id="main-content" className={cn("flex-1 overflow-auto bg-background", className)} role="main">
-            <div className={cn(
-              "p-3 sm:p-4 lg:p-6",
-              isTablet && "max-w-4xl mx-auto"
-            )}>
+            <div className="p-3 sm:p-4 lg:p-6 w-full">
               {children}
             </div>
           </main>
