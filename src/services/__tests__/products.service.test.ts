@@ -61,7 +61,7 @@ describe('ProductsService', () => {
     it('handles missing meta', async () => {
       mockList.mockResolvedValue({ items: [], meta: null })
 
-      const result = await ProductsService.getProductsPage('user-123', 0, 50)
+      const result = await ProductsService.getProductsPage('user-123', 0, 30)
       expect(result.total).toBe(0)
       expect(result.totalPages).toBe(0)
     })
