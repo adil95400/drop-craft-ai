@@ -1,12 +1,13 @@
 /**
  * ChannableLayout - Layout principal avec navigation Channable
  * Intègre sidebar + header avec design cohérent
+ * Responsive: mobile (bottom nav), tablet (sidebar collapsed), desktop (sidebar open)
  */
 import React, { lazy, Suspense } from 'react'
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar'
 import { ChannableSidebar } from './ChannableSidebar'
 import { ChannableHeader } from './ChannableHeader'
-import { useIsMobile } from '@/hooks/use-mobile'
+import { useIsMobile, useIsTablet } from '@/hooks/use-mobile'
 import { MobileHeader, MobileNav } from '@/components/mobile/MobileNav'
 import { SkipToContent } from '@/components/a11y/SkipToContent'
 import { cn } from '@/lib/utils'
@@ -23,6 +24,7 @@ interface ChannableLayoutProps {
 
 export function ChannableLayout({ children, className }: ChannableLayoutProps) {
   const isMobile = useIsMobile()
+  const isTablet = useIsTablet()
   useRetentionTracking()
 
   // Version mobile avec navigation en bas
@@ -43,9 +45,10 @@ export function ChannableLayout({ children, className }: ChannableLayoutProps) {
     )
   }
 
-  // Version desktop avec sidebar Channable
+  // Version desktop/tablet avec sidebar Channable
+  // Sidebar collapsed by default on tablet for more content space
   return (
-    <SidebarProvider defaultOpen={true}>
+    <SidebarProvider defaultOpen={!isTablet}>
       <SkipToContent />
       <div className="min-h-screen flex w-full">
         <ChannableSidebar />
@@ -53,9 +56,12 @@ export function ChannableLayout({ children, className }: ChannableLayoutProps) {
         <SidebarInset className="flex-1 flex flex-col">
           <ChannableHeader />
           
-          {/* Contenu scrollable */}
+          {/* Contenu scrollable - responsive padding */}
           <main id="main-content" className={cn("flex-1 overflow-auto bg-background", className)} role="main">
-            <div className="p-4 sm:p-6">
+            <div className={cn(
+              "p-3 sm:p-4 lg:p-6",
+              isTablet && "max-w-4xl mx-auto"
+            )}>
               {children}
             </div>
           </main>
