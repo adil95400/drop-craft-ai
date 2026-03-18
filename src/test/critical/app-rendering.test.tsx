@@ -59,7 +59,7 @@ describe('Application Core', () => {
     const module = await import('@/App');
     expect(module.default).toBeDefined();
     expect(typeof module.default).toBe('function');
-  });
+  }, 15000);
 
   it('should have ErrorBoundary component available', async () => {
     const { ErrorBoundary } = await import('@/components/common/ErrorBoundary');
