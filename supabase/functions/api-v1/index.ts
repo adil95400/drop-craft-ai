@@ -199,7 +199,7 @@ async function listProducts(url: URL, auth: Auth, reqId: string) {
 
   let q = admin
     .from("products")
-    .select("id, user_id, title, sku, barcode, price, compare_at_price, cost_price, category, brand, supplier, status, stock_quantity, weight, weight_unit, images, tags, seo_title, seo_description, is_published, created_at, updated_at, name, image_url, view_count, product_type, vendor, profit_margin, main_image_url, primary_image_url, currency", { count: "exact" })
+    .select("id, user_id, title, sku, price, compare_at_price, cost_price, category, brand, supplier, status, stock_quantity, images, tags, is_published, created_at, updated_at, name, image_url, product_type, vendor, profit_margin, main_image_url, primary_image_url, currency", { count: "exact" })
     .eq("user_id", auth.user.id)
     .order("created_at", { ascending: false })
     .range(from, to);
