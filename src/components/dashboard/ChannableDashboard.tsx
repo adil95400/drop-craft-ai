@@ -159,7 +159,7 @@ function QuickStatCard({
       {...motionProps}
       onClick={onClick}
       className={cn(
-        "group cursor-pointer relative overflow-hidden rounded-2xl border p-5 backdrop-blur-sm transition-all duration-300",
+        "group cursor-pointer relative overflow-hidden rounded-xl sm:rounded-2xl border p-3 sm:p-5 backdrop-blur-sm transition-all duration-300",
         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2",
         cfg.card, cfg.glow
       )}
@@ -171,15 +171,15 @@ function QuickStatCard({
       {/* Subtle decorative element */}
       <div className="absolute -right-6 -top-6 h-24 w-24 rounded-full bg-gradient-to-br from-current/[0.04] to-transparent pointer-events-none" aria-hidden="true" />
       
-      <div className="flex items-center justify-between mb-4">
-        <div className={cn("p-2.5 rounded-xl transition-transform duration-300 group-hover:scale-110", cfg.icon)} aria-hidden="true">
-          <Icon className="h-4 w-4" />
+      <div className="flex items-center justify-between mb-2 sm:mb-4">
+        <div className={cn("p-2 sm:p-2.5 rounded-lg sm:rounded-xl transition-transform duration-300 group-hover:scale-110", cfg.icon)} aria-hidden="true">
+          <Icon className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
         </div>
         {change && (
           <Badge 
             variant="outline" 
             className={cn(
-              "text-[10px] font-semibold px-2 py-0.5 rounded-full",
+              "text-[9px] sm:text-[10px] font-semibold px-1.5 sm:px-2 py-0.5 rounded-full",
               changeType === 'positive' && 'text-success border-success/30 bg-success/10',
               changeType === 'negative' && 'text-destructive border-destructive/30 bg-destructive/10',
               changeType === 'neutral' && 'text-muted-foreground border-border bg-muted/50'
@@ -190,13 +190,13 @@ function QuickStatCard({
           </Badge>
         )}
       </div>
-      <div className="space-y-1.5">
+      <div className="space-y-0.5 sm:space-y-1.5">
         {isLoading ? (
-          <div className="h-8 w-28 rounded-lg shimmer" />
+          <div className="h-6 sm:h-8 w-20 sm:w-28 rounded-lg shimmer" />
         ) : (
-          <p className="text-2xl font-bold tracking-tight text-foreground font-heading">{value}</p>
+          <p className="text-lg sm:text-2xl font-bold tracking-tight text-foreground font-heading">{value}</p>
         )}
-        <p className="text-xs font-medium text-muted-foreground tracking-wide uppercase">{label}</p>
+        <p className="text-[10px] sm:text-xs font-medium text-muted-foreground tracking-wide uppercase">{label}</p>
       </div>
     </motion.div>
   );
