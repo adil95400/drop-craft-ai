@@ -19051,6 +19051,7 @@ export type Database = {
           product_data: Json
         }[]
       }
+      get_product_stats: { Args: { p_user_id: string }; Returns: Json }
       get_scope_rate_limit: { Args: { p_scope_name: string }; Returns: number }
       get_translation_usage_summary: {
         Args: { p_user_id?: string }
