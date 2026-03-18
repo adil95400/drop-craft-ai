@@ -37,8 +37,9 @@ export class ShopifyAdapter extends BaseAdapter {
   normalize(raw: any): NormalizedProduct {
     const images = this.extractImages(raw)
     const variants = this.extractVariants(raw)
-    const firstVariant = variants?.[0] || raw.variants?.[0] || {}
-    const price = this.parsePrice(firstVariant.price || raw.price || 0)
+    const rawFirstVariant = raw.variants?.[0] || {}
+    const firstVariant = variants?.[0] || {}
+    const price = this.parsePrice(rawFirstVariant.price || raw.price || 0)
 
     return this.finalize({
       title: raw.title || raw.name || 'Sans titre',
