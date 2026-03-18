@@ -17,6 +17,7 @@ const DataExportCenterPage = lazy(() => import('@/pages/settings/DataExportCente
 const NotificationPreferencesPage = lazy(() => import('@/pages/settings/NotificationPreferencesPage'));
 const TeamManagementPage = lazy(() => import('@/pages/settings/TeamManagementPage'));
 const OnboardingRetentionPage = lazy(() => import('@/pages/settings/OnboardingRetentionPage'));
+const LegalCompliancePage = lazy(() => import('@/pages/settings/LegalCompliancePage'));
 
 export function SettingsRoutes() {
   return (
@@ -34,6 +35,7 @@ export function SettingsRoutes() {
       <Route path="export" element={<DataExportCenterPage />} />
       <Route path="notifications" element={<NotificationPreferencesPage />} />
       <Route path="onboarding" element={<OnboardingRetentionPage />} />
+      <Route path="legal-compliance" element={<LegalCompliancePage />} />
     </Routes>
   );
 }

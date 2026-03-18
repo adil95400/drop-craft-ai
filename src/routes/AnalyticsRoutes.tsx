@@ -42,6 +42,7 @@ const RealTimeAnalyticsPage = lazy(() => import('@/pages/analytics/RealTimeAnaly
 // AI BI & Predictive Demand (Sprint 20)
 const AIBusinessInsightsPage = lazy(() => import('@/pages/analytics/AIBusinessInsightsPage'));
 const PredictiveDemandPage = lazy(() => import('@/pages/analytics/PredictiveDemandPage'));
+const ConversionFunnelPage = lazy(() => import('@/pages/analytics/ConversionFunnelPage'));
 
 export function AnalyticsRoutes() {
   return (
@@ -78,6 +79,7 @@ export function AnalyticsRoutes() {
       {/* AI BI & Predictive Demand */}
       <Route path="ai-insights" element={<AIBusinessInsightsPage />} />
       <Route path="demand-forecast" element={<PredictiveDemandPage />} />
+      <Route path="conversion-funnel" element={<ConversionFunnelPage />} />
 
       {/* === Redirects: merged/obsolete routes === */}
       <Route path="unified" element={<Navigate to="/analytics" replace />} />
