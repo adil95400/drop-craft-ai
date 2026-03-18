@@ -697,35 +697,35 @@ export const ChannableHeader = memo(() => {
       className="sticky top-0 z-40 border-b border-border/40 bg-background/80 backdrop-blur-xl supports-[backdrop-filter]:bg-background/60"
       role="banner"
     >
-      <div className="flex h-14 items-center gap-4 px-4">
+      <div className="flex h-14 items-center gap-2 sm:gap-4 px-2 sm:px-4">
         {/* Sidebar Trigger */}
         <SidebarTrigger 
-          className="h-9 w-9 rounded-xl hover:bg-muted/50 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2" 
+          className="h-9 w-9 rounded-xl hover:bg-muted/50 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2 flex-shrink-0" 
           aria-label={t('openCloseSidebar')}
         />
         
-        <Separator orientation="vertical" className="h-6 hidden md:block bg-border/40" aria-hidden="true" />
+        <Separator orientation="vertical" className="h-6 hidden lg:block bg-border/40" aria-hidden="true" />
         
         {/* Back Button + Breadcrumbs */}
-        <div className="hidden md:flex items-center gap-2">
+        <div className="hidden lg:flex items-center gap-2 min-w-0">
           <BackButton />
           <ChannableBreadcrumbs />
         </div>
         
-        {/* Horizontal Navigation - Desktop */}
+        {/* Horizontal Navigation - Desktop only */}
         <HorizontalNavTabs />
         
         {/* Spacer */}
-        <div className="flex-1" />
+        <div className="flex-1 min-w-0" />
         
-        {/* Right Actions */}
-        <div className="flex items-center gap-2">
+        {/* Right Actions - responsive */}
+        <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
           <GlobalSearch />
           <QuickActionsButton />
-          <ConsumptionAlertBadge />
-          <LanguageSwitcher compact />
+          <div className="hidden lg:block"><ConsumptionAlertBadge /></div>
+          <div className="hidden md:block"><LanguageSwitcher compact /></div>
           <NotificationsDropdown />
-          <Separator orientation="vertical" className="h-6 mx-1 hidden sm:block bg-border/40" aria-hidden="true" />
+          <Separator orientation="vertical" className="h-6 mx-1 hidden lg:block bg-border/40" aria-hidden="true" />
           <UserMenuDropdown />
         </div>
       </div>
