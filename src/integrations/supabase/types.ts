@@ -19188,6 +19188,10 @@ export type Database = {
         Args: { p_token_id: string }
         Returns: number
       }
+      promote_imported_to_products: {
+        Args: { p_user_id: string }
+        Returns: Json
+      }
       refresh_extension_token: {
         Args: { p_refresh_token: string }
         Returns: Json

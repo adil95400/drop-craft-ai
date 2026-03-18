@@ -34,19 +34,27 @@ function safeRemoteUrl(value: unknown): string | null {
 
 function sanitizeProductListItems(items: any[]) {
   return items.map((item) => {
-    const images = Array.isArray(item.images)
-      ? item.images.map(safeRemoteUrl).filter(Boolean).slice(0, 5)
-      : [];
-    // Strip heavy fields from list responses to avoid memory overflow
-    const { description, description_html, bullet_points, collections, supplier_url, source_url, ...light } = item;
+    const mainImage = safeRemoteUrl(item.image_url) ?? safeRemoteUrl(item.primary_image_url) ?? safeRemoteUrl(item.main_image_url) ?? null;
     return {
-      ...light,
-      // Truncate description to 200 chars for list view
-      description: typeof description === "string" ? description.slice(0, 200) : null,
-      images,
-      image_url: safeRemoteUrl(item.image_url) ?? images[0] ?? null,
-      primary_image_url: safeRemoteUrl(item.primary_image_url) ?? images[0] ?? null,
-      main_image_url: safeRemoteUrl(item.main_image_url) ?? images[0] ?? null,
+      id: item.id,
+      title: item.title,
+      sku: item.sku,
+      price: item.price,
+      compare_at_price: item.compare_at_price,
+      cost_price: item.cost_price,
+      category: item.category,
+      brand: item.brand,
+      status: item.status,
+      stock_quantity: item.stock_quantity,
+      tags: item.tags,
+      is_published: item.is_published,
+      created_at: item.created_at,
+      updated_at: item.updated_at,
+      currency: item.currency,
+      images: mainImage ? [mainImage] : [],
+      image_url: mainImage,
+      primary_image_url: mainImage,
+      main_image_url: mainImage,
       variants: [],
     };
   });
@@ -199,7 +207,7 @@ async function listProducts(url: URL, auth: Auth, reqId: string) {
 
   let q = admin
     .from("products")
-    .select("id, title, sku, price, compare_at_price, cost_price, category, brand, status, stock_quantity, images, tags, is_published, created_at, updated_at, image_url, primary_image_url, main_image_url, currency", { count: "exact" })
+    .select("id, title, sku, price, compare_at_price, cost_price, category, brand, status, stock_quantity, tags, is_published, created_at, updated_at, image_url, primary_image_url, main_image_url, currency", { count: "exact" })
     .eq("user_id", auth.user.id)
     .order("created_at", { ascending: false })
     .range(from, to);
