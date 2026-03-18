@@ -414,12 +414,12 @@ export default function CatalogProductsPage() {
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3">
           <Card className="border-border/50 cursor-pointer hover:border-primary/30 transition-colors" onClick={() => navigate('/products?status=active')}>
             <CardContent className="p-3 sm:p-4 flex items-center gap-2 sm:gap-3">
-              <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-                <Package className="h-5 w-5 text-primary" />
+              <div className="h-8 w-8 sm:h-10 sm:w-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                <Package className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
               </div>
               <div className="min-w-0">
-                <p className="text-2xl font-bold leading-none">{stats.total}</p>
-                <p className="text-xs text-muted-foreground mt-1">Produits total</p>
+                <p className="text-lg sm:text-2xl font-bold leading-none">{stats.total}</p>
+                <p className="text-[10px] sm:text-xs text-muted-foreground mt-0.5 sm:mt-1">Produits total</p>
               </div>
             </CardContent>
           </Card>
