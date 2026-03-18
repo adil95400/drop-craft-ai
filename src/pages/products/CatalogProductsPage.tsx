@@ -82,15 +82,40 @@ type SortDirection = 'asc' | 'desc';
 
 export default function CatalogProductsPage() {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
+  // === Read initial filters from URL (from SavedViews navigation) ===
+  const initialStatus = (searchParams.get('status') as StatusFilter) || 'all';
+  const initialSort = (searchParams.get('sort') as SortField) || 'created_at';
+  const initialDirection = (searchParams.get('direction') as SortDirection) || 'desc';
+  const initialSearch = searchParams.get('q') || '';
+
   // === FILTERS ===
-  const [search, setSearch] = useState('');
-  const [debouncedSearch, setDebouncedSearch] = useState('');
-  const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
+  const [search, setSearch] = useState(initialSearch);
+  const [debouncedSearch, setDebouncedSearch] = useState(initialSearch);
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>(initialStatus);
   const [categoryFilter, setCategoryFilter] = useState('all');
   const [sourceFilter, setSourceFilter] = useState('all');
+
+  // Clear URL params after reading them (keep URL clean)
+  const paramsCleared = useRef(false);
+  useEffect(() => {
+    if (!paramsCleared.current && searchParams.toString()) {
+      paramsCleared.current = true;
+      // Show toast if filters were applied from URL
+      const appliedFilters: string[] = [];
+      if (initialStatus !== 'all') appliedFilters.push(`Statut: ${initialStatus}`);
+      if (initialSort !== 'created_at') appliedFilters.push(`Tri: ${initialSort}`);
+      if (initialSearch) appliedFilters.push(`Recherche: ${initialSearch}`);
+      if (appliedFilters.length > 0) {
+        toast({ title: 'Filtres appliqués', description: appliedFilters.join(' · ') });
+      }
+      // Clean up URL
+      setSearchParams({}, { replace: true });
+    }
+  }, []);
 
   // Debounce search for performance
   const searchTimerRef = useRef<ReturnType<typeof setTimeout>>();
@@ -101,8 +126,8 @@ export default function CatalogProductsPage() {
 
   // === VIEW & SORT STATE ===
   const [viewMode, setViewMode] = useState<ViewMode>('table');
-  const [sortField, setSortField] = useState<SortField>('created_at');
-  const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
+  const [sortField, setSortField] = useState<SortField>(initialSort);
+  const [sortDirection, setSortDirection] = useState<SortDirection>(initialDirection);
 
   // === UI STATE ===
   const [selectedProducts, setSelectedProducts] = useState<string[]>([]);
