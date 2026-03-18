@@ -72,7 +72,7 @@ describe('ProductsService', () => {
       mockList.mockResolvedValue({ items: [{ id: '1', title: 'Blue Widget' }] })
 
       const result = await ProductsService.searchProducts('user-123', 'blue')
-      expect(mockList).toHaveBeenCalledWith({ q: 'blue', per_page: 50 })
+      expect(mockList).toHaveBeenCalledWith({ q: 'blue', per_page: 30 })
       expect(result).toHaveLength(1)
     })
   })
