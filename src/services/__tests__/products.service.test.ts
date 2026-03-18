@@ -50,12 +50,12 @@ describe('ProductsService', () => {
     it('returns paginated results', async () => {
       mockList.mockResolvedValue({ items: [{ id: '1' }], meta: { total: 100 } })
 
-      const result = await ProductsService.getProductsPage('user-123', 0, 50)
+      const result = await ProductsService.getProductsPage('user-123', 0, 30)
       expect(result.data).toHaveLength(1)
       expect(result.total).toBe(100)
-      expect(result.totalPages).toBe(2)
+      expect(result.totalPages).toBe(4)
       expect(result.page).toBe(0)
-      expect(result.pageSize).toBe(50)
+      expect(result.pageSize).toBe(30)
     })
 
     it('handles missing meta', async () => {
