@@ -80,7 +80,7 @@ export function ChannablePageWrapper({
   className
 }: ChannablePageWrapperProps) {
   const backgroundImage = useHeroImage(heroImage);
-  return <div className={cn("space-y-4 sm:space-y-6", className)}>
+  return <div className={cn("space-y-4 sm:space-y-6 w-full max-w-full overflow-x-hidden", className)}>
       {/* Hero Section avec image de fond */}
       <motion.div initial={{
       opacity: 0,

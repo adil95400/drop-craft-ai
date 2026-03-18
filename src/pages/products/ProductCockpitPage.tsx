@@ -79,7 +79,7 @@ export default function ProductCockpitPage() {
         </div>
 
         {/* Row 0: KPIs classiques */}
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 sm:gap-3">
           {mainKPIs.map((kpi: CockpitKPI, i: number) => (
             <StatCard
               key={kpi.label}
