@@ -56,22 +56,22 @@ export function UnifiedStoreDashboard() {
 
   if (isLoading) {
     return (
-      <div className="container mx-auto p-6 space-y-6">
-        <div className="animate-pulse space-y-6">
-          <div className="h-32 bg-muted rounded" />
-          <div className="h-64 bg-muted rounded" />
+      <div className="page-container">
+        <div className="animate-pulse space-y-4 sm:space-y-6">
+          <div className="h-24 sm:h-32 bg-muted rounded" />
+          <div className="h-48 sm:h-64 bg-muted rounded" />
         </div>
       </div>
     );
   }
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
+    <div className="page-container">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="page-header">
         <div>
-          <h1 className="text-3xl font-bold text-foreground">Mes Boutiques</h1>
-          <p className="text-muted-foreground mt-1">
+          <h1 className="page-title">Mes Boutiques</h1>
+          <p className="page-subtitle">
             Gérez toutes vos boutiques depuis un seul endroit
           </p>
         </div>
@@ -92,9 +92,9 @@ export function UnifiedStoreDashboard() {
           >
             <List className="h-4 w-4" />
           </Button>
-          <Button onClick={() => navigate('/stores-channels/connect')}>
-            <Plus className="h-4 w-4 mr-2" />
-            Nouvelle Boutique
+          <Button size="sm" className="sm:size-default" onClick={() => navigate('/stores-channels/connect')}>
+            <Plus className="h-4 w-4 sm:mr-2" />
+            <span className="hidden sm:inline">Nouvelle Boutique</span>
           </Button>
         </div>
       </div>
