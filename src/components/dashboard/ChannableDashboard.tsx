@@ -497,7 +497,7 @@ export function ChannableDashboard() {
           </Suspense>
 
           {/* Quick Stats Grid Premium - DONNÉES DYNAMIQUES */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4" role="region" aria-label={t('quickStats')}>
+      <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4" role="region" aria-label={t('quickStats')}>
         <QuickStatCard
           label={t('stats.revenue')}
           value={quickStatsData.revenue.value}
