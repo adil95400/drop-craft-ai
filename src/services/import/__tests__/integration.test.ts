@@ -5,6 +5,7 @@
 
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import type { ImportRequest } from '../types'
+import { importGateway, getSupportedSources } from '../index'
 
 // Use vi.hoisted to avoid TDZ issues
 const { mockInvoke } = vi.hoisted(() => ({
