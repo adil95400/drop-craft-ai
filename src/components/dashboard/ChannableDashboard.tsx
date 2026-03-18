@@ -602,11 +602,10 @@ export function ChannableDashboard() {
           <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
             <SortableContext items={enabledWidgets.map(w => w.id)} strategy={rectSortingStrategy}>
               <div className={cn(
-                "grid gap-4",
-                // Responsive columns with tablet optimization
+                "grid gap-3 sm:gap-4",
                 "grid-cols-1",
-                "md:grid-cols-2",
-                isTablet ? "md:gap-5" : "lg:grid-cols-3"
+                "sm:grid-cols-2",
+                "lg:grid-cols-3"
               )}>
                 {enabledWidgets.map((widget, index) => (
                   <motion.div 
