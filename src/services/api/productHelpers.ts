@@ -15,9 +15,9 @@ export async function getProductCount(): Promise<number> {
 }
 
 /** Fetch product list via API (lightweight) */
-export async function getProductList(limit = 50): Promise<ProductRecord[]> {
+export async function getProductList(limit = 30): Promise<ProductRecord[]> {
   try {
-    const resp = await productsApi.list({ per_page: Math.min(limit, 50) })
+    const resp = await productsApi.list({ per_page: Math.min(limit, 30) })
     return resp.items ?? []
   } catch {
     return []

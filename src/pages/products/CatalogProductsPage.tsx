@@ -138,7 +138,7 @@ export default function CatalogProductsPage() {
   const [isExporting, setIsExporting] = useState(false);
 
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(50);
+  const [itemsPerPage, setItemsPerPage] = useState(30);
   const [showJobTracker, setShowJobTracker] = useState(false);
   const [showPublishDialog, setShowPublishDialog] = useState(false);
   const [showSourcingPanel, setShowSourcingPanel] = useState(false);
