@@ -579,7 +579,7 @@ export function ChannableDashboard() {
       {/* Main Content Grid avec Sidebar */}
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 sm:gap-6">
         {/* Main Content - 3 colonnes */}
-        <div className="lg:col-span-3 space-y-6">
+        <div className="lg:col-span-3 space-y-4 sm:space-y-6">
           {/* Smart Alerts Channable */}
           <SmartAlertsChannable />
 
