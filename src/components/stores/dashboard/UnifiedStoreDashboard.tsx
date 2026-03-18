@@ -106,23 +106,23 @@ export function UnifiedStoreDashboard() {
       <StoreQuickActions onSync={handleSyncAll} />
 
       {/* Main Content */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
         {/* Store Cards */}
         <div className="lg:col-span-2">
-          <h2 className="text-xl font-semibold text-foreground mb-4">
+          <h2 className="text-lg sm:text-xl font-semibold text-foreground mb-3 sm:mb-4">
             Vos Boutiques ({stores.length})
           </h2>
           
           {stores.length === 0 ? (
-            <div className="text-center py-12 border-2 border-dashed rounded-lg">
-              <p className="text-muted-foreground mb-4">Aucune boutique connectée</p>
+            <div className="text-center py-8 sm:py-12 border-2 border-dashed rounded-lg">
+              <p className="text-muted-foreground mb-4 text-sm sm:text-base">Aucune boutique connectée</p>
               <Button onClick={() => navigate('/stores-channels/connect')}>
                 <Plus className="h-4 w-4 mr-2" />
                 Connecter une boutique
               </Button>
             </div>
           ) : (
-            <div className={viewMode === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 gap-4' : 'space-y-4'}>
+            <div className={viewMode === 'grid' ? 'grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4' : 'space-y-3 sm:space-y-4'}>
               {stores.map((store) => {
                 const storeStat = stats.find(s => s.store_id === store.id);
                 return (
