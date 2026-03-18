@@ -1057,4 +1057,26 @@
   .responsive-tabs [role="tablist"] {
     @apply w-max sm:w-full;
   }
+
+  /* Tablet & mobile: prevent horizontal overflow globally */
+  .overflow-safe {
+    @apply w-full max-w-full overflow-x-hidden min-w-0;
+  }
+
+  /* Force all direct children of flex containers to respect min-w-0 */
+  [class*="flex-1"] {
+    min-width: 0;
+  }
+
+  /* Tables: horizontal scroll wrapper for tablet */
+  .table-responsive {
+    @apply w-full overflow-x-auto -mx-1 px-1;
+  }
+
+  /* Cards: ensure they don't overflow on tablet */
+  @media (min-width: 768px) and (max-width: 1024px) {
+    .grid {
+      gap: clamp(0.5rem, 1.5vw, 1rem);
+    }
+  }
 }
