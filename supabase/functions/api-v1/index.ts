@@ -51,6 +51,7 @@ function sanitizeProductListItems(items: any[]) {
       created_at: item.created_at,
       updated_at: item.updated_at,
       currency: item.currency,
+      source_type: item.source_type ?? 'manual',
       images: mainImage ? [mainImage] : [],
       image_url: mainImage,
       primary_image_url: mainImage,
