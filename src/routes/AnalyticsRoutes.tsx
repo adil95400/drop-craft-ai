@@ -79,6 +79,7 @@ export function AnalyticsRoutes() {
       {/* AI BI & Predictive Demand */}
       <Route path="ai-insights" element={<AIBusinessInsightsPage />} />
       <Route path="demand-forecast" element={<PredictiveDemandPage />} />
+      <Route path="conversion-funnel" element={<ConversionFunnelPage />} />
 
       {/* === Redirects: merged/obsolete routes === */}
       <Route path="unified" element={<Navigate to="/analytics" replace />} />
