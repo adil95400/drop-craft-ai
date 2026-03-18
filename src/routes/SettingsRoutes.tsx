@@ -35,6 +35,7 @@ export function SettingsRoutes() {
       <Route path="export" element={<DataExportCenterPage />} />
       <Route path="notifications" element={<NotificationPreferencesPage />} />
       <Route path="onboarding" element={<OnboardingRetentionPage />} />
+      <Route path="legal-compliance" element={<LegalCompliancePage />} />
     </Routes>
   );
 }
