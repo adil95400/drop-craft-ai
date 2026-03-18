@@ -1,255 +1,70 @@
-# DropCraft AI — Roadmap Stratégique Complète
 
-> Last updated: 2026-03-07
 
-## Vision
-Transformer DropCraft AI en plateforme SaaS leader du dropshipping automatisé avec IA, surpassant AutoDS, DSers, Spocket, Zendrop et Dropship.io.
+# Plan: Fix Product Catalog Loading (503 Memory Error) + Show All Imported Products
 
----
+## Problem Diagnosis
 
-## 📊 Audit TODO — Résultats (7 mars 2026)
+Two distinct issues identified:
 
-**Total TODOs trouvés:** ~125 (105 dans `src/`, 20 dans `supabase/functions/`)
-**FIXME/HACK:** 0 actionable
+1. **503 Memory Crash**: The `images` column in the `products` table contains **base64-encoded image data** (up to 13 MB per product). Loading 30 products = ~70 MB, which exceeds the edge function's memory limit. The `/v1/products` endpoint crashes every time.
 
-### 🔴 P0 — Sécurité & Intégrité (Résoudre immédiatement)
-| Fichier | TODO | Risque |
-|---------|------|--------|
-| `supabase/functions/store-webhook/index.ts` | Vérification HMAC non implémentée (Shopify + WooCommerce) | **Falsification de webhooks** |
-| `supabase/functions/platform-sync/index.ts` | Appels API réels manquants | Sync est un no-op |
-| `src/services/white-label/MultiTenantService.ts` | Isolation tenant non implémentée | **Fuite de données cross-tenant** |
-
-### 🟠 P1 — Fonctionnalités bloquantes
-| Fichier | TODO | Impact |
-|---------|------|--------|
-| `src/components/modals/CustomerEditModal.tsx` | Logique de sauvegarde manquante | Éditions client silencieusement perdues |
-| `src/components/multi-channel/ChannelFeedManager.tsx` | Sync, view/fix issue manquants | Gestion multi-canal non fonctionnelle |
-| `src/components/products/AdvancedProductCatalog.tsx` | Actions en masse non implémentées | Échec silencieux |
-| `src/pages/import/MultiStoreImportPage.tsx` | Handler d'import complet manquant | Résultats non traités |
-| `src/services/integrations/CRMConnector.ts` | Sync CRM vers DB locale manquante | CRM unidirectionnel |
-| `src/pages/AdsManagerPage.tsx` | Toggle campaign non implémenté | Gestion campagnes non fonctionnelle |
-
-### 🟡 P2 — Améliorations (Non bloquant, 12 items)
-- Background removal serveur, notification cleanup, mobile sync, analytics produit, duplication produit, wishlist, collections, support tickets, config save, extension install
+2. **Imported products invisible**: The `imported_products` table has 32 products that are never shown in the catalog because `listProducts()` only queries the `products` table.
 
 ---
 
-## État Actuel (Mars 2026)
+## Solution
 
-### ✅ Déjà Implémenté
-| Domaine | Détails |
-|---------|---------|
-| **Architecture** | 26 modules de routes, 120+ pages lazy-loaded, 145+ edge functions |
-| **Sécurité** | RLS 100%, RBAC 4 niveaux, JWT-first, CORS sécurisé, audit logs immutables, XSS sanitization, rate limiting API |
-| **Auth** | Email + Google OAuth (Lovable Cloud), 2FA infrastructure |
-| **IA** | Lovable AI Gateway (GPT-5-nano, Gemini), AI product optimizer, content generator |
-| **i18n** | 68+ langues, 58+ devises, conversion temps réel |
-| **Intégrations** | Shopify, WooCommerce, Amazon, eBay, CJ, BigBuy, AliExpress, Mirakl, Rakuten, Zalando, Wish |
-| **PWA** | Service Worker, push notifications, offline mode, Web APIs (navigator.vibrate, Notification) |
-| **Monitoring** | Sentry, logger centralisé (100% consolidé), console interceptor, Web Vitals |
-| **Paiement** | Stripe (checkout, webhooks, portail, plans Free/Standard/Pro/Ultra Pro) |
-| **SEO** | Sitemap, robots.txt, JSON-LD, meta tags, scoring temps réel |
-| **Design System** | shadcn/ui, tokens HSL, animations framer-motion |
-| **Marketing** | GA4, Mixpanel, Hotjar (GDPR-gated), email marketing, automation |
-| **Tests** | 23 fichiers de test, Vitest + Playwright configurés |
-| **Feature Flags** | Système DB-driven par plan utilisateur |
-| **Performance** | Code splitting, route prefetch, OptimizedImage, bundle optimization |
+### Step 1 — Fix the memory crash by excluding `images` from the list query
 
----
+In `supabase/functions/api-v1/index.ts`, change the `listProducts` SELECT to **not include `images`** at all. Only select `image_url`, `primary_image_url`, and `main_image_url` (which are lightweight URL strings). The `sanitizeProductListItems` function already handles fallback logic.
 
-## Phase 1 — Stabilisation & Qualité (Semaines 1-3)
-*Objectif : Fondations solides avant d'ajouter des features*
+```text
+Before:  .select("id, title, sku, price, ..., images, ...", { count: "exact" })
+After:   .select("id, title, sku, price, ..., image_url, primary_image_url, main_image_url, ...", { count: "exact" })
+                                                  ^^^^^^ NO images column
+```
 
-### 1.1 Tests & CI/CD ⭐ PRIORITÉ HAUTE
-- [ ] Lancer et corriger les 23 fichiers de test existants
-- [ ] Ajouter tests unitaires pour les services critiques :
-  - `ProductsUnifiedService`
-  - `OrderService`
-  - `ConnectorManager`
-  - `ExportService`
-- [ ] Tests E2E Playwright pour les parcours critiques :
-  - Auth flow (signup → login → dashboard)
-  - Import produit (URL → catalogue)
-  - Tunnel commande
-  - Connexion marketplace
-- [ ] GitHub Actions pipeline : lint → typecheck → vitest → playwright
-- [ ] Coverage minimale : 70% services, 50% hooks
+Update `sanitizeProductListItems` to handle `images` being undefined (empty array fallback).
 
-### 1.2 Migration Logger (Finaliser)
-- [ ] Migrer les ~1500 `console.*` restants dans 55+ fichiers services
-- [ ] Migrer les hooks critiques
-- [ ] Vérifier que le console interceptor couvre bien la production
+### Step 2 — Clean up base64 data from the database
 
-### 1.3 Nettoyage Code
-- [ ] Supprimer les routes mortes / pages vides
-- [ ] Consolider les services dupliqués
-- [ ] Auditer les dépendances inutilisées
-- [ ] Corriger les erreurs TypeScript résiduelles
+Create a migration with a database function that strips base64 entries from the `images` array, keeping only URL strings. This prevents future memory issues even on detail views.
 
-### 1.4 Sécurité Edge Functions
-- [ ] Vérifier `SET search_path TO 'public'` sur toutes les DB functions
-- [ ] Audit des edge functions sans validation JWT
-- [ ] Vérifier qu'aucun `SERVICE_ROLE_KEY` n'est exposé côté client
+```sql
+UPDATE products
+SET images = (
+  SELECT jsonb_agg(elem)
+  FROM jsonb_array_elements_text(images::jsonb) AS elem
+  WHERE elem::text NOT LIKE 'data:%'
+)
+WHERE images::text LIKE '%data:%';
+```
+
+### Step 3 — Promote imported products to the catalog
+
+Create an RPC function `promote_imported_to_products` that copies unmatched `imported_products` rows into the `products` table (matching on `sku` or `source_url` to avoid duplicates). This ensures all imported products appear in the catalog.
+
+Alternatively, modify the `listProducts` query to UNION with `imported_products` — but promotion to the canonical `products` table is the cleaner approach per the existing architecture.
+
+### Step 4 — Redeploy the edge function
+
+Deploy the updated `api-v1` function with the fixed SELECT query.
 
 ---
 
-## Phase 2 — Core Product Excellence (Semaines 4-8)
-*Objectif : Rendre les fonctionnalités existantes production-ready*
+## Technical Details
 
-### 2.1 Données Réelles Partout
-- [ ] Remplacer toutes les données mockées par des appels API réels
-- [ ] Dashboard KPIs depuis les tables réelles (orders, products, customers)
-- [ ] Métriques de performance système réelles (latence, mémoire)
-- [ ] Scoring produit basé sur complétude réelle des données
+| Item | Detail |
+|------|--------|
+| Root cause of 503 | `images` column has base64 data, avg 2.3 MB/row |
+| Worst offender | Product `6b14c659...` with 13 MB in `images` |
+| Products in `products` table | 33 |
+| Products in `imported_products` table | 32 (invisible in catalog) |
+| Files to edit | `supabase/functions/api-v1/index.ts` |
+| Migrations | 1 (clean base64 + optional promote function) |
 
-### 2.2 Product Sourcing Amélioré
-- [ ] Fiabiliser le scraping Firecrawl (AliExpress, Amazon, eBay, Temu)
-- [ ] Scoring "Winning Product" pondéré (marge 35%, note 25%, demande 20%)
-- [ ] Import one-click depuis URL → catalogue avec enrichissement IA
-- [ ] Comparateur de prix multi-fournisseurs
+## Impact
+- Catalog page will load instantly (no more 503)
+- All imported products will be visible in the catalog
+- No data loss — base64 cleanup only removes inline data, keeping URLs
 
-### 2.3 Order Fulfillment Robuste
-- [ ] Auto-order placement (CJ, BigBuy, AliExpress)
-- [ ] Auto-tracking sync
-- [ ] Retry mechanism pour commandes échouées
-- [ ] Queue de commandes avec monitoring
-
-### 2.4 Sync Multi-Boutique Fiable
-- [ ] Sync bidirectionnelle prix/stock (Shopify, WooCommerce)
-- [ ] Résolution de conflits (local_wins, remote_wins, newest_wins)
-- [ ] Webhooks entrants normalisés
-- [ ] Dashboard sync avec historique et alertes
-
----
-
-## Phase 3 — Différenciation IA (Semaines 9-14)
-*Objectif : Devenir une AI-first platform*
-
-### 3.1 IA Produit
-- [ ] AI Product Research : analyse tendances + scoring automatique
-- [ ] AI Product Description : génération multi-langue optimisée SEO
-- [ ] AI Image Enhancement : amélioration automatique des visuels produit
-- [ ] AI Ad Creative Generator : créatifs pub automatiques
-
-### 3.2 IA Marketing
-- [ ] AI Campaign Generator : campagnes email/SMS automatiques
-- [ ] AI Funnel Builder : tunnels de vente pré-optimisés
-- [ ] AI SEO Optimizer : suggestions de mots-clés et méta-données
-- [ ] AI Copywriter : descriptions, titres, bullet points
-
-### 3.3 IA Prédictive
-- [ ] Product Trend Prediction : analyse de tendances marché
-- [ ] Revenue Forecasting : prévisions de CA basées sur historique
-- [ ] Demand Prediction : anticipation des ruptures de stock
-- [ ] Dynamic Pricing : ajustement automatique des prix selon la demande
-
----
-
-## Phase 4 — Parité Concurrentielle (Semaines 15-20)
-*Objectif : Fonctionnalités attendues par le marché*
-
-### 4.1 Pricing Intelligence
-- [ ] Competitor price monitoring
-- [ ] Margin calculator avec simulateur temps réel
-- [ ] Price history avec graphiques de tendance
-- [ ] Règles de pricing automatiques (arrondis psychologiques)
-
-### 4.2 Shipping System
-- [ ] Intégrations : UPS, DHL, FedEx, Colissimo
-- [ ] Shipping rules engine (par poids, destination, valeur)
-- [ ] Shipping calculator intégré
-- [ ] Label generation
-
-### 4.3 Customer Service
-- [ ] Ticket system avec historique client
-- [ ] Live chat widget
-- [ ] Returns portal (RMA automatisé)
-- [ ] Refund automation avec règles configurables
-
-### 4.4 Ads Manager
-- [ ] Facebook Ads : campagnes, audiences, reporting
-- [ ] Google Ads : search, shopping, display
-- [ ] TikTok Ads : créatifs, audiences
-- [ ] ROI tracking cross-platform
-
----
-
-## Phase 5 — Scale & Enterprise (Semaines 21-28)
-*Objectif : Prêt pour la croissance*
-
-### 5.1 Performance & Architecture
-- [ ] Bundle splitting optimisé (vendor, core, features)
-- [ ] React Query cache strategy par entité
-- [ ] Virtual scrolling pour listes de produits (>10K)
-- [ ] Image optimization pipeline (WebP, lazy, blur-up)
-
-### 5.2 Social Commerce
-- [ ] Instagram Shop sync
-- [ ] TikTok Shop sync
-- [ ] Facebook Shop sync
-- [ ] Multi-channel listing management
-
-### 5.3 Advanced Analytics
-- [ ] Custom dashboards builder (drag & drop widgets)
-- [ ] Cohort analysis
-- [ ] Attribution modeling
-- [ ] Export automatisé (PDF, Excel schedulé)
-
-### 5.4 Enterprise Features
-- [ ] Multi-workspace (organisations)
-- [ ] SSO (SAML/OIDC)
-- [ ] API marketplace (webhooks sortants)
-- [ ] White-label option
-
----
-
-## Phase 6 — Go-to-Market (Semaines 29-32)
-*Objectif : Lancement public*
-
-### 6.1 Onboarding
-- [ ] Wizard de configuration (3 étapes : boutique → fournisseur → premier produit)
-- [ ] Templates pré-configurés par niche
-- [ ] Vidéos tutorielles intégrées
-- [ ] Checklist de démarrage interactive
-
-### 6.2 Documentation
-- [ ] Centre d'aide complet
-- [ ] API documentation interactive
-- [ ] SDK examples (JS, Python, PHP)
-- [ ] Blog avec guides de dropshipping
-
-### 6.3 Conformité Production
-- [ ] Headers sécurité (_headers file)
-- [ ] RGPD complet (CGU, CGV, cookies, suppression, export)
-- [ ] Stripe webhooks production
-- [ ] Sentry DSN production
-- [ ] DNS + domaine custom
-
----
-
-## Métriques de Succès
-
-| Phase | KPI | Cible |
-|-------|-----|-------|
-| Phase 1 | Test coverage | >70% services |
-| Phase 1 | Console.* restants | 0 |
-| Phase 2 | Données mockées | 0 |
-| Phase 3 | Features IA actives | 8+ |
-| Phase 4 | Parité AutoDS | >80% |
-| Phase 5 | Lighthouse score | >90 |
-| Phase 6 | Temps onboarding | <5 min |
-
----
-
-## Dépendances & Risques
-
-| Risque | Impact | Mitigation |
-|--------|--------|------------|
-| APIs fournisseurs instables | Fulfillment bloqué | Retry + fallback fournisseur |
-| Coûts IA élevés | Marge réduite | Quotas par plan + caching |
-| Rate limiting plateformes | Sync lente | Queues + batch processing |
-| Complexité croissante | Bugs | Tests automatisés + CI/CD |
-
----
-
-*Dernière mise à jour : 7 mars 2026*
