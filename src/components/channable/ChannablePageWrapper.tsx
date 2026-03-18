@@ -80,7 +80,7 @@ export function ChannablePageWrapper({
   className
 }: ChannablePageWrapperProps) {
   const backgroundImage = useHeroImage(heroImage);
-  return <div className={cn("space-y-6", className)}>
+  return <div className={cn("space-y-4 sm:space-y-6", className)}>
       {/* Hero Section avec image de fond */}
       <motion.div initial={{
       opacity: 0,
@@ -90,7 +90,7 @@ export function ChannablePageWrapper({
       y: 0
     }} transition={{
       duration: 0.5
-    }} className="relative overflow-hidden rounded-2xl">
+    }} className="relative overflow-hidden rounded-xl sm:rounded-2xl">
         {/* Background Image - lazy loaded */}
         <div 
           className={cn(

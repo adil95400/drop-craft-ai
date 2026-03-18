@@ -34,7 +34,7 @@ export function ChannableLayout({ children, className }: ChannableLayoutProps) {
         <SkipToContent />
         <MobileHeader />
         <main id="main-content" className="flex-1 pb-20 overflow-auto" role="main">
-          <div className="container max-w-screen-sm mx-auto px-3 py-3">
+          <div className="w-full px-3 py-3">
             {children}
           </div>
         </main>
@@ -58,10 +58,7 @@ export function ChannableLayout({ children, className }: ChannableLayoutProps) {
           
           {/* Contenu scrollable - responsive padding */}
           <main id="main-content" className={cn("flex-1 overflow-auto bg-background", className)} role="main">
-            <div className={cn(
-              "p-3 sm:p-4 lg:p-6",
-              isTablet && "max-w-4xl mx-auto"
-            )}>
+            <div className="p-3 sm:p-4 lg:p-6 w-full">
               {children}
             </div>
           </main>
