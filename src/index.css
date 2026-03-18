@@ -1017,4 +1017,44 @@
       transform: scale(1);
     }
   }
+
+  /* Responsive page container utility */
+  .page-container {
+    @apply w-full space-y-4 sm:space-y-6;
+  }
+
+  /* Responsive page header */
+  .page-header {
+    @apply flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4;
+  }
+
+  .page-title {
+    @apply text-xl sm:text-2xl lg:text-3xl font-bold text-foreground;
+  }
+
+  .page-subtitle {
+    @apply text-xs sm:text-sm text-muted-foreground mt-0.5 sm:mt-1;
+  }
+
+  /* Responsive card grid */
+  .responsive-grid-2 {
+    @apply grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 lg:gap-6;
+  }
+
+  .responsive-grid-3 {
+    @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 lg:gap-6;
+  }
+
+  .responsive-grid-4 {
+    @apply grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6;
+  }
+
+  /* Responsive tabs - scroll on small screens */
+  .responsive-tabs {
+    @apply overflow-x-auto -mx-3 px-3 sm:mx-0 sm:px-0;
+  }
+
+  .responsive-tabs [role="tablist"] {
+    @apply w-max sm:w-full;
+  }
 }
