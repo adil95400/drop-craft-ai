@@ -10,8 +10,8 @@ import { logger } from '@/utils/logger'
 
 const BASE_URL = `${SUPABASE_URL}/functions/v1/api-v1/v1`
 
-const PRODUCTS_MAX_PER_PAGE = 50
-const PRODUCTS_DEFAULT_PER_PAGE = 50
+const PRODUCTS_MAX_PER_PAGE = 30
+const PRODUCTS_DEFAULT_PER_PAGE = 30
 
 function normalizeProductsPerPage(rawValue: unknown): number {
   const parsed = Number(rawValue)
