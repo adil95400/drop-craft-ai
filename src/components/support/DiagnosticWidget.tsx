@@ -451,7 +451,7 @@ export function DiagnosticWidget() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 100, scale: 0.8 }}
             transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-            className="fixed bottom-6 right-24 z-50 w-[400px]"
+            className="fixed bottom-24 right-4 z-50 w-[calc(100vw-2rem)] max-w-[400px] md:bottom-6 md:right-24 md:w-[400px]"
           >
             <Card className="shadow-2xl border-2 overflow-hidden">
               {/* Header */}
