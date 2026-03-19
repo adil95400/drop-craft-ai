@@ -20,6 +20,7 @@ import { useApiAI } from '@/hooks/api/useApiAI';
 import { usePublishProducts } from '@/hooks/usePublishProducts';
 import { useApiJobs } from '@/hooks/api/useApiJobs';
 import { productsApi } from '@/services/api/client';
+import { useSyncConnectedStores } from '@/hooks/useSyncConnectedStores';
 
 // Job tracking UI
 import { ActiveJobsBanner } from '@/components/jobs/ActiveJobsBanner';
