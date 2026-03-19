@@ -267,8 +267,8 @@ export function OnboardingWidget() {
                   className={cn(
                     "w-full flex items-center gap-3 p-3 rounded-xl transition-all duration-200 text-left group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50",
                     isCompleted 
-                      ? "bg-emerald-500/10 border border-emerald-500/20" 
-                      : "hover:bg-muted/50 border border-transparent hover:border-border/50"
+                      ? "bg-success/10 border border-success/20" 
+                      : "hover:bg-muted/80 border border-border/40 hover:border-border"
                   )}
                   whileHover={prefersReducedMotion ? undefined : { x: 4 }}
                   initial={prefersReducedMotion ? undefined : { opacity: 0, x: -10 }}
