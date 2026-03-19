@@ -35,6 +35,7 @@ interface ChannelOverviewTabProps {
   onSave: () => void
   isSyncing: boolean
   lastEvent?: { type: string } | null
+  healthMetrics?: { syncRate: number; errorRate: number; uptime: number; avgLatency: number } | null
 }
 
 export function ChannelOverviewTab({
@@ -45,7 +46,8 @@ export function ChannelOverviewTab({
   onSync,
   onSave,
   isSyncing,
-  lastEvent
+  lastEvent,
+  healthMetrics
 }: ChannelOverviewTabProps) {
   const { t } = useTranslation('channels')
   
