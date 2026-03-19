@@ -279,12 +279,12 @@ export function OnboardingWidget() {
                   <div className={cn(
                     "p-2 rounded-lg transition-all",
                     isCompleted 
-                      ? "bg-emerald-500/20" 
-                      : "bg-muted/50 group-hover:bg-primary/10"
+                      ? "bg-success/20" 
+                      : "bg-muted group-hover:bg-primary/10"
                   )} aria-hidden="true">
                     <Icon className={cn(
                       "h-4 w-4 transition-colors",
-                      isCompleted ? "text-emerald-500" : "text-muted-foreground group-hover:text-primary"
+                      isCompleted ? "text-success" : "text-foreground/60 group-hover:text-primary"
                     )} />
                   </div>
                   
