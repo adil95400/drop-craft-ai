@@ -19,11 +19,32 @@ export function usePublishProducts() {
     enabled: !!user,
   });
 
+  const { data: publicationLogs = [], isLoading: isLoadingLogs } = useQuery({
+    queryKey: ['publication-logs', user?.id],
+    queryFn: () => PublishProductsService.getPublicationLogs(user!.id),
+    enabled: !!user,
+  });
+
+  const { data: scheduledPublications = [], isLoading: isLoadingScheduled } = useQuery({
+    queryKey: ['scheduled-publications', user?.id],
+    queryFn: () => PublishProductsService.getScheduledPublications(user!.id),
+    enabled: !!user,
+  });
+
+  const { data: publicationStats } = useQuery({
+    queryKey: ['publication-stats', user?.id],
+    queryFn: () => PublishProductsService.getPublicationStats(user!.id),
+    enabled: !!user,
+  });
+
   const invalidateAll = () => {
     queryClient.invalidateQueries({ queryKey: ['products'] });
     queryClient.invalidateQueries({ queryKey: ['publish-stats'] });
     queryClient.invalidateQueries({ queryKey: ['products-unified'] });
     queryClient.invalidateQueries({ queryKey: ['product-store-links'] });
+    queryClient.invalidateQueries({ queryKey: ['publication-logs'] });
+    queryClient.invalidateQueries({ queryKey: ['scheduled-publications'] });
+    queryClient.invalidateQueries({ queryKey: ['publication-stats'] });
   };
 
   const publishToStoresMutation = useMutation({
@@ -31,15 +52,29 @@ export function usePublishProducts() {
       PublishProductsService.publishToStores(productId, storeIds),
     onSuccess: (result) => {
       invalidateAll();
-      if (result.successCount > 0) {
-        toast.success(`Publié sur ${result.successCount} boutique(s)`);
-      }
-      if (result.failCount > 0) {
-        toast.error(`${result.failCount} erreur(s)`);
-      }
+      if (result.successCount > 0) toast.success(`Publié sur ${result.successCount} boutique(s)`);
+      if (result.failCount > 0) toast.error(`${result.failCount} erreur(s)`);
     },
     onError: (error) => {
       toast.error(error instanceof Error ? error.message : 'Erreur de publication');
+    },
+  });
+
+  const publishToSocialMutation = useMutation({
+    mutationFn: ({ productId, channels, customMessage, scheduleAt }: { 
+      productId: string; channels: string[]; customMessage?: string; scheduleAt?: string 
+    }) => PublishProductsService.publishToSocial(productId, channels, customMessage, scheduleAt),
+    onSuccess: (result) => {
+      invalidateAll();
+      if (result.scheduled) {
+        toast.success(`Publication planifiée sur ${result.count} canal/canaux`);
+      } else {
+        if (result.successCount > 0) toast.success(`Publié sur ${result.successCount} réseau(x) social/sociaux`);
+        if (result.failCount > 0) toast.error(`${result.failCount} erreur(s) de publication sociale`);
+      }
+    },
+    onError: (error) => {
+      toast.error(error instanceof Error ? error.message : 'Erreur de publication sociale');
     },
   });
 
@@ -60,12 +95,8 @@ export function usePublishProducts() {
       PublishProductsService.bulkPublish(productIds, user!.id),
     onSuccess: (results) => {
       invalidateAll();
-      if (results.success.length > 0) {
-        toast.success(`${results.success.length} produit(s) publié(s)`);
-      }
-      if (results.errors.length > 0) {
-        toast.error(`${results.errors.length} erreur(s)`);
-      }
+      if (results.success.length > 0) toast.success(`${results.success.length} produit(s) publié(s)`);
+      if (results.errors.length > 0) toast.error(`${results.errors.length} erreur(s)`);
     },
     onError: () => {
       toast.error('Erreur lors de la publication en masse');
@@ -96,19 +127,40 @@ export function usePublishProducts() {
     },
   });
 
+  const cancelScheduledMutation = useMutation({
+    mutationFn: (publicationId: string) =>
+      PublishProductsService.cancelScheduledPublication(publicationId),
+    onSuccess: () => {
+      invalidateAll();
+      toast.success('Publication annulée');
+    },
+    onError: (error) => {
+      toast.error(error instanceof Error ? error.message : 'Erreur d\'annulation');
+    },
+  });
+
   return {
     stats,
     stores,
+    publicationLogs,
+    scheduledPublications,
+    publicationStats,
     isLoadingStats,
     isLoadingStores,
+    isLoadingLogs,
+    isLoadingScheduled,
     publishProduct: publishMutation.mutate,
     publishToStores: (productId: string, storeIds: string[]) =>
       publishToStoresMutation.mutate({ productId, storeIds }),
+    publishToSocial: (productId: string, channels: string[], customMessage?: string, scheduleAt?: string) =>
+      publishToSocialMutation.mutate({ productId, channels, customMessage, scheduleAt }),
     bulkPublish: bulkPublishMutation.mutate,
     syncStock: (productId: string, quantity: number) =>
       syncStockMutation.mutate({ productId, quantity }),
     unpublishProduct: unpublishMutation.mutate,
+    cancelScheduled: cancelScheduledMutation.mutate,
     isPublishing: publishMutation.isPending || publishToStoresMutation.isPending,
+    isPublishingSocial: publishToSocialMutation.isPending,
     isBulkPublishing: bulkPublishMutation.isPending,
     isSyncing: syncStockMutation.isPending,
     isUnpublishing: unpublishMutation.isPending,
