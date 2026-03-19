@@ -206,8 +206,8 @@ export function OnboardingWidget() {
 
   return (
     <motion.div {...motionProps}>
-      <Card className="relative overflow-hidden border-primary/30 bg-gradient-to-br from-primary/5 via-background to-violet-500/5 shadow-lg">
-        <div className="absolute inset-0 bg-gradient-to-r from-primary/10 to-violet-500/10 opacity-50" aria-hidden="true" />
+       <Card className="relative overflow-hidden border-primary/30 bg-gradient-to-br from-primary/8 via-card to-primary/5 shadow-lg">
+        <div className="absolute inset-0 bg-gradient-to-r from-primary/8 to-primary/5 opacity-60" aria-hidden="true" />
         
         <CardHeader className="relative pb-3">
           <div className="flex items-start justify-between">
