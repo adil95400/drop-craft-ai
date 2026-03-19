@@ -115,6 +115,7 @@ const MultiChannelManagementPage: React.FC = () => {
           <TabsTrigger value="channels">Canaux connectés</TabsTrigger>
           <TabsTrigger value="available">Ajouter un canal</TabsTrigger>
           <TabsTrigger value="sync">Synchronisation</TabsTrigger>
+          <TabsTrigger value="publications">Publications</TabsTrigger>
         </TabsList>
 
         {/* Connected channels */}
