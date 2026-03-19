@@ -56,6 +56,41 @@ const API_ENDPOINTS: Record<string, { test: string, products: string, base: stri
     base: 'https://openapi.eprolo.com',
     test: '/api/v1/user/info',
     products: '/api/v1/product/list'
+  },
+  printify: {
+    base: 'https://api.printify.com/v1',
+    test: '/shops.json',
+    products: '/shops/{shop_id}/products.json'
+  },
+  wish: {
+    base: 'https://merchant.wish.com/api/v3',
+    test: '/auth_test',
+    products: '/products'
+  },
+  shopee: {
+    base: 'https://partner.shopeemobile.com',
+    test: '/api/v2/shop/get_shop_info',
+    products: '/api/v2/product/get_item_list'
+  },
+  alibaba: {
+    base: 'https://eco.taobao.com/router/rest',
+    test: '/alibaba.product.search',
+    products: '/alibaba.product.search'
+  },
+  bangood: {
+    base: 'https://api.banggood.com',
+    test: '/product/getProductInfo',
+    products: '/product/getProductList'
+  },
+  dsers: {
+    base: 'https://api.dsers.com/v1',
+    test: '/user',
+    products: '/products'
+  },
+  temu: {
+    base: 'https://api.temu.com/v1',
+    test: '/account',
+    products: '/products/list'
   }
 }
 
