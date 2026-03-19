@@ -1,12 +1,12 @@
 /**
- * UnifiedOnboarding - Système d'onboarding unifié
- * Remplace WelcomeWidget, OnboardingChecklist, InteractiveOnboarding
+ * UnifiedOnboarding — Système d'onboarding unifié v2
+ * Fusionné: Widget + Modal + Questionnaire business type
  * 
- * Caractéristiques:
- * - 3 étapes maximum (pas 5+)
- * - Persistance en localStorage (compatible avec future BDD)
- * - Adapté au contexte (dashboard vs modal)
- * - Mode compact (inline) ou modal (premier login)
+ * Inspiré d'AutoDS/Spocket:
+ * - Questionnaire initial (type de business)
+ * - 3 étapes essentielles personnalisées
+ * - Pas de modal séparé — tout intégré dans un seul flow
+ * - Estimation de temps visible
  */
 
 import { useState, useCallback, useMemo, useEffect } from 'react'
@@ -14,7 +14,8 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { 
   X, CheckCircle2, Circle, Sparkles, Package, Store, 
-  Upload, ArrowRight, Rocket, Zap, Play
+  Upload, ArrowRight, Rocket, Zap, Play, ShoppingCart,
+  Globe, TrendingUp, Clock, ChevronRight
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
@@ -33,59 +34,71 @@ interface OnboardingStep {
   icon: React.ElementType
   route: string
   checkCompleted: () => Promise<boolean>
+  estimatedTime?: string
 }
+
+type BusinessType = 'dropshipping' | 'ecommerce' | 'marketplace' | null
 
 interface UnifiedOnboardingState {
   completedSteps: string[]
   dismissed: boolean
-  modalShown: boolean
+  businessType: BusinessType
   lastUpdated: string
 }
 
-// Clé de stockage unique
-const ONBOARDING_STORAGE_KEY = 'shopopti_unified_onboarding'
+const ONBOARDING_STORAGE_KEY = 'shopopti_unified_onboarding_v2'
 
-// 3 étapes essentielles seulement
-const ONBOARDING_STEPS: OnboardingStep[] = [
-  {
-    id: 'connect-store',
-    title: 'Connecter une boutique',
-    description: 'Liez Shopify, WooCommerce ou PrestaShop',
-    icon: Store,
-    route: '/stores-channels',
-    checkCompleted: async () => {
-      const { count } = await supabase
-        .from('integrations')
-        .select('*', { count: 'exact', head: true })
-        .eq('is_active', true)
-      return (count || 0) > 0
+// Étapes personnalisées par type de business
+const getStepsForBusinessType = (type: BusinessType): OnboardingStep[] => {
+  const baseSteps: OnboardingStep[] = [
+    {
+      id: 'connect-store',
+      title: type === 'dropshipping' ? 'Connecter votre boutique Shopify' : 'Connecter votre boutique',
+      description: type === 'dropshipping' 
+        ? 'Liez Shopify pour synchroniser produits, commandes et stock automatiquement'
+        : 'Liez Shopify, WooCommerce ou PrestaShop en quelques clics',
+      icon: Store,
+      route: '/stores-channels',
+      estimatedTime: '2 min',
+      checkCompleted: async () => {
+        const { count } = await supabase
+          .from('integrations')
+          .select('*', { count: 'exact', head: true })
+          .eq('is_active', true)
+        return (count || 0) > 0
+      }
+    },
+    {
+      id: 'import-products',
+      title: type === 'dropshipping' ? 'Importer depuis un fournisseur' : 'Ajouter vos produits',
+      description: type === 'dropshipping'
+        ? 'Importez depuis AliExpress, BigBuy ou Spocket en 1 clic'
+        : 'Importez via CSV, URL ou créez manuellement',
+      icon: Upload,
+      route: '/import',
+      estimatedTime: '3 min',
+      checkCompleted: async () => {
+        const { count } = await supabase
+          .from('products')
+          .select('*', { count: 'exact', head: true })
+        return (count || 0) > 0
+      }
+    },
+    {
+      id: 'explore-catalog',
+      title: type === 'marketplace' ? 'Lancer la synchronisation' : 'Explorer & optimiser avec l\'IA',
+      description: type === 'marketplace'
+        ? 'Synchronisez vos produits sur plusieurs canaux de vente'
+        : 'Découvrez l\'optimisation IA de vos titres, prix et descriptions',
+      icon: type === 'marketplace' ? Globe : Sparkles,
+      route: type === 'marketplace' ? '/stores-channels' : '/products',
+      estimatedTime: '1 min',
+      checkCompleted: async () => false
     }
-  },
-  {
-    id: 'import-products',
-    title: 'Importer des produits',
-    description: 'Importez via URL, fichier ou fournisseur',
-    icon: Upload,
-    route: '/import',
-    checkCompleted: async () => {
-      const { count } = await supabase
-        .from('products')
-        .select('*', { count: 'exact', head: true })
-      return (count || 0) > 0
-    }
-  },
-  {
-    id: 'explore-catalog',
-    title: 'Explorer le catalogue',
-    description: 'Découvrez vos produits et optimisations IA',
-    icon: Package,
-    route: '/products',
-    checkCompleted: async () => {
-      // Considéré comme complété si l'utilisateur a visité /products
-      return false // Toujours montrer pour encourager l'exploration
-    }
-  }
-]
+  ]
+
+  return baseSteps
+}
 
 // Hook pour gérer l'état d'onboarding
 export function useUnifiedOnboarding() {
@@ -95,19 +108,16 @@ export function useUnifiedOnboarding() {
   const [state, setState] = useState<UnifiedOnboardingState>(() => {
     try {
       const stored = localStorage.getItem(`${ONBOARDING_STORAGE_KEY}-${userId}`)
-      if (stored) {
-        return JSON.parse(stored)
-      }
+      if (stored) return JSON.parse(stored)
     } catch {}
     return {
       completedSteps: [],
       dismissed: false,
-      modalShown: false,
+      businessType: null,
       lastUpdated: new Date().toISOString()
     }
   })
 
-  // Persister en localStorage
   const persistState = useCallback((newState: UnifiedOnboardingState) => {
     try {
       localStorage.setItem(
@@ -127,28 +137,33 @@ export function useUnifiedOnboarding() {
     }
   }, [state, persistState])
 
-  const dismiss = useCallback(() => {
-    persistState({ ...state, dismissed: true })
+  const setBusinessType = useCallback((type: BusinessType) => {
+    persistState({ ...state, businessType: type })
+    // Also store for GuidedTour personalization
+    if (type) localStorage.setItem('shopopti_business_type', type)
   }, [state, persistState])
 
-  const markModalShown = useCallback(() => {
-    persistState({ ...state, modalShown: true })
+  const dismiss = useCallback(() => {
+    persistState({ ...state, dismissed: true })
   }, [state, persistState])
 
   const reset = useCallback(() => {
     persistState({
       completedSteps: [],
       dismissed: false,
-      modalShown: false,
+      businessType: null,
       lastUpdated: new Date().toISOString()
     })
   }, [persistState])
 
-  // Vérifier automatiquement les étapes complétées
+  const steps = useMemo(() => getStepsForBusinessType(state.businessType), [state.businessType])
+
+  // Auto-check completed steps
   useEffect(() => {
+    if (!user || !state.businessType) return
     const checkSteps = async () => {
       const newCompleted: string[] = []
-      for (const step of ONBOARDING_STEPS) {
+      for (const step of steps) {
         if (await step.checkCompleted()) {
           newCompleted.push(step.id)
         }
@@ -161,38 +176,62 @@ export function useUnifiedOnboarding() {
         })
       }
     }
-    if (user) {
-      checkSteps()
-    }
-  }, [user])
+    checkSteps()
+  }, [user, state.businessType])
 
   const progress = useMemo(() => ({
     completed: state.completedSteps.length,
-    total: ONBOARDING_STEPS.length,
-    percent: (state.completedSteps.length / ONBOARDING_STEPS.length) * 100,
-    isComplete: state.completedSteps.length >= ONBOARDING_STEPS.length
-  }), [state.completedSteps])
+    total: steps.length,
+    percent: steps.length > 0 ? (state.completedSteps.length / steps.length) * 100 : 0,
+    isComplete: steps.length > 0 && state.completedSteps.length >= steps.length
+  }), [state.completedSteps, steps])
 
   return {
     state,
-    steps: ONBOARDING_STEPS,
+    steps,
     progress,
     completeStep,
+    setBusinessType,
     dismiss,
-    markModalShown,
     reset
   }
 }
 
-// Widget compact pour le dashboard
+// Business type selector cards
+const BUSINESS_TYPES = [
+  {
+    type: 'dropshipping' as BusinessType,
+    label: 'Dropshipping',
+    description: 'Vendre sans stock via fournisseurs',
+    icon: ShoppingCart,
+    color: 'text-primary',
+    bg: 'bg-primary/10 border-primary/20 hover:border-primary/40',
+  },
+  {
+    type: 'ecommerce' as BusinessType,
+    label: 'E-commerce',
+    description: 'Ma propre boutique en ligne',
+    icon: Package,
+    color: 'text-success',
+    bg: 'bg-success/10 border-success/20 hover:border-success/40',
+  },
+  {
+    type: 'marketplace' as BusinessType,
+    label: 'Multi-canal',
+    description: 'Vendre sur plusieurs plateformes',
+    icon: Globe,
+    color: 'text-info',
+    bg: 'bg-info/10 border-info/20 hover:border-info/40',
+  },
+]
+
+// Widget compact unifié pour le dashboard
 export function OnboardingWidget() {
   const navigate = useNavigate()
   const { profile } = useUnifiedAuth()
   const prefersReducedMotion = useReducedMotion()
-  const { state, steps, progress, completeStep, dismiss } = useUnifiedOnboarding()
-  const [hoveredStep, setHoveredStep] = useState<string | null>(null)
+  const { state, steps, progress, completeStep, setBusinessType, dismiss } = useUnifiedOnboarding()
 
-  // Ne pas afficher si dismissed ou tout complété
   if (state.dismissed || progress.isComplete) return null
 
   const handleStepClick = (step: OnboardingStep) => {
@@ -204,36 +243,30 @@ export function OnboardingWidget() {
     ? {} 
     : { initial: { opacity: 0, y: 20 }, animate: { opacity: 1, y: 0 } }
 
-  return (
-    <motion.div {...motionProps}>
-       <Card className="relative overflow-hidden border-primary/30 bg-gradient-to-br from-primary/8 via-card to-primary/5 shadow-lg">
-        <div className="absolute inset-0 bg-gradient-to-r from-primary/8 to-primary/5 opacity-60" aria-hidden="true" />
-        
-        <CardHeader className="relative pb-3">
-          <div className="flex items-start justify-between">
-            <div className="flex items-center gap-3">
-              <motion.div 
-                className="p-2.5 rounded-xl bg-primary shadow-lg"
-                whileHover={prefersReducedMotion ? undefined : { scale: 1.05 }}
-                aria-hidden="true"
-              >
-                <Rocket className="h-5 w-5 text-primary-foreground" />
-              </motion.div>
-              <div>
-                <h3 className="font-semibold text-lg flex items-center gap-2">
-                  Bienvenue{profile?.full_name ? `, ${profile.full_name.split(' ')[0]}` : ''} !
-                  <Sparkles className="h-4 w-4 text-amber-500" aria-hidden="true" />
-                </h3>
-                <p className="text-sm text-muted-foreground">
-                  3 étapes pour démarrer
-                </p>
+  const firstName = profile?.full_name?.split(' ')[0]
+
+  // Phase 1: Business type questionnaire
+  if (!state.businessType) {
+    return (
+      <motion.div {...motionProps}>
+        <Card className="relative overflow-hidden border-primary/30 shadow-xl">
+          <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-card to-transparent" aria-hidden="true" />
+          
+          <CardHeader className="relative pb-2">
+            <div className="flex items-start justify-between">
+              <div className="flex items-center gap-3">
+                <div className="p-2.5 rounded-xl bg-primary shadow-lg" aria-hidden="true">
+                  <Rocket className="h-5 w-5 text-primary-foreground" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-lg text-foreground">
+                    Bienvenue{firstName ? `, ${firstName}` : ''} ! 🎉
+                  </h3>
+                  <p className="text-sm text-foreground/60">
+                    Configurons votre espace en 2 minutes
+                  </p>
+                </div>
               </div>
-            </div>
-            
-            <div className="flex items-center gap-2">
-              <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/20">
-                {progress.completed}/{progress.total}
-              </Badge>
               <Button 
                 variant="ghost" 
                 size="icon" 
@@ -244,73 +277,157 @@ export function OnboardingWidget() {
                 <X className="h-4 w-4" />
               </Button>
             </div>
+          </CardHeader>
+          
+          <CardContent className="relative pt-2 pb-5">
+            <p className="text-sm font-medium text-foreground mb-3">
+              Quel est votre type d'activité ?
+            </p>
+            
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+              {BUSINESS_TYPES.map(({ type, label, description, icon: Icon, color, bg }) => (
+                <motion.button
+                  key={type}
+                  onClick={() => setBusinessType(type)}
+                  className={cn(
+                    "flex items-center gap-3 p-3.5 rounded-xl border-2 transition-all text-left group",
+                    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50",
+                    bg
+                  )}
+                  whileHover={prefersReducedMotion ? undefined : { scale: 1.02 }}
+                  whileTap={prefersReducedMotion ? undefined : { scale: 0.98 }}
+                >
+                  <div className={cn("p-2 rounded-lg", bg.split(' ')[0])} aria-hidden="true">
+                    <Icon className={cn("h-5 w-5", color)} />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="font-semibold text-sm text-foreground">{label}</p>
+                    <p className="text-xs text-foreground/55 truncate">{description}</p>
+                  </div>
+                </motion.button>
+              ))}
+            </div>
+            
+            <div className="mt-3 flex items-center justify-center gap-1.5 text-foreground/40">
+              <Clock className="h-3 w-3" />
+              <span className="text-[11px]">Prend moins de 2 minutes</span>
+            </div>
+          </CardContent>
+        </Card>
+      </motion.div>
+    )
+  }
+
+  // Phase 2: Steps checklist (personalized)
+  const totalTime = steps.reduce((acc, s) => {
+    const mins = parseInt(s.estimatedTime || '0')
+    return acc + mins
+  }, 0)
+
+  return (
+    <motion.div {...motionProps}>
+      <Card className="relative overflow-hidden border-primary/30 shadow-lg">
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-card to-transparent" aria-hidden="true" />
+        
+        <CardHeader className="relative pb-2">
+          <div className="flex items-start justify-between">
+            <div className="flex items-center gap-3">
+              <div className="p-2.5 rounded-xl bg-primary shadow-lg" aria-hidden="true">
+                <Rocket className="h-5 w-5 text-primary-foreground" />
+              </div>
+              <div>
+                <h3 className="font-bold text-base sm:text-lg text-foreground flex items-center gap-2">
+                  Démarrage rapide
+                  <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/20 text-[10px]">
+                    {progress.completed}/{progress.total}
+                  </Badge>
+                </h3>
+                <div className="flex items-center gap-2 text-xs text-foreground/55">
+                  <Clock className="h-3 w-3" />
+                  <span>~{totalTime - (progress.completed * 2)} min restantes</span>
+                  <span className="text-foreground/30">·</span>
+                  <span className="capitalize">{state.businessType}</span>
+                </div>
+              </div>
+            </div>
+            
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              onClick={dismiss}
+              className="h-8 w-8 rounded-lg hover:bg-destructive/10 hover:text-destructive"
+              aria-label="Fermer"
+            >
+              <X className="h-4 w-4" />
+            </Button>
           </div>
           
-          <div className="mt-4 space-y-2">
-            <Progress value={progress.percent} className="h-2 bg-muted/50" />
-          </div>
+          <Progress value={progress.percent} className="mt-3 h-1.5 bg-muted" />
         </CardHeader>
         
-        <CardContent className="relative pt-0">
-          <div className="space-y-2" role="list">
+        <CardContent className="relative pt-1 pb-4">
+          <div className="space-y-1.5" role="list">
             {steps.map((step, index) => {
               const Icon = step.icon
               const isCompleted = state.completedSteps.includes(step.id)
-              const isHovered = hoveredStep === step.id
+              const isNext = !isCompleted && !state.completedSteps.includes(steps[index - 1]?.id || '') && index === state.completedSteps.length
               
               return (
                 <motion.button
                   key={step.id}
                   onClick={() => handleStepClick(step)}
-                  onMouseEnter={() => setHoveredStep(step.id)}
-                  onMouseLeave={() => setHoveredStep(null)}
                   className={cn(
-                    "w-full flex items-center gap-3 p-3 rounded-xl transition-all duration-200 text-left group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50",
+                    "w-full flex items-center gap-3 p-3 rounded-xl transition-all duration-200 text-left group",
+                    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50",
                     isCompleted 
-                      ? "bg-success/10 border border-success/20" 
-                      : "hover:bg-muted/80 border border-border/40 hover:border-border"
+                      ? "bg-success/8 border border-success/20" 
+                      : isNext
+                      ? "bg-primary/5 border border-primary/25 shadow-sm"
+                      : "hover:bg-muted/80 border border-border/30 hover:border-border/60"
                   )}
-                  whileHover={prefersReducedMotion ? undefined : { x: 4 }}
+                  whileHover={prefersReducedMotion ? undefined : { x: 3 }}
                   initial={prefersReducedMotion ? undefined : { opacity: 0, x: -10 }}
                   animate={prefersReducedMotion ? undefined : { opacity: 1, x: 0 }}
-                  transition={prefersReducedMotion ? undefined : { delay: index * 0.05 }}
+                  transition={prefersReducedMotion ? undefined : { delay: index * 0.08 }}
                   role="listitem"
                 >
+                  {/* Step number / check */}
                   <div className={cn(
-                    "p-2 rounded-lg transition-all",
+                    "flex items-center justify-center h-8 w-8 rounded-full text-xs font-bold flex-shrink-0 transition-all",
                     isCompleted 
-                      ? "bg-success/20" 
-                      : "bg-muted group-hover:bg-primary/10"
-                  )} aria-hidden="true">
-                    <Icon className={cn(
-                      "h-4 w-4 transition-colors",
-                      isCompleted ? "text-success" : "text-foreground/60 group-hover:text-primary"
-                    )} />
+                      ? "bg-success text-success-foreground" 
+                      : isNext
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-muted text-foreground/50 border border-border"
+                  )}>
+                    {isCompleted ? (
+                      <CheckCircle2 className="h-4 w-4" />
+                    ) : (
+                      <span>{index + 1}</span>
+                    )}
                   </div>
                   
                   <div className="flex-1 min-w-0">
                     <p className={cn(
-                      "font-semibold text-sm truncate text-foreground",
-                      isCompleted && "line-through text-foreground/50"
+                      "font-semibold text-sm truncate",
+                      isCompleted ? "text-foreground/50 line-through" : "text-foreground"
                     )}>
                       {step.title}
                     </p>
-                    <p className="text-xs text-foreground/60 truncate">
+                    <p className={cn(
+                      "text-xs truncate",
+                      isCompleted ? "text-foreground/35" : "text-foreground/55"
+                    )}>
                       {step.description}
                     </p>
                   </div>
                   
-                  <div className="flex items-center gap-2 flex-shrink-0">
-                    {isCompleted ? (
-                      <CheckCircle2 className="h-5 w-5 text-success" />
-                    ) : (
-                      <>
-                        <Circle className="h-5 w-5 text-foreground/30" />
-                        <ArrowRight className={cn(
-                          "h-4 w-4 transition-all",
-                          isHovered ? "opacity-100 text-primary" : "opacity-0"
-                        )} />
-                      </>
+                  <div className="flex items-center gap-1.5 flex-shrink-0">
+                    {!isCompleted && step.estimatedTime && (
+                      <span className="text-[10px] text-foreground/40">{step.estimatedTime}</span>
+                    )}
+                    {isNext && (
+                      <ChevronRight className="h-4 w-4 text-primary" />
                     )}
                   </div>
                 </motion.button>
@@ -318,12 +435,12 @@ export function OnboardingWidget() {
             })}
           </div>
           
-          <div className="mt-4 text-center">
+          <div className="mt-3 text-center">
             <button 
               onClick={dismiss}
-              className="text-xs text-muted-foreground hover:text-foreground transition-colors underline-offset-2 hover:underline"
+              className="text-xs text-foreground/40 hover:text-foreground transition-colors underline-offset-2 hover:underline"
             >
-              Passer cette introduction
+              Passer l'introduction
             </button>
           </div>
         </CardContent>
@@ -332,127 +449,10 @@ export function OnboardingWidget() {
   )
 }
 
-// Modal pour premier login (remplace InteractiveOnboarding)
+// Modal supprimée — tout est dans le widget maintenant
 export function OnboardingModal() {
-  const navigate = useNavigate()
-  const location = useLocation()
-  const { profile } = useUnifiedAuth()
-  const prefersReducedMotion = useReducedMotion()
-  const { state, steps, progress, markModalShown, dismiss } = useUnifiedOnboarding()
-  const [currentStep, setCurrentStep] = useState(0)
-
-  // Afficher seulement sur le dashboard, au premier login
-  const shouldShow = !state.modalShown && 
-                     !state.dismissed && 
-                     location.pathname === '/'
-
-  useEffect(() => {
-    if (shouldShow) {
-      // Marquer comme vu après 1 seconde
-      const timer = setTimeout(() => markModalShown(), 1000)
-      return () => clearTimeout(timer)
-    }
-  }, [shouldShow, markModalShown])
-
-  if (!shouldShow) return null
-
-  const handleGetStarted = () => {
-    dismiss()
-    navigate('/import')
-  }
-
-  const handleSkip = () => {
-    dismiss()
-  }
-
-  return (
-    <AnimatePresence>
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
-      >
-        <motion.div
-          initial={prefersReducedMotion ? {} : { scale: 0.9, opacity: 0 }}
-          animate={prefersReducedMotion ? {} : { scale: 1, opacity: 1 }}
-          className="w-full max-w-lg"
-        >
-          <Card className="relative overflow-hidden">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="absolute top-4 right-4 z-10"
-              onClick={handleSkip}
-            >
-              <X className="h-4 w-4" />
-            </Button>
-
-            <CardHeader className="text-center pb-2 pt-8">
-              <motion.div
-                className="mx-auto mb-4 p-4 rounded-2xl bg-gradient-to-br from-primary to-violet-600 w-fit"
-                animate={prefersReducedMotion ? {} : { 
-                  scale: [1, 1.1, 1],
-                  rotate: [0, 5, -5, 0]
-                }}
-                transition={{ duration: 2, repeat: Infinity, repeatDelay: 1 }}
-              >
-                <Rocket className="h-10 w-10 text-white" />
-              </motion.div>
-              
-              <h2 className="text-2xl font-bold mb-2">
-                Bienvenue sur ShopOpti{profile?.full_name ? `, ${profile.full_name.split(' ')[0]}` : ''} !
-              </h2>
-              
-              <p className="text-muted-foreground">
-                Votre plateforme e-commerce intelligente est prête.
-              </p>
-            </CardHeader>
-
-            <CardContent className="space-y-6 pb-8">
-              {/* 3 features highlight */}
-              <div className="grid grid-cols-3 gap-4">
-                <div className="text-center p-3 bg-primary/5 rounded-xl">
-                  <Zap className="h-6 w-6 text-primary mx-auto mb-2" />
-                  <p className="text-xs font-medium">IA Intégrée</p>
-                </div>
-                <div className="text-center p-3 bg-emerald-500/5 rounded-xl">
-                  <Upload className="h-6 w-6 text-emerald-500 mx-auto mb-2" />
-                  <p className="text-xs font-medium">Import Facile</p>
-                </div>
-                <div className="text-center p-3 bg-violet-500/5 rounded-xl">
-                  <Store className="h-6 w-6 text-violet-500 mx-auto mb-2" />
-                  <p className="text-xs font-medium">Multi-Boutiques</p>
-                </div>
-              </div>
-
-              {/* CTA buttons */}
-              <div className="flex flex-col gap-3">
-                <Button 
-                  size="lg" 
-                  className="w-full bg-gradient-to-r from-primary to-violet-600 hover:opacity-90"
-                  onClick={handleGetStarted}
-                >
-                  <Play className="h-4 w-4 mr-2" />
-                  Commencer maintenant
-                </Button>
-                
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  onClick={handleSkip}
-                  className="text-muted-foreground"
-                >
-                  Explorer par moi-même
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        </motion.div>
-      </motion.div>
-    </AnimatePresence>
-  )
+  // No-op: le questionnaire est intégré dans le widget
+  return null
 }
 
-// Export par défaut du widget
 export default OnboardingWidget
