@@ -240,9 +240,9 @@ export function ChannelOverviewTab({
           <CardContent className="pt-0">
             <div className="space-y-4">
               {[
-                { label: t('overview.syncRate'), value: 98, color: 'bg-emerald-500' },
-                { label: t('overview.publishedProducts'), value: 85, color: 'bg-blue-500' },
-                { label: t('overview.syncedStock'), value: 100, color: 'bg-purple-500' },
+                { label: t('overview.syncRate'), value: healthMetrics?.syncRate ?? 98, color: 'bg-emerald-500' },
+                { label: 'Uptime', value: healthMetrics?.uptime ?? 100, color: 'bg-blue-500' },
+                { label: t('overview.syncedStock'), value: healthMetrics?.errorRate != null ? (100 - healthMetrics.errorRate) : 100, color: 'bg-purple-500' },
               ].map((item, index) => (
                 <div key={item.label}>
                   <div className="flex justify-between text-xs mb-1.5">
