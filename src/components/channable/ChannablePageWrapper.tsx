@@ -148,7 +148,7 @@ export function ChannablePageWrapper({
           }} transition={{
             delay: 0.2
           }} className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight mb-3 sm:mb-4">
-              <span className="bg-gradient-to-r from-foreground via-foreground to-foreground/70 bg-clip-text">
+              <span className="text-foreground">
                 {title}
               </span>
             </motion.h1>
