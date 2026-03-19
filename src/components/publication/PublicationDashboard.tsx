@@ -159,7 +159,8 @@ export function PublicationDashboard() {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-2">
-            {Object.entries(publicationStats.byChannel).map(([channel, stats]) => {
+            {Object.entries(publicationStats.byChannel).map(([channel, rawStats]) => {
+              const stats = rawStats as { success: number; failed: number; pending: number };
               const total = stats.success + stats.failed + stats.pending;
               const rate = total > 0 ? Math.round((stats.success / total) * 100) : 0;
               return (
@@ -170,7 +171,7 @@ export function PublicationDashboard() {
                   <span className="text-sm font-medium capitalize flex-1">{channel}</span>
                   <span className="text-xs text-muted-foreground">{stats.success}/{total}</span>
                   <div className="w-16 h-2 bg-muted rounded-full overflow-hidden">
-                    <div className="h-full bg-emerald-500 rounded-full" style={{ width: `${rate}%` }} />
+                    <div className="h-full bg-primary rounded-full" style={{ width: `${rate}%` }} />
                   </div>
                 </div>
               );
