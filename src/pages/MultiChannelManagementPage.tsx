@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Store, ShoppingBag, TrendingUp, RefreshCw, Globe, BarChart3, Plug, Unplug } from 'lucide-react';
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
+import { PublicationDashboard } from '@/components/publication/PublicationDashboard';
 import { useMarketplaceIntegrations } from '@/hooks/useMarketplaceIntegrations';
 import { MarketplaceConnectDialog } from '@/domains/marketplace/components/MarketplaceConnectDialog';
 import { Skeleton } from '@/components/ui/skeleton';
