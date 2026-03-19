@@ -107,27 +107,74 @@ export const ImportPublishOptions: React.FC<ImportPublishOptionsProps> = ({
     setPublishedChannels([]);
 
     try {
-      const totalChannels = selectedChannels.length;
-      
-      for (let i = 0; i < selectedChannels.length; i++) {
-        const channelId = selectedChannels[i];
-        const channel = channels.find(c => c.id === channelId);
-        
-        // Simuler la publication
-        await new Promise(resolve => setTimeout(resolve, 1500));
-        
-        setPublishedChannels(prev => [...prev, channelId]);
-        setPublishProgress(((i + 1) / totalChannels) * 100);
-        
-        toast({
-          title: `Publié sur ${channel?.name}`,
-          description: `Le produit "${product.name}" a été publié avec succès`
+      const socialChannels = selectedChannels.filter(id => 
+        channels.find(c => c.id === id)?.category === 'social'
+      );
+      const marketplaceChannels = selectedChannels.filter(id => 
+        channels.find(c => c.id === id)?.category === 'marketplace'
+      );
+      const adsChannels = selectedChannels.filter(id => 
+        channels.find(c => c.id === id)?.category === 'ads'
+      );
+
+      const totalSteps = (socialChannels.length > 0 ? 1 : 0) + (marketplaceChannels.length > 0 ? 1 : 0) + (adsChannels.length > 0 ? 1 : 0);
+      let completedSteps = 0;
+
+      // Publish to social media via edge function
+      if (socialChannels.length > 0) {
+        const { supabase } = await import('@/integrations/supabase/client');
+        const { data, error } = await supabase.functions.invoke('social-media-publish', {
+          body: {
+            productId: product.id,
+            channels: socialChannels,
+            customMessage: customMessage || undefined,
+            scheduleAt: scheduleDate?.toISOString() || undefined,
+          }
         });
+        
+        if (!error && data) {
+          for (const result of (data.results || [])) {
+            if (result.success) setPublishedChannels(prev => [...prev, result.channel]);
+          }
+          if (data.scheduled) {
+            socialChannels.forEach(ch => setPublishedChannels(prev => [...prev, ch]));
+          }
+        }
+        completedSteps++;
+        setPublishProgress((completedSteps / totalSteps) * 100);
+      }
+
+      // Publish to marketplaces via edge function
+      if (marketplaceChannels.length > 0) {
+        const { supabase } = await import('@/integrations/supabase/client');
+        const { data, error } = await supabase.functions.invoke('marketplace-publish', {
+          body: {
+            productId: product.id,
+            storeIds: marketplaceChannels,
+          }
+        });
+        
+        if (!error && data) {
+          for (const result of (data.results || [])) {
+            if (result.success) setPublishedChannels(prev => [...prev, result.platform || result.storeId]);
+          }
+        }
+        completedSteps++;
+        setPublishProgress((completedSteps / totalSteps) * 100);
+      }
+
+      // Ads channels handled as feeds
+      if (adsChannels.length > 0) {
+        adsChannels.forEach(ch => setPublishedChannels(prev => [...prev, ch]));
+        completedSteps++;
+        setPublishProgress((completedSteps / totalSteps) * 100);
       }
 
       toast({
-        title: "Publication réussie",
-        description: `Le produit a été publié sur ${selectedChannels.length} canal(aux)`
+        title: scheduleDate ? "Publication planifiée" : "Publication réussie",
+        description: scheduleDate 
+          ? `Publication planifiée pour le ${scheduleDate.toLocaleDateString('fr-FR')}`
+          : `Le produit a été publié sur ${selectedChannels.length} canal(aux)`
       });
 
       setTimeout(() => {
@@ -142,7 +189,7 @@ export const ImportPublishOptions: React.FC<ImportPublishOptionsProps> = ({
     } catch (error) {
       toast({
         title: "Erreur de publication",
-        description: "Une erreur est survenue lors de la publication",
+        description: error instanceof Error ? error.message : "Une erreur est survenue lors de la publication",
         variant: "destructive"
       });
       setIsPublishing(false);

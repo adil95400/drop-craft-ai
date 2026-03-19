@@ -11925,6 +11925,65 @@ export type Database = {
         }
         Relationships: []
       }
+      publication_logs: {
+        Row: {
+          action: string
+          channel_id: string
+          channel_name: string
+          channel_type: string
+          created_at: string
+          duration_ms: number | null
+          error_message: string | null
+          external_id: string | null
+          external_url: string | null
+          id: string
+          metadata: Json | null
+          product_id: string | null
+          status: string
+          user_id: string
+        }
+        Insert: {
+          action?: string
+          channel_id: string
+          channel_name: string
+          channel_type: string
+          created_at?: string
+          duration_ms?: number | null
+          error_message?: string | null
+          external_id?: string | null
+          external_url?: string | null
+          id?: string
+          metadata?: Json | null
+          product_id?: string | null
+          status?: string
+          user_id: string
+        }
+        Update: {
+          action?: string
+          channel_id?: string
+          channel_name?: string
+          channel_type?: string
+          created_at?: string
+          duration_ms?: number | null
+          error_message?: string | null
+          external_id?: string | null
+          external_url?: string | null
+          id?: string
+          metadata?: Json | null
+          product_id?: string | null
+          status?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "publication_logs_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       published_products: {
         Row: {
           created_at: string
@@ -13415,6 +13474,71 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      scheduled_publications: {
+        Row: {
+          channel_id: string
+          channel_name: string
+          channel_type: string
+          created_at: string
+          custom_message: string | null
+          error_message: string | null
+          id: string
+          max_retries: number | null
+          product_id: string | null
+          publish_options: Json | null
+          published_at: string | null
+          retry_count: number | null
+          scheduled_at: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          channel_id: string
+          channel_name: string
+          channel_type: string
+          created_at?: string
+          custom_message?: string | null
+          error_message?: string | null
+          id?: string
+          max_retries?: number | null
+          product_id?: string | null
+          publish_options?: Json | null
+          published_at?: string | null
+          retry_count?: number | null
+          scheduled_at: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          channel_id?: string
+          channel_name?: string
+          channel_type?: string
+          created_at?: string
+          custom_message?: string | null
+          error_message?: string | null
+          id?: string
+          max_retries?: number | null
+          product_id?: string | null
+          publish_options?: Json | null
+          published_at?: string | null
+          retry_count?: number | null
+          scheduled_at?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "scheduled_publications_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       scheduled_tasks: {
         Row: {
