@@ -105,7 +105,7 @@ export function ChannablePageWrapper({
         )}
         
         {/* Overlay Gradient */}
-        <div className="absolute inset-0 bg-gradient-to-r from-background/95 via-background/80 to-background/40" />
+        <div className="absolute inset-0 bg-gradient-to-r from-background/98 via-background/90 to-background/60 sm:from-background/95 sm:via-background/80 sm:to-background/40" />
         
         {/* Hexagon Pattern Overlay */}
         <div className="absolute inset-0 opacity-10">
