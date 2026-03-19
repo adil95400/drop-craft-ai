@@ -105,7 +105,7 @@ export function ChannablePageWrapper({
         )}
         
         {/* Overlay Gradient */}
-        <div className="absolute inset-0 bg-gradient-to-r from-background/95 via-background/80 to-background/40" />
+        <div className="absolute inset-0 bg-gradient-to-r from-background/98 via-background/90 to-background/60 sm:from-background/95 sm:via-background/80 sm:to-background/40" />
         
         {/* Hexagon Pattern Overlay */}
         <div className="absolute inset-0 opacity-10">
@@ -148,7 +148,7 @@ export function ChannablePageWrapper({
           }} transition={{
             delay: 0.2
           }} className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight mb-3 sm:mb-4">
-              <span className="bg-gradient-to-r from-foreground via-foreground to-foreground/70 bg-clip-text">
+              <span className="text-foreground">
                 {title}
               </span>
             </motion.h1>

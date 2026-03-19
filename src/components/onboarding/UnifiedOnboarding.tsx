@@ -206,18 +206,18 @@ export function OnboardingWidget() {
 
   return (
     <motion.div {...motionProps}>
-      <Card className="relative overflow-hidden border-primary/30 bg-gradient-to-br from-primary/5 via-background to-violet-500/5 shadow-lg">
-        <div className="absolute inset-0 bg-gradient-to-r from-primary/10 to-violet-500/10 opacity-50" aria-hidden="true" />
+       <Card className="relative overflow-hidden border-primary/30 bg-gradient-to-br from-primary/8 via-card to-primary/5 shadow-lg">
+        <div className="absolute inset-0 bg-gradient-to-r from-primary/8 to-primary/5 opacity-60" aria-hidden="true" />
         
         <CardHeader className="relative pb-3">
           <div className="flex items-start justify-between">
             <div className="flex items-center gap-3">
               <motion.div 
-                className="p-2.5 rounded-xl bg-gradient-to-br from-primary to-violet-600 shadow-lg"
+                className="p-2.5 rounded-xl bg-primary shadow-lg"
                 whileHover={prefersReducedMotion ? undefined : { scale: 1.05 }}
                 aria-hidden="true"
               >
-                <Rocket className="h-5 w-5 text-white" />
+                <Rocket className="h-5 w-5 text-primary-foreground" />
               </motion.div>
               <div>
                 <h3 className="font-semibold text-lg flex items-center gap-2">
@@ -267,8 +267,8 @@ export function OnboardingWidget() {
                   className={cn(
                     "w-full flex items-center gap-3 p-3 rounded-xl transition-all duration-200 text-left group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50",
                     isCompleted 
-                      ? "bg-emerald-500/10 border border-emerald-500/20" 
-                      : "hover:bg-muted/50 border border-transparent hover:border-border/50"
+                      ? "bg-success/10 border border-success/20" 
+                      : "hover:bg-muted/80 border border-border/40 hover:border-border"
                   )}
                   whileHover={prefersReducedMotion ? undefined : { x: 4 }}
                   initial={prefersReducedMotion ? undefined : { opacity: 0, x: -10 }}
@@ -279,33 +279,33 @@ export function OnboardingWidget() {
                   <div className={cn(
                     "p-2 rounded-lg transition-all",
                     isCompleted 
-                      ? "bg-emerald-500/20" 
-                      : "bg-muted/50 group-hover:bg-primary/10"
+                      ? "bg-success/20" 
+                      : "bg-muted group-hover:bg-primary/10"
                   )} aria-hidden="true">
                     <Icon className={cn(
                       "h-4 w-4 transition-colors",
-                      isCompleted ? "text-emerald-500" : "text-muted-foreground group-hover:text-primary"
+                      isCompleted ? "text-success" : "text-foreground/60 group-hover:text-primary"
                     )} />
                   </div>
                   
                   <div className="flex-1 min-w-0">
                     <p className={cn(
-                      "font-medium text-sm truncate",
-                      isCompleted && "line-through text-muted-foreground"
+                      "font-semibold text-sm truncate text-foreground",
+                      isCompleted && "line-through text-foreground/50"
                     )}>
                       {step.title}
                     </p>
-                    <p className="text-xs text-muted-foreground truncate">
+                    <p className="text-xs text-foreground/60 truncate">
                       {step.description}
                     </p>
                   </div>
                   
                   <div className="flex items-center gap-2 flex-shrink-0">
                     {isCompleted ? (
-                      <CheckCircle2 className="h-5 w-5 text-emerald-500" />
+                      <CheckCircle2 className="h-5 w-5 text-success" />
                     ) : (
                       <>
-                        <Circle className="h-5 w-5 text-muted-foreground/40" />
+                        <Circle className="h-5 w-5 text-foreground/30" />
                         <ArrowRight className={cn(
                           "h-4 w-4 transition-all",
                           isHovered ? "opacity-100 text-primary" : "opacity-0"
