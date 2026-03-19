@@ -1,20 +1,22 @@
 /**
  * ChannelStatsBar - Channable-style compact metrics
- * Data-dense stat cards with trends
+ * Data-dense stat cards with real health trends
  */
-import { Package, ShoppingCart, TrendingUp, Clock, ArrowUpRight, ArrowDownRight } from 'lucide-react'
+import { Package, ShoppingCart, TrendingUp, Clock, ArrowUpRight, ArrowDownRight, Activity } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { cn } from '@/lib/utils'
 import { useTranslation } from 'react-i18next'
+import type { ChannelHealthMetrics } from '@/hooks/useChannelHealth'
 
 interface ChannelStatsBarProps {
   productCount: number
   orderCount: number
   revenue: number
   lastSync: string | null
+  healthMetrics?: ChannelHealthMetrics | null
 }
 
-export function ChannelStatsBar({ productCount, orderCount, revenue, lastSync }: ChannelStatsBarProps) {
+export function ChannelStatsBar({ productCount, orderCount, revenue, lastSync, healthMetrics }: ChannelStatsBarProps) {
   const { i18n } = useTranslation()
   const locale = i18n.language === 'fr' ? 'fr-FR' : 'en-US'
 
@@ -31,27 +33,39 @@ export function ChannelStatsBar({ productCount, orderCount, revenue, lastSync }:
     return d.toLocaleDateString(locale, { day: '2-digit', month: 'short' })
   }
 
+  const syncRate = healthMetrics?.syncRate ?? 100
+  const errorRate = healthMetrics?.errorRate ?? 0
+
   const stats = [
     {
       label: 'Produits',
       value: productCount.toLocaleString(locale),
       icon: Package,
-      trend: productCount > 0 ? { value: 12, positive: true } : null,
+      trend: null,
       iconBg: 'bg-blue-500/10 text-blue-600 dark:text-blue-400',
     },
     {
       label: 'Commandes',
       value: orderCount.toLocaleString(locale),
       icon: ShoppingCart,
-      trend: orderCount > 0 ? { value: 8, positive: true } : null,
+      trend: null,
       iconBg: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400',
     },
     {
       label: 'Chiffre d\'affaires',
       value: `€${revenue.toLocaleString(locale, { minimumFractionDigits: 2 })}`,
       icon: TrendingUp,
-      trend: revenue > 0 ? { value: 15, positive: true } : null,
+      trend: null,
       iconBg: 'bg-purple-500/10 text-purple-600 dark:text-purple-400',
+    },
+    {
+      label: 'Taux de sync',
+      value: `${syncRate}%`,
+      icon: Activity,
+      trend: errorRate > 5 ? { value: errorRate, positive: false } : syncRate >= 95 ? { value: syncRate, positive: true } : null,
+      iconBg: syncRate >= 95 
+        ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' 
+        : 'bg-amber-500/10 text-amber-600 dark:text-amber-400',
     },
     {
       label: 'Dernière sync',
@@ -63,7 +77,7 @@ export function ChannelStatsBar({ productCount, orderCount, revenue, lastSync }:
   ]
 
   return (
-    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
       {stats.map((stat, index) => {
         const Icon = stat.icon
         return (
