@@ -20,6 +20,7 @@ import { useApiAI } from '@/hooks/api/useApiAI';
 import { usePublishProducts } from '@/hooks/usePublishProducts';
 import { useApiJobs } from '@/hooks/api/useApiJobs';
 import { productsApi } from '@/services/api/client';
+import { useSyncConnectedStores } from '@/hooks/useSyncConnectedStores';
 
 // Job tracking UI
 import { ActiveJobsBanner } from '@/components/jobs/ActiveJobsBanner';
@@ -55,7 +56,7 @@ import {
   Edit3, Loader2, Package, Filter, X, Brain, Zap,
   ChevronDown, LayoutGrid, List, DollarSign, TrendingUp,
   BarChart3, AlertTriangle, ArrowUpDown, ShoppingCart, Globe,
-  Truck, Tag, Eye as EyeIcon } from
+  Truck, Tag, Eye as EyeIcon, Store } from
 'lucide-react';
 
 // Product components
@@ -152,6 +153,7 @@ export default function CatalogProductsPage() {
   const { bulkEnrich, isBulkEnriching } = useApiAI();
   const { bulkPublish, isBulkPublishing } = usePublishProducts();
   const { activeJobs } = useApiJobs({ limit: 5 });
+  const { syncStores, isSyncingStores } = useSyncConnectedStores();
 
   const categories = useMemo(() => {
     const cats = new Set(products.map((p) => p.category).filter(Boolean));
@@ -529,6 +531,13 @@ export default function CatalogProductsPage() {
                 disabled={isSyncing}>
                 <RefreshCw className={`h-4 w-4 ${isSyncing ? 'animate-spin' : ''}`} />
                 Sync
+              </Button>
+              <Button
+                variant="outline" size="sm" className="gap-2"
+                onClick={() => syncStores()}
+                disabled={isSyncingStores}>
+                <Store className={`h-4 w-4 ${isSyncingStores ? 'animate-spin' : ''}`} />
+                {isSyncingStores ? 'Sync en cours...' : 'Sync Magasins'}
               </Button>
               <Button variant="outline" size="sm" className="gap-2" onClick={() => navigate('/import/quick')}>
                 <Upload className="h-4 w-4" />
