@@ -532,6 +532,13 @@ export default function CatalogProductsPage() {
                 <RefreshCw className={`h-4 w-4 ${isSyncing ? 'animate-spin' : ''}`} />
                 Sync
               </Button>
+              <Button
+                variant="outline" size="sm" className="gap-2"
+                onClick={() => syncStores()}
+                disabled={isSyncingStores}>
+                <Store className={`h-4 w-4 ${isSyncingStores ? 'animate-spin' : ''}`} />
+                {isSyncingStores ? 'Sync en cours...' : 'Sync Magasins'}
+              </Button>
               <Button variant="outline" size="sm" className="gap-2" onClick={() => navigate('/import/quick')}>
                 <Upload className="h-4 w-4" />
                 Importer
