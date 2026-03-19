@@ -56,7 +56,7 @@ import {
   Edit3, Loader2, Package, Filter, X, Brain, Zap,
   ChevronDown, LayoutGrid, List, DollarSign, TrendingUp,
   BarChart3, AlertTriangle, ArrowUpDown, ShoppingCart, Globe,
-  Truck, Tag, Eye as EyeIcon } from
+  Truck, Tag, Eye as EyeIcon, Store } from
 'lucide-react';
 
 // Product components
