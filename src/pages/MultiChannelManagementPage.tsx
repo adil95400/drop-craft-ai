@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Store, ShoppingBag, TrendingUp, RefreshCw, Globe, BarChart3, Plug, Unplug } from 'lucide-react';
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
+import { PublicationDashboard } from '@/components/publication/PublicationDashboard';
 import { useMarketplaceIntegrations } from '@/hooks/useMarketplaceIntegrations';
 import { MarketplaceConnectDialog } from '@/domains/marketplace/components/MarketplaceConnectDialog';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -114,6 +115,7 @@ const MultiChannelManagementPage: React.FC = () => {
           <TabsTrigger value="channels">Canaux connectés</TabsTrigger>
           <TabsTrigger value="available">Ajouter un canal</TabsTrigger>
           <TabsTrigger value="sync">Synchronisation</TabsTrigger>
+          <TabsTrigger value="publications">Publications</TabsTrigger>
         </TabsList>
 
         {/* Connected channels */}
@@ -245,6 +247,10 @@ const MultiChannelManagementPage: React.FC = () => {
               )}
             </CardContent>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="publications">
+          <PublicationDashboard />
         </TabsContent>
       </Tabs>
 

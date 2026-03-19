@@ -163,9 +163,20 @@ export const ImportPublishOptions: React.FC<ImportPublishOptionsProps> = ({
         setPublishProgress((completedSteps / totalSteps) * 100);
       }
 
-      // Ads channels handled as feeds
+      // Ads channels: generate product feeds
       if (adsChannels.length > 0) {
-        adsChannels.forEach(ch => setPublishedChannels(prev => [...prev, ch]));
+        const { supabase } = await import('@/integrations/supabase/client');
+        for (const ch of adsChannels) {
+          const feedFormat = ch === 'google-shopping' || ch === 'google-ads' ? 'google_shopping' : 'facebook_catalog';
+          try {
+            await supabase.functions.invoke('generate-product-feed', {
+              body: { format: feedFormat, filters: { inStockOnly: true } }
+            });
+            setPublishedChannels(prev => [...prev, ch]);
+          } catch {
+            // Feed generation failed silently
+          }
+        }
         completedSteps++;
         setPublishProgress((completedSteps / totalSteps) * 100);
       }
