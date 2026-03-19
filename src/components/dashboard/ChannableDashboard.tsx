@@ -474,7 +474,7 @@ export function ChannableDashboard() {
       {/* Free tier upgrade banner */}
       <FreeTrialBanner />
 
-      {/* Modal d'onboarding pour premier login */}
+      {/* Onboarding modal (now no-op, integrated in widget) */}
       <OnboardingModal />
 
       {/* État vide si pas de données */}
