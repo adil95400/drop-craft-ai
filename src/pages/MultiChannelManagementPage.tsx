@@ -248,6 +248,10 @@ const MultiChannelManagementPage: React.FC = () => {
             </CardContent>
           </Card>
         </TabsContent>
+
+        <TabsContent value="publications">
+          <PublicationDashboard />
+        </TabsContent>
       </Tabs>
 
       <MarketplaceConnectDialog
