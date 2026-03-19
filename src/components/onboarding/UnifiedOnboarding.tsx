@@ -213,11 +213,11 @@ export function OnboardingWidget() {
           <div className="flex items-start justify-between">
             <div className="flex items-center gap-3">
               <motion.div 
-                className="p-2.5 rounded-xl bg-gradient-to-br from-primary to-violet-600 shadow-lg"
+                className="p-2.5 rounded-xl bg-primary shadow-lg"
                 whileHover={prefersReducedMotion ? undefined : { scale: 1.05 }}
                 aria-hidden="true"
               >
-                <Rocket className="h-5 w-5 text-white" />
+                <Rocket className="h-5 w-5 text-primary-foreground" />
               </motion.div>
               <div>
                 <h3 className="font-semibold text-lg flex items-center gap-2">
