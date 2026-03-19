@@ -97,12 +97,12 @@ export function RealtimeKPIGrid() {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <h2 className="text-lg font-semibold">KPIs Temps Réel</h2>
+          <h2 className="text-base sm:text-lg font-bold text-foreground">KPIs Temps Réel</h2>
           <span className="relative flex h-2 w-2">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-            <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-success opacity-75" />
+            <span className="relative inline-flex rounded-full h-2 w-2 bg-success" />
           </span>
-          <span className="text-xs text-emerald-600 font-medium">LIVE</span>
+          <span className="text-xs text-success font-semibold">LIVE</span>
         </div>
         <Button variant="ghost" size="sm" onClick={loadKPIs} disabled={loading} aria-label="Rafraîchir les KPIs">
           <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
