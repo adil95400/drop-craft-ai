@@ -109,14 +109,14 @@ export function RealtimeKPIGrid() {
         </Button>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 xl:grid-cols-6 gap-3 sm:gap-4">
         <RealtimeKPICard
           title="Chiffre d'Affaires"
           value={kpis.revenue}
           previousValue={kpis.prevRevenue}
           format="currency"
           icon={<DollarSign className="h-5 w-5" />}
-          color="text-emerald-600"
+          color="text-success"
           pulse
           delay={0}
         />
@@ -126,7 +126,7 @@ export function RealtimeKPIGrid() {
           previousValue={kpis.prevOrders}
           format="number"
           icon={<ShoppingCart className="h-5 w-5" />}
-          color="text-blue-600"
+          color="text-primary"
           pulse
           delay={1}
         />
@@ -135,7 +135,7 @@ export function RealtimeKPIGrid() {
           value={kpis.customers}
           format="number"
           icon={<Users className="h-5 w-5" />}
-          color="text-violet-600"
+          color="text-primary"
           delay={2}
         />
         <RealtimeKPICard
@@ -143,7 +143,7 @@ export function RealtimeKPIGrid() {
           value={kpis.products}
           format="number"
           icon={<Package className="h-5 w-5" />}
-          color="text-amber-600"
+          color="text-warning"
           delay={3}
         />
         <RealtimeKPICard
@@ -151,7 +151,7 @@ export function RealtimeKPIGrid() {
           value={kpis.avgOrderValue}
           format="currency"
           icon={<Target className="h-5 w-5" />}
-          color="text-pink-600"
+          color="text-destructive"
           delay={4}
         />
         <RealtimeKPICard
@@ -159,7 +159,7 @@ export function RealtimeKPIGrid() {
           value={kpis.conversionRate}
           format="percentage"
           icon={<Activity className="h-5 w-5" />}
-          color="text-cyan-600"
+          color="text-info"
           delay={5}
         />
       </div>

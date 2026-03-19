@@ -302,10 +302,10 @@ export function OnboardingWidget() {
                   
                   <div className="flex items-center gap-2 flex-shrink-0">
                     {isCompleted ? (
-                      <CheckCircle2 className="h-5 w-5 text-emerald-500" />
+                      <CheckCircle2 className="h-5 w-5 text-success" />
                     ) : (
                       <>
-                        <Circle className="h-5 w-5 text-muted-foreground/40" />
+                        <Circle className="h-5 w-5 text-foreground/30" />
                         <ArrowRight className={cn(
                           "h-4 w-4 transition-all",
                           isHovered ? "opacity-100 text-primary" : "opacity-0"

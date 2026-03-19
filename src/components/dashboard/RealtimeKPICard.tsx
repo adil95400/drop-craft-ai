@@ -100,8 +100,8 @@ export const RealtimeKPICard = memo(function RealtimeKPICard({
                       variant="secondary"
                       className={cn(
                         'text-[10px] font-semibold gap-0.5 px-1.5 py-0',
-                        change > 0 && 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20',
-                        change < 0 && 'bg-red-500/10 text-red-600 border-red-500/20'
+                        change > 0 && 'bg-success/10 text-success border-success/20',
+                        change < 0 && 'bg-destructive/10 text-destructive border-destructive/20'
                       )}
                     >
                       {trendIcon}
