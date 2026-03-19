@@ -1,16 +1,15 @@
 /**
- * GuidedTour — Spotlight-based interactive tour for new users
- * Shows contextual tooltips pointing to key UI elements on the dashboard
+ * GuidedTour — Simplified 4-step interactive tour (competitor-aligned)
+ * Down from 8 steps to 4 essential steps per AutoDS/DSers best practices
  */
 import { useState, useEffect, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Progress } from '@/components/ui/progress'
 import { 
   X, ArrowRight, ArrowLeft, Package, ShoppingCart, 
-  BarChart3, Zap, Sparkles, Rocket, CheckCircle2 
+  BarChart3, Sparkles, Rocket, CheckCircle2, Store
 } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 
@@ -26,96 +25,60 @@ interface TourStep {
 const TOUR_STEPS_BASE: TourStep[] = [
   {
     id: 'welcome',
-    title: 'Bienvenue sur ShopOpti+ ! 🎉',
-    description: 'Nous allons vous guider à travers les fonctionnalités clés de la plateforme pour vous aider à démarrer rapidement.',
+    title: 'Bienvenue sur ShopOpti+ !',
+    description: 'Votre copilote IA pour le e-commerce. Découvrez les 3 fonctionnalités clés en 1 minute.',
     icon: Rocket,
-    tip: 'Ce tour ne prend que 2 minutes'
-  },
-  {
-    id: 'products',
-    title: 'Importez vos premiers produits',
-    description: 'Importez depuis AliExpress, BigBuy, Spocket et 99+ fournisseurs en quelques clics. Vous pouvez aussi importer via CSV ou créer manuellement.',
-    icon: Package,
-    action: { label: 'Importer un produit', route: '/import' },
-    tip: 'Astuce : utilisez l\'import par URL pour le plus rapide'
+    tip: 'Naviguez avec les flèches ← → ou Échap pour fermer'
   },
   {
     id: 'store',
-    title: 'Connectez votre boutique',
-    description: 'Reliez Shopify, WooCommerce ou PrestaShop pour synchroniser automatiquement vos produits, commandes et stock en temps réel.',
-    icon: ShoppingCart,
-    action: { label: 'Connecter une boutique', route: '/integrations' },
-    tip: 'La synchronisation bidirectionnelle est incluse dans tous les plans'
-  },
-  {
-    id: 'orders',
-    title: 'Gérez vos commandes',
-    description: 'Suivez toutes vos commandes en temps réel, automatisez le traitement et synchronisez le tracking avec vos boutiques.',
-    icon: ShoppingCart,
-    action: { label: 'Voir les commandes', route: '/orders' },
-    tip: 'Les commandes se synchronisent automatiquement'
+    title: 'Connectez & importez',
+    description: 'Connectez Shopify en 1 clic, puis importez vos produits depuis 99+ fournisseurs ou par CSV.',
+    icon: Store,
+    action: { label: 'Connecter une boutique', route: '/stores-channels' },
+    tip: 'La synchronisation est bidirectionnelle et en temps réel'
   },
   {
     id: 'analytics',
-    title: 'Analysez vos performances',
-    description: 'Tableaux de bord en temps réel avec KPIs, tendances de ventes, marges et insights IA pour optimiser votre business.',
+    title: 'Pilotez vos performances',
+    description: 'KPIs en temps réel, marges, tendances et alertes automatiques pour ne rien rater.',
     icon: BarChart3,
-    action: { label: 'Voir les analytics', route: '/analytics' },
+    action: { label: 'Voir le dashboard', route: '/' },
     tip: 'Les widgets sont personnalisables par glisser-déposer'
   },
   {
     id: 'ai',
-    title: 'Exploitez l\'IA intégrée',
-    description: 'Optimisez vos titres, descriptions et prix avec l\'intelligence artificielle. Générez du contenu SEO automatiquement.',
+    title: 'Automatisez avec l\'IA',
+    description: 'L\'IA optimise vos titres, descriptions et prix. Créez des workflows d\'automatisation en quelques clics.',
     icon: Sparkles,
     action: { label: 'Découvrir l\'IA', route: '/ai-hub' },
-    tip: 'L\'IA analyse votre catalogue et suggère des améliorations'
-  },
-  {
-    id: 'automation',
-    title: 'Automatisez vos tâches',
-    description: 'Créez des workflows automatiques pour les réapprovisionnements, les alertes de prix et la synchronisation multi-plateformes.',
-    icon: Zap,
-    action: { label: 'Créer une automation', route: '/automations' },
-    tip: 'Économisez jusqu\'à 20h par semaine avec l\'automatisation'
-  },
-  {
-    id: 'support',
-    title: 'Besoin d\'aide ? On est là !',
-    description: 'Chat IA 24/7, centre d\'aide complet, tutoriels vidéo et guides pas-à-pas. Notre équipe est disponible pour vous accompagner.',
-    icon: Rocket,
-    action: { label: 'Voir le centre d\'aide', route: '/help-center' },
-    tip: 'Le chatbot IA répond instantanément à 90% des questions'
+    tip: 'Économisez jusqu\'à 20h par semaine'
   }
 ]
 
 // Personalized tips by business type
 const BUSINESS_TYPE_TIPS: Record<string, Partial<Record<string, string>>> = {
   dropshipping: {
-    products: 'Pour le dropshipping, privilégiez l\'import par URL AliExpress',
-    orders: 'Activez l\'auto-fulfillment pour traiter les commandes automatiquement',
+    store: 'Pour le dropshipping, importez directement via URL AliExpress',
     ai: 'L\'IA optimise vos fiches pour maximiser les conversions',
   },
   ecommerce: {
-    products: 'Importez votre catalogue existant via CSV pour gagner du temps',
+    store: 'Importez votre catalogue existant via CSV pour gagner du temps',
     analytics: 'Suivez vos marges brutes et nettes en temps réel',
-    automation: 'Automatisez les alertes de stock bas pour éviter les ruptures',
   },
   marketplace: {
     store: 'Connectez plusieurs boutiques pour centraliser la gestion',
     analytics: 'Comparez les performances par canal de vente',
-    automation: 'Synchronisez les prix et stocks sur toutes vos plateformes',
   },
 }
 
 function getPersonalizedSteps(businessType?: string): TourStep[] {
-  if (!businessType || !BUSINESS_TYPE_TIPS[businessType]) return TOUR_STEPS_BASE;
-  
-  const tips = BUSINESS_TYPE_TIPS[businessType];
+  if (!businessType || !BUSINESS_TYPE_TIPS[businessType]) return TOUR_STEPS_BASE
+  const tips = BUSINESS_TYPE_TIPS[businessType]
   return TOUR_STEPS_BASE.map(step => ({
     ...step,
     tip: tips[step.id] || step.tip,
-  }));
+  }))
 }
 
 const STORAGE_KEY = 'shopopti_tour_completed'
@@ -126,7 +89,6 @@ export function GuidedTour() {
   const [currentStep, setCurrentStep] = useState(0)
   const navigate = useNavigate()
 
-  // Get business type from localStorage (set during onboarding wizard)
   const businessType = localStorage.getItem('shopopti_business_type') || undefined
   const TOUR_STEPS = getPersonalizedSteps(businessType)
 
@@ -134,7 +96,7 @@ export function GuidedTour() {
     const completed = localStorage.getItem(STORAGE_KEY)
     const dismissed = localStorage.getItem(STORAGE_DISMISSED_KEY)
     if (!completed && !dismissed) {
-      const timer = setTimeout(() => setIsActive(true), 1500)
+      const timer = setTimeout(() => setIsActive(true), 2000)
       return () => clearTimeout(timer)
     }
   }, [])
@@ -168,7 +130,6 @@ export function GuidedTour() {
     navigate(route)
   }, [navigate, handleComplete])
 
-  // Keyboard navigation
   useEffect(() => {
     if (!isActive) return
     const handler = (e: KeyboardEvent) => {
@@ -188,7 +149,7 @@ export function GuidedTour() {
 
   return (
     <AnimatePresence>
-      {/* Backdrop overlay */}
+      {/* Backdrop */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
@@ -204,7 +165,7 @@ export function GuidedTour() {
         animate={{ opacity: 1, y: 0, scale: 1 }}
         exit={{ opacity: 0, y: 30, scale: 0.95 }}
         transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-        className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 w-full max-w-lg px-4"
+        className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 w-full max-w-md px-4"
         role="dialog"
         aria-modal="true"
         aria-label="Visite guidée"
@@ -219,25 +180,25 @@ export function GuidedTour() {
             />
           </div>
 
-          <CardContent className="p-6">
+          <CardContent className="p-5">
             {/* Header */}
-            <div className="flex items-start justify-between mb-4">
+            <div className="flex items-start justify-between mb-3">
               <div className="flex items-center gap-3">
                 <div className="p-2.5 rounded-xl bg-primary/10">
-                  <Icon className="h-6 w-6 text-primary" />
+                  <Icon className="h-5 w-5 text-primary" />
                 </div>
                 <div>
-                  <Badge variant="secondary" className="mb-1 text-xs">
+                  <Badge variant="secondary" className="mb-1 text-[10px] px-1.5 py-0">
                     {currentStep + 1} / {TOUR_STEPS.length}
                   </Badge>
-                  <h3 className="font-bold text-lg leading-tight">{step.title}</h3>
+                  <h3 className="font-bold text-base leading-tight text-foreground">{step.title}</h3>
                 </div>
               </div>
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={handleDismiss}
-                className="h-8 w-8 p-0 text-muted-foreground"
+                className="h-8 w-8 p-0 text-foreground/40"
                 aria-label="Fermer la visite guidée"
               >
                 <X className="h-4 w-4" />
@@ -245,15 +206,15 @@ export function GuidedTour() {
             </div>
 
             {/* Content */}
-            <p className="text-muted-foreground mb-4 leading-relaxed">
+            <p className="text-foreground/60 text-sm mb-3 leading-relaxed">
               {step.description}
             </p>
 
             {/* Tip */}
             {step.tip && (
-              <div className="flex items-start gap-2 p-3 rounded-lg bg-primary/5 border border-primary/10 mb-4">
-                <Sparkles className="h-4 w-4 text-primary flex-shrink-0 mt-0.5" />
-                <p className="text-sm text-primary font-medium">{step.tip}</p>
+              <div className="flex items-start gap-2 p-2.5 rounded-lg bg-primary/5 border border-primary/10 mb-3">
+                <Sparkles className="h-3.5 w-3.5 text-primary flex-shrink-0 mt-0.5" />
+                <p className="text-xs text-primary font-medium">{step.tip}</p>
               </div>
             )}
 
@@ -262,7 +223,7 @@ export function GuidedTour() {
               <Button
                 variant="outline"
                 size="sm"
-                className="mb-4 w-full border-primary/30 text-primary hover:bg-primary/5"
+                className="mb-3 w-full border-primary/30 text-primary hover:bg-primary/5"
                 onClick={() => handleAction(step.action!.route)}
               >
                 {step.action.label}
@@ -271,14 +232,15 @@ export function GuidedTour() {
             )}
 
             {/* Navigation */}
-            <div className="flex items-center justify-between pt-2 border-t">
+            <div className="flex items-center justify-between pt-2 border-t border-border/50">
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={handlePrev}
                 disabled={currentStep === 0}
+                className="text-xs"
               >
-                <ArrowLeft className="h-4 w-4 mr-1" />
+                <ArrowLeft className="h-3.5 w-3.5 mr-1" />
                 Précédent
               </Button>
 
@@ -287,8 +249,8 @@ export function GuidedTour() {
                   <button
                     key={i}
                     onClick={() => setCurrentStep(i)}
-                    className={`h-2 rounded-full transition-all ${
-                      i === currentStep ? 'w-6 bg-primary' : 'w-2 bg-muted-foreground/30 hover:bg-muted-foreground/50'
+                    className={`h-1.5 rounded-full transition-all ${
+                      i === currentStep ? 'w-5 bg-primary' : 'w-1.5 bg-foreground/20 hover:bg-foreground/30'
                     }`}
                     aria-label={`Étape ${i + 1}`}
                   />
@@ -298,17 +260,17 @@ export function GuidedTour() {
               <Button
                 size="sm"
                 onClick={handleNext}
-                className="bg-primary hover:bg-primary/90"
+                className="bg-primary hover:bg-primary/90 text-xs"
               >
                 {currentStep === TOUR_STEPS.length - 1 ? (
                   <>
-                    <CheckCircle2 className="h-4 w-4 mr-1" />
+                    <CheckCircle2 className="h-3.5 w-3.5 mr-1" />
                     Terminer
                   </>
                 ) : (
                   <>
                     Suivant
-                    <ArrowRight className="h-4 w-4 ml-1" />
+                    <ArrowRight className="h-3.5 w-3.5 ml-1" />
                   </>
                 )}
               </Button>
