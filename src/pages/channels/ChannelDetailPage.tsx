@@ -6,25 +6,26 @@
 import { useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { Helmet } from 'react-helmet-async'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '@/integrations/supabase/client'
 import { useToast } from '@/hooks/use-toast'
-import { BarChart3, Package, Code2, FileText, Settings, Loader2, AlertCircle, ShoppingCart, Activity, Shield } from 'lucide-react'
+import { BarChart3, Package, Code2, FileText, Settings, Loader2, AlertCircle, ShoppingCart, Activity, FileBarChart } from 'lucide-react'
 import { ChannableEmptyState } from '@/components/channable'
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper'
 import { ProductMappingEditor } from '@/components/channels/ProductMappingEditor'
 import { TransformationRulesEditor } from '@/components/channels/TransformationRulesEditor'
 import { VisualMappingEditor } from '@/components/channels/VisualMappingEditor'
-import { AutoSyncSettings } from '@/components/channels/AutoSyncSettings'
-import { WebhookEventsLog } from '@/components/channels/WebhookEventsLog'
 import { useChannelWebhooks } from '@/hooks/useChannelWebhooks'
-import { ChannelHeader, ChannelStatsBar, ChannelOverviewTab, ChannelProductsTab, ChannelAlertsPanel, ChannelOrdersPanel, ChannelBulkActions, ChannelSyncHistory } from '@/components/channels/detail'
+import { useChannelHealth } from '@/hooks/useChannelHealth'
+import {
+  ChannelHeader, ChannelStatsBar, ChannelOverviewTab, ChannelProductsTab,
+  ChannelAlertsPanel, ChannelOrdersPanel, ChannelSyncHistory,
+  ChannelConnectionInfo, ChannelLogsTab, ChannelSettingsTab
+} from '@/components/channels/detail'
 import { motion } from 'framer-motion'
-import { Button } from '@/components/ui/button'
-import { AlertTriangle, Unplug } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
 
@@ -36,7 +37,7 @@ export default function ChannelDetailPage() {
   const [retryCount, setRetryCount] = useState([3])
   const [activeTab, setActiveTab] = useState('overview')
   const [showDisconnectConfirm, setShowDisconnectConfirm] = useState(false)
-  
+
   const [syncSettings, setSyncSettings] = useState({
     products: true,
     orders: true,
@@ -51,6 +52,8 @@ export default function ChannelDetailPage() {
     channelId,
     enableNotifications: true,
   })
+
+  const { data: healthMetrics } = useChannelHealth()
 
   // Fetch channel details
   const { data: channel, isLoading } = useQuery({
@@ -76,26 +79,26 @@ export default function ChannelDetailPage() {
         .select('*')
         .eq('id', channelId)
         .single()
-      
+
       if (!integration) return []
-      
+
       const config = integration.config as any
       const credentials = config?.credentials || {}
       const shopDomain = credentials.shop_domain || integration.store_url
       const accessToken = credentials.access_token
-      
+
       if (!shopDomain || !accessToken) {
         throw new Error("Configuration de boutique manquante")
       }
-      
+
       const response = await supabase.functions.invoke('shopify-admin-products', {
         body: { shopDomain, accessToken, limit: 100 }
       })
-      
+
       if (response.error) throw response.error
-      
+
       const products = response.data?.products || []
-      
+
       return products.map((p: any) => ({
         id: p.id,
         title: p.title,
@@ -118,15 +121,15 @@ export default function ChannelDetailPage() {
         .select('*')
         .eq('id', channelId)
         .single()
-      
+
       if (!integration?.user_id) return { products: 0, orders: 0, revenue: 0 }
-      
+
       let shopifyProductCount = 0
       const config = integration.config as any
       const credentials = config?.credentials || {}
       const shopDomain = credentials.shop_domain || integration.store_url
       const accessToken = credentials.access_token
-      
+
       if (shopDomain && accessToken) {
         try {
           const response = await supabase.functions.invoke('shopify-admin-products', {
@@ -137,7 +140,7 @@ export default function ChannelDetailPage() {
           console.error('Error fetching Shopify product count:', err)
         }
       }
-      
+
       const [ordersResult, revenueResult] = await Promise.all([
         supabase
           .from('orders')
@@ -148,12 +151,25 @@ export default function ChannelDetailPage() {
           .select('total_amount')
           .eq('user_id', integration.user_id)
       ])
-      
+
       const revenue = (revenueResult.data || []).reduce((sum, o) => sum + (o.total_amount || 0), 0)
-      
+
       return { products: shopifyProductCount, orders: ordersResult.count || 0, revenue }
     },
     enabled: !!channelId
+  })
+
+  // Sync logs count for tab badge
+  const { data: logsCount } = useQuery({
+    queryKey: ['channel-logs-count', channelId],
+    queryFn: async () => {
+      const { count } = await supabase
+        .from('channel_sync_logs')
+        .select('id', { count: 'exact', head: true })
+        .eq('channel_id', channelId!)
+      return count || 0
+    },
+    enabled: !!channelId,
   })
 
   // Sync mutation
@@ -163,26 +179,27 @@ export default function ChannelDetailPage() {
         .from('integrations')
         .update({ connection_status: 'connecting', last_sync_at: new Date().toISOString() })
         .eq('id', channelId)
-      
+
       const { data, error } = await supabase.functions.invoke('shopify-complete-import', {
         body: { historyId: `sync-${Date.now()}`, includeVariants: true }
       })
-      
+
       if (error) {
         await supabase.from('integrations').update({ connection_status: 'error' }).eq('id', channelId)
         throw error
       }
-      
+
       const { count } = await supabase.from('products').select('*', { count: 'exact', head: true })
-      
+
       await supabase.from('integrations').update({ connection_status: 'connected' }).eq('id', channelId)
-      
+
       return { productCount: count || 0 }
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['channel', channelId] })
       queryClient.invalidateQueries({ queryKey: ['channel-products', channelId] })
-      queryClient.invalidateQueries({ queryKey: ['channel-product-count', channelId] })
+      queryClient.invalidateQueries({ queryKey: ['channel-stats', channelId] })
+      queryClient.invalidateQueries({ queryKey: ['channel-logs', channelId] })
       toast({ title: 'Synchronisation terminée', description: `${data.productCount} produits synchronisés` })
     },
     onError: (error) => {
@@ -272,6 +289,7 @@ export default function ChannelDetailPage() {
     { value: 'orders', icon: ShoppingCart, label: 'Commandes', count: channelStats?.orders || null },
     { value: 'rules', icon: Code2, label: 'Règles', count: null },
     { value: 'mapping', icon: FileText, label: 'Mapping', count: null },
+    { value: 'logs', icon: FileBarChart, label: 'Logs', count: logsCount || null },
     { value: 'settings', icon: Settings, label: 'Paramètres', count: null },
   ]
 
@@ -298,12 +316,13 @@ export default function ChannelDetailPage() {
             orderCount={channelStats?.orders || 0}
             revenue={channelStats?.revenue || 0}
             lastSync={channel.last_sync_at}
+            healthMetrics={healthMetrics}
           />
         </div>
 
         {/* Realtime Banner */}
         {webhooksConnected && eventCount > 0 && (
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: -4 }}
             animate={{ opacity: 1, y: 0 }}
             className="mt-4 flex items-center gap-2.5 text-sm px-4 py-2.5 bg-primary/5 border border-primary/20 rounded-lg"
@@ -318,7 +337,7 @@ export default function ChannelDetailPage() {
           </motion.div>
         )}
 
-        {/* Tabs Navigation - Channable style with counters */}
+        {/* Tabs Navigation */}
         <div className="mt-6">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-5">
             <div className="border-b border-border">
@@ -349,15 +368,16 @@ export default function ChannelDetailPage() {
 
             {/* Overview Tab */}
             <TabsContent value="overview" className="m-0 space-y-5">
-              <div className="grid gap-5 lg:grid-cols-2">
+              <div className="grid gap-5 lg:grid-cols-3">
+                <ChannelConnectionInfo channel={channel} />
                 <ChannelAlertsPanel />
-                <ChannelSyncHistory 
-                  channelId={channelId || ''} 
+                <ChannelSyncHistory
+                  channelId={channelId || ''}
                   onSync={async () => { syncMutation.mutate() }}
                   isSyncing={syncMutation.isPending}
                 />
               </div>
-              
+
               <ChannelOverviewTab
                 syncSettings={syncSettings}
                 onSyncSettingsChange={setSyncSettings}
@@ -367,6 +387,7 @@ export default function ChannelDetailPage() {
                 onSave={handleSaveConfig}
                 isSyncing={syncMutation.isPending}
                 lastEvent={lastEvent}
+                healthMetrics={healthMetrics}
               />
             </TabsContent>
 
@@ -403,7 +424,7 @@ export default function ChannelDetailPage() {
 
             {/* Mapping Tab */}
             <TabsContent value="mapping" className="m-0 space-y-5">
-              <VisualMappingEditor 
+              <VisualMappingEditor
                 channelId={channelId || ''}
                 platform={channel.platform?.toLowerCase() || 'default'}
                 mappings={[]}
@@ -411,7 +432,7 @@ export default function ChannelDetailPage() {
                   toast({ title: 'Mapping visuel mis à jour' })
                 }}
               />
-              
+
               <ProductMappingEditor
                 platform={channel.platform?.toLowerCase() || 'default'}
                 platformName={channel.platform_name || 'Canal'}
@@ -421,45 +442,21 @@ export default function ChannelDetailPage() {
               />
             </TabsContent>
 
+            {/* Logs Tab */}
+            <TabsContent value="logs" className="m-0">
+              <ChannelLogsTab channelId={channelId || ''} />
+            </TabsContent>
+
             {/* Settings Tab */}
-            <TabsContent value="settings" className="m-0 space-y-5">
-              <AutoSyncSettings 
+            <TabsContent value="settings" className="m-0">
+              <ChannelSettingsTab
                 channelId={channelId || ''}
-                platform={channel.platform?.toLowerCase() || 'default'}
+                channel={channel}
+                onDisconnect={() => setShowDisconnectConfirm(true)}
                 onConfigChange={() => {
-                  toast({ title: 'Paramètres de sync enregistrés' })
+                  queryClient.invalidateQueries({ queryKey: ['channel', channelId] })
                 }}
               />
-
-              <WebhookEventsLog channelId={channelId || ''} />
-
-              {/* Danger Zone */}
-              <Card className="border-destructive/30 shadow-none">
-                <div className="p-5">
-                  <div className="flex items-center gap-2 mb-4">
-                    <Shield className="h-4 w-4 text-destructive" />
-                    <h3 className="text-sm font-semibold text-destructive">Zone de danger</h3>
-                  </div>
-                  
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-lg border border-destructive/20 bg-destructive/5">
-                    <div>
-                      <p className="font-medium text-sm">Déconnecter ce canal</p>
-                      <p className="text-sm text-muted-foreground mt-0.5">
-                        Cette action est irréversible. Toutes les données de synchronisation seront perdues.
-                      </p>
-                    </div>
-                    <Button 
-                      variant="destructive"
-                      size="sm"
-                      className="gap-2 shrink-0"
-                      onClick={() => setShowDisconnectConfirm(true)}
-                    >
-                      <Unplug className="h-4 w-4" />
-                      Déconnecter
-                    </Button>
-                  </div>
-                </div>
-              </Card>
             </TabsContent>
           </Tabs>
         </div>
