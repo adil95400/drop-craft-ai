@@ -75,13 +75,13 @@ export const RealtimeKPICard = memo(function RealtimeKPICard({
           </div>
         )}
 
-        <CardContent className="p-5">
+        <CardContent className="p-4 sm:p-5">
           <div className="flex items-start justify-between gap-3">
-            <div className="space-y-2 flex-1 min-w-0">
-              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider truncate">
+            <div className="space-y-1.5 flex-1 min-w-0">
+              <p className="text-[10px] sm:text-xs font-semibold text-foreground/70 uppercase tracking-wider truncate">
                 {title}
               </p>
-              <div className="text-2xl font-bold">
+              <div className="text-xl sm:text-2xl font-bold text-foreground">
                 <AnimatedCounter
                   value={value}
                   format={format}
