@@ -153,6 +153,7 @@ export default function CatalogProductsPage() {
   const { bulkEnrich, isBulkEnriching } = useApiAI();
   const { bulkPublish, isBulkPublishing } = usePublishProducts();
   const { activeJobs } = useApiJobs({ limit: 5 });
+  const { syncStores, isSyncingStores } = useSyncConnectedStores();
 
   const categories = useMemo(() => {
     const cats = new Set(products.map((p) => p.category).filter(Boolean));
