@@ -114,10 +114,9 @@ export function PublicationDashboard() {
     cancelScheduled,
   } = usePublishProducts();
 
-  const successRate = publicationStats?.byStatus
-    ? publicationStats.total > 0
-      ? Math.round((publicationStats.byStatus.success / publicationStats.total) * 100)
-      : 0
+  const byStatus = (publicationStats?.byStatus || {}) as { success?: number; failed?: number; pending?: number };
+  const successRate = publicationStats?.total && publicationStats.total > 0
+    ? Math.round(((byStatus.success || 0) / publicationStats.total) * 100)
     : 0;
 
   return (
@@ -132,13 +131,13 @@ export function PublicationDashboard() {
         </Card>
         <Card>
           <CardContent className="p-3 text-center">
-            <div className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">{publicationStats?.byStatus?.success || 0}</div>
+            <div className="text-2xl font-bold text-foreground">{byStatus.success || 0}</div>
             <div className="text-xs text-muted-foreground">Réussies</div>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-3 text-center">
-            <div className="text-2xl font-bold text-red-600 dark:text-red-400">{publicationStats?.byStatus?.failed || 0}</div>
+            <div className="text-2xl font-bold text-destructive">{byStatus.failed || 0}</div>
             <div className="text-xs text-muted-foreground">Échouées</div>
           </CardContent>
         </Card>
