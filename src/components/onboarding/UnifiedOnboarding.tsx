@@ -290,12 +290,12 @@ export function OnboardingWidget() {
                   
                   <div className="flex-1 min-w-0">
                     <p className={cn(
-                      "font-medium text-sm truncate",
-                      isCompleted && "line-through text-muted-foreground"
+                      "font-semibold text-sm truncate text-foreground",
+                      isCompleted && "line-through text-foreground/50"
                     )}>
                       {step.title}
                     </p>
-                    <p className="text-xs text-muted-foreground truncate">
+                    <p className="text-xs text-foreground/60 truncate">
                       {step.description}
                     </p>
                   </div>
