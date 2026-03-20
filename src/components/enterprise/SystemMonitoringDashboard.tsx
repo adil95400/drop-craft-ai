@@ -3,12 +3,12 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { useRealSystemMonitoring } from "@/hooks/useRealSystemMonitoring"
+import { useSystemMonitoring } from "@/hooks/useSystemMonitoring"
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from 'recharts'
 import { Activity, Server, Cpu, HardDrive, Wifi, AlertTriangle, CheckCircle, Zap } from "lucide-react"
 
 export function SystemMonitoringDashboard() {
-  const { logs, alerts, health, isLoading, refetch } = useRealSystemMonitoring()
+  const { logs, alerts, health, isLoading, refetch } = useSystemMonitoring()
 
   if (isLoading) {
     return (

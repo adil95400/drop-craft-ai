@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useRealPredictiveAI } from '@/hooks/usePredictiveAI';
+import { usePredictiveAI } from '@/hooks/usePredictiveAI';
 import { useBusinessMetrics } from '@/hooks/useBIMetrics';
 import {
   Brain, Zap, TrendingUp, TrendingDown, Target, ArrowUpRight,
@@ -17,7 +17,7 @@ import {
 const fmt = (n: number) => new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(n);
 
 export function AIRevenueForecastDashboard() {
-  const { insights, salesData, generatePrediction, isGenerating, isLoading } = useRealPredictiveAI('30d');
+  const { insights, salesData, generatePrediction, isGenerating, isLoading } = usePredictiveAI('30d');
   const { data: metrics } = useBusinessMetrics('30d');
   const [horizon, setHorizon] = useState<30 | 60 | 90>(30);
 

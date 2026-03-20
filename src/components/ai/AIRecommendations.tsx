@@ -17,7 +17,7 @@ import {
   DollarSign
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { useRealAIRecommendations, AIRecommendation } from '@/hooks/useAIRecommendations';
+import { useAIRecommendations, AIRecommendation } from '@/hooks/useAIRecommendations';
 
 interface AIRecommendationsProps {
   limit?: number;
@@ -27,7 +27,7 @@ interface AIRecommendationsProps {
 export function AIRecommendations({ limit = 6, types }: AIRecommendationsProps) {
   const [generatingNew, setGeneratingNew] = useState(false);
   const { toast } = useToast();
-  const { recommendations, isLoading: loading, refetch } = useRealAIRecommendations(limit, types);
+  const { recommendations, isLoading: loading, refetch } = useAIRecommendations(limit, types);
 
   const generateNewRecommendations = async () => {
     setGeneratingNew(true);

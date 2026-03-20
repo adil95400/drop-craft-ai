@@ -26,7 +26,7 @@ import {
   WifiOff
 } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
-import { useRealImportMethods } from '@/hooks/useImportJobs'
+import { useImportJobs } from '@/hooks/useImportJobs'
 import { type ImportMethodTemplate } from '@/hooks/useImportMethods'
 import { unifiedImportService } from '@/services/UnifiedImportService'
 import { ImportProgress } from './ImportProgress'
@@ -203,7 +203,7 @@ const importMethods: ImportMethodTemplate[] = [
 
 export const AdvancedImportMethods: React.FC = () => {
   const { toast } = useToast()
-  const { importMethods: dbMethods, isLoading, executeImport, createMethod } = useRealImportMethods()
+  const { importMethods: dbMethods, isLoading, executeImport, createMethod } = useImportJobs()
   const [selectedCategory, setSelectedCategory] = useState<string>('all')
   const [configModalOpen, setConfigModalOpen] = useState(false)
   const [selectedMethod, setSelectedMethod] = useState<ImportMethodTemplate | null>(null)

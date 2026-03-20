@@ -17,13 +17,13 @@ import {
   Package
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { useRealAIOptimizer, OptimizationTask, OptimizationStats } from '@/hooks/useAIOptimizer';
+import { useAIOptimizer, OptimizationTask, OptimizationStats } from '@/hooks/useAIOptimizer';
 
 export function AIOptimizer() {
   const [runningTask, setRunningTask] = useState<string | null>(null);
   const [localTasks, setLocalTasks] = useState<OptimizationTask[]>([]);
   const { toast } = useToast();
-  const { tasks, stats, isLoading: loading, refetch } = useRealAIOptimizer();
+  const { tasks, stats, isLoading: loading, refetch } = useAIOptimizer();
 
   // Use local tasks for progress tracking
   React.useEffect(() => {

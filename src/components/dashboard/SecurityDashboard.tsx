@@ -14,7 +14,7 @@ import {
   Clock
 } from 'lucide-react'
 import { toast } from 'sonner'
-import { useRealSecurityEvents, SecurityEvent, SecurityMetric } from '@/hooks/useSecurityEvents'
+import { useSecurityEvents, SecurityEvent, SecurityMetric } from '@/hooks/useSecurityEvents'
 
 export function SecurityDashboard() {
   const {
@@ -29,7 +29,7 @@ export function SecurityDashboard() {
     isResolving,
     runSecurityScan,
     isScanning
-  } = useRealSecurityEvents()
+  } = useSecurityEvents()
 
   if (isLoading) {
     return (

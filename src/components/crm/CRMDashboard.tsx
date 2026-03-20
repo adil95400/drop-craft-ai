@@ -20,7 +20,7 @@ import {
   Edit3
 } from 'lucide-react';
 import { LineChart, Line, AreaChart, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
-import { useRealCRMDashboard } from '@/hooks/useCRMDashboard';
+import { useCRMDashboard } from '@/hooks/useCRMDashboard';
 
 interface CRMContact {
   id: string;
@@ -60,7 +60,7 @@ interface CRMMetrics {
 }
 
 export const CRMDashboard: React.FC = () => {
-  const { customers, metrics, segments, isLoading } = useRealCRMDashboard();
+  const { customers, metrics, segments, isLoading } = useCRMDashboard();
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [selectedContact, setSelectedContact] = useState<any | null>(null);

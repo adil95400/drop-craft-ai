@@ -1,10 +1,10 @@
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { useRealAdsManager } from '@/hooks/useAdsManager';
+import { useAdsManager } from '@/hooks/useAdsManager';
 import { TrendingUp, TrendingDown, DollarSign, MousePointerClick, Eye, Target, Lightbulb } from 'lucide-react';
 
 export function PerformanceDashboard() {
-  const { campaigns, metrics, platformPerformance } = useRealAdsManager();
+  const { campaigns, metrics, platformPerformance } = useAdsManager();
 
   if (!metrics) return null;
 
