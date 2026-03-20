@@ -24,8 +24,8 @@ const handler = createEdgeFunction<FunnelInput>({
   rateLimit: { maxRequests: 15, windowMinutes: 60, action: 'ai_funnel_builder' }
 }, async (ctx) => {
   const { user, input, correlationId } = ctx
-  const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY')
-  if (!LOVABLE_API_KEY) throw new Error('LOVABLE_API_KEY not configured')
+  const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY')
+  if (!OPENAI_API_KEY) throw new Error('OPENAI_API_KEY not configured')
 
   console.log(`[${correlationId}] Funnel ${input.funnel_type} for user ${user.id}`)
 
@@ -45,7 +45,7 @@ Use the build_funnel tool to return the complete funnel structure.`
 
   const aiResponse = await fetch(AI_GATEWAY_URL, {
     method: 'POST',
-    headers: { 'Authorization': `Bearer ${LOVABLE_API_KEY}`, 'Content-Type': 'application/json' },
+    headers: { 'Authorization': `Bearer ${OPENAI_API_KEY}`, 'Content-Type': 'application/json' },
     body: JSON.stringify({
       model: AI_MODEL,
       messages: [{ role: 'system', content: systemPrompt }, { role: 'user', content: userPrompt }],

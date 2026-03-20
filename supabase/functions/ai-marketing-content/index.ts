@@ -87,9 +87,9 @@ serve(async (req) => {
     const { contentType, productInfo, platform, campaignGoal } = parseResult.data;
     
     // Use Lovable AI Gateway (no external API key needed)
-    const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
+    const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY');
 
-    if (!LOVABLE_API_KEY) {
+    if (!OPENAI_API_KEY) {
       throw new Error('AI service not configured');
     }
 
@@ -149,14 +149,14 @@ Return as JSON with structure: {"title", "metaDescription", "intro", "sections",
 
     const prompt = contentPrompts[contentType];
 
-    const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${LOVABLE_API_KEY}`,
+        'Authorization': `Bearer ${OPENAI_API_KEY}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'openai/gpt-5-nano',
+        model: 'gpt-4o-mini',
         messages: [
           { role: 'system', content: 'You are an expert digital marketing content creator with expertise in conversion optimization. Always respond in valid JSON.' },
           { role: 'user', content: prompt }

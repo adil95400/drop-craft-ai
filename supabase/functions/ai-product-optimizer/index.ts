@@ -73,9 +73,9 @@ serve(async (req) => {
   const corsHeaders = getSecureCorsHeaders(req);
 
   try {
-    const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
-    if (!LOVABLE_API_KEY) {
-      console.error('[AI-OPTIMIZER] LOVABLE_API_KEY not configured');
+    const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY');
+    if (!OPENAI_API_KEY) {
+      console.error('[AI-OPTIMIZER] OPENAI_API_KEY not configured');
       return new Response(
         JSON.stringify({ error: 'AI service not configured' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -141,14 +141,14 @@ serve(async (req) => {
       userPrompt = `Génère des meta tags SEO pour:\n\nTitre: ${currentData.name || 'Sans titre'}\nDescription: ${currentData.description || 'Sans description'}\nCatégorie: ${currentData.category || 'Non catégorisé'}\n\nRetourne UNIQUEMENT un JSON: {"meta_title":"...","meta_description":"...","keywords":["..."]}`;
     }
 
-    const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${LOVABLE_API_KEY}`,
+        'Authorization': `Bearer ${OPENAI_API_KEY}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'openai/gpt-5-nano',
+        model: 'gpt-4o-mini',
         messages: [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: userPrompt }

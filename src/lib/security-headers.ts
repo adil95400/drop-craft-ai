@@ -17,7 +17,6 @@ export const CSP_DIRECTIVES = {
     "https://*.supabase.co",
     "wss://*.supabase.co",
     "https://api.openai.com",
-    "https://*.lovable.app",
   ],
   'frame-ancestors': ["'self'"],
   'form-action': ["'self'"],

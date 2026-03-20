@@ -107,7 +107,7 @@ serve(async (req) => {
     if (action === 'optimize') {
       console.log(`🎨 Optimizing image: ${imageUrl}`);
 
-      const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
+      const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY');
       
       const optimizations = [];
 
@@ -124,16 +124,16 @@ serve(async (req) => {
 
       // 3. Generate ALT tag with AI if missing
       let altTag = '';
-      if (issues.some((i: ImageIssue) => i.type === 'alt') && LOVABLE_API_KEY) {
+      if (issues.some((i: ImageIssue) => i.type === 'alt') && OPENAI_API_KEY) {
         try {
-          const altResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+          const altResponse = await fetch('https://api.openai.com/v1/chat/completions', {
             method: 'POST',
             headers: {
-              'Authorization': `Bearer ${LOVABLE_API_KEY}`,
+              'Authorization': `Bearer ${OPENAI_API_KEY}`,
               'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-              model: 'openai/gpt-5-nano',
+              model: 'gpt-4o-mini',
               messages: [
                 {
                   role: 'user',

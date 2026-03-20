@@ -52,8 +52,8 @@ async function scanTikTokAds(params: any, userId: string, supabase: any) {
   const { keywords, category, region = 'US', limit = 20 } = params
 
   // Use Lovable AI to analyze TikTok ad trends and generate winning product insights
-  const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY')
-  if (!LOVABLE_API_KEY) throw new Error('LOVABLE_API_KEY not configured')
+  const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY')
+  if (!OPENAI_API_KEY) throw new Error('OPENAI_API_KEY not configured')
 
   const prompt = `You are a TikTok ads product research expert. Analyze current TikTok Shop trends and generate a list of ${limit} winning products for the ${region} market.
 
@@ -62,14 +62,14 @@ ${category ? `Category focus: ${category}` : ''}
 
 For each product, provide realistic data based on current TikTok Shop trends.`
 
-  const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+  const response = await fetch('https://api.openai.com/v1/chat/completions', {
     method: 'POST',
     headers: {
-      Authorization: `Bearer ${LOVABLE_API_KEY}`,
+      Authorization: `Bearer ${OPENAI_API_KEY}`,
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      model: 'openai/gpt-5-nano',
+      model: 'gpt-4o-mini',
       messages: [
         { role: 'system', content: 'You are a TikTok advertising and dropshipping product research AI. You analyze market trends, ad performance data, and consumer behavior to identify winning products.' },
         { role: 'user', content: prompt },
@@ -184,19 +184,19 @@ async function scoreProductsWithAI(params: any, userId: string, supabase: any) {
 
   if (!products?.length) throw new Error('No products found')
 
-  const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY')
-  if (!LOVABLE_API_KEY) throw new Error('LOVABLE_API_KEY not configured')
+  const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY')
+  if (!OPENAI_API_KEY) throw new Error('OPENAI_API_KEY not configured')
 
   const productList = products.map((p: any) => `- ${p.name} (${p.price}${p.currency || 'USD'}, category: ${p.category || 'unknown'})`).join('\n')
 
-  const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+  const response = await fetch('https://api.openai.com/v1/chat/completions', {
     method: 'POST',
     headers: {
-      Authorization: `Bearer ${LOVABLE_API_KEY}`,
+      Authorization: `Bearer ${OPENAI_API_KEY}`,
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      model: 'openai/gpt-5-nano',
+      model: 'gpt-4o-mini',
       messages: [
         { role: 'system', content: 'You are an expert dropshipping product scorer for TikTok Shop.' },
         { role: 'user', content: `Score these products for TikTok Shop potential (0-100):\n${productList}` },

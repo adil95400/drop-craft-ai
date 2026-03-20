@@ -51,8 +51,8 @@ Deno.serve(async (req) => {
     console.log(`[customer-intelligence] User ${auth.userId} analyzing: ${customerData.customer_email}`)
 
     // 4. AI analysis via Lovable AI
-    const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY')
-    if (!LOVABLE_API_KEY) {
+    const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY')
+    if (!OPENAI_API_KEY) {
       return errorResponse('AI service not configured', auth.corsHeaders, 500)
     }
 
@@ -81,14 +81,14 @@ Respond in JSON format with these exact fields:
   "preferences": [string]
 }`
 
-    const aiResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+    const aiResponse = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${LOVABLE_API_KEY}`,
+        'Authorization': `Bearer ${OPENAI_API_KEY}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'openai/gpt-5-nano',
+        model: 'gpt-4o-mini',
         messages: [
           {
             role: 'system',

@@ -21,8 +21,8 @@ const handler = createEdgeFunction<ForecastInput>({
   rateLimit: { maxRequests: 15, windowMinutes: 60, action: 'ai_revenue_forecast' }
 }, async (ctx) => {
   const { user, input, correlationId } = ctx
-  const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY')
-  if (!LOVABLE_API_KEY) throw new Error('LOVABLE_API_KEY not configured')
+  const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY')
+  if (!OPENAI_API_KEY) throw new Error('OPENAI_API_KEY not configured')
 
   console.log(`[${correlationId}] Revenue forecast ${input.period}d for user ${user.id}`)
 
@@ -81,7 +81,7 @@ Historical data (last ${lookbackDays} days):
 
   const aiResponse = await fetch(AI_GATEWAY_URL, {
     method: 'POST',
-    headers: { 'Authorization': `Bearer ${LOVABLE_API_KEY}`, 'Content-Type': 'application/json' },
+    headers: { 'Authorization': `Bearer ${OPENAI_API_KEY}`, 'Content-Type': 'application/json' },
     body: JSON.stringify({
       model: AI_MODEL,
       messages: [

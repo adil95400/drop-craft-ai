@@ -45,7 +45,7 @@ Deno.serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     )
 
-    const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY')
+    const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY')
     
     let query: string, category: string, limit: number
     
@@ -80,8 +80,8 @@ Deno.serve(async (req) => {
     }
 
     // Use Lovable AI to generate real trending product data
-    if (!LOVABLE_API_KEY) {
-      console.warn('LOVABLE_API_KEY not set - falling back to simulation')
+    if (!OPENAI_API_KEY) {
+      console.warn('OPENAI_API_KEY not set - falling back to simulation')
       return generateFallbackResponse(query, category, limit, corsHeaders)
     }
 
@@ -106,14 +106,14 @@ Pour chaque produit, fournis des données RÉALISTES basées sur les tendances a
 Réponds UNIQUEMENT avec un JSON valide contenant un tableau "products".`
 
     try {
-      const aiResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+      const aiResponse = await fetch('https://api.openai.com/v1/chat/completions', {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${LOVABLE_API_KEY}`,
+          'Authorization': `Bearer ${OPENAI_API_KEY}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          model: 'openai/gpt-5-nano',
+          model: 'gpt-4o-mini',
           messages: [
             { role: 'system', content: 'Tu es un assistant spécialisé en analyse de tendances e-commerce et dropshipping. Tu fournis des données structurées et réalistes sur les produits tendance.' },
             { role: 'user', content: aiPrompt }

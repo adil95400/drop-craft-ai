@@ -23,9 +23,9 @@ const handler = createEdgeFunction<MarketingInput>({
   
   console.log(`[${correlationId}] Marketing AI request from user: ${user.id}`)
 
-  const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY')
-  if (!LOVABLE_API_KEY) {
-    throw new Error('LOVABLE_API_KEY is not configured')
+  const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY')
+  if (!OPENAI_API_KEY) {
+    throw new Error('OPENAI_API_KEY is not configured')
   }
 
   const systemPrompt = `Tu es un expert en marketing digital et copywriting. 
@@ -46,14 +46,14 @@ Format de réponse (JSON uniquement):
 
   console.log('Calling Lovable AI for marketing content generation...')
   
-  const aiResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+  const aiResponse = await fetch('https://api.openai.com/v1/chat/completions', {
     method: 'POST',
     headers: {
-      'Authorization': `Bearer ${LOVABLE_API_KEY}`,
+      'Authorization': `Bearer ${OPENAI_API_KEY}`,
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      model: 'openai/gpt-5-nano',
+      model: 'gpt-4o-mini',
       messages: [
         { role: 'system', content: systemPrompt },
         { role: 'user', content: userPrompt }

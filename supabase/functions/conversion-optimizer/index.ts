@@ -32,7 +32,7 @@ serve(async (req) => {
       case 'generate_upsells': {
         const { product_id, cart_items } = params;
         
-        const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
+        const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY');
         
         const prompt = `Generate 3 upsell/cross-sell product suggestions for:
 Product ID: ${product_id}
@@ -44,14 +44,14 @@ Return suggestions with:
 - Discount recommendation (if any)
 - Display message`;
 
-        const aiResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+        const aiResponse = await fetch('https://api.openai.com/v1/chat/completions', {
           method: 'POST',
           headers: {
-            'Authorization': `Bearer ${LOVABLE_API_KEY}`,
+            'Authorization': `Bearer ${OPENAI_API_KEY}`,
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            model: 'openai/gpt-5-nano',
+            model: 'gpt-4o-mini',
             messages: [
               { role: 'system', content: 'You are an e-commerce conversion optimization expert.' },
               { role: 'user', content: prompt }

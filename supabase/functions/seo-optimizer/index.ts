@@ -75,8 +75,8 @@ Deno.serve(async (req) => {
       }
 
       // Use Lovable AI for SEO analysis
-      const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY')
-      if (!LOVABLE_API_KEY) {
+      const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY')
+      if (!OPENAI_API_KEY) {
         results.push({ productId, status: 'error', message: 'AI non configurée' })
         continue
       }
@@ -101,14 +101,14 @@ Génère un JSON avec:
 }`
 
       try {
-        const aiResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+        const aiResponse = await fetch('https://api.openai.com/v1/chat/completions', {
           method: 'POST',
           headers: {
-            'Authorization': `Bearer ${LOVABLE_API_KEY}`,
+            'Authorization': `Bearer ${OPENAI_API_KEY}`,
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            model: 'openai/gpt-5-nano',
+            model: 'gpt-4o-mini',
             messages: [
               { role: 'system', content: 'Tu es un expert SEO e-commerce. Réponds uniquement en JSON valide.' },
               { role: 'user', content: prompt }

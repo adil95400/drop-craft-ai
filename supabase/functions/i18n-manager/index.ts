@@ -50,9 +50,9 @@ serve(async (req) => {
 
         if (productsError) throw productsError
 
-        const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY')
-        if (!LOVABLE_API_KEY) {
-          throw new Error('LOVABLE_API_KEY not configured')
+        const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY')
+        if (!OPENAI_API_KEY) {
+          throw new Error('OPENAI_API_KEY not configured')
         }
 
         const translations = []
@@ -86,14 +86,14 @@ Return ONLY a JSON object with these exact keys:
   "short_description": "translated short description"
 }`
 
-            const aiResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+            const aiResponse = await fetch('https://api.openai.com/v1/chat/completions', {
               method: 'POST',
               headers: {
-                'Authorization': `Bearer ${LOVABLE_API_KEY}`,
+                'Authorization': `Bearer ${OPENAI_API_KEY}`,
                 'Content-Type': 'application/json',
               },
               body: JSON.stringify({
-                model: 'openai/gpt-5-nano',
+                model: 'gpt-4o-mini',
                 messages: [
                   { 
                     role: 'system', 
@@ -147,7 +147,7 @@ Return ONLY a JSON object with these exact keys:
                 translation_quality_score: 0.85,
                 ai_translation_metadata: {
                   provider: 'lovable_ai',
-                  model: 'openai/gpt-5-nano',
+                  model: 'gpt-4o-mini',
                   source_locale: sourceLocale,
                   timestamp: new Date().toISOString()
                 }

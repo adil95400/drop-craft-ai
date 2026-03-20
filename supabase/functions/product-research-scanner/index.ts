@@ -27,8 +27,8 @@ serve(async (req) => {
     const { data: { user }, error: userError } = await supabase.auth.getUser(token);
     if (userError || !user) throw new Error('Utilisateur non authentifié');
 
-    const lovableApiKey = Deno.env.get('LOVABLE_API_KEY');
-    if (!lovableApiKey) throw new Error('LOVABLE_API_KEY non configurée');
+    const lovableApiKey = Deno.env.get('OPENAI_API_KEY');
+    if (!lovableApiKey) throw new Error('OPENAI_API_KEY non configurée');
 
     let result;
 
@@ -349,14 +349,14 @@ Retourne un JSON:
 
 // ─── HELPERS ─────────────────────────────────────────────────────
 async function callAI(apiKey: string, systemPrompt: string, userPrompt: string) {
-  const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+  const response = await fetch('https://api.openai.com/v1/chat/completions', {
     method: 'POST',
     headers: {
       'Authorization': `Bearer ${apiKey}`,
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      model: 'openai/gpt-5-nano',
+      model: 'gpt-4o-mini',
       messages: [
         { role: 'system', content: systemPrompt },
         { role: 'user', content: userPrompt },

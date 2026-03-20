@@ -61,7 +61,7 @@ Deno.serve(async (req) => {
           'X-Title': 'ShopOpti Multilingual',
         },
         body: JSON.stringify({
-          model: 'openai/gpt-5-nano',
+          model: 'gpt-4o-mini',
           messages: [
             {
               role: 'system',

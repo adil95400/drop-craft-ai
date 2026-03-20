@@ -7,7 +7,7 @@ serve(async (req) => {
 
   try {
     const { userId, supabase, corsHeaders } = await requireAuth(req)
-    const lovableKey = Deno.env.get("LOVABLE_API_KEY")
+    const lovableKey = Deno.env.get("OPENAI_API_KEY")
 
     const { action, productId } = await req.json()
 
@@ -30,11 +30,11 @@ serve(async (req) => {
 
       let forecast;
       if (lovableKey) {
-        const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+        const aiResponse = await fetch("https://api.openai.com/v1/chat/completions", {
           method: "POST",
           headers: { Authorization: `Bearer ${lovableKey}`, "Content-Type": "application/json" },
           body: JSON.stringify({
-            model: "openai/gpt-5-nano",
+            model: "gpt-4o-mini",
             messages: [
               { role: "system", content: "You are a demand forecasting analyst. Analyze sales data and provide 30-day demand predictions. Return JSON with tool call." },
               { role: "user", content: `Product: ${product.title}, Price: ${product.price}€, Stock: ${product.stock_quantity}, Sales: ${product.sales_count || 0}. Recent orders: ${JSON.stringify(orders?.slice(0, 20) || [])}. Provide 30-day forecast.` }

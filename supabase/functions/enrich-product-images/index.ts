@@ -115,9 +115,9 @@ async function generateAndStoreAltTexts(
   productTitle: string,
   category?: string | null
 ): Promise<number> {
-  const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY')
-  if (!LOVABLE_API_KEY) {
-    console.warn('[ALT-TEXT] LOVABLE_API_KEY not configured, skipping')
+  const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY')
+  if (!OPENAI_API_KEY) {
+    console.warn('[ALT-TEXT] OPENAI_API_KEY not configured, skipping')
     return 0
   }
 
@@ -135,14 +135,14 @@ async function generateAndStoreAltTexts(
   console.log(`[ALT-TEXT] Generating alt texts for ${imageCount} images of "${productTitle}"`)
 
   try {
-    const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
+        Authorization: `Bearer ${OPENAI_API_KEY}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'openai/gpt-5-nano',
+        model: 'gpt-4o-mini',
         messages: [
           {
             role: 'system',
@@ -351,8 +351,8 @@ async function scrapeImagesFromSource(sourceUrl: string): Promise<string[]> {
 }
 
 async function generateImagesWithAI(productTitle: string, existingImageUrl: string | null): Promise<string[]> {
-  const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY')
-  if (!LOVABLE_API_KEY) throw new Error('LOVABLE_API_KEY not configured')
+  const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY')
+  if (!OPENAI_API_KEY) throw new Error('OPENAI_API_KEY not configured')
 
   const images: string[] = []
   const prompts = [
@@ -362,9 +362,9 @@ async function generateImagesWithAI(productTitle: string, existingImageUrl: stri
 
   for (const prompt of prompts) {
     try {
-      const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+      const response = await fetch('https://api.openai.com/v1/chat/completions', {
         method: 'POST',
-        headers: { Authorization: `Bearer ${LOVABLE_API_KEY}`, 'Content-Type': 'application/json' },
+        headers: { Authorization: `Bearer ${OPENAI_API_KEY}`, 'Content-Type': 'application/json' },
         body: JSON.stringify({
           model: 'google/gemini-2.5-flash-image-preview',
           messages: [
