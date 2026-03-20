@@ -1,0 +1,11 @@
+export { HeroSection } from "./HeroSection";
+export { SocialProofBar } from "./SocialProofBar";
+export { ProblemSection } from "./ProblemSection";
+export { HowItWorksSection } from "./HowItWorksSection";
+export { SolutionSection } from "./SolutionSection";
+export { WhyShopOptiSection } from "./WhyShopOptiSection";
+export { ProofSection } from "./ProofSection";
+export { IntegrationsSection } from "./IntegrationsSection";
+export { PricingPreviewSection } from "./PricingPreviewSection";
+export { FAQSection } from "./FAQSection";
+export { FinalCTASection } from "./FinalCTASection";
