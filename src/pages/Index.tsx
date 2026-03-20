@@ -6,7 +6,8 @@ import { PublicLayout } from "@/layouts/PublicLayout";
 import { SEO } from "@/components/SEO";
 import { OrganizationSchema } from "@/components/seo/StructuredData";
 import { StickyCtaBar } from "@/components/landing/StickyCtaBar";
-import { PLANS, SOCIAL_PROOF, FAQ_DATA } from "@/config/landingPageConfig";
+import { FAQ_DATA } from "@/config/landingPageConfig";
+import { useLandingContent } from "@/hooks/useLandingContent";
 
 import {
   HeroSection,
@@ -22,57 +23,11 @@ import {
   FinalCTASection,
 } from "./landing";
 
-// ─── JSON-LD SCHEMAS (computed once, outside render) ─────────────────────────
-const jsonLdSchemas = [
-  {
-    "@context": "https://schema.org",
-    "@type": "SoftwareApplication",
-    name: "ShopOpti+",
-    applicationCategory: "BusinessApplication",
-    operatingSystem: "Web",
-    url: "https://shopopti.io",
-    description:
-      "AI-powered Shopify automation platform for product research, dynamic pricing, inventory management, and revenue growth.",
-    offers: {
-      "@type": "AggregateOffer",
-      lowPrice: String(PLANS[0].monthlyPrice),
-      highPrice: String(PLANS[PLANS.length - 1].monthlyPrice),
-      priceCurrency: "USD",
-      offerCount: String(PLANS.length),
-    },
-    aggregateRating: {
-      "@type": "AggregateRating",
-      ratingValue: SOCIAL_PROOF.rating.replace("/5", ""),
-      reviewCount: String(SOCIAL_PROOF.reviewCount),
-      bestRating: "5",
-      worstRating: "1",
-    },
-    featureList: [
-      "AI Product Research",
-      "Dynamic Pricing Automation",
-      "Inventory Sync",
-      "Order Auto-Fulfillment",
-      "SEO Optimization",
-      "Multi-Store Management",
-      `${SOCIAL_PROOF.supplierCount} Supplier Integrations`,
-      "Real-Time Analytics",
-    ],
-  },
-  {
-    "@context": "https://schema.org",
-    "@type": "FAQPage",
-    mainEntity: FAQ_DATA.map((faq) => ({
-      "@type": "Question",
-      name: faq.q,
-      acceptedAnswer: { "@type": "Answer", text: faq.a },
-    })),
-  },
-];
-
 // ─── MAIN PAGE ───────────────────────────────────────────────────────────────
 const Index = () => {
   const { isAuthenticated, isLoading } = useLightAuth();
   const navigate = useNavigate();
+  const { testimonials, socialProof, plans } = useLandingContent();
 
   useEffect(() => {
     if (!isLoading && isAuthenticated) navigate("/dashboard", { replace: true });
@@ -82,6 +37,53 @@ const Index = () => {
     (path: string) => navigate(path),
     [navigate]
   );
+
+  // JSON-LD computed from dynamic data
+  const jsonLdSchemas = useMemo(() => [
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      name: "ShopOpti+",
+      applicationCategory: "BusinessApplication",
+      operatingSystem: "Web",
+      url: "https://shopopti.io",
+      description:
+        "AI-powered Shopify automation platform for product research, dynamic pricing, inventory management, and revenue growth.",
+      offers: {
+        "@type": "AggregateOffer",
+        lowPrice: String(plans[0]?.monthlyPrice ?? 29),
+        highPrice: String(plans[plans.length - 1]?.monthlyPrice ?? 199),
+        priceCurrency: "USD",
+        offerCount: String(plans.length),
+      },
+      aggregateRating: {
+        "@type": "AggregateRating",
+        ratingValue: socialProof.rating.replace("/5", ""),
+        reviewCount: String(socialProof.reviewCount),
+        bestRating: "5",
+        worstRating: "1",
+      },
+      featureList: [
+        "AI Product Research",
+        "Dynamic Pricing Automation",
+        "Inventory Sync",
+        "Order Auto-Fulfillment",
+        "SEO Optimization",
+        "Multi-Store Management",
+        `${socialProof.supplierCount} Supplier Integrations`,
+        "Real-Time Analytics",
+      ],
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      mainEntity: FAQ_DATA.map((faq) => ({
+        "@type": "Question",
+        name: faq.q,
+        acceptedAnswer: { "@type": "Answer", text: faq.a },
+      })),
+    },
+  ], [plans, socialProof]);
 
   if (isLoading || isAuthenticated) {
     return (
@@ -104,16 +106,16 @@ const Index = () => {
 
       <main>
         <HeroSection onNavigate={onNavigate} />
-        <SocialProofBar />
+        <SocialProofBar socialProof={socialProof} />
         <ProblemSection />
         <HowItWorksSection onNavigate={onNavigate} />
-        <SolutionSection onNavigate={onNavigate} />
-        <WhyShopOptiSection />
-        <ProofSection />
+        <SolutionSection socialProof={socialProof} onNavigate={onNavigate} />
+        <WhyShopOptiSection socialProof={socialProof} />
+        <ProofSection socialProof={socialProof} testimonials={testimonials} />
         <IntegrationsSection onNavigate={onNavigate} />
-        <PricingPreviewSection onNavigate={onNavigate} />
+        <PricingPreviewSection plans={plans} onNavigate={onNavigate} />
         <FAQSection />
-        <FinalCTASection onNavigate={onNavigate} />
+        <FinalCTASection socialProof={socialProof} onNavigate={onNavigate} />
       </main>
       <StickyCtaBar />
     </PublicLayout>
