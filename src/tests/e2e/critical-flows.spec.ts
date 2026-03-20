@@ -303,7 +303,7 @@ export const testUtils = {
   
   cleanupTestData: async () => {
     // Cleanup logic for test data
-    console.log('Test data cleaned up');
+    // Test cleanup completed
   }
 };
 

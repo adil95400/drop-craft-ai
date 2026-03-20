@@ -1,4 +1,5 @@
 import { MODULE_REGISTRY, type ModuleConfig, type SubModule } from '@/config/modules';
+import { logger } from '@/lib/logger';
 
 interface RouteDefinition {
   path: string;
@@ -332,25 +333,20 @@ export function validateAllRoutes(): {
 export function logValidationResults(results: ReturnType<typeof validateAllRoutes>): void {
   if (!import.meta.env.DEV) return;
   
-  // eslint-disable-next-line no-console
-  console.group('🔍 Validation des Routes');
-  // eslint-disable-next-line no-console
-  console.log(`📊 Résumé: Modules: ${results.summary.totalModules}, Sous-modules: ${results.summary.totalSubModules}, Erreurs: ${results.summary.errors}, Avertissements: ${results.summary.warnings}`);
+  
+  logger.info(`Route validation: Modules: ${results.summary.totalModules}, Sub-modules: ${results.summary.totalSubModules}, Errors: ${results.summary.errors}, Warnings: ${results.summary.warnings}`, { component: 'RouteValidator' });
   
   if (results.isValid) {
-    // eslint-disable-next-line no-console
-    console.log('✅ Toutes les routes sont valides!');
+    logger.info('All routes are valid', { component: 'RouteValidator' });
   } else {
-    // eslint-disable-next-line no-console
-    console.error('❌ Des erreurs ont été détectées dans la configuration des routes');
+    logger.error('Route configuration errors detected', undefined, { component: 'RouteValidator' });
     
-    results.issues.forEach((issue, index) => {
-      const icon = issue.type === 'error' ? '❌' : '⚠️';
-      const categoryLabel = issue.category === 'module' ? 'MODULE' : 'SUB-MODULE';
-      // eslint-disable-next-line no-console
-      console.log(`${icon} ${index + 1}. [${categoryLabel}] ${issue.name} | Route: ${issue.route} | ${issue.issue}${issue.suggestion ? ` | 💡 ${issue.suggestion}` : ''}`);
+    results.issues.forEach((issue) => {
+      if (issue.type === 'error') {
+        logger.error(`[${issue.category.toUpperCase()}] ${issue.name} | Route: ${issue.route} | ${issue.issue}`, undefined, { component: 'RouteValidator' });
+      } else {
+        logger.warn(`[${issue.category.toUpperCase()}] ${issue.name} | Route: ${issue.route} | ${issue.issue}`, { component: 'RouteValidator' });
+      }
     });
   }
-  // eslint-disable-next-line no-console
-  console.groupEnd();
 }
