@@ -288,11 +288,12 @@ export default function AdvancedMediaEditorPage() {
           {/* Editor Controls */}
           <div className="space-y-4">
             <Tabs defaultValue="adjust" className="w-full">
-              <TabsList className="grid grid-cols-4 w-full">
+              <TabsList className="grid grid-cols-5 w-full">
                 <TabsTrigger value="adjust"><Sun className="h-4 w-4" /></TabsTrigger>
                 <TabsTrigger value="transform"><Crop className="h-4 w-4" /></TabsTrigger>
                 <TabsTrigger value="presets"><Palette className="h-4 w-4" /></TabsTrigger>
                 <TabsTrigger value="tools"><Wand2 className="h-4 w-4" /></TabsTrigger>
+                <TabsTrigger value="ai"><Sparkles className="h-4 w-4" /></TabsTrigger>
               </TabsList>
 
               <TabsContent value="adjust" className="space-y-4 mt-4">
