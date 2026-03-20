@@ -5,7 +5,7 @@ type SEOProps = {
   description: string;
   path?: string;
   keywords?: string;
-  jsonLd?: object;
+  jsonLd?: object | object[];
 };
 
 export const SEO = ({ title, description, path = "/", keywords, jsonLd }: SEOProps) => {
@@ -38,9 +38,17 @@ export const SEO = ({ title, description, path = "/", keywords, jsonLd }: SEOPro
       <meta name="twitter:image" content={ogImg} />
 
       {jsonLd && (
-        <script type="application/ld+json">
-          {JSON.stringify(jsonLd)}
-        </script>
+        Array.isArray(jsonLd)
+          ? jsonLd.map((schema, i) => (
+              <script key={i} type="application/ld+json">
+                {JSON.stringify(schema)}
+              </script>
+            ))
+          : (
+              <script type="application/ld+json">
+                {JSON.stringify(jsonLd)}
+              </script>
+            )
       )}
     </Helmet>
   );
