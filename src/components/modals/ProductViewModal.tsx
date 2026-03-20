@@ -82,6 +82,9 @@ import { ProductVideosTab } from './product/ProductVideosTab'
 import { ProductVariantsTab } from './product/ProductVariantsTab'
 import { ImageGalleryModal } from './ImageGalleryModal'
 import { PrescriptiveProductHeader } from './product/PrescriptiveProductHeader'
+import { ProductSEOTab } from './product/ProductSEOTab'
+import { ProductMediaTab } from './product/ProductMediaTab'
+import { ProductPricingTab } from './product/ProductPricingTab'
 import {
   AlertDialog,
   AlertDialogAction,
