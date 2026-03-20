@@ -750,6 +750,3 @@ verify_jwt = false
 
 [functions.supplier-compare]
 verify_jwt = false
-
-[functions.stripe-webhooks]
-verify_jwt = false

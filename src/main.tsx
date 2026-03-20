@@ -7,9 +7,8 @@ import { HelmetProvider } from 'react-helmet-async'
 import App from './App'
 import './index.css'
 
-const CookieBanner = lazy(() =>
-  import('./components/CookieBanner').then(m => ({ default: m.CookieBanner }))
-);
+// Lazy-load non-critical components
+const CookieBanner = lazy(() => import('./components/CookieBanner').then(m => ({ default: m.CookieBanner })));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -20,7 +19,9 @@ const queryClient = new QueryClient({
       refetchOnWindowFocus: false,
       refetchOnReconnect: 'always',
       networkMode: 'offlineFirst',
+      // Structural sharing reduces re-renders when data hasn't changed
       structuralSharing: true,
+      // Deduplicate in-flight requests automatically
       refetchOnMount: 'always',
     },
     mutations: {
@@ -30,6 +31,7 @@ const queryClient = new QueryClient({
   },
 })
 
+// Remove initial loader using RAF to avoid forced reflow
 requestAnimationFrame(() => {
   const loaderEl = document.getElementById('initial-loader');
   if (loaderEl) {
@@ -40,24 +42,21 @@ requestAnimationFrame(() => {
   }
 });
 
-const root = document.getElementById('root')!
-
-createRoot(root).render(
+createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <HelmetProvider>
       <QueryClientProvider client={queryClient}>
         <BrowserRouter>
           <App />
           <Toaster />
-          <Suspense fallback={null}>
-            <CookieBanner />
-          </Suspense>
+          <Suspense fallback={null}><CookieBanner /></Suspense>
         </BrowserRouter>
       </QueryClientProvider>
     </HelmetProvider>
   </StrictMode>,
 )
 
+// Defer non-critical initialization after first render
 const initDeferred = () => {
   import('@/utils/consoleInterceptor').then(m => m.installConsoleInterceptor());
   import('@/utils/sentry').then(m => m.initSentry());

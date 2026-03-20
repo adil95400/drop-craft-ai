@@ -8080,39 +8080,6 @@ export type Database = {
         }
         Relationships: []
       }
-      landing_content: {
-        Row: {
-          content_key: string
-          content_value: Json
-          created_at: string | null
-          id: string
-          is_active: boolean | null
-          section: string
-          sort_order: number | null
-          updated_at: string | null
-        }
-        Insert: {
-          content_key: string
-          content_value?: Json
-          created_at?: string | null
-          id?: string
-          is_active?: boolean | null
-          section: string
-          sort_order?: number | null
-          updated_at?: string | null
-        }
-        Update: {
-          content_key?: string
-          content_value?: Json
-          created_at?: string | null
-          id?: string
-          is_active?: boolean | null
-          section?: string
-          sort_order?: number | null
-          updated_at?: string | null
-        }
-        Relationships: []
-      }
       landing_pages: {
         Row: {
           content: Json
