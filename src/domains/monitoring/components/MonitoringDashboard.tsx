@@ -172,7 +172,7 @@ export function MonitoringDashboard() {
             variant="outline"
             size="sm"
             onClick={() => setAutoRefresh(!autoRefresh)}
-            className={cn(autoRefresh && 'border-green-500 text-green-600')}
+            className={cn(autoRefresh && 'border-success text-success')}
           >
             {autoRefresh ? (
               <>
@@ -451,9 +451,9 @@ function QuickStatCard({
           </div>
           <div className={cn(
             'h-10 w-10 rounded-full flex items-center justify-center',
-            status === 'healthy' && 'bg-green-100 text-green-600 dark:bg-green-900/30',
-            status === 'warning' && 'bg-yellow-100 text-yellow-600 dark:bg-yellow-900/30',
-            status === 'critical' && 'bg-red-100 text-red-600 dark:bg-red-900/30',
+            status === 'healthy' && 'bg-success/10 text-success dark:bg-green-900/30',
+            status === 'warning' && 'bg-warning/10 text-warning dark:bg-yellow-900/30',
+            status === 'critical' && 'bg-destructive/10 text-destructive dark:bg-red-900/30',
             !status && 'bg-primary/10 text-primary'
           )}>
             <Icon className="h-5 w-5" />
@@ -462,7 +462,7 @@ function QuickStatCard({
         {trend !== undefined && (
           <div className={cn(
             'flex items-center gap-1 text-sm mt-2',
-            trend >= 0 ? 'text-green-600' : 'text-red-600'
+            trend >= 0 ? 'text-success' : 'text-destructive'
           )}>
             {trend >= 0 ? <TrendingUp className="h-4 w-4" /> : <TrendingDown className="h-4 w-4" />}
             <span>{trend >= 0 ? '+' : ''}{trend}%</span>
@@ -495,9 +495,9 @@ function SystemHealthIndicator({
       <div className="flex items-center gap-2">
         <div className={cn(
           'h-3 w-3 rounded-full',
-          overallStatus === 'healthy' && 'bg-green-500',
-          overallStatus === 'warning' && 'bg-yellow-500',
-          overallStatus === 'critical' && 'bg-red-500 animate-pulse'
+          overallStatus === 'healthy' && 'bg-success',
+          overallStatus === 'warning' && 'bg-warning',
+          overallStatus === 'critical' && 'bg-destructive animate-pulse'
         )} />
         <span className="font-medium">
           {overallStatus === 'healthy' && 'Tous les systèmes opérationnels'}
@@ -507,15 +507,15 @@ function SystemHealthIndicator({
       </div>
       <div className="grid grid-cols-3 gap-2 text-sm">
         <div className="flex items-center gap-1">
-          <CheckCircle2 className="h-4 w-4 text-green-500" />
+          <CheckCircle2 className="h-4 w-4 text-success" />
           <span>{metrics.filter(m => m.status === 'healthy').length}</span>
         </div>
         <div className="flex items-center gap-1">
-          <AlertTriangle className="h-4 w-4 text-yellow-500" />
+          <AlertTriangle className="h-4 w-4 text-warning" />
           <span>{warningCount}</span>
         </div>
         <div className="flex items-center gap-1">
-          <XCircle className="h-4 w-4 text-red-500" />
+          <XCircle className="h-4 w-4 text-destructive" />
           <span>{criticalCount}</span>
         </div>
       </div>
@@ -568,7 +568,7 @@ function RecentAlertsList({
               </p>
             </div>
             {!alert.acknowledged && (
-              <div className="h-2 w-2 rounded-full bg-blue-500" />
+              <div className="h-2 w-2 rounded-full bg-info" />
             )}
           </button>
         ))}
@@ -658,7 +658,7 @@ function MetricsGrid({
           {metric.trendValue !== 0 && (
             <div className={cn(
               'flex items-center gap-1 text-xs mt-1',
-              metric.trend === 'up' ? 'text-green-600' : 'text-red-600'
+              metric.trend === 'up' ? 'text-success' : 'text-destructive'
             )}>
               {metric.trend === 'up' ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
               <span>{metric.trendValue}%</span>
@@ -924,10 +924,10 @@ function AlertDetailModal({
 
 function SeverityIcon({ severity }: { severity: Alert['severity'] }) {
   const icons = {
-    low: <Activity className="h-4 w-4 text-blue-500" />,
-    medium: <AlertTriangle className="h-4 w-4 text-yellow-500" />,
-    high: <AlertCircle className="h-4 w-4 text-orange-500" />,
-    critical: <XCircle className="h-4 w-4 text-red-500" />,
+    low: <Activity className="h-4 w-4 text-info" />,
+    medium: <AlertTriangle className="h-4 w-4 text-warning" />,
+    high: <AlertCircle className="h-4 w-4 text-warning" />,
+    critical: <XCircle className="h-4 w-4 text-destructive" />,
   }
   return icons[severity]
 }
@@ -944,9 +944,9 @@ function SeverityBadge({ severity }: { severity: Alert['severity'] }) {
 
 function StatusBadge({ status }: { status: 'healthy' | 'warning' | 'critical' }) {
   const colors = {
-    healthy: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400',
-    warning: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400',
-    critical: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400',
+    healthy: 'bg-success/10 text-success dark:bg-green-900/30 dark:text-green-400',
+    warning: 'bg-warning/10 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400',
+    critical: 'bg-destructive/10 text-red-800 dark:bg-red-900/30 dark:text-red-400',
   }
   return (
     <span className={cn('text-xs px-2 py-0.5 rounded-full', colors[status])}>
@@ -957,9 +957,9 @@ function StatusBadge({ status }: { status: 'healthy' | 'warning' | 'critical' })
 
 function StatusDot({ status }: { status: 'healthy' | 'warning' | 'critical' }) {
   const colors = {
-    healthy: 'bg-green-500',
-    warning: 'bg-yellow-500',
-    critical: 'bg-red-500 animate-pulse',
+    healthy: 'bg-success',
+    warning: 'bg-warning',
+    critical: 'bg-destructive animate-pulse',
   }
   return <div className={cn('h-2 w-2 rounded-full', colors[status])} />
 }
@@ -967,10 +967,10 @@ function StatusDot({ status }: { status: 'healthy' | 'warning' | 'critical' }) {
 function ImportStatusIcon({ status }: { status: ImportJob['status'] }) {
   const icons = {
     pending: <Clock className="h-4 w-4 text-muted-foreground" />,
-    scraping: <Activity className="h-4 w-4 text-blue-500 animate-pulse" />,
-    processing: <RefreshCw className="h-4 w-4 text-blue-500 animate-spin" />,
-    completed: <CheckCircle2 className="h-4 w-4 text-green-500" />,
-    error: <XCircle className="h-4 w-4 text-red-500" />,
+    scraping: <Activity className="h-4 w-4 text-info animate-pulse" />,
+    processing: <RefreshCw className="h-4 w-4 text-info animate-spin" />,
+    completed: <CheckCircle2 className="h-4 w-4 text-success" />,
+    error: <XCircle className="h-4 w-4 text-destructive" />,
   }
   return icons[status]
 }

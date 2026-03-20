@@ -49,12 +49,12 @@ export function ChannelHeader({ channel, webhooksConnected, isSyncing, onBack, o
   const statusMap: Record<string, { label: string; className: string; icon: typeof CheckCircle2 }> = {
     connected: {
       label: 'Connecté',
-      className: 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/30',
+      className: 'bg-success/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/30',
       icon: CheckCircle2
     },
     connecting: {
       label: 'Connexion...',
-      className: 'bg-blue-500/10 text-blue-700 dark:text-blue-400 border-blue-500/30',
+      className: 'bg-info/10 text-blue-700 dark:text-blue-400 border-info/30',
       icon: Loader2
     },
     error: {

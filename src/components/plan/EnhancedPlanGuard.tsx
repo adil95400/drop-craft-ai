@@ -30,9 +30,9 @@ const planConfig = {
   pro: {
     name: 'Pro',
     icon: Star,
-    color: 'text-blue-600',
-    bgColor: 'bg-blue-50',
-    borderColor: 'border-blue-200',
+    color: 'text-info',
+    bgColor: 'bg-info/5',
+    borderColor: 'border-info/20',
     description: 'Débloquez les fonctionnalités avancées',
     price: '29€/mois'
   },

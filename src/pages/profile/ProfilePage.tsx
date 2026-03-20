@@ -250,7 +250,7 @@ export default function ProfilePage() {
                       {planBadge.label}
                     </Badge>
                     {profile?.email_verified && (
-                      <Badge variant="outline" className="gap-1 text-green-600 border-green-600">
+                      <Badge variant="outline" className="gap-1 text-success border-green-600">
                         <CheckCircle2 className="w-3 h-3" />
                         Vérifié
                       </Badge>
@@ -449,8 +449,8 @@ export default function ProfilePage() {
                 <Card>
                   <CardHeader>
                     <div className="flex items-center gap-3">
-                      <div className="p-2 rounded-xl bg-gradient-to-br from-blue-500/20 to-blue-500/5">
-                        <Building2 className="w-5 h-5 text-blue-600" />
+                      <div className="p-2 rounded-xl bg-gradient-to-br from-info/20 to-blue-500/5">
+                        <Building2 className="w-5 h-5 text-info" />
                       </div>
                       <div>
                         <CardTitle>Informations professionnelles</CardTitle>
@@ -663,8 +663,8 @@ export default function ProfilePage() {
                   <CardHeader>
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
-                        <div className="p-2 rounded-xl bg-gradient-to-br from-green-500/20 to-green-500/5">
-                          <CreditCard className="w-5 h-5 text-green-600" />
+                        <div className="p-2 rounded-xl bg-gradient-to-br from-success/20 to-green-500/5">
+                          <CreditCard className="w-5 h-5 text-success" />
                         </div>
                         <div>
                           <CardTitle>Plan actuel</CardTitle>

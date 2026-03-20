@@ -307,19 +307,19 @@ export default function CreateProduct() {
                     </div>
                     <Progress value={completionScore} className="h-2" />
                     <div className="flex gap-4 mt-2 text-xs text-muted-foreground">
-                      <span className={cn("flex items-center gap-1", formData.name && "text-green-600")}>
+                      <span className={cn("flex items-center gap-1", formData.name && "text-success")}>
                         {formData.name ? <CheckCircle2 className="h-3 w-3" /> : <AlertTriangle className="h-3 w-3" />}
                         Nom
                       </span>
-                      <span className={cn("flex items-center gap-1", images.length > 0 && "text-green-600")}>
+                      <span className={cn("flex items-center gap-1", images.length > 0 && "text-success")}>
                         {images.length > 0 ? <CheckCircle2 className="h-3 w-3" /> : <AlertTriangle className="h-3 w-3" />}
                         Images
                       </span>
-                      <span className={cn("flex items-center gap-1", formData.price && "text-green-600")}>
+                      <span className={cn("flex items-center gap-1", formData.price && "text-success")}>
                         {formData.price ? <CheckCircle2 className="h-3 w-3" /> : <AlertTriangle className="h-3 w-3" />}
                         Prix
                       </span>
-                      <span className={cn("flex items-center gap-1", formData.metaTitle && "text-green-600")}>
+                      <span className={cn("flex items-center gap-1", formData.metaTitle && "text-success")}>
                         {formData.metaTitle ? <CheckCircle2 className="h-3 w-3" /> : <AlertTriangle className="h-3 w-3" />}
                         SEO
                       </span>
@@ -460,13 +460,13 @@ export default function CreateProduct() {
                             <SelectContent>
                               <SelectItem value="active">
                                 <div className="flex items-center gap-2">
-                                  <div className="h-2 w-2 rounded-full bg-green-500" />
+                                  <div className="h-2 w-2 rounded-full bg-success" />
                                   Actif
                                 </div>
                               </SelectItem>
                               <SelectItem value="draft">
                                 <div className="flex items-center gap-2">
-                                  <div className="h-2 w-2 rounded-full bg-yellow-500" />
+                                  <div className="h-2 w-2 rounded-full bg-warning" />
                                   Brouillon
                                 </div>
                               </SelectItem>
@@ -698,7 +698,7 @@ export default function CreateProduct() {
                               placeholder="39.99"
                             />
                             {compareAtPrice && formData.price && (
-                              <Badge className="absolute -top-2 -right-2 bg-red-500" variant="default">
+                              <Badge className="absolute -top-2 -right-2 bg-destructive" variant="default">
                                 -{calculateDiscount()}%
                               </Badge>
                             )}
@@ -832,14 +832,14 @@ export default function CreateProduct() {
                         <span className="text-sm text-muted-foreground">Marge brute</span>
                         <span className={cn(
                           "font-bold",
-                          parseFloat(String(calculateMargin())) > 30 ? "text-green-600" : "text-yellow-600"
+                          parseFloat(String(calculateMargin())) > 30 ? "text-success" : "text-warning"
                         )}>
                           {calculateMargin()}%
                         </span>
                       </div>
                       <div className="flex justify-between items-center">
                         <span className="text-sm text-muted-foreground">Bénéfice unitaire</span>
-                        <span className="font-bold text-green-600">
+                        <span className="font-bold text-success">
                           {formData.price && formData.cost 
                             ? `${(parseFloat(formData.price) - parseFloat(formData.cost)).toFixed(2)} €`
                             : '-'
@@ -1019,7 +1019,7 @@ export default function CreateProduct() {
                       <div className="flex justify-between">
                         <p className={cn(
                           "text-xs",
-                          formData.metaTitle.length > 50 ? "text-yellow-600" : "text-muted-foreground"
+                          formData.metaTitle.length > 50 ? "text-warning" : "text-muted-foreground"
                         )}>
                           {formData.metaTitle.length > 50 ? "Titre un peu long" : "Longueur idéale: 50-60 caractères"}
                         </p>
@@ -1042,7 +1042,7 @@ export default function CreateProduct() {
                       <div className="flex justify-between">
                         <p className={cn(
                           "text-xs",
-                          formData.metaDescription.length > 150 ? "text-yellow-600" : "text-muted-foreground"
+                          formData.metaDescription.length > 150 ? "text-warning" : "text-muted-foreground"
                         )}>
                           {formData.metaDescription.length > 150 ? "Description un peu longue" : "Longueur idéale: 120-160 caractères"}
                         </p>
@@ -1067,10 +1067,10 @@ export default function CreateProduct() {
                   </CardHeader>
                   <CardContent>
                     <div className="p-4 bg-muted/50 rounded-lg space-y-1">
-                      <p className="text-blue-600 text-lg hover:underline cursor-pointer truncate">
+                      <p className="text-info text-lg hover:underline cursor-pointer truncate">
                         {formData.metaTitle || formData.name || 'Titre du produit'}
                       </p>
-                      <p className="text-green-700 text-sm truncate flex items-center gap-1">
+                      <p className="text-success text-sm truncate flex items-center gap-1">
                         <Link className="h-3 w-3" />
                         votresite.com/products/{formData.slug || 'votre-produit'}
                       </p>
@@ -1084,28 +1084,28 @@ export default function CreateProduct() {
                       <div className="space-y-2">
                         <div className={cn(
                           "flex items-center gap-2 text-sm",
-                          formData.metaTitle ? "text-green-600" : "text-muted-foreground"
+                          formData.metaTitle ? "text-success" : "text-muted-foreground"
                         )}>
                           {formData.metaTitle ? <CheckCircle2 className="h-4 w-4" /> : <AlertTriangle className="h-4 w-4" />}
                           Titre SEO défini
                         </div>
                         <div className={cn(
                           "flex items-center gap-2 text-sm",
-                          formData.metaDescription ? "text-green-600" : "text-muted-foreground"
+                          formData.metaDescription ? "text-success" : "text-muted-foreground"
                         )}>
                           {formData.metaDescription ? <CheckCircle2 className="h-4 w-4" /> : <AlertTriangle className="h-4 w-4" />}
                           Meta description renseignée
                         </div>
                         <div className={cn(
                           "flex items-center gap-2 text-sm",
-                          formData.slug ? "text-green-600" : "text-muted-foreground"
+                          formData.slug ? "text-success" : "text-muted-foreground"
                         )}>
                           {formData.slug ? <CheckCircle2 className="h-4 w-4" /> : <AlertTriangle className="h-4 w-4" />}
                           URL personnalisée
                         </div>
                         <div className={cn(
                           "flex items-center gap-2 text-sm",
-                          images.length > 0 ? "text-green-600" : "text-muted-foreground"
+                          images.length > 0 ? "text-success" : "text-muted-foreground"
                         )}>
                           {images.length > 0 ? <CheckCircle2 className="h-4 w-4" /> : <AlertTriangle className="h-4 w-4" />}
                           Images ajoutées

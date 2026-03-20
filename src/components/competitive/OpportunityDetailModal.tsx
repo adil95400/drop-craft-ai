@@ -22,8 +22,8 @@ export function OpportunityDetailModal({ opportunity, open, onOpenChange }: Oppo
 
   const getPotentialColor = (potential: string) => {
     const colors = {
-      high: 'text-green-600',
-      medium: 'text-amber-600',
+      high: 'text-success',
+      medium: 'text-warning',
       low: 'text-gray-600'
     };
     return colors[potential as keyof typeof colors] || colors.medium;
@@ -31,9 +31,9 @@ export function OpportunityDetailModal({ opportunity, open, onOpenChange }: Oppo
 
   const getDifficultyColor = (difficulty: string) => {
     const colors = {
-      low: 'text-green-600',
-      medium: 'text-amber-600',
-      high: 'text-red-600'
+      low: 'text-success',
+      medium: 'text-warning',
+      high: 'text-destructive'
     };
     return colors[difficulty as keyof typeof colors] || colors.medium;
   };
@@ -57,12 +57,12 @@ export function OpportunityDetailModal({ opportunity, open, onOpenChange }: Oppo
             <Card>
               <CardContent className="pt-6">
                 <div className="flex items-center gap-3">
-                  <div className="p-3 bg-green-100 dark:bg-green-900/20 rounded-lg">
-                    <DollarSign className="w-6 h-6 text-green-600" />
+                  <div className="p-3 bg-success/10 dark:bg-green-900/20 rounded-lg">
+                    <DollarSign className="w-6 h-6 text-success" />
                   </div>
                   <div>
                     <p className="text-sm text-muted-foreground">Revenue Potentiel</p>
-                    <p className="text-2xl font-bold text-green-600">
+                    <p className="text-2xl font-bold text-success">
                       +{opportunity.estimatedRevenue}€/mois
                     </p>
                   </div>
@@ -73,8 +73,8 @@ export function OpportunityDetailModal({ opportunity, open, onOpenChange }: Oppo
             <Card>
               <CardContent className="pt-6">
                 <div className="flex items-center gap-3">
-                  <div className="p-3 bg-blue-100 dark:bg-blue-900/20 rounded-lg">
-                    <Users className="w-6 h-6 text-blue-600" />
+                  <div className="p-3 bg-info/10 dark:bg-blue-900/20 rounded-lg">
+                    <Users className="w-6 h-6 text-info" />
                   </div>
                   <div>
                     <p className="text-sm text-muted-foreground">Concurrence</p>

@@ -136,7 +136,7 @@ export const WinnersProfitCalculator = ({ product }: WinnersProfitCalculatorProp
                   <DollarSign className="w-4 h-4 text-muted-foreground" />
                   <span className="text-xs text-muted-foreground">Profit/unité</span>
                 </div>
-                <div className={`text-2xl font-bold ${profitPerUnit > 0 ? 'text-green-600' : 'text-red-600'}`}>
+                <div className={`text-2xl font-bold ${profitPerUnit > 0 ? 'text-success' : 'text-destructive'}`}>
                   {profitPerUnit.toFixed(2)} {product.currency}
                 </div>
               </CardContent>
@@ -148,7 +148,7 @@ export const WinnersProfitCalculator = ({ product }: WinnersProfitCalculatorProp
                   <Percent className="w-4 h-4 text-muted-foreground" />
                   <span className="text-xs text-muted-foreground">Marge</span>
                 </div>
-                <div className={`text-2xl font-bold ${profitMargin > 20 ? 'text-green-600' : profitMargin > 10 ? 'text-orange-600' : 'text-red-600'}`}>
+                <div className={`text-2xl font-bold ${profitMargin > 20 ? 'text-success' : profitMargin > 10 ? 'text-warning' : 'text-destructive'}`}>
                   {profitMargin.toFixed(1)}%
                 </div>
               </CardContent>
@@ -191,7 +191,7 @@ export const WinnersProfitCalculator = ({ product }: WinnersProfitCalculatorProp
 
             <div className="space-y-2 p-4 border rounded-lg">
               <h5 className="font-semibold text-sm">ROI (Retour sur Investissement)</h5>
-              <div className={`text-2xl font-bold ${roi > 100 ? 'text-green-600' : roi > 0 ? 'text-orange-600' : 'text-red-600'}`}>
+              <div className={`text-2xl font-bold ${roi > 100 ? 'text-success' : roi > 0 ? 'text-warning' : 'text-destructive'}`}>
                 {roi > 0 ? '+' : ''}{roi.toFixed(0)}%
               </div>
               <p className="text-xs text-muted-foreground">
@@ -228,7 +228,7 @@ export const WinnersProfitCalculator = ({ product }: WinnersProfitCalculatorProp
                 <span>Total coûts</span>
                 <span>{totalCosts.toFixed(2)} {product.currency}</span>
               </div>
-              <div className={`flex justify-between pt-2 border-t font-bold ${profitPerUnit > 0 ? 'text-green-600' : 'text-red-600'}`}>
+              <div className={`flex justify-between pt-2 border-t font-bold ${profitPerUnit > 0 ? 'text-success' : 'text-destructive'}`}>
                 <span>Profit net</span>
                 <span>{profitPerUnit.toFixed(2)} {product.currency}</span>
               </div>
@@ -236,7 +236,7 @@ export const WinnersProfitCalculator = ({ product }: WinnersProfitCalculatorProp
           </div>
 
           {/* Recommandations */}
-          <div className="space-y-2 p-4 bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+          <div className="space-y-2 p-4 bg-info/5 dark:bg-blue-950/20 border border-info/20 dark:border-blue-800 rounded-lg">
             <h5 className="font-semibold text-sm text-blue-900 dark:text-blue-100">💡 Recommandations</h5>
             <ul className="text-sm space-y-1 text-blue-800 dark:text-blue-200">
               {profitMargin < 20 && (

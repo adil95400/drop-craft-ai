@@ -15,9 +15,9 @@ export function ABTestingDashboard() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'running':
-        return <Badge className="bg-blue-500">En cours</Badge>;
+        return <Badge className="bg-info">En cours</Badge>;
       case 'completed':
-        return <Badge className="bg-green-500">Terminé</Badge>;
+        return <Badge className="bg-success">Terminé</Badge>;
       case 'paused':
         return <Badge variant="secondary">En pause</Badge>;
       default:
@@ -67,7 +67,7 @@ export function ABTestingDashboard() {
                   </div>
                   
                   {test.winner && (
-                    <Badge className="bg-yellow-500">
+                    <Badge className="bg-warning">
                       <Trophy className="h-3 w-3 mr-1" />
                       Gagnant: {test.winner}
                     </Badge>
@@ -122,7 +122,7 @@ export function ABTestingDashboard() {
 
                 {test.confidence_level && (
                   <div className="flex items-center gap-2 text-sm">
-                    <TrendingUp className="h-4 w-4 text-green-600" />
+                    <TrendingUp className="h-4 w-4 text-success" />
                     <span className="text-muted-foreground">Niveau de confiance:</span>
                     <span className="font-semibold">{test.confidence_level}%</span>
                   </div>

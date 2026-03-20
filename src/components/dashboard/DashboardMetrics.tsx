@@ -42,8 +42,8 @@ export function DashboardMetric({
             <Badge 
               variant={trend === 'up' ? 'default' : 'destructive'}
               className={`${trend === 'up' 
-                ? 'bg-green-100 text-green-700 hover:bg-green-200' 
-                : 'bg-red-100 text-red-700 hover:bg-red-200'
+                ? 'bg-success/10 text-success hover:bg-green-200' 
+                : 'bg-destructive/10 text-red-700 hover:bg-red-200'
               } border-0 font-medium px-3 py-1`}
             >
               {trend === 'up' ? (

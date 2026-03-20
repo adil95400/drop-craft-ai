@@ -266,14 +266,14 @@ export function AIContentDashboard() {
                                 size="sm"
                                 onClick={() => handleApprove(content.id)}
                               >
-                                <ThumbsUp className="h-4 w-4 text-green-600" />
+                                <ThumbsUp className="h-4 w-4 text-success" />
                               </Button>
                               <Button 
                                 variant="ghost" 
                                 size="sm"
                                 onClick={() => handleReject(content.id)}
                               >
-                                <ThumbsDown className="h-4 w-4 text-red-600" />
+                                <ThumbsDown className="h-4 w-4 text-destructive" />
                               </Button>
                             </>
                           )}
@@ -283,7 +283,7 @@ export function AIContentDashboard() {
                               size="sm"
                               onClick={() => handleApply(content.id)}
                             >
-                              <Play className="h-4 w-4 text-blue-600" />
+                              <Play className="h-4 w-4 text-info" />
                             </Button>
                           )}
                         </div>

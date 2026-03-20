@@ -55,8 +55,8 @@ export function SupplierSyncDashboard() {
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-green-100 rounded-lg">
-                <CheckCircle className="h-5 w-5 text-green-600" />
+              <div className="p-2 bg-success/10 rounded-lg">
+                <CheckCircle className="h-5 w-5 text-success" />
               </div>
               <div>
                 <p className="text-2xl font-bold">
@@ -70,8 +70,8 @@ export function SupplierSyncDashboard() {
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-red-100 rounded-lg">
-                <AlertTriangle className="h-5 w-5 text-red-600" />
+              <div className="p-2 bg-destructive/10 rounded-lg">
+                <AlertTriangle className="h-5 w-5 text-destructive" />
               </div>
               <div>
                 <p className="text-2xl font-bold">{highAlerts.length}</p>
@@ -84,7 +84,7 @@ export function SupplierSyncDashboard() {
           <CardContent className="pt-6">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-orange-100 rounded-lg">
-                <Bell className="h-5 w-5 text-orange-600" />
+                <Bell className="h-5 w-5 text-warning" />
               </div>
               <div>
                 <p className="text-2xl font-bold">{mediumAlerts.length}</p>
@@ -180,9 +180,9 @@ export function SupplierSyncDashboard() {
                     className="flex items-start gap-3 p-2 border rounded-lg"
                   >
                     {alert.severity === 'high' ? (
-                      <AlertTriangle className="h-4 w-4 text-red-500 mt-0.5 flex-shrink-0" />
+                      <AlertTriangle className="h-4 w-4 text-destructive mt-0.5 flex-shrink-0" />
                     ) : (
-                      <Bell className="h-4 w-4 text-orange-500 mt-0.5 flex-shrink-0" />
+                      <Bell className="h-4 w-4 text-warning mt-0.5 flex-shrink-0" />
                     )}
                     <div className="min-w-0 flex-1">
                       <p className="text-sm font-medium truncate">{alert.title}</p>
@@ -219,11 +219,11 @@ export function SupplierSyncDashboard() {
                 >
                   <div className="flex items-center gap-3">
                     {job.status === 'completed' ? (
-                      <CheckCircle className="h-4 w-4 text-green-500" />
+                      <CheckCircle className="h-4 w-4 text-success" />
                     ) : job.status === 'running' ? (
-                      <Loader2 className="h-4 w-4 text-blue-500 animate-spin" />
+                      <Loader2 className="h-4 w-4 text-info animate-spin" />
                     ) : (
-                      <AlertTriangle className="h-4 w-4 text-red-500" />
+                      <AlertTriangle className="h-4 w-4 text-destructive" />
                     )}
                     <div>
                       <p className="text-sm font-medium">{job.name || 'Sync fournisseur'}</p>

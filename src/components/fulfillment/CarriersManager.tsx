@@ -41,14 +41,14 @@ interface CarriersManagerProps {
 }
 
 const CARRIER_OPTIONS = [
-  { code: 'colissimo', name: 'Colissimo', logo: '📦', color: 'bg-yellow-500/10 text-yellow-600', description: 'Service postal français' },
-  { code: 'chronopost', name: 'Chronopost', logo: '⚡', color: 'bg-red-500/10 text-red-600', description: 'Livraison express' },
-  { code: 'ups', name: 'UPS', logo: '🟤', color: 'bg-amber-600/10 text-amber-700', description: 'United Parcel Service' },
-  { code: 'dhl', name: 'DHL', logo: '🟡', color: 'bg-yellow-400/10 text-yellow-600', description: 'DHL Express' },
+  { code: 'colissimo', name: 'Colissimo', logo: '📦', color: 'bg-warning/10 text-warning', description: 'Service postal français' },
+  { code: 'chronopost', name: 'Chronopost', logo: '⚡', color: 'bg-destructive/10 text-destructive', description: 'Livraison express' },
+  { code: 'ups', name: 'UPS', logo: '🟤', color: 'bg-warning/10 text-amber-700', description: 'United Parcel Service' },
+  { code: 'dhl', name: 'DHL', logo: '🟡', color: 'bg-yellow-400/10 text-warning', description: 'DHL Express' },
   { code: 'fedex', name: 'FedEx', logo: '🟣', color: 'bg-purple-500/10 text-purple-600', description: 'Federal Express' },
-  { code: 'mondialrelay', name: 'Mondial Relay', logo: '🔵', color: 'bg-blue-500/10 text-blue-600', description: 'Points relais' },
-  { code: 'gls', name: 'GLS', logo: '🟢', color: 'bg-green-500/10 text-green-600', description: 'General Logistics' },
-  { code: 'dpd', name: 'DPD', logo: '🔴', color: 'bg-rose-500/10 text-rose-600', description: 'Dynamic Parcel Distribution' },
+  { code: 'mondialrelay', name: 'Mondial Relay', logo: '🔵', color: 'bg-info/10 text-info', description: 'Points relais' },
+  { code: 'gls', name: 'GLS', logo: '🟢', color: 'bg-success/10 text-success', description: 'General Logistics' },
+  { code: 'dpd', name: 'DPD', logo: '🔴', color: 'bg-destructive/10 text-destructive', description: 'Dynamic Parcel Distribution' },
 ]
 
 export function CarriersManager({ carriers, isLoading, onCreate }: CarriersManagerProps) {
@@ -161,7 +161,7 @@ export function CarriersManager({ carriers, isLoading, onCreate }: CarriersManag
                         <CardTitle className="text-base flex items-center gap-2">
                           {carrier.name || option.name}
                           {carrier.is_default && (
-                            <Star className="w-3.5 h-3.5 text-yellow-500 fill-yellow-500" />
+                            <Star className="w-3.5 h-3.5 text-warning fill-yellow-500" />
                           )}
                         </CardTitle>
                         <CardDescription className="text-xs uppercase tracking-wide">
@@ -204,7 +204,7 @@ export function CarriersManager({ carriers, isLoading, onCreate }: CarriersManag
                       variant={carrier.is_active ? 'default' : 'secondary'}
                       className={cn(
                         "gap-1",
-                        carrier.is_active && "bg-green-500/10 text-green-600 hover:bg-green-500/20"
+                        carrier.is_active && "bg-success/10 text-success hover:bg-success/20"
                       )}
                     >
                       {carrier.is_active ? (

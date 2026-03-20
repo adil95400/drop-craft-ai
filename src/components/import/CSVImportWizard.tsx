@@ -707,13 +707,13 @@ export function CSVImportWizard() {
                 <h4 className="font-medium text-sm mb-1">Mapping intelligent</h4>
                 <p className="text-xs text-muted-foreground">Détection automatique des colonnes</p>
               </div>
-              <div className="p-4 rounded-lg bg-green-500/5 border border-green-500/10">
-                <Check className="w-5 h-5 text-green-600 mb-2" />
+              <div className="p-4 rounded-lg bg-success/5 border border-success/10">
+                <Check className="w-5 h-5 text-success mb-2" />
                 <h4 className="font-medium text-sm mb-1">Validation avancée</h4>
                 <p className="text-xs text-muted-foreground">Vérification des données en temps réel</p>
               </div>
-              <div className="p-4 rounded-lg bg-blue-500/5 border border-blue-500/10">
-                <FileText className="w-5 h-5 text-blue-600 mb-2" />
+              <div className="p-4 rounded-lg bg-info/5 border border-info/10">
+                <FileText className="w-5 h-5 text-info mb-2" />
                 <h4 className="font-medium text-sm mb-1">Format Shopify</h4>
                 <p className="text-xs text-muted-foreground">Compatible template Shopify FR/EN</p>
               </div>
@@ -774,7 +774,7 @@ export function CSVImportWizard() {
                         .slice(0, 5)
                         .map(([key, config]) => (
                           <Badge key={key} variant="outline" className="text-xs bg-background">
-                            <CheckCircle2 className="w-3 h-3 mr-1 text-green-500" />
+                            <CheckCircle2 className="w-3 h-3 mr-1 text-success" />
                             {config.label}
                           </Badge>
                         ))}
@@ -790,15 +790,15 @@ export function CSVImportWizard() {
                 {/* Stats bar */}
                 <div className="flex items-center gap-4 p-3 bg-muted/50 rounded-lg">
                   <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 rounded-full bg-green-500" />
+                    <div className="w-3 h-3 rounded-full bg-success" />
                     <span className="text-sm">{Object.values(mapping).filter(v => v && v !== 'ignore').length} mappées</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 rounded-full bg-yellow-500" />
+                    <div className="w-3 h-3 rounded-full bg-warning" />
                     <span className="text-sm">{csvData.headers.length - Object.values(mapping).filter(v => v && v !== 'ignore').length} non mappées</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 rounded-full bg-red-500" />
+                    <div className="w-3 h-3 rounded-full bg-destructive" />
                     <span className="text-sm">{requiredFields.filter(f => !Object.values(mapping).includes(f)).length} champs requis manquants</span>
                   </div>
                   {searchFilter && (
@@ -823,7 +823,7 @@ export function CSVImportWizard() {
                           className={cn(
                             "flex items-center gap-4 p-3 border rounded-xl transition-all duration-200 hover:shadow-sm",
                             isAutoMapped && "border-primary/40 bg-gradient-to-r from-primary/5 to-transparent",
-                            !isAutoMapped && isMapped && "border-green-500/40 bg-gradient-to-r from-green-500/5 to-transparent",
+                            !isAutoMapped && isMapped && "border-success/40 bg-gradient-to-r from-success/5 to-transparent",
                             !isMapped && "hover:border-muted-foreground/50"
                           )}
                         >
@@ -831,7 +831,7 @@ export function CSVImportWizard() {
                             <div className="flex items-center gap-2">
                               <div className={cn(
                                 "w-2 h-2 rounded-full shrink-0",
-                                isMapped ? "bg-green-500" : "bg-muted-foreground/30"
+                                isMapped ? "bg-success" : "bg-muted-foreground/30"
                               )} />
                               <Label className="font-semibold truncate">{header}</Label>
                               {isAutoMapped && (
@@ -839,9 +839,9 @@ export function CSVImportWizard() {
                                   variant="secondary" 
                                   className={cn(
                                     "text-[10px] px-1.5 py-0 shrink-0",
-                                    confidence >= 90 ? "bg-green-500/20 text-green-700 dark:text-green-400" :
+                                    confidence >= 90 ? "bg-success/20 text-success dark:text-green-400" :
                                     confidence >= 70 ? "bg-primary/20 text-primary" :
-                                    "bg-yellow-500/20 text-yellow-700 dark:text-yellow-400"
+                                    "bg-warning/20 text-yellow-700 dark:text-yellow-400"
                                   )}
                                 >
                                   {confidence >= 90 ? <CheckCircle2 className="w-2.5 h-2.5 mr-0.5" /> : <Sparkles className="w-2.5 h-2.5 mr-0.5" />}
@@ -857,11 +857,11 @@ export function CSVImportWizard() {
                           
                           <div className={cn(
                             "p-1.5 rounded-full transition-colors",
-                            isMapped ? "bg-green-500/10" : "bg-muted"
+                            isMapped ? "bg-success/10" : "bg-muted"
                           )}>
                             <ArrowRight className={cn(
                               "w-4 h-4 transition-colors",
-                              isMapped ? "text-green-500" : "text-muted-foreground"
+                              isMapped ? "text-success" : "text-muted-foreground"
                             )} />
                           </div>
                           
@@ -872,7 +872,7 @@ export function CSVImportWizard() {
                             >
                               <SelectTrigger className={cn(
                                 "transition-colors",
-                                isMapped && "border-green-500/50 bg-green-500/5"
+                                isMapped && "border-success/50 bg-success/5"
                               )}>
                                 <SelectValue placeholder="Sélectionner un champ..." />
                               </SelectTrigger>
@@ -959,7 +959,7 @@ export function CSVImportWizard() {
                 <CardHeader className="pb-3">
                   <CardTitle className="text-base flex items-center justify-between">
                     <span className="flex items-center gap-2">
-                      <AlertTriangle className="w-4 h-4 text-yellow-500" />
+                      <AlertTriangle className="w-4 h-4 text-warning" />
                       Erreurs de validation ({validationErrors.length})
                     </span>
                     <div className="flex items-center gap-2">
@@ -969,7 +969,7 @@ export function CSVImportWizard() {
                         </Badge>
                       )}
                       {errorsByCategory.format.length > 0 && (
-                        <Badge variant="outline" className="text-xs border-yellow-500 text-yellow-600">
+                        <Badge variant="outline" className="text-xs border-warning text-warning">
                           {errorsByCategory.format.length} format invalide
                         </Badge>
                       )}
@@ -989,13 +989,13 @@ export function CSVImportWizard() {
                           key={index} 
                           className={cn(
                             "flex items-start gap-3 text-sm p-2 rounded-lg",
-                            error.severity === 'error' ? "bg-red-500/5" : "bg-yellow-500/5"
+                            error.severity === 'error' ? "bg-destructive/5" : "bg-warning/5"
                           )}
                         >
                           {error.severity === 'error' ? (
-                            <X className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
+                            <X className="w-4 h-4 text-destructive shrink-0 mt-0.5" />
                           ) : (
-                            <AlertTriangle className="w-4 h-4 text-yellow-500 shrink-0 mt-0.5" />
+                            <AlertTriangle className="w-4 h-4 text-warning shrink-0 mt-0.5" />
                           )}
                           <div className="flex-1 min-w-0">
                             <span className="font-semibold">Ligne {error.row}</span>
@@ -1019,7 +1019,7 @@ export function CSVImportWizard() {
             <Card>
               <CardHeader>
                 <CardTitle className="text-base flex items-center gap-2">
-                  <Eye className="w-4 h-4 text-green-500" />
+                  <Eye className="w-4 h-4 text-success" />
                   Aperçu des produits valides ({validProducts.length})
                 </CardTitle>
               </CardHeader>
@@ -1103,7 +1103,7 @@ export function CSVImportWizard() {
                      <Card>
                        <CardHeader>
                          <CardTitle className="text-base flex items-center gap-2">
-                           <AlertTriangle className="w-4 h-4 text-yellow-500" />
+                           <AlertTriangle className="w-4 h-4 text-warning" />
                            Détails des erreurs (extrait)
                          </CardTitle>
                        </CardHeader>
@@ -1112,7 +1112,7 @@ export function CSVImportWizard() {
                            <div className="space-y-2 text-sm">
                              {importOutcome.errors.slice(0, 20).map((e, idx) => (
                                <div key={idx} className="flex items-start gap-2">
-                                 <AlertTriangle className="w-4 h-4 text-yellow-500 mt-0.5" />
+                                 <AlertTriangle className="w-4 h-4 text-warning mt-0.5" />
                                  <span>{e}</span>
                                </div>
                              ))}

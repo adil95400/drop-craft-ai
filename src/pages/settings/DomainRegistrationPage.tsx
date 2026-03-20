@@ -88,7 +88,7 @@ export default function DomainRegistrationPage() {
                   <span className="text-sm text-muted-foreground line-through">{opt.originalPrice}</span>
                   <span className="text-xs text-muted-foreground">/an</span>
                 </div>
-                <div className="flex items-center gap-1 text-xs text-green-600 mb-3">
+                <div className="flex items-center gap-1 text-xs text-success mb-3">
                   <CheckCircle2 className="h-3 w-3" /> Disponible
                 </div>
                 <Button className="w-full" size="sm" onClick={() => handleRegister(opt.tld)}>

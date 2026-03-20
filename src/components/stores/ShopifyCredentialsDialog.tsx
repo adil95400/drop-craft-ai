@@ -285,7 +285,7 @@ export function ShopifyCredentialsDialog({
             {shopInfo && (
               <div className="bg-muted/50 p-4 rounded-lg">
                 <div className="flex items-center gap-2 mb-2">
-                  <CheckCircle className="w-4 h-4 text-green-600" />
+                  <CheckCircle className="w-4 h-4 text-success" />
                   <span className="text-sm font-medium">Connexion réussie</span>
                 </div>
                 <p className="text-sm text-muted-foreground">
@@ -335,7 +335,7 @@ export function ShopifyCredentialsDialog({
               </div>
 
               {selectedLocations.length === 0 && (
-                <div className="flex items-center gap-2 p-2 text-amber-600 bg-amber-50 rounded-lg">
+                <div className="flex items-center gap-2 p-2 text-warning bg-amber-50 rounded-lg">
                   <AlertCircle className="w-4 h-4" />
                   <span className="text-xs">
                     Veuillez sélectionner au moins un emplacement pour continuer

@@ -91,7 +91,7 @@ function RulePreviewPanel({ ruleId, onClose }: { ruleId: string; onClose: () => 
               </Card>
               <Card>
                 <CardContent className="pt-3 pb-2 text-center">
-                  <p className="text-2xl font-bold text-green-600">{results.products_modified}</p>
+                  <p className="text-2xl font-bold text-success">{results.products_modified}</p>
                   <p className="text-xs text-muted-foreground">Seront modifiés</p>
                 </CardContent>
               </Card>
@@ -123,7 +123,7 @@ function RulePreviewPanel({ ruleId, onClose }: { ruleId: string; onClose: () => 
                                   {String(before ?? '∅')}
                                 </span>
                                 <ArrowRight className="h-3 w-3 shrink-0 text-muted-foreground" />
-                                <span className="text-green-600 font-medium truncate max-w-[150px]">
+                                <span className="text-success font-medium truncate max-w-[150px]">
                                   {String(after ?? '∅')}
                                 </span>
                               </div>
@@ -201,8 +201,8 @@ export function FeedRulesDashboard() {
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center gap-4">
-              <div className="p-2 bg-green-500/10 rounded-lg">
-                <CheckCircle2 className="h-5 w-5 text-green-500" />
+              <div className="p-2 bg-success/10 rounded-lg">
+                <CheckCircle2 className="h-5 w-5 text-success" />
               </div>
               <div>
                 <p className="text-2xl font-bold">{stats?.activeRules || 0}</p>
@@ -214,8 +214,8 @@ export function FeedRulesDashboard() {
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center gap-4">
-              <div className="p-2 bg-blue-500/10 rounded-lg">
-                <Zap className="h-5 w-5 text-blue-500" />
+              <div className="p-2 bg-info/10 rounded-lg">
+                <Zap className="h-5 w-5 text-info" />
               </div>
               <div>
                 <p className="text-2xl font-bold">{stats?.totalExecutions || 0}</p>
@@ -227,8 +227,8 @@ export function FeedRulesDashboard() {
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center gap-4">
-              <div className="p-2 bg-orange-500/10 rounded-lg">
-                <TrendingUp className="h-5 w-5 text-orange-500" />
+              <div className="p-2 bg-warning/10 rounded-lg">
+                <TrendingUp className="h-5 w-5 text-warning" />
               </div>
               <div>
                 <p className="text-2xl font-bold">{stats?.avgProductsModified || 0}</p>

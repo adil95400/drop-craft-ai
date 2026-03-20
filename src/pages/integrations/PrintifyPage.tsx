@@ -80,12 +80,12 @@ export default function PrintifyPage() {
     <div className="container mx-auto p-6 space-y-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <div className="w-14 h-14 rounded-xl bg-green-500/10 flex items-center justify-center text-3xl">🖨️</div>
+          <div className="w-14 h-14 rounded-xl bg-success/10 flex items-center justify-center text-3xl">🖨️</div>
           <div>
             <h1 className="text-2xl font-bold flex items-center gap-2">
               Printify
               {isConnected ? (
-                <Badge className="bg-green-500/10 text-green-600 border-green-500/30"><CheckCircle2 className="h-3 w-3 mr-1" />Connecté</Badge>
+                <Badge className="bg-success/10 text-success border-success/30"><CheckCircle2 className="h-3 w-3 mr-1" />Connecté</Badge>
               ) : (
                 <Badge variant="secondary"><AlertCircle className="h-3 w-3 mr-1" />Non connecté</Badge>
               )}
@@ -143,7 +143,7 @@ export default function PrintifyPage() {
                 <p className="text-sm font-medium mb-2">Avantages Printify</p>
                 <div className="grid grid-cols-2 gap-2 text-xs text-muted-foreground">
                   {['Zéro stock', '250+ fournisseurs', 'Mockup auto', 'Expédition mondiale', 'Marque blanche', 'Intégration Shopify'].map(f => (
-                    <span key={f} className="flex items-center gap-1"><CheckCircle2 className="h-3 w-3 text-green-500" />{f}</span>
+                    <span key={f} className="flex items-center gap-1"><CheckCircle2 className="h-3 w-3 text-success" />{f}</span>
                   ))}
                 </div>
               </div>

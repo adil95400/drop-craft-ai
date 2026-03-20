@@ -86,9 +86,9 @@ export default function AdminSecurityPage() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
           {[
             { label: 'Événements (30j)', value: stats.total_events ?? '—', icon: Activity, color: 'text-primary' },
-            { label: 'Utilisateurs actifs', value: stats.unique_users ?? '—', icon: Users, color: 'text-green-500' },
-            { label: 'Événements critiques', value: stats.critical_events ?? '0', icon: AlertTriangle, color: 'text-red-500' },
-            { label: 'Clés API actives', value: apiKeys.filter((k: any) => k.is_active).length, icon: Key, color: 'text-blue-500' },
+            { label: 'Utilisateurs actifs', value: stats.unique_users ?? '—', icon: Users, color: 'text-success' },
+            { label: 'Événements critiques', value: stats.critical_events ?? '0', icon: AlertTriangle, color: 'text-destructive' },
+            { label: 'Clés API actives', value: apiKeys.filter((k: any) => k.is_active).length, icon: Key, color: 'text-info' },
           ].map((kpi) => (
             <Card key={kpi.label} className="p-4">
               <div className="flex items-center gap-3">
@@ -192,13 +192,13 @@ export default function AdminSecurityPage() {
                 ].map((policy) => (
                   <div key={policy.name} className="flex items-center justify-between py-2 border-b border-border last:border-0">
                     <div className="flex items-center gap-3">
-                      <CheckCircle className="h-4 w-4 text-green-500" />
+                      <CheckCircle className="h-4 w-4 text-success" />
                       <div>
                         <p className="font-medium text-sm">{policy.name}</p>
                         <p className="text-xs text-muted-foreground">{policy.desc}</p>
                       </div>
                     </div>
-                    <Badge variant="outline" className="text-green-600">Actif</Badge>
+                    <Badge variant="outline" className="text-success">Actif</Badge>
                   </div>
                 ))}
               </div>

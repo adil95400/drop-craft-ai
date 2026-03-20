@@ -66,10 +66,10 @@ export default function PaymentSuccess() {
                 </>
               ) : (
                 <>
-                  <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center">
-                    <CheckCircle className="w-10 h-10 text-green-600" />
+                  <div className="w-16 h-16 rounded-full bg-success/10 flex items-center justify-center">
+                    <CheckCircle className="w-10 h-10 text-success" />
                   </div>
-                  <CardTitle className="text-3xl text-center text-green-600">
+                  <CardTitle className="text-3xl text-center text-success">
                     Paiement Réussi !
                   </CardTitle>
                 </>
@@ -85,7 +85,7 @@ export default function PaymentSuccess() {
               </div>
             ) : (
               <>
-                <div className="bg-green-50 border border-green-200 rounded-lg p-6 space-y-3">
+                <div className="bg-success/5 border border-success/20 rounded-lg p-6 space-y-3">
                   <h3 className="font-semibold text-lg">🎉 Bienvenue dans votre nouveau plan !</h3>
                   <p className="text-sm text-muted-foreground">
                     Votre abonnement a été activé avec succès. Vous avez maintenant accès à toutes les fonctionnalités premium.

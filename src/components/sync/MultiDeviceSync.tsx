@@ -110,10 +110,10 @@ const getDeviceIcon = (type: Device['type']) => {
 
 const getStatusIcon = (status: SyncItem['status']) => {
   switch (status) {
-    case 'synced': return <Check className="h-4 w-4 text-green-500" />;
-    case 'syncing': return <RefreshCw className="h-4 w-4 text-blue-500 animate-spin" />;
-    case 'pending': return <Clock className="h-4 w-4 text-yellow-500" />;
-    case 'error': return <AlertCircle className="h-4 w-4 text-red-500" />;
+    case 'synced': return <Check className="h-4 w-4 text-success" />;
+    case 'syncing': return <RefreshCw className="h-4 w-4 text-info animate-spin" />;
+    case 'pending': return <Clock className="h-4 w-4 text-warning" />;
+    case 'error': return <AlertCircle className="h-4 w-4 text-destructive" />;
   }
 };
 
@@ -198,10 +198,10 @@ export function MultiDeviceSync() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">En ligne</p>
-                <p className="text-2xl font-bold text-green-500">{onlineDevices}</p>
+                <p className="text-2xl font-bold text-success">{onlineDevices}</p>
               </div>
-              <div className="h-12 w-12 bg-green-500/10 rounded-full flex items-center justify-center">
-                <Wifi className="h-6 w-6 text-green-500" />
+              <div className="h-12 w-12 bg-success/10 rounded-full flex items-center justify-center">
+                <Wifi className="h-6 w-6 text-success" />
               </div>
             </div>
           </CardContent>
@@ -214,8 +214,8 @@ export function MultiDeviceSync() {
                 <p className="text-sm text-muted-foreground">Données sync</p>
                 <p className="text-2xl font-bold">{(totalSyncSize / 1024).toFixed(1)} MB</p>
               </div>
-              <div className="h-12 w-12 bg-blue-500/10 rounded-full flex items-center justify-center">
-                <Activity className="h-6 w-6 text-blue-500" />
+              <div className="h-12 w-12 bg-info/10 rounded-full flex items-center justify-center">
+                <Activity className="h-6 w-6 text-info" />
               </div>
             </div>
           </CardContent>
@@ -274,7 +274,7 @@ export function MultiDeviceSync() {
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-4">
                       <div className={`h-12 w-12 rounded-full flex items-center justify-center ${
-                        device.isOnline ? 'bg-green-500/10' : 'bg-muted'
+                        device.isOnline ? 'bg-success/10' : 'bg-muted'
                       }`}>
                         {getDeviceIcon(device.type)}
                       </div>
@@ -287,7 +287,7 @@ export function MultiDeviceSync() {
                             </Badge>
                           )}
                           {device.isOnline ? (
-                            <Badge variant="outline" className="text-xs text-green-500 border-green-500/50">
+                            <Badge variant="outline" className="text-xs text-success border-success/50">
                               <Wifi className="h-3 w-3 mr-1" />
                               En ligne
                             </Badge>

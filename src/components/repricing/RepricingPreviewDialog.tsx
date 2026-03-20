@@ -35,14 +35,14 @@ export function RepricingPreviewDialog({
   if (!preview) return null;
 
   const getPriceChangeIcon = (change: number) => {
-    if (change > 0) return <TrendingUp className="h-4 w-4 text-green-600" />;
-    if (change < 0) return <TrendingDown className="h-4 w-4 text-red-600" />;
+    if (change > 0) return <TrendingUp className="h-4 w-4 text-success" />;
+    if (change < 0) return <TrendingDown className="h-4 w-4 text-destructive" />;
     return <Minus className="h-4 w-4 text-muted-foreground" />;
   };
 
   const getPriceChangeColor = (change: number) => {
-    if (change > 0) return 'text-green-600';
-    if (change < 0) return 'text-red-600';
+    if (change > 0) return 'text-success';
+    if (change < 0) return 'text-destructive';
     return 'text-muted-foreground';
   };
 
@@ -58,11 +58,11 @@ export function RepricingPreviewDialog({
         </DialogHeader>
 
         <div className="flex gap-4 mb-4">
-          <Badge variant="outline" className="bg-green-50">
+          <Badge variant="outline" className="bg-success/5">
             <TrendingUp className="h-3 w-3 mr-1" />
             {totalIncrease} hausses
           </Badge>
-          <Badge variant="outline" className="bg-red-50">
+          <Badge variant="outline" className="bg-destructive/5">
             <TrendingDown className="h-3 w-3 mr-1" />
             {totalDecrease} baisses
           </Badge>

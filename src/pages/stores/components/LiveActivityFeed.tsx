@@ -60,11 +60,11 @@ export function LiveActivityFeed({ storeId }: LiveActivityFeedProps) {
 
   const getIcon = (type: ActivityItem['type']) => {
     switch (type) {
-      case 'sync': return <Zap className="w-4 h-4 text-blue-500" />
-      case 'order': return <ShoppingCart className="w-4 h-4 text-green-500" />
+      case 'sync': return <Zap className="w-4 h-4 text-info" />
+      case 'order': return <ShoppingCart className="w-4 h-4 text-success" />
       case 'product': return <Package className="w-4 h-4 text-purple-500" />
-      case 'error': return <AlertCircle className="w-4 h-4 text-red-500" />
-      case 'success': return <CheckCircle className="w-4 h-4 text-green-500" />
+      case 'error': return <AlertCircle className="w-4 h-4 text-destructive" />
+      case 'success': return <CheckCircle className="w-4 h-4 text-success" />
       default: return <Activity className="w-4 h-4 text-muted-foreground" />
     }
   }

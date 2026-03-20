@@ -76,7 +76,7 @@ export const ProductOptimizationModal: React.FC<ProductOptimizationModalProps> =
     toast({ title: "Génération IA lancée", description: `Création automatique du ${type} en cours...` });
   };
 
-  const scoreColor = (s: number) => s >= 80 ? 'text-green-600' : s >= 60 ? 'text-yellow-600' : 'text-red-600';
+  const scoreColor = (s: number) => s >= 80 ? 'text-success' : s >= 60 ? 'text-warning' : 'text-destructive';
   const scoreBadge = (s: number) => s >= 80 ? 'default' : 'secondary';
 
   return (

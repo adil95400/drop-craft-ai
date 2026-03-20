@@ -257,7 +257,7 @@ export default function VideoTutorialsPage() {
                   {tutorials.reduce((sum, t) => sum + t.views, 0).toLocaleString()}
                 </p>
               </div>
-              <Play className="h-8 w-8 text-green-500" />
+              <Play className="h-8 w-8 text-success" />
             </div>
           </CardContent>
         </Card>
@@ -269,7 +269,7 @@ export default function VideoTutorialsPage() {
                 <p className="text-sm text-muted-foreground">Catégories</p>
                 <p className="text-2xl font-bold">{categories.length - 1}</p>
               </div>
-              <Filter className="h-8 w-8 text-orange-500" />
+              <Filter className="h-8 w-8 text-warning" />
             </div>
           </CardContent>
         </Card>
@@ -287,7 +287,7 @@ export default function VideoTutorialsPage() {
                   }).length}
                 </p>
               </div>
-              <Video className="h-8 w-8 text-blue-500" />
+              <Video className="h-8 w-8 text-info" />
             </div>
           </CardContent>
         </Card>

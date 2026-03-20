@@ -56,10 +56,10 @@ export function NotificationCenter() {
 
   const getTypeIcon = (type: Notification['type']) => {
     switch (type) {
-      case 'success': return <CheckCircle2 className="h-4 w-4 text-green-500" />
-      case 'warning': return <AlertTriangle className="h-4 w-4 text-yellow-500" />
-      case 'error': return <AlertTriangle className="h-4 w-4 text-red-500" />
-      case 'info': return <Info className="h-4 w-4 text-blue-500" />
+      case 'success': return <CheckCircle2 className="h-4 w-4 text-success" />
+      case 'warning': return <AlertTriangle className="h-4 w-4 text-warning" />
+      case 'error': return <AlertTriangle className="h-4 w-4 text-destructive" />
+      case 'info': return <Info className="h-4 w-4 text-info" />
       default: return <Bell className="h-4 w-4 text-gray-500" />
     }
   }
@@ -76,10 +76,10 @@ export function NotificationCenter() {
 
   const getPriorityColor = (priority: Notification['priority']) => {
     switch (priority) {
-      case 'urgent': return 'bg-red-500'
-      case 'high': return 'bg-orange-500'
-      case 'medium': return 'bg-yellow-500'
-      case 'low': return 'bg-green-500'
+      case 'urgent': return 'bg-destructive'
+      case 'high': return 'bg-warning'
+      case 'medium': return 'bg-warning'
+      case 'low': return 'bg-success'
       default: return 'bg-gray-500'
     }
   }
@@ -126,9 +126,9 @@ export function NotificationCenter() {
         <div className="flex items-center justify-between">
           <div>
             <CardTitle className="flex items-center gap-2">
-              <Bell className="h-5 w-5 text-blue-500" />
+              <Bell className="h-5 w-5 text-info" />
               Centre de Notifications
-              {unreadCount > 0 && <Badge className="bg-red-500 text-white ml-2">{unreadCount}</Badge>}
+              {unreadCount > 0 && <Badge className="bg-destructive text-white ml-2">{unreadCount}</Badge>}
             </CardTitle>
             <CardDescription>Restez informé des événements importants en temps réel</CardDescription>
           </div>

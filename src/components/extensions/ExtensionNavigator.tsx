@@ -39,7 +39,7 @@ const extensionCards: ExtensionCard[] = [
     route: '/extensions/marketplace',
     planRequired: null,
     badge: 'Gratuit',
-    color: 'bg-blue-50 border-blue-200 hover:bg-blue-100',
+    color: 'bg-info/5 border-info/20 hover:bg-info/10',
     status: 'available'
   },
   {
@@ -50,7 +50,7 @@ const extensionCards: ExtensionCard[] = [
     route: '/extensions/developer',
     planRequired: null,
     badge: 'Dev',
-    color: 'bg-green-50 border-green-200 hover:bg-green-100',
+    color: 'bg-success/5 border-success/20 hover:bg-success/10',
     status: 'available'
   },
   {
@@ -83,7 +83,7 @@ const extensionCards: ExtensionCard[] = [
     route: '/extensions/sso',
     planRequired: 'ultra_pro',
     badge: 'Ultra Pro',
-    color: 'bg-red-50 border-red-200 hover:bg-red-100',
+    color: 'bg-destructive/5 border-destructive/20 hover:bg-destructive/10',
     status: 'available'
   },
   {
@@ -94,7 +94,7 @@ const extensionCards: ExtensionCard[] = [
     route: '/import',
     planRequired: 'pro',
     badge: 'IA',
-    color: 'bg-yellow-50 border-yellow-200 hover:bg-yellow-100',
+    color: 'bg-warning/5 border-warning/20 hover:bg-warning/10',
     status: 'available'
   },
   {
@@ -135,7 +135,7 @@ export const ExtensionNavigator: React.FC = () => {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'available':
-        return <Badge className="bg-green-100 text-green-800">Disponible</Badge>
+        return <Badge className="bg-success/10 text-success">Disponible</Badge>
       case 'beta':
         return <Badge className="bg-orange-100 text-orange-800">Beta</Badge>
       case 'coming-soon':
@@ -163,11 +163,11 @@ export const ExtensionNavigator: React.FC = () => {
       {/* Quick Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <Card className="text-center p-4">
-          <div className="text-2xl font-bold text-blue-600">250+</div>
+          <div className="text-2xl font-bold text-info">250+</div>
           <div className="text-sm text-muted-foreground">Extensions disponibles</div>
         </Card>
         <Card className="text-center p-4">
-          <div className="text-2xl font-bold text-green-600">50k+</div>
+          <div className="text-2xl font-bold text-success">50k+</div>
           <div className="text-sm text-muted-foreground">Téléchargements</div>
         </Card>
         <Card className="text-center p-4">
@@ -175,7 +175,7 @@ export const ExtensionNavigator: React.FC = () => {
           <div className="text-sm text-muted-foreground">Développeurs</div>
         </Card>
         <Card className="text-center p-4">
-          <div className="text-2xl font-bold text-orange-600">4.8⭐</div>
+          <div className="text-2xl font-bold text-warning">4.8⭐</div>
           <div className="text-sm text-muted-foreground">Note moyenne</div>
         </Card>
       </div>
@@ -225,7 +225,7 @@ export const ExtensionNavigator: React.FC = () => {
                     </Button>
                   ) : (
                     <div className="w-full text-center">
-                      <Badge className="bg-yellow-100 text-yellow-800 mb-2">
+                      <Badge className="bg-warning/10 text-yellow-800 mb-2">
                         Plan {extension.planRequired?.replace('_', ' ').toUpperCase()} requis
                       </Badge>
                       <Button variant="outline" size="sm" className="w-full">

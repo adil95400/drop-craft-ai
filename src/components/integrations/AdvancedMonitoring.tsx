@@ -50,10 +50,10 @@ export const AdvancedMonitoring = () => {
   ]
 
   const statusColors = {
-    success: 'bg-green-100 text-green-800 border-green-200',
-    warning: 'bg-yellow-100 text-yellow-800 border-yellow-200',
-    error: 'bg-red-100 text-red-800 border-red-200',
-    info: 'bg-blue-100 text-blue-800 border-blue-200'
+    success: 'bg-success/10 text-success border-success/20',
+    warning: 'bg-warning/10 text-yellow-800 border-warning/20',
+    error: 'bg-destructive/10 text-red-800 border-destructive/20',
+    info: 'bg-info/10 text-blue-800 border-info/20'
   }
 
   useEffect(() => {
@@ -191,17 +191,17 @@ export const AdvancedMonitoring = () => {
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'success': return <CheckCircle className="w-4 h-4 text-green-600" />
-      case 'warning': return <AlertTriangle className="w-4 h-4 text-yellow-600" />
-      case 'error': return <AlertTriangle className="w-4 h-4 text-red-600" />
-      case 'info': return <Globe className="w-4 h-4 text-blue-600" />
+      case 'success': return <CheckCircle className="w-4 h-4 text-success" />
+      case 'warning': return <AlertTriangle className="w-4 h-4 text-warning" />
+      case 'error': return <AlertTriangle className="w-4 h-4 text-destructive" />
+      case 'info': return <Globe className="w-4 h-4 text-info" />
       default: return <Clock className="w-4 h-4 text-gray-400" />
     }
   }
 
   const getChangeIcon = (change: number) => {
-    if (change > 0) return <TrendingUp className="w-3 h-3 text-green-600" />
-    if (change < 0) return <TrendingDown className="w-3 h-3 text-red-600" />
+    if (change > 0) return <TrendingUp className="w-3 h-3 text-success" />
+    if (change < 0) return <TrendingDown className="w-3 h-3 text-destructive" />
     return null
   }
 
@@ -381,7 +381,7 @@ export const AdvancedMonitoring = () => {
                 {alerts.length === 0 && <p className="text-muted-foreground text-center py-4">Aucune alerte active</p>}
                 {alerts.map(alert => (
                   <div key={alert.id} className={`p-4 rounded-lg border ${alert.acknowledged ? 'opacity-50' : ''} ${
-                    alert.type === 'error' ? 'border-red-200 bg-red-50' : alert.type === 'warning' ? 'border-yellow-200 bg-yellow-50' : 'border-blue-200 bg-blue-50'
+                    alert.type === 'error' ? 'border-destructive/20 bg-destructive/5' : alert.type === 'warning' ? 'border-warning/20 bg-warning/5' : 'border-info/20 bg-info/5'
                   }`}>
                     <div className="flex items-start justify-between">
                       <div className="flex items-start gap-3">

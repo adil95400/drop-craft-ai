@@ -72,8 +72,8 @@ export function RepricingRulesList({ onEditRule, onPreviewRule }: RepricingRules
 
   const getRuleTypeColor = (type?: string) => {
     const colors: Record<string, string> = {
-      fixed_margin: 'bg-blue-100 text-blue-700',
-      target_margin: 'bg-green-100 text-green-700',
+      fixed_margin: 'bg-info/10 text-blue-700',
+      target_margin: 'bg-success/10 text-success',
       competitive: 'bg-orange-100 text-orange-700',
       dynamic: 'bg-purple-100 text-purple-700',
     };

@@ -34,7 +34,7 @@ const navItems: QuickNavItem[] = [
     description: 'Gérer vos publicités multi-plateformes',
     icon: Megaphone,
     route: '/marketing/ads',
-    color: 'text-orange-500 bg-orange-500/10',
+    color: 'text-warning bg-warning/10',
   },
   {
     id: 'email',
@@ -42,7 +42,7 @@ const navItems: QuickNavItem[] = [
     description: 'Créer et envoyer des campagnes email',
     icon: Mail,
     route: '/marketing/email',
-    color: 'text-blue-500 bg-blue-500/10',
+    color: 'text-info bg-info/10',
   },
   {
     id: 'promotions',
@@ -50,7 +50,7 @@ const navItems: QuickNavItem[] = [
     description: 'Codes promo et remises automatiques',
     icon: Tag,
     route: '/marketing/promotions',
-    color: 'text-emerald-500 bg-emerald-500/10',
+    color: 'text-success bg-success/10',
   },
   {
     id: 'abandoned',
@@ -58,7 +58,7 @@ const navItems: QuickNavItem[] = [
     description: 'Récupérer les ventes perdues',
     icon: ShoppingCart,
     route: '/marketing/abandoned-cart',
-    color: 'text-red-500 bg-red-500/10',
+    color: 'text-destructive bg-destructive/10',
   },
   {
     id: 'loyalty',
@@ -66,7 +66,7 @@ const navItems: QuickNavItem[] = [
     description: 'Programme de fidélité client',
     icon: Award,
     route: '/marketing/loyalty',
-    color: 'text-amber-500 bg-amber-500/10',
+    color: 'text-warning bg-warning/10',
   },
   {
     id: 'flash-sales',
@@ -115,7 +115,7 @@ const navItems: QuickNavItem[] = [
     description: 'Génération de contenu automatique',
     icon: Sparkles,
     route: '/marketing/content-generation',
-    color: 'text-rose-500 bg-rose-500/10',
+    color: 'text-destructive bg-destructive/10',
     badge: 'IA',
   },
   {

@@ -224,9 +224,9 @@ export function WorkflowTemplates() {
 
   const getComplexityColor = (complexity: WorkflowTemplate['complexity']) => {
     switch (complexity) {
-      case 'simple': return 'text-green-600 bg-green-50 border-green-200';
-      case 'medium': return 'text-amber-600 bg-amber-50 border-amber-200';
-      case 'advanced': return 'text-red-600 bg-red-50 border-red-200';
+      case 'simple': return 'text-success bg-success/5 border-success/20';
+      case 'medium': return 'text-warning bg-amber-50 border-amber-200';
+      case 'advanced': return 'text-destructive bg-destructive/5 border-destructive/20';
     }
   };
 
@@ -305,7 +305,7 @@ export function WorkflowTemplates() {
                         </Badge>
                       )}
                       {template.new && (
-                        <Badge className="text-xs bg-green-500">
+                        <Badge className="text-xs bg-success">
                           Nouveau
                         </Badge>
                       )}

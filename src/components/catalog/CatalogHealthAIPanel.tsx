@@ -50,14 +50,14 @@ export function CatalogHealthAIPanel() {
   const trendIcon = aiStats.healthTrendPrediction === 'improving' ? TrendingUp :
                     aiStats.healthTrendPrediction === 'declining' ? TrendingDown : Minus
   
-  const trendColor = aiStats.healthTrendPrediction === 'improving' ? 'text-emerald-500' :
-                     aiStats.healthTrendPrediction === 'declining' ? 'text-red-500' : 'text-amber-500'
+  const trendColor = aiStats.healthTrendPrediction === 'improving' ? 'text-success' :
+                     aiStats.healthTrendPrediction === 'declining' ? 'text-destructive' : 'text-warning'
 
   const riskColors = {
-    low: 'bg-emerald-500/10 text-emerald-700 border-emerald-500/20',
-    medium: 'bg-amber-500/10 text-amber-700 border-amber-500/20',
-    high: 'bg-orange-500/10 text-orange-700 border-orange-500/20',
-    critical: 'bg-red-500/10 text-red-700 border-red-500/20'
+    low: 'bg-success/10 text-emerald-700 border-emerald-500/20',
+    medium: 'bg-warning/10 text-amber-700 border-amber-500/20',
+    high: 'bg-warning/10 text-orange-700 border-orange-500/20',
+    critical: 'bg-destructive/10 text-red-700 border-destructive/20'
   }
 
   return (
@@ -140,7 +140,7 @@ export function CatalogHealthAIPanel() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-lg">
-            <AlertTriangle className="h-5 w-5 text-amber-500" />
+            <AlertTriangle className="h-5 w-5 text-warning" />
             Actions prioritaires
             <Badge variant="secondary" className="ml-2">
               {aiStats.priorityActions.length}
@@ -154,7 +154,7 @@ export function CatalogHealthAIPanel() {
             ))}
             {aiStats.priorityActions.length === 0 && (
               <div className="text-center py-8 text-muted-foreground">
-                <CheckCircle className="h-12 w-12 mx-auto mb-3 text-emerald-500" />
+                <CheckCircle className="h-12 w-12 mx-auto mb-3 text-success" />
                 <p>Aucune action prioritaire identifiée</p>
                 <p className="text-sm">Votre catalogue est en excellente santé !</p>
               </div>
@@ -203,21 +203,21 @@ export function CatalogHealthAIPanel() {
                     <div className="flex items-center gap-2">
                       <span className={cn(
                         "text-sm font-medium",
-                        insight.healthScore >= 70 ? "text-emerald-600" :
-                        insight.healthScore >= 50 ? "text-amber-600" : "text-red-600"
+                        insight.healthScore >= 70 ? "text-success" :
+                        insight.healthScore >= 50 ? "text-warning" : "text-destructive"
                       )}>
                         {insight.healthScore}%
                       </span>
-                      {insight.trend === 'up' && <TrendingUp className="h-4 w-4 text-emerald-500" />}
-                      {insight.trend === 'down' && <TrendingDown className="h-4 w-4 text-red-500" />}
+                      {insight.trend === 'up' && <TrendingUp className="h-4 w-4 text-success" />}
+                      {insight.trend === 'down' && <TrendingDown className="h-4 w-4 text-destructive" />}
                     </div>
                   </div>
                   <Progress 
                     value={insight.healthScore} 
                     className={cn(
                       "h-2",
-                      insight.healthScore >= 70 ? "[&>div]:bg-emerald-500" :
-                      insight.healthScore >= 50 ? "[&>div]:bg-amber-500" : "[&>div]:bg-red-500"
+                      insight.healthScore >= 70 ? "[&>div]:bg-success" :
+                      insight.healthScore >= 50 ? "[&>div]:bg-warning" : "[&>div]:bg-destructive"
                     )}
                   />
                   {insight.issues.length > 0 && (
@@ -236,7 +236,7 @@ export function CatalogHealthAIPanel() {
       </Card>
 
       {/* Benchmark */}
-      <Card className="bg-gradient-to-br from-blue-500/5 to-cyan-500/5 border-blue-500/20">
+      <Card className="bg-gradient-to-br from-info/5 to-cyan-500/5 border-info/20">
         <CardContent className="p-6">
           <div className="flex items-center justify-between">
             <div>
@@ -272,10 +272,10 @@ export function CatalogHealthAIPanel() {
 // Sous-composant pour les actions prioritaires
 function PriorityActionCard({ action }: { action: HealthPriorityAction }) {
   const typeColors = {
-    critical: 'border-l-red-500 bg-red-500/5',
-    high: 'border-l-orange-500 bg-orange-500/5',
-    medium: 'border-l-amber-500 bg-amber-500/5',
-    low: 'border-l-blue-500 bg-blue-500/5'
+    critical: 'border-l-red-500 bg-destructive/5',
+    high: 'border-l-orange-500 bg-warning/5',
+    medium: 'border-l-amber-500 bg-warning/5',
+    low: 'border-l-blue-500 bg-info/5'
   }
 
   return (
@@ -329,9 +329,9 @@ function RecommendationCard({
   }
 
   const impactColors = {
-    high: 'text-emerald-600',
-    medium: 'text-amber-600',
-    low: 'text-blue-600'
+    high: 'text-success',
+    medium: 'text-warning',
+    low: 'text-info'
   }
 
   return (

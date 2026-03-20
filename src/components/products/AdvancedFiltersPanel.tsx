@@ -515,7 +515,7 @@ export function AdvancedFiltersPanel({
             <div className="grid grid-cols-1 gap-2">
               <div className="flex items-center justify-between p-2 rounded-lg bg-muted/50">
                 <div className="flex items-center gap-2">
-                  <Star className="h-4 w-4 text-yellow-500" />
+                  <Star className="h-4 w-4 text-warning" />
                   <Label className="text-xs">Bestseller</Label>
                 </div>
                 <Switch
@@ -525,7 +525,7 @@ export function AdvancedFiltersPanel({
               </div>
               <div className="flex items-center justify-between p-2 rounded-lg bg-muted/50">
                 <div className="flex items-center gap-2">
-                  <TrendingUp className="h-4 w-4 text-green-500" />
+                  <TrendingUp className="h-4 w-4 text-success" />
                   <Label className="text-xs">Tendance</Label>
                 </div>
                 <Switch

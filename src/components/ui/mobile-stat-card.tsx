@@ -52,7 +52,7 @@ export function MobileStatCard({
           <p className="text-[9px] sm:text-xs text-muted-foreground mt-1 line-clamp-1">
             {trend !== undefined && (
               <span className={cn(
-                trend >= 0 ? 'text-green-600' : 'text-red-600'
+                trend >= 0 ? 'text-success' : 'text-destructive'
               )}>
                 {trend >= 0 ? '+' : ''}{trend}%
               </span>

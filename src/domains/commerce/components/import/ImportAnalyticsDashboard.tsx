@@ -93,8 +93,8 @@ export const ImportAnalyticsDashboard = ({ jobs, products }: ImportAnalyticsDash
             <p className="text-xs text-muted-foreground flex items-center gap-1 mt-1">
               {weekTrend >= 0 ? (
                 <>
-                  <TrendingUp className="h-3 w-3 text-green-500" />
-                  <span className="text-green-500">+{weekTrendPercent}%</span>
+                  <TrendingUp className="h-3 w-3 text-success" />
+                  <span className="text-success">+{weekTrendPercent}%</span>
                 </>
               ) : (
                 <>
@@ -272,8 +272,8 @@ export const ImportAnalyticsDashboard = ({ jobs, products }: ImportAnalyticsDash
             )}
             
             {weekTrend > 0 && (
-              <div className="flex items-start gap-3 p-3 rounded-lg bg-green-500/10 border border-green-500/20">
-                <TrendingUp className="h-5 w-5 text-green-500 mt-0.5" />
+              <div className="flex items-start gap-3 p-3 rounded-lg bg-success/10 border border-success/20">
+                <TrendingUp className="h-5 w-5 text-success mt-0.5" />
                 <div className="flex-1">
                   <p className="text-sm font-medium">Activité en hausse</p>
                   <p className="text-xs text-muted-foreground mt-1">
@@ -284,8 +284,8 @@ export const ImportAnalyticsDashboard = ({ jobs, products }: ImportAnalyticsDash
             )}
 
             {!isNaN(avgTimeMinutes) && avgTimeMinutes > 10 && (
-              <div className="flex items-start gap-3 p-3 rounded-lg bg-amber-500/10 border border-amber-500/20">
-                <Clock className="h-5 w-5 text-amber-500 mt-0.5" />
+              <div className="flex items-start gap-3 p-3 rounded-lg bg-warning/10 border border-amber-500/20">
+                <Clock className="h-5 w-5 text-warning mt-0.5" />
                 <div className="flex-1">
                   <p className="text-sm font-medium">Temps d'import élevé</p>
                   <p className="text-xs text-muted-foreground mt-1">
@@ -296,8 +296,8 @@ export const ImportAnalyticsDashboard = ({ jobs, products }: ImportAnalyticsDash
             )}
 
             {successRate >= 90 && (
-              <div className="flex items-start gap-3 p-3 rounded-lg bg-green-500/10 border border-green-500/20">
-                <TrendingUp className="h-5 w-5 text-green-500 mt-0.5" />
+              <div className="flex items-start gap-3 p-3 rounded-lg bg-success/10 border border-success/20">
+                <TrendingUp className="h-5 w-5 text-success mt-0.5" />
                 <div className="flex-1">
                   <p className="text-sm font-medium">Excellente performance</p>
                   <p className="text-xs text-muted-foreground mt-1">

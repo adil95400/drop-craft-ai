@@ -94,18 +94,18 @@ export default function SimpleHistoryPage() {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'completed': case 'success': return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
-      case 'processing': return 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400'
-      case 'failed': case 'error': return 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400'
+      case 'completed': case 'success': return 'bg-success/10 text-success dark:bg-green-900/30 dark:text-green-400'
+      case 'processing': return 'bg-info/10 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400'
+      case 'failed': case 'error': return 'bg-destructive/10 text-red-800 dark:bg-red-900/30 dark:text-red-400'
       default: return 'bg-muted text-muted-foreground'
     }
   }
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'completed': case 'success': return <CheckCircle2 className="h-4 w-4 text-green-600" />
-      case 'processing': return <Loader2 className="h-4 w-4 animate-spin text-blue-600" />
-      case 'failed': case 'error': return <XCircle className="h-4 w-4 text-red-600" />
+      case 'completed': case 'success': return <CheckCircle2 className="h-4 w-4 text-success" />
+      case 'processing': return <Loader2 className="h-4 w-4 animate-spin text-info" />
+      case 'failed': case 'error': return <XCircle className="h-4 w-4 text-destructive" />
       default: return <Clock className="h-4 w-4 text-muted-foreground" />
     }
   }
@@ -121,10 +121,10 @@ export default function SimpleHistoryPage() {
   }
 
   const getTypeIcon = (type: string) => {
-    if (type?.toLowerCase().includes('shopify')) return <ShoppingBag className="h-5 w-5 text-green-600" />
-    if (type?.toLowerCase().includes('csv') || type?.toLowerCase().includes('excel')) return <FileSpreadsheet className="h-5 w-5 text-blue-600" />
-    if (type?.toLowerCase().includes('aliexpress')) return <Package className="h-5 w-5 text-orange-600" />
-    if (type?.toLowerCase().includes('amazon')) return <Package className="h-5 w-5 text-yellow-600" />
+    if (type?.toLowerCase().includes('shopify')) return <ShoppingBag className="h-5 w-5 text-success" />
+    if (type?.toLowerCase().includes('csv') || type?.toLowerCase().includes('excel')) return <FileSpreadsheet className="h-5 w-5 text-info" />
+    if (type?.toLowerCase().includes('aliexpress')) return <Package className="h-5 w-5 text-warning" />
+    if (type?.toLowerCase().includes('amazon')) return <Package className="h-5 w-5 text-warning" />
     return <Link2 className="h-5 w-5 text-primary" />
   }
 
@@ -171,9 +171,9 @@ export default function SimpleHistoryPage() {
         <Card>
           <CardContent className="pt-5 pb-4">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-green-500/10 rounded-lg"><CheckCircle2 className="h-4 w-4 text-green-600" /></div>
+              <div className="p-2 bg-success/10 rounded-lg"><CheckCircle2 className="h-4 w-4 text-success" /></div>
               <div>
-                <p className="text-2xl font-bold text-green-600">{stats.completed}</p>
+                <p className="text-2xl font-bold text-success">{stats.completed}</p>
                 <p className="text-xs text-muted-foreground">Réussis</p>
               </div>
             </div>
@@ -182,9 +182,9 @@ export default function SimpleHistoryPage() {
         <Card>
           <CardContent className="pt-5 pb-4">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-red-500/10 rounded-lg"><XCircle className="h-4 w-4 text-red-600" /></div>
+              <div className="p-2 bg-destructive/10 rounded-lg"><XCircle className="h-4 w-4 text-destructive" /></div>
               <div>
-                <p className="text-2xl font-bold text-red-600">{stats.failed}</p>
+                <p className="text-2xl font-bold text-destructive">{stats.failed}</p>
                 <p className="text-xs text-muted-foreground">Échoués</p>
               </div>
             </div>
@@ -193,9 +193,9 @@ export default function SimpleHistoryPage() {
         <Card>
           <CardContent className="pt-5 pb-4">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-blue-500/10 rounded-lg"><Loader2 className="h-4 w-4 text-blue-600" /></div>
+              <div className="p-2 bg-info/10 rounded-lg"><Loader2 className="h-4 w-4 text-info" /></div>
               <div>
-                <p className="text-2xl font-bold text-blue-600">{stats.processing}</p>
+                <p className="text-2xl font-bold text-info">{stats.processing}</p>
                 <p className="text-xs text-muted-foreground">En cours</p>
               </div>
             </div>
@@ -215,7 +215,7 @@ export default function SimpleHistoryPage() {
         <Card>
           <CardContent className="pt-5 pb-4">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-emerald-500/10 rounded-lg"><TrendingUp className="h-4 w-4 text-emerald-600" /></div>
+              <div className="p-2 bg-success/10 rounded-lg"><TrendingUp className="h-4 w-4 text-success" /></div>
               <div>
                 <p className="text-2xl font-bold">{stats.successRate}%</p>
                 <p className="text-xs text-muted-foreground">Taux succès</p>
@@ -337,7 +337,7 @@ export default function SimpleHistoryPage() {
                       </div>
                       {record.products_failed > 0 && (
                         <div className="text-center">
-                          <p className="font-semibold text-red-600">{record.products_failed}</p>
+                          <p className="font-semibold text-destructive">{record.products_failed}</p>
                           <p className="text-xs text-muted-foreground">échecs</p>
                         </div>
                       )}

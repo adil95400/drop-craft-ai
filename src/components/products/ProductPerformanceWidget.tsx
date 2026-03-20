@@ -30,13 +30,13 @@ export const ProductPerformanceWidget = ({
       label: 'Vues',
       value: viewCount.toLocaleString(),
       icon: Eye,
-      color: 'text-blue-500'
+      color: 'text-info'
     },
     {
       label: 'Conversion',
       value: `${conversionRate.toFixed(1)}%`,
       icon: TrendingUp,
-      color: 'text-green-500'
+      color: 'text-success'
     },
     {
       label: 'Commandes',
@@ -48,7 +48,7 @@ export const ProductPerformanceWidget = ({
       label: 'CA',
       value: `${revenue.toFixed(0)}€`,
       icon: DollarSign,
-      color: 'text-amber-500'
+      color: 'text-warning'
     }
   ]
 

@@ -96,7 +96,7 @@ const onboardingSteps: OnboardingStep[] = [
       'Commissions plateforme (Stripe, Shopify)',
       'TVA et marge nette estimée',
     ],
-    color: 'from-green-500 to-emerald-600',
+    color: 'from-success to-emerald-600',
   },
 ];
 
@@ -180,8 +180,8 @@ export function ImportOnboardingModal({
           <div className="space-y-3 text-left bg-muted/50 rounded-xl p-4">
             {step.features.map((feature, index) => (
               <div key={index} className="flex items-center gap-3">
-                <div className="w-5 h-5 rounded-full bg-green-500/20 flex items-center justify-center flex-shrink-0">
-                  <Check className="w-3 h-3 text-green-600" />
+                <div className="w-5 h-5 rounded-full bg-success/20 flex items-center justify-center flex-shrink-0">
+                  <Check className="w-3 h-3 text-success" />
                 </div>
                 <span className="text-sm">{feature}</span>
               </div>

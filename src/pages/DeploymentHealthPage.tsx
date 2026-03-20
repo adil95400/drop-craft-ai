@@ -9,9 +9,9 @@ import { useDeploymentStatus, useDatabaseHealth, useBackupVerification, useEnvir
 import { Skeleton } from "@/components/ui/skeleton";
 
 const priorityColors: Record<string, string> = {
-  high: "bg-red-500/15 text-red-700",
-  medium: "bg-amber-500/15 text-amber-700",
-  low: "bg-blue-500/15 text-blue-700",
+  high: "bg-destructive/15 text-red-700",
+  medium: "bg-warning/15 text-amber-700",
+  low: "bg-info/15 text-blue-700",
 };
 
 export default function DeploymentHealthPage() {
@@ -45,7 +45,7 @@ export default function DeploymentHealthPage() {
           <Card className="border-l-4" style={{ borderLeftColor: deploy.status === "healthy" ? "hsl(var(--primary))" : "hsl(var(--destructive))" }}>
             <CardContent className="py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
               <div className="flex items-center gap-3">
-                <Cloud className={`h-8 w-8 ${deploy.status === "healthy" ? "text-emerald-500" : "text-red-500"}`} />
+                <Cloud className={`h-8 w-8 ${deploy.status === "healthy" ? "text-success" : "text-destructive"}`} />
                 <div>
                   <p className="text-lg font-semibold">
                     Infrastructure {deploy.status === "healthy" ? "saine" : "dégradée"}
@@ -67,7 +67,7 @@ export default function DeploymentHealthPage() {
           <Card>
             <CardContent className="pt-5 pb-4">
               <div className="flex items-start gap-3">
-                <div className="p-2 rounded-lg bg-blue-500/10"><Database className="h-5 w-5 text-blue-500" /></div>
+                <div className="p-2 rounded-lg bg-info/10"><Database className="h-5 w-5 text-info" /></div>
                 <div>
                   <p className="text-sm text-muted-foreground">Tables DB</p>
                   <p className="text-2xl font-bold">{dbHealth?.tables?.length ?? "—"}</p>
@@ -79,7 +79,7 @@ export default function DeploymentHealthPage() {
           <Card>
             <CardContent className="pt-5 pb-4">
               <div className="flex items-start gap-3">
-                <div className="p-2 rounded-lg bg-emerald-500/10"><Shield className="h-5 w-5 text-emerald-500" /></div>
+                <div className="p-2 rounded-lg bg-success/10"><Shield className="h-5 w-5 text-success" /></div>
                 <div>
                   <p className="text-sm text-muted-foreground">Score sécurité</p>
                   <p className="text-2xl font-bold">{envAudit?.security_score ?? "—"}%</p>
@@ -105,7 +105,7 @@ export default function DeploymentHealthPage() {
           <Card>
             <CardContent className="pt-5 pb-4">
               <div className="flex items-start gap-3">
-                <div className="p-2 rounded-lg bg-amber-500/10"><RotateCcw className="h-5 w-5 text-amber-500" /></div>
+                <div className="p-2 rounded-lg bg-warning/10"><RotateCcw className="h-5 w-5 text-warning" /></div>
                 <div>
                   <p className="text-sm text-muted-foreground">Rollback</p>
                   <p className="text-2xl font-bold">{rollback?.rollback_safe ? "Prêt" : "Risqué"}</p>
@@ -143,7 +143,7 @@ export default function DeploymentHealthPage() {
                       </div>
                       <div className="flex items-center gap-4">
                         <span className="text-sm text-muted-foreground">{t.row_count.toLocaleString()} lignes</span>
-                        <Badge variant="outline" className={t.accessible ? "bg-emerald-500/15 text-emerald-700" : "bg-red-500/15 text-red-700"}>
+                        <Badge variant="outline" className={t.accessible ? "bg-success/15 text-emerald-700" : "bg-destructive/15 text-red-700"}>
                           {t.accessible ? <><CheckCircle2 className="h-3 w-3 mr-1" /> OK</> : <><AlertTriangle className="h-3 w-3 mr-1" /> Erreur</>}
                         </Badge>
                       </div>
@@ -170,13 +170,13 @@ export default function DeploymentHealthPage() {
                     <div key={check.check} className="flex items-center justify-between py-2 px-4 rounded-lg bg-muted/50">
                       <div className="flex items-center gap-3">
                         {check.status === "pass" ? (
-                          <CheckCircle2 className="h-4 w-4 text-emerald-500" />
+                          <CheckCircle2 className="h-4 w-4 text-success" />
                         ) : (
-                          <AlertTriangle className="h-4 w-4 text-red-500" />
+                          <AlertTriangle className="h-4 w-4 text-destructive" />
                         )}
                         <span className="text-sm">{check.detail}</span>
                       </div>
-                      <Badge variant="outline" className={check.status === "pass" ? "bg-emerald-500/15 text-emerald-700" : "bg-red-500/15 text-red-700"}>
+                      <Badge variant="outline" className={check.status === "pass" ? "bg-success/15 text-emerald-700" : "bg-destructive/15 text-red-700"}>
                         {check.status}
                       </Badge>
                     </div>
@@ -212,11 +212,11 @@ export default function DeploymentHealthPage() {
                         <p className="text-xs text-muted-foreground">Actives</p>
                       </div>
                       <div className="p-3 rounded-lg bg-muted/50">
-                        <p className="text-xl font-bold text-red-600">{envAudit.api_keys.expired}</p>
+                        <p className="text-xl font-bold text-destructive">{envAudit.api_keys.expired}</p>
                         <p className="text-xs text-muted-foreground">Expirées</p>
                       </div>
                       <div className="p-3 rounded-lg bg-muted/50">
-                        <p className="text-xl font-bold text-amber-600">{envAudit.api_keys.unused}</p>
+                        <p className="text-xl font-bold text-warning">{envAudit.api_keys.unused}</p>
                         <p className="text-xs text-muted-foreground">Inutilisées</p>
                       </div>
                     </div>
@@ -276,7 +276,7 @@ export default function DeploymentHealthPage() {
                   {(deploy?.edge_functions || []).map((fn: any) => (
                     <div key={fn.name} className="flex items-center justify-between py-3 px-4 rounded-lg bg-muted/50">
                       <span className="font-mono text-sm">{fn.name}</span>
-                      <Badge variant="outline" className="bg-emerald-500/15 text-emerald-700">
+                      <Badge variant="outline" className="bg-success/15 text-emerald-700">
                         <CheckCircle2 className="h-3 w-3 mr-1" />
                         {fn.status}
                       </Badge>

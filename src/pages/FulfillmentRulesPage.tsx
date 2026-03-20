@@ -101,7 +101,7 @@ export default function FulfillmentRulesPage() {
               <p className="text-sm text-muted-foreground">Règles actives</p>
               <p className="text-2xl font-bold">{rules?.filter(r => r.is_active).length || 0}</p>
             </div>
-            <Play className="w-8 h-8 text-green-500" />
+            <Play className="w-8 h-8 text-success" />
           </div>
         </Card>
         <Card className="p-6">
@@ -119,7 +119,7 @@ export default function FulfillmentRulesPage() {
               <p className="text-sm text-muted-foreground">Total règles</p>
               <p className="text-2xl font-bold">{rules?.length || 0}</p>
             </div>
-            <Settings className="w-8 h-8 text-blue-500" />
+            <Settings className="w-8 h-8 text-info" />
           </div>
         </Card>
       </div>

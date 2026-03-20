@@ -166,10 +166,10 @@ export function SyncManager({ onSyncCompleted }: SyncManagerProps) {
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'active': return <CheckCircle className="h-4 w-4 text-green-500" />
-      case 'paused': return <Pause className="h-4 w-4 text-yellow-500" />
-      case 'error': return <AlertCircle className="h-4 w-4 text-red-500" />
-      case 'syncing': return <RefreshCw className="h-4 w-4 text-blue-500 animate-spin" />
+      case 'active': return <CheckCircle className="h-4 w-4 text-success" />
+      case 'paused': return <Pause className="h-4 w-4 text-warning" />
+      case 'error': return <AlertCircle className="h-4 w-4 text-destructive" />
+      case 'syncing': return <RefreshCw className="h-4 w-4 text-info animate-spin" />
       default: return <Clock className="h-4 w-4 text-gray-500" />
     }
   }
@@ -213,8 +213,8 @@ export function SyncManager({ onSyncCompleted }: SyncManagerProps) {
             </Label>
           </div>
           {realTimeEnabled && (
-            <div className="mt-4 p-4 bg-green-50 rounded-lg">
-              <p className="text-sm text-green-700">
+            <div className="mt-4 p-4 bg-success/5 rounded-lg">
+              <p className="text-sm text-success">
                 ✅ Sync temps réel activée - Les produits seront mis à jour automatiquement
               </p>
             </div>
@@ -281,11 +281,11 @@ export function SyncManager({ onSyncCompleted }: SyncManagerProps) {
                   </div>
                   <div>
                     <p className="text-muted-foreground">Mis à jour</p>
-                    <p className="font-medium text-green-600">{job.updatedCount.toLocaleString()}</p>
+                    <p className="font-medium text-success">{job.updatedCount.toLocaleString()}</p>
                   </div>
                   <div>
                     <p className="text-muted-foreground">Erreurs</p>
-                    <p className="font-medium text-red-600">{job.errorCount.toLocaleString()}</p>
+                    <p className="font-medium text-destructive">{job.errorCount.toLocaleString()}</p>
                   </div>
                   <div>
                     <p className="text-muted-foreground">Dernière sync</p>

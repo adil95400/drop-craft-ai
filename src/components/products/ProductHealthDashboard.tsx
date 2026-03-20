@@ -198,15 +198,15 @@ export function ProductHealthDashboard() {
   };
 
   const getScoreColor = (score: number) => {
-    if (score >= 80) return 'text-green-600';
-    if (score >= 50) return 'text-yellow-600';
-    return 'text-red-600';
+    if (score >= 80) return 'text-success';
+    if (score >= 50) return 'text-warning';
+    return 'text-destructive';
   };
 
   const getScoreBg = (score: number) => {
-    if (score >= 80) return 'bg-green-500';
-    if (score >= 50) return 'bg-yellow-500';
-    return 'bg-red-500';
+    if (score >= 80) return 'bg-success';
+    if (score >= 50) return 'bg-warning';
+    return 'bg-destructive';
   };
 
   return (
@@ -218,8 +218,8 @@ export function ProductHealthDashboard() {
             <div className="flex items-center gap-3">
               <div className={cn(
                 "h-12 w-12 rounded-xl flex items-center justify-center",
-                stats.averageScore >= 80 ? "bg-green-500/10" : 
-                stats.averageScore >= 50 ? "bg-yellow-500/10" : "bg-red-500/10"
+                stats.averageScore >= 80 ? "bg-success/10" : 
+                stats.averageScore >= 50 ? "bg-warning/10" : "bg-destructive/10"
               )}>
                 <Activity className={cn(
                   "h-6 w-6",
@@ -240,10 +240,10 @@ export function ProductHealthDashboard() {
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-2xl font-bold text-green-600">{stats.healthyProducts}</p>
+                <p className="text-2xl font-bold text-success">{stats.healthyProducts}</p>
                 <p className="text-xs text-muted-foreground">Sains</p>
               </div>
-              <CheckCircle className="h-8 w-8 text-green-500/30" />
+              <CheckCircle className="h-8 w-8 text-success/30" />
             </div>
           </CardContent>
         </Card>
@@ -252,10 +252,10 @@ export function ProductHealthDashboard() {
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-2xl font-bold text-yellow-600">{stats.warningProducts}</p>
+                <p className="text-2xl font-bold text-warning">{stats.warningProducts}</p>
                 <p className="text-xs text-muted-foreground">Attention</p>
               </div>
-              <AlertTriangle className="h-8 w-8 text-yellow-500/30" />
+              <AlertTriangle className="h-8 w-8 text-warning/30" />
             </div>
           </CardContent>
         </Card>
@@ -264,10 +264,10 @@ export function ProductHealthDashboard() {
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-2xl font-bold text-red-600">{stats.criticalProducts}</p>
+                <p className="text-2xl font-bold text-destructive">{stats.criticalProducts}</p>
                 <p className="text-xs text-muted-foreground">Critiques</p>
               </div>
-              <XCircle className="h-8 w-8 text-red-500/30" />
+              <XCircle className="h-8 w-8 text-destructive/30" />
             </div>
           </CardContent>
         </Card>
@@ -290,7 +290,7 @@ export function ProductHealthDashboard() {
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-base flex items-center gap-2">
-              <AlertCircle className="h-5 w-5 text-yellow-500" />
+              <AlertCircle className="h-5 w-5 text-warning" />
               Problèmes les plus fréquents
             </CardTitle>
           </CardHeader>
@@ -334,9 +334,9 @@ export function ProductHealthDashboard() {
                   size="sm"
                   onClick={() => setFilterStatus(status)}
                   className={cn(
-                    filterStatus === status && status === 'healthy' && "bg-green-500 hover:bg-green-600",
-                    filterStatus === status && status === 'warning' && "bg-yellow-500 hover:bg-yellow-600",
-                    filterStatus === status && status === 'critical' && "bg-red-500 hover:bg-red-600"
+                    filterStatus === status && status === 'healthy' && "bg-success hover:bg-success",
+                    filterStatus === status && status === 'warning' && "bg-warning hover:bg-warning",
+                    filterStatus === status && status === 'critical' && "bg-destructive hover:bg-destructive"
                   )}
                 >
                   {status === 'all' && 'Tous'}
@@ -407,9 +407,9 @@ export function ProductHealthDashboard() {
                             variant="outline"
                             className={cn(
                               "text-xs",
-                              issue.severity === 'high' && "bg-red-500/10 text-red-600 border-red-500/20",
-                              issue.severity === 'medium' && "bg-yellow-500/10 text-yellow-600 border-yellow-500/20",
-                              issue.severity === 'low' && "bg-blue-500/10 text-blue-600 border-blue-500/20"
+                              issue.severity === 'high' && "bg-destructive/10 text-destructive border-destructive/20",
+                              issue.severity === 'medium' && "bg-warning/10 text-warning border-warning/20",
+                              issue.severity === 'low' && "bg-info/10 text-info border-info/20"
                             )}
                           >
                             {issue.message}

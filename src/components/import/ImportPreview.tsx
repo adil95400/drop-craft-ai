@@ -85,7 +85,7 @@ export const ImportPreview = ({
             <Card className="hover-scale">
               <CardContent className="pt-6">
                 <div className="text-center">
-                  <p className="text-2xl font-bold text-green-600 dark:text-green-400">{data.validProducts}</p>
+                  <p className="text-2xl font-bold text-success dark:text-green-400">{data.validProducts}</p>
                   <p className="text-xs text-muted-foreground">Valides</p>
                 </div>
               </CardContent>
@@ -112,7 +112,7 @@ export const ImportPreview = ({
           {data.warnings.length > 0 && (
             <div className="space-y-2 animate-fade-in">
               <div className="flex items-center gap-2 text-sm font-medium">
-                <AlertTriangle className="h-4 w-4 text-yellow-600" />
+                <AlertTriangle className="h-4 w-4 text-warning" />
                 <span>Avertissements ({data.warnings.length})</span>
               </div>
               <ScrollArea className="h-20 rounded border p-2">
@@ -190,7 +190,7 @@ export const ImportPreview = ({
                       )}
                       <TableCell>
                         {product.issues.length === 0 ? (
-                          <CheckCircle2 className="h-4 w-4 text-green-600 dark:text-green-400" />
+                          <CheckCircle2 className="h-4 w-4 text-success dark:text-green-400" />
                         ) : (
                           <div className="flex items-center gap-2">
                             <XCircle className="h-4 w-4 text-destructive" />

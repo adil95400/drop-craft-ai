@@ -67,8 +67,8 @@ export function BulkPublishDialog({
         </DialogHeader>
 
         <div className="space-y-4">
-          <Alert className="border-blue-200 bg-blue-50 dark:bg-blue-950/20 dark:border-blue-900">
-            <AlertCircle className="h-4 w-4 text-blue-600" />
+          <Alert className="border-info/20 bg-info/5 dark:bg-blue-950/20 dark:border-blue-900">
+            <AlertCircle className="h-4 w-4 text-info" />
             <AlertDescription className="text-sm">
               Cette action va :
               <ul className="list-disc list-inside mt-2 space-y-1 text-foreground/90">
@@ -79,8 +79,8 @@ export function BulkPublishDialog({
             </AlertDescription>
           </Alert>
 
-          <Alert className="border-green-200 bg-green-50 dark:bg-green-950/20 dark:border-green-900">
-            <CheckCircle2 className="h-4 w-4 text-green-600" />
+          <Alert className="border-success/20 bg-success/5 dark:bg-green-950/20 dark:border-green-900">
+            <CheckCircle2 className="h-4 w-4 text-success" />
             <AlertDescription className="text-sm text-foreground/90">
               Les produits déjà publiés seront automatiquement mis à jour avec les
               nouvelles informations.

@@ -3,14 +3,14 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { useRealAdsManager } from '@/hooks/useRealAdsManager';
+import { useAdsManager } from '@/hooks/useAdsManager';
 import { Plus, Play, Pause, TrendingUp, DollarSign, Megaphone, Sparkles, Loader2 } from 'lucide-react';
 import { CreateCampaignDialog } from './CreateCampaignDialog';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useQueryClient } from '@tanstack/react-query';
 export function CampaignManager() {
-  const { campaigns, isLoading } = useRealAdsManager();
+  const { campaigns, isLoading } = useAdsManager();
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [togglingCampaignId, setTogglingCampaignId] = useState<string | null>(null);
   const queryClient = useQueryClient();
@@ -39,7 +39,7 @@ export function CampaignManager() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'active':
-        return <Badge className="bg-green-500">Actif</Badge>;
+        return <Badge className="bg-success">Actif</Badge>;
       case 'paused':
         return <Badge variant="secondary">En pause</Badge>;
       case 'completed':
@@ -157,7 +157,7 @@ export function CampaignManager() {
                   <div>
                     <p className="text-sm text-muted-foreground">ROAS</p>
                     <p className="text-lg font-semibold flex items-center gap-1">
-                      <TrendingUp className="h-4 w-4 text-green-600" />
+                      <TrendingUp className="h-4 w-4 text-success" />
                       {campaign.performance_metrics?.roas || '0'}x
                     </p>
                   </div>

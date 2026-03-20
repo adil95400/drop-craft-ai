@@ -467,8 +467,8 @@ export function AdvancedSupplierEngine() {
                         <div className="flex items-center gap-3">
                           <div className={cn(
                             "w-2 h-2 rounded-full",
-                            supplier.status === 'success' ? "bg-green-500" :
-                            supplier.status === 'warning' ? "bg-yellow-500" : "bg-red-500"
+                            supplier.status === 'success' ? "bg-success" :
+                            supplier.status === 'warning' ? "bg-warning" : "bg-destructive"
                           )} />
                           <div>
                             <div className="font-medium">{supplier.name}</div>
@@ -614,7 +614,7 @@ export function AdvancedSupplierEngine() {
                 toast({ title: 'Actualisation...', description: 'Mise à jour des scores en cours' });
               }}
             >
-              <Star className="h-6 w-6 text-yellow-500" />
+              <Star className="h-6 w-6 text-warning" />
               <span>Actualiser Scores</span>
               <span className="text-xs text-muted-foreground">Fiabilité</span>
             </Button>
@@ -759,7 +759,7 @@ export function AdvancedSupplierEngine() {
             {/* Auto-Order */}
             <Card className={cn(
               "transition-all",
-              automationStatus.autoOrder && "border-green-500/50 bg-green-500/5"
+              automationStatus.autoOrder && "border-success/50 bg-success/5"
             )}>
               <CardHeader>
                 <div className="flex items-center justify-between">
@@ -779,15 +779,15 @@ export function AdvancedSupplierEngine() {
               <CardContent className="space-y-4">
                 <div className="text-sm space-y-2">
                   <div className="flex items-center gap-2">
-                    <CheckCircle2 className="h-4 w-4 text-green-500" />
+                    <CheckCircle2 className="h-4 w-4 text-success" />
                     Détection nouvelles commandes
                   </div>
                   <div className="flex items-center gap-2">
-                    <CheckCircle2 className="h-4 w-4 text-green-500" />
+                    <CheckCircle2 className="h-4 w-4 text-success" />
                     Sélection fournisseur optimal
                   </div>
                   <div className="flex items-center gap-2">
-                    <CheckCircle2 className="h-4 w-4 text-green-500" />
+                    <CheckCircle2 className="h-4 w-4 text-success" />
                     Passage commande API
                   </div>
                 </div>
@@ -800,7 +800,7 @@ export function AdvancedSupplierEngine() {
             {/* Auto-Fulfillment */}
             <Card className={cn(
               "transition-all",
-              automationStatus.autoFulfillment && "border-blue-500/50 bg-blue-500/5"
+              automationStatus.autoFulfillment && "border-info/50 bg-info/5"
             )}>
               <CardHeader>
                 <div className="flex items-center justify-between">
@@ -820,15 +820,15 @@ export function AdvancedSupplierEngine() {
               <CardContent className="space-y-4">
                 <div className="text-sm space-y-2">
                   <div className="flex items-center gap-2">
-                    <CheckCircle2 className="h-4 w-4 text-green-500" />
+                    <CheckCircle2 className="h-4 w-4 text-success" />
                     Récupération tracking fournisseur
                   </div>
                   <div className="flex items-center gap-2">
-                    <CheckCircle2 className="h-4 w-4 text-green-500" />
+                    <CheckCircle2 className="h-4 w-4 text-success" />
                     Mise à jour commande client
                   </div>
                   <div className="flex items-center gap-2">
-                    <CheckCircle2 className="h-4 w-4 text-green-500" />
+                    <CheckCircle2 className="h-4 w-4 text-success" />
                     Notification client automatique
                   </div>
                 </div>
@@ -861,15 +861,15 @@ export function AdvancedSupplierEngine() {
               <CardContent className="space-y-4">
                 <div className="text-sm space-y-2">
                   <div className="flex items-center gap-2">
-                    <CheckCircle2 className="h-4 w-4 text-green-500" />
+                    <CheckCircle2 className="h-4 w-4 text-success" />
                     Polling toutes les 5 min
                   </div>
                   <div className="flex items-center gap-2">
-                    <CheckCircle2 className="h-4 w-4 text-green-500" />
+                    <CheckCircle2 className="h-4 w-4 text-success" />
                     Webhooks temps réel
                   </div>
                   <div className="flex items-center gap-2">
-                    <CheckCircle2 className="h-4 w-4 text-green-500" />
+                    <CheckCircle2 className="h-4 w-4 text-success" />
                     Alertes rupture de stock
                   </div>
                 </div>
@@ -966,8 +966,8 @@ export function AdvancedSupplierEngine() {
                           <div className="flex items-center gap-3">
                             <div className={cn(
                               "w-3 h-3 rounded-full",
-                              supplier.status === 'success' ? "bg-green-500" :
-                              supplier.status === 'warning' ? "bg-yellow-500" : "bg-red-500"
+                              supplier.status === 'success' ? "bg-success" :
+                              supplier.status === 'warning' ? "bg-warning" : "bg-destructive"
                             )} />
                             <span className="font-medium">{supplier.name}</span>
                           </div>

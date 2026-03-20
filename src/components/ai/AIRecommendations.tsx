@@ -17,7 +17,7 @@ import {
   DollarSign
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { useRealAIRecommendations, AIRecommendation } from '@/hooks/useRealAIRecommendations';
+import { useAIRecommendations, AIRecommendation } from '@/hooks/useAIRecommendations';
 
 interface AIRecommendationsProps {
   limit?: number;
@@ -27,7 +27,7 @@ interface AIRecommendationsProps {
 export function AIRecommendations({ limit = 6, types }: AIRecommendationsProps) {
   const [generatingNew, setGeneratingNew] = useState(false);
   const { toast } = useToast();
-  const { recommendations, isLoading: loading, refetch } = useRealAIRecommendations(limit, types);
+  const { recommendations, isLoading: loading, refetch } = useAIRecommendations(limit, types);
 
   const generateNewRecommendations = async () => {
     setGeneratingNew(true);
@@ -110,10 +110,10 @@ export function AIRecommendations({ limit = 6, types }: AIRecommendationsProps) 
 
   const getTypeColor = (type: string) => {
     switch (type) {
-      case 'pricing': return 'text-green-600 bg-green-100';
-      case 'product': return 'text-blue-600 bg-blue-100';
+      case 'pricing': return 'text-success bg-success/10';
+      case 'product': return 'text-info bg-info/10';
       case 'marketing': return 'text-purple-600 bg-purple-100';
-      case 'inventory': return 'text-orange-600 bg-orange-100';
+      case 'inventory': return 'text-warning bg-orange-100';
       case 'seo': return 'text-pink-600 bg-pink-100';
       default: return 'text-gray-600 bg-gray-100';
     }
@@ -121,9 +121,9 @@ export function AIRecommendations({ limit = 6, types }: AIRecommendationsProps) 
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
-      case 'high': return 'border-red-200 bg-red-50';
-      case 'medium': return 'border-yellow-200 bg-yellow-50';
-      case 'low': return 'border-blue-200 bg-blue-50';
+      case 'high': return 'border-destructive/20 bg-destructive/5';
+      case 'medium': return 'border-warning/20 bg-warning/5';
+      case 'low': return 'border-info/20 bg-info/5';
       default: return '';
     }
   };
@@ -226,7 +226,7 @@ export function AIRecommendations({ limit = 6, types }: AIRecommendationsProps) 
                 </div>
 
                 <div className="bg-white/50 p-2 rounded text-xs">
-                  <div className="flex items-center text-green-600 mb-1">
+                  <div className="flex items-center text-success mb-1">
                     <TrendingUp className="h-3 w-3 mr-1" />
                     <span className="font-medium">Impact prévu :</span>
                   </div>
@@ -236,16 +236,16 @@ export function AIRecommendations({ limit = 6, types }: AIRecommendationsProps) 
                 {recommendation.metrics && (
                   <div className="grid grid-cols-2 gap-2 text-xs">
                     {recommendation.metrics.potential_revenue && (
-                      <div className="text-center p-1 bg-green-50 rounded">
-                        <div className="font-medium text-green-600">
+                      <div className="text-center p-1 bg-success/5 rounded">
+                        <div className="font-medium text-success">
                           +€{recommendation.metrics.potential_revenue}
                         </div>
                         <div className="text-muted-foreground">Revenus</div>
                       </div>
                     )}
                     {recommendation.metrics.conversion_lift && (
-                      <div className="text-center p-1 bg-blue-50 rounded">
-                        <div className="font-medium text-blue-600">
+                      <div className="text-center p-1 bg-info/5 rounded">
+                        <div className="font-medium text-info">
                           +{recommendation.metrics.conversion_lift}%
                         </div>
                         <div className="text-muted-foreground">Conversion</div>

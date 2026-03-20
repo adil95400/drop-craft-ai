@@ -161,11 +161,11 @@ at Object.<anonymous> (src/api/client.test.js:56:12)`,
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'passed':
-        return <CheckCircle className="w-4 h-4 text-green-500" />
+        return <CheckCircle className="w-4 h-4 text-success" />
       case 'failed':
-        return <XCircle className="w-4 h-4 text-red-500" />
+        return <XCircle className="w-4 h-4 text-destructive" />
       case 'warning':
-        return <AlertTriangle className="w-4 h-4 text-orange-500" />
+        return <AlertTriangle className="w-4 h-4 text-warning" />
       default:
         return <AlertTriangle className="w-4 h-4" />
     }
@@ -257,19 +257,19 @@ at Object.<anonymous> (src/api/client.test.js:56:12)`,
               <div className="space-y-3">
                 <div className="flex justify-between text-sm">
                   <span className="flex items-center">
-                    <CheckCircle className="w-3 h-3 mr-1 text-green-500" />
+                    <CheckCircle className="w-3 h-3 mr-1 text-success" />
                     Réussis: {suite.passed}
                   </span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="flex items-center">
-                    <XCircle className="w-3 h-3 mr-1 text-red-500" />
+                    <XCircle className="w-3 h-3 mr-1 text-destructive" />
                     Échoués: {suite.failed}
                   </span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="flex items-center">
-                    <AlertTriangle className="w-3 h-3 mr-1 text-orange-500" />
+                    <AlertTriangle className="w-3 h-3 mr-1 text-warning" />
                     Ignorés: {suite.skipped}
                   </span>
                 </div>
@@ -309,19 +309,19 @@ at Object.<anonymous> (src/api/client.test.js:56:12)`,
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
                 <div className="text-center">
-                  <div className="text-3xl font-bold text-green-600">270</div>
+                  <div className="text-3xl font-bold text-success">270</div>
                   <p className="text-sm text-muted-foreground">Tests totaux</p>
                 </div>
                 <div className="text-center">
-                  <div className="text-3xl font-bold text-blue-600">241</div>
+                  <div className="text-3xl font-bold text-info">241</div>
                   <p className="text-sm text-muted-foreground">Réussis</p>
                 </div>
                 <div className="text-center">
-                  <div className="text-3xl font-bold text-red-600">17</div>
+                  <div className="text-3xl font-bold text-destructive">17</div>
                   <p className="text-sm text-muted-foreground">Échoués</p>
                 </div>
                 <div className="text-center">
-                  <div className="text-3xl font-bold text-orange-600">12</div>
+                  <div className="text-3xl font-bold text-warning">12</div>
                   <p className="text-sm text-muted-foreground">Ignorés</p>
                 </div>
               </div>
@@ -352,7 +352,7 @@ at Object.<anonymous> (src/api/client.test.js:56:12)`,
                     <CardContent className="p-4">
                       <div className="flex items-start justify-between mb-3">
                         <div>
-                          <h3 className="font-semibold text-red-600">{test.name}</h3>
+                          <h3 className="font-semibold text-destructive">{test.name}</h3>
                           <p className="text-sm text-muted-foreground">{test.suite} • {test.file}</p>
                         </div>
                         <div className="flex items-center space-x-2">
@@ -368,7 +368,7 @@ at Object.<anonymous> (src/api/client.test.js:56:12)`,
                       </div>
                       
                       <div className="bg-muted p-3 rounded-lg mb-3">
-                        <p className="text-sm font-mono text-red-600">{test.error}</p>
+                        <p className="text-sm font-mono text-destructive">{test.error}</p>
                       </div>
                       
                       <details className="text-sm">
@@ -441,7 +441,7 @@ at Object.<anonymous> (src/api/client.test.js:56:12)`,
                         </div>
                         <div className="flex justify-between">
                           <span className="text-sm text-muted-foreground">Tendance</span>
-                          <span className={`text-sm ${metric.trend.startsWith('-') ? 'text-green-600' : 'text-red-600'}`}>
+                          <span className={`text-sm ${metric.trend.startsWith('-') ? 'text-success' : 'text-destructive'}`}>
                             {metric.trend}
                           </span>
                         </div>

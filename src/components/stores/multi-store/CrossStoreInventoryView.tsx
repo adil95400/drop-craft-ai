@@ -88,7 +88,7 @@ export function CrossStoreInventoryView() {
                       <TableCell className="font-medium">{product.title}</TableCell>
                       <TableCell className="text-muted-foreground">{product.sku || '-'}</TableCell>
                       <TableCell className="text-right">
-                        <span className={isLowStock ? 'text-red-500 font-semibold' : ''}>
+                        <span className={isLowStock ? 'text-destructive font-semibold' : ''}>
                           {stock}
                         </span>
                       </TableCell>

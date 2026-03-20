@@ -517,9 +517,9 @@ export const RealtimeAIAssistant: React.FC = () => {
 
   const getStatusColor = () => {
     switch (connectionStatus) {
-      case 'connected': return 'bg-green-500'
-      case 'connecting': return 'bg-yellow-500 animate-pulse'
-      case 'error': return 'bg-red-500'
+      case 'connected': return 'bg-success'
+      case 'connecting': return 'bg-warning animate-pulse'
+      case 'error': return 'bg-destructive'
       default: return 'bg-gray-500'
     }
   }
@@ -601,7 +601,7 @@ export const RealtimeAIAssistant: React.FC = () => {
                 variant="outline"
                 size="sm"
                 onClick={() => setIsMuted(!isMuted)}
-                className={isMuted ? 'bg-red-50' : ''}
+                className={isMuted ? 'bg-destructive/5' : ''}
               >
                 {isMuted ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
               </Button>
@@ -644,7 +644,7 @@ export const RealtimeAIAssistant: React.FC = () => {
                       : message.type === 'system'
                       ? 'bg-muted text-muted-foreground'
                       : message.type === 'function_call'
-                      ? 'bg-blue-50 text-blue-800 border border-blue-200'
+                      ? 'bg-info/5 text-blue-800 border border-info/20'
                       : 'bg-muted'
                   }`}>
                     {message.type === 'function_call' ? (

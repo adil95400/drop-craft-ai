@@ -27,12 +27,12 @@ import {
 const LEVEL_CONFIG: Record<UserLevel, { label: string; color: string; description: string }> = {
   beginner: { 
     label: 'Débutant', 
-    color: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400',
+    color: 'bg-success/10 text-success dark:bg-green-900/30 dark:text-green-400',
     description: 'Premiers pas avec le module'
   },
   intermediate: { 
     label: 'Intermédiaire', 
-    color: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400',
+    color: 'bg-info/10 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400',
     description: 'Fonctionnalités avancées'
   },
   advanced: { 
@@ -153,7 +153,7 @@ export function DocumentationViewer({ module, onBack, onNavigateToModule }: Docu
             <Card>
               <CardHeader className="pb-3">
                 <CardTitle className="text-base flex items-center gap-2">
-                  <Clock className="h-4 w-4 text-blue-500" />
+                  <Clock className="h-4 w-4 text-info" />
                   Quand l'utiliser ?
                 </CardTitle>
               </CardHeader>
@@ -165,7 +165,7 @@ export function DocumentationViewer({ module, onBack, onNavigateToModule }: Docu
             <Card>
               <CardHeader className="pb-3">
                 <CardTitle className="text-base flex items-center gap-2">
-                  <Users className="h-4 w-4 text-green-500" />
+                  <Users className="h-4 w-4 text-success" />
                   Pour qui ?
                 </CardTitle>
               </CardHeader>
@@ -179,7 +179,7 @@ export function DocumentationViewer({ module, onBack, onNavigateToModule }: Docu
             <Card>
               <CardHeader className="pb-3">
                 <CardTitle className="text-base flex items-center gap-2">
-                  <CheckCircle2 className="h-4 w-4 text-orange-500" />
+                  <CheckCircle2 className="h-4 w-4 text-warning" />
                   Prérequis
                 </CardTitle>
               </CardHeader>
@@ -207,7 +207,7 @@ export function DocumentationViewer({ module, onBack, onNavigateToModule }: Docu
               <div className="grid gap-2 sm:grid-cols-2">
                 {module.overview.keyFeatures.map((feature, idx) => (
                   <div key={idx} className="flex items-start gap-2 p-2 rounded-lg bg-muted/50">
-                    <CheckCircle2 className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
+                    <CheckCircle2 className="h-4 w-4 text-success mt-0.5 flex-shrink-0" />
                     <span className="text-sm">{feature}</span>
                   </div>
                 ))}
@@ -252,8 +252,8 @@ export function DocumentationViewer({ module, onBack, onNavigateToModule }: Docu
                       )}
                       
                       {useCase.expectedOutcome && (
-                        <div className="p-3 rounded-lg bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800">
-                          <p className="text-sm text-green-800 dark:text-green-300 flex items-start gap-2">
+                        <div className="p-3 rounded-lg bg-success/5 dark:bg-green-900/20 border border-success/20 dark:border-green-800">
+                          <p className="text-sm text-success dark:text-green-300 flex items-start gap-2">
                             <TrendingUp className="h-4 w-4 mt-0.5 flex-shrink-0" />
                             <span><strong>Résultat attendu:</strong> {useCase.expectedOutcome}</span>
                           </p>
@@ -297,7 +297,7 @@ export function DocumentationViewer({ module, onBack, onNavigateToModule }: Docu
                     <p className="text-sm text-muted-foreground">{step.description}</p>
                     
                     {step.tip && (
-                      <div className="p-3 rounded-lg bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800">
+                      <div className="p-3 rounded-lg bg-info/5 dark:bg-blue-900/20 border border-info/20 dark:border-blue-800">
                         <p className="text-sm text-blue-800 dark:text-blue-300 flex items-start gap-2">
                           <Lightbulb className="h-4 w-4 mt-0.5 flex-shrink-0" />
                           <span><strong>Astuce:</strong> {step.tip}</span>
@@ -323,14 +323,14 @@ export function DocumentationViewer({ module, onBack, onNavigateToModule }: Docu
           <div className="grid gap-4 md:grid-cols-2">
             <Card>
               <CardHeader className="pb-3">
-                <CardTitle className="text-base flex items-center gap-2 text-green-600">
+                <CardTitle className="text-base flex items-center gap-2 text-success">
                   <CheckCircle2 className="h-4 w-4" />
                   Bonnes pratiques
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
                 {module.bestPractices.recommendations.map((rec, idx) => (
-                  <div key={idx} className="p-3 rounded-lg bg-green-50/50 dark:bg-green-900/10 border border-green-100 dark:border-green-900/30">
+                  <div key={idx} className="p-3 rounded-lg bg-success/5/50 dark:bg-green-900/10 border border-green-100 dark:border-green-900/30">
                     <p className="font-medium text-sm">{rec.title}</p>
                     <p className="text-xs text-muted-foreground mt-1">{rec.description}</p>
                     <Badge variant="outline" className="mt-2 text-xs">
@@ -343,14 +343,14 @@ export function DocumentationViewer({ module, onBack, onNavigateToModule }: Docu
             
             <Card>
               <CardHeader className="pb-3">
-                <CardTitle className="text-base flex items-center gap-2 text-red-600">
+                <CardTitle className="text-base flex items-center gap-2 text-destructive">
                   <AlertTriangle className="h-4 w-4" />
                   Pièges à éviter
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
                 {module.bestPractices.pitfalls.map((pitfall, idx) => (
-                  <div key={idx} className="p-3 rounded-lg bg-red-50/50 dark:bg-red-900/10 border border-red-100 dark:border-red-900/30">
+                  <div key={idx} className="p-3 rounded-lg bg-destructive/5/50 dark:bg-red-900/10 border border-red-100 dark:border-red-900/30">
                     <p className="font-medium text-sm">{pitfall.title}</p>
                     <p className="text-xs text-muted-foreground mt-1">{pitfall.description}</p>
                   </div>
@@ -365,7 +365,7 @@ export function DocumentationViewer({ module, onBack, onNavigateToModule }: Docu
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <AlertTriangle className="h-5 w-5 text-orange-500" />
+                <AlertTriangle className="h-5 w-5 text-warning" />
                 Problèmes fréquents & Solutions
               </CardTitle>
               <CardDescription>
@@ -387,7 +387,7 @@ export function DocumentationViewer({ module, onBack, onNavigateToModule }: Docu
                       <tr key={idx} className="border-b last:border-0">
                         <td className="py-3 px-2 align-top">
                           <div className="flex items-start gap-2">
-                            <AlertTriangle className="h-4 w-4 text-red-500 mt-0.5 flex-shrink-0" />
+                            <AlertTriangle className="h-4 w-4 text-destructive mt-0.5 flex-shrink-0" />
                             <span>{item.symptom}</span>
                           </div>
                         </td>
@@ -396,7 +396,7 @@ export function DocumentationViewer({ module, onBack, onNavigateToModule }: Docu
                         </td>
                         <td className="py-3 px-2 align-top">
                           <div className="flex items-start gap-2">
-                            <CheckCircle2 className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
+                            <CheckCircle2 className="h-4 w-4 text-success mt-0.5 flex-shrink-0" />
                             <span>{item.solution}</span>
                           </div>
                         </td>
@@ -412,7 +412,7 @@ export function DocumentationViewer({ module, onBack, onNavigateToModule }: Docu
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <HelpCircle className="h-5 w-5 text-blue-500" />
+                <HelpCircle className="h-5 w-5 text-info" />
                 Questions fréquentes
               </CardTitle>
             </CardHeader>
@@ -450,7 +450,7 @@ export function DocumentationViewer({ module, onBack, onNavigateToModule }: Docu
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Star className="h-5 w-5 text-yellow-500" />
+                <Star className="h-5 w-5 text-warning" />
                 Conseils d'expert
               </CardTitle>
               <CardDescription>
@@ -461,7 +461,7 @@ export function DocumentationViewer({ module, onBack, onNavigateToModule }: Docu
               {module.expertTips.map((tip, idx) => (
                 <div key={idx} className="p-4 rounded-lg border bg-gradient-to-r from-primary/5 to-transparent">
                   <h4 className="font-semibold flex items-center gap-2 mb-2">
-                    <Lightbulb className="h-4 w-4 text-yellow-500" />
+                    <Lightbulb className="h-4 w-4 text-warning" />
                     {tip.title}
                   </h4>
                   <p className="text-sm text-muted-foreground mb-3">{tip.content}</p>

@@ -34,7 +34,7 @@ export function SupplierPreviewModal({ open, onOpenChange, supplier, onConnect, 
                 <Badge variant="outline">{supplier.sector}</Badge>
                 <Badge variant="outline">{supplier.country}</Badge>
                 {supplier.is_featured && (
-                  <Badge className="bg-yellow-100 text-yellow-800">
+                  <Badge className="bg-warning/10 text-yellow-800">
                     <Star className="h-3 w-3 mr-1" fill="currentColor" />
                     Populaire
                   </Badge>
@@ -59,17 +59,17 @@ export function SupplierPreviewModal({ open, onOpenChange, supplier, onConnect, 
                 <p className="text-xs text-muted-foreground">Produits</p>
               </div>
               <div className="text-center p-4 rounded-lg border bg-muted/50">
-                <Star className="h-6 w-6 mx-auto mb-2 text-yellow-500" />
+                <Star className="h-6 w-6 mx-auto mb-2 text-warning" />
                 <p className="text-2xl font-bold">{supplier.rating}</p>
                 <p className="text-xs text-muted-foreground">Note moyenne</p>
               </div>
               <div className="text-center p-4 rounded-lg border bg-muted/50">
-                <Clock className="h-6 w-6 mx-auto mb-2 text-blue-600" />
+                <Clock className="h-6 w-6 mx-auto mb-2 text-info" />
                 <p className="text-2xl font-bold">{supplier.setup_time_minutes}min</p>
                 <p className="text-xs text-muted-foreground">Setup</p>
               </div>
               <div className="text-center p-4 rounded-lg border bg-muted/50">
-                <Globe className="h-6 w-6 mx-auto mb-2 text-green-600" />
+                <Globe className="h-6 w-6 mx-auto mb-2 text-success" />
                 <p className="text-2xl font-bold">{supplier.shipping_countries?.length || 0}</p>
                 <p className="text-xs text-muted-foreground">Pays</p>
               </div>
@@ -97,28 +97,28 @@ export function SupplierPreviewModal({ open, onOpenChange, supplier, onConnect, 
           <TabsContent value="features" className="space-y-4 mt-6">
             <div className="space-y-3">
               <div className="flex items-start gap-3 p-3 rounded-lg border">
-                <CheckCircle className="h-5 w-5 text-green-600 mt-0.5" />
+                <CheckCircle className="h-5 w-5 text-success mt-0.5" />
                 <div>
                   <p className="font-medium">Connexion API automatique</p>
                   <p className="text-sm text-muted-foreground">Synchronisation en temps réel des produits</p>
                 </div>
               </div>
               <div className="flex items-start gap-3 p-3 rounded-lg border">
-                <CheckCircle className="h-5 w-5 text-green-600 mt-0.5" />
+                <CheckCircle className="h-5 w-5 text-success mt-0.5" />
                 <div>
                   <p className="font-medium">Mise à jour automatique des stocks</p>
                   <p className="text-sm text-muted-foreground">Stock toujours à jour automatiquement</p>
                 </div>
               </div>
               <div className="flex items-start gap-3 p-3 rounded-lg border">
-                <CheckCircle className="h-5 w-5 text-green-600 mt-0.5" />
+                <CheckCircle className="h-5 w-5 text-success mt-0.5" />
                 <div>
                   <p className="font-medium">Fulfillment automatisé</p>
                   <p className="text-sm text-muted-foreground">Commandes transmises automatiquement</p>
                 </div>
               </div>
               <div className="flex items-start gap-3 p-3 rounded-lg border">
-                <CheckCircle className="h-5 w-5 text-green-600 mt-0.5" />
+                <CheckCircle className="h-5 w-5 text-success mt-0.5" />
                 <div>
                   <p className="font-medium">Tracking des colis</p>
                   <p className="text-sm text-muted-foreground">Suivi en temps réel des expéditions</p>
@@ -149,12 +149,12 @@ export function SupplierPreviewModal({ open, onOpenChange, supplier, onConnect, 
                 </div>
               )}
 
-              <div className="p-4 rounded-lg border bg-green-50">
+              <div className="p-4 rounded-lg border bg-success/5">
                 <div className="flex items-center gap-2 mb-2">
-                  <TrendingUp className="h-5 w-5 text-green-600" />
+                  <TrendingUp className="h-5 w-5 text-success" />
                   <h4 className="font-semibold text-green-900">Marges recommandées</h4>
                 </div>
-                <p className="text-sm text-green-700">40-60% de marge selon la catégorie de produits</p>
+                <p className="text-sm text-success">40-60% de marge selon la catégorie de produits</p>
               </div>
             </div>
           </TabsContent>

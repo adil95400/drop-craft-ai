@@ -264,13 +264,13 @@ export function CreateRuleDialog({ open, onOpenChange, editRule, onClose }: Crea
               </Button>
             </div>
 
-            <div className="space-y-2 pl-4 border-l-2 border-green-500/20">
+            <div className="space-y-2 pl-4 border-l-2 border-success/20">
               {actions.map((action, index) => {
                 const actionDef = actionOptions.find(a => a.value === action.type);
                 const isPricingAction = ['apply_margin', 'percentage_adjust', 'round_psychological', 'set_compare_at_price', 'min_price', 'max_price'].includes(action.type);
                 
                 return (
-                  <div key={index} className={`flex items-center gap-2 p-2 rounded-lg ${isPricingAction ? 'bg-amber-500/10 border border-amber-500/20' : 'bg-green-500/5'}`}>
+                  <div key={index} className={`flex items-center gap-2 p-2 rounded-lg ${isPricingAction ? 'bg-warning/10 border border-amber-500/20' : 'bg-success/5'}`}>
                     <Select
                       value={action.type}
                       onValueChange={(v) => updateAction(index, { type: v })}

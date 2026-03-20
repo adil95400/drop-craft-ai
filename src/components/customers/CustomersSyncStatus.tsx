@@ -101,19 +101,19 @@ export function CustomersSyncStatus() {
 
   const getStatusColor = (status: SyncChannel['status']) => {
     switch (status) {
-      case 'synced': return 'bg-green-500'
-      case 'syncing': return 'bg-blue-500 animate-pulse'
-      case 'error': return 'bg-red-500'
-      default: return 'bg-amber-500'
+      case 'synced': return 'bg-success'
+      case 'syncing': return 'bg-info animate-pulse'
+      case 'error': return 'bg-destructive'
+      default: return 'bg-warning'
     }
   }
 
   const getStatusIcon = (status: SyncChannel['status']) => {
     switch (status) {
-      case 'synced': return <CheckCircle2 className="h-4 w-4 text-green-600" />
-      case 'syncing': return <Loader2 className="h-4 w-4 text-blue-600 animate-spin" />
-      case 'error': return <AlertCircle className="h-4 w-4 text-red-600" />
-      default: return <Clock className="h-4 w-4 text-amber-600" />
+      case 'synced': return <CheckCircle2 className="h-4 w-4 text-success" />
+      case 'syncing': return <Loader2 className="h-4 w-4 text-info animate-spin" />
+      case 'error': return <AlertCircle className="h-4 w-4 text-destructive" />
+      default: return <Clock className="h-4 w-4 text-warning" />
     }
   }
 
@@ -177,7 +177,7 @@ export function CustomersSyncStatus() {
                 </div>
                 <span className={cn(
                   "absolute -top-1 -right-1 w-3 h-3 rounded-full border-2 border-background",
-                  isSyncingAny ? 'bg-blue-500 animate-pulse' : 'bg-green-500'
+                  isSyncingAny ? 'bg-info animate-pulse' : 'bg-success'
                 )} />
               </div>
               <div>

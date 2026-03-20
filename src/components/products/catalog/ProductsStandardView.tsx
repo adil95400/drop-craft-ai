@@ -74,13 +74,13 @@ export function ProductsStandardView({
                 isAISorted 
                   ? 'bg-gradient-to-br from-primary/20 to-primary/10' 
                   : isBusinessMode 
-                    ? 'bg-emerald-500/10' 
+                    ? 'bg-success/10' 
                     : 'bg-primary/10'
               )}>
                 {isAISorted ? (
                   <Brain className="h-5 w-5 text-primary" />
                 ) : isBusinessMode ? (
-                  <BarChart3 className="h-5 w-5 text-emerald-600" />
+                  <BarChart3 className="h-5 w-5 text-success" />
                 ) : (
                   <Package className="h-5 w-5 text-primary" />
                 )}

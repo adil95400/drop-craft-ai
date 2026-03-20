@@ -205,16 +205,16 @@ export const EnhancedProductCard = memo(function EnhancedProductCard({
 
   const getStockStatus = () => {
     const stock = product.stock_quantity || 0;
-    if (stock > 50) return { label: 'En stock', color: 'bg-emerald-500', textColor: 'text-emerald-600' };
-    if (stock > 10) return { label: 'Limité', color: 'bg-amber-500', textColor: 'text-amber-600' };
-    if (stock > 0) return { label: 'Faible', color: 'bg-orange-500', textColor: 'text-orange-600' };
-    return { label: 'Rupture', color: 'bg-red-500', textColor: 'text-red-600' };
+    if (stock > 50) return { label: 'En stock', color: 'bg-success', textColor: 'text-success' };
+    if (stock > 10) return { label: 'Limité', color: 'bg-warning', textColor: 'text-warning' };
+    if (stock > 0) return { label: 'Faible', color: 'bg-warning', textColor: 'text-warning' };
+    return { label: 'Rupture', color: 'bg-destructive', textColor: 'text-destructive' };
   };
 
   const getScoreConfig = (score: number) => {
-    if (score >= 80) return { color: 'text-emerald-500', bg: 'bg-emerald-500', label: 'Excellent', gradient: 'from-emerald-500 to-emerald-400' };
-    if (score >= 60) return { color: 'text-amber-500', bg: 'bg-amber-500', label: 'Bon', gradient: 'from-amber-500 to-amber-400' };
-    return { color: 'text-red-500', bg: 'bg-red-500', label: 'À optimiser', gradient: 'from-red-500 to-red-400' };
+    if (score >= 80) return { color: 'text-success', bg: 'bg-success', label: 'Excellent', gradient: 'from-emerald-500 to-emerald-400' };
+    if (score >= 60) return { color: 'text-warning', bg: 'bg-warning', label: 'Bon', gradient: 'from-amber-500 to-amber-400' };
+    return { color: 'text-destructive', bg: 'bg-destructive', label: 'À optimiser', gradient: 'from-destructive to-red-400' };
   };
 
   const stockStatus = getStockStatus();
@@ -318,7 +318,7 @@ export const EnhancedProductCard = memo(function EnhancedProductCard({
                   Partager
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={handleToggleFavorite} className="gap-2">
-                  <Heart className={cn("h-4 w-4", isFavorite && "fill-red-500 text-red-500")} />
+                  <Heart className={cn("h-4 w-4", isFavorite && "fill-red-500 text-destructive")} />
                   {isFavorite ? 'Retirer des favoris' : 'Ajouter aux favoris'}
                 </DropdownMenuItem>
                 {product.status !== 'active' && (
@@ -442,7 +442,7 @@ export const EnhancedProductCard = memo(function EnhancedProductCard({
               className={cn(
                 "shrink-0 text-[10px] font-medium border-0",
                 product.status === 'active' 
-                  ? 'bg-emerald-500/10 text-emerald-600' 
+                  ? 'bg-success/10 text-success' 
                   : 'bg-muted text-muted-foreground'
               )}
             >
@@ -470,11 +470,11 @@ export const EnhancedProductCard = memo(function EnhancedProductCard({
                   <TooltipTrigger asChild>
                     <div className={cn(
                       "px-2.5 py-1.5 rounded-lg text-right",
-                      margin >= 30 ? "bg-emerald-500/10" : margin >= 15 ? "bg-amber-500/10" : "bg-red-500/10"
+                      margin >= 30 ? "bg-success/10" : margin >= 15 ? "bg-warning/10" : "bg-destructive/10"
                     )}>
                       <p className={cn(
                         "text-lg font-bold leading-none",
-                        margin >= 30 ? "text-emerald-600" : margin >= 15 ? "text-amber-600" : "text-red-600"
+                        margin >= 30 ? "text-success" : margin >= 15 ? "text-warning" : "text-destructive"
                       )}>
                         {margin >= 0 ? '+' : ''}{margin}%
                       </p>
@@ -543,7 +543,7 @@ export const EnhancedProductCard = memo(function EnhancedProductCard({
             {aiBadge?.type === 'risk' ? (
               <Button
                 size="sm"
-                className="flex-1 h-9 text-xs bg-red-500 hover:bg-red-600 text-white shadow-sm"
+                className="flex-1 h-9 text-xs bg-destructive hover:bg-destructive text-white shadow-sm"
                 onClick={() => onView(product)}
               >
                 <AlertTriangle className="h-3.5 w-3.5 mr-1.5" />
@@ -552,7 +552,7 @@ export const EnhancedProductCard = memo(function EnhancedProductCard({
             ) : aiBadge?.type === 'opportunity' ? (
               <Button
                 size="sm"
-                className="flex-1 h-9 text-xs bg-emerald-500 hover:bg-emerald-600 text-white shadow-sm"
+                className="flex-1 h-9 text-xs bg-success hover:bg-success text-white shadow-sm"
                 onClick={() => onView(product)}
               >
                 <Sparkles className="h-3.5 w-3.5 mr-1.5" />
@@ -612,7 +612,7 @@ export const EnhancedProductCard = memo(function EnhancedProductCard({
                   Partager
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={handleToggleFavorite} className="gap-2">
-                  <Heart className={cn("h-4 w-4", isFavorite && "fill-red-500 text-red-500")} />
+                  <Heart className={cn("h-4 w-4", isFavorite && "fill-red-500 text-destructive")} />
                   Favoris
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />

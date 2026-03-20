@@ -115,10 +115,10 @@ export default function SecurityPage() {
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center space-x-2 mb-2">
-              <Shield className="w-5 h-5 text-green-500" />
+              <Shield className="w-5 h-5 text-success" />
               <span className="font-semibold">Score de Sécurité</span>
             </div>
-            <div className="text-2xl font-bold text-green-600 mb-2">{securityStatus.overall}%</div>
+            <div className="text-2xl font-bold text-success mb-2">{securityStatus.overall}%</div>
             <Progress value={securityStatus.overall} className="mb-2" />
             <p className="text-sm text-muted-foreground">Niveau: {securityStatus.level}</p>
           </CardContent>
@@ -127,10 +127,10 @@ export default function SecurityPage() {
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center space-x-2 mb-2">
-              <AlertTriangle className="w-5 h-5 text-orange-500" />
+              <AlertTriangle className="w-5 h-5 text-warning" />
               <span className="font-semibold">Vulnérabilités</span>
             </div>
-            <div className="text-2xl font-bold text-orange-600 mb-2">{securityStatus.vulnerabilities}</div>
+            <div className="text-2xl font-bold text-warning mb-2">{securityStatus.vulnerabilities}</div>
             <p className="text-sm text-muted-foreground">Détectées</p>
           </CardContent>
         </Card>
@@ -138,7 +138,7 @@ export default function SecurityPage() {
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center space-x-2 mb-2">
-              <Scan className="w-5 h-5 text-blue-500" />
+              <Scan className="w-5 h-5 text-info" />
               <span className="font-semibold">Dernier Scan</span>
             </div>
             <div className="text-sm font-medium mb-2">{securityStatus.lastScan}</div>
@@ -313,9 +313,9 @@ export default function SecurityPage() {
               {securityEvents.map((event) => (
                 <div key={event.id} className="flex items-start space-x-3 p-3 border rounded-lg">
                   <div className={`p-1 rounded-full ${
-                    event.severity === 'high' ? 'bg-red-100 text-red-600' :
-                    event.severity === 'medium' ? 'bg-orange-100 text-orange-600' :
-                    'bg-blue-100 text-blue-600'
+                    event.severity === 'high' ? 'bg-destructive/10 text-destructive' :
+                    event.severity === 'medium' ? 'bg-orange-100 text-warning' :
+                    'bg-info/10 text-info'
                   }`}>
                     {event.severity === 'high' ? <AlertTriangle className="w-4 h-4" /> :
                      event.severity === 'medium' ? <Shield className="w-4 h-4" /> :

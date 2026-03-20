@@ -69,10 +69,10 @@ export function StoreDashboardPage() {
   }
 
   const platformColors = {
-    shopify: 'bg-green-500',
+    shopify: 'bg-success',
     woocommerce: 'bg-purple-500',
-    prestashop: 'bg-blue-500',
-    magento: 'bg-orange-500'
+    prestashop: 'bg-info',
+    magento: 'bg-warning'
   }
 
   const statusColors = {

@@ -41,7 +41,7 @@ export function StoreComparisonTable({ stats }: StoreComparisonTableProps) {
                 <TableCell className="font-medium">{stat.store_name}</TableCell>
                 <TableCell>
                   {stat.is_active ? (
-                    <Badge variant="default" className="bg-green-500">
+                    <Badge variant="default" className="bg-success">
                       <CheckCircle2 className="h-3 w-3 mr-1" />
                       Actif
                     </Badge>
@@ -62,9 +62,9 @@ export function StoreComparisonTable({ stats }: StoreComparisonTableProps) {
                   <div className="flex items-center justify-end gap-2">
                     <span className="font-medium">{stat.active_integrations}</span>
                     {activeRate >= 80 ? (
-                      <TrendingUp className="h-4 w-4 text-green-500" />
+                      <TrendingUp className="h-4 w-4 text-success" />
                     ) : activeRate < 50 ? (
-                      <TrendingDown className="h-4 w-4 text-red-500" />
+                      <TrendingDown className="h-4 w-4 text-destructive" />
                     ) : null}
                   </div>
                 </TableCell>

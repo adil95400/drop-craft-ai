@@ -106,7 +106,7 @@ export function ResponsiveProductTable({
   const getStatusBadge = (status?: string) => {
     switch (status) {
       case 'active':
-        return <Badge className="bg-green-500/20 text-green-700 text-xs">Actif</Badge>
+        return <Badge className="bg-success/20 text-success text-xs">Actif</Badge>
       case 'draft':
         return <Badge variant="secondary" className="text-xs">Brouillon</Badge>
       case 'archived':
@@ -424,7 +424,7 @@ export function ResponsiveProductTable({
                     <span className={cn(
                       "font-medium",
                       (product.inventory_quantity ?? 0) === 0 && "text-destructive",
-                      (product.inventory_quantity ?? 0) > 0 && (product.inventory_quantity ?? 0) <= 5 && "text-orange-600"
+                      (product.inventory_quantity ?? 0) > 0 && (product.inventory_quantity ?? 0) <= 5 && "text-warning"
                     )}>
                       {product.inventory_quantity ?? 0}
                     </span>

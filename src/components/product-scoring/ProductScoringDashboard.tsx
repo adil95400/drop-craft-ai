@@ -19,10 +19,10 @@ import { formatDistanceToNow } from 'date-fns';
 import { getDateFnsLocale } from '@/utils/dateFnsLocale';
 
 function getScoreColor(score: number): string {
-  if (score >= 90) return 'text-green-500';
-  if (score >= 70) return 'text-blue-500';
-  if (score >= 50) return 'text-yellow-500';
-  return 'text-red-500';
+  if (score >= 90) return 'text-success';
+  if (score >= 70) return 'text-info';
+  if (score >= 50) return 'text-warning';
+  return 'text-destructive';
 }
 
 function getScoreBadge(score: number) {
@@ -67,7 +67,7 @@ export function ProductScoringDashboard() {
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center gap-4">
-              <div className="p-2 bg-blue-500/10 rounded-lg"><BarChart3 className="h-5 w-5 text-blue-500" /></div>
+              <div className="p-2 bg-info/10 rounded-lg"><BarChart3 className="h-5 w-5 text-info" /></div>
               <div>
                 <p className={`text-2xl font-bold ${getScoreColor(stats?.avgScore || 0)}`}>{(stats?.avgScore || 0).toFixed(0)}</p>
                 <p className="text-sm text-muted-foreground">Score moyen</p>
@@ -78,9 +78,9 @@ export function ProductScoringDashboard() {
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center gap-4">
-              <div className="p-2 bg-green-500/10 rounded-lg"><TrendingUp className="h-5 w-5 text-green-500" /></div>
+              <div className="p-2 bg-success/10 rounded-lg"><TrendingUp className="h-5 w-5 text-success" /></div>
               <div>
-                <p className="text-2xl font-bold text-green-500">{stats?.excellentCount || 0}</p>
+                <p className="text-2xl font-bold text-success">{stats?.excellentCount || 0}</p>
                 <p className="text-sm text-muted-foreground">Excellents (90+)</p>
               </div>
             </div>
@@ -89,9 +89,9 @@ export function ProductScoringDashboard() {
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center gap-4">
-              <div className="p-2 bg-red-500/10 rounded-lg"><TrendingDown className="h-5 w-5 text-red-500" /></div>
+              <div className="p-2 bg-destructive/10 rounded-lg"><TrendingDown className="h-5 w-5 text-destructive" /></div>
               <div>
-                <p className="text-2xl font-bold text-red-500">{stats?.poorCount || 0}</p>
+                <p className="text-2xl font-bold text-destructive">{stats?.poorCount || 0}</p>
                 <p className="text-sm text-muted-foreground">Faibles (&lt;60)</p>
               </div>
             </div>
@@ -155,11 +155,11 @@ export function ProductScoringDashboard() {
                         </div>
                         {score.issues.length > 0 && (
                           <div className="flex items-center gap-2 mt-3 pt-3 border-t">
-                            <AlertTriangle className="h-4 w-4 text-yellow-500" />
+                            <AlertTriangle className="h-4 w-4 text-warning" />
                             <span className="text-sm text-muted-foreground">{score.issues.length} problème(s)</span>
                             {score.recommendations.length > 0 && (
                               <>
-                                <Lightbulb className="h-4 w-4 text-blue-500 ml-4" />
+                                <Lightbulb className="h-4 w-4 text-info ml-4" />
                                 <span className="text-sm text-muted-foreground">{score.recommendations.length} suggestion(s)</span>
                               </>
                             )}
@@ -185,7 +185,7 @@ export function ProductScoringDashboard() {
                 {rules.map((rule) => (
                   <div key={rule.id} className="flex items-center justify-between p-3 border rounded-lg">
                     <div className="flex items-center gap-3">
-                      <CheckCircle className={`h-5 w-5 ${rule.is_active ? 'text-green-500' : 'text-muted-foreground'}`} />
+                      <CheckCircle className={`h-5 w-5 ${rule.is_active ? 'text-success' : 'text-muted-foreground'}`} />
                       <div>
                         <p className="font-medium">{rule.name}</p>
                         <p className="text-xs text-muted-foreground">

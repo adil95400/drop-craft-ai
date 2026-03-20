@@ -88,7 +88,7 @@ const KPIMini = memo(function KPIMini({
       {trend && (
         <div className={cn(
           'flex items-center gap-0.5 text-[10px] font-medium px-1.5 py-0.5 rounded',
-          trend.positive ? 'bg-emerald-500/10 text-emerald-500' : 'bg-red-500/10 text-red-500'
+          trend.positive ? 'bg-success/10 text-success' : 'bg-destructive/10 text-destructive'
         )}>
           {trend.direction === 'up' ? (
             <TrendingUp className="h-2.5 w-2.5" />
@@ -120,7 +120,7 @@ export const CollapsibleKPIBar = memo(function CollapsibleKPIBar({
       unit: KPI_FEEDBACK_CONFIG.avg_margin.unit,
       icon: Percent,
       trend: calculateTrend(data.avgMargin, previousData?.avgMargin),
-      color: 'bg-blue-500/10 text-blue-500'
+      color: 'bg-info/10 text-info'
     },
     {
       key: 'stock_value',
@@ -138,7 +138,7 @@ export const CollapsibleKPIBar = memo(function CollapsibleKPIBar({
       unit: currency,
       icon: DollarSign,
       trend: calculateTrend(data.potentialProfit, previousData?.potentialProfit),
-      color: 'bg-emerald-500/10 text-emerald-500'
+      color: 'bg-success/10 text-success'
     },
     {
       key: 'profitable_products',
@@ -147,7 +147,7 @@ export const CollapsibleKPIBar = memo(function CollapsibleKPIBar({
       unit: '',
       icon: BarChart3,
       trend: calculateTrend(data.profitableProducts, previousData?.profitableProducts),
-      color: 'bg-amber-500/10 text-amber-500'
+      color: 'bg-warning/10 text-warning'
     }
   ]
   
@@ -169,7 +169,7 @@ export const CollapsibleKPIBar = memo(function CollapsibleKPIBar({
             <div className="flex items-center gap-2">
               <BarChart3 className="h-4 w-4 text-muted-foreground" />
               <span className="text-xs text-muted-foreground">KPIs Business</span>
-              <span className="text-sm font-bold text-emerald-500">
+              <span className="text-sm font-bold text-success">
                 {Math.round(data.potentialProfit).toLocaleString('fr-FR')}€
               </span>
               <span className="text-xs text-muted-foreground">profit potentiel</span>

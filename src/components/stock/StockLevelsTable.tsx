@@ -164,7 +164,7 @@ export function StockLevelsTable() {
                       <TableCell className="text-center font-mono text-muted-foreground">
                         {level.reserved_quantity}
                       </TableCell>
-                      <TableCell className="text-center font-mono font-medium text-green-600">
+                      <TableCell className="text-center font-mono font-medium text-success">
                         {level.available_quantity}
                       </TableCell>
                       <TableCell className="text-center text-xs text-muted-foreground">
@@ -235,7 +235,7 @@ export function StockLevelsTable() {
               </div>
               
               {newQuantity !== editingLevel.quantity && (
-                <div className={`p-3 rounded-lg ${newQuantity > editingLevel.quantity ? 'bg-green-500/10 text-green-700' : 'bg-red-500/10 text-red-700'}`}>
+                <div className={`p-3 rounded-lg ${newQuantity > editingLevel.quantity ? 'bg-success/10 text-success' : 'bg-destructive/10 text-red-700'}`}>
                   <p className="text-sm font-medium">
                     {newQuantity > editingLevel.quantity ? '+' : ''}{newQuantity - editingLevel.quantity} unités
                   </p>

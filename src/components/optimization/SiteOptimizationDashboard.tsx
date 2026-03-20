@@ -45,15 +45,15 @@ export function SiteOptimizationDashboard() {
   };
 
   const getScoreColor = (score: number) => {
-    if (score >= 80) return 'text-green-600';
-    if (score >= 60) return 'text-yellow-600';
-    return 'text-red-600';
+    if (score >= 80) return 'text-success';
+    if (score >= 60) return 'text-warning';
+    return 'text-destructive';
   };
 
   const getScoreStatus = (score: number) => {
-    if (score >= 80) return { label: 'Excellent', icon: CheckCircle2, color: 'text-green-600' };
-    if (score >= 60) return { label: 'À améliorer', icon: AlertCircle, color: 'text-yellow-600' };
-    return { label: 'À optimiser', icon: AlertCircle, color: 'text-red-600' };
+    if (score >= 80) return { label: 'Excellent', icon: CheckCircle2, color: 'text-success' };
+    if (score >= 60) return { label: 'À améliorer', icon: AlertCircle, color: 'text-warning' };
+    return { label: 'À optimiser', icon: AlertCircle, color: 'text-destructive' };
   };
 
   const healthCategories = [
@@ -63,7 +63,7 @@ export function SiteOptimizationDashboard() {
       description: 'Référencement naturel',
       icon: Search,
       score: siteHealth.seo,
-      color: 'from-blue-500 to-blue-600'
+      color: 'from-info to-info'
     },
     {
       key: 'images',
@@ -79,7 +79,7 @@ export function SiteOptimizationDashboard() {
       description: 'Qualité du contenu',
       icon: FileText,
       score: siteHealth.content,
-      color: 'from-green-500 to-green-600'
+      color: 'from-success to-success'
     },
     {
       key: 'translations',
@@ -333,7 +333,7 @@ export function SiteOptimizationDashboard() {
               <div className="text-xs text-muted-foreground">Optimisations</div>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold text-green-600">+{siteHealth.improvement}%</div>
+              <div className="text-2xl font-bold text-success">+{siteHealth.improvement}%</div>
               <div className="text-xs text-muted-foreground">Amélioration</div>
             </div>
             <div className="text-center">

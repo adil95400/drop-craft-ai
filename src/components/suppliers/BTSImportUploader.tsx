@@ -152,14 +152,14 @@ export function BTSImportUploader({ supplierId }: BTSImportUploaderProps) {
           <div className="space-y-4">
             {result.success ? (
               <div className="text-center space-y-4">
-                <CheckCircle className="h-12 w-12 mx-auto text-green-500" />
+                <CheckCircle className="h-12 w-12 mx-auto text-success" />
                 <div>
                   <p className="font-medium text-lg">Import terminé!</p>
                   <p className="text-muted-foreground">
                     {result.processed} produits importés sur {result.total}
                   </p>
                   {result.failed && result.failed > 0 && (
-                    <p className="text-yellow-600">
+                    <p className="text-warning">
                       {result.failed} produits en échec
                     </p>
                   )}

@@ -70,9 +70,9 @@ export function PerformanceMonitor({ children, showWidget = false }: Performance
   }, [])
 
   const getScoreColor = (score: number) => {
-    if (score >= 90) return 'text-green-600'
-    if (score >= 70) return 'text-yellow-600'
-    return 'text-red-600'
+    if (score >= 90) return 'text-success'
+    if (score >= 70) return 'text-warning'
+    return 'text-destructive'
   }
 
   const getScoreBadge = (score: number) => {
@@ -209,7 +209,7 @@ export function PerformanceMonitor({ children, showWidget = false }: Performance
           >
             {isOptimized ? (
               <>
-                <CheckCircle className="h-3 w-3 text-green-600" />
+                <CheckCircle className="h-3 w-3 text-success" />
                 Optimisé
               </>
             ) : (
@@ -237,8 +237,8 @@ export function PerformanceMonitor({ children, showWidget = false }: Performance
 
         {/* Alertes de performance */}
         {overallScore < 70 && (
-          <div className="flex items-center gap-2 p-3 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg border border-yellow-200 dark:border-yellow-800">
-            <AlertTriangle className="h-4 w-4 text-yellow-600" />
+          <div className="flex items-center gap-2 p-3 bg-warning/5 dark:bg-yellow-900/20 rounded-lg border border-warning/20 dark:border-yellow-800">
+            <AlertTriangle className="h-4 w-4 text-warning" />
             <div className="text-sm">
               <p className="font-medium text-yellow-800 dark:text-yellow-200">
                 Performance dégradée détectée
@@ -255,7 +255,7 @@ export function PerformanceMonitor({ children, showWidget = false }: Performance
       {isOptimized && (
         <div className="absolute inset-0 bg-primary/5 flex items-center justify-center">
           <div className="bg-background border rounded-lg p-4 shadow-lg animate-pulse">
-            <div className="flex items-center gap-2 text-green-600">
+            <div className="flex items-center gap-2 text-success">
               <Zap className="h-5 w-5" />
               <span className="font-medium">Optimisation en cours...</span>
             </div>

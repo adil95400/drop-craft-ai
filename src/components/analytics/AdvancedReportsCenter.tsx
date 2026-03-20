@@ -187,18 +187,18 @@ export function AdvancedReportsCenter() {
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'completed': return <CheckCircle className="h-4 w-4 text-green-600" />;
-      case 'generating': return <RefreshCw className="h-4 w-4 text-blue-600 animate-spin" />;
-      case 'failed': return <AlertTriangle className="h-4 w-4 text-red-600" />;
+      case 'completed': return <CheckCircle className="h-4 w-4 text-success" />;
+      case 'generating': return <RefreshCw className="h-4 w-4 text-info animate-spin" />;
+      case 'failed': return <AlertTriangle className="h-4 w-4 text-destructive" />;
       default: return <Clock className="h-4 w-4 text-gray-600" />;
     }
   };
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'completed': return 'text-green-600 bg-green-100';
-      case 'generating': return 'text-blue-600 bg-blue-100';
-      case 'failed': return 'text-red-600 bg-red-100';
+      case 'completed': return 'text-success bg-success/10';
+      case 'generating': return 'text-info bg-info/10';
+      case 'failed': return 'text-destructive bg-destructive/10';
       default: return 'text-gray-600 bg-gray-100';
     }
   };
@@ -397,10 +397,10 @@ export function AdvancedReportsCenter() {
                     <p className="text-sm text-muted-foreground">Revenus Totaux</p>
                     <p className="text-2xl font-bold">€245,000</p>
                   </div>
-                  <DollarSign className="h-5 w-5 text-green-600" />
+                  <DollarSign className="h-5 w-5 text-success" />
                 </div>
                 <div className="mt-2">
-                  <Badge variant="outline" className="text-xs text-green-600">
+                  <Badge variant="outline" className="text-xs text-success">
                     +18.5% ce mois
                   </Badge>
                 </div>
@@ -414,10 +414,10 @@ export function AdvancedReportsCenter() {
                     <p className="text-sm text-muted-foreground">Clients Actifs</p>
                     <p className="text-2xl font-bold">2,450</p>
                   </div>
-                  <Users className="h-5 w-5 text-blue-600" />
+                  <Users className="h-5 w-5 text-info" />
                 </div>
                 <div className="mt-2">
-                  <Badge variant="outline" className="text-xs text-blue-600">
+                  <Badge variant="outline" className="text-xs text-info">
                     +12.3% ce mois
                   </Badge>
                 </div>
@@ -448,10 +448,10 @@ export function AdvancedReportsCenter() {
                     <p className="text-sm text-muted-foreground">Efficacité</p>
                     <p className="text-2xl font-bold">89%</p>
                   </div>
-                  <Activity className="h-5 w-5 text-orange-600" />
+                  <Activity className="h-5 w-5 text-warning" />
                 </div>
                 <div className="mt-2">
-                  <Badge variant="outline" className="text-xs text-orange-600">
+                  <Badge variant="outline" className="text-xs text-warning">
                     +5.2% ce mois
                   </Badge>
                 </div>
@@ -478,10 +478,10 @@ export function AdvancedReportsCenter() {
               <CardContent>
                 <div className="space-y-4">
                   {[
-                    { name: 'Technologie & IA', value: 78, color: 'bg-blue-500' },
-                    { name: 'Marketing & Ventes', value: 65, color: 'bg-green-500' },
+                    { name: 'Technologie & IA', value: 78, color: 'bg-info' },
+                    { name: 'Marketing & Ventes', value: 65, color: 'bg-success' },
                     { name: 'Opérations', value: 89, color: 'bg-purple-500' },
-                    { name: 'Support Client', value: 94, color: 'bg-orange-500' }
+                    { name: 'Support Client', value: 94, color: 'bg-warning' }
                   ].map((item, index) => (
                     <div key={index}>
                       <div className="flex justify-between text-sm mb-1">
@@ -532,9 +532,9 @@ export function AdvancedReportsCenter() {
                       <CardContent className="pt-4">
                         <div className="flex items-start gap-4">
                           <div className="p-2 rounded-lg bg-primary/10">
-                            {insight.type === 'success' && <CheckCircle className="h-5 w-5 text-green-600" />}
-                            {insight.type === 'warning' && <AlertTriangle className="h-5 w-5 text-yellow-600" />}
-                            {insight.type === 'info' && <Activity className="h-5 w-5 text-blue-600" />}
+                            {insight.type === 'success' && <CheckCircle className="h-5 w-5 text-success" />}
+                            {insight.type === 'warning' && <AlertTriangle className="h-5 w-5 text-warning" />}
+                            {insight.type === 'info' && <Activity className="h-5 w-5 text-info" />}
                           </div>
                           <div className="flex-1">
                             <h3 className="font-medium mb-1">{insight.title}</h3>

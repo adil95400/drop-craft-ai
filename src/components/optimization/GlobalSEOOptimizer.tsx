@@ -36,26 +36,26 @@ export function GlobalSEOOptimizer() {
   const getSeverityIcon = (severity: string) => {
     switch (severity) {
       case 'critical':
-        return <XCircle className="w-4 h-4 text-red-600" />;
+        return <XCircle className="w-4 h-4 text-destructive" />;
       case 'warning':
-        return <AlertCircle className="w-4 h-4 text-yellow-600" />;
+        return <AlertCircle className="w-4 h-4 text-warning" />;
       case 'info':
-        return <CheckCircle2 className="w-4 h-4 text-blue-600" />;
+        return <CheckCircle2 className="w-4 h-4 text-info" />;
       default:
-        return <CheckCircle2 className="w-4 h-4 text-green-600" />;
+        return <CheckCircle2 className="w-4 h-4 text-success" />;
     }
   };
 
   const getSeverityColor = (severity: string) => {
     switch (severity) {
       case 'critical':
-        return 'bg-red-100 text-red-800 border-red-200';
+        return 'bg-destructive/10 text-red-800 border-destructive/20';
       case 'warning':
-        return 'bg-yellow-100 text-yellow-800 border-yellow-200';
+        return 'bg-warning/10 text-yellow-800 border-warning/20';
       case 'info':
-        return 'bg-blue-100 text-blue-800 border-blue-200';
+        return 'bg-info/10 text-blue-800 border-info/20';
       default:
-        return 'bg-green-100 text-green-800 border-green-200';
+        return 'bg-success/10 text-success border-success/20';
     }
   };
 
@@ -85,7 +85,7 @@ export function GlobalSEOOptimizer() {
         <Card>
           <CardContent className="pt-6">
             <div className="text-center">
-              <TrendingUp className="w-8 h-8 mx-auto mb-2 text-green-600" />
+              <TrendingUp className="w-8 h-8 mx-auto mb-2 text-success" />
               <div className="text-2xl font-bold">{averageScore}/100</div>
               <div className="text-sm text-muted-foreground">Score moyen SEO</div>
             </div>
@@ -95,7 +95,7 @@ export function GlobalSEOOptimizer() {
         <Card>
           <CardContent className="pt-6">
             <div className="text-center">
-              <AlertCircle className="w-8 h-8 mx-auto mb-2 text-yellow-600" />
+              <AlertCircle className="w-8 h-8 mx-auto mb-2 text-warning" />
               <div className="text-2xl font-bold">{totalIssues}</div>
               <div className="text-sm text-muted-foreground">Problèmes détectés</div>
             </div>
@@ -105,7 +105,7 @@ export function GlobalSEOOptimizer() {
         <Card>
           <CardContent className="pt-6">
             <div className="text-center">
-              <XCircle className="w-8 h-8 mx-auto mb-2 text-red-600" />
+              <XCircle className="w-8 h-8 mx-auto mb-2 text-destructive" />
               <div className="text-2xl font-bold">{criticalIssues}</div>
               <div className="text-sm text-muted-foreground">Problèmes critiques</div>
             </div>
@@ -251,9 +251,9 @@ export function GlobalSEOOptimizer() {
                           <Badge 
                             variant="outline"
                             className={
-                              page.score >= 80 ? 'border-green-500 text-green-700' :
-                              page.score >= 60 ? 'border-yellow-500 text-yellow-700' :
-                              'border-red-500 text-red-700'
+                              page.score >= 80 ? 'border-success text-success' :
+                              page.score >= 60 ? 'border-warning text-yellow-700' :
+                              'border-destructive text-red-700'
                             }
                           >
                             Score: {page.score}/100
@@ -263,7 +263,7 @@ export function GlobalSEOOptimizer() {
                     </CardHeader>
                     <CardContent className="space-y-2">
                       {page.issues.length === 0 ? (
-                        <div className="flex items-center gap-2 text-green-600 text-sm">
+                        <div className="flex items-center gap-2 text-success text-sm">
                           <CheckCircle2 className="w-4 h-4" />
                           <span>Aucun problème détecté</span>
                         </div>
@@ -292,7 +292,7 @@ export function GlobalSEOOptimizer() {
                       {/* Optimized Content */}
                       {page.optimized && (
                         <div className="mt-4 pt-4 border-t space-y-2">
-                          <div className="flex items-center gap-2 text-green-600 text-sm font-medium">
+                          <div className="flex items-center gap-2 text-success text-sm font-medium">
                             <Sparkles className="w-4 h-4" />
                             Contenu optimisé par IA
                           </div>

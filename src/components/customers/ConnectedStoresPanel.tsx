@@ -41,8 +41,8 @@ import {
 const platformConfig: Record<string, { icon: React.ReactNode; color: string; gradient: string }> = {
   shopify: { 
     icon: <ShoppingBag className="h-4 w-4" />, 
-    color: 'text-green-600',
-    gradient: 'from-green-500/20 to-green-600/10'
+    color: 'text-success',
+    gradient: 'from-success/20 to-success/10'
   },
   woocommerce: { 
     icon: <Store className="h-4 w-4" />, 
@@ -56,13 +56,13 @@ const platformConfig: Record<string, { icon: React.ReactNode; color: string; gra
   },
   magento: { 
     icon: <Store className="h-4 w-4" />, 
-    color: 'text-orange-600',
+    color: 'text-warning',
     gradient: 'from-orange-500/20 to-orange-600/10'
   },
   default: { 
     icon: <Globe className="h-4 w-4" />, 
-    color: 'text-blue-600',
-    gradient: 'from-blue-500/20 to-blue-600/10'
+    color: 'text-info',
+    gradient: 'from-info/20 to-info/10'
   }
 }
 
@@ -259,7 +259,7 @@ export function ConnectedStoresPanel({ onImportComplete, autoSync = true }: Conn
                   </div>
                   <span className={cn(
                     "absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full border-2 border-background shadow-sm",
-                    isSyncingAny ? 'bg-blue-500 animate-pulse' : activeStores.length > 0 ? 'bg-green-500' : 'bg-amber-500'
+                    isSyncingAny ? 'bg-info animate-pulse' : activeStores.length > 0 ? 'bg-success' : 'bg-warning'
                   )} />
                 </div>
                 <div>
@@ -269,7 +269,7 @@ export function ConnectedStoresPanel({ onImportComplete, autoSync = true }: Conn
                       {activeStores.length}/{connectedIntegrations.length} actives
                     </Badge>
                     {isSyncingAny && (
-                      <Badge variant="outline" className="text-xs gap-1 animate-pulse border-blue-500/30 text-blue-600">
+                      <Badge variant="outline" className="text-xs gap-1 animate-pulse border-info/30 text-info">
                         <Loader2 className="h-3 w-3 animate-spin" />
                         Sync...
                       </Badge>
@@ -351,7 +351,7 @@ export function ConnectedStoresPanel({ onImportComplete, autoSync = true }: Conn
                                     {integration.platform_name || integration.platform}
                                   </p>
                                   {integration.is_active && (
-                                    <CheckCircle2 className="h-3.5 w-3.5 text-green-500" />
+                                    <CheckCircle2 className="h-3.5 w-3.5 text-success" />
                                   )}
                                 </div>
                                 <div className="flex items-center gap-3 text-xs text-muted-foreground mt-0.5">
@@ -394,7 +394,7 @@ export function ConnectedStoresPanel({ onImportComplete, autoSync = true }: Conn
                                 <Switch
                                   checked={integration.is_active}
                                   onCheckedChange={(checked) => handleToggleStore(integration, checked)}
-                                  className="data-[state=checked]:bg-green-500"
+                                  className="data-[state=checked]:bg-success"
                                 />
                               </div>
                             </div>

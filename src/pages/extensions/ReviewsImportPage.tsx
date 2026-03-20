@@ -221,8 +221,8 @@ export default function ReviewsImportPage() {
                   <Star className="h-4 w-4 text-yellow-400 fill-yellow-400" />
                 </p>
               </div>
-              <div className="h-10 w-10 rounded-full bg-yellow-500/10 flex items-center justify-center">
-                <Star className="h-5 w-5 text-yellow-500" />
+              <div className="h-10 w-10 rounded-full bg-warning/10 flex items-center justify-center">
+                <Star className="h-5 w-5 text-warning" />
               </div>
             </div>
           </CardContent>
@@ -235,8 +235,8 @@ export default function ReviewsImportPage() {
                 <p className="text-sm text-muted-foreground">Achats Vérifiés</p>
                 <p className="text-2xl font-bold">{stats.verified}</p>
               </div>
-              <div className="h-10 w-10 rounded-full bg-green-500/10 flex items-center justify-center">
-                <CheckCircle className="h-5 w-5 text-green-500" />
+              <div className="h-10 w-10 rounded-full bg-success/10 flex items-center justify-center">
+                <CheckCircle className="h-5 w-5 text-success" />
               </div>
             </div>
           </CardContent>
@@ -249,8 +249,8 @@ export default function ReviewsImportPage() {
                 <p className="text-sm text-muted-foreground">Sources</p>
                 <p className="text-2xl font-bold">{stats.sources.length}</p>
               </div>
-              <div className="h-10 w-10 rounded-full bg-blue-500/10 flex items-center justify-center">
-                <Globe className="h-5 w-5 text-blue-500" />
+              <div className="h-10 w-10 rounded-full bg-info/10 flex items-center justify-center">
+                <Globe className="h-5 w-5 text-info" />
               </div>
             </div>
           </CardContent>
@@ -270,7 +270,7 @@ export default function ReviewsImportPage() {
               className="h-auto flex-col gap-2 p-4"
               onClick={() => setShowImportModal(true)}
             >
-              <FileSpreadsheet className="h-6 w-6 text-green-500" />
+              <FileSpreadsheet className="h-6 w-6 text-success" />
               <span className="text-sm font-medium">CSV / JSON</span>
               <span className="text-xs text-muted-foreground">Fichier local</span>
             </Button>
@@ -280,7 +280,7 @@ export default function ReviewsImportPage() {
               className="h-auto flex-col gap-2 p-4"
               onClick={() => setShowImportModal(true)}
             >
-              <LinkIcon className="h-6 w-6 text-blue-500" />
+              <LinkIcon className="h-6 w-6 text-info" />
               <span className="text-sm font-medium">Par URL</span>
               <span className="text-xs text-muted-foreground">Amazon, AliExpress...</span>
             </Button>

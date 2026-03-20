@@ -41,8 +41,8 @@ export function AIBusinessDashboard() {
   }
 
   const velocityIcon = (v: string) => {
-    if (v === 'rising') return <ArrowUpRight className="h-4 w-4 text-green-500" />
-    if (v === 'declining') return <ArrowDownRight className="h-4 w-4 text-red-500" />
+    if (v === 'rising') return <ArrowUpRight className="h-4 w-4 text-success" />
+    if (v === 'declining') return <ArrowDownRight className="h-4 w-4 text-destructive" />
     return <Minus className="h-4 w-4 text-muted-foreground" />
   }
 
@@ -73,8 +73,8 @@ export function AIBusinessDashboard() {
             <CardHeader className="pb-2">
               <CardDescription className="flex items-center gap-1">
                 {summary.revenue_trend.direction === 'up'
-                  ? <TrendingUp className="h-4 w-4 text-green-500" />
-                  : <TrendingDown className="h-4 w-4 text-red-500" />}
+                  ? <TrendingUp className="h-4 w-4 text-success" />
+                  : <TrendingDown className="h-4 w-4 text-destructive" />}
                 Tendance Revenus
               </CardDescription>
               <CardTitle className="text-2xl">
@@ -121,7 +121,7 @@ export function AIBusinessDashboard() {
               {summary.risk_alerts.length > 0 ? (
                 <p className="text-xs text-destructive">{summary.risk_alerts[0]}</p>
               ) : (
-                <p className="text-xs text-green-600">Aucune alerte</p>
+                <p className="text-xs text-success">Aucune alerte</p>
               )}
             </CardContent>
           </Card>
@@ -262,7 +262,7 @@ export function AIBusinessDashboard() {
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <h4 className="font-semibold text-green-600 flex items-center gap-1">
+                      <h4 className="font-semibold text-success flex items-center gap-1">
                         <ArrowUpRight className="h-4 w-4" /> Forces
                       </h4>
                       {perfReport.strengths.map((s, i) => (
@@ -270,7 +270,7 @@ export function AIBusinessDashboard() {
                       ))}
                     </div>
                     <div className="space-y-2">
-                      <h4 className="font-semibold text-red-500 flex items-center gap-1">
+                      <h4 className="font-semibold text-destructive flex items-center gap-1">
                         <AlertTriangle className="h-4 w-4" /> Faiblesses
                       </h4>
                       {perfReport.weaknesses.map((w, i) => (

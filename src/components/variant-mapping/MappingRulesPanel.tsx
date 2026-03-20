@@ -107,7 +107,7 @@ export function MappingRulesPanel() {
       <div className="flex justify-between items-center">
         <div>
           <h3 className="text-lg font-semibold flex items-center gap-2">
-            <Zap className="h-5 w-5 text-yellow-500" />
+            <Zap className="h-5 w-5 text-warning" />
             Règles de Mapping Automatique
           </h3>
           <p className="text-sm text-muted-foreground">
@@ -151,7 +151,7 @@ export function MappingRulesPanel() {
                         {TRANSFORMATION_TYPES.find(t => t.value === rule.transformation_type)?.label}
                       </Badge>
                       {rule.is_active ? (
-                        <Badge className="bg-green-500/10 text-green-600">
+                        <Badge className="bg-success/10 text-success">
                           <CheckCircle className="h-3 w-3 mr-1" />
                           Actif
                         </Badge>

@@ -69,9 +69,9 @@ export function OrdersWidgetAdvanced({ timeRange, settings, lastRefresh }: Order
 
   // Real status distribution from database
   const statusData = [
-    { name: 'En attente', value: (statusDistribution?.pending || 0) + (statusDistribution?.processing || 0), icon: Clock, color: 'text-yellow-500' },
-    { name: 'Expédiées', value: (statusDistribution?.shipped || 0) + (statusDistribution?.delivered || 0), icon: Truck, color: 'text-green-500' },
-    { name: 'Annulées', value: statusDistribution?.cancelled || 0, icon: XCircle, color: 'text-red-500' },
+    { name: 'En attente', value: (statusDistribution?.pending || 0) + (statusDistribution?.processing || 0), icon: Clock, color: 'text-warning' },
+    { name: 'Expédiées', value: (statusDistribution?.shipped || 0) + (statusDistribution?.delivered || 0), icon: Truck, color: 'text-success' },
+    { name: 'Annulées', value: statusDistribution?.cancelled || 0, icon: XCircle, color: 'text-destructive' },
   ];
 
   if (statsLoading || chartLoading || statusLoading) {
@@ -87,8 +87,8 @@ export function OrdersWidgetAdvanced({ timeRange, settings, lastRefresh }: Order
       <CardHeader className="pb-2">
         <CardTitle className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="p-2 rounded-lg bg-blue-500/10">
-              <ShoppingCart className="h-5 w-5 text-blue-500" />
+            <div className="p-2 rounded-lg bg-info/10">
+              <ShoppingCart className="h-5 w-5 text-info" />
             </div>
             <span>Commandes</span>
           </div>

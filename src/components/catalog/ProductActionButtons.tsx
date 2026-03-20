@@ -240,15 +240,15 @@ export const ProductActionButtons = ({
 
   const getStockBadge = () => {
     const stock = product.stock_quantity || 0;
-    if (stock > 50) return <Badge className="bg-green-500">Stock OK</Badge>;
-    if (stock > 10) return <Badge className="bg-orange-500">Stock limité</Badge>;
-    return <Badge className="bg-red-500">Stock faible</Badge>;
+    if (stock > 50) return <Badge className="bg-success">Stock OK</Badge>;
+    if (stock > 10) return <Badge className="bg-warning">Stock limité</Badge>;
+    return <Badge className="bg-destructive">Stock faible</Badge>;
   };
 
   const getProfitBadge = () => {
     const margin = product.profit_margin || 0;
-    if (margin > 50) return <Badge className="bg-green-500">+{margin}%</Badge>;
-    if (margin > 30) return <Badge className="bg-blue-500">+{margin}%</Badge>;
+    if (margin > 50) return <Badge className="bg-success">+{margin}%</Badge>;
+    if (margin > 30) return <Badge className="bg-info">+{margin}%</Badge>;
     return <Badge variant="outline">+{margin}%</Badge>;
   };
 
@@ -281,7 +281,7 @@ export const ProductActionButtons = ({
               Dupliquer
             </DropdownMenuItem>
             <DropdownMenuItem onClick={handleToggleFavorite}>
-              <Heart className={`h-4 w-4 mr-2 ${isFavorite ? 'fill-red-500 text-red-500' : ''}`} />
+              <Heart className={`h-4 w-4 mr-2 ${isFavorite ? 'fill-red-500 text-destructive' : ''}`} />
               {isFavorite ? 'Retirer des favoris' : 'Ajouter aux favoris'}
             </DropdownMenuItem>
             <DropdownMenuSeparator />
@@ -298,7 +298,7 @@ export const ProductActionButtons = ({
               Partager
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={handleDeleteProduct} className="text-red-600">
+            <DropdownMenuItem onClick={handleDeleteProduct} className="text-destructive">
               <Trash2 className="h-4 w-4 mr-2" />
               Supprimer
             </DropdownMenuItem>
@@ -356,7 +356,7 @@ export const ProductActionButtons = ({
           onClick={handleToggleFavorite}
           title={isFavorite ? "Retirer des favoris" : "Ajouter aux favoris"}
         >
-          <Heart className={`h-4 w-4 ${isFavorite ? 'fill-red-500 text-red-500' : ''}`} />
+          <Heart className={`h-4 w-4 ${isFavorite ? 'fill-red-500 text-destructive' : ''}`} />
         </Button>
         
         <Button

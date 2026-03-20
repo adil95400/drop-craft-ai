@@ -127,9 +127,9 @@ export default function ExtensionImportHistoryPage() {
       case 'extension':
         return <Chrome className="h-4 w-4 text-cyan-500" />;
       case 'url':
-        return <Globe className="h-4 w-4 text-blue-500" />;
+        return <Globe className="h-4 w-4 text-info" />;
       case 'csv':
-        return <FileSpreadsheet className="h-4 w-4 text-green-500" />;
+        return <FileSpreadsheet className="h-4 w-4 text-success" />;
       default:
         return <Package className="h-4 w-4 text-muted-foreground" />;
     }
@@ -138,9 +138,9 @@ export default function ExtensionImportHistoryPage() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'active':
-        return <Badge className="bg-green-500/10 text-green-600 border-green-500/20"><CheckCircle className="h-3 w-3 mr-1" />Actif</Badge>;
+        return <Badge className="bg-success/10 text-success border-success/20"><CheckCircle className="h-3 w-3 mr-1" />Actif</Badge>;
       case 'pending':
-        return <Badge className="bg-yellow-500/10 text-yellow-600 border-yellow-500/20"><Clock className="h-3 w-3 mr-1" />En attente</Badge>;
+        return <Badge className="bg-warning/10 text-warning border-warning/20"><Clock className="h-3 w-3 mr-1" />En attente</Badge>;
       case 'draft':
         return <Badge className="bg-gray-500/10 text-gray-600 border-gray-500/20">Brouillon</Badge>;
       default:
@@ -232,9 +232,9 @@ export default function ExtensionImportHistoryPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">Via URL</p>
-                <p className="text-2xl font-bold text-blue-600">{stats.urlCount}</p>
+                <p className="text-2xl font-bold text-info">{stats.urlCount}</p>
               </div>
-              <Globe className="h-8 w-8 text-blue-500/30" />
+              <Globe className="h-8 w-8 text-info/30" />
             </div>
           </CardContent>
         </Card>
@@ -243,9 +243,9 @@ export default function ExtensionImportHistoryPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">Actifs</p>
-                <p className="text-2xl font-bold text-green-600">{stats.activeCount}</p>
+                <p className="text-2xl font-bold text-success">{stats.activeCount}</p>
               </div>
-              <CheckCircle className="h-8 w-8 text-green-500/30" />
+              <CheckCircle className="h-8 w-8 text-success/30" />
             </div>
           </CardContent>
         </Card>

@@ -44,7 +44,7 @@ export default function AdsManagerPage() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'active':
-        return <Badge className="bg-green-500 hover:bg-green-600">Actif</Badge>;
+        return <Badge className="bg-success hover:bg-success">Actif</Badge>;
       case 'paused':
         return <Badge variant="secondary">En pause</Badge>;
       case 'completed':
@@ -132,7 +132,7 @@ export default function AdsManagerPage() {
                       <TrendingUp className="h-4 w-4" />
                       <span className="text-xs">ROAS moyen</span>
                     </div>
-                    <p className="text-2xl font-bold text-green-600">{(stats?.avgROAS || 0).toFixed(2)}x</p>
+                    <p className="text-2xl font-bold text-success">{(stats?.avgROAS || 0).toFixed(2)}x</p>
                   </CardContent>
                 </Card>
               </>
@@ -245,7 +245,7 @@ export default function AdsManagerPage() {
                           <div>
                             <p className="text-sm text-muted-foreground">ROAS</p>
                             <p className="text-lg font-semibold flex items-center gap-1">
-                              <TrendingUp className="h-4 w-4 text-green-600" />
+                              <TrendingUp className="h-4 w-4 text-success" />
                               {campaign.performance_metrics?.roas || 0}x
                             </p>
                           </div>

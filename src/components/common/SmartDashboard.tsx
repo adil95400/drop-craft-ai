@@ -53,9 +53,9 @@ const MetricCard = memo(function MetricCard({
     
     switch (metric.change.type) {
       case 'increase':
-        return 'text-green-600';
+        return 'text-success';
       case 'decrease':
-        return 'text-red-600';
+        return 'text-destructive';
       default:
         return 'text-muted-foreground';
     }

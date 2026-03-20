@@ -26,7 +26,7 @@ export function AdsTrendingPanel() {
           <div className="flex items-center justify-between">
             <div>
               <CardTitle className="flex items-center gap-2">
-                <Flame className="w-5 h-5 text-orange-500" />
+                <Flame className="w-5 h-5 text-warning" />
                 Publicités Tendances
               </CardTitle>
               <CardDescription>

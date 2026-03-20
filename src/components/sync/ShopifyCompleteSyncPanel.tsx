@@ -72,12 +72,12 @@ export function ShopifyCompleteSyncPanel() {
     switch (status) {
       case 'success':
       case 'connected': 
-        return <CheckCircle className="h-4 w-4 text-green-500" />
+        return <CheckCircle className="h-4 w-4 text-success" />
       case 'error': 
-        return <XCircle className="h-4 w-4 text-red-500" />
+        return <XCircle className="h-4 w-4 text-destructive" />
       case 'syncing':
       case 'running': 
-        return <RefreshCw className="h-4 w-4 text-blue-500 animate-spin" />
+        return <RefreshCw className="h-4 w-4 text-info animate-spin" />
       default: 
         return <Clock className="h-4 w-4 text-muted-foreground" />
     }
@@ -94,7 +94,7 @@ export function ShopifyCompleteSyncPanel() {
         <CardHeader className="pb-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-gradient-to-br from-green-500 to-emerald-600">
+              <div className="p-2 rounded-lg bg-gradient-to-br from-success to-emerald-600">
                 <RefreshCw className="h-5 w-5 text-white" />
               </div>
               <div>
@@ -137,7 +137,7 @@ export function ShopifyCompleteSyncPanel() {
                 }
               />
               <Label htmlFor="sync-products" className="flex items-center gap-2 cursor-pointer">
-                <Package className="h-4 w-4 text-blue-500" />
+                <Package className="h-4 w-4 text-info" />
                 Produits
               </Label>
             </div>
@@ -151,7 +151,7 @@ export function ShopifyCompleteSyncPanel() {
                 }
               />
               <Label htmlFor="sync-orders" className="flex items-center gap-2 cursor-pointer">
-                <ShoppingCart className="h-4 w-4 text-orange-500" />
+                <ShoppingCart className="h-4 w-4 text-warning" />
                 Commandes
               </Label>
             </div>

@@ -192,7 +192,7 @@ export const EnterpriseScalability = () => {
               <Shield className="h-4 w-4" />
               Santé système
             </CardDescription>
-            <CardTitle className={`text-3xl ${metrics.healthScore > 95 ? 'text-green-600' : 'text-yellow-600'}`}>
+            <CardTitle className={`text-3xl ${metrics.healthScore > 95 ? 'text-success' : 'text-warning'}`}>
               {metrics.healthScore}%
             </CardTitle>
             <Progress value={metrics.healthScore} className="mt-2" />

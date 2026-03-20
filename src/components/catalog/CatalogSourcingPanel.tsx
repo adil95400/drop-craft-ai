@@ -122,7 +122,7 @@ export function CatalogSourcingPanel({ selectedProducts, onClose }: CatalogSourc
                   {r.price && <span className="text-xs text-muted-foreground">{r.price} €</span>}
                   {r.rating && (
                     <span className="text-xs flex items-center gap-0.5">
-                      <Star className="h-3 w-3 text-yellow-500 fill-yellow-500" />
+                      <Star className="h-3 w-3 text-warning fill-yellow-500" />
                       {r.rating}
                     </span>
                   )}

@@ -518,7 +518,7 @@ export const BulkEditor = ({ products, onProductsUpdate }: BulkEditorProps) => {
 
             <TabsContent value="preview" className="mt-6">
               <div className="space-y-4">
-                <div className="flex items-center justify-between p-4 bg-blue-50 rounded-lg">
+                <div className="flex items-center justify-between p-4 bg-info/5 rounded-lg">
                   <div>
                     <h4 className="font-medium">Aperçu des modifications</h4>
                     <p className="text-sm text-muted-foreground">
@@ -567,7 +567,7 @@ export const BulkEditor = ({ products, onProductsUpdate }: BulkEditorProps) => {
                             </TableCell>
                             <TableCell>
                               {preview.newPrice > preview.price ? (
-                                <Badge variant="default" className="bg-green-500">
+                                <Badge variant="default" className="bg-success">
                                   +{((preview.newPrice - preview.price) / preview.price * 100).toFixed(1)}%
                                 </Badge>
                               ) : preview.newPrice < preview.price ? (

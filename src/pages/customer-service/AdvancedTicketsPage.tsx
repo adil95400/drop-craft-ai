@@ -87,9 +87,9 @@ export default function AdvancedTicketsPage() {
 
   const getPriorityBadge = (priority: string) => {
     const map: Record<string, string> = {
-      urgent: 'bg-red-100 text-red-700 border-red-200',
+      urgent: 'bg-destructive/10 text-red-700 border-destructive/20',
       high: 'bg-orange-100 text-orange-700 border-orange-200',
-      normal: 'bg-blue-100 text-blue-700 border-blue-200',
+      normal: 'bg-info/10 text-blue-700 border-info/20',
       low: 'bg-muted text-muted-foreground',
     };
     return <Badge className={cn("text-xs", map[priority] || map.normal)}>{priority === 'urgent' ? '🔴 Urgent' : priority === 'high' ? '🟠 Haute' : priority === 'low' ? '🟢 Basse' : '🔵 Normale'}</Badge>;
@@ -107,10 +107,10 @@ export default function AdvancedTicketsPage() {
         <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-6">
           {[
             { label: 'Total tickets', value: stats.total, icon: Ticket, color: 'text-primary' },
-            { label: 'Ouverts', value: stats.open, icon: AlertCircle, color: 'text-amber-500' },
+            { label: 'Ouverts', value: stats.open, icon: AlertCircle, color: 'text-warning' },
             { label: 'SLA dépassé', value: stats.breached, icon: Clock, color: 'text-destructive' },
-            { label: 'Âge moyen (h)', value: stats.avgAge, icon: TrendingUp, color: 'text-blue-500' },
-            { label: "Résolus aujourd'hui", value: stats.resolvedToday, icon: CheckCircle, color: 'text-emerald-500' },
+            { label: 'Âge moyen (h)', value: stats.avgAge, icon: TrendingUp, color: 'text-info' },
+            { label: "Résolus aujourd'hui", value: stats.resolvedToday, icon: CheckCircle, color: 'text-success' },
           ].map((s, i) => (
             <Card key={i}>
               <CardContent className="p-4 flex items-center gap-3">
@@ -197,12 +197,12 @@ export default function AdvancedTicketsPage() {
                             className={cn(
                               "h-2",
                               ticket.isBreached && "[&>div]:bg-destructive",
-                              ticket.isWarning && "[&>div]:bg-amber-500"
+                              ticket.isWarning && "[&>div]:bg-warning"
                             )} 
                           />
                           <span className={cn(
                             "text-[10px]",
-                            ticket.isBreached ? "text-destructive font-medium" : ticket.isWarning ? "text-amber-600" : "text-muted-foreground"
+                            ticket.isBreached ? "text-destructive font-medium" : ticket.isWarning ? "text-warning" : "text-muted-foreground"
                           )}>
                             {ticket.isBreached ? 'Dépassé !' : `${Math.round(ticket.slaPercentage)}%`}
                           </span>

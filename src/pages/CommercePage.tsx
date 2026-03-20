@@ -63,14 +63,14 @@ export default function CommercePage() {
       value: `€${(analytics?.revenue || 0).toLocaleString('fr-FR')}`, 
       change: '+12.5%',
       icon: DollarSign, 
-      color: 'text-green-500' 
+      color: 'text-success' 
     },
     { 
       label: 'Commandes actives', 
       value: (analytics?.orders || 0).toString(), 
       change: `+${Math.floor((analytics?.orders || 0) * 0.08)}`,
       icon: ShoppingCart, 
-      color: 'text-blue-500' 
+      color: 'text-info' 
     },
     { 
       label: 'Produits en stock', 
@@ -84,17 +84,17 @@ export default function CommercePage() {
       value: (customerStats?.active || 0).toString(), 
       change: `+${Math.floor((customerStats?.active || 0) * 0.05)}`,
       icon: Users, 
-      color: 'text-orange-500' 
+      color: 'text-warning' 
     }
   ];
 
   const getStatusBadge = (status: string) => {
     const statusMap: Record<string, { label: string; color: string }> = {
-      'pending': { label: 'En attente', color: 'bg-yellow-500' },
-      'processing': { label: 'En cours', color: 'bg-blue-500' },
+      'pending': { label: 'En attente', color: 'bg-warning' },
+      'processing': { label: 'En cours', color: 'bg-info' },
       'shipped': { label: 'Expédié', color: 'bg-purple-500' },
-      'delivered': { label: 'Livré', color: 'bg-green-500' },
-      'cancelled': { label: 'Annulé', color: 'bg-red-500' }
+      'delivered': { label: 'Livré', color: 'bg-success' },
+      'cancelled': { label: 'Annulé', color: 'bg-destructive' }
     };
     return statusMap[status] || { label: status, color: 'bg-gray-500' };
   };
@@ -257,13 +257,13 @@ export default function CommercePage() {
                       </div>
                       <div className="flex items-center gap-2">
                         {item.status === 'critical' && (
-                          <AlertCircle className="h-4 w-4 text-red-500" />
+                          <AlertCircle className="h-4 w-4 text-destructive" />
                         )}
                         {item.status === 'low' && (
-                          <AlertCircle className="h-4 w-4 text-yellow-500" />
+                          <AlertCircle className="h-4 w-4 text-warning" />
                         )}
                         {item.status === 'normal' && (
-                          <CheckCircle className="h-4 w-4 text-green-500" />
+                          <CheckCircle className="h-4 w-4 text-success" />
                         )}
                         <span className="text-sm text-muted-foreground">
                           {item.available}/{item.stock} disponibles
@@ -273,9 +273,9 @@ export default function CommercePage() {
                     <Progress 
                       value={(item.available / item.stock) * 100} 
                       className={
-                        item.status === 'critical' ? 'bg-red-200 [&>div]:bg-red-500' :
-                        item.status === 'low' ? 'bg-yellow-200 [&>div]:bg-yellow-500' :
-                        'bg-green-200 [&>div]:bg-green-500'
+                        item.status === 'critical' ? 'bg-red-200 [&>div]:bg-destructive' :
+                        item.status === 'low' ? 'bg-yellow-200 [&>div]:bg-warning' :
+                        'bg-green-200 [&>div]:bg-success'
                       }
                     />
                   </div>

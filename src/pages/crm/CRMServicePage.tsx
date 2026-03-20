@@ -70,11 +70,11 @@ interface FAQRow {
 // Helpers
 // ============================================
 const segmentColors: Record<string, string> = {
-  VIP: 'bg-amber-500/10 text-amber-600 border-amber-500/30',
-  Active: 'bg-emerald-500/10 text-emerald-600 border-emerald-500/30',
-  New: 'bg-blue-500/10 text-blue-600 border-blue-500/30',
+  VIP: 'bg-warning/10 text-warning border-amber-500/30',
+  Active: 'bg-success/10 text-success border-emerald-500/30',
+  New: 'bg-info/10 text-info border-info/30',
   Repeat: 'bg-violet-500/10 text-violet-600 border-violet-500/30',
-  'At Risk': 'bg-red-500/10 text-red-600 border-red-500/30',
+  'At Risk': 'bg-destructive/10 text-destructive border-destructive/30',
 };
 
 function getCustomerSegment(c: CustomerRow): string {
@@ -102,16 +102,16 @@ function getCustomerLoyalty(c: CustomerRow): string {
 }
 
 const priorityConfig: Record<string, { color: string; label: string }> = {
-  urgent: { color: 'bg-red-500/10 text-red-600 border-red-500/30', label: 'Urgent' },
-  high: { color: 'bg-orange-500/10 text-orange-600 border-orange-500/30', label: 'Haute' },
-  medium: { color: 'bg-yellow-500/10 text-yellow-600 border-yellow-500/30', label: 'Moyenne' },
-  low: { color: 'bg-green-500/10 text-green-600 border-green-500/30', label: 'Basse' },
+  urgent: { color: 'bg-destructive/10 text-destructive border-destructive/30', label: 'Urgent' },
+  high: { color: 'bg-warning/10 text-warning border-orange-500/30', label: 'Haute' },
+  medium: { color: 'bg-warning/10 text-warning border-warning/30', label: 'Moyenne' },
+  low: { color: 'bg-success/10 text-success border-success/30', label: 'Basse' },
 };
 
 const statusConfig: Record<string, { color: string; label: string; icon: typeof CheckCircle2 }> = {
-  open: { color: 'bg-blue-500/10 text-blue-600', label: 'Ouvert', icon: Inbox },
-  in_progress: { color: 'bg-amber-500/10 text-amber-600', label: 'En cours', icon: RefreshCw },
-  resolved: { color: 'bg-green-500/10 text-green-600', label: 'Résolu', icon: CheckCircle2 },
+  open: { color: 'bg-info/10 text-info', label: 'Ouvert', icon: Inbox },
+  in_progress: { color: 'bg-warning/10 text-warning', label: 'En cours', icon: RefreshCw },
+  resolved: { color: 'bg-success/10 text-success', label: 'Résolu', icon: CheckCircle2 },
   closed: { color: 'bg-muted text-muted-foreground', label: 'Fermé', icon: Archive },
 };
 
@@ -125,7 +125,7 @@ function StatCard({ icon: Icon, label, value, trend, color, isLoading }: { icon:
               <Icon className="h-4 w-4" />
             </div>
             {trend && (
-              <span className="text-xs text-emerald-500 flex items-center gap-0.5">
+              <span className="text-xs text-success flex items-center gap-0.5">
                 <TrendingUp className="h-3 w-3" /> {trend}
               </span>
             )}
@@ -579,11 +579,11 @@ function LifecycleFunnel() {
     const atRisk = customers.filter(c => (c.total_orders ?? 0) === 0).length;
 
     return [
-      { name: 'Nouveaux', count: newCount, percent: Math.round((newCount / total) * 100), color: 'bg-blue-500' },
-      { name: 'Actifs', count: active, percent: Math.round((active / total) * 100), color: 'bg-emerald-500' },
+      { name: 'Nouveaux', count: newCount, percent: Math.round((newCount / total) * 100), color: 'bg-info' },
+      { name: 'Actifs', count: active, percent: Math.round((active / total) * 100), color: 'bg-success' },
       { name: 'Récurrents', count: repeat, percent: Math.round((repeat / total) * 100), color: 'bg-violet-500' },
-      { name: 'VIP', count: vip, percent: Math.round((vip / total) * 100), color: 'bg-amber-500' },
-      { name: 'À risque', count: atRisk, percent: Math.round((atRisk / total) * 100), color: 'bg-red-500' },
+      { name: 'VIP', count: vip, percent: Math.round((vip / total) * 100), color: 'bg-warning' },
+      { name: 'À risque', count: atRisk, percent: Math.round((atRisk / total) * 100), color: 'bg-destructive' },
     ];
   }, [customers]);
 
@@ -655,8 +655,8 @@ export default function CRMServicePage() {
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <StatCard icon={Users} label="Clients actifs" value={customerCount.toLocaleString('fr-FR')} color="bg-primary/10 text-primary" isLoading={isLoading} />
-        <StatCard icon={MessageSquare} label="Tickets ouverts" value={openTickets.toString()} color="bg-amber-500/10 text-amber-600" isLoading={isLoading} />
-        <StatCard icon={Star} label="Satisfaction" value="—" color="bg-emerald-500/10 text-emerald-600" />
+        <StatCard icon={MessageSquare} label="Tickets ouverts" value={openTickets.toString()} color="bg-warning/10 text-warning" isLoading={isLoading} />
+        <StatCard icon={Star} label="Satisfaction" value="—" color="bg-success/10 text-success" />
         <StatCard icon={Zap} label="Temps de réponse" value="—" color="bg-violet-500/10 text-violet-600" />
       </div>
 
@@ -692,10 +692,10 @@ export default function CRMServicePage() {
             </CardHeader>
             <CardContent className="space-y-2">
               {[
-                { icon: UserPlus, label: 'Importer contacts', color: 'text-blue-500' },
+                { icon: UserPlus, label: 'Importer contacts', color: 'text-info' },
                 { icon: Mail, label: 'Campagne email', color: 'text-violet-500' },
-                { icon: Tag, label: 'Gérer segments', color: 'text-amber-500' },
-                { icon: FileText, label: 'Exporter données', color: 'text-emerald-500' },
+                { icon: Tag, label: 'Gérer segments', color: 'text-warning' },
+                { icon: FileText, label: 'Exporter données', color: 'text-success' },
               ].map(action => (
                 <Button key={action.label} variant="ghost" size="sm" className="w-full justify-start gap-2 text-muted-foreground hover:text-foreground">
                   <action.icon className={`h-4 w-4 ${action.color}`} /> {action.label}

@@ -23,11 +23,11 @@ export function ProductsLowStockAlert({ lowStockCount, onViewLowStock }: Product
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4">
         <div className="flex items-center gap-3">
           <motion.div 
-            className="h-10 w-10 rounded-xl bg-orange-500/15 flex items-center justify-center shrink-0"
+            className="h-10 w-10 rounded-xl bg-warning/15 flex items-center justify-center shrink-0"
             animate={{ scale: [1, 1.05, 1] }}
             transition={{ duration: 2, repeat: Infinity }}
           >
-            <AlertCircle className="h-5 w-5 text-orange-500" />
+            <AlertCircle className="h-5 w-5 text-warning" />
           </motion.div>
           <div>
             <p className="font-semibold text-foreground">

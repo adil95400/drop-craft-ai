@@ -38,7 +38,7 @@ export function DemandForecastDashboard() {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         {[
           { title: 'Prévisions générées', value: realisticForecasts.length, icon: BarChart3, color: 'text-primary' },
-          { title: 'Demande totale (30j)', value: totalDemand, icon: Sparkles, color: 'text-amber-500' },
+          { title: 'Demande totale (30j)', value: totalDemand, icon: Sparkles, color: 'text-warning' },
           { title: 'Confiance moyenne', value: `${avgConfidence}%`, icon: Brain, color: 'text-primary' },
           { title: 'Tendance haussière', value: trendUp, icon: TrendingUp, color: 'text-primary' },
         ].map((s, i) => (

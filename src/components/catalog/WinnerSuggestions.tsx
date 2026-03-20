@@ -79,18 +79,18 @@ export const WinnerSuggestions = ({ onViewProduct, onAnalyzeNiche }: WinnerSugge
   ];
 
   const getConfidenceColor = (confidence: number) => {
-    if (confidence >= 90) return "text-green-600";
-    if (confidence >= 80) return "text-blue-600";
-    if (confidence >= 70) return "text-orange-600";
-    return "text-red-600";
+    if (confidence >= 90) return "text-success";
+    if (confidence >= 80) return "text-info";
+    if (confidence >= 70) return "text-warning";
+    return "text-destructive";
   };
 
   const getCompetitionColor = (level: string) => {
     switch (level) {
-      case "Très faible": return "text-green-600";
-      case "Faible": return "text-blue-600";
-      case "Moyenne": return "text-orange-600";
-      default: return "text-red-600";
+      case "Très faible": return "text-success";
+      case "Faible": return "text-info";
+      case "Moyenne": return "text-warning";
+      default: return "text-destructive";
     }
   };
 
@@ -100,7 +100,7 @@ export const WinnerSuggestions = ({ onViewProduct, onAnalyzeNiche }: WinnerSugge
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold flex items-center gap-2">
-            <Crown className="w-6 h-6 text-yellow-500" />
+            <Crown className="w-6 h-6 text-warning" />
             Winners Détectés par IA
           </h2>
           <p className="text-muted-foreground">
@@ -127,7 +127,7 @@ export const WinnerSuggestions = ({ onViewProduct, onAnalyzeNiche }: WinnerSugge
                       <h4 className="font-medium">{product.name}</h4>
                       <p className="text-sm text-muted-foreground">Par {product.supplier}</p>
                     </div>
-                    <Badge className="bg-yellow-500 text-black">
+                    <Badge className="bg-warning text-black">
                       <Crown className="w-3 h-3 mr-1" />
                       Winner
                     </Badge>
@@ -141,11 +141,11 @@ export const WinnerSuggestions = ({ onViewProduct, onAnalyzeNiche }: WinnerSugge
                     </div>
                     <div>
                       <p className="text-muted-foreground">Marge</p>
-                      <p className="font-bold text-green-600">{product.margin}%</p>
+                      <p className="font-bold text-success">{product.margin}%</p>
                     </div>
                     <div>
                       <p className="text-muted-foreground">Tendance</p>
-                      <p className="font-bold text-blue-600">{product.trend}</p>
+                      <p className="font-bold text-info">{product.trend}</p>
                     </div>
                   </div>
 
@@ -216,7 +216,7 @@ export const WinnerSuggestions = ({ onViewProduct, onAnalyzeNiche }: WinnerSugge
                 >
                   <div className="flex items-center justify-between mb-2">
                     <h4 className="font-medium">{niche.name}</h4>
-                    <Badge variant="outline" className="text-green-600">
+                    <Badge variant="outline" className="text-success">
                       {niche.growth}
                     </Badge>
                   </div>
@@ -247,15 +247,15 @@ export const WinnerSuggestions = ({ onViewProduct, onAnalyzeNiche }: WinnerSugge
             </CardHeader>
             <CardContent className="space-y-3 text-sm">
               <div className="flex items-start gap-2">
-                <Zap className="w-4 h-4 text-yellow-500 mt-0.5" />
+                <Zap className="w-4 h-4 text-warning mt-0.5" />
                 <span>Le gaming représente 34% des winners ce mois</span>
               </div>
               <div className="flex items-start gap-2">
-                <TrendingUp className="w-4 h-4 text-green-500 mt-0.5" />
+                <TrendingUp className="w-4 h-4 text-success mt-0.5" />
                 <span>Les produits éco-friendly croissent de +65%</span>
               </div>
               <div className="flex items-start gap-2">
-                <Target className="w-4 h-4 text-blue-500 mt-0.5" />
+                <Target className="w-4 h-4 text-info mt-0.5" />
                 <span>Meilleur moment pour lancer en fitness: maintenant</span>
               </div>
             </CardContent>

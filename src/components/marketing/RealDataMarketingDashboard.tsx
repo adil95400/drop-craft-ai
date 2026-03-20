@@ -126,7 +126,7 @@ export const RealDataMarketingDashboard = ({ className = '' }: RealDataMarketing
           </h1>
           <div className="flex items-center gap-2 mt-2">
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <Activity className="h-4 w-4 text-green-500" />
+              <Activity className="h-4 w-4 text-success" />
               <span>En direct</span>
               <span>•</span>
               <span>Dernière activité: {lastActivity.toLocaleTimeString()}</span>
@@ -144,22 +144,22 @@ export const RealDataMarketingDashboard = ({ className = '' }: RealDataMarketing
         <Card className="border-border bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-blue-950/20 dark:to-cyan-950/20">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Campagnes Actives</CardTitle>
-            <Target className="h-4 w-4 text-blue-600" />
+            <Target className="h-4 w-4 text-info" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-blue-700">{stats.activeCampaigns}</div>
-            <p className="text-xs text-blue-600">sur {stats.totalCampaigns} total</p>
+            <p className="text-xs text-info">sur {stats.totalCampaigns} total</p>
           </CardContent>
         </Card>
 
         <Card className="border-border bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950/20 dark:to-emerald-950/20">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Budget Total</CardTitle>
-            <BarChart3 className="h-4 w-4 text-green-600" />
+            <BarChart3 className="h-4 w-4 text-success" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-green-700">{formatCurrency(stats.totalBudget)}</div>
-            <p className="text-xs text-green-600">Dépensé: {formatCurrency(stats.totalSpent)}</p>
+            <div className="text-2xl font-bold text-success">{formatCurrency(stats.totalBudget)}</div>
+            <p className="text-xs text-success">Dépensé: {formatCurrency(stats.totalSpent)}</p>
           </CardContent>
         </Card>
 
@@ -177,11 +177,11 @@ export const RealDataMarketingDashboard = ({ className = '' }: RealDataMarketing
         <Card className="border-border bg-gradient-to-br from-orange-50 to-red-50 dark:from-orange-950/20 dark:to-red-950/20">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">ROAS Moyen</CardTitle>
-            <TrendingUp className="h-4 w-4 text-orange-600" />
+            <TrendingUp className="h-4 w-4 text-warning" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-orange-700">{stats.avgROAS.toFixed(1)}x</div>
-            <p className="text-xs text-orange-600">Taux conv: {stats.conversionRate.toFixed(1)}%</p>
+            <p className="text-xs text-warning">Taux conv: {stats.conversionRate.toFixed(1)}%</p>
           </CardContent>
         </Card>
       </div>

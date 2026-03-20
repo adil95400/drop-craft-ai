@@ -182,7 +182,7 @@ export function ExtensionAuthManager() {
                             onClick={() => copyToken(token.token)}
                           >
                             {copiedToken === token.token ? (
-                              <Check className="h-4 w-4 text-green-500" />
+                              <Check className="h-4 w-4 text-success" />
                             ) : (
                               <Copy className="h-4 w-4" />
                             )}

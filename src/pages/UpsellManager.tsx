@@ -65,21 +65,21 @@ export default function UpsellManager() {
       description: 'Proposez des produits complémentaires lorsque le client ajoute au panier',
       trigger: 'add_to_cart',
       icon: ShoppingCart,
-      color: 'text-blue-500'
+      color: 'text-info'
     },
     {
       title: 'Bundle automatique',
       description: 'Créez des bundles avec réduction pour augmenter le panier moyen',
       trigger: 'bundle',
       icon: Plus,
-      color: 'text-green-500'
+      color: 'text-success'
     },
     {
       title: 'Offre post-achat',
       description: 'Proposez une offre exclusive juste après la commande',
       trigger: 'post_purchase',
       icon: Zap,
-      color: 'text-orange-500'
+      color: 'text-warning'
     }
   ]
 

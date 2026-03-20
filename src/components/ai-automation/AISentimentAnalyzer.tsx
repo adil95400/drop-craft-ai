@@ -48,9 +48,9 @@ export function AISentimentAnalyzer() {
 
   const getSentimentColor = (label: string) => {
     switch (label) {
-      case 'positive': return 'text-green-500';
-      case 'negative': return 'text-red-500';
-      default: return 'text-yellow-500';
+      case 'positive': return 'text-success';
+      case 'negative': return 'text-destructive';
+      default: return 'text-warning';
     }
   };
 
@@ -144,19 +144,19 @@ export function AISentimentAnalyzer() {
                       <div className="space-y-2">
                         <div className="flex justify-between text-xs">
                           <span>Positif</span>
-                          <span className="text-green-500">{sentiment.distribution.positive}%</span>
+                          <span className="text-success">{sentiment.distribution.positive}%</span>
                         </div>
                         <Progress value={sentiment.distribution.positive} className="h-2" />
                         
                         <div className="flex justify-between text-xs">
                           <span>Neutre</span>
-                          <span className="text-yellow-500">{sentiment.distribution.neutral}%</span>
+                          <span className="text-warning">{sentiment.distribution.neutral}%</span>
                         </div>
                         <Progress value={sentiment.distribution.neutral} className="h-2" />
                         
                         <div className="flex justify-between text-xs">
                           <span>Négatif</span>
-                          <span className="text-red-500">{sentiment.distribution.negative}%</span>
+                          <span className="text-destructive">{sentiment.distribution.negative}%</span>
                         </div>
                         <Progress value={sentiment.distribution.negative} className="h-2" />
                       </div>
@@ -186,12 +186,12 @@ export function AISentimentAnalyzer() {
               {analysis.positiveAspects && analysis.positiveAspects.length > 0 && (
                 <div className="space-y-2">
                   <Label className="flex items-center gap-2">
-                    <ThumbsUp className="h-4 w-4 text-green-500" />
+                    <ThumbsUp className="h-4 w-4 text-success" />
                     Points forts ({analysis.positiveAspects.length})
                   </Label>
                   <div className="space-y-1">
                     {analysis.positiveAspects.slice(0, 5).map((aspect: any, idx: number) => (
-                      <div key={idx} className="flex items-center justify-between p-2 bg-green-500/10 rounded-lg text-sm">
+                      <div key={idx} className="flex items-center justify-between p-2 bg-success/10 rounded-lg text-sm">
                         <span>{aspect.aspect}</span>
                         <Badge variant="secondary">{aspect.mentions} mentions</Badge>
                       </div>
@@ -203,12 +203,12 @@ export function AISentimentAnalyzer() {
               {analysis.concerns && analysis.concerns.length > 0 && (
                 <div className="space-y-2">
                   <Label className="flex items-center gap-2">
-                    <ThumbsDown className="h-4 w-4 text-red-500" />
+                    <ThumbsDown className="h-4 w-4 text-destructive" />
                     Préoccupations ({analysis.concerns.length})
                   </Label>
                   <div className="space-y-1">
                     {analysis.concerns.slice(0, 5).map((concern: any, idx: number) => (
-                      <div key={idx} className="p-2 bg-red-500/10 rounded-lg text-sm">
+                      <div key={idx} className="p-2 bg-destructive/10 rounded-lg text-sm">
                         <div className="flex items-center justify-between mb-1">
                           <span className="font-medium">{concern.issue}</span>
                           <Badge variant={
@@ -230,7 +230,7 @@ export function AISentimentAnalyzer() {
               {analysis.improvements && analysis.improvements.length > 0 && (
                 <div className="space-y-2">
                   <Label className="flex items-center gap-2">
-                    <Lightbulb className="h-4 w-4 text-yellow-500" />
+                    <Lightbulb className="h-4 w-4 text-warning" />
                     Améliorations suggérées
                   </Label>
                   <div className="space-y-2">

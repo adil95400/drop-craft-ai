@@ -346,7 +346,7 @@ export function SupplierConnectorHub() {
         <Card>
           <CardContent className="pt-4">
             <div className="flex items-center gap-2">
-              <Package className="h-5 w-5 text-blue-500" />
+              <Package className="h-5 w-5 text-info" />
               <div>
                 <p className="text-2xl font-bold">{SUPPLIER_CONFIGS.length}</p>
                 <p className="text-xs text-muted-foreground">Disponibles</p>
@@ -357,7 +357,7 @@ export function SupplierConnectorHub() {
         <Card>
           <CardContent className="pt-4">
             <div className="flex items-center gap-2">
-              <Globe className="h-5 w-5 text-green-500" />
+              <Globe className="h-5 w-5 text-success" />
               <div>
                 <p className="text-2xl font-bold">50+</p>
                 <p className="text-xs text-muted-foreground">Pays couverts</p>
@@ -368,7 +368,7 @@ export function SupplierConnectorHub() {
         <Card>
           <CardContent className="pt-4">
             <div className="flex items-center gap-2">
-              <Shield className="h-5 w-5 text-amber-500" />
+              <Shield className="h-5 w-5 text-warning" />
               <div>
                 <p className="text-2xl font-bold">100%</p>
                 <p className="text-xs text-muted-foreground">Sécurisé</p>
@@ -428,10 +428,10 @@ export function SupplierConnectorHub() {
           const isConnected = !!connection;
 
           return (
-            <Card key={supplier.id} className={`relative ${isConnected ? 'border-green-500/50' : ''}`}>
+            <Card key={supplier.id} className={`relative ${isConnected ? 'border-success/50' : ''}`}>
               {isConnected && (
                 <div className="absolute top-2 right-2">
-                  <Badge className="bg-green-500">
+                  <Badge className="bg-success">
                     <Check className="h-3 w-3 mr-1" />
                     Connecté
                   </Badge>
@@ -536,7 +536,7 @@ export function SupplierConnectorHub() {
                 <div key={field.name} className="space-y-2">
                   <Label htmlFor={field.name}>
                     {field.label}
-                    {field.required && <span className="text-red-500 ml-1">*</span>}
+                    {field.required && <span className="text-destructive ml-1">*</span>}
                   </Label>
                   <Input
                     id={field.name}

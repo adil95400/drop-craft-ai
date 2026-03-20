@@ -46,10 +46,10 @@ const statusIcons: Record<string, React.ElementType> = {
 
 const statusColors: Record<string, string> = {
   pending: 'text-muted-foreground',
-  processing: 'text-blue-500',
-  completed: 'text-green-500',
+  processing: 'text-info',
+  completed: 'text-success',
   failed: 'text-destructive',
-  partial: 'text-yellow-500',
+  partial: 'text-warning',
   cancelled: 'text-muted-foreground'
 }
 

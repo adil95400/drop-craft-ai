@@ -25,22 +25,22 @@ export function StockAlertsPanel() {
   const getSeverityIcon = (severity: string) => {
     switch (severity) {
       case 'critical':
-        return <AlertTriangle className="h-5 w-5 text-red-500" />;
+        return <AlertTriangle className="h-5 w-5 text-destructive" />;
       case 'high':
-        return <AlertCircle className="h-5 w-5 text-orange-500" />;
+        return <AlertCircle className="h-5 w-5 text-warning" />;
       case 'medium':
-        return <AlertCircle className="h-5 w-5 text-yellow-500" />;
+        return <AlertCircle className="h-5 w-5 text-warning" />;
       default:
-        return <Info className="h-5 w-5 text-blue-500" />;
+        return <Info className="h-5 w-5 text-info" />;
     }
   };
 
   const getSeverityColor = (severity: string) => {
     const colors = {
-      critical: 'border-red-500 bg-red-50 dark:bg-red-950/20',
+      critical: 'border-destructive bg-destructive/5 dark:bg-red-950/20',
       high: 'border-orange-500 bg-orange-50 dark:bg-orange-950/20',
-      medium: 'border-yellow-500 bg-yellow-50 dark:bg-yellow-950/20',
-      low: 'border-blue-500 bg-blue-50 dark:bg-blue-950/20',
+      medium: 'border-warning bg-warning/5 dark:bg-yellow-950/20',
+      low: 'border-info bg-info/5 dark:bg-blue-950/20',
     };
     return colors[severity as keyof typeof colors] || 'border-muted';
   };
@@ -74,7 +74,7 @@ export function StockAlertsPanel() {
 
       {alerts.length === 0 ? (
         <div className="text-center py-12">
-          <CheckCircle2 className="h-12 w-12 text-green-500 mx-auto mb-4" />
+          <CheckCircle2 className="h-12 w-12 text-success mx-auto mb-4" />
           <p className="text-muted-foreground">Aucune alerte active</p>
           <p className="text-sm text-muted-foreground">
             Tout va bien avec votre stock !

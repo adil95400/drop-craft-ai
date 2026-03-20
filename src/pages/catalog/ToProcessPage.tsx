@@ -71,7 +71,7 @@ export default function ToProcessPage() {
   const statCards = [
     { id: 'all', label: 'Total à traiter', value: counts.total, icon: Filter, color: 'text-foreground', bg: 'bg-muted', ring: 'ring-primary' },
     { id: 'actions', label: 'Actions stock', value: counts.actions, icon: AlertCircle, color: 'text-destructive', bg: 'bg-destructive/10', ring: 'ring-destructive', extra: counts.critical > 0 ? `⚠️ ${counts.critical}` : null },
-    { id: 'opportunities', label: 'Opportunités marge', value: counts.opportunities, icon: TrendingUp, color: 'text-amber-600', bg: 'bg-amber-500/10', ring: 'ring-amber-500' },
+    { id: 'opportunities', label: 'Opportunités marge', value: counts.opportunities, icon: TrendingUp, color: 'text-warning', bg: 'bg-warning/10', ring: 'ring-amber-500' },
     { id: 'optimization', label: 'Optimisations', value: counts.optimization, icon: Sparkles, color: 'text-violet-600', bg: 'bg-violet-500/10', ring: 'ring-violet-500' },
   ]
 
@@ -129,15 +129,15 @@ export default function ToProcessPage() {
                   <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-emerald-400/5 to-transparent" />
                   <CardContent className="p-5 flex items-center justify-between relative">
                     <div className="flex items-center gap-4">
-                      <div className="p-3 rounded-2xl bg-emerald-500/10 shadow-lg shadow-emerald-500/10">
-                        <Euro className="h-6 w-6 text-emerald-600" />
+                      <div className="p-3 rounded-2xl bg-success/10 shadow-lg shadow-emerald-500/10">
+                        <Euro className="h-6 w-6 text-success" />
                       </div>
                       <div>
                         <p className="text-sm text-muted-foreground">Impact potentiel estimé</p>
-                        <p className="text-3xl font-black text-emerald-600 tracking-tight">+{totalEstimatedImpact.toLocaleString()}€</p>
+                        <p className="text-3xl font-black text-success tracking-tight">+{totalEstimatedImpact.toLocaleString()}€</p>
                       </div>
                     </div>
-                    <Badge variant="outline" className="text-emerald-600 border-emerald-500/30 backdrop-blur-sm">
+                    <Badge variant="outline" className="text-success border-emerald-500/30 backdrop-blur-sm">
                       <Sparkles className="h-3 w-3 mr-1" />
                       Estimation IA
                     </Badge>
@@ -193,7 +193,7 @@ export default function ToProcessPage() {
                   ) : filteredItems.length === 0 ? (
                     <div className="text-center py-16">
                       <motion.div initial={{ scale: 0.8 }} animate={{ scale: 1 }} transition={{ type: 'spring' }}>
-                        <CheckCircle className="h-16 w-16 text-emerald-500 mx-auto mb-4" />
+                        <CheckCircle className="h-16 w-16 text-success mx-auto mb-4" />
                       </motion.div>
                       <h3 className="text-lg font-semibold">Tout est en ordre !</h3>
                       <p className="text-muted-foreground">Aucun produit ne nécessite d'action immédiate</p>
@@ -229,7 +229,7 @@ export default function ToProcessPage() {
                                     ))}
                                   </div>
                                   {item.estimatedImpact > 0 && (
-                                    <p className="text-xs text-emerald-600 mt-1 font-medium">
+                                    <p className="text-xs text-success mt-1 font-medium">
                                       💰 +{item.estimatedImpact}€ potentiel
                                     </p>
                                   )}

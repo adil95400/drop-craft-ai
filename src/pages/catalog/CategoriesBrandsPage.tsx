@@ -23,8 +23,8 @@ export default function CategoriesBrandsPage() {
   const { metrics, issues, uncategorized, unbranded, withSuggestions, isLoading } = useCategoryClassification()
 
   const issueCategories = [
-    { id: 'no-category', label: 'Sans catégorie', icon: Folder, count: metrics.missingCategory, color: 'text-red-500', bg: 'bg-red-500/10', ring: 'ring-red-500' },
-    { id: 'no-brand', label: 'Sans marque', icon: Building, count: metrics.missingBrand, color: 'text-amber-500', bg: 'bg-amber-500/10', ring: 'ring-amber-500' },
+    { id: 'no-category', label: 'Sans catégorie', icon: Folder, count: metrics.missingCategory, color: 'text-destructive', bg: 'bg-destructive/10', ring: 'ring-red-500' },
+    { id: 'no-brand', label: 'Sans marque', icon: Building, count: metrics.missingBrand, color: 'text-warning', bg: 'bg-warning/10', ring: 'ring-amber-500' },
     { id: 'suggestions', label: 'Suggestions IA', icon: Sparkles, count: withSuggestions.length, color: 'text-purple-500', bg: 'bg-purple-500/10', ring: 'ring-purple-500' },
   ]
 
@@ -58,7 +58,7 @@ export default function CategoriesBrandsPage() {
                 </div>
                 <span className={cn(
                   "text-5xl font-black tracking-tight",
-                  metrics.classificationScore >= 80 ? "text-emerald-500" : metrics.classificationScore >= 60 ? "text-amber-500" : "text-red-500"
+                  metrics.classificationScore >= 80 ? "text-success" : metrics.classificationScore >= 60 ? "text-warning" : "text-destructive"
                 )}>
                   {metrics.classificationScore}%
                 </span>
@@ -107,7 +107,7 @@ export default function CategoriesBrandsPage() {
                 </div>
               ) : metrics.topCategories.length === 0 ? (
                 <div className="text-center py-12">
-                  <AlertTriangle className="h-12 w-12 text-amber-500 mx-auto mb-3" />
+                  <AlertTriangle className="h-12 w-12 text-warning mx-auto mb-3" />
                   <p className="text-muted-foreground font-medium">Aucune catégorie définie</p>
                   <Button variant="outline" className="mt-3 gap-2" onClick={() => navigate('/products')}>
                     <Sparkles className="h-4 w-4" />Classifier les produits
@@ -229,7 +229,7 @@ export default function CategoriesBrandsPage() {
                           </Badge>
                         )}
                         <Button size="sm" variant="ghost" className="opacity-0 group-hover:opacity-100 transition-opacity">
-                          <CheckCircle className="h-4 w-4 text-emerald-500" />
+                          <CheckCircle className="h-4 w-4 text-success" />
                         </Button>
                         <ArrowRight className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
                       </div>

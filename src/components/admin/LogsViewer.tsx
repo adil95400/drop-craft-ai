@@ -184,11 +184,11 @@ export const LogsViewer = () => {
   const getLevelIcon = (level: string) => {
     switch (level) {
       case 'error':
-        return <XCircle className="h-4 w-4 text-red-500" />
+        return <XCircle className="h-4 w-4 text-destructive" />
       case 'warning':
-        return <AlertTriangle className="h-4 w-4 text-yellow-500" />
+        return <AlertTriangle className="h-4 w-4 text-warning" />
       case 'info':
-        return <Info className="h-4 w-4 text-blue-500" />
+        return <Info className="h-4 w-4 text-info" />
       case 'debug':
         return <CheckCircle className="h-4 w-4 text-gray-500" />
       default:
@@ -407,7 +407,7 @@ export const LogsViewer = () => {
         <TabsContent value="errors">
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-red-600">
+              <CardTitle className="flex items-center gap-2 text-destructive">
                 <XCircle className="h-5 w-5" />
                 Erreurs ({errorCount})
               </CardTitle>
@@ -442,7 +442,7 @@ export const LogsViewer = () => {
         <TabsContent value="warnings">
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-yellow-600">
+              <CardTitle className="flex items-center gap-2 text-warning">
                 <AlertTriangle className="h-5 w-5" />
                 Avertissements ({warningCount})
               </CardTitle>

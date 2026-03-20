@@ -113,7 +113,7 @@ export default function BTSImportPage() {
           <Card>
             <CardContent className="pt-6">
               <div className="flex items-center gap-3">
-                <RefreshCw className="h-8 w-8 text-blue-500" />
+                <RefreshCw className="h-8 w-8 text-info" />
                 <div>
                   <p className="text-2xl font-bold">{recentJobs?.length || 0}</p>
                   <p className="text-sm text-muted-foreground">Imports récents</p>
@@ -125,7 +125,7 @@ export default function BTSImportPage() {
           <Card>
             <CardContent className="pt-6">
               <div className="flex items-center gap-3">
-                <Clock className="h-8 w-8 text-green-500" />
+                <Clock className="h-8 w-8 text-success" />
                 <div>
                   <p className="text-2xl font-bold">
                     {recentJobs?.[0]?.created_at 
@@ -159,10 +159,10 @@ export default function BTSImportPage() {
                   >
                     <div className="flex items-center gap-3">
                       <div className={`w-2 h-2 rounded-full ${
-                        job.status === 'completed' ? 'bg-green-500' :
-                        job.status === 'partial' ? 'bg-yellow-500' :
-                        job.status === 'failed' ? 'bg-red-500' :
-                        'bg-blue-500 animate-pulse'
+                        job.status === 'completed' ? 'bg-success' :
+                        job.status === 'partial' ? 'bg-warning' :
+                        job.status === 'failed' ? 'bg-destructive' :
+                        'bg-info animate-pulse'
                       }`} />
                       <div>
                         <p className="font-medium">
@@ -174,10 +174,10 @@ export default function BTSImportPage() {
                       </div>
                     </div>
                     <span className={`text-xs px-2 py-1 rounded ${
-                      job.status === 'completed' ? 'bg-green-100 text-green-700' :
-                      job.status === 'partial' ? 'bg-yellow-100 text-yellow-700' :
-                      job.status === 'failed' ? 'bg-red-100 text-red-700' :
-                      'bg-blue-100 text-blue-700'
+                      job.status === 'completed' ? 'bg-success/10 text-success' :
+                      job.status === 'partial' ? 'bg-warning/10 text-yellow-700' :
+                      job.status === 'failed' ? 'bg-destructive/10 text-red-700' :
+                      'bg-info/10 text-blue-700'
                     }`}>
                       {job.status === 'completed' ? 'Terminé' :
                        job.status === 'partial' ? 'Partiel' :

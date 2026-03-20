@@ -187,18 +187,18 @@ export const FinalHealthCheck = () => {
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'complete': return <CheckCircle className="h-5 w-5 text-green-500" />;
-      case 'partial': return <AlertTriangle className="h-5 w-5 text-yellow-500" />;
-      case 'missing': return <Clock className="h-5 w-5 text-red-500" />;
+      case 'complete': return <CheckCircle className="h-5 w-5 text-success" />;
+      case 'partial': return <AlertTriangle className="h-5 w-5 text-warning" />;
+      case 'missing': return <Clock className="h-5 w-5 text-destructive" />;
       default: return <Clock className="h-5 w-5 text-gray-500" />;
     }
   };
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'complete': return 'bg-green-100 text-green-800';
-      case 'partial': return 'bg-yellow-100 text-yellow-800'; 
-      case 'missing': return 'bg-red-100 text-red-800';
+      case 'complete': return 'bg-success/10 text-success';
+      case 'partial': return 'bg-warning/10 text-yellow-800'; 
+      case 'missing': return 'bg-destructive/10 text-red-800';
       default: return 'bg-gray-100 text-gray-800';
     }
   };
@@ -212,11 +212,11 @@ export const FinalHealthCheck = () => {
   return (
     <div className="space-y-6">
       {/* Overall Status */}
-      <Card className="border-green-200 bg-green-50">
+      <Card className="border-success/20 bg-success/5">
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle className="text-2xl flex items-center gap-3">
-              <CheckCircle className="h-8 w-8 text-green-600" />
+              <CheckCircle className="h-8 w-8 text-success" />
               Projet Completé à {overallCompletion}%
             </CardTitle>
             <Button 
@@ -234,19 +234,19 @@ export const FinalHealthCheck = () => {
             <Progress value={overallCompletion} className="h-3" />
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
               <div className="space-y-1">
-                <p className="text-2xl font-bold text-green-600">
+                <p className="text-2xl font-bold text-success">
                   {features.filter(f => f.status === 'complete').length}
                 </p>
                 <p className="text-sm text-muted-foreground">Fonctionnalités Complètes</p>
               </div>
               <div className="space-y-1">
-                <p className="text-2xl font-bold text-yellow-600">
+                <p className="text-2xl font-bold text-warning">
                   {features.filter(f => f.status === 'partial').length}
                 </p>
                 <p className="text-sm text-muted-foreground">Partiellement Fini</p>
               </div>
               <div className="space-y-1">
-                <p className="text-2xl font-bold text-red-600">
+                <p className="text-2xl font-bold text-destructive">
                   {features.filter(f => f.status === 'missing').length}
                 </p>
                 <p className="text-sm text-muted-foreground">À Finaliser</p>

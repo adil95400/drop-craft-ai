@@ -42,8 +42,8 @@ export function ProgressDashboard() {
       value: stats?.completedCourses || 0,
       total: stats?.totalCourses || 0,
       icon: BookOpen,
-      color: 'text-blue-500',
-      bgColor: 'bg-blue-500/10'
+      color: 'text-info',
+      bgColor: 'bg-info/10'
     },
     {
       title: 'Certificats Obtenus',
@@ -56,15 +56,15 @@ export function ProgressDashboard() {
       title: 'Points XP',
       value: stats?.totalPoints || 0,
       icon: Zap,
-      color: 'text-yellow-500',
-      bgColor: 'bg-yellow-500/10'
+      color: 'text-warning',
+      bgColor: 'bg-warning/10'
     },
     {
       title: 'Temps Total',
       value: `${Math.floor((stats?.totalTimeSpent || 0) / 60)}h${(stats?.totalTimeSpent || 0) % 60}m`,
       icon: Clock,
-      color: 'text-green-500',
-      bgColor: 'bg-green-500/10'
+      color: 'text-success',
+      bgColor: 'bg-success/10'
     }
   ];
 
@@ -177,8 +177,8 @@ export function ProgressDashboard() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {certificates.map((cert: any) => (
                 <div key={cert.id} className="flex items-center gap-4 p-4 rounded-lg border bg-gradient-to-r from-yellow-500/10 to-orange-500/10">
-                  <div className="p-3 rounded-lg bg-yellow-500/20">
-                    <Award className="h-6 w-6 text-yellow-600" />
+                  <div className="p-3 rounded-lg bg-warning/20">
+                    <Award className="h-6 w-6 text-warning" />
                   </div>
                   <div className="flex-1">
                     <h4 className="font-semibold">{cert.academy_courses?.title}</h4>

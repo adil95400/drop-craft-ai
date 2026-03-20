@@ -51,7 +51,7 @@ export function ExtensionCTA({ className }: ExtensionCTAProps) {
           <div className="flex flex-wrap justify-center gap-4 mb-8">
             {benefits.map((benefit, idx) => (
               <div key={idx} className="flex items-center gap-2 text-sm text-muted-foreground">
-                <CheckCircle className="w-4 h-4 text-green-500" />
+                <CheckCircle className="w-4 h-4 text-success" />
                 {benefit}
               </div>
             ))}

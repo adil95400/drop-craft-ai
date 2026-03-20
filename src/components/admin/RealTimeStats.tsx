@@ -152,32 +152,32 @@ export const RealTimeStats: React.FC = () => {
   const getStatusColor = (value: number, threshold: number, inverse = false) => {
     const ratio = value / threshold;
     if (inverse) {
-      if (ratio < 0.3) return 'text-green-600';
-      if (ratio < 0.6) return 'text-yellow-600';
-      return 'text-red-600';
+      if (ratio < 0.3) return 'text-success';
+      if (ratio < 0.6) return 'text-warning';
+      return 'text-destructive';
     }
-    if (ratio < 0.6) return 'text-green-600';
-    if (ratio < 0.8) return 'text-yellow-600';
-    return 'text-red-600';
+    if (ratio < 0.6) return 'text-success';
+    if (ratio < 0.8) return 'text-warning';
+    return 'text-destructive';
   };
 
   const getStatusBadge = (value: number, threshold: number, inverse = false) => {
     const ratio = value / threshold;
     if (inverse) {
-      if (ratio < 0.3) return <Badge variant="secondary" className="bg-green-100 text-green-800">Optimal</Badge>;
-      if (ratio < 0.6) return <Badge variant="outline" className="border-yellow-500 text-yellow-700">Attention</Badge>;
+      if (ratio < 0.3) return <Badge variant="secondary" className="bg-success/10 text-success">Optimal</Badge>;
+      if (ratio < 0.6) return <Badge variant="outline" className="border-warning text-yellow-700">Attention</Badge>;
       return <Badge variant="destructive">Critique</Badge>;
     }
-    if (ratio < 0.6) return <Badge variant="secondary" className="bg-green-100 text-green-800">Optimal</Badge>;
-    if (ratio < 0.8) return <Badge variant="outline" className="border-yellow-500 text-yellow-700">Attention</Badge>;
+    if (ratio < 0.6) return <Badge variant="secondary" className="bg-success/10 text-success">Optimal</Badge>;
+    if (ratio < 0.8) return <Badge variant="outline" className="border-warning text-yellow-700">Attention</Badge>;
     return <Badge variant="destructive">Critique</Badge>;
   };
 
   const TrendIcon = ({ trend }: { trend?: 'up' | 'down' | 'stable' }) => {
     if (!trend || trend === 'stable') return null;
     return trend === 'up' 
-      ? <TrendingUp className="h-3 w-3 text-green-500" />
-      : <TrendingDown className="h-3 w-3 text-red-500" />;
+      ? <TrendingUp className="h-3 w-3 text-success" />
+      : <TrendingDown className="h-3 w-3 text-destructive" />;
   };
 
   return (
@@ -198,7 +198,7 @@ export const RealTimeStats: React.FC = () => {
             variant="outline" 
             size="sm"
             onClick={() => setAutoRefresh(!autoRefresh)}
-            className={autoRefresh ? 'bg-green-50' : ''}
+            className={autoRefresh ? 'bg-success/5' : ''}
           >
             {autoRefresh ? 'Auto: ON' : 'Auto: OFF'}
           </Button>
@@ -261,8 +261,8 @@ export const RealTimeStats: React.FC = () => {
                 <div className="mt-2 h-1.5 bg-gray-200 rounded-full overflow-hidden">
                   <div 
                     className={`h-full rounded-full transition-all ${
-                      metrics.systemLoad < 60 ? 'bg-green-500' : 
-                      metrics.systemLoad < 80 ? 'bg-yellow-500' : 'bg-red-500'
+                      metrics.systemLoad < 60 ? 'bg-success' : 
+                      metrics.systemLoad < 80 ? 'bg-warning' : 'bg-destructive'
                     }`}
                     style={{ width: `${metrics.systemLoad}%` }}
                   />

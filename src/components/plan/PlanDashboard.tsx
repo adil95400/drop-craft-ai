@@ -66,14 +66,14 @@ export const PlanDashboard = () => {
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg">
-              <TrendingUp className="h-5 w-5 text-blue-600" />
+              <TrendingUp className="h-5 w-5 text-info" />
               <div>
                 <p className="font-medium">Performances</p>
                 <p className="text-sm text-muted-foreground">Excellent</p>
               </div>
             </div>
             <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg">
-              <Database className="h-5 w-5 text-green-600" />
+              <Database className="h-5 w-5 text-success" />
               <div>
                 <p className="font-medium">Stockage</p>
                 <p className="text-sm text-muted-foreground">Illimité</p>
@@ -112,15 +112,15 @@ export const PlanDashboard = () => {
             {plan === 'standard' && (
               <>
                 <div className="flex items-center gap-2 text-sm">
-                  <div className="h-2 w-2 bg-green-500 rounded-full"></div>
+                  <div className="h-2 w-2 bg-success rounded-full"></div>
                   Import basique inclus
                 </div>
                 <div className="flex items-center gap-2 text-sm">
-                  <div className="h-2 w-2 bg-green-500 rounded-full"></div>
+                  <div className="h-2 w-2 bg-success rounded-full"></div>
                   Catalogue de base
                 </div>
                 <div className="flex items-center gap-2 text-sm">
-                  <div className="h-2 w-2 bg-green-500 rounded-full"></div>
+                  <div className="h-2 w-2 bg-success rounded-full"></div>
                   Support email
                 </div>
               </>
@@ -128,23 +128,23 @@ export const PlanDashboard = () => {
             {plan === 'pro' && (
               <>
                 <div className="flex items-center gap-2 text-sm">
-                  <div className="h-2 w-2 bg-blue-500 rounded-full"></div>
+                  <div className="h-2 w-2 bg-info rounded-full"></div>
                   Import avancé avec IA
                 </div>
                 <div className="flex items-center gap-2 text-sm">
-                  <div className="h-2 w-2 bg-blue-500 rounded-full"></div>
+                  <div className="h-2 w-2 bg-info rounded-full"></div>
                   Catalogue illimité
                 </div>
                 <div className="flex items-center gap-2 text-sm">
-                  <div className="h-2 w-2 bg-blue-500 rounded-full"></div>
+                  <div className="h-2 w-2 bg-info rounded-full"></div>
                   Analytics avancés
                 </div>
                 <div className="flex items-center gap-2 text-sm">
-                  <div className="h-2 w-2 bg-blue-500 rounded-full"></div>
+                  <div className="h-2 w-2 bg-info rounded-full"></div>
                   Automatisation
                 </div>
                 <div className="flex items-center gap-2 text-sm">
-                  <div className="h-2 w-2 bg-blue-500 rounded-full"></div>
+                  <div className="h-2 w-2 bg-info rounded-full"></div>
                   Support prioritaire
                 </div>
               </>

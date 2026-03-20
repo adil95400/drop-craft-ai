@@ -17,11 +17,11 @@ import { format } from 'date-fns';
 import { getDateFnsLocale } from '@/utils/dateFnsLocale';
 
 const statusConfig = {
-  operational: { icon: CheckCircle2, label: 'Opérationnel', color: 'text-green-600', bg: 'bg-green-100', badge: 'default' as const },
-  degraded: { icon: AlertTriangle, label: 'Performances dégradées', color: 'text-yellow-600', bg: 'bg-yellow-100', badge: 'secondary' as const },
-  partial_outage: { icon: AlertCircle, label: 'Panne partielle', color: 'text-orange-600', bg: 'bg-orange-100', badge: 'secondary' as const },
-  major_outage: { icon: XCircle, label: 'Panne majeure', color: 'text-red-600', bg: 'bg-red-100', badge: 'destructive' as const },
-  maintenance: { icon: Wrench, label: 'Maintenance', color: 'text-blue-600', bg: 'bg-blue-100', badge: 'outline' as const }
+  operational: { icon: CheckCircle2, label: 'Opérationnel', color: 'text-success', bg: 'bg-success/10', badge: 'default' as const },
+  degraded: { icon: AlertTriangle, label: 'Performances dégradées', color: 'text-warning', bg: 'bg-warning/10', badge: 'secondary' as const },
+  partial_outage: { icon: AlertCircle, label: 'Panne partielle', color: 'text-warning', bg: 'bg-orange-100', badge: 'secondary' as const },
+  major_outage: { icon: XCircle, label: 'Panne majeure', color: 'text-destructive', bg: 'bg-destructive/10', badge: 'destructive' as const },
+  maintenance: { icon: Wrench, label: 'Maintenance', color: 'text-info', bg: 'bg-info/10', badge: 'outline' as const }
 };
 
 const serviceIcons: Record<string, React.ElementType> = {

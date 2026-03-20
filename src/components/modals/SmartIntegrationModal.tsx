@@ -288,7 +288,7 @@ export const SmartIntegrationModal: React.FC<SmartIntegrationModalProps> = ({
                           <div className="space-y-1">
                             {platform.features.map((feature, idx) => (
                               <div key={idx} className="flex items-center gap-2 text-xs">
-                                <CheckCircle className="w-3 h-3 text-green-500" />
+                                <CheckCircle className="w-3 h-3 text-success" />
                                 <span>{feature}</span>
                               </div>
                             ))}
@@ -647,7 +647,7 @@ export const SmartIntegrationModal: React.FC<SmartIntegrationModalProps> = ({
                         </CardHeader>
                         <CardContent>
                           <div className="flex items-center gap-2">
-                            <CheckCircle className="w-4 h-4 text-green-500" />
+                            <CheckCircle className="w-4 h-4 text-success" />
                             <span className="text-sm">Connecté</span>
                           </div>
                         </CardContent>
@@ -659,7 +659,7 @@ export const SmartIntegrationModal: React.FC<SmartIntegrationModalProps> = ({
                         </CardHeader>
                         <CardContent>
                           <div className="flex items-center gap-2">
-                            <Clock className="w-4 h-4 text-blue-500" />
+                            <Clock className="w-4 h-4 text-info" />
                             <span className="text-sm">Il y a 2 min</span>
                           </div>
                         </CardContent>

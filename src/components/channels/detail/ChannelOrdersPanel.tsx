@@ -21,10 +21,10 @@ interface ChannelOrdersPanelProps {
 }
 
 const statusConfig: Record<string, { label: string; color: string; icon: typeof Clock }> = {
-  pending: { label: 'En attente', color: 'text-amber-700 bg-amber-500/10 border-amber-500/30', icon: Clock },
-  processing: { label: 'En cours', color: 'text-blue-700 bg-blue-500/10 border-blue-500/30', icon: Package },
+  pending: { label: 'En attente', color: 'text-amber-700 bg-warning/10 border-amber-500/30', icon: Clock },
+  processing: { label: 'En cours', color: 'text-blue-700 bg-info/10 border-info/30', icon: Package },
   shipped: { label: 'Expédié', color: 'text-purple-700 bg-purple-500/10 border-purple-500/30', icon: Truck },
-  delivered: { label: 'Livré', color: 'text-emerald-700 bg-emerald-500/10 border-emerald-500/30', icon: CheckCircle2 },
+  delivered: { label: 'Livré', color: 'text-emerald-700 bg-success/10 border-emerald-500/30', icon: CheckCircle2 },
   cancelled: { label: 'Annulé', color: 'text-destructive bg-destructive/10 border-destructive/30', icon: AlertCircle },
 }
 
@@ -64,7 +64,7 @@ export function ChannelOrdersPanel({ channelId, onRefresh }: ChannelOrdersPanelP
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <ShoppingCart className="h-4 w-4 text-emerald-500" />
+            <ShoppingCart className="h-4 w-4 text-success" />
             <div>
               <CardTitle className="text-sm font-semibold">Commandes récentes</CardTitle>
               <p className="text-[11px] text-muted-foreground">

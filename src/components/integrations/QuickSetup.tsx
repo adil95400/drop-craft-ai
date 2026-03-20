@@ -149,11 +149,11 @@ export const QuickSetup = () => {
   const getDifficultyBadge = (difficulty: string) => {
     switch (difficulty) {
       case 'Facile':
-        return <Badge className="bg-green-100 text-green-800">Facile</Badge>
+        return <Badge className="bg-success/10 text-success">Facile</Badge>
       case 'Moyen':
-        return <Badge className="bg-yellow-100 text-yellow-800">Moyen</Badge>
+        return <Badge className="bg-warning/10 text-yellow-800">Moyen</Badge>
       case 'Avancé':
-        return <Badge className="bg-red-100 text-red-800">Avancé</Badge>
+        return <Badge className="bg-destructive/10 text-red-800">Avancé</Badge>
       default:
         return <Badge variant="outline">{difficulty}</Badge>
     }
@@ -205,7 +205,7 @@ export const QuickSetup = () => {
           <div className="grid grid-cols-2 gap-2">
             {setup.integrations.map((integration: any) => (
               <div key={integration.name} className="flex items-center gap-2 text-xs">
-                <CheckCircle className="w-3 h-3 text-green-600" />
+                <CheckCircle className="w-3 h-3 text-success" />
                 <span>{integration.name}</span>
               </div>
             ))}
@@ -301,14 +301,14 @@ export const QuickSetup = () => {
         
         <Card>
           <CardContent className="p-4 text-center">
-            <div className="text-2xl font-bold text-green-600">85%</div>
+            <div className="text-2xl font-bold text-success">85%</div>
             <div className="text-sm text-muted-foreground">Taux de réussite</div>
           </CardContent>
         </Card>
         
         <Card>
           <CardContent className="p-4 text-center">
-            <div className="text-2xl font-bold text-blue-600">12min</div>
+            <div className="text-2xl font-bold text-info">12min</div>
             <div className="text-sm text-muted-foreground">Temps moyen</div>
           </CardContent>
         </Card>

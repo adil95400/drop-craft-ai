@@ -201,19 +201,19 @@ export function PrePublicationValidator({
   }
 
   const getScoreColor = (score: number) => {
-    if (score >= 80) return 'text-green-600'
-    if (score >= 60) return 'text-yellow-600'
-    return 'text-red-600'
+    if (score >= 80) return 'text-success'
+    if (score >= 60) return 'text-warning'
+    return 'text-destructive'
   }
 
   const getStatusIcon = (status: ProductValidation['status']) => {
     switch (status) {
       case 'valid':
-        return <CheckCircle2 className="h-4 w-4 text-green-600" />
+        return <CheckCircle2 className="h-4 w-4 text-success" />
       case 'warning':
-        return <AlertTriangle className="h-4 w-4 text-yellow-600" />
+        return <AlertTriangle className="h-4 w-4 text-warning" />
       case 'error':
-        return <XCircle className="h-4 w-4 text-red-600" />
+        return <XCircle className="h-4 w-4 text-destructive" />
       default:
         return null
     }
@@ -265,19 +265,19 @@ export function PrePublicationValidator({
         {validations.length > 0 && !isValidating && (
           <>
             <div className="grid grid-cols-3 gap-4">
-              <div className="p-4 rounded-lg bg-green-50 dark:bg-green-950/20 text-center">
-                <CheckCircle2 className="h-6 w-6 text-green-600 mx-auto mb-1" />
-                <p className="text-2xl font-bold text-green-600">{validCount}</p>
+              <div className="p-4 rounded-lg bg-success/5 dark:bg-green-950/20 text-center">
+                <CheckCircle2 className="h-6 w-6 text-success mx-auto mb-1" />
+                <p className="text-2xl font-bold text-success">{validCount}</p>
                 <p className="text-xs text-muted-foreground">Prêts</p>
               </div>
-              <div className="p-4 rounded-lg bg-yellow-50 dark:bg-yellow-950/20 text-center">
-                <AlertTriangle className="h-6 w-6 text-yellow-600 mx-auto mb-1" />
-                <p className="text-2xl font-bold text-yellow-600">{warningCount}</p>
+              <div className="p-4 rounded-lg bg-warning/5 dark:bg-yellow-950/20 text-center">
+                <AlertTriangle className="h-6 w-6 text-warning mx-auto mb-1" />
+                <p className="text-2xl font-bold text-warning">{warningCount}</p>
                 <p className="text-xs text-muted-foreground">Avertissements</p>
               </div>
-              <div className="p-4 rounded-lg bg-red-50 dark:bg-red-950/20 text-center">
-                <XCircle className="h-6 w-6 text-red-600 mx-auto mb-1" />
-                <p className="text-2xl font-bold text-red-600">{errorCount}</p>
+              <div className="p-4 rounded-lg bg-destructive/5 dark:bg-red-950/20 text-center">
+                <XCircle className="h-6 w-6 text-destructive mx-auto mb-1" />
+                <p className="text-2xl font-bold text-destructive">{errorCount}</p>
                 <p className="text-xs text-muted-foreground">Erreurs</p>
               </div>
             </div>
@@ -309,9 +309,9 @@ export function PrePublicationValidator({
                     key={validation.productId}
                     className={cn(
                       "p-3 rounded-lg border",
-                      validation.status === 'error' && "border-red-200 bg-red-50/50 dark:bg-red-950/10",
-                      validation.status === 'warning' && "border-yellow-200 bg-yellow-50/50 dark:bg-yellow-950/10",
-                      validation.status === 'valid' && "border-green-200 bg-green-50/50 dark:bg-green-950/10"
+                      validation.status === 'error' && "border-destructive/20 bg-destructive/5/50 dark:bg-red-950/10",
+                      validation.status === 'warning' && "border-warning/20 bg-warning/5/50 dark:bg-yellow-950/10",
+                      validation.status === 'valid' && "border-success/20 bg-success/5/50 dark:bg-green-950/10"
                     )}
                   >
                     <div className="flex items-start gap-3">

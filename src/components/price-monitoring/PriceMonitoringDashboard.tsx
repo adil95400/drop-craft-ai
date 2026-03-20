@@ -131,7 +131,7 @@ export function PriceMonitoringDashboard() {
       value: increases.length,
       icon: TrendingUp,
       description: `${records.length ? Math.round((increases.length / records.length) * 100) : 0}% des changements`,
-      color: 'text-emerald-500',
+      color: 'text-success',
     },
     {
       title: 'Baisses',
@@ -145,7 +145,7 @@ export function PriceMonitoringDashboard() {
       value: stockStats.unresolved,
       icon: AlertTriangle,
       description: `${stockStats.critical} critiques`,
-      color: stockStats.critical > 0 ? 'text-destructive' : 'text-amber-500',
+      color: stockStats.critical > 0 ? 'text-destructive' : 'text-warning',
     },
   ];
 
@@ -280,7 +280,7 @@ export function PriceMonitoringDashboard() {
                         <td className="p-2 text-right font-mono">{r.old_price.toFixed(2)}€</td>
                         <td className="p-2 text-right font-mono">{r.new_price.toFixed(2)}€</td>
                         <td className="p-2 text-right">
-                          <span className={`inline-flex items-center gap-0.5 font-medium ${r.change_percent >= 0 ? 'text-emerald-500' : 'text-destructive'}`}>
+                          <span className={`inline-flex items-center gap-0.5 font-medium ${r.change_percent >= 0 ? 'text-success' : 'text-destructive'}`}>
                             {r.change_percent >= 0 ? <ArrowUpRight className="h-3 w-3" /> : <ArrowDownRight className="h-3 w-3" />}
                             {Math.abs(r.change_percent).toFixed(1)}%
                           </span>

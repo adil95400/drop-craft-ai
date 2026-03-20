@@ -169,7 +169,7 @@ export function SupplierAnalyticsDashboard() {
                 <p className="text-sm text-muted-foreground">Revenu total</p>
                 <p className="text-2xl font-bold">{totalRevenue.toFixed(0)}€</p>
               </div>
-              <DollarSign className="h-8 w-8 text-green-600 opacity-20" />
+              <DollarSign className="h-8 w-8 text-success opacity-20" />
             </div>
           </CardContent>
         </Card>
@@ -181,7 +181,7 @@ export function SupplierAnalyticsDashboard() {
                 <p className="text-sm text-muted-foreground">Commandes</p>
                 <p className="text-2xl font-bold">{totalOrders}</p>
               </div>
-              <Package className="h-8 w-8 text-blue-600 opacity-20" />
+              <Package className="h-8 w-8 text-info opacity-20" />
             </div>
           </CardContent>
         </Card>
@@ -193,7 +193,7 @@ export function SupplierAnalyticsDashboard() {
                 <p className="text-sm text-muted-foreground">Taux de succès</p>
                 <p className="text-2xl font-bold">{avgSuccessRate.toFixed(1)}%</p>
               </div>
-              <CheckCircle className="h-8 w-8 text-green-600 opacity-20" />
+              <CheckCircle className="h-8 w-8 text-success opacity-20" />
             </div>
           </CardContent>
         </Card>
@@ -308,7 +308,7 @@ export function SupplierAnalyticsDashboard() {
                 <div className="flex items-center gap-6">
                   <div className="text-right">
                     <p className="text-sm text-muted-foreground">Revenu</p>
-                    <p className="font-bold text-green-600">{analytic.total_revenue.toFixed(0)}€</p>
+                    <p className="font-bold text-success">{analytic.total_revenue.toFixed(0)}€</p>
                   </div>
                   <div className="text-right">
                     <p className="text-sm text-muted-foreground">Succès</p>
@@ -316,17 +316,17 @@ export function SupplierAnalyticsDashboard() {
                   </div>
                   <div>
                     {analytic.success_rate >= 95 ? (
-                      <Badge className="bg-green-100 text-green-800">
+                      <Badge className="bg-success/10 text-success">
                         <CheckCircle className="h-3 w-3 mr-1" />
                         Excellent
                       </Badge>
                     ) : analytic.success_rate >= 85 ? (
-                      <Badge className="bg-blue-100 text-blue-800">
+                      <Badge className="bg-info/10 text-blue-800">
                         <TrendingUp className="h-3 w-3 mr-1" />
                         Bon
                       </Badge>
                     ) : (
-                      <Badge className="bg-yellow-100 text-yellow-800">
+                      <Badge className="bg-warning/10 text-yellow-800">
                         <AlertTriangle className="h-3 w-3 mr-1" />
                         Moyen
                       </Badge>

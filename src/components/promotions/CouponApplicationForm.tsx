@@ -92,10 +92,10 @@ export function CouponApplicationForm({
         </div>
 
         {validatedDiscount && (
-          <div className="p-3 bg-green-500/10 border border-green-500/20 rounded-lg">
+          <div className="p-3 bg-success/10 border border-success/20 rounded-lg">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-green-600">
+                <p className="text-sm font-medium text-success">
                   Coupon valide : {validatedDiscount.coupon.code}
                 </p>
                 {validatedDiscount.coupon.description && (
@@ -105,7 +105,7 @@ export function CouponApplicationForm({
                 )}
               </div>
               <div className="text-right">
-                <p className="text-lg font-bold text-green-600">
+                <p className="text-lg font-bold text-success">
                   -{validatedDiscount.discount.amount.toFixed(2)}€
                 </p>
                 <p className="text-xs text-muted-foreground">

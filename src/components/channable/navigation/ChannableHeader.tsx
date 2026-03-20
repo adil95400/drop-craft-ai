@@ -273,8 +273,8 @@ const GlobalSearch = memo(() => {
           {/* Quick Actions */}
           <CommandGroup heading={t('header.quickActions')}>
             <CommandItem onSelect={() => handleSelect('/products/new')} className="cursor-pointer py-3">
-              <div className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center mr-3">
-                <Plus className="h-4 w-4 text-emerald-500" aria-hidden="true" />
+              <div className="w-8 h-8 rounded-lg bg-success/10 flex items-center justify-center mr-3">
+                <Plus className="h-4 w-4 text-success" aria-hidden="true" />
               </div>
               <div className="flex-1">
                 <span className="font-medium">{t('header.newProduct')}</span>
@@ -283,8 +283,8 @@ const GlobalSearch = memo(() => {
               <kbd className="text-[10px] text-muted-foreground bg-muted px-1.5 py-0.5 rounded" aria-hidden="true">⌘N</kbd>
             </CommandItem>
             <CommandItem onSelect={() => handleSelect('/import')} className="cursor-pointer py-3">
-              <div className="w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center mr-3">
-                <Upload className="h-4 w-4 text-blue-500" aria-hidden="true" />
+              <div className="w-8 h-8 rounded-lg bg-info/10 flex items-center justify-center mr-3">
+                <Upload className="h-4 w-4 text-info" aria-hidden="true" />
               </div>
               <div className="flex-1">
                 <span className="font-medium">{t('header.importData')}</span>
@@ -371,8 +371,8 @@ const QuickActionsButton = memo(() => {
         <DropdownMenuSeparator className="mb-2" />
         <DropdownMenuGroup className="space-y-1">
           <DropdownMenuItem onClick={() => navigate('/products/new')} className="cursor-pointer rounded-lg py-2.5">
-            <div className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center mr-3">
-              <Package className="h-4 w-4 text-emerald-500" aria-hidden="true" />
+            <div className="w-8 h-8 rounded-lg bg-success/10 flex items-center justify-center mr-3">
+              <Package className="h-4 w-4 text-success" aria-hidden="true" />
             </div>
             <div>
               <span className="font-medium">{t('header.newProduct')}</span>
@@ -380,8 +380,8 @@ const QuickActionsButton = memo(() => {
             </div>
           </DropdownMenuItem>
           <DropdownMenuItem onClick={() => navigate('/orders/new')} className="cursor-pointer rounded-lg py-2.5">
-            <div className="w-8 h-8 rounded-lg bg-amber-500/10 flex items-center justify-center mr-3">
-              <ShoppingCart className="h-4 w-4 text-amber-500" aria-hidden="true" />
+            <div className="w-8 h-8 rounded-lg bg-warning/10 flex items-center justify-center mr-3">
+              <ShoppingCart className="h-4 w-4 text-warning" aria-hidden="true" />
             </div>
             <div>
               <span className="font-medium">{t('header.newOrder')}</span>
@@ -389,8 +389,8 @@ const QuickActionsButton = memo(() => {
             </div>
           </DropdownMenuItem>
           <DropdownMenuItem onClick={() => navigate('/import')} className="cursor-pointer rounded-lg py-2.5">
-            <div className="w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center mr-3">
-              <Upload className="h-4 w-4 text-blue-500" aria-hidden="true" />
+            <div className="w-8 h-8 rounded-lg bg-info/10 flex items-center justify-center mr-3">
+              <Upload className="h-4 w-4 text-info" aria-hidden="true" />
             </div>
             <div>
               <span className="font-medium">{t('import')}</span>
@@ -406,7 +406,7 @@ QuickActionsButton.displayName = 'QuickActionsButton'
 
 // Memoized Badge Content for notifications
 const NotificationBadge = memo(({ count, t }: { count: number; t: (key: string) => string }) => (
-  <Badge className="bg-rose-500/10 text-rose-600 border-rose-500/20 text-[10px] font-semibold">
+  <Badge className="bg-destructive/10 text-destructive border-rose-500/20 text-[10px] font-semibold">
     {count} {t('new')}
   </Badge>
 ))
@@ -414,10 +414,10 @@ NotificationBadge.displayName = 'NotificationBadge'
 
 // Notification type styles
 const NOTIF_TYPE_STYLES = {
-  success: { bg: 'bg-emerald-500/10', text: 'text-emerald-500', dot: 'bg-emerald-500' },
-  warning: { bg: 'bg-amber-500/10', text: 'text-amber-500', dot: 'bg-amber-500' },
-  info: { bg: 'bg-blue-500/10', text: 'text-blue-500', dot: 'bg-blue-500' },
-  error: { bg: 'bg-rose-500/10', text: 'text-rose-500', dot: 'bg-rose-500' },
+  success: { bg: 'bg-success/10', text: 'text-success', dot: 'bg-success' },
+  warning: { bg: 'bg-warning/10', text: 'text-warning', dot: 'bg-warning' },
+  info: { bg: 'bg-info/10', text: 'text-info', dot: 'bg-info' },
+  error: { bg: 'bg-destructive/10', text: 'text-destructive', dot: 'bg-destructive' },
 }
 
 // Notifications Dropdown Premium - Connected to real data
@@ -452,7 +452,7 @@ const NotificationsDropdown = memo(() => {
             <Bell className="h-4 w-4" aria-hidden="true" />
             {hasUnread && (
               <motion.span
-                className="absolute top-1.5 right-1.5 w-2 h-2 bg-rose-500 rounded-full border-2 border-background"
+                className="absolute top-1.5 right-1.5 w-2 h-2 bg-destructive rounded-full border-2 border-background"
                 animate={prefersReducedMotion ? undefined : { scale: [1, 1.2, 1] }}
                 transition={prefersReducedMotion ? undefined : { repeat: Infinity, duration: 2 }}
                 aria-hidden="true"
@@ -578,7 +578,7 @@ const UserMenuDropdown = memo(() => {
                   {profile?.full_name?.[0]?.toUpperCase() || 'U'}
                 </div>
               )}
-              <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-emerald-500 rounded-full border-2 border-background" aria-label={t('online')} />
+              <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-success rounded-full border-2 border-background" aria-label={t('online')} />
             </div>
             <div className="hidden md:block text-left">
               <p className="text-xs font-semibold truncate max-w-[100px]">
@@ -640,14 +640,14 @@ const UserMenuDropdown = memo(() => {
         <DropdownMenuItem onClick={() => navigate('/pricing')} className="cursor-pointer rounded-lg py-2.5 bg-gradient-to-r from-primary/5 to-violet-500/5 hover:from-primary/10 hover:to-violet-500/10">
           <Sparkles className="mr-3 h-4 w-4 text-primary" aria-hidden="true" />
           <span className="font-medium text-primary">{t('header.upgradeToPro')}</span>
-          <Star className="ml-auto h-4 w-4 text-amber-500" aria-hidden="true" />
+          <Star className="ml-auto h-4 w-4 text-warning" aria-hidden="true" />
         </DropdownMenuItem>
         
         <DropdownMenuSeparator className="my-2" />
         
         <DropdownMenuItem 
           onClick={() => signOut?.()}
-          className="cursor-pointer rounded-lg py-2.5 text-rose-600 hover:text-rose-700 hover:bg-rose-500/10"
+          className="cursor-pointer rounded-lg py-2.5 text-destructive hover:text-rose-700 hover:bg-destructive/10"
         >
           <LogOut className="mr-3 h-4 w-4" aria-hidden="true" />
           <span className="font-medium">{t('logout')}</span>

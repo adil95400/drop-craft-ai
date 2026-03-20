@@ -155,7 +155,7 @@ export function QuickConnectSuppliers({
                 onChange={(e) => setApiSecret(e.target.value)}
               />
             </div>
-            <div className="p-4 bg-blue-50 dark:bg-blue-950/20 rounded-lg">
+            <div className="p-4 bg-info/5 dark:bg-blue-950/20 rounded-lg">
               <p className="text-sm text-blue-800 dark:text-blue-200">
                 💡 Vous trouverez vos identifiants API dans les paramètres de votre compte fournisseur
               </p>
@@ -189,8 +189,8 @@ export function QuickConnectSuppliers({
                 onChange={(e) => setSyncInterval(e.target.value)}
               />
             </div>
-            <div className="p-4 bg-green-50 dark:bg-green-950/20 rounded-lg">
-              <p className="text-sm text-green-800 dark:text-green-200">
+            <div className="p-4 bg-success/5 dark:bg-green-950/20 rounded-lg">
+              <p className="text-sm text-success dark:text-green-200">
                 ✓ Synchronisation automatique toutes les {parseInt(syncInterval) / 60} minutes
               </p>
             </div>
@@ -223,8 +223,8 @@ export function QuickConnectSuppliers({
                 onChange={(e) => setSyncInterval(e.target.value)}
               />
             </div>
-            <div className="p-4 bg-green-50 dark:bg-green-950/20 rounded-lg">
-              <p className="text-sm text-green-800 dark:text-green-200">
+            <div className="p-4 bg-success/5 dark:bg-green-950/20 rounded-lg">
+              <p className="text-sm text-success dark:text-green-200">
                 ✓ Synchronisation automatique toutes les {parseInt(syncInterval) / 60} minutes
               </p>
             </div>

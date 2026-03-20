@@ -69,8 +69,8 @@ const FORMAT_ICONS: Record<string, React.ElementType> = {
 };
 
 const FORMAT_COLORS: Record<string, string> = {
-  csv: 'text-green-500 bg-green-500/10',
-  json: 'text-blue-500 bg-blue-500/10',
+  csv: 'text-success bg-success/10',
+  json: 'text-info bg-info/10',
   xml: 'text-purple-500 bg-purple-500/10',
 };
 
@@ -301,7 +301,7 @@ export function FeedURLImporter({ onImportComplete, className }: FeedURLImporter
 
               <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-6 text-xs text-muted-foreground">
                 <div className="flex items-center gap-1">
-                  <FileSpreadsheet className="w-4 h-4 text-green-500" />
+                  <FileSpreadsheet className="w-4 h-4 text-success" />
                   CSV
                 </div>
                 <div className="flex items-center gap-1">
@@ -309,7 +309,7 @@ export function FeedURLImporter({ onImportComplete, className }: FeedURLImporter
                   XML
                 </div>
                 <div className="flex items-center gap-1">
-                  <FileJson className="w-4 h-4 text-blue-500" />
+                  <FileJson className="w-4 h-4 text-info" />
                   JSON
                 </div>
               </div>
@@ -435,7 +435,7 @@ export function FeedURLImporter({ onImportComplete, className }: FeedURLImporter
                 <Button 
                   onClick={handleImport}
                   disabled={!previewData.success || previewData.total_products === 0}
-                  className="sm:flex-1 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700"
+                  className="sm:flex-1 bg-gradient-to-r from-success to-emerald-600 hover:from-green-600 hover:to-emerald-700"
                 >
                   <Download className="w-4 h-4 mr-2" />
                   Importer ({previewData.total_products})
@@ -481,11 +481,11 @@ export function FeedURLImporter({ onImportComplete, className }: FeedURLImporter
               className="space-y-6 py-6"
             >
               <div className="text-center space-y-4">
-                <div className="mx-auto w-16 h-16 rounded-full bg-green-500/10 flex items-center justify-center">
-                  <CheckCircle className="w-8 h-8 text-green-500" />
+                <div className="mx-auto w-16 h-16 rounded-full bg-success/10 flex items-center justify-center">
+                  <CheckCircle className="w-8 h-8 text-success" />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-lg text-green-600">Import terminé !</h3>
+                  <h3 className="font-semibold text-lg text-success">Import terminé !</h3>
                   <p className="text-muted-foreground">
                     {importResult.data?.products_imported} produits importés avec succès
                   </p>
@@ -494,8 +494,8 @@ export function FeedURLImporter({ onImportComplete, className }: FeedURLImporter
 
               {/* Stats */}
               <div className="grid grid-cols-3 gap-4">
-                <div className="text-center p-4 bg-green-500/10 rounded-lg">
-                  <p className="text-2xl font-bold text-green-600">
+                <div className="text-center p-4 bg-success/10 rounded-lg">
+                  <p className="text-2xl font-bold text-success">
                     {importResult.data?.products_imported || 0}
                   </p>
                   <p className="text-sm text-muted-foreground">Importés</p>
@@ -506,8 +506,8 @@ export function FeedURLImporter({ onImportComplete, className }: FeedURLImporter
                   </p>
                   <p className="text-sm text-muted-foreground">Total</p>
                 </div>
-                <div className="text-center p-4 bg-red-500/10 rounded-lg">
-                  <p className="text-2xl font-bold text-red-600">
+                <div className="text-center p-4 bg-destructive/10 rounded-lg">
+                  <p className="text-2xl font-bold text-destructive">
                     {importResult.data?.errors || 0}
                   </p>
                   <p className="text-sm text-muted-foreground">Erreurs</p>

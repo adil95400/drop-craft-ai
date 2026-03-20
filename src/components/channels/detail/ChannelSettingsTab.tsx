@@ -87,7 +87,7 @@ export function ChannelSettingsTab({ channelId, channel, onDisconnect, onConfigC
       <Card className="shadow-none border-border">
         <CardHeader className="pb-3">
           <div className="flex items-center gap-2.5">
-            <Wifi className="h-4 w-4 text-blue-500" />
+            <Wifi className="h-4 w-4 text-info" />
             <CardTitle className="text-sm font-semibold">Test de connexion</CardTitle>
           </div>
           <p className="text-xs text-muted-foreground">Vérifiez que la connexion à votre boutique fonctionne correctement</p>
@@ -104,7 +104,7 @@ export function ChannelSettingsTab({ channelId, channel, onDisconnect, onConfigC
               {isTesting ? (
                 <Loader2 className="h-3.5 w-3.5 animate-spin" />
               ) : testResult === 'success' ? (
-                <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />
+                <CheckCircle2 className="h-3.5 w-3.5 text-success" />
               ) : testResult === 'error' ? (
                 <XCircle className="h-3.5 w-3.5 text-destructive" />
               ) : (
@@ -124,7 +124,7 @@ export function ChannelSettingsTab({ channelId, channel, onDisconnect, onConfigC
                 className={cn(
                   "gap-1",
                   testResult === 'success' 
-                    ? "bg-emerald-500/10 text-emerald-700 border-emerald-500/30" 
+                    ? "bg-success/10 text-emerald-700 border-emerald-500/30" 
                     : "bg-destructive/10 text-destructive border-destructive/30"
                 )}
               >

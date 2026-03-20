@@ -95,7 +95,7 @@ export default function PrintOnDemandHub() {
 
         <Card className="p-4">
           <div className="flex items-center gap-3">
-            <TrendingUp className="h-5 w-5 text-green-500" />
+            <TrendingUp className="h-5 w-5 text-success" />
             <div>
               <p className="text-sm text-muted-foreground">Actifs</p>
               <p className="text-2xl font-bold">
@@ -107,7 +107,7 @@ export default function PrintOnDemandHub() {
 
         <Card className="p-4">
           <div className="flex items-center gap-3">
-            <Package className="h-5 w-5 text-blue-500" />
+            <Package className="h-5 w-5 text-info" />
             <div>
               <p className="text-sm text-muted-foreground">Fournisseurs</p>
               <p className="text-2xl font-bold">3</p>

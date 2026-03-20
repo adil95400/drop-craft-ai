@@ -98,9 +98,9 @@ export const WhiteLabelSolution = () => {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'ready': return 'bg-green-500';
-      case 'generating': return 'bg-yellow-500';
-      case 'error': return 'bg-red-500';
+      case 'ready': return 'bg-success';
+      case 'generating': return 'bg-warning';
+      case 'error': return 'bg-destructive';
       default: return 'bg-gray-500';
     }
   };

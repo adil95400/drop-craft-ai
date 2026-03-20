@@ -74,9 +74,9 @@ const AVAILABLE_LANGUAGES = [
 
 const STATUS_CONFIG = {
   draft: { label: 'Brouillon', color: 'bg-gray-500', icon: Clock },
-  pending_review: { label: 'En révision', color: 'bg-yellow-500', icon: AlertCircle },
-  approved: { label: 'Approuvé', color: 'bg-green-500', icon: Check },
-  published: { label: 'Publié', color: 'bg-blue-500', icon: Globe },
+  pending_review: { label: 'En révision', color: 'bg-warning', icon: AlertCircle },
+  approved: { label: 'Approuvé', color: 'bg-success', icon: Check },
+  published: { label: 'Publié', color: 'bg-info', icon: Globe },
 };
 
 export function TranslationManager() {
@@ -294,8 +294,8 @@ export function TranslationManager() {
             </Card>
             <Card>
               <CardContent className="p-4 flex items-center gap-3">
-                <div className="p-2 bg-blue-500/10 rounded-lg">
-                  <Languages className="h-5 w-5 text-blue-500" />
+                <div className="p-2 bg-info/10 rounded-lg">
+                  <Languages className="h-5 w-5 text-info" />
                 </div>
                 <div>
                   <p className="text-2xl font-bold">{translationStats.total}</p>
@@ -305,8 +305,8 @@ export function TranslationManager() {
             </Card>
             <Card>
               <CardContent className="p-4 flex items-center gap-3">
-                <div className="p-2 bg-yellow-500/10 rounded-lg">
-                  <Clock className="h-5 w-5 text-yellow-500" />
+                <div className="p-2 bg-warning/10 rounded-lg">
+                  <Clock className="h-5 w-5 text-warning" />
                 </div>
                 <div>
                   <p className="text-2xl font-bold">{translationStats.pending}</p>
@@ -316,8 +316,8 @@ export function TranslationManager() {
             </Card>
             <Card>
               <CardContent className="p-4 flex items-center gap-3">
-                <div className="p-2 bg-green-500/10 rounded-lg">
-                  <Check className="h-5 w-5 text-green-500" />
+                <div className="p-2 bg-success/10 rounded-lg">
+                  <Check className="h-5 w-5 text-success" />
                 </div>
                 <div>
                   <p className="text-2xl font-bold">{translationStats.published}</p>
@@ -550,7 +550,7 @@ export function TranslationManager() {
                                     status: 'approved'
                                   })}
                                 >
-                                  <Check className="h-4 w-4 text-green-500" />
+                                  <Check className="h-4 w-4 text-success" />
                                 </Button>
                               )}
                             </div>
@@ -609,7 +609,7 @@ export function TranslationManager() {
             <CardContent>
               {translations.filter(t => t.translation_status === 'pending_review').length === 0 ? (
                 <div className="text-center py-8">
-                  <Check className="h-12 w-12 mx-auto text-green-500 mb-4" />
+                  <Check className="h-12 w-12 mx-auto text-success mb-4" />
                   <p className="text-muted-foreground">Toutes les traductions sont à jour !</p>
                 </div>
               ) : (

@@ -393,7 +393,7 @@ export default function FAQ() {
                       <CardDescription>Configuration complète en 10 étapes</CardDescription>
                     </CardHeader>
                     <CardContent>
-                      <Badge className="bg-green-100 text-green-800">Recommandé</Badge>
+                      <Badge className="bg-success/10 text-success">Recommandé</Badge>
                     </CardContent>
                   </Card>
                   

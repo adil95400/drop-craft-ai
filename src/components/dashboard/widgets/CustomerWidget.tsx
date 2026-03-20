@@ -49,7 +49,7 @@ export function CustomerWidget({ isCustomizing }: CustomerWidgetProps) {
 
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-1">
-            <div className={`flex items-center gap-1 ${customersChange >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+            <div className={`flex items-center gap-1 ${customersChange >= 0 ? 'text-success' : 'text-destructive'}`}>
               <UserPlus className="h-3 w-3" />
               <p className="text-xs">Évolution</p>
             </div>
@@ -58,7 +58,7 @@ export function CustomerWidget({ isCustomizing }: CustomerWidgetProps) {
           </div>
 
           <div className="space-y-1">
-            <div className="flex items-center gap-1 text-blue-600">
+            <div className="flex items-center gap-1 text-info">
               <TrendingUp className="h-3 w-3" />
               <p className="text-xs">Commandes</p>
             </div>
@@ -70,7 +70,7 @@ export function CustomerWidget({ isCustomizing }: CustomerWidgetProps) {
         <div className="pt-2 border-t">
           <div className="flex items-center justify-between text-sm">
             <span className="text-muted-foreground">Panier moyen</span>
-            <span className="font-semibold text-green-600">
+            <span className="font-semibold text-success">
               {stats?.ordersCount && stats.ordersCount > 0
                 ? (stats.monthlyRevenue / stats.ordersCount).toFixed(2)
                 : 0}€

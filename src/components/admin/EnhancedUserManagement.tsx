@@ -141,7 +141,7 @@ export const EnhancedUserManagement = () => {
   const getPlanBadge = (plan: PlanType | null, subscriptionStatus?: string | null) => {
     const planConfig = {
       standard: { label: 'STANDARD', color: 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200' },
-      pro: { label: 'PRO', color: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' },
+      pro: { label: 'PRO', color: 'bg-info/10 text-blue-800 dark:bg-blue-900 dark:text-blue-200' },
       ultra_pro: { label: 'ULTRA PRO', color: 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200' }
     }
     
@@ -167,10 +167,10 @@ export const EnhancedUserManagement = () => {
     
     const daysSinceLogin = Math.floor((Date.now() - new Date(lastLogin).getTime()) / (1000 * 60 * 60 * 24))
     
-    if (daysSinceLogin === 0) return { status: 'Actif aujourd\'hui', color: 'text-green-600' }
-    if (daysSinceLogin <= 7) return { status: `Actif il y a ${daysSinceLogin}j`, color: 'text-blue-600' }
-    if (daysSinceLogin <= 30) return { status: `Inactif ${daysSinceLogin}j`, color: 'text-yellow-600' }
-    return { status: `Inactif +${daysSinceLogin}j`, color: 'text-red-600' }
+    if (daysSinceLogin === 0) return { status: 'Actif aujourd\'hui', color: 'text-success' }
+    if (daysSinceLogin <= 7) return { status: `Actif il y a ${daysSinceLogin}j`, color: 'text-info' }
+    if (daysSinceLogin <= 30) return { status: `Inactif ${daysSinceLogin}j`, color: 'text-warning' }
+    return { status: `Inactif +${daysSinceLogin}j`, color: 'text-destructive' }
   }
 
   if (loading && users.length === 0) {
@@ -204,13 +204,13 @@ export const EnhancedUserManagement = () => {
               <div className="text-sm text-muted-foreground">Utilisateurs totaux</div>
             </div>
             <div className="text-center p-4 border rounded-lg">
-              <div className="text-2xl font-bold text-green-600">
+              <div className="text-2xl font-bold text-success">
                 {users.filter(u => u.role === 'admin' || u.is_admin).length}
               </div>
               <div className="text-sm text-muted-foreground">Administrateurs</div>
             </div>
             <div className="text-center p-4 border rounded-lg">
-              <div className="text-2xl font-bold text-blue-600">
+              <div className="text-2xl font-bold text-info">
                 {users.filter(u => u.plan === 'pro' || u.plan === 'ultra_pro').length}
               </div>
               <div className="text-sm text-muted-foreground">Abonnés Premium</div>

@@ -17,13 +17,13 @@ interface MarketplacesWidgetProps {
 }
 
 const marketplaceIcons: Record<string, { icon: string; color: string }> = {
-  amazon: { icon: '📦', color: 'text-orange-500' },
-  ebay: { icon: '🏷️', color: 'text-blue-500' },
-  cdiscount: { icon: '🛍️', color: 'text-red-500' },
+  amazon: { icon: '📦', color: 'text-warning' },
+  ebay: { icon: '🏷️', color: 'text-info' },
+  cdiscount: { icon: '🛍️', color: 'text-destructive' },
   aliexpress: { icon: '🌍', color: 'text-orange-400' },
-  etsy: { icon: '🎨', color: 'text-orange-600' },
-  rakuten: { icon: '🔴', color: 'text-red-600' },
-  fnac: { icon: '📱', color: 'text-yellow-600' },
+  etsy: { icon: '🎨', color: 'text-warning' },
+  rakuten: { icon: '🔴', color: 'text-destructive' },
+  fnac: { icon: '📱', color: 'text-warning' },
 };
 
 export function MarketplacesWidget({ settings }: MarketplacesWidgetProps) {
@@ -143,7 +143,7 @@ export function MarketplacesWidget({ settings }: MarketplacesWidgetProps) {
                   </div>
                   <div className="flex items-center gap-2">
                     {marketplace.connection_status === 'connected' ? (
-                      <Badge variant="default" className="text-[10px] bg-green-500">
+                      <Badge variant="default" className="text-[10px] bg-success">
                         <CheckCircle className="h-2 w-2 mr-1" />
                         Actif
                       </Badge>
@@ -169,8 +169,8 @@ export function MarketplacesWidget({ settings }: MarketplacesWidgetProps) {
         )}
 
         {showStats && orderStats && orderStats.totalRevenue > 0 && (
-          <div className="flex items-center justify-center gap-2 p-2 bg-green-500/10 rounded-lg">
-            <TrendingUp className="h-4 w-4 text-green-500" />
+          <div className="flex items-center justify-center gap-2 p-2 bg-success/10 rounded-lg">
+            <TrendingUp className="h-4 w-4 text-success" />
             <span className="text-sm font-medium">
               {orderStats.totalRevenue.toLocaleString('fr-FR')} € de revenus
             </span>

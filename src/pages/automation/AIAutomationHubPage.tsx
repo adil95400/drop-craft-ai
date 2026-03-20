@@ -26,9 +26,9 @@ import { fr } from 'date-fns/locale';
 import { ModuleInterconnectionBanner } from '@/components/cross-module/ModuleInterconnectionBanner';
 
 const ACTION_TYPE_META: Record<string, { icon: any; label: string; color: string }> = {
-  'content-optimizer': { icon: FileText, label: 'Optimiseur de Contenu', color: 'text-blue-500' },
-  'price-optimizer': { icon: DollarSign, label: 'Optimiseur de Prix', color: 'text-green-500' },
-  'stock-predictor': { icon: Package, label: 'Prédicteur de Stock', color: 'text-amber-500' },
+  'content-optimizer': { icon: FileText, label: 'Optimiseur de Contenu', color: 'text-info' },
+  'price-optimizer': { icon: DollarSign, label: 'Optimiseur de Prix', color: 'text-success' },
+  'stock-predictor': { icon: Package, label: 'Prédicteur de Stock', color: 'text-warning' },
   'ad-optimizer': { icon: Target, label: 'Optimiseur Publicitaire', color: 'text-purple-500' },
   'quality-auditor': { icon: CheckCircle2, label: 'Auditeur Qualité', color: 'text-primary' },
 };
@@ -258,11 +258,11 @@ export default function AIAutomationHubPage() {
                       <div key={log.id} className="flex items-center justify-between py-2 border-b border-border last:border-0">
                         <div className="flex items-center gap-3">
                           {log.status === 'applied' ? (
-                            <CheckCircle2 className="h-4 w-4 text-green-500 shrink-0" />
+                            <CheckCircle2 className="h-4 w-4 text-success shrink-0" />
                           ) : log.status === 'reverted' ? (
                             <XCircle className="h-4 w-4 text-destructive shrink-0" />
                           ) : (
-                            <Clock className="h-4 w-4 text-amber-500 shrink-0" />
+                            <Clock className="h-4 w-4 text-warning shrink-0" />
                           )}
                           <div>
                             <div className="text-sm font-medium text-foreground">
@@ -305,7 +305,7 @@ export default function AIAutomationHubPage() {
                         <div className={cn(
                           'w-2 h-2 rounded-full mt-1.5 shrink-0',
                           rec.confidence_score >= 0.8 ? 'bg-destructive' :
-                            rec.confidence_score >= 0.5 ? 'bg-amber-500' : 'bg-blue-500'
+                            rec.confidence_score >= 0.5 ? 'bg-warning' : 'bg-info'
                         )} />
                         <div className="flex-1">
                           <span className="text-sm font-medium text-foreground">{rec.title}</span>

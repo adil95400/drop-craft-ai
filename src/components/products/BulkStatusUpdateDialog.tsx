@@ -36,7 +36,7 @@ export function BulkStatusUpdateDialog({ open, onOpenChange, count, onConfirm }:
             <div className="flex items-center space-x-2 p-3 border rounded-lg hover:bg-muted/50 cursor-pointer">
               <RadioGroupItem value="active" id="active" />
               <Label htmlFor="active" className="flex items-center gap-2 cursor-pointer flex-1">
-                <CheckCircle2 className="h-4 w-4 text-green-600" />
+                <CheckCircle2 className="h-4 w-4 text-success" />
                 <div>
                   <div className="font-medium">Actif</div>
                   <div className="text-sm text-muted-foreground">Produits visibles et disponibles à la vente</div>
@@ -47,7 +47,7 @@ export function BulkStatusUpdateDialog({ open, onOpenChange, count, onConfirm }:
             <div className="flex items-center space-x-2 p-3 border rounded-lg hover:bg-muted/50 cursor-pointer">
               <RadioGroupItem value="inactive" id="inactive" />
               <Label htmlFor="inactive" className="flex items-center gap-2 cursor-pointer flex-1">
-                <XCircle className="h-4 w-4 text-red-600" />
+                <XCircle className="h-4 w-4 text-destructive" />
                 <div>
                   <div className="font-medium">Inactif</div>
                   <div className="text-sm text-muted-foreground">Produits masqués et non disponibles</div>
@@ -58,7 +58,7 @@ export function BulkStatusUpdateDialog({ open, onOpenChange, count, onConfirm }:
             <div className="flex items-center space-x-2 p-3 border rounded-lg hover:bg-muted/50 cursor-pointer">
               <RadioGroupItem value="draft" id="draft" />
               <Label htmlFor="draft" className="flex items-center gap-2 cursor-pointer flex-1">
-                <FileText className="h-4 w-4 text-orange-600" />
+                <FileText className="h-4 w-4 text-warning" />
                 <div>
                   <div className="font-medium">Brouillon</div>
                   <div className="text-sm text-muted-foreground">Produits en cours de préparation</div>

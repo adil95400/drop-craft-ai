@@ -44,7 +44,7 @@ export const ConnectedSupplierCard = memo(function ConnectedSupplierCard({
   return (
     <Card className={cn(
       "relative overflow-hidden transition-all",
-      isActive ? "border-green-500/30 bg-green-500/5" : "border-muted"
+      isActive ? "border-success/30 bg-success/5" : "border-muted"
     )}>
       <CardContent className="p-4">
         <div className="flex items-start justify-between">
@@ -67,7 +67,7 @@ export const ConnectedSupplierCard = memo(function ConnectedSupplierCard({
                 </Badge>
                 {supplier.rating && (
                   <span className="text-xs text-muted-foreground flex items-center gap-1">
-                    <Star className="w-3 h-3 fill-yellow-500 text-yellow-500" />
+                    <Star className="w-3 h-3 fill-yellow-500 text-warning" />
                     {supplier.rating}
                   </span>
                 )}

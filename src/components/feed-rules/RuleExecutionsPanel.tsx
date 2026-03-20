@@ -60,9 +60,9 @@ export function RuleExecutionsPanel({ ruleId }: RuleExecutionsPanelProps) {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     {execution.status === 'success' ? (
-                      <CheckCircle2 className="h-5 w-5 text-green-500" />
+                      <CheckCircle2 className="h-5 w-5 text-success" />
                     ) : execution.status === 'partial' ? (
-                      <AlertCircle className="h-5 w-5 text-yellow-500" />
+                      <AlertCircle className="h-5 w-5 text-warning" />
                     ) : (
                       <AlertCircle className="h-5 w-5 text-destructive" />
                     )}

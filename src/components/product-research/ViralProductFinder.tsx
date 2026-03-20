@@ -22,7 +22,7 @@ export function ViralProductFinder() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Flame className="w-5 h-5 text-orange-500" />
+            <Flame className="w-5 h-5 text-warning" />
             Détecteur de Produits Viraux
           </CardTitle>
           <CardDescription>
@@ -96,7 +96,7 @@ export function ViralProductFinder() {
                   </div>
                   <div className="space-y-1">
                     <p className="text-sm text-muted-foreground">Marge</p>
-                    <p className="text-lg font-bold text-green-600">{product.profit_margin}%</p>
+                    <p className="text-lg font-bold text-success">{product.profit_margin}%</p>
                   </div>
                 </div>
 

@@ -214,7 +214,7 @@ export const OneClickImportConfig: React.FC = () => {
                       {lastResults.map((result, i) => (
                         <div
                           key={i}
-                          className={`flex items-center gap-2 p-2 rounded-md ${result.success ? 'bg-green-50 dark:bg-green-950 text-green-600 dark:text-green-400' : 'bg-red-50 dark:bg-red-950 text-red-600 dark:text-red-400'}`}
+                          className={`flex items-center gap-2 p-2 rounded-md ${result.success ? 'bg-success/5 dark:bg-green-950 text-success dark:text-green-400' : 'bg-destructive/5 dark:bg-red-950 text-destructive dark:text-red-400'}`}
                         >
                           {result.success ? <CheckCircle2 className="w-4 h-4" /> : <XCircle className="w-4 h-4" />}
                           <a href={result.url} target="_blank" rel="noopener noreferrer" className="underline">
@@ -274,11 +274,11 @@ export const OneClickImportConfig: React.FC = () => {
                         <div className="flex-1 space-y-2">
                           <div className="flex items-center gap-2">
                             {history.status === 'success' ? (
-                              <CheckCircle2 className="w-4 h-4 text-green-500 flex-shrink-0" />
+                              <CheckCircle2 className="w-4 h-4 text-success flex-shrink-0" />
                             ) : history.status === 'failed' ? (
-                              <XCircle className="w-4 h-4 text-red-500 flex-shrink-0" />
+                              <XCircle className="w-4 h-4 text-destructive flex-shrink-0" />
                             ) : (
-                              <AlertCircle className="w-4 h-4 text-yellow-500 flex-shrink-0" />
+                              <AlertCircle className="w-4 h-4 text-warning flex-shrink-0" />
                             )}
                             <span className="text-lg">{getPlatformIcon(history.job_type)}</span>
                             <Badge variant="outline" className="uppercase text-xs">
@@ -294,12 +294,12 @@ export const OneClickImportConfig: React.FC = () => {
                           </p>
                           
                           <div className="flex items-center gap-4 text-xs">
-                            <span className="flex items-center gap-1 text-green-600">
+                            <span className="flex items-center gap-1 text-success">
                               <CheckCircle2 className="w-3 h-3" />
                               {history.successful_imports} importé{history.successful_imports > 1 ? 's' : ''}
                             </span>
                             {history.failed_imports > 0 && (
-                              <span className="flex items-center gap-1 text-red-600">
+                              <span className="flex items-center gap-1 text-destructive">
                                 <XCircle className="w-3 h-3" />
                                 {history.failed_imports} échoué{history.failed_imports > 1 ? 's' : ''}
                               </span>
@@ -307,7 +307,7 @@ export const OneClickImportConfig: React.FC = () => {
                           </div>
                           
                           {history.error_message && (
-                            <p className="text-xs text-red-600 bg-red-50 dark:bg-red-950 p-2 rounded">
+                            <p className="text-xs text-destructive bg-destructive/5 dark:bg-red-950 p-2 rounded">
                               Erreur: {history.error_message}
                             </p>
                           )}

@@ -126,8 +126,8 @@ export const APIKeysManager = () => {
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card><CardContent className="p-4"><p className="text-sm text-muted-foreground">Total</p><p className="text-2xl font-bold">{apiKeys.length}</p></CardContent></Card>
-        <Card><CardContent className="p-4"><p className="text-sm text-muted-foreground">Actives</p><p className="text-2xl font-bold text-green-600">{apiKeys.filter(k => k.is_active).length}</p></CardContent></Card>
-        <Card><CardContent className="p-4"><p className="text-sm text-muted-foreground">Expirées</p><p className="text-2xl font-bold text-red-600">{apiKeys.filter(k => k.expires_at && new Date(k.expires_at) < new Date()).length}</p></CardContent></Card>
+        <Card><CardContent className="p-4"><p className="text-sm text-muted-foreground">Actives</p><p className="text-2xl font-bold text-success">{apiKeys.filter(k => k.is_active).length}</p></CardContent></Card>
+        <Card><CardContent className="p-4"><p className="text-sm text-muted-foreground">Expirées</p><p className="text-2xl font-bold text-destructive">{apiKeys.filter(k => k.expires_at && new Date(k.expires_at) < new Date()).length}</p></CardContent></Card>
       </div>
 
       <Card>
@@ -163,7 +163,7 @@ export const APIKeysManager = () => {
                   </TableCell>
                   <TableCell>
                     {key.is_active ? (
-                      <Badge className="bg-green-100 text-green-800 border-green-200"><CheckCircle className="w-3 h-3 mr-1" />Active</Badge>
+                      <Badge className="bg-success/10 text-success border-success/20"><CheckCircle className="w-3 h-3 mr-1" />Active</Badge>
                     ) : (
                       <Badge variant="outline">Inactive</Badge>
                     )}

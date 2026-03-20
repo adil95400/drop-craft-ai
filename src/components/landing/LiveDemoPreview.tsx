@@ -15,10 +15,10 @@ import { useNavigate } from 'react-router-dom';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
 
 const demoStats = [
-  { label: 'Produits', value: 2847, icon: Package, color: 'text-blue-500' },
-  { label: 'Commandes', value: 156, icon: ShoppingCart, color: 'text-emerald-500' },
+  { label: 'Produits', value: 2847, icon: Package, color: 'text-info' },
+  { label: 'Commandes', value: 156, icon: ShoppingCart, color: 'text-success' },
   { label: 'Revenue', value: '€12,458', icon: DollarSign, color: 'text-primary' },
-  { label: 'Croissance', value: '+27%', icon: TrendingUp, color: 'text-amber-500' },
+  { label: 'Croissance', value: '+27%', icon: TrendingUp, color: 'text-warning' },
 ];
 
 const demoFeatures = [
@@ -96,9 +96,9 @@ export const LiveDemoPreview = memo(() => {
             <CardHeader className="border-b bg-muted/30">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <div className="h-3 w-3 rounded-full bg-red-500" />
-                  <div className="h-3 w-3 rounded-full bg-yellow-500" />
-                  <div className="h-3 w-3 rounded-full bg-green-500" />
+                  <div className="h-3 w-3 rounded-full bg-destructive" />
+                  <div className="h-3 w-3 rounded-full bg-warning" />
+                  <div className="h-3 w-3 rounded-full bg-success" />
                 </div>
                 <Badge variant="outline" className="text-xs">
                   Dashboard Live

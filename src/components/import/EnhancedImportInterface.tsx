@@ -178,7 +178,7 @@ export const EnhancedImportInterface = ({ selectedMethod, isImporting, importPro
                     getCurrentStep() === index 
                       ? 'bg-primary/10 border border-primary/20 animate-scale-in' 
                       : getCurrentStep() > index
-                      ? 'bg-green-50 border border-green-200'
+                      ? 'bg-success/5 border border-success/20'
                       : 'bg-muted/30'
                   }`}
                 >
@@ -186,7 +186,7 @@ export const EnhancedImportInterface = ({ selectedMethod, isImporting, importPro
                     getCurrentStep() === index 
                       ? 'bg-primary text-primary-foreground animate-pulse' 
                       : getCurrentStep() > index
-                      ? 'bg-green-500 text-white'
+                      ? 'bg-success text-white'
                       : 'bg-muted text-muted-foreground'
                   }`}>
                     {getCurrentStep() > index ? (
@@ -306,7 +306,7 @@ export const EnhancedImportInterface = ({ selectedMethod, isImporting, importPro
                     className="mt-1"
                   />
                   {selectedFile && (
-                    <p className="text-sm text-green-600 mt-1 animate-fade-in">
+                    <p className="text-sm text-success mt-1 animate-fade-in">
                       ✓ {selectedFile.name} sélectionné
                     </p>
                   )}
@@ -343,7 +343,7 @@ export const EnhancedImportInterface = ({ selectedMethod, isImporting, importPro
                     className="mt-1"
                   />
                   {imageFile && (
-                    <p className="text-sm text-green-600 mt-1 animate-fade-in">
+                    <p className="text-sm text-success mt-1 animate-fade-in">
                       ✓ {imageFile.name} sélectionné
                     </p>
                   )}
@@ -365,7 +365,7 @@ export const EnhancedImportInterface = ({ selectedMethod, isImporting, importPro
             <Card className="border-gradient-to-r from-yellow-500 to-orange-500">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <Bot className="w-5 h-5 text-yellow-600" />
+                  <Bot className="w-5 h-5 text-warning" />
                   Import Winners IA
                   <Badge className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white">
                     Ultra Pro
@@ -377,11 +377,11 @@ export const EnhancedImportInterface = ({ selectedMethod, isImporting, importPro
                   Laissez notre IA découvrir automatiquement les produits gagnants du moment
                 </p>
                 <div className="grid grid-cols-2 gap-4">
-                  <div className="p-3 bg-yellow-50 rounded-lg">
+                  <div className="p-3 bg-warning/5 rounded-lg">
                     <p className="text-sm font-medium">🔥 Tendances</p>
                     <p className="text-xs text-muted-foreground">Produits viraux détectés</p>
                   </div>
-                  <div className="p-3 bg-green-50 rounded-lg">
+                  <div className="p-3 bg-success/5 rounded-lg">
                     <p className="text-sm font-medium">💰 Profit</p>
                     <p className="text-xs text-muted-foreground">Marges optimisées</p>
                   </div>

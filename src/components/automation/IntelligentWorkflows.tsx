@@ -196,11 +196,11 @@ export const IntelligentWorkflows = () => {
       {/* Workflows existants */}
       <div className="grid grid-cols-1 gap-4">
         {workflows.map(workflow => (
-          <Card key={workflow.id} className={`${workflow.enabled ? 'border-green-200 bg-green-50/30' : ''}`}>
+          <Card key={workflow.id} className={`${workflow.enabled ? 'border-success/20 bg-success/5/30' : ''}`}>
             <CardHeader>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className={`p-2 rounded-lg ${workflow.enabled ? 'bg-green-100 text-green-600' : 'bg-gray-100 text-gray-500'}`}>
+                  <div className={`p-2 rounded-lg ${workflow.enabled ? 'bg-success/10 text-success' : 'bg-gray-100 text-gray-500'}`}>
                     <Workflow className="w-5 h-5" />
                   </div>
                   <div>
@@ -348,8 +348,8 @@ export const IntelligentWorkflows = () => {
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-blue-100 rounded-lg">
-                <Zap className="w-5 h-5 text-blue-600" />
+              <div className="p-2 bg-info/10 rounded-lg">
+                <Zap className="w-5 h-5 text-info" />
               </div>
               <div>
                 <p className="text-sm text-gray-600">Workflows Actifs</p>
@@ -362,8 +362,8 @@ export const IntelligentWorkflows = () => {
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-green-100 rounded-lg">
-                <CheckCircle2 className="w-5 h-5 text-green-600" />
+              <div className="p-2 bg-success/10 rounded-lg">
+                <CheckCircle2 className="w-5 h-5 text-success" />
               </div>
               <div>
                 <p className="text-sm text-gray-600">Exécutions Totales</p>

@@ -100,7 +100,7 @@ function StoreItem({
           </Badge>
         ) : result ? (
           result.success ? (
-            <CheckCircle2 className="h-5 w-5 text-green-500" />
+            <CheckCircle2 className="h-5 w-5 text-success" />
           ) : (
             <XCircle className="h-5 w-5 text-destructive" />
           )
@@ -139,7 +139,7 @@ function ImportProgress({ progress }: { progress: MultiStoreImportProgress }) {
       
       <div className="flex items-center gap-4 text-sm">
         <div className="flex items-center gap-1.5">
-          <CheckCircle2 className="h-4 w-4 text-green-500" />
+          <CheckCircle2 className="h-4 w-4 text-success" />
           <span>{progress.successful} réussi(s)</span>
         </div>
         {progress.failed > 0 && (
@@ -158,7 +158,7 @@ function ImportProgress({ progress }: { progress: MultiStoreImportProgress }) {
                 key={idx}
                 className={cn(
                   "text-xs px-2 py-1 rounded",
-                  result.success ? "bg-green-500/10 text-green-700" : "bg-destructive/10 text-destructive"
+                  result.success ? "bg-success/10 text-success" : "bg-destructive/10 text-destructive"
                 )}
               >
                 {result.storeName}: {result.success ? 'Importé' : result.error}

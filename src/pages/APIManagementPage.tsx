@@ -126,8 +126,8 @@ export default function APIManagementPage() {
 
           <Card className="p-3 sm:p-6">
             <div className="flex items-center gap-2 sm:gap-4">
-              <div className="p-2 sm:p-3 rounded-lg bg-blue-500/10">
-                <Activity className="w-4 h-4 sm:w-6 sm:h-6 text-blue-500" />
+              <div className="p-2 sm:p-3 rounded-lg bg-info/10">
+                <Activity className="w-4 h-4 sm:w-6 sm:h-6 text-info" />
               </div>
               <div>
                 <p className="text-xs sm:text-sm text-muted-foreground">Requêtes</p>
@@ -138,8 +138,8 @@ export default function APIManagementPage() {
 
           <Card className="p-3 sm:p-6">
             <div className="flex items-center gap-2 sm:gap-4">
-              <div className="p-2 sm:p-3 rounded-lg bg-green-500/10">
-                <Activity className="w-4 h-4 sm:w-6 sm:h-6 text-green-500" />
+              <div className="p-2 sm:p-3 rounded-lg bg-success/10">
+                <Activity className="w-4 h-4 sm:w-6 sm:h-6 text-success" />
               </div>
               <div>
                 <p className="text-xs sm:text-sm text-muted-foreground">Succès</p>
@@ -155,8 +155,8 @@ export default function APIManagementPage() {
 
           <Card className="p-3 sm:p-6">
             <div className="flex items-center gap-2 sm:gap-4">
-              <div className="p-2 sm:p-3 rounded-lg bg-red-500/10">
-                <Activity className="w-4 h-4 sm:w-6 sm:h-6 text-red-500" />
+              <div className="p-2 sm:p-3 rounded-lg bg-destructive/10">
+                <Activity className="w-4 h-4 sm:w-6 sm:h-6 text-destructive" />
               </div>
               <div>
                 <p className="text-xs sm:text-sm text-muted-foreground">Échecs</p>
@@ -247,7 +247,7 @@ export default function APIManagementPage() {
                       </TableCell>
                       <TableCell className="text-right">
                         <Button variant="ghost" size="sm">
-                          <Trash2 className="w-4 h-4 text-red-500" />
+                          <Trash2 className="w-4 h-4 text-destructive" />
                         </Button>
                       </TableCell>
                     </TableRow>

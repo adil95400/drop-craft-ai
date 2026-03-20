@@ -94,7 +94,7 @@ export const BulkImportDialog = ({
 
             <Card>
               <CardContent className="p-4 text-center">
-                <DollarSign className="w-8 h-8 text-green-500 mx-auto mb-2" />
+                <DollarSign className="w-8 h-8 text-success mx-auto mb-2" />
                 <div className="text-2xl font-bold">{formatPrice(totalValue)}</div>
                 <p className="text-sm text-muted-foreground">Valeur totale</p>
               </CardContent>
@@ -102,7 +102,7 @@ export const BulkImportDialog = ({
 
             <Card>
               <CardContent className="p-4 text-center">
-                <Star className="w-8 h-8 text-yellow-500 mx-auto mb-2" />
+                <Star className="w-8 h-8 text-warning mx-auto mb-2" />
                 <div className="text-2xl font-bold">{averageMargin.toFixed(1)}%</div>
                 <p className="text-sm text-muted-foreground">Marge moyenne</p>
               </CardContent>
@@ -165,13 +165,13 @@ export const BulkImportDialog = ({
                           
                           <div className="flex items-center gap-2 mt-1">
                             {product.is_winner && (
-                              <Badge className="bg-yellow-500 text-black text-xs">
+                              <Badge className="bg-warning text-black text-xs">
                                 <Crown className="w-3 h-3 mr-1" />
                                 Winner
                               </Badge>
                             )}
                             {product.is_trending && (
-                              <Badge className="bg-green-500 text-white text-xs">
+                              <Badge className="bg-success text-white text-xs">
                                 <TrendingUp className="w-3 h-3 mr-1" />
                                 Trending
                               </Badge>
@@ -185,8 +185,8 @@ export const BulkImportDialog = ({
                             <Badge 
                               variant="outline" 
                               className={`text-xs ${
-                                product.profit_margin >= 50 ? 'text-green-600' : 
-                                product.profit_margin >= 30 ? 'text-orange-600' : 'text-red-600'
+                                product.profit_margin >= 50 ? 'text-success' : 
+                                product.profit_margin >= 30 ? 'text-warning' : 'text-destructive'
                               }`}
                             >
                               {product.profit_margin.toFixed(0)}% marge

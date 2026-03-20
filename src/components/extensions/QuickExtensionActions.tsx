@@ -20,7 +20,7 @@ export const QuickExtensionActions: React.FC = () => {
       description: 'Télécharger l\'extension Chrome/Firefox',
       icon: <Globe className="w-5 h-5" />,
       route: '/extension-download',
-      color: 'bg-blue-50 hover:bg-blue-100 text-blue-700',
+      color: 'bg-info/5 hover:bg-info/10 text-blue-700',
       badge: 'Beta'
     },
     {
@@ -28,7 +28,7 @@ export const QuickExtensionActions: React.FC = () => {
       description: 'Parcourir les extensions disponibles',
       icon: <Store className="w-5 h-5" />,
       route: '/extensions/marketplace',
-      color: 'bg-green-50 hover:bg-green-100 text-green-700'
+      color: 'bg-success/5 hover:bg-success/10 text-success'
     },
     {
       label: 'Developer Hub',

@@ -71,9 +71,9 @@ export function AddKeywordModal({ open, onOpenChange }: AddKeywordModalProps) {
 
   const getCompetitionColor = (competition: string) => {
     switch (competition) {
-      case 'low': return 'text-green-600 bg-green-100'
-      case 'medium': return 'text-yellow-600 bg-yellow-100'
-      case 'high': return 'text-red-600 bg-red-100'
+      case 'low': return 'text-success bg-success/10'
+      case 'medium': return 'text-warning bg-warning/10'
+      case 'high': return 'text-destructive bg-destructive/10'
       default: return 'text-gray-600 bg-gray-100'
     }
   }
@@ -128,19 +128,19 @@ export function AddKeywordModal({ open, onOpenChange }: AddKeywordModalProps) {
               <SelectContent>
                 <SelectItem value="low">
                   <div className="flex items-center gap-2">
-                    <div className="w-2 h-2 rounded-full bg-green-500"></div>
+                    <div className="w-2 h-2 rounded-full bg-success"></div>
                     Faible - Facile à positionner
                   </div>
                 </SelectItem>
                 <SelectItem value="medium">
                   <div className="flex items-center gap-2">
-                    <div className="w-2 h-2 rounded-full bg-yellow-500"></div>
+                    <div className="w-2 h-2 rounded-full bg-warning"></div>
                     Moyenne - Effort modéré requis
                   </div>
                 </SelectItem>
                 <SelectItem value="high">
                   <div className="flex items-center gap-2">
-                    <div className="w-2 h-2 rounded-full bg-red-500"></div>
+                    <div className="w-2 h-2 rounded-full bg-destructive"></div>
                     Élevée - Stratégie avancée nécessaire
                   </div>
                 </SelectItem>
@@ -199,14 +199,14 @@ export function AddKeywordModal({ open, onOpenChange }: AddKeywordModalProps) {
             <h4 className="font-medium text-sm">Prédictions SEO (basées sur l'IA)</h4>
             <div className="grid grid-cols-3 gap-4 text-sm">
               <div className="flex items-center gap-2">
-                <TrendingUp className="w-4 h-4 text-blue-500" />
+                <TrendingUp className="w-4 h-4 text-info" />
                 <div>
                   <div className="font-medium">Volume estimé</div>
                   <div className="text-muted-foreground">2,400/mois</div>
                 </div>
               </div>
               <div className="flex items-center gap-2">
-                <Target className="w-4 h-4 text-orange-500" />
+                <Target className="w-4 h-4 text-warning" />
                 <div>
                   <div className="font-medium">Difficulté</div>
                   <Badge className={`text-xs ${getCompetitionColor(formData.competition)}`}>
@@ -216,7 +216,7 @@ export function AddKeywordModal({ open, onOpenChange }: AddKeywordModalProps) {
                 </div>
               </div>
               <div className="flex items-center gap-2">
-                <DollarSign className="w-4 h-4 text-green-500" />
+                <DollarSign className="w-4 h-4 text-success" />
                 <div>
                   <div className="font-medium">CPC moyen</div>
                   <div className="text-muted-foreground">€1.25</div>

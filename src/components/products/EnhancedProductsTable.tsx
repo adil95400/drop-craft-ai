@@ -108,18 +108,18 @@ export function EnhancedProductsTable({
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'active': return 'bg-emerald-500/10 text-emerald-700 border-emerald-200'
+      case 'active': return 'bg-success/10 text-emerald-700 border-emerald-200'
       case 'inactive': return 'bg-gray-500/10 text-gray-700 border-gray-200'
-      default: return 'bg-blue-500/10 text-blue-700 border-blue-200'
+      default: return 'bg-info/10 text-blue-700 border-info/20'
     }
   }
 
   const getSourceBadge = (source: string) => {
     const configs = {
-      imported: { label: 'Importé', className: 'bg-blue-500/10 text-blue-700 border-blue-200' },
+      imported: { label: 'Importé', className: 'bg-info/10 text-blue-700 border-info/20' },
       catalog: { label: 'Catalogue', className: 'bg-purple-500/10 text-purple-700 border-purple-200' },
       premium: { label: 'Premium', className: 'bg-gradient-to-r from-purple-600 to-pink-600 text-white border-0' },
-      products: { label: 'Manuel', className: 'bg-green-500/10 text-green-700 border-green-200' }
+      products: { label: 'Manuel', className: 'bg-success/10 text-success border-success/20' }
     }
     const config = configs[source as keyof typeof configs] || { label: source, className: '' }
     return <Badge variant="outline" className={cn("text-xs", config.className)}>{config.label}</Badge>
@@ -305,10 +305,10 @@ export function EnhancedProductsTable({
                           className={cn(
                             "font-medium",
                             (product.profit_margin || 0) > 30 
-                              ? "bg-emerald-500/10 text-emerald-700 border-emerald-200" 
+                              ? "bg-success/10 text-emerald-700 border-emerald-200" 
                               : (product.profit_margin || 0) > 15
-                              ? "bg-yellow-500/10 text-yellow-700 border-yellow-200"
-                              : "bg-red-500/10 text-red-700 border-red-200"
+                              ? "bg-warning/10 text-yellow-700 border-warning/20"
+                              : "bg-destructive/10 text-red-700 border-destructive/20"
                           )}
                         >
                           {product.profit_margin?.toFixed(1) || calculateMargin(product.price, product.cost_price)}%
@@ -326,10 +326,10 @@ export function EnhancedProductsTable({
                         className={cn(
                           "font-mono",
                           (product.stock_quantity || 0) < 10 
-                            ? "bg-red-500/10 text-red-700 border-red-200" 
+                            ? "bg-destructive/10 text-red-700 border-destructive/20" 
                             : (product.stock_quantity || 0) < 50
-                            ? "bg-yellow-500/10 text-yellow-700 border-yellow-200"
-                            : "bg-emerald-500/10 text-emerald-700 border-emerald-200"
+                            ? "bg-warning/10 text-yellow-700 border-warning/20"
+                            : "bg-success/10 text-emerald-700 border-emerald-200"
                         )}
                       >
                         {product.stock_quantity || 0}

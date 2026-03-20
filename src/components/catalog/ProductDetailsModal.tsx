@@ -21,11 +21,11 @@ export function ProductDetailsModal({ product, open, onClose }: ProductDetailsMo
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'in_stock':
-        return <Badge className="bg-green-100 text-green-800">En stock</Badge>
+        return <Badge className="bg-success/10 text-success">En stock</Badge>
       case 'out_of_stock':
         return <Badge variant="destructive">Rupture</Badge>
       case 'low_stock':
-        return <Badge className="bg-yellow-100 text-yellow-800">Stock faible</Badge>
+        return <Badge className="bg-warning/10 text-yellow-800">Stock faible</Badge>
       default:
         return <Badge variant="outline">{status}</Badge>
     }
@@ -61,12 +61,12 @@ export function ProductDetailsModal({ product, open, onClose }: ProductDetailsMo
             {/* Badges */}
             <div className="flex gap-2 flex-wrap">
               {product.is_bestseller && (
-                <Badge className="bg-yellow-100 text-yellow-800">
+                <Badge className="bg-warning/10 text-yellow-800">
                   <Star className="h-3 w-3 mr-1" />Bestseller
                 </Badge>
               )}
               {product.is_trending && (
-                <Badge className="bg-blue-100 text-blue-800">
+                <Badge className="bg-info/10 text-blue-800">
                   <TrendingUp className="h-3 w-3 mr-1" />Tendance
                 </Badge>
               )}
@@ -95,7 +95,7 @@ export function ProductDetailsModal({ product, open, onClose }: ProductDetailsMo
                       <p className="text-sm text-muted-foreground">Prix</p>
                       <p className="text-2xl font-bold">{formatCurrency(product.price || 0)}</p>
                     </div>
-                    <DollarSign className="h-8 w-8 text-green-600" />
+                    <DollarSign className="h-8 w-8 text-success" />
                   </div>
                 </CardContent>
               </Card>
@@ -107,7 +107,7 @@ export function ProductDetailsModal({ product, open, onClose }: ProductDetailsMo
                       <p className="text-sm text-muted-foreground">Stock</p>
                       <p className="text-2xl font-bold">{product.stock_quantity || 0}</p>
                     </div>
-                    <Package className="h-8 w-8 text-blue-600" />
+                    <Package className="h-8 w-8 text-info" />
                   </div>
                 </CardContent>
               </Card>

@@ -231,7 +231,7 @@ export function MarketingAnalyticsDashboard({ timeRange = '30d' }: AnalyticsProp
               }).format(totalRevenue)}
             </div>
             <p className="text-xs text-muted-foreground flex items-center gap-1">
-              <TrendingUp className="h-3 w-3 text-green-500" />
+              <TrendingUp className="h-3 w-3 text-success" />
               +12.5% vs période précédente
             </p>
           </CardContent>
@@ -245,7 +245,7 @@ export function MarketingAnalyticsDashboard({ timeRange = '30d' }: AnalyticsProp
           <CardContent>
             <div className="text-2xl font-bold">{totalConversions.toLocaleString()}</div>
             <p className="text-xs text-muted-foreground flex items-center gap-1">
-              <TrendingUp className="h-3 w-3 text-green-500" />
+              <TrendingUp className="h-3 w-3 text-success" />
               +8.2% vs période précédente
             </p>
           </CardContent>
@@ -259,7 +259,7 @@ export function MarketingAnalyticsDashboard({ timeRange = '30d' }: AnalyticsProp
           <CardContent>
             <div className="text-2xl font-bold">{avgROAS.toFixed(2)}x</div>
             <p className="text-xs text-muted-foreground flex items-center gap-1">
-              <TrendingUp className="h-3 w-3 text-green-500" />
+              <TrendingUp className="h-3 w-3 text-success" />
               +5.1% vs période précédente
             </p>
           </CardContent>
@@ -275,7 +275,7 @@ export function MarketingAnalyticsDashboard({ timeRange = '30d' }: AnalyticsProp
               {((totalConversions / totalClicks) * 100).toFixed(2)}%
             </div>
             <p className="text-xs text-muted-foreground flex items-center gap-1">
-              <TrendingDown className="h-3 w-3 text-red-500" />
+              <TrendingDown className="h-3 w-3 text-destructive" />
               -2.1% vs période précédente
             </p>
           </CardContent>
@@ -438,29 +438,29 @@ export function MarketingAnalyticsDashboard({ timeRange = '30d' }: AnalyticsProp
             <div className="flex justify-between items-center">
               <span className="text-sm text-muted-foreground">Revenus</span>
               <div className="flex items-center gap-1">
-                <TrendingUp className="h-3 w-3 text-green-500" />
-                <span className="font-medium text-green-600">+12.5%</span>
+                <TrendingUp className="h-3 w-3 text-success" />
+                <span className="font-medium text-success">+12.5%</span>
               </div>
             </div>
             <div className="flex justify-between items-center">
               <span className="text-sm text-muted-foreground">Conversions</span>
               <div className="flex items-center gap-1">
-                <TrendingUp className="h-3 w-3 text-green-500" />
-                <span className="font-medium text-green-600">+8.2%</span>
+                <TrendingUp className="h-3 w-3 text-success" />
+                <span className="font-medium text-success">+8.2%</span>
               </div>
             </div>
             <div className="flex justify-between items-center">
               <span className="text-sm text-muted-foreground">Trafic</span>
               <div className="flex items-center gap-1">
-                <TrendingUp className="h-3 w-3 text-green-500" />
-                <span className="font-medium text-green-600">+15.7%</span>
+                <TrendingUp className="h-3 w-3 text-success" />
+                <span className="font-medium text-success">+15.7%</span>
               </div>
             </div>
             <div className="flex justify-between items-center">
               <span className="text-sm text-muted-foreground">CTR</span>
               <div className="flex items-center gap-1">
-                <TrendingDown className="h-3 w-3 text-red-500" />
-                <span className="font-medium text-red-600">-2.1%</span>
+                <TrendingDown className="h-3 w-3 text-destructive" />
+                <span className="font-medium text-destructive">-2.1%</span>
               </div>
             </div>
           </CardContent>

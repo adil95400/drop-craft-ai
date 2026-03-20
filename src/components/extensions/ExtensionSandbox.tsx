@@ -220,20 +220,20 @@ window.TestExtension = TestExtension;`)
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'passed': return <CheckCircle className="w-4 h-4 text-green-600" />
-      case 'failed': return <XCircle className="w-4 h-4 text-red-600" />
-      case 'warning': return <AlertTriangle className="w-4 h-4 text-yellow-600" />
-      case 'running': return <RefreshCw className="w-4 h-4 text-blue-600 animate-spin" />
+      case 'passed': return <CheckCircle className="w-4 h-4 text-success" />
+      case 'failed': return <XCircle className="w-4 h-4 text-destructive" />
+      case 'warning': return <AlertTriangle className="w-4 h-4 text-warning" />
+      case 'running': return <RefreshCw className="w-4 h-4 text-info animate-spin" />
       default: return <Clock className="w-4 h-4 text-muted-foreground" />
     }
   }
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'passed': return 'text-green-600'
-      case 'failed': return 'text-red-600'
-      case 'warning': return 'text-yellow-600'
-      case 'running': return 'text-blue-600'
+      case 'passed': return 'text-success'
+      case 'failed': return 'text-destructive'
+      case 'warning': return 'text-warning'
+      case 'running': return 'text-info'
       default: return 'text-muted-foreground'
     }
   }
@@ -248,7 +248,7 @@ window.TestExtension = TestExtension;`)
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-gradient-to-r from-green-600 to-blue-600">
+            <div className="p-2 rounded-lg bg-gradient-to-r from-green-600 to-info">
               <Bug className="w-8 h-8 text-white" />
             </div>
             Sandbox de Test
@@ -265,7 +265,7 @@ window.TestExtension = TestExtension;`)
           <Button 
             onClick={runTests} 
             disabled={isRunning}
-            className="bg-gradient-to-r from-green-600 to-blue-600"
+            className="bg-gradient-to-r from-green-600 to-info"
           >
             {isRunning ? (
               <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
@@ -391,7 +391,7 @@ window.TestExtension = TestExtension;`)
                           {test.message}
                         </div>
                         {test.details && (
-                          <div className="text-xs text-red-600 mt-1">
+                          <div className="text-xs text-destructive mt-1">
                             {test.details}
                           </div>
                         )}
@@ -428,19 +428,19 @@ window.TestExtension = TestExtension;`)
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-3 gap-4 text-center">
                   <div>
-                    <div className="text-lg font-bold text-blue-600">
+                    <div className="text-lg font-bold text-info">
                       {performance.executionTime.toFixed(0)}ms
                     </div>
                     <div className="text-xs text-muted-foreground">Temps d'exécution</div>
                   </div>
                   <div>
-                    <div className="text-lg font-bold text-green-600">
+                    <div className="text-lg font-bold text-success">
                       {performance.memoryUsage.toFixed(1)}MB
                     </div>
                     <div className="text-xs text-muted-foreground">Mémoire utilisée</div>
                   </div>
                   <div>
-                    <div className="text-lg font-bold text-orange-600">
+                    <div className="text-lg font-bold text-warning">
                       {performance.cpuUsage.toFixed(1)}%
                     </div>
                     <div className="text-xs text-muted-foreground">Utilisation CPU</div>

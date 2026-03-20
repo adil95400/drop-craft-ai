@@ -30,11 +30,11 @@ export default function AuditFeedPage() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'valid':
-        return <Badge className="bg-green-100 text-green-800 gap-1"><CheckCircle2 className="h-3 w-3" />{t('feed.statusValid')}</Badge>;
+        return <Badge className="bg-success/10 text-success gap-1"><CheckCircle2 className="h-3 w-3" />{t('feed.statusValid')}</Badge>;
       case 'warning':
-        return <Badge className="bg-yellow-100 text-yellow-800 gap-1"><AlertCircle className="h-3 w-3" />{t('feed.statusWarning')}</Badge>;
+        return <Badge className="bg-warning/10 text-yellow-800 gap-1"><AlertCircle className="h-3 w-3" />{t('feed.statusWarning')}</Badge>;
       case 'error':
-        return <Badge className="bg-red-100 text-red-800 gap-1"><XCircle className="h-3 w-3" />{t('feed.statusError')}</Badge>;
+        return <Badge className="bg-destructive/10 text-red-800 gap-1"><XCircle className="h-3 w-3" />{t('feed.statusError')}</Badge>;
       default:
         return <Badge variant="outline" className="gap-1"><Clock className="h-3 w-3" />{t('feed.statusPending')}</Badge>;
     }
@@ -72,24 +72,24 @@ export default function AuditFeedPage() {
           </CardContent></Card>
         </motion.div>
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
-          <Card className="border-green-200 bg-green-50/50 dark:bg-green-900/10"><CardContent className="pt-6">
-            <p className="text-sm text-green-700">{t('feed.validProducts')}</p>
-            <div className="text-3xl font-bold text-green-700">{stats.validProducts}</div>
+          <Card className="border-success/20 bg-success/5/50 dark:bg-green-900/10"><CardContent className="pt-6">
+            <p className="text-sm text-success">{t('feed.validProducts')}</p>
+            <div className="text-3xl font-bold text-success">{stats.validProducts}</div>
             <Progress value={(stats.validProducts / stats.totalProducts) * 100 || 0} className="h-2 mt-2" />
           </CardContent></Card>
         </motion.div>
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
-          <Card className="border-green-200 bg-green-50/50 dark:bg-green-900/10"><CardContent className="pt-6">
-            <p className="text-sm text-green-700">{t('feed.healthyFeeds')}</p>
-            <div className="text-3xl font-bold text-green-700">{stats.healthyFeeds}</div>
+          <Card className="border-success/20 bg-success/5/50 dark:bg-green-900/10"><CardContent className="pt-6">
+            <p className="text-sm text-success">{t('feed.healthyFeeds')}</p>
+            <div className="text-3xl font-bold text-success">{stats.healthyFeeds}</div>
             <p className="text-xs text-muted-foreground">{t('feed.ofNChannels', { count: stats.totalFeeds })}</p>
           </CardContent></Card>
         </motion.div>
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
-          <Card className={cn(stats.productsWithIssues > 0 ? 'border-orange-200 bg-orange-50/50 dark:bg-orange-900/10' : 'border-green-200 bg-green-50/50')}>
+          <Card className={cn(stats.productsWithIssues > 0 ? 'border-orange-200 bg-orange-50/50 dark:bg-orange-900/10' : 'border-success/20 bg-success/5/50')}>
             <CardContent className="pt-6">
-              <p className={cn('text-sm', stats.productsWithIssues > 0 ? 'text-orange-700' : 'text-green-700')}>{t('feed.productsWithIssues')}</p>
-              <div className={cn('text-3xl font-bold', stats.productsWithIssues > 0 ? 'text-orange-700' : 'text-green-700')}>{stats.productsWithIssues}</div>
+              <p className={cn('text-sm', stats.productsWithIssues > 0 ? 'text-orange-700' : 'text-success')}>{t('feed.productsWithIssues')}</p>
+              <div className={cn('text-3xl font-bold', stats.productsWithIssues > 0 ? 'text-orange-700' : 'text-success')}>{stats.productsWithIssues}</div>
               <p className="text-xs text-muted-foreground">{t('feed.toFix')}</p>
             </CardContent>
           </Card>
@@ -125,9 +125,9 @@ export default function AuditFeedPage() {
                       </div>
                       <Progress value={(feed.productsValid / feed.productsTotal) * 100 || 0} className="h-2" />
                       <div className="flex justify-between text-xs text-muted-foreground">
-                        <span className="text-green-600">{feed.productsValid} {t('feed.valid')}</span>
-                        {feed.productsWarning > 0 && <span className="text-yellow-600">{feed.productsWarning} {t('feed.warnings')}</span>}
-                        {feed.productsError > 0 && <span className="text-red-600">{feed.productsError} {t('feed.errors')}</span>}
+                        <span className="text-success">{feed.productsValid} {t('feed.valid')}</span>
+                        {feed.productsWarning > 0 && <span className="text-warning">{feed.productsWarning} {t('feed.warnings')}</span>}
+                        {feed.productsError > 0 && <span className="text-destructive">{feed.productsError} {t('feed.errors')}</span>}
                       </div>
                       <div className="flex items-center gap-2 text-xs text-muted-foreground pt-2 border-t">
                         <Clock className="h-3 w-3" />
@@ -153,7 +153,7 @@ export default function AuditFeedPage() {
                 <CardContent>
                   {selectedChannelData.validationErrors.length === 0 ? (
                     <div className="text-center py-8 text-muted-foreground">
-                      <CheckCircle2 className="h-12 w-12 mx-auto mb-4 text-green-600" />
+                      <CheckCircle2 className="h-12 w-12 mx-auto mb-4 text-success" />
                       <p>{t('feed.noProblem')}</p>
                     </div>
                   ) : (
@@ -161,10 +161,10 @@ export default function AuditFeedPage() {
                       {selectedChannelData.validationErrors.map((error, idx) => (
                         <div key={idx} className={cn(
                           'flex items-center justify-between p-4 border rounded-lg',
-                          error.type === 'error' ? 'bg-red-50 dark:bg-red-900/10 border-red-200' : 'bg-yellow-50 dark:bg-yellow-900/10 border-yellow-200'
+                          error.type === 'error' ? 'bg-destructive/5 dark:bg-red-900/10 border-destructive/20' : 'bg-warning/5 dark:bg-yellow-900/10 border-warning/20'
                         )}>
                           <div className="flex items-center gap-4">
-                            {error.type === 'error' ? <XCircle className="h-5 w-5 text-red-600" /> : <AlertCircle className="h-5 w-5 text-yellow-600" />}
+                            {error.type === 'error' ? <XCircle className="h-5 w-5 text-destructive" /> : <AlertCircle className="h-5 w-5 text-warning" />}
                             <div>
                               <p className="font-medium">{error.message}</p>
                               <p className="text-sm text-muted-foreground">{error.fixSuggestion}</p>
@@ -195,10 +195,10 @@ export default function AuditFeedPage() {
                 {feedChannels.flatMap(f => f.validationErrors).sort((a, b) => b.affectedProducts - a.affectedProducts).slice(0, 10).map((error, idx) => (
                   <div key={idx} className={cn(
                     'flex items-center justify-between p-3 border rounded-lg',
-                    error.type === 'error' ? 'bg-red-50 dark:bg-red-900/10' : 'bg-yellow-50 dark:bg-yellow-900/10'
+                    error.type === 'error' ? 'bg-destructive/5 dark:bg-red-900/10' : 'bg-warning/5 dark:bg-yellow-900/10'
                   )}>
                     <div className="flex items-center gap-3">
-                      {error.type === 'error' ? <XCircle className="h-4 w-4 text-red-600" /> : <AlertCircle className="h-4 w-4 text-yellow-600" />}
+                      {error.type === 'error' ? <XCircle className="h-4 w-4 text-destructive" /> : <AlertCircle className="h-4 w-4 text-warning" />}
                       <span className="font-medium">{error.message}</span>
                     </div>
                     <Badge variant={error.type === 'error' ? 'destructive' : 'secondary'}>

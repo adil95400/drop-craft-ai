@@ -40,9 +40,9 @@ export function PriceHistoryView({ priceHistory }: PriceHistoryViewProps) {
                   </p>
                   <div className="flex items-center gap-1 justify-end">
                     {priceIncrease ? (
-                      <TrendingUp className="h-4 w-4 text-green-600" />
+                      <TrendingUp className="h-4 w-4 text-success" />
                     ) : (
-                      <TrendingDown className="h-4 w-4 text-red-600" />
+                      <TrendingDown className="h-4 w-4 text-destructive" />
                     )}
                     <Badge variant={priceIncrease ? 'default' : 'secondary'} className="text-xs">
                       {priceIncrease ? '+' : ''}{changePercent}%

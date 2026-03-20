@@ -112,15 +112,15 @@ export function CatalogQualityDashboard({ products }: CatalogQualityDashboardPro
   ].sort((a, b) => b.count - a.count).slice(0, 5)
 
   const getScoreColor = (score: number) => {
-    if (score >= 70) return 'text-green-600'
-    if (score >= 40) return 'text-orange-600'
-    return 'text-red-600'
+    if (score >= 70) return 'text-success'
+    if (score >= 40) return 'text-warning'
+    return 'text-destructive'
   }
 
   const getScoreBg = (score: number) => {
-    if (score >= 70) return 'bg-green-500'
-    if (score >= 40) return 'bg-orange-500'
-    return 'bg-red-500'
+    if (score >= 70) return 'bg-success'
+    if (score >= 40) return 'bg-warning'
+    return 'bg-destructive'
   }
 
   return (
@@ -139,21 +139,21 @@ export function CatalogQualityDashboard({ products }: CatalogQualityDashboardPro
           <Progress value={avgScore} className="h-3 mb-4" />
           <div className="grid grid-cols-3 gap-4 mt-6">
             <div className="flex items-center gap-2">
-              <CheckCircle2 className="h-5 w-5 text-green-600" />
+              <CheckCircle2 className="h-5 w-5 text-success" />
               <div>
                 <div className="text-sm text-muted-foreground">OK</div>
                 <div className="font-bold">{okCount} ({Math.round(okCount / products.length * 100)}%)</div>
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <AlertTriangle className="h-5 w-5 text-orange-600" />
+              <AlertTriangle className="h-5 w-5 text-warning" />
               <div>
                 <div className="text-sm text-muted-foreground">À améliorer</div>
                 <div className="font-bold">{warningCount} ({Math.round(warningCount / products.length * 100)}%)</div>
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <XCircle className="h-5 w-5 text-red-600" />
+              <XCircle className="h-5 w-5 text-destructive" />
               <div>
                 <div className="text-sm text-muted-foreground">Critique</div>
                 <div className="font-bold">{criticalCount} ({Math.round(criticalCount / products.length * 100)}%)</div>
@@ -233,9 +233,9 @@ export function CatalogQualityDashboard({ products }: CatalogQualityDashboardPro
               <div key={idx} className="flex items-center justify-between p-3 rounded-lg bg-muted">
                 <div className="flex items-center gap-3">
                   {error.severity === 'error' ? (
-                    <XCircle className="h-5 w-5 text-red-600" />
+                    <XCircle className="h-5 w-5 text-destructive" />
                   ) : (
-                    <AlertTriangle className="h-5 w-5 text-orange-600" />
+                    <AlertTriangle className="h-5 w-5 text-warning" />
                   )}
                   <span className="font-medium">{error.type}</span>
                 </div>

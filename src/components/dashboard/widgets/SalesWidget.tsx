@@ -45,7 +45,7 @@ export function SalesWidget({ isCustomizing }: SalesWidgetProps) {
             <TrendingUp className="h-5 w-5 text-primary" />
             Ventes
           </div>
-          <div className={`flex items-center gap-1 text-sm ${isPositive ? 'text-green-600' : 'text-red-600'}`}>
+          <div className={`flex items-center gap-1 text-sm ${isPositive ? 'text-success' : 'text-destructive'}`}>
             {isPositive ? <ArrowUpRight className="h-4 w-4" /> : <ArrowDownRight className="h-4 w-4" />}
             {isPositive ? '+' : ''}{revenueChange.toFixed(1)}%
           </div>

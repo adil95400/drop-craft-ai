@@ -114,7 +114,7 @@ export const WinnersMarketIntelligence = () => {
                 <div className="flex-1">
                   <div className="flex items-center justify-between mb-1">
                     <h4 className="font-semibold">{trend.trend}</h4>
-                    <Badge variant="default" className="bg-green-500">
+                    <Badge variant="default" className="bg-success">
                       <TrendingUp className="w-3 h-3 mr-1" />
                       {trend.growth}
                     </Badge>
@@ -156,11 +156,11 @@ export const WinnersMarketIntelligence = () => {
                     <div className="text-muted-foreground mb-1">Croissance</div>
                     <div className="flex items-center gap-1">
                       {category.growthRate > 40 ? (
-                        <TrendingUp className="w-4 h-4 text-green-500" />
+                        <TrendingUp className="w-4 h-4 text-success" />
                       ) : (
-                        <TrendingDown className="w-4 h-4 text-orange-500" />
+                        <TrendingDown className="w-4 h-4 text-warning" />
                       )}
-                      <span className={`font-semibold ${category.growthRate > 40 ? 'text-green-600' : 'text-orange-600'}`}>
+                      <span className={`font-semibold ${category.growthRate > 40 ? 'text-success' : 'text-warning'}`}>
                         +{category.growthRate}%
                       </span>
                     </div>
@@ -203,11 +203,11 @@ export const WinnersMarketIntelligence = () => {
 
                 {/* Recommandation */}
                 {category.competition === 'low' && category.growthRate > 40 && (
-                  <div className="flex items-start gap-2 p-3 bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-800 rounded-lg">
-                    <AlertCircle className="w-4 h-4 text-green-600 mt-0.5" />
+                  <div className="flex items-start gap-2 p-3 bg-success/5 dark:bg-green-950/20 border border-success/20 dark:border-green-800 rounded-lg">
+                    <AlertCircle className="w-4 h-4 text-success mt-0.5" />
                     <div className="text-sm">
                       <span className="font-semibold text-green-900 dark:text-green-100">🎯 Opportunité excellente !</span>
-                      <p className="text-green-800 dark:text-green-200">
+                      <p className="text-success dark:text-green-200">
                         Forte croissance avec faible concurrence - Idéal pour démarrer rapidement
                       </p>
                     </div>
@@ -216,7 +216,7 @@ export const WinnersMarketIntelligence = () => {
 
                 {category.saturationLevel > 70 && (
                   <div className="flex items-start gap-2 p-3 bg-orange-50 dark:bg-orange-950/20 border border-orange-200 dark:border-orange-800 rounded-lg">
-                    <AlertCircle className="w-4 h-4 text-orange-600 mt-0.5" />
+                    <AlertCircle className="w-4 h-4 text-warning mt-0.5" />
                     <div className="text-sm">
                       <span className="font-semibold text-orange-900 dark:text-orange-100">⚠️ Marché saturé</span>
                       <p className="text-orange-800 dark:text-orange-200">
@@ -232,7 +232,7 @@ export const WinnersMarketIntelligence = () => {
       </Card>
 
       {/* Insights AI */}
-      <Card className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20 border-blue-200 dark:border-blue-800">
+      <Card className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20 border-info/20 dark:border-blue-800">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-blue-900 dark:text-blue-100">
             🤖 Insights IA
@@ -240,19 +240,19 @@ export const WinnersMarketIntelligence = () => {
         </CardHeader>
         <CardContent className="space-y-3">
           <div className="flex items-start gap-3">
-            <div className="w-2 h-2 rounded-full bg-blue-500 mt-2" />
+            <div className="w-2 h-2 rounded-full bg-info mt-2" />
             <p className="text-sm text-blue-900 dark:text-blue-100">
               <strong>Sport & Fitness</strong> présente le meilleur ratio opportunité/concurrence ce mois-ci
             </p>
           </div>
           <div className="flex items-start gap-3">
-            <div className="w-2 h-2 rounded-full bg-blue-500 mt-2" />
+            <div className="w-2 h-2 rounded-full bg-info mt-2" />
             <p className="text-sm text-blue-900 dark:text-blue-100">
               Les produits <strong>écologiques</strong> génèrent 23% plus d'engagement que la moyenne
             </p>
           </div>
           <div className="flex items-start gap-3">
-            <div className="w-2 h-2 rounded-full bg-blue-500 mt-2" />
+            <div className="w-2 h-2 rounded-full bg-info mt-2" />
             <p className="text-sm text-blue-900 dark:text-blue-100">
               Pic de demande prévu pour <strong>Maison & Jardin</strong> dans les 4 prochaines semaines
             </p>

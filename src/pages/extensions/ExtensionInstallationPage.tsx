@@ -157,7 +157,7 @@ export default function ExtensionInstallationPage() {
       )
     },
     {
-      icon: <CheckCircle className="h-8 w-8 text-green-500" />,
+      icon: <CheckCircle className="h-8 w-8 text-success" />,
       title: "6. Installation terminée !",
       content: (
         <div className="space-y-4">
@@ -165,10 +165,10 @@ export default function ExtensionInstallationPage() {
             L'extension ShopOpti+ est maintenant installée ! Vous devriez voir apparaître 
             une nouvelle carte d'extension sur la page.
           </p>
-          <Alert className="bg-green-500/10 border-green-500/20">
-            <CheckCircle className="h-4 w-4 text-green-500" />
-            <AlertTitle className="text-green-700">Extension active</AlertTitle>
-            <AlertDescription className="text-green-600">
+          <Alert className="bg-success/10 border-success/20">
+            <CheckCircle className="h-4 w-4 text-success" />
+            <AlertTitle className="text-success">Extension active</AlertTitle>
+            <AlertDescription className="text-success">
               ShopOpti+ est prêt à être utilisé sur AliExpress, Amazon et autres plateformes.
             </AlertDescription>
           </Alert>
@@ -252,24 +252,24 @@ export default function ExtensionInstallationPage() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <AlertTriangle className="h-5 w-5 text-yellow-500" />
+            <AlertTriangle className="h-5 w-5 text-warning" />
             Résolution des Problèmes
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="border-l-4 border-yellow-500 pl-4">
+          <div className="border-l-4 border-warning pl-4">
             <p className="font-medium">L'extension ne s'affiche pas après l'installation</p>
             <p className="text-sm text-muted-foreground">
               Assurez-vous d'avoir sélectionné le bon dossier contenant le fichier <code>manifest.json</code>.
             </p>
           </div>
-          <div className="border-l-4 border-yellow-500 pl-4">
+          <div className="border-l-4 border-warning pl-4">
             <p className="font-medium">Chrome affiche "Extension non vérifiée"</p>
             <p className="text-sm text-muted-foreground">
               C'est normal pour les extensions en mode développeur. Cliquez sur "Conserver" pour continuer.
             </p>
           </div>
-          <div className="border-l-4 border-yellow-500 pl-4">
+          <div className="border-l-4 border-warning pl-4">
             <p className="font-medium">L'extension ne fonctionne pas sur certains sites</p>
             <p className="text-sm text-muted-foreground">
               Rechargez la page après l'installation. Si le problème persiste, désactivez puis réactivez l'extension.

@@ -147,10 +147,10 @@ export const AdminNotificationsCenter: React.FC = () => {
 
   const getTypeIcon = (type: AdminNotification['type']) => {
     switch (type) {
-      case 'user': return <Users className="h-4 w-4 text-blue-500" />;
-      case 'order': return <ShoppingCart className="h-4 w-4 text-green-500" />;
+      case 'user': return <Users className="h-4 w-4 text-info" />;
+      case 'order': return <ShoppingCart className="h-4 w-4 text-success" />;
       case 'system': return <Settings className="h-4 w-4 text-gray-500" />;
-      case 'security': return <AlertTriangle className="h-4 w-4 text-red-500" />;
+      case 'security': return <AlertTriangle className="h-4 w-4 text-destructive" />;
       case 'performance': return <TrendingUp className="h-4 w-4 text-purple-500" />;
     }
   };
@@ -158,8 +158,8 @@ export const AdminNotificationsCenter: React.FC = () => {
   const getPriorityColor = (priority: AdminNotification['priority']) => {
     switch (priority) {
       case 'low': return 'bg-gray-100 text-gray-800';
-      case 'medium': return 'bg-blue-100 text-blue-800';
-      case 'high': return 'bg-red-100 text-red-800';
+      case 'medium': return 'bg-info/10 text-blue-800';
+      case 'high': return 'bg-destructive/10 text-red-800';
     }
   };
 

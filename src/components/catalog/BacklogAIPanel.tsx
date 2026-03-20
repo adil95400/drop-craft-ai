@@ -36,9 +36,9 @@ export function BacklogAIPanel() {
   const isLoading = statsLoading || recsLoading
 
   const getScoreColor = (score: number) => {
-    if (score >= 80) return 'text-emerald-600'
-    if (score >= 60) return 'text-amber-600'
-    return 'text-red-600'
+    if (score >= 80) return 'text-success'
+    if (score >= 60) return 'text-warning'
+    return 'text-destructive'
   }
 
   const getScoreLabel = (score: number) => {
@@ -50,8 +50,8 @@ export function BacklogAIPanel() {
 
   const getPriorityStyles = (priority: string) => {
     switch (priority) {
-      case 'critical': return 'border-red-500/30 bg-red-500/5'
-      case 'high': return 'border-amber-500/30 bg-amber-500/5'
+      case 'critical': return 'border-destructive/30 bg-destructive/5'
+      case 'high': return 'border-amber-500/30 bg-warning/5'
       default: return 'border-violet-500/30 bg-violet-500/5'
     }
   }
@@ -112,11 +112,11 @@ export function BacklogAIPanel() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card>
           <CardContent className="p-4 flex items-center gap-4">
-            <div className="p-3 rounded-xl bg-emerald-500/10">
-              <Euro className="h-5 w-5 text-emerald-600" />
+            <div className="p-3 rounded-xl bg-success/10">
+              <Euro className="h-5 w-5 text-success" />
             </div>
             <div>
-              <p className="text-2xl font-bold text-emerald-600">
+              <p className="text-2xl font-bold text-success">
                 {stats.potentialGainPerHour}€/h
               </p>
               <p className="text-sm text-muted-foreground">Gain potentiel</p>
@@ -126,11 +126,11 @@ export function BacklogAIPanel() {
 
         <Card>
           <CardContent className="p-4 flex items-center gap-4">
-            <div className="p-3 rounded-xl bg-blue-500/10">
-              <Bot className="h-5 w-5 text-blue-600" />
+            <div className="p-3 rounded-xl bg-info/10">
+              <Bot className="h-5 w-5 text-info" />
             </div>
             <div>
-              <p className="text-2xl font-bold text-blue-600">
+              <p className="text-2xl font-bold text-info">
                 {stats.automationPotential}%
               </p>
               <p className="text-sm text-muted-foreground">Automatisable</p>
@@ -140,11 +140,11 @@ export function BacklogAIPanel() {
 
         <Card>
           <CardContent className="p-4 flex items-center gap-4">
-            <div className="p-3 rounded-xl bg-amber-500/10">
-              <AlertTriangle className="h-5 w-5 text-amber-600" />
+            <div className="p-3 rounded-xl bg-warning/10">
+              <AlertTriangle className="h-5 w-5 text-warning" />
             </div>
             <div>
-              <p className="text-2xl font-bold text-amber-600">
+              <p className="text-2xl font-bold text-warning">
                 {stats.urgencyDistribution.critical + stats.urgencyDistribution.high}
               </p>
               <p className="text-sm text-muted-foreground">Actions urgentes</p>
@@ -172,7 +172,7 @@ export function BacklogAIPanel() {
             )}
             {stats.urgencyDistribution.high > 0 && (
               <div className="flex items-center gap-3">
-                <Badge className="w-20 justify-center bg-amber-500">Urgent</Badge>
+                <Badge className="w-20 justify-center bg-warning">Urgent</Badge>
                 <Progress value={(stats.urgencyDistribution.high / (stats.urgencyDistribution.critical + stats.urgencyDistribution.high + stats.urgencyDistribution.medium + stats.urgencyDistribution.low)) * 100} className="flex-1 h-2" />
                 <span className="text-sm font-medium w-8">{stats.urgencyDistribution.high}</span>
               </div>
@@ -192,7 +192,7 @@ export function BacklogAIPanel() {
       <Card>
         <CardHeader>
           <CardTitle className="text-lg flex items-center gap-2">
-            <Zap className="h-5 w-5 text-amber-500" />
+            <Zap className="h-5 w-5 text-warning" />
             Recommandations IA
             {recommendations.length > 0 && (
               <Badge variant="secondary">{recommendations.length}</Badge>
@@ -202,7 +202,7 @@ export function BacklogAIPanel() {
         <CardContent>
           {recommendations.length === 0 ? (
             <div className="text-center py-8">
-              <CheckCircle className="h-12 w-12 text-emerald-500 mx-auto mb-3" />
+              <CheckCircle className="h-12 w-12 text-success mx-auto mb-3" />
               <h3 className="font-semibold">Backlog optimisé</h3>
               <p className="text-sm text-muted-foreground">Aucune action automatisée suggérée</p>
             </div>
@@ -231,7 +231,7 @@ export function BacklogAIPanel() {
                           {rec.estimatedTime}
                         </span>
                         {rec.estimatedImpact > 0 && (
-                          <span className="flex items-center gap-1 text-emerald-600">
+                          <span className="flex items-center gap-1 text-success">
                             <TrendingUp className="h-3 w-3" />
                             +{rec.estimatedImpact}€
                           </span>
@@ -271,7 +271,7 @@ export function BacklogAIPanel() {
                       <p className="text-xs text-muted-foreground">{issue.count} produits</p>
                     </div>
                   </div>
-                  <Badge variant="outline" className="text-emerald-600">
+                  <Badge variant="outline" className="text-success">
                     +{issue.totalImpact}€
                   </Badge>
                 </div>

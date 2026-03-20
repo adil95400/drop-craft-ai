@@ -334,7 +334,7 @@ export const ContentGenerator = ({ className }: ContentGeneratorProps) => {
                 <div key={field}>
                   <Label htmlFor={field} className="flex items-center gap-1">
                     {fieldLabels[field]}
-                    {index < 3 && <span className="text-red-500">*</span>}
+                    {index < 3 && <span className="text-destructive">*</span>}
                   </Label>
                   {field === 'features' || field === 'specialContent' || field === 'keywords' ? (
                     <Textarea

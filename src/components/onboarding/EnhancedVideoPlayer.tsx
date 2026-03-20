@@ -271,7 +271,7 @@ export function EnhancedVideoPlayer({
 
       {/* Completed Badge */}
       {progress >= 90 && (
-        <div className="absolute top-2 right-2 bg-green-500 text-white px-2 py-1 rounded-full text-xs font-medium flex items-center gap-1">
+        <div className="absolute top-2 right-2 bg-success text-white px-2 py-1 rounded-full text-xs font-medium flex items-center gap-1">
           <Check className="w-3 h-3" />
           Vu
         </div>
@@ -330,7 +330,7 @@ export function VideoThumbnail({
 
       {/* Completed badge */}
       {isCompleted && (
-        <div className="absolute top-2 right-2 bg-green-500 text-white p-1 rounded-full">
+        <div className="absolute top-2 right-2 bg-success text-white p-1 rounded-full">
           <Check className="w-3 h-3" />
         </div>
       )}

@@ -60,8 +60,8 @@ function gatherPerformanceSnapshot() {
 
 const IMPACT_STYLES: Record<string, { class: string; icon: typeof AlertTriangle }> = {
   critical: { class: 'border-destructive/30 bg-destructive/5', icon: AlertTriangle },
-  high: { class: 'border-orange-500/30 bg-orange-500/5', icon: Zap },
-  medium: { class: 'border-yellow-500/30 bg-yellow-500/5', icon: Lightbulb },
+  high: { class: 'border-orange-500/30 bg-warning/5', icon: Zap },
+  medium: { class: 'border-warning/30 bg-warning/5', icon: Lightbulb },
   low: { class: 'border-muted bg-muted/30', icon: Lightbulb },
 };
 

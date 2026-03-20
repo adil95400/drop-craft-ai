@@ -90,8 +90,8 @@ export const ReturnsManagementPanel: React.FC = () => {
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-2">
-              <div className="p-2 bg-yellow-500/10 rounded-lg">
-                <Clock className="w-4 h-4 text-yellow-600" />
+              <div className="p-2 bg-warning/10 rounded-lg">
+                <Clock className="w-4 h-4 text-warning" />
               </div>
               <div>
                 <p className="text-2xl font-bold">{stats?.pending || 0}</p>
@@ -104,8 +104,8 @@ export const ReturnsManagementPanel: React.FC = () => {
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-2">
-              <div className="p-2 bg-green-500/10 rounded-lg">
-                <CheckCircle className="w-4 h-4 text-green-600" />
+              <div className="p-2 bg-success/10 rounded-lg">
+                <CheckCircle className="w-4 h-4 text-success" />
               </div>
               <div>
                 <p className="text-2xl font-bold">{stats?.approved || 0}</p>
@@ -118,8 +118,8 @@ export const ReturnsManagementPanel: React.FC = () => {
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-2">
-              <div className="p-2 bg-blue-500/10 rounded-lg">
-                <Package className="w-4 h-4 text-blue-600" />
+              <div className="p-2 bg-info/10 rounded-lg">
+                <Package className="w-4 h-4 text-info" />
               </div>
               <div>
                 <p className="text-2xl font-bold">{stats?.received || 0}</p>
@@ -146,8 +146,8 @@ export const ReturnsManagementPanel: React.FC = () => {
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-2">
-              <div className="p-2 bg-red-500/10 rounded-lg">
-                <TrendingDown className="w-4 h-4 text-red-600" />
+              <div className="p-2 bg-destructive/10 rounded-lg">
+                <TrendingDown className="w-4 h-4 text-destructive" />
               </div>
               <div>
                 <p className="text-2xl font-bold">{stats?.totalRefundAmount?.toFixed(0) || 0}€</p>
@@ -160,8 +160,8 @@ export const ReturnsManagementPanel: React.FC = () => {
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-2">
-              <div className="p-2 bg-emerald-500/10 rounded-lg">
-                <Zap className="w-4 h-4 text-emerald-600" />
+              <div className="p-2 bg-success/10 rounded-lg">
+                <Zap className="w-4 h-4 text-success" />
               </div>
               <div>
                 <p className="text-2xl font-bold">{stats?.approvalRate || 0}%</p>
@@ -244,7 +244,7 @@ export const ReturnsManagementPanel: React.FC = () => {
                             <Button
                               size="sm"
                               variant="outline"
-                              className="text-green-600"
+                              className="text-success"
                               onClick={() => {
                                 setSelectedReturn(ret)
                                 setActionDialog('approve')
@@ -255,7 +255,7 @@ export const ReturnsManagementPanel: React.FC = () => {
                             <Button
                               size="sm"
                               variant="outline"
-                              className="text-red-600"
+                              className="text-destructive"
                               onClick={() => {
                                 setSelectedReturn(ret)
                                 setActionDialog('reject')

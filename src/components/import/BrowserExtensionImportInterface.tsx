@@ -306,7 +306,7 @@ export const BrowserExtensionImportInterface = () => {
               </p>
             </div>
             <div className="flex items-center gap-3">
-              <Badge className={`${isConnected ? 'bg-green-500' : 'bg-red-500'} text-white`}>
+              <Badge className={`${isConnected ? 'bg-success' : 'bg-destructive'} text-white`}>
                 {isConnected ? (
                   <>
                     <CheckCircle className="h-4 w-4 mr-1" />
@@ -350,9 +350,9 @@ export const BrowserExtensionImportInterface = () => {
           <CardContent className="space-y-4">
             {!isConnected ? (
               <>
-                <div className="bg-yellow-50 border border-yellow-200 p-4 rounded-lg">
+                <div className="bg-warning/5 border border-warning/20 p-4 rounded-lg">
                   <div className="flex items-start gap-3">
-                    <AlertTriangle className="h-5 w-5 text-yellow-600 mt-0.5" />
+                    <AlertTriangle className="h-5 w-5 text-warning mt-0.5" />
                     <div>
                       <h4 className="font-semibold text-yellow-800">Extension non installée</h4>
                       <p className="text-sm text-yellow-700">
@@ -391,12 +391,12 @@ export const BrowserExtensionImportInterface = () => {
               </>
             ) : (
               <>
-                <div className="bg-green-50 border border-green-200 p-4 rounded-lg">
+                <div className="bg-success/5 border border-success/20 p-4 rounded-lg">
                   <div className="flex items-start gap-3">
-                    <CheckCircle className="h-5 w-5 text-green-600 mt-0.5" />
+                    <CheckCircle className="h-5 w-5 text-success mt-0.5" />
                     <div>
-                      <h4 className="font-semibold text-green-800">Extension connectée</h4>
-                      <p className="text-sm text-green-700">
+                      <h4 className="font-semibold text-success">Extension connectée</h4>
+                      <p className="text-sm text-success">
                         Votre extension est installée et fonctionnelle
                       </p>
                     </div>
@@ -501,12 +501,12 @@ export const BrowserExtensionImportInterface = () => {
 
                         {log.errors && log.errors.length > 0 && (
                           <details className="text-xs">
-                            <summary className="cursor-pointer text-red-600">
+                            <summary className="cursor-pointer text-destructive">
                               Voir les erreurs ({log.errors.length})
                             </summary>
                             <div className="mt-1 space-y-1">
                               {log.errors.slice(0, 3).map((error, index) => (
-                                <p key={index} className="text-red-600 bg-red-50 p-1 rounded">
+                                <p key={index} className="text-destructive bg-destructive/5 p-1 rounded">
                                   {error}
                                 </p>
                               ))}
@@ -534,8 +534,8 @@ export const BrowserExtensionImportInterface = () => {
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="text-center p-4 border rounded-lg">
-              <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                <span className="text-blue-600 font-bold">1</span>
+              <div className="w-10 h-10 bg-info/10 rounded-full flex items-center justify-center mx-auto mb-3">
+                <span className="text-info font-bold">1</span>
               </div>
               <h4 className="font-semibold mb-2">Naviguez sur un site</h4>
               <p className="text-sm text-muted-foreground">
@@ -544,8 +544,8 @@ export const BrowserExtensionImportInterface = () => {
             </div>
 
             <div className="text-center p-4 border rounded-lg">
-              <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                <span className="text-blue-600 font-bold">2</span>
+              <div className="w-10 h-10 bg-info/10 rounded-full flex items-center justify-center mx-auto mb-3">
+                <span className="text-info font-bold">2</span>
               </div>
               <h4 className="font-semibold mb-2">Cliquez sur "Importer"</h4>
               <p className="text-sm text-muted-foreground">
@@ -554,8 +554,8 @@ export const BrowserExtensionImportInterface = () => {
             </div>
 
             <div className="text-center p-4 border rounded-lg">
-              <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                <span className="text-blue-600 font-bold">3</span>
+              <div className="w-10 h-10 bg-info/10 rounded-full flex items-center justify-center mx-auto mb-3">
+                <span className="text-info font-bold">3</span>
               </div>
               <h4 className="font-semibold mb-2">Produit importé</h4>
               <p className="text-sm text-muted-foreground">

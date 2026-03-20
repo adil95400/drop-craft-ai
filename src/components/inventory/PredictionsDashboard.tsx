@@ -13,18 +13,18 @@ export function PredictionsDashboard() {
   const getTrendIcon = (direction: string) => {
     switch (direction) {
       case 'up':
-        return <TrendingUp className="h-4 w-4 text-green-600" />;
+        return <TrendingUp className="h-4 w-4 text-success" />;
       case 'down':
-        return <TrendingDown className="h-4 w-4 text-red-600" />;
+        return <TrendingDown className="h-4 w-4 text-destructive" />;
       default:
         return <Minus className="h-4 w-4 text-gray-600" />;
     }
   };
 
   const getConfidenceColor = (score: number) => {
-    if (score >= 0.8) return 'text-green-600';
-    if (score >= 0.6) return 'text-yellow-600';
-    return 'text-orange-600';
+    if (score >= 0.8) return 'text-success';
+    if (score >= 0.6) return 'text-warning';
+    return 'text-warning';
   };
 
   return (
@@ -77,8 +77,8 @@ export function PredictionsDashboard() {
                 <div>
                   <p className="text-sm text-muted-foreground">Jours Avant Rupture</p>
                   <p className={`text-2xl font-bold ${
-                    prediction.days_until_stockout <= 7 ? 'text-red-600' : 
-                    prediction.days_until_stockout <= 14 ? 'text-orange-600' : ''
+                    prediction.days_until_stockout <= 7 ? 'text-destructive' : 
+                    prediction.days_until_stockout <= 14 ? 'text-warning' : ''
                   }`}>
                     {prediction.days_until_stockout}
                   </p>

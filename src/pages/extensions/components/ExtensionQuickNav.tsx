@@ -138,7 +138,7 @@ export function ExtensionQuickNav({ className }: ExtensionQuickNavProps) {
                     <h3 className="text-xl font-bold group-hover:text-primary transition-colors">
                       {ext.title}
                     </h3>
-                    <Badge className="bg-green-500 text-white">
+                    <Badge className="bg-success text-white">
                       {ext.badge}
                     </Badge>
                   </div>

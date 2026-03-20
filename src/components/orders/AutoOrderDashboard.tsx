@@ -407,15 +407,15 @@ export function AutoOrderDashboard() {
 function StatusIcon({ status }: { status: string }) {
   switch (status) {
     case 'pending':
-      return <Clock className="h-5 w-5 text-yellow-500" />;
+      return <Clock className="h-5 w-5 text-warning" />;
     case 'processing':
-      return <RefreshCw className="h-5 w-5 text-blue-500 animate-spin" />;
+      return <RefreshCw className="h-5 w-5 text-info animate-spin" />;
     case 'completed':
-      return <CheckCircle2 className="h-5 w-5 text-green-500" />;
+      return <CheckCircle2 className="h-5 w-5 text-success" />;
     case 'failed':
-      return <XCircle className="h-5 w-5 text-red-500" />;
+      return <XCircle className="h-5 w-5 text-destructive" />;
     case 'retry':
-      return <AlertTriangle className="h-5 w-5 text-orange-500" />;
+      return <AlertTriangle className="h-5 w-5 text-warning" />;
     default:
       return <Clock className="h-5 w-5 text-gray-500" />;
   }

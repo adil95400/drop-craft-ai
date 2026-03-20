@@ -224,10 +224,10 @@ export default function ChannableStoresPage() {
                     <Badge 
                       className={`${
                         integration.connection_status === 'connected' 
-                          ? 'bg-green-500/10 text-green-600 border-green-500/30' 
+                          ? 'bg-success/10 text-success border-success/30' 
                           : integration.connection_status === 'error'
-                          ? 'bg-red-500/10 text-red-600 border-red-500/30'
-                          : 'bg-yellow-500/10 text-yellow-600 border-yellow-500/30'
+                          ? 'bg-destructive/10 text-destructive border-destructive/30'
+                          : 'bg-warning/10 text-warning border-warning/30'
                       } border`}
                     >
                       {integration.connection_status === 'connected' ? (
@@ -291,7 +291,7 @@ export default function ChannableStoresPage() {
                       variant="ghost"
                       size="sm"
                       onClick={() => handleDisconnect(integration.id)}
-                      className="w-full text-red-600 hover:text-red-700 hover:bg-red-50"
+                      className="w-full text-destructive hover:text-red-700 hover:bg-destructive/5"
                     >
                       <Unplug className="w-4 h-4 mr-1.5" />
                       Déconnecter

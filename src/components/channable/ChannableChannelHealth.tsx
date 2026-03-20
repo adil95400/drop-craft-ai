@@ -39,9 +39,9 @@ interface ChannableChannelHealthProps {
 }
 
 const STATUS_CONFIG = {
-  good: { color: 'text-green-500', bg: 'bg-green-500', icon: CheckCircle2 },
-  warning: { color: 'text-amber-500', bg: 'bg-amber-500', icon: AlertTriangle },
-  critical: { color: 'text-red-500', bg: 'bg-red-500', icon: XCircle },
+  good: { color: 'text-success', bg: 'bg-success', icon: CheckCircle2 },
+  warning: { color: 'text-warning', bg: 'bg-warning', icon: AlertTriangle },
+  critical: { color: 'text-destructive', bg: 'bg-destructive', icon: XCircle },
 }
 
 export function ChannableChannelHealth({
@@ -75,9 +75,9 @@ export function ChannableChannelHealth({
           <TooltipTrigger asChild>
             <div className={cn(
               "flex items-center gap-2 px-3 py-1.5 rounded-full border cursor-help",
-              overallStatus === 'good' && "border-green-500/30 bg-green-500/10",
-              overallStatus === 'warning' && "border-amber-500/30 bg-amber-500/10",
-              overallStatus === 'critical' && "border-red-500/30 bg-red-500/10",
+              overallStatus === 'good' && "border-success/30 bg-success/10",
+              overallStatus === 'warning' && "border-amber-500/30 bg-warning/10",
+              overallStatus === 'critical' && "border-destructive/30 bg-destructive/10",
               className
             )}>
               <StatusIcon className={cn("h-4 w-4", statusConfig.color)} />
@@ -95,9 +95,9 @@ export function ChannableChannelHealth({
                     <span>{m.label}</span>
                     <span className={cn(
                       "font-medium",
-                      m.status === 'good' && "text-green-500",
-                      m.status === 'warning' && "text-amber-500",
-                      m.status === 'critical' && "text-red-500"
+                      m.status === 'good' && "text-success",
+                      m.status === 'warning' && "text-warning",
+                      m.status === 'critical' && "text-destructive"
                     )}>
                       {m.score}/{m.maxScore}
                     </span>
@@ -133,9 +133,9 @@ export function ChannableChannelHealth({
           <div className={cn(
             "relative w-20 h-20 rounded-full flex items-center justify-center",
             "bg-gradient-to-br from-background to-muted border-4",
-            overallStatus === 'good' && "border-green-500/50",
+            overallStatus === 'good' && "border-success/50",
             overallStatus === 'warning' && "border-amber-500/50",
-            overallStatus === 'critical' && "border-red-500/50"
+            overallStatus === 'critical' && "border-destructive/50"
           )}>
             <motion.div
               initial={{ scale: 0 }}

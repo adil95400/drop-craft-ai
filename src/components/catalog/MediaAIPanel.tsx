@@ -40,9 +40,9 @@ export function MediaAIPanel() {
 
   const getPriorityStyles = (priority: string) => {
     switch (priority) {
-      case 'critical': return { bg: 'bg-red-500/10', text: 'text-red-500', border: 'border-red-500/20' }
-      case 'high': return { bg: 'bg-amber-500/10', text: 'text-amber-500', border: 'border-amber-500/20' }
-      case 'medium': return { bg: 'bg-blue-500/10', text: 'text-blue-500', border: 'border-blue-500/20' }
+      case 'critical': return { bg: 'bg-destructive/10', text: 'text-destructive', border: 'border-destructive/20' }
+      case 'high': return { bg: 'bg-warning/10', text: 'text-warning', border: 'border-amber-500/20' }
+      case 'medium': return { bg: 'bg-info/10', text: 'text-info', border: 'border-info/20' }
       default: return { bg: 'bg-muted', text: 'text-muted-foreground', border: 'border-muted' }
     }
   }
@@ -92,14 +92,14 @@ export function MediaAIPanel() {
                 </div>
                 <div className="h-12 w-px bg-border" />
                 <div>
-                  <p className="text-2xl font-semibold text-emerald-500">
+                  <p className="text-2xl font-semibold text-success">
                     +{stats.potentialConversionGain}%
                   </p>
                   <p className="text-xs text-muted-foreground">Gain conversions potentiel</p>
                 </div>
                 <div className="h-12 w-px bg-border" />
                 <div>
-                  <p className="text-2xl font-semibold text-emerald-500">
+                  <p className="text-2xl font-semibold text-success">
                     +{stats.potentialRevenueGain.toLocaleString()}€
                   </p>
                   <p className="text-xs text-muted-foreground">Revenus additionnels</p>
@@ -133,8 +133,8 @@ export function MediaAIPanel() {
               <div className="flex items-end justify-between mb-2">
                 <span className={cn(
                   "text-2xl font-bold",
-                  metric.value >= metric.target ? "text-emerald-500" : 
-                  metric.value >= metric.target * 0.7 ? "text-amber-500" : "text-red-500"
+                  metric.value >= metric.target ? "text-success" : 
+                  metric.value >= metric.target * 0.7 ? "text-warning" : "text-destructive"
                 )}>
                   {metric.value}%
                 </span>
@@ -160,7 +160,7 @@ export function MediaAIPanel() {
         <CardContent>
           {recommendations.length === 0 ? (
             <div className="text-center py-8">
-              <CheckCircle className="h-12 w-12 text-emerald-500 mx-auto mb-4" />
+              <CheckCircle className="h-12 w-12 text-success mx-auto mb-4" />
               <h3 className="font-semibold">Médias optimisés !</h3>
               <p className="text-sm text-muted-foreground">
                 Aucune recommandation urgente pour le moment
@@ -195,11 +195,11 @@ export function MediaAIPanel() {
                           {rec.description}
                         </p>
                         <div className="flex items-center gap-4 text-sm">
-                          <span className="flex items-center gap-1 text-emerald-500">
+                          <span className="flex items-center gap-1 text-success">
                             <TrendingUp className="h-3 w-3" />
                             {rec.impact}
                           </span>
-                          <span className="flex items-center gap-1 text-emerald-600">
+                          <span className="flex items-center gap-1 text-success">
                             <Euro className="h-3 w-3" />
                             +{rec.estimatedGain.toLocaleString()}€ potentiel
                           </span>

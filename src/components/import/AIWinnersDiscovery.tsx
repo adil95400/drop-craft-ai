@@ -37,9 +37,9 @@ const WinnerCard = ({ product, onImport }: WinnerCardProps) => {
     Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100) : 0
 
   const getScoreColor = (score: number) => {
-    if (score >= 90) return 'text-green-600 bg-green-100'
-    if (score >= 70) return 'text-yellow-600 bg-yellow-100' 
-    return 'text-red-600 bg-red-100'
+    if (score >= 90) return 'text-success bg-success/10'
+    if (score >= 70) return 'text-warning bg-warning/10' 
+    return 'text-destructive bg-destructive/10'
   }
 
   return (
@@ -51,7 +51,7 @@ const WinnerCard = ({ product, onImport }: WinnerCardProps) => {
           className="w-full h-48 object-cover rounded-t-lg"
         />
         <div className="absolute top-2 left-2 flex gap-1">
-          <Badge className="bg-red-500 text-white">
+          <Badge className="bg-destructive text-white">
             🔥 Hot
           </Badge>
           {discount > 0 && (
@@ -94,7 +94,7 @@ const WinnerCard = ({ product, onImport }: WinnerCardProps) => {
                   </span>
                 )}
               </div>
-              <div className="flex items-center gap-1 text-xs text-green-600">
+              <div className="flex items-center gap-1 text-xs text-success">
                 <TrendingUp className="h-3 w-3" />
                 <span>+{product.profit_potential}% profit</span>
               </div>
@@ -189,13 +189,13 @@ export const AIWinnersDiscovery = ({ onImportWinner }: AIWinnersDiscoveryProps) 
       icon: TrendingUp,
       title: "Tendances détectées", 
       value: "23 niches en croissance",
-      color: "text-green-600"
+      color: "text-success"
     },
     {
       icon: Target,
       title: "Précision IA",
       value: "94.7% de réussite",
-      color: "text-blue-600"
+      color: "text-info"
     },
     {
       icon: DollarSign,
@@ -207,17 +207,17 @@ export const AIWinnersDiscovery = ({ onImportWinner }: AIWinnersDiscoveryProps) 
       icon: Timer,
       title: "Mise à jour",
       value: "Il y a 5 min",
-      color: "text-orange-600"
+      color: "text-warning"
     }
   ]
 
   return (
     <div className="space-y-6 animate-fade-in">
       {/* Header IA */}
-      <Card className="border-gradient-to-r from-blue-500 to-purple-600 bg-gradient-to-r from-blue-50 to-purple-50">
+      <Card className="border-gradient-to-r from-info to-purple-600 bg-gradient-to-r from-blue-50 to-purple-50">
         <CardHeader>
           <CardTitle className="flex items-center gap-3">
-            <div className="p-2 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg">
+            <div className="p-2 bg-gradient-to-r from-info to-purple-600 rounded-lg">
               <Sparkles className="h-5 w-5 text-white" />
             </div>
             <div>
@@ -263,16 +263,16 @@ export const AIWinnersDiscovery = ({ onImportWinner }: AIWinnersDiscoveryProps) 
       </div>
 
       {/* Call to action */}
-      <Card className="text-center bg-gradient-to-r from-green-50 to-emerald-50 border-green-200">
+      <Card className="text-center bg-gradient-to-r from-green-50 to-emerald-50 border-success/20">
         <CardContent className="py-6">
-          <Award className="h-12 w-12 text-green-600 mx-auto mb-3" />
-          <h4 className="font-semibold text-green-800 mb-2">
+          <Award className="h-12 w-12 text-success mx-auto mb-3" />
+          <h4 className="font-semibold text-success mb-2">
             Découvrez plus de Winners
           </h4>
-          <p className="text-sm text-green-600 mb-4">
+          <p className="text-sm text-success mb-4">
             Notre IA analyse 50,000+ produits chaque jour pour vous trouver les pépites
           </p>
-          <Button variant="default" className="bg-green-600 hover:bg-green-700">
+          <Button variant="default" className="bg-success hover:bg-green-700">
             <Sparkles className="h-4 w-4 mr-2" />
             Voir tous les Winners
           </Button>

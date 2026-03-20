@@ -415,7 +415,7 @@ export const CreateIntegrationForm = () => {
 
           <TabsContent value="test" className="space-y-6">
             <div className="text-center">
-              <CheckCircle className="w-16 h-16 mx-auto text-green-500 mb-4" />
+              <CheckCircle className="w-16 h-16 mx-auto text-success mb-4" />
               <h3 className="text-lg font-semibold mb-2">Intégration prête</h3>
               <p className="text-muted-foreground mb-6">
                 Votre intégration {formData.platform_name} a été configurée avec succès.

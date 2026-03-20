@@ -21,11 +21,11 @@ import { cn } from '@/lib/utils'
 import { motion, AnimatePresence } from 'framer-motion'
 
 const TYPE_CONFIG: Record<string, { icon: any; color: string; label: string }> = {
-  trending: { icon: Flame, color: 'bg-orange-500', label: 'Tendance' },
+  trending: { icon: Flame, color: 'bg-warning', label: 'Tendance' },
   cross_sell: { icon: Link2, color: 'bg-purple-500', label: 'Cross-Sell' },
-  upsell: { icon: ArrowUpRight, color: 'bg-emerald-500', label: 'Up-Sell' },
-  restock: { icon: Package, color: 'bg-blue-500', label: 'Stock' },
-  pricing: { icon: DollarSign, color: 'bg-green-500', label: 'Prix' },
+  upsell: { icon: ArrowUpRight, color: 'bg-success', label: 'Up-Sell' },
+  restock: { icon: Package, color: 'bg-info', label: 'Stock' },
+  pricing: { icon: DollarSign, color: 'bg-success', label: 'Prix' },
   bundle: { icon: ShoppingBag, color: 'bg-pink-500', label: 'Bundle' },
 }
 
@@ -109,8 +109,8 @@ export default function AIRecommendationsPage() {
                   </p>
                   <p className="text-xs text-muted-foreground">{totalAccepted}/{totalGenerated} acceptées</p>
                 </div>
-                <div className="p-2 rounded-lg bg-emerald-500/10">
-                  <Target className="h-5 w-5 text-emerald-500" />
+                <div className="p-2 rounded-lg bg-success/10">
+                  <Target className="h-5 w-5 text-success" />
                 </div>
               </div>
             </CardContent>
@@ -123,8 +123,8 @@ export default function AIRecommendationsPage() {
                   <p className="text-2xl font-bold">{avgConfidence}%</p>
                   <Progress value={avgConfidence} className="h-1.5 mt-2" />
                 </div>
-                <div className="p-2 rounded-lg bg-blue-500/10">
-                  <BarChart3 className="h-5 w-5 text-blue-500" />
+                <div className="p-2 rounded-lg bg-info/10">
+                  <BarChart3 className="h-5 w-5 text-info" />
                 </div>
               </div>
             </CardContent>
@@ -211,8 +211,8 @@ export default function AIRecommendationsPage() {
                                   <Badge variant="outline" className="text-[10px] shrink-0">{typeConf.label}</Badge>
                                   <Badge className={cn(
                                     "text-[10px] shrink-0",
-                                    rec.confidence_score >= 80 ? "bg-emerald-500" :
-                                    rec.confidence_score >= 60 ? "bg-amber-500" : "bg-muted"
+                                    rec.confidence_score >= 80 ? "bg-success" :
+                                    rec.confidence_score >= 60 ? "bg-warning" : "bg-muted"
                                   )}>
                                     {rec.confidence_score}%
                                   </Badge>
@@ -235,7 +235,7 @@ export default function AIRecommendationsPage() {
                                     <Button
                                       variant="ghost"
                                       size="sm"
-                                      className="h-7 text-xs text-red-500 hover:text-red-600"
+                                      className="h-7 text-xs text-destructive hover:text-destructive"
                                       onClick={() => updateStatus.mutate({ id: rec.id, action: 'dismiss' })}
                                     >
                                       <ThumbsDown className="h-3 w-3 mr-1" />Ignorer
@@ -351,7 +351,7 @@ export default function AIRecommendationsPage() {
                             <p className="text-sm font-medium truncate">{rec.title}</p>
                             <p className="text-xs text-muted-foreground">{rec.impact_estimate}</p>
                           </div>
-                          <Badge variant="outline" className="text-[10px] text-emerald-600 border-emerald-300 shrink-0">
+                          <Badge variant="outline" className="text-[10px] text-success border-emerald-300 shrink-0">
                             <CheckCircle2 className="h-3 w-3 mr-1" />Acceptée
                           </Badge>
                         </CardContent>

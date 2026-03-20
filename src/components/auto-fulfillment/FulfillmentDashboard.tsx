@@ -74,7 +74,7 @@ export function FulfillmentDashboard() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 p-3 md:p-6 pb-2">
             <CardTitle className="text-xs md:text-sm font-medium truncate pr-2">Taux Succès</CardTitle>
-            <CheckCircle className="h-4 w-4 text-green-600 shrink-0" />
+            <CheckCircle className="h-4 w-4 text-success shrink-0" />
           </CardHeader>
           <CardContent className="p-3 md:p-6 pt-0">
             <div className="text-xl md:text-2xl font-bold">{stats?.successRate || 0}%</div>
@@ -96,7 +96,7 @@ export function FulfillmentDashboard() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 p-3 md:p-6 pb-2">
             <CardTitle className="text-xs md:text-sm font-medium truncate pr-2">En Attente</CardTitle>
-            <AlertCircle className="h-4 w-4 text-yellow-600 shrink-0" />
+            <AlertCircle className="h-4 w-4 text-warning shrink-0" />
           </CardHeader>
           <CardContent className="p-3 md:p-6 pt-0">
             <div className="text-xl md:text-2xl font-bold">{stats?.pendingOrders || 0}</div>
@@ -115,21 +115,21 @@ export function FulfillmentDashboard() {
           <CardContent className="p-4 md:p-6 pt-0 space-y-3 md:space-y-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <CheckCircle className="w-4 h-4 text-green-600 shrink-0" />
+                <CheckCircle className="w-4 h-4 text-success shrink-0" />
                 <span className="text-xs md:text-sm">Confirmées</span>
               </div>
               <span className="font-bold text-sm md:text-base">{stats?.completed || 0}</span>
             </div>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <Package className="w-4 h-4 text-blue-600 shrink-0" />
+                <Package className="w-4 h-4 text-info shrink-0" />
                 <span className="text-xs md:text-sm">Tracking à sync</span>
               </div>
               <span className="font-bold text-sm md:text-base">{stats?.unsyncedTracking || 0}</span>
             </div>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <Clock className="w-4 h-4 text-yellow-600 shrink-0" />
+                <Clock className="w-4 h-4 text-warning shrink-0" />
                 <span className="text-xs md:text-sm">En traitement</span>
               </div>
               <span className="font-bold text-sm md:text-base">{stats?.processing || 0}</span>

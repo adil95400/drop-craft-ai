@@ -487,7 +487,7 @@ export function ShopifyStyleProductPreview({
 
                     {/* Duplicate alert */}
                     {duplicatesRemoved > 0 && (
-                      <div className="flex items-center gap-2 p-2.5 rounded-lg bg-amber-500/10 border border-amber-500/20 text-xs text-amber-700 dark:text-amber-400">
+                      <div className="flex items-center gap-2 p-2.5 rounded-lg bg-warning/10 border border-amber-500/20 text-xs text-amber-700 dark:text-amber-400">
                         <Copy className="h-3.5 w-3.5 shrink-0" />
                         {duplicatesRemoved} image(s) en double supprimée(s) automatiquement
                       </div>
@@ -620,7 +620,7 @@ export function ShopifyStyleProductPreview({
                     <div className="flex items-center gap-1.5">
                       {editedProduct.reviews?.rating && (
                         <Badge variant="outline" className="text-xs flex items-center gap-1">
-                          <Star className="h-3 w-3 fill-amber-500 text-amber-500" />
+                          <Star className="h-3 w-3 fill-amber-500 text-warning" />
                           {editedProduct.reviews.rating.toFixed(1)}
                           {editedProduct.reviews.count != null && (
                             <span className="text-muted-foreground">({editedProduct.reviews.count})</span>
@@ -642,7 +642,7 @@ export function ShopifyStyleProductPreview({
                             <span className="text-xs font-medium">{review.customer_name || 'Client'}</span>
                             <div className="flex items-center gap-0.5">
                               {Array.from({ length: 5 }).map((_, s) => (
-                                <Star key={s} className={cn("h-3 w-3", s < (review.rating || 0) ? "fill-amber-500 text-amber-500" : "text-muted-foreground/20")} />
+                                <Star key={s} className={cn("h-3 w-3", s < (review.rating || 0) ? "fill-amber-500 text-warning" : "text-muted-foreground/20")} />
                               ))}
                             </div>
                           </div>
@@ -650,7 +650,7 @@ export function ShopifyStyleProductPreview({
                           {review.comment && <p className="text-xs text-muted-foreground line-clamp-2">{review.comment}</p>}
                           <div className="flex items-center gap-2 text-[10px] text-muted-foreground/60">
                             {review.verified_purchase && (
-                              <Badge variant="outline" className="text-[10px] h-4 px-1 border-green-500/30 text-green-600">Vérifié</Badge>
+                              <Badge variant="outline" className="text-[10px] h-4 px-1 border-success/30 text-success">Vérifié</Badge>
                             )}
                             {review.review_date && <span>{new Date(review.review_date).toLocaleDateString('fr-FR')}</span>}
                           </div>
@@ -664,7 +664,7 @@ export function ShopifyStyleProductPreview({
                           <div className="flex items-center gap-2">
                             <div className="flex items-center gap-0.5">
                               {Array.from({ length: 5 }).map((_, s) => (
-                                <Star key={s} className={cn("h-4 w-4", s < Math.round(editedProduct.reviews?.rating || 0) ? "fill-amber-500 text-amber-500" : "text-muted-foreground/20")} />
+                                <Star key={s} className={cn("h-4 w-4", s < Math.round(editedProduct.reviews?.rating || 0) ? "fill-amber-500 text-warning" : "text-muted-foreground/20")} />
                               ))}
                             </div>
                             <span className="text-sm font-semibold text-foreground">{editedProduct.reviews.rating.toFixed(1)}/5</span>
@@ -689,10 +689,10 @@ export function ShopifyStyleProductPreview({
                 {/* ── SEO Preview ── */}
                 <CollapsibleCard title="Aperçu SEO" icon={Search} defaultOpen={false}>
                   <div className="space-y-2 p-3 rounded-lg border border-border/30 bg-muted/10">
-                    <p className="text-sm font-medium text-blue-600 dark:text-blue-400 line-clamp-1">
+                    <p className="text-sm font-medium text-info dark:text-blue-400 line-clamp-1">
                       {editedProduct.title || 'Titre du produit'}
                     </p>
-                    <p className="text-xs text-green-700 dark:text-green-400 truncate">
+                    <p className="text-xs text-success dark:text-green-400 truncate">
                       monsite.com › produits › {editedProduct.sku?.toLowerCase() || 'nouveau-produit'}
                     </p>
                     <p className="text-xs text-muted-foreground line-clamp-2">
@@ -759,9 +759,9 @@ export function ShopifyStyleProductPreview({
                       />
                     </div>
                     {/* Profit indicator */}
-                    <div className="flex items-center justify-between p-2.5 rounded-lg bg-green-500/10 border border-green-500/20">
-                      <span className="text-xs text-green-700 dark:text-green-400">Marge bénéficiaire</span>
-                      <span className="text-sm font-bold text-green-600">{margin}%</span>
+                    <div className="flex items-center justify-between p-2.5 rounded-lg bg-success/10 border border-success/20">
+                      <span className="text-xs text-success dark:text-green-400">Marge bénéficiaire</span>
+                      <span className="text-sm font-bold text-success">{margin}%</span>
                     </div>
                     <div className="flex items-center justify-between p-2.5 rounded-lg bg-primary/5 border border-primary/10">
                       <span className="text-xs text-muted-foreground">Profit estimé</span>

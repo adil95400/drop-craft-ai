@@ -39,13 +39,13 @@ const statusConfig: Record<ImportStatus, {
   labelKey: string
 }> = {
   idle: { icon: Clock, color: 'text-muted-foreground', labelKey: 'import.status.idle' },
-  detecting: { icon: Loader2, color: 'text-blue-500', labelKey: 'import.status.detecting' },
-  validating: { icon: Loader2, color: 'text-blue-500', labelKey: 'import.status.validating' },
+  detecting: { icon: Loader2, color: 'text-info', labelKey: 'import.status.detecting' },
+  validating: { icon: Loader2, color: 'text-info', labelKey: 'import.status.validating' },
   processing: { icon: Loader2, color: 'text-primary', labelKey: 'import.status.processing' },
   enriching: { icon: Sparkles, color: 'text-purple-500', labelKey: 'import.status.enriching' },
-  completed: { icon: CheckCircle2, color: 'text-green-500', labelKey: 'import.status.completed' },
+  completed: { icon: CheckCircle2, color: 'text-success', labelKey: 'import.status.completed' },
   failed: { icon: XCircle, color: 'text-destructive', labelKey: 'import.status.failed' },
-  partial: { icon: AlertTriangle, color: 'text-yellow-500', labelKey: 'import.status.partial' }
+  partial: { icon: AlertTriangle, color: 'text-warning', labelKey: 'import.status.partial' }
 }
 
 export function ImportProgressIndicator({
@@ -151,7 +151,7 @@ export function ImportProgressIndicator({
               <StatItem 
                 label={t('import.successful', 'Réussis')} 
                 value={progress.successful}
-                className="text-green-600 dark:text-green-400"
+                className="text-success dark:text-green-400"
               />
               <StatItem 
                 label={t('import.failed', 'Échoués')} 

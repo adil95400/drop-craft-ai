@@ -47,7 +47,7 @@ export const ImportStatsRealTime = ({ refreshInterval = 5000 }: ImportStatsRealT
       <div className="flex items-center justify-between">
         <h3 className="text-lg font-semibold">Statistiques en Temps Réel</h3>
         <div className="flex items-center gap-2">
-          <Activity className="w-4 h-4 text-green-500 animate-pulse" />
+          <Activity className="w-4 h-4 text-success animate-pulse" />
           <span className="text-sm text-muted-foreground">
             Données réelles
           </span>
@@ -60,16 +60,16 @@ export const ImportStatsRealTime = ({ refreshInterval = 5000 }: ImportStatsRealT
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <div className="text-2xl font-bold text-blue-600">
+                <div className="text-2xl font-bold text-info">
                   {stats.totalImportsToday.toLocaleString()}
                 </div>
                 <div className="text-sm text-muted-foreground">Imports aujourd'hui</div>
               </div>
-              <Package className="w-8 h-8 text-blue-500" />
+              <Package className="w-8 h-8 text-info" />
             </div>
             <div className="flex items-center gap-1 mt-2">
-              <TrendingUp className="w-3 h-3 text-blue-500" />
-              <span className="text-xs text-blue-600">Produits importés</span>
+              <TrendingUp className="w-3 h-3 text-info" />
+              <span className="text-xs text-info">Produits importés</span>
             </div>
           </CardContent>
         </Card>
@@ -78,12 +78,12 @@ export const ImportStatsRealTime = ({ refreshInterval = 5000 }: ImportStatsRealT
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <div className="text-2xl font-bold text-green-600">
+                <div className="text-2xl font-bold text-success">
                   {stats.successRate.toFixed(1)}%
                 </div>
                 <div className="text-sm text-muted-foreground">Taux de succès</div>
               </div>
-              <CheckCircle className="w-8 h-8 text-green-500" />
+              <CheckCircle className="w-8 h-8 text-success" />
             </div>
             <Progress value={stats.successRate} className="mt-2 h-2" />
           </CardContent>
@@ -103,7 +103,7 @@ export const ImportStatsRealTime = ({ refreshInterval = 5000 }: ImportStatsRealT
             <div className="flex items-center gap-1 mt-2">
               {stats.activeJobs > 0 ? (
                 <>
-                  <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                  <div className="w-2 h-2 bg-success rounded-full animate-pulse"></div>
                   <span className="text-xs text-muted-foreground">En cours</span>
                 </>
               ) : (
@@ -117,16 +117,16 @@ export const ImportStatsRealTime = ({ refreshInterval = 5000 }: ImportStatsRealT
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <div className="text-2xl font-bold text-orange-600">
+                <div className="text-2xl font-bold text-warning">
                   {stats.topSources.length}
                 </div>
                 <div className="text-sm text-muted-foreground">Sources actives</div>
               </div>
-              <Globe className="w-8 h-8 text-orange-500" />
+              <Globe className="w-8 h-8 text-warning" />
             </div>
             <div className="flex items-center gap-1 mt-2">
-              <Zap className="w-3 h-3 text-orange-500" />
-              <span className="text-xs text-orange-600">Multi-sources</span>
+              <Zap className="w-3 h-3 text-warning" />
+              <span className="text-xs text-warning">Multi-sources</span>
             </div>
           </CardContent>
         </Card>
@@ -189,10 +189,10 @@ export const ImportStatsRealTime = ({ refreshInterval = 5000 }: ImportStatsRealT
                   >
                     <div className="flex items-center gap-3">
                       <div className={`w-2 h-2 rounded-full ${
-                        job.status === 'completed' ? 'bg-green-500' :
-                        job.status === 'processing' ? 'bg-blue-500 animate-pulse' :
-                        job.status === 'failed' ? 'bg-red-500' :
-                        'bg-yellow-500'
+                        job.status === 'completed' ? 'bg-success' :
+                        job.status === 'processing' ? 'bg-info animate-pulse' :
+                        job.status === 'failed' ? 'bg-destructive' :
+                        'bg-warning'
                       }`}></div>
                       <div>
                         <div className="font-medium text-sm capitalize">{job.source_type || 'Import'}</div>
@@ -218,17 +218,17 @@ export const ImportStatsRealTime = ({ refreshInterval = 5000 }: ImportStatsRealT
       </div>
 
       {/* Indicateur de performance */}
-      <Card className="bg-gradient-to-r from-green-50 to-blue-50 border-green-200">
+      <Card className="bg-gradient-to-r from-green-50 to-blue-50 border-success/20">
         <CardContent className="p-4">
           <div className="flex items-center justify-center gap-4">
             <div className="flex items-center gap-2">
-              <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
+              <div className="w-3 h-3 bg-success rounded-full animate-pulse"></div>
               <span className="text-sm font-medium">Système optimal</span>
             </div>
             <div className="text-sm text-muted-foreground">
               Tous les services fonctionnent parfaitement
             </div>
-            <Badge className="bg-green-500 text-white">
+            <Badge className="bg-success text-white">
               99.9% Disponibilité
             </Badge>
           </div>

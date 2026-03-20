@@ -155,11 +155,11 @@ export function MultiChannelReadiness({ product }: MultiChannelReadinessProps) {
                       {readiness}%
                     </Badge>
                     {isReady ? (
-                      <CheckCircle2 className="h-5 w-5 text-green-600" />
+                      <CheckCircle2 className="h-5 w-5 text-success" />
                     ) : readiness >= 50 ? (
-                      <AlertTriangle className="h-5 w-5 text-orange-600" />
+                      <AlertTriangle className="h-5 w-5 text-warning" />
                     ) : (
-                      <XCircle className="h-5 w-5 text-red-600" />
+                      <XCircle className="h-5 w-5 text-destructive" />
                     )}
                   </div>
                 </div>

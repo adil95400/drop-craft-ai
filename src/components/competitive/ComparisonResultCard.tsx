@@ -21,7 +21,7 @@ export function ComparisonResultCard({ comparison }: ComparisonResultCardProps) 
           </CardHeader>
           <CardContent>
             <div className="flex items-center gap-2">
-              <Award className="w-5 h-5 text-amber-500" />
+              <Award className="w-5 h-5 text-warning" />
               <p className="text-xl font-bold">{comparison_summary?.market_leader || 'N/A'}</p>
             </div>
           </CardContent>
@@ -33,7 +33,7 @@ export function ComparisonResultCard({ comparison }: ComparisonResultCardProps) 
           </CardHeader>
           <CardContent>
             <div className="flex items-center gap-2">
-              <TrendingDown className="w-5 h-5 text-green-500" />
+              <TrendingDown className="w-5 h-5 text-success" />
               <p className="text-xl font-bold">{comparison_summary?.price_leader || 'N/A'}</p>
             </div>
           </CardContent>
@@ -45,7 +45,7 @@ export function ComparisonResultCard({ comparison }: ComparisonResultCardProps) 
           </CardHeader>
           <CardContent>
             <div className="flex items-center gap-2">
-              <TrendingUp className="w-5 h-5 text-blue-500" />
+              <TrendingUp className="w-5 h-5 text-info" />
               <p className="text-xl font-bold">{comparison_summary?.quality_leader || 'N/A'}</p>
             </div>
           </CardContent>
@@ -79,22 +79,22 @@ export function ComparisonResultCard({ comparison }: ComparisonResultCardProps) 
                   
                   <div className="grid gap-4 md:grid-cols-2">
                     <div>
-                      <p className="text-sm font-medium text-green-600 mb-2">Forces</p>
+                      <p className="text-sm font-medium text-success mb-2">Forces</p>
                       <ul className="space-y-1">
                         {(comp.strengths || []).slice(0, 3).map((strength: string, i: number) => (
                           <li key={i} className="text-sm flex items-start gap-2">
-                            <span className="text-green-500">✓</span>
+                            <span className="text-success">✓</span>
                             <span>{strength}</span>
                           </li>
                         ))}
                       </ul>
                     </div>
                     <div>
-                      <p className="text-sm font-medium text-amber-600 mb-2">Faiblesses</p>
+                      <p className="text-sm font-medium text-warning mb-2">Faiblesses</p>
                       <ul className="space-y-1">
                         {(comp.weaknesses || []).slice(0, 3).map((weakness: string, i: number) => (
                           <li key={i} className="text-sm flex items-start gap-2">
-                            <span className="text-amber-500">⚠</span>
+                            <span className="text-warning">⚠</span>
                             <span>{weakness}</span>
                           </li>
                         ))}
@@ -118,14 +118,14 @@ export function ComparisonResultCard({ comparison }: ComparisonResultCardProps) 
           <CardContent>
             <div className="grid gap-6 md:grid-cols-2">
               <div className="space-y-3">
-                <h4 className="font-semibold text-green-600 flex items-center gap-2">
+                <h4 className="font-semibold text-success flex items-center gap-2">
                   <TrendingUp className="w-4 h-4" />
                   Vos Avantages
                 </h4>
                 <ul className="space-y-2">
                   {(gap_analysis.user_advantages || []).map((adv: string, i: number) => (
                     <li key={i} className="text-sm flex items-start gap-2">
-                      <span className="text-green-500">✓</span>
+                      <span className="text-success">✓</span>
                       <span>{adv}</span>
                     </li>
                   ))}
@@ -133,14 +133,14 @@ export function ComparisonResultCard({ comparison }: ComparisonResultCardProps) 
               </div>
 
               <div className="space-y-3">
-                <h4 className="font-semibold text-amber-600 flex items-center gap-2">
+                <h4 className="font-semibold text-warning flex items-center gap-2">
                   <AlertTriangle className="w-4 h-4" />
                   Points à Améliorer
                 </h4>
                 <ul className="space-y-2">
                   {(gap_analysis.user_disadvantages || []).map((dis: string, i: number) => (
                     <li key={i} className="text-sm flex items-start gap-2">
-                      <span className="text-amber-500">⚠</span>
+                      <span className="text-warning">⚠</span>
                       <span>{dis}</span>
                     </li>
                   ))}

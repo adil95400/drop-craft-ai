@@ -37,9 +37,9 @@ export const OptimizedCard = memo(function OptimizedCard({
   const trendColor = useMemo(() => {
     switch (trend) {
       case 'up':
-        return 'text-green-600 bg-green-50';
+        return 'text-success bg-success/5';
       case 'down':
-        return 'text-red-600 bg-red-50';
+        return 'text-destructive bg-destructive/5';
       default:
         return 'text-muted-foreground bg-muted';
     }

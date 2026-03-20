@@ -75,7 +75,7 @@ export function SubscriptionPlans() {
             className={cn(
               "relative",
               plan.popular && "border-primary shadow-lg scale-105",
-              isCurrent && "border-green-500 border-2"
+              isCurrent && "border-success border-2"
             )}
           >
             {plan.popular && (
@@ -85,7 +85,7 @@ export function SubscriptionPlans() {
             )}
             
             {isCurrent && (
-              <Badge className="absolute -top-3 right-4 bg-green-500">
+              <Badge className="absolute -top-3 right-4 bg-success">
                 Plan actuel
               </Badge>
             )}
@@ -106,7 +106,7 @@ export function SubscriptionPlans() {
               <ul className="space-y-3">
                 {plan.features.map((feature) => (
                   <li key={feature} className="flex items-start gap-2">
-                    <Check className="h-5 w-5 text-green-500 flex-shrink-0 mt-0.5" />
+                    <Check className="h-5 w-5 text-success flex-shrink-0 mt-0.5" />
                     <span className="text-sm">{feature}</span>
                   </li>
                 ))}

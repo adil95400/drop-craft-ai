@@ -163,11 +163,11 @@ export function ExtensionActivityFeed() {
   const getActivityColor = (action: string) => {
     switch (action) {
       case 'product_import':
-        return 'bg-blue-500/10 text-blue-500';
+        return 'bg-info/10 text-info';
       case 'review_import':
-        return 'bg-yellow-500/10 text-yellow-500';
+        return 'bg-warning/10 text-warning';
       case 'price_alert':
-        return 'bg-green-500/10 text-green-500';
+        return 'bg-success/10 text-success';
       case 'stock_sync':
         return 'bg-purple-500/10 text-purple-500';
       default:
@@ -178,11 +178,11 @@ export function ExtensionActivityFeed() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'success':
-        return <Badge variant="secondary" className="bg-green-500/10 text-green-600 text-xs"><CheckCircle className="h-3 w-3 mr-1" />Succès</Badge>;
+        return <Badge variant="secondary" className="bg-success/10 text-success text-xs"><CheckCircle className="h-3 w-3 mr-1" />Succès</Badge>;
       case 'pending':
-        return <Badge variant="secondary" className="bg-yellow-500/10 text-yellow-600 text-xs"><Clock className="h-3 w-3 mr-1" />En cours</Badge>;
+        return <Badge variant="secondary" className="bg-warning/10 text-warning text-xs"><Clock className="h-3 w-3 mr-1" />En cours</Badge>;
       case 'error':
-        return <Badge variant="secondary" className="bg-red-500/10 text-red-600 text-xs"><AlertCircle className="h-3 w-3 mr-1" />Erreur</Badge>;
+        return <Badge variant="secondary" className="bg-destructive/10 text-destructive text-xs"><AlertCircle className="h-3 w-3 mr-1" />Erreur</Badge>;
       default:
         return null;
     }

@@ -164,8 +164,8 @@ export default function ShopifyImportPage() {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {[
           { label: 'Produits Shopify', value: stats?.shopify?.toLocaleString() || '0', icon: Package, color: 'text-primary' },
-          { label: 'Avis importés', value: stats?.reviews?.toLocaleString() || '0', icon: Star, color: 'text-amber-500' },
-          { label: 'Jobs actifs', value: importJobs?.filter(j => j.status === 'processing').length?.toString() || '0', icon: RefreshCw, color: 'text-blue-500' },
+          { label: 'Avis importés', value: stats?.reviews?.toLocaleString() || '0', icon: Star, color: 'text-warning' },
+          { label: 'Jobs actifs', value: importJobs?.filter(j => j.status === 'processing').length?.toString() || '0', icon: RefreshCw, color: 'text-info' },
           { label: 'Dernier import', value: stats?.lastImport ? new Date(stats.lastImport).toLocaleDateString('fr-FR') : 'Jamais', icon: Clock, color: 'text-muted-foreground' },
         ].map((stat, i) => (
           <motion.div key={stat.label} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}>

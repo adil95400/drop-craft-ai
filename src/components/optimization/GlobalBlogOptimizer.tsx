@@ -140,10 +140,10 @@ export const GlobalBlogOptimizer = () => {
                 <Card>
                   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                     <CardTitle className="text-sm font-medium">Articles Optimisés</CardTitle>
-                    <CheckCircle2 className="h-4 w-4 text-green-500" />
+                    <CheckCircle2 className="h-4 w-4 text-success" />
                   </CardHeader>
                   <CardContent>
-                    <div className="text-2xl font-bold text-green-500">
+                    <div className="text-2xl font-bold text-success">
                       {auditResults.optimizedPosts}
                     </div>
                   </CardContent>
@@ -208,7 +208,7 @@ export const GlobalBlogOptimizer = () => {
                       {auditResults.issues.map((issue, idx) => (
                         <div key={idx} className="flex items-start gap-3 p-3 border rounded-lg">
                           <AlertCircle className={`h-5 w-5 mt-0.5 ${
-                            issue.severity === 'critical' ? 'text-destructive' : 'text-yellow-500'
+                            issue.severity === 'critical' ? 'text-destructive' : 'text-warning'
                           }`} />
                           <div className="flex-1">
                             <div className="flex items-center gap-2 mb-1">

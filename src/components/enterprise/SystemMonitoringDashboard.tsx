@@ -3,12 +3,12 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { useRealSystemMonitoring } from "@/hooks/useRealSystemMonitoring"
+import { useSystemMonitoring } from "@/hooks/useSystemMonitoring"
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from 'recharts'
 import { Activity, Server, Cpu, HardDrive, Wifi, AlertTriangle, CheckCircle, Zap } from "lucide-react"
 
 export function SystemMonitoringDashboard() {
-  const { logs, alerts, health, isLoading, refetch } = useRealSystemMonitoring()
+  const { logs, alerts, health, isLoading, refetch } = useSystemMonitoring()
 
   if (isLoading) {
     return (
@@ -39,9 +39,9 @@ export function SystemMonitoringDashboard() {
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'healthy': return <CheckCircle className="w-4 h-4 text-green-500" />
-      case 'warning': return <AlertTriangle className="w-4 h-4 text-yellow-500" />
-      case 'critical': return <AlertTriangle className="w-4 h-4 text-red-500" />
+      case 'healthy': return <CheckCircle className="w-4 h-4 text-success" />
+      case 'warning': return <AlertTriangle className="w-4 h-4 text-warning" />
+      case 'critical': return <AlertTriangle className="w-4 h-4 text-destructive" />
       default: return <Activity className="w-4 h-4" />
     }
   }
@@ -214,9 +214,9 @@ export function SystemMonitoringDashboard() {
                     <div key={index} className="flex items-center justify-between p-3 border rounded-lg">
                       <div className="flex items-center gap-2">
                         <AlertTriangle className={`w-4 h-4 ${
-                          alert.severity === 'critical' ? 'text-red-500' :
-                          alert.severity === 'high' ? 'text-orange-500' :
-                          'text-yellow-500'
+                          alert.severity === 'critical' ? 'text-destructive' :
+                          alert.severity === 'high' ? 'text-warning' :
+                          'text-warning'
                         }`} />
                         <div>
                           <div className="font-medium">{alert.title}</div>
@@ -233,7 +233,7 @@ export function SystemMonitoringDashboard() {
                   ))}
                   {alerts.length === 0 && (
                     <div className="text-center py-8 text-muted-foreground">
-                      <CheckCircle className="w-12 h-12 mx-auto mb-2 text-green-500" />
+                      <CheckCircle className="w-12 h-12 mx-auto mb-2 text-success" />
                       Aucune alerte système
                     </div>
                   )}
@@ -261,7 +261,7 @@ export function SystemMonitoringDashboard() {
                       </div>
                       <div className="flex justify-between items-center">
                         <span>Alertes actives</span>
-                        <span className="font-medium text-red-500">{alerts.length}</span>
+                        <span className="font-medium text-destructive">{alerts.length}</span>
                       </div>
                       <div className="flex justify-between items-center">
                         <span>Utilisateurs actifs</span>

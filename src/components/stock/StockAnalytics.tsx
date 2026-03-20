@@ -208,12 +208,12 @@ export function StockAnalytics() {
           <Card>
             <CardHeader className="pb-3">
               <CardTitle className="text-sm flex items-center gap-2">
-                <TrendingUp className="h-4 w-4 text-green-500" />
+                <TrendingUp className="h-4 w-4 text-success" />
                 Entrées
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-2xl font-bold text-green-600">{kpis.totalInbound}</p>
+              <p className="text-2xl font-bold text-success">{kpis.totalInbound}</p>
               <p className="text-xs text-muted-foreground">unités reçues</p>
             </CardContent>
           </Card>
@@ -221,12 +221,12 @@ export function StockAnalytics() {
           <Card>
             <CardHeader className="pb-3">
               <CardTitle className="text-sm flex items-center gap-2">
-                <TrendingDown className="h-4 w-4 text-red-500" />
+                <TrendingDown className="h-4 w-4 text-destructive" />
                 Sorties
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-2xl font-bold text-red-600">{kpis.totalOutbound}</p>
+              <p className="text-2xl font-bold text-destructive">{kpis.totalOutbound}</p>
               <p className="text-xs text-muted-foreground">unités vendues</p>
             </CardContent>
           </Card>
@@ -234,12 +234,12 @@ export function StockAnalytics() {
           <Card>
             <CardHeader className="pb-3">
               <CardTitle className="text-sm flex items-center gap-2">
-                <Activity className="h-4 w-4 text-blue-500" />
+                <Activity className="h-4 w-4 text-info" />
                 Variation Nette
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className={`text-2xl font-bold ${kpis.netChange >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+              <p className={`text-2xl font-bold ${kpis.netChange >= 0 ? 'text-success' : 'text-destructive'}`}>
                 {kpis.netChange >= 0 ? '+' : ''}{kpis.netChange}
               </p>
               <p className="text-xs text-muted-foreground">unités</p>
@@ -262,12 +262,12 @@ export function StockAnalytics() {
           <Card>
             <CardHeader className="pb-3">
               <CardTitle className="text-sm flex items-center gap-2">
-                <Package className="h-4 w-4 text-orange-500" />
+                <Package className="h-4 w-4 text-warning" />
                 Rotation
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-2xl font-bold text-orange-600">{kpis.turnoverRate}%</p>
+              <p className="text-2xl font-bold text-warning">{kpis.turnoverRate}%</p>
               <p className="text-xs text-muted-foreground">taux de rotation</p>
             </CardContent>
           </Card>

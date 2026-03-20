@@ -244,7 +244,7 @@ export default function ProductSourcingAssistant() {
                     <div className="flex items-center gap-2 mb-2">
                       <h3 className="font-semibold text-lg">{result.supplier}</h3>
                       {result.verified && (
-                        <Badge className="bg-blue-500">
+                        <Badge className="bg-info">
                           <Award className="h-3 w-3 mr-1" />
                           Vérifié
                         </Badge>
@@ -253,7 +253,7 @@ export default function ProductSourcingAssistant() {
                     
                     <div className="flex items-center gap-4 text-sm text-muted-foreground mb-3">
                       <span className="flex items-center gap-1">
-                        <Star className="h-4 w-4 text-yellow-500 fill-yellow-500" />
+                        <Star className="h-4 w-4 text-warning fill-yellow-500" />
                         {result.rating} ({result.orders.toLocaleString()} commandes)
                       </span>
                       <span className="flex items-center gap-1">
@@ -296,7 +296,7 @@ export default function ProductSourcingAssistant() {
                   </div>
                   <div>
                     <div className="text-xs text-muted-foreground">Prix total estimé</div>
-                    <div className="font-semibold text-green-600">
+                    <div className="font-semibold text-success">
                       ${(result.price + result.shippingCost).toFixed(2)}
                     </div>
                   </div>
@@ -327,7 +327,7 @@ export default function ProductSourcingAssistant() {
                   <div className="flex items-center gap-4">
                     <div className="text-right">
                       <div className="text-sm text-muted-foreground">Meilleur prix</div>
-                      <div className="font-semibold text-green-600">${item.bestPrice}</div>
+                      <div className="font-semibold text-success">${item.bestPrice}</div>
                     </div>
                     <Badge variant={item.status === 'completed' ? 'default' : 'secondary'}>
                       {item.status === 'completed' ? 'Complété' : 'En attente'}
@@ -348,10 +348,10 @@ export default function ProductSourcingAssistant() {
         </Card>
 
         {/* AI Recommendations */}
-        <Card className="border-blue-200 bg-blue-50/50">
+        <Card className="border-info/20 bg-info/5/50">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <TrendingUp className="h-5 w-5 text-blue-500" />
+              <TrendingUp className="h-5 w-5 text-info" />
               Recommandations IA
             </CardTitle>
             <CardDescription>

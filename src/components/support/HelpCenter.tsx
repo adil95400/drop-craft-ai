@@ -278,9 +278,9 @@ export function HelpCenter() {
 
   const getLevelColor = (level: GuideItem['level']) => {
     switch (level) {
-      case 'Débutant': return 'bg-green-100 text-green-800'
-      case 'Intermédiaire': return 'bg-yellow-100 text-yellow-800'
-      case 'Avancé': return 'bg-red-100 text-red-800'
+      case 'Débutant': return 'bg-success/10 text-success'
+      case 'Intermédiaire': return 'bg-warning/10 text-yellow-800'
+      case 'Avancé': return 'bg-destructive/10 text-red-800'
       default: return 'bg-gray-100 text-gray-800'
     }
   }
@@ -311,7 +311,7 @@ export function HelpCenter() {
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center">
-              <Book className="h-8 w-8 text-blue-500" />
+              <Book className="h-8 w-8 text-info" />
               <div className="ml-4">
                 <p className="text-2xl font-bold">150+</p>
                 <p className="text-xs text-muted-foreground">Articles d'aide</p>
@@ -323,7 +323,7 @@ export function HelpCenter() {
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center">
-              <Video className="h-8 w-8 text-green-500" />
+              <Video className="h-8 w-8 text-success" />
               <div className="ml-4">
                 <p className="text-2xl font-bold">45</p>
                 <p className="text-xs text-muted-foreground">Tutoriels vidéo</p>
@@ -347,7 +347,7 @@ export function HelpCenter() {
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center">
-              <Clock className="h-8 w-8 text-orange-500" />
+              <Clock className="h-8 w-8 text-warning" />
               <div className="ml-4">
                 <p className="text-2xl font-bold">&lt; 2h</p>
                 <p className="text-xs text-muted-foreground">Temps de réponse</p>
@@ -390,7 +390,7 @@ export function HelpCenter() {
       <div className="grid gap-4 md:grid-cols-3">
         <Card className="hover:shadow-lg transition-shadow cursor-pointer">
           <CardContent className="p-6 text-center">
-            <MessageCircle className="h-12 w-12 text-blue-500 mx-auto mb-4" />
+            <MessageCircle className="h-12 w-12 text-info mx-auto mb-4" />
             <h3 className="font-semibold mb-2">Chat en direct</h3>
             <p className="text-sm text-muted-foreground mb-4">
               Obtenez une aide immédiate de notre équipe
@@ -403,7 +403,7 @@ export function HelpCenter() {
         
         <Card className="hover:shadow-lg transition-shadow cursor-pointer">
           <CardContent className="p-6 text-center">
-            <Mail className="h-12 w-12 text-green-500 mx-auto mb-4" />
+            <Mail className="h-12 w-12 text-success mx-auto mb-4" />
             <h3 className="font-semibold mb-2">Email support</h3>
             <p className="text-sm text-muted-foreground mb-4">
               Décrivez votre problème en détail

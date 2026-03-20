@@ -164,8 +164,8 @@ export function PremiumSupplierDirectory() {
         </Card>
         <Card>
           <CardContent className="p-4 flex items-center gap-3">
-            <div className="h-10 w-10 rounded-lg bg-blue-100 dark:bg-blue-900 flex items-center justify-center">
-              <MapPin className="h-5 w-5 text-blue-600 dark:text-blue-300" />
+            <div className="h-10 w-10 rounded-lg bg-info/10 dark:bg-blue-900 flex items-center justify-center">
+              <MapPin className="h-5 w-5 text-info dark:text-blue-300" />
             </div>
             <div>
               <p className="text-2xl font-bold">{PREMIUM_DIRECTORY.filter(s => s.region === 'US').length}</p>
@@ -176,7 +176,7 @@ export function PremiumSupplierDirectory() {
         <Card>
           <CardContent className="p-4 flex items-center gap-3">
             <div className="h-10 w-10 rounded-lg bg-emerald-100 dark:bg-emerald-900 flex items-center justify-center">
-              <Globe className="h-5 w-5 text-emerald-600 dark:text-emerald-300" />
+              <Globe className="h-5 w-5 text-success dark:text-emerald-300" />
             </div>
             <div>
               <p className="text-2xl font-bold">{PREMIUM_DIRECTORY.filter(s => s.region === 'EU').length}</p>
@@ -244,7 +244,7 @@ export function PremiumSupplierDirectory() {
                     <div>
                       <CardTitle className="text-base flex items-center gap-2">
                         {supplier.name}
-                        {supplier.isVerified && <BadgeCheck className="h-4 w-4 text-green-500" />}
+                        {supplier.isVerified && <BadgeCheck className="h-4 w-4 text-success" />}
                       </CardTitle>
                       <div className="flex items-center gap-2 mt-1">
                         <Badge className={cn('text-xs gap-1', tierCfg.className)}>
@@ -257,7 +257,7 @@ export function PremiumSupplierDirectory() {
                     </div>
                   </div>
                   <div className="flex items-center gap-1">
-                    <Star className="h-4 w-4 text-amber-500 fill-amber-500" />
+                    <Star className="h-4 w-4 text-warning fill-amber-500" />
                     <span className="text-sm font-semibold">{supplier.rating}</span>
                   </div>
                 </div>
@@ -267,17 +267,17 @@ export function PremiumSupplierDirectory() {
                 
                 <div className="grid grid-cols-4 gap-2 text-center">
                   <div>
-                    <Clock className="h-3.5 w-3.5 mx-auto text-blue-500" />
+                    <Clock className="h-3.5 w-3.5 mx-auto text-info" />
                     <p className="text-xs font-medium mt-1">{supplier.avgDelivery}</p>
                     <p className="text-[10px] text-muted-foreground">Livraison</p>
                   </div>
                   <div>
-                    <Package className="h-3.5 w-3.5 mx-auto text-emerald-500" />
+                    <Package className="h-3.5 w-3.5 mx-auto text-success" />
                     <p className="text-xs font-medium mt-1">{supplier.productCount}</p>
                     <p className="text-[10px] text-muted-foreground">Produits</p>
                   </div>
                   <div>
-                    <DollarSign className="h-3.5 w-3.5 mx-auto text-green-500" />
+                    <DollarSign className="h-3.5 w-3.5 mx-auto text-success" />
                     <p className="text-xs font-medium mt-1">{supplier.marginRange}</p>
                     <p className="text-[10px] text-muted-foreground">Marge</p>
                   </div>

@@ -45,13 +45,13 @@ export function ImportJobHistory() {
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'completed':
-        return <CheckCircle className="w-5 h-5 text-green-500" />
+        return <CheckCircle className="w-5 h-5 text-success" />
       case 'failed':
-        return <XCircle className="w-5 h-5 text-red-500" />
+        return <XCircle className="w-5 h-5 text-destructive" />
       case 'processing':
-        return <Clock className="w-5 h-5 text-blue-500 animate-spin" />
+        return <Clock className="w-5 h-5 text-info animate-spin" />
       case 'pending':
-        return <Clock className="w-5 h-5 text-yellow-500" />
+        return <Clock className="w-5 h-5 text-warning" />
       default:
         return <FileText className="w-5 h-5 text-gray-500" />
     }
@@ -59,10 +59,10 @@ export function ImportJobHistory() {
 
   const getStatusBadge = (status: string) => {
     const variants: Record<string, { label: string; className: string }> = {
-      completed: { label: 'Terminé', className: 'bg-green-500' },
-      failed: { label: 'Échoué', className: 'bg-red-500' },
-      processing: { label: 'En cours', className: 'bg-blue-500' },
-      pending: { label: 'En attente', className: 'bg-yellow-500' }
+      completed: { label: 'Terminé', className: 'bg-success' },
+      failed: { label: 'Échoué', className: 'bg-destructive' },
+      processing: { label: 'En cours', className: 'bg-info' },
+      pending: { label: 'En attente', className: 'bg-warning' }
     }
     
     const variant = variants[status] || { label: status, className: 'bg-gray-500' }
@@ -137,13 +137,13 @@ export function ImportJobHistory() {
                         {/* Stats */}
                         <div className="flex items-center gap-4 text-xs">
                           {job.successful_imports > 0 && (
-                            <div className="flex items-center gap-1 text-green-600">
+                            <div className="flex items-center gap-1 text-success">
                               <CheckCircle className="w-3 h-3" />
                               <span>{job.successful_imports} réussis</span>
                             </div>
                           )}
                           {job.failed_imports > 0 && (
-                            <div className="flex items-center gap-1 text-red-600">
+                            <div className="flex items-center gap-1 text-destructive">
                               <XCircle className="w-3 h-3" />
                               <span>{job.failed_imports} échoués</span>
                             </div>

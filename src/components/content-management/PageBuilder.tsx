@@ -51,12 +51,12 @@ import {
 // Section types
 const SECTION_TYPES = {
   hero: { label: 'Hero Banner', icon: Layout, color: 'bg-purple-500' },
-  text: { label: 'Texte', icon: Type, color: 'bg-blue-500' },
-  image: { label: 'Image', icon: Image, color: 'bg-green-500' },
-  gallery: { label: 'Galerie', icon: Square, color: 'bg-yellow-500' },
-  columns: { label: 'Colonnes', icon: Columns, color: 'bg-orange-500' },
+  text: { label: 'Texte', icon: Type, color: 'bg-info' },
+  image: { label: 'Image', icon: Image, color: 'bg-success' },
+  gallery: { label: 'Galerie', icon: Square, color: 'bg-warning' },
+  columns: { label: 'Colonnes', icon: Columns, color: 'bg-warning' },
   testimonials: { label: 'Témoignages', icon: MessageSquare, color: 'bg-pink-500' },
-  cta: { label: 'Call to Action', icon: Star, color: 'bg-red-500' },
+  cta: { label: 'Call to Action', icon: Star, color: 'bg-destructive' },
   features: { label: 'Fonctionnalités', icon: Square, color: 'bg-indigo-500' },
 };
 

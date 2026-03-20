@@ -89,7 +89,7 @@ export function EnhancedFormField({
       icon && "pl-10",
       showIcon && "pr-10",
       showError && "border-destructive focus-visible:ring-destructive/20",
-      showSuccess && "border-green-500 focus-visible:ring-green-500/20",
+      showSuccess && "border-success focus-visible:ring-green-500/20",
       isFocused && !showError && !showSuccess && "ring-2 ring-primary/20",
       inputClassName
     ),
@@ -103,7 +103,7 @@ export function EnhancedFormField({
           className={cn(
             "text-sm font-medium transition-colors",
             showError && "text-destructive",
-            showSuccess && "text-green-600 dark:text-green-500"
+            showSuccess && "text-success dark:text-success"
           )}
         >
           {label}
@@ -149,7 +149,7 @@ export function EnhancedFormField({
                 <AlertCircle className="h-4 w-4 text-destructive" />
               )}
               {showSuccess && !loading && (
-                <CheckCircle2 className="h-4 w-4 text-green-500" />
+                <CheckCircle2 className="h-4 w-4 text-success" />
               )}
             </motion.div>
           )}

@@ -134,7 +134,7 @@ export default function MultiStoreSyncPage() {
         <Card><CardContent className="pt-4 pb-3">
           <div className="flex items-center gap-2 text-muted-foreground text-sm mb-1"><Store className="h-4 w-4" /> Boutiques</div>
           <div className="text-2xl font-bold">{isLoading ? '...' : stores.length}</div>
-          <p className="text-xs text-green-600 mt-1">{stores.filter((s: any) => s.status === 'connected').length} connectées</p>
+          <p className="text-xs text-success mt-1">{stores.filter((s: any) => s.status === 'connected').length} connectées</p>
         </CardContent></Card>
         <Card><CardContent className="pt-4 pb-3">
           <div className="flex items-center gap-2 text-muted-foreground text-sm mb-1"><Package className="h-4 w-4" /> Produits total</div>
@@ -218,7 +218,7 @@ export default function MultiStoreSyncPage() {
                 <div className="space-y-3">
                   {activity.map((act: any) => (
                     <div key={act.id} className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
-                      {act.status === 'success' ? <CheckCircle className="h-5 w-5 text-green-500" /> : <AlertTriangle className="h-5 w-5 text-destructive" />}
+                      {act.status === 'success' ? <CheckCircle className="h-5 w-5 text-success" /> : <AlertTriangle className="h-5 w-5 text-destructive" />}
                       <div className="flex-1">
                         <p className="text-sm font-medium">{act.action}</p>
                         <p className="text-xs text-muted-foreground">{act.timestamp}</p>

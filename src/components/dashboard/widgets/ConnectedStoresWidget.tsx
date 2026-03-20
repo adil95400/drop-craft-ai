@@ -75,8 +75,8 @@ export function ConnectedStoresWidget({ settings }: ConnectedStoresWidgetProps) 
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="grid grid-cols-2 gap-3">
-          <div className="text-center p-3 bg-green-500/10 rounded-lg">
-            <CheckCircle className="h-5 w-5 mx-auto text-green-500 mb-1" />
+          <div className="text-center p-3 bg-success/10 rounded-lg">
+            <CheckCircle className="h-5 w-5 mx-auto text-success mb-1" />
             <p className="text-2xl font-bold">{activeStores.length}</p>
             <p className="text-xs text-muted-foreground">Actives</p>
           </div>

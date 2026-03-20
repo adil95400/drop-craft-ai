@@ -57,25 +57,25 @@ export function WinnerProductCard({
   const [isHovered, setIsHovered] = useState(false);
 
   const getScoreColor = (score: number) => {
-    if (score >= 80) return 'text-green-500';
-    if (score >= 60) return 'text-yellow-500';
-    return 'text-red-500';
+    if (score >= 80) return 'text-success';
+    if (score >= 60) return 'text-warning';
+    return 'text-destructive';
   };
 
   const getScoreBg = (score: number) => {
-    if (score >= 80) return 'bg-green-500/10 border-green-500/30';
-    if (score >= 60) return 'bg-yellow-500/10 border-yellow-500/30';
-    return 'bg-red-500/10 border-red-500/30';
+    if (score >= 80) return 'bg-success/10 border-success/30';
+    if (score >= 60) return 'bg-warning/10 border-warning/30';
+    return 'bg-destructive/10 border-destructive/30';
   };
 
   const getSaturationBadge = (saturation: string) => {
     switch (saturation) {
       case 'low':
-        return <Badge className="bg-green-500/20 text-green-700 border-0">🟢 Faible</Badge>;
+        return <Badge className="bg-success/20 text-success border-0">🟢 Faible</Badge>;
       case 'medium':
-        return <Badge className="bg-yellow-500/20 text-yellow-700 border-0">🟡 Modérée</Badge>;
+        return <Badge className="bg-warning/20 text-yellow-700 border-0">🟡 Modérée</Badge>;
       case 'high':
-        return <Badge className="bg-red-500/20 text-red-700 border-0">🔴 Élevée</Badge>;
+        return <Badge className="bg-destructive/20 text-red-700 border-0">🔴 Élevée</Badge>;
       default:
         return null;
     }
@@ -132,7 +132,7 @@ export function WinnerProductCard({
               className={cn(
                 "h-8 w-8 rounded-full backdrop-blur-sm transition-colors",
                 product.isFavorite 
-                  ? "bg-red-500 text-white hover:bg-red-600" 
+                  ? "bg-destructive text-white hover:bg-destructive" 
                   : "bg-white/80 text-gray-600 hover:bg-white"
               )}
               onClick={() => onToggleFavorite?.(product.id)}
@@ -194,8 +194,8 @@ export function WinnerProductCard({
           {/* Stats Grid */}
           <div className="grid grid-cols-2 gap-3">
             <div className="flex items-center gap-2 text-sm">
-              <div className="p-1.5 rounded bg-blue-500/10">
-                <TrendingUp className="w-3.5 h-3.5 text-blue-500" />
+              <div className="p-1.5 rounded bg-info/10">
+                <TrendingUp className="w-3.5 h-3.5 text-info" />
               </div>
               <div>
                 <p className="text-muted-foreground text-xs">Tendance</p>
@@ -214,18 +214,18 @@ export function WinnerProductCard({
             </div>
             
             <div className="flex items-center gap-2 text-sm">
-              <div className="p-1.5 rounded bg-green-500/10">
-                <DollarSign className="w-3.5 h-3.5 text-green-500" />
+              <div className="p-1.5 rounded bg-success/10">
+                <DollarSign className="w-3.5 h-3.5 text-success" />
               </div>
               <div>
                 <p className="text-muted-foreground text-xs">Profit</p>
-                <p className="font-semibold text-green-600">+{profitMargin}%</p>
+                <p className="font-semibold text-success">+{profitMargin}%</p>
               </div>
             </div>
             
             <div className="flex items-center gap-2 text-sm">
-              <div className="p-1.5 rounded bg-orange-500/10">
-                <Eye className="w-3.5 h-3.5 text-orange-500" />
+              <div className="p-1.5 rounded bg-warning/10">
+                <Eye className="w-3.5 h-3.5 text-warning" />
               </div>
               <div>
                 <p className="text-muted-foreground text-xs">Vues</p>

@@ -78,7 +78,7 @@ export const CanvaIntegrationCard = () => {
   }
 
   const StatusIcon = isConnected ? CheckCircle2 : AlertCircle
-  const statusColor = isConnected ? 'text-green-600' : 'text-red-600'
+  const statusColor = isConnected ? 'text-success' : 'text-destructive'
 
   return (
     <Card className="hover:shadow-md transition-shadow">
@@ -165,11 +165,11 @@ export const CanvaIntegrationCard = () => {
                 <p className="text-xs text-muted-foreground">Designs</p>
               </div>
               <div>
-                <p className="text-2xl font-bold text-green-600">✓</p>
+                <p className="text-2xl font-bold text-success">✓</p>
                 <p className="text-xs text-muted-foreground">Actif</p>
               </div>
               <div>
-                <p className="text-2xl font-bold text-blue-600">API</p>
+                <p className="text-2xl font-bold text-info">API</p>
                 <p className="text-xs text-muted-foreground">Connecté</p>
               </div>
             </div>

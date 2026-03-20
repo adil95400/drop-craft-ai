@@ -150,7 +150,7 @@ export default function ChannableStyleSuppliersPage() {
             <RefreshCcw className="w-4 h-4" />
             <span className="hidden sm:inline">{t('page.synchronization')}</span>
             {activeSyncJobs.length > 0 && (
-              <span className="absolute -top-1 -right-1 w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+              <span className="absolute -top-1 -right-1 w-2 h-2 bg-success rounded-full animate-pulse" />
             )}
           </TabsTrigger>
         </TabsList>
@@ -177,7 +177,7 @@ export default function ChannableStyleSuppliersPage() {
             <div className="mb-10">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-xl font-semibold flex items-center gap-2">
-                  <PlugZap className="w-5 h-5 text-green-500" />
+                  <PlugZap className="w-5 h-5 text-success" />
                   {t('page.yourSuppliers', { count: suppliers.length })}
                 </h2>
                 <Button variant="outline" size="sm" onClick={() => navigate('/suppliers/my')}>

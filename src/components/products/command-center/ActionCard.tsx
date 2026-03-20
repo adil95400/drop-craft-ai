@@ -44,27 +44,27 @@ const variantStyles: Record<ActionCardVariant, {
   glow: string
 }> = {
   destructive: {
-    bg: 'bg-red-500/10',
-    bgHover: 'hover:bg-red-500/20',
-    border: 'border-red-500/30',
-    text: 'text-red-600 dark:text-red-400',
-    iconBg: 'bg-red-500/20',
+    bg: 'bg-destructive/10',
+    bgHover: 'hover:bg-destructive/20',
+    border: 'border-destructive/30',
+    text: 'text-destructive dark:text-red-400',
+    iconBg: 'bg-destructive/20',
     glow: 'shadow-red-500/20'
   },
   warning: {
-    bg: 'bg-orange-500/10',
-    bgHover: 'hover:bg-orange-500/20',
+    bg: 'bg-warning/10',
+    bgHover: 'hover:bg-warning/20',
     border: 'border-orange-500/30',
-    text: 'text-orange-600 dark:text-orange-400',
-    iconBg: 'bg-orange-500/20',
+    text: 'text-warning dark:text-orange-400',
+    iconBg: 'bg-warning/20',
     glow: 'shadow-orange-500/20'
   },
   info: {
-    bg: 'bg-blue-500/10',
-    bgHover: 'hover:bg-blue-500/20',
-    border: 'border-blue-500/30',
-    text: 'text-blue-600 dark:text-blue-400',
-    iconBg: 'bg-blue-500/20',
+    bg: 'bg-info/10',
+    bgHover: 'hover:bg-info/20',
+    border: 'border-info/30',
+    text: 'text-info dark:text-blue-400',
+    iconBg: 'bg-info/20',
     glow: 'shadow-blue-500/20'
   },
   primary: {
@@ -233,7 +233,7 @@ export function ActionCard({
                 <motion.span 
                   className={cn(
                     'flex items-center text-xs font-medium pb-1',
-                    trend.direction === 'up' ? 'text-red-500' : 'text-green-500'
+                    trend.direction === 'up' ? 'text-destructive' : 'text-success'
                   )}
                   initial={{ opacity: 0, x: -5 }}
                   animate={{ opacity: 1, x: 0 }}

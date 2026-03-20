@@ -72,11 +72,11 @@ export const ImportAnalytics = () => {
               <div className="text-2xl font-bold">{totalImports}</div>
               <p className="text-sm text-muted-foreground">Total Imports</p>
               <div className="flex items-center gap-1 mt-1">
-                <TrendingUp className="w-3 h-3 text-green-500" />
-                <span className="text-xs text-green-600">+12% cette semaine</span>
+                <TrendingUp className="w-3 h-3 text-success" />
+                <span className="text-xs text-success">+12% cette semaine</span>
               </div>
             </div>
-            <Package className="h-8 w-8 text-blue-500" />
+            <Package className="h-8 w-8 text-info" />
           </div>
         </CardContent>
       </Card>
@@ -85,14 +85,14 @@ export const ImportAnalytics = () => {
         <CardContent className="p-4">
           <div className="flex items-center justify-between">
             <div>
-              <div className="text-2xl font-bold text-green-600">{successRate}%</div>
+              <div className="text-2xl font-bold text-success">{successRate}%</div>
               <p className="text-sm text-muted-foreground">Taux de Succès</p>
               <div className="flex items-center gap-1 mt-1">
-                <TrendingUp className="w-3 h-3 text-green-500" />
-                <span className="text-xs text-green-600">+3.2% vs hier</span>
+                <TrendingUp className="w-3 h-3 text-success" />
+                <span className="text-xs text-success">+3.2% vs hier</span>
               </div>
             </div>
-            <CheckCircle className="h-8 w-8 text-green-500" />
+            <CheckCircle className="h-8 w-8 text-success" />
           </div>
         </CardContent>
       </Card>
@@ -120,11 +120,11 @@ export const ImportAnalytics = () => {
               <div className="text-2xl font-bold">2.1m</div>
               <p className="text-sm text-muted-foreground">Temps Moyen</p>
               <div className="flex items-center gap-1 mt-1">
-                <TrendingDown className="w-3 h-3 text-green-500" />
-                <span className="text-xs text-green-600">-15s vs hier</span>
+                <TrendingDown className="w-3 h-3 text-success" />
+                <span className="text-xs text-success">-15s vs hier</span>
               </div>
             </div>
-            <Clock className="h-8 w-8 text-orange-500" />
+            <Clock className="h-8 w-8 text-warning" />
           </div>
         </CardContent>
       </Card>
@@ -162,7 +162,7 @@ export const ImportAnalytics = () => {
               <div className="flex-1">
                 <div className="flex items-center gap-2 mb-1">
                   <span className="text-sm font-medium">{day.imports} imports</span>
-                  <Badge variant="outline" className="text-xs bg-green-50">
+                  <Badge variant="outline" className="text-xs bg-success/5">
                     {day.success} succès
                   </Badge>
                   {day.failed > 0 && (
@@ -173,7 +173,7 @@ export const ImportAnalytics = () => {
                 </div>
                 <div className="w-full bg-muted rounded-full h-2">
                   <div 
-                    className="bg-blue-500 h-2 rounded-full"
+                    className="bg-info h-2 rounded-full"
                     style={{ width: `${Math.min((day.imports / 40) * 100, 100)}%` }}
                   />
                 </div>
@@ -199,13 +199,13 @@ export const ImportAnalytics = () => {
           {categoryBreakdown.map((cat) => (
             <div key={cat.category} className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="w-2 h-2 bg-blue-500 rounded-full" />
+                <div className="w-2 h-2 bg-info rounded-full" />
                 <span className="font-medium">{cat.category}</span>
               </div>
               <div className="flex items-center gap-4">
                 <div className="w-32 bg-muted rounded-full h-2">
                   <div 
-                    className="bg-blue-500 h-2 rounded-full"
+                    className="bg-info h-2 rounded-full"
                     style={{ width: `${cat.percentage}%` }}
                   />
                 </div>
@@ -243,7 +243,7 @@ export const ImportAnalytics = () => {
                 </div>
                 <Badge 
                   variant={supplier.success_rate >= 90 ? "default" : "secondary"}
-                  className={supplier.success_rate >= 90 ? "bg-green-100 text-green-800" : ""}
+                  className={supplier.success_rate >= 90 ? "bg-success/10 text-success" : ""}
                 >
                   {supplier.success_rate >= 90 ? "Excellent" : "Correct"}
                 </Badge>
@@ -268,7 +268,7 @@ export const ImportAnalytics = () => {
             <div className="text-sm text-muted-foreground">Jobs IA Total</div>
           </div>
           <div className="text-center">
-            <div className="text-3xl font-bold text-green-600">
+            <div className="text-3xl font-bold text-success">
               {aiJobs.filter(j => j.status === 'completed').length}
             </div>
             <div className="text-sm text-muted-foreground">Complétés</div>
@@ -347,7 +347,7 @@ export const ImportAnalytics = () => {
                     </div>
                     <div className="flex justify-between">
                       <span className="text-sm">Taux de succès prévu</span>
-                      <span className="font-medium text-green-600">~91%</span>
+                      <span className="font-medium text-success">~91%</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-sm">Optimisation IA</span>
@@ -401,11 +401,11 @@ export const ImportAnalytics = () => {
                 <div className="space-y-4">
                   <div className="flex justify-between items-center">
                     <span className="text-sm">Amélioration SEO moyenne</span>
-                    <Badge className="bg-green-100 text-green-800">+23%</Badge>
+                    <Badge className="bg-success/10 text-success">+23%</Badge>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-sm">Optimisation images</span>
-                    <Badge className="bg-blue-100 text-blue-800">+67% qualité</Badge>
+                    <Badge className="bg-info/10 text-blue-800">+67% qualité</Badge>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-sm">Suggestions acceptées</span>
@@ -426,11 +426,11 @@ export const ImportAnalytics = () => {
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="text-center">
-                  <div className="text-3xl font-bold text-green-600">8.7</div>
+                  <div className="text-3xl font-bold text-success">8.7</div>
                   <div className="text-sm text-muted-foreground">Score Moyen</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-3xl font-bold text-blue-600">92%</div>
+                  <div className="text-3xl font-bold text-info">92%</div>
                   <div className="text-sm text-muted-foreground">Complétude Données</div>
                 </div>
                 <div className="text-center">

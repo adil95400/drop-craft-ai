@@ -394,13 +394,13 @@ export function ContentImportExport({ contentType }: ContentImportExportProps) {
             )}
 
             {importResult && (
-              <Card className={importResult.failed > 0 ? 'border-yellow-500' : 'border-green-500'}>
+              <Card className={importResult.failed > 0 ? 'border-warning' : 'border-success'}>
                 <CardContent className="p-4">
                   <div className="flex items-center gap-4">
                     {importResult.failed === 0 ? (
-                      <CheckCircle className="h-8 w-8 text-green-500" />
+                      <CheckCircle className="h-8 w-8 text-success" />
                     ) : (
-                      <AlertCircle className="h-8 w-8 text-yellow-500" />
+                      <AlertCircle className="h-8 w-8 text-warning" />
                     )}
                     <div>
                       <p className="font-medium">

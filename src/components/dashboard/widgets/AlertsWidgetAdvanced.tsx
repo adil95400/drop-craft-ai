@@ -67,11 +67,11 @@ export function AlertsWidgetAdvanced({ timeRange, settings, lastRefresh }: Alert
   const getSeverityIcon = (severity: string) => {
     switch (severity) {
       case 'error':
-        return <XCircle className="h-4 w-4 text-red-500" />;
+        return <XCircle className="h-4 w-4 text-destructive" />;
       case 'warning':
-        return <AlertCircle className="h-4 w-4 text-yellow-500" />;
+        return <AlertCircle className="h-4 w-4 text-warning" />;
       default:
-        return <CheckCircle className="h-4 w-4 text-blue-500" />;
+        return <CheckCircle className="h-4 w-4 text-info" />;
     }
   };
 
@@ -102,8 +102,8 @@ export function AlertsWidgetAdvanced({ timeRange, settings, lastRefresh }: Alert
       <CardHeader className="pb-2">
         <CardTitle className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="p-2 rounded-lg bg-red-500/10">
-              <Bell className="h-5 w-5 text-red-500" />
+            <div className="p-2 rounded-lg bg-destructive/10">
+              <Bell className="h-5 w-5 text-destructive" />
             </div>
             <span>Alertes</span>
           </div>
@@ -120,7 +120,7 @@ export function AlertsWidgetAdvanced({ timeRange, settings, lastRefresh }: Alert
       <CardContent>
         {alerts.length === 0 ? (
           <div className="text-center py-6">
-            <CheckCircle className="h-8 w-8 mx-auto text-green-500 mb-2" />
+            <CheckCircle className="h-8 w-8 mx-auto text-success mb-2" />
             <p className="text-sm text-muted-foreground">Aucune alerte active</p>
           </div>
         ) : (

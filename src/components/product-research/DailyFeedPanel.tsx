@@ -156,22 +156,22 @@ export function DailyFeedPanel() {
   });
 
   const getScoreColor = (score: number) => {
-    if (score >= 80) return 'text-green-500';
-    if (score >= 60) return 'text-yellow-500';
-    return 'text-red-500';
+    if (score >= 80) return 'text-success';
+    if (score >= 60) return 'text-warning';
+    return 'text-destructive';
   };
 
   const getScoreBg = (score: number) => {
-    if (score >= 80) return 'bg-green-500/10 border-green-500/30';
-    if (score >= 60) return 'bg-yellow-500/10 border-yellow-500/30';
-    return 'bg-red-500/10 border-red-500/30';
+    if (score >= 80) return 'bg-success/10 border-success/30';
+    if (score >= 60) return 'bg-warning/10 border-warning/30';
+    return 'bg-destructive/10 border-destructive/30';
   };
 
   const getSaturationBadge = (sat: string) => {
     switch (sat) {
-      case 'low': return <Badge className="bg-green-500/20 text-green-700 dark:text-green-400 border-0 text-xs">🟢 Faible</Badge>;
-      case 'medium': return <Badge className="bg-yellow-500/20 text-yellow-700 dark:text-yellow-400 border-0 text-xs">🟡 Modérée</Badge>;
-      case 'high': return <Badge className="bg-red-500/20 text-red-700 dark:text-red-400 border-0 text-xs">🔴 Élevée</Badge>;
+      case 'low': return <Badge className="bg-success/20 text-success dark:text-green-400 border-0 text-xs">🟢 Faible</Badge>;
+      case 'medium': return <Badge className="bg-warning/20 text-yellow-700 dark:text-yellow-400 border-0 text-xs">🟡 Modérée</Badge>;
+      case 'high': return <Badge className="bg-destructive/20 text-red-700 dark:text-red-400 border-0 text-xs">🔴 Élevée</Badge>;
       default: return null;
     }
   };
@@ -228,7 +228,7 @@ export function DailyFeedPanel() {
                 </SelectContent>
               </Select>
 
-              <Button onClick={loadFeed} disabled={isLoading} className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white">
+              <Button onClick={loadFeed} disabled={isLoading} className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-destructive text-white">
                 {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4 mr-1.5" />}
                 {isLoading ? 'Chargement...' : 'Actualiser'}
               </Button>
@@ -276,11 +276,11 @@ export function DailyFeedPanel() {
           </CardContent></Card>
           <Card><CardContent className="pt-3 pb-3">
             <p className="text-xs text-muted-foreground flex items-center gap-1"><DollarSign className="h-3 w-3" /> Marge moy.</p>
-            <p className="text-xl font-bold text-green-600">{Math.round(filteredProducts.reduce((s, p) => s + (p.margin_percent || 0), 0) / filteredProducts.length)}%</p>
+            <p className="text-xl font-bold text-success">{Math.round(filteredProducts.reduce((s, p) => s + (p.margin_percent || 0), 0) / filteredProducts.length)}%</p>
           </CardContent></Card>
           <Card><CardContent className="pt-3 pb-3">
             <p className="text-xs text-muted-foreground flex items-center gap-1"><Flame className="h-3 w-3" /> Winners 80+</p>
-            <p className="text-xl font-bold text-orange-500">{filteredProducts.filter(p => p.winner_score >= 80).length}</p>
+            <p className="text-xl font-bold text-warning">{filteredProducts.filter(p => p.winner_score >= 80).length}</p>
           </CardContent></Card>
           <Card><CardContent className="pt-3 pb-3">
             <p className="text-xs text-muted-foreground flex items-center gap-1"><TrendingUp className="h-3 w-3" /> Ads actives</p>
@@ -348,7 +348,7 @@ export function DailyFeedPanel() {
                         size="icon"
                         className={cn(
                           "h-7 w-7 rounded-full backdrop-blur-sm",
-                          favorites.has(product.product_name) ? "bg-red-500 text-white" : "bg-white/80 text-foreground"
+                          favorites.has(product.product_name) ? "bg-destructive text-white" : "bg-white/80 text-foreground"
                         )}
                         onClick={() => toggleFavorite(product.product_name)}
                       >
@@ -392,7 +392,7 @@ export function DailyFeedPanel() {
                     {/* Score breakdown */}
                     <div className="grid grid-cols-2 gap-2">
                       <div className="flex items-center gap-1.5 text-xs">
-                        <div className="p-1 rounded bg-blue-500/10"><TrendingUp className="h-3 w-3 text-blue-500" /></div>
+                        <div className="p-1 rounded bg-info/10"><TrendingUp className="h-3 w-3 text-info" /></div>
                         <div>
                           <p className="text-muted-foreground">Tendance</p>
                           <p className="font-semibold">{product.trend_score}</p>
@@ -406,14 +406,14 @@ export function DailyFeedPanel() {
                         </div>
                       </div>
                       <div className="flex items-center gap-1.5 text-xs">
-                        <div className="p-1 rounded bg-green-500/10"><DollarSign className="h-3 w-3 text-green-500" /></div>
+                        <div className="p-1 rounded bg-success/10"><DollarSign className="h-3 w-3 text-success" /></div>
                         <div>
                           <p className="text-muted-foreground">Marge</p>
-                          <p className="font-semibold text-green-600">{product.margin_percent}%</p>
+                          <p className="font-semibold text-success">{product.margin_percent}%</p>
                         </div>
                       </div>
                       <div className="flex items-center gap-1.5 text-xs">
-                        <div className="p-1 rounded bg-orange-500/10"><Eye className="h-3 w-3 text-orange-500" /></div>
+                        <div className="p-1 rounded bg-warning/10"><Eye className="h-3 w-3 text-warning" /></div>
                         <div>
                           <p className="text-muted-foreground">Vues</p>
                           <p className="font-semibold">{formatNumber(product.views)}</p>
@@ -425,7 +425,7 @@ export function DailyFeedPanel() {
                     <div className="flex items-center justify-between pt-2 border-t text-sm">
                       <div>
                         <p className="text-xs text-muted-foreground">Coût → Vente</p>
-                        <p className="font-bold">${product.cost_price} → <span className="text-green-600">${product.selling_price}</span></p>
+                        <p className="font-bold">${product.cost_price} → <span className="text-success">${product.selling_price}</span></p>
                       </div>
                       <div className="text-right">
                         <p className="text-xs text-muted-foreground">Rev./mois</p>
@@ -453,7 +453,7 @@ export function DailyFeedPanel() {
       {!isLoading && filteredProducts.length === 0 && (
         <Card>
           <CardContent className="py-16 text-center">
-            <Flame className="h-12 w-12 mx-auto text-orange-500/30 mb-4" />
+            <Flame className="h-12 w-12 mx-auto text-warning/30 mb-4" />
             <h3 className="text-lg font-semibold mb-2">Découvrez les produits gagnants du jour</h3>
             <p className="text-muted-foreground text-sm max-w-md mx-auto mb-4">
               Sélectionnez votre marché cible et cliquez sur "Actualiser" pour découvrir les produits qui cartonnent en ce moment.

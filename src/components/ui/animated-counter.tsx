@@ -127,7 +127,7 @@ export function AnimatedStatsCard({
           {trend !== undefined && (
             <div className={cn(
               "flex items-center text-xs font-medium",
-              trend > 0 ? "text-green-500" : trend < 0 ? "text-red-500" : "text-muted-foreground"
+              trend > 0 ? "text-success" : trend < 0 ? "text-destructive" : "text-muted-foreground"
             )}>
               {trend > 0 ? "↗" : trend < 0 ? "↘" : "→"} {Math.abs(trend)}%
             </div>

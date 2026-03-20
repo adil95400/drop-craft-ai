@@ -10,13 +10,13 @@ export function StockAlerts() {
   const getSeverityIcon = (severity: string) => {
     switch (severity) {
       case 'critical':
-        return <AlertTriangle className="w-5 h-5 text-red-500" />;
+        return <AlertTriangle className="w-5 h-5 text-destructive" />;
       case 'high':
-        return <AlertTriangle className="w-5 h-5 text-orange-500" />;
+        return <AlertTriangle className="w-5 h-5 text-warning" />;
       case 'medium':
-        return <Bell className="w-5 h-5 text-yellow-500" />;
+        return <Bell className="w-5 h-5 text-warning" />;
       default:
-        return <CheckCircle className="w-5 h-5 text-green-500" />;
+        return <CheckCircle className="w-5 h-5 text-success" />;
     }
   };
 

@@ -185,7 +185,7 @@ export function FeatureComparison() {
         <div className="space-y-4">
           <Card className="border-2 border-gradient-to-r from-purple-500 to-blue-500 text-center relative">
             <Badge 
-              className="absolute -top-2 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-purple-600 to-blue-600 text-white"
+              className="absolute -top-2 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-purple-600 to-info text-white"
             >
               Entreprise
             </Badge>

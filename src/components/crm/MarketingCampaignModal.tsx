@@ -178,7 +178,7 @@ export const MarketingCampaignModal: React.FC<MarketingCampaignModalProps> = ({
                   onClick={() => setCampaignType('google_ads')}
                 >
                   <div className="flex items-center gap-2 mb-2">
-                    <Search className="w-5 h-5 text-blue-600" />
+                    <Search className="w-5 h-5 text-info" />
                     <span className="font-medium">Google Ads</span>
                   </div>
                   <p className="text-sm text-muted-foreground">
@@ -197,7 +197,7 @@ export const MarketingCampaignModal: React.FC<MarketingCampaignModalProps> = ({
                   onClick={() => setCampaignType('facebook_ads')}
                 >
                   <div className="flex items-center gap-2 mb-2">
-                    <Facebook className="w-5 h-5 text-blue-600" />
+                    <Facebook className="w-5 h-5 text-info" />
                     <span className="font-medium">Facebook Ads</span>
                   </div>
                   <p className="text-sm text-muted-foreground">

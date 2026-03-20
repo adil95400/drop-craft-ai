@@ -77,7 +77,7 @@ function DraggableVariant({ item, side, isMapped }: { item: VariantItem; side: '
         "hover:border-primary/50 hover:shadow-sm",
         isDragging && "opacity-50 scale-95 border-dashed border-primary",
         isMapped
-          ? "bg-green-500/5 border-green-500/30 dark:bg-green-500/10"
+          ? "bg-success/5 border-success/30 dark:bg-success/10"
           : "bg-card border-border",
         side === 'source' && "cursor-grab active:cursor-grabbing"
       )}
@@ -90,7 +90,7 @@ function DraggableVariant({ item, side, isMapped }: { item: VariantItem; side: '
         <p className="text-sm font-medium truncate">{item.optionValue}</p>
         <p className="text-xs text-muted-foreground truncate">{item.optionName}{item.sku ? ` · ${item.sku}` : ''}</p>
       </div>
-      {isMapped && <CheckCircle className="h-4 w-4 text-green-600 flex-shrink-0" />}
+      {isMapped && <CheckCircle className="h-4 w-4 text-success flex-shrink-0" />}
     </div>
   );
 }

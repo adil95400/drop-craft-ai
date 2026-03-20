@@ -92,13 +92,13 @@ export function RevenueForecastChart({ currentRevenue, orders, avgMargin }: Reve
       <CardContent>
         {/* Summary badges */}
         <div className="flex gap-2 mb-4 flex-wrap">
-          <Badge variant="outline" className="border-green-500/30 text-green-600 text-xs">
+          <Badge variant="outline" className="border-success/30 text-success text-xs">
             🟢 Optimiste: {formatEur(finalOptimistic)}
           </Badge>
-          <Badge variant="outline" className="border-blue-500/30 text-blue-600 text-xs">
+          <Badge variant="outline" className="border-info/30 text-info text-xs">
             🔵 Réaliste: {formatEur(finalRealistic)}
           </Badge>
-          <Badge variant="outline" className="border-orange-500/30 text-orange-600 text-xs">
+          <Badge variant="outline" className="border-orange-500/30 text-warning text-xs">
             🟠 Pessimiste: {formatEur(finalPessimistic)}
           </Badge>
         </div>

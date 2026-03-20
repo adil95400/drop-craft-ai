@@ -121,8 +121,8 @@ export function AIAssistantWidget() {
             </div>
             Assistant IA
           </CardTitle>
-          <Badge variant="outline" className="bg-green-500/10 text-green-600 border-green-500/20">
-            <span className="w-1.5 h-1.5 bg-green-500 rounded-full mr-1.5 animate-pulse" />
+          <Badge variant="outline" className="bg-success/10 text-success border-success/20">
+            <span className="w-1.5 h-1.5 bg-success rounded-full mr-1.5 animate-pulse" />
             En ligne
           </Badge>
         </div>

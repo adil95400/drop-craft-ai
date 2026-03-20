@@ -26,8 +26,8 @@ const getIcon = (iconName: string) => {
 }
 
 const groupColors: Record<string, string> = {
-  home: 'from-blue-500/20 to-blue-600/10 border-blue-500/20',
-  sources: 'from-green-500/20 to-green-600/10 border-green-500/20',
+  home: 'from-info/20 to-info/10 border-info/20',
+  sources: 'from-success/20 to-success/10 border-success/20',
   catalog: 'from-purple-500/20 to-purple-600/10 border-purple-500/20',
   channels: 'from-orange-500/20 to-orange-600/10 border-orange-500/20',
   orders: 'from-pink-500/20 to-pink-600/10 border-pink-500/20',

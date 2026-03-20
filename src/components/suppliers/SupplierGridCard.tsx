@@ -35,13 +35,13 @@ export const SupplierGridCard = memo(function SupplierGridCard({
       className={cn(
         "relative group cursor-pointer rounded-xl border bg-card p-4 transition-all",
         "hover:shadow-lg hover:border-primary/50",
-        isConnected && "ring-2 ring-green-500/50 bg-green-500/5"
+        isConnected && "ring-2 ring-green-500/50 bg-success/5"
       )}
     >
       {/* Badges */}
       <div className="absolute top-3 right-3 flex gap-1">
         {isConnected && (
-          <Badge className="bg-green-600 text-xs">
+          <Badge className="bg-success text-xs">
             <CheckCircle2 className="w-3 h-3 mr-1" />
             Connecté
           </Badge>
@@ -74,7 +74,7 @@ export const SupplierGridCard = memo(function SupplierGridCard({
             <span>{COUNTRY_FLAGS[definition.country] || '🌍'}</span>
             {definition.rating && (
               <span className="flex items-center gap-0.5">
-                <Star className="w-3 h-3 fill-yellow-500 text-yellow-500" />
+                <Star className="w-3 h-3 fill-yellow-500 text-warning" />
                 {definition.rating}
               </span>
             )}

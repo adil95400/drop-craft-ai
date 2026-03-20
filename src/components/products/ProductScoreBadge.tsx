@@ -27,23 +27,23 @@ export function ProductScoreBadge({
     trend: {
       icon: TrendingUp,
       label: 'Tendance',
-      color: 'text-blue-600',
-      bg: 'bg-blue-50',
-      border: 'border-blue-200'
+      color: 'text-info',
+      bg: 'bg-info/5',
+      border: 'border-info/20'
     },
     competition: {
       icon: Target,
       label: 'Concurrence',
-      color: 'text-orange-600',
+      color: 'text-warning',
       bg: 'bg-orange-50',
       border: 'border-orange-200'
     },
     profit: {
       icon: Trophy,
       label: 'Profit',
-      color: 'text-green-600',
-      bg: 'bg-green-50',
-      border: 'border-green-200'
+      color: 'text-success',
+      bg: 'bg-success/5',
+      border: 'border-success/20'
     }
   }
 
@@ -62,10 +62,10 @@ export function ProductScoreBadge({
   }
 
   const getScoreColor = (score: number) => {
-    if (score >= 80) return 'text-green-700 bg-green-100 border-green-300'
-    if (score >= 60) return 'text-blue-700 bg-blue-100 border-blue-300'
+    if (score >= 80) return 'text-success bg-success/10 border-green-300'
+    if (score >= 60) return 'text-blue-700 bg-info/10 border-blue-300'
     if (score >= 40) return 'text-orange-700 bg-orange-100 border-orange-300'
-    return 'text-red-700 bg-red-100 border-red-300'
+    return 'text-red-700 bg-destructive/10 border-red-300'
   }
 
   return (
@@ -135,7 +135,7 @@ export function ProductBadgeGroup({
       <div
         key="trending"
         className={cn(
-          'inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-blue-500 to-cyan-500 text-white font-semibold',
+          'inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-info to-cyan-500 text-white font-semibold',
           sizeClasses[size]
         )}
       >
@@ -150,7 +150,7 @@ export function ProductBadgeGroup({
       <div
         key="bestseller"
         className={cn(
-          'inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-green-500 to-emerald-500 text-white font-semibold',
+          'inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-success to-emerald-500 text-white font-semibold',
           sizeClasses[size]
         )}
       >

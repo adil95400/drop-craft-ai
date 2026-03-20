@@ -319,16 +319,16 @@ export default function AuditProductsList() {
   // Severity helpers
   const getSeverityIcon = (severity: string) => {
     switch (severity) {
-      case 'critical': return <XCircle className="h-4 w-4 text-red-500" />;
-      case 'warning': return <AlertTriangle className="h-4 w-4 text-yellow-500" />;
-      default: return <CheckCircle2 className="h-4 w-4 text-blue-500" />;
+      case 'critical': return <XCircle className="h-4 w-4 text-destructive" />;
+      case 'warning': return <AlertTriangle className="h-4 w-4 text-warning" />;
+      default: return <CheckCircle2 className="h-4 w-4 text-info" />;
     }
   };
 
   const getSeverityBadge = (severity: string) => {
     switch (severity) {
       case 'critical': return <Badge variant="destructive">{t('productsList.severityCritical')}</Badge>;
-      case 'warning': return <Badge variant="secondary" className="bg-yellow-100 text-yellow-800">{t('productsList.severityWarning')}</Badge>;
+      case 'warning': return <Badge variant="secondary" className="bg-warning/10 text-yellow-800">{t('productsList.severityWarning')}</Badge>;
       default: return <Badge variant="outline">{t('productsList.severityInfo')}</Badge>;
     }
   };
@@ -535,7 +535,7 @@ export default function AuditProductsList() {
                 <div className="flex items-center justify-between pt-4 border-t flex-wrap gap-4">
                   <div className="flex items-center gap-4 text-sm text-muted-foreground flex-wrap">
                     <span className="flex items-center gap-1">
-                      <CheckCircle2 className="h-4 w-4 text-green-600" />
+                      <CheckCircle2 className="h-4 w-4 text-success" />
                       {stats.excellentCount} {t('productsList.excellents')}
                     </span>
                     <span className="hidden sm:inline">•</span>
@@ -631,13 +631,13 @@ export default function AuditProductsList() {
                 {/* Strengths */}
                 {selectedAudit.strengths.length > 0 && (
                   <div className="space-y-3">
-                    <h4 className="font-semibold flex items-center gap-2 text-green-600">
+                    <h4 className="font-semibold flex items-center gap-2 text-success">
                       <CheckCircle2 className="h-4 w-4" />
                       {t('productsList.strengths', { count: selectedAudit.strengths.length })}
                     </h4>
                     <div className="flex flex-wrap gap-2">
                       {selectedAudit.strengths.map((strength, i) => (
-                        <Badge key={i} variant="outline" className="bg-green-50 text-green-700 border-green-200">
+                        <Badge key={i} variant="outline" className="bg-success/5 text-success border-success/20">
                           ✓ {strength}
                         </Badge>
                       ))}

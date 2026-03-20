@@ -29,7 +29,7 @@ export function AdvancedAnalyticsDashboard() {
       change: '+12.5%',
       trend: 'up',
       icon: DollarSign,
-      color: 'text-green-500'
+      color: 'text-success'
     },
     {
       title: 'Visiteurs uniques',
@@ -37,7 +37,7 @@ export function AdvancedAnalyticsDashboard() {
       change: '+8.2%',
       trend: 'up',
       icon: Users,
-      color: 'text-blue-500'
+      color: 'text-info'
     },
     {
       title: 'Taux de conversion',
@@ -45,7 +45,7 @@ export function AdvancedAnalyticsDashboard() {
       change: '-0.3%',
       trend: 'down',
       icon: ShoppingCart,
-      color: 'text-orange-500'
+      color: 'text-warning'
     },
     {
       title: 'Panier moyen',
@@ -72,11 +72,11 @@ export function AdvancedAnalyticsDashboard() {
               <div className="text-2xl font-bold">{metric.value}</div>
               <div className="flex items-center text-xs text-muted-foreground">
                 {metric.trend === 'up' ? (
-                  <ArrowUpRight className="h-4 w-4 text-green-500" />
+                  <ArrowUpRight className="h-4 w-4 text-success" />
                 ) : (
-                  <ArrowDownRight className="h-4 w-4 text-red-500" />
+                  <ArrowDownRight className="h-4 w-4 text-destructive" />
                 )}
-                <span className={metric.trend === 'up' ? 'text-green-500' : 'text-red-500'}>
+                <span className={metric.trend === 'up' ? 'text-success' : 'text-destructive'}>
                   {metric.change}
                 </span>
                 <span className="ml-1">vs mois dernier</span>

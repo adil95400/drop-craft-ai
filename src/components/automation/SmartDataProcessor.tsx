@@ -259,7 +259,7 @@ export const SmartDataProcessor = () => {
                 <p className="text-sm font-medium text-gray-600">Produits</p>
                 <p className="text-2xl font-bold">{stats.totalProducts}</p>
               </div>
-              <BarChart3 className="w-8 h-8 text-blue-500" />
+              <BarChart3 className="w-8 h-8 text-info" />
             </div>
           </CardContent>
         </Card>
@@ -271,7 +271,7 @@ export const SmartDataProcessor = () => {
                 <p className="text-sm font-medium text-gray-600">Traités</p>
                 <p className="text-2xl font-bold">{stats.processedProducts}</p>
               </div>
-              <CheckCircle2 className="w-8 h-8 text-green-500" />
+              <CheckCircle2 className="w-8 h-8 text-success" />
             </div>
           </CardContent>
         </Card>
@@ -283,7 +283,7 @@ export const SmartDataProcessor = () => {
                 <p className="text-sm font-medium text-gray-600">Problèmes</p>
                 <p className="text-2xl font-bold">{stats.issuesFound}</p>
               </div>
-              <AlertTriangle className="w-8 h-8 text-orange-500" />
+              <AlertTriangle className="w-8 h-8 text-warning" />
             </div>
           </CardContent>
         </Card>
@@ -348,7 +348,7 @@ export const SmartDataProcessor = () => {
             <TabsContent value="rules" className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {processingRules.map(rule => (
-                  <Card key={rule.id} className={`border ${rule.enabled ? 'border-green-200 bg-green-50' : 'border-gray-200'}`}>
+                  <Card key={rule.id} className={`border ${rule.enabled ? 'border-success/20 bg-success/5' : 'border-gray-200'}`}>
                     <CardContent className="p-4">
                       <div className="flex items-start justify-between">
                         <div className="flex items-start gap-3">
@@ -375,7 +375,7 @@ export const SmartDataProcessor = () => {
             <TabsContent value="issues" className="space-y-4">
               {issues.length === 0 ? (
                 <div className="text-center py-8">
-                  <CheckCircle2 className="w-12 h-12 text-green-500 mx-auto mb-4" />
+                  <CheckCircle2 className="w-12 h-12 text-success mx-auto mb-4" />
                   <h3 className="text-lg font-medium">Aucun problème détecté !</h3>
                   <p className="text-gray-600">Vos données semblent être de bonne qualité.</p>
                 </div>
@@ -395,7 +395,7 @@ export const SmartDataProcessor = () => {
                             <p className="text-sm text-gray-600">{issue.suggestion}</p>
                           </div>
                           {issue.autoFixable && (
-                            <Badge variant="outline" className="bg-blue-50 text-blue-700">
+                            <Badge variant="outline" className="bg-info/5 text-blue-700">
                               Auto-corrigible
                             </Badge>
                           )}

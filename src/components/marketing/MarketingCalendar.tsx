@@ -116,20 +116,20 @@ export function MarketingCalendar() {
 
   const getEventTypeColor = (type: string) => {
     switch (type) {
-      case 'campaign': return 'bg-blue-100 text-blue-800 border-blue-200'
-      case 'email': return 'bg-green-100 text-green-800 border-green-200'
+      case 'campaign': return 'bg-info/10 text-blue-800 border-info/20'
+      case 'email': return 'bg-success/10 text-success border-success/20'
       case 'social': return 'bg-purple-100 text-purple-800 border-purple-200'
       case 'event': return 'bg-orange-100 text-orange-800 border-orange-200'
-      case 'deadline': return 'bg-red-100 text-red-800 border-red-200'
+      case 'deadline': return 'bg-destructive/10 text-red-800 border-destructive/20'
       default: return 'bg-gray-100 text-gray-800 border-gray-200'
     }
   }
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
-      case 'high': return 'text-red-600 border-red-600'
-      case 'medium': return 'text-yellow-600 border-yellow-600'
-      case 'low': return 'text-green-600 border-green-600'
+      case 'high': return 'text-destructive border-red-600'
+      case 'medium': return 'text-warning border-yellow-600'
+      case 'low': return 'text-success border-green-600'
       default: return 'text-gray-600 border-gray-600'
     }
   }

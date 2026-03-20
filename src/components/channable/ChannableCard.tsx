@@ -41,11 +41,11 @@ interface ChannableCardProps {
 }
 
 const statusConfig = {
-  connected: { icon: CheckCircle2, color: 'text-green-500', bg: 'bg-green-500/10', label: 'Connecté' },
+  connected: { icon: CheckCircle2, color: 'text-success', bg: 'bg-success/10', label: 'Connecté' },
   disconnected: { icon: AlertCircle, color: 'text-muted-foreground', bg: 'bg-muted', label: 'Déconnecté' },
-  pending: { icon: Clock, color: 'text-yellow-500', bg: 'bg-yellow-500/10', label: 'En attente' },
+  pending: { icon: Clock, color: 'text-warning', bg: 'bg-warning/10', label: 'En attente' },
   error: { icon: AlertCircle, color: 'text-destructive', bg: 'bg-destructive/10', label: 'Erreur' },
-  active: { icon: Zap, color: 'text-green-500', bg: 'bg-green-500/10', label: 'Actif' },
+  active: { icon: Zap, color: 'text-success', bg: 'bg-success/10', label: 'Actif' },
   inactive: { icon: Clock, color: 'text-muted-foreground', bg: 'bg-muted', label: 'Inactif' },
 }
 

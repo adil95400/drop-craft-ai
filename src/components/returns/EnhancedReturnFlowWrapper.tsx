@@ -168,7 +168,7 @@ export function EnhancedReturnFlowWrapper() {
           {/* Pending column */}
           <div>
             <div className="flex items-center gap-2 mb-4">
-              <Clock className="h-5 w-5 text-yellow-500" />
+              <Clock className="h-5 w-5 text-warning" />
               <h3 className="font-semibold">En attente ({pendingReturns.length})</h3>
             </div>
             <ScrollArea className="h-[600px] pr-4">
@@ -188,7 +188,7 @@ export function EnhancedReturnFlowWrapper() {
           {/* In Progress column */}
           <div>
             <div className="flex items-center gap-2 mb-4">
-              <RefreshCw className="h-5 w-5 text-blue-500" />
+              <RefreshCw className="h-5 w-5 text-info" />
               <h3 className="font-semibold">En cours ({inProgressReturns.length})</h3>
             </div>
             <ScrollArea className="h-[600px] pr-4">
@@ -208,7 +208,7 @@ export function EnhancedReturnFlowWrapper() {
           {/* Completed column */}
           <div>
             <div className="flex items-center gap-2 mb-4">
-              <CheckCircle className="h-5 w-5 text-green-500" />
+              <CheckCircle className="h-5 w-5 text-success" />
               <h3 className="font-semibold">Terminés ({completedReturns.length})</h3>
             </div>
             <ScrollArea className="h-[600px] pr-4">

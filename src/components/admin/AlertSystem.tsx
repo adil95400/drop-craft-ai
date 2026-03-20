@@ -339,7 +339,7 @@ export const AlertSystem: React.FC = () => {
               variant="outline"
               size="sm"
               onClick={toggleAlerts}
-              className={alertsEnabled ? 'text-green-600' : 'text-gray-500'}
+              className={alertsEnabled ? 'text-success' : 'text-gray-500'}
             >
               {alertsEnabled ? <Bell className="h-4 w-4" /> : <BellOff className="h-4 w-4" />}
               {alertsEnabled ? 'Activées' : 'Désactivées'}
@@ -349,7 +349,7 @@ export const AlertSystem: React.FC = () => {
       </CardHeader>
       <CardContent>
         {criticalCount > 0 && (
-          <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+          <div className="mb-4 p-3 bg-destructive/5 border border-destructive/20 rounded-lg">
             <div className="flex items-center gap-2 text-red-800">
               <AlertTriangle className="h-4 w-4" />
               <span className="font-semibold">
@@ -363,7 +363,7 @@ export const AlertSystem: React.FC = () => {
           <div className="space-y-3">
             {alerts.length === 0 ? (
               <div className="text-center py-8 text-muted-foreground">
-                <CheckCircle className="h-8 w-8 mx-auto mb-2 text-green-500" />
+                <CheckCircle className="h-8 w-8 mx-auto mb-2 text-success" />
                 Aucune alerte active
               </div>
             ) : (
@@ -375,7 +375,7 @@ export const AlertSystem: React.FC = () => {
                     key={alert.id}
                     className={`p-3 border rounded-lg ${
                       alert.resolved ? 'bg-gray-50 opacity-75' : 
-                      alert.acknowledged ? 'bg-blue-50' : 'bg-white'
+                      alert.acknowledged ? 'bg-info/5' : 'bg-white'
                     }`}
                   >
                     <div className="flex items-start justify-between mb-2">

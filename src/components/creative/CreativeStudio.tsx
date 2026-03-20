@@ -166,9 +166,9 @@ export function CreativeStudio() {
 
   const getCampaignStatusColor = (status: MarketingCampaign['status']) => {
     switch (status) {
-      case 'active': return 'bg-green-500'
-      case 'paused': return 'bg-yellow-500'
-      case 'completed': return 'bg-blue-500'
+      case 'active': return 'bg-success'
+      case 'paused': return 'bg-warning'
+      case 'completed': return 'bg-info'
       default: return 'bg-gray-500'
     }
   }
@@ -343,7 +343,7 @@ export function CreativeStudio() {
                     {campaign.performance_metrics?.roi && (
                       <div className="flex justify-between text-sm">
                         <span>ROI:</span>
-                        <span className="text-green-600 font-semibold">
+                        <span className="text-success font-semibold">
                           {(campaign.performance_metrics.roi * 100).toFixed(1)}%
                         </span>
                       </div>
@@ -373,7 +373,7 @@ export function CreativeStudio() {
                       </Badge>
                     </div>
                     {template.is_premium && (
-                      <Badge variant="default" className="bg-yellow-500">
+                      <Badge variant="default" className="bg-warning">
                         <Star className="h-3 w-3 mr-1" />
                         Premium
                       </Badge>

@@ -315,7 +315,7 @@ export function BulkEditPanel({ selectedProducts, onClose, onComplete, onCancel 
                   onClick={() => handleAction({ operation: 'status', value: 'active' })}
                   disabled={isProcessing}
                 >
-                  <CheckCircle className="h-5 w-5 text-green-600" />
+                  <CheckCircle className="h-5 w-5 text-success" />
                   <span className="text-xs">Activer</span>
                 </Button>
                 <Button
@@ -324,7 +324,7 @@ export function BulkEditPanel({ selectedProducts, onClose, onComplete, onCancel 
                   onClick={() => handleAction({ operation: 'status', value: 'paused' })}
                   disabled={isProcessing}
                 >
-                  <EyeOff className="h-5 w-5 text-orange-600" />
+                  <EyeOff className="h-5 w-5 text-warning" />
                   <span className="text-xs">Désactiver</span>
                 </Button>
                 <Button
@@ -399,7 +399,7 @@ export function BulkEditPanel({ selectedProducts, onClose, onComplete, onCancel 
                           <ArrowRight className="h-3 w-3" />
                           <span className={cn(
                             "font-medium",
-                            p.newPrice > p.oldPrice ? "text-green-600" : "text-red-600"
+                            p.newPrice > p.oldPrice ? "text-success" : "text-destructive"
                           )}>
                             {p.newPrice}€
                           </span>
@@ -523,7 +523,7 @@ export function BulkEditPanel({ selectedProducts, onClose, onComplete, onCancel 
                   onClick={() => handleAIOptimize('rewrite_titles')}
                   disabled={isProcessing}
                 >
-                  <FileText className="h-6 w-6 text-blue-600" />
+                  <FileText className="h-6 w-6 text-info" />
                   <span className="text-xs text-center">Réécrire les titres</span>
                 </Button>
                 <Button
@@ -541,7 +541,7 @@ export function BulkEditPanel({ selectedProducts, onClose, onComplete, onCancel 
                   onClick={() => handleAIOptimize('generate_seo')}
                   disabled={isProcessing}
                 >
-                  <Target className="h-6 w-6 text-green-600" />
+                  <Target className="h-6 w-6 text-success" />
                   <span className="text-xs text-center">Générer metas SEO</span>
                 </Button>
                 <Button
@@ -550,7 +550,7 @@ export function BulkEditPanel({ selectedProducts, onClose, onComplete, onCancel 
                   onClick={() => handleAIOptimize('complete_attributes')}
                   disabled={isProcessing}
                 >
-                  <Tag className="h-6 w-6 text-orange-600" />
+                  <Tag className="h-6 w-6 text-warning" />
                   <span className="text-xs text-center">Compléter attributs</span>
                 </Button>
                 <Button
@@ -568,7 +568,7 @@ export function BulkEditPanel({ selectedProducts, onClose, onComplete, onCancel 
                   onClick={() => handleAIOptimize('fix_spelling')}
                   disabled={isProcessing}
                 >
-                  <Zap className="h-6 w-6 text-yellow-600" />
+                  <Zap className="h-6 w-6 text-warning" />
                   <span className="text-xs text-center">Corriger orthographe</span>
                 </Button>
               </div>

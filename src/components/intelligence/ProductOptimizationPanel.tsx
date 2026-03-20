@@ -124,16 +124,16 @@ export function ProductOptimizationPanel() {
 
   const getTrendIcon = (trend: string) => {
     switch (trend) {
-      case 'improving': return <TrendingUp className="w-4 h-4 text-green-500" />;
-      case 'declining': return <TrendingDown className="w-4 h-4 text-red-500" />;
-      default: return <Settings className="w-4 h-4 text-blue-500" />;
+      case 'improving': return <TrendingUp className="w-4 h-4 text-success" />;
+      case 'declining': return <TrendingDown className="w-4 h-4 text-destructive" />;
+      default: return <Settings className="w-4 h-4 text-info" />;
     }
   };
 
   const getOptimizationColor = (potential: number) => {
-    if (potential >= 80) return 'text-green-600';
-    if (potential >= 60) return 'text-yellow-600';
-    return 'text-red-600';
+    if (potential >= 80) return 'text-success';
+    if (potential >= 60) return 'text-warning';
+    return 'text-destructive';
   };
 
   const totalOptimizationPotential = products.length > 0 ? 
@@ -146,10 +146,10 @@ export function ProductOptimizationPanel() {
   return (
     <div className="space-y-6">
       {/* Header avec métriques */}
-      <Card className="bg-gradient-to-r from-blue-50 to-purple-50 border-blue-200">
+      <Card className="bg-gradient-to-r from-blue-50 to-purple-50 border-info/20">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Target className="w-6 h-6 text-blue-600" />
+            <Target className="w-6 h-6 text-info" />
             Optimisation Produits IA
           </CardTitle>
           <CardDescription>
@@ -159,15 +159,15 @@ export function ProductOptimizationPanel() {
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div className="text-center">
-              <div className="text-2xl font-bold text-blue-600">{products.length}</div>
+              <div className="text-2xl font-bold text-info">{products.length}</div>
               <p className="text-sm text-muted-foreground">Produits Analysés</p>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold text-green-600">{totalOptimizationPotential}%</div>
+              <div className="text-2xl font-bold text-success">{totalOptimizationPotential}%</div>
               <p className="text-sm text-muted-foreground">Potentiel Moyen</p>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold text-orange-600">{highPotentialProducts}</div>
+              <div className="text-2xl font-bold text-warning">{highPotentialProducts}</div>
               <p className="text-sm text-muted-foreground">Priorité Haute</p>
             </div>
             <div className="text-center">
@@ -312,7 +312,7 @@ export function ProductOptimizationPanel() {
                   </div>
                   <div className="text-center">
                     <div className={`text-lg font-bold ${
-                      product.suggested_price > product.current_price ? 'text-green-600' : 'text-red-600'
+                      product.suggested_price > product.current_price ? 'text-success' : 'text-destructive'
                     }`}>
                       {product.suggested_price.toFixed(2)}€
                     </div>
@@ -343,13 +343,13 @@ export function ProductOptimizationPanel() {
                 {/* Recommandations IA */}
                 <div>
                   <h4 className="font-medium text-sm mb-2 flex items-center gap-2">
-                    <Zap className="w-4 h-4 text-yellow-500" />
+                    <Zap className="w-4 h-4 text-warning" />
                     Recommandations IA
                   </h4>
                   <ul className="space-y-1">
                     {product.ai_recommendations.slice(0, 2).map((rec, index) => (
                       <li key={index} className="text-xs text-muted-foreground flex items-center gap-2">
-                        <div className="w-1.5 h-1.5 bg-blue-500 rounded-full flex-shrink-0" />
+                        <div className="w-1.5 h-1.5 bg-info rounded-full flex-shrink-0" />
                         {rec}
                       </li>
                     ))}
@@ -360,13 +360,13 @@ export function ProductOptimizationPanel() {
                 {product.risk_factors.length > 0 && (
                   <div>
                     <h4 className="font-medium text-sm mb-2 flex items-center gap-2">
-                      <AlertTriangle className="w-4 h-4 text-red-500" />
+                      <AlertTriangle className="w-4 h-4 text-destructive" />
                       Facteurs de Risque
                     </h4>
                     <ul className="space-y-1">
                       {product.risk_factors.map((risk, index) => (
-                        <li key={index} className="text-xs text-red-600 flex items-center gap-2">
-                          <div className="w-1.5 h-1.5 bg-red-500 rounded-full flex-shrink-0" />
+                        <li key={index} className="text-xs text-destructive flex items-center gap-2">
+                          <div className="w-1.5 h-1.5 bg-destructive rounded-full flex-shrink-0" />
                           {risk}
                         </li>
                       ))}

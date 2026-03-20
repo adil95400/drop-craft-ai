@@ -105,7 +105,7 @@ export function ExtensionInstallWelcomeModal({
               exit={{ opacity: 0, y: -10 }}
             >
               <DialogHeader className="text-center">
-                <div className="mx-auto mb-4 h-16 w-16 rounded-full bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center">
+                <div className="mx-auto mb-4 h-16 w-16 rounded-full bg-gradient-to-br from-cyan-500 to-info flex items-center justify-center">
                   <Chrome className="h-8 w-8 text-white" />
                 </div>
                 <DialogTitle className="text-xl">
@@ -129,7 +129,7 @@ export function ExtensionInstallWelcomeModal({
                       <feature.icon className="h-4 w-4 text-primary" />
                     </div>
                     <span className="text-sm font-medium">{feature.text}</span>
-                    <CheckCircle className="h-4 w-4 text-green-500 ml-auto" />
+                    <CheckCircle className="h-4 w-4 text-success ml-auto" />
                   </motion.div>
                 ))}
               </div>
@@ -137,7 +137,7 @@ export function ExtensionInstallWelcomeModal({
               <DialogFooter className="flex-col gap-2 sm:flex-col">
                 {user ? (
                   <Button 
-                    className="w-full bg-gradient-to-r from-cyan-500 to-blue-600"
+                    className="w-full bg-gradient-to-r from-cyan-500 to-info"
                     onClick={() => setStep('generate')}
                   >
                     Connecter l'extension
@@ -175,7 +175,7 @@ export function ExtensionInstallWelcomeModal({
               </DialogHeader>
 
               <div className="py-6 space-y-4">
-                <Alert className="bg-yellow-500/10 border-yellow-500/20">
+                <Alert className="bg-warning/10 border-warning/20">
                   <AlertDescription className="text-sm">
                     ⚠️ Gardez ce token secret. Il donne accès à votre compte depuis l'extension.
                   </AlertDescription>
@@ -216,8 +216,8 @@ export function ExtensionInstallWelcomeModal({
               exit={{ opacity: 0, y: -10 }}
             >
               <DialogHeader className="text-center">
-                <div className="mx-auto mb-4 h-16 w-16 rounded-full bg-green-500/10 flex items-center justify-center">
-                  <CheckCircle className="h-8 w-8 text-green-500" />
+                <div className="mx-auto mb-4 h-16 w-16 rounded-full bg-success/10 flex items-center justify-center">
+                  <CheckCircle className="h-8 w-8 text-success" />
                 </div>
                 <DialogTitle>Token généré avec succès !</DialogTitle>
                 <DialogDescription>

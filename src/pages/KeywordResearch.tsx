@@ -49,16 +49,16 @@ const KeywordResearch = () => {
   const isKeywordTracked = (kw: string) => trackedKeywords.some(tk => tk.keyword === kw);
 
   const getDifficultyColor = (difficulty: number) => {
-    if (difficulty < 30) return "bg-green-100 text-green-800";
+    if (difficulty < 30) return "bg-success/10 text-success";
     if (difficulty < 70) return "bg-orange-100 text-orange-800";
-    return "bg-red-100 text-red-800";
+    return "bg-destructive/10 text-red-800";
   };
 
   const getCompetitionColor = (competition: string) => {
     switch (competition) {
-      case 'Low': return "bg-green-100 text-green-800";
+      case 'Low': return "bg-success/10 text-success";
       case 'Medium': return "bg-orange-100 text-orange-800";
-      case 'High': return "bg-red-100 text-red-800";
+      case 'High': return "bg-destructive/10 text-red-800";
       default: return "bg-gray-100 text-gray-800";
     }
   };
@@ -202,9 +202,9 @@ const KeywordResearch = () => {
                           </TableCell>
                           <TableCell>
                             {kw.trend === 'up' ? (
-                              <ArrowUp className="w-4 h-4 text-green-500" />
+                              <ArrowUp className="w-4 h-4 text-success" />
                             ) : kw.trend === 'down' ? (
-                              <ArrowDown className="w-4 h-4 text-red-500" />
+                              <ArrowDown className="w-4 h-4 text-destructive" />
                             ) : (
                               <Minus className="w-4 h-4 text-gray-400" />
                             )}
@@ -215,7 +215,7 @@ const KeywordResearch = () => {
                                 size="sm"
                                 variant="outline"
                                 onClick={() => handleUntrackKeyword(kw.keyword)}
-                                className="text-red-600 hover:text-red-700"
+                                className="text-destructive hover:text-red-700"
                               >
                                 <Minus className="w-4 h-4" />
                               </Button>
@@ -224,7 +224,7 @@ const KeywordResearch = () => {
                                 size="sm"
                                 variant="outline"
                                 onClick={() => handleTrackKeyword(kw.keyword)}
-                                className="text-green-600 hover:text-green-700"
+                                className="text-success hover:text-success"
                                 disabled={isAdding}
                               >
                                 <Plus className="w-4 h-4" />

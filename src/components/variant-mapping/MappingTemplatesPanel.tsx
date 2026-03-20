@@ -102,7 +102,7 @@ export function MappingTemplatesPanel() {
         return <Palette className="h-4 w-4 text-pink-500" />;
       case 'size':
       case 'taille':
-        return <Ruler className="h-4 w-4 text-blue-500" />;
+        return <Ruler className="h-4 w-4 text-info" />;
       default:
         return <Package className="h-4 w-4 text-gray-500" />;
     }

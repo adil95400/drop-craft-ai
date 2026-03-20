@@ -300,9 +300,9 @@ export function WebhookManager() {
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-2">
-                          <CheckCircle className="h-4 w-4 text-green-500" />
+                          <CheckCircle className="h-4 w-4 text-success" />
                           <span className="text-sm">{stats.successful}</span>
-                          <XCircle className="h-4 w-4 text-red-500" />
+                          <XCircle className="h-4 w-4 text-destructive" />
                           <span className="text-sm">{stats.failed}</span>
                         </div>
                       </TableCell>
@@ -322,7 +322,7 @@ export function WebhookManager() {
                           onClick={() => toggleWebhookMutation.mutate({ id: webhook.id, isActive: webhook.is_active })}
                         >
                           {webhook.is_active ? (
-                            <Badge className="bg-green-500">Actif</Badge>
+                            <Badge className="bg-success">Actif</Badge>
                           ) : (
                             <Badge variant="secondary">Inactif</Badge>
                           )}

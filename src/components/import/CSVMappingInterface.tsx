@@ -269,7 +269,7 @@ export const CSVMappingInterface: React.FC<CSVMappingInterfaceProps> = ({
                       draggable
                       onDragStart={() => handleDragStart(index)}
                       className={`p-3 border rounded-lg cursor-move hover:bg-muted/50 transition-colors ${
-                        mapping ? 'border-green-500 bg-green-50' : 'border-border'
+                        mapping ? 'border-success bg-success/5' : 'border-border'
                       }`}
                     >
                       <div className="flex items-center justify-between">
@@ -317,7 +317,7 @@ export const CSVMappingInterface: React.FC<CSVMappingInterfaceProps> = ({
                       onDrop={(e) => handleDrop(e, field.key)}
                       className={`p-3 border-2 border-dashed rounded-lg transition-all ${
                         mapping 
-                          ? 'border-green-500 bg-green-50' 
+                          ? 'border-success bg-success/5' 
                           : draggedColumn !== null 
                             ? 'border-primary bg-primary/5' 
                             : 'border-border hover:border-primary/50'

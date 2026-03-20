@@ -15,7 +15,7 @@ const plans = [
     price: 'Gratuit',
     description: 'Parfait pour démarrer',
     icon: Sparkles,
-    color: 'from-blue-500 to-cyan-500',
+    color: 'from-info to-cyan-500',
     features: [
       '1000 produits',
       'Import basique',
@@ -126,7 +126,7 @@ export default function PricingPlansPage() {
             return (
               <Card 
                 key={plan.id} 
-                className={`relative ${plan.popular ? 'border-primary shadow-lg scale-105' : ''} ${isCurrentPlan ? 'border-green-500' : ''}`}
+                className={`relative ${plan.popular ? 'border-primary shadow-lg scale-105' : ''} ${isCurrentPlan ? 'border-success' : ''}`}
               >
                 {plan.popular && (
                   <div className="absolute -top-4 left-1/2 -translate-x-1/2">
@@ -166,7 +166,7 @@ export default function PricingPlansPage() {
                   <ul className="space-y-3">
                     {plan.features.map((feature, index) => (
                       <li key={index} className="flex items-start gap-2">
-                        <Check className="h-5 w-5 text-green-500 shrink-0 mt-0.5" />
+                        <Check className="h-5 w-5 text-success shrink-0 mt-0.5" />
                         <span className="text-sm">{feature}</span>
                       </li>
                     ))}

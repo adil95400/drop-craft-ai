@@ -83,9 +83,9 @@ export function TopWinnersSection() {
       {/* Winners Grid */}
       <div className="space-y-4">
         <div className="flex items-center gap-2">
-          <PeriodIcon className="w-5 h-5 text-orange-500" />
+          <PeriodIcon className="w-5 h-5 text-warning" />
           <h2 className="text-lg font-semibold">{periodLabels[period]}</h2>
-          <Badge variant="secondary" className="bg-gradient-to-r from-orange-500/20 to-red-500/20 text-orange-600 border-orange-500/30">
+          <Badge variant="secondary" className="bg-gradient-to-r from-orange-500/20 to-red-500/20 text-warning border-orange-500/30">
             Mise à jour toutes les heures
           </Badge>
         </div>

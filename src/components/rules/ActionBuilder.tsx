@@ -236,7 +236,7 @@ export function ActionBuilder({ action, onChange, onRemove }: ActionBuilderProps
       case 'exclude_product':
         return <Ban className="h-4 w-4 text-destructive" />
       case 'include_product':
-        return <Check className="h-4 w-4 text-green-500" />
+        return <Check className="h-4 w-4 text-success" />
       case 'set_category':
         return <FolderTree className="h-4 w-4 text-primary" />
       default:

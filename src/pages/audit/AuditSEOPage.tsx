@@ -121,21 +121,21 @@ export default function AuditSEOPage() {
   };
 
   const getScoreColor = (score: number) => {
-    if (score >= 80) return 'text-emerald-600 dark:text-emerald-400';
-    if (score >= 50) return 'text-amber-600 dark:text-amber-400';
-    return 'text-red-600 dark:text-red-400';
+    if (score >= 80) return 'text-success dark:text-emerald-400';
+    if (score >= 50) return 'text-warning dark:text-amber-400';
+    return 'text-destructive dark:text-red-400';
   };
 
   const getScoreBg = (score: number) => {
     if (score >= 80) return 'bg-emerald-100 dark:bg-emerald-900/30';
     if (score >= 50) return 'bg-amber-100 dark:bg-amber-900/30';
-    return 'bg-red-100 dark:bg-red-900/30';
+    return 'bg-destructive/10 dark:bg-red-900/30';
   };
 
   const getStatusIcon = (status: 'good' | 'warning' | 'error') => {
-    if (status === 'good') return <CheckCircle2 className="h-4 w-4 text-emerald-600" />;
-    if (status === 'warning') return <AlertCircle className="h-4 w-4 text-amber-600" />;
-    return <XCircle className="h-4 w-4 text-red-600" />;
+    if (status === 'good') return <CheckCircle2 className="h-4 w-4 text-success" />;
+    if (status === 'warning') return <AlertCircle className="h-4 w-4 text-warning" />;
+    return <XCircle className="h-4 w-4 text-destructive" />;
   };
 
   const MetricCard = ({ analysis, metricKey, label, icon: Icon }: { 
@@ -150,7 +150,7 @@ export default function AuditSEOPage() {
         'p-3 rounded-lg border transition-all',
         metric.status === 'good' ? 'bg-emerald-50 dark:bg-emerald-900/20 border-emerald-200' :
         metric.status === 'warning' ? 'bg-amber-50 dark:bg-amber-900/20 border-amber-200' :
-        'bg-red-50 dark:bg-red-900/20 border-red-200'
+        'bg-destructive/5 dark:bg-red-900/20 border-destructive/20'
       )}>
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2">
@@ -162,9 +162,9 @@ export default function AuditSEOPage() {
         <Progress 
           value={metric.score} 
           className={cn('h-2', 
-            metric.status === 'good' ? '[&>div]:bg-emerald-500' :
-            metric.status === 'warning' ? '[&>div]:bg-amber-500' :
-            '[&>div]:bg-red-500'
+            metric.status === 'good' ? '[&>div]:bg-success' :
+            metric.status === 'warning' ? '[&>div]:bg-warning' :
+            '[&>div]:bg-destructive'
           )} 
         />
         <p className="text-xs text-muted-foreground mt-1">{metric.details}</p>
@@ -286,7 +286,7 @@ export default function AuditSEOPage() {
         </motion.div>
 
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
-          <Card className="border-red-200 dark:border-red-800 bg-gradient-to-br from-red-50 to-red-100/50 dark:from-red-900/20 dark:to-red-800/10">
+          <Card className="border-destructive/20 dark:border-red-800 bg-gradient-to-br from-red-50 to-red-100/50 dark:from-red-900/20 dark:to-red-800/10">
             <CardContent className="pt-6">
               <div className="flex items-center gap-3">
                 <div className="p-2 rounded-full bg-red-200 dark:bg-red-800">
@@ -364,11 +364,11 @@ export default function AuditSEOPage() {
                     >
                       <item.icon className={cn(
                         'h-6 w-6 mx-auto mb-2',
-                        item.value > 0 ? 'text-orange-600' : 'text-emerald-600'
+                        item.value > 0 ? 'text-warning' : 'text-success'
                       )} />
                       <div className={cn(
                         'text-3xl font-bold',
-                        item.value > 0 ? 'text-orange-600' : 'text-emerald-600'
+                        item.value > 0 ? 'text-warning' : 'text-success'
                       )}>
                         {item.value}
                       </div>
@@ -425,26 +425,26 @@ export default function AuditSEOPage() {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-lg">
-                  <CheckCircle2 className="h-5 w-5 text-emerald-600" />
+                  <CheckCircle2 className="h-5 w-5 text-success" />
                   {t('seo.bestPractices')}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="p-4 rounded-lg bg-muted/50 border">
                   <h4 className="font-semibold flex items-center gap-2 mb-3">
-                    <FileText className="h-4 w-4 text-blue-600" /> {t('seo.productTitles')}
+                    <FileText className="h-4 w-4 text-info" /> {t('seo.productTitles')}
                   </h4>
                   <ul className="text-sm text-muted-foreground space-y-2">
                     <li className="flex items-start gap-2">
-                      <CheckCheck className="h-4 w-4 text-emerald-600 mt-0.5 shrink-0" />
+                      <CheckCheck className="h-4 w-4 text-success mt-0.5 shrink-0" />
                       {t('seo.titleTip1')}
                     </li>
                     <li className="flex items-start gap-2">
-                      <CheckCheck className="h-4 w-4 text-emerald-600 mt-0.5 shrink-0" />
+                      <CheckCheck className="h-4 w-4 text-success mt-0.5 shrink-0" />
                       {t('seo.titleTip2')}
                     </li>
                     <li className="flex items-start gap-2">
-                      <CheckCheck className="h-4 w-4 text-emerald-600 mt-0.5 shrink-0" />
+                      <CheckCheck className="h-4 w-4 text-success mt-0.5 shrink-0" />
                       {t('seo.titleTip3')}
                     </li>
                   </ul>
@@ -455,15 +455,15 @@ export default function AuditSEOPage() {
                   </h4>
                   <ul className="text-sm text-muted-foreground space-y-2">
                     <li className="flex items-start gap-2">
-                      <CheckCheck className="h-4 w-4 text-emerald-600 mt-0.5 shrink-0" />
+                      <CheckCheck className="h-4 w-4 text-success mt-0.5 shrink-0" />
                       {t('seo.descTip1')}
                     </li>
                     <li className="flex items-start gap-2">
-                      <CheckCheck className="h-4 w-4 text-emerald-600 mt-0.5 shrink-0" />
+                      <CheckCheck className="h-4 w-4 text-success mt-0.5 shrink-0" />
                       {t('seo.descTip2')}
                     </li>
                     <li className="flex items-start gap-2">
-                      <CheckCheck className="h-4 w-4 text-emerald-600 mt-0.5 shrink-0" />
+                      <CheckCheck className="h-4 w-4 text-success mt-0.5 shrink-0" />
                       {t('seo.descTip3')}
                     </li>
                   </ul>
@@ -491,14 +491,14 @@ export default function AuditSEOPage() {
                     <span className="text-sm font-medium">{t('seo.potentialCTR')}</span>
                     <Badge className="bg-amber-100 text-amber-700">+{Math.round(stats.averageSeoScore * 0.2)}%</Badge>
                   </div>
-                  <Progress value={stats.averageSeoScore * 0.6} className="h-2 [&>div]:bg-amber-500" />
+                  <Progress value={stats.averageSeoScore * 0.6} className="h-2 [&>div]:bg-warning" />
                 </div>
-                <div className="p-4 rounded-lg border border-blue-200 bg-blue-50/50">
+                <div className="p-4 rounded-lg border border-info/20 bg-info/5/50">
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-sm font-medium">{t('seo.conversions')}</span>
-                    <Badge className="bg-blue-100 text-blue-700">+{Math.round(stats.averageSeoScore * 0.15)}%</Badge>
+                    <Badge className="bg-info/10 text-blue-700">+{Math.round(stats.averageSeoScore * 0.15)}%</Badge>
                   </div>
-                  <Progress value={stats.averageSeoScore * 0.5} className="h-2 [&>div]:bg-blue-500" />
+                  <Progress value={stats.averageSeoScore * 0.5} className="h-2 [&>div]:bg-info" />
                 </div>
               </CardContent>
             </Card>
@@ -694,7 +694,7 @@ export default function AuditSEOPage() {
                               </span>
                             )}
                             {analysis.issues.length > 0 && (
-                              <Badge variant="outline" className="text-orange-600 border-orange-300">
+                              <Badge variant="outline" className="text-warning border-orange-300">
                                 {t('seo.nIssues', { count: analysis.issues.length })}
                               </Badge>
                             )}
@@ -709,7 +709,7 @@ export default function AuditSEOPage() {
                                       'inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium',
                                       metric.status === 'good' ? 'bg-emerald-100 text-emerald-700' :
                                       metric.status === 'warning' ? 'bg-amber-100 text-amber-700' :
-                                      'bg-red-100 text-red-700'
+                                      'bg-destructive/10 text-red-700'
                                     )}>
                                       {getStatusIcon(metric.status)}
                                       {metric.score}
@@ -768,7 +768,7 @@ export default function AuditSEOPage() {
                               {analysis.issues.length > 0 && (
                                 <div className="space-y-2">
                                   <h5 className="text-sm font-semibold flex items-center gap-2">
-                                    <AlertCircle className="h-4 w-4 text-orange-600" />
+                                    <AlertCircle className="h-4 w-4 text-warning" />
                                     {t('seo.detectedIssues')}
                                   </h5>
                                   <div className="grid gap-2 md:grid-cols-2">
@@ -777,15 +777,15 @@ export default function AuditSEOPage() {
                                         key={i} 
                                         className={cn(
                                           'p-3 rounded-lg border',
-                                          issue.type === 'error' ? 'bg-red-50 border-red-200' :
+                                          issue.type === 'error' ? 'bg-destructive/5 border-destructive/20' :
                                           issue.type === 'warning' ? 'bg-amber-50 border-amber-200' :
-                                          'bg-blue-50 border-blue-200'
+                                          'bg-info/5 border-info/20'
                                         )}
                                       >
                                         <div className="flex items-start gap-2">
-                                          {issue.type === 'error' ? <XCircle className="h-4 w-4 text-red-600 mt-0.5" /> :
-                                           issue.type === 'warning' ? <AlertCircle className="h-4 w-4 text-amber-600 mt-0.5" /> :
-                                           <Lightbulb className="h-4 w-4 text-blue-600 mt-0.5" />}
+                                          {issue.type === 'error' ? <XCircle className="h-4 w-4 text-destructive mt-0.5" /> :
+                                           issue.type === 'warning' ? <AlertCircle className="h-4 w-4 text-warning mt-0.5" /> :
+                                           <Lightbulb className="h-4 w-4 text-info mt-0.5" />}
                                           <div>
                                             <p className="text-sm font-medium">{issue.title}</p>
                                             <p className="text-xs text-muted-foreground mt-0.5">{issue.description}</p>
@@ -866,7 +866,7 @@ export default function AuditSEOPage() {
                     <Card className="border-dashed">
                       <CardContent className="pt-4">
                         <div className="text-center">
-                          <TrendingUp className="h-8 w-8 mx-auto mb-2 text-emerald-600" />
+                          <TrendingUp className="h-8 w-8 mx-auto mb-2 text-success" />
                           <p className="text-2xl font-bold">{stats.topKeywords.length}</p>
                           <p className="text-sm text-muted-foreground">{t('seo.uniqueKeywords')}</p>
                         </div>
@@ -875,7 +875,7 @@ export default function AuditSEOPage() {
                     <Card className="border-dashed">
                       <CardContent className="pt-4">
                         <div className="text-center">
-                          <Target className="h-8 w-8 mx-auto mb-2 text-blue-600" />
+                          <Target className="h-8 w-8 mx-auto mb-2 text-info" />
                           <p className="text-2xl font-bold">
                             {stats.topKeywords.length > 0 ? stats.topKeywords[0].count : 0}
                           </p>
@@ -962,7 +962,7 @@ export default function AuditSEOPage() {
                 </Card>
 
                 <Card 
-                  className="border-2 border-dashed border-blue-200 hover:border-blue-400 transition-colors cursor-pointer"
+                  className="border-2 border-dashed border-info/20 hover:border-blue-400 transition-colors cursor-pointer"
                   onClick={() => {
                     setIssueFilter('image');
                     setActiveTab('products');
@@ -970,12 +970,12 @@ export default function AuditSEOPage() {
                   }}
                 >
                   <CardContent className="pt-6 text-center">
-                    <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center mx-auto mb-4">
-                      <Image className="h-6 w-6 text-blue-600" />
+                    <div className="w-12 h-12 rounded-full bg-info/10 flex items-center justify-center mx-auto mb-4">
+                      <Image className="h-6 w-6 text-info" />
                     </div>
                     <h4 className="font-semibold mb-2">{t('seo.altTextImages')}</h4>
                     <p className="text-sm text-muted-foreground mb-4">{t('seo.altTextImagesDesc')}</p>
-                    <Badge className="bg-blue-100 text-blue-700">
+                    <Badge className="bg-info/10 text-blue-700">
                       {t('seo.nImages', { count: stats.issueBreakdown.imageIssues })}
                     </Badge>
                   </CardContent>
@@ -991,7 +991,7 @@ export default function AuditSEOPage() {
                 >
                   <CardContent className="pt-6 text-center">
                     <div className="w-12 h-12 rounded-full bg-emerald-100 flex items-center justify-center mx-auto mb-4">
-                      <Tag className="h-6 w-6 text-emerald-600" />
+                      <Tag className="h-6 w-6 text-success" />
                     </div>
                     <h4 className="font-semibold mb-2">{t('seo.enrichKeywords')}</h4>
                     <p className="text-sm text-muted-foreground mb-4">{t('seo.enrichKeywordsDesc')}</p>

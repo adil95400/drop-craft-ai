@@ -25,9 +25,9 @@ export const ImportHub = ({ onViewChange, onCategorySelect }: ImportHubProps) =>
   const navigate = useNavigate();
   const categories = [
     { id: 'ecommerce', title: 'E-commerce', description: 'WooCommerce, Shopify, PrestaShop, Magento...', icon: ShoppingCart, count: 8, color: 'text-purple-600', bgColor: 'bg-purple-100' },
-    { id: 'files', title: 'Fichiers & Feeds', description: 'CSV, XML, JSON, Google Sheets...', icon: FileSpreadsheet, count: 5, color: 'text-blue-600', bgColor: 'bg-blue-100' },
-    { id: 'specialty', title: 'Spécialisés', description: 'Lightspeed, Ecwid, Squarespace...', icon: Settings, count: 4, color: 'text-green-600', bgColor: 'bg-green-100' },
-    { id: 'regional', title: 'Régionaux', description: 'Mijnwebwinkel, Crawler, ItsPerfect...', icon: Globe, count: 4, color: 'text-orange-600', bgColor: 'bg-orange-100' },
+    { id: 'files', title: 'Fichiers & Feeds', description: 'CSV, XML, JSON, Google Sheets...', icon: FileSpreadsheet, count: 5, color: 'text-info', bgColor: 'bg-info/10' },
+    { id: 'specialty', title: 'Spécialisés', description: 'Lightspeed, Ecwid, Squarespace...', icon: Settings, count: 4, color: 'text-success', bgColor: 'bg-success/10' },
+    { id: 'regional', title: 'Régionaux', description: 'Mijnwebwinkel, Crawler, ItsPerfect...', icon: Globe, count: 4, color: 'text-warning', bgColor: 'bg-orange-100' },
     { id: 'ftp', title: 'FTP/SFTP', description: 'Serveurs FTP, SFTP, FTPS', icon: Database, count: 1, color: 'text-indigo-600', bgColor: 'bg-indigo-100' }
   ];
 

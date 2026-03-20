@@ -68,15 +68,15 @@ export default function FeedOptimizationPage() {
   };
 
   const getScoreColor = (score: number) => {
-    if (score >= 80) return 'text-green-500';
-    if (score >= 60) return 'text-yellow-500';
-    return 'text-red-500';
+    if (score >= 80) return 'text-success';
+    if (score >= 60) return 'text-warning';
+    return 'text-destructive';
   };
 
   const getScoreBgColor = (score: number) => {
-    if (score >= 80) return 'bg-green-500';
-    if (score >= 60) return 'bg-yellow-500';
-    return 'bg-red-500';
+    if (score >= 80) return 'bg-success';
+    if (score >= 60) return 'bg-warning';
+    return 'bg-destructive';
   };
 
   return (
@@ -129,24 +129,24 @@ export default function FeedOptimizationPage() {
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center gap-4">
-              <div className="p-3 bg-red-500/10 rounded-xl"><AlertTriangle className="h-6 w-6 text-red-500" /></div>
-              <div><p className="text-2xl font-bold text-red-500">{stats.highIssues}</p><p className="text-sm text-muted-foreground">Critiques</p></div>
+              <div className="p-3 bg-destructive/10 rounded-xl"><AlertTriangle className="h-6 w-6 text-destructive" /></div>
+              <div><p className="text-2xl font-bold text-destructive">{stats.highIssues}</p><p className="text-sm text-muted-foreground">Critiques</p></div>
             </div>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center gap-4">
-              <div className="p-3 bg-yellow-500/10 rounded-xl"><TrendingUp className="h-6 w-6 text-yellow-500" /></div>
-              <div><p className="text-2xl font-bold text-yellow-500">{stats.mediumIssues}</p><p className="text-sm text-muted-foreground">À améliorer</p></div>
+              <div className="p-3 bg-warning/10 rounded-xl"><TrendingUp className="h-6 w-6 text-warning" /></div>
+              <div><p className="text-2xl font-bold text-warning">{stats.mediumIssues}</p><p className="text-sm text-muted-foreground">À améliorer</p></div>
             </div>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center gap-4">
-              <div className="p-3 bg-green-500/10 rounded-xl"><CheckCircle className="h-6 w-6 text-green-500" /></div>
-              <div><p className="text-2xl font-bold text-green-500">{stats.optimized}</p><p className="text-sm text-muted-foreground">Optimisés</p></div>
+              <div className="p-3 bg-success/10 rounded-xl"><CheckCircle className="h-6 w-6 text-success" /></div>
+              <div><p className="text-2xl font-bold text-success">{stats.optimized}</p><p className="text-sm text-muted-foreground">Optimisés</p></div>
             </div>
           </CardContent>
         </Card>
@@ -174,7 +174,7 @@ export default function FeedOptimizationPage() {
                     <CardContent className="py-4">
                       <div className="flex items-start justify-between gap-4">
                         <div className="flex items-start gap-4">
-                          <div className={`w-10 h-10 rounded-full flex items-center justify-center text-white font-bold ${rec.impact === 'high' ? 'bg-red-500' : rec.impact === 'medium' ? 'bg-yellow-500' : 'bg-blue-500'}`}>
+                          <div className={`w-10 h-10 rounded-full flex items-center justify-center text-white font-bold ${rec.impact === 'high' ? 'bg-destructive' : rec.impact === 'medium' ? 'bg-warning' : 'bg-info'}`}>
                             {rec.priority}
                           </div>
                           <div>
@@ -219,7 +219,7 @@ export default function FeedOptimizationPage() {
             <ScrollArea className="h-[500px]">
               <div className="space-y-3 pr-4">
                 {analysisResults.map((result) => (
-                  <Card key={result.productId} className={result.score < 60 ? 'border-red-200' : ''}>
+                  <Card key={result.productId} className={result.score < 60 ? 'border-destructive/20' : ''}>
                     <CardContent className="py-4">
                       <div className="flex items-start justify-between gap-4">
                         <div className="flex-1 min-w-0">
@@ -231,7 +231,7 @@ export default function FeedOptimizationPage() {
                             <div className="space-y-1">
                               {result.issues.map((issue: any, i: number) => (
                                 <div key={i} className="flex items-start gap-2 text-sm">
-                                  <AlertTriangle className={`h-4 w-4 flex-shrink-0 mt-0.5 ${issue.severity === 'high' ? 'text-red-500' : issue.severity === 'medium' ? 'text-yellow-500' : 'text-blue-500'}`} />
+                                  <AlertTriangle className={`h-4 w-4 flex-shrink-0 mt-0.5 ${issue.severity === 'high' ? 'text-destructive' : issue.severity === 'medium' ? 'text-warning' : 'text-info'}`} />
                                   <div><span className="font-medium">{issue.message}</span><span className="text-muted-foreground"> - {issue.suggestion}</span></div>
                                 </div>
                               ))}

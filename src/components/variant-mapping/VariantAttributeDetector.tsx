@@ -324,16 +324,16 @@ export function VariantAttributeDetector() {
   const getTypeIcon = (type: string) => {
     switch (type) {
       case 'color': return <Palette className="h-4 w-4 text-pink-500" />;
-      case 'size': return <Ruler className="h-4 w-4 text-blue-500" />;
+      case 'size': return <Ruler className="h-4 w-4 text-info" />;
       default: return <Package className="h-4 w-4 text-gray-500" />;
     }
   };
 
   const getConfidenceBadge = (confidence: number) => {
     if (confidence >= 0.9) {
-      return <Badge className="bg-green-500/10 text-green-600">Haute</Badge>;
+      return <Badge className="bg-success/10 text-success">Haute</Badge>;
     } else if (confidence >= 0.7) {
-      return <Badge className="bg-yellow-500/10 text-yellow-600">Moyenne</Badge>;
+      return <Badge className="bg-warning/10 text-warning">Moyenne</Badge>;
     }
     return <Badge className="bg-gray-500/10 text-gray-600">Faible</Badge>;
   };
@@ -480,7 +480,7 @@ export function VariantAttributeDetector() {
         <Card>
           <CardHeader>
             <CardTitle className="text-base flex items-center gap-2">
-              <CheckCircle2 className="h-5 w-5 text-green-500" />
+              <CheckCircle2 className="h-5 w-5 text-success" />
               Suggestions de Mapping
             </CardTitle>
             <CardDescription>

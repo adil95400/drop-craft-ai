@@ -43,9 +43,9 @@ export function QuickStats({ stats, className }: QuickStatsProps) {
   const getTrendIcon = (trend?: 'up' | 'down' | 'neutral') => {
     switch (trend) {
       case 'up':
-        return <ArrowUpRight className="h-4 w-4 text-emerald-600" />;
+        return <ArrowUpRight className="h-4 w-4 text-success" />;
       case 'down':
-        return <ArrowDownRight className="h-4 w-4 text-red-600" />;
+        return <ArrowDownRight className="h-4 w-4 text-destructive" />;
       default:
         return null;
     }
@@ -54,9 +54,9 @@ export function QuickStats({ stats, className }: QuickStatsProps) {
   const getTrendColor = (trend?: 'up' | 'down' | 'neutral') => {
     switch (trend) {
       case 'up':
-        return 'text-emerald-600';
+        return 'text-success';
       case 'down':
-        return 'text-red-600';
+        return 'text-destructive';
       default:
         return 'text-muted-foreground';
     }

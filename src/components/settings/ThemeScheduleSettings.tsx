@@ -25,7 +25,7 @@ export function ThemeScheduleSettings() {
       <CardContent className="space-y-4">
         <div className="space-y-2">
           <Label htmlFor="light-start" className="flex items-center gap-2">
-            <Sun className="w-4 h-4 text-amber-500" />
+            <Sun className="w-4 h-4 text-warning" />
             Début du mode clair
           </Label>
           <Input

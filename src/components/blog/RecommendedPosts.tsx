@@ -71,11 +71,11 @@ export function RecommendedPosts({
   const getReasonColor = (reason: string) => {
     switch (reason) {
       case 'trending':
-        return 'bg-red-100 text-red-700 border-red-200';
+        return 'bg-destructive/10 text-red-700 border-destructive/20';
       case 'popular':
-        return 'bg-blue-100 text-blue-700 border-blue-200';
+        return 'bg-info/10 text-blue-700 border-info/20';
       case 'recent':
-        return 'bg-green-100 text-green-700 border-green-200';
+        return 'bg-success/10 text-success border-success/20';
       case 'related':
         return 'bg-purple-100 text-purple-700 border-purple-200';
       default:

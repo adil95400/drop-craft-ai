@@ -132,17 +132,17 @@ export function StripeCheckout() {
     <div className="space-y-8">
       {/* Current Subscription Status */}
       {hasActiveSubscription && (
-        <Card className="border-green-200 bg-green-50">
+        <Card className="border-success/20 bg-success/5">
           <CardHeader>
-            <CardTitle className="text-green-800">Abonnement Actif</CardTitle>
-            <CardDescription className="text-green-600">
+            <CardTitle className="text-success">Abonnement Actif</CardTitle>
+            <CardDescription className="text-success">
               Votre abonnement {getPlanDisplayName(subscription?.plan_id)} est actif jusqu'au{' '}
               {subscription?.current_period_end 
                 ? new Date(subscription.current_period_end).toLocaleDateString()
                 : 'date inconnue'
               }
               {isSubscriptionCancelled && (
-                <Badge variant="outline" className="ml-2 text-orange-600 border-orange-300">
+                <Badge variant="outline" className="ml-2 text-warning border-orange-300">
                   Sera annulé
                 </Badge>
               )}
@@ -208,7 +208,7 @@ export function StripeCheckout() {
                 <ul className="space-y-2">
                   {plan.features.map((feature, index) => (
                     <li key={index} className="flex items-center gap-2">
-                      <Check className="w-4 h-4 text-green-500" />
+                      <Check className="w-4 h-4 text-success" />
                       <span className="text-sm">{feature}</span>
                     </li>
                   ))}

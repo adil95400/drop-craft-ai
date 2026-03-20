@@ -47,8 +47,8 @@ export default function TeamPage() {
 
   const getRoleIcon = (role: string) => {
     switch (role) {
-      case 'owner': return <Crown className="w-4 h-4 text-yellow-500" />
-      case 'admin': return <Shield className="w-4 h-4 text-blue-500" />
+      case 'owner': return <Crown className="w-4 h-4 text-warning" />
+      case 'admin': return <Shield className="w-4 h-4 text-info" />
       default: return <Eye className="w-4 h-4 text-muted-foreground" />
     }
   }
@@ -84,14 +84,14 @@ export default function TeamPage() {
         </Card>
         <Card>
           <CardContent className="p-6 text-center">
-            <Settings className="w-8 h-8 mx-auto mb-2 text-blue-500" />
+            <Settings className="w-8 h-8 mx-auto mb-2 text-info" />
             <div className="text-2xl font-bold">-</div>
             <p className="text-sm text-muted-foreground">Extensions partagées</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-6 text-center">
-            <Shield className="w-8 h-8 mx-auto mb-2 text-green-500" />
+            <Shield className="w-8 h-8 mx-auto mb-2 text-success" />
             <div className="text-2xl font-bold">{members.filter(m => m.role === 'owner' || m.role === 'admin').length}</div>
             <p className="text-sm text-muted-foreground">Administrateurs</p>
           </CardContent>

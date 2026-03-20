@@ -49,7 +49,7 @@ export function UpgradePromoBanner({ currentPage, className = '' }: UpgradePromo
               <div className="p-1.5 rounded-full bg-primary/10">
                 <Crown className="h-4 w-4 text-primary" />
               </div>
-              <Badge variant="secondary" className="bg-yellow-100 text-yellow-800">
+              <Badge variant="secondary" className="bg-warning/10 text-yellow-800">
                 <Sparkles className="h-3 w-3 mr-1" />
                 Ultra Pro
               </Badge>
@@ -63,7 +63,7 @@ export function UpgradePromoBanner({ currentPage, className = '' }: UpgradePromo
             <div className="flex flex-wrap gap-2">
               {content.features.map((feature, index) => (
                 <div key={index} className="flex items-center gap-1 text-xs">
-                  <Zap className="h-3 w-3 text-green-500" />
+                  <Zap className="h-3 w-3 text-success" />
                   <span className="text-muted-foreground">{feature}</span>
                 </div>
               ))}

@@ -82,7 +82,7 @@ export const PlanGatedButton = ({
                 <Lock className="h-4 w-4 mr-2" />
                 {children}
                 {PlanIcon && (
-                  <PlanIcon className="h-3 w-3 ml-2 text-amber-500" />
+                  <PlanIcon className="h-3 w-3 ml-2 text-warning" />
                 )}
               </Button>
             </div>

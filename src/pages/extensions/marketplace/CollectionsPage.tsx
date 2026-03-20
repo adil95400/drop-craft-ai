@@ -283,7 +283,7 @@ export default function CollectionsPage() {
                       variant="ghost"
                       size="sm"
                       onClick={() => handleLikeCollection(collection.id)}
-                      className={collection.isLiked ? 'text-red-500' : ''}
+                      className={collection.isLiked ? 'text-destructive' : ''}
                     >
                       <Heart className={`w-4 h-4 ${collection.isLiked ? 'fill-current' : ''}`} />
                     </Button>

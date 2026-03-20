@@ -82,6 +82,9 @@ import { ProductVideosTab } from './product/ProductVideosTab'
 import { ProductVariantsTab } from './product/ProductVariantsTab'
 import { ImageGalleryModal } from './ImageGalleryModal'
 import { PrescriptiveProductHeader } from './product/PrescriptiveProductHeader'
+import { ProductSEOTab } from './product/ProductSEOTab'
+import { ProductMediaTab } from './product/ProductMediaTab'
+import { ProductPricingTab } from './product/ProductPricingTab'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -595,9 +598,9 @@ export function ProductViewModal({
     switch (status) {
       case 'published':
       case 'active':
-        return { label: 'Publié', color: 'bg-green-500/10 text-green-600 border-green-500/20', icon: CheckCircle }
+        return { label: 'Publié', color: 'bg-success/10 text-success border-success/20', icon: CheckCircle }
       case 'draft':
-        return { label: 'Brouillon', color: 'bg-yellow-500/10 text-yellow-600 border-yellow-500/20', icon: FileText }
+        return { label: 'Brouillon', color: 'bg-warning/10 text-warning border-warning/20', icon: FileText }
       case 'archived':
         return { label: 'Archivé', color: 'bg-muted text-muted-foreground border-border', icon: Archive }
       default:
@@ -670,7 +673,7 @@ export function ProductViewModal({
                       className="h-8 w-8"
                       onClick={() => setIsLiked(!isLiked)}
                     >
-                      <Heart className={cn("h-4 w-4 transition-all", isLiked && "fill-red-500 text-red-500 scale-110")} />
+                      <Heart className={cn("h-4 w-4 transition-all", isLiked && "fill-red-500 text-destructive scale-110")} />
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent>Ajouter aux favoris</TooltipContent>
@@ -858,8 +861,8 @@ export function ProductViewModal({
                   {aiScore > 0 && (
                     <div className="absolute top-3 right-3">
                       <div className="px-3 py-1.5 rounded-full backdrop-blur-md bg-background/80 border border-border flex items-center gap-2 shadow-lg">
-                        <Sparkles className={cn("h-4 w-4", aiScore >= 80 ? 'text-green-500' : aiScore >= 60 ? 'text-yellow-500' : 'text-red-500')} />
-                        <span className={cn("font-bold text-sm", aiScore >= 80 ? 'text-green-500' : aiScore >= 60 ? 'text-yellow-500' : 'text-red-500')}>
+                        <Sparkles className={cn("h-4 w-4", aiScore >= 80 ? 'text-success' : aiScore >= 60 ? 'text-warning' : 'text-destructive')} />
+                        <span className={cn("font-bold text-sm", aiScore >= 80 ? 'text-success' : aiScore >= 60 ? 'text-warning' : 'text-destructive')}>
                           {Math.round(aiScore * 100)}%
                         </span>
                       </div>
@@ -958,7 +961,7 @@ export function ProductViewModal({
                       className="w-full justify-start gap-2 h-10"
                       onClick={() => setShowImageGallery(true)}
                     >
-                      <ImageIcon className="h-4 w-4 text-emerald-500" />
+                      <ImageIcon className="h-4 w-4 text-success" />
                       <span>Gérer les images</span>
                       {images.length > 0 && (
                         <Badge variant="secondary" className="ml-auto text-xs">
@@ -977,7 +980,7 @@ export function ProductViewModal({
                       {isOptimizing ? (
                         <Loader2 className="h-4 w-4 animate-spin" />
                       ) : (
-                        <Search className="h-4 w-4 text-blue-500" />
+                        <Search className="h-4 w-4 text-info" />
                       )}
                       <span>Optimiser SEO</span>
                     </Button>
@@ -993,21 +996,21 @@ export function ProductViewModal({
                         {isUnpublishing ? (
                           <Loader2 className="h-4 w-4 animate-spin" />
                         ) : (
-                          <Archive className="h-4 w-4 text-orange-500" />
+                          <Archive className="h-4 w-4 text-warning" />
                         )}
                         <span>Dépublier</span>
                       </Button>
                     ) : (
                       <Button
                         variant="outline"
-                        className="w-full justify-start gap-2 h-10 border-green-500/30 hover:bg-green-500/10"
+                        className="w-full justify-start gap-2 h-10 border-success/30 hover:bg-success/10"
                         onClick={handlePublish}
                         disabled={isPublishing}
                       >
                         {isPublishing ? (
                           <Loader2 className="h-4 w-4 animate-spin" />
                         ) : (
-                          <Send className="h-4 w-4 text-green-500" />
+                          <Send className="h-4 w-4 text-success" />
                         )}
                         <span>Publier dans le catalogue</span>
                       </Button>
@@ -1030,20 +1033,20 @@ export function ProductViewModal({
                   <Card className={cn(
                     "border",
                     (metrics?.margin || 0) >= 30 
-                      ? "bg-green-500/5 border-green-500/10" 
+                      ? "bg-success/5 border-success/10" 
                       : (metrics?.margin || 0) >= 15 
-                        ? "bg-yellow-500/5 border-yellow-500/10"
-                        : "bg-red-500/5 border-red-500/10"
+                        ? "bg-warning/5 border-warning/10"
+                        : "bg-destructive/5 border-destructive/10"
                   )}>
                     <CardContent className="p-3 text-center">
                       <Percent className="h-5 w-5 mx-auto mb-1 text-muted-foreground" />
                       <p className={cn(
                         "text-lg font-bold",
                         (metrics?.margin || 0) >= 30 
-                          ? "text-green-600" 
+                          ? "text-success" 
                           : (metrics?.margin || 0) >= 15 
-                            ? "text-yellow-600"
-                            : "text-red-600"
+                            ? "text-warning"
+                            : "text-destructive"
                       )}>
                         {metrics?.margin.toFixed(1)}%
                       </p>
@@ -1054,9 +1057,9 @@ export function ProductViewModal({
                   <Card className={cn(
                     "border",
                     metrics?.isOutOfStock 
-                      ? "bg-red-500/5 border-red-500/10" 
+                      ? "bg-destructive/5 border-destructive/10" 
                       : metrics?.isLowStock 
-                        ? "bg-yellow-500/5 border-yellow-500/10"
+                        ? "bg-warning/5 border-warning/10"
                         : "bg-muted/50 border-border"
                   )}>
                     <CardContent className="p-3 text-center">
@@ -1064,9 +1067,9 @@ export function ProductViewModal({
                       <p className={cn(
                         "text-lg font-bold",
                         metrics?.isOutOfStock 
-                          ? "text-red-600" 
+                          ? "text-destructive" 
                           : metrics?.isLowStock 
-                            ? "text-yellow-600"
+                            ? "text-warning"
                             : "text-foreground"
                       )}>
                         {metrics?.stock || 0}
@@ -1233,12 +1236,12 @@ export function ProductViewModal({
 
                         <Card>
                           <CardContent className="p-4 flex items-center gap-4">
-                            <div className="h-12 w-12 rounded-xl bg-green-500/10 flex items-center justify-center">
-                              <TrendingUp className="h-6 w-6 text-green-600" />
+                            <div className="h-12 w-12 rounded-xl bg-success/10 flex items-center justify-center">
+                              <TrendingUp className="h-6 w-6 text-success" />
                             </div>
                             <div>
                               <p className="text-sm text-muted-foreground">Profit</p>
-                              <p className="text-xl font-bold text-green-600">
+                              <p className="text-xl font-bold text-success">
                                 +{formatCurrency(metrics?.profit || 0)}
                               </p>
                             </div>
@@ -1287,256 +1290,19 @@ export function ProductViewModal({
 
                     {/* Media Tab - Images, Videos, Variants */}
                     <TabsContent value="media" className="m-0 space-y-6">
-                      {/* Images Gallery with Selection */}
-                      <Card>
-                        <CardHeader className="pb-3">
-                          <div className="flex items-center justify-between">
-                            <CardTitle className="text-sm flex items-center gap-2">
-                              <ImageIcon className="h-4 w-4" />
-                              Images ({images.length})
-                            </CardTitle>
-                            <div className="flex items-center gap-2">
-                              {images.length > 0 && (
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={selectAllImages}
-                                  className="h-8 gap-1.5"
-                                >
-                                  <Checkbox 
-                                    checked={selectedImages.size === images.length && images.length > 0}
-                                    className="pointer-events-none h-3.5 w-3.5"
-                                  />
-                                  <span className="text-xs">
-                                    {selectedImages.size === images.length ? 'Désélectionner' : 'Tout'}
-                                  </span>
-                                </Button>
-                              )}
-                              {selectedImages.size > 0 && (
-                                <Button
-                                  variant="destructive"
-                                  size="sm"
-                                  onClick={() => setShowDeleteImagesDialog(true)}
-                                  className="h-8 gap-1.5"
-                                  disabled={isSavingImages}
-                                >
-                                  <Trash2 className="h-3.5 w-3.5" />
-                                  <span className="text-xs">Supprimer ({selectedImages.size})</span>
-                                </Button>
-                              )}
-                              <Button
-                                variant="default"
-                                size="sm"
-                                onClick={() => setShowAddImageDialog(true)}
-                                className="h-8 gap-1.5"
-                              >
-                                <Plus className="h-3.5 w-3.5" />
-                                <span className="text-xs">Ajouter</span>
-                              </Button>
-                            </div>
-                          </div>
-                        </CardHeader>
-                        <CardContent>
-                          {images.length > 0 ? (
-                            <div className="grid grid-cols-4 gap-2">
-                              {images.map((img: string, idx: number) => (
-                                <div
-                                  key={idx}
-                                  className={cn(
-                                    "relative aspect-square rounded-lg overflow-hidden border-2 transition-all cursor-pointer group",
-                                    selectedImages.has(idx)
-                                      ? "border-primary ring-2 ring-primary/20"
-                                      : "border-transparent hover:border-muted-foreground/30"
-                                  )}
-                                  onClick={() => toggleImageSelection(idx)}
-                                >
-                                  <img
-                                    src={img}
-                                    alt={`Image ${idx + 1}`}
-                                    className="w-full h-full object-cover"
-                                    onError={(e) => {
-                                      (e.target as HTMLImageElement).src = '/placeholder.svg'
-                                    }}
-                                  />
-                                  
-                                  {/* Primary badge */}
-                                  {idx === 0 && (
-                                    <div className="absolute top-1 left-1 bg-primary text-primary-foreground px-1.5 py-0.5 rounded text-[10px] font-semibold flex items-center gap-0.5">
-                                      <Star className="h-2.5 w-2.5 fill-current" />
-                                      Principale
-                                    </div>
-                                  )}
-                                  
-                                  {/* Selection checkbox */}
-                                  <div 
-                                    className={cn(
-                                      "absolute top-1 right-1 h-5 w-5 rounded flex items-center justify-center transition-all",
-                                      selectedImages.has(idx)
-                                        ? "bg-primary text-primary-foreground"
-                                        : "bg-background/80 opacity-0 group-hover:opacity-100"
-                                    )}
-                                  >
-                                    {selectedImages.has(idx) ? (
-                                      <Check className="h-3 w-3" />
-                                    ) : (
-                                      <div className="h-3 w-3 border-2 rounded-sm" />
-                                    )}
-                                  </div>
-
-                                  {/* Set as primary overlay */}
-                                  {idx !== 0 && (
-                                    <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                                      <Button
-                                        variant="secondary"
-                                        size="sm"
-                                        className="h-7 text-xs gap-1"
-                                        onClick={(e) => {
-                                          e.stopPropagation()
-                                          handleSetPrimaryImage(idx)
-                                        }}
-                                        disabled={isSavingImages}
-                                      >
-                                        <Star className="h-3 w-3" />
-                                        Principale
-                                      </Button>
-                                    </div>
-                                  )}
-                                </div>
-                              ))}
-                            </div>
-                          ) : (
-                            <div className="text-center py-8 text-muted-foreground">
-                              <ImageIcon className="h-12 w-12 mx-auto mb-2 opacity-30" />
-                              <p className="mb-4">Aucune image disponible</p>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => setShowAddImageDialog(true)}
-                                className="gap-2"
-                              >
-                                <Plus className="h-4 w-4" />
-                                Ajouter une image
-                              </Button>
-                            </div>
-                          )}
-                        </CardContent>
-                      </Card>
-
-                      {/* Videos */}
-                      <Card>
-                        <CardHeader className="pb-3">
-                          <CardTitle className="text-sm flex items-center gap-2">
-                            <Video className="h-4 w-4" />
-                            Vidéos ({videos.length})
-                          </CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                          {videos.length > 0 ? (
-                            <div className="space-y-3">
-                              {videos.map((video: string, idx: number) => (
-                                <div
-                                  key={idx}
-                                  className="flex items-center gap-3 p-3 rounded-lg bg-muted/50 hover:bg-muted transition-colors"
-                                >
-                                  <div className="h-10 w-10 rounded-lg bg-purple-500/10 flex items-center justify-center">
-                                    <Play className="h-5 w-5 text-purple-600" />
-                                  </div>
-                                  <div className="flex-1 min-w-0">
-                                    <p className="text-sm font-medium truncate">
-                                      Vidéo {idx + 1}
-                                    </p>
-                                    <p className="text-xs text-muted-foreground truncate">
-                                      {video.includes('.mp4') ? 'MP4' : video.includes('.m3u8') ? 'HLS Stream' : 'Vidéo'}
-                                    </p>
-                                  </div>
-                                  <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={() => window.open(video, '_blank')}
-                                  >
-                                    <ExternalLink className="h-4 w-4" />
-                                  </Button>
-                                </div>
-                              ))}
-                            </div>
-                          ) : (
-                            <div className="text-center py-8 text-muted-foreground">
-                              <Video className="h-12 w-12 mx-auto mb-2 opacity-30" />
-                              <p>Aucune vidéo disponible</p>
-                            </div>
-                          )}
-                        </CardContent>
-                      </Card>
-
-                      {/* Variants */}
-                      <Card>
-                        <CardHeader className="pb-3">
-                          <CardTitle className="text-sm flex items-center gap-2">
-                            <Layers className="h-4 w-4" />
-                            Variantes ({variants.length})
-                          </CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                          {variants.length > 0 ? (
-                            <div className="space-y-2">
-                              {variants.map((variant: any, idx: number) => (
-                                <div
-                                  key={variant.id || idx}
-                                  className="flex items-center justify-between p-3 rounded-lg bg-muted/50 hover:bg-muted transition-colors"
-                                >
-                                  <div className="flex items-center gap-3">
-                                    {variant.image ? (
-                                      <img
-                                        src={variant.image}
-                                        alt={variant.name}
-                                        className="h-10 w-10 rounded-lg object-cover"
-                                      />
-                                    ) : (
-                                      <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                                        <Package className="h-5 w-5 text-primary" />
-                                      </div>
-                                    )}
-                                    <div>
-                                      <p className="text-sm font-medium">{variant.name || 'Variante'}</p>
-                                      {variant.sku && (
-                                        <p className="text-xs text-muted-foreground font-mono">
-                                          SKU: {variant.sku}
-                                        </p>
-                                      )}
-                                      {variant.attributes && Object.keys(variant.attributes).length > 0 && (
-                                        <div className="flex gap-1 mt-1">
-                                          {Object.entries(variant.attributes).map(([key, value]) => (
-                                            <Badge key={key} variant="outline" className="text-xs">
-                                              {key}: {String(value)}
-                                            </Badge>
-                                          ))}
-                                        </div>
-                                      )}
-                                    </div>
-                                  </div>
-                                  <div className="text-right">
-                                    {variant.price !== undefined && variant.price > 0 && (
-                                      <p className="text-sm font-bold">
-                                        {formatCurrency(variant.price)}
-                                      </p>
-                                    )}
-                                    {variant.stock_quantity !== undefined && (
-                                      <p className="text-xs text-muted-foreground">
-                                        Stock: {variant.stock_quantity}
-                                      </p>
-                                    )}
-                                  </div>
-                                </div>
-                              ))}
-                            </div>
-                          ) : (
-                            <div className="text-center py-8 text-muted-foreground">
-                              <Layers className="h-12 w-12 mx-auto mb-2 opacity-30" />
-                              <p>Aucune variante disponible</p>
-                            </div>
-                          )}
-                        </CardContent>
-                      </Card>
+                      <ProductMediaTab
+                        images={images}
+                        videos={videos}
+                        variants={variants}
+                        selectedImages={selectedImages}
+                        isSavingImages={isSavingImages}
+                        onToggleImageSelection={toggleImageSelection}
+                        onSelectAllImages={selectAllImages}
+                        onShowAddImageDialog={() => setShowAddImageDialog(true)}
+                        onShowDeleteImagesDialog={() => setShowDeleteImagesDialog(true)}
+                        onSetPrimaryImage={handleSetPrimaryImage}
+                        formatCurrency={formatCurrency}
+                      />
                     </TabsContent>
 
                     {/* Videos Tab */}
@@ -1568,125 +1334,15 @@ export function ProductViewModal({
 
                     {/* Pricing Tab */}
                     <TabsContent value="pricing" className="m-0 space-y-6">
-                      <div className="grid grid-cols-2 gap-4">
-                        <Card>
-                          <CardHeader className="pb-2">
-                            <CardTitle className="text-sm">Prix de vente</CardTitle>
-                          </CardHeader>
-                          <CardContent>
-                            {isEditing ? (
-                              <div className="relative">
-                                <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                                <Input
-                                  type="number"
-                                  step="0.01"
-                                  value={editedProduct.price || ''}
-                                  onChange={(e) =>
-                                    setEditedProduct({
-                                      ...editedProduct,
-                                      price: e.target.value,
-                                    })
-                                  }
-                                  className="pl-9"
-                                />
-                              </div>
-                            ) : (
-                              <p className="text-3xl font-bold text-primary">
-                                {formatCurrency(product.price || 0)}
-                              </p>
-                            )}
-                          </CardContent>
-                        </Card>
-
-                        <Card>
-                          <CardHeader className="pb-2">
-                            <CardTitle className="text-sm">Prix d'achat</CardTitle>
-                          </CardHeader>
-                          <CardContent>
-                            {isEditing ? (
-                              <div className="relative">
-                                <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                                <Input
-                                  type="number"
-                                  step="0.01"
-                                  value={editedProduct.cost_price || ''}
-                                  onChange={(e) =>
-                                    setEditedProduct({
-                                      ...editedProduct,
-                                      cost_price: e.target.value,
-                                    })
-                                  }
-                                  className="pl-9"
-                                />
-                              </div>
-                            ) : (
-                              <p className="text-3xl font-bold">
-                                {formatCurrency(product.cost_price || 0)}
-                              </p>
-                            )}
-                          </CardContent>
-                        </Card>
-                      </div>
-
-                      <Card className="bg-gradient-to-r from-green-500/5 to-emerald-500/5 border-green-500/20">
-                        <CardContent className="p-6">
-                          <div className="flex items-center justify-between mb-4">
-                            <div>
-                              <p className="text-sm text-muted-foreground">Profit par unité</p>
-                              <p className="text-2xl font-bold text-green-600">
-                                +{formatCurrency(metrics?.profit || 0)}
-                              </p>
-                            </div>
-                            <div className="text-right">
-                              <p className="text-sm text-muted-foreground">Marge bénéficiaire</p>
-                              <p className="text-2xl font-bold text-green-600">
-                                {metrics?.margin.toFixed(1)}%
-                              </p>
-                            </div>
-                          </div>
-                          <Progress 
-                            value={Math.min(metrics?.margin || 0, 100)} 
-                            className="h-3"
-                          />
-                        </CardContent>
-                      </Card>
-
-                      <Card>
-                        <CardHeader className="pb-2">
-                          <CardTitle className="text-sm flex items-center gap-2">
-                            <ShoppingCart className="h-4 w-4" />
-                            Inventaire
-                          </CardTitle>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                          <div className="flex items-center justify-between">
-                            <Label>Quantité en stock</Label>
-                            {isEditing ? (
-                              <Input
-                                type="number"
-                                value={editedProduct.stock_quantity || ''}
-                                onChange={(e) =>
-                                  setEditedProduct({
-                                    ...editedProduct,
-                                    stock_quantity: e.target.value,
-                                  })
-                                }
-                                className="w-32"
-                              />
-                            ) : (
-                              <div className="flex items-center gap-2">
-                                {stockConfig && (
-                                  <Badge variant={stockConfig.color} className="gap-1.5">
-                                    <stockConfig.icon className="h-3 w-3" />
-                                    {stockConfig.label}
-                                  </Badge>
-                                )}
-                                <span className="text-xl font-bold">{metrics?.stock || 0}</span>
-                              </div>
-                            )}
-                          </div>
-                        </CardContent>
-                      </Card>
+                      <ProductPricingTab
+                        product={product}
+                        editedProduct={editedProduct}
+                        setEditedProduct={setEditedProduct}
+                        isEditing={isEditing}
+                        metrics={metrics}
+                        stockConfig={stockConfig}
+                        formatCurrency={formatCurrency}
+                      />
                     </TabsContent>
 
                     {/* Details Tab */}
@@ -1773,210 +1429,15 @@ export function ProductViewModal({
 
                     {/* SEO Tab */}
                     <TabsContent value="seo" className="m-0 space-y-6">
-                      {/* SEO Score Card */}
-                      {(() => {
-                        const seoTitle = isEditing ? editedProduct.seo_title : ((product as any).seo_title || product.name || '');
-                        const seoDesc = isEditing ? editedProduct.seo_description : ((product as any).seo_description || product.description?.slice(0, 160) || '');
-                        const titleLength = seoTitle.length;
-                        const descLength = seoDesc.length;
-                        const hasImages = images.length > 0;
-                        const hasCategory = !!product.category;
-                        
-                        // Calculate SEO score
-                        let seoScore = 0;
-                        if (titleLength >= 30 && titleLength <= 60) seoScore += 25;
-                        else if (titleLength > 0 && titleLength < 30) seoScore += 10;
-                        else if (titleLength > 60) seoScore += 15;
-                        
-                        if (descLength >= 120 && descLength <= 160) seoScore += 25;
-                        else if (descLength > 0 && descLength < 120) seoScore += 10;
-                        else if (descLength > 160) seoScore += 15;
-                        
-                        if (hasImages) seoScore += 25;
-                        if (hasCategory) seoScore += 15;
-                        if (product.description && product.description.length > 100) seoScore += 10;
-                        
-                        const seoScoreColor = seoScore >= 80 ? 'text-green-600' : seoScore >= 50 ? 'text-yellow-600' : 'text-red-600';
-                        const seoScoreBg = seoScore >= 80 ? 'from-green-500/10 to-emerald-500/10 border-green-500/20' : seoScore >= 50 ? 'from-yellow-500/10 to-orange-500/10 border-yellow-500/20' : 'from-red-500/10 to-pink-500/10 border-red-500/20';
-                        
-                        return (
-                          <>
-                            <Card className={cn("bg-gradient-to-br", seoScoreBg)}>
-                              <CardContent className="p-6">
-                                <div className="flex items-center justify-between">
-                                  <div>
-                                    <p className="text-sm text-muted-foreground mb-1">Score SEO</p>
-                                    <div className="flex items-center gap-3">
-                                      <span className={cn("text-4xl font-bold", seoScoreColor)}>{seoScore}</span>
-                                      <span className="text-xl text-muted-foreground">/100</span>
-                                    </div>
-                                    <p className="text-xs text-muted-foreground mt-1">
-                                      {seoScore >= 80 ? 'Excellent - Votre produit est bien optimisé' : 
-                                       seoScore >= 50 ? 'Moyen - Des améliorations sont possibles' : 
-                                       'Faible - Optimisation recommandée'}
-                                    </p>
-                                  </div>
-                                  <div className="relative h-20 w-20">
-                                    <svg className="h-20 w-20 -rotate-90">
-                                      <circle
-                                        cx="40"
-                                        cy="40"
-                                        r="36"
-                                        stroke="currentColor"
-                                        strokeWidth="8"
-                                        fill="transparent"
-                                        className="text-muted/20"
-                                      />
-                                      <circle
-                                        cx="40"
-                                        cy="40"
-                                        r="36"
-                                        stroke="currentColor"
-                                        strokeWidth="8"
-                                        fill="transparent"
-                                        strokeDasharray={226}
-                                        strokeDashoffset={226 - (226 * seoScore) / 100}
-                                        className={seoScoreColor}
-                                        strokeLinecap="round"
-                                      />
-                                    </svg>
-                                    <div className="absolute inset-0 flex items-center justify-center">
-                                      <Sparkles className={cn("h-6 w-6", seoScoreColor)} />
-                                    </div>
-                                  </div>
-                                </div>
-                              </CardContent>
-                            </Card>
-
-                            <Card>
-                              <CardHeader>
-                                <div className="flex items-center justify-between">
-                                  <div>
-                                    <CardTitle className="text-sm flex items-center gap-2">
-                                      <Globe className="h-4 w-4" />
-                                      Optimisation SEO
-                                    </CardTitle>
-                                    <CardDescription>
-                                      Optimisez votre produit pour les moteurs de recherche
-                                    </CardDescription>
-                                  </div>
-                                  <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={handleOptimizeSEO}
-                                    disabled={isOptimizing}
-                                  >
-                                    {isOptimizing ? (
-                                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                                    ) : (
-                                      <Sparkles className="h-4 w-4 mr-2 text-purple-500" />
-                                    )}
-                                    Optimiser SEO
-                                  </Button>
-                                </div>
-                              </CardHeader>
-                              <CardContent className="space-y-4">
-                                <div className="space-y-2">
-                                  <div className="flex items-center justify-between">
-                                    <Label>Titre SEO</Label>
-                                    <span className={cn(
-                                      "text-xs font-medium",
-                                      titleLength >= 30 && titleLength <= 60 ? "text-green-600" :
-                                      titleLength > 60 ? "text-red-600" : "text-yellow-600"
-                                    )}>
-                                      {titleLength}/60 caractères
-                                      {titleLength >= 30 && titleLength <= 60 && " ✓"}
-                                    </span>
-                                  </div>
-                                  <Input
-                                    value={seoTitle}
-                                    onChange={(e) =>
-                                      setEditedProduct({ ...editedProduct, seo_title: e.target.value })
-                                    }
-                                    placeholder="Titre pour les moteurs de recherche"
-                                    disabled={!isEditing}
-                                    className={cn(
-                                      titleLength > 60 && "border-red-500 focus-visible:ring-red-500"
-                                    )}
-                                  />
-                                  <Progress 
-                                    value={Math.min((titleLength / 60) * 100, 100)} 
-                                    className={cn(
-                                      "h-1.5",
-                                      titleLength > 60 && "[&>div]:bg-red-500"
-                                    )}
-                                  />
-                                </div>
-
-                                <div className="space-y-2">
-                                  <div className="flex items-center justify-between">
-                                    <Label>Meta description</Label>
-                                    <span className={cn(
-                                      "text-xs font-medium",
-                                      descLength >= 120 && descLength <= 160 ? "text-green-600" :
-                                      descLength > 160 ? "text-red-600" : "text-yellow-600"
-                                    )}>
-                                      {descLength}/160 caractères
-                                      {descLength >= 120 && descLength <= 160 && " ✓"}
-                                    </span>
-                                  </div>
-                                  <Textarea
-                                    value={seoDesc}
-                                    onChange={(e) =>
-                                      setEditedProduct({ ...editedProduct, seo_description: e.target.value })
-                                    }
-                                    placeholder="Description pour les moteurs de recherche"
-                                    disabled={!isEditing}
-                                    rows={3}
-                                    className={cn(
-                                      descLength > 160 && "border-red-500 focus-visible:ring-red-500"
-                                    )}
-                                  />
-                                  <Progress 
-                                    value={Math.min((descLength / 160) * 100, 100)} 
-                                    className={cn(
-                                      "h-1.5",
-                                      descLength > 160 && "[&>div]:bg-red-500"
-                                    )}
-                                  />
-                                </div>
-
-                                <div className="space-y-2">
-                                  <Label>URL slug</Label>
-                                  <Input
-                                    value={(product as any).slug || product.name?.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '') || ''}
-                                    placeholder="url-du-produit"
-                                    disabled
-                                    className="font-mono text-sm"
-                                  />
-                                </div>
-                              </CardContent>
-                            </Card>
-
-                            <Card>
-                              <CardHeader className="pb-3">
-                                <CardTitle className="text-sm flex items-center gap-2">
-                                  <Eye className="h-4 w-4" />
-                                  Aperçu Google
-                                </CardTitle>
-                              </CardHeader>
-                              <CardContent>
-                                <div className="p-4 bg-white rounded-lg border space-y-1 dark:bg-zinc-950">
-                                  <p className="text-blue-600 dark:text-blue-400 text-lg hover:underline cursor-pointer truncate font-medium">
-                                    {seoTitle || 'Titre du produit'}
-                                  </p>
-                                  <p className="text-green-700 dark:text-green-500 text-sm truncate">
-                                    www.votre-boutique.com › produits › {(product as any).slug || product.name?.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '') || 'produit'}
-                                  </p>
-                                  <p className="text-gray-600 dark:text-gray-400 text-sm line-clamp-2">
-                                    {seoDesc || 'Description du produit pour les moteurs de recherche...'}
-                                  </p>
-                                </div>
-                              </CardContent>
-                            </Card>
-                          </>
-                        );
-                      })()}
+                      <ProductSEOTab
+                        product={product}
+                        editedProduct={editedProduct}
+                        setEditedProduct={setEditedProduct}
+                        isEditing={isEditing}
+                        images={images}
+                        isOptimizing={isOptimizing}
+                        onOptimizeSEO={handleOptimizeSEO}
+                      />
                     </TabsContent>
 
                     {/* History Tab */}
@@ -2006,8 +1467,8 @@ export function ProductViewModal({
                             </div>
 
                             <div className="flex items-start gap-4 p-3 rounded-lg bg-muted/50">
-                              <div className="h-8 w-8 rounded-full bg-green-500/10 flex items-center justify-center shrink-0">
-                                <CheckCircle className="h-4 w-4 text-green-600" />
+                              <div className="h-8 w-8 rounded-full bg-success/10 flex items-center justify-center shrink-0">
+                                <CheckCircle className="h-4 w-4 text-success" />
                               </div>
                               <div className="flex-1 min-w-0">
                                 <p className="text-sm font-medium">Création</p>

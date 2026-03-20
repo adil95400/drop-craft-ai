@@ -169,12 +169,12 @@ export function OrderFulfillmentPanel({
 
   const getStatusColor = (type: string) => {
     const colors: Record<string, string> = {
-      created: 'bg-blue-500',
-      processing: 'bg-amber-500',
+      created: 'bg-info',
+      processing: 'bg-warning',
       partial_shipped: 'bg-purple-500',
       shipped: 'bg-indigo-500',
-      delivered: 'bg-green-500',
-      issue: 'bg-red-500',
+      delivered: 'bg-success',
+      issue: 'bg-destructive',
     };
     return colors[type] || 'bg-gray-500';
   };
@@ -290,7 +290,7 @@ export function OrderFulfillmentPanel({
                           {item.fulfilled_quantity}/{item.quantity}
                         </Badge>
                         {isFullyFulfilled && (
-                          <CheckCircle2 className="h-4 w-4 text-green-500" />
+                          <CheckCircle2 className="h-4 w-4 text-success" />
                         )}
                       </div>
                     </div>

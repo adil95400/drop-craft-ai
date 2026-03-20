@@ -17,10 +17,10 @@ interface AIPrioritiesCardProps {
 }
 
 const categoryLabels: Record<string, { label: string; color: string }> = {
-  seo: { label: 'SEO', color: 'bg-blue-500/10 text-blue-600' },
+  seo: { label: 'SEO', color: 'bg-info/10 text-info' },
   content: { label: 'Contenu', color: 'bg-purple-500/10 text-purple-600' },
-  pricing: { label: 'Prix', color: 'bg-yellow-500/10 text-yellow-600' },
-  stock: { label: 'Stock', color: 'bg-green-500/10 text-green-600' },
+  pricing: { label: 'Prix', color: 'bg-warning/10 text-warning' },
+  stock: { label: 'Stock', color: 'bg-success/10 text-success' },
 }
 
 export function AIPrioritiesCard({ priorities }: AIPrioritiesCardProps) {
@@ -56,7 +56,7 @@ export function AIPrioritiesCard({ priorities }: AIPrioritiesCardProps) {
               <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
                 {displayed.map(p => {
                   const cat = categoryLabels[p.category] || categoryLabels.content
-                  const scoreColor = p.score >= 60 ? 'text-yellow-600' : 'text-destructive'
+                  const scoreColor = p.score >= 60 ? 'text-warning' : 'text-destructive'
 
                   return (
                     <div

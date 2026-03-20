@@ -39,7 +39,7 @@ export const MARKETPLACE_CONFIGS: MarketplaceConfig[] = [
     id: 'amazon',
     name: 'Amazon Seller',
     icon: '🛒',
-    color: 'bg-orange-500',
+    color: 'bg-warning',
     regions: [
       { code: 'ATVPDKIKX0DER', name: 'Amazon US' },
       { code: 'A1PA6795UKMFR9', name: 'Amazon DE' },
@@ -58,7 +58,7 @@ export const MARKETPLACE_CONFIGS: MarketplaceConfig[] = [
     id: 'ebay',
     name: 'eBay',
     icon: '🏪',
-    color: 'bg-blue-500',
+    color: 'bg-info',
     regions: [
       { code: 'EBAY_US', name: 'eBay US' },
       { code: 'EBAY_GB', name: 'eBay UK' },
@@ -75,7 +75,7 @@ export const MARKETPLACE_CONFIGS: MarketplaceConfig[] = [
     id: 'aliexpress',
     name: 'AliExpress',
     icon: '🚀',
-    color: 'bg-red-500',
+    color: 'bg-destructive',
     credentialFields: [
       { key: 'appKey', label: 'App Key', type: 'text', required: true },
       { key: 'appSecret', label: 'App Secret', type: 'password', required: true },
@@ -125,7 +125,7 @@ export const MARKETPLACE_CONFIGS: MarketplaceConfig[] = [
     id: 'alibaba',
     name: 'Alibaba / 1688',
     icon: '🏭',
-    color: 'bg-amber-500',
+    color: 'bg-warning',
     credentialFields: [
       { key: 'appKey', label: 'App Key', type: 'text', required: true },
       { key: 'appSecret', label: 'App Secret', type: 'password', required: true },
@@ -136,7 +136,7 @@ export const MARKETPLACE_CONFIGS: MarketplaceConfig[] = [
     id: 'printify',
     name: 'Printify',
     icon: '🎨',
-    color: 'bg-green-500',
+    color: 'bg-success',
     credentialFields: [
       { key: 'personalAccessToken', label: 'Personal Access Token', type: 'password', required: true, placeholder: 'Depuis Printify > Settings > Connections' },
     ]

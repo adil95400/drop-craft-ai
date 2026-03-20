@@ -179,7 +179,7 @@ export const WooCommerceIntegration: React.FC<WooCommerceIntegrationProps> = ({
                   <p className="text-sm text-muted-foreground">Produits</p>
                   <p className="text-2xl font-bold">{stats.products}</p>
                 </div>
-                <ShoppingBag className="w-8 h-8 text-blue-500" />
+                <ShoppingBag className="w-8 h-8 text-info" />
               </div>
             </CardContent>
           </Card>
@@ -190,7 +190,7 @@ export const WooCommerceIntegration: React.FC<WooCommerceIntegrationProps> = ({
                   <p className="text-sm text-muted-foreground">Commandes</p>
                   <p className="text-2xl font-bold">{stats.orders}</p>
                 </div>
-                <Package className="w-8 h-8 text-green-500" />
+                <Package className="w-8 h-8 text-success" />
               </div>
             </CardContent>
           </Card>
@@ -214,7 +214,7 @@ export const WooCommerceIntegration: React.FC<WooCommerceIntegrationProps> = ({
                     {stats.lastSync ? new Date(stats.lastSync).toLocaleDateString() : 'Jamais'}
                   </p>
                 </div>
-                <RefreshCw className="w-8 h-8 text-orange-500" />
+                <RefreshCw className="w-8 h-8 text-warning" />
               </div>
             </CardContent>
           </Card>
@@ -293,7 +293,7 @@ export const WooCommerceIntegration: React.FC<WooCommerceIntegrationProps> = ({
 
               <div className="bg-amber-50 p-4 rounded-lg">
                 <div className="flex items-start gap-2">
-                  <AlertCircle className="w-5 h-5 text-amber-500 mt-0.5" />
+                  <AlertCircle className="w-5 h-5 text-warning mt-0.5" />
                   <div>
                     <h4 className="font-medium text-amber-900">Générer les clés API</h4>
                     <p className="text-sm text-amber-700 mb-2">
@@ -540,9 +540,9 @@ export const WooCommerceIntegration: React.FC<WooCommerceIntegrationProps> = ({
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="bg-blue-50 p-4 rounded-lg">
+              <div className="bg-info/5 p-4 rounded-lg">
                 <div className="flex items-start gap-2">
-                  <Download className="w-5 h-5 text-blue-500 mt-0.5" />
+                  <Download className="w-5 h-5 text-info mt-0.5" />
                   <div>
                     <h4 className="font-medium text-blue-900">Plugin Recommandé</h4>
                     <p className="text-sm text-blue-700 mb-3">
@@ -550,19 +550,19 @@ export const WooCommerceIntegration: React.FC<WooCommerceIntegrationProps> = ({
                     </p>
                     <div className="space-y-2">
                       <div className="flex items-center gap-2 text-sm">
-                        <Check className="w-4 h-4 text-green-500" />
+                        <Check className="w-4 h-4 text-success" />
                         <span>Synchronisation temps réel via webhooks</span>
                       </div>
                       <div className="flex items-center gap-2 text-sm">
-                        <Check className="w-4 h-4 text-green-500" />
+                        <Check className="w-4 h-4 text-success" />
                         <span>Gestion avancée des variations</span>
                       </div>
                       <div className="flex items-center gap-2 text-sm">
-                        <Check className="w-4 h-4 text-green-500" />
+                        <Check className="w-4 h-4 text-success" />
                         <span>Optimisation SEO automatique</span>
                       </div>
                       <div className="flex items-center gap-2 text-sm">
-                        <Check className="w-4 h-4 text-green-500" />
+                        <Check className="w-4 h-4 text-success" />
                         <span>Synchronisation des images en arrière-plan</span>
                       </div>
                     </div>

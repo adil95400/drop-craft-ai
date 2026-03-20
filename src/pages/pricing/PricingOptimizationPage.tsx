@@ -215,8 +215,8 @@ export default function PricingOptimizationPage() {
 
   const getDelta = (current: number, suggested: number) => {
     const diff = ((suggested - current) / current) * 100;
-    if (diff > 0) return { icon: ArrowUp, color: 'text-green-500', label: `+${diff.toFixed(1)}%` };
-    if (diff < 0) return { icon: ArrowDown, color: 'text-red-500', label: `${diff.toFixed(1)}%` };
+    if (diff > 0) return { icon: ArrowUp, color: 'text-success', label: `+${diff.toFixed(1)}%` };
+    if (diff < 0) return { icon: ArrowDown, color: 'text-destructive', label: `${diff.toFixed(1)}%` };
     return { icon: Minus, color: 'text-muted-foreground', label: '0%' };
   };
 

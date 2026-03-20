@@ -70,9 +70,9 @@ export function SyncHistory({ storeId }: SyncHistoryProps) {
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'success': return <CheckCircle className="w-4 h-4 text-green-500" />
-      case 'error': return <XCircle className="w-4 h-4 text-red-500" />
-      case 'warning': return <AlertCircle className="w-4 h-4 text-orange-500" />
+      case 'success': return <CheckCircle className="w-4 h-4 text-success" />
+      case 'error': return <XCircle className="w-4 h-4 text-destructive" />
+      case 'warning': return <AlertCircle className="w-4 h-4 text-warning" />
       default: return <Clock className="w-4 h-4 text-gray-500" />
     }
   }
@@ -98,8 +98,8 @@ export function SyncHistory({ storeId }: SyncHistoryProps) {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'success': return 'bg-green-100 text-green-800 border-green-200'
-      case 'error': return 'bg-red-100 text-red-800 border-red-200'
+      case 'success': return 'bg-success/10 text-success border-success/20'
+      case 'error': return 'bg-destructive/10 text-red-800 border-destructive/20'
       case 'warning': return 'bg-orange-100 text-orange-800 border-orange-200'
       default: return 'bg-gray-100 text-gray-800 border-gray-200'
     }

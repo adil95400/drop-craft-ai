@@ -160,7 +160,7 @@ export function ProductEditModal({ product, open, onOpenChange, onSuccess }: Pro
 
       toast.success('Produit mis à jour avec succès', {
         description: `${data.name} a été modifié`,
-        icon: <CheckCircle className="h-4 w-4 text-green-500" />
+        icon: <CheckCircle className="h-4 w-4 text-success" />
       });
 
       queryClient.invalidateQueries({ queryKey: ['unified-products'] });
@@ -218,7 +218,7 @@ export function ProductEditModal({ product, open, onOpenChange, onSuccess }: Pro
                         <Input 
                           {...field} 
                           placeholder="Ex: T-shirt Premium Bio"
-                          className={cn(form.formState.errors.name && "border-red-500")}
+                          className={cn(form.formState.errors.name && "border-destructive")}
                         />
                       </FormControl>
                       <FormMessage />
@@ -343,9 +343,9 @@ export function ProductEditModal({ product, open, onOpenChange, onSuccess }: Pro
                   <Label>Marge</Label>
                   <div className={cn(
                     "h-10 px-3 flex items-center rounded-md border text-sm font-medium",
-                    parseFloat(calculateMargin()) > 30 ? "bg-green-50 text-green-700 border-green-200" :
+                    parseFloat(calculateMargin()) > 30 ? "bg-success/5 text-success border-success/20" :
                     parseFloat(calculateMargin()) > 15 ? "bg-amber-50 text-amber-700 border-amber-200" :
-                    "bg-red-50 text-red-700 border-red-200"
+                    "bg-destructive/5 text-red-700 border-destructive/20"
                   )}>
                     {calculateMargin()}%
                   </div>

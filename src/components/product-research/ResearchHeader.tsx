@@ -39,22 +39,22 @@ export function ResearchHeader({ stats }: ResearchHeaderProps) {
       label: 'Produits analysés',
       value: formatNumber(displayStats.totalProducts),
       icon: BarChart3,
-      color: 'text-blue-500',
-      bgColor: 'bg-blue-500/10'
+      color: 'text-info',
+      bgColor: 'bg-info/10'
     },
     {
       label: 'Tendances actives',
       value: formatNumber(displayStats.trendingNow),
       icon: TrendingUp,
-      color: 'text-green-500',
-      bgColor: 'bg-green-500/10'
+      color: 'text-success',
+      bgColor: 'bg-success/10'
     },
     {
       label: 'Score moyen',
       value: `${displayStats.avgScore}%`,
       icon: Target,
-      color: 'text-orange-500',
-      bgColor: 'bg-orange-500/10'
+      color: 'text-warning',
+      bgColor: 'bg-warning/10'
     },
     {
       label: 'Mise à jour',

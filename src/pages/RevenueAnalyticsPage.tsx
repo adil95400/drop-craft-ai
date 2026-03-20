@@ -44,8 +44,8 @@ function MetricCard({
         </div>
         {trend !== undefined && (
           <div className="mt-3 flex items-center gap-1">
-            <TrendIcon className={`h-3.5 w-3.5 ${isPositive ? 'text-green-500' : 'text-red-500'}`} />
-            <span className={`text-xs font-medium ${isPositive ? 'text-green-500' : 'text-red-500'}`}>
+            <TrendIcon className={`h-3.5 w-3.5 ${isPositive ? 'text-success' : 'text-destructive'}`} />
+            <span className={`text-xs font-medium ${isPositive ? 'text-success' : 'text-destructive'}`}>
               {isPositive ? '+' : ''}{trend.toFixed(1)}%
             </span>
             {trendLabel && <span className="text-xs text-muted-foreground ml-1">{trendLabel}</span>}

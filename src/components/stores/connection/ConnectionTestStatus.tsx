@@ -62,7 +62,7 @@ export function ConnectionTestStatus({
 
   const getStatusIcon = () => {
     if (testing) {
-      return <Loader2 className="h-4 w-4 animate-spin text-blue-500" />;
+      return <Loader2 className="h-4 w-4 animate-spin text-info" />;
     }
     
     if (testResult === null) {
@@ -70,9 +70,9 @@ export function ConnectionTestStatus({
     }
     
     return testResult.success ? (
-      <CheckCircle className="h-4 w-4 text-green-500" />
+      <CheckCircle className="h-4 w-4 text-success" />
     ) : (
-      <XCircle className="h-4 w-4 text-red-500" />
+      <XCircle className="h-4 w-4 text-destructive" />
     );
   };
 

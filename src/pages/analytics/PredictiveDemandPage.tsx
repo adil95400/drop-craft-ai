@@ -36,10 +36,10 @@ interface ProductDemand {
 }
 
 const URGENCY_CONFIG = {
-  critical: { color: 'bg-red-500/10 text-red-600 border-red-500/20', label: 'Critique', barColor: '#ef4444' },
-  high: { color: 'bg-orange-500/10 text-orange-600 border-orange-500/20', label: 'Élevé', barColor: '#f97316' },
-  medium: { color: 'bg-amber-500/10 text-amber-600 border-amber-500/20', label: 'Moyen', barColor: '#eab308' },
-  low: { color: 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20', label: 'Faible', barColor: '#22c55e' },
+  critical: { color: 'bg-destructive/10 text-destructive border-destructive/20', label: 'Critique', barColor: '#ef4444' },
+  high: { color: 'bg-warning/10 text-warning border-orange-500/20', label: 'Élevé', barColor: '#f97316' },
+  medium: { color: 'bg-warning/10 text-warning border-amber-500/20', label: 'Moyen', barColor: '#eab308' },
+  low: { color: 'bg-success/10 text-success border-emerald-500/20', label: 'Faible', barColor: '#22c55e' },
 };
 
 export default function PredictiveDemandPage() {
@@ -195,9 +195,9 @@ export default function PredictiveDemandPage() {
           <Card>
             <CardContent className="pt-4 pb-3">
               <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
-                <AlertTriangle className="h-4 w-4 text-red-500" /> Rupture imminente
+                <AlertTriangle className="h-4 w-4 text-destructive" /> Rupture imminente
               </div>
-              <div className="text-2xl font-bold text-red-600">{stats.critical}</div>
+              <div className="text-2xl font-bold text-destructive">{stats.critical}</div>
               <p className="text-xs text-muted-foreground mt-1">{stats.high} en stock bas</p>
             </CardContent>
           </Card>
@@ -279,14 +279,14 @@ export default function PredictiveDemandPage() {
                               <td className="text-center py-2 px-3">
                                 <span className={cn(
                                   "font-semibold",
-                                  p.days_of_stock <= 7 ? 'text-red-600' : p.days_of_stock <= 14 ? 'text-amber-600' : ''
+                                  p.days_of_stock <= 7 ? 'text-destructive' : p.days_of_stock <= 14 ? 'text-warning' : ''
                                 )}>
                                   {p.days_of_stock >= 999 ? '∞' : `${p.days_of_stock}j`}
                                 </span>
                               </td>
                               <td className="text-center py-2 px-3">
-                                {p.trend === 'up' ? <ArrowUpRight className="h-4 w-4 text-emerald-500 mx-auto" /> :
-                                 p.trend === 'down' ? <ArrowDownRight className="h-4 w-4 text-red-500 mx-auto" /> :
+                                {p.trend === 'up' ? <ArrowUpRight className="h-4 w-4 text-success mx-auto" /> :
+                                 p.trend === 'down' ? <ArrowDownRight className="h-4 w-4 text-destructive mx-auto" /> :
                                  <span className="text-muted-foreground">—</span>}
                               </td>
                               <td className="text-center py-2 px-3 font-medium">{p.predicted_demand_30d}</td>

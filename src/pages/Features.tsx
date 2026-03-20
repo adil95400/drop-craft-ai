@@ -33,7 +33,7 @@ const Features = () => {
         "Import/Export en masse",
         "API robuste et documentée"
       ],
-      color: "from-blue-500 to-cyan-500"
+      color: "from-info to-cyan-500"
     },
     {
       icon: BarChart3,
@@ -45,7 +45,7 @@ const Features = () => {
         "Analyse des performances produits",
         "Rapports automatisés"
       ],
-      color: "from-green-500 to-emerald-500"
+      color: "from-success to-emerald-500"
     },
     {
       icon: Zap,
@@ -69,7 +69,7 @@ const Features = () => {
         "Notifications clients automatiques",
         "Gestion des retours simplifiée"
       ],
-      color: "from-red-500 to-rose-500"
+      color: "from-destructive to-rose-500"
     },
     {
       icon: Shield,

@@ -212,9 +212,9 @@ export function MobileOptimizer() {
   return (
     <div className="space-y-6">
       {/* Performance Overview */}
-      <Card className={`${performanceScore >= 80 ? 'border-green-200 bg-green-50' : 
+      <Card className={`${performanceScore >= 80 ? 'border-success/20 bg-success/5' : 
                        performanceScore >= 60 ? 'border-orange-200 bg-orange-50' : 
-                       'border-red-200 bg-red-50'}`}>
+                       'border-destructive/20 bg-destructive/5'}`}>
         <CardHeader>
           <CardTitle className="flex items-center justify-between">
             <span className="flex items-center">
@@ -222,8 +222,8 @@ export function MobileOptimizer() {
               Score Performance Mobile
             </span>
             <div className={`text-3xl font-bold ${
-              performanceScore >= 80 ? 'text-green-600' :
-              performanceScore >= 60 ? 'text-orange-600' : 'text-red-600'
+              performanceScore >= 80 ? 'text-success' :
+              performanceScore >= 60 ? 'text-warning' : 'text-destructive'
             }`}>
               {performanceScore}/100
             </div>
@@ -390,7 +390,7 @@ export function MobileOptimizer() {
         <CardContent>
           <div className="space-y-3">
             <div className="flex items-start space-x-3 p-3 border rounded-lg">
-              <CheckCircle className="h-4 w-4 text-green-500 mt-0.5" />
+              <CheckCircle className="h-4 w-4 text-success mt-0.5" />
               <div className="space-y-1">
                 <div className="text-sm font-medium">Images optimisées</div>
                 <div className="text-xs text-muted-foreground">
@@ -400,7 +400,7 @@ export function MobileOptimizer() {
             </div>
             
             <div className="flex items-start space-x-3 p-3 border rounded-lg">
-              <AlertTriangle className="h-4 w-4 text-orange-500 mt-0.5" />
+              <AlertTriangle className="h-4 w-4 text-warning mt-0.5" />
               <div className="space-y-1">
                 <div className="text-sm font-medium">Cache à optimiser</div>
                 <div className="text-xs text-muted-foreground">
@@ -410,7 +410,7 @@ export function MobileOptimizer() {
             </div>
             
             <div className="flex items-start space-x-3 p-3 border rounded-lg">
-              <AlertTriangle className="h-4 w-4 text-orange-500 mt-0.5" />
+              <AlertTriangle className="h-4 w-4 text-warning mt-0.5" />
               <div className="space-y-1">
                 <div className="text-sm font-medium">Lazy loading requis</div>
                 <div className="text-xs text-muted-foreground">

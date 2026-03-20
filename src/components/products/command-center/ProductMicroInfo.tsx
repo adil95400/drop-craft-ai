@@ -48,9 +48,9 @@ export const ProductMicroInfo = memo(function ProductMicroInfo({
       label: `${margin >= 0 ? '+' : ''}${margin.toFixed(0)}%`,
       tooltip: `Marge: ${margin.toFixed(1)}%`,
       className: cn(
-        isHealthy && 'text-emerald-600',
-        isWarning && 'text-amber-600',
-        !isHealthy && !isWarning && 'text-red-600'
+        isHealthy && 'text-success',
+        isWarning && 'text-warning',
+        !isHealthy && !isWarning && 'text-destructive'
       )
     })
   }
@@ -66,7 +66,7 @@ export const ProductMicroInfo = memo(function ProductMicroInfo({
       icon: RefreshCw,
       label: formatDistanceToNow(syncDate, { addSuffix: false, locale: getDateFnsLocale() }),
       tooltip: `Dernière sync: ${syncDate.toLocaleDateString('fr-FR')} ${syncDate.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}`,
-      className: isRecent ? 'text-emerald-600' : 'text-muted-foreground'
+      className: isRecent ? 'text-success' : 'text-muted-foreground'
     })
   }
 
@@ -77,7 +77,7 @@ export const ProductMicroInfo = memo(function ProductMicroInfo({
       icon: DollarSign,
       label: hasPriceRule ? 'Règle' : 'Sans règle',
       tooltip: hasPriceRule ? 'Règle de prix appliquée' : 'Aucune règle de tarification',
-      className: hasPriceRule ? 'text-blue-600' : 'text-muted-foreground'
+      className: hasPriceRule ? 'text-info' : 'text-muted-foreground'
     })
   }
 
@@ -92,9 +92,9 @@ export const ProductMicroInfo = memo(function ProductMicroInfo({
       label: `${qualityScore}`,
       tooltip: `Score qualité: ${qualityScore}/100`,
       className: cn(
-        isExcellent && 'text-emerald-600',
-        isGood && 'text-amber-600',
-        !isExcellent && !isGood && 'text-red-600'
+        isExcellent && 'text-success',
+        isGood && 'text-warning',
+        !isExcellent && !isGood && 'text-destructive'
       )
     })
   }

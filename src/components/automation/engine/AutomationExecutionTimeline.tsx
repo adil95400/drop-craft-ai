@@ -101,15 +101,15 @@ export function AutomationExecutionTimeline({ executions: propExecutions, onRetr
     switch (status) {
       case 'success':
       case 'completed':
-        return { icon: CheckCircle2, color: 'text-green-500', bg: 'bg-green-500/10', label: 'Succès' };
+        return { icon: CheckCircle2, color: 'text-success', bg: 'bg-success/10', label: 'Succès' };
       case 'failed':
-        return { icon: XCircle, color: 'text-red-500', bg: 'bg-red-500/10', label: 'Échoué' };
+        return { icon: XCircle, color: 'text-destructive', bg: 'bg-destructive/10', label: 'Échoué' };
       case 'running':
-        return { icon: Activity, color: 'text-blue-500', bg: 'bg-blue-500/10', label: 'En cours' };
+        return { icon: Activity, color: 'text-info', bg: 'bg-info/10', label: 'En cours' };
       case 'skipped':
         return { icon: ArrowRight, color: 'text-muted-foreground', bg: 'bg-muted', label: 'Ignoré' };
       case 'cancelled':
-        return { icon: XCircle, color: 'text-orange-500', bg: 'bg-orange-500/10', label: 'Annulé' };
+        return { icon: XCircle, color: 'text-warning', bg: 'bg-warning/10', label: 'Annulé' };
       default:
         return { icon: Clock, color: 'text-muted-foreground', bg: 'bg-muted', label: 'En attente' };
     }
@@ -151,7 +151,7 @@ export function AutomationExecutionTimeline({ executions: propExecutions, onRetr
                     <CollapsibleTrigger asChild>
                       <div className={cn(
                         "flex items-center gap-3 p-3 rounded-lg border cursor-pointer hover:bg-muted/50 transition-colors",
-                        exec.status === 'running' && "border-blue-300 bg-blue-50/50 dark:bg-blue-950/20"
+                        exec.status === 'running' && "border-blue-300 bg-info/5/50 dark:bg-blue-950/20"
                       )}>
                         <div className={cn("p-2 rounded-full", statusConfig.bg)}>
                           <StatusIcon className={cn("h-4 w-4", statusConfig.color, exec.status === 'running' && "animate-spin")} />
@@ -188,7 +188,7 @@ export function AutomationExecutionTimeline({ executions: propExecutions, onRetr
                           return (
                             <motion.div key={step.id} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }}>
                               <div
-                                className={cn("flex items-center gap-3 p-2 rounded-md cursor-pointer hover:bg-muted/50 transition-colors text-sm", step.status === 'running' && "bg-blue-50/50 dark:bg-blue-950/20")}
+                                className={cn("flex items-center gap-3 p-2 rounded-md cursor-pointer hover:bg-muted/50 transition-colors text-sm", step.status === 'running' && "bg-info/5/50 dark:bg-blue-950/20")}
                                 onClick={() => setExpandedStep(isStepExpanded ? null : `${exec.id}-${step.id}`)}
                               >
                                 <StepIcon className={cn("h-3.5 w-3.5 shrink-0", stepStatus.color, step.status === 'running' && "animate-spin")} />
@@ -209,7 +209,7 @@ export function AutomationExecutionTimeline({ executions: propExecutions, onRetr
                                       <pre className="mt-1 font-mono text-[11px] bg-background p-2 rounded overflow-x-auto">{JSON.stringify(step.output, null, 2)}</pre></div>
                                   )}
                                   {step.error && (
-                                    <div className="flex items-start gap-2 p-2 bg-red-50 dark:bg-red-950/30 rounded text-red-700 dark:text-red-300">
+                                    <div className="flex items-start gap-2 p-2 bg-destructive/5 dark:bg-red-950/30 rounded text-red-700 dark:text-red-300">
                                       <AlertTriangle className="h-3.5 w-3.5 mt-0.5 shrink-0" /><span>{step.error}</span>
                                     </div>
                                   )}

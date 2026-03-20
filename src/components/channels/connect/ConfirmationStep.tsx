@@ -67,7 +67,7 @@ export function ConfirmationStep({ platform, settings, testDetails }: Confirmati
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
                 transition={{ type: "spring", stiffness: 300, delay: 0.3 }}
-                className="absolute -bottom-1 -right-1 p-1 rounded-full bg-emerald-500 text-white shadow-lg"
+                className="absolute -bottom-1 -right-1 p-1 rounded-full bg-success text-white shadow-lg"
               >
                 <Check className="h-3 w-3" />
               </motion.div>
@@ -76,7 +76,7 @@ export function ConfirmationStep({ platform, settings, testDetails }: Confirmati
             <div className="flex-1">
               <div className="flex items-center gap-2">
                 <h3 className="text-xl font-bold">{platform.name}</h3>
-                <Badge className="bg-emerald-500/10 text-emerald-600 border-emerald-500/20">
+                <Badge className="bg-success/10 text-success border-emerald-500/20">
                   <Sparkles className="h-3 w-3 mr-1" />
                   Prêt
                 </Badge>
@@ -133,19 +133,19 @@ export function ConfirmationStep({ platform, settings, testDetails }: Confirmati
                     className={cn(
                       "flex items-center gap-2 p-3 rounded-lg border transition-colors",
                       value 
-                        ? "bg-emerald-500/5 border-emerald-500/20" 
+                        ? "bg-success/5 border-emerald-500/20" 
                         : "bg-muted/30 border-transparent"
                     )}
                   >
                     <div className={cn(
                       "p-1.5 rounded-md",
-                      value ? "bg-emerald-500/20 text-emerald-600" : "bg-muted text-muted-foreground"
+                      value ? "bg-success/20 text-success" : "bg-muted text-muted-foreground"
                     )}>
                       <Icon className="h-3.5 w-3.5" />
                     </div>
                     <span className="text-sm font-medium flex-1">{label}</span>
                     {value ? (
-                      <Check className="h-4 w-4 text-emerald-500" />
+                      <Check className="h-4 w-4 text-success" />
                     ) : (
                       <X className="h-4 w-4 text-muted-foreground" />
                     )}
@@ -162,7 +162,7 @@ export function ConfirmationStep({ platform, settings, testDetails }: Confirmati
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.4 }}
-        className="flex items-center gap-3 p-4 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-700 dark:text-amber-400"
+        className="flex items-center gap-3 p-4 rounded-xl bg-warning/10 border border-amber-500/20 text-amber-700 dark:text-amber-400"
       >
         <Shield className="h-5 w-5 flex-shrink-0" />
         <p className="text-sm">

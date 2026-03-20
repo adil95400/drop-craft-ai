@@ -209,7 +209,7 @@ export default function CourseDetailPage() {
                       )}
                     </div>
                     {isLessonCompleted(currentLesson.id) && (
-                      <Badge className="bg-green-500 shrink-0">
+                      <Badge className="bg-success shrink-0">
                         <CheckCircle2 className="h-3 w-3 mr-1" />
                         Complété
                       </Badge>
@@ -249,7 +249,7 @@ export default function CourseDetailPage() {
 
                      {isLessonCompleted(currentLesson.id) && (
                        <Button variant="secondary" size="lg" className="gap-2">
-                         <CheckCircle2 className="h-4 w-4 text-green-500" />
+                         <CheckCircle2 className="h-4 w-4 text-success" />
                          Leçon complétée
                        </Button>
                      )}
@@ -306,7 +306,7 @@ export default function CourseDetailPage() {
                     {course.total_lessons} leçons
                   </div>
                   <div className="flex items-center gap-2">
-                    <Star className="h-4 w-4 fill-yellow-500 text-yellow-500" />
+                    <Star className="h-4 w-4 fill-yellow-500 text-warning" />
                     4.8/5 (245 avis)
                   </div>
                 </div>
@@ -335,7 +335,7 @@ export default function CourseDetailPage() {
                       <ul className="space-y-1 text-sm">
                         {course.learning_objectives.map((obj, i) => (
                           <li key={i} className="flex items-start gap-2">
-                            <CheckCircle2 className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
+                            <CheckCircle2 className="h-4 w-4 text-success mt-0.5 flex-shrink-0" />
                             <span>{obj}</span>
                           </li>
                         ))}
@@ -376,13 +376,13 @@ export default function CourseDetailPage() {
                          <div className="flex items-start gap-3">
                            <div className={`flex-shrink-0 w-10 h-10 rounded-lg border-2 flex items-center justify-center ${
                              isLessonCompleted(lesson.id) 
-                               ? 'bg-green-500/10 border-green-500' 
+                               ? 'bg-success/10 border-success' 
                                : currentLesson?.id === lesson.id 
                                ? 'bg-primary/10 border-primary'
                                : 'border-border'
                            }`}>
                              {isLessonCompleted(lesson.id) ? (
-                               <CheckCircle2 className="h-5 w-5 text-green-500" />
+                               <CheckCircle2 className="h-5 w-5 text-success" />
                              ) : (
                                <LessonIcon className="h-5 w-5 text-muted-foreground" />
                              )}

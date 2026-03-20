@@ -49,9 +49,9 @@ export function ComparisonTable({ analyses }: ComparisonTableProps) {
         return <span className="font-semibold">{value}</span>;
       case 'boolean':
         return value ? (
-          <CheckCircle2 className="w-5 h-5 text-green-500" />
+          <CheckCircle2 className="w-5 h-5 text-success" />
         ) : (
-          <XCircle className="w-5 h-5 text-red-500" />
+          <XCircle className="w-5 h-5 text-destructive" />
         );
       default:
         return value;

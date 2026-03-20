@@ -63,8 +63,8 @@ const planConfigs: Record<PlanType, PlanConfig> = {
     name: 'Pro',
     price: '29€/mois',
     icon: Star,
-    color: 'text-blue-600',
-    bgColor: 'bg-blue-50',
+    color: 'text-info',
+    bgColor: 'bg-info/5',
     description: 'Pour les professionnels',
     popular: true,
     features: [
@@ -165,7 +165,7 @@ export const PlanSelector = () => {
                 {config.features.map((feature, index) => (
                   <div key={index} className="flex items-center gap-3">
                     {feature.included ? (
-                      <Check className="h-4 w-4 text-green-600" />
+                      <Check className="h-4 w-4 text-success" />
                     ) : (
                       <X className="h-4 w-4 text-gray-400" />
                     )}

@@ -74,7 +74,7 @@ export const SubscriptionManager = () => {
   const getPlanBadge = (tier: string | null) => {
     switch (tier) {
       case 'pro':
-        return <Badge className="bg-blue-100 text-blue-800">Pro</Badge>
+        return <Badge className="bg-info/10 text-blue-800">Pro</Badge>
       case 'ultra_pro':
         return <Badge className="bg-purple-100 text-purple-800"><Crown className="w-3 h-3 mr-1" />Ultra Pro</Badge>
       default:
@@ -125,7 +125,7 @@ export const SubscriptionManager = () => {
               <div className="flex items-center gap-2 mt-1">
                 {getPlanBadge(subscription?.plan)}
                 {subscription?.subscribed && (
-                  <Badge className="bg-green-100 text-green-800">Actif</Badge>
+                  <Badge className="bg-success/10 text-success">Actif</Badge>
                 )}
               </div>
             </div>
@@ -161,8 +161,8 @@ export const SubscriptionManager = () => {
           <Card className="relative">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
-                  <CreditCard className="w-4 h-4 text-blue-600" />
+                <div className="w-8 h-8 bg-info/10 rounded-lg flex items-center justify-center">
+                  <CreditCard className="w-4 h-4 text-info" />
                 </div>
                 Plan Pro
               </CardTitle>
@@ -174,15 +174,15 @@ export const SubscriptionManager = () => {
               </div>
               <ul className="space-y-2 text-sm">
                 <li className="flex items-center gap-2">
-                  <div className="w-1.5 h-1.5 bg-blue-500 rounded-full" />
+                  <div className="w-1.5 h-1.5 bg-info rounded-full" />
                   Fonctionnalités avancées
                 </li>
                 <li className="flex items-center gap-2">
-                  <div className="w-1.5 h-1.5 bg-blue-500 rounded-full" />
+                  <div className="w-1.5 h-1.5 bg-info rounded-full" />
                   Support prioritaire
                 </li>
                 <li className="flex items-center gap-2">
-                  <div className="w-1.5 h-1.5 bg-blue-500 rounded-full" />
+                  <div className="w-1.5 h-1.5 bg-info rounded-full" />
                   Analytics détaillés
                 </li>
               </ul>

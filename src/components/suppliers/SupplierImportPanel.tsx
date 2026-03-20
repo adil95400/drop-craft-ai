@@ -176,9 +176,9 @@ export function SupplierImportPanel() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'completed':
-        return <Badge className="bg-green-500"><Check className="h-3 w-3 mr-1" />Terminé</Badge>;
+        return <Badge className="bg-success"><Check className="h-3 w-3 mr-1" />Terminé</Badge>;
       case 'running':
-        return <Badge className="bg-blue-500"><RefreshCw className="h-3 w-3 mr-1 animate-spin" />En cours</Badge>;
+        return <Badge className="bg-info"><RefreshCw className="h-3 w-3 mr-1 animate-spin" />En cours</Badge>;
       case 'failed':
         return <Badge variant="destructive"><AlertCircle className="h-3 w-3 mr-1" />Échoué</Badge>;
       default:
@@ -430,7 +430,7 @@ export function SupplierImportPanel() {
             </div>
             <div className="flex items-center justify-between">
               <span className="text-sm text-muted-foreground">Taux de succès</span>
-              <span className="font-bold text-green-500">
+              <span className="font-bold text-success">
                 {importHistory.length > 0
                   ? Math.round((importHistory.filter((j: any) => j.status === 'completed').length / importHistory.length) * 100)
                   : 0}%

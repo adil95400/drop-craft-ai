@@ -31,18 +31,18 @@ const VITAL_DESCRIPTIONS: Record<string, string> = {
 
 function getRatingColor(rating: VitalScore['rating']) {
   switch (rating) {
-    case 'good': return 'text-green-600 dark:text-green-400';
-    case 'needs-improvement': return 'text-yellow-600 dark:text-yellow-400';
-    case 'poor': return 'text-red-600 dark:text-red-400';
+    case 'good': return 'text-success dark:text-green-400';
+    case 'needs-improvement': return 'text-warning dark:text-yellow-400';
+    case 'poor': return 'text-destructive dark:text-red-400';
     default: return 'text-muted-foreground';
   }
 }
 
 function getRatingBadge(rating: VitalScore['rating']) {
   switch (rating) {
-    case 'good': return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400';
-    case 'needs-improvement': return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400';
-    case 'poor': return 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400';
+    case 'good': return 'bg-success/10 text-success dark:bg-green-900/30 dark:text-green-400';
+    case 'needs-improvement': return 'bg-warning/10 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400';
+    case 'poor': return 'bg-destructive/10 text-red-800 dark:bg-red-900/30 dark:text-red-400';
     default: return 'bg-muted text-muted-foreground';
   }
 }
@@ -118,9 +118,9 @@ export const CoreWebVitalsWidget = memo(function CoreWebVitalsWidget({ className
           <Badge 
             className={cn(
               "text-xs",
-              overall >= 80 ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' :
-              overall >= 50 ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400' :
-              'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400'
+              overall >= 80 ? 'bg-success/10 text-success dark:bg-green-900/30 dark:text-green-400' :
+              overall >= 50 ? 'bg-warning/10 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400' :
+              'bg-destructive/10 text-red-800 dark:bg-red-900/30 dark:text-red-400'
             )}
           >
             Score: {overall}%

@@ -222,7 +222,7 @@ export function CustomReportsBuilder() {
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
                           <h4 className="font-medium truncate">{r.report_name}</h4>
-                          {r.is_favorite && <Star className="h-4 w-4 text-yellow-500 fill-yellow-500" />}
+                          {r.is_favorite && <Star className="h-4 w-4 text-warning fill-yellow-500" />}
                         </div>
                         <div className="flex items-center gap-2 mt-1 text-sm text-muted-foreground">
                           <Badge variant="outline" className="text-xs">{typeInfo?.label || r.report_type}</Badge>
@@ -231,7 +231,7 @@ export function CustomReportsBuilder() {
                       </div>
                       <div className="flex items-center gap-2">
                         <Button variant="ghost" size="icon" onClick={() => toggleFavorite.mutate({ id: r.id, is_favorite: r.is_favorite || false })}>
-                          <Star className={`h-4 w-4 ${r.is_favorite ? 'text-yellow-500 fill-yellow-500' : ''}`} />
+                          <Star className={`h-4 w-4 ${r.is_favorite ? 'text-warning fill-yellow-500' : ''}`} />
                         </Button>
                         <Button variant="outline" size="sm"><Play className="h-3 w-3 mr-1" />Générer</Button>
                         <Button variant="ghost" size="icon" className="text-destructive" onClick={() => deleteReport.mutate(r.id)}>

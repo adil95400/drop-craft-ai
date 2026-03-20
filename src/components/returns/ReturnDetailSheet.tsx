@@ -25,13 +25,13 @@ interface ReturnDetailSheetProps {
 }
 
 const STATUS_CONFIG: Record<Return['status'], { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline'; icon: typeof Clock; color: string }> = {
-  pending: { label: 'En attente', variant: 'secondary', icon: Clock, color: 'text-yellow-600' },
-  approved: { label: 'Approuvé', variant: 'default', icon: CheckCircle, color: 'text-blue-600' },
+  pending: { label: 'En attente', variant: 'secondary', icon: Clock, color: 'text-warning' },
+  approved: { label: 'Approuvé', variant: 'default', icon: CheckCircle, color: 'text-info' },
   received: { label: 'Reçu', variant: 'default', icon: Package, color: 'text-purple-600' },
-  inspecting: { label: 'Inspection', variant: 'outline', icon: Eye, color: 'text-orange-600' },
-  refunded: { label: 'Remboursé', variant: 'default', icon: RefreshCw, color: 'text-green-600' },
-  rejected: { label: 'Rejeté', variant: 'destructive', icon: XCircle, color: 'text-red-600' },
-  completed: { label: 'Terminé', variant: 'default', icon: CheckCircle, color: 'text-green-600' }
+  inspecting: { label: 'Inspection', variant: 'outline', icon: Eye, color: 'text-warning' },
+  refunded: { label: 'Remboursé', variant: 'default', icon: RefreshCw, color: 'text-success' },
+  rejected: { label: 'Rejeté', variant: 'destructive', icon: XCircle, color: 'text-destructive' },
+  completed: { label: 'Terminé', variant: 'default', icon: CheckCircle, color: 'text-success' }
 }
 
 const REASON_LABELS: Record<string, string> = {

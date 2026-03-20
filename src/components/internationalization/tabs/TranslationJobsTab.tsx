@@ -42,9 +42,9 @@ export const TranslationJobsTab = () => {
                 <div className="flex items-center justify-between mb-2">
                   <p className="font-medium">{job.job_name}</p>
                   <span className={`text-xs px-2 py-1 rounded ${
-                    job.status === 'completed' ? 'bg-green-100 text-green-800' :
-                    job.status === 'processing' ? 'bg-blue-100 text-blue-800' :
-                    job.status === 'failed' ? 'bg-red-100 text-red-800' :
+                    job.status === 'completed' ? 'bg-success/10 text-success' :
+                    job.status === 'processing' ? 'bg-info/10 text-blue-800' :
+                    job.status === 'failed' ? 'bg-destructive/10 text-red-800' :
                     'bg-gray-100 text-gray-800'
                   }`}>
                     {job.status}

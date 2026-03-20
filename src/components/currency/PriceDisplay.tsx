@@ -142,7 +142,7 @@ export function MarginDisplay({
     return (
       <span className={cn(
         'font-medium',
-        margin >= 0 ? 'text-green-600' : 'text-red-600',
+        margin >= 0 ? 'text-success' : 'text-destructive',
         className
       )}>
         {margin >= 0 ? '+' : ''}{formatCurrency(margin, sellingCurrency)} ({marginPercent.toFixed(1)}%)
@@ -161,7 +161,7 @@ export function MarginDisplay({
         <TooltipTrigger asChild>
           <span className={cn(
             'font-medium cursor-help',
-            margin >= 0 ? 'text-green-600' : 'text-red-600',
+            margin >= 0 ? 'text-success' : 'text-destructive',
             className
           )}>
             {margin >= 0 ? '+' : ''}{formatCurrency(margin, sellingCurrency)} ({marginPercent.toFixed(1)}%)

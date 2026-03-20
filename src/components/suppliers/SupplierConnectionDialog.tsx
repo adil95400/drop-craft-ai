@@ -167,7 +167,7 @@ export function SupplierConnectionDialog({
                 <Label htmlFor={field.key} className="flex items-center gap-2">
                   <field.icon className="h-4 w-4 text-muted-foreground" />
                   {field.label}
-                  {field.required && <span className="text-red-500">*</span>}
+                  {field.required && <span className="text-destructive">*</span>}
                 </Label>
                 <div className="relative">
                   <Input
@@ -199,9 +199,9 @@ export function SupplierConnectionDialog({
 
             {/* Statut de connexion */}
             {connectionStatus === 'success' && (
-              <Alert className="bg-green-50 border-green-200">
-                <CheckCircle className="h-4 w-4 text-green-600" />
-                <AlertDescription className="text-green-800">
+              <Alert className="bg-success/5 border-success/20">
+                <CheckCircle className="h-4 w-4 text-success" />
+                <AlertDescription className="text-success">
                   Connexion réussie ! Le fournisseur est maintenant actif.
                 </AlertDescription>
               </Alert>

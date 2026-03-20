@@ -385,7 +385,7 @@ export function ProductVariantEditor({
                       {margin ? (
                         <span className={cn(
                           "font-medium",
-                          parseFloat(margin) >= 30 ? "text-green-600" : parseFloat(margin) >= 15 ? "text-amber-600" : "text-red-600"
+                          parseFloat(margin) >= 30 ? "text-success" : parseFloat(margin) >= 15 ? "text-warning" : "text-destructive"
                         )}>
                           {margin}%
                         </span>

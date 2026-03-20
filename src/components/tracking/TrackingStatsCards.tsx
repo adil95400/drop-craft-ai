@@ -28,15 +28,15 @@ export function TrackingStatsCards({ stats }: TrackingStatsCardsProps) {
       title: 'En Attente',
       value: stats.pending,
       icon: Clock,
-      color: 'text-amber-600 dark:text-amber-400',
+      color: 'text-warning dark:text-amber-400',
       bgColor: 'bg-amber-100 dark:bg-amber-900/30'
     },
     {
       title: 'En Transit',
       value: stats.inTransit,
       icon: Truck,
-      color: 'text-blue-600 dark:text-blue-400',
-      bgColor: 'bg-blue-100 dark:bg-blue-900/30'
+      color: 'text-info dark:text-blue-400',
+      bgColor: 'bg-info/10 dark:bg-blue-900/30'
     },
     {
       title: 'Livraison Jour',
@@ -49,15 +49,15 @@ export function TrackingStatsCards({ stats }: TrackingStatsCardsProps) {
       title: 'Livrés',
       value: stats.delivered,
       icon: CheckCircle,
-      color: 'text-green-600 dark:text-green-400',
-      bgColor: 'bg-green-100 dark:bg-green-900/30'
+      color: 'text-success dark:text-green-400',
+      bgColor: 'bg-success/10 dark:bg-green-900/30'
     },
     {
       title: 'Problèmes',
       value: stats.exception,
       icon: AlertTriangle,
-      color: 'text-red-600 dark:text-red-400',
-      bgColor: 'bg-red-100 dark:bg-red-900/30'
+      color: 'text-destructive dark:text-red-400',
+      bgColor: 'bg-destructive/10 dark:bg-red-900/30'
     }
   ];
 
@@ -87,7 +87,7 @@ export function TrackingStatsCards({ stats }: TrackingStatsCardsProps) {
 
 export function DeliveryRateCard({ stats }: TrackingStatsCardsProps) {
   const rate = stats.deliveryRate;
-  const rateColor = rate >= 90 ? 'text-green-600' : rate >= 70 ? 'text-amber-600' : 'text-red-600';
+  const rateColor = rate >= 90 ? 'text-success' : rate >= 70 ? 'text-warning' : 'text-destructive';
   
   return (
     <Card>
@@ -112,7 +112,7 @@ export function DeliveryRateCard({ stats }: TrackingStatsCardsProps) {
           <div 
             className={cn(
               "h-full transition-all duration-500",
-              rate >= 90 ? "bg-green-500" : rate >= 70 ? "bg-amber-500" : "bg-red-500"
+              rate >= 90 ? "bg-success" : rate >= 70 ? "bg-warning" : "bg-destructive"
             )}
             style={{ width: `${rate}%` }}
           />

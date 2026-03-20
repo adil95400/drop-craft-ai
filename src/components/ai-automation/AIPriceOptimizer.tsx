@@ -180,13 +180,13 @@ export function AIPriceOptimizer() {
               {analysis.opportunities && analysis.opportunities.length > 0 && (
                 <div className="space-y-2">
                   <Label className="flex items-center gap-2">
-                    <CheckCircle2 className="h-4 w-4 text-green-500" />
+                    <CheckCircle2 className="h-4 w-4 text-success" />
                     Opportunités
                   </Label>
                   <ul className="space-y-1 text-sm">
                     {analysis.opportunities.map((opp: string, idx: number) => (
                       <li key={idx} className="flex items-start gap-2">
-                        <span className="text-green-500 mt-0.5">•</span>
+                        <span className="text-success mt-0.5">•</span>
                         <span>{opp}</span>
                       </li>
                     ))}
@@ -197,13 +197,13 @@ export function AIPriceOptimizer() {
               {analysis.risks && analysis.risks.length > 0 && (
                 <div className="space-y-2">
                   <Label className="flex items-center gap-2">
-                    <AlertCircle className="h-4 w-4 text-yellow-500" />
+                    <AlertCircle className="h-4 w-4 text-warning" />
                     Risques à considérer
                   </Label>
                   <ul className="space-y-1 text-sm">
                     {analysis.risks.map((risk: string, idx: number) => (
                       <li key={idx} className="flex items-start gap-2">
-                        <span className="text-yellow-500 mt-0.5">•</span>
+                        <span className="text-warning mt-0.5">•</span>
                         <span>{risk}</span>
                       </li>
                     ))}

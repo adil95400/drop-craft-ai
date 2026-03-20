@@ -111,7 +111,7 @@ export const ExtensionMarketplace: React.FC = () => {
                       <div className="flex items-center gap-2 text-sm text-muted-foreground">
                         <span>{ext.developer_name}</span>
                         {ext.developer_verified && (
-                          <CheckCircle className="w-3 h-3 text-green-500" />
+                          <CheckCircle className="w-3 h-3 text-success" />
                         )}
                       </div>
                     </div>

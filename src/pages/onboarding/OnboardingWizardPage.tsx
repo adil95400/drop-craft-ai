@@ -22,11 +22,11 @@ import {
 } from 'lucide-react'
 
 const PLATFORMS = [
-  { id: 'shopify', name: 'Shopify', icon: ShoppingCart, color: 'bg-green-500', desc: 'La plateforme e-commerce #1 mondiale' },
+  { id: 'shopify', name: 'Shopify', icon: ShoppingCart, color: 'bg-success', desc: 'La plateforme e-commerce #1 mondiale' },
   { id: 'woocommerce', name: 'WooCommerce', icon: Globe, color: 'bg-purple-500', desc: 'Extension WordPress puissante' },
-  { id: 'prestashop', name: 'PrestaShop', icon: Store, color: 'bg-blue-500', desc: 'Solution open-source française' },
-  { id: 'amazon', name: 'Amazon', icon: Package, color: 'bg-orange-500', desc: 'Marketplace mondiale' },
-  { id: 'etsy', name: 'Etsy', icon: Sparkles, color: 'bg-amber-500', desc: 'Marketplace créative et artisanale' },
+  { id: 'prestashop', name: 'PrestaShop', icon: Store, color: 'bg-info', desc: 'Solution open-source française' },
+  { id: 'amazon', name: 'Amazon', icon: Package, color: 'bg-warning', desc: 'Marketplace mondiale' },
+  { id: 'etsy', name: 'Etsy', icon: Sparkles, color: 'bg-warning', desc: 'Marketplace créative et artisanale' },
   { id: 'other', name: 'Autre', icon: Building2, color: 'bg-muted-foreground', desc: 'Autre plateforme ou démarrage from scratch' },
 ]
 
@@ -311,7 +311,7 @@ export default function OnboardingWizardPage() {
               >
                 <div className="text-center space-y-4">
                   <motion.div
-                    className="mx-auto p-5 rounded-2xl bg-gradient-to-br from-emerald-500 to-green-600 w-fit"
+                    className="mx-auto p-5 rounded-2xl bg-gradient-to-br from-emerald-500 to-success w-fit"
                     animate={{ scale: [1, 1.1, 1], rotate: [0, 5, -5, 0] }}
                     transition={{ duration: 1.5, repeat: 2 }}
                   >
@@ -394,7 +394,7 @@ export default function OnboardingWizardPage() {
           ) : (
             <Button
               onClick={handleFinish}
-              className="bg-gradient-to-r from-emerald-500 to-green-600 hover:opacity-90"
+              className="bg-gradient-to-r from-emerald-500 to-success hover:opacity-90"
             >
               Lancer ShopOpti
               <ChevronRight className="h-4 w-4 ml-2" />

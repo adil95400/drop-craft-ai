@@ -136,7 +136,7 @@ export const RealTimeMetrics: React.FC = () => {
       {/* Status en temps réel */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className={`w-3 h-3 rounded-full ${isLive ? 'bg-green-500 animate-pulse' : 'bg-red-500'}`} />
+          <div className={`w-3 h-3 rounded-full ${isLive ? 'bg-success animate-pulse' : 'bg-destructive'}`} />
           <span className="text-sm font-medium">
             {isLive ? 'Données en temps réel' : 'Connexion interrompue'}
           </span>
@@ -153,23 +153,23 @@ export const RealTimeMetrics: React.FC = () => {
 
       {/* Métriques temps réel */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card className="border-green-200 bg-green-50/50">
+        <Card className="border-success/20 bg-success/5/50">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Visiteurs actifs</CardTitle>
-            <Users className="h-4 w-4 text-green-600" />
+            <Users className="h-4 w-4 text-success" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-green-700">{realTimeData.activeVisitors}</div>
+            <div className="text-2xl font-bold text-success">{realTimeData.activeVisitors}</div>
             <p className="text-xs text-muted-foreground">
               {realTimeData.currentSessions} sessions actives
             </p>
           </CardContent>
         </Card>
 
-        <Card className="border-blue-200 bg-blue-50/50">
+        <Card className="border-info/20 bg-info/5/50">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Commandes live</CardTitle>
-            <ShoppingCart className="h-4 w-4 text-blue-600" />
+            <ShoppingCart className="h-4 w-4 text-info" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-blue-700">{realTimeData.liveOrders}</div>
@@ -179,10 +179,10 @@ export const RealTimeMetrics: React.FC = () => {
           </CardContent>
         </Card>
 
-        <Card className="border-yellow-200 bg-yellow-50/50">
+        <Card className="border-warning/20 bg-warning/5/50">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Paniers abandonnés</CardTitle>
-            <AlertCircle className="h-4 w-4 text-yellow-600" />
+            <AlertCircle className="h-4 w-4 text-warning" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-yellow-700">{realTimeData.cartAbandonments}</div>
@@ -244,9 +244,9 @@ export const RealTimeMetrics: React.FC = () => {
             {realTimeData.recentActivity.map((activity, index) => (
               <div key={index} className="flex items-start gap-3 p-2 rounded-lg bg-muted/50">
                 <div className="mt-1">
-                  {activity.type === 'order' && <CheckCircle className="h-4 w-4 text-green-500" />}
-                  {activity.type === 'visitor' && <Eye className="h-4 w-4 text-blue-500" />}
-                  {activity.type === 'cart' && <ShoppingCart className="h-4 w-4 text-orange-500" />}
+                  {activity.type === 'order' && <CheckCircle className="h-4 w-4 text-success" />}
+                  {activity.type === 'visitor' && <Eye className="h-4 w-4 text-info" />}
+                  {activity.type === 'cart' && <ShoppingCart className="h-4 w-4 text-warning" />}
                 </div>
                 <div className="flex-1">
                   <p className="text-sm font-medium">{activity.message}</p>

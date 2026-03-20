@@ -48,17 +48,17 @@ interface CreateTicketDialogProps {
 }
 
 const categories = [
-  { value: 'general', label: 'Question générale', icon: HelpCircle, description: 'Informations, fonctionnalités', color: 'from-blue-500/20 to-blue-600/10 border-blue-500/30 hover:border-blue-500/50' },
-  { value: 'technical', label: 'Problème technique', icon: Bug, description: 'Bugs, erreurs, dysfonctionnements', color: 'from-red-500/20 to-red-600/10 border-red-500/30 hover:border-red-500/50' },
+  { value: 'general', label: 'Question générale', icon: HelpCircle, description: 'Informations, fonctionnalités', color: 'from-info/20 to-info/10 border-info/30 hover:border-info/50' },
+  { value: 'technical', label: 'Problème technique', icon: Bug, description: 'Bugs, erreurs, dysfonctionnements', color: 'from-destructive/20 to-destructive/10 border-destructive/30 hover:border-destructive/50' },
   { value: 'billing', label: 'Facturation', icon: AlertCircle, description: 'Paiements, abonnements', color: 'from-amber-500/20 to-amber-600/10 border-amber-500/30 hover:border-amber-500/50' },
   { value: 'feature', label: 'Suggestion', icon: Lightbulb, description: 'Idées, améliorations', color: 'from-emerald-500/20 to-emerald-600/10 border-emerald-500/30 hover:border-emerald-500/50' },
 ];
 
 const priorities = [
   { value: 'low', label: 'Basse', icon: Clock, description: 'Réponse sous 48h', color: 'bg-muted hover:bg-muted/80 border-border', activeColor: 'bg-slate-500/10 border-slate-500 text-slate-600' },
-  { value: 'medium', label: 'Moyenne', icon: CheckCircle2, description: 'Réponse sous 24h', color: 'bg-muted hover:bg-muted/80 border-border', activeColor: 'bg-blue-500/10 border-blue-500 text-blue-600' },
-  { value: 'high', label: 'Haute', icon: Zap, description: 'Réponse sous 12h', color: 'bg-muted hover:bg-muted/80 border-border', activeColor: 'bg-orange-500/10 border-orange-500 text-orange-600' },
-  { value: 'urgent', label: 'Urgente', icon: AlertTriangle, description: 'Réponse sous 4h', color: 'bg-muted hover:bg-muted/80 border-border', activeColor: 'bg-red-500/10 border-red-500 text-red-600' },
+  { value: 'medium', label: 'Moyenne', icon: CheckCircle2, description: 'Réponse sous 24h', color: 'bg-muted hover:bg-muted/80 border-border', activeColor: 'bg-info/10 border-info text-info' },
+  { value: 'high', label: 'Haute', icon: Zap, description: 'Réponse sous 12h', color: 'bg-muted hover:bg-muted/80 border-border', activeColor: 'bg-warning/10 border-orange-500 text-warning' },
+  { value: 'urgent', label: 'Urgente', icon: AlertTriangle, description: 'Réponse sous 4h', color: 'bg-muted hover:bg-muted/80 border-border', activeColor: 'bg-destructive/10 border-destructive text-destructive' },
 ];
 
 export function CreateTicketDialog({ open, onOpenChange }: CreateTicketDialogProps) {
@@ -221,7 +221,7 @@ export function CreateTicketDialog({ open, onOpenChange }: CreateTicketDialogPro
                     </FormLabel>
                     <span className={cn(
                       "text-xs transition-colors",
-                      subjectLength > 80 ? "text-amber-500" : "text-muted-foreground"
+                      subjectLength > 80 ? "text-warning" : "text-muted-foreground"
                     )}>
                       {subjectLength}/100
                     </span>
@@ -251,8 +251,8 @@ export function CreateTicketDialog({ open, onOpenChange }: CreateTicketDialogPro
                     </FormLabel>
                     <span className={cn(
                       "text-xs transition-colors",
-                      messageLength < 20 ? "text-amber-500" : 
-                      messageLength > 1800 ? "text-amber-500" : "text-muted-foreground"
+                      messageLength < 20 ? "text-warning" : 
+                      messageLength > 1800 ? "text-warning" : "text-muted-foreground"
                     )}>
                       {messageLength}/2000
                     </span>
@@ -265,7 +265,7 @@ export function CreateTicketDialog({ open, onOpenChange }: CreateTicketDialogPro
                     />
                   </FormControl>
                   {messageLength < 20 && messageLength > 0 && (
-                    <p className="text-xs text-amber-500 flex items-center gap-1">
+                    <p className="text-xs text-warning flex items-center gap-1">
                       <Info className="h-3 w-3" />
                       Encore {20 - messageLength} caractères requis
                     </p>

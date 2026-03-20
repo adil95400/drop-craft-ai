@@ -61,7 +61,7 @@ export default function CompetitiveIntelligenceHub() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <Card className="p-4">
             <div className="flex items-center gap-3">
-              <DollarSign className="h-5 w-5 text-green-500" />
+              <DollarSign className="h-5 w-5 text-success" />
               <div>
                 <p className="text-sm text-muted-foreground">Ventes mensuelles estimées</p>
                 <p className="text-2xl font-bold">{analysisResult.estimated_monthly_sales}</p>
@@ -71,7 +71,7 @@ export default function CompetitiveIntelligenceHub() {
 
           <Card className="p-4">
             <div className="flex items-center gap-3">
-              <TrendingUp className="h-5 w-5 text-blue-500" />
+              <TrendingUp className="h-5 w-5 text-info" />
               <div>
                 <p className="text-sm text-muted-foreground">Revenu estimé</p>
                 <p className="text-2xl font-bold">{analysisResult.estimated_revenue}€</p>
@@ -81,7 +81,7 @@ export default function CompetitiveIntelligenceHub() {
 
           <Card className="p-4">
             <div className="flex items-center gap-3">
-              <AlertCircle className="h-5 w-5 text-orange-500" />
+              <AlertCircle className="h-5 w-5 text-warning" />
               <div>
                 <p className="text-sm text-muted-foreground">Saturation marché</p>
                 <p className="text-2xl font-bold">{(analysisResult.market_saturation_score * 100).toFixed(0)}%</p>

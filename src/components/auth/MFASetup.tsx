@@ -67,7 +67,7 @@ export function MFASetup() {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             {isEnabled ? (
-              <ShieldCheck className="h-6 w-6 text-green-500" />
+              <ShieldCheck className="h-6 w-6 text-success" />
             ) : (
               <Shield className="h-6 w-6 text-muted-foreground" />
             )}
@@ -78,7 +78,7 @@ export function MFASetup() {
               </CardDescription>
             </div>
           </div>
-          <Badge variant={isEnabled ? "default" : "secondary"} className={isEnabled ? "bg-green-500/10 text-green-500 border-green-500/20" : ""}>
+          <Badge variant={isEnabled ? "default" : "secondary"} className={isEnabled ? "bg-success/10 text-success border-success/20" : ""}>
             {isEnabled ? "Activé" : "Désactivé"}
           </Badge>
         </div>
@@ -86,9 +86,9 @@ export function MFASetup() {
       <CardContent className="space-y-4">
         {isEnabled ? (
           <div className="space-y-4">
-            <Alert className="border-green-500/20 bg-green-500/5">
-              <ShieldCheck className="h-4 w-4 text-green-500" />
-              <AlertDescription className="text-green-700 dark:text-green-400">
+            <Alert className="border-success/20 bg-success/5">
+              <ShieldCheck className="h-4 w-4 text-success" />
+              <AlertDescription className="text-success dark:text-green-400">
                 Votre compte est protégé par l'authentification à deux facteurs.
               </AlertDescription>
             </Alert>
@@ -187,7 +187,7 @@ export function MFASetup() {
                 </code>
                 <Button variant="ghost" size="icon" onClick={copySecret}>
                   {copied ? (
-                    <CheckCircle2 className="h-4 w-4 text-green-500" />
+                    <CheckCircle2 className="h-4 w-4 text-success" />
                   ) : (
                     <Copy className="h-4 w-4" />
                   )}

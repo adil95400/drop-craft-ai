@@ -43,10 +43,10 @@ const targetIcons: Record<string, React.ElementType> = {
 };
 
 const severityConfig: Record<string, { icon: React.ElementType; color: string; label: string }> = {
-  info: { icon: CheckCircle, color: 'text-blue-500', label: 'Info' },
-  success: { icon: CheckCircle, color: 'text-green-500', label: 'Succès' },
-  warning: { icon: AlertCircle, color: 'text-yellow-500', label: 'Attention' },
-  error: { icon: AlertCircle, color: 'text-red-500', label: 'Erreur' },
+  info: { icon: CheckCircle, color: 'text-info', label: 'Info' },
+  success: { icon: CheckCircle, color: 'text-success', label: 'Succès' },
+  warning: { icon: AlertCircle, color: 'text-warning', label: 'Attention' },
+  error: { icon: AlertCircle, color: 'text-destructive', label: 'Erreur' },
 };
 
 function formatTimeAgo(dateStr: string): string {

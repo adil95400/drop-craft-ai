@@ -84,8 +84,8 @@ export default function LiveRepricingPage() {
   }
 
   const TrendIcon = ({ trend }: { trend: string }) => {
-    if (trend === 'up') return <ArrowUp className="h-4 w-4 text-green-500" />
-    if (trend === 'down') return <ArrowDown className="h-4 w-4 text-red-500" />
+    if (trend === 'up') return <ArrowUp className="h-4 w-4 text-success" />
+    if (trend === 'down') return <ArrowDown className="h-4 w-4 text-destructive" />
     return <Minus className="h-4 w-4 text-muted-foreground" />
   }
 
@@ -113,7 +113,7 @@ export default function LiveRepricingPage() {
         <Card><CardContent className="pt-4 pb-3"><div className="flex items-center gap-2 text-muted-foreground text-sm mb-1"><Eye className="h-4 w-4" /> Produits surveillés</div><div className="text-2xl font-bold">{competitorPrices.length}</div><p className="text-xs text-muted-foreground mt-1">intelligence concurrentielle</p></CardContent></Card>
         <Card><CardContent className="pt-4 pb-3"><div className="flex items-center gap-2 text-muted-foreground text-sm mb-1"><Zap className="h-4 w-4" /> Ajustements</div><div className="text-2xl font-bold text-primary">{totalAdjustments}</div><p className="text-xs text-muted-foreground mt-1">exécutions totales</p></CardContent></Card>
         <Card><CardContent className="pt-4 pb-3"><div className="flex items-center gap-2 text-muted-foreground text-sm mb-1"><Shield className="h-4 w-4" /> Règles actives</div><div className="text-2xl font-bold">{activeRules.length}</div><p className="text-xs text-muted-foreground mt-1">sur {rules.length} règles</p></CardContent></Card>
-        <Card><CardContent className="pt-4 pb-3"><div className="flex items-center gap-2 text-muted-foreground text-sm mb-1"><Target className="h-4 w-4" /> Marge protégée</div><div className="text-2xl font-bold text-green-600">{rules.length > 0 ? Math.round(rules.reduce((a: number, r: any) => a + (r.margin_protection || 0), 0) / rules.length) : 0}%</div><p className="text-xs text-muted-foreground mt-1">marge minimum moyenne</p></CardContent></Card>
+        <Card><CardContent className="pt-4 pb-3"><div className="flex items-center gap-2 text-muted-foreground text-sm mb-1"><Target className="h-4 w-4" /> Marge protégée</div><div className="text-2xl font-bold text-success">{rules.length > 0 ? Math.round(rules.reduce((a: number, r: any) => a + (r.margin_protection || 0), 0) / rules.length) : 0}%</div><p className="text-xs text-muted-foreground mt-1">marge minimum moyenne</p></CardContent></Card>
       </div>
 
       <Tabs defaultValue="monitor" className="space-y-4">
@@ -161,12 +161,12 @@ export default function LiveRepricingPage() {
                             <td className="py-3 text-right">{yourPrice.toFixed(2)}€</td>
                             <td className="py-3">{cp.competitor_name}</td>
                             <td className="py-3 text-right">
-                              <span className={yourPrice > (cp.competitor_price || 0) ? 'text-red-500' : 'text-green-500'}>
+                              <span className={yourPrice > (cp.competitor_price || 0) ? 'text-destructive' : 'text-success'}>
                                 {(cp.competitor_price || 0).toFixed(2)}€
                               </span>
                             </td>
                             <td className="py-3 text-right font-medium">
-                              <span className={diff > 0 ? 'text-red-500' : 'text-green-500'}>{diff > 0 ? '+' : ''}{diff.toFixed(2)}€</span>
+                              <span className={diff > 0 ? 'text-destructive' : 'text-success'}>{diff > 0 ? '+' : ''}{diff.toFixed(2)}€</span>
                             </td>
                             <td className="py-3 text-center">
                               <Badge variant={cp.market_position === 'leader' ? 'default' : 'secondary'} className="text-xs">
@@ -243,7 +243,7 @@ export default function LiveRepricingPage() {
                     .filter((cp: any) => Math.abs(cp.price_difference || 0) > 5)
                     .map((cp: any) => (
                       <div key={cp.id} className="flex items-start gap-3 p-3 rounded-lg bg-muted/50">
-                        <AlertTriangle className={`h-5 w-5 mt-0.5 ${Math.abs(cp.price_difference || 0) > 20 ? 'text-destructive' : 'text-yellow-500'}`} />
+                        <AlertTriangle className={`h-5 w-5 mt-0.5 ${Math.abs(cp.price_difference || 0) > 20 ? 'text-destructive' : 'text-warning'}`} />
                         <div className="flex-1">
                           <p className="text-sm">{cp.products?.name}: {cp.competitor_name} à {(cp.competitor_price || 0).toFixed(2)}€ (diff: {(cp.price_difference || 0).toFixed(2)}€)</p>
                           <p className="text-xs text-muted-foreground mt-1">{cp.last_checked_at ? new Date(cp.last_checked_at).toLocaleString('fr-FR') : ''}</p>

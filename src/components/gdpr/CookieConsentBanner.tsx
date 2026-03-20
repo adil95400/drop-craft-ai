@@ -72,7 +72,7 @@ export const CookieConsentBanner = () => {
               {showDetails && (
                 <div className="space-y-2 p-3 bg-muted/50 rounded-lg text-sm">
                   <div className="flex items-center gap-2">
-                    <Check className="h-4 w-4 text-green-500" />
+                    <Check className="h-4 w-4 text-success" />
                     <span><strong>Cookies essentiels</strong> - Nécessaires au fonctionnement (toujours actifs)</span>
                   </div>
                   <div className="flex items-center gap-2">

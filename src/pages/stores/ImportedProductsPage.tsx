@@ -337,7 +337,7 @@ export default function ImportedProductsPage() {
             <CardContent className="pt-6">
               <div className="text-center">
                 <p className="text-sm font-medium text-muted-foreground">Actifs</p>
-                <p className="text-3xl font-bold text-green-600">{stats.active}</p>
+                <p className="text-3xl font-bold text-success">{stats.active}</p>
               </div>
             </CardContent>
           </Card>
@@ -346,7 +346,7 @@ export default function ImportedProductsPage() {
             <CardContent className="pt-6">
               <div className="text-center">
                 <p className="text-sm font-medium text-muted-foreground">En rupture</p>
-                <p className="text-3xl font-bold text-red-600">{stats.outOfStock}</p>
+                <p className="text-3xl font-bold text-destructive">{stats.outOfStock}</p>
               </div>
             </CardContent>
           </Card>

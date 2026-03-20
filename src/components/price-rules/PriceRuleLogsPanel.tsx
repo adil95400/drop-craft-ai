@@ -92,7 +92,7 @@ export function PriceRuleLogsPanel({ ruleId }: { ruleId?: string }) {
                 <div key={log.id} className="p-4 border rounded-lg space-y-2">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <Icon className={`h-5 w-5 ${log.action === 'applied' ? 'text-green-500' : log.action === 'simulated' ? 'text-blue-500' : 'text-orange-500'}`} />
+                      <Icon className={`h-5 w-5 ${log.action === 'applied' ? 'text-success' : log.action === 'simulated' ? 'text-info' : 'text-warning'}`} />
                       <Badge variant={log.action === 'applied' ? 'default' : 'secondary'}>{actionLabels[log.action] || log.action}</Badge>
                     </div>
                     <span className="text-sm text-muted-foreground">
@@ -101,7 +101,7 @@ export function PriceRuleLogsPanel({ ruleId }: { ruleId?: string }) {
                   </div>
                   <div className="grid grid-cols-3 gap-4 text-sm">
                     <div><strong>{log.products_count}</strong> produits</div>
-                    <div className={isPositive ? 'text-green-600' : 'text-red-600'}>
+                    <div className={isPositive ? 'text-success' : 'text-destructive'}>
                       {isPositive ? <TrendingUp className="h-4 w-4 inline mr-1" /> : <TrendingDown className="h-4 w-4 inline mr-1" />}
                       {isPositive ? '+' : ''}{log.avg_price_change_percent.toFixed(2)}%
                     </div>

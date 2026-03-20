@@ -61,7 +61,7 @@ export const WinnersProductAnalysis = ({ product }: WinnersProductAnalysisProps)
                 
                 <div className="space-y-2">
                   <div className="text-sm text-muted-foreground">Demande Marché</div>
-                  <div className="text-2xl font-bold text-green-600">{product.market_demand?.toFixed(0) || 'N/A'}</div>
+                  <div className="text-2xl font-bold text-success">{product.market_demand?.toFixed(0) || 'N/A'}</div>
                   <Progress value={product.market_demand || 0} className="h-2" />
                 </div>
                 
@@ -128,7 +128,7 @@ export const WinnersProductAnalysis = ({ product }: WinnersProductAnalysisProps)
                     </div>
                     <div className="flex justify-between items-center">
                       <span className="text-sm">Croissance tendance</span>
-                      <span className="font-semibold text-green-600">+{product.trending_score?.toFixed(0)}%</span>
+                      <span className="font-semibold text-success">+{product.trending_score?.toFixed(0)}%</span>
                     </div>
                     <div className="flex justify-between items-center">
                       <span className="text-sm">Intérêt géographique</span>
@@ -174,7 +174,7 @@ export const WinnersProductAnalysis = ({ product }: WinnersProductAnalysisProps)
                     <CardTitle className="text-sm font-medium">Profit potentiel/vente</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="text-2xl font-bold text-green-600">{profitPotential.toFixed(2)} {product.currency}</div>
+                    <div className="text-2xl font-bold text-success">{profitPotential.toFixed(2)} {product.currency}</div>
                   </CardContent>
                 </Card>
 
@@ -192,7 +192,7 @@ export const WinnersProductAnalysis = ({ product }: WinnersProductAnalysisProps)
                     <CardTitle className="text-sm font-medium">Coût pub estimé</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="text-2xl font-bold text-orange-600">{adCostEstimate.toFixed(2)} {product.currency}</div>
+                    <div className="text-2xl font-bold text-warning">{adCostEstimate.toFixed(2)} {product.currency}</div>
                   </CardContent>
                 </Card>
               </div>
@@ -218,7 +218,7 @@ export const WinnersProductAnalysis = ({ product }: WinnersProductAnalysisProps)
                   </div>
                   <div className="flex justify-between items-center pt-2 border-t font-semibold">
                     <span className="text-sm">Marge nette (30%)</span>
-                    <span className="text-green-600">{profitPotential.toFixed(2)} {product.currency}</span>
+                    <span className="text-success">{profitPotential.toFixed(2)} {product.currency}</span>
                   </div>
                 </div>
               </div>
@@ -246,25 +246,25 @@ export const WinnersProductAnalysis = ({ product }: WinnersProductAnalysisProps)
                 <ul className="space-y-2">
                   {product.rating && product.rating > 4 && (
                     <li className="flex items-start gap-2">
-                      <div className="w-2 h-2 rounded-full bg-green-500 mt-1.5" />
+                      <div className="w-2 h-2 rounded-full bg-success mt-1.5" />
                       <span className="text-sm">Excellentes évaluations ({product.rating}/5)</span>
                     </li>
                   )}
                   {product.reviews && product.reviews > 100 && (
                     <li className="flex items-start gap-2">
-                      <div className="w-2 h-2 rounded-full bg-green-500 mt-1.5" />
+                      <div className="w-2 h-2 rounded-full bg-success mt-1.5" />
                       <span className="text-sm">Fort social proof ({product.reviews} avis)</span>
                     </li>
                   )}
                   {product.trending_score && product.trending_score > 70 && (
                     <li className="flex items-start gap-2">
-                      <div className="w-2 h-2 rounded-full bg-green-500 mt-1.5" />
+                      <div className="w-2 h-2 rounded-full bg-success mt-1.5" />
                       <span className="text-sm">Forte tendance actuelle</span>
                     </li>
                   )}
                   {product.price < 50 && (
                     <li className="flex items-start gap-2">
-                      <div className="w-2 h-2 rounded-full bg-green-500 mt-1.5" />
+                      <div className="w-2 h-2 rounded-full bg-success mt-1.5" />
                       <span className="text-sm">Prix accessible favorisant les achats impulsifs</span>
                     </li>
                   )}
@@ -273,24 +273,24 @@ export const WinnersProductAnalysis = ({ product }: WinnersProductAnalysisProps)
 
               <div>
                 <h4 className="font-semibold mb-2 flex items-center gap-2">
-                  <AlertTriangle className="w-4 h-4 text-orange-500" />
+                  <AlertTriangle className="w-4 h-4 text-warning" />
                   Points d'Attention
                 </h4>
                 <ul className="space-y-2">
                   {(!product.rating || product.rating < 3.5) && (
                     <li className="flex items-start gap-2">
-                      <div className="w-2 h-2 rounded-full bg-orange-500 mt-1.5" />
+                      <div className="w-2 h-2 rounded-full bg-warning mt-1.5" />
                       <span className="text-sm">Notes faibles - Opportunité d'amélioration</span>
                     </li>
                   )}
                   {marketSaturation === 'Saturé' && (
                     <li className="flex items-start gap-2">
-                      <div className="w-2 h-2 rounded-full bg-orange-500 mt-1.5" />
+                      <div className="w-2 h-2 rounded-full bg-warning mt-1.5" />
                       <span className="text-sm">Marché saturé - Différenciation nécessaire</span>
                     </li>
                   )}
                   <li className="flex items-start gap-2">
-                    <div className="w-2 h-2 rounded-full bg-blue-500 mt-1.5" />
+                    <div className="w-2 h-2 rounded-full bg-info mt-1.5" />
                     <span className="text-sm">Analyser les stratégies des top vendeurs</span>
                   </li>
                 </ul>

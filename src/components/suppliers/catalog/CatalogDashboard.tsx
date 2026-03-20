@@ -50,18 +50,18 @@ interface StatCardProps {
 
 const colorClasses = {
   primary: 'bg-primary/10 text-primary border-primary/20',
-  success: 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20',
-  warning: 'bg-amber-500/10 text-amber-600 border-amber-500/20',
-  danger: 'bg-red-500/10 text-red-600 border-red-500/20',
-  info: 'bg-blue-500/10 text-blue-600 border-blue-500/20',
+  success: 'bg-success/10 text-success border-emerald-500/20',
+  warning: 'bg-warning/10 text-warning border-amber-500/20',
+  danger: 'bg-destructive/10 text-destructive border-destructive/20',
+  info: 'bg-info/10 text-info border-info/20',
 };
 
 const iconColorClasses = {
   primary: 'text-primary',
-  success: 'text-emerald-500',
-  warning: 'text-amber-500',
-  danger: 'text-red-500',
-  info: 'text-blue-500',
+  success: 'text-success',
+  warning: 'text-warning',
+  danger: 'text-destructive',
+  info: 'text-info',
 };
 
 const StatCard = memo(function StatCard({
@@ -97,7 +97,7 @@ const StatCard = memo(function StatCard({
             {trend !== undefined && (
               <div className={cn(
                 "flex items-center gap-0.5 text-xs font-medium",
-                trend >= 0 ? "text-emerald-600" : "text-red-500"
+                trend >= 0 ? "text-success" : "text-destructive"
               )}>
                 {trend >= 0 ? (
                   <ArrowUpRight className="h-3 w-3" />
@@ -205,8 +205,8 @@ export const CatalogDashboard = memo(function CatalogDashboard({
           <div className="flex items-center gap-2">
             <div className={cn(
               "h-2 w-2 rounded-full",
-              stats.healthScore >= 70 ? "bg-emerald-500" : 
-              stats.healthScore >= 40 ? "bg-amber-500" : "bg-red-500"
+              stats.healthScore >= 70 ? "bg-success" : 
+              stats.healthScore >= 40 ? "bg-warning" : "bg-destructive"
             )} />
             <span className="text-sm font-medium">
               Santé catalogue: {stats.healthScore}%
@@ -224,7 +224,7 @@ export const CatalogDashboard = memo(function CatalogDashboard({
             onClick={() => onQuickFilter('winners')}
             className="gap-1"
           >
-            <Crown className="h-3.5 w-3.5 text-amber-500" />
+            <Crown className="h-3.5 w-3.5 text-warning" />
             Winners ({stats.winners})
           </Button>
           <Button
@@ -233,7 +233,7 @@ export const CatalogDashboard = memo(function CatalogDashboard({
             onClick={() => onQuickFilter('low_stock')}
             className="gap-1"
           >
-            <AlertTriangle className="h-3.5 w-3.5 text-amber-500" />
+            <AlertTriangle className="h-3.5 w-3.5 text-warning" />
             Stock faible ({stats.lowStock})
           </Button>
           {onSync && (

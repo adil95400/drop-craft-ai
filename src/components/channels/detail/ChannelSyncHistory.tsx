@@ -78,13 +78,13 @@ export function ChannelSyncHistory({
   const getStatusConfig = (status: SyncLog['status']) => {
     switch (status) {
       case 'success':
-        return { icon: CheckCircle2, color: 'text-emerald-600', bg: 'bg-emerald-500/10', label: 'OK' }
+        return { icon: CheckCircle2, color: 'text-success', bg: 'bg-success/10', label: 'OK' }
       case 'error':
         return { icon: XCircle, color: 'text-destructive', bg: 'bg-destructive/10', label: 'Erreur' }
       case 'running':
-        return { icon: Loader2, color: 'text-blue-600', bg: 'bg-blue-500/10', label: 'En cours' }
+        return { icon: Loader2, color: 'text-info', bg: 'bg-info/10', label: 'En cours' }
       default:
-        return { icon: Clock, color: 'text-amber-600', bg: 'bg-amber-500/10', label: 'Attente' }
+        return { icon: Clock, color: 'text-warning', bg: 'bg-warning/10', label: 'Attente' }
     }
   }
 
@@ -177,11 +177,11 @@ export function ChannelSyncHistory({
           <motion.div
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
-            className="mt-3 p-3 rounded-lg bg-blue-500/10 border border-blue-500/20"
+            className="mt-3 p-3 rounded-lg bg-info/10 border border-info/20"
           >
             <div className="flex items-center justify-between mb-1.5">
               <div className="flex items-center gap-2">
-                <Loader2 className="h-3.5 w-3.5 animate-spin text-blue-600" />
+                <Loader2 className="h-3.5 w-3.5 animate-spin text-info" />
                 <span className="text-xs font-medium">Synchronisation...</span>
               </div>
               <span className="text-xs font-mono tabular-nums">{currentSync.itemsProcessed}%</span>

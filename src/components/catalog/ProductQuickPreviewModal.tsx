@@ -110,8 +110,8 @@ function HealthScore({ product }: { product: QuickPreviewProduct }) {
   checks.forEach(c => { total++; if (c.ok) score++ })
   const percent = Math.round((score / total) * 100)
 
-  const color = percent >= 80 ? 'text-emerald-600' : percent >= 50 ? 'text-amber-600' : 'text-red-600'
-  const bgColor = percent >= 80 ? 'bg-emerald-500' : percent >= 50 ? 'bg-amber-500' : 'bg-red-500'
+  const color = percent >= 80 ? 'text-success' : percent >= 50 ? 'text-warning' : 'text-destructive'
+  const bgColor = percent >= 80 ? 'bg-success' : percent >= 50 ? 'bg-warning' : 'bg-destructive'
 
   return (
     <div className="space-y-3">
@@ -126,9 +126,9 @@ function HealthScore({ product }: { product: QuickPreviewProduct }) {
         {checks.map((c, i) => (
           <div key={i} className="flex items-center gap-1.5 text-xs">
             {c.ok ? (
-              <CheckCircle2 className="h-3 w-3 text-emerald-500 flex-shrink-0" />
+              <CheckCircle2 className="h-3 w-3 text-success flex-shrink-0" />
             ) : (
-              <AlertTriangle className="h-3 w-3 text-amber-500 flex-shrink-0" />
+              <AlertTriangle className="h-3 w-3 text-warning flex-shrink-0" />
             )}
             <span className={c.ok ? 'text-muted-foreground' : 'text-foreground font-medium'}>{c.label}</span>
           </div>
@@ -273,7 +273,7 @@ export function ProductQuickPreviewModal({
                     variant={product.status === 'active' ? 'default' : 'secondary'}
                     className={cn(
                       "shrink-0",
-                      product.status === 'draft' && "bg-amber-500/10 text-amber-600 border-amber-500/30"
+                      product.status === 'draft' && "bg-warning/10 text-warning border-amber-500/30"
                     )}
                   >
                     {product.status === 'draft' ? '🔶 Brouillon' : product.status === 'active' ? '✅ Actif' : product.status}
@@ -431,9 +431,9 @@ export function ProductQuickPreviewModal({
                             <div className="flex justify-between items-center pt-1 border-t border-border/30">
                               <span className="text-xs text-muted-foreground">Marge</span>
                               <Badge className={cn(
-                                margin >= 30 ? "bg-emerald-500/10 text-emerald-600 border-emerald-500/30" :
-                                margin >= 15 ? "bg-amber-500/10 text-amber-600 border-amber-500/30" :
-                                "bg-red-500/10 text-red-600 border-red-500/30"
+                                margin >= 30 ? "bg-success/10 text-success border-emerald-500/30" :
+                                margin >= 15 ? "bg-warning/10 text-warning border-amber-500/30" :
+                                "bg-destructive/10 text-destructive border-destructive/30"
                               )} variant="outline">
                                 <TrendingUp className="h-3 w-3 mr-1" />
                                 {margin}%
@@ -447,14 +447,14 @@ export function ProductQuickPreviewModal({
                       {reviewStats && reviewStats.rating && (
                         <div className="rounded-xl border border-border/50 bg-muted/20 p-4 space-y-2">
                           <div className="flex items-center gap-2 text-sm font-semibold">
-                            <Star className="h-4 w-4 text-amber-500" />
+                            <Star className="h-4 w-4 text-warning" />
                             Avis clients
                           </div>
                           <div className="flex items-center gap-2">
                             <span className="text-2xl font-bold">{reviewStats.rating.toFixed?.(1) || reviewStats.rating}</span>
                             <div className="flex gap-0.5">
                               {Array.from({ length: 5 }).map((_, s) => (
-                                <Star key={s} className={cn("h-4 w-4", s < Math.round(reviewStats.rating || 0) ? "fill-amber-500 text-amber-500" : "text-muted-foreground/20")} />
+                                <Star key={s} className={cn("h-4 w-4", s < Math.round(reviewStats.rating || 0) ? "fill-amber-500 text-warning" : "text-muted-foreground/20")} />
                               ))}
                             </div>
                           </div>
@@ -627,7 +627,7 @@ export function ProductQuickPreviewModal({
                         <div className="text-3xl font-bold">{reviewStats.rating.toFixed?.(1) || reviewStats.rating}</div>
                         <div className="flex gap-0.5 mt-1">
                           {Array.from({ length: 5 }).map((_, s) => (
-                            <Star key={s} className={cn("h-4 w-4", s < Math.round(reviewStats.rating || 0) ? "fill-amber-500 text-amber-500" : "text-muted-foreground/20")} />
+                            <Star key={s} className={cn("h-4 w-4", s < Math.round(reviewStats.rating || 0) ? "fill-amber-500 text-warning" : "text-muted-foreground/20")} />
                           ))}
                         </div>
                         <p className="text-xs text-muted-foreground mt-1">{reviews.length} avis</p>
@@ -651,7 +651,7 @@ export function ProductQuickPreviewModal({
                           </span>
                           <div className="flex items-center gap-0.5">
                             {Array.from({ length: 5 }).map((_, s) => (
-                              <Star key={s} className={cn("h-3 w-3", s < (review.rating || 0) ? "fill-amber-500 text-amber-500" : "text-muted-foreground/20")} />
+                              <Star key={s} className={cn("h-3 w-3", s < (review.rating || 0) ? "fill-amber-500 text-warning" : "text-muted-foreground/20")} />
                             ))}
                           </div>
                         </div>
@@ -667,7 +667,7 @@ export function ProductQuickPreviewModal({
                         )}
                         <div className="flex items-center gap-2 text-[10px] text-muted-foreground/60">
                           {review.verified_purchase && (
-                            <Badge variant="outline" className="text-[10px] h-4 px-1.5 border-green-500/30 text-green-600">
+                            <Badge variant="outline" className="text-[10px] h-4 px-1.5 border-success/30 text-success">
                               <CheckCircle2 className="h-2.5 w-2.5 mr-0.5" />
                               Vérifié
                             </Badge>

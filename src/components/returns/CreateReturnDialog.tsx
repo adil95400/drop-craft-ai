@@ -113,10 +113,10 @@ interface SelectedProduct {
 
 const REASON_CATEGORIES = [
   { value: 'defective', label: 'Produit défectueux', icon: AlertTriangle, color: 'text-destructive' },
-  { value: 'wrong_item', label: 'Mauvais article', icon: Package, color: 'text-orange-500' },
-  { value: 'not_as_described', label: 'Non conforme', icon: FileText, color: 'text-yellow-500' },
-  { value: 'changed_mind', label: 'Changement d\'avis', icon: RotateCcw, color: 'text-blue-500' },
-  { value: 'damaged_shipping', label: 'Endommagé livraison', icon: Package, color: 'text-red-500' },
+  { value: 'wrong_item', label: 'Mauvais article', icon: Package, color: 'text-warning' },
+  { value: 'not_as_described', label: 'Non conforme', icon: FileText, color: 'text-warning' },
+  { value: 'changed_mind', label: 'Changement d\'avis', icon: RotateCcw, color: 'text-info' },
+  { value: 'damaged_shipping', label: 'Endommagé livraison', icon: Package, color: 'text-destructive' },
   { value: 'other', label: 'Autre', icon: FileText, color: 'text-muted-foreground' }
 ] as const
 
@@ -838,7 +838,7 @@ export function CreateReturnDialog({ open, onOpenChange, orderId }: CreateReturn
 
               {!showAllCustomers && !debouncedCustomerQuery && (
                 <div className="flex items-center gap-2 text-xs text-muted-foreground bg-muted/50 rounded-lg p-3">
-                  <AlertTriangle className="h-3.5 w-3.5 text-yellow-500 flex-shrink-0" />
+                  <AlertTriangle className="h-3.5 w-3.5 text-warning flex-shrink-0" />
                   <span>Sans client identifié, le retour sera créé sans lien avec un compte client.</span>
                 </div>
               )}

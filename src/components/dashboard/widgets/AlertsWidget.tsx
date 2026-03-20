@@ -29,22 +29,22 @@ export function AlertsWidget({ isCustomizing }: AlertsWidgetProps) {
   const getAlertIcon = (type: string) => {
     switch (type) {
       case 'warning':
-        return <AlertCircle className="h-5 w-5 text-red-600 flex-shrink-0 mt-0.5" />;
+        return <AlertCircle className="h-5 w-5 text-destructive flex-shrink-0 mt-0.5" />;
       case 'info':
-        return <Info className="h-5 w-5 text-blue-600 flex-shrink-0 mt-0.5" />;
+        return <Info className="h-5 w-5 text-info flex-shrink-0 mt-0.5" />;
       default:
-        return <AlertTriangle className="h-5 w-5 text-orange-600 flex-shrink-0 mt-0.5" />;
+        return <AlertTriangle className="h-5 w-5 text-warning flex-shrink-0 mt-0.5" />;
     }
   };
 
   const getAlertBgColor = (type: string) => {
     switch (type) {
       case 'warning':
-        return 'bg-red-500/10 border-red-500/20';
+        return 'bg-destructive/10 border-destructive/20';
       case 'info':
-        return 'bg-blue-500/10 border-blue-500/20';
+        return 'bg-info/10 border-info/20';
       default:
-        return 'bg-orange-500/10 border-orange-500/20';
+        return 'bg-warning/10 border-orange-500/20';
     }
   };
 

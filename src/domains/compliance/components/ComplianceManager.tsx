@@ -254,9 +254,9 @@ export const ComplianceManager: React.FC = () => {
 
   const getComplianceStatusColor = (status: string) => {
     switch (status) {
-      case 'compliant': return 'bg-green-100 text-green-800 border-green-200';
-      case 'partial': return 'bg-yellow-100 text-yellow-800 border-yellow-200';
-      case 'non_compliant': return 'bg-red-100 text-red-800 border-red-200';
+      case 'compliant': return 'bg-success/10 text-success border-success/20';
+      case 'partial': return 'bg-warning/10 text-yellow-800 border-warning/20';
+      case 'non_compliant': return 'bg-destructive/10 text-red-800 border-destructive/20';
       case 'not_applicable': return 'bg-gray-100 text-gray-800 border-gray-200';
       default: return 'bg-gray-100 text-gray-800 border-gray-200';
     }
@@ -265,8 +265,8 @@ export const ComplianceManager: React.FC = () => {
   const getCategoryColor = (category: string) => {
     switch (category) {
       case 'privacy': return 'bg-purple-100 text-purple-800 border-purple-200';
-      case 'security': return 'bg-blue-100 text-blue-800 border-blue-200';
-      case 'financial': return 'bg-green-100 text-green-800 border-green-200';
+      case 'security': return 'bg-info/10 text-blue-800 border-info/20';
+      case 'financial': return 'bg-success/10 text-success border-success/20';
       case 'industry': return 'bg-orange-100 text-orange-800 border-orange-200';
       case 'accessibility': return 'bg-pink-100 text-pink-800 border-pink-200';
       default: return 'bg-gray-100 text-gray-800 border-gray-200';
@@ -275,20 +275,20 @@ export const ComplianceManager: React.FC = () => {
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
-      case 'critical': return 'bg-red-100 text-red-800 border-red-200';
+      case 'critical': return 'bg-destructive/10 text-red-800 border-destructive/20';
       case 'high': return 'bg-orange-100 text-orange-800 border-orange-200';
-      case 'medium': return 'bg-yellow-100 text-yellow-800 border-yellow-200';
-      case 'low': return 'bg-green-100 text-green-800 border-green-200';
+      case 'medium': return 'bg-warning/10 text-yellow-800 border-warning/20';
+      case 'low': return 'bg-success/10 text-success border-success/20';
       default: return 'bg-gray-100 text-gray-800 border-gray-200';
     }
   };
 
   const getSeverityColor = (severity: string) => {
     switch (severity) {
-      case 'critical': return 'bg-red-100 text-red-800 border-red-200';
+      case 'critical': return 'bg-destructive/10 text-red-800 border-destructive/20';
       case 'high': return 'bg-orange-100 text-orange-800 border-orange-200';
-      case 'medium': return 'bg-yellow-100 text-yellow-800 border-yellow-200';
-      case 'low': return 'bg-blue-100 text-blue-800 border-blue-200';
+      case 'medium': return 'bg-warning/10 text-yellow-800 border-warning/20';
+      case 'low': return 'bg-info/10 text-blue-800 border-info/20';
       default: return 'bg-gray-100 text-gray-800 border-gray-200';
     }
   };
@@ -316,8 +316,8 @@ export const ComplianceManager: React.FC = () => {
     <div className="space-y-6 p-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-3">
-          <div className="p-2 bg-blue-100 rounded-lg">
-            <Shield className="h-6 w-6 text-blue-600" />
+          <div className="p-2 bg-info/10 rounded-lg">
+            <Shield className="h-6 w-6 text-info" />
           </div>
           <div>
             <h1 className="text-3xl font-bold">Compliance Manager</h1>
@@ -327,7 +327,7 @@ export const ComplianceManager: React.FC = () => {
           </div>
         </div>
         <div className="flex space-x-2">
-          <Badge variant="secondary" className="bg-green-100 text-green-800">
+          <Badge variant="secondary" className="bg-success/10 text-success">
             <CheckCircle className="h-3 w-3 mr-1" />
             3 Frameworks Compliant
           </Badge>
@@ -395,17 +395,17 @@ export const ComplianceManager: React.FC = () => {
                   <div className="grid grid-cols-4 gap-4">
                     <div className="text-center">
                       <p className="text-sm font-medium text-gray-500">Requirements Met</p>
-                      <p className="text-xl font-bold text-green-600">
+                      <p className="text-xl font-bold text-success">
                         {framework.requirements_met}/{framework.requirements_total}
                       </p>
                     </div>
                     <div className="text-center">
                       <p className="text-sm font-medium text-gray-500">Critical Gaps</p>
-                      <p className="text-xl font-bold text-red-600">{framework.critical_gaps}</p>
+                      <p className="text-xl font-bold text-destructive">{framework.critical_gaps}</p>
                     </div>
                     <div className="text-center">
                       <p className="text-sm font-medium text-gray-500">Compliance Score</p>
-                      <p className="text-xl font-bold text-blue-600">{framework.compliance_score}%</p>
+                      <p className="text-xl font-bold text-info">{framework.compliance_score}%</p>
                     </div>
                     <div className="text-center">
                       <p className="text-sm font-medium text-gray-500">Est. Cost</p>
@@ -560,7 +560,7 @@ export const ComplianceManager: React.FC = () => {
                     {report.overall_score > 0 && (
                       <div className="text-right">
                         <p className="text-sm font-medium text-gray-700">Score</p>
-                        <p className="text-2xl font-bold text-green-600">{report.overall_score}/100</p>
+                        <p className="text-2xl font-bold text-success">{report.overall_score}/100</p>
                       </div>
                     )}
                   </div>
@@ -571,16 +571,16 @@ export const ComplianceManager: React.FC = () => {
                       <div className="grid grid-cols-3 gap-4 text-center">
                         <div>
                           <p className="text-sm font-medium text-gray-500">Total Findings</p>
-                          <p className="text-xl font-bold text-blue-600">{report.findings_count}</p>
+                          <p className="text-xl font-bold text-info">{report.findings_count}</p>
                         </div>
                         <div>
                           <p className="text-sm font-medium text-gray-500">Critical</p>
-                          <p className="text-xl font-bold text-red-600">{report.critical_findings}</p>
+                          <p className="text-xl font-bold text-destructive">{report.critical_findings}</p>
                         </div>
                         <div>
                           <p className="text-sm font-medium text-gray-500">Outcome</p>
                           <Badge className={report.certification_outcome === 'passed' ? 
-                            'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}>
+                            'bg-success/10 text-success' : 'bg-destructive/10 text-red-800'}>
                             {report.certification_outcome}
                           </Badge>
                         </div>
@@ -592,7 +592,7 @@ export const ComplianceManager: React.FC = () => {
                           <ul className="space-y-1">
                             {report.recommendations.map((rec, idx) => (
                               <li key={idx} className="text-sm text-gray-600 flex items-start space-x-2">
-                                <Target className="h-3 w-3 text-blue-500 mt-0.5 flex-shrink-0" />
+                                <Target className="h-3 w-3 text-info mt-0.5 flex-shrink-0" />
                                 <span>{rec}</span>
                               </li>
                             ))}

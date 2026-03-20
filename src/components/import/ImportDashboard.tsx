@@ -103,7 +103,7 @@ export const ImportDashboard = () => {
                 <p className="text-sm font-medium text-muted-foreground">Total Imports</p>
                 <p className="text-2xl font-bold">{stats.totalImports}</p>
               </div>
-              <FileSpreadsheet className="w-8 h-8 text-blue-600" />
+              <FileSpreadsheet className="w-8 h-8 text-info" />
             </div>
           </CardContent>
         </Card>
@@ -115,7 +115,7 @@ export const ImportDashboard = () => {
                 <p className="text-sm font-medium text-muted-foreground">Produits Importés</p>
                 <p className="text-2xl font-bold">{stats.totalProducts}</p>
               </div>
-              <Database className="w-8 h-8 text-green-600" />
+              <Database className="w-8 h-8 text-success" />
             </div>
           </CardContent>
         </Card>
@@ -127,7 +127,7 @@ export const ImportDashboard = () => {
                 <p className="text-sm font-medium text-muted-foreground">Publiés</p>
                 <p className="text-2xl font-bold">{stats.publishedProducts}</p>
               </div>
-              <CheckCircle className="w-8 h-8 text-emerald-600" />
+              <CheckCircle className="w-8 h-8 text-success" />
             </div>
           </CardContent>
         </Card>
@@ -159,7 +159,7 @@ export const ImportDashboard = () => {
               {imports.filter(i => i.status === 'processing').map((importJob, index) => (
                 <div key={importJob.id} className="flex items-center justify-between p-4 border rounded-lg">
                   <div className="flex items-center gap-3">
-                    <RefreshCw className="w-4 h-4 animate-spin text-blue-600" />
+                    <RefreshCw className="w-4 h-4 animate-spin text-info" />
                     <div>
                       <p className="font-medium">{importJob.source_name || 'Import sans nom'}</p>
                       <p className="text-sm text-muted-foreground">
@@ -252,20 +252,20 @@ export const ImportDashboard = () => {
             {imports.slice(0, 5).map((importJob) => {
               const getStatusIcon = (status: string) => {
                 switch (status) {
-                  case 'completed': return <CheckCircle className="w-4 h-4 text-green-600" />;
-                  case 'processing': return <RefreshCw className="w-4 h-4 text-blue-600 animate-spin" />;
-                  case 'pending': return <Clock className="w-4 h-4 text-yellow-600" />;
-                  case 'failed': return <XCircle className="w-4 h-4 text-red-600" />;
+                  case 'completed': return <CheckCircle className="w-4 h-4 text-success" />;
+                  case 'processing': return <RefreshCw className="w-4 h-4 text-info animate-spin" />;
+                  case 'pending': return <Clock className="w-4 h-4 text-warning" />;
+                  case 'failed': return <XCircle className="w-4 h-4 text-destructive" />;
                   default: return <AlertCircle className="w-4 h-4 text-gray-600" />;
                 }
               };
 
               const getStatusColor = (status: string) => {
                 switch (status) {
-                  case 'completed': return 'bg-green-500/10 text-green-700 border-green-500/20';
-                  case 'processing': return 'bg-blue-500/10 text-blue-700 border-blue-500/20';
-                  case 'pending': return 'bg-yellow-500/10 text-yellow-700 border-yellow-500/20';
-                  case 'failed': return 'bg-red-500/10 text-red-700 border-red-500/20';
+                  case 'completed': return 'bg-success/10 text-success border-success/20';
+                  case 'processing': return 'bg-info/10 text-blue-700 border-info/20';
+                  case 'pending': return 'bg-warning/10 text-yellow-700 border-warning/20';
+                  case 'failed': return 'bg-destructive/10 text-red-700 border-destructive/20';
                   default: return 'bg-gray-500/10 text-gray-700 border-gray-500/20';
                 }
               };

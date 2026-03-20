@@ -203,7 +203,7 @@ export const createProductsColumns = ({
       return (
         <Badge
           variant={status === 'active' ? 'default' : 'secondary'}
-          className={status === 'active' ? 'bg-green-500' : ''}
+          className={status === 'active' ? 'bg-success' : ''}
         >
           {status === 'active' ? 'Actif' : 'Inactif'}
         </Badge>
@@ -255,7 +255,7 @@ export const createProductsColumns = ({
       if (!margin) return <span className="text-muted-foreground">-</span>
       return (
         <div className="flex items-center gap-1">
-          <TrendingUp className="h-3 w-3 text-green-500" />
+          <TrendingUp className="h-3 w-3 text-success" />
           <span className="font-medium">{margin.toFixed(1)}%</span>
         </div>
       )

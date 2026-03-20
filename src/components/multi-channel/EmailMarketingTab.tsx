@@ -94,7 +94,7 @@ export function EmailMarketingTab() {
                 <p className="text-sm text-muted-foreground">Revenu email</p>
                 <p className="text-2xl font-bold">8 970 €</p>
               </div>
-              <ArrowUpRight className="h-5 w-5 text-emerald-500" />
+              <ArrowUpRight className="h-5 w-5 text-success" />
             </div>
           </CardContent>
         </Card>

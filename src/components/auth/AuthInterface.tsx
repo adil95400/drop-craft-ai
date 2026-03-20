@@ -235,12 +235,12 @@ export const AuthInterface = () => {
                     }}
                     className={cn(
                       "mt-1.5 h-12 border-gray-300 focus:border-[#00B8D4] focus:ring-[#00B8D4] placeholder:text-gray-400",
-                      errors.email && "border-red-500 focus:border-red-500 focus:ring-red-500"
+                      errors.email && "border-destructive focus:border-destructive focus:ring-red-500"
                     )}
                     disabled={isLoading}
                   />
                   {errors.email && (
-                    <p className="text-xs text-red-500 flex items-center gap-1 mt-1">
+                    <p className="text-xs text-destructive flex items-center gap-1 mt-1">
                       <AlertCircle className="h-3 w-3" />
                       {errors.email}
                     </p>
@@ -264,7 +264,7 @@ export const AuthInterface = () => {
                       }}
                       className={cn(
                         "h-12 border-gray-300 focus:border-[#00B8D4] focus:ring-[#00B8D4] pr-10 placeholder:text-gray-400",
-                        errors.password && "border-red-500 focus:border-red-500 focus:ring-red-500"
+                        errors.password && "border-destructive focus:border-destructive focus:ring-red-500"
                       )}
                       disabled={isLoading}
                     />
@@ -277,7 +277,7 @@ export const AuthInterface = () => {
                     </button>
                   </div>
                   {errors.password && (
-                    <p className="text-xs text-red-500 flex items-center gap-1 mt-1">
+                    <p className="text-xs text-destructive flex items-center gap-1 mt-1">
                       <AlertCircle className="h-3 w-3" />
                       {errors.password}
                     </p>
@@ -307,12 +307,12 @@ export const AuthInterface = () => {
                         }}
                         className={cn(
                           "mt-1.5 h-12 border-gray-300 focus:border-[#00B8D4] focus:ring-[#00B8D4] placeholder:text-gray-400",
-                          errors.confirmPassword && "border-red-500 focus:border-red-500 focus:ring-red-500"
+                          errors.confirmPassword && "border-destructive focus:border-destructive focus:ring-red-500"
                         )}
                         disabled={isLoading}
                       />
                       {errors.confirmPassword && (
-                        <p className="text-xs text-red-500 flex items-center gap-1 mt-1">
+                        <p className="text-xs text-destructive flex items-center gap-1 mt-1">
                           <AlertCircle className="h-3 w-3" />
                           {errors.confirmPassword}
                         </p>

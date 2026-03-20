@@ -40,9 +40,9 @@ const DECISION_CONFIG = {
     icon: AlertTriangle,
     label: 'Action requise',
     shortLabel: 'Action',
-    colors: 'bg-red-500/15 text-red-600 dark:text-red-400 border-red-500/40',
-    iconColor: 'text-red-500',
-    pulseColor: 'bg-red-500'
+    colors: 'bg-destructive/15 text-destructive dark:text-red-400 border-destructive/40',
+    iconColor: 'text-destructive',
+    pulseColor: 'bg-destructive'
   },
   opportunity: {
     type: 'opportunity' as DecisionType,
@@ -50,9 +50,9 @@ const DECISION_CONFIG = {
     icon: TrendingUp,
     label: 'Opportunité',
     shortLabel: 'Opportunité',
-    colors: 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/40',
-    iconColor: 'text-emerald-500',
-    pulseColor: 'bg-emerald-500'
+    colors: 'bg-success/15 text-success dark:text-emerald-400 border-emerald-500/40',
+    iconColor: 'text-success',
+    pulseColor: 'bg-success'
   },
   optimized: {
     type: 'optimized' as DecisionType,
@@ -60,9 +60,9 @@ const DECISION_CONFIG = {
     icon: CheckCircle,
     label: 'Optimisé',
     shortLabel: 'OK',
-    colors: 'bg-blue-500/15 text-blue-600 dark:text-blue-400 border-blue-500/40',
-    iconColor: 'text-blue-500',
-    pulseColor: 'bg-blue-500'
+    colors: 'bg-info/15 text-info dark:text-blue-400 border-info/40',
+    iconColor: 'text-info',
+    pulseColor: 'bg-info'
   },
   neutral: {
     type: 'optimized' as DecisionType,
@@ -182,9 +182,9 @@ export const DecisionBadge = memo(function DecisionBadge({
                 <span className="font-medium">Priorité:</span>
                 <span className={cn(
                   'font-bold capitalize',
-                  badge.priority === 'critical' && 'text-red-500',
-                  badge.priority === 'high' && 'text-orange-500',
-                  badge.priority === 'medium' && 'text-amber-500'
+                  badge.priority === 'critical' && 'text-destructive',
+                  badge.priority === 'high' && 'text-warning',
+                  badge.priority === 'medium' && 'text-warning'
                 )}>
                   {badge.priority}
                 </span>

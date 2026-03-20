@@ -212,18 +212,18 @@ export const AutoDetectionDashboard: React.FC = () => {
   const getPlatformColor = (platform: string) => {
     const colors: Record<string, string> = {
       tiktok: 'bg-black text-white',
-      facebook: 'bg-blue-600 text-white',
+      facebook: 'bg-info text-white',
       instagram: 'bg-gradient-to-r from-purple-600 to-pink-600 text-white',
-      aliexpress: 'bg-red-600 text-white'
+      aliexpress: 'bg-destructive text-white'
     };
     return colors[platform] || 'bg-gray-600 text-white';
   };
 
   const getCompetitionColor = (level: string) => {
     const colors: Record<string, string> = {
-      low: 'bg-green-100 text-green-800',
-      medium: 'bg-yellow-100 text-yellow-800',
-      high: 'bg-red-100 text-red-800'
+      low: 'bg-success/10 text-success',
+      medium: 'bg-warning/10 text-yellow-800',
+      high: 'bg-destructive/10 text-red-800'
     };
     return colors[level] || 'bg-gray-100 text-gray-800';
   };
@@ -262,7 +262,7 @@ export const AutoDetectionDashboard: React.FC = () => {
                 <p className="text-sm text-muted-foreground">Score viral moyen</p>
                 <p className="text-3xl font-bold">{stats.avgViralityScore}%</p>
               </div>
-              <Sparkles className="w-8 h-8 text-yellow-500" />
+              <Sparkles className="w-8 h-8 text-warning" />
             </div>
           </CardContent>
         </Card>
@@ -274,7 +274,7 @@ export const AutoDetectionDashboard: React.FC = () => {
                 <p className="text-sm text-muted-foreground">Top plateforme</p>
                 <p className="text-2xl font-bold capitalize">{stats.topPlatform || '-'}</p>
               </div>
-              <TrendingUp className="w-8 h-8 text-green-500" />
+              <TrendingUp className="w-8 h-8 text-success" />
             </div>
           </CardContent>
         </Card>
@@ -286,7 +286,7 @@ export const AutoDetectionDashboard: React.FC = () => {
                 <p className="text-sm text-muted-foreground">Dernière màj</p>
                 <p className="text-xs font-medium">{stats.lastUpdate || '-'}</p>
               </div>
-              <Clock className="w-8 h-8 text-blue-500" />
+              <Clock className="w-8 h-8 text-info" />
             </div>
           </CardContent>
         </Card>
@@ -487,7 +487,7 @@ export const AutoDetectionDashboard: React.FC = () => {
                               {product.metadata?.confidence_level || '95%'} confiance
                             </Badge>
                             {product.trend_analysis?.trend_direction === 'up' && (
-                              <Badge className="bg-green-100 text-green-800">
+                              <Badge className="bg-success/10 text-success">
                                 <TrendingUp className="w-3 h-3 mr-1" />
                                 En hausse
                               </Badge>
@@ -534,7 +534,7 @@ export const AutoDetectionDashboard: React.FC = () => {
                             {((product.social_proof?.tiktok_views || 0) / 1000).toFixed(0)}K
                           </p>
                         </div>
-                        <div className="text-center p-2 bg-blue-500/5 rounded">
+                        <div className="text-center p-2 bg-info/5 rounded">
                           <p className="text-xs text-muted-foreground">FB partages</p>
                           <p className="text-sm font-semibold">
                             {((product.social_proof?.facebook_shares || 0) / 1000).toFixed(1)}K
@@ -546,7 +546,7 @@ export const AutoDetectionDashboard: React.FC = () => {
                             {((product.social_proof?.instagram_likes || 0) / 1000).toFixed(1)}K
                           </p>
                         </div>
-                        <div className="text-center p-2 bg-green-500/5 rounded">
+                        <div className="text-center p-2 bg-success/5 rounded">
                           <p className="text-xs text-muted-foreground">Marge estimée</p>
                           <p className="text-sm font-semibold">{product.estimated_profit_margin}%</p>
                         </div>

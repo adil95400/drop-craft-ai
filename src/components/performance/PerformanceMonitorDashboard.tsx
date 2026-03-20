@@ -146,9 +146,9 @@ export function PerformanceMonitorDashboard() {
 
   const ratingColor = (rating: string) => {
     switch (rating) {
-      case 'good': return 'bg-green-500/10 text-green-700 border-green-500/20';
-      case 'needs-improvement': return 'bg-yellow-500/10 text-yellow-700 border-yellow-500/20';
-      case 'poor': return 'bg-red-500/10 text-red-700 border-red-500/20';
+      case 'good': return 'bg-success/10 text-success border-success/20';
+      case 'needs-improvement': return 'bg-warning/10 text-yellow-700 border-warning/20';
+      case 'poor': return 'bg-destructive/10 text-red-700 border-destructive/20';
       default: return '';
     }
   };
@@ -285,8 +285,8 @@ export function PerformanceMonitorDashboard() {
               </CardHeader>
               <CardContent className="space-y-3">
                 <div className="flex justify-between"><span className="text-sm">Total entrées</span><span className="font-semibold">{cacheStats.total}</span></div>
-                <div className="flex justify-between"><span className="text-sm">Actives</span><span className="font-semibold text-green-600">{cacheStats.active}</span></div>
-                <div className="flex justify-between"><span className="text-sm">Expirées</span><span className="font-semibold text-red-600">{cacheStats.expired}</span></div>
+                <div className="flex justify-between"><span className="text-sm">Actives</span><span className="font-semibold text-success">{cacheStats.active}</span></div>
+                <div className="flex justify-between"><span className="text-sm">Expirées</span><span className="font-semibold text-destructive">{cacheStats.expired}</span></div>
                 <div className="flex justify-between"><span className="text-sm">Hit rate</span><span className="font-semibold">{(cacheStats.hitRate * 100).toFixed(1)}%</span></div>
                 <Button variant="outline" size="sm" className="w-full mt-2" onClick={() => { unifiedCache.cleanup(); measureCacheStats(); }}>
                   Nettoyer le cache
@@ -330,15 +330,15 @@ export function PerformanceMonitorDashboard() {
                   <p className="text-xs text-muted-foreground">Total queries</p>
                 </div>
                 <div>
-                  <div className="text-2xl font-bold text-blue-600">{queryStats.fetching}</div>
+                  <div className="text-2xl font-bold text-info">{queryStats.fetching}</div>
                   <p className="text-xs text-muted-foreground">En cours</p>
                 </div>
                 <div>
-                  <div className="text-2xl font-bold text-green-600">{queryStats.fresh}</div>
+                  <div className="text-2xl font-bold text-success">{queryStats.fresh}</div>
                   <p className="text-xs text-muted-foreground">Fraîches</p>
                 </div>
                 <div>
-                  <div className="text-2xl font-bold text-yellow-600">{queryStats.stale}</div>
+                  <div className="text-2xl font-bold text-warning">{queryStats.stale}</div>
                   <p className="text-xs text-muted-foreground">Périmées</p>
                 </div>
               </div>

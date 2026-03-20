@@ -169,10 +169,10 @@ export default function SupplierSettingsPage() {
 
   const getStatusBadge = (status: string) => {
     const config: Record<string, { color: string; icon: any; label: string }> = {
-      connected: { color: 'bg-green-500', icon: CheckCircle, label: 'Connecté' },
-      active: { color: 'bg-green-500', icon: CheckCircle, label: 'Actif' },
-      pending: { color: 'bg-yellow-500', icon: Clock, label: 'En attente' },
-      error: { color: 'bg-red-500', icon: XCircle, label: 'Erreur' },
+      connected: { color: 'bg-success', icon: CheckCircle, label: 'Connecté' },
+      active: { color: 'bg-success', icon: CheckCircle, label: 'Actif' },
+      pending: { color: 'bg-warning', icon: Clock, label: 'En attente' },
+      error: { color: 'bg-destructive', icon: XCircle, label: 'Erreur' },
       revoked: { color: 'bg-gray-500', icon: XCircle, label: 'Révoqué' },
     }
     const { color, icon: Icon, label } = config[status] || config.pending

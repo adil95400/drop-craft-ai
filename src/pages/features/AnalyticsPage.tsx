@@ -112,19 +112,19 @@ export default function AnalyticsPage() {
 
       {/* Hero Section */}
       <section className="relative py-20 lg:py-32 overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-green-500/5 via-background to-emerald-500/5" />
+        <div className="absolute inset-0 bg-gradient-to-br from-success/5 via-background to-emerald-500/5" />
         
         <div className="container mx-auto px-4 sm:px-6 relative z-10">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div className="space-y-8">
-              <Badge className="px-4 py-2 bg-gradient-to-r from-green-500/10 to-emerald-500/10 text-green-700 dark:text-green-300 border-green-500/20">
+              <Badge className="px-4 py-2 bg-gradient-to-r from-success/10 to-emerald-500/10 text-success dark:text-green-300 border-success/20">
                 <BarChart3 className="h-4 w-4 mr-2" />
                 Business Intelligence
               </Badge>
               
               <h1 className="text-5xl lg:text-6xl font-bold tracking-tight">
                 Des insights pour
-                <span className="block bg-gradient-to-r from-green-500 via-emerald-500 to-green-500 bg-clip-text text-transparent">
+                <span className="block bg-gradient-to-r from-success via-emerald-500 to-green-500 bg-clip-text text-transparent">
                   mieux décider
                 </span>
               </h1>
@@ -165,7 +165,7 @@ export default function AnalyticsPage() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
             {benefits.map((benefit, index) => (
               <div key={index} className="text-center space-y-2">
-                <div className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-green-500 to-emerald-500 bg-clip-text text-transparent">
+                <div className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-success to-emerald-500 bg-clip-text text-transparent">
                   {benefit.stat}
                 </div>
                 <div className="text-sm text-muted-foreground">{benefit.label}</div>
@@ -189,10 +189,10 @@ export default function AnalyticsPage() {
             {features.map((feature, index) => {
               const IconComponent = feature.icon
               return (
-                <Card key={index} className="border-2 hover:border-green-500/50 transition-all duration-300 hover:shadow-lg">
+                <Card key={index} className="border-2 hover:border-success/50 transition-all duration-300 hover:shadow-lg">
                   <CardHeader>
-                    <div className="p-3 rounded-xl bg-gradient-to-br from-green-500/10 to-emerald-500/10 w-fit mb-4">
-                      <IconComponent className="h-6 w-6 text-green-500" />
+                    <div className="p-3 rounded-xl bg-gradient-to-br from-success/10 to-emerald-500/10 w-fit mb-4">
+                      <IconComponent className="h-6 w-6 text-success" />
                     </div>
                     <CardTitle className="text-xl">{feature.title}</CardTitle>
                   </CardHeader>
@@ -279,10 +279,10 @@ export default function AnalyticsPage() {
       {/* CTA Section */}
       <section className="py-20 bg-secondary/30">
         <div className="container mx-auto px-4 sm:px-6">
-          <Card className="border-2 bg-gradient-to-br from-green-500/5 to-emerald-500/5">
+          <Card className="border-2 bg-gradient-to-br from-success/5 to-emerald-500/5">
             <CardContent className="p-12 text-center space-y-6">
               <div className="flex justify-center">
-                <div className="p-4 rounded-2xl bg-gradient-to-br from-green-500 to-emerald-500">
+                <div className="p-4 rounded-2xl bg-gradient-to-br from-success to-emerald-500">
                   <BarChart3 className="h-12 w-12 text-white" />
                 </div>
               </div>

@@ -288,8 +288,8 @@ export const EnterpriseSSO = () => {
                         {log.time}
                       </div>
                       <div className={`w-2 h-2 rounded-full ${
-                        log.status === 'success' ? 'bg-green-500' :
-                        log.status === 'failed' ? 'bg-red-500' : 'bg-blue-500'
+                        log.status === 'success' ? 'bg-success' :
+                        log.status === 'failed' ? 'bg-destructive' : 'bg-info'
                       }`}></div>
                       <div className="flex-1">
                         <div className="font-medium">{log.event}</div>
@@ -531,8 +531,8 @@ export const EnterpriseSSO = () => {
                   {securityLogs.map((log, index) => (
                     <div key={index} className="flex items-start gap-3 text-sm">
                       <div className={`w-2 h-2 rounded-full mt-2 ${
-                        log.status === 'success' ? 'bg-green-500' :
-                        log.status === 'failed' ? 'bg-red-500' : 'bg-blue-500'
+                        log.status === 'success' ? 'bg-success' :
+                        log.status === 'failed' ? 'bg-destructive' : 'bg-info'
                       }`}></div>
                       <div className="flex-1">
                         <div className="flex items-center justify-between">

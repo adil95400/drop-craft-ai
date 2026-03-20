@@ -29,7 +29,7 @@ export const ImportHistory = memo(function ImportHistory({
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'completed':
-        return <CheckCircle2 className="w-4 h-4 text-green-500" />;
+        return <CheckCircle2 className="w-4 h-4 text-success" />;
       case 'failed':
         return <XCircle className="w-4 h-4 text-destructive" />;
       case 'processing':
@@ -41,7 +41,7 @@ export const ImportHistory = memo(function ImportHistory({
 
   const getStatusBadge = (status: string) => {
     const config = {
-      completed: { variant: 'default' as const, label: 'Terminé', className: 'bg-green-500/10 text-green-500' },
+      completed: { variant: 'default' as const, label: 'Terminé', className: 'bg-success/10 text-success' },
       failed: { variant: 'destructive' as const, label: 'Échoué', className: '' },
       processing: { variant: 'default' as const, label: 'En cours', className: '' },
       pending: { variant: 'secondary' as const, label: 'En attente', className: '' },
@@ -97,7 +97,7 @@ export const ImportHistory = memo(function ImportHistory({
           <div className="flex items-start gap-4">
             <div className={cn(
               "w-10 h-10 rounded-full flex items-center justify-center",
-              job.status === 'completed' && "bg-green-500/10",
+              job.status === 'completed' && "bg-success/10",
               job.status === 'failed' && "bg-destructive/10",
               job.status === 'processing' && "bg-primary/10",
               job.status === 'pending' && "bg-muted"
@@ -122,7 +122,7 @@ export const ImportHistory = memo(function ImportHistory({
 
               {job.processed_rows !== undefined && (
                 <div className="flex gap-4 text-sm">
-                  <span className="text-green-500">
+                  <span className="text-success">
                     ✓ {job.processed_rows} traités
                   </span>
                   {job.failed_rows !== undefined && job.failed_rows > 0 && (

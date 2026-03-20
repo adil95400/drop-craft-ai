@@ -272,12 +272,12 @@ export function VariantMatrix() {
       return 'bg-muted/30 border-dashed cursor-pointer hover:bg-muted/50';
     }
     if ((cell.stock ?? 0) === 0) {
-      return 'bg-red-50 dark:bg-red-950/20 border-red-200';
+      return 'bg-destructive/5 dark:bg-red-950/20 border-destructive/20';
     }
     if ((cell.stock ?? 0) < 5) {
-      return 'bg-yellow-50 dark:bg-yellow-950/20 border-yellow-200';
+      return 'bg-warning/5 dark:bg-yellow-950/20 border-warning/20';
     }
-    return 'bg-green-50 dark:bg-green-950/20 border-green-200';
+    return 'bg-success/5 dark:bg-green-950/20 border-success/20';
   };
 
   const missingCount = matrixData 
@@ -364,7 +364,7 @@ export function VariantMatrix() {
                 <div className="flex items-center gap-2">
                   <Badge variant="outline">{variants.length} variantes</Badge>
                   {missingCount > 0 && (
-                    <Badge variant="secondary" className="text-yellow-600">
+                    <Badge variant="secondary" className="text-warning">
                       <AlertTriangle className="h-3 w-3 mr-1" />
                       {missingCount} manquantes
                     </Badge>
@@ -493,15 +493,15 @@ export function VariantMatrix() {
             {/* Legend */}
             <div className="mt-4 flex items-center gap-6 text-sm">
               <div className="flex items-center gap-2">
-                <div className="w-4 h-4 rounded bg-green-100 border border-green-300" />
+                <div className="w-4 h-4 rounded bg-success/10 border border-green-300" />
                 <span>En stock</span>
               </div>
               <div className="flex items-center gap-2">
-                <div className="w-4 h-4 rounded bg-yellow-100 border border-yellow-300" />
+                <div className="w-4 h-4 rounded bg-warning/10 border border-yellow-300" />
                 <span>Stock faible (&lt;5)</span>
               </div>
               <div className="flex items-center gap-2">
-                <div className="w-4 h-4 rounded bg-red-100 border border-red-300" />
+                <div className="w-4 h-4 rounded bg-destructive/10 border border-red-300" />
                 <span>Rupture</span>
               </div>
               <div className="flex items-center gap-2">

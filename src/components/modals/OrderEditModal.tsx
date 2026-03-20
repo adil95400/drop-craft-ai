@@ -42,17 +42,17 @@ interface OrderEditModalProps {
 }
 
 const STATUS_OPTIONS = [
-  { value: 'pending', label: 'En attente', color: 'bg-yellow-500' },
-  { value: 'processing', label: 'En traitement', color: 'bg-blue-500' },
+  { value: 'pending', label: 'En attente', color: 'bg-warning' },
+  { value: 'processing', label: 'En traitement', color: 'bg-info' },
   { value: 'shipped', label: 'Expédiée', color: 'bg-purple-500' },
-  { value: 'delivered', label: 'Livrée', color: 'bg-green-500' },
-  { value: 'cancelled', label: 'Annulée', color: 'bg-red-500' },
+  { value: 'delivered', label: 'Livrée', color: 'bg-success' },
+  { value: 'cancelled', label: 'Annulée', color: 'bg-destructive' },
 ]
 
 const PAYMENT_STATUS_OPTIONS = [
-  { value: 'pending', label: 'En attente', color: 'bg-yellow-500' },
-  { value: 'paid', label: 'Payé', color: 'bg-green-500' },
-  { value: 'failed', label: 'Échoué', color: 'bg-red-500' },
+  { value: 'pending', label: 'En attente', color: 'bg-warning' },
+  { value: 'paid', label: 'Payé', color: 'bg-success' },
+  { value: 'failed', label: 'Échoué', color: 'bg-destructive' },
   { value: 'refunded', label: 'Remboursé', color: 'bg-gray-500' },
 ]
 
@@ -332,7 +332,7 @@ export function OrderEditModal({ open, onOpenChange, order, onSuccess }: OrderEd
                                 size="icon"
                                 onClick={() => copyToClipboard(field.value || '')}
                               >
-                                {copied ? <CheckCircle className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
+                                {copied ? <CheckCircle className="h-4 w-4 text-success" /> : <Copy className="h-4 w-4" />}
                               </Button>
                             )}
                           </div>

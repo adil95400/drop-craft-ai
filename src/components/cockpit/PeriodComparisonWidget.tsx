@@ -115,7 +115,7 @@ export function PeriodComparisonWidget({ revenue, orders, customers, avgMargin, 
                   <span className="text-sm font-bold">{formatValue(m.current, m.unit)}</span>
                   <div className={cn(
                     'flex items-center gap-0.5 text-[10px] font-semibold',
-                    isPositive ? 'text-green-600' : m.delta < 0 ? 'text-red-500' : 'text-muted-foreground'
+                    isPositive ? 'text-success' : m.delta < 0 ? 'text-destructive' : 'text-muted-foreground'
                   )}>
                     <DeltaIcon className="h-2.5 w-2.5" />
                     {m.delta > 0 ? '+' : ''}{m.delta.toFixed(1)}%

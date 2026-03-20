@@ -38,13 +38,13 @@ export function SyncConfigManager() {
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'success':
-        return <CheckCircle2 className="w-4 h-4 text-green-500" />
+        return <CheckCircle2 className="w-4 h-4 text-success" />
       case 'failed':
-        return <XCircle className="w-4 h-4 text-red-500" />
+        return <XCircle className="w-4 h-4 text-destructive" />
       case 'partial':
-        return <AlertCircle className="w-4 h-4 text-yellow-500" />
+        return <AlertCircle className="w-4 h-4 text-warning" />
       case 'running':
-        return <RefreshCw className="w-4 h-4 text-blue-500 animate-spin" />
+        return <RefreshCw className="w-4 h-4 text-info animate-spin" />
       default:
         return <Clock className="w-4 h-4 text-muted-foreground" />
     }
@@ -180,7 +180,7 @@ export function SyncConfigManager() {
                     {log.items_synced} synchronisés
                   </p>
                   {log.items_failed > 0 && (
-                    <p className="text-sm text-red-500">
+                    <p className="text-sm text-destructive">
                       {log.items_failed} échecs
                     </p>
                   )}

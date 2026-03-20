@@ -96,9 +96,9 @@ export const SupplierAnalyzer: React.FC = () => {
   }
 
   const getReliabilityColor = (score: number) => {
-    if (score >= 4) return 'text-emerald-600 bg-emerald-50'
-    if (score >= 3) return 'text-orange-600 bg-orange-50'
-    return 'text-red-600 bg-red-50'
+    if (score >= 4) return 'text-success bg-emerald-50'
+    if (score >= 3) return 'text-warning bg-orange-50'
+    return 'text-destructive bg-destructive/5'
   }
 
   return (
@@ -151,7 +151,7 @@ export const SupplierAnalyzer: React.FC = () => {
                 <h3 className="font-semibold text-lg">{result.name}</h3>
                 <p className="text-sm text-muted-foreground">Fournisseur détecté</p>
               </div>
-              <CheckCircle className="h-6 w-6 text-emerald-500" />
+              <CheckCircle className="h-6 w-6 text-success" />
             </div>
 
             <div className="grid grid-cols-2 gap-4 pt-2">
@@ -186,7 +186,7 @@ export const SupplierAnalyzer: React.FC = () => {
             )}
 
             {result.has_api && (
-              <div className="flex items-center gap-2 text-sm text-emerald-600">
+              <div className="flex items-center gap-2 text-sm text-success">
                 <CheckCircle className="h-4 w-4" />
                 <span>API disponible détectée</span>
               </div>

@@ -44,21 +44,21 @@ export function ProductsOverview() {
       title: "Produits Actifs",
       value: stats.active,
       icon: ShoppingBag,
-      color: "text-green-600",
+      color: "text-success",
       trend: `${((stats.active / stats.total) * 100).toFixed(1)}%`
     },
     {
       title: "Stock Faible",
       value: stats.lowStock,
       icon: AlertTriangle,
-      color: "text-orange-500",
+      color: "text-warning",
       trend: stats.lowStock > 0 ? "Attention requise" : "Tout va bien"
     },
     {
       title: "Valeur Stock",
       value: `${stats.totalValue.toLocaleString()}€`,
       icon: DollarSign,
-      color: "text-blue-600",
+      color: "text-info",
       trend: "+8.5% ce mois"
     },
     {
@@ -72,14 +72,14 @@ export function ProductsOverview() {
       title: "Note Moyenne",
       value: "4.7",
       icon: Star,
-      color: "text-yellow-500",
+      color: "text-warning",
       trend: "⭐ Excellent"
     },
     {
       title: "Conversions",
       value: "12.4%",
       icon: TrendingUp,
-      color: "text-green-600",
+      color: "text-success",
       trend: "+2.1% vs mois dernier"
     },
     {

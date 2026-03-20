@@ -421,12 +421,63 @@ export const UnifiedAuthProvider = ({ children }: { children: React.ReactNode })
 
   const hasRole = useCallback((role: string) => {
     if (role === 'admin') return isAdmin;
-    return !!profile;
+    if (role === 'manager') return isAdmin; // admins have manager perms
+    if (role === 'user') return !!profile;
+    return false;
   }, [isAdmin, profile]);
 
-  const canAccess = useCallback((_feature: string) => {
-    return !!profile;
-  }, [profile]);
+  // ── Real permission checks based on role + plan ──────────────────
+  const canAccess = useCallback((feature: string): boolean => {
+    if (!profile) return false;
+    if (isAdmin) return true; // Admin bypasses all checks
+
+    const planHierarchy: Record<string, number> = {
+      free: 0, standard: 1, pro: 2, ultra_pro: 3, enterprise: 4
+    };
+    const userPlanLevel = planHierarchy[effectivePlan] ?? 0;
+
+    // Feature → minimum plan required
+    const featurePlanMap: Record<string, string> = {
+      // Free / Standard tier
+      'view_dashboard': 'free',
+      'manage_own_data': 'free',
+      'import_data': 'free',
+      'basic-analytics': 'free',
+      // Pro tier
+      'advanced-analytics': 'pro',
+      'ai-analysis': 'pro',
+      'ai-import': 'pro',
+      'bulk-import': 'pro',
+      'advanced-crm': 'pro',
+      'advanced-seo': 'pro',
+      'workflow-builder': 'pro',
+      'export_data': 'pro',
+      'view_analytics': 'pro',
+      'manage_customers': 'pro',
+      'manage_products': 'pro',
+      // Ultra Pro tier
+      'bulk-operations': 'ultra_pro',
+      'premium-integrations': 'ultra_pro',
+      'advanced-automation': 'ultra_pro',
+      'predictive-analytics': 'ultra_pro',
+      'ai-insights': 'ultra_pro',
+      'marketing-automation': 'ultra_pro',
+      'seo-automation': 'ultra_pro',
+      'security-monitoring': 'ultra_pro',
+      'advanced-tracking': 'ultra_pro',
+      'scheduled-import': 'ultra_pro',
+      'view_analytics_advanced': 'ultra_pro',
+      // Admin only
+      'manage_users': 'admin',
+      'manage_system': 'admin',
+      'view_security_events': 'admin',
+    };
+
+    const requiredPlan = featurePlanMap[feature];
+    if (!requiredPlan) return true; // Unknown feature = allow (fail-open for non-critical)
+    if (requiredPlan === 'admin') return false; // Non-admin user can't access admin features
+    return userPlanLevel >= (planHierarchy[requiredPlan] ?? 0);
+  }, [profile, isAdmin, effectivePlan]);
 
   // ── Context value ────────────────────────────────────────────────
   const value = useMemo<UnifiedAuthContextType>(

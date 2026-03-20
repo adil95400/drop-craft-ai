@@ -80,13 +80,13 @@ export function LeadsManager() {
 
   const getStatusBadge = (status: string) => {
     const variants: Record<string, { label: string; className: string }> = {
-      new: { label: 'Nouveau', className: 'bg-blue-500' },
-      contacted: { label: 'Contacté', className: 'bg-yellow-500' },
+      new: { label: 'Nouveau', className: 'bg-info' },
+      contacted: { label: 'Contacté', className: 'bg-warning' },
       qualified: { label: 'Qualifié', className: 'bg-purple-500' },
-      proposal: { label: 'Proposition', className: 'bg-orange-500' },
+      proposal: { label: 'Proposition', className: 'bg-warning' },
       negotiation: { label: 'Négociation', className: 'bg-pink-500' },
-      won: { label: 'Gagné', className: 'bg-green-500' },
-      lost: { label: 'Perdu', className: 'bg-red-500' }
+      won: { label: 'Gagné', className: 'bg-success' },
+      lost: { label: 'Perdu', className: 'bg-destructive' }
     };
     
     const variant = variants[status] || { label: status, className: 'bg-gray-500' };
@@ -113,7 +113,7 @@ export function LeadsManager() {
                 <div className="text-2xl font-bold">{stats.total}</div>
                 <div className="text-sm text-muted-foreground">Total Leads</div>
               </div>
-              <UserPlus className="w-8 h-8 text-blue-500" />
+              <UserPlus className="w-8 h-8 text-info" />
             </div>
           </CardContent>
         </Card>
@@ -137,7 +137,7 @@ export function LeadsManager() {
                 <div className="text-2xl font-bold">{stats.won}</div>
                 <div className="text-sm text-muted-foreground">Gagnés</div>
               </div>
-              <TrendingUp className="w-8 h-8 text-green-500" />
+              <TrendingUp className="w-8 h-8 text-success" />
             </div>
           </CardContent>
         </Card>
@@ -155,7 +155,7 @@ export function LeadsManager() {
                 </div>
                 <div className="text-sm text-muted-foreground">Valeur totale</div>
               </div>
-              <TrendingUp className="w-8 h-8 text-orange-500" />
+              <TrendingUp className="w-8 h-8 text-warning" />
             </div>
           </CardContent>
         </Card>
@@ -276,7 +276,7 @@ export function LeadsManager() {
                           <h3 className="font-semibold text-lg">{lead.name}</h3>
                           {getStatusBadge(lead.status)}
                           {lead.lead_score > 70 && (
-                            <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-200">
+                            <Badge variant="outline" className="bg-warning/5 text-yellow-700 border-warning/20">
                               <Star className="w-3 h-3 mr-1" />
                               Score: {lead.lead_score}
                             </Badge>
@@ -303,7 +303,7 @@ export function LeadsManager() {
                         </div>
 
                         {lead.estimated_value && lead.estimated_value > 0 && (
-                          <div className="text-sm font-medium text-green-600">
+                          <div className="text-sm font-medium text-success">
                             Valeur estimée: {new Intl.NumberFormat('fr-FR', { 
                               style: 'currency', 
                               currency: 'EUR' 
@@ -328,7 +328,7 @@ export function LeadsManager() {
                             Modifier
                           </DropdownMenuItem>
                           <DropdownMenuItem 
-                            className="text-red-600"
+                            className="text-destructive"
                             onClick={() => deleteLead(lead.id)}
                           >
                             <Trash2 className="w-4 h-4 mr-2" />

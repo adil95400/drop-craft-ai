@@ -177,7 +177,7 @@ const ChannableNavItem = memo(({
               
               <div className="flex items-center gap-1.5 ml-2 flex-shrink-0 pr-6">
                 {badgeCount != null && badgeCount > 0 && (
-                  <Badge className="text-[9px] px-1.5 py-0 h-4 font-bold border-0 bg-rose-500 text-white shadow-sm min-w-[1.25rem] text-center animate-pulse">
+                  <Badge className="text-[9px] px-1.5 py-0 h-4 font-bold border-0 bg-destructive text-white shadow-sm min-w-[1.25rem] text-center animate-pulse">
                     {badgeCount > 99 ? '99+' : badgeCount}
                   </Badge>
                 )}
@@ -190,7 +190,7 @@ const ChannableNavItem = memo(({
                 
                 {!hasAccess && !isComingSoon && <Lock className="h-3 w-3 text-muted-foreground/60" aria-label={t('errors.forbidden')} />}
                 
-                {module.badge && !isComingSoon && <Badge className={cn("text-[9px] px-1.5 py-0 h-4 font-bold border-0 uppercase tracking-wide", module.badge === 'pro' && "bg-gradient-to-r from-amber-500/90 to-orange-500/90 text-white shadow-sm", module.badge === 'new' && "bg-gradient-to-r from-emerald-500/90 to-green-500/90 text-white shadow-sm", module.badge === 'beta' && "bg-gradient-to-r from-blue-500/90 to-cyan-500/90 text-white shadow-sm")}>
+                {module.badge && !isComingSoon && <Badge className={cn("text-[9px] px-1.5 py-0 h-4 font-bold border-0 uppercase tracking-wide", module.badge === 'pro' && "bg-gradient-to-r from-amber-500/90 to-orange-500/90 text-white shadow-sm", module.badge === 'new' && "bg-gradient-to-r from-emerald-500/90 to-green-500/90 text-white shadow-sm", module.badge === 'beta' && "bg-gradient-to-r from-info/90 to-cyan-500/90 text-white shadow-sm")}>
                     {module.badge}
                   </Badge>}
                 
@@ -211,7 +211,7 @@ const ChannableNavItem = memo(({
             aria-label={isFavorite ? t('sidebar.removeFromFavorites') : t('sidebar.addToFavorites')}
             aria-pressed={isFavorite}
           >
-            <Star className={cn("h-3 w-3 transition-all", isFavorite ? "fill-amber-400 text-amber-400 drop-shadow-sm" : isActive ? "text-white/60 hover:text-amber-300" : "text-muted-foreground/50 hover:text-amber-500")} aria-hidden="true" />
+            <Star className={cn("h-3 w-3 transition-all", isFavorite ? "fill-amber-400 text-amber-400 drop-shadow-sm" : isActive ? "text-white/60 hover:text-amber-300" : "text-muted-foreground/50 hover:text-warning")} aria-hidden="true" />
           </SidebarMenuAction>
         )}
       </SidebarMenuItem>
@@ -354,7 +354,7 @@ const FavoritesSection = memo(({
   if (favoriteModules.length === 0) return null;
   return <div className="mb-2" role="region" aria-label="Modules favoris">
       {!collapsed && <div className="flex items-center gap-2 px-3 py-2">
-          <Star className="h-3.5 w-3.5 text-amber-500 fill-amber-500" aria-hidden="true" />
+          <Star className="h-3.5 w-3.5 text-warning fill-amber-500" aria-hidden="true" />
           <span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/60">
             Favoris
           </span>
@@ -369,8 +369,8 @@ const FavoritesSection = memo(({
         }} whileTap={prefersReducedMotion ? undefined : {
           scale: 0.98
         }} className={cn("w-full flex items-center gap-2.5 px-2.5 py-2 rounded-xl transition-all group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50", active ? "bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-md" : "hover:bg-sidebar-accent/40 dark:hover:bg-sidebar-accent/20")} role="listitem" aria-current={active ? "page" : undefined}>
-              <div className={cn("flex items-center justify-center w-7 h-7 rounded-lg", active ? "bg-white/20" : "bg-amber-500/10")} aria-hidden="true">
-                <Icon className={cn("h-3.5 w-3.5", active ? "text-white" : "text-amber-600 dark:text-amber-400")} />
+              <div className={cn("flex items-center justify-center w-7 h-7 rounded-lg", active ? "bg-white/20" : "bg-warning/10")} aria-hidden="true">
+                <Icon className={cn("h-3.5 w-3.5", active ? "text-white" : "text-warning dark:text-amber-400")} />
               </div>
               {!collapsed && <span className={cn("flex-1 text-left text-[12px] font-medium truncate", active ? "text-white" : "text-foreground/80")}>
                   {module.name}
@@ -457,7 +457,7 @@ const ChannableFooter = memo(({
                 aria-label="Voir mon abonnement"
                 onKeyDown={(e) => e.key === 'Enter' && navigate('/dashboard/subscription')}
               >
-                <Crown className="h-3 w-3 text-amber-500" aria-hidden="true" />
+                <Crown className="h-3 w-3 text-warning" aria-hidden="true" />
                 <p className="text-[11px] text-muted-foreground/70">
                   {planLabel}
                 </p>

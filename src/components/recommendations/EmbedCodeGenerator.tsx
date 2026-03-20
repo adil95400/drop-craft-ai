@@ -191,7 +191,7 @@ export function ProductPage({ productId }) {
                 <TabsTrigger value="react">React</TabsTrigger>
               </TabsList>
               <Button size="sm" variant="outline" onClick={() => handleCopy(activeTab)}>
-                {copied === activeTab ? <Check className="h-3.5 w-3.5 mr-1 text-emerald-500" /> : <Copy className="h-3.5 w-3.5 mr-1" />}
+                {copied === activeTab ? <Check className="h-3.5 w-3.5 mr-1 text-success" /> : <Copy className="h-3.5 w-3.5 mr-1" />}
                 {copied === activeTab ? 'Copié !' : 'Copier'}
               </Button>
             </div>

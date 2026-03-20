@@ -156,8 +156,8 @@ export const AuthForm = ({ mode, onToggleMode }: AuthFormProps) => {
         {message && (
           <div className={`text-sm p-3 rounded-lg ${
             message.includes('Vérifiez') 
-              ? 'bg-blue-50 text-blue-600 border border-blue-200' 
-              : 'bg-red-50 text-red-600 border border-red-200'
+              ? 'bg-info/5 text-info border border-info/20' 
+              : 'bg-destructive/5 text-destructive border border-destructive/20'
           }`}>
             {message}
           </div>

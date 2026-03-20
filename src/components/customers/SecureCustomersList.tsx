@@ -39,7 +39,7 @@ export const SecureCustomersList = () => {
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle className="flex items-center gap-2">
-          <Shield className="h-5 w-5 text-green-600" />
+          <Shield className="h-5 w-5 text-success" />
           Clients Sécurisés
         </CardTitle>
         <Button
@@ -81,7 +81,7 @@ export const SecureCustomersList = () => {
         </div>
         
         {!showSensitiveData && (
-          <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+          <div className="mt-4 p-3 bg-warning/5 border border-warning/20 rounded-lg">
             <div className="flex items-center gap-2 text-sm text-yellow-800">
               <Shield className="h-4 w-4" />
               <span>Les données sensibles sont masquées pour la sécurité</span>

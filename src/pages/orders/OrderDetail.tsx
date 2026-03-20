@@ -125,11 +125,11 @@ export default function OrderDetail() {
   }
 
   const statusColors: Record<string, string> = {
-    pending: 'bg-yellow-500',
-    processing: 'bg-blue-500',
+    pending: 'bg-warning',
+    processing: 'bg-info',
     shipped: 'bg-purple-500',
-    delivered: 'bg-green-500',
-    cancelled: 'bg-red-500'
+    delivered: 'bg-success',
+    cancelled: 'bg-destructive'
   };
 
   const statusLabels: Record<string, string> = {

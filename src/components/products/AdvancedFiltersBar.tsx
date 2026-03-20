@@ -197,7 +197,7 @@ export function AdvancedFiltersBar({
             <SelectItem value="all">Tous</SelectItem>
             <SelectItem value="active">
               <div className="flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full bg-emerald-500" />
+                <div className="w-2 h-2 rounded-full bg-success" />
                 Actif
               </div>
             </SelectItem>

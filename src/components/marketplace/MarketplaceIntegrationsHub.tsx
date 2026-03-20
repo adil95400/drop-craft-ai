@@ -77,7 +77,7 @@ const MARKETPLACE_CONFIGS: Record<string, { name: string; icon: any; color: stri
   cdiscount: {
     name: 'Cdiscount',
     icon: ShoppingBag,
-    color: 'from-green-500 to-emerald-500',
+    color: 'from-success to-emerald-500',
     description: 'French e-commerce leader',
   },
   ebay: {
@@ -95,7 +95,7 @@ const MARKETPLACE_CONFIGS: Record<string, { name: string; icon: any; color: stri
   manomano: {
     name: 'ManoMano',
     icon: TrendingUp,
-    color: 'from-blue-500 to-cyan-500',
+    color: 'from-info to-cyan-500',
     description: 'DIY & home improvement',
   },
   rakuten: {
@@ -121,7 +121,7 @@ const MARKETPLACE_CONFIGS: Record<string, { name: string; icon: any; color: stri
   aliexpress: {
     name: 'AliExpress',
     icon: TrendingUp,
-    color: 'from-red-500 to-orange-500',
+    color: 'from-destructive to-orange-500',
     description: 'Global dropshipping platform',
   },
   
@@ -325,14 +325,14 @@ export function MarketplaceIntegrationsHub() {
     switch (status) {
       case 'connected':
         return (
-          <Badge className="bg-gradient-to-r from-green-500 to-emerald-500">
+          <Badge className="bg-gradient-to-r from-success to-emerald-500">
             <CheckCircle className="h-3 w-3 mr-1" />
             Connecté
           </Badge>
         )
       case 'syncing':
         return (
-          <Badge className="bg-gradient-to-r from-blue-500 to-cyan-500">
+          <Badge className="bg-gradient-to-r from-info to-cyan-500">
             <RefreshCw className="h-3 w-3 mr-1 animate-spin" />
             Synchronisation
           </Badge>

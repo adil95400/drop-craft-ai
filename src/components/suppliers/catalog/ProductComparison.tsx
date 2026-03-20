@@ -62,9 +62,9 @@ export const ProductComparison = memo(function ProductComparison({
 
   const getScoreColor = (score: number) => {
     const percent = score * 100;
-    if (percent >= 80) return 'text-emerald-500';
-    if (percent >= 60) return 'text-amber-500';
-    return 'text-red-500';
+    if (percent >= 80) return 'text-success';
+    if (percent >= 60) return 'text-warning';
+    return 'text-destructive';
   };
 
   const CompareRow = ({ 
@@ -102,7 +102,7 @@ export const ProductComparison = memo(function ProductComparison({
             key={idx}
             className={cn(
               "text-center py-2 px-3 rounded-lg font-medium",
-              isBest ? "bg-emerald-500/10 text-emerald-600" : "bg-muted/50"
+              isBest ? "bg-success/10 text-success" : "bg-muted/50"
             )}
           >
             {displayValue}
@@ -148,7 +148,7 @@ export const ProductComparison = memo(function ProductComparison({
                       className="w-full h-full object-cover"
                     />
                     {product.is_winner && (
-                      <Badge className="absolute top-1 left-1 bg-amber-500 text-white text-[10px] px-1">
+                      <Badge className="absolute top-1 left-1 bg-warning text-white text-[10px] px-1">
                         <Crown className="h-2.5 w-2.5 mr-0.5" />
                         Winner
                       </Badge>
@@ -159,7 +159,7 @@ export const ProductComparison = memo(function ProductComparison({
                   <div className="flex gap-1 justify-center mt-2">
                     {product.is_winner && (
                       <Badge variant="outline" className="text-[10px]">
-                        <Crown className="h-2.5 w-2.5 mr-0.5 text-amber-500" />
+                        <Crown className="h-2.5 w-2.5 mr-0.5 text-warning" />
                         Winner
                       </Badge>
                     )}

@@ -25,9 +25,9 @@ export default function PaymentCancelled() {
           <CardHeader>
             <div className="flex flex-col items-center space-y-4">
               <div className="w-16 h-16 rounded-full bg-orange-100 flex items-center justify-center">
-                <XCircle className="w-10 h-10 text-orange-600" />
+                <XCircle className="w-10 h-10 text-warning" />
               </div>
-              <CardTitle className="text-3xl text-center text-orange-600">
+              <CardTitle className="text-3xl text-center text-warning">
                 Paiement Annulé
               </CardTitle>
             </div>
@@ -63,7 +63,7 @@ export default function PaymentCancelled() {
               </ul>
             </div>
 
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <div className="bg-info/5 border border-info/20 rounded-lg p-4">
               <p className="text-sm text-blue-900">
                 💡 <strong>Astuce :</strong> Nos plans sont sans engagement. 
                 Vous pouvez annuler à tout moment depuis votre espace client.

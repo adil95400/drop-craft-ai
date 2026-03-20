@@ -59,7 +59,7 @@ export function ProfitHistory() {
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Profit Net</p>
-              <p className={`text-lg font-semibold ${parseFloat(calc.net_profit) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+              <p className={`text-lg font-semibold ${parseFloat(calc.net_profit) >= 0 ? 'text-success' : 'text-destructive'}`}>
                 {calc.net_profit} €
               </p>
             </div>
@@ -70,9 +70,9 @@ export function ProfitHistory() {
                   {calc.profit_margin_percent}%
                 </Badge>
                 {parseFloat(calc.profit_margin_percent) > 30 ? (
-                  <TrendingUp className="h-4 w-4 text-green-600" />
+                  <TrendingUp className="h-4 w-4 text-success" />
                 ) : (
-                  <TrendingDown className="h-4 w-4 text-orange-600" />
+                  <TrendingDown className="h-4 w-4 text-warning" />
                 )}
               </div>
             </div>

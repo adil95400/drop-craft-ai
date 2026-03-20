@@ -88,21 +88,21 @@ export function ProductInventory() {
         </Card>
         <Card>
           <CardContent className="p-4 text-center">
-            <AlertTriangle className="h-6 w-6 text-orange-500 mx-auto mb-2" />
+            <AlertTriangle className="h-6 w-6 text-warning mx-auto mb-2" />
             <div className="text-2xl font-bold">{stockStats.lowStock}</div>
             <div className="text-sm text-muted-foreground">Stock faible</div>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-4 text-center">
-            <Package className="h-6 w-6 text-red-500 mx-auto mb-2" />
+            <Package className="h-6 w-6 text-destructive mx-auto mb-2" />
             <div className="text-2xl font-bold">{stockStats.outOfStock}</div>
             <div className="text-sm text-muted-foreground">Rupture stock</div>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-4 text-center">
-            <TrendingUp className="h-6 w-6 text-green-600 mx-auto mb-2" />
+            <TrendingUp className="h-6 w-6 text-success mx-auto mb-2" />
             <div className="text-2xl font-bold">{stockStats.totalValue.toLocaleString()}€</div>
             <div className="text-sm text-muted-foreground">Valeur stock</div>
           </CardContent>
@@ -223,7 +223,7 @@ export function ProductInventory() {
                           Stock faible
                         </Badge>
                       ) : (
-                        <Badge variant="secondary" className="bg-green-100 text-green-800">
+                        <Badge variant="secondary" className="bg-success/10 text-success">
                           En stock
                         </Badge>
                       )}

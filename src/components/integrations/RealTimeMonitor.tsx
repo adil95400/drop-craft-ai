@@ -125,24 +125,24 @@ export const RealTimeMonitor = () => {
   const getStatusIcon = (status: ActivityLog['status']) => {
     switch (status) {
       case 'success':
-        return <CheckCircle className="w-4 h-4 text-green-500" />
+        return <CheckCircle className="w-4 h-4 text-success" />
       case 'error':
-        return <XCircle className="w-4 h-4 text-red-500" />
+        return <XCircle className="w-4 h-4 text-destructive" />
       case 'warning':
-        return <AlertTriangle className="w-4 h-4 text-yellow-500" />
+        return <AlertTriangle className="w-4 h-4 text-warning" />
       case 'pending':
-        return <Clock className="w-4 h-4 text-blue-500" />
+        return <Clock className="w-4 h-4 text-info" />
     }
   }
 
   const getHealthBadge = (health: SystemStatus['system_health']) => {
     switch (health) {
       case 'excellent':
-        return <Badge className="bg-green-100 text-green-800 border-green-200">Excellent</Badge>
+        return <Badge className="bg-success/10 text-success border-success/20">Excellent</Badge>
       case 'good':
-        return <Badge className="bg-blue-100 text-blue-800 border-blue-200">Bon</Badge>
+        return <Badge className="bg-info/10 text-blue-800 border-info/20">Bon</Badge>
       case 'warning':
-        return <Badge className="bg-yellow-100 text-yellow-800 border-yellow-200">Attention</Badge>
+        return <Badge className="bg-warning/10 text-yellow-800 border-warning/20">Attention</Badge>
       case 'critical':
         return <Badge variant="destructive">Critique</Badge>
     }
@@ -151,13 +151,13 @@ export const RealTimeMonitor = () => {
   const getTypeIcon = (type: ActivityLog['type']) => {
     switch (type) {
       case 'sync':
-        return <RefreshCw className="w-4 h-4 text-blue-500" />
+        return <RefreshCw className="w-4 h-4 text-info" />
       case 'webhook':
         return <Zap className="w-4 h-4 text-purple-500" />
       case 'test':
-        return <Activity className="w-4 h-4 text-orange-500" />
+        return <Activity className="w-4 h-4 text-warning" />
       case 'connection':
-        return <Database className="w-4 h-4 text-green-500" />
+        return <Database className="w-4 h-4 text-success" />
       default:
         return <Activity className="w-4 h-4" />
     }
@@ -175,13 +175,13 @@ export const RealTimeMonitor = () => {
                 <div className="flex items-center gap-2 mt-1">
                   {isConnected ? (
                     <>
-                      <Wifi className="w-4 h-4 text-green-500" />
-                      <span className="text-sm text-green-600 font-medium">En ligne</span>
+                      <Wifi className="w-4 h-4 text-success" />
+                      <span className="text-sm text-success font-medium">En ligne</span>
                     </>
                   ) : (
                     <>
-                      <WifiOff className="w-4 h-4 text-red-500" />
-                      <span className="text-sm text-red-600 font-medium">Hors ligne</span>
+                      <WifiOff className="w-4 h-4 text-destructive" />
+                      <span className="text-sm text-destructive font-medium">Hors ligne</span>
                     </>
                   )}
                 </div>
@@ -209,9 +209,9 @@ export const RealTimeMonitor = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-muted-foreground">Syncs Actives</p>
-                <p className="text-xl font-bold text-blue-600">{systemStatus.active_syncs}</p>
+                <p className="text-xl font-bold text-info">{systemStatus.active_syncs}</p>
               </div>
-              <RefreshCw className="w-6 h-6 text-blue-500" />
+              <RefreshCw className="w-6 h-6 text-info" />
             </div>
           </CardContent>
         </Card>
@@ -257,7 +257,7 @@ export const RealTimeMonitor = () => {
               </CardDescription>
             </div>
             <div className="flex items-center gap-2">
-              <div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-green-500' : 'bg-red-500'} animate-pulse`} />
+              <div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-success' : 'bg-destructive'} animate-pulse`} />
               <span className="text-sm text-muted-foreground">
                 {isConnected ? 'Connecté' : 'Déconnecté'}
               </span>
@@ -330,7 +330,7 @@ export const RealTimeMonitor = () => {
         <Card>
           <CardContent className="p-4">
             <div className="text-center">
-              <div className="text-2xl font-bold text-green-600">
+              <div className="text-2xl font-bold text-success">
                 {activityLogs.filter(log => log.status === 'success').length}
               </div>
               <div className="text-sm text-muted-foreground">Opérations réussies</div>
@@ -341,7 +341,7 @@ export const RealTimeMonitor = () => {
         <Card>
           <CardContent className="p-4">
             <div className="text-center">
-              <div className="text-2xl font-bold text-red-600">
+              <div className="text-2xl font-bold text-destructive">
                 {activityLogs.filter(log => log.status === 'error').length}
               </div>
               <div className="text-sm text-muted-foreground">Erreurs détectées</div>
@@ -352,7 +352,7 @@ export const RealTimeMonitor = () => {
         <Card>
           <CardContent className="p-4">
             <div className="text-center">
-              <div className="text-2xl font-bold text-blue-600">
+              <div className="text-2xl font-bold text-info">
                 {activityLogs.filter(log => log.status === 'pending').length}
               </div>
               <div className="text-sm text-muted-foreground">En cours de traitement</div>

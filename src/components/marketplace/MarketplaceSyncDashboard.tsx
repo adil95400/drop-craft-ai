@@ -19,12 +19,12 @@ import { format } from 'date-fns';
 import { useDateFnsLocale } from '@/hooks/useDateFnsLocale';
 
 const MARKETPLACES = [
-  { id: 'shopify', name: 'Shopify', icon: '🛒', color: 'bg-green-500' },
-  { id: 'amazon', name: 'Amazon', icon: '📦', color: 'bg-orange-500' },
-  { id: 'ebay', name: 'eBay', icon: '🏷️', color: 'bg-blue-500' },
+  { id: 'shopify', name: 'Shopify', icon: '🛒', color: 'bg-success' },
+  { id: 'amazon', name: 'Amazon', icon: '📦', color: 'bg-warning' },
+  { id: 'ebay', name: 'eBay', icon: '🏷️', color: 'bg-info' },
   { id: 'woocommerce', name: 'WooCommerce', icon: '🔮', color: 'bg-purple-500' },
   { id: 'etsy', name: 'Etsy', icon: '🎨', color: 'bg-orange-400' },
-  { id: 'aliexpress', name: 'AliExpress', icon: '🌏', color: 'bg-red-500' }
+  { id: 'aliexpress', name: 'AliExpress', icon: '🌏', color: 'bg-destructive' }
 ];
 
 export function MarketplaceSyncDashboard() {
@@ -63,11 +63,11 @@ export function MarketplaceSyncDashboard() {
   const getStatusBadge = (status?: string) => {
     switch (status) {
       case 'connected':
-        return <Badge className="bg-green-500"><Check className="h-3 w-3 mr-1" /> Connecté</Badge>;
+        return <Badge className="bg-success"><Check className="h-3 w-3 mr-1" /> Connecté</Badge>;
       case 'error':
         return <Badge variant="destructive"><X className="h-3 w-3 mr-1" /> Erreur</Badge>;
       case 'syncing':
-        return <Badge className="bg-blue-500"><RefreshCw className="h-3 w-3 mr-1 animate-spin" /> Sync</Badge>;
+        return <Badge className="bg-info"><RefreshCw className="h-3 w-3 mr-1 animate-spin" /> Sync</Badge>;
       default:
         return <Badge variant="secondary"><Clock className="h-3 w-3 mr-1" /> En attente</Badge>;
     }
@@ -105,7 +105,7 @@ export function MarketplaceSyncDashboard() {
                 <p className="text-sm text-muted-foreground">Produits mappés</p>
                 <p className="text-2xl font-bold">245</p>
               </div>
-              <Package className="h-8 w-8 text-green-500" />
+              <Package className="h-8 w-8 text-success" />
             </div>
           </CardContent>
         </Card>
@@ -117,7 +117,7 @@ export function MarketplaceSyncDashboard() {
                 <p className="text-sm text-muted-foreground">Syncs aujourd'hui</p>
                 <p className="text-2xl font-bold">12</p>
               </div>
-              <ArrowRightLeft className="h-8 w-8 text-blue-500" />
+              <ArrowRightLeft className="h-8 w-8 text-info" />
             </div>
           </CardContent>
         </Card>
@@ -362,7 +362,7 @@ export function MarketplaceSyncDashboard() {
                   </TableCell>
                   <TableCell>Stock</TableCell>
                   <TableCell>
-                    <Badge className="bg-green-500">Succès</Badge>
+                    <Badge className="bg-success">Succès</Badge>
                   </TableCell>
                   <TableCell>45 produits</TableCell>
                   <TableCell>{format(new Date(), 'dd/MM HH:mm', { locale })}</TableCell>
@@ -376,7 +376,7 @@ export function MarketplaceSyncDashboard() {
                   </TableCell>
                   <TableCell>Prix</TableCell>
                   <TableCell>
-                    <Badge className="bg-green-500">Succès</Badge>
+                    <Badge className="bg-success">Succès</Badge>
                   </TableCell>
                   <TableCell>120 produits</TableCell>
                   <TableCell>{format(new Date(Date.now() - 3600000), 'dd/MM HH:mm', { locale })}</TableCell>

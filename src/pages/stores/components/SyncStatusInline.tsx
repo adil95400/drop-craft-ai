@@ -108,7 +108,7 @@ export function SyncStatusInline({
           ) : hasError ? (
             <AlertCircle className="h-5 w-5 text-destructive" />
           ) : isComplete ? (
-            <CheckCircle2 className="h-5 w-5 text-green-500" />
+            <CheckCircle2 className="h-5 w-5 text-success" />
           ) : (
             <Clock className="h-5 w-5 text-muted-foreground" />
           )}
@@ -122,7 +122,7 @@ export function SyncStatusInline({
         <Badge 
           variant={isInProgress ? 'secondary' : hasError ? 'destructive' : isComplete ? 'default' : 'outline'}
           className={cn(
-            isComplete && 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
+            isComplete && 'bg-success/10 text-success dark:bg-green-900/30 dark:text-green-400'
           )}
         >
           {isInProgress ? 'En cours' : hasError ? 'Erreur' : isComplete ? 'Actif' : 'Inactif'}

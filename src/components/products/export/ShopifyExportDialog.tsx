@@ -297,7 +297,7 @@ export function ShopifyExportDialog({
                   <span>
                     {result.exported_count} produit(s) exporté(s) avec succès !
                     {result.errors && result.errors.length > 0 && (
-                      <span className="block mt-1 text-amber-600">
+                      <span className="block mt-1 text-warning">
                         {result.errors.length} erreur(s) : {result.errors.slice(0, 2).join(', ')}
                       </span>
                     )}

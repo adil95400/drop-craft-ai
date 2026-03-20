@@ -54,7 +54,7 @@ export function RevenueWidget({ isCustomizing }: RevenueWidgetProps) {
             <p className="text-3xl font-bold">{(stats?.monthlyRevenue || 0).toFixed(0)}€</p>
             <p className="text-sm text-muted-foreground">Ce mois</p>
           </div>
-          <div className={`flex items-center gap-1 ${isPositive ? 'text-green-600' : 'text-red-600'}`}>
+          <div className={`flex items-center gap-1 ${isPositive ? 'text-success' : 'text-destructive'}`}>
             {isPositive ? <TrendingUp className="h-4 w-4" /> : <TrendingDown className="h-4 w-4" />}
             <span className="text-sm font-semibold">{isPositive ? '+' : ''}{revenueChange.toFixed(1)}%</span>
           </div>

@@ -200,7 +200,7 @@ export function ProductSuppliersPanel({ productId, productPrice }: ProductSuppli
                             <p className="text-xs text-muted-foreground">Marge</p>
                             <p className={cn(
                               "text-lg font-bold",
-                              parseFloat(margin) >= 30 ? "text-green-600" : parseFloat(margin) >= 15 ? "text-amber-600" : "text-red-600"
+                              parseFloat(margin) >= 30 ? "text-success" : parseFloat(margin) >= 15 ? "text-warning" : "text-destructive"
                             )}>
                               {margin}%
                             </p>

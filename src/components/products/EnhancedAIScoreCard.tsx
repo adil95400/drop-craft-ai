@@ -40,8 +40,8 @@ const DIMENSION_CONFIG = {
   seo: {
     label: 'SEO',
     icon: Search,
-    color: 'text-blue-600',
-    bgColor: 'bg-blue-100 dark:bg-blue-900/30',
+    color: 'text-info',
+    bgColor: 'bg-info/10 dark:bg-blue-900/30',
     description: 'Titres, méta-descriptions, mots-clés'
   },
   content: {
@@ -54,14 +54,14 @@ const DIMENSION_CONFIG = {
   images: {
     label: 'Images',
     icon: Image,
-    color: 'text-green-600',
-    bgColor: 'bg-green-100 dark:bg-green-900/30',
+    color: 'text-success',
+    bgColor: 'bg-success/10 dark:bg-green-900/30',
     description: 'Quantité et qualité des images'
   },
   data: {
     label: 'Données',
     icon: Tag,
-    color: 'text-orange-600',
+    color: 'text-warning',
     bgColor: 'bg-orange-100 dark:bg-orange-900/30',
     description: 'SKU, GTIN, attributs, variantes'
   },
@@ -75,17 +75,17 @@ const DIMENSION_CONFIG = {
 }
 
 function getScoreColor(score: number) {
-  if (score >= 80) return 'text-green-600'
-  if (score >= 60) return 'text-yellow-600'
-  if (score >= 40) return 'text-orange-600'
-  return 'text-red-600'
+  if (score >= 80) return 'text-success'
+  if (score >= 60) return 'text-warning'
+  if (score >= 40) return 'text-warning'
+  return 'text-destructive'
 }
 
 function getScoreBgColor(score: number) {
-  if (score >= 80) return 'bg-green-100 dark:bg-green-900/30'
-  if (score >= 60) return 'bg-yellow-100 dark:bg-yellow-900/30'
+  if (score >= 80) return 'bg-success/10 dark:bg-green-900/30'
+  if (score >= 60) return 'bg-warning/10 dark:bg-yellow-900/30'
   if (score >= 40) return 'bg-orange-100 dark:bg-orange-900/30'
-  return 'bg-red-100 dark:bg-red-900/30'
+  return 'bg-destructive/10 dark:bg-red-900/30'
 }
 
 function getScoreLabel(score: number) {
@@ -96,10 +96,10 @@ function getScoreLabel(score: number) {
 }
 
 function getProgressColor(score: number) {
-  if (score >= 80) return 'bg-green-500'
-  if (score >= 60) return 'bg-yellow-500'
-  if (score >= 40) return 'bg-orange-500'
-  return 'bg-red-500'
+  if (score >= 80) return 'bg-success'
+  if (score >= 60) return 'bg-warning'
+  if (score >= 40) return 'bg-warning'
+  return 'bg-destructive'
 }
 
 export function EnhancedAIScoreCard({
@@ -258,7 +258,7 @@ export function EnhancedAIScoreCard({
         {issues.length > 0 && (
           <div className="space-y-3">
             <h4 className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-              <AlertTriangle className="h-4 w-4 text-orange-500" />
+              <AlertTriangle className="h-4 w-4 text-warning" />
               Problèmes détectés ({issues.length})
             </h4>
             <div className="space-y-2 max-h-40 overflow-y-auto">
@@ -268,8 +268,8 @@ export function EnhancedAIScoreCard({
                   className={cn(
                     "flex items-start gap-2 p-2 rounded-lg text-xs",
                     issue.severity === 'critical' 
-                      ? 'bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300'
-                      : 'bg-yellow-50 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-300'
+                      ? 'bg-destructive/5 dark:bg-red-900/20 text-red-700 dark:text-red-300'
+                      : 'bg-warning/5 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-300'
                   )}
                 >
                   {issue.severity === 'critical' ? (
@@ -298,17 +298,17 @@ export function EnhancedAIScoreCard({
         {recommendations && recommendations.length > 0 && (
           <div className="space-y-3">
             <h4 className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-              <TrendingUp className="h-4 w-4 text-green-500" />
+              <TrendingUp className="h-4 w-4 text-success" />
               Recommandations
             </h4>
             <div className="space-y-2">
               {recommendations.slice(0, 3).map((rec, idx) => (
                 <div 
                   key={idx}
-                  className="flex items-start gap-2 p-2 rounded-lg bg-green-50 dark:bg-green-900/20 text-xs"
+                  className="flex items-start gap-2 p-2 rounded-lg bg-success/5 dark:bg-green-900/20 text-xs"
                 >
-                  <CheckCircle className="h-3.5 w-3.5 text-green-600 flex-shrink-0 mt-0.5" />
-                  <p className="text-green-700 dark:text-green-300">{rec}</p>
+                  <CheckCircle className="h-3.5 w-3.5 text-success flex-shrink-0 mt-0.5" />
+                  <p className="text-success dark:text-green-300">{rec}</p>
                 </div>
               ))}
             </div>

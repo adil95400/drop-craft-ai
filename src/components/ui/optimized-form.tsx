@@ -134,7 +134,7 @@ export function EnhancedInput({
           <motion.div
             initial={{ opacity: 0, scale: 0 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-emerald-500"
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-success"
           >
             <CheckCircle2 className="h-4 w-4" />
           </motion.div>
@@ -143,7 +143,7 @@ export function EnhancedInput({
           <motion.div
             initial={{ opacity: 0, scale: 0 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-amber-500"
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-warning"
           >
             <AlertCircle className="h-4 w-4" />
           </motion.div>
@@ -208,7 +208,7 @@ export function EnhancedTextarea({
         />
         {showCount && maxLength && (
           <div className="absolute right-3 bottom-3 text-xs text-muted-foreground">
-            <span className={cn(charCount > maxLength * 0.9 && 'text-amber-500', charCount >= maxLength && 'text-destructive')}>
+            <span className={cn(charCount > maxLength * 0.9 && 'text-warning', charCount >= maxLength && 'text-destructive')}>
               {charCount}
             </span>
             /{maxLength}

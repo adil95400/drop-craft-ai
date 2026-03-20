@@ -284,7 +284,7 @@ export function InteractiveOnboarding() {
                     <motion.div
                       initial={{ opacity: 0, scale: 0.8 }}
                       animate={{ opacity: 1, scale: 1 }}
-                      className="flex items-center justify-center space-x-2 text-green-600"
+                      className="flex items-center justify-center space-x-2 text-success"
                     >
                       <CheckCircle className="h-5 w-5" />
                       <span className="font-medium">Étape complétée !</span>

@@ -19,22 +19,22 @@ import { supabase } from '@/integrations/supabase/client';
 // Plateformes basées sur votre capture d'écran
 const PLATFORMS = [
   // Marketplaces principales
-  { id: 'amazon', name: 'Amazon', type: 'marketplace', icon: '🛒', color: 'bg-orange-500', regions: ['US', 'EU', 'UK', 'CA', 'JP'] },
-  { id: 'ebay', name: 'eBay', type: 'marketplace', icon: '🏪', color: 'bg-blue-500', regions: ['US', 'UK', 'DE', 'FR'] },
-  { id: 'aliexpress', name: 'AliExpress', type: 'supplier', icon: '🚀', color: 'bg-red-500' },
+  { id: 'amazon', name: 'Amazon', type: 'marketplace', icon: '🛒', color: 'bg-warning', regions: ['US', 'EU', 'UK', 'CA', 'JP'] },
+  { id: 'ebay', name: 'eBay', type: 'marketplace', icon: '🏪', color: 'bg-info', regions: ['US', 'UK', 'DE', 'FR'] },
+  { id: 'aliexpress', name: 'AliExpress', type: 'supplier', icon: '🚀', color: 'bg-destructive' },
   { id: 'cdiscount', name: 'CDiscount', type: 'marketplace', icon: '💳', color: 'bg-purple-500', regions: ['FR'] },
-  { id: 'fnac', name: 'Fnac', type: 'marketplace', icon: '📚', color: 'bg-yellow-600', regions: ['FR'] },
-  { id: 'carrefour', name: 'Carrefour', type: 'marketplace', icon: '🛍️', color: 'bg-blue-600', regions: ['FR'] },
+  { id: 'fnac', name: 'Fnac', type: 'marketplace', icon: '📚', color: 'bg-warning', regions: ['FR'] },
+  { id: 'carrefour', name: 'Carrefour', type: 'marketplace', icon: '🛍️', color: 'bg-info', regions: ['FR'] },
   
   // Retailers européens
-  { id: 'rakuten', name: 'Rakuten', type: 'marketplace', icon: '🎯', color: 'bg-red-600', regions: ['FR', 'UK', 'DE'] },
-  { id: 'allegro', name: 'Allegro', type: 'marketplace', icon: '🇵🇱', color: 'bg-orange-600', regions: ['PL'] },
+  { id: 'rakuten', name: 'Rakuten', type: 'marketplace', icon: '🎯', color: 'bg-destructive', regions: ['FR', 'UK', 'DE'] },
+  { id: 'allegro', name: 'Allegro', type: 'marketplace', icon: '🇵🇱', color: 'bg-warning', regions: ['PL'] },
   { id: 'kaufland', name: 'Kaufland.de', type: 'marketplace', icon: '🇩🇪', color: 'bg-red-700', regions: ['DE'] },
   { id: 'worten', name: 'Worten', type: 'marketplace', icon: '⚡', color: 'bg-red-800', regions: ['PT'] },
-  { id: 'conforama', name: 'Conforama', type: 'marketplace', icon: '🏡', color: 'bg-green-600', regions: ['FR'] },
+  { id: 'conforama', name: 'Conforama', type: 'marketplace', icon: '🏡', color: 'bg-success', regions: ['FR'] },
   
   // E-commerce platforms
-  { id: 'shopify', name: 'Shopify', type: 'ecommerce', icon: '🛍️', color: 'bg-green-500' },
+  { id: 'shopify', name: 'Shopify', type: 'ecommerce', icon: '🛍️', color: 'bg-success' },
   { id: 'woocommerce', name: 'WooCommerce', type: 'ecommerce', icon: '🌐', color: 'bg-purple-600' },
   { id: 'prestashop', name: 'PrestaShop', type: 'ecommerce', icon: '🏪', color: 'bg-pink-500' },
   { id: 'wix', name: 'Wix', type: 'ecommerce', icon: '✨', color: 'bg-blue-400' },
@@ -43,8 +43,8 @@ const PLATFORMS = [
   { id: 'instagram', name: 'Instagram', type: 'social', icon: '📷', color: 'bg-gradient-to-r from-purple-500 to-pink-500' },
   { id: 'facebook', name: 'Facebook', type: 'social', icon: '👥', color: 'bg-blue-700' },
   { id: 'tiktok', name: 'TikTok', type: 'social', icon: '🎵', color: 'bg-black' },
-  { id: 'pinterest', name: 'Pinterest', type: 'social', icon: '📌', color: 'bg-red-500' },
-  { id: 'youtube', name: 'YouTube', type: 'social', icon: '📺', color: 'bg-red-600' }
+  { id: 'pinterest', name: 'Pinterest', type: 'social', icon: '📌', color: 'bg-destructive' },
+  { id: 'youtube', name: 'YouTube', type: 'social', icon: '📺', color: 'bg-destructive' }
 ];
 
 interface PlatformConfig {
@@ -402,7 +402,7 @@ function ConnectionForm({ platform, onConnect, loading }) {
       {getCredentialFields().map((field) => (
         <div key={field.key} className="space-y-2">
           <Label htmlFor={field.key}>
-            {field.label} {field.required && <span className="text-red-500">*</span>}
+            {field.label} {field.required && <span className="text-destructive">*</span>}
           </Label>
           <Input
             id={field.key}

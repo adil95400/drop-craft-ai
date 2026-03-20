@@ -40,12 +40,12 @@ const AI_STATUS_CONFIG = {
     subtitle: 'Ce produit nécessite votre attention immédiate',
     ctaLabel: 'Corriger maintenant',
     ctaIcon: Zap,
-    gradient: 'from-red-500/20 via-red-500/10 to-transparent',
-    border: 'border-red-500/40',
-    iconBg: 'bg-red-500/20',
-    iconColor: 'text-red-500',
-    textColor: 'text-red-600 dark:text-red-400',
-    ctaClass: 'bg-red-500 hover:bg-red-600 text-white shadow-lg shadow-red-500/30'
+    gradient: 'from-destructive/20 via-red-500/10 to-transparent',
+    border: 'border-destructive/40',
+    iconBg: 'bg-destructive/20',
+    iconColor: 'text-destructive',
+    textColor: 'text-destructive dark:text-red-400',
+    ctaClass: 'bg-destructive hover:bg-destructive text-white shadow-lg shadow-red-500/30'
   },
   opportunity: {
     icon: TrendingUp,
@@ -55,10 +55,10 @@ const AI_STATUS_CONFIG = {
     ctaIcon: TrendingUp,
     gradient: 'from-emerald-500/20 via-emerald-500/10 to-transparent',
     border: 'border-emerald-500/40',
-    iconBg: 'bg-emerald-500/20',
-    iconColor: 'text-emerald-500',
-    textColor: 'text-emerald-600 dark:text-emerald-400',
-    ctaClass: 'bg-emerald-500 hover:bg-emerald-600 text-white shadow-lg shadow-emerald-500/30'
+    iconBg: 'bg-success/20',
+    iconColor: 'text-success',
+    textColor: 'text-success dark:text-emerald-400',
+    ctaClass: 'bg-success hover:bg-success text-white shadow-lg shadow-emerald-500/30'
   },
   optimized: {
     icon: CheckCircle,
@@ -66,12 +66,12 @@ const AI_STATUS_CONFIG = {
     subtitle: 'Aucune action requise',
     ctaLabel: 'Voir détails',
     ctaIcon: ArrowRight,
-    gradient: 'from-blue-500/20 via-blue-500/10 to-transparent',
-    border: 'border-blue-500/40',
-    iconBg: 'bg-blue-500/20',
-    iconColor: 'text-blue-500',
-    textColor: 'text-blue-600 dark:text-blue-400',
-    ctaClass: 'bg-blue-500 hover:bg-blue-600 text-white'
+    gradient: 'from-info/20 via-blue-500/10 to-transparent',
+    border: 'border-info/40',
+    iconBg: 'bg-info/20',
+    iconColor: 'text-info',
+    textColor: 'text-info dark:text-blue-400',
+    ctaClass: 'bg-info hover:bg-info text-white'
   },
   neutral: {
     icon: CheckCircle,
@@ -229,7 +229,7 @@ export const PrescriptiveProductHeader = memo(function PrescriptiveProductHeader
       {/* Priority indicator bar */}
       {badgeType === 'risk' && aiBadge?.priority === 'critical' && (
         <motion.div
-          className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-red-500 via-orange-500 to-red-500"
+          className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-destructive via-orange-500 to-red-500"
           animate={{ backgroundPosition: ['0% 50%', '100% 50%', '0% 50%'] }}
           transition={{ duration: 3, repeat: Infinity }}
           style={{ backgroundSize: '200% 200%' }}

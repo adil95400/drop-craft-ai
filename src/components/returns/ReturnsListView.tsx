@@ -42,13 +42,13 @@ const STATUS_CONFIG: Record<Return['status'], {
   icon: typeof Clock
   color: string 
 }> = {
-  pending: { label: 'En attente', variant: 'secondary', icon: Clock, color: 'text-amber-500' },
-  approved: { label: 'Approuvé', variant: 'default', icon: CheckCircle, color: 'text-blue-500' },
+  pending: { label: 'En attente', variant: 'secondary', icon: Clock, color: 'text-warning' },
+  approved: { label: 'Approuvé', variant: 'default', icon: CheckCircle, color: 'text-info' },
   received: { label: 'Reçu', variant: 'default', icon: Package, color: 'text-purple-500' },
-  inspecting: { label: 'Inspection', variant: 'outline', icon: Eye, color: 'text-orange-500' },
-  refunded: { label: 'Remboursé', variant: 'default', icon: RefreshCw, color: 'text-emerald-500' },
-  rejected: { label: 'Rejeté', variant: 'destructive', icon: XCircle, color: 'text-red-500' },
-  completed: { label: 'Terminé', variant: 'default', icon: CheckCircle, color: 'text-emerald-500' }
+  inspecting: { label: 'Inspection', variant: 'outline', icon: Eye, color: 'text-warning' },
+  refunded: { label: 'Remboursé', variant: 'default', icon: RefreshCw, color: 'text-success' },
+  rejected: { label: 'Rejeté', variant: 'destructive', icon: XCircle, color: 'text-destructive' },
+  completed: { label: 'Terminé', variant: 'default', icon: CheckCircle, color: 'text-success' }
 }
 
 const REASON_LABELS: Record<string, string> = {

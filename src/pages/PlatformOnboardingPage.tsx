@@ -19,7 +19,7 @@ import { cn } from '@/lib/utils'
 const PLATFORMS = [
   { id: 'shopify', name: 'Shopify', icon: '🟢', color: 'border-emerald-500', desc: 'La plateforme e-commerce leader', fields: ['shop_domain', 'api_key'] },
   { id: 'woocommerce', name: 'WooCommerce', icon: '🟣', color: 'border-purple-500', desc: 'WordPress + WooCommerce', fields: ['site_url', 'consumer_key', 'consumer_secret'] },
-  { id: 'prestashop', name: 'PrestaShop', icon: '🔵', color: 'border-blue-500', desc: 'Solution open-source française', fields: ['site_url', 'api_key'] },
+  { id: 'prestashop', name: 'PrestaShop', icon: '🔵', color: 'border-info', desc: 'Solution open-source française', fields: ['site_url', 'api_key'] },
 ]
 
 const STEPS = [
@@ -174,7 +174,7 @@ export default function PlatformOnboardingPage() {
         {step === 3 && platform && (
           <Card className="max-w-lg mx-auto border-emerald-200">
             <CardContent className="py-12 text-center">
-              <CheckCircle2 className="h-16 w-16 mx-auto text-emerald-500 mb-4" />
+              <CheckCircle2 className="h-16 w-16 mx-auto text-success mb-4" />
               <h3 className="font-bold text-xl mb-2">🎉 {platform.name} connecté !</h3>
               <p className="text-sm text-muted-foreground mb-6">
                 Votre boutique est synchronisée. Vos produits sont prêts à être optimisés.

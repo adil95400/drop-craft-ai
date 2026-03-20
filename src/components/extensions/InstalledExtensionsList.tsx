@@ -128,7 +128,7 @@ export const InstalledExtensionsList: React.FC = () => {
                       <div className="flex items-center gap-1">
                         {lastSyncAt ? (
                           <>
-                            <CheckCircle2 className="w-4 h-4 text-green-500" />
+                            <CheckCircle2 className="w-4 h-4 text-success" />
                             <span>Dernière sync: {new Date(lastSyncAt).toLocaleDateString()}</span>
                           </>
                         ) : (

@@ -36,9 +36,9 @@ export const RealtimeActivityFeed = () => {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'success': return 'text-green-600 bg-green-100'
-      case 'error': return 'text-red-600 bg-red-100'
-      case 'processing': return 'text-blue-600 bg-blue-100'
+      case 'success': return 'text-success bg-success/10'
+      case 'error': return 'text-destructive bg-destructive/10'
+      case 'processing': return 'text-info bg-info/10'
       case 'info': return 'text-gray-600 bg-gray-100'
       default: return 'text-gray-600 bg-gray-100'
     }
@@ -74,7 +74,7 @@ export const RealtimeActivityFeed = () => {
             Activité Temps Réel
           </CardTitle>
           <div className="flex items-center gap-2">
-            <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+            <div className="w-2 h-2 rounded-full bg-success animate-pulse" />
             <span className="text-sm text-gray-600">En direct</span>
           </div>
         </div>

@@ -142,18 +142,18 @@ export function SupplierNotifications() {
   const getIcon = (type: string) => {
     switch (type) {
       case 'stock_alert':
-        return <AlertTriangle className="h-5 w-5 text-yellow-600" />;
+        return <AlertTriangle className="h-5 w-5 text-warning" />;
       case 'price_change':
-        return <TrendingUp className="h-5 w-5 text-blue-600" />;
+        return <TrendingUp className="h-5 w-5 text-info" />;
       case 'sync_error':
-        return <AlertTriangle className="h-5 w-5 text-red-600" />;
+        return <AlertTriangle className="h-5 w-5 text-destructive" />;
       case 'sync_complete':
       case 'import_completed':
-        return <CheckCircle className="h-5 w-5 text-green-600" />;
+        return <CheckCircle className="h-5 w-5 text-success" />;
       case 'new_products':
         return <TrendingUp className="h-5 w-5 text-purple-600" />;
       default:
-        return <Info className="h-5 w-5 text-blue-600" />;
+        return <Info className="h-5 w-5 text-info" />;
     }
   };
 
@@ -162,9 +162,9 @@ export function SupplierNotifications() {
       case 'error':
         return <Badge variant="destructive">Critique</Badge>;
       case 'warning':
-        return <Badge variant="default" className="bg-orange-500">Avertissement</Badge>;
+        return <Badge variant="default" className="bg-warning">Avertissement</Badge>;
       case 'success':
-        return <Badge variant="default" className="bg-green-500">Succès</Badge>;
+        return <Badge variant="default" className="bg-success">Succès</Badge>;
       default:
         return <Badge variant="outline">Info</Badge>;
     }

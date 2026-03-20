@@ -307,7 +307,7 @@ export function QuickActionModal({
   const iconBgClass = {
     default: 'bg-primary/10 text-primary',
     destructive: 'bg-destructive/10 text-destructive',
-    success: 'bg-emerald-500/10 text-emerald-500',
+    success: 'bg-success/10 text-success',
   };
 
   const confirmButtonVariant = variant === 'destructive' ? 'destructive' : 'default';

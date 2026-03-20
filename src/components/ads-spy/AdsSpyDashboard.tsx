@@ -28,10 +28,10 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 // Platform configurations
 const PLATFORMS = [
   { id: 'all', name: 'Toutes', icon: Globe },
-  { id: 'facebook', name: 'Facebook', icon: Facebook, color: 'text-blue-600' },
+  { id: 'facebook', name: 'Facebook', icon: Facebook, color: 'text-info' },
   { id: 'tiktok', name: 'TikTok', icon: Globe, color: 'text-pink-500' },
   { id: 'instagram', name: 'Instagram', icon: Instagram, color: 'text-purple-500' },
-  { id: 'pinterest', name: 'Pinterest', icon: Globe, color: 'text-red-500' },
+  { id: 'pinterest', name: 'Pinterest', icon: Globe, color: 'text-destructive' },
 ];
 
 const CATEGORIES = [
@@ -79,8 +79,8 @@ const QuickFilters = ({ onSelect, active }: { onSelect: (filter: string) => void
 // Stats Cards
 const StatsCards = ({ isLoading }: { isLoading: boolean }) => {
   const stats = [
-    { label: 'Pubs analysées', value: '12,847', icon: Search, color: 'from-blue-500/10 to-blue-600/5', border: 'border-blue-500/20' },
-    { label: 'Winners détectés', value: '1,234', icon: Trophy, color: 'from-green-500/10 to-green-600/5', border: 'border-green-500/20' },
+    { label: 'Pubs analysées', value: '12,847', icon: Search, color: 'from-info/10 to-info/5', border: 'border-info/20' },
+    { label: 'Winners détectés', value: '1,234', icon: Trophy, color: 'from-success/10 to-success/5', border: 'border-success/20' },
     { label: 'Boutiques espionnées', value: '567', icon: Store, color: 'from-purple-500/10 to-purple-600/5', border: 'border-purple-500/20' },
     { label: 'Influenceurs suivis', value: '89', icon: Users, color: 'from-pink-500/10 to-pink-600/5', border: 'border-pink-500/20' },
   ];
@@ -402,7 +402,7 @@ const TopWinnersDashboard = () => {
       {/* Winners Grid */}
       <div>
         <div className="flex items-center gap-2 mb-4">
-          <Flame className="w-5 h-5 text-orange-500" />
+          <Flame className="w-5 h-5 text-warning" />
           <h2 className="text-lg font-semibold">{periodLabels[period]}</h2>
           <Badge variant="secondary" className="text-xs">
             Mise à jour toutes les heures

@@ -263,29 +263,29 @@ export default function ChromeExtensionPage() {
       icon: Zap,
       title: 'Import 1-clic',
       description: 'Importez n\'importe quel produit en un seul clic',
-      color: 'text-yellow-500',
-      bgColor: 'bg-yellow-500/10',
+      color: 'text-warning',
+      bgColor: 'bg-warning/10',
     },
     {
       icon: Star,
       title: 'Import des avis',
       description: 'Récupérez automatiquement les avis clients',
-      color: 'text-orange-500',
-      bgColor: 'bg-orange-500/10',
+      color: 'text-warning',
+      bgColor: 'bg-warning/10',
     },
     {
       icon: RefreshCw,
       title: 'Suivi des prix',
       description: 'Alertes automatiques sur les changements de prix',
-      color: 'text-blue-500',
-      bgColor: 'bg-blue-500/10',
+      color: 'text-info',
+      bgColor: 'bg-info/10',
     },
     {
       icon: Package,
       title: 'Multi-plateformes',
       description: 'AliExpress, Amazon, eBay, Temu et plus',
-      color: 'text-green-500',
-      bgColor: 'bg-green-500/10',
+      color: 'text-success',
+      bgColor: 'bg-success/10',
     },
   ];
 
@@ -385,7 +385,7 @@ export default function ChromeExtensionPage() {
             <div className="flex items-center gap-2">
               <Badge className="bg-cyan-500">Extension Chrome</Badge>
               <Badge variant="outline">v6.0.0</Badge>
-              <Badge variant="outline" className="bg-green-500/10 text-green-600 border-green-500/30">
+              <Badge variant="outline" className="bg-success/10 text-success border-success/30">
                 <RefreshCw className="h-3 w-3 mr-1" />
                 Sync SaaS
               </Badge>
@@ -404,7 +404,7 @@ export default function ChromeExtensionPage() {
               {IS_PUBLISHED ? (
                 <Button 
                   size="lg" 
-                  className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700"
+                  className="bg-gradient-to-r from-cyan-500 to-info hover:from-cyan-600 hover:to-blue-700"
                   onClick={() => window.open(CHROME_STORE_URL, '_blank')}
                 >
                   <Chrome className="h-5 w-5 mr-2" />
@@ -434,15 +434,15 @@ export default function ChromeExtensionPage() {
             
             <div className="flex items-center gap-4 text-sm text-muted-foreground">
               <span className="flex items-center gap-1">
-                <CheckCircle className="h-4 w-4 text-green-500" />
+                <CheckCircle className="h-4 w-4 text-success" />
                 Gratuit
               </span>
               <span className="flex items-center gap-1">
-                <CheckCircle className="h-4 w-4 text-green-500" />
+                <CheckCircle className="h-4 w-4 text-success" />
                 45+ plateformes
               </span>
               <span className="flex items-center gap-1">
-                <CheckCircle className="h-4 w-4 text-green-500" />
+                <CheckCircle className="h-4 w-4 text-success" />
                 10k+ utilisateurs
               </span>
             </div>
@@ -450,10 +450,10 @@ export default function ChromeExtensionPage() {
           
           <div className="hidden md:block">
             <div className="relative">
-              <div className="w-48 h-48 bg-gradient-to-br from-cyan-500 to-blue-600 rounded-2xl flex items-center justify-center shadow-xl">
+              <div className="w-48 h-48 bg-gradient-to-br from-cyan-500 to-info rounded-2xl flex items-center justify-center shadow-xl">
                 <Chrome className="h-24 w-24 text-white" />
               </div>
-              <div className="absolute -bottom-4 -right-4 bg-green-500 text-white rounded-full p-2">
+              <div className="absolute -bottom-4 -right-4 bg-success text-white rounded-full p-2">
                 <CheckCircle className="h-6 w-6" />
               </div>
             </div>
@@ -489,7 +489,7 @@ export default function ChromeExtensionPage() {
                   <Clock className="h-4 w-4" />
                   <span className="text-xs">Aujourd'hui</span>
                 </div>
-                <p className="text-2xl font-bold text-green-600">{stats?.todayImports || 0}</p>
+                <p className="text-2xl font-bold text-success">{stats?.todayImports || 0}</p>
               </CardContent>
             </Card>
             <Card>
@@ -615,7 +615,7 @@ export default function ChromeExtensionPage() {
                       <div className={cn(
                         "h-8 w-8 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0",
                         step.completed 
-                          ? "bg-green-500 text-white" 
+                          ? "bg-success text-white" 
                           : "bg-primary text-primary-foreground"
                       )}>
                         {step.completed ? <CheckCircle className="h-4 w-4" /> : step.step}
@@ -725,7 +725,7 @@ export default function ChromeExtensionPage() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="flex items-center justify-between p-4 rounded-lg border bg-muted/30">
                       <div className="flex items-center gap-3">
-                        <Zap className="h-5 w-5 text-yellow-500" />
+                        <Zap className="h-5 w-5 text-warning" />
                         <div>
                           <p className="font-medium">Sync automatique</p>
                           <p className="text-sm text-muted-foreground">Synchroniser les données en temps réel</p>
@@ -739,7 +739,7 @@ export default function ChromeExtensionPage() {
                     
                     <div className="flex items-center justify-between p-4 rounded-lg border bg-muted/30">
                       <div className="flex items-center gap-3">
-                        <Cloud className="h-5 w-5 text-blue-500" />
+                        <Cloud className="h-5 w-5 text-info" />
                         <div>
                           <p className="font-medium">Backend-First Import</p>
                           <p className="text-sm text-muted-foreground">Extraction côté serveur (recommandé)</p>
@@ -753,7 +753,7 @@ export default function ChromeExtensionPage() {
 
                     <div className="flex items-center justify-between p-4 rounded-lg border bg-muted/30">
                       <div className="flex items-center gap-3">
-                        <RefreshCw className="h-5 w-5 text-green-500" />
+                        <RefreshCw className="h-5 w-5 text-success" />
                         <div>
                           <p className="font-medium">Sync des prix</p>
                           <p className="text-sm text-muted-foreground">Mettre à jour les prix automatiquement</p>
@@ -782,7 +782,7 @@ export default function ChromeExtensionPage() {
 
                   <div className="p-4 rounded-lg border border-dashed bg-muted/20">
                     <div className="flex items-start gap-3">
-                      <AlertCircle className="h-5 w-5 text-blue-500 flex-shrink-0 mt-0.5" />
+                      <AlertCircle className="h-5 w-5 text-info flex-shrink-0 mt-0.5" />
                       <div>
                         <p className="font-medium text-sm">Mode Backend-First</p>
                         <p className="text-sm text-muted-foreground mt-1">
@@ -855,9 +855,9 @@ export default function ChromeExtensionPage() {
                           </div>
                           <Badge 
                             className={cn(
-                              item.status === 'success' && 'bg-green-500/10 text-green-600 border-green-500/30',
-                              item.status === 'pending' && 'bg-yellow-500/10 text-yellow-600 border-yellow-500/30',
-                              item.status === 'error' && 'bg-red-500/10 text-red-600 border-red-500/30'
+                              item.status === 'success' && 'bg-success/10 text-success border-success/30',
+                              item.status === 'pending' && 'bg-warning/10 text-warning border-warning/30',
+                              item.status === 'error' && 'bg-destructive/10 text-destructive border-destructive/30'
                             )}
                           >
                             {item.status === 'success' && <CheckCircle className="h-3 w-3 mr-1" />}
@@ -914,7 +914,7 @@ export default function ChromeExtensionPage() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="flex items-center justify-between p-4 rounded-lg border bg-muted/30">
                       <div className="flex items-center gap-3">
-                        <Zap className="h-5 w-5 text-yellow-500" />
+                        <Zap className="h-5 w-5 text-warning" />
                         <div>
                           <p className="font-medium">Import automatique</p>
                           <p className="text-sm text-muted-foreground">Importer en 1 clic sans preview</p>
@@ -928,7 +928,7 @@ export default function ChromeExtensionPage() {
                     
                     <div className="flex items-center justify-between p-4 rounded-lg border bg-muted/30">
                       <div className="flex items-center gap-3">
-                        <Globe className="h-5 w-5 text-blue-500" />
+                        <Globe className="h-5 w-5 text-info" />
                         <div>
                           <p className="font-medium">Importer les images</p>
                           <p className="text-sm text-muted-foreground">Télécharger toutes les images HD</p>
@@ -942,7 +942,7 @@ export default function ChromeExtensionPage() {
                     
                     <div className="flex items-center justify-between p-4 rounded-lg border bg-muted/30">
                       <div className="flex items-center gap-3">
-                        <Star className="h-5 w-5 text-orange-500" />
+                        <Star className="h-5 w-5 text-warning" />
                         <div>
                           <p className="font-medium">Importer les avis</p>
                           <p className="text-sm text-muted-foreground">Récupérer les avis clients</p>
@@ -977,7 +977,7 @@ export default function ChromeExtensionPage() {
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
-                    <TrendingUp className="h-5 w-5 text-green-500" />
+                    <TrendingUp className="h-5 w-5 text-success" />
                     Paramètres de prix
                   </CardTitle>
                   <CardDescription>
@@ -988,7 +988,7 @@ export default function ChromeExtensionPage() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="flex items-center justify-between p-4 rounded-lg border bg-muted/30">
                       <div className="flex items-center gap-3">
-                        <Activity className="h-5 w-5 text-blue-500" />
+                        <Activity className="h-5 w-5 text-info" />
                         <div>
                           <p className="font-medium">Suivi des prix</p>
                           <p className="text-sm text-muted-foreground">Alertes sur les changements</p>
@@ -1002,7 +1002,7 @@ export default function ChromeExtensionPage() {
 
                     <div className="flex items-center justify-between p-4 rounded-lg border bg-muted/30">
                       <div className="flex items-center gap-3">
-                        <TrendingUp className="h-5 w-5 text-green-500" />
+                        <TrendingUp className="h-5 w-5 text-success" />
                         <div>
                           <p className="font-medium">Markup par défaut</p>
                           <p className="text-sm text-muted-foreground">Marge appliquée à l'import</p>
@@ -1037,7 +1037,7 @@ export default function ChromeExtensionPage() {
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
-                    <Zap className="h-5 w-5 text-yellow-500" />
+                    <Zap className="h-5 w-5 text-warning" />
                     Comportement
                   </CardTitle>
                   <CardDescription>
@@ -1048,7 +1048,7 @@ export default function ChromeExtensionPage() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="flex items-center justify-between p-4 rounded-lg border bg-muted/30">
                       <div className="flex items-center gap-3">
-                        <AlertCircle className="h-5 w-5 text-blue-500" />
+                        <AlertCircle className="h-5 w-5 text-info" />
                         <div>
                           <p className="font-medium">Notifications</p>
                           <p className="text-sm text-muted-foreground">Recevoir les alertes</p>
@@ -1062,7 +1062,7 @@ export default function ChromeExtensionPage() {
 
                     <div className="flex items-center justify-between p-4 rounded-lg border bg-muted/30">
                       <div className="flex items-center gap-3">
-                        <Chrome className="h-5 w-5 text-green-500" />
+                        <Chrome className="h-5 w-5 text-success" />
                         <div>
                           <p className="font-medium">Badge compteur</p>
                           <p className="text-sm text-muted-foreground">Afficher le nombre d'imports</p>
@@ -1091,11 +1091,11 @@ export default function ChromeExtensionPage() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6">
-                  <div className="p-4 rounded-lg border border-amber-500/30 bg-amber-500/10">
+                  <div className="p-4 rounded-lg border border-amber-500/30 bg-warning/10">
                     <div className="flex items-start gap-3">
-                      <AlertCircle className="h-5 w-5 text-amber-500 flex-shrink-0 mt-0.5" />
+                      <AlertCircle className="h-5 w-5 text-warning flex-shrink-0 mt-0.5" />
                       <div>
-                        <p className="font-medium text-amber-600">Installation Mode Développeur</p>
+                        <p className="font-medium text-warning">Installation Mode Développeur</p>
                         <p className="text-sm text-muted-foreground mt-1">
                           Pour charger l'extension en mode développeur:
                         </p>
@@ -1128,7 +1128,7 @@ export default function ChromeExtensionPage() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="flex items-center justify-between p-4 rounded-lg border bg-muted/30">
                       <div className="flex items-center gap-3">
-                        <Activity className="h-5 w-5 text-red-500" />
+                        <Activity className="h-5 w-5 text-destructive" />
                         <div>
                           <p className="font-medium">Mode debug</p>
                           <p className="text-sm text-muted-foreground">Logs détaillés console</p>
@@ -1142,7 +1142,7 @@ export default function ChromeExtensionPage() {
 
                     <div className="flex items-center justify-between p-4 rounded-lg border bg-muted/30">
                       <div className="flex items-center gap-3">
-                        <ExternalLink className="h-5 w-5 text-blue-500" />
+                        <ExternalLink className="h-5 w-5 text-info" />
                         <div>
                           <p className="font-medium">Backend-first</p>
                           <p className="text-sm text-muted-foreground">Import via API (recommandé)</p>

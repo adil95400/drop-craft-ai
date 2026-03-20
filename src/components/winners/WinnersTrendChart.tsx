@@ -85,7 +85,7 @@ export const WinnersTrendChart = ({ products }: WinnersTrendChartProps) => {
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Demande Moyenne</p>
-              <p className="text-2xl font-bold text-emerald-600">{avgDemand.toFixed(1)}</p>
+              <p className="text-2xl font-bold text-success">{avgDemand.toFixed(1)}</p>
             </div>
           </div>
         </CardContent>

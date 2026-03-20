@@ -149,7 +149,7 @@ export function ChannelBulkActions({
                 disabled={isLoading}
                 className="gap-2"
               >
-                <Power className="h-4 w-4 text-green-600" />
+                <Power className="h-4 w-4 text-success" />
                 <span className="hidden sm:inline">Activer</span>
               </Button>
               
@@ -160,7 +160,7 @@ export function ChannelBulkActions({
                 disabled={isLoading}
                 className="gap-2"
               >
-                <PowerOff className="h-4 w-4 text-yellow-600" />
+                <PowerOff className="h-4 w-4 text-warning" />
                 <span className="hidden sm:inline">Désactiver</span>
               </Button>
               
@@ -171,7 +171,7 @@ export function ChannelBulkActions({
                 disabled={isLoading}
                 className="gap-2"
               >
-                <Percent className="h-4 w-4 text-blue-600" />
+                <Percent className="h-4 w-4 text-info" />
                 <span className="hidden sm:inline">Prix</span>
               </Button>
               
@@ -193,7 +193,7 @@ export function ChannelBulkActions({
                 size="sm" 
                 onClick={() => setShowDeleteDialog(true)}
                 disabled={isLoading}
-                className="gap-2 text-red-600 hover:text-red-700 hover:bg-red-50"
+                className="gap-2 text-destructive hover:text-red-700 hover:bg-destructive/5"
               >
                 <Trash2 className="h-4 w-4" />
                 <span className="hidden sm:inline">Supprimer</span>
@@ -307,8 +307,8 @@ export function ChannelBulkActions({
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <div className="flex items-center gap-3">
-              <div className="p-2 rounded-xl bg-red-500/10">
-                <AlertTriangle className="h-5 w-5 text-red-600" />
+              <div className="p-2 rounded-xl bg-destructive/10">
+                <AlertTriangle className="h-5 w-5 text-destructive" />
               </div>
               <DialogTitle>Confirmer la suppression</DialogTitle>
             </div>

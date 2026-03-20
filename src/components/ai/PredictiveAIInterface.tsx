@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { useRealPredictiveAI, PredictiveInsight, SalesData } from '@/hooks/useRealPredictiveAI';
+import { usePredictiveAI, PredictiveInsight, SalesData } from '@/hooks/usePredictiveAI';
 
 export const PredictiveAIInterface = () => {
   const [selectedPeriod, setSelectedPeriod] = useState('30d');
@@ -17,16 +17,16 @@ export const PredictiveAIInterface = () => {
     isLoading,
     generatePrediction,
     isGenerating
-  } = useRealPredictiveAI(selectedPeriod, selectedCategory);
+  } = usePredictiveAI(selectedPeriod, selectedCategory);
 
   const getImpactColor = (impact: string) => {
     switch (impact) {
       case 'high':
-        return 'bg-red-100 text-red-800 border-red-200';
+        return 'bg-destructive/10 text-red-800 border-destructive/20';
       case 'medium':
-        return 'bg-yellow-100 text-yellow-800 border-yellow-200';
+        return 'bg-warning/10 text-yellow-800 border-warning/20';
       case 'low':
-        return 'bg-green-100 text-green-800 border-green-200';
+        return 'bg-success/10 text-success border-success/20';
       default:
         return 'bg-gray-100 text-gray-800 border-gray-200';
     }

@@ -65,9 +65,9 @@ function StatCard({
 }) {
   const colorClasses = {
     primary: 'bg-primary/10 text-primary border-primary/20',
-    success: 'bg-green-500/10 text-green-600 border-green-500/20',
-    warning: 'bg-amber-500/10 text-amber-600 border-amber-500/20',
-    destructive: 'bg-red-500/10 text-red-600 border-red-500/20',
+    success: 'bg-success/10 text-success border-success/20',
+    warning: 'bg-warning/10 text-warning border-amber-500/20',
+    destructive: 'bg-destructive/10 text-destructive border-destructive/20',
   };
 
   return (
@@ -85,7 +85,7 @@ function StatCard({
               <Icon className="h-4 w-4 sm:h-5 sm:w-5" />
             </div>
             {trend && (
-              <Badge variant="secondary" className="text-[10px] sm:text-xs font-medium bg-green-500/10 text-green-600 border-0">
+              <Badge variant="secondary" className="text-[10px] sm:text-xs font-medium bg-success/10 text-success border-0">
                 {trend}
               </Badge>
             )}
@@ -114,11 +114,11 @@ function OrderCard({
   
   const getStatusConfig = (status: string) => {
     const configs: Record<string, { color: string; icon: React.ElementType; label: string }> = {
-      pending: { color: 'bg-amber-500/10 text-amber-600 border-amber-500/30', icon: Clock, label: t('status.pending') },
-      processing: { color: 'bg-blue-500/10 text-blue-600 border-blue-500/30', icon: Package, label: t('status.processing') },
+      pending: { color: 'bg-warning/10 text-warning border-amber-500/30', icon: Clock, label: t('status.pending') },
+      processing: { color: 'bg-info/10 text-info border-info/30', icon: Package, label: t('status.processing') },
       shipped: { color: 'bg-purple-500/10 text-purple-600 border-purple-500/30', icon: Truck, label: t('status.shipped') },
-      delivered: { color: 'bg-green-500/10 text-green-600 border-green-500/30', icon: CheckCircle2, label: t('status.delivered') },
-      cancelled: { color: 'bg-red-500/10 text-red-600 border-red-500/30', icon: AlertCircle, label: t('status.cancelled') },
+      delivered: { color: 'bg-success/10 text-success border-success/30', icon: CheckCircle2, label: t('status.delivered') },
+      cancelled: { color: 'bg-destructive/10 text-destructive border-destructive/30', icon: AlertCircle, label: t('status.cancelled') },
     };
     return configs[status] || configs.pending;
   };

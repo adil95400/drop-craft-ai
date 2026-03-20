@@ -138,12 +138,12 @@ export function ProductVariantsTab({
   return (
     <div className="space-y-6">
       {/* Summary Card */}
-      <Card className="bg-gradient-to-br from-blue-500/5 to-cyan-500/5 border-blue-500/20">
+      <Card className="bg-gradient-to-br from-info/5 to-cyan-500/5 border-info/20">
         <CardContent className="p-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <div className="h-14 w-14 rounded-xl bg-gradient-to-br from-blue-500/20 to-cyan-500/20 flex items-center justify-center">
-                <Layers className="h-7 w-7 text-blue-600" />
+              <div className="h-14 w-14 rounded-xl bg-gradient-to-br from-info/20 to-cyan-500/20 flex items-center justify-center">
+                <Layers className="h-7 w-7 text-info" />
               </div>
               <div>
                 <h3 className="font-semibold text-lg">{variants.length} variante{variants.length !== 1 ? 's' : ''}</h3>
@@ -354,14 +354,14 @@ export function ProductVariantsTab({
                 </p>
                 <p className="text-xs text-muted-foreground">Stock total</p>
               </div>
-              <div className="p-4 rounded-xl bg-green-500/10 text-center">
-                <p className="text-2xl font-bold text-green-600">
+              <div className="p-4 rounded-xl bg-success/10 text-center">
+                <p className="text-2xl font-bold text-success">
                   {variants.filter(v => (v.stock_quantity || 0) > 10).length}
                 </p>
                 <p className="text-xs text-muted-foreground">En stock</p>
               </div>
-              <div className="p-4 rounded-xl bg-red-500/10 text-center">
-                <p className="text-2xl font-bold text-red-600">
+              <div className="p-4 rounded-xl bg-destructive/10 text-center">
+                <p className="text-2xl font-bold text-destructive">
                   {variants.filter(v => (v.stock_quantity || 0) <= 0).length}
                 </p>
                 <p className="text-xs text-muted-foreground">Rupture</p>

@@ -187,14 +187,14 @@ export const DeveloperDashboard: React.FC = () => {
                     <div className="font-medium">Paiement janvier 2024</div>
                     <div className="text-sm text-muted-foreground">Transféré le 15 jan</div>
                   </div>
-                  <div className="text-green-600 font-bold">+€1,247</div>
+                  <div className="text-success font-bold">+€1,247</div>
                 </div>
                 <div className="flex items-center justify-between p-4 border rounded-lg">
                   <div>
                     <div className="font-medium">Paiement décembre 2023</div>
                     <div className="text-sm text-muted-foreground">Transféré le 15 déc</div>
                   </div>
-                  <div className="text-green-600 font-bold">+€890</div>
+                  <div className="text-success font-bold">+€890</div>
                 </div>
               </div>
             </CardContent>
@@ -232,7 +232,7 @@ export const DeveloperDashboard: React.FC = () => {
                           {[...Array(5)].map((_, i) => (
                             <Star 
                               key={i} 
-                              className={`h-4 w-4 ${i < review.rating ? 'fill-current text-yellow-500' : 'text-gray-300'}`}
+                              className={`h-4 w-4 ${i < review.rating ? 'fill-current text-warning' : 'text-gray-300'}`}
                             />
                           ))}
                         </div>

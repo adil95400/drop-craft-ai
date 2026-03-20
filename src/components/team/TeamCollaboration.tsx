@@ -87,10 +87,10 @@ export const TeamCollaboration = () => {
 
   const getRoleColor = (role: string) => {
     switch (role) {
-      case 'admin': return 'bg-red-500';
-      case 'developer': return 'bg-blue-500';
+      case 'admin': return 'bg-destructive';
+      case 'developer': return 'bg-info';
       case 'designer': return 'bg-purple-500';
-      case 'tester': return 'bg-yellow-500';
+      case 'tester': return 'bg-warning';
       case 'viewer': return 'bg-gray-500';
       default: return 'bg-gray-500';
     }
@@ -98,8 +98,8 @@ export const TeamCollaboration = () => {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'active': return 'text-green-500';
-      case 'invited': return 'text-yellow-500';
+      case 'active': return 'text-success';
+      case 'invited': return 'text-warning';
       case 'inactive': return 'text-gray-500';
       default: return 'text-gray-500';
     }

@@ -311,7 +311,7 @@ export default function BrandingInvoicesHub() {
         </Card>
         <Card className="p-4">
           <div className="flex items-center gap-3">
-            <Send className="h-5 w-5 text-blue-500" />
+            <Send className="h-5 w-5 text-info" />
             <div>
               <p className="text-sm text-muted-foreground">Envoyées</p>
               <p className="text-2xl font-bold">{invoices.filter((i: any) => i.status === 'sent' || i.status === 'paid').length}</p>
@@ -320,7 +320,7 @@ export default function BrandingInvoicesHub() {
         </Card>
         <Card className="p-4">
           <div className="flex items-center gap-3">
-            <CheckCircle2 className="h-5 w-5 text-green-500" />
+            <CheckCircle2 className="h-5 w-5 text-success" />
             <div>
               <p className="text-sm text-muted-foreground">Payées</p>
               <p className="text-2xl font-bold">{invoices.filter((i: any) => i.status === 'paid').length}</p>
@@ -329,7 +329,7 @@ export default function BrandingInvoicesHub() {
         </Card>
         <Card className="p-4">
           <div className="flex items-center gap-3">
-            <FileText className="h-5 w-5 text-orange-500" />
+            <FileText className="h-5 w-5 text-warning" />
             <div>
               <p className="text-sm text-muted-foreground">En attente</p>
               <p className="text-2xl font-bold">{invoices.filter((i: any) => i.status === 'draft' || i.status === 'sent').length}</p>

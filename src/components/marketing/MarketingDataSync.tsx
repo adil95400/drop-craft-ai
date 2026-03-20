@@ -15,7 +15,7 @@ export function MarketingDataSync() {
 
   return (
     <div className="flex items-center gap-2">
-      <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+      <Badge variant="outline" className="bg-success/5 text-success border-success/20">
         <Zap className="h-3 w-3 mr-1" />
         Temps Réel
       </Badge>

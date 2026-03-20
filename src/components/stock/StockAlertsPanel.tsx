@@ -75,9 +75,9 @@ export function StockAlertsPanel({ limit, compact }: StockAlertsPanelProps) {
   const getSeverityColor = (severity: string) => {
     switch (severity) {
       case 'critical': return 'border-destructive bg-destructive/10';
-      case 'high': return 'border-orange-500 bg-orange-500/10';
-      case 'medium': return 'border-yellow-500 bg-yellow-500/10';
-      default: return 'border-blue-500 bg-blue-500/10';
+      case 'high': return 'border-orange-500 bg-warning/10';
+      case 'medium': return 'border-warning bg-warning/10';
+      default: return 'border-info bg-info/10';
     }
   };
 
@@ -106,7 +106,7 @@ export function StockAlertsPanel({ limit, compact }: StockAlertsPanelProps) {
     if (displayedAlerts.length === 0) {
       return (
         <div className="text-center py-6">
-          <CheckCircle className="h-8 w-8 text-green-500 mx-auto mb-2" />
+          <CheckCircle className="h-8 w-8 text-success mx-auto mb-2" />
           <p className="text-sm text-muted-foreground">Aucune alerte active</p>
         </div>
       );
@@ -142,15 +142,15 @@ export function StockAlertsPanel({ limit, compact }: StockAlertsPanelProps) {
     <div className="space-y-6">
       {/* Stats Summary */}
       <div className="grid gap-4 md:grid-cols-4">
-        <Card className="border-red-500">
+        <Card className="border-destructive">
           <CardHeader className="pb-3">
             <CardTitle className="text-sm flex items-center gap-2">
-              <AlertTriangle className="h-4 w-4 text-red-500" />
+              <AlertTriangle className="h-4 w-4 text-destructive" />
               Critiques
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-2xl font-bold text-red-500">{criticalAlerts.length}</p>
+            <p className="text-2xl font-bold text-destructive">{criticalAlerts.length}</p>
           </CardContent>
         </Card>
 
@@ -261,7 +261,7 @@ export function StockAlertsPanel({ limit, compact }: StockAlertsPanelProps) {
             </div>
           ) : (
             <div className="text-center py-12">
-              <CheckCircle className="h-12 w-12 text-green-500 mx-auto mb-4" />
+              <CheckCircle className="h-12 w-12 text-success mx-auto mb-4" />
               <p className="text-lg font-medium mb-2">Aucune alerte active</p>
               <p className="text-sm text-muted-foreground">
                 Tous les niveaux de stock sont normaux

@@ -53,7 +53,7 @@ export function FavoriteButton({
               size === 'sm' && 'h-7 px-2',
               size === 'default' && 'h-9 px-3',
               size === 'lg' && 'h-10 px-4',
-              favorite && 'text-yellow-500 hover:text-yellow-600',
+              favorite && 'text-warning hover:text-warning',
               className
             )}
           >

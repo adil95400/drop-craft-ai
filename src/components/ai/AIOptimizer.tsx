@@ -17,13 +17,13 @@ import {
   Package
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { useRealAIOptimizer, OptimizationTask, OptimizationStats } from '@/hooks/useRealAIOptimizer';
+import { useAIOptimizer, OptimizationTask, OptimizationStats } from '@/hooks/useAIOptimizer';
 
 export function AIOptimizer() {
   const [runningTask, setRunningTask] = useState<string | null>(null);
   const [localTasks, setLocalTasks] = useState<OptimizationTask[]>([]);
   const { toast } = useToast();
-  const { tasks, stats, isLoading: loading, refetch } = useRealAIOptimizer();
+  const { tasks, stats, isLoading: loading, refetch } = useAIOptimizer();
 
   // Use local tasks for progress tracking
   React.useEffect(() => {
@@ -97,18 +97,18 @@ export function AIOptimizer() {
 
   const getImpactColor = (impact: string) => {
     switch (impact) {
-      case 'high': return 'text-green-600 bg-green-50 border-green-200';
-      case 'medium': return 'text-orange-600 bg-orange-50 border-orange-200';
-      case 'low': return 'text-blue-600 bg-blue-50 border-blue-200';
+      case 'high': return 'text-success bg-success/5 border-success/20';
+      case 'medium': return 'text-warning bg-orange-50 border-orange-200';
+      case 'low': return 'text-info bg-info/5 border-info/20';
       default: return 'text-gray-600 bg-gray-50 border-gray-200';
     }
   };
 
   const getEffortColor = (effort: string) => {
     switch (effort) {
-      case 'low': return 'bg-green-500';
-      case 'medium': return 'bg-orange-500';
-      case 'high': return 'bg-red-500';
+      case 'low': return 'bg-success';
+      case 'medium': return 'bg-warning';
+      case 'high': return 'bg-destructive';
       default: return 'bg-gray-500';
     }
   };
@@ -185,7 +185,7 @@ export function AIOptimizer() {
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-green-600">
+            <div className="text-2xl font-bold text-success">
               {formatCurrency(stats?.revenue_generated || 0)}
             </div>
           </CardContent>
@@ -254,7 +254,7 @@ export function AIOptimizer() {
                         <div className="flex items-center space-x-4 text-xs text-muted-foreground">
                           <div className="flex items-center space-x-1">
                             <DollarSign className="h-3 w-3" />
-                            <span className="text-green-600 font-medium">
+                            <span className="text-success font-medium">
                               +{formatCurrency(task.estimated_revenue)}
                             </span>
                           </div>
@@ -315,11 +315,11 @@ export function AIOptimizer() {
                       )}
 
                       {task.status === 'completed' && (
-                        <CheckCircle className="h-4 w-4 text-green-500" />
+                        <CheckCircle className="h-4 w-4 text-success" />
                       )}
 
                       {task.status === 'failed' && (
-                        <AlertTriangle className="h-4 w-4 text-red-500" />
+                        <AlertTriangle className="h-4 w-4 text-destructive" />
                       )}
                     </div>
                   </div>

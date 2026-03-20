@@ -131,9 +131,9 @@ export function KPIsDashboard() {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'success': return 'bg-green-500';
-      case 'warning': return 'bg-yellow-500';
-      default: return 'bg-red-500';
+      case 'success': return 'bg-success';
+      case 'warning': return 'bg-warning';
+      default: return 'bg-destructive';
     }
   };
 
@@ -319,11 +319,11 @@ export function KPIsDashboard() {
                       </div>
                       <div className="flex items-center gap-1 text-sm">
                         {progress >= 100 ? (
-                          <TrendingUp className="h-4 w-4 text-green-500" />
+                          <TrendingUp className="h-4 w-4 text-success" />
                         ) : (
                           <TrendingDown className="h-4 w-4 text-muted-foreground" />
                         )}
-                        <span className={progress >= 100 ? 'text-green-500 font-medium' : 'text-muted-foreground'}>
+                        <span className={progress >= 100 ? 'text-success font-medium' : 'text-muted-foreground'}>
                           {progress.toFixed(0)}%
                         </span>
                       </div>

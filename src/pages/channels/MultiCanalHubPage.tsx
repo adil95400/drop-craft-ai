@@ -135,10 +135,10 @@ export default function MultiCanalHubPage() {
               <Activity className="h-3.5 w-3.5" /> Santé
             </div>
             <div className="flex items-center gap-2">
-              <p className={cn("text-2xl font-bold", healthScore >= 80 ? "text-green-600" : healthScore >= 50 ? "text-amber-600" : "text-red-600")}>
+              <p className={cn("text-2xl font-bold", healthScore >= 80 ? "text-success" : healthScore >= 50 ? "text-warning" : "text-destructive")}>
                 {healthScore}%
               </p>
-              {healthScore >= 80 ? <CheckCircle2 className="h-4 w-4 text-green-600" /> : <AlertTriangle className="h-4 w-4 text-amber-600" />}
+              {healthScore >= 80 ? <CheckCircle2 className="h-4 w-4 text-success" /> : <AlertTriangle className="h-4 w-4 text-warning" />}
             </div>
           </CardContent>
         </Card>
@@ -156,7 +156,7 @@ export default function MultiCanalHubPage() {
             <div className="flex items-center gap-2 text-muted-foreground text-xs mb-1">
               <CheckCircle2 className="h-3.5 w-3.5" /> Aujourd'hui
             </div>
-            <p className="text-2xl font-bold text-green-600">{syncStats?.todaySuccess || 0}</p>
+            <p className="text-2xl font-bold text-success">{syncStats?.todaySuccess || 0}</p>
             <p className="text-xs text-muted-foreground">{syncStats?.todayFailed || 0} erreurs</p>
           </CardContent>
         </Card>
@@ -225,7 +225,7 @@ export default function MultiCanalHubPage() {
                         </div>
                         {integration.auto_sync_enabled && (
                           <div className="flex items-center gap-1 text-xs">
-                            <Zap className="h-3 w-3 text-amber-500" />
+                            <Zap className="h-3 w-3 text-warning" />
                             <span className="text-muted-foreground">Auto-sync : {integration.sync_frequency || '15 min'}</span>
                           </div>
                         )}
@@ -352,9 +352,9 @@ export default function MultiCanalHubPage() {
                   <div className="space-y-2">
                     {syncLogs.map(log => {
                       const statusConfig = {
-                        success: { color: 'text-green-600', icon: CheckCircle2, label: 'Succès' },
-                        failed: { color: 'text-red-600', icon: XCircle, label: 'Échec' },
-                        partial: { color: 'text-amber-600', icon: AlertTriangle, label: 'Partiel' },
+                        success: { color: 'text-success', icon: CheckCircle2, label: 'Succès' },
+                        failed: { color: 'text-destructive', icon: XCircle, label: 'Échec' },
+                        partial: { color: 'text-warning', icon: AlertTriangle, label: 'Partiel' },
                         skipped: { color: 'text-muted-foreground', icon: Clock, label: 'Ignoré' },
                       };
                       const cfg = statusConfig[log.status] || statusConfig.skipped;

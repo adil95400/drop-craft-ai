@@ -85,9 +85,9 @@ async function getCurrentUser() {
 
 // Trigger options with icons and descriptions
 const TRIGGER_OPTIONS = [
-  { value: 'paid', label: 'Commande payée', icon: Euro, color: 'text-green-500', description: 'Dès que le paiement est confirmé' },
-  { value: 'confirmed', label: 'Commande confirmée', icon: CheckCircle, color: 'text-blue-500', description: 'Après validation manuelle' },
-  { value: 'processing', label: 'En traitement', icon: Clock, color: 'text-amber-500', description: 'Lors du passage en préparation' },
+  { value: 'paid', label: 'Commande payée', icon: Euro, color: 'text-success', description: 'Dès que le paiement est confirmé' },
+  { value: 'confirmed', label: 'Commande confirmée', icon: CheckCircle, color: 'text-info', description: 'Après validation manuelle' },
+  { value: 'processing', label: 'En traitement', icon: Clock, color: 'text-warning', description: 'Lors du passage en préparation' },
   { value: 'stock_ready', label: 'Stock disponible', icon: Box, color: 'text-purple-500', description: 'Quand le stock est vérifié' },
 ];
 
@@ -388,7 +388,7 @@ export function FulfillmentAutomation() {
                 <p className="text-xs text-muted-foreground">Règles</p>
               </div>
               <div className="text-center px-4 py-2 rounded-lg bg-background/50 backdrop-blur-sm">
-                <p className="text-2xl font-bold text-green-500">{rules.filter(r => r.is_active).length}</p>
+                <p className="text-2xl font-bold text-success">{rules.filter(r => r.is_active).length}</p>
                 <p className="text-xs text-muted-foreground">Actives</p>
               </div>
             </div>
@@ -517,19 +517,19 @@ export function FulfillmentAutomation() {
                             <SelectContent>
                               <SelectItem value="1">
                                 <div className="flex items-center gap-2">
-                                  <span className="w-2 h-2 rounded-full bg-red-500" />
+                                  <span className="w-2 h-2 rounded-full bg-destructive" />
                                   Haute - S'exécute en premier
                                 </div>
                               </SelectItem>
                               <SelectItem value="2">
                                 <div className="flex items-center gap-2">
-                                  <span className="w-2 h-2 rounded-full bg-amber-500" />
+                                  <span className="w-2 h-2 rounded-full bg-warning" />
                                   Moyenne - Priorité standard
                                 </div>
                               </SelectItem>
                               <SelectItem value="3">
                                 <div className="flex items-center gap-2">
-                                  <span className="w-2 h-2 rounded-full bg-green-500" />
+                                  <span className="w-2 h-2 rounded-full bg-success" />
                                   Basse - Fallback
                                 </div>
                               </SelectItem>
@@ -568,7 +568,7 @@ export function FulfillmentAutomation() {
                       {/* Trigger Selection */}
                       <div className="space-y-3">
                         <Label className="text-sm font-medium flex items-center gap-2">
-                          <Zap className="h-4 w-4 text-amber-500" />
+                          <Zap className="h-4 w-4 text-warning" />
                           Déclencheur
                         </Label>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -611,7 +611,7 @@ export function FulfillmentAutomation() {
                       {/* Carrier Selection */}
                       <div className="space-y-3">
                         <Label className="text-sm font-medium flex items-center gap-2">
-                          <Truck className="h-4 w-4 text-blue-500" />
+                          <Truck className="h-4 w-4 text-info" />
                           Sélection du transporteur
                         </Label>
                         <div className="grid grid-cols-1 gap-2">
@@ -712,16 +712,16 @@ export function FulfillmentAutomation() {
                         {/* Auto Label */}
                         <div className={cn(
                           "flex items-center justify-between p-4 rounded-xl border transition-all",
-                          formData.auto_label ? "border-green-500/50 bg-green-500/5" : "border-border bg-muted/20"
+                          formData.auto_label ? "border-success/50 bg-success/5" : "border-border bg-muted/20"
                         )}>
                           <div className="flex items-center gap-4">
                             <div className={cn(
                               "p-3 rounded-xl",
-                              formData.auto_label ? "bg-green-500/10" : "bg-muted"
+                              formData.auto_label ? "bg-success/10" : "bg-muted"
                             )}>
                               <Package className={cn(
                                 "h-5 w-5",
-                                formData.auto_label ? "text-green-600" : "text-muted-foreground"
+                                formData.auto_label ? "text-success" : "text-muted-foreground"
                               )} />
                             </div>
                             <div>
@@ -732,23 +732,23 @@ export function FulfillmentAutomation() {
                           <Switch
                             checked={formData.auto_label}
                             onCheckedChange={(checked) => setFormData({ ...formData, auto_label: checked })}
-                            className="data-[state=checked]:bg-green-500"
+                            className="data-[state=checked]:bg-success"
                           />
                         </div>
                         
                         {/* Auto Print */}
                         <div className={cn(
                           "flex items-center justify-between p-4 rounded-xl border transition-all",
-                          formData.auto_print ? "border-blue-500/50 bg-blue-500/5" : "border-border bg-muted/20"
+                          formData.auto_print ? "border-info/50 bg-info/5" : "border-border bg-muted/20"
                         )}>
                           <div className="flex items-center gap-4">
                             <div className={cn(
                               "p-3 rounded-xl",
-                              formData.auto_print ? "bg-blue-500/10" : "bg-muted"
+                              formData.auto_print ? "bg-info/10" : "bg-muted"
                             )}>
                               <Printer className={cn(
                                 "h-5 w-5",
-                                formData.auto_print ? "text-blue-600" : "text-muted-foreground"
+                                formData.auto_print ? "text-info" : "text-muted-foreground"
                               )} />
                             </div>
                             <div>
@@ -759,7 +759,7 @@ export function FulfillmentAutomation() {
                           <Switch
                             checked={formData.auto_print}
                             onCheckedChange={(checked) => setFormData({ ...formData, auto_print: checked })}
-                            className="data-[state=checked]:bg-blue-500"
+                            className="data-[state=checked]:bg-info"
                           />
                         </div>
                         
@@ -798,16 +798,16 @@ export function FulfillmentAutomation() {
                         {/* Add Insurance */}
                         <div className={cn(
                           "flex items-center justify-between p-4 rounded-xl border transition-all",
-                          formData.add_insurance ? "border-amber-500/50 bg-amber-500/5" : "border-border bg-muted/20"
+                          formData.add_insurance ? "border-amber-500/50 bg-warning/5" : "border-border bg-muted/20"
                         )}>
                           <div className="flex items-center gap-4">
                             <div className={cn(
                               "p-3 rounded-xl",
-                              formData.add_insurance ? "bg-amber-500/10" : "bg-muted"
+                              formData.add_insurance ? "bg-warning/10" : "bg-muted"
                             )}>
                               <AlertTriangle className={cn(
                                 "h-5 w-5",
-                                formData.add_insurance ? "text-amber-600" : "text-muted-foreground"
+                                formData.add_insurance ? "text-warning" : "text-muted-foreground"
                               )} />
                             </div>
                             <div>
@@ -818,23 +818,23 @@ export function FulfillmentAutomation() {
                           <Switch
                             checked={formData.add_insurance}
                             onCheckedChange={(checked) => setFormData({ ...formData, add_insurance: checked })}
-                            className="data-[state=checked]:bg-amber-500"
+                            className="data-[state=checked]:bg-warning"
                           />
                         </div>
                         
                         {/* Priority Processing */}
                         <div className={cn(
                           "flex items-center justify-between p-4 rounded-xl border transition-all",
-                          formData.priority_processing ? "border-rose-500/50 bg-rose-500/5" : "border-border bg-muted/20"
+                          formData.priority_processing ? "border-rose-500/50 bg-destructive/5" : "border-border bg-muted/20"
                         )}>
                           <div className="flex items-center gap-4">
                             <div className={cn(
                               "p-3 rounded-xl",
-                              formData.priority_processing ? "bg-rose-500/10" : "bg-muted"
+                              formData.priority_processing ? "bg-destructive/10" : "bg-muted"
                             )}>
                               <Zap className={cn(
                                 "h-5 w-5",
-                                formData.priority_processing ? "text-rose-600" : "text-muted-foreground"
+                                formData.priority_processing ? "text-destructive" : "text-muted-foreground"
                               )} />
                             </div>
                             <div>
@@ -845,7 +845,7 @@ export function FulfillmentAutomation() {
                           <Switch
                             checked={formData.priority_processing}
                             onCheckedChange={(checked) => setFormData({ ...formData, priority_processing: checked })}
-                            className="data-[state=checked]:bg-rose-500"
+                            className="data-[state=checked]:bg-destructive"
                           />
                         </div>
                       </div>
@@ -960,7 +960,7 @@ export function FulfillmentAutomation() {
                             variant={rule.is_active ? "default" : "secondary"}
                             className={cn(
                               "shrink-0",
-                              rule.is_active && "bg-green-500/10 text-green-600 border-green-500/20"
+                              rule.is_active && "bg-success/10 text-success border-success/20"
                             )}
                           >
                             {rule.is_active ? (
@@ -981,17 +981,17 @@ export function FulfillmentAutomation() {
                             {triggerLabels[trigger] || trigger}
                           </Badge>
                           <Badge variant="outline" className="gap-1.5 text-xs">
-                            <Truck className="h-3 w-3 text-blue-500" />
+                            <Truck className="h-3 w-3 text-info" />
                             {selectionLabels[carrierSelection] || carrierSelection}
                           </Badge>
                         </div>
                         
                         <div className="flex flex-wrap gap-3 text-xs">
-                          <span className={cn("flex items-center gap-1", autoLabel ? "text-green-600" : "text-muted-foreground")}>
+                          <span className={cn("flex items-center gap-1", autoLabel ? "text-success" : "text-muted-foreground")}>
                             {autoLabel ? <CheckCircle className="h-3 w-3" /> : <span className="w-3 h-3 rounded-full border" />}
                             Étiquette
                           </span>
-                          <span className={cn("flex items-center gap-1", autoPrint ? "text-blue-600" : "text-muted-foreground")}>
+                          <span className={cn("flex items-center gap-1", autoPrint ? "text-info" : "text-muted-foreground")}>
                             {autoPrint ? <CheckCircle className="h-3 w-3" /> : <span className="w-3 h-3 rounded-full border" />}
                             Impression
                           </span>
@@ -1000,13 +1000,13 @@ export function FulfillmentAutomation() {
                             Notification
                           </span>
                           {addInsurance && (
-                            <span className="flex items-center gap-1 text-amber-600">
+                            <span className="flex items-center gap-1 text-warning">
                               <CheckCircle className="h-3 w-3" />
                               Assurance
                             </span>
                           )}
                           {priorityProcessing && (
-                            <span className="flex items-center gap-1 text-rose-600">
+                            <span className="flex items-center gap-1 text-destructive">
                               <CheckCircle className="h-3 w-3" />
                               Prioritaire
                             </span>

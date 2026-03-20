@@ -62,12 +62,12 @@ export const QuickImportCard = memo(function QuickImportCard({
     if (!url) return null
     
     const lowUrl = url.toLowerCase()
-    if (lowUrl.includes('aliexpress')) return { label: 'AliExpress', color: 'bg-orange-500' }
-    if (lowUrl.includes('temu')) return { label: 'Temu', color: 'bg-orange-600' }
-    if (lowUrl.includes('amazon')) return { label: 'Amazon', color: 'bg-yellow-600' }
-    if (lowUrl.includes('ebay')) return { label: 'eBay', color: 'bg-blue-600' }
-    if (lowUrl.includes('shopify') || lowUrl.includes('myshopify')) return { label: 'Shopify', color: 'bg-green-600' }
-    if (lowUrl.includes('etsy')) return { label: 'Etsy', color: 'bg-orange-500' }
+    if (lowUrl.includes('aliexpress')) return { label: 'AliExpress', color: 'bg-warning' }
+    if (lowUrl.includes('temu')) return { label: 'Temu', color: 'bg-warning' }
+    if (lowUrl.includes('amazon')) return { label: 'Amazon', color: 'bg-warning' }
+    if (lowUrl.includes('ebay')) return { label: 'eBay', color: 'bg-info' }
+    if (lowUrl.includes('shopify') || lowUrl.includes('myshopify')) return { label: 'Shopify', color: 'bg-success' }
+    if (lowUrl.includes('etsy')) return { label: 'Etsy', color: 'bg-warning' }
     return { label: 'Autre', color: 'bg-muted' }
   }
 

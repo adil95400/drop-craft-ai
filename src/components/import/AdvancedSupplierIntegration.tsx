@@ -114,11 +114,11 @@ export const AdvancedSupplierIntegration = () => {
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'connected':
-        return <CheckCircle className="h-4 w-4 text-green-600" />
+        return <CheckCircle className="h-4 w-4 text-success" />
       case 'configuring':
-        return <Loader2 className="h-4 w-4 text-blue-600 animate-spin" />
+        return <Loader2 className="h-4 w-4 text-info animate-spin" />
       case 'error':
-        return <AlertCircle className="h-4 w-4 text-red-600" />
+        return <AlertCircle className="h-4 w-4 text-destructive" />
       default:
         return <Settings className="h-4 w-4 text-gray-400" />
     }
@@ -127,11 +127,11 @@ export const AdvancedSupplierIntegration = () => {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'connected':
-        return 'bg-green-100 text-green-800'
+        return 'bg-success/10 text-success'
       case 'configuring':
-        return 'bg-blue-100 text-blue-800'
+        return 'bg-info/10 text-blue-800'
       case 'error':
-        return 'bg-red-100 text-red-800'
+        return 'bg-destructive/10 text-red-800'
       default:
         return 'bg-gray-100 text-gray-800'
     }
@@ -202,7 +202,7 @@ export const AdvancedSupplierIntegration = () => {
                     <div className="text-2xl font-bold">{connectedSuppliers}</div>
                     <p className="text-sm opacity-80">Fournisseurs Connectés</p>
                   </div>
-                  <div className="p-2 bg-green-500/20 rounded-lg">
+                  <div className="p-2 bg-success/20 rounded-lg">
                     <CheckCircle className="h-5 w-5 text-green-400" />
                   </div>
                 </div>
@@ -216,7 +216,7 @@ export const AdvancedSupplierIntegration = () => {
                     <div className="text-2xl font-bold">{totalProducts.toLocaleString()}</div>
                     <p className="text-sm opacity-80">Produits Disponibles</p>
                   </div>
-                  <div className="p-2 bg-blue-500/20 rounded-lg">
+                  <div className="p-2 bg-info/20 rounded-lg">
                     <Globe className="h-5 w-5 text-blue-400" />
                   </div>
                 </div>
@@ -303,21 +303,21 @@ export const AdvancedSupplierIntegration = () => {
                   <div className="space-y-2">
                     {supplier.features.map((feature, index) => (
                       <div key={index} className="flex items-center gap-2 text-sm">
-                        <CheckCircle className="h-3 w-3 text-green-600 flex-shrink-0" />
+                        <CheckCircle className="h-3 w-3 text-success flex-shrink-0" />
                         <span>{feature}</span>
                       </div>
                     ))}
                   </div>
                   
                   {supplier.status === 'connected' && (
-                    <div className="flex items-center justify-between py-3 px-4 bg-green-50 rounded-lg">
+                    <div className="flex items-center justify-between py-3 px-4 bg-success/5 rounded-lg">
                       <div>
-                        <span className="text-sm font-medium text-green-800">
+                        <span className="text-sm font-medium text-success">
                           {supplier.products.toLocaleString()} produits
                         </span>
-                        <div className="text-xs text-green-600">Synchronisé</div>
+                        <div className="text-xs text-success">Synchronisé</div>
                       </div>
-                      <Button variant="ghost" size="sm" className="text-green-600 hover:bg-green-100">
+                      <Button variant="ghost" size="sm" className="text-success hover:bg-success/10">
                         <ExternalLink className="h-4 w-4" />
                       </Button>
                     </div>
@@ -326,7 +326,7 @@ export const AdvancedSupplierIntegration = () => {
                   <Button 
                     className={`w-full ${
                       supplier.status === 'connected' 
-                        ? 'bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600' 
+                        ? 'bg-gradient-to-r from-success to-emerald-500 hover:from-green-600 hover:to-emerald-600' 
                         : supplier.isPro 
                           ? 'bg-gradient-primary hover:bg-gradient-accent' 
                           : 'bg-secondary hover:bg-secondary/80'

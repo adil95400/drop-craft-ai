@@ -14,13 +14,13 @@ interface ShippingWidgetProps {
 }
 
 const statusConfig: Record<string, { color: string; label: string; icon: typeof Package }> = {
-  pending: { color: 'text-orange-500', label: 'En attente', icon: Clock },
-  processing: { color: 'text-blue-500', label: 'En cours', icon: Package },
-  shipped: { color: 'text-blue-500', label: 'Expédié', icon: Truck },
-  in_transit: { color: 'text-blue-500', label: 'En transit', icon: Truck },
-  delivered: { color: 'text-green-500', label: 'Livré', icon: CheckCircle },
-  returned: { color: 'text-red-500', label: 'Retourné', icon: AlertCircle },
-  failed: { color: 'text-red-500', label: 'Échoué', icon: AlertCircle },
+  pending: { color: 'text-warning', label: 'En attente', icon: Clock },
+  processing: { color: 'text-info', label: 'En cours', icon: Package },
+  shipped: { color: 'text-info', label: 'Expédié', icon: Truck },
+  in_transit: { color: 'text-info', label: 'En transit', icon: Truck },
+  delivered: { color: 'text-success', label: 'Livré', icon: CheckCircle },
+  returned: { color: 'text-destructive', label: 'Retourné', icon: AlertCircle },
+  failed: { color: 'text-destructive', label: 'Échoué', icon: AlertCircle },
 };
 
 export function ShippingWidget({ settings }: ShippingWidgetProps) {
@@ -80,30 +80,30 @@ export function ShippingWidget({ settings }: ShippingWidgetProps) {
     <Card className="h-full">
       <CardHeader className="pb-2">
         <CardTitle className="flex items-center gap-2 text-base">
-          <Truck className="h-4 w-4 text-blue-500" />
+          <Truck className="h-4 w-4 text-info" />
           Expéditions & Livraisons
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         {showDetails && (
           <div className="grid grid-cols-4 gap-2">
-            <div className="text-center p-2 bg-orange-500/10 rounded-lg">
-              <Clock className="h-4 w-4 mx-auto text-orange-500 mb-1" />
+            <div className="text-center p-2 bg-warning/10 rounded-lg">
+              <Clock className="h-4 w-4 mx-auto text-warning mb-1" />
               <p className="text-lg font-bold">{shippingStats.pending}</p>
               <p className="text-[10px] text-muted-foreground">En attente</p>
             </div>
-            <div className="text-center p-2 bg-blue-500/10 rounded-lg">
-              <Truck className="h-4 w-4 mx-auto text-blue-500 mb-1" />
+            <div className="text-center p-2 bg-info/10 rounded-lg">
+              <Truck className="h-4 w-4 mx-auto text-info mb-1" />
               <p className="text-lg font-bold">{shippingStats.shipped}</p>
               <p className="text-[10px] text-muted-foreground">Expédiées</p>
             </div>
-            <div className="text-center p-2 bg-green-500/10 rounded-lg">
-              <CheckCircle className="h-4 w-4 mx-auto text-green-500 mb-1" />
+            <div className="text-center p-2 bg-success/10 rounded-lg">
+              <CheckCircle className="h-4 w-4 mx-auto text-success mb-1" />
               <p className="text-lg font-bold">{shippingStats.delivered}</p>
               <p className="text-[10px] text-muted-foreground">Livrées</p>
             </div>
-            <div className="text-center p-2 bg-red-500/10 rounded-lg">
-              <AlertCircle className="h-4 w-4 mx-auto text-red-500 mb-1" />
+            <div className="text-center p-2 bg-destructive/10 rounded-lg">
+              <AlertCircle className="h-4 w-4 mx-auto text-destructive mb-1" />
               <p className="text-lg font-bold">{shippingStats.returned}</p>
               <p className="text-[10px] text-muted-foreground">Retours</p>
             </div>
@@ -113,7 +113,7 @@ export function ShippingWidget({ settings }: ShippingWidgetProps) {
         <div className="space-y-2">
           <div className="flex items-center justify-between text-sm">
             <span className="text-muted-foreground">Taux de livraison</span>
-            <span className="font-medium text-green-500">{deliveryRate}%</span>
+            <span className="font-medium text-success">{deliveryRate}%</span>
           </div>
           <Progress value={parseFloat(deliveryRate)} className="h-2" />
         </div>

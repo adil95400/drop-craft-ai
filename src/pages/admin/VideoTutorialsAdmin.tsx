@@ -156,9 +156,9 @@ export default function VideoTutorialsAdmin() {
   const getVideoTypeBadge = (type: string) => {
     switch (type) {
       case 'youtube':
-        return <Badge variant="outline" className="bg-red-50 dark:bg-red-950/30 text-red-700 dark:text-red-300">YouTube</Badge>
+        return <Badge variant="outline" className="bg-destructive/5 dark:bg-red-950/30 text-red-700 dark:text-red-300">YouTube</Badge>
       case 'upload':
-        return <Badge variant="outline" className="bg-blue-50 dark:bg-blue-950/30 text-blue-700 dark:text-blue-300">Upload</Badge>
+        return <Badge variant="outline" className="bg-info/5 dark:bg-blue-950/30 text-blue-700 dark:text-blue-300">Upload</Badge>
       default:
         return <Badge variant="outline">Externe</Badge>
     }

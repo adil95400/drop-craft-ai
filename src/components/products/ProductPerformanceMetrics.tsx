@@ -77,15 +77,15 @@ export function ProductPerformanceMetrics({ productId, sourceTable }: ProductPer
       label: 'Vues',
       value: performance.views.toLocaleString(),
       icon: Eye,
-      color: 'text-blue-600',
-      bg: 'bg-blue-50'
+      color: 'text-info',
+      bg: 'bg-info/5'
     },
     {
       label: 'Ajouts panier',
       value: performance.addToCart.toLocaleString(),
       rate: performance.addToCartRate > 0 ? `${performance.addToCartRate.toFixed(1)}%` : undefined,
       icon: ShoppingCart,
-      color: 'text-orange-600',
+      color: 'text-warning',
       bg: 'bg-orange-50'
     },
     {
@@ -93,8 +93,8 @@ export function ProductPerformanceMetrics({ productId, sourceTable }: ProductPer
       value: performance.purchases.toLocaleString(),
       rate: performance.conversionRate > 0 ? `${performance.conversionRate.toFixed(1)}%` : undefined,
       icon: Target,
-      color: 'text-green-600',
-      bg: 'bg-green-50'
+      color: 'text-success',
+      bg: 'bg-success/5'
     },
     {
       label: 'Chiffre d\'affaires',
@@ -153,7 +153,7 @@ export function ProductPerformanceMetrics({ productId, sourceTable }: ProductPer
         )}
 
         {isHighTrafficLowConversion && (
-          <div className="mt-4 p-4 rounded-lg bg-red-50 border border-red-200">
+          <div className="mt-4 p-4 rounded-lg bg-destructive/5 border border-destructive/20">
             <p className="text-sm font-medium text-red-900">
               ⚠️ Fort trafic mais faible conversion
             </p>
@@ -164,11 +164,11 @@ export function ProductPerformanceMetrics({ productId, sourceTable }: ProductPer
         )}
 
         {isLowTrafficHighQuality && (
-          <div className="mt-4 p-4 rounded-lg bg-green-50 border border-green-200">
+          <div className="mt-4 p-4 rounded-lg bg-success/5 border border-success/20">
             <p className="text-sm font-medium text-green-900">
               ✨ Produit très performant mais peu visible
             </p>
-            <p className="text-xs text-green-700 mt-1">
+            <p className="text-xs text-success mt-1">
               Excellent taux de conversion ! Investissez dans le SEO et la visibilité.
             </p>
           </div>

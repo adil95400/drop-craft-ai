@@ -227,14 +227,14 @@ export function ProductCategories() {
         </Card>
         <Card>
           <CardContent className="p-4 text-center">
-            <Package className="h-6 w-6 text-blue-600 mx-auto mb-2" />
+            <Package className="h-6 w-6 text-info mx-auto mb-2" />
             <div className="text-2xl font-bold">{totalProducts}</div>
             <div className="text-sm text-muted-foreground">Produits classés</div>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-4 text-center">
-            <TrendingUp className="h-6 w-6 text-green-600 mx-auto mb-2" />
+            <TrendingUp className="h-6 w-6 text-success mx-auto mb-2" />
             <div className="text-2xl font-bold">{categories.filter(c => c.is_active).length}</div>
             <div className="text-sm text-muted-foreground">Catégories actives</div>
           </CardContent>

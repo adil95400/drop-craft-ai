@@ -82,7 +82,7 @@ export function StoreCard({ store, stats, onEdit, onDelete, onToggleActive }: St
         <div className="flex items-center justify-between text-sm">
           <span className="text-muted-foreground">Statut</span>
           {store.is_active ? (
-            <Badge variant="default" className="bg-green-500">
+            <Badge variant="default" className="bg-success">
               <CheckCircle2 className="h-3 w-3 mr-1" />
               Actif
             </Badge>

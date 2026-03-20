@@ -312,10 +312,10 @@ export function ContentTemplates() {
   const getTypeColor = (type: string) => {
     const colors: Record<string, string> = {
       blog: 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200',
-      product: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200',
+      product: 'bg-info/10 text-blue-800 dark:bg-blue-900 dark:text-blue-200',
       social: 'bg-pink-100 text-pink-800 dark:bg-pink-900 dark:text-pink-200',
-      email: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200',
-      seo: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+      email: 'bg-warning/10 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200',
+      seo: 'bg-success/10 text-success dark:bg-green-900 dark:text-green-200'
     };
     return colors[type] || 'bg-muted text-muted-foreground';
   };
@@ -376,8 +376,8 @@ export function ContentTemplates() {
         <Card className="bg-gradient-to-br from-yellow-500/10 to-yellow-500/5">
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-yellow-500/20 rounded-lg">
-                <Star className="h-5 w-5 text-yellow-500" />
+              <div className="p-2 bg-warning/20 rounded-lg">
+                <Star className="h-5 w-5 text-warning" />
               </div>
               <div>
                 <p className="text-2xl font-bold">
@@ -388,11 +388,11 @@ export function ContentTemplates() {
             </div>
           </CardContent>
         </Card>
-        <Card className="bg-gradient-to-br from-green-500/10 to-green-500/5">
+        <Card className="bg-gradient-to-br from-success/10 to-green-500/5">
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-green-500/20 rounded-lg">
-                <Copy className="h-5 w-5 text-green-500" />
+              <div className="p-2 bg-success/20 rounded-lg">
+                <Copy className="h-5 w-5 text-success" />
               </div>
               <div>
                 <p className="text-2xl font-bold">
@@ -439,7 +439,7 @@ export function ContentTemplates() {
                     <div className="space-y-1 flex-1 min-w-0">
                       <CardTitle className="text-sm font-medium flex items-center gap-2">
                         {template.is_favorite && (
-                          <Star className="h-4 w-4 text-yellow-500 fill-yellow-500 flex-shrink-0" />
+                          <Star className="h-4 w-4 text-warning fill-yellow-500 flex-shrink-0" />
                         )}
                         <span className="truncate">{template.name}</span>
                       </CardTitle>

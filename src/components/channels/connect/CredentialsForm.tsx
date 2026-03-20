@@ -183,7 +183,7 @@ export function CredentialsForm({
                 disabled={isTestingConnection || !canProceed}
                 className={cn(
                   "w-full h-11 font-medium transition-all",
-                  connectionTestResult === 'success' && "border-emerald-500/50 bg-emerald-500/5"
+                  connectionTestResult === 'success' && "border-emerald-500/50 bg-success/5"
                 )}
               >
                 {isTestingConnection ? (
@@ -193,7 +193,7 @@ export function CredentialsForm({
                   </>
                 ) : connectionTestResult === 'success' ? (
                   <>
-                    <CheckCircle2 className="h-4 w-4 mr-2 text-emerald-500" />
+                    <CheckCircle2 className="h-4 w-4 mr-2 text-success" />
                     Connexion vérifiée
                   </>
                 ) : (
@@ -212,7 +212,7 @@ export function CredentialsForm({
                   className={cn(
                     "p-4 rounded-xl flex items-start gap-3",
                     connectionTestResult === 'success' 
-                      ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20"
+                      ? "bg-success/10 text-success dark:text-emerald-400 border border-emerald-500/20"
                       : "bg-destructive/10 text-destructive border border-destructive/20"
                   )}
                 >

@@ -188,21 +188,21 @@ export function ProductPublisher({
                   key={index}
                   className={`flex items-center justify-between p-3 rounded-lg border ${
                     result.success
-                      ? 'border-green-200 bg-green-50 dark:border-green-900 dark:bg-green-950'
-                      : 'border-red-200 bg-red-50 dark:border-red-900 dark:bg-red-950'
+                      ? 'border-success/20 bg-success/5 dark:border-green-900 dark:bg-green-950'
+                      : 'border-destructive/20 bg-destructive/5 dark:border-red-900 dark:bg-red-950'
                   }`}
                 >
                   <div className="flex items-center gap-3">
                     {result.success ? (
-                      <CheckCircle className="h-5 w-5 text-green-600" />
+                      <CheckCircle className="h-5 w-5 text-success" />
                     ) : (
-                      <XCircle className="h-5 w-5 text-red-600" />
+                      <XCircle className="h-5 w-5 text-destructive" />
                     )}
                     <div>
                       <p className="font-medium">{result.marketplace}</p>
                       <p className="text-sm text-muted-foreground">{result.message}</p>
                       {result.error && (
-                        <p className="text-sm text-red-600">{result.error}</p>
+                        <p className="text-sm text-destructive">{result.error}</p>
                       )}
                     </div>
                   </div>

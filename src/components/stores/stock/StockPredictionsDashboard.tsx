@@ -20,17 +20,17 @@ export function StockPredictionsDashboard() {
 
   const getUrgencyColor = (urgency: string) => {
     const colors = {
-      critical: 'bg-red-500',
-      high: 'bg-orange-500',
-      medium: 'bg-yellow-500',
-      low: 'bg-green-500',
+      critical: 'bg-destructive',
+      high: 'bg-warning',
+      medium: 'bg-warning',
+      low: 'bg-success',
     };
     return colors[urgency as keyof typeof colors] || 'bg-muted';
   };
 
   const getTrendIcon = (trend: string) => {
-    if (trend === 'increasing') return <TrendingUp className="h-4 w-4 text-green-500" />;
-    if (trend === 'decreasing') return <TrendingDown className="h-4 w-4 text-red-500" />;
+    if (trend === 'increasing') return <TrendingUp className="h-4 w-4 text-success" />;
+    if (trend === 'decreasing') return <TrendingDown className="h-4 w-4 text-destructive" />;
     return <Minus className="h-4 w-4 text-muted-foreground" />;
   };
 
@@ -66,7 +66,7 @@ export function StockPredictionsDashboard() {
             </Badge>
           )}
           {highCount > 0 && (
-            <Badge className="bg-orange-500 hover:bg-orange-600 flex items-center gap-1">
+            <Badge className="bg-warning hover:bg-warning flex items-center gap-1">
               <AlertTriangle className="h-3 w-3" />
               {highCount} urgent{highCount > 1 && 's'}
             </Badge>

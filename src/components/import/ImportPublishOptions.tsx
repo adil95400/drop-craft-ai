@@ -259,14 +259,14 @@ export const ImportPublishOptions: React.FC<ImportPublishOptionsProps> = ({
                         <span className="font-medium text-sm">{channel.name}</span>
                       </div>
                       {publishedChannels.includes(channel.id) && (
-                        <CheckCircle className="w-4 h-4 text-green-500" />
+                        <CheckCircle className="w-4 h-4 text-success" />
                       )}
                     </div>
                     {selectedChannels.includes(channel.id) && !publishedChannels.includes(channel.id) && (
                       <Badge variant="secondary" className="text-xs">Sélectionné</Badge>
                     )}
                     {publishedChannels.includes(channel.id) && (
-                      <Badge className="text-xs bg-green-500">Publié</Badge>
+                      <Badge className="text-xs bg-success">Publié</Badge>
                     )}
                   </div>
                 ))}
@@ -299,14 +299,14 @@ export const ImportPublishOptions: React.FC<ImportPublishOptionsProps> = ({
                         <span className="font-medium text-sm">{channel.name}</span>
                       </div>
                       {publishedChannels.includes(channel.id) && (
-                        <CheckCircle className="w-4 h-4 text-green-500" />
+                        <CheckCircle className="w-4 h-4 text-success" />
                       )}
                     </div>
                     {selectedChannels.includes(channel.id) && !publishedChannels.includes(channel.id) && (
                       <Badge variant="secondary" className="text-xs">Sélectionné</Badge>
                     )}
                     {publishedChannels.includes(channel.id) && (
-                      <Badge className="text-xs bg-green-500">Publié</Badge>
+                      <Badge className="text-xs bg-success">Publié</Badge>
                     )}
                   </div>
                 ))}
@@ -339,14 +339,14 @@ export const ImportPublishOptions: React.FC<ImportPublishOptionsProps> = ({
                         <span className="font-medium text-sm">{channel.name}</span>
                       </div>
                       {publishedChannels.includes(channel.id) && (
-                        <CheckCircle className="w-4 h-4 text-green-500" />
+                        <CheckCircle className="w-4 h-4 text-success" />
                       )}
                     </div>
                     {selectedChannels.includes(channel.id) && !publishedChannels.includes(channel.id) && (
                       <Badge variant="secondary" className="text-xs">Sélectionné</Badge>
                     )}
                     {publishedChannels.includes(channel.id) && (
-                      <Badge className="text-xs bg-green-500">Publié</Badge>
+                      <Badge className="text-xs bg-success">Publié</Badge>
                     )}
                   </div>
                 ))}
@@ -379,14 +379,14 @@ export const ImportPublishOptions: React.FC<ImportPublishOptionsProps> = ({
                         <span className="font-medium text-sm">{channel.name}</span>
                       </div>
                       {publishedChannels.includes(channel.id) && (
-                        <CheckCircle className="w-4 h-4 text-green-500" />
+                        <CheckCircle className="w-4 h-4 text-success" />
                       )}
                     </div>
                     {selectedChannels.includes(channel.id) && !publishedChannels.includes(channel.id) && (
                       <Badge variant="secondary" className="text-xs">Sélectionné</Badge>
                     )}
                     {publishedChannels.includes(channel.id) && (
-                      <Badge className="text-xs bg-green-500">Publié</Badge>
+                      <Badge className="text-xs bg-success">Publié</Badge>
                     )}
                   </div>
                 ))}

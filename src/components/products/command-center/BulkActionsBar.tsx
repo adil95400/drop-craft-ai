@@ -129,7 +129,7 @@ export function BulkActionsBar({
                   {isProcessing ? (
                     <Loader2 className="h-4 w-4 animate-spin" />
                   ) : isCompleted ? (
-                    <CheckCircle2 className="h-4 w-4 text-emerald-500" />
+                    <CheckCircle2 className="h-4 w-4 text-success" />
                   ) : (
                     <Icon className="h-4 w-4" />
                   )}

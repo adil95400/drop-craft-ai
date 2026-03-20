@@ -245,7 +245,7 @@ export const OrderRouter = () => {
       case 'pending':
         return <Badge variant="secondary"><Clock className="h-3 w-3 mr-1" />En attente</Badge>
       case 'routed':
-        return <Badge variant="secondary" className="bg-green-100 text-green-800"><CheckCircle className="h-3 w-3 mr-1" />Routée</Badge>
+        return <Badge variant="secondary" className="bg-success/10 text-success"><CheckCircle className="h-3 w-3 mr-1" />Routée</Badge>
       case 'failed':
         return <Badge variant="destructive"><AlertCircle className="h-3 w-3 mr-1" />Échec</Badge>
     }
@@ -276,17 +276,17 @@ export const OrderRouter = () => {
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
             <div className="text-center p-4 bg-muted rounded-lg">
-              <Clock className="h-8 w-8 mx-auto mb-2 text-yellow-500" />
+              <Clock className="h-8 w-8 mx-auto mb-2 text-warning" />
               <p className="text-2xl font-bold">{ordersToRoute.filter(o => o.routing_status === 'pending').length}</p>
               <p className="text-sm text-muted-foreground">En attente</p>
             </div>
             <div className="text-center p-4 bg-muted rounded-lg">
-              <CheckCircle className="h-8 w-8 mx-auto mb-2 text-green-500" />
+              <CheckCircle className="h-8 w-8 mx-auto mb-2 text-success" />
               <p className="text-2xl font-bold">{ordersToRoute.filter(o => o.routing_status === 'routed').length}</p>
               <p className="text-sm text-muted-foreground">Routées</p>
             </div>
             <div className="text-center p-4 bg-muted rounded-lg">
-              <AlertCircle className="h-8 w-8 mx-auto mb-2 text-red-500" />
+              <AlertCircle className="h-8 w-8 mx-auto mb-2 text-destructive" />
               <p className="text-2xl font-bold">{ordersToRoute.filter(o => o.routing_status === 'failed').length}</p>
               <p className="text-sm text-muted-foreground">Échecs</p>
             </div>

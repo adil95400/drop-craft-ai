@@ -62,12 +62,12 @@ const RealTimeSupplierStats: React.FC<SupplierStatsProps> = ({ connectorIds }) =
     switch (status) {
       case 'active':
       case 'connected':
-        return <CheckCircle className="h-4 w-4 text-green-500" />;
+        return <CheckCircle className="h-4 w-4 text-success" />;
       case 'syncing':
-        return <RefreshCw className="h-4 w-4 text-blue-500 animate-spin" />;
+        return <RefreshCw className="h-4 w-4 text-info animate-spin" />;
       case 'error':
       case 'inactive':
-        return <AlertTriangle className="h-4 w-4 text-red-500" />;
+        return <AlertTriangle className="h-4 w-4 text-destructive" />;
       default:
         return <Clock className="h-4 w-4 text-muted-foreground" />;
     }
@@ -129,7 +129,7 @@ const RealTimeSupplierStats: React.FC<SupplierStatsProps> = ({ connectorIds }) =
                 <p className="text-sm text-muted-foreground">Produits Total</p>
                 <p className="text-2xl font-bold">{totalProducts.toLocaleString()}</p>
               </div>
-              <Package className="h-8 w-8 text-blue-500" />
+              <Package className="h-8 w-8 text-info" />
             </div>
           </CardContent>
         </Card>

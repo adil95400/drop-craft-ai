@@ -36,9 +36,9 @@ export function BulkEnrichmentPanel({ productIds, onComplete }: BulkEnrichmentPa
   const { toast } = useToast();
 
   const sources = [
-    { id: 'amazon', label: 'Amazon', color: 'bg-orange-500' },
-    { id: 'aliexpress', label: 'AliExpress', color: 'bg-red-500' },
-    { id: 'ebay', label: 'eBay', color: 'bg-blue-500' },
+    { id: 'amazon', label: 'Amazon', color: 'bg-warning' },
+    { id: 'aliexpress', label: 'AliExpress', color: 'bg-destructive' },
+    { id: 'ebay', label: 'eBay', color: 'bg-info' },
   ];
 
   const toggleSource = (sourceId: string) => {
@@ -214,16 +214,16 @@ export function BulkEnrichmentPanel({ productIds, onComplete }: BulkEnrichmentPa
         {results.length > 0 && (
           <div className="flex items-center gap-4 p-3 rounded-lg bg-muted/50">
             <div className="flex items-center gap-2">
-              <CheckCircle className="h-4 w-4 text-green-600" />
+              <CheckCircle className="h-4 w-4 text-success" />
               <span className="text-sm">{successCount} réussis</span>
             </div>
             <div className="flex items-center gap-2">
-              <AlertCircle className="h-4 w-4 text-amber-600" />
+              <AlertCircle className="h-4 w-4 text-warning" />
               <span className="text-sm">{noResultsCount} sans résultat</span>
             </div>
             {errorCount > 0 && (
               <div className="flex items-center gap-2">
-                <AlertCircle className="h-4 w-4 text-red-600" />
+                <AlertCircle className="h-4 w-4 text-destructive" />
                 <span className="text-sm">{errorCount} erreurs</span>
               </div>
             )}

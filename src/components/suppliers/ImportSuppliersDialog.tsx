@@ -245,9 +245,9 @@ export function ImportSuppliersDialog({ open, onOpenChange }: ImportSuppliersDia
       case 'diamond':
         return <Badge className="bg-purple-500">💎 Diamond</Badge>
       case 'platinum':
-        return <Badge className="bg-blue-500">⭐ Platinum</Badge>
+        return <Badge className="bg-info">⭐ Platinum</Badge>
       case 'gold':
-        return <Badge className="bg-yellow-500">🥇 Gold</Badge>
+        return <Badge className="bg-warning">🥇 Gold</Badge>
       default:
         return <Badge variant="secondary">{tier}</Badge>
     }

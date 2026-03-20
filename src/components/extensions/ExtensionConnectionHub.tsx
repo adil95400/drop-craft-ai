@@ -119,12 +119,12 @@ export function ExtensionConnectionHub() {
 
   const getPlatformColor = (platform: string) => {
     const colors: Record<string, string> = {
-      aliexpress: 'bg-orange-500/10 text-orange-600 border-orange-500/30',
-      amazon: 'bg-yellow-500/10 text-yellow-600 border-yellow-500/30',
-      ebay: 'bg-blue-500/10 text-blue-600 border-blue-500/30',
+      aliexpress: 'bg-warning/10 text-warning border-orange-500/30',
+      amazon: 'bg-warning/10 text-warning border-warning/30',
+      ebay: 'bg-info/10 text-info border-info/30',
       temu: 'bg-pink-500/10 text-pink-600 border-pink-500/30',
-      shopify: 'bg-green-500/10 text-green-600 border-green-500/30',
-      etsy: 'bg-orange-600/10 text-orange-700 border-orange-600/30',
+      shopify: 'bg-success/10 text-success border-success/30',
+      etsy: 'bg-warning/10 text-orange-700 border-orange-600/30',
     };
     return colors[platform] || 'bg-gray-500/10 text-gray-600 border-gray-500/30';
   };
@@ -135,7 +135,7 @@ export function ExtensionConnectionHub() {
       <Card className="overflow-hidden">
         <div className={cn(
           "h-2 w-full",
-          connectionStatus?.connected ? "bg-green-500" : "bg-amber-500"
+          connectionStatus?.connected ? "bg-success" : "bg-warning"
         )} />
         <CardHeader>
           <div className="flex items-center justify-between">
@@ -143,8 +143,8 @@ export function ExtensionConnectionHub() {
               <div className={cn(
                 "p-3 rounded-xl",
                 connectionStatus?.connected 
-                  ? "bg-green-500/10 text-green-600" 
-                  : "bg-amber-500/10 text-amber-600"
+                  ? "bg-success/10 text-success" 
+                  : "bg-warning/10 text-warning"
               )}>
                 <Chrome className="h-6 w-6" />
               </div>
@@ -152,12 +152,12 @@ export function ExtensionConnectionHub() {
                 <CardTitle className="flex items-center gap-2">
                   Extension ShopOpti+
                   {connectionStatus?.connected ? (
-                    <Badge variant="outline" className="bg-green-500/10 text-green-600 border-green-500/30">
+                    <Badge variant="outline" className="bg-success/10 text-success border-success/30">
                       <CheckCircle2 className="h-3 w-3 mr-1" />
                       Connectée
                     </Badge>
                   ) : (
-                    <Badge variant="outline" className="bg-amber-500/10 text-amber-600 border-amber-500/30">
+                    <Badge variant="outline" className="bg-warning/10 text-warning border-amber-500/30">
                       <Clock className="h-3 w-3 mr-1" />
                       Déconnectée
                     </Badge>
@@ -244,7 +244,7 @@ export function ExtensionConnectionHub() {
           <Card>
             <CardContent className="pt-6">
               <div className="flex items-center gap-3">
-                <div className="p-2.5 rounded-xl bg-blue-500/10 text-blue-600">
+                <div className="p-2.5 rounded-xl bg-info/10 text-info">
                   <TrendingUp className="h-5 w-5" />
                 </div>
                 <div>
@@ -264,7 +264,7 @@ export function ExtensionConnectionHub() {
           <Card>
             <CardContent className="pt-6">
               <div className="flex items-center gap-3">
-                <div className="p-2.5 rounded-xl bg-green-500/10 text-green-600">
+                <div className="p-2.5 rounded-xl bg-success/10 text-success">
                   <Download className="h-5 w-5" />
                 </div>
                 <div>

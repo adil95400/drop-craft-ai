@@ -129,7 +129,7 @@ export const AdvancedIntegrationModal = ({
                 onChange={(e) => handleCredentialChange('apiSecret', e.target.value)}
               />
             </div>
-            <div className="p-3 bg-blue-50 rounded-lg">
+            <div className="p-3 bg-info/5 rounded-lg">
               <p className="text-sm text-blue-700">
                 💡 Inscrivez-vous au programme Portail Développeur AliExpress pour obtenir vos clés API
               </p>
@@ -150,8 +150,8 @@ export const AdvancedIntegrationModal = ({
                 onChange={(e) => handleCredentialChange('apiKey', e.target.value)}
               />
             </div>
-            <div className="p-3 bg-green-50 rounded-lg">
-              <p className="text-sm text-green-700">
+            <div className="p-3 bg-success/5 rounded-lg">
+              <p className="text-sm text-success">
                 ✓ API REST complète avec gestion des commandes et stock temps réel
               </p>
             </div>
@@ -257,7 +257,7 @@ export const AdvancedIntegrationModal = ({
                 onChange={(e) => handleCredentialChange('accessToken', e.target.value)}
               />
             </div>
-            <div className="p-3 bg-blue-50 rounded-lg">
+            <div className="p-3 bg-info/5 rounded-lg">
               <p className="text-sm text-blue-700">
                 Générez un token longue durée depuis Facebook Developer Console
               </p>
@@ -278,7 +278,7 @@ export const AdvancedIntegrationModal = ({
                 onChange={(e) => handleCredentialChange('apiKey', e.target.value)}
               />
             </div>
-            <div className="p-3 bg-yellow-50 rounded-lg">
+            <div className="p-3 bg-warning/5 rounded-lg">
               <p className="text-sm text-yellow-700">
                 ⚠️ Utilisez votre clé de test pour les essais, puis passez en mode live
               </p>
@@ -589,8 +589,8 @@ export const AdvancedIntegrationModal = ({
                 <div className="flex items-center gap-2">
                   {integration.status === 'connected' ? (
                     <>
-                      <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-                      <span className="text-sm text-green-600">En ligne</span>
+                      <div className="w-2 h-2 bg-success rounded-full animate-pulse" />
+                      <span className="text-sm text-success">En ligne</span>
                     </>
                   ) : (
                     <>
@@ -630,11 +630,11 @@ export const AdvancedIntegrationModal = ({
                   </div>
                   <div className="flex justify-between text-sm">
                     <span>Erreurs ce mois</span>
-                    <span className="font-medium text-red-600">{integration.errors || 0}</span>
+                    <span className="font-medium text-destructive">{integration.errors || 0}</span>
                   </div>
                   <div className="flex justify-between text-sm">
                     <span>Taux de réussite</span>
-                    <span className="font-medium text-green-600">
+                    <span className="font-medium text-success">
                       {integration.successRate || 100}%
                     </span>
                   </div>
@@ -670,7 +670,7 @@ export const AdvancedIntegrationModal = ({
               <div className="space-y-2">
                 {integration.features?.map((feature: string, index: number) => (
                   <div key={index} className="flex items-center gap-2">
-                    <CheckCircle className="w-3 h-3 text-green-500" />
+                    <CheckCircle className="w-3 h-3 text-success" />
                     <span className="text-sm">{feature}</span>
                   </div>
                 ))}

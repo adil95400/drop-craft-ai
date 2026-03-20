@@ -53,9 +53,9 @@ export function ProfileCompletionCard({
   const percentage = Math.round((completedCount / items.length) * 100);
 
   const getProgressColor = () => {
-    if (percentage >= 80) return 'bg-green-500';
-    if (percentage >= 50) return 'bg-yellow-500';
-    return 'bg-orange-500';
+    if (percentage >= 80) return 'bg-success';
+    if (percentage >= 50) return 'bg-warning';
+    return 'bg-warning';
   };
 
   return (
@@ -70,7 +70,7 @@ export function ProfileCompletionCard({
           </CardTitle>
           <Badge 
             variant={percentage >= 80 ? "default" : "secondary"}
-            className={percentage >= 80 ? "bg-green-500" : ""}
+            className={percentage >= 80 ? "bg-success" : ""}
           >
             {percentage}%
           </Badge>
@@ -89,16 +89,16 @@ export function ProfileCompletionCard({
             <div 
               key={item.id}
               className={`flex items-center justify-between p-2 rounded-lg transition-colors ${
-                item.completed ? 'bg-green-500/5' : 'bg-muted/30 hover:bg-muted/50'
+                item.completed ? 'bg-success/5' : 'bg-muted/30 hover:bg-muted/50'
               }`}
             >
               <div className="flex items-center gap-3">
                 {item.completed ? (
-                  <CheckCircle2 className="h-4 w-4 text-green-500" />
+                  <CheckCircle2 className="h-4 w-4 text-success" />
                 ) : (
                   <Circle className="h-4 w-4 text-muted-foreground" />
                 )}
-                <item.icon className={`h-4 w-4 ${item.completed ? 'text-green-500' : 'text-muted-foreground'}`} />
+                <item.icon className={`h-4 w-4 ${item.completed ? 'text-success' : 'text-muted-foreground'}`} />
                 <span className={`text-sm ${item.completed ? 'text-foreground' : 'text-muted-foreground'}`}>
                   {item.label}
                 </span>

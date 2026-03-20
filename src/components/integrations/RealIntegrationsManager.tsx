@@ -37,7 +37,7 @@ export function RealIntegrationsManager() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'connected':
-        return <Badge variant="default" className="bg-green-500"><CheckCircle className="w-3 h-3 mr-1" />Connecté</Badge>
+        return <Badge variant="default" className="bg-success"><CheckCircle className="w-3 h-3 mr-1" />Connecté</Badge>
       case 'error':
         return <Badge variant="destructive"><AlertCircle className="w-3 h-3 mr-1" />Erreur</Badge>
       default:
@@ -82,7 +82,7 @@ export function RealIntegrationsManager() {
                 <p className="text-sm font-medium">Intégrations Actives</p>
                 <p className="text-2xl font-bold">{connectedIntegrations.length}</p>
               </div>
-              <CheckCircle className="w-8 h-8 text-green-500" />
+              <CheckCircle className="w-8 h-8 text-success" />
             </div>
           </CardContent>
         </Card>
@@ -99,7 +99,7 @@ export function RealIntegrationsManager() {
                   }
                 </p>
               </div>
-              <RefreshCw className="w-8 h-8 text-blue-500" />
+              <RefreshCw className="w-8 h-8 text-info" />
             </div>
           </CardContent>
         </Card>
@@ -109,11 +109,11 @@ export function RealIntegrationsManager() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium">Statut Global</p>
-                <p className="text-sm text-green-600 font-medium">
+                <p className="text-sm text-success font-medium">
                   {connectedIntegrations.length > 0 ? 'Opérationnel' : 'En attente'}
                 </p>
               </div>
-              <AlertCircle className="w-8 h-8 text-green-500" />
+              <AlertCircle className="w-8 h-8 text-success" />
             </div>
           </CardContent>
         </Card>

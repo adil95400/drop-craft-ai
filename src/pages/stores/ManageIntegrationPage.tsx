@@ -123,7 +123,7 @@ export default function ManageIntegrationPage() {
                 <p className="text-sm font-medium text-muted-foreground">Taux de succès</p>
                 <p className="text-2xl font-bold text-foreground">{calculateSuccessRate()}%</p>
               </div>
-              <TrendingUp className="h-8 w-8 text-green-500 opacity-50" />
+              <TrendingUp className="h-8 w-8 text-success opacity-50" />
             </div>
             <Progress value={calculateSuccessRate()} className="mt-2" />
           </CardContent>
@@ -262,7 +262,7 @@ export default function ManageIntegrationPage() {
                         <div key={log.id} className="border rounded-lg p-4 hover:bg-muted/50 transition-colors">
                           <div className="flex items-center justify-between mb-3">
                             <div className="flex items-center space-x-2">
-                              {log.status === 'completed' && <CheckCircle className="h-4 w-4 text-green-500" />}
+                              {log.status === 'completed' && <CheckCircle className="h-4 w-4 text-success" />}
                               {log.status === 'failed' && <AlertTriangle className="h-4 w-4 text-destructive" />}
                               {log.status === 'in_progress' && <Loader2 className="h-4 w-4 text-primary animate-spin" />}
                               {getStatusBadge(log.status)}
@@ -277,12 +277,12 @@ export default function ManageIntegrationPage() {
                           
                           <div className="grid grid-cols-3 gap-4 text-sm mb-2">
                             <div className="flex items-center gap-2">
-                              <div className="h-2 w-2 rounded-full bg-blue-500"></div>
+                              <div className="h-2 w-2 rounded-full bg-info"></div>
                               <span className="text-muted-foreground">Produits:</span>
                               <span className="font-semibold text-foreground">{log.products_synced || 0}</span>
                             </div>
                             <div className="flex items-center gap-2">
-                              <div className="h-2 w-2 rounded-full bg-green-500"></div>
+                              <div className="h-2 w-2 rounded-full bg-success"></div>
                               <span className="text-muted-foreground">Commandes:</span>
                               <span className="font-semibold text-foreground">{log.orders_synced || 0}</span>
                             </div>

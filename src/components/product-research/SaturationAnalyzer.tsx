@@ -96,9 +96,9 @@ export const SaturationAnalyzer = () => {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'excellent': return 'text-green-600 bg-green-50 border-green-200'
-      case 'moderate': return 'text-yellow-600 bg-yellow-50 border-yellow-200'
-      case 'saturated': return 'text-red-600 bg-red-50 border-red-200'
+      case 'excellent': return 'text-success bg-success/5 border-success/20'
+      case 'moderate': return 'text-warning bg-warning/5 border-warning/20'
+      case 'saturated': return 'text-destructive bg-destructive/5 border-destructive/20'
       default: return ''
     }
   }
@@ -165,7 +165,7 @@ export const SaturationAnalyzer = () => {
                     <span className="text-muted-foreground">Opportunité Marché</span>
                     <span className="font-medium">{result.market_opportunity_score}/100</span>
                   </div>
-                  <Progress value={result.market_opportunity_score} className="[&>div]:bg-green-500" />
+                  <Progress value={result.market_opportunity_score} className="[&>div]:bg-success" />
                 </div>
 
                 <div className="space-y-2">
@@ -173,7 +173,7 @@ export const SaturationAnalyzer = () => {
                     <span className="text-muted-foreground">Densité Publicitaire</span>
                     <span className="font-medium">{result.ad_density}/100</span>
                   </div>
-                  <Progress value={result.ad_density} className="[&>div]:bg-orange-500" />
+                  <Progress value={result.ad_density} className="[&>div]:bg-warning" />
                 </div>
 
                 <div className="space-y-2">

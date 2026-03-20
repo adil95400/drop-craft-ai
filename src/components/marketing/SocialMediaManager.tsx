@@ -41,10 +41,10 @@ interface SocialAccount {
 
 const platforms = [
   { id: 'instagram', name: 'Instagram', icon: Instagram, color: 'bg-pink-500' },
-  { id: 'twitter', name: 'Twitter', icon: Twitter, color: 'bg-blue-500' },
-  { id: 'facebook', name: 'Facebook', icon: Facebook, color: 'bg-blue-600' },
+  { id: 'twitter', name: 'Twitter', icon: Twitter, color: 'bg-info' },
+  { id: 'facebook', name: 'Facebook', icon: Facebook, color: 'bg-info' },
   { id: 'linkedin', name: 'LinkedIn', icon: Linkedin, color: 'bg-blue-700' },
-  { id: 'youtube', name: 'YouTube', icon: Youtube, color: 'bg-red-500' }
+  { id: 'youtube', name: 'YouTube', icon: Youtube, color: 'bg-destructive' }
 ]
 
 export function SocialMediaManager() {
@@ -201,8 +201,8 @@ export function SocialMediaManager() {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'published': return 'bg-green-100 text-green-800 border-green-200'
-      case 'scheduled': return 'bg-blue-100 text-blue-800 border-blue-200'
+      case 'published': return 'bg-success/10 text-success border-success/20'
+      case 'scheduled': return 'bg-info/10 text-blue-800 border-info/20'
       case 'draft': return 'bg-gray-100 text-gray-800 border-gray-200'
       default: return 'bg-gray-100 text-gray-800 border-gray-200'
     }
@@ -330,7 +330,7 @@ export function SocialMediaManager() {
                           {hashtag}
                           <button 
                             onClick={() => removeHashtag(hashtag)}
-                            className="ml-1 text-xs hover:text-red-500"
+                            className="ml-1 text-xs hover:text-destructive"
                           >
                             ×
                           </button>
@@ -480,7 +480,7 @@ export function SocialMediaManager() {
                 </div>
                 
                 {currentPost.hashtags.length > 0 && (
-                  <div className="text-xs text-blue-600">
+                  <div className="text-xs text-info">
                     {currentPost.hashtags.join(' ')}
                   </div>
                 )}
@@ -504,7 +504,7 @@ export function SocialMediaManager() {
               </div>
               <div className="flex justify-between">
                 <span className="text-sm text-muted-foreground">Nouveaux abonnés</span>
-                <span className="font-medium text-green-600">+127</span>
+                <span className="font-medium text-success">+127</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-sm text-muted-foreground">Meilleure heure</span>

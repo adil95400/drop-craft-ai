@@ -15,11 +15,11 @@ import { useDateFnsLocale } from '@/hooks/useDateFnsLocale';
 
 const STATUS_CONFIG: Record<string, { label: string; color: string; icon: any }> = {
   draft: { label: 'Brouillon', color: 'bg-gray-500', icon: FileText },
-  pending: { label: 'En attente', color: 'bg-yellow-500', icon: Clock },
-  processing: { label: 'Traitement', color: 'bg-blue-500', icon: RefreshCw },
+  pending: { label: 'En attente', color: 'bg-warning', icon: Clock },
+  processing: { label: 'Traitement', color: 'bg-info', icon: RefreshCw },
   shipped: { label: 'Expédiée', color: 'bg-purple-500', icon: Truck },
-  completed: { label: 'Terminée', color: 'bg-green-500', icon: CheckCircle },
-  cancelled: { label: 'Annulée', color: 'bg-red-500', icon: XCircle },
+  completed: { label: 'Terminée', color: 'bg-success', icon: CheckCircle },
+  cancelled: { label: 'Annulée', color: 'bg-destructive', icon: XCircle },
 };
 
 interface BulkOrderCardProps {
@@ -68,7 +68,7 @@ export function BulkOrderCard({ order, onView }: BulkOrderCardProps) {
               <p className="text-xs text-muted-foreground">Produits</p>
             </div>
             <div className="text-center">
-              <p className="text-lg font-bold text-green-600">
+              <p className="text-lg font-bold text-success">
                 {parseFloat(order.total_amount as any).toLocaleString('fr-FR', { minimumFractionDigits: 2 })}€
               </p>
               <p className="text-xs text-muted-foreground">Total</p>

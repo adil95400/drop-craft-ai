@@ -350,11 +350,11 @@ const endpoints: Endpoint[] = [
 ];
 
 const methodColors: Record<string, string> = {
-  GET: 'bg-blue-500/20 text-blue-400 border-blue-500/30',
-  POST: 'bg-green-500/20 text-green-400 border-green-500/30',
-  PUT: 'bg-amber-500/20 text-amber-400 border-amber-500/30',
-  PATCH: 'bg-orange-500/20 text-orange-400 border-orange-500/30',
-  DELETE: 'bg-red-500/20 text-red-400 border-red-500/30'
+  GET: 'bg-info/20 text-blue-400 border-info/30',
+  POST: 'bg-success/20 text-green-400 border-success/30',
+  PUT: 'bg-warning/20 text-amber-400 border-amber-500/30',
+  PATCH: 'bg-warning/20 text-orange-400 border-orange-500/30',
+  DELETE: 'bg-destructive/20 text-red-400 border-destructive/30'
 };
 
 const methodBgColors: Record<string, string> = {
@@ -669,7 +669,7 @@ export function SwaggerDocumentation() {
                                         <tr key={pIdx} className="border-t">
                                           <td className="p-2">
                                             <code className="text-xs">{param.name}</code>
-                                            {param.required && <span className="text-red-500 ml-1">*</span>}
+                                            {param.required && <span className="text-destructive ml-1">*</span>}
                                             <Badge variant="outline" className="ml-2 text-[10px]">{param.in}</Badge>
                                           </td>
                                           <td className="p-2 text-muted-foreground">{param.type}</td>
@@ -711,7 +711,7 @@ export function SwaggerDocumentation() {
                                           <td className="p-2">
                                             <code className="text-xs">{propName}</code>
                                             {endpoint.requestBody?.required?.includes(propName) && (
-                                              <span className="text-red-500 ml-1">*</span>
+                                              <span className="text-destructive ml-1">*</span>
                                             )}
                                           </td>
                                           <td className="p-2 text-muted-foreground">{prop.type}</td>

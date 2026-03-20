@@ -44,29 +44,29 @@ export function InventoryWidget({ isCustomizing }: InventoryWidgetProps) {
       <CardContent className="space-y-4">
         <div className="flex items-center justify-between">
           <p className="text-sm text-muted-foreground">Taux de disponibilité</p>
-          <p className="text-2xl font-bold text-green-600">{availabilityRate}%</p>
+          <p className="text-2xl font-bold text-success">{availabilityRate}%</p>
         </div>
 
         <div className="space-y-2">
-          <div className="flex items-center justify-between p-2 rounded-lg bg-green-500/10">
+          <div className="flex items-center justify-between p-2 rounded-lg bg-success/10">
             <div className="flex items-center gap-2">
-              <CheckCircle className="h-4 w-4 text-green-600" />
+              <CheckCircle className="h-4 w-4 text-success" />
               <span className="text-sm">En stock</span>
             </div>
             <Badge variant="secondary">{inStock}</Badge>
           </div>
 
-          <div className="flex items-center justify-between p-2 rounded-lg bg-orange-500/10">
+          <div className="flex items-center justify-between p-2 rounded-lg bg-warning/10">
             <div className="flex items-center gap-2">
-              <AlertTriangle className="h-4 w-4 text-orange-600" />
+              <AlertTriangle className="h-4 w-4 text-warning" />
               <span className="text-sm">Stock bas</span>
             </div>
             <Badge variant="secondary">{lowStock}</Badge>
           </div>
 
-          <div className="flex items-center justify-between p-2 rounded-lg bg-red-500/10">
+          <div className="flex items-center justify-between p-2 rounded-lg bg-destructive/10">
             <div className="flex items-center gap-2">
-              <AlertTriangle className="h-4 w-4 text-red-600" />
+              <AlertTriangle className="h-4 w-4 text-destructive" />
               <span className="text-sm">Rupture</span>
             </div>
             <Badge variant="secondary">{outOfStock}</Badge>

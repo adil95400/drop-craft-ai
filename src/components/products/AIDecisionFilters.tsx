@@ -44,7 +44,7 @@ const AI_FILTERS: AIFilterConfig[] = [
     description: 'Produits nécessitant une action immédiate',
     colors: {
       active: 'bg-gradient-to-r from-amber-500 to-orange-500 text-white border-transparent shadow-lg shadow-amber-500/30',
-      inactive: 'bg-amber-500/10 text-amber-600 border-amber-500/30 hover:bg-amber-500/20'
+      inactive: 'bg-warning/10 text-warning border-amber-500/30 hover:bg-warning/20'
     },
     isPrimary: true
   },
@@ -56,8 +56,8 @@ const AI_FILTERS: AIFilterConfig[] = [
     icon: AlertTriangle,
     description: 'Problèmes critiques à corriger',
     colors: {
-      active: 'bg-red-500 text-white border-transparent',
-      inactive: 'bg-red-500/10 text-red-600 border-red-500/30 hover:bg-red-500/20'
+      active: 'bg-destructive text-white border-transparent',
+      inactive: 'bg-destructive/10 text-destructive border-destructive/30 hover:bg-destructive/20'
     }
   },
   {
@@ -68,8 +68,8 @@ const AI_FILTERS: AIFilterConfig[] = [
     icon: TrendingUp,
     description: 'Gains potentiels identifiés',
     colors: {
-      active: 'bg-emerald-500 text-white border-transparent',
-      inactive: 'bg-emerald-500/10 text-emerald-600 border-emerald-500/30 hover:bg-emerald-500/20'
+      active: 'bg-success text-white border-transparent',
+      inactive: 'bg-success/10 text-success border-emerald-500/30 hover:bg-success/20'
     }
   },
   {
@@ -80,8 +80,8 @@ const AI_FILTERS: AIFilterConfig[] = [
     icon: CheckCircle,
     description: 'Produits performants',
     colors: {
-      active: 'bg-blue-500 text-white border-transparent',
-      inactive: 'bg-blue-500/10 text-blue-600 border-blue-500/30 hover:bg-blue-500/20'
+      active: 'bg-info text-white border-transparent',
+      inactive: 'bg-info/10 text-info border-info/30 hover:bg-info/20'
     }
   },
   {
@@ -179,7 +179,7 @@ export const AIDecisionFilters = memo(function AIDecisionFilters({
                     className={cn(
                       'h-5 min-w-[20px] px-1.5 text-xs font-bold',
                       isActive && 'bg-white/20 text-inherit border-0',
-                      filter.isPrimary && !isActive && 'bg-amber-500/20 text-amber-700 border-amber-500/30'
+                      filter.isPrimary && !isActive && 'bg-warning/20 text-amber-700 border-amber-500/30'
                     )}
                   >
                     {count}
@@ -191,7 +191,7 @@ export const AIDecisionFilters = memo(function AIDecisionFilters({
                   <motion.div
                     animate={{ scale: [1, 1.2, 1], opacity: [1, 0.6, 1] }}
                     transition={{ duration: 1.5, repeat: Infinity }}
-                    className="h-2 w-2 rounded-full bg-amber-500"
+                    className="h-2 w-2 rounded-full bg-warning"
                   />
                 )}
               </Button>
@@ -257,7 +257,7 @@ export const AIDecisionFilterBar = memo(function AIDecisionFilterBar({
             'gap-2 font-bold',
             isProcessActive 
               ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-lg' 
-              : 'bg-amber-500/10 text-amber-600 border-amber-500/30 hover:bg-amber-500/20 ring-2 ring-amber-500/20'
+              : 'bg-warning/10 text-warning border-amber-500/30 hover:bg-warning/20 ring-2 ring-amber-500/20'
           )}
         >
           <span>🎯</span>
@@ -267,7 +267,7 @@ export const AIDecisionFilterBar = memo(function AIDecisionFilterBar({
               variant="secondary" 
               className={cn(
                 'h-5 min-w-[20px] px-1.5 text-xs font-bold',
-                isProcessActive ? 'bg-white/20 text-white border-0' : 'bg-amber-500/20 text-amber-700'
+                isProcessActive ? 'bg-white/20 text-white border-0' : 'bg-warning/20 text-amber-700'
               )}
             >
               {toProcessCount}
@@ -277,7 +277,7 @@ export const AIDecisionFilterBar = memo(function AIDecisionFilterBar({
             <motion.div
               animate={{ scale: [1, 1.2, 1] }}
               transition={{ duration: 1.5, repeat: Infinity }}
-              className="h-2 w-2 rounded-full bg-amber-500"
+              className="h-2 w-2 rounded-full bg-warning"
             />
           )}
         </Button>

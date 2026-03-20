@@ -158,25 +158,25 @@ export const SupplierPerformanceAnalytics = () => {
   const getTierColor = (tier: string) => {
     switch (tier) {
       case 'premium': return 'text-purple-600 bg-purple-100'
-      case 'gold': return 'text-yellow-600 bg-yellow-100'
+      case 'gold': return 'text-warning bg-warning/10'
       case 'silver': return 'text-gray-600 bg-gray-100'
-      case 'bronze': return 'text-orange-600 bg-orange-100'
+      case 'bronze': return 'text-warning bg-orange-100'
       default: return 'text-gray-600 bg-gray-100'
     }
   }
 
   const getTrendingIcon = (trending: string) => {
     switch (trending) {
-      case 'up': return <TrendingUp className="w-4 h-4 text-green-600" />
-      case 'down': return <TrendingDown className="w-4 h-4 text-red-600" />
+      case 'up': return <TrendingUp className="w-4 h-4 text-success" />
+      case 'down': return <TrendingDown className="w-4 h-4 text-destructive" />
       default: return <div className="w-4 h-4" />
     }
   }
 
   const getScoreColor = (score: number) => {
-    if (score >= 90) return 'text-green-600'
-    if (score >= 80) return 'text-orange-600'
-    return 'text-red-600'
+    if (score >= 90) return 'text-success'
+    if (score >= 80) return 'text-warning'
+    return 'text-destructive'
   }
 
   const topPerformer = supplierMetrics.reduce((prev, current) => 
@@ -240,12 +240,12 @@ export const SupplierPerformanceAnalytics = () => {
               <div>
                 <p className="text-sm text-muted-foreground">Chiffre d'Affaires</p>
                 <p className="text-2xl font-bold">€{totalRevenue.toLocaleString()}</p>
-                <p className="text-xs text-green-600 flex items-center gap-1">
+                <p className="text-xs text-success flex items-center gap-1">
                   <TrendingUp className="w-3 h-3" />
                   +12% ce mois
                 </p>
               </div>
-              <DollarSign className="w-8 h-8 text-green-500" />
+              <DollarSign className="w-8 h-8 text-success" />
             </div>
           </CardContent>
         </Card>
@@ -272,12 +272,12 @@ export const SupplierPerformanceAnalytics = () => {
               <div>
                 <p className="text-sm text-muted-foreground">Satisfaction Moyenne</p>
                 <p className="text-2xl font-bold">{avgSatisfaction.toFixed(1)}/5</p>
-                <p className="text-xs text-blue-600 flex items-center gap-1">
+                <p className="text-xs text-info flex items-center gap-1">
                   <Star className="w-3 h-3" />
                   Très bon niveau
                 </p>
               </div>
-              <Star className="w-8 h-8 text-blue-500" />
+              <Star className="w-8 h-8 text-info" />
             </div>
           </CardContent>
         </Card>
@@ -288,12 +288,12 @@ export const SupplierPerformanceAnalytics = () => {
               <div>
                 <p className="text-sm text-muted-foreground">Taux Retour Moy.</p>
                 <p className="text-2xl font-bold">{avgReturnRate.toFixed(1)}%</p>
-                <p className="text-xs text-orange-600 flex items-center gap-1">
+                <p className="text-xs text-warning flex items-center gap-1">
                   <Target className="w-3 h-3" />
                   Objectif: &lt;5%
                 </p>
               </div>
-              <Target className="w-8 h-8 text-orange-500" />
+              <Target className="w-8 h-8 text-warning" />
             </div>
           </CardContent>
         </Card>
@@ -511,7 +511,7 @@ export const SupplierPerformanceAnalytics = () => {
                         <div className="flex items-center gap-2">
                           <div className="w-20 bg-gray-200 rounded-full h-2">
                             <div 
-                              className="bg-blue-500 h-2 rounded-full" 
+                              className="bg-info h-2 rounded-full" 
                               style={{ width: `${metric.value}%` }}
                             />
                           </div>

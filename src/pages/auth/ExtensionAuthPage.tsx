@@ -177,7 +177,7 @@ export default function ExtensionAuthPage() {
           <CardContent>
             {authSuccess ? (
               <div className="space-y-4">
-                <div className="flex items-center justify-center gap-2 text-green-600 dark:text-green-400">
+                <div className="flex items-center justify-center gap-2 text-success dark:text-green-400">
                   <CheckCircle className="h-6 w-6" />
                   <span className="font-medium">Connexion réussie</span>
                 </div>
@@ -232,7 +232,7 @@ export default function ExtensionAuthPage() {
             ) : user ? (
               <div className="space-y-4">
                 <div className="flex items-center gap-2 p-3 bg-muted rounded-lg">
-                  <CheckCircle className="h-5 w-5 text-green-600" />
+                  <CheckCircle className="h-5 w-5 text-success" />
                   <div>
                     <p className="text-sm font-medium">Connecté en tant que</p>
                     <p className="text-xs text-muted-foreground">{user.email}</p>

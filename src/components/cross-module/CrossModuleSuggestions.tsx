@@ -22,8 +22,8 @@ const ICON_MAP: Record<string, typeof Zap> = {
 
 const PRIORITY_STYLES = {
   high: 'border-l-destructive bg-destructive/5',
-  medium: 'border-l-amber-500 bg-amber-500/5',
-  low: 'border-l-blue-500 bg-blue-500/5',
+  medium: 'border-l-amber-500 bg-warning/5',
+  low: 'border-l-blue-500 bg-info/5',
 };
 
 interface CrossModuleSuggestionsProps {

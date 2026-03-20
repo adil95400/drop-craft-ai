@@ -21,7 +21,7 @@ const getMethodConfig = (method: string) => {
     // Files & Technical Formats
     csv: {
       title: 'CSV',
-      icon: <FileText className="w-5 h-5 text-green-600" />,
+      icon: <FileText className="w-5 h-5 text-success" />,
       description: 'Import depuis fichiers CSV',
       fields: [
         { name: 'name', label: 'Nom', placeholder: 'ex : exemple site e-commerce', required: true },
@@ -46,7 +46,7 @@ const getMethodConfig = (method: string) => {
     },
     json: {
       title: 'JSON',
-      icon: <Globe className="w-5 h-5 text-blue-600" />,
+      icon: <Globe className="w-5 h-5 text-info" />,
       description: 'Import depuis URL JSON avec JSONPath',
       fields: [
         { name: 'name', label: 'Nom', placeholder: 'ex : exemple site e-commerce', required: true },
@@ -58,7 +58,7 @@ const getMethodConfig = (method: string) => {
     },
     text: {
       title: 'Text',
-      icon: <FileText className="w-5 h-5 text-red-600" />,
+      icon: <FileText className="w-5 h-5 text-destructive" />,
       description: 'Import depuis fichiers texte',
       fields: [
         { name: 'name', label: 'Nom', placeholder: 'ex : exemple site e-commerce', required: true },
@@ -71,7 +71,7 @@ const getMethodConfig = (method: string) => {
     },
     google_sheets: {
       title: 'Google Sheets',
-      icon: <Database className="w-5 h-5 text-green-600" />,
+      icon: <Database className="w-5 h-5 text-success" />,
       description: 'Import depuis feuilles Google Sheets',
       fields: [
         { name: 'name', label: 'Nom', placeholder: 'Google sheets', required: true },
@@ -82,7 +82,7 @@ const getMethodConfig = (method: string) => {
     },
     ftp: {
       title: 'FTP/SFTP/FTPS',
-      icon: <Database className="w-5 h-5 text-blue-600" />,
+      icon: <Database className="w-5 h-5 text-info" />,
       description: 'Import depuis serveurs FTP/SFTP/FTPS',
       fields: [
         { name: 'name', label: 'Nom', placeholder: 'ex : exemple serveur FTP', required: true },
@@ -98,7 +98,7 @@ const getMethodConfig = (method: string) => {
     // E-commerce Platforms
     shopify: {
       title: 'Shopify',
-      icon: <Cloud className="w-5 h-5 text-green-600" />,
+      icon: <Cloud className="w-5 h-5 text-success" />,
       description: 'Synchronisation avec Shopify',
       fields: [
         { name: 'name', label: 'Nom', placeholder: 'Shopify Store', required: true },
@@ -110,7 +110,7 @@ const getMethodConfig = (method: string) => {
     },
     woocommerce: {
       title: 'WooCommerce',
-      icon: <Globe className="w-5 h-5 text-blue-600" />,
+      icon: <Globe className="w-5 h-5 text-info" />,
       description: 'Connexion avec WooCommerce',
       fields: [
         { name: 'name', label: 'Nom', placeholder: 'WooCommerce', required: true },
@@ -122,7 +122,7 @@ const getMethodConfig = (method: string) => {
     },
     prestashop: {
       title: 'PrestaShop',
-      icon: <Webhook className="w-5 h-5 text-red-600" />,
+      icon: <Webhook className="w-5 h-5 text-destructive" />,
       description: 'Synchronisation avec PrestaShop',
       fields: [
         { name: 'name', label: 'Nom', placeholder: 'PrestaShop', required: true },
@@ -134,7 +134,7 @@ const getMethodConfig = (method: string) => {
     },
     magento: {
       title: 'Magento',
-      icon: <ShoppingCart className="w-5 h-5 text-orange-600" />,
+      icon: <ShoppingCart className="w-5 h-5 text-warning" />,
       description: 'Synchronisation avec Magento',
       fields: [
         { name: 'name', label: 'Nom', placeholder: 'Magento Store', required: true },
@@ -174,7 +174,7 @@ const getMethodConfig = (method: string) => {
     },
     lightspeed: {
       title: 'Lightspeed',
-      icon: <Settings className="w-5 h-5 text-red-600" />,
+      icon: <Settings className="w-5 h-5 text-destructive" />,
       description: 'Synchronisation avec Lightspeed',
       fields: [
         { name: 'name', label: 'Nom', placeholder: 'Lightspeed', required: true },
@@ -293,7 +293,7 @@ export const ImportConfigurationDialog = ({
               <div key={field.name} className="space-y-2">
                 <Label htmlFor={field.name}>
                   {field.label}
-                  {field.required && <span className="text-red-500 ml-1">*</span>}
+                  {field.required && <span className="text-destructive ml-1">*</span>}
                 </Label>
                 
                 {field.type === 'select' ? (
@@ -325,7 +325,7 @@ export const ImportConfigurationDialog = ({
             ))}
 
             {method === 'woocommerce' && (
-              <div className="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
+              <div className="mt-4 p-3 bg-info/5 rounded-lg border border-info/20">
                 <div className="flex items-center gap-2 text-blue-800">
                   <HelpCircle className="w-4 h-4" />
                   <span className="text-sm font-medium">Aide</span>

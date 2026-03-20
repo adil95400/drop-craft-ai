@@ -157,7 +157,7 @@ export default function ImportPublishingPage() {
                 <p className="text-sm text-muted-foreground">Approuvés</p>
                 <p className="text-2xl font-bold">{approvedProducts.length}</p>
               </div>
-              <CheckCircle className="w-8 h-8 text-green-600" />
+              <CheckCircle className="w-8 h-8 text-success" />
             </div>
           </CardContent>
         </Card>
@@ -169,7 +169,7 @@ export default function ImportPublishingPage() {
                 <p className="text-sm text-muted-foreground">Publiés</p>
                 <p className="text-2xl font-bold">{publishedProducts.length}</p>
               </div>
-              <Upload className="w-8 h-8 text-blue-600" />
+              <Upload className="w-8 h-8 text-info" />
             </div>
           </CardContent>
         </Card>
@@ -193,10 +193,10 @@ export default function ImportPublishingPage() {
 
       {/* Publication Progress */}
       {publishing && (
-        <Card className="border-blue-200 bg-blue-50/50">
+        <Card className="border-info/20 bg-info/5/50">
           <CardContent className="p-6">
             <div className="flex items-center gap-4">
-              <RefreshCw className="w-6 h-6 text-blue-600 animate-spin" />
+              <RefreshCw className="w-6 h-6 text-info animate-spin" />
               <div className="flex-1">
                 <p className="font-medium mb-2">Publication en cours...</p>
                 <Progress value={publishingProgress} className="h-2" />
@@ -272,8 +272,8 @@ export default function ImportPublishingPage() {
                 {/* Amazon */}
                 <div className="flex items-center justify-between p-4 border rounded-lg hover:shadow-md transition-shadow">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-orange-500/10 rounded-lg flex items-center justify-center">
-                      <Package className="w-5 h-5 text-orange-600" />
+                    <div className="w-10 h-10 bg-warning/10 rounded-lg flex items-center justify-center">
+                      <Package className="w-5 h-5 text-warning" />
                     </div>
                     <div>
                       <p className="font-medium">Amazon</p>
@@ -286,8 +286,8 @@ export default function ImportPublishingPage() {
                 {/* eBay */}
                 <div className="flex items-center justify-between p-4 border rounded-lg hover:shadow-md transition-shadow">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-blue-500/10 rounded-lg flex items-center justify-center">
-                      <Package className="w-5 h-5 text-blue-600" />
+                    <div className="w-10 h-10 bg-info/10 rounded-lg flex items-center justify-center">
+                      <Package className="w-5 h-5 text-info" />
                     </div>
                     <div>
                       <p className="font-medium">eBay</p>
@@ -314,7 +314,7 @@ export default function ImportPublishingPage() {
                 {/* Meta/Facebook */}
                 <div className="flex items-center justify-between p-4 border rounded-lg hover:shadow-md transition-shadow">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-blue-600/10 rounded-lg flex items-center justify-center">
+                    <div className="w-10 h-10 bg-info/10 rounded-lg flex items-center justify-center">
                       <Package className="w-5 h-5 text-blue-700" />
                     </div>
                     <div>
@@ -328,8 +328,8 @@ export default function ImportPublishingPage() {
                 {/* Google Shopping */}
                 <div className="flex items-center justify-between p-4 border rounded-lg hover:shadow-md transition-shadow">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-green-500/10 rounded-lg flex items-center justify-center">
-                      <Package className="w-5 h-5 text-green-600" />
+                    <div className="w-10 h-10 bg-success/10 rounded-lg flex items-center justify-center">
+                      <Package className="w-5 h-5 text-success" />
                     </div>
                     <div>
                       <p className="font-medium">Google Shopping</p>
@@ -342,7 +342,7 @@ export default function ImportPublishingPage() {
                 {/* Etsy */}
                 <div className="flex items-center justify-between p-4 border rounded-lg hover:shadow-md transition-shadow">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-orange-600/10 rounded-lg flex items-center justify-center">
+                    <div className="w-10 h-10 bg-warning/10 rounded-lg flex items-center justify-center">
                       <Package className="w-5 h-5 text-orange-700" />
                     </div>
                     <div>
@@ -370,8 +370,8 @@ export default function ImportPublishingPage() {
                 {/* Cdiscount */}
                 <div className="flex items-center justify-between p-4 border rounded-lg hover:shadow-md transition-shadow">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-red-500/10 rounded-lg flex items-center justify-center">
-                      <Package className="w-5 h-5 text-red-600" />
+                    <div className="w-10 h-10 bg-destructive/10 rounded-lg flex items-center justify-center">
+                      <Package className="w-5 h-5 text-destructive" />
                     </div>
                     <div>
                       <p className="font-medium">Cdiscount</p>
@@ -384,7 +384,7 @@ export default function ImportPublishingPage() {
                 {/* AliExpress */}
                 <div className="flex items-center justify-between p-4 border rounded-lg hover:shadow-md transition-shadow">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-red-600/10 rounded-lg flex items-center justify-center">
+                    <div className="w-10 h-10 bg-destructive/10 rounded-lg flex items-center justify-center">
                       <Package className="w-5 h-5 text-red-700" />
                     </div>
                     <div>
@@ -441,7 +441,7 @@ export default function ImportPublishingPage() {
                     <p className="text-sm text-muted-foreground">{product.sku}</p>
                   </div>
                 </div>
-                <Badge className="bg-green-500/10 text-green-700 border-green-500/20">
+                <Badge className="bg-success/10 text-success border-success/20">
                   <CheckCircle className="w-3 h-3 mr-1" />
                   Publié
                 </Badge>

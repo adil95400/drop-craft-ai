@@ -133,10 +133,10 @@ export function ActivityFeed() {
   const getActivityIcon = (activity: ActivityItem) => {
     const IconComponent = activity.icon
     const colorClass = {
-      success: 'text-green-600 bg-green-100',
-      info: 'text-blue-600 bg-blue-100', 
-      warning: 'text-yellow-600 bg-yellow-100',
-      error: 'text-red-600 bg-red-100'
+      success: 'text-success bg-success/10',
+      info: 'text-info bg-info/10', 
+      warning: 'text-warning bg-warning/10',
+      error: 'text-destructive bg-destructive/10'
     }[activity.type]
 
     return (
@@ -149,11 +149,11 @@ export function ActivityFeed() {
   const getModuleBadge = (module: string) => {
     const moduleColors = {
       'CRM': 'bg-purple-100 text-purple-800',
-      'Reviews': 'bg-yellow-100 text-yellow-800',
-      'SEO': 'bg-green-100 text-green-800',
-      'Automation': 'bg-blue-100 text-blue-800',
+      'Reviews': 'bg-warning/10 text-yellow-800',
+      'SEO': 'bg-success/10 text-success',
+      'Automation': 'bg-info/10 text-blue-800',
       'Dashboard': 'bg-indigo-100 text-indigo-800',
-      'Security': 'bg-red-100 text-red-800',
+      'Security': 'bg-destructive/10 text-red-800',
       'Marketing': 'bg-pink-100 text-pink-800',
       'Backend': 'bg-gray-100 text-gray-800'
     }
@@ -179,7 +179,7 @@ export function ActivityFeed() {
             </CardDescription>
           </div>
           <Badge variant="outline" className="gap-1">
-            <CheckCircle className="h-3 w-3 text-green-600" />
+            <CheckCircle className="h-3 w-3 text-success" />
             Tout opérationnel
           </Badge>
         </div>

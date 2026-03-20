@@ -30,11 +30,11 @@ const CATEGORY_ICONS: Record<string, any> = {
 
 const CHANNEL_COLORS: Record<string, string> = {
   global: 'bg-gray-500',
-  google: 'bg-blue-500',
+  google: 'bg-info',
   meta: 'bg-indigo-500',
   tiktok: 'bg-pink-500',
-  amazon: 'bg-orange-500',
-  shopify: 'bg-green-500'
+  amazon: 'bg-warning',
+  shopify: 'bg-success'
 };
 
 export function RuleTemplatesDialog({ open, onOpenChange, onSelectTemplate }: RuleTemplatesDialogProps) {

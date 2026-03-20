@@ -132,9 +132,9 @@ export const RealtimePresence: React.FC<RealtimePresenceProps> = ({
 
   const getStatusColor = (status?: string) => {
     switch (status) {
-      case 'online': return 'bg-green-500'
-      case 'busy': return 'bg-red-500'
-      case 'away': return 'bg-yellow-500'
+      case 'online': return 'bg-success'
+      case 'busy': return 'bg-destructive'
+      case 'away': return 'bg-warning'
       default: return 'bg-gray-500'
     }
   }
@@ -181,7 +181,7 @@ export const RealtimePresence: React.FC<RealtimePresenceProps> = ({
             Utilisateurs en ligne
           </CardTitle>
           <Badge variant="outline" className="flex items-center gap-1">
-            <Circle className="w-2 h-2 fill-green-500 text-green-500" />
+            <Circle className="w-2 h-2 fill-green-500 text-success" />
             {presenceUsers.length}
           </Badge>
         </div>

@@ -420,7 +420,7 @@ export default function AutoDSImportPage() {
                       transition={{ delay: index * 0.03 }}
                       className={cn(
                         "flex gap-4 p-4 rounded-xl border transition-all duration-200",
-                        item.status === 'success' && "bg-green-500/5 border-green-500/20 hover:border-green-500/40",
+                        item.status === 'success' && "bg-success/5 border-success/20 hover:border-success/40",
                         item.status === 'error' && "bg-destructive/5 border-destructive/20",
                         item.status === 'loading' && "bg-primary/5 border-primary/20",
                         item.status === 'pending' && "bg-muted/30 border-border/50 hover:border-border"
@@ -474,12 +474,12 @@ export default function AutoDSImportPage() {
                                 <span className="font-semibold text-sm">{(item.preview.price ?? 0).toFixed(2)} {item.preview.currency}</span>
                               </div>
                               <ArrowRight className="h-3 w-3 text-muted-foreground" />
-                              <div className="flex items-center gap-1.5 bg-green-500/10 px-2 py-0.5 rounded-md border border-green-500/20">
-                                <span className="text-green-700 dark:text-green-400 text-xs">Vente</span>
-                                <span className="font-bold text-sm text-green-600 dark:text-green-400">{(item.preview.suggested_price ?? 0).toFixed(2)} €</span>
+                              <div className="flex items-center gap-1.5 bg-success/10 px-2 py-0.5 rounded-md border border-success/20">
+                                <span className="text-success dark:text-green-400 text-xs">Vente</span>
+                                <span className="font-bold text-sm text-success dark:text-green-400">{(item.preview.suggested_price ?? 0).toFixed(2)} €</span>
                               </div>
                               {item.preview.profit_margin > 0 && (
-                                <Badge variant="outline" className="text-green-600 dark:text-green-400 border-green-500/30 text-xs">
+                                <Badge variant="outline" className="text-success dark:text-green-400 border-success/30 text-xs">
                                   +{item.preview.profit_margin}%
                                 </Badge>
                               )}

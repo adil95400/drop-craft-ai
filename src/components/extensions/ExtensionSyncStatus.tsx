@@ -134,9 +134,9 @@ export function ExtensionSyncStatus() {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'synced': return 'bg-green-500';
-      case 'syncing': return 'bg-blue-500 animate-pulse';
-      case 'error': return 'bg-red-500';
+      case 'synced': return 'bg-success';
+      case 'syncing': return 'bg-info animate-pulse';
+      case 'error': return 'bg-destructive';
       default: return 'bg-muted-foreground';
     }
   };
@@ -144,11 +144,11 @@ export function ExtensionSyncStatus() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'synced':
-        return <Badge className="bg-green-500/10 text-green-600 border-green-500/30"><CheckCircle className="h-3 w-3 mr-1" />Synchronisé</Badge>;
+        return <Badge className="bg-success/10 text-success border-success/30"><CheckCircle className="h-3 w-3 mr-1" />Synchronisé</Badge>;
       case 'syncing':
-        return <Badge className="bg-blue-500/10 text-blue-600 border-blue-500/30"><RefreshCw className="h-3 w-3 mr-1 animate-spin" />Sync...</Badge>;
+        return <Badge className="bg-info/10 text-info border-info/30"><RefreshCw className="h-3 w-3 mr-1 animate-spin" />Sync...</Badge>;
       case 'error':
-        return <Badge className="bg-red-500/10 text-red-600 border-red-500/30"><AlertCircle className="h-3 w-3 mr-1" />Erreur</Badge>;
+        return <Badge className="bg-destructive/10 text-destructive border-destructive/30"><AlertCircle className="h-3 w-3 mr-1" />Erreur</Badge>;
       default:
         return <Badge variant="secondary"><Clock className="h-3 w-3 mr-1" />En attente</Badge>;
     }
@@ -170,11 +170,11 @@ export function ExtensionSyncStatus() {
             <div className="flex items-center gap-3">
               <div className={cn(
                 "h-12 w-12 rounded-xl flex items-center justify-center",
-                overallStatus === 'synced' ? 'bg-green-500/10' : 'bg-primary/10'
+                overallStatus === 'synced' ? 'bg-success/10' : 'bg-primary/10'
               )}>
                 <Zap className={cn(
                   "h-6 w-6",
-                  overallStatus === 'synced' ? 'text-green-500' : 'text-primary'
+                  overallStatus === 'synced' ? 'text-success' : 'text-primary'
                 )} />
               </div>
               <div>
@@ -235,8 +235,8 @@ export function ExtensionSyncStatus() {
                 key={module.id}
                 className={cn(
                   "transition-all duration-200",
-                  module.status === 'synced' && "border-green-500/30",
-                  isSyncing && "border-blue-500/50 shadow-lg"
+                  module.status === 'synced' && "border-success/30",
+                  isSyncing && "border-info/50 shadow-lg"
                 )}
               >
                 <CardContent className="p-4">
@@ -244,11 +244,11 @@ export function ExtensionSyncStatus() {
                     <div className="flex items-center gap-3">
                       <div className={cn(
                         "h-10 w-10 rounded-lg flex items-center justify-center",
-                        module.status === 'synced' ? 'bg-green-500/10' : 'bg-muted'
+                        module.status === 'synced' ? 'bg-success/10' : 'bg-muted'
                       )}>
                         <Icon className={cn(
                           "h-5 w-5",
-                          module.status === 'synced' ? 'text-green-500' : 'text-muted-foreground'
+                          module.status === 'synced' ? 'text-success' : 'text-muted-foreground'
                         )} />
                       </div>
                       <div>
@@ -296,12 +296,12 @@ export function ExtensionSyncStatus() {
         <CardContent>
           <div className="grid grid-cols-3 gap-4 text-center">
             <div className="p-3 rounded-lg bg-muted/50">
-              <Package className="h-5 w-5 mx-auto mb-1 text-blue-500" />
+              <Package className="h-5 w-5 mx-auto mb-1 text-info" />
               <p className="text-lg font-bold">{syncData?.importsCount || 0}</p>
               <p className="text-xs text-muted-foreground">Imports totaux</p>
             </div>
             <div className="p-3 rounded-lg bg-muted/50">
-              <Store className="h-5 w-5 mx-auto mb-1 text-green-500" />
+              <Store className="h-5 w-5 mx-auto mb-1 text-success" />
               <p className="text-lg font-bold">{syncData?.stores || 0}</p>
               <p className="text-xs text-muted-foreground">Boutiques</p>
             </div>

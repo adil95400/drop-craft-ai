@@ -56,11 +56,11 @@ export function BlogDashboard({ onCreatePost, onEditPost }: BlogDashboardProps) 
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'published':
-        return <Badge className="bg-green-100 text-green-800">Publié</Badge>
+        return <Badge className="bg-success/10 text-success">Publié</Badge>
       case 'draft':
         return <Badge variant="secondary">Brouillon</Badge>
       case 'scheduled':
-        return <Badge className="bg-blue-100 text-blue-800">Programmé</Badge>
+        return <Badge className="bg-info/10 text-blue-800">Programmé</Badge>
       default:
         return <Badge variant="outline">{status}</Badge>
     }
@@ -71,24 +71,24 @@ export function BlogDashboard({ onCreatePost, onEditPost }: BlogDashboardProps) 
       title: 'Articles publiés',
       value: stats.published,
       icon: BookOpen,
-      color: 'text-green-600',
-      bg: 'bg-green-100',
+      color: 'text-success',
+      bg: 'bg-success/10',
       href: '/marketing/blog'
     },
     {
       title: 'Brouillons',
       value: stats.drafts,
       icon: FileText,
-      color: 'text-yellow-600',
-      bg: 'bg-yellow-100',
+      color: 'text-warning',
+      bg: 'bg-warning/10',
       href: '/marketing/blog'
     },
     {
       title: 'Vues totales',
       value: stats.totalViews.toLocaleString(),
       icon: Eye,
-      color: 'text-blue-600',
-      bg: 'bg-blue-100',
+      color: 'text-info',
+      bg: 'bg-info/10',
       href: '/analytics'
     },
     {

@@ -59,7 +59,7 @@ export function CatalogStockAlerts({ products, onSelectProducts, onOpenAutoOrder
             )}
             {outOfStock.length > 0 && lowStock.length > 0 && ' · '}
             {lowStock.length > 0 && (
-              <span className="text-amber-600 dark:text-amber-400">{lowStock.length} stock faible</span>
+              <span className="text-warning dark:text-amber-400">{lowStock.length} stock faible</span>
             )}
           </p>
         </div>
@@ -111,8 +111,8 @@ export function CatalogStockAlerts({ products, onSelectProducts, onOpenAutoOrder
                 <div className="space-y-1">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <AlertTriangle className="h-3.5 w-3.5 text-amber-500" />
-                      <span className="text-xs font-medium text-amber-600 dark:text-amber-400">Stock faible (&lt;10)</span>
+                      <AlertTriangle className="h-3.5 w-3.5 text-warning" />
+                      <span className="text-xs font-medium text-warning dark:text-amber-400">Stock faible (&lt;10)</span>
                     </div>
                     <Button
                       variant="outline"

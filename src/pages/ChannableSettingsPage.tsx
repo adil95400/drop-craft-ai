@@ -289,7 +289,7 @@ export default function ChannableSettingsPage() {
                   <CardHeader>
                     <div className="flex items-center gap-3">
                       <div className="p-2 rounded-xl bg-gradient-to-br from-yellow-500/20 to-yellow-500/5">
-                        <Bell className="w-5 h-5 text-yellow-600" />
+                        <Bell className="w-5 h-5 text-warning" />
                       </div>
                       <div>
                         <CardTitle>{t('notifications.title')}</CardTitle>
@@ -352,8 +352,8 @@ export default function ChannableSettingsPage() {
                 <Card>
                   <CardHeader>
                     <div className="flex items-center gap-3">
-                      <div className="p-2 rounded-xl bg-gradient-to-br from-green-500/20 to-green-500/5">
-                        <Eye className="w-5 h-5 text-green-600" />
+                      <div className="p-2 rounded-xl bg-gradient-to-br from-success/20 to-green-500/5">
+                        <Eye className="w-5 h-5 text-success" />
                       </div>
                       <div>
                         <CardTitle>{t('privacy.title')}</CardTitle>
@@ -408,8 +408,8 @@ export default function ChannableSettingsPage() {
                 <Card>
                   <CardHeader>
                     <div className="flex items-center gap-3">
-                      <div className="p-2 rounded-xl bg-gradient-to-br from-red-500/20 to-red-500/5">
-                        <Shield className="w-5 h-5 text-red-600" />
+                      <div className="p-2 rounded-xl bg-gradient-to-br from-destructive/20 to-red-500/5">
+                        <Shield className="w-5 h-5 text-destructive" />
                       </div>
                       <div>
                         <CardTitle>{t('security.title')}</CardTitle>
@@ -516,8 +516,8 @@ export default function ChannableSettingsPage() {
                 <Card>
                   <CardHeader>
                     <div className="flex items-center gap-3">
-                      <div className="p-2 rounded-xl bg-gradient-to-br from-blue-500/20 to-blue-500/5">
-                        <User className="w-5 h-5 text-blue-600" />
+                      <div className="p-2 rounded-xl bg-gradient-to-br from-info/20 to-blue-500/5">
+                        <User className="w-5 h-5 text-info" />
                       </div>
                       <div>
                         <CardTitle>{t('account.title')}</CardTitle>
@@ -539,14 +539,14 @@ export default function ChannableSettingsPage() {
                   </CardContent>
                 </Card>
 
-                <Card className="border-red-500/30">
+                <Card className="border-destructive/30">
                   <CardHeader>
                     <div className="flex items-center gap-3">
-                      <div className="p-2 rounded-xl bg-red-500/10">
-                        <AlertTriangle className="w-5 h-5 text-red-600" />
+                      <div className="p-2 rounded-xl bg-destructive/10">
+                        <AlertTriangle className="w-5 h-5 text-destructive" />
                       </div>
                       <div>
-                        <CardTitle className="text-red-600">{t('account.dangerZone.title')}</CardTitle>
+                        <CardTitle className="text-destructive">{t('account.dangerZone.title')}</CardTitle>
                         <CardDescription>{t('account.dangerZone.description')}</CardDescription>
                       </div>
                     </div>

@@ -187,22 +187,22 @@ export const ConnectionManager = () => {
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'connected':
-        return <Link className="w-4 h-4 text-green-600" />
+        return <Link className="w-4 h-4 text-success" />
       case 'disconnected':
         return <Unlink className="w-4 h-4 text-gray-400" />
       default:
-        return <RefreshCw className="w-4 h-4 text-yellow-600" />
+        return <RefreshCw className="w-4 h-4 text-warning" />
     }
   }
 
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'connected':
-        return <Badge className="bg-green-100 text-green-800">Connecté</Badge>
+        return <Badge className="bg-success/10 text-success">Connecté</Badge>
       case 'disconnected':
         return <Badge variant="outline">Déconnecté</Badge>
       default:
-        return <Badge className="bg-yellow-100 text-yellow-800">En cours</Badge>
+        return <Badge className="bg-warning/10 text-yellow-800">En cours</Badge>
     }
   }
 

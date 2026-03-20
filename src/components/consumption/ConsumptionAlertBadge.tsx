@@ -20,9 +20,9 @@ import { cn } from '@/lib/utils';
 const ALERT_STYLES = {
   warning_10: {
     icon: AlertTriangle,
-    bgColor: 'bg-yellow-50 dark:bg-yellow-950/30',
+    bgColor: 'bg-warning/5 dark:bg-yellow-950/30',
     textColor: 'text-yellow-700 dark:text-yellow-400',
-    borderColor: 'border-yellow-200 dark:border-yellow-800'
+    borderColor: 'border-warning/20 dark:border-yellow-800'
   },
   warning_5: {
     icon: AlertTriangle,
@@ -32,15 +32,15 @@ const ALERT_STYLES = {
   },
   exhausted: {
     icon: XCircle,
-    bgColor: 'bg-red-50 dark:bg-red-950/30',
+    bgColor: 'bg-destructive/5 dark:bg-red-950/30',
     textColor: 'text-red-700 dark:text-red-400',
-    borderColor: 'border-red-200 dark:border-red-800'
+    borderColor: 'border-destructive/20 dark:border-red-800'
   },
   reset: {
     icon: CheckCircle,
-    bgColor: 'bg-green-50 dark:bg-green-950/30',
-    textColor: 'text-green-700 dark:text-green-400',
-    borderColor: 'border-green-200 dark:border-green-800'
+    bgColor: 'bg-success/5 dark:bg-green-950/30',
+    textColor: 'text-success dark:text-green-400',
+    borderColor: 'border-success/20 dark:border-green-800'
   }
 };
 
@@ -141,7 +141,7 @@ export function ConsumptionAlertBadge() {
         <ScrollArea className="h-[300px]">
           {alerts.length === 0 ?
           <div className="p-6 text-center text-muted-foreground">
-              <CheckCircle className="h-8 w-8 mx-auto mb-2 text-green-500" />
+              <CheckCircle className="h-8 w-8 mx-auto mb-2 text-success" />
               <p className="text-sm">Aucune alerte</p>
               <p className="text-xs">Vos quotas sont en bonne santé</p>
             </div> :

@@ -150,18 +150,18 @@ export function SecurityTab() {
           {/* Security Checklist */}
           <div className="space-y-3">
             <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
-              <CheckCircle2 className="h-5 w-5 text-green-500" />
+              <CheckCircle2 className="h-5 w-5 text-success" />
               <span className="text-sm">Email vérifié</span>
             </div>
             <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
-              <CheckCircle2 className="h-5 w-5 text-green-500" />
+              <CheckCircle2 className="h-5 w-5 text-success" />
               <span className="text-sm">Mot de passe défini</span>
             </div>
-            <div className={`flex items-center gap-3 p-3 rounded-lg ${twoFactorEnabled ? 'bg-muted/50' : 'bg-yellow-500/10'}`}>
+            <div className={`flex items-center gap-3 p-3 rounded-lg ${twoFactorEnabled ? 'bg-muted/50' : 'bg-warning/10'}`}>
               {twoFactorEnabled ? (
-                <CheckCircle2 className="h-5 w-5 text-green-500" />
+                <CheckCircle2 className="h-5 w-5 text-success" />
               ) : (
-                <AlertCircle className="h-5 w-5 text-yellow-500" />
+                <AlertCircle className="h-5 w-5 text-warning" />
               )}
               <span className="text-sm">Authentification à deux facteurs {twoFactorEnabled ? 'activée' : 'désactivée'}</span>
             </div>
@@ -201,16 +201,16 @@ export function SecurityTab() {
                   <div className="h-1 flex-1 bg-muted rounded-full overflow-hidden">
                     <div 
                       className={`h-full transition-all ${
-                        passwordStrength === 'Fort' ? 'w-full bg-green-500' :
-                        passwordStrength === 'Moyen' ? 'w-2/3 bg-yellow-500' :
-                        'w-1/3 bg-red-500'
+                        passwordStrength === 'Fort' ? 'w-full bg-success' :
+                        passwordStrength === 'Moyen' ? 'w-2/3 bg-warning' :
+                        'w-1/3 bg-destructive'
                       }`}
                     />
                   </div>
                   <span className={`text-xs ${
-                    passwordStrength === 'Fort' ? 'text-green-500' :
-                    passwordStrength === 'Moyen' ? 'text-yellow-500' :
-                    'text-red-500'
+                    passwordStrength === 'Fort' ? 'text-success' :
+                    passwordStrength === 'Moyen' ? 'text-warning' :
+                    'text-destructive'
                   }`}>{passwordStrength}</span>
                 </div>
               )}
@@ -245,7 +245,7 @@ export function SecurityTab() {
             <div>
               <div className="font-medium flex items-center gap-2">
                 2FA 
-                {twoFactorEnabled && <Badge className="bg-green-500">Activé</Badge>}
+                {twoFactorEnabled && <Badge className="bg-success">Activé</Badge>}
               </div>
               <div className="text-sm text-muted-foreground">
                 Ajoutez une couche de sécurité supplémentaire

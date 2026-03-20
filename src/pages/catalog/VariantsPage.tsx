@@ -40,9 +40,9 @@ export default function VariantsPage() {
   }, [issues, activeTab, searchQuery])
 
   const issueCategories = [
-    { id: 'no-stock', label: 'Sans stock', icon: Package, count: stats.noStockCount, color: 'text-red-500', bg: 'bg-red-500/10', ring: 'ring-red-500' },
-    { id: 'no-price', label: 'Sans prix', icon: DollarSign, count: stats.noPriceCount, color: 'text-amber-500', bg: 'bg-amber-500/10', ring: 'ring-amber-500' },
-    { id: 'not-synced', label: 'Non synchronisées', icon: RefreshCw, count: stats.notSyncedCount, color: 'text-blue-500', bg: 'bg-blue-500/10', ring: 'ring-blue-500' },
+    { id: 'no-stock', label: 'Sans stock', icon: Package, count: stats.noStockCount, color: 'text-destructive', bg: 'bg-destructive/10', ring: 'ring-red-500' },
+    { id: 'no-price', label: 'Sans prix', icon: DollarSign, count: stats.noPriceCount, color: 'text-warning', bg: 'bg-warning/10', ring: 'ring-amber-500' },
+    { id: 'not-synced', label: 'Non synchronisées', icon: RefreshCw, count: stats.notSyncedCount, color: 'text-info', bg: 'bg-info/10', ring: 'ring-blue-500' },
     { id: 'inconsistent', label: 'Incohérentes', icon: AlertTriangle, count: stats.inconsistentCount, color: 'text-purple-500', bg: 'bg-purple-500/10', ring: 'ring-purple-500' },
   ]
 
@@ -148,7 +148,7 @@ export default function VariantsPage() {
                 ) : filteredIssues.length === 0 ? (
                   <div className="text-center py-16">
                     <motion.div initial={{ scale: 0.8 }} animate={{ scale: 1 }} transition={{ type: 'spring' }}>
-                      <CheckCircle className="h-16 w-16 text-emerald-500 mx-auto mb-4" />
+                      <CheckCircle className="h-16 w-16 text-success mx-auto mb-4" />
                     </motion.div>
                     <h3 className="text-lg font-semibold">Toutes les variantes sont conformes</h3>
                     <p className="text-muted-foreground">Aucun problème détecté</p>

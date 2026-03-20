@@ -149,7 +149,7 @@ export function QuickConnectTokenModal({
             <>
               <div className="space-y-2">
                 <Label className="text-xs font-medium flex items-center gap-2">
-                  <CheckCircle className="h-3 w-3 text-green-500" />
+                  <CheckCircle className="h-3 w-3 text-success" />
                   Token généré avec succès
                 </Label>
                 <div className="flex gap-2">
@@ -164,7 +164,7 @@ export function QuickConnectTokenModal({
                     onClick={copyToken}
                   >
                     {copied ? (
-                      <CheckCircle className="h-4 w-4 text-green-500" />
+                      <CheckCircle className="h-4 w-4 text-success" />
                     ) : (
                       <Copy className="h-4 w-4" />
                     )}

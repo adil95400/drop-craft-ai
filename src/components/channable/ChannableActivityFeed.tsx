@@ -46,18 +46,18 @@ interface ChannableActivityFeedProps {
 }
 
 const TYPE_CONFIG = {
-  sync: { icon: RefreshCw, color: 'text-blue-500', bg: 'bg-blue-500/10' },
-  order: { icon: ShoppingCart, color: 'text-green-500', bg: 'bg-green-500/10' },
+  sync: { icon: RefreshCw, color: 'text-info', bg: 'bg-info/10' },
+  order: { icon: ShoppingCart, color: 'text-success', bg: 'bg-success/10' },
   product: { icon: Package, color: 'text-purple-500', bg: 'bg-purple-500/10' },
-  alert: { icon: AlertCircle, color: 'text-amber-500', bg: 'bg-amber-500/10' },
+  alert: { icon: AlertCircle, color: 'text-warning', bg: 'bg-warning/10' },
   system: { icon: Zap, color: 'text-primary', bg: 'bg-primary/10' },
 }
 
 const STATUS_COLORS = {
-  success: 'text-green-500',
-  error: 'text-red-500',
-  warning: 'text-amber-500',
-  info: 'text-blue-500',
+  success: 'text-success',
+  error: 'text-destructive',
+  warning: 'text-warning',
+  info: 'text-info',
 }
 
 export function ChannableActivityFeed({
@@ -102,7 +102,7 @@ export function ChannableActivityFeed({
             {title}
             {realtime && (
               <Badge variant="outline" className="ml-2 text-xs animate-pulse">
-                <span className="w-2 h-2 bg-green-500 rounded-full mr-1.5" />
+                <span className="w-2 h-2 bg-success rounded-full mr-1.5" />
                 Live
               </Badge>
             )}
@@ -176,8 +176,8 @@ export function ChannableActivityFeed({
                             variant="outline" 
                             className={cn(
                               "text-xs h-5",
-                              event.metadata.trend === 'up' && "text-green-600 border-green-200",
-                              event.metadata.trend === 'down' && "text-red-600 border-red-200"
+                              event.metadata.trend === 'up' && "text-success border-success/20",
+                              event.metadata.trend === 'down' && "text-destructive border-destructive/20"
                             )}
                           >
                             {event.metadata.trend === 'up' && <TrendingUp className="h-3 w-3 mr-1" />}

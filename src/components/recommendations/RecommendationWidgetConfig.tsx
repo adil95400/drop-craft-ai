@@ -50,9 +50,9 @@ const defaultStrategies: StrategyConfig = {
 };
 
 const strategyInfo = {
-  cross_sell: { label: 'Cross-sell', desc: 'Produits complémentaires souvent achetés ensemble', icon: Target, color: 'text-blue-500' },
-  upsell: { label: 'Up-sell', desc: 'Versions premium ou supérieures du produit consulté', icon: Zap, color: 'text-amber-500' },
-  bundle: { label: 'Bundles', desc: 'Offres groupées avec réduction pour paniers plus élevés', icon: ShoppingCart, color: 'text-emerald-500' },
+  cross_sell: { label: 'Cross-sell', desc: 'Produits complémentaires souvent achetés ensemble', icon: Target, color: 'text-info' },
+  upsell: { label: 'Up-sell', desc: 'Versions premium ou supérieures du produit consulté', icon: Zap, color: 'text-warning' },
+  bundle: { label: 'Bundles', desc: 'Offres groupées avec réduction pour paniers plus élevés', icon: ShoppingCart, color: 'text-success' },
   similar: { label: 'Similaires', desc: 'Produits de même catégorie ou caractéristiques proches', icon: Sparkles, color: 'text-purple-500' },
   personalized: { label: 'Personnalisé', desc: 'Basé sur l\'historique de navigation du client', icon: Sparkles, color: 'text-primary' },
 };

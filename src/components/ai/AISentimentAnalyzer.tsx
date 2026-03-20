@@ -29,15 +29,15 @@ export const AISentimentAnalyzer = () => {
   };
 
   const getSentimentIcon = (sentiment: number) => {
-    if (sentiment > 0.3) return <TrendingUp className="h-4 w-4 text-green-500" />;
-    if (sentiment < -0.3) return <TrendingDown className="h-4 w-4 text-red-500" />;
-    return <Minus className="h-4 w-4 text-yellow-500" />;
+    if (sentiment > 0.3) return <TrendingUp className="h-4 w-4 text-success" />;
+    if (sentiment < -0.3) return <TrendingDown className="h-4 w-4 text-destructive" />;
+    return <Minus className="h-4 w-4 text-warning" />;
   };
 
   const getSentimentColor = (sentiment: number) => {
-    if (sentiment > 0.3) return 'text-green-600 dark:text-green-400';
-    if (sentiment < -0.3) return 'text-red-600 dark:text-red-400';
-    return 'text-yellow-600 dark:text-yellow-400';
+    if (sentiment > 0.3) return 'text-success dark:text-green-400';
+    if (sentiment < -0.3) return 'text-destructive dark:text-red-400';
+    return 'text-warning dark:text-yellow-400';
   };
 
   const getSentimentProgress = (sentiment: number) => {

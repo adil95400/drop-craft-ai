@@ -141,9 +141,9 @@ export default function SyncManagerPage() {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'connected': return 'bg-green-100 text-green-800';
-      case 'syncing': return 'bg-blue-100 text-blue-800';
-      case 'error': return 'bg-red-100 text-red-800';
+      case 'connected': return 'bg-success/10 text-success';
+      case 'syncing': return 'bg-info/10 text-blue-800';
+      case 'error': return 'bg-destructive/10 text-red-800';
       default: return 'bg-gray-100 text-gray-800';
     }
   };
@@ -303,9 +303,9 @@ export default function SyncManagerPage() {
                       </div>
 
                       {connection.error_message && (
-                        <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+                        <div className="mt-4 p-3 bg-destructive/5 border border-destructive/20 rounded-lg">
                           <div className="flex items-center gap-2">
-                            <AlertCircle className="h-4 w-4 text-red-600" />
+                            <AlertCircle className="h-4 w-4 text-destructive" />
                             <p className="text-sm text-red-800">
                               Erreur: {connection.error_message}
                             </p>
@@ -327,7 +327,7 @@ export default function SyncManagerPage() {
                         {getPlatformIcon(connection.platform)}
                         <div>
                           <h3 className="font-semibold">{connection.platform}</h3>
-                          <Badge variant="outline" className="bg-green-50">Actif</Badge>
+                          <Badge variant="outline" className="bg-success/5">Actif</Badge>
                         </div>
                       </div>
                       <Button onClick={() => handleManualSync(connection.id)}>
@@ -341,7 +341,7 @@ export default function SyncManagerPage() {
 
             <TabsContent value="errors" className="space-y-4 mt-4">
               {connections.filter(c => c.status === 'error').map((connection) => (
-                <Card key={connection.id} className="border-red-200">
+                <Card key={connection.id} className="border-destructive/20">
                   <CardContent className="pt-6">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-4">

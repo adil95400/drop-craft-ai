@@ -69,9 +69,9 @@ const importMethodsConfig = [
     title: 'Import Rapide',
     description: 'Import unitaire ou en masse avec URL. La méthode la plus rapide.',
     icon: Bolt,
-    color: 'from-orange-500 to-red-600',
-    bgColor: 'bg-orange-500/10',
-    iconColor: 'text-orange-500',
+    color: 'from-orange-500 to-destructive',
+    bgColor: 'bg-warning/10',
+    iconColor: 'text-warning',
     borderColor: 'border-orange-500/20 hover:border-orange-500/50',
     link: '/import/autods',
     badge: '⭐ Recommandé',
@@ -101,10 +101,10 @@ const importMethodsConfig = [
     title: 'CSV / Excel',
     description: 'Importez vos catalogues depuis des fichiers avec mapping intelligent.',
     icon: FileSpreadsheet,
-    color: 'from-green-500 to-green-600',
-    bgColor: 'bg-green-500/10',
-    iconColor: 'text-green-500',
-    borderColor: 'border-green-500/20 hover:border-green-500/50',
+    color: 'from-success to-success',
+    bgColor: 'bg-success/10',
+    iconColor: 'text-success',
+    borderColor: 'border-success/20 hover:border-success/50',
     link: '/import/quick',
     features: ['Glisser-déposer', 'Mapping automatique', 'Validation des colonnes'],
     avgTime: '~2 min',
@@ -281,11 +281,11 @@ function ImportHubContent() {
   // Status helpers
   const getStatusConfig = useCallback((status: string) => {
     const configs: Record<string, { icon: any; color: string; bgColor: string; label: string }> = {
-      completed: { icon: CheckCircle, color: 'text-green-500', bgColor: 'bg-green-500/10', label: 'Terminé' },
-      processing: { icon: Loader2, color: 'text-blue-500', bgColor: 'bg-blue-500/10', label: 'En cours' },
-      failed: { icon: XCircle, color: 'text-red-500', bgColor: 'bg-red-500/10', label: 'Échoué' },
-      pending: { icon: Clock, color: 'text-amber-500', bgColor: 'bg-amber-500/10', label: 'En attente' },
-      partial: { icon: AlertTriangle, color: 'text-orange-500', bgColor: 'bg-orange-500/10', label: 'Partiel' }
+      completed: { icon: CheckCircle, color: 'text-success', bgColor: 'bg-success/10', label: 'Terminé' },
+      processing: { icon: Loader2, color: 'text-info', bgColor: 'bg-info/10', label: 'En cours' },
+      failed: { icon: XCircle, color: 'text-destructive', bgColor: 'bg-destructive/10', label: 'Échoué' },
+      pending: { icon: Clock, color: 'text-warning', bgColor: 'bg-warning/10', label: 'En attente' },
+      partial: { icon: AlertTriangle, color: 'text-warning', bgColor: 'bg-warning/10', label: 'Partiel' }
     };
     return configs[status] || configs.pending;
   }, []);
@@ -339,8 +339,8 @@ function ImportHubContent() {
               <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
                 <div className="flex items-center gap-6 flex-wrap">
                   <div className="flex items-center gap-2">
-                    <div className="p-2 bg-green-500/10 rounded-lg">
-                      <Wifi className="w-4 h-4 text-green-500" />
+                    <div className="p-2 bg-success/10 rounded-lg">
+                      <Wifi className="w-4 h-4 text-success" />
                     </div>
                     <div>
                       <p className="text-sm font-medium">{channelStats.totalConnected} canaux connectés</p>
@@ -353,8 +353,8 @@ function ImportHubContent() {
                   <Separator orientation="vertical" className="h-10 hidden lg:block" />
                   
                   <div className="flex items-center gap-2">
-                    <div className="p-2 bg-blue-500/10 rounded-lg">
-                      <Package className="w-4 h-4 text-blue-500" />
+                    <div className="p-2 bg-info/10 rounded-lg">
+                      <Package className="w-4 h-4 text-info" />
                     </div>
                     <div>
                       <p className="text-sm font-medium">{channelStats.totalProducts.toLocaleString()} produits</p>
@@ -383,7 +383,7 @@ function ImportHubContent() {
                           <div className="flex items-center gap-1.5 px-2.5 py-1.5 bg-background border rounded-full text-sm">
                             <span>{platformLogos[channel.platform_type?.toLowerCase()] || platformLogos.default}</span>
                             <span className="font-medium truncate max-w-[80px]">{channel.platform_name}</span>
-                            <div className="w-2 h-2 rounded-full bg-green-500" />
+                            <div className="w-2 h-2 rounded-full bg-success" />
                           </div>
                         </TooltipTrigger>
                         <TooltipContent>
@@ -455,12 +455,12 @@ function ImportHubContent() {
         <AnimatePresence>
           {activeImports.length > 0 && (
             <motion.div {...getMotionProps(prefersReducedMotion, { initial: { opacity: 0, height: 0 }, animate: { opacity: 1, height: 'auto' }, exit: { opacity: 0, height: 0 } })} className="mb-6">
-              <Card className="border-blue-500/30 bg-blue-500/5">
+              <Card className="border-info/30 bg-info/5">
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                      <div className="p-2 bg-blue-500/20 rounded-lg">
-                        <Loader2 className={cn("w-5 h-5 text-blue-500", !prefersReducedMotion && "animate-spin")} />
+                      <div className="p-2 bg-info/20 rounded-lg">
+                        <Loader2 className={cn("w-5 h-5 text-info", !prefersReducedMotion && "animate-spin")} />
                       </div>
                       <div>
                         <p className="font-medium">{activeImports.length} import{activeImports.length > 1 ? 's' : ''} en cours</p>
@@ -666,7 +666,7 @@ function ImportHubContent() {
                           <div className="flex items-center gap-4">
                             <div className="text-right">
                               <p className="font-medium">{imp.success_rows || 0} produits</p>
-                              {imp.error_rows > 0 && <p className="text-xs text-red-500">{imp.error_rows} erreurs</p>}
+                              {imp.error_rows > 0 && <p className="text-xs text-destructive">{imp.error_rows} erreurs</p>}
                             </div>
                             
                             {imp.status === 'processing' && imp.total_rows > 0 && (
@@ -784,7 +784,7 @@ function ImportHubContent() {
                         <div className="space-y-2 mb-4">
                           {method.features.map((feature, i) => (
                             <div key={i} className="flex items-center gap-2 text-sm">
-                              <CheckCircle className="w-3.5 h-3.5 text-green-500 flex-shrink-0" />
+                              <CheckCircle className="w-3.5 h-3.5 text-success flex-shrink-0" />
                               <span className="text-muted-foreground">{feature}</span>
                             </div>
                           ))}
@@ -878,7 +878,7 @@ function ImportHubContent() {
                               </p>
                             </div>
                           </div>
-                          <Badge variant="outline" className="bg-green-500/10 text-green-600 border-green-500/20">
+                          <Badge variant="outline" className="bg-success/10 text-success border-success/20">
                             <Wifi className="w-3 h-3 mr-1" />
                             Connecté
                           </Badge>
@@ -957,7 +957,7 @@ function ImportHubContent() {
                               <p className="text-xs text-muted-foreground">Marketplace</p>
                             </div>
                           </div>
-                          <Badge variant="outline" className="bg-green-500/10 text-green-600 border-green-500/20">
+                          <Badge variant="outline" className="bg-success/10 text-success border-success/20">
                             <Wifi className="w-3 h-3 mr-1" />
                             Connecté
                           </Badge>
@@ -1098,7 +1098,7 @@ function ImportHubContent() {
                           <div className="flex items-center gap-4">
                             <div className="text-right">
                               <p className="font-medium">{imp.success_rows || 0} produits</p>
-                              {imp.error_rows > 0 && <p className="text-xs text-red-500">{imp.error_rows} erreurs</p>}
+                              {imp.error_rows > 0 && <p className="text-xs text-destructive">{imp.error_rows} erreurs</p>}
                             </div>
                             
                             {getStatusBadge(imp.status)}

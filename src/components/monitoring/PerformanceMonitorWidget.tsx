@@ -42,11 +42,11 @@ export const PerformanceMonitorWidget = memo(function PerformanceMonitorWidget({
   const getStatusColor = (status: 'good' | 'warning' | 'critical') => {
     switch (status) {
       case 'good':
-        return 'text-green-500';
+        return 'text-success';
       case 'warning':
-        return 'text-yellow-500';
+        return 'text-warning';
       case 'critical':
-        return 'text-red-500';
+        return 'text-destructive';
     }
   };
 
@@ -202,9 +202,9 @@ export const PerformanceMonitorWidget = memo(function PerformanceMonitorWidget({
                   key={alert.id}
                   className={cn(
                     'text-xs p-2 rounded-md flex items-start gap-2',
-                    alert.type === 'critical' && 'bg-red-500/10 text-red-500',
-                    alert.type === 'warning' && 'bg-yellow-500/10 text-yellow-500',
-                    alert.type === 'error' && 'bg-orange-500/10 text-orange-500'
+                    alert.type === 'critical' && 'bg-destructive/10 text-destructive',
+                    alert.type === 'warning' && 'bg-warning/10 text-warning',
+                    alert.type === 'error' && 'bg-warning/10 text-warning'
                   )}
                 >
                   <AlertTriangle className="h-3 w-3 mt-0.5 shrink-0" />
@@ -318,9 +318,9 @@ const PerformanceDetailsView = memo(function PerformanceDetailsView({
                 key={alert.id}
                 className={cn(
                   'text-xs p-2 rounded-md flex items-start gap-2',
-                  alert.type === 'critical' && 'bg-red-500/10 text-red-500',
-                  alert.type === 'warning' && 'bg-yellow-500/10 text-yellow-500',
-                  alert.type === 'error' && 'bg-orange-500/10 text-orange-500'
+                  alert.type === 'critical' && 'bg-destructive/10 text-destructive',
+                  alert.type === 'warning' && 'bg-warning/10 text-warning',
+                  alert.type === 'error' && 'bg-warning/10 text-warning'
                 )}
               >
                 <AlertTriangle className="h-3 w-3 mt-0.5 shrink-0" />

@@ -132,10 +132,10 @@ export default function PerformancePage() {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'excellent': return 'bg-green-500'
-      case 'good': return 'bg-blue-500'
-      case 'warning': return 'bg-orange-500'
-      case 'critical': return 'bg-red-500'
+      case 'excellent': return 'bg-success'
+      case 'good': return 'bg-info'
+      case 'warning': return 'bg-warning'
+      case 'critical': return 'bg-destructive'
       default: return 'bg-gray-500'
     }
   }
@@ -153,11 +153,11 @@ export default function PerformancePage() {
   const getTrendIcon = (trend: string) => {
     switch (trend) {
       case 'improving':
-        return <CheckCircle className="w-4 h-4 text-green-500" />
+        return <CheckCircle className="w-4 h-4 text-success" />
       case 'stable':
-        return <Activity className="w-4 h-4 text-blue-500" />
+        return <Activity className="w-4 h-4 text-info" />
       case 'increasing':
-        return <TrendingDown className="w-4 h-4 text-orange-500" />
+        return <TrendingDown className="w-4 h-4 text-warning" />
       default:
         return <Activity className="w-4 h-4 text-gray-500" />
     }
@@ -281,11 +281,11 @@ export default function PerformancePage() {
               <CardContent className="space-y-6">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="text-center">
-                    <div className="text-2xl font-bold text-green-600">99.7%</div>
+                    <div className="text-2xl font-bold text-success">99.7%</div>
                     <p className="text-sm text-muted-foreground">Disponibilité</p>
                   </div>
                   <div className="text-center">
-                    <div className="text-2xl font-bold text-blue-600">156</div>
+                    <div className="text-2xl font-bold text-info">156</div>
                     <p className="text-sm text-muted-foreground">Req/min</p>
                   </div>
                   <div className="text-center">
@@ -293,7 +293,7 @@ export default function PerformancePage() {
                     <p className="text-sm text-muted-foreground">Extensions actives</p>
                   </div>
                   <div className="text-center">
-                    <div className="text-2xl font-bold text-orange-600">4.2s</div>
+                    <div className="text-2xl font-bold text-warning">4.2s</div>
                     <p className="text-sm text-muted-foreground">Temps de démarrage</p>
                   </div>
                 </div>

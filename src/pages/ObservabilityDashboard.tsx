@@ -11,17 +11,17 @@ import { useSystemHealthV2, useMetricsSnapshotV2, useUptimeReportV2, useLogAggre
 import { Skeleton } from "@/components/ui/skeleton";
 
 const statusColors: Record<string, string> = {
-  healthy: "bg-emerald-500/15 text-emerald-700 border-emerald-500/30",
-  operational: "bg-emerald-500/15 text-emerald-700 border-emerald-500/30",
-  warning: "bg-amber-500/15 text-amber-700 border-amber-500/30",
-  degraded: "bg-red-500/15 text-red-700 border-red-500/30",
+  healthy: "bg-success/15 text-emerald-700 border-emerald-500/30",
+  operational: "bg-success/15 text-emerald-700 border-emerald-500/30",
+  warning: "bg-warning/15 text-amber-700 border-amber-500/30",
+  degraded: "bg-destructive/15 text-red-700 border-destructive/30",
 };
 
 const severityColors: Record<string, string> = {
-  info: "bg-blue-500/15 text-blue-700",
-  warn: "bg-amber-500/15 text-amber-700",
-  error: "bg-red-500/15 text-red-700",
-  critical: "bg-red-600/15 text-red-800",
+  info: "bg-info/15 text-blue-700",
+  warn: "bg-warning/15 text-amber-700",
+  error: "bg-destructive/15 text-red-700",
+  critical: "bg-destructive/15 text-red-800",
 };
 
 export default function ObservabilityDashboard() {
@@ -67,7 +67,7 @@ export default function ObservabilityDashboard() {
           <Card className="border-l-4" style={{ borderLeftColor: health.status === "healthy" ? "hsl(var(--primary))" : "hsl(var(--destructive))" }}>
             <CardContent className="py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
               <div className="flex items-center gap-3">
-                <Heart className={`h-8 w-8 ${health.status === "healthy" ? "text-emerald-500" : "text-red-500"}`} />
+                <Heart className={`h-8 w-8 ${health.status === "healthy" ? "text-success" : "text-destructive"}`} />
                 <div>
                   <p className="text-lg font-semibold">Système {health.status === "healthy" ? "opérationnel" : health.status === "warning" ? "en alerte" : "dégradé"}</p>
                   <p className="text-sm text-muted-foreground">Dernière vérification : {new Date(health.timestamp).toLocaleTimeString("fr-FR")}</p>
@@ -87,28 +87,28 @@ export default function ObservabilityDashboard() {
         {/* KPI Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <MetricCard
-            icon={<Zap className="h-5 w-5 text-blue-500" />}
+            icon={<Zap className="h-5 w-5 text-info" />}
             title="Requêtes API (1h)"
             value={health?.metrics?.api?.total_requests_1h ?? "—"}
             subtitle={`${health?.metrics?.api?.error_rate ?? 0}% erreurs`}
             loading={healthLoading}
           />
           <MetricCard
-            icon={<Clock className="h-5 w-5 text-amber-500" />}
+            icon={<Clock className="h-5 w-5 text-warning" />}
             title="Latence moyenne"
             value={health?.metrics?.api?.avg_latency_ms ? `${health.metrics.api.avg_latency_ms}ms` : "—"}
             subtitle="Dernière heure"
             loading={healthLoading}
           />
           <MetricCard
-            icon={<AlertTriangle className="h-5 w-5 text-red-500" />}
+            icon={<AlertTriangle className="h-5 w-5 text-destructive" />}
             title="Alertes actives"
             value={health?.metrics?.alerts?.active_count ?? 0}
             subtitle="Nécessitent attention"
             loading={healthLoading}
           />
           <MetricCard
-            icon={<Shield className="h-5 w-5 text-emerald-500" />}
+            icon={<Shield className="h-5 w-5 text-success" />}
             title="Uptime (30j)"
             value={uptime?.uptime_percent ? `${uptime.uptime_percent}%` : "—"}
             subtitle={uptime?.sla_status === "met" ? "SLA respecté" : "SLA à risque"}
@@ -292,10 +292,10 @@ function MetricCard({ icon, title, value, subtitle, loading }: { icon: React.Rea
 
 function ServiceIcon({ name }: { name: string }) {
   switch (name) {
-    case "database": return <Database className="h-5 w-5 text-blue-500" />;
-    case "edge_functions": return <Zap className="h-5 w-5 text-amber-500" />;
+    case "database": return <Database className="h-5 w-5 text-info" />;
+    case "edge_functions": return <Zap className="h-5 w-5 text-warning" />;
     case "storage": return <Server className="h-5 w-5 text-purple-500" />;
-    case "auth": return <Shield className="h-5 w-5 text-emerald-500" />;
+    case "auth": return <Shield className="h-5 w-5 text-success" />;
     default: return <Globe className="h-5 w-5 text-muted-foreground" />;
   }
 }

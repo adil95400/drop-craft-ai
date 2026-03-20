@@ -73,7 +73,7 @@ const MARKETPLACE_EXTENSIONS = [
     price: 39.99,
     pricing_model: 'monthly',  
     icon: TrendingUp,
-    color: 'from-green-500 to-emerald-600',
+    color: 'from-success to-emerald-600',
     rating: 4.8,
     reviews_count: 923,
     downloads: 18934,
@@ -100,7 +100,7 @@ const MARKETPLACE_EXTENSIONS = [
     price: 0,
     pricing_model: 'free',
     icon: Award,
-    color: 'from-blue-500 to-cyan-600',
+    color: 'from-info to-cyan-600',
     rating: 4.7,
     reviews_count: 1567,
     downloads: 34521,
@@ -127,7 +127,7 @@ const MARKETPLACE_EXTENSIONS = [
     price: 19.99,
     pricing_model: 'monthly',
     icon: ImageIcon,
-    color: 'from-orange-500 to-red-600',
+    color: 'from-orange-500 to-destructive',
     rating: 4.6,
     reviews_count: 734,
     downloads: 12456,
@@ -329,7 +329,7 @@ export const MarketplacePublic = () => {
             </div>
             <div className="text-right">
               {extension.price === 0 ? (
-                <Badge className="bg-green-100 text-green-800 font-medium">Free</Badge>
+                <Badge className="bg-success/10 text-success font-medium">Free</Badge>
               ) : (
                 <Badge className="bg-primary/10 text-primary font-medium">Premium</Badge>
               )}

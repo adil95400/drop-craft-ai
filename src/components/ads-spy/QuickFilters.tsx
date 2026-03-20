@@ -22,14 +22,14 @@ export function QuickFilters({ onSelectFilter, activeFilter }: QuickFiltersProps
       id: 'winners_month',
       label: 'Winners du mois',
       icon: Star,
-      color: 'from-blue-500 to-indigo-500',
+      color: 'from-info to-indigo-500',
       description: 'Meilleures performances ce mois',
     },
     {
       id: 'cash_machines',
       label: 'Cash Machines',
       icon: DollarSign,
-      color: 'from-green-500 to-emerald-500',
+      color: 'from-success to-emerald-500',
       description: 'Pubs à fort ROI',
       badge: 'NEW',
     },
@@ -37,7 +37,7 @@ export function QuickFilters({ onSelectFilter, activeFilter }: QuickFiltersProps
       id: 'viral_now',
       label: 'Viral en ce moment',
       icon: Flame,
-      color: 'from-red-500 to-pink-500',
+      color: 'from-destructive to-pink-500',
       description: 'Pubs qui explosent maintenant',
     },
     {
@@ -80,7 +80,7 @@ export function QuickFilters({ onSelectFilter, activeFilter }: QuickFiltersProps
             >
               {filter.badge && (
                 <Badge 
-                  className="absolute -top-2 -right-2 text-[10px] px-1.5 py-0.5 bg-red-500 text-white border-0"
+                  className="absolute -top-2 -right-2 text-[10px] px-1.5 py-0.5 bg-destructive text-white border-0"
                 >
                   {filter.badge}
                 </Badge>

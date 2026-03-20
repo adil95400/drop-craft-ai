@@ -181,7 +181,7 @@ export function UrlScraper() {
                 <div className="flex items-start justify-between gap-4">
                   <div className="space-y-1">
                     <div className="flex items-center gap-2">
-                      <CheckCircle2 className="h-4 w-4 text-emerald-500" />
+                      <CheckCircle2 className="h-4 w-4 text-success" />
                       <Badge variant="outline">{result.source_platform}</Badge>
                     </div>
                     <h3 className="font-semibold text-lg leading-tight">{result.title}</h3>
@@ -231,7 +231,7 @@ export function UrlScraper() {
 
                 <div className="flex items-center gap-2 pt-2">
                   <Badge variant="secondary" className="gap-1">
-                    <CheckCircle2 className="h-3 w-3 text-emerald-500" />
+                    <CheckCircle2 className="h-3 w-3 text-success" />
                     Sauvegardé dans le catalogue fournisseur
                   </Badge>
                 </div>

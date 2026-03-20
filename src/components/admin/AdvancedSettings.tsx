@@ -667,21 +667,21 @@ export const AdvancedSettings = () => {
                     </div>
                     <div className="flex justify-between">
                       <span>Base de Données</span>
-                      <Badge className="bg-green-100 text-green-800">
+                      <Badge className="bg-success/10 text-success">
                         <CheckCircle className="h-3 w-3 mr-1" />
                         Connectée
                       </Badge>
                     </div>
                     <div className="flex justify-between">
                       <span>Stockage</span>
-                      <Badge className="bg-green-100 text-green-800">
+                      <Badge className="bg-success/10 text-success">
                         <CheckCircle className="h-3 w-3 mr-1" />
                         Opérationnel
                       </Badge>
                     </div>
                     <div className="flex justify-between">
                       <span>Edge Functions</span>
-                      <Badge className="bg-yellow-100 text-yellow-800">
+                      <Badge className="bg-warning/10 text-yellow-800">
                         <Info className="h-3 w-3 mr-1" />
                         Maintenance
                       </Badge>

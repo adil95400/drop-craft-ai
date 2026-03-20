@@ -23,14 +23,14 @@ const detailedFeatures = [
     icon: ShoppingCart,
     title: 'Import Produit 1-Clic',
     description: 'Importez n\'importe quel produit directement dans votre boutique avec toutes ses variantes, images et descriptions.',
-    gradient: 'from-blue-500 to-blue-600',
+    gradient: 'from-info to-info',
     highlight: '15+ plateformes'
   },
   {
     icon: TrendingUp,
     title: 'Surveillance des Prix',
     description: 'Recevez des alertes automatiques lorsque les prix changent chez les fournisseurs pour optimiser vos marges.',
-    gradient: 'from-green-500 to-emerald-600',
+    gradient: 'from-success to-emerald-600',
     highlight: 'Temps réel'
   },
   {
@@ -51,7 +51,7 @@ const detailedFeatures = [
     icon: Target,
     title: 'Auto-Order Intelligent',
     description: 'Commandez automatiquement auprès des fournisseurs à chaque vente pour un fulfillment sans effort.',
-    gradient: 'from-red-500 to-rose-600',
+    gradient: 'from-destructive to-rose-600',
     highlight: 'Automatisé'
   },
   {

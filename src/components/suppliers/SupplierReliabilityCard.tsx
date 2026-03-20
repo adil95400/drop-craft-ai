@@ -18,27 +18,27 @@ interface SupplierReliabilityCardProps {
 export function SupplierReliabilityCard({ data, compact = false }: SupplierReliabilityCardProps) {
   const getRecommendationStyle = (rec: string) => {
     const styles: Record<string, string> = {
-      excellent: 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300',
-      good: 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300',
-      fair: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300',
+      excellent: 'bg-success/10 text-success dark:bg-green-900 dark:text-green-300',
+      good: 'bg-info/10 text-blue-700 dark:bg-blue-900 dark:text-blue-300',
+      fair: 'bg-warning/10 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300',
       caution: 'bg-orange-100 text-orange-700 dark:bg-orange-900 dark:text-orange-300',
-      avoid: 'bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300',
+      avoid: 'bg-destructive/10 text-red-700 dark:bg-red-900 dark:text-red-300',
     };
     return styles[rec] || styles.fair;
   };
 
   const getScoreColor = (score: number) => {
-    if (score >= 80) return 'text-green-600';
-    if (score >= 60) return 'text-blue-600';
-    if (score >= 40) return 'text-yellow-600';
-    return 'text-red-600';
+    if (score >= 80) return 'text-success';
+    if (score >= 60) return 'text-info';
+    if (score >= 40) return 'text-warning';
+    return 'text-destructive';
   };
 
   const getProgressColor = (score: number) => {
-    if (score >= 80) return 'bg-green-500';
-    if (score >= 60) return 'bg-blue-500';
-    if (score >= 40) return 'bg-yellow-500';
-    return 'bg-red-500';
+    if (score >= 80) return 'bg-success';
+    if (score >= 60) return 'bg-info';
+    if (score >= 40) return 'bg-warning';
+    return 'bg-destructive';
   };
 
   const score = Math.round(data.overallScore * 100);
@@ -133,7 +133,7 @@ export function SupplierReliabilityCard({ data, compact = false }: SupplierRelia
         {/* Warnings & Strengths */}
         {data.warnings.length > 0 && (
           <div className="space-y-1">
-            <p className="text-xs font-medium text-orange-600">⚠️ Points d'attention:</p>
+            <p className="text-xs font-medium text-warning">⚠️ Points d'attention:</p>
             {data.warnings.map((warning, i) => (
               <p key={i} className="text-xs text-muted-foreground pl-4">• {warning}</p>
             ))}
@@ -142,7 +142,7 @@ export function SupplierReliabilityCard({ data, compact = false }: SupplierRelia
 
         {data.strengths.length > 0 && (
           <div className="space-y-1">
-            <p className="text-xs font-medium text-green-600">✓ Points forts:</p>
+            <p className="text-xs font-medium text-success">✓ Points forts:</p>
             {data.strengths.map((strength, i) => (
               <p key={i} className="text-xs text-muted-foreground pl-4">• {strength}</p>
             ))}
@@ -166,10 +166,10 @@ function MetricItem({
 }) {
   const percentage = Math.round(score * 100);
   const getColor = (s: number) => {
-    if (s >= 0.8) return 'text-green-600';
-    if (s >= 0.6) return 'text-blue-600';
-    if (s >= 0.4) return 'text-yellow-600';
-    return 'text-red-600';
+    if (s >= 0.8) return 'text-success';
+    if (s >= 0.6) return 'text-info';
+    if (s >= 0.4) return 'text-warning';
+    return 'text-destructive';
   };
 
   return (

@@ -26,7 +26,7 @@ import {
   WifiOff
 } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
-import { useRealImportMethods } from '@/hooks/useRealImportMethods'
+import { useImportJobs } from '@/hooks/useImportJobs'
 import { type ImportMethodTemplate } from '@/hooks/useImportMethods'
 import { unifiedImportService } from '@/services/UnifiedImportService'
 import { ImportProgress } from './ImportProgress'
@@ -203,7 +203,7 @@ const importMethods: ImportMethodTemplate[] = [
 
 export const AdvancedImportMethods: React.FC = () => {
   const { toast } = useToast()
-  const { importMethods: dbMethods, isLoading, executeImport, createMethod } = useRealImportMethods()
+  const { importMethods: dbMethods, isLoading, executeImport, createMethod } = useImportJobs()
   const [selectedCategory, setSelectedCategory] = useState<string>('all')
   const [configModalOpen, setConfigModalOpen] = useState(false)
   const [selectedMethod, setSelectedMethod] = useState<ImportMethodTemplate | null>(null)
@@ -280,9 +280,9 @@ export const AdvancedImportMethods: React.FC = () => {
 
   const getComplexityColor = (complexity: string) => {
     switch (complexity) {
-      case 'easy': return 'bg-green-100 text-green-800'
-      case 'medium': return 'bg-yellow-100 text-yellow-800'
-      case 'advanced': return 'bg-red-100 text-red-800'
+      case 'easy': return 'bg-success/10 text-success'
+      case 'medium': return 'bg-warning/10 text-yellow-800'
+      case 'advanced': return 'bg-destructive/10 text-red-800'
       default: return 'bg-gray-100 text-gray-800'
     }
   }
@@ -294,7 +294,7 @@ export const AdvancedImportMethods: React.FC = () => {
         <div className="flex items-center gap-2">
           {isConnected ? (
             <>
-              <Wifi className="h-4 w-4 text-green-600 dark:text-green-400" />
+              <Wifi className="h-4 w-4 text-success dark:text-green-400" />
               <span className="text-xs text-muted-foreground">
                 Suivi en temps réel actif
               </span>

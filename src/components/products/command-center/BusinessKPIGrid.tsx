@@ -40,10 +40,10 @@ interface KPIItemProps {
 
 const variantStyles = {
   default: 'text-foreground',
-  success: 'text-emerald-600 dark:text-emerald-400',
-  warning: 'text-orange-600 dark:text-orange-400',
-  danger: 'text-red-600 dark:text-red-400',
-  info: 'text-blue-600 dark:text-blue-400'
+  success: 'text-success dark:text-emerald-400',
+  warning: 'text-warning dark:text-orange-400',
+  danger: 'text-destructive dark:text-red-400',
+  info: 'text-info dark:text-blue-400'
 }
 
 function KPIItem({ label, value, icon: Icon, variant = 'default', sublabel }: KPIItemProps) {

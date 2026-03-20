@@ -40,7 +40,7 @@ export function PublishStatsCard() {
         <div className="space-y-4">
           <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
             <div className="flex items-center gap-3">
-              <CheckCircle2 className="h-5 w-5 text-green-600" />
+              <CheckCircle2 className="h-5 w-5 text-success" />
               <div>
                 <p className="text-sm font-medium">Produits publiés</p>
                 <p className="text-xs text-muted-foreground">
@@ -54,7 +54,7 @@ export function PublishStatsCard() {
           <div className="grid grid-cols-3 gap-3">
             <div className="p-3 bg-muted rounded-lg">
               <div className="flex items-center gap-2 mb-1">
-                <Clock className="h-4 w-4 text-orange-600" />
+                <Clock className="h-4 w-4 text-warning" />
                 <p className="text-xs text-muted-foreground">Brouillons</p>
               </div>
               <p className="text-xl font-bold">{stats.draft}</p>
@@ -62,7 +62,7 @@ export function PublishStatsCard() {
 
             <div className="p-3 bg-muted rounded-lg">
               <div className="flex items-center gap-2 mb-1">
-                <CheckCircle2 className="h-4 w-4 text-green-600" />
+                <CheckCircle2 className="h-4 w-4 text-success" />
                 <p className="text-xs text-muted-foreground">Total</p>
               </div>
               <p className="text-xl font-bold">{stats.total}</p>

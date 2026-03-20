@@ -178,28 +178,28 @@ export function MonitoringConfig() {
         <CardContent>
           <div className="space-y-3">
             <div className="flex items-center gap-3 p-3 rounded-lg bg-muted">
-              <div className="w-2 h-2 rounded-full bg-green-500" />
+              <div className="w-2 h-2 rounded-full bg-success" />
               <div className="flex-1">
                 <p className="text-sm font-medium">Surveillance des prix en temps réel</p>
                 <p className="text-xs text-muted-foreground">Alertes automatiques sur les changements</p>
               </div>
             </div>
             <div className="flex items-center gap-3 p-3 rounded-lg bg-muted">
-              <div className="w-2 h-2 rounded-full bg-green-500" />
+              <div className="w-2 h-2 rounded-full bg-success" />
               <div className="flex-1">
                 <p className="text-sm font-medium">Gestion intelligente du stock</p>
                 <p className="text-xs text-muted-foreground">Réapprovisionnement automatique</p>
               </div>
             </div>
             <div className="flex items-center gap-3 p-3 rounded-lg bg-muted">
-              <div className="w-2 h-2 rounded-full bg-green-500" />
+              <div className="w-2 h-2 rounded-full bg-success" />
               <div className="flex-1">
                 <p className="text-sm font-medium">Auto-ordering intelligent</p>
                 <p className="text-xs text-muted-foreground">Commandes automatiques basées sur vos règles</p>
               </div>
             </div>
             <div className="flex items-center gap-3 p-3 rounded-lg bg-muted">
-              <div className="w-2 h-2 rounded-full bg-green-500" />
+              <div className="w-2 h-2 rounded-full bg-success" />
               <div className="flex-1">
                 <p className="text-sm font-medium">Historique et analytics</p>
                 <p className="text-xs text-muted-foreground">Suivi complet de toutes les actions</p>

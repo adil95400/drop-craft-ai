@@ -50,9 +50,9 @@ export function AdsAutomationDashboard() {
 
   const getPlatformColor = (platform: string) => {
     const colors: any = {
-      facebook: 'bg-blue-500',
+      facebook: 'bg-info',
       instagram: 'bg-pink-500',
-      google: 'bg-red-500',
+      google: 'bg-destructive',
       tiktok: 'bg-black',
     };
     return colors[platform] || 'bg-gray-500';

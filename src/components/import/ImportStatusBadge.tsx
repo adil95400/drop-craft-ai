@@ -24,13 +24,13 @@ export function ImportStatusBadge({ status, className }: ImportStatusBadgeProps)
       label: 'Terminé',
       icon: CheckCircle2,
       variant: 'default' as const,
-      className: 'bg-green-500/10 text-green-600'
+      className: 'bg-success/10 text-success'
     },
     partial: {
       label: 'Partiel',
       icon: AlertCircle,
       variant: 'default' as const,
-      className: 'bg-yellow-500/10 text-yellow-600'
+      className: 'bg-warning/10 text-warning'
     },
     failed: {
       label: 'Échoué',

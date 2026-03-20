@@ -119,13 +119,13 @@ export function SupplierComparisonPanel({
             {/* Summary Badges */}
             <div className="flex flex-wrap gap-2">
               {comparisonResult.highestMargin && (
-                <Badge className="bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300">
+                <Badge className="bg-success/10 text-success dark:bg-green-900 dark:text-green-300">
                   <TrendingUp className="w-3 h-3 mr-1" />
                   Meilleure marge: {comparisonResult.highestMargin}
                 </Badge>
               )}
               {comparisonResult.fastestShipping && (
-                <Badge className="bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300">
+                <Badge className="bg-info/10 text-blue-700 dark:bg-blue-900 dark:text-blue-300">
                   <Truck className="w-3 h-3 mr-1" />
                   Plus rapide: {comparisonResult.fastestShipping}
                 </Badge>
@@ -187,14 +187,14 @@ export function SupplierComparisonPanel({
                   {sortedSuppliers.map((supplier, index) => (
                     <TableRow 
                       key={supplier.supplierId}
-                      className={index === 0 ? 'bg-green-50 dark:bg-green-950/20' : ''}
+                      className={index === 0 ? 'bg-success/5 dark:bg-green-950/20' : ''}
                     >
                       <TableCell className="font-medium">
                         <div className="flex items-center gap-2">
                           {supplier.supplierName}
                           {index === 0 && (
                             <Badge variant="outline" className="text-xs">
-                              <Star className="w-3 h-3 mr-1 text-yellow-500" />
+                              <Star className="w-3 h-3 mr-1 text-warning" />
                               Recommandé
                             </Badge>
                           )}
@@ -243,15 +243,15 @@ export function SupplierComparisonPanel({
 }
 
 function getMarginColor(percent: number): string {
-  if (percent >= 40) return 'text-green-600';
-  if (percent >= 20) return 'text-blue-600';
-  if (percent >= 10) return 'text-yellow-600';
-  return 'text-red-600';
+  if (percent >= 40) return 'text-success';
+  if (percent >= 20) return 'text-info';
+  if (percent >= 10) return 'text-warning';
+  return 'text-destructive';
 }
 
 function getReliabilityColor(score: number): string {
-  if (score >= 0.8) return 'text-green-600';
-  if (score >= 0.6) return 'text-blue-600';
-  if (score >= 0.4) return 'text-yellow-600';
-  return 'text-red-600';
+  if (score >= 0.8) return 'text-success';
+  if (score >= 0.6) return 'text-info';
+  if (score >= 0.4) return 'text-warning';
+  return 'text-destructive';
 }

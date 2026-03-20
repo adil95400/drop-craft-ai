@@ -38,7 +38,7 @@ export function ROIAnalysisCard({ roi }: ROIAnalysisCardProps) {
             <p className="text-xs text-muted-foreground">Coût total</p>
           </div>
           <div className="text-center p-2 rounded-lg bg-muted/50">
-            <p className={cn("text-lg font-bold", profit >= 0 ? "text-green-600" : "text-destructive")}>
+            <p className={cn("text-lg font-bold", profit >= 0 ? "text-success" : "text-destructive")}>
               {formatCurrency(profit)}
             </p>
             <p className="text-xs text-muted-foreground">Profit estimé</p>
@@ -58,14 +58,14 @@ export function ROIAnalysisCard({ roi }: ROIAnalysisCardProps) {
         {roi.bestMarginProducts.length > 0 && (
           <div>
             <p className="text-xs font-medium text-muted-foreground mb-2 flex items-center gap-1">
-              <ArrowUpRight className="h-3 w-3 text-green-500" />
+              <ArrowUpRight className="h-3 w-3 text-success" />
               Top marges
             </p>
             <div className="space-y-1.5">
               {roi.bestMarginProducts.slice(0, 3).map(p => (
                 <div key={p.id} className="flex items-center justify-between text-sm">
                   <span className="truncate flex-1 mr-2">{p.name}</span>
-                  <Badge variant="outline" className="text-green-600 shrink-0">{p.profit_margin?.toFixed(0)}%</Badge>
+                  <Badge variant="outline" className="text-success shrink-0">{p.profit_margin?.toFixed(0)}%</Badge>
                 </div>
               ))}
             </div>

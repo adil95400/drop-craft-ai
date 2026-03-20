@@ -83,10 +83,10 @@ export function CompetitiveAnalysisPanel() {
   }
 
   const getScoreColor = (score: number) =>
-    score >= 70 ? 'text-emerald-600' : score >= 40 ? 'text-amber-600' : 'text-red-600'
+    score >= 70 ? 'text-success' : score >= 40 ? 'text-warning' : 'text-destructive'
 
   const getProgressColor = (score: number) =>
-    score >= 70 ? '[&>div]:bg-emerald-500' : score >= 40 ? '[&>div]:bg-amber-500' : '[&>div]:bg-red-500'
+    score >= 70 ? '[&>div]:bg-success' : score >= 40 ? '[&>div]:bg-warning' : '[&>div]:bg-destructive'
 
   return (
     <div className="space-y-6">
@@ -174,7 +174,7 @@ export function CompetitiveAnalysisPanel() {
                       <div className="space-y-1.5">
                         {result.opportunities.map((opp, i) => (
                           <div key={i} className="flex items-center gap-2 text-sm p-2 rounded bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800">
-                            <ArrowUpRight className="h-3.5 w-3.5 text-emerald-600 shrink-0" />
+                            <ArrowUpRight className="h-3.5 w-3.5 text-success shrink-0" />
                             <span>{opp}</span>
                           </div>
                         ))}
@@ -183,8 +183,8 @@ export function CompetitiveAnalysisPanel() {
                     <TabsContent value="strengths" className="mt-2">
                       <div className="space-y-1.5">
                         {result.strengths.map((s, i) => (
-                          <div key={i} className="flex items-center gap-2 text-sm p-2 rounded bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800">
-                            <CheckCircle2 className="h-3.5 w-3.5 text-blue-600 shrink-0" />
+                          <div key={i} className="flex items-center gap-2 text-sm p-2 rounded bg-info/5 dark:bg-blue-950/30 border border-info/20 dark:border-blue-800">
+                            <CheckCircle2 className="h-3.5 w-3.5 text-info shrink-0" />
                             <span>{s}</span>
                           </div>
                         ))}
@@ -194,7 +194,7 @@ export function CompetitiveAnalysisPanel() {
                       <div className="space-y-1.5">
                         {result.weaknesses.map((w, i) => (
                           <div key={i} className="flex items-center gap-2 text-sm p-2 rounded bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800">
-                            <AlertTriangle className="h-3.5 w-3.5 text-amber-600 shrink-0" />
+                            <AlertTriangle className="h-3.5 w-3.5 text-warning shrink-0" />
                             <span>{w}</span>
                           </div>
                         ))}
@@ -213,7 +213,7 @@ export function CompetitiveAnalysisPanel() {
                           <div key={i} className="flex items-center justify-between px-3 py-2 text-sm">
                             <span className="font-medium">{kw.keyword}</span>
                             <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                              <span>Pos. <strong className={kw.position <= 10 ? 'text-emerald-600' : kw.position <= 30 ? 'text-amber-600' : 'text-red-600'}>#{kw.position}</strong></span>
+                              <span>Pos. <strong className={kw.position <= 10 ? 'text-success' : kw.position <= 30 ? 'text-warning' : 'text-destructive'}>#{kw.position}</strong></span>
                               <span>Vol. <strong>{kw.volume}</strong></span>
                               <Badge variant="outline" className="text-[10px]">
                                 {kw.difficulty < 30 ? 'Facile' : kw.difficulty < 60 ? 'Moyen' : 'Difficile'}

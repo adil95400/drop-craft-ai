@@ -18,8 +18,8 @@ import { motion } from 'framer-motion';
 
 const triggerLabels: Record<string, { label: string; icon: typeof PackageX; color: string }> = {
   out_of_stock: { label: 'Rupture de stock', icon: PackageX, color: 'text-destructive' },
-  low_stock: { label: 'Stock bas', icon: ShieldAlert, color: 'text-amber-500' },
-  price_increase: { label: 'Hausse de prix', icon: TrendingDown, color: 'text-orange-500' },
+  low_stock: { label: 'Stock bas', icon: ShieldAlert, color: 'text-warning' },
+  price_increase: { label: 'Hausse de prix', icon: TrendingDown, color: 'text-warning' },
 };
 
 export function SupplierFallbackDashboard() {
@@ -41,13 +41,13 @@ export function SupplierFallbackDashboard() {
       title: 'Basculements effectués',
       value: totalSwitches,
       icon: ArrowRightLeft,
-      color: 'text-amber-500',
+      color: 'text-warning',
     },
     {
       title: 'Auto-switch activé',
       value: rules.filter(r => r.auto_switch && r.is_active).length,
       icon: Zap,
-      color: 'text-emerald-500',
+      color: 'text-success',
     },
   ];
 

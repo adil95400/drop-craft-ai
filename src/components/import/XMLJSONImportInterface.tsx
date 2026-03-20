@@ -274,7 +274,7 @@ export const XMLJSONImportInterface = ({ onImport }: XMLJSONImportInterfaceProps
 
                 <div className="p-4 bg-muted/30 rounded-lg">
                   <div className="flex items-center gap-2 mb-2">
-                    <CheckCircle className="w-4 h-4 text-green-600" />
+                    <CheckCircle className="w-4 h-4 text-success" />
                     <span className="text-sm font-medium">Formats supportés</span>
                   </div>
                   <ul className="text-xs text-muted-foreground space-y-1">
@@ -289,11 +289,11 @@ export const XMLJSONImportInterface = ({ onImport }: XMLJSONImportInterfaceProps
 
             <TabsContent value="sync" className="mt-6">
               <div className="space-y-6">
-                <Card className="border-blue-200 bg-blue-50">
+                <Card className="border-info/20 bg-info/5">
                   <CardContent className="p-4">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
-                        <Clock className="w-5 h-5 text-blue-600" />
+                        <Clock className="w-5 h-5 text-info" />
                         <div>
                           <h4 className="font-medium">Synchronisation Automatique</h4>
                           <p className="text-sm text-muted-foreground">
@@ -361,8 +361,8 @@ export const XMLJSONImportInterface = ({ onImport }: XMLJSONImportInterfaceProps
                       <div key={index} className="flex items-center justify-between p-3 bg-muted/30 rounded-lg">
                         <div className="flex items-center gap-3">
                           <div className={`w-2 h-2 rounded-full ${
-                            sync.status === 'active' ? 'bg-green-500' :
-                            sync.status === 'error' ? 'bg-red-500' : 'bg-gray-400'
+                            sync.status === 'active' ? 'bg-success' :
+                            sync.status === 'error' ? 'bg-destructive' : 'bg-gray-400'
                           }`} />
                           <div>
                             <p className="text-sm font-medium">{sync.name}</p>

@@ -249,7 +249,7 @@ export const WorkflowBuilder = () => {
       <div
         className={`absolute bg-white border-2 rounded-lg p-3 min-w-[160px] cursor-pointer transition-all duration-200 ${
           isSelected ? 'border-primary shadow-lg scale-105' : 'border-gray-300 hover:border-gray-400'
-        } ${type === 'trigger' ? 'bg-blue-50' : 'bg-gray-50'}`}
+        } ${type === 'trigger' ? 'bg-info/5' : 'bg-gray-50'}`}
         style={{ 
           left: node.position?.x || 0, 
           top: node.position?.y || 0,
@@ -333,7 +333,7 @@ export const WorkflowBuilder = () => {
                     onDragStart={(e) => handleDragStart({ ...trigger, category: 'trigger' }, e)}
                   >
                     <div className="flex items-center gap-2">
-                      <Icon className="w-4 h-4 text-blue-600" />
+                      <Icon className="w-4 h-4 text-info" />
                       <div>
                         <div className="font-medium text-sm">{trigger.name}</div>
                         <div className="text-xs text-gray-500">{trigger.description}</div>
@@ -360,7 +360,7 @@ export const WorkflowBuilder = () => {
                     onDragStart={(e) => handleDragStart(action, e)}
                   >
                     <div className="flex items-center gap-2">
-                      <Icon className="w-4 h-4 text-green-600" />
+                      <Icon className="w-4 h-4 text-success" />
                       <div>
                         <div className="font-medium text-sm">{action.name}</div>
                         <div className="text-xs text-gray-500">{action.category}</div>
@@ -496,7 +496,7 @@ export const WorkflowBuilder = () => {
                       variant="outline"
                       size="sm"
                       onClick={() => deleteNode(selectedNode.id)}
-                      className="text-red-600 hover:text-red-700"
+                      className="text-destructive hover:text-red-700"
                     >
                       <Trash2 className="w-3 h-3" />
                     </Button>
@@ -521,9 +521,9 @@ export const WorkflowBuilder = () => {
                 {testResults.map((result, index) => (
                   <div key={index} className="flex items-center gap-2 text-xs p-2 bg-gray-50 rounded">
                     {result.status === 'success' ? (
-                      <CheckCircle className="w-3 h-3 text-green-600" />
+                      <CheckCircle className="w-3 h-3 text-success" />
                     ) : (
-                      <AlertTriangle className="w-3 h-3 text-red-600" />
+                      <AlertTriangle className="w-3 h-3 text-destructive" />
                     )}
                     <div className="flex-1">
                       <div className="font-medium">{result.name}</div>

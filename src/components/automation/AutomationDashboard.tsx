@@ -76,9 +76,9 @@ export function AutomationDashboard() {
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'active': return <CheckCircle className="h-4 w-4 text-green-500" />;
-      case 'paused': return <Pause className="h-4 w-4 text-yellow-500" />;
-      case 'error': return <XCircle className="h-4 w-4 text-red-500" />;
+      case 'active': return <CheckCircle className="h-4 w-4 text-success" />;
+      case 'paused': return <Pause className="h-4 w-4 text-warning" />;
+      case 'error': return <XCircle className="h-4 w-4 text-destructive" />;
       default: return <AlertCircle className="h-4 w-4 text-gray-500" />;
     }
   };
@@ -94,9 +94,9 @@ export function AutomationDashboard() {
 
   const getExecutionStatusIcon = (status: string) => {
     switch (status) {
-      case 'completed': return <CheckCircle className="h-4 w-4 text-green-500" />;
-      case 'failed': return <XCircle className="h-4 w-4 text-red-500" />;
-      case 'running': return <Clock className="h-4 w-4 text-blue-500" />;
+      case 'completed': return <CheckCircle className="h-4 w-4 text-success" />;
+      case 'failed': return <XCircle className="h-4 w-4 text-destructive" />;
+      case 'running': return <Clock className="h-4 w-4 text-info" />;
       default: return <AlertCircle className="h-4 w-4 text-gray-500" />;
     }
   };
@@ -170,7 +170,7 @@ export function AutomationDashboard() {
             <CardTitle className="text-sm font-medium">Active Workflows</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-green-600">{stats.activeWorkflows}</div>
+            <div className="text-2xl font-bold text-success">{stats.activeWorkflows}</div>
           </CardContent>
         </Card>
 
@@ -188,7 +188,7 @@ export function AutomationDashboard() {
             <CardTitle className="text-sm font-medium">Successful Runs</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-green-600">{stats.successfulExecutions}</div>
+            <div className="text-2xl font-bold text-success">{stats.successfulExecutions}</div>
           </CardContent>
         </Card>
 

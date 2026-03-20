@@ -80,13 +80,13 @@ export default function ProfitDashboard() {
             {format === 'currency' ? `${value.toFixed(2)} €` : `${value.toFixed(1)} %`}
           </p>
           {trend !== undefined && (
-            <p className={`text-sm mt-2 flex items-center gap-1 ${trend >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+            <p className={`text-sm mt-2 flex items-center gap-1 ${trend >= 0 ? 'text-success' : 'text-destructive'}`}>
               <TrendingUp className={`w-4 h-4 ${trend < 0 ? 'rotate-180' : ''}`} />
               {Math.abs(trend).toFixed(1)}% vs période précédente
             </p>
           )}
         </div>
-        <div className={`p-3 rounded-full ${value > 0 ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'}`}>
+        <div className={`p-3 rounded-full ${value > 0 ? 'bg-success/10 text-success' : 'bg-destructive/10 text-destructive'}`}>
           <Icon className="w-6 h-6" />
         </div>
       </div>

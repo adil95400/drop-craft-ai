@@ -135,11 +135,11 @@ export function ImportRollbackManager() {
   const getStatusBadge = (status: ImportJob['status']) => {
     switch (status) {
       case 'completed':
-        return <Badge className="bg-green-500/10 text-green-600"><CheckCircle className="h-3 w-3 mr-1" />Terminé</Badge>;
+        return <Badge className="bg-success/10 text-success"><CheckCircle className="h-3 w-3 mr-1" />Terminé</Badge>;
       case 'partial':
-        return <Badge className="bg-yellow-500/10 text-yellow-600"><AlertTriangle className="h-3 w-3 mr-1" />Partiel</Badge>;
+        return <Badge className="bg-warning/10 text-warning"><AlertTriangle className="h-3 w-3 mr-1" />Partiel</Badge>;
       case 'failed':
-        return <Badge className="bg-red-500/10 text-red-600"><XCircle className="h-3 w-3 mr-1" />Échoué</Badge>;
+        return <Badge className="bg-destructive/10 text-destructive"><XCircle className="h-3 w-3 mr-1" />Échoué</Badge>;
       case 'rolled_back':
         return <Badge variant="secondary"><RotateCcw className="h-3 w-3 mr-1" />Annulé</Badge>;
       default:
@@ -259,11 +259,11 @@ export function ImportRollbackManager() {
                           {job.productsCount} produits
                         </span>
                         <span>•</span>
-                        <span className="text-green-600">{job.successCount} réussis</span>
+                        <span className="text-success">{job.successCount} réussis</span>
                         {job.failedCount > 0 && (
                           <>
                             <span>•</span>
-                            <span className="text-red-600">{job.failedCount} échoués</span>
+                            <span className="text-destructive">{job.failedCount} échoués</span>
                           </>
                         )}
                       </div>
@@ -277,7 +277,7 @@ export function ImportRollbackManager() {
                     <div className="text-right shrink-0">
                       {job.canRollback ? (
                         <div className="space-y-2">
-                          <Badge variant="outline" className="bg-orange-500/10 text-orange-600 border-orange-500/20">
+                          <Badge variant="outline" className="bg-warning/10 text-warning border-orange-500/20">
                             <Clock className="h-3 w-3 mr-1" />
                             Expire {formatDistanceToNow(new Date(job.rollbackDeadline), { addSuffix: true, locale: getDateFnsLocale() })}
                           </Badge>
@@ -317,7 +317,7 @@ export function ImportRollbackManager() {
         <DialogContent>
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <AlertTriangle className="h-5 w-5 text-orange-500" />
+              <AlertTriangle className="h-5 w-5 text-warning" />
               Confirmer l'annulation
             </DialogTitle>
             <DialogDescription>
@@ -341,7 +341,7 @@ export function ImportRollbackManager() {
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">Produits à supprimer</span>
-                  <span className="font-medium text-red-600">{selectedJob.successCount}</span>
+                  <span className="font-medium text-destructive">{selectedJob.successCount}</span>
                 </div>
               </div>
             </div>

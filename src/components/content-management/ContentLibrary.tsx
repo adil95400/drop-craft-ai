@@ -119,13 +119,13 @@ export function ContentLibrary() {
 
   const getTypeColor = (type: string) => {
     const colors: Record<string, string> = {
-      description: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200',
-      seo_title: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
+      description: 'bg-info/10 text-blue-800 dark:bg-blue-900 dark:text-blue-200',
+      seo_title: 'bg-success/10 text-success dark:bg-green-900 dark:text-green-200',
       meta_description: 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200',
       blog: 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200',
       social: 'bg-pink-100 text-pink-800 dark:bg-pink-900 dark:text-pink-200',
-      email: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200',
-      ad_copy: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+      email: 'bg-warning/10 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200',
+      ad_copy: 'bg-destructive/10 text-red-800 dark:bg-red-900 dark:text-red-200'
     };
     return colors[type] || 'bg-muted text-muted-foreground';
   };
@@ -182,8 +182,8 @@ export function ContentLibrary() {
         <Card className="bg-gradient-to-br from-yellow-500/10 to-yellow-500/5">
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-yellow-500/20 rounded-lg">
-                <Star className="h-5 w-5 text-yellow-500" />
+              <div className="p-2 bg-warning/20 rounded-lg">
+                <Star className="h-5 w-5 text-warning" />
               </div>
               <div>
                 <p className="text-2xl font-bold">
@@ -194,11 +194,11 @@ export function ContentLibrary() {
             </div>
           </CardContent>
         </Card>
-        <Card className="bg-gradient-to-br from-blue-500/10 to-blue-500/5">
+        <Card className="bg-gradient-to-br from-info/10 to-blue-500/5">
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-blue-500/20 rounded-lg">
-                <Sparkles className="h-5 w-5 text-blue-500" />
+              <div className="p-2 bg-info/20 rounded-lg">
+                <Sparkles className="h-5 w-5 text-info" />
               </div>
               <div>
                 <p className="text-2xl font-bold">
@@ -209,11 +209,11 @@ export function ContentLibrary() {
             </div>
           </CardContent>
         </Card>
-        <Card className="bg-gradient-to-br from-green-500/10 to-green-500/5">
+        <Card className="bg-gradient-to-br from-success/10 to-green-500/5">
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-green-500/20 rounded-lg">
-                <Copy className="h-5 w-5 text-green-500" />
+              <div className="p-2 bg-success/20 rounded-lg">
+                <Copy className="h-5 w-5 text-success" />
               </div>
               <div>
                 <p className="text-2xl font-bold">
@@ -316,7 +316,7 @@ export function ContentLibrary() {
                       {format(new Date(item.created_at), 'dd MMM yyyy', { locale })}
                     </div>
                     <div className="flex items-center gap-2">
-                      {item.is_favorite && <Star className="h-3 w-3 text-yellow-500 fill-yellow-500" />}
+                      {item.is_favorite && <Star className="h-3 w-3 text-warning fill-yellow-500" />}
                       {item.tags?.length > 0 && (
                         <div className="flex items-center gap-1">
                           <Tag className="h-3 w-3" />

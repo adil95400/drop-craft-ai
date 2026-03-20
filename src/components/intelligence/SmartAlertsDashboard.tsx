@@ -27,8 +27,8 @@ const categoryIcons: Record<string, typeof Bell> = {
 
 const severityColors: Record<string, string> = {
   critical: 'border-destructive bg-destructive/5',
-  high: 'border-orange-500 bg-orange-500/5',
-  medium: 'border-amber-500 bg-amber-500/5',
+  high: 'border-orange-500 bg-warning/5',
+  medium: 'border-amber-500 bg-warning/5',
   low: 'border-muted',
   info: 'border-border',
 };
@@ -52,7 +52,7 @@ export function SmartAlertsDashboard() {
         {[
           { title: 'Non lues', value: stats.unread, icon: Bell, color: 'text-primary' },
           { title: 'Critiques', value: stats.critical, icon: AlertTriangle, color: 'text-destructive' },
-          { title: 'Stock', value: stats.byCategory.stock, icon: Package, color: 'text-amber-500' },
+          { title: 'Stock', value: stats.byCategory.stock, icon: Package, color: 'text-warning' },
           { title: 'Opportunités', value: stats.byCategory.opportunity, icon: Zap, color: 'text-primary' },
         ].map((s, i) => (
           <motion.div key={s.title} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}>

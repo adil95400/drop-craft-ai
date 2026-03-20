@@ -35,10 +35,10 @@ export function BusinessIntelligenceDashboard() {
 
   const getSeverityColor = (severity: string) => {
     switch (severity) {
-      case 'critical': return 'text-red-600 bg-red-100 border-red-200';
-      case 'warning': return 'text-orange-600 bg-orange-100 border-orange-200';
-      case 'opportunity': return 'text-green-600 bg-green-100 border-green-200';
-      case 'info': return 'text-blue-600 bg-blue-100 border-blue-200';
+      case 'critical': return 'text-destructive bg-destructive/10 border-destructive/20';
+      case 'warning': return 'text-warning bg-orange-100 border-orange-200';
+      case 'opportunity': return 'text-success bg-success/10 border-success/20';
+      case 'info': return 'text-info bg-info/10 border-info/20';
       default: return 'text-gray-600 bg-gray-100 border-gray-200';
     }
   };
@@ -94,12 +94,12 @@ export function BusinessIntelligenceDashboard() {
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-red-100 rounded-lg">
-                <AlertTriangle className="h-5 w-5 text-red-600" />
+              <div className="p-2 bg-destructive/10 rounded-lg">
+                <AlertTriangle className="h-5 w-5 text-destructive" />
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Critiques</p>
-                <p className="text-2xl font-bold text-red-600">{metrics?.critical || 0}</p>
+                <p className="text-2xl font-bold text-destructive">{metrics?.critical || 0}</p>
               </div>
             </div>
           </CardContent>
@@ -108,12 +108,12 @@ export function BusinessIntelligenceDashboard() {
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-green-100 rounded-lg">
-                <Lightbulb className="h-5 w-5 text-green-600" />
+              <div className="p-2 bg-success/10 rounded-lg">
+                <Lightbulb className="h-5 w-5 text-success" />
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Opportunités</p>
-                <p className="text-2xl font-bold text-green-600">{(metrics?.total || 0) - (metrics?.critical || 0)}</p>
+                <p className="text-2xl font-bold text-success">{(metrics?.total || 0) - (metrics?.critical || 0)}</p>
               </div>
             </div>
           </CardContent>
@@ -122,8 +122,8 @@ export function BusinessIntelligenceDashboard() {
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-blue-100 rounded-lg">
-                <Activity className="h-5 w-5 text-blue-600" />
+              <div className="p-2 bg-info/10 rounded-lg">
+                <Activity className="h-5 w-5 text-info" />
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Taux d'Action</p>

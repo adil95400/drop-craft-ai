@@ -15,9 +15,9 @@ const quickUpgrades = [
     description: 'Débloquez l\'IA et les fonctionnalités avancées',
     benefits: ['AI Analytics', 'Import automatisé', 'Support prioritaire'],
     icon: Star,
-    color: 'text-blue-600',
-    bgColor: 'bg-blue-50',
-    borderColor: 'border-blue-200'
+    color: 'text-info',
+    bgColor: 'bg-info/5',
+    borderColor: 'border-info/20'
   },
   {
     from: 'free',
@@ -62,12 +62,12 @@ export const PlanQuickActions = () => {
 
   if (availableUpgrades.length === 0) {
     return (
-      <Card className="bg-gradient-to-r from-green-50 to-green-100 border-green-200">
+      <Card className="bg-gradient-to-r from-green-50 to-green-100 border-success/20">
         <CardContent className="flex items-center justify-center p-6">
           <div className="text-center space-y-2">
-            <Crown className="h-8 w-8 text-green-600 mx-auto" />
-            <p className="font-semibold text-green-800">Vous avez le plan maximum !</p>
-            <p className="text-sm text-green-600">Profitez de toutes les fonctionnalités premium</p>
+            <Crown className="h-8 w-8 text-success mx-auto" />
+            <p className="font-semibold text-success">Vous avez le plan maximum !</p>
+            <p className="text-sm text-success">Profitez de toutes les fonctionnalités premium</p>
           </div>
         </CardContent>
       </Card>

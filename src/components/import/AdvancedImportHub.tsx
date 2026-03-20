@@ -221,18 +221,18 @@ export function AdvancedImportHub() {
 
   const getDifficultyColor = (difficulty: string) => {
     switch (difficulty) {
-      case 'facile': return 'bg-green-500'
-      case 'moyen': return 'bg-yellow-500'
-      case 'avancé': return 'bg-red-500'
+      case 'facile': return 'bg-success'
+      case 'moyen': return 'bg-warning'
+      case 'avancé': return 'bg-destructive'
       default: return 'bg-gray-500'
     }
   }
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'completed': return <CheckCircle className="h-4 w-4 text-green-500" />
-      case 'processing': return <Clock className="h-4 w-4 text-blue-500" />
-      case 'error': return <AlertTriangle className="h-4 w-4 text-red-500" />
+      case 'completed': return <CheckCircle className="h-4 w-4 text-success" />
+      case 'processing': return <Clock className="h-4 w-4 text-info" />
+      case 'error': return <AlertTriangle className="h-4 w-4 text-destructive" />
       default: return <Clock className="h-4 w-4 text-gray-500" />
     }
   }
@@ -263,7 +263,7 @@ export function AdvancedImportHub() {
                 <p className="text-sm font-medium text-muted-foreground">Produits ce mois</p>
                 <p className="text-2xl font-bold">{stats.productsThisMonth.toLocaleString()}</p>
               </div>
-              <TrendingUp className="h-8 w-8 text-green-500" />
+              <TrendingUp className="h-8 w-8 text-success" />
             </div>
           </CardContent>
         </Card>
@@ -275,7 +275,7 @@ export function AdvancedImportHub() {
                 <p className="text-sm font-medium text-muted-foreground">Taux de Réussite</p>
                 <p className="text-2xl font-bold">{stats.successRate}%</p>
               </div>
-              <CheckCircle className="h-8 w-8 text-green-500" />
+              <CheckCircle className="h-8 w-8 text-success" />
             </div>
           </CardContent>
         </Card>
@@ -287,7 +287,7 @@ export function AdvancedImportHub() {
                 <p className="text-sm font-medium text-muted-foreground">Temps Moyen</p>
                 <p className="text-2xl font-bold">{stats.avgTime} min</p>
               </div>
-              <Clock className="h-8 w-8 text-blue-500" />
+              <Clock className="h-8 w-8 text-info" />
             </div>
           </CardContent>
         </Card>

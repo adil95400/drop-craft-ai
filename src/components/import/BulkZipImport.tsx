@@ -110,11 +110,11 @@ export const BulkZipImport = () => {
   const getStatusIcon = (status: ImportJob['status']) => {
     switch (status) {
       case 'processing':
-        return <Clock className="h-4 w-4 text-yellow-500" />
+        return <Clock className="h-4 w-4 text-warning" />
       case 'completed':
-        return <CheckCircle className="h-4 w-4 text-green-500" />
+        return <CheckCircle className="h-4 w-4 text-success" />
       case 'failed':
-        return <AlertCircle className="h-4 w-4 text-red-500" />
+        return <AlertCircle className="h-4 w-4 text-destructive" />
     }
   }
 

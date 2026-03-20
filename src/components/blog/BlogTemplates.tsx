@@ -384,8 +384,8 @@ Comment adapter votre stratégie à ces tendances...
                     <div className="flex-1">
                       <CardTitle className="text-lg flex items-center gap-2">
                         {template.name}
-                        {template.isPremium && <Crown className="h-4 w-4 text-yellow-500" />}
-                        {template.isPopular && <Star className="h-4 w-4 text-orange-500" />}
+                        {template.isPremium && <Crown className="h-4 w-4 text-warning" />}
+                        {template.isPopular && <Star className="h-4 w-4 text-warning" />}
                       </CardTitle>
                     </div>
                     <Button variant="ghost" size="sm">
@@ -396,7 +396,7 @@ Comment adapter votre stratégie à ces tendances...
                     {template.description}
                   </p>
                   <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <Star className="h-4 w-4 fill-current text-yellow-500" />
+                    <Star className="h-4 w-4 fill-current text-warning" />
                     {template.rating}
                     <span>•</span>
                     <span>{template.usageCount} utilisations</span>
@@ -465,7 +465,7 @@ Comment adapter votre stratégie à ces tendances...
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     {template.name}
-                    <Star className="h-4 w-4 text-orange-500" />
+                    <Star className="h-4 w-4 text-warning" />
                   </CardTitle>
                   <p className="text-sm text-muted-foreground">
                     {template.description}
@@ -490,11 +490,11 @@ Comment adapter votre stratégie à ces tendances...
         <TabsContent value="premium">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {templates.filter(t => t.isPremium).map((template) => (
-              <Card key={template.id} className="hover-scale border-yellow-200">
+              <Card key={template.id} className="hover-scale border-warning/20">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     {template.name}
-                    <Crown className="h-4 w-4 text-yellow-500" />
+                    <Crown className="h-4 w-4 text-warning" />
                   </CardTitle>
                   <p className="text-sm text-muted-foreground">
                     {template.description}

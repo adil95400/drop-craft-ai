@@ -86,28 +86,28 @@ export function ImportPreviewDialog({
               <Plus className="h-4 w-4" />
               Nouveaux
             </div>
-            <div className="text-2xl font-bold text-green-600">{stats.new}</div>
+            <div className="text-2xl font-bold text-success">{stats.new}</div>
           </div>
           <div className="rounded-lg border p-3">
             <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
               <RefreshCw className="h-4 w-4" />
               Mises à jour
             </div>
-            <div className="text-2xl font-bold text-blue-600">{stats.updates}</div>
+            <div className="text-2xl font-bold text-info">{stats.updates}</div>
           </div>
           <div className="rounded-lg border p-3">
             <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
               <AlertTriangle className="h-4 w-4" />
               Conflits
             </div>
-            <div className="text-2xl font-bold text-orange-600">{stats.conflicts}</div>
+            <div className="text-2xl font-bold text-warning">{stats.conflicts}</div>
           </div>
           <div className="rounded-lg border p-3">
             <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
               <XCircle className="h-4 w-4" />
               Erreurs
             </div>
-            <div className="text-2xl font-bold text-red-600">{stats.errors}</div>
+            <div className="text-2xl font-bold text-destructive">{stats.errors}</div>
           </div>
         </div>
 
@@ -132,12 +132,12 @@ export function ImportPreviewDialog({
             <ScrollArea className="h-[400px]">
               <div className="space-y-3 p-1">
                 {preview.new.map((product, index) => (
-                  <div key={index} className="rounded-lg border p-4 bg-green-50/50 dark:bg-green-950/20">
+                  <div key={index} className="rounded-lg border p-4 bg-success/5/50 dark:bg-green-950/20">
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
                         <div className="flex items-center gap-2 mb-2">
                           <h4 className="font-semibold">{product.name}</h4>
-                          <Badge variant="outline" className="text-green-600">Nouveau</Badge>
+                          <Badge variant="outline" className="text-success">Nouveau</Badge>
                         </div>
                         <div className="grid grid-cols-2 gap-2 text-sm">
                           <div>
@@ -160,7 +160,7 @@ export function ImportPreviewDialog({
                           )}
                         </div>
                       </div>
-                      <CheckCircle2 className="h-5 w-5 text-green-600" />
+                      <CheckCircle2 className="h-5 w-5 text-success" />
                     </div>
                   </div>
                 ))}
@@ -173,13 +173,13 @@ export function ImportPreviewDialog({
             <ScrollArea className="h-[400px]">
               <div className="space-y-3 p-1">
                 {preview.updates.map((update, index) => (
-                  <div key={index} className="rounded-lg border p-4 bg-blue-50/50 dark:bg-blue-950/20">
+                  <div key={index} className="rounded-lg border p-4 bg-info/5/50 dark:bg-blue-950/20">
                     <div className="flex items-start justify-between mb-3">
                       <div className="flex items-center gap-2">
                         <h4 className="font-semibold">{update.product.name}</h4>
-                        <Badge variant="outline" className="text-blue-600">Mise à jour</Badge>
+                        <Badge variant="outline" className="text-info">Mise à jour</Badge>
                       </div>
-                      <RefreshCw className="h-5 w-5 text-blue-600" />
+                      <RefreshCw className="h-5 w-5 text-info" />
                     </div>
                     <div className="space-y-1">
                       {update.changes.map((change, i) => (
@@ -215,7 +215,7 @@ export function ImportPreviewDialog({
                             }
                           </p>
                         </div>
-                        <AlertTriangle className="h-5 w-5 text-orange-600" />
+                        <AlertTriangle className="h-5 w-5 text-warning" />
                       </div>
                       
                       <div className="flex gap-2">
@@ -253,9 +253,9 @@ export function ImportPreviewDialog({
             <ScrollArea className="h-[400px]">
               <div className="space-y-3 p-1">
                 {preview.errors.map((error, index) => (
-                  <div key={index} className="rounded-lg border p-4 bg-red-50/50 dark:bg-red-950/20">
+                  <div key={index} className="rounded-lg border p-4 bg-destructive/5/50 dark:bg-red-950/20">
                     <div className="flex items-start gap-3">
-                      <XCircle className="h-5 w-5 text-red-600 flex-shrink-0 mt-0.5" />
+                      <XCircle className="h-5 w-5 text-destructive flex-shrink-0 mt-0.5" />
                       <div className="flex-1">
                         <div className="font-medium mb-1">Ligne {error.row}</div>
                         <div className="text-sm text-muted-foreground">{error.error}</div>
@@ -275,7 +275,7 @@ export function ImportPreviewDialog({
 
         {stats.conflicts > 0 && !allConflictsResolved && (
           <div className="rounded-lg bg-orange-50 dark:bg-orange-950/20 p-3 flex items-start gap-2">
-            <AlertTriangle className="h-5 w-5 text-orange-600 flex-shrink-0 mt-0.5" />
+            <AlertTriangle className="h-5 w-5 text-warning flex-shrink-0 mt-0.5" />
             <p className="text-sm text-muted-foreground">
               Veuillez résoudre tous les conflits avant de continuer l'import
             </p>

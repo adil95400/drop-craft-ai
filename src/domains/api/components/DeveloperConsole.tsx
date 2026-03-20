@@ -243,7 +243,7 @@ export function DeveloperConsole() {
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center">
-              <Key className="mr-2 h-4 w-4 text-blue-500" />
+              <Key className="mr-2 h-4 w-4 text-info" />
               <div>
                 <p className="text-sm text-muted-foreground">Clés API actives</p>
                 <p className="text-lg font-semibold">{apiKeys.filter(k => k.status === 'active').length}</p>
@@ -255,7 +255,7 @@ export function DeveloperConsole() {
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center">
-              <Webhook className="mr-2 h-4 w-4 text-green-500" />
+              <Webhook className="mr-2 h-4 w-4 text-success" />
               <div>
                 <p className="text-sm text-muted-foreground">Webhooks</p>
                 <p className="text-lg font-semibold">{webhooks.filter(w => w.status === 'active').length}</p>
@@ -279,7 +279,7 @@ export function DeveloperConsole() {
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center">
-              <Zap className="mr-2 h-4 w-4 text-yellow-500" />
+              <Zap className="mr-2 h-4 w-4 text-warning" />
               <div>
                 <p className="text-sm text-muted-foreground">Uptime API</p>
                 <p className="text-lg font-semibold">99.9%</p>
@@ -349,7 +349,7 @@ export function DeveloperConsole() {
                         Créée le {new Date(apiKey.created).toLocaleDateString()}
                       </CardDescription>
                     </div>
-                    <Badge className={apiKey.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}>
+                    <Badge className={apiKey.status === 'active' ? 'bg-success/10 text-success' : 'bg-destructive/10 text-red-800'}>
                       {apiKey.status}
                     </Badge>
                   </div>
@@ -480,7 +480,7 @@ export function DeveloperConsole() {
                       </CardDescription>
                     </div>
                     <div className="flex items-center space-x-2">
-                      <Badge className={webhook.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}>
+                      <Badge className={webhook.status === 'active' ? 'bg-success/10 text-success' : 'bg-gray-100 text-gray-800'}>
                         {webhook.status}
                       </Badge>
                       <Badge variant="outline">
@@ -498,7 +498,7 @@ export function DeveloperConsole() {
                     </div>
                     <div>
                       <p className="text-muted-foreground">Taux de succès</p>
-                      <p className={webhook.successRate > 95 ? 'text-green-600' : 'text-yellow-600'}>
+                      <p className={webhook.successRate > 95 ? 'text-success' : 'text-warning'}>
                         {webhook.successRate}%
                       </p>
                     </div>
@@ -565,7 +565,7 @@ export function DeveloperConsole() {
                   <div className="space-y-3">
                     <div className="border rounded-lg p-4">
                       <div className="flex items-center space-x-2 mb-2">
-                        <Badge className="bg-green-100 text-green-800">GET</Badge>
+                        <Badge className="bg-success/10 text-success">GET</Badge>
                         <code className="text-sm">/api/v1/products</code>
                       </div>
                       <p className="text-sm text-muted-foreground mb-2">
@@ -578,7 +578,7 @@ export function DeveloperConsole() {
                     
                     <div className="border rounded-lg p-4">
                       <div className="flex items-center space-x-2 mb-2">
-                        <Badge className="bg-blue-100 text-blue-800">POST</Badge>
+                        <Badge className="bg-info/10 text-blue-800">POST</Badge>
                         <code className="text-sm">/api/v1/products</code>
                       </div>
                       <p className="text-sm text-muted-foreground mb-2">
@@ -591,7 +591,7 @@ export function DeveloperConsole() {
                     
                     <div className="border rounded-lg p-4">
                       <div className="flex items-center space-x-2 mb-2">
-                        <Badge className="bg-green-100 text-green-800">GET</Badge>
+                        <Badge className="bg-success/10 text-success">GET</Badge>
                         <code className="text-sm">/api/v1/orders</code>
                       </div>
                       <p className="text-sm text-muted-foreground mb-2">
@@ -666,9 +666,9 @@ export function DeveloperConsole() {
                       <span className="text-sm text-muted-foreground">{log.time}</span>
                       <Badge 
                         className={
-                          log.method === 'GET' ? 'bg-green-100 text-green-800' :
-                          log.method === 'POST' ? 'bg-blue-100 text-blue-800' :
-                          'bg-yellow-100 text-yellow-800'
+                          log.method === 'GET' ? 'bg-success/10 text-success' :
+                          log.method === 'POST' ? 'bg-info/10 text-blue-800' :
+                          'bg-warning/10 text-yellow-800'
                         }
                       >
                         {log.method}
@@ -678,9 +678,9 @@ export function DeveloperConsole() {
                     <div className="flex items-center space-x-2">
                       <Badge 
                         className={
-                          log.status === 200 || log.status === 201 ? 'bg-green-100 text-green-800' :
-                          log.status === 429 ? 'bg-red-100 text-red-800' :
-                          'bg-yellow-100 text-yellow-800'
+                          log.status === 200 || log.status === 201 ? 'bg-success/10 text-success' :
+                          log.status === 429 ? 'bg-destructive/10 text-red-800' :
+                          'bg-warning/10 text-yellow-800'
                         }
                       >
                         {log.status}

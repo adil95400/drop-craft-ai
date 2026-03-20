@@ -248,7 +248,7 @@ export function MarketplaceConnectionWizard({ open, onOpenChange, platformId }: 
         {step === 2 && config && (
           <div className="space-y-4">
             <div className="flex items-center gap-2 p-3 bg-muted/50 rounded-lg">
-              <Shield className="h-4 w-4 text-green-500" />
+              <Shield className="h-4 w-4 text-success" />
               <p className="text-xs text-muted-foreground">Vos identifiants sont chiffrés et stockés de manière sécurisée</p>
             </div>
             {config.fields.map(field => (
@@ -321,7 +321,7 @@ export function MarketplaceConnectionWizard({ open, onOpenChange, platformId }: 
                   <div className="flex flex-wrap gap-2">
                     {config.syncOptions.filter(o => syncOptions[o.key]).map(o => (
                       <Badge key={o.key} variant="secondary" className="gap-1">
-                        <CheckCircle2 className="h-3 w-3 text-green-500" /> {o.label}
+                        <CheckCircle2 className="h-3 w-3 text-success" /> {o.label}
                       </Badge>
                     ))}
                   </div>
@@ -329,7 +329,7 @@ export function MarketplaceConnectionWizard({ open, onOpenChange, platformId }: 
               </CardContent>
             </Card>
             <div className="p-3 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-lg flex items-start gap-2">
-              <AlertTriangle className="h-4 w-4 text-amber-500 mt-0.5 shrink-0" />
+              <AlertTriangle className="h-4 w-4 text-warning mt-0.5 shrink-0" />
               <p className="text-xs text-amber-800 dark:text-amber-200">
                 La première synchronisation peut prendre quelques minutes selon la taille de votre catalogue.
               </p>

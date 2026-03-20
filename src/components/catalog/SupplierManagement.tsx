@@ -123,11 +123,11 @@ export function SupplierManagement() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'active':
-        return <Badge className="bg-green-100 text-green-800"><CheckCircle className="h-3 w-3 mr-1" />Actif</Badge>
+        return <Badge className="bg-success/10 text-success"><CheckCircle className="h-3 w-3 mr-1" />Actif</Badge>
       case 'inactive':
         return <Badge variant="destructive"><AlertTriangle className="h-3 w-3 mr-1" />Inactif</Badge>
       case 'pending':
-        return <Badge className="bg-yellow-100 text-yellow-800"><Clock className="h-3 w-3 mr-1" />En attente</Badge>
+        return <Badge className="bg-warning/10 text-yellow-800"><Clock className="h-3 w-3 mr-1" />En attente</Badge>
       default:
         return <Badge variant="outline">{status}</Badge>
     }
@@ -151,8 +151,8 @@ export function SupplierManagement() {
       title: 'Fournisseurs actifs',
       value: suppliers.filter(s => s.status === 'active').length.toString(),
       icon: Truck,
-      color: 'text-green-600',
-      bg: 'bg-green-100'
+      color: 'text-success',
+      bg: 'bg-success/10'
     },
     {
       title: 'Fournisseurs Pro',
@@ -165,15 +165,15 @@ export function SupplierManagement() {
       title: 'Note moyenne',
       value: (suppliers.reduce((sum, s) => sum + s.averageRating, 0) / suppliers.length).toFixed(1),
       icon: Star,
-      color: 'text-yellow-600',
-      bg: 'bg-yellow-100'
+      color: 'text-warning',
+      bg: 'bg-warning/10'
     },
     {
       title: 'Délai moyen',
       value: Math.round(suppliers.reduce((sum, s) => sum + s.averageDeliveryTime, 0) / suppliers.length) + 'j',
       icon: Clock,
-      color: 'text-blue-600',
-      bg: 'bg-blue-100'
+      color: 'text-info',
+      bg: 'bg-info/10'
     }
   ]
 
@@ -377,7 +377,7 @@ export function SupplierManagement() {
                 
                 <Card className="bg-gradient-to-br from-amber-50 to-orange-50 border-amber-200">
                   <CardContent className="p-4">
-                    <TrendingUp className="h-8 w-8 text-amber-600 mb-2" />
+                    <TrendingUp className="h-8 w-8 text-warning mb-2" />
                     <h3 className="font-semibold mb-2">Analytics avancées</h3>
                     <p className="text-sm text-muted-foreground">
                       Rapports détaillés de performance
@@ -385,9 +385,9 @@ export function SupplierManagement() {
                   </CardContent>
                 </Card>
                 
-                <Card className="bg-gradient-to-br from-green-50 to-emerald-50 border-green-200">
+                <Card className="bg-gradient-to-br from-green-50 to-emerald-50 border-success/20">
                   <CardContent className="p-4">
-                    <Shield className="h-8 w-8 text-green-600 mb-2" />
+                    <Shield className="h-8 w-8 text-success mb-2" />
                     <h3 className="font-semibold mb-2">Support prioritaire</h3>
                     <p className="text-sm text-muted-foreground">
                       Assistance dédiée 24/7

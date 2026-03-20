@@ -47,16 +47,16 @@ export const CatalogProductGrid = ({
   }
 
   const getMarginColor = (margin: number) => {
-    if (margin >= 50) return 'text-green-600'
-    if (margin >= 40) return 'text-blue-600'
-    if (margin >= 30) return 'text-orange-600'
-    return 'text-red-600'
+    if (margin >= 50) return 'text-success'
+    if (margin >= 40) return 'text-info'
+    if (margin >= 30) return 'text-warning'
+    return 'text-destructive'
   }
 
   const getStockStatus = (stock: number) => {
-    if (stock > 100) return { color: 'text-green-600', icon: CheckCircle, text: 'En stock' }
-    if (stock > 20) return { color: 'text-orange-600', icon: AlertTriangle, text: 'Stock limité' }
-    return { color: 'text-red-600', icon: AlertTriangle, text: 'Stock faible' }
+    if (stock > 100) return { color: 'text-success', icon: CheckCircle, text: 'En stock' }
+    if (stock > 20) return { color: 'text-warning', icon: AlertTriangle, text: 'Stock limité' }
+    return { color: 'text-destructive', icon: AlertTriangle, text: 'Stock faible' }
   }
 
   const formatPrice = (price: number) => {
@@ -132,13 +132,13 @@ export const CatalogProductGrid = ({
                   {/* Badges */}
                   <div className="absolute top-2 left-2 flex flex-col gap-1">
                     {product.is_winner && (
-                      <Badge className="bg-yellow-500 text-black text-xs">
+                      <Badge className="bg-warning text-black text-xs">
                         <Crown className="w-3 h-3 mr-1" />
                         Winner
                       </Badge>
                     )}
                     {product.is_trending && (
-                      <Badge className="bg-green-500 text-white text-xs">
+                      <Badge className="bg-success text-white text-xs">
                         <TrendingUp className="w-3 h-3 mr-1" />
                         Trending
                       </Badge>
@@ -166,7 +166,7 @@ export const CatalogProductGrid = ({
                       onToggleFavorite(product.id, isFavorite)
                     }}
                   >
-                    <Heart className={`w-4 h-4 ${isFavorite ? 'fill-red-500 text-red-500' : 'text-gray-600'}`} />
+                    <Heart className={`w-4 h-4 ${isFavorite ? 'fill-red-500 text-destructive' : 'text-gray-600'}`} />
                   </Button>
                 </div>
 

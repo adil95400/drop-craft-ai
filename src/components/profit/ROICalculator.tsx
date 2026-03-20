@@ -18,9 +18,9 @@ export const ROICalculator = () => {
   const breakEvenUnits = profitMargin > 0 ? Math.ceil(adSpend / (sellingPrice - costPrice)) : 0
 
   const getROIColor = (roi: number) => {
-    if (roi >= 100) return 'text-green-600'
-    if (roi >= 50) return 'text-yellow-600'
-    return 'text-red-600'
+    if (roi >= 100) return 'text-success'
+    if (roi >= 50) return 'text-warning'
+    return 'text-destructive'
   }
 
   return (
@@ -107,7 +107,7 @@ export const ROICalculator = () => {
 
             <div>
               <p className="text-sm text-muted-foreground mb-1">Profit Net</p>
-              <p className={`text-2xl font-bold ${netProfit >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+              <p className={`text-2xl font-bold ${netProfit >= 0 ? 'text-success' : 'text-destructive'}`}>
                 {netProfit.toFixed(2)} €
               </p>
             </div>

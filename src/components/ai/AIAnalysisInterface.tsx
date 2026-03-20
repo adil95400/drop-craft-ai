@@ -94,20 +94,20 @@ export function AIAnalysisInterface({ products, onAnalysisComplete }: AIAnalysis
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Target className="w-5 h-5 text-green-500" />
+                <Target className="w-5 h-5 text-success" />
                 Top Produits Identifiés
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="grid gap-4">
                 {analysis.topProducts.map((product: any, index: number) => (
-                  <div key={index} className="p-3 border rounded-lg bg-green-50">
+                  <div key={index} className="p-3 border rounded-lg bg-success/5">
                     <div className="flex justify-between items-start">
                       <div>
                         <h4 className="font-medium">{product.name || `Produit ${index + 1}`}</h4>
                         <p className="text-sm text-muted-foreground">{product.justification}</p>
                       </div>
-                      <Badge className="bg-green-500">Score: {product.score}/100</Badge>
+                      <Badge className="bg-success">Score: {product.score}/100</Badge>
                     </div>
                   </div>
                 ))}
@@ -130,7 +130,7 @@ export function AIAnalysisInterface({ products, onAnalysisComplete }: AIAnalysis
                     <div className="flex items-center gap-2">
                       <span className="text-muted-foreground">{rec.currentPrice}€</span>
                       <span className="mx-2">→</span>
-                      <span className="font-bold text-green-600">{rec.recommendedPrice}€</span>
+                      <span className="font-bold text-success">{rec.recommendedPrice}€</span>
                       <Badge variant="outline">+{rec.improvement}</Badge>
                     </div>
                   </div>
@@ -155,7 +155,7 @@ export function AIAnalysisInterface({ products, onAnalysisComplete }: AIAnalysis
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <TrendingUp className="w-5 h-5 text-blue-500" />
+                <TrendingUp className="w-5 h-5 text-info" />
                 Tendances par Catégorie
               </CardTitle>
             </CardHeader>
@@ -186,11 +186,11 @@ export function AIAnalysisInterface({ products, onAnalysisComplete }: AIAnalysis
             <CardContent>
               <div className="space-y-3">
                 {analysis.growthOpportunities.map((opp: any, index: number) => (
-                  <div key={index} className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                  <div key={index} className="p-3 bg-info/5 border border-info/20 rounded-lg">
                     <h4 className="font-medium text-blue-900">{opp.opportunity}</h4>
                     <p className="text-sm text-blue-700">{opp.description}</p>
                     <div className="flex items-center gap-2 mt-2">
-                      <Badge className="bg-blue-500">Potentiel: {opp.potential}</Badge>
+                      <Badge className="bg-info">Potentiel: {opp.potential}</Badge>
                       <Badge variant="outline">Difficulté: {opp.difficulty}</Badge>
                     </div>
                   </div>
@@ -263,7 +263,7 @@ export function AIAnalysisInterface({ products, onAnalysisComplete }: AIAnalysis
           <CardHeader>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <CheckCircle2 className="w-5 h-5 text-green-500" />
+                <CheckCircle2 className="w-5 h-5 text-success" />
                 <CardTitle>Résultats d'Analyse IA</CardTitle>
               </div>
               <div className="flex items-center gap-2">

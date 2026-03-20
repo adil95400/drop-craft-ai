@@ -134,7 +134,7 @@ export default function UpsellCrossSellPage() {
           </Card>
           <Card className="p-4">
             <div className="flex items-center gap-3">
-              <Eye className="h-5 w-5 text-blue-500" />
+              <Eye className="h-5 w-5 text-info" />
               <div>
                 <p className="text-sm text-muted-foreground">Impressions</p>
                 <p className="text-2xl font-bold">{stats.totalImpressions.toLocaleString()}</p>
@@ -143,7 +143,7 @@ export default function UpsellCrossSellPage() {
           </Card>
           <Card className="p-4">
             <div className="flex items-center gap-3">
-              <ShoppingCart className="h-5 w-5 text-green-500" />
+              <ShoppingCart className="h-5 w-5 text-success" />
               <div>
                 <p className="text-sm text-muted-foreground">Conversions</p>
                 <p className="text-2xl font-bold">{stats.totalConversions} ({stats.conversionRate}%)</p>
@@ -152,7 +152,7 @@ export default function UpsellCrossSellPage() {
           </Card>
           <Card className="p-4">
             <div className="flex items-center gap-3">
-              <TrendingUp className="h-5 w-5 text-yellow-500" />
+              <TrendingUp className="h-5 w-5 text-warning" />
               <div>
                 <p className="text-sm text-muted-foreground">Revenus générés</p>
                 <p className="text-2xl font-bold">{stats.totalRevenue.toLocaleString('fr-FR')}€</p>
@@ -200,7 +200,7 @@ export default function UpsellCrossSellPage() {
                         </Badge>
                         <Badge variant="outline">{rule.display_location.replace('_', ' ')}</Badge>
                         {rule.discount_percent > 0 && (
-                          <Badge className="bg-green-100 text-green-700">
+                          <Badge className="bg-success/10 text-success">
                             <Percent className="h-3 w-3 mr-1" />
                             -{rule.discount_percent}%
                           </Badge>
@@ -210,7 +210,7 @@ export default function UpsellCrossSellPage() {
                         <span>{rule.impressions} impressions</span>
                         <span>{rule.conversions} conversions</span>
                         {Number(rule.revenue_generated) > 0 && (
-                          <span className="text-green-600 font-medium">
+                          <span className="text-success font-medium">
                             +{Number(rule.revenue_generated).toLocaleString('fr-FR')}€
                           </span>
                         )}

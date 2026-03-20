@@ -107,7 +107,7 @@ export default function DataExportCenterPage() {
             {recentExports.map((exp) => (
               <div key={exp.id} className="flex items-center justify-between p-3 rounded-lg border">
                 <div className="flex items-center gap-3">
-                  <CheckCircle2 className="h-4 w-4 text-green-500" />
+                  <CheckCircle2 className="h-4 w-4 text-success" />
                   <div>
                     <p className="text-sm font-medium">{exp.module}</p>
                     <p className="text-xs text-muted-foreground">{exp.date} · {exp.size}</p>

@@ -23,7 +23,7 @@ const planNames = {
 
 const planColors = {
   free: 'text-gray-600 bg-gray-100',
-  pro: 'text-blue-600 bg-blue-100',
+  pro: 'text-info bg-info/10',
   ultra_pro: 'text-purple-600 bg-purple-100'
 }
 
@@ -86,7 +86,7 @@ export const SubscriptionManager = () => {
         <div className="space-y-4">
           <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
             <div className="flex items-center gap-3">
-              <div className={`h-3 w-3 rounded-full ${subscription.subscribed ? 'bg-green-500' : 'bg-gray-400'}`}></div>
+              <div className={`h-3 w-3 rounded-full ${subscription.subscribed ? 'bg-success' : 'bg-gray-400'}`}></div>
               <div>
                 <p className="font-medium">Statut de l'abonnement</p>
                 <p className="text-sm text-muted-foreground">
@@ -95,7 +95,7 @@ export const SubscriptionManager = () => {
               </div>
             </div>
             {subscription.subscribed && (
-              <Badge variant="outline" className="text-green-600 border-green-600">
+              <Badge variant="outline" className="text-success border-green-600">
                 Payé
               </Badge>
             )}

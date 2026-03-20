@@ -31,14 +31,14 @@ import {
 
 // Plateformes supportées avec logos
 const supportedPlatforms = [
-  { name: 'AliExpress', logo: '/logos/aliexpress-logo.svg', color: 'text-orange-500', path: '/import/aliexpress' },
-  { name: 'Amazon', logo: '/logos/amazon-logo.svg', color: 'text-amber-600', path: '/import/amazon' },
-  { name: 'Temu', logo: '/logos/temu-logo.svg', color: 'text-orange-600', path: '/import/temu' },
-  { name: 'eBay', logo: '/logos/ebay-icon.svg', color: 'text-blue-500', path: '/import/ebay' },
-  { name: 'Etsy', logo: '/logos/etsy.svg', color: 'text-orange-500', path: '/import/etsy' },
-  { name: 'CJ', logo: '/logos/cj-logo.svg', color: 'text-red-500', path: '/import/cj-dropshipping' },
-  { name: 'Cdiscount', logo: '/logos/cdiscount-icon.svg', color: 'text-red-600', path: '/import/cdiscount' },
-  { name: 'Shopify', logo: '/logos/shopify.svg', color: 'text-green-600', path: '/import/shopify' },
+  { name: 'AliExpress', logo: '/logos/aliexpress-logo.svg', color: 'text-warning', path: '/import/aliexpress' },
+  { name: 'Amazon', logo: '/logos/amazon-logo.svg', color: 'text-warning', path: '/import/amazon' },
+  { name: 'Temu', logo: '/logos/temu-logo.svg', color: 'text-warning', path: '/import/temu' },
+  { name: 'eBay', logo: '/logos/ebay-icon.svg', color: 'text-info', path: '/import/ebay' },
+  { name: 'Etsy', logo: '/logos/etsy.svg', color: 'text-warning', path: '/import/etsy' },
+  { name: 'CJ', logo: '/logos/cj-logo.svg', color: 'text-destructive', path: '/import/cj-dropshipping' },
+  { name: 'Cdiscount', logo: '/logos/cdiscount-icon.svg', color: 'text-destructive', path: '/import/cdiscount' },
+  { name: 'Shopify', logo: '/logos/shopify.svg', color: 'text-success', path: '/import/shopify' },
 ];
 
 interface QuickImportHeroProps {

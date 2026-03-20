@@ -105,7 +105,7 @@ export function ExportModal({ open, onClose, selectedProducts }: ExportModalProp
               <div className="space-y-2 mb-4">
                 {option.formats.map((format) => (
                   <div key={format} className="flex items-center gap-2">
-                    <CheckCircle className="h-4 w-4 text-green-600" />
+                    <CheckCircle className="h-4 w-4 text-success" />
                     <span className="text-sm">{format}</span>
                   </div>
                 ))}

@@ -58,7 +58,7 @@ export function CustomerAnalysisCard({ analysis }: CustomerAnalysisCardProps) {
           <div className="flex items-center gap-2">
             <p className="text-2xl font-bold">{analysis.churn_probability}%</p>
             {(analysis.churn_probability || 0) >= 50 && (
-              <AlertCircle className="h-5 w-5 text-orange-500" />
+              <AlertCircle className="h-5 w-5 text-warning" />
             )}
           </div>
         </div>

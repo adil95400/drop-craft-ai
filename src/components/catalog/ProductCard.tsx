@@ -37,9 +37,9 @@ export const ProductCard = ({
   };
 
   const getStockColor = (stock: number = 0) => {
-    if (stock > 50) return 'text-green-600';
-    if (stock > 10) return 'text-orange-600';
-    return 'text-red-600';
+    if (stock > 50) return 'text-success';
+    if (stock > 10) return 'text-warning';
+    return 'text-destructive';
   };
 
   const formatCurrency = (amount: number) => {
@@ -57,9 +57,9 @@ export const ProductCard = ({
   };
 
   const getMarginColor = (margin: number) => {
-    if (margin >= 50) return 'text-green-600';
-    if (margin >= 30) return 'text-blue-600';
-    return 'text-orange-600';
+    if (margin >= 50) return 'text-success';
+    if (margin >= 30) return 'text-info';
+    return 'text-warning';
   };
 
   return (
@@ -79,19 +79,19 @@ export const ProductCard = ({
           {/* Badges overlay */}
           <div className="absolute top-2 left-2 flex flex-col gap-1">
             {product.status === 'active' && product.stock_quantity && product.stock_quantity > 0 && (
-              <Badge className="bg-green-500 text-white text-xs">
+              <Badge className="bg-success text-white text-xs">
                 <TrendingUp className="w-3 h-3 mr-1" />
                 Actif
               </Badge>
             )}
             {product.profit_margin && product.profit_margin > 50 && (
-              <Badge className="bg-yellow-500 text-black text-xs">
+              <Badge className="bg-warning text-black text-xs">
                 <Crown className="w-3 h-3 mr-1" />
                 Top Marge
               </Badge>
             )}
             {product.stock_quantity && product.stock_quantity > 100 && (
-              <Badge className="bg-blue-500 text-white text-xs">
+              <Badge className="bg-info text-white text-xs">
                 <Zap className="w-3 h-3 mr-1" />
                 Stock+
               </Badge>

@@ -55,10 +55,10 @@ import { format } from 'date-fns';
 import { getDateFnsLocale } from '@/utils/dateFnsLocale';
 
 const STATUS_STYLES = {
-  ok: { label: 'OK', icon: Activity, color: 'text-green-500', bg: 'bg-green-50 dark:bg-green-950/30' },
-  warning: { label: 'Alerte', icon: AlertTriangle, color: 'text-yellow-500', bg: 'bg-yellow-50 dark:bg-yellow-950/30' },
-  exhausted: { label: 'Épuisé', icon: XCircle, color: 'text-red-500', bg: 'bg-red-50 dark:bg-red-950/30' },
-  unlimited: { label: 'Illimité', icon: Zap, color: 'text-blue-500', bg: 'bg-blue-50 dark:bg-blue-950/30' },
+  ok: { label: 'OK', icon: Activity, color: 'text-success', bg: 'bg-success/5 dark:bg-green-950/30' },
+  warning: { label: 'Alerte', icon: AlertTriangle, color: 'text-warning', bg: 'bg-warning/5 dark:bg-yellow-950/30' },
+  exhausted: { label: 'Épuisé', icon: XCircle, color: 'text-destructive', bg: 'bg-destructive/5 dark:bg-red-950/30' },
+  unlimited: { label: 'Illimité', icon: Zap, color: 'text-info', bg: 'bg-info/5 dark:bg-blue-950/30' },
 };
 
 const PLAN_BADGES: Record<string, { label: string; variant: 'default' | 'secondary' | 'outline' }> = {
@@ -98,7 +98,7 @@ function UserDetailDialog({ user }: UserDetailDialogProps) {
     <DialogContent className="max-w-2xl">
       <DialogHeader>
         <DialogTitle className="flex items-center gap-2">
-          <Crown className="h-5 w-5 text-amber-500" />
+          <Crown className="h-5 w-5 text-warning" />
           Détail utilisateur
         </DialogTitle>
         <DialogDescription>
@@ -204,7 +204,7 @@ export function AdminConsumptionDashboard() {
       <Card>
         <CardContent className="pt-6">
           <div className="text-center text-muted-foreground">
-            <AlertTriangle className="h-12 w-12 mx-auto mb-4 text-yellow-500" />
+            <AlertTriangle className="h-12 w-12 mx-auto mb-4 text-warning" />
             <p className="font-medium">Accès non autorisé</p>
             <p className="text-sm">Vous devez être administrateur pour accéder à cette page.</p>
           </div>
@@ -252,7 +252,7 @@ export function AdminConsumptionDashboard() {
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium flex items-center gap-2">
-              <Users className="h-4 w-4 text-blue-500" />
+              <Users className="h-4 w-4 text-info" />
               Total utilisateurs
             </CardTitle>
           </CardHeader>
@@ -268,30 +268,30 @@ export function AdminConsumptionDashboard() {
           </CardContent>
         </Card>
 
-        <Card className="border-red-200 dark:border-red-900">
+        <Card className="border-destructive/20 dark:border-red-900">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium flex items-center gap-2">
-              <XCircle className="h-4 w-4 text-red-500" />
+              <XCircle className="h-4 w-4 text-destructive" />
               Quotas épuisés
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-red-500">{overview?.users_at_limit || 0}</div>
+            <div className="text-2xl font-bold text-destructive">{overview?.users_at_limit || 0}</div>
             <p className="text-xs text-muted-foreground mt-1">
               utilisateurs bloqués (24h)
             </p>
           </CardContent>
         </Card>
 
-        <Card className="border-yellow-200 dark:border-yellow-900">
+        <Card className="border-warning/20 dark:border-yellow-900">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium flex items-center gap-2">
-              <AlertTriangle className="h-4 w-4 text-yellow-500" />
+              <AlertTriangle className="h-4 w-4 text-warning" />
               Proche de la limite
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-yellow-500">{overview?.users_near_limit || 0}</div>
+            <div className="text-2xl font-bold text-warning">{overview?.users_near_limit || 0}</div>
             <p className="text-xs text-muted-foreground mt-1">
               utilisateurs à surveiller (24h)
             </p>
@@ -301,7 +301,7 @@ export function AdminConsumptionDashboard() {
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium flex items-center gap-2">
-              <DollarSign className="h-4 w-4 text-green-500" />
+              <DollarSign className="h-4 w-4 text-success" />
               Coût estimé (aujourd'hui)
             </CardTitle>
           </CardHeader>
@@ -331,8 +331,8 @@ export function AdminConsumptionDashboard() {
               {Object.entries(overview.consumption_by_quota).map(([key, data]) => {
                 const icons: Record<string, React.ReactNode> = {
                   ai_generations: <Sparkles className="h-5 w-5 text-purple-500" />,
-                  products: <Package className="h-5 w-5 text-blue-500" />,
-                  imports_monthly: <Download className="h-5 w-5 text-green-500" />,
+                  products: <Package className="h-5 w-5 text-info" />,
+                  imports_monthly: <Download className="h-5 w-5 text-success" />,
                 };
                 return (
                   <div key={key} className="p-3 rounded-lg bg-muted/50">
@@ -474,7 +474,7 @@ export function AdminConsumptionDashboard() {
                                   variant="outline"
                                   className={cn(
                                     'text-xs',
-                                    q.status === 'exhausted' ? 'border-red-500 text-red-500' : 'border-yellow-500 text-yellow-500'
+                                    q.status === 'exhausted' ? 'border-destructive text-destructive' : 'border-warning text-warning'
                                   )}
                                 >
                                   {q.key}: {q.current}/{q.limit}

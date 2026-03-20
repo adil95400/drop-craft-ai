@@ -322,7 +322,7 @@ export function ImageGalleryModal({
                   <FileText className="h-3.5 w-3.5 mr-1" />
                   SEO
                   {getOverallSeoScore() < 50 && (
-                    <AlertCircle className="h-3 w-3 ml-1 text-amber-500" />
+                    <AlertCircle className="h-3 w-3 ml-1 text-warning" />
                   )}
                 </TabsTrigger>
                 <TabsTrigger value="optimize" className="text-xs h-7 px-3">
@@ -409,7 +409,7 @@ export function ImageGalleryModal({
 
                     {/* Primary Badge */}
                     {currentIndex === 0 && (
-                      <Badge className="absolute top-4 left-4 bg-amber-500 text-white border-0 gap-1">
+                      <Badge className="absolute top-4 left-4 bg-warning text-white border-0 gap-1">
                         <Star className="h-3 w-3 fill-current" />
                         Principale
                       </Badge>
@@ -523,7 +523,7 @@ export function ImageGalleryModal({
                                 <Button
                                   variant="ghost"
                                   size="icon"
-                                  className="h-9 w-9 text-amber-400 hover:text-amber-300 hover:bg-amber-500/20"
+                                  className="h-9 w-9 text-amber-400 hover:text-amber-300 hover:bg-warning/20"
                                   onClick={() => handleSetPrimary(currentIndex)}
                                 >
                                   <Star className="h-4 w-4" />
@@ -538,7 +538,7 @@ export function ImageGalleryModal({
                               <Button
                                 variant="ghost"
                                 size="icon"
-                                className="h-9 w-9 text-red-400 hover:text-red-300 hover:bg-red-500/20"
+                                className="h-9 w-9 text-red-400 hover:text-red-300 hover:bg-destructive/20"
                                 onClick={() => handleRemoveImage(currentIndex)}
                               >
                                 <Trash2 className="h-4 w-4" />
@@ -566,8 +566,8 @@ export function ImageGalleryModal({
                       </div>
                       <div className={cn(
                         "text-3xl font-bold",
-                        getOverallSeoScore() >= 70 ? "text-emerald-500" :
-                        getOverallSeoScore() >= 40 ? "text-amber-500" : "text-red-500"
+                        getOverallSeoScore() >= 70 ? "text-success" :
+                        getOverallSeoScore() >= 40 ? "text-warning" : "text-destructive"
                       )}>
                         {getOverallSeoScore()}%
                       </div>
@@ -616,15 +616,15 @@ export function ImageGalleryModal({
                               <div className="flex items-center gap-2">
                                 <span className={cn(
                                   "text-sm font-semibold",
-                                  getSeoScore(index) >= 70 ? "text-emerald-500" :
-                                  getSeoScore(index) >= 40 ? "text-amber-500" : "text-red-500"
+                                  getSeoScore(index) >= 70 ? "text-success" :
+                                  getSeoScore(index) >= 40 ? "text-warning" : "text-destructive"
                                 )}>
                                   {getSeoScore(index)}%
                                 </span>
                                 {getSeoScore(index) >= 70 ? (
-                                  <CheckCircle2 className="h-4 w-4 text-emerald-500" />
+                                  <CheckCircle2 className="h-4 w-4 text-success" />
                                 ) : (
-                                  <AlertCircle className="h-4 w-4 text-amber-500" />
+                                  <AlertCircle className="h-4 w-4 text-warning" />
                                 )}
                               </div>
                             </div>
@@ -683,8 +683,8 @@ export function ImageGalleryModal({
                     <div className="space-y-4">
                       <Card className="p-4 border-dashed">
                         <div className="flex items-start gap-4">
-                          <div className="h-10 w-10 rounded-lg bg-blue-500/10 flex items-center justify-center flex-shrink-0">
-                            <RefreshCw className="h-5 w-5 text-blue-500" />
+                          <div className="h-10 w-10 rounded-lg bg-info/10 flex items-center justify-center flex-shrink-0">
+                            <RefreshCw className="h-5 w-5 text-info" />
                           </div>
                           <div className="flex-1">
                             <h5 className="font-medium mb-1">Compression intelligente</h5>
@@ -710,8 +710,8 @@ export function ImageGalleryModal({
 
                       <Card className="p-4 border-dashed">
                         <div className="flex items-start gap-4">
-                          <div className="h-10 w-10 rounded-lg bg-emerald-500/10 flex items-center justify-center flex-shrink-0">
-                            <Search className="h-5 w-5 text-emerald-500" />
+                          <div className="h-10 w-10 rounded-lg bg-success/10 flex items-center justify-center flex-shrink-0">
+                            <Search className="h-5 w-5 text-success" />
                           </div>
                           <div className="flex-1">
                             <h5 className="font-medium mb-1">Recherche d'images supplémentaires</h5>
@@ -769,11 +769,11 @@ export function ImageGalleryModal({
                         <div className="text-xs text-muted-foreground">Images totales</div>
                       </div>
                       <div>
-                        <div className="text-2xl font-bold text-emerald-500">{Object.keys(altTexts).length}</div>
+                        <div className="text-2xl font-bold text-success">{Object.keys(altTexts).length}</div>
                         <div className="text-xs text-muted-foreground">Alt texts définis</div>
                       </div>
                       <div>
-                        <div className="text-2xl font-bold text-amber-500">{getOverallSeoScore()}%</div>
+                        <div className="text-2xl font-bold text-warning">{getOverallSeoScore()}%</div>
                         <div className="text-xs text-muted-foreground">Score SEO</div>
                       </div>
                     </div>

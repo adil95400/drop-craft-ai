@@ -98,10 +98,10 @@ export function InventoryDashboard() {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'in_stock': return 'bg-green-100 text-green-800';
-      case 'low_stock': return 'bg-yellow-100 text-yellow-800';
-      case 'out_of_stock': return 'bg-red-100 text-red-800';
-      case 'overstock': return 'bg-blue-100 text-blue-800';
+      case 'in_stock': return 'bg-success/10 text-success';
+      case 'low_stock': return 'bg-warning/10 text-yellow-800';
+      case 'out_of_stock': return 'bg-destructive/10 text-red-800';
+      case 'overstock': return 'bg-info/10 text-blue-800';
       default: return 'bg-gray-100 text-gray-800';
     }
   };
@@ -132,7 +132,7 @@ export function InventoryDashboard() {
                 <p className="text-sm font-medium text-muted-foreground">Valeur Totale</p>
                 <p className="text-2xl font-bold">{totalValue.toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' })}</p>
               </div>
-              <Package className="w-8 h-8 text-blue-500" />
+              <Package className="w-8 h-8 text-info" />
             </div>
           </CardContent>
         </Card>
@@ -142,9 +142,9 @@ export function InventoryDashboard() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-muted-foreground">Stock Faible</p>
-                <p className="text-2xl font-bold text-yellow-600">{lowStockItems}</p>
+                <p className="text-2xl font-bold text-warning">{lowStockItems}</p>
               </div>
-              <TrendingDown className="w-8 h-8 text-yellow-500" />
+              <TrendingDown className="w-8 h-8 text-warning" />
             </div>
           </CardContent>
         </Card>
@@ -154,9 +154,9 @@ export function InventoryDashboard() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-muted-foreground">Ruptures</p>
-                <p className="text-2xl font-bold text-red-600">{outOfStockItems}</p>
+                <p className="text-2xl font-bold text-destructive">{outOfStockItems}</p>
               </div>
-              <AlertTriangle className="w-8 h-8 text-red-500" />
+              <AlertTriangle className="w-8 h-8 text-destructive" />
             </div>
           </CardContent>
         </Card>
@@ -166,9 +166,9 @@ export function InventoryDashboard() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-muted-foreground">Surstock</p>
-                <p className="text-2xl font-bold text-blue-600">{overstockItems}</p>
+                <p className="text-2xl font-bold text-info">{overstockItems}</p>
               </div>
-              <TrendingUp className="w-8 h-8 text-blue-500" />
+              <TrendingUp className="w-8 h-8 text-info" />
             </div>
           </CardContent>
         </Card>
@@ -299,7 +299,7 @@ export function InventoryDashboard() {
                 <Card>
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
-                      <AlertTriangle className="w-5 h-5 text-yellow-500" />
+                      <AlertTriangle className="w-5 h-5 text-warning" />
                       Alertes Stock Faible
                     </CardTitle>
                   </CardHeader>
@@ -324,14 +324,14 @@ export function InventoryDashboard() {
                 <Card>
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
-                      <AlertTriangle className="w-5 h-5 text-red-500" />
+                      <AlertTriangle className="w-5 h-5 text-destructive" />
                       Ruptures de Stock
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-2">
                       {inventoryData.filter(item => item.status === 'out_of_stock').map(item => (
-                        <div key={item.id} className="flex items-center justify-between p-3 border rounded-lg bg-red-50">
+                        <div key={item.id} className="flex items-center justify-between p-3 border rounded-lg bg-destructive/5">
                           <div>
                             <div className="font-medium">{item.name}</div>
                             <div className="text-sm text-muted-foreground">

@@ -106,7 +106,7 @@ export function SupportAvailabilityIndicator({
     return (
       <Badge 
         variant={isHumanAvailable ? "default" : "secondary"}
-        className={isHumanAvailable ? "bg-green-500" : ""}
+        className={isHumanAvailable ? "bg-success" : ""}
       >
         {isHumanAvailable ? "En ligne" : "Hors ligne"}
       </Badge>
@@ -125,7 +125,7 @@ export function SupportAvailabilityIndicator({
             {isVIP && (
               <Tooltip>
                 <TooltipTrigger>
-                  <Badge variant="outline" className="bg-amber-500/10 text-amber-600 border-amber-500">
+                  <Badge variant="outline" className="bg-warning/10 text-warning border-amber-500">
                     <Crown className="h-3 w-3 mr-1" />
                     VIP 24/7
                   </Badge>
@@ -137,7 +137,7 @@ export function SupportAvailabilityIndicator({
             )}
             <Badge 
               variant={isHumanAvailable ? "default" : "secondary"}
-              className={isHumanAvailable ? "bg-green-500 hover:bg-green-600" : ""}
+              className={isHumanAvailable ? "bg-success hover:bg-success" : ""}
             >
               <div className={`w-2 h-2 rounded-full mr-2 ${isHumanAvailable ? 'bg-white animate-pulse' : 'bg-muted-foreground'}`} />
               {isHumanAvailable ? "Disponible" : "Indisponible"}
@@ -169,7 +169,7 @@ export function SupportAvailabilityIndicator({
         )}
 
         {!isVIP && (
-          <div className="text-xs text-amber-600 bg-amber-500/10 p-2 rounded mt-1">
+          <div className="text-xs text-warning bg-warning/10 p-2 rounded mt-1">
             <Crown className="h-3 w-3 inline mr-1" />
             Passez au plan Business pour un support 24/7 prioritaire
           </div>

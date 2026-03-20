@@ -14,13 +14,13 @@ export function StockAlerts() {
   const getSeverityConfig = (severity: string) => {
     switch (severity) {
       case 'critical':
-        return { icon: XCircle, color: 'text-red-600', bg: 'bg-red-500', variant: 'destructive' as const };
+        return { icon: XCircle, color: 'text-destructive', bg: 'bg-destructive', variant: 'destructive' as const };
       case 'high':
-        return { icon: AlertTriangle, color: 'text-orange-600', bg: 'bg-orange-500', variant: 'destructive' as const };
+        return { icon: AlertTriangle, color: 'text-warning', bg: 'bg-warning', variant: 'destructive' as const };
       case 'medium':
-        return { icon: AlertCircle, color: 'text-yellow-600', bg: 'bg-yellow-500', variant: 'secondary' as const };
+        return { icon: AlertCircle, color: 'text-warning', bg: 'bg-warning', variant: 'secondary' as const };
       default:
-        return { icon: AlertCircle, color: 'text-blue-600', bg: 'bg-blue-500', variant: 'default' as const };
+        return { icon: AlertCircle, color: 'text-info', bg: 'bg-info', variant: 'default' as const };
     }
   };
 
@@ -43,7 +43,7 @@ export function StockAlerts() {
     <div className="space-y-6">
       <div>
         <h2 className="text-2xl font-bold flex items-center gap-2">
-          <AlertTriangle className="h-6 w-6 text-orange-500" />
+          <AlertTriangle className="h-6 w-6 text-warning" />
           Alertes Stock
         </h2>
         <p className="text-muted-foreground mt-1">
@@ -53,7 +53,7 @@ export function StockAlerts() {
 
       {(!alerts || alerts.length === 0) ? (
         <Card className="p-12 text-center">
-          <CheckCircle className="h-12 w-12 mx-auto mb-4 text-green-500" />
+          <CheckCircle className="h-12 w-12 mx-auto mb-4 text-success" />
           <p className="text-muted-foreground">
             Aucune alerte active. Tous vos stocks sont à des niveaux normaux !
           </p>

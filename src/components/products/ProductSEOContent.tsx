@@ -68,7 +68,7 @@ export function ProductSEOContent({
             placeholder="Titre optimisé pour les moteurs de recherche"
           />
           <div className="flex justify-between text-xs">
-            <span className={seoData.title.length > 60 ? 'text-red-500' : seoData.title.length < 30 ? 'text-orange-500' : 'text-green-500'}>
+            <span className={seoData.title.length > 60 ? 'text-destructive' : seoData.title.length < 30 ? 'text-warning' : 'text-success'}>
               {seoData.title.length} caractères
             </span>
             <span className="text-muted-foreground">30-60 recommandé</span>
@@ -86,7 +86,7 @@ export function ProductSEOContent({
             rows={3}
           />
           <div className="flex justify-between text-xs">
-            <span className={seoData.description.length > 160 ? 'text-red-500' : seoData.description.length < 120 ? 'text-orange-500' : 'text-green-500'}>
+            <span className={seoData.description.length > 160 ? 'text-destructive' : seoData.description.length < 120 ? 'text-warning' : 'text-success'}>
               {seoData.description.length} caractères
             </span>
             <span className="text-muted-foreground">120-160 recommandé</span>
@@ -396,11 +396,11 @@ export function ProductSEOContent({
                   {analysis.checks?.map((check: any, index: number) => (
                     <div key={index} className="flex items-center gap-2">
                       {check.passed ? (
-                        <CheckCircle2 className="h-4 w-4 text-green-500" />
+                        <CheckCircle2 className="h-4 w-4 text-success" />
                       ) : (
-                        <AlertCircle className="h-4 w-4 text-orange-500" />
+                        <AlertCircle className="h-4 w-4 text-warning" />
                       )}
-                      <span className={`text-sm ${check.passed ? 'text-green-700' : 'text-orange-700'}`}>
+                      <span className={`text-sm ${check.passed ? 'text-success' : 'text-orange-700'}`}>
                         {check.name}
                       </span>
                     </div>

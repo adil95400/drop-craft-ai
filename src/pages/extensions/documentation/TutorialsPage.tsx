@@ -140,9 +140,9 @@ export default function TutorialsPage() {
 
   const getDifficultyColor = (difficulty: string) => {
     switch (difficulty) {
-      case 'Débutant': return 'bg-green-500'
-      case 'Intermédiaire': return 'bg-orange-500'
-      case 'Avancé': return 'bg-red-500'
+      case 'Débutant': return 'bg-success'
+      case 'Intermédiaire': return 'bg-warning'
+      case 'Avancé': return 'bg-destructive'
       default: return 'bg-gray-500'
     }
   }
@@ -219,7 +219,7 @@ export default function TutorialsPage() {
                     </div>
                     {tutorial.completed && (
                       <div className="absolute top-2 left-2">
-                        <Badge className="bg-green-500">
+                        <Badge className="bg-success">
                           <CheckCircle className="w-3 h-3 mr-1" />
                           Terminé
                         </Badge>

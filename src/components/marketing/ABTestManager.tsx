@@ -184,8 +184,8 @@ export function ABTestManager() {
 
   const getStatusBadge = (status: string | null) => {
     switch (status) {
-      case 'running': return <Badge className="bg-green-500/10 text-green-600 border-green-200">En cours</Badge>;
-      case 'completed': return <Badge className="bg-blue-500/10 text-blue-600 border-blue-200">Terminé</Badge>;
+      case 'running': return <Badge className="bg-success/10 text-success border-success/20">En cours</Badge>;
+      case 'completed': return <Badge className="bg-info/10 text-info border-info/20">Terminé</Badge>;
       case 'paused': return <Badge variant="secondary">Pause</Badge>;
       default: return <Badge variant="outline">Brouillon</Badge>;
     }
@@ -360,7 +360,7 @@ export function ABTestManager() {
                               <div className="flex items-center justify-between mb-2">
                                 <div className="flex items-center gap-2">
                                   <span className="font-medium text-sm">{v.variant_name}</span>
-                                  {v.is_winner && <Trophy className="h-4 w-4 text-yellow-500" />}
+                                  {v.is_winner && <Trophy className="h-4 w-4 text-warning" />}
                                 </div>
                                 <Badge variant="outline" className="text-xs">
                                   {v.traffic_allocation || 50}% trafic

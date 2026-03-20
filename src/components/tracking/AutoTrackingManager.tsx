@@ -173,20 +173,20 @@ export const AutoTrackingManager = () => {
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'processing': return <Clock className="h-4 w-4 text-yellow-500" />;
-      case 'shipped': return <Truck className="h-4 w-4 text-blue-500" />;
+      case 'processing': return <Clock className="h-4 w-4 text-warning" />;
+      case 'shipped': return <Truck className="h-4 w-4 text-info" />;
       case 'in_transit': return <Package className="h-4 w-4 text-purple-500" />;
-      case 'delivered': return <CheckCircle className="h-4 w-4 text-green-500" />;
+      case 'delivered': return <CheckCircle className="h-4 w-4 text-success" />;
       default: return <AlertCircle className="h-4 w-4 text-gray-500" />;
     }
   };
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'processing': return 'bg-yellow-100 text-yellow-800';
-      case 'shipped': return 'bg-blue-100 text-blue-800';
+      case 'processing': return 'bg-warning/10 text-yellow-800';
+      case 'shipped': return 'bg-info/10 text-blue-800';
       case 'in_transit': return 'bg-purple-100 text-purple-800';
-      case 'delivered': return 'bg-green-100 text-green-800';
+      case 'delivered': return 'bg-success/10 text-success';
       default: return 'bg-gray-100 text-gray-800';
     }
   };

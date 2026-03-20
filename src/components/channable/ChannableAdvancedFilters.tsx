@@ -53,9 +53,9 @@ interface ChannableAdvancedFiltersProps {
 }
 
 const STATUS_OPTIONS = [
-  { value: 'connected', label: 'Connecté', icon: CheckCircle2, color: 'text-green-500' },
-  { value: 'connecting', label: 'Synchronisation', icon: Clock, color: 'text-blue-500' },
-  { value: 'error', label: 'Erreur', icon: AlertCircle, color: 'text-red-500' },
+  { value: 'connected', label: 'Connecté', icon: CheckCircle2, color: 'text-success' },
+  { value: 'connecting', label: 'Synchronisation', icon: Clock, color: 'text-info' },
+  { value: 'error', label: 'Erreur', icon: AlertCircle, color: 'text-destructive' },
   { value: 'disconnected', label: 'Déconnecté', icon: WifiOff, color: 'text-muted-foreground' },
 ]
 

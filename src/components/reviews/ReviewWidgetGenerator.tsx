@@ -150,7 +150,7 @@ export function ReviewWidgetGenerator() {
                 <div className="flex items-center gap-2 mb-4">
                   <div className="flex gap-0.5">
                     {[1, 2, 3, 4, 5].map(i => (
-                      <Star key={i} className="h-5 w-5 text-yellow-500 fill-yellow-500" />
+                      <Star key={i} className="h-5 w-5 text-warning fill-yellow-500" />
                     ))}
                   </div>
                   <span className="font-bold text-lg">4.8/5</span>
@@ -165,7 +165,7 @@ export function ReviewWidgetGenerator() {
                     <div key={i} className={`p-3 rounded border ${darkMode ? 'border-slate-600' : 'border-border'}`}>
                       <div className="flex gap-0.5 mb-1">
                         {[1, 2, 3, 4, 5].map(s => (
-                          <Star key={s} className={`h-3 w-3 ${s <= r.rating ? 'text-yellow-500 fill-yellow-500' : 'text-muted-foreground/20'}`} />
+                          <Star key={s} className={`h-3 w-3 ${s <= r.rating ? 'text-warning fill-yellow-500' : 'text-muted-foreground/20'}`} />
                         ))}
                       </div>
                       <p className="text-sm font-medium">{r.author}</p>

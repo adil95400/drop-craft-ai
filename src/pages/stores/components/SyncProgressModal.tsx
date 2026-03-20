@@ -49,18 +49,18 @@ export function SyncProgressModal({
 
   const getStepIcon = (status: SyncStep['status']) => {
     switch (status) {
-      case 'completed': return <CheckCircle className="w-4 h-4 text-green-500" />
-      case 'error': return <XCircle className="w-4 h-4 text-red-500" />
-      case 'running': return <RefreshCw className="w-4 h-4 text-blue-500 animate-spin" />
+      case 'completed': return <CheckCircle className="w-4 h-4 text-success" />
+      case 'error': return <XCircle className="w-4 h-4 text-destructive" />
+      case 'running': return <RefreshCw className="w-4 h-4 text-info animate-spin" />
       default: return <div className="w-4 h-4 rounded-full border-2 border-muted" />
     }
   }
 
   const getStatusBadge = (status: SyncStep['status']) => {
     switch (status) {
-      case 'completed': return <Badge variant="default" className="bg-green-100 text-green-700">Terminé</Badge>
+      case 'completed': return <Badge variant="default" className="bg-success/10 text-success">Terminé</Badge>
       case 'error': return <Badge variant="destructive">Erreur</Badge>
-      case 'running': return <Badge variant="secondary" className="bg-blue-100 text-blue-700">En cours</Badge>
+      case 'running': return <Badge variant="secondary" className="bg-info/10 text-blue-700">En cours</Badge>
       default: return <Badge variant="outline">En attente</Badge>
     }
   }
@@ -111,7 +111,7 @@ export function SyncProgressModal({
                   )}
                   
                   {step.status === 'completed' && step.count !== undefined && (
-                    <p className="text-xs text-green-600">
+                    <p className="text-xs text-success">
                       {step.count} éléments synchronisés
                     </p>
                   )}

@@ -93,7 +93,7 @@ export function DuplicateDetector({ products }: DuplicateDetectorProps) {
       <Card>
         <CardContent className="pt-6">
           <div className="text-center text-muted-foreground">
-            <AlertTriangle className="h-12 w-12 mx-auto mb-2 opacity-50 text-green-600" />
+            <AlertTriangle className="h-12 w-12 mx-auto mb-2 opacity-50 text-success" />
             <p>Aucun doublon détecté ✨</p>
           </div>
         </CardContent>
@@ -106,7 +106,7 @@ export function DuplicateDetector({ products }: DuplicateDetectorProps) {
       <CardHeader>
         <CardTitle className="flex items-center justify-between">
           <span className="flex items-center gap-2">
-            <AlertTriangle className="h-5 w-5 text-orange-600" />
+            <AlertTriangle className="h-5 w-5 text-warning" />
             Doublons Détectés
           </span>
           <Badge variant="destructive">{duplicates.length} groupe{duplicates.length > 1 ? 's' : ''}</Badge>

@@ -34,10 +34,10 @@ interface StatCardProps {
 function StatCard({ title, value, subValue, icon: Icon, trend, trendValue, color, delay = 0 }: StatCardProps) {
   const colorClasses = {
     primary: 'bg-primary/10 text-primary',
-    warning: 'bg-amber-500/10 text-amber-500',
-    success: 'bg-emerald-500/10 text-emerald-500',
-    destructive: 'bg-red-500/10 text-red-500',
-    info: 'bg-blue-500/10 text-blue-500'
+    warning: 'bg-warning/10 text-warning',
+    success: 'bg-success/10 text-success',
+    destructive: 'bg-destructive/10 text-destructive',
+    info: 'bg-info/10 text-info'
   }
 
   return (
@@ -64,14 +64,14 @@ function StatCard({ title, value, subValue, icon: Icon, trend, trendValue, color
           {trend && trendValue && (
             <div className="mt-3 flex items-center gap-1">
               {trend === 'up' ? (
-                <ArrowUpRight className="h-3.5 w-3.5 text-emerald-500" />
+                <ArrowUpRight className="h-3.5 w-3.5 text-success" />
               ) : trend === 'down' ? (
-                <ArrowDownRight className="h-3.5 w-3.5 text-red-500" />
+                <ArrowDownRight className="h-3.5 w-3.5 text-destructive" />
               ) : null}
               <span className={cn(
                 "text-xs font-medium",
-                trend === 'up' && "text-emerald-500",
-                trend === 'down' && "text-red-500"
+                trend === 'up' && "text-success",
+                trend === 'down' && "text-destructive"
               )}>
                 {trendValue}
               </span>

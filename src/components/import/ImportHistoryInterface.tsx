@@ -145,13 +145,13 @@ export const ImportHistoryInterface: React.FC = () => {
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'completed':
-        return <CheckCircle className="w-4 h-4 text-green-500" />;
+        return <CheckCircle className="w-4 h-4 text-success" />;
       case 'processing':
-        return <RefreshCw className="w-4 h-4 text-blue-500 animate-spin" />;
+        return <RefreshCw className="w-4 h-4 text-info animate-spin" />;
       case 'failed':
-        return <AlertCircle className="w-4 h-4 text-red-500" />;
+        return <AlertCircle className="w-4 h-4 text-destructive" />;
       default:
-        return <Clock className="w-4 h-4 text-orange-500" />;
+        return <Clock className="w-4 h-4 text-warning" />;
     }
   };
 
@@ -327,9 +327,9 @@ export const ImportHistoryInterface: React.FC = () => {
                           </div>
                           <Progress value={calculateProgress(job)} className="h-2" />
                           <div className="flex gap-4 text-xs text-muted-foreground">
-                            <span className="text-green-600">✓ {job.success_rows}</span>
+                            <span className="text-success">✓ {job.success_rows}</span>
                             {job.error_rows > 0 && (
-                              <span className="text-red-600">✗ {job.error_rows}</span>
+                              <span className="text-destructive">✗ {job.error_rows}</span>
                             )}
                           </div>
                         </div>

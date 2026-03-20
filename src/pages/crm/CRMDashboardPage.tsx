@@ -19,9 +19,9 @@ import {
 } from 'lucide-react';
 
 const scoreColor = (score: number) => {
-  if (score >= 70) return 'text-green-500';
-  if (score >= 40) return 'text-yellow-500';
-  return 'text-red-500';
+  if (score >= 70) return 'text-success';
+  if (score >= 40) return 'text-warning';
+  return 'text-destructive';
 };
 
 const scoreBadge = (score: number) => {

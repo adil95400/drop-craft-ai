@@ -81,22 +81,22 @@ export const WinnersImportFlow = ({ product, isOpen, onClose, onConfirm }: Winne
           </div>
 
           {/* AI Insights */}
-          <div className="p-4 bg-blue-500/10 border border-blue-500/20 rounded-lg">
+          <div className="p-4 bg-info/10 border border-info/20 rounded-lg">
             <div className="flex items-center gap-2 mb-2">
-              <TrendingUp className="h-4 w-4 text-blue-500" />
+              <TrendingUp className="h-4 w-4 text-info" />
               <h4 className="font-semibold text-sm">Insights IA</h4>
             </div>
             <ul className="text-sm space-y-1 text-muted-foreground">
               <li className="flex items-center gap-2">
-                <Check className="h-3 w-3 text-green-500" />
+                <Check className="h-3 w-3 text-success" />
                 Forte demande du marché ({product.market_demand}/100)
               </li>
               <li className="flex items-center gap-2">
-                <Check className="h-3 w-3 text-green-500" />
+                <Check className="h-3 w-3 text-success" />
                 {product.reviews || 0} avis positifs
               </li>
               <li className="flex items-center gap-2">
-                <AlertCircle className="h-3 w-3 text-orange-500" />
+                <AlertCircle className="h-3 w-3 text-warning" />
                 Optimisez votre marge pour rester compétitif
               </li>
             </ul>
@@ -134,14 +134,14 @@ export const WinnersImportFlow = ({ product, isOpen, onClose, onConfirm }: Winne
           </div>
 
           {/* Profit Calculation */}
-          <div className="grid grid-cols-3 gap-4 p-4 bg-emerald-500/10 rounded-lg">
+          <div className="grid grid-cols-3 gap-4 p-4 bg-success/10 rounded-lg">
             <div>
               <p className="text-xs text-muted-foreground">Coût estimé</p>
-              <p className="text-lg font-bold text-emerald-600">€{estimatedCost.toFixed(2)}</p>
+              <p className="text-lg font-bold text-success">€{estimatedCost.toFixed(2)}</p>
             </div>
             <div>
               <p className="text-xs text-muted-foreground">Prix suggéré</p>
-              <p className="text-lg font-bold text-blue-600">€{suggestedPrice.toFixed(2)}</p>
+              <p className="text-lg font-bold text-info">€{suggestedPrice.toFixed(2)}</p>
             </div>
             <div>
               <p className="text-xs text-muted-foreground">Profit/vente</p>

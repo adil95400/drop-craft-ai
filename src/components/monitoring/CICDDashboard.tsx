@@ -38,11 +38,11 @@ const defaultJobs: PipelineJob[] = [
 const getStatusIcon = (status: PipelineJob['status']) => {
   switch (status) {
     case 'success':
-      return <CheckCircle className="h-5 w-5 text-green-500" />
+      return <CheckCircle className="h-5 w-5 text-success" />
     case 'failed':
-      return <XCircle className="h-5 w-5 text-red-500" />
+      return <XCircle className="h-5 w-5 text-destructive" />
     case 'running':
-      return <Clock className="h-5 w-5 text-blue-500 animate-spin" />
+      return <Clock className="h-5 w-5 text-info animate-spin" />
     case 'pending':
       return <Clock className="h-5 w-5 text-muted-foreground" />
   }
@@ -99,15 +99,15 @@ export const CICDDashboard: React.FC<CICDDashboardProps> = ({
         <CardContent>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div className="text-center p-3 bg-muted/50 rounded-lg">
-              <div className="text-2xl font-bold text-green-500">{successCount}</div>
+              <div className="text-2xl font-bold text-success">{successCount}</div>
               <div className="text-sm text-muted-foreground">Réussis</div>
             </div>
             <div className="text-center p-3 bg-muted/50 rounded-lg">
-              <div className="text-2xl font-bold text-red-500">{failedCount}</div>
+              <div className="text-2xl font-bold text-destructive">{failedCount}</div>
               <div className="text-sm text-muted-foreground">Échoués</div>
             </div>
             <div className="text-center p-3 bg-muted/50 rounded-lg">
-              <div className="text-2xl font-bold text-blue-500">{runningCount}</div>
+              <div className="text-2xl font-bold text-info">{runningCount}</div>
               <div className="text-sm text-muted-foreground">En cours</div>
             </div>
             <div className="text-center p-3 bg-muted/50 rounded-lg">
@@ -176,7 +176,7 @@ export const CICDDashboard: React.FC<CICDDashboardProps> = ({
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-green-500">0</div>
+            <div className="text-2xl font-bold text-success">0</div>
             <p className="text-xs text-muted-foreground">Vulnérabilités</p>
             <div className="flex gap-1 mt-2">
               <Badge variant="outline" className="text-xs">npm audit</Badge>

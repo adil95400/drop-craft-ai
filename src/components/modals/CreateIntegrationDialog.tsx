@@ -116,7 +116,7 @@ export const CreateIntegrationDialog = ({ open, onOpenChange }: CreateIntegratio
     if (currentStep === 2) return (
       <div className="space-y-6">
         <div className="text-center pb-4">
-          <div className="w-16 h-16 mx-auto rounded-2xl bg-amber-500/10 flex items-center justify-center mb-3"><Key className="h-8 w-8 text-amber-500" /></div>
+          <div className="w-16 h-16 mx-auto rounded-2xl bg-warning/10 flex items-center justify-center mb-3"><Key className="h-8 w-8 text-warning" /></div>
           <h3 className="font-semibold">Credentials {selectedPlatform?.label}</h3>
         </div>
         <div className="space-y-2"><Label>Clé API *</Label><Input type="password" value={formData.apiKey} onChange={(e) => setFormData({ ...formData, apiKey: e.target.value })} placeholder="sk_live_xxx" /></div>
@@ -126,7 +126,7 @@ export const CreateIntegrationDialog = ({ open, onOpenChange }: CreateIntegratio
     return (
       <div className="space-y-6">
         <div className="text-center pb-4">
-          <div className="w-16 h-16 mx-auto rounded-2xl bg-green-500/10 flex items-center justify-center mb-3"><Zap className="h-8 w-8 text-green-500" /></div>
+          <div className="w-16 h-16 mx-auto rounded-2xl bg-success/10 flex items-center justify-center mb-3"><Zap className="h-8 w-8 text-success" /></div>
           <h3 className="font-semibold">Configuration finale</h3>
         </div>
         <div className="space-y-2"><Label>Description</Label><Textarea value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })} placeholder="Description" /></div>

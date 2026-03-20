@@ -192,19 +192,19 @@ export function AIContextPanel({
           
           {/* Quick Stats */}
           <div className="grid grid-cols-3 gap-2">
-            <div className="text-center p-2 rounded-lg bg-red-500/10">
-              <AlertTriangle className="h-4 w-4 mx-auto text-red-500 mb-1" />
-              <p className="text-lg font-bold text-red-600">{contextStats.riskCount}</p>
+            <div className="text-center p-2 rounded-lg bg-destructive/10">
+              <AlertTriangle className="h-4 w-4 mx-auto text-destructive mb-1" />
+              <p className="text-lg font-bold text-destructive">{contextStats.riskCount}</p>
               <p className="text-[10px] text-muted-foreground">Risques</p>
             </div>
-            <div className="text-center p-2 rounded-lg bg-emerald-500/10">
-              <TrendingUp className="h-4 w-4 mx-auto text-emerald-500 mb-1" />
-              <p className="text-lg font-bold text-emerald-600">{contextStats.opportunityCount}</p>
+            <div className="text-center p-2 rounded-lg bg-success/10">
+              <TrendingUp className="h-4 w-4 mx-auto text-success mb-1" />
+              <p className="text-lg font-bold text-success">{contextStats.opportunityCount}</p>
               <p className="text-[10px] text-muted-foreground">Opportunités</p>
             </div>
-            <div className="text-center p-2 rounded-lg bg-blue-500/10">
-              <CheckCircle className="h-4 w-4 mx-auto text-blue-500 mb-1" />
-              <p className="text-lg font-bold text-blue-600">{contextStats.optimizedCount}</p>
+            <div className="text-center p-2 rounded-lg bg-info/10">
+              <CheckCircle className="h-4 w-4 mx-auto text-info mb-1" />
+              <p className="text-lg font-bold text-info">{contextStats.optimizedCount}</p>
               <p className="text-[10px] text-muted-foreground">Optimisés</p>
             </div>
           </div>
@@ -212,9 +212,9 @@ export function AIContextPanel({
           {/* Estimated Gain */}
           {metrics.estimatedPotentialGain > 0 && (
             <div className="flex items-center gap-3 p-3 rounded-lg bg-gradient-to-r from-emerald-500/10 to-emerald-600/5 border border-emerald-500/20">
-              <Sparkles className="h-5 w-5 text-emerald-500 shrink-0" />
+              <Sparkles className="h-5 w-5 text-success shrink-0" />
               <div className="flex-1">
-                <p className="text-sm font-semibold text-emerald-600">
+                <p className="text-sm font-semibold text-success">
                   +{metrics.estimatedPotentialGain.toLocaleString()}€
                 </p>
                 <p className="text-[10px] text-muted-foreground">
@@ -241,8 +241,8 @@ export function AIContextPanel({
                       className={cn(
                         'w-full p-3 rounded-lg border text-left transition-colors',
                         'hover:border-primary/50 hover:bg-primary/5',
-                        action.variant === 'destructive' && 'border-red-500/30 bg-red-500/5',
-                        action.variant === 'warning' && 'border-amber-500/30 bg-amber-500/5',
+                        action.variant === 'destructive' && 'border-destructive/30 bg-destructive/5',
+                        action.variant === 'warning' && 'border-amber-500/30 bg-warning/5',
                         action.variant === 'primary' && 'border-primary/30 bg-primary/5'
                       )}
                     >

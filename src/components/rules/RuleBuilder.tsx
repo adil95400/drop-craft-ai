@@ -81,11 +81,11 @@ const PRODUCT_FIELDS = [
 
 const CHANNELS: { value: RuleChannel; label: string; color: string }[] = [
   { value: 'global', label: 'Global', color: 'bg-slate-500' },
-  { value: 'google', label: 'Google Shopping', color: 'bg-blue-500' },
+  { value: 'google', label: 'Google Shopping', color: 'bg-info' },
   { value: 'meta', label: 'Meta/Facebook', color: 'bg-indigo-500' },
   { value: 'tiktok', label: 'TikTok', color: 'bg-pink-500' },
-  { value: 'amazon', label: 'Amazon', color: 'bg-orange-500' },
-  { value: 'shopify', label: 'Shopify', color: 'bg-green-500' },
+  { value: 'amazon', label: 'Amazon', color: 'bg-warning' },
+  { value: 'shopify', label: 'Shopify', color: 'bg-success' },
 ]
 
 // Fallback products for preview when no real data available
@@ -286,7 +286,7 @@ export function RuleBuilder({ rule, open, onOpenChange, onSave }: RuleBuilderPro
               <DialogTitle className="flex items-center gap-2 text-xl">
                 {rule ? 'Éditer la règle' : 'Nouvelle règle'}
                 {enabled && (
-                  <Badge className="bg-emerald-500 text-white">Active</Badge>
+                  <Badge className="bg-success text-white">Active</Badge>
                 )}
               </DialogTitle>
               {name && (
@@ -709,14 +709,14 @@ export function RuleBuilder({ rule, open, onOpenChange, onSave }: RuleBuilderPro
                             className={cn(
                               "transition-all",
                               matches 
-                                ? "border-emerald-500/50 bg-emerald-500/5" 
+                                ? "border-emerald-500/50 bg-success/5" 
                                 : "opacity-50"
                             )}
                           >
                             <CardContent className="p-3">
                               <div className="flex items-start gap-2">
                                 {matches ? (
-                                  <CheckCircle2 className="h-4 w-4 text-emerald-500 mt-0.5 shrink-0" />
+                                  <CheckCircle2 className="h-4 w-4 text-success mt-0.5 shrink-0" />
                                 ) : (
                                   <AlertCircle className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
                                 )}
@@ -750,7 +750,7 @@ export function RuleBuilder({ rule, open, onOpenChange, onSave }: RuleBuilderPro
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               {!isValid && (
                 <>
-                  <AlertCircle className="h-4 w-4 text-amber-500" />
+                  <AlertCircle className="h-4 w-4 text-warning" />
                   <span>
                     {!name.trim() ? "Nom requis" : 
                      conditions.length === 0 ? "Ajoutez des conditions" : 

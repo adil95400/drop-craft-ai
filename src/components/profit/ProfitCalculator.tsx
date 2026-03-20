@@ -240,14 +240,14 @@ export function ProfitCalculator() {
                 <div className="flex items-center justify-between p-4 bg-accent/50 rounded-lg">
                   <div>
                     <p className="text-sm text-muted-foreground">Profit Net</p>
-                    <p className={`text-3xl font-bold ${results.netProfit >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                    <p className={`text-3xl font-bold ${results.netProfit >= 0 ? 'text-success' : 'text-destructive'}`}>
                       {results.netProfit.toFixed(2)} €
                     </p>
                   </div>
                   {results.netProfit >= 0 ? (
-                    <TrendingUp className="h-8 w-8 text-green-600" />
+                    <TrendingUp className="h-8 w-8 text-success" />
                   ) : (
-                    <TrendingDown className="h-8 w-8 text-red-600" />
+                    <TrendingDown className="h-8 w-8 text-destructive" />
                   )}
                 </div>
 

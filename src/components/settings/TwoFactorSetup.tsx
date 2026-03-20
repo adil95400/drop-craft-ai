@@ -86,7 +86,7 @@ export function TwoFactorSetup() {
   if (isEnrolled) {
     return (
       <div className="flex items-center gap-2">
-        <Badge className="bg-green-500/10 text-green-600 border-green-200">
+        <Badge className="bg-success/10 text-success border-success/20">
           <CheckCircle className="h-3 w-3 mr-1" /> Activée
         </Badge>
         <Button variant="outline" size="sm" onClick={unenroll} disabled={loading}>
@@ -161,7 +161,7 @@ export function TwoFactorSetup() {
 
           {step === 'done' && (
             <div className="text-center py-6">
-              <CheckCircle className="h-12 w-12 mx-auto mb-4 text-green-500" />
+              <CheckCircle className="h-12 w-12 mx-auto mb-4 text-success" />
               <p className="text-lg font-semibold">2FA activée avec succès !</p>
               <p className="text-sm text-muted-foreground mt-2">
                 Un code sera demandé à chaque connexion.

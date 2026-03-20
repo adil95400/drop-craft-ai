@@ -61,8 +61,8 @@ export function RecentActivity() {
               >
                 <div className={`p-2 rounded-lg ${
                   activity.status === 'success' 
-                    ? 'bg-green-100 text-green-600' 
-                    : 'bg-red-100 text-red-600'
+                    ? 'bg-success/10 text-success' 
+                    : 'bg-destructive/10 text-destructive'
                 }`}>
                   <Icon className="h-4 w-4" />
                 </div>

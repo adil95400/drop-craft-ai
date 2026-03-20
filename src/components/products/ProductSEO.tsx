@@ -49,10 +49,10 @@ const calculateSEOScore = (product: Product): number => {
 }
 
 const getSEOStatus = (score: number) => {
-  if (score >= 80) return { label: 'Excellent', color: 'bg-green-500', variant: 'default' as const }
-  if (score >= 60) return { label: 'Bon', color: 'bg-blue-500', variant: 'secondary' as const }
-  if (score >= 40) return { label: 'Moyen', color: 'bg-yellow-500', variant: 'outline' as const }
-  return { label: 'Faible', color: 'bg-red-500', variant: 'destructive' as const }
+  if (score >= 80) return { label: 'Excellent', color: 'bg-success', variant: 'default' as const }
+  if (score >= 60) return { label: 'Bon', color: 'bg-info', variant: 'secondary' as const }
+  if (score >= 40) return { label: 'Moyen', color: 'bg-warning', variant: 'outline' as const }
+  return { label: 'Faible', color: 'bg-destructive', variant: 'destructive' as const }
 }
 
 export function ProductSEO() {
@@ -137,10 +137,10 @@ export function ProductSEO() {
           <Card className="border-primary/20 shadow-lg">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium">Excellents</CardTitle>
-              <CheckCircle2 className="h-4 w-4 text-green-500" />
+              <CheckCircle2 className="h-4 w-4 text-success" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-green-600">{excellentCount}</div>
+              <div className="text-2xl font-bold text-success">{excellentCount}</div>
               <p className="text-xs text-muted-foreground mt-1">
                 Score ≥ 80/100
               </p>
@@ -150,10 +150,10 @@ export function ProductSEO() {
           <Card className="border-primary/20 shadow-lg">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium">À Améliorer</CardTitle>
-              <AlertTriangle className="h-4 w-4 text-yellow-500" />
+              <AlertTriangle className="h-4 w-4 text-warning" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-yellow-600">{needsWorkCount}</div>
+              <div className="text-2xl font-bold text-warning">{needsWorkCount}</div>
               <p className="text-xs text-muted-foreground mt-1">
                 Score &lt; 60/100
               </p>

@@ -59,9 +59,9 @@ export function PPCSyncLogsPanel({ linkId }: PPCSyncLogsPanelProps) {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     {log.status === 'success' ? (
-                      <CheckCircle2 className="h-5 w-5 text-green-500" />
+                      <CheckCircle2 className="h-5 w-5 text-success" />
                     ) : log.status === 'partial' ? (
-                      <AlertCircle className="h-5 w-5 text-yellow-500" />
+                      <AlertCircle className="h-5 w-5 text-warning" />
                     ) : (
                       <AlertCircle className="h-5 w-5 text-destructive" />
                     )}
@@ -97,15 +97,15 @@ export function PPCSyncLogsPanel({ linkId }: PPCSyncLogsPanelProps) {
                       <strong>{log.products_processed}</strong> traités
                     </span>
                   </div>
-                  <div className="flex items-center gap-2 text-green-600">
+                  <div className="flex items-center gap-2 text-success">
                     <Plus className="h-4 w-4" />
                     <span>{log.products_added} ajoutés</span>
                   </div>
-                  <div className="flex items-center gap-2 text-blue-600">
+                  <div className="flex items-center gap-2 text-info">
                     <RefreshCw className="h-4 w-4" />
                     <span>{log.products_updated} mis à jour</span>
                   </div>
-                  <div className="flex items-center gap-2 text-orange-600">
+                  <div className="flex items-center gap-2 text-warning">
                     <Minus className="h-4 w-4" />
                     <span>{log.products_removed} supprimés</span>
                   </div>

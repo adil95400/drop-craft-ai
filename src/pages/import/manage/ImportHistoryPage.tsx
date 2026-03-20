@@ -140,10 +140,10 @@ export default function ImportHistoryPage() {
   // Status config
   const getStatusConfig = (status: string) => {
     const configs: Record<string, { icon: any; color: string; bgColor: string; label: string }> = {
-      completed: { icon: CheckCircle, color: 'text-green-500', bgColor: 'bg-green-500/10', label: 'Terminé' },
-      processing: { icon: Loader2, color: 'text-blue-500', bgColor: 'bg-blue-500/10', label: 'En cours' },
-      failed: { icon: XCircle, color: 'text-red-500', bgColor: 'bg-red-500/10', label: 'Échoué' },
-      pending: { icon: Clock, color: 'text-amber-500', bgColor: 'bg-amber-500/10', label: 'En attente' }
+      completed: { icon: CheckCircle, color: 'text-success', bgColor: 'bg-success/10', label: 'Terminé' },
+      processing: { icon: Loader2, color: 'text-info', bgColor: 'bg-info/10', label: 'En cours' },
+      failed: { icon: XCircle, color: 'text-destructive', bgColor: 'bg-destructive/10', label: 'Échoué' },
+      pending: { icon: Clock, color: 'text-warning', bgColor: 'bg-warning/10', label: 'En attente' }
     }
     return configs[status] || configs.pending
   }
@@ -444,10 +444,10 @@ export default function ImportHistoryPage() {
                       </div>
                       <div className="flex items-center gap-4">
                         <div className="text-right">
-                          <p className="text-lg font-bold text-green-600">{item.success_rows || 0}</p>
+                          <p className="text-lg font-bold text-success">{item.success_rows || 0}</p>
                           <p className="text-xs text-muted-foreground">
                             sur {item.total_rows || 0}
-                            {item.error_rows > 0 && <span className="text-red-500 ml-1">({item.error_rows} erreurs)</span>}
+                            {item.error_rows > 0 && <span className="text-destructive ml-1">({item.error_rows} erreurs)</span>}
                           </p>
                         </div>
                         
@@ -546,10 +546,10 @@ export default function ImportHistoryPage() {
                           
                           <div className="flex items-center justify-between">
                             <div>
-                              <p className="text-2xl font-bold text-green-600">{item.success_rows || 0}</p>
+                              <p className="text-2xl font-bold text-success">{item.success_rows || 0}</p>
                               <p className="text-xs text-muted-foreground">
                                 produits
-                                {item.error_rows > 0 && <span className="text-red-500 ml-1">({item.error_rows} erreurs)</span>}
+                                {item.error_rows > 0 && <span className="text-destructive ml-1">({item.error_rows} erreurs)</span>}
                               </p>
                             </div>
                             
@@ -615,9 +615,9 @@ export default function ImportHistoryPage() {
                 {/* Header with gradient */}
                 <div className={cn(
                   "relative px-6 py-8 text-white overflow-hidden",
-                  selectedJob.status === 'completed' && "bg-gradient-to-br from-green-500 to-emerald-600",
-                  selectedJob.status === 'failed' && "bg-gradient-to-br from-red-500 to-rose-600",
-                  selectedJob.status === 'processing' && "bg-gradient-to-br from-blue-500 to-indigo-600",
+                  selectedJob.status === 'completed' && "bg-gradient-to-br from-success to-emerald-600",
+                  selectedJob.status === 'failed' && "bg-gradient-to-br from-destructive to-rose-600",
+                  selectedJob.status === 'processing' && "bg-gradient-to-br from-info to-indigo-600",
                   selectedJob.status === 'pending' && "bg-gradient-to-br from-amber-500 to-orange-600"
                 )}>
                   {/* Background pattern */}
@@ -702,8 +702,8 @@ export default function ImportHistoryPage() {
                       <Card className="border-2">
                         <CardContent className="p-4">
                           <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-lg bg-blue-500/10 flex items-center justify-center">
-                              <Package className="w-5 h-5 text-blue-500" />
+                            <div className="w-10 h-10 rounded-lg bg-info/10 flex items-center justify-center">
+                              <Package className="w-5 h-5 text-info" />
                             </div>
                             <div>
                               <p className="text-xs text-muted-foreground">Type source</p>
@@ -718,8 +718,8 @@ export default function ImportHistoryPage() {
                       <Card className="border-2">
                         <CardContent className="p-4">
                           <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-lg bg-green-500/10 flex items-center justify-center">
-                              <Clock className="w-5 h-5 text-green-500" />
+                            <div className="w-10 h-10 rounded-lg bg-success/10 flex items-center justify-center">
+                              <Clock className="w-5 h-5 text-success" />
                             </div>
                             <div>
                               <p className="text-xs text-muted-foreground">Démarré</p>
@@ -773,8 +773,8 @@ export default function ImportHistoryPage() {
                     {selectedJob.errors && selectedJob.errors.length > 0 && (
                       <div className="space-y-3">
                         <div className="flex items-center gap-2">
-                          <AlertTriangle className="w-4 h-4 text-red-500" />
-                          <p className="text-sm font-medium text-red-600">
+                          <AlertTriangle className="w-4 h-4 text-destructive" />
+                          <p className="text-sm font-medium text-destructive">
                             Erreurs détectées ({selectedJob.errors.length})
                           </p>
                         </div>
@@ -782,9 +782,9 @@ export default function ImportHistoryPage() {
                           {selectedJob.errors.slice(0, 5).map((error, i) => (
                             <div 
                               key={i} 
-                              className="flex items-start gap-3 p-3 bg-red-50 dark:bg-red-950/20 rounded-lg border border-red-200 dark:border-red-800"
+                              className="flex items-start gap-3 p-3 bg-destructive/5 dark:bg-red-950/20 rounded-lg border border-destructive/20 dark:border-red-800"
                             >
-                              <XCircle className="w-4 h-4 text-red-500 mt-0.5 shrink-0" />
+                              <XCircle className="w-4 h-4 text-destructive mt-0.5 shrink-0" />
                               <p className="text-sm text-red-700 dark:text-red-400">{error}</p>
                             </div>
                           ))}
@@ -815,7 +815,7 @@ export default function ImportHistoryPage() {
                         </div>
                         {selectedJob.started_at && (
                           <div className="relative">
-                            <div className="absolute -left-[18px] w-3 h-3 rounded-full bg-blue-500 border-2 border-background" />
+                            <div className="absolute -left-[18px] w-3 h-3 rounded-full bg-info border-2 border-background" />
                             <div className="text-sm">
                               <p className="font-medium">Démarré</p>
                               <p className="text-muted-foreground">
@@ -828,7 +828,7 @@ export default function ImportHistoryPage() {
                           <div className="relative">
                             <div className={cn(
                               "absolute -left-[18px] w-3 h-3 rounded-full border-2 border-background",
-                              selectedJob.status === 'completed' ? 'bg-green-500' : 'bg-red-500'
+                              selectedJob.status === 'completed' ? 'bg-success' : 'bg-destructive'
                             )} />
                             <div className="text-sm">
                               <p className="font-medium">

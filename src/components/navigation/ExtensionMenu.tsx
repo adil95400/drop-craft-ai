@@ -150,7 +150,7 @@ export const ExtensionMenu: React.FC = () => {
                 </Badge>
               )}
               {!canAccess(item.planRequired) && (
-                <Badge className="text-xs bg-yellow-100 text-yellow-800">
+                <Badge className="text-xs bg-warning/10 text-yellow-800">
                   Upgrade
                 </Badge>
               )}
@@ -184,7 +184,7 @@ export const ExtensionMenu: React.FC = () => {
                 {item.badge}
               </Badge>
               {!canAccess(item.planRequired) && (
-                <Badge className="text-xs bg-red-100 text-red-800">
+                <Badge className="text-xs bg-destructive/10 text-red-800">
                   Requis
                 </Badge>
               )}

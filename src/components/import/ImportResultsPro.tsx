@@ -52,24 +52,24 @@ export const ImportResultsPro = ({
   const analysis = result.analysis;
 
   const getScoreColor = (score: number) => {
-    if (score >= 90) return "text-green-600 bg-green-100";
-    if (score >= 70) return "text-yellow-600 bg-yellow-100";
-    return "text-red-600 bg-red-100";
+    if (score >= 90) return "text-success bg-success/10";
+    if (score >= 70) return "text-warning bg-warning/10";
+    return "text-destructive bg-destructive/10";
   };
 
   const getTrendIcon = (trend: string) => {
     switch (trend) {
-      case "rising": return <TrendingUp className="w-4 h-4 text-green-600" />;
-      case "stable": return <BarChart3 className="w-4 h-4 text-blue-600" />;
+      case "rising": return <TrendingUp className="w-4 h-4 text-success" />;
+      case "stable": return <BarChart3 className="w-4 h-4 text-info" />;
       default: return <BarChart3 className="w-4 h-4 text-gray-600" />;
     }
   };
 
   const getPotentialIcon = (potential: string) => {
     switch (potential) {
-      case "very_high": case "high": return <Target className="w-4 h-4 text-green-600" />;
-      case "medium": return <Target className="w-4 h-4 text-yellow-600" />;
-      default: return <Target className="w-4 h-4 text-red-600" />;
+      case "very_high": case "high": return <Target className="w-4 h-4 text-success" />;
+      case "medium": return <Target className="w-4 h-4 text-warning" />;
+      default: return <Target className="w-4 h-4 text-destructive" />;
     }
   };
 
@@ -78,8 +78,8 @@ export const ImportResultsPro = ({
       {/* Header avec statut */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <div className="p-3 rounded-full bg-green-100">
-            <CheckCircle className="w-6 h-6 text-green-600" />
+          <div className="p-3 rounded-full bg-success/10">
+            <CheckCircle className="w-6 h-6 text-success" />
           </div>
           <div>
             <h3 className="text-xl font-bold text-gray-900">Import Réussi !</h3>
@@ -88,7 +88,7 @@ export const ImportResultsPro = ({
             </p>
           </div>
         </div>
-        <Badge variant="outline" className="px-4 py-2 bg-green-50 text-green-700 border-green-200">
+        <Badge variant="outline" className="px-4 py-2 bg-success/5 text-success border-success/20">
           <Zap className="w-4 h-4 mr-2" />
           {analysis.platform}
         </Badge>
@@ -98,7 +98,7 @@ export const ImportResultsPro = ({
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <Card className="bg-white/70 backdrop-blur-sm">
           <CardContent className="p-4 text-center">
-            <div className="text-2xl font-bold text-blue-600">{Math.round(analysis.trustScore)}</div>
+            <div className="text-2xl font-bold text-info">{Math.round(analysis.trustScore)}</div>
             <div className="text-sm text-gray-600">Fiabilité</div>
             <Progress value={analysis.trustScore} className="w-full mt-2" />
           </CardContent>
@@ -106,7 +106,7 @@ export const ImportResultsPro = ({
         
         <Card className="bg-white/70 backdrop-blur-sm">
           <CardContent className="p-4 text-center">
-            <div className="text-2xl font-bold text-green-600">{Math.round(analysis.seoScore)}</div>
+            <div className="text-2xl font-bold text-success">{Math.round(analysis.seoScore)}</div>
             <div className="text-sm text-gray-600">SEO Score</div>
             <Progress value={analysis.seoScore} className="w-full mt-2" />
           </CardContent>
@@ -122,7 +122,7 @@ export const ImportResultsPro = ({
         
         <Card className="bg-white/70 backdrop-blur-sm">
           <CardContent className="p-4 text-center">
-            <div className="text-2xl font-bold text-orange-600">{Math.round(analysis.potentialMargin)}%</div>
+            <div className="text-2xl font-bold text-warning">{Math.round(analysis.potentialMargin)}%</div>
             <div className="text-sm text-gray-600">Marge Potentielle</div>
             <Progress value={analysis.potentialMargin} className="w-full mt-2" />
           </CardContent>
@@ -138,16 +138,16 @@ export const ImportResultsPro = ({
               <div className="flex items-center gap-4 mt-2">
                 <Badge variant="secondary">{product.category}</Badge>
                 <div className="flex items-center gap-1">
-                  <Star className="w-4 h-4 text-yellow-500 fill-current" />
+                  <Star className="w-4 h-4 text-warning fill-current" />
                   <span className="text-sm font-medium">{product.product_rating}</span>
                   <span className="text-sm text-gray-500">({product.reviews_count} avis)</span>
                 </div>
               </div>
             </div>
             <div className="text-right">
-              <div className="text-2xl font-bold text-green-600">{product.price}€</div>
+              <div className="text-2xl font-bold text-success">{product.price}€</div>
               <div className="text-sm text-gray-500">Coût: {product.cost_price}€</div>
-              <div className="text-sm font-medium text-blue-600">
+              <div className="text-sm font-medium text-info">
                 Marge: {Math.round(product.profit_margin)}%
               </div>
             </div>
@@ -271,8 +271,8 @@ export const ImportResultsPro = ({
             </h4>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
               {analysis.recommendedActions.map((action: string, index: number) => (
-                <div key={index} className="flex items-center gap-2 p-2 bg-blue-50 rounded-lg">
-                  <AlertTriangle className="w-4 h-4 text-blue-600" />
+                <div key={index} className="flex items-center gap-2 p-2 bg-info/5 rounded-lg">
+                  <AlertTriangle className="w-4 h-4 text-info" />
                   <span className="text-sm text-blue-800">{action}</span>
                 </div>
               ))}
@@ -283,7 +283,7 @@ export const ImportResultsPro = ({
           <div className="flex gap-3 pt-4 border-t">
             <Button 
               onClick={() => onAddToStore(product)} 
-              className="flex-1 bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700"
+              className="flex-1 bg-gradient-to-r from-green-600 to-info hover:from-green-700 hover:to-blue-700"
             >
               <ShoppingCart className="w-4 h-4 mr-2" />
               Ajouter au Catalogue

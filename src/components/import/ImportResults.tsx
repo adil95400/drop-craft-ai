@@ -32,7 +32,7 @@ export const ImportResults = () => {
   });
 
   const getStatusBadge = (status: string) => {
-    if (status === 'published') return <Badge className="bg-green-100 text-green-800">Publié</Badge>;
+    if (status === 'published') return <Badge className="bg-success/10 text-success">Publié</Badge>;
     if (status === 'draft') return <Badge variant="secondary">Brouillon</Badge>;
     return <Badge variant="outline">En attente</Badge>;
   };
@@ -53,7 +53,7 @@ export const ImportResults = () => {
                 <div className="text-2xl font-bold">{stats.total}</div>
                 <p className="text-sm text-muted-foreground">Total importé</p>
               </div>
-              <Database className="h-8 w-8 text-blue-500" />
+              <Database className="h-8 w-8 text-info" />
             </div>
           </CardContent>
         </Card>
@@ -61,10 +61,10 @@ export const ImportResults = () => {
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <div className="text-2xl font-bold text-green-600">{stats.published}</div>
+                <div className="text-2xl font-bold text-success">{stats.published}</div>
                 <p className="text-sm text-muted-foreground">Publié</p>
               </div>
-              <CheckCircle className="h-8 w-8 text-green-500" />
+              <CheckCircle className="h-8 w-8 text-success" />
             </div>
           </CardContent>
         </Card>
@@ -72,10 +72,10 @@ export const ImportResults = () => {
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <div className="text-2xl font-bold text-yellow-600">{stats.draft}</div>
+                <div className="text-2xl font-bold text-warning">{stats.draft}</div>
                 <p className="text-sm text-muted-foreground">Brouillon</p>
               </div>
-              <AlertTriangle className="h-8 w-8 text-yellow-500" />
+              <AlertTriangle className="h-8 w-8 text-warning" />
             </div>
           </CardContent>
         </Card>

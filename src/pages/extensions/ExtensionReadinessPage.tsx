@@ -101,9 +101,9 @@ export default function ExtensionReadinessPage() {
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'pass': return <CheckCircle2 className="w-5 h-5 text-green-500" />;
-      case 'warning': return <AlertTriangle className="w-5 h-5 text-yellow-500" />;
-      case 'fail': return <XCircle className="w-5 h-5 text-red-500" />;
+      case 'pass': return <CheckCircle2 className="w-5 h-5 text-success" />;
+      case 'warning': return <AlertTriangle className="w-5 h-5 text-warning" />;
+      case 'fail': return <XCircle className="w-5 h-5 text-destructive" />;
       default: return <div className="w-5 h-5 rounded-full border-2 border-muted" />;
     }
   };
@@ -119,9 +119,9 @@ export default function ExtensionReadinessPage() {
         <div 
           key={item.id}
           className={`flex items-center justify-between p-3 rounded-lg border ${
-            item.status === 'pass' ? 'border-green-200 bg-green-50' :
-            item.status === 'warning' ? 'border-yellow-200 bg-yellow-50' :
-            item.status === 'fail' ? 'border-red-200 bg-red-50' :
+            item.status === 'pass' ? 'border-success/20 bg-success/5' :
+            item.status === 'warning' ? 'border-warning/20 bg-warning/5' :
+            item.status === 'fail' ? 'border-destructive/20 bg-destructive/5' :
             'border-muted'
           }`}
         >
@@ -183,12 +183,12 @@ export default function ExtensionReadinessPage() {
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-4">
                 <div className={`w-16 h-16 rounded-full flex items-center justify-center ${
-                  isReadyForStore ? 'bg-green-100' : 'bg-yellow-100'
+                  isReadyForStore ? 'bg-success/10' : 'bg-warning/10'
                 }`}>
                   {isReadyForStore ? (
-                    <CheckCircle2 className="w-8 h-8 text-green-600" />
+                    <CheckCircle2 className="w-8 h-8 text-success" />
                   ) : (
-                    <AlertTriangle className="w-8 h-8 text-yellow-600" />
+                    <AlertTriangle className="w-8 h-8 text-warning" />
                   )}
                 </div>
                 <div>
@@ -202,15 +202,15 @@ export default function ExtensionReadinessPage() {
               </div>
               <div className="flex gap-6 text-center">
                 <div>
-                  <div className="text-2xl font-bold text-green-600">{passed}</div>
+                  <div className="text-2xl font-bold text-success">{passed}</div>
                   <div className="text-xs text-muted-foreground">Passés</div>
                 </div>
                 <div>
-                  <div className="text-2xl font-bold text-yellow-600">{warnings}</div>
+                  <div className="text-2xl font-bold text-warning">{warnings}</div>
                   <div className="text-xs text-muted-foreground">Avertissements</div>
                 </div>
                 <div>
-                  <div className="text-2xl font-bold text-red-600">{failed}</div>
+                  <div className="text-2xl font-bold text-destructive">{failed}</div>
                   <div className="text-xs text-muted-foreground">Échecs</div>
                 </div>
               </div>
@@ -273,7 +273,7 @@ export default function ExtensionReadinessPage() {
                       <p className="text-sm text-muted-foreground">Version 6.0.0</p>
                       <div className="flex gap-1 mt-1">
                         <Badge variant="outline">Manifest V3</Badge>
-                        <Badge className="bg-green-500">Prêt</Badge>
+                        <Badge className="bg-success">Prêt</Badge>
                       </div>
                     </div>
                   </div>
@@ -402,7 +402,7 @@ export default function ExtensionReadinessPage() {
                 
                 <Separator className="my-6" />
                 
-                <div className="p-4 bg-blue-50 rounded-lg">
+                <div className="p-4 bg-info/5 rounded-lg">
                   <h4 className="font-medium text-blue-900 mb-2">
                     Prochaines étapes pour publier
                   </h4>

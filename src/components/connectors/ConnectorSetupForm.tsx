@@ -294,14 +294,14 @@ export const ConnectorSetupForm: React.FC<ConnectorSetupFormProps> = ({
                 </Button>
 
                 {connectionStatus === 'success' && (
-                  <div className="flex items-center gap-2 text-green-600">
+                  <div className="flex items-center gap-2 text-success">
                     <CheckCircle className="w-4 h-4" />
                     <span className="text-sm">Connexion réussie</span>
                   </div>
                 )}
 
                 {connectionStatus === 'error' && (
-                  <div className="flex items-center gap-2 text-red-600">
+                  <div className="flex items-center gap-2 text-destructive">
                     <XCircle className="w-4 h-4" />
                     <span className="text-sm">Connexion échouée</span>
                   </div>

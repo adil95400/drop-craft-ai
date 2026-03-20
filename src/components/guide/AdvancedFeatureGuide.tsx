@@ -89,8 +89,8 @@ export function AdvancedFeatureGuide({
   const completedSteps = steps.filter(s => s.completed).length
 
   const levelConfig = {
-    beginner: { label: 'Débutant', color: 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20', icon: Zap },
-    intermediate: { label: 'Intermédiaire', color: 'bg-blue-500/10 text-blue-600 border-blue-500/20', icon: Monitor },
+    beginner: { label: 'Débutant', color: 'bg-success/10 text-success border-emerald-500/20', icon: Zap },
+    intermediate: { label: 'Intermédiaire', color: 'bg-info/10 text-info border-info/20', icon: Monitor },
     advanced: { label: 'Avancé', color: 'bg-purple-500/10 text-purple-600 border-purple-500/20', icon: Award }
   }
 
@@ -117,7 +117,7 @@ export function AdvancedFeatureGuide({
                       {currentLevel.label}
                     </Badge>
                     {completedSteps === steps.length && steps.length > 0 && (
-                      <Badge variant="secondary" className="bg-emerald-500/10 text-emerald-600 text-[10px]">
+                      <Badge variant="secondary" className="bg-success/10 text-success text-[10px]">
                         <CheckCircle2 className="h-3 w-3 mr-0.5" />Complété
                       </Badge>
                     )}
@@ -127,7 +127,7 @@ export function AdvancedFeatureGuide({
               </div>
               <div className="flex items-center gap-2">
                 {videos.length > 0 && (
-                  <Badge variant="outline" className="text-[10px] px-1.5 border-blue-500/20 text-blue-600">
+                  <Badge variant="outline" className="text-[10px] px-1.5 border-info/20 text-info">
                     <Video className="h-3 w-3 mr-0.5" />{videos.length} vidéo{videos.length > 1 ? 's' : ''}
                   </Badge>
                 )}
@@ -208,8 +208,8 @@ export function AdvancedFeatureGuide({
                 {tips.map((tip, index) => {
                   if (dismissedTips.includes(index)) return null
                   const tipConfig = {
-                    info: { style: 'bg-blue-500/5 border-blue-500/20 text-blue-700 dark:text-blue-400', icon: Info },
-                    warning: { style: 'bg-amber-500/5 border-amber-500/20 text-amber-700 dark:text-amber-400', icon: AlertTriangle },
+                    info: { style: 'bg-info/5 border-info/20 text-blue-700 dark:text-blue-400', icon: Info },
+                    warning: { style: 'bg-warning/5 border-amber-500/20 text-amber-700 dark:text-amber-400', icon: AlertTriangle },
                     pro: { style: 'bg-purple-500/5 border-purple-500/20 text-purple-700 dark:text-purple-400', icon: Sparkles }
                   }
                   const config = tipConfig[tip.type || 'info']
@@ -257,7 +257,7 @@ function StepsSection({ steps }: { steps: GuideStep[] }) {
           key={index}
           className={cn(
             "rounded-lg border transition-all",
-            step.completed ? "bg-emerald-500/5 border-emerald-500/20" : "bg-card border-border hover:border-primary/30"
+            step.completed ? "bg-success/5 border-emerald-500/20" : "bg-card border-border hover:border-primary/30"
           )}
         >
           <button
@@ -266,7 +266,7 @@ function StepsSection({ steps }: { steps: GuideStep[] }) {
           >
             <div className={cn(
               "flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold mt-0.5",
-              step.completed ? "bg-emerald-500 text-white" : "bg-muted text-muted-foreground"
+              step.completed ? "bg-success text-white" : "bg-muted text-muted-foreground"
             )}>
               {step.completed ? <CheckCircle2 className="h-4 w-4" /> : index + 1}
             </div>

@@ -146,7 +146,7 @@ export const BusinessIntelligence: React.FC = () => {
                     <div className="flex items-start justify-between">
                       <div className="space-y-2">
                         <div className="flex items-center gap-3">
-                          <Lightbulb className="h-5 w-5 text-yellow-500" />
+                          <Lightbulb className="h-5 w-5 text-warning" />
                           <h3 className="font-semibold">{insight.title}</h3>
                           <Badge variant="outline">{insight.category}</Badge>
                         </div>
@@ -157,7 +157,7 @@ export const BusinessIntelligence: React.FC = () => {
                       </Badge>
                     </div>
                     
-                    <div className="p-3 bg-blue-50 dark:bg-blue-950/20 rounded-lg">
+                    <div className="p-3 bg-info/5 dark:bg-blue-950/20 rounded-lg">
                       <p className="text-sm font-medium text-blue-900 dark:text-blue-100">
                         {insight.insight}
                       </p>
@@ -203,8 +203,8 @@ export const BusinessIntelligence: React.FC = () => {
                       <div className="text-right">
                         <div className="font-bold text-lg">{prediction.predicted}</div>
                         <div className="flex items-center gap-1 text-sm">
-                          <TrendingUp className={`h-4 w-4 ${prediction.trend === 'up' ? 'text-green-500' : 'text-red-500'}`} />
-                          <span className={prediction.trend === 'up' ? 'text-green-600' : 'text-red-600'}>
+                          <TrendingUp className={`h-4 w-4 ${prediction.trend === 'up' ? 'text-success' : 'text-destructive'}`} />
+                          <span className={prediction.trend === 'up' ? 'text-success' : 'text-destructive'}>
                             {prediction.trend === 'up' ? '+18%' : '-8%'}
                           </span>
                         </div>
@@ -281,18 +281,18 @@ export const BusinessIntelligence: React.FC = () => {
                     <div className="flex items-start justify-between">
                       <div className="space-y-2">
                         <div className="flex items-center gap-3">
-                          <Target className="h-5 w-5 text-green-500" />
+                          <Target className="h-5 w-5 text-success" />
                           <h3 className="font-semibold">{opportunity.title}</h3>
                         </div>
                         <p className="text-sm text-muted-foreground">{opportunity.description}</p>
                       </div>
                       <div className="text-right">
-                        <div className="text-2xl font-bold text-green-600">{opportunity.potential}</div>
+                        <div className="text-2xl font-bold text-success">{opportunity.potential}</div>
                         <div className="text-xs text-muted-foreground">Potentiel</div>
                       </div>
                     </div>
                     
-                    <div className="p-3 bg-green-50 dark:bg-green-950/20 rounded-lg">
+                    <div className="p-3 bg-success/5 dark:bg-green-950/20 rounded-lg">
                       <p className="text-sm font-medium text-green-900 dark:text-green-100">
                         Action: {opportunity.action}
                       </p>
@@ -362,9 +362,9 @@ export const BusinessIntelligence: React.FC = () => {
                   <div className="space-y-3">
                     {[
                       { name: 'Électronique', value: 35, color: 'bg-primary' },
-                      { name: 'Mode', value: 28, color: 'bg-blue-500' },
-                      { name: 'Maison', value: 20, color: 'bg-green-500' },
-                      { name: 'Beauté', value: 12, color: 'bg-orange-500' },
+                      { name: 'Mode', value: 28, color: 'bg-info' },
+                      { name: 'Maison', value: 20, color: 'bg-success' },
+                      { name: 'Beauté', value: 12, color: 'bg-warning' },
                       { name: 'Autres', value: 5, color: 'bg-muted-foreground' },
                     ].map((item) => (
                       <div key={item.name} className="space-y-1">

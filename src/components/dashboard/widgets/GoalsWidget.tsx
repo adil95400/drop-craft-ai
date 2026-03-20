@@ -46,7 +46,7 @@ export function GoalsWidget({ settings }: GoalsWidgetProps) {
         current: monthlyRevenue, 
         unit: '€',
         deadline: currentMonth,
-        color: 'bg-blue-500'
+        color: 'bg-info'
       },
       { 
         id: 2, 
@@ -55,7 +55,7 @@ export function GoalsWidget({ settings }: GoalsWidgetProps) {
         current: monthlyCustomers.length, 
         unit: '',
         deadline: currentMonth,
-        color: 'bg-green-500'
+        color: 'bg-success'
       },
       { 
         id: 3, 
@@ -73,7 +73,7 @@ export function GoalsWidget({ settings }: GoalsWidgetProps) {
         current: products?.length || 0, 
         unit: '',
         deadline: 'Objectif annuel',
-        color: 'bg-orange-500'
+        color: 'bg-warning'
       },
     ];
   }, [orders, customers, products]);
@@ -108,10 +108,10 @@ export function GoalsWidget({ settings }: GoalsWidgetProps) {
             <div key={goal.id} className="space-y-2">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  {isCompleted && <Award className="h-4 w-4 text-yellow-500" />}
+                  {isCompleted && <Award className="h-4 w-4 text-warning" />}
                   <span className="text-sm font-medium">{goal.name}</span>
                 </div>
-                <span className={`text-sm font-bold ${isCompleted ? 'text-green-500' : isNearComplete ? 'text-orange-500' : ''}`}>
+                <span className={`text-sm font-bold ${isCompleted ? 'text-success' : isNearComplete ? 'text-warning' : ''}`}>
                   {goal.current.toLocaleString('fr-FR')}{goal.unit} / {goal.target.toLocaleString('fr-FR')}{goal.unit}
                 </span>
               </div>
@@ -133,7 +133,7 @@ export function GoalsWidget({ settings }: GoalsWidgetProps) {
                   </div>
                   <div className="flex items-center gap-1">
                     {isCompleted ? (
-                      <span className="text-green-500">Objectif atteint!</span>
+                      <span className="text-success">Objectif atteint!</span>
                     ) : (
                       <>
                         <TrendingUp className="h-3 w-3" />

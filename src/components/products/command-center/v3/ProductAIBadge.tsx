@@ -32,23 +32,23 @@ const BADGE_CONFIG = {
   risk: {
     icon: AlertTriangle,
     label: 'À risque',
-    colors: 'bg-red-500/10 text-red-600 border-red-500/30',
-    iconColor: 'text-red-500',
-    gradient: 'from-red-500/20 to-red-600/10'
+    colors: 'bg-destructive/10 text-destructive border-destructive/30',
+    iconColor: 'text-destructive',
+    gradient: 'from-destructive/20 to-destructive/10'
   },
   opportunity: {
     icon: TrendingUp,
     label: 'Opportunité',
-    colors: 'bg-emerald-500/10 text-emerald-600 border-emerald-500/30',
-    iconColor: 'text-emerald-500',
+    colors: 'bg-success/10 text-success border-emerald-500/30',
+    iconColor: 'text-success',
     gradient: 'from-emerald-500/20 to-emerald-600/10'
   },
   optimized: {
     icon: CheckCircle,
     label: 'Optimisé',
-    colors: 'bg-blue-500/10 text-blue-600 border-blue-500/30',
-    iconColor: 'text-blue-500',
-    gradient: 'from-blue-500/20 to-blue-600/10'
+    colors: 'bg-info/10 text-info border-info/30',
+    iconColor: 'text-info',
+    gradient: 'from-info/20 to-info/10'
   },
   neutral: {
     icon: Minus,
@@ -180,9 +180,9 @@ export function ProductAIPriorityIndicator({
   if (!badge) return null
   
   const priorityColors = {
-    critical: 'bg-red-500',
-    high: 'bg-orange-500',
-    medium: 'bg-amber-500',
+    critical: 'bg-destructive',
+    high: 'bg-warning',
+    medium: 'bg-warning',
     low: 'bg-muted'
   }
   

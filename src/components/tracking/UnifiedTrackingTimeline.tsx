@@ -70,13 +70,13 @@ const CARRIER_TRACKING_URLS: Record<string, string> = {
 const statusColors: Record<string, string> = {
   'pending': 'bg-muted text-muted-foreground',
   'ordered': 'bg-muted text-muted-foreground',
-  'info_received': 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
-  'processing': 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400',
+  'info_received': 'bg-info/10 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
+  'processing': 'bg-warning/10 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400',
   'shipped': 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400',
   'in_transit': 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
   'out_for_delivery': 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400',
-  'delivered': 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
-  'exception': 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
+  'delivered': 'bg-success/10 text-success dark:bg-green-900/30 dark:text-green-400',
+  'exception': 'bg-destructive/10 text-red-700 dark:bg-red-900/30 dark:text-red-400',
   'expired': 'bg-gray-100 text-gray-700 dark:bg-gray-900/30 dark:text-gray-400',
 };
 
@@ -386,8 +386,8 @@ export function UnifiedTrackingTimeline({
 
         {/* No tracking warning */}
         {!trackingNumber && normalizedEvents.length === 0 && (
-          <div className="flex items-center gap-3 p-4 rounded-lg bg-yellow-500/10 border border-yellow-500/20">
-            <AlertCircle className="h-5 w-5 text-yellow-500 flex-shrink-0" />
+          <div className="flex items-center gap-3 p-4 rounded-lg bg-warning/10 border border-warning/20">
+            <AlertCircle className="h-5 w-5 text-warning flex-shrink-0" />
             <div>
               <p className="font-medium text-sm">Numéro de suivi non disponible</p>
               <p className="text-xs text-muted-foreground">

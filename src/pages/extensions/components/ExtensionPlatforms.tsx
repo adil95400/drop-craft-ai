@@ -8,18 +8,18 @@ import { Globe, CheckCircle } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 const platforms = [
-  { name: 'AliExpress', color: 'bg-orange-500', logo: '🛒', popular: true },
-  { name: 'Amazon', color: 'bg-yellow-500', logo: '📦', popular: true },
-  { name: 'Temu', color: 'bg-orange-600', logo: '🎯', popular: true },
-  { name: 'CJDropshipping', color: 'bg-green-500', logo: '🚀' },
-  { name: 'eBay', color: 'bg-blue-500', logo: '🏷️' },
+  { name: 'AliExpress', color: 'bg-warning', logo: '🛒', popular: true },
+  { name: 'Amazon', color: 'bg-warning', logo: '📦', popular: true },
+  { name: 'Temu', color: 'bg-warning', logo: '🎯', popular: true },
+  { name: 'CJDropshipping', color: 'bg-success', logo: '🚀' },
+  { name: 'eBay', color: 'bg-info', logo: '🏷️' },
   { name: '1688', color: 'bg-orange-400', logo: '🏭' },
   { name: 'Taobao', color: 'bg-orange-300', logo: '🛍️' },
   { name: 'DHgate', color: 'bg-blue-400', logo: '🌐' },
-  { name: 'Banggood', color: 'bg-red-500', logo: '🔧' },
+  { name: 'Banggood', color: 'bg-destructive', logo: '🔧' },
   { name: 'Wish', color: 'bg-cyan-500', logo: '⭐' },
   { name: 'Shein', color: 'bg-pink-500', logo: '👗' },
-  { name: 'Walmart', color: 'bg-blue-600', logo: '🏪' },
+  { name: 'Walmart', color: 'bg-info', logo: '🏪' },
 ]
 
 interface ExtensionPlatformsProps {

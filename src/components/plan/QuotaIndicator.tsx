@@ -24,17 +24,17 @@ export const QuotaIndicator = ({
   const isWarning = !isUnlimited && percentage > 80
   
   const getStatusColor = () => {
-    if (isUnlimited) return 'text-green-600'
-    if (isExceeded) return 'text-red-600'
-    if (isWarning) return 'text-yellow-600'
-    return 'text-green-600'
+    if (isUnlimited) return 'text-success'
+    if (isExceeded) return 'text-destructive'
+    if (isWarning) return 'text-warning'
+    return 'text-success'
   }
 
   const getStatusIcon = () => {
-    if (isUnlimited) return <CheckCircle className="h-4 w-4 text-green-600" />
-    if (isExceeded) return <XCircle className="h-4 w-4 text-red-600" />
-    if (isWarning) return <AlertTriangle className="h-4 w-4 text-yellow-600" />
-    return <CheckCircle className="h-4 w-4 text-green-600" />
+    if (isUnlimited) return <CheckCircle className="h-4 w-4 text-success" />
+    if (isExceeded) return <XCircle className="h-4 w-4 text-destructive" />
+    if (isWarning) return <AlertTriangle className="h-4 w-4 text-warning" />
+    return <CheckCircle className="h-4 w-4 text-success" />
   }
 
   if (compact) {
@@ -78,13 +78,13 @@ export const QuotaIndicator = ({
       )}
       
       {isExceeded && (
-        <p className="text-xs text-red-600">
+        <p className="text-xs text-destructive">
           Quota dépassé - Passez à un plan supérieur
         </p>
       )}
       
       {isWarning && !isExceeded && (
-        <p className="text-xs text-yellow-600">
+        <p className="text-xs text-warning">
           Attention: proche de la limite
         </p>
       )}

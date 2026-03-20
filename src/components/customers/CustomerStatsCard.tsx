@@ -34,22 +34,22 @@ export function CustomerStatsCard({
       gradient: 'from-primary/5 to-transparent'
     },
     success: {
-      bg: 'bg-green-500/10',
-      text: 'text-green-600',
-      border: 'border-green-500/20',
-      gradient: 'from-green-500/5 to-transparent'
+      bg: 'bg-success/10',
+      text: 'text-success',
+      border: 'border-success/20',
+      gradient: 'from-success/5 to-transparent'
     },
     warning: {
-      bg: 'bg-amber-500/10',
-      text: 'text-amber-600',
+      bg: 'bg-warning/10',
+      text: 'text-warning',
       border: 'border-amber-500/20',
       gradient: 'from-amber-500/5 to-transparent'
     },
     info: {
-      bg: 'bg-blue-500/10',
-      text: 'text-blue-600',
-      border: 'border-blue-500/20',
-      gradient: 'from-blue-500/5 to-transparent'
+      bg: 'bg-info/10',
+      text: 'text-info',
+      border: 'border-info/20',
+      gradient: 'from-info/5 to-transparent'
     },
     purple: {
       bg: 'bg-purple-500/10',
@@ -93,8 +93,8 @@ export function CustomerStatsCard({
                 className={cn(
                   "text-xs font-medium border-0 gap-1",
                   isPositive 
-                    ? "bg-green-500/10 text-green-600" 
-                    : "bg-red-500/10 text-red-600"
+                    ? "bg-success/10 text-success" 
+                    : "bg-destructive/10 text-destructive"
                 )}
               >
                 {isPositive ? (

@@ -67,9 +67,9 @@ export const IntegrationsManager = () => {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'connected': return 'text-green-600';
-      case 'error': return 'text-red-600';
-      default: return 'text-yellow-600';
+      case 'connected': return 'text-success';
+      case 'error': return 'text-destructive';
+      default: return 'text-warning';
     }
   };
 
@@ -173,9 +173,9 @@ export const IntegrationsManager = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">Connectées</p>
-                <p className="text-2xl font-bold text-green-600">{stats.connected}</p>
+                <p className="text-2xl font-bold text-success">{stats.connected}</p>
               </div>
-              <CheckCircle2 className="h-8 w-8 text-green-600" />
+              <CheckCircle2 className="h-8 w-8 text-success" />
             </div>
           </CardContent>
         </Card>
@@ -185,9 +185,9 @@ export const IntegrationsManager = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">Actives</p>
-                <p className="text-2xl font-bold text-blue-600">{stats.active}</p>
+                <p className="text-2xl font-bold text-info">{stats.active}</p>
               </div>
-              <Zap className="h-8 w-8 text-blue-600" />
+              <Zap className="h-8 w-8 text-info" />
             </div>
           </CardContent>
         </Card>

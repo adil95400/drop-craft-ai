@@ -175,7 +175,7 @@ export function VideoTutorialSection({
                             idx === currentIndex
                               ? 'bg-primary'
                               : progress[videos[idx].id]?.completed
-                              ? 'bg-green-500'
+                              ? 'bg-success'
                               : 'bg-muted'
                           )}
                         />
@@ -231,7 +231,7 @@ export function VideoStep({ video, isCompleted, onPlay }: VideoStepProps) {
       className={cn(
         'flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors',
         isCompleted
-          ? 'bg-green-50 border-green-200 dark:bg-green-950/20 dark:border-green-900'
+          ? 'bg-success/5 border-success/20 dark:bg-green-950/20 dark:border-green-900'
           : 'bg-card border-border hover:bg-accent'
       )}
     >
@@ -252,7 +252,7 @@ export function VideoStep({ video, isCompleted, onPlay }: VideoStepProps) {
       </div>
 
       {isCompleted && (
-        <div className="p-1 rounded-full bg-green-500 text-white">
+        <div className="p-1 rounded-full bg-success text-white">
           <Check className="w-3 h-3" />
         </div>
       )}

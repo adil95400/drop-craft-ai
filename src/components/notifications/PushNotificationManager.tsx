@@ -47,9 +47,9 @@ interface DeviceRegistration {
 
 const NOTIFICATION_TYPES = [
   { value: 'promotional', label: 'Promotionnel', icon: '🎉', color: 'bg-purple-100 text-purple-700' },
-  { value: 'transactional', label: 'Transactionnel', icon: '📦', color: 'bg-blue-100 text-blue-700' },
-  { value: 'reminder', label: 'Rappel', icon: '⏰', color: 'bg-yellow-100 text-yellow-700' },
-  { value: 'alert', label: 'Alerte', icon: '🔔', color: 'bg-red-100 text-red-700' },
+  { value: 'transactional', label: 'Transactionnel', icon: '📦', color: 'bg-info/10 text-blue-700' },
+  { value: 'reminder', label: 'Rappel', icon: '⏰', color: 'bg-warning/10 text-yellow-700' },
+  { value: 'alert', label: 'Alerte', icon: '🔔', color: 'bg-destructive/10 text-red-700' },
 ];
 
 const DEFAULT_TEMPLATES: NotificationTemplate[] = [
@@ -242,7 +242,7 @@ export function PushNotificationManager() {
         </div>
         <div className="flex items-center gap-3">
           {permissionStatus === 'granted' ? (
-            <Badge className="bg-green-100 text-green-700">
+            <Badge className="bg-success/10 text-success">
               <CheckCircle2 className="h-3 w-3 mr-1" />
               Activées
             </Badge>
@@ -458,7 +458,7 @@ export function PushNotificationManager() {
                       </div>
                       <div className="flex items-center gap-3">
                         {device.is_active ? (
-                          <Badge className="bg-green-100 text-green-700">Actif</Badge>
+                          <Badge className="bg-success/10 text-success">Actif</Badge>
                         ) : (
                           <Badge variant="outline">Inactif</Badge>
                         )}

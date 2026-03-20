@@ -271,7 +271,7 @@ export const RealQuickUrlImport: React.FC = () => {
           </div>
 
           {detectedPlatform && !isImporting && (
-            <div className="flex items-center gap-2 text-sm text-green-600">
+            <div className="flex items-center gap-2 text-sm text-success">
               <CheckCircle className="w-4 h-4" />
               Plateforme détectée: {platforms.find(p => p.id === detectedPlatform)?.name}
             </div>
@@ -290,7 +290,7 @@ export const RealQuickUrlImport: React.FC = () => {
 
         {/* Imported product preview */}
         {importedProduct && (
-          <Card className="border-green-200 bg-green-50 dark:bg-green-950/20">
+          <Card className="border-success/20 bg-success/5 dark:bg-green-950/20">
             <CardContent className="p-4">
               <div className="flex items-start gap-3">
                 {importedProduct.image_url ? (
@@ -309,8 +309,8 @@ export const RealQuickUrlImport: React.FC = () => {
                 )}
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1">
-                    <CheckCircle className="w-4 h-4 text-green-600 flex-shrink-0" />
-                    <span className="text-sm font-medium text-green-700 dark:text-green-400">
+                    <CheckCircle className="w-4 h-4 text-success flex-shrink-0" />
+                    <span className="text-sm font-medium text-success dark:text-green-400">
                       Produit importé !
                     </span>
                   </div>
@@ -333,19 +333,19 @@ export const RealQuickUrlImport: React.FC = () => {
             </p>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-1 text-sm">
               <div className="flex items-center gap-2">
-                <CheckCircle className="w-3 h-3 text-green-600 flex-shrink-0" />
+                <CheckCircle className="w-3 h-3 text-success flex-shrink-0" />
                 <span>Extraction des images</span>
               </div>
               <div className="flex items-center gap-2">
-                <CheckCircle className="w-3 h-3 text-green-600 flex-shrink-0" />
+                <CheckCircle className="w-3 h-3 text-success flex-shrink-0" />
                 <span>Import des variantes</span>
               </div>
               <div className="flex items-center gap-2">
-                <CheckCircle className="w-3 h-3 text-green-600 flex-shrink-0" />
+                <CheckCircle className="w-3 h-3 text-success flex-shrink-0" />
                 <span>Optimisation SEO IA</span>
               </div>
               <div className="flex items-center gap-2">
-                <CheckCircle className="w-3 h-3 text-green-600 flex-shrink-0" />
+                <CheckCircle className="w-3 h-3 text-success flex-shrink-0" />
                 <span>Calcul des marges</span>
               </div>
             </div>

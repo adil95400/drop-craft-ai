@@ -115,7 +115,7 @@ export const KPIAnimatedValue = memo(function KPIAnimatedValue({
           <motion.span
             className={cn(
               'absolute inset-0 rounded-md',
-              isPositiveChange ? 'bg-emerald-500/20' : 'bg-amber-500/20'
+              isPositiveChange ? 'bg-success/20' : 'bg-warning/20'
             )}
             initial={{ opacity: 0.5 }}
             animate={{ opacity: 0 }}
@@ -153,8 +153,8 @@ export const KPIChangeIndicator = memo(function KPIChangeIndicator({
       className={cn(
         'inline-flex items-center gap-1 text-xs font-medium px-1.5 py-0.5 rounded',
         isPositive 
-          ? 'bg-emerald-500/10 text-emerald-600' 
-          : 'bg-red-500/10 text-red-600',
+          ? 'bg-success/10 text-success' 
+          : 'bg-destructive/10 text-destructive',
         className
       )}
       initial={{ opacity: 0, scale: 0.8, y: -4 }}

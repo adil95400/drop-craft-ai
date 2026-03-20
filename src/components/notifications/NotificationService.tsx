@@ -210,10 +210,10 @@ export function NotificationsList() {
 
   const getTypeColor = (type: string) => {
     switch (type) {
-      case 'success': return 'text-green-600 bg-green-100';
-      case 'warning': return 'text-yellow-600 bg-yellow-100';
-      case 'error': return 'text-red-600 bg-red-100';
-      default: return 'text-blue-600 bg-blue-100';
+      case 'success': return 'text-success bg-success/10';
+      case 'warning': return 'text-warning bg-warning/10';
+      case 'error': return 'text-destructive bg-destructive/10';
+      default: return 'text-info bg-info/10';
     }
   };
 

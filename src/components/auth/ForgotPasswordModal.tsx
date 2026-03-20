@@ -73,7 +73,7 @@ export function ForgotPasswordModal({ open, onOpenChange }: ForgotPasswordModalP
           <DialogTitle className="flex items-center gap-2">
             {emailSent ? (
               <>
-                <Mail className="h-5 w-5 text-green-500" />
+                <Mail className="h-5 w-5 text-success" />
                 Email envoyé
               </>
             ) : (

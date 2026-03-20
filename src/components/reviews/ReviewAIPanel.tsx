@@ -73,8 +73,8 @@ export function ReviewAIPanel() {
 
         <Card className="cursor-pointer hover:shadow-md transition-shadow border-2 border-transparent hover:border-primary/20" onClick={runSentiment}>
           <CardContent className="p-5 text-center space-y-3">
-            <div className="h-12 w-12 rounded-xl bg-blue-500/10 flex items-center justify-center mx-auto">
-              <Brain className="h-6 w-6 text-blue-500" />
+            <div className="h-12 w-12 rounded-xl bg-info/10 flex items-center justify-center mx-auto">
+              <Brain className="h-6 w-6 text-info" />
             </div>
             <div>
               <h3 className="font-semibold">Analyse de sentiment</h3>
@@ -89,8 +89,8 @@ export function ReviewAIPanel() {
 
         <Card className="cursor-pointer hover:shadow-md transition-shadow border-2 border-transparent hover:border-primary/20">
           <CardContent className="p-5 text-center space-y-3">
-            <div className="h-12 w-12 rounded-xl bg-emerald-500/10 flex items-center justify-center mx-auto">
-              <Languages className="h-6 w-6 text-emerald-500" />
+            <div className="h-12 w-12 rounded-xl bg-success/10 flex items-center justify-center mx-auto">
+              <Languages className="h-6 w-6 text-success" />
             </div>
             <div>
               <h3 className="font-semibold">Traduction en masse</h3>
@@ -162,7 +162,7 @@ export function ReviewAIPanel() {
                     <div className="shrink-0 text-center w-16">
                       <p className={cn(
                         'text-lg font-bold',
-                        r.fake_score > 60 ? 'text-destructive' : r.fake_score > 30 ? 'text-yellow-600' : 'text-emerald-600'
+                        r.fake_score > 60 ? 'text-destructive' : r.fake_score > 30 ? 'text-warning' : 'text-success'
                       )}>
                         {r.fake_score}%
                       </p>
@@ -170,7 +170,7 @@ export function ReviewAIPanel() {
                     </div>
                     <Progress
                       value={r.fake_score}
-                      className={cn('w-20 h-2', r.fake_score > 60 ? '[&>div]:bg-destructive' : r.fake_score > 30 ? '[&>div]:bg-yellow-500' : '[&>div]:bg-emerald-500')}
+                      className={cn('w-20 h-2', r.fake_score > 60 ? '[&>div]:bg-destructive' : r.fake_score > 30 ? '[&>div]:bg-warning' : '[&>div]:bg-success')}
                     />
                     <div className="flex-1 min-w-0">
                       <p className="text-sm truncate">{r.summary}</p>
@@ -185,7 +185,7 @@ export function ReviewAIPanel() {
                     {r.fake_score > 60 ? (
                       <AlertTriangle className="h-5 w-5 text-destructive shrink-0" />
                     ) : (
-                      <CheckCircle className="h-5 w-5 text-emerald-500 shrink-0" />
+                      <CheckCircle className="h-5 w-5 text-success shrink-0" />
                     )}
                   </CardContent>
                 </Card>
@@ -198,21 +198,21 @@ export function ReviewAIPanel() {
       {sentimentResults && activeAnalysis === 'sentiment' && (
         <div className="space-y-4">
           {sentimentResults.summary && (
-            <Card className="border-blue-500/20">
+            <Card className="border-info/20">
               <CardHeader className="pb-3">
                 <CardTitle className="text-base flex items-center gap-2">
-                  <Brain className="h-5 w-5 text-blue-500" />
+                  <Brain className="h-5 w-5 text-info" />
                   Analyse de sentiment — {sentimentResults.summary.overall_mood}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="flex gap-4">
                   <div className="flex items-center gap-2">
-                    <ThumbsUp className="h-4 w-4 text-emerald-500" />
+                    <ThumbsUp className="h-4 w-4 text-success" />
                     <span className="text-sm font-medium">{sentimentResults.summary.positive_pct}%</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <Minus className="h-4 w-4 text-yellow-500" />
+                    <Minus className="h-4 w-4 text-warning" />
                     <span className="text-sm font-medium">{sentimentResults.summary.neutral_pct}%</span>
                   </div>
                   <div className="flex items-center gap-2">
@@ -254,7 +254,7 @@ export function ReviewAIPanel() {
           <div className="space-y-2">
             {sentimentResults.reviews.map(r => {
               const sentimentIcon = r.sentiment === 'positive' ? ThumbsUp : r.sentiment === 'negative' ? ThumbsDown : Minus;
-              const sentimentColor = r.sentiment === 'positive' ? 'text-emerald-600' : r.sentiment === 'negative' ? 'text-destructive' : 'text-yellow-600';
+              const sentimentColor = r.sentiment === 'positive' ? 'text-success' : r.sentiment === 'negative' ? 'text-destructive' : 'text-warning';
               const SIcon = sentimentIcon;
               return (
                 <Card key={r.id}>
@@ -287,7 +287,7 @@ export function ReviewAIPanel() {
           <Card className="border-emerald-500/20">
             <CardHeader className="pb-2">
               <CardTitle className="text-base flex items-center gap-2">
-                <Languages className="h-5 w-5 text-emerald-500" />
+                <Languages className="h-5 w-5 text-success" />
                 {translations.length} avis traduits
               </CardTitle>
             </CardHeader>

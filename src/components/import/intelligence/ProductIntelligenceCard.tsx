@@ -193,8 +193,8 @@ function SupplierCard({
   rank: number;
   onOpen: () => void;
 }) {
-  const confidenceColor = supplier.confidence >= 70 ? 'text-green-500' : 
-                          supplier.confidence >= 50 ? 'text-yellow-500' : 'text-red-500';
+  const confidenceColor = supplier.confidence >= 70 ? 'text-success' : 
+                          supplier.confidence >= 50 ? 'text-warning' : 'text-destructive';
 
   return (
     <div className="p-3 rounded-lg border bg-card hover:shadow-md transition-shadow">
@@ -216,7 +216,7 @@ function SupplierCard({
           </span>
         </div>
         {supplier.potentialMargin && (
-          <div className="flex items-center gap-1 text-green-600">
+          <div className="flex items-center gap-1 text-success">
             <TrendingUp className="h-3 w-3" />
             <span className="font-medium">+{supplier.potentialMargin.marginPercent}%</span>
           </div>
@@ -277,7 +277,7 @@ function PricingSuggestions({
           </span>
         </div>
         <div className="flex items-center gap-4 mt-2 text-sm">
-          <span className="text-green-600 font-medium">
+          <span className="text-success font-medium">
             +€{recommendation.profit.toFixed(2)} / vente
           </span>
           <span className="text-muted-foreground">
@@ -343,9 +343,9 @@ function PricingSuggestions({
             <div 
               key={idx}
               className={`flex items-start gap-2 p-2 rounded text-xs ${
-                warning.severity === 'high' ? 'bg-red-50 text-red-700 dark:bg-red-950/20 dark:text-red-400' :
-                warning.severity === 'medium' ? 'bg-yellow-50 text-yellow-700 dark:bg-yellow-950/20 dark:text-yellow-400' :
-                'bg-blue-50 text-blue-700 dark:bg-blue-950/20 dark:text-blue-400'
+                warning.severity === 'high' ? 'bg-destructive/5 text-red-700 dark:bg-red-950/20 dark:text-red-400' :
+                warning.severity === 'medium' ? 'bg-warning/5 text-yellow-700 dark:bg-yellow-950/20 dark:text-yellow-400' :
+                'bg-info/5 text-blue-700 dark:bg-blue-950/20 dark:text-blue-400'
               }`}
             >
               <AlertCircle className="h-3 w-3 mt-0.5 flex-shrink-0" />

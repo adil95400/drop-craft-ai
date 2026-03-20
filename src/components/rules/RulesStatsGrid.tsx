@@ -34,18 +34,18 @@ const colorClasses = {
   },
   green: {
     gradient: 'from-emerald-500/20 to-emerald-500/5',
-    text: 'text-emerald-600 dark:text-emerald-400',
-    bg: 'bg-emerald-500/10',
+    text: 'text-success dark:text-emerald-400',
+    bg: 'bg-success/10',
   },
   orange: {
     gradient: 'from-amber-500/20 to-amber-500/5',
-    text: 'text-amber-600 dark:text-amber-400',
-    bg: 'bg-amber-500/10',
+    text: 'text-warning dark:text-amber-400',
+    bg: 'bg-warning/10',
   },
   blue: {
-    gradient: 'from-blue-500/20 to-blue-500/5',
-    text: 'text-blue-600 dark:text-blue-400',
-    bg: 'bg-blue-500/10',
+    gradient: 'from-info/20 to-blue-500/5',
+    text: 'text-info dark:text-blue-400',
+    bg: 'bg-info/10',
   },
   purple: {
     gradient: 'from-purple-500/20 to-purple-500/5',
@@ -86,7 +86,7 @@ const StatCard = ({
                 {trend !== undefined && trend !== 0 && (
                   <span className={cn(
                     "text-xs font-medium flex items-center gap-0.5",
-                    trend > 0 ? "text-emerald-500" : "text-red-500"
+                    trend > 0 ? "text-success" : "text-destructive"
                   )}>
                     <TrendingUp className={cn("h-3 w-3", trend < 0 && "rotate-180")} />
                     {Math.abs(trend)}%

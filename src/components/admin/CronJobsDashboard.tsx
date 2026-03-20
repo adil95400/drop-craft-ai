@@ -198,7 +198,7 @@ export function CronJobsDashboard() {
       case 'running':
         return <Badge variant="secondary"><Loader2 className="h-3 w-3 mr-1 animate-spin" /> En cours</Badge>;
       case 'success':
-        return <Badge variant="default" className="bg-green-500"><CheckCircle2 className="h-3 w-3 mr-1" /> Succès</Badge>;
+        return <Badge variant="default" className="bg-success"><CheckCircle2 className="h-3 w-3 mr-1" /> Succès</Badge>;
       case 'error':
         return <Badge variant="destructive"><XCircle className="h-3 w-3 mr-1" /> Erreur</Badge>;
       default:
@@ -225,7 +225,7 @@ export function CronJobsDashboard() {
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center gap-2">
-              <CheckCircle2 className="h-5 w-5 text-green-500" />
+              <CheckCircle2 className="h-5 w-5 text-success" />
               <div>
                 <p className="text-2xl font-bold">{stats.successRate}%</p>
                 <p className="text-xs text-muted-foreground">Taux de succès</p>
@@ -237,7 +237,7 @@ export function CronJobsDashboard() {
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center gap-2">
-              <Clock className="h-5 w-5 text-blue-500" />
+              <Clock className="h-5 w-5 text-info" />
               <div>
                 <p className="text-2xl font-bold">{stats.lastHourRuns}</p>
                 <p className="text-xs text-muted-foreground">Dernière heure</p>
@@ -356,7 +356,7 @@ export function CronJobsDashboard() {
                     >
                       <div className="flex items-center gap-3">
                         {log.status_code === 200 ? (
-                          <CheckCircle2 className="h-4 w-4 text-green-500" />
+                          <CheckCircle2 className="h-4 w-4 text-success" />
                         ) : (
                           <XCircle className="h-4 w-4 text-destructive" />
                         )}

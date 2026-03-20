@@ -180,7 +180,7 @@ export function SortableBlock({ block, isSelected, onSelect, onDelete }: Sortabl
             <ul className="text-xs space-y-1">
               {(block.props.items || []).slice(0, 3).map((item: string, i: number) => (
                 <li key={i} className="flex items-center gap-1">
-                  <CheckCircle className="h-3 w-3 text-green-500" />
+                  <CheckCircle className="h-3 w-3 text-success" />
                   {item}
                 </li>
               ))}

@@ -85,11 +85,11 @@ export function PlatformAnalyticsDashboard() {
               <div className="text-2xl font-bold">{formatCurrency(summary.revenue)}</div>
               <div className="flex items-center text-xs text-muted-foreground mt-1">
                 {summary.revenueGrowth >= 0 ? (
-                  <TrendingUp className="w-3 h-3 mr-1 text-green-500" />
+                  <TrendingUp className="w-3 h-3 mr-1 text-success" />
                 ) : (
-                  <TrendingDown className="w-3 h-3 mr-1 text-red-500" />
+                  <TrendingDown className="w-3 h-3 mr-1 text-destructive" />
                 )}
-                <span className={summary.revenueGrowth >= 0 ? 'text-green-500' : 'text-red-500'}>
+                <span className={summary.revenueGrowth >= 0 ? 'text-success' : 'text-destructive'}>
                   {summary.revenueGrowth.toFixed(1)}%
                 </span>
                 <span className="ml-1">vs période précédente</span>

@@ -20,7 +20,7 @@ export function QuickAccessMenu() {
       url: '/import/advanced',
       icon: Upload,
       badge: 'Ultra',
-      color: 'from-blue-500 to-blue-600'
+      color: 'from-info to-info'
     },
     {
       title: 'Catalogue Ultra Pro',
@@ -28,7 +28,7 @@ export function QuickAccessMenu() {
       url: '/products/advanced',
       icon: Package,
       badge: 'Ultra',
-      color: 'from-green-500 to-green-600'
+      color: 'from-success to-success'
     },
     {
       title: 'Fournisseurs Pro',
@@ -45,7 +45,7 @@ export function QuickAccessMenu() {
       <CardContent className="p-4">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
-            <Crown className="h-5 w-5 text-yellow-500" />
+            <Crown className="h-5 w-5 text-warning" />
             <h3 className="font-semibold">Accès Rapide Ultra Pro</h3>
           </div>
           <Button variant="outline" size="sm" asChild>

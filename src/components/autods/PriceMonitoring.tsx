@@ -60,7 +60,7 @@ export function PriceMonitoring() {
                     <div>
                       <div className="text-sm text-muted-foreground">Variation</div>
                       <div className={`text-2xl font-bold flex items-center gap-1 ${
-                        isIncrease ? 'text-red-500' : priceChange < 0 ? 'text-green-500' : ''
+                        isIncrease ? 'text-destructive' : priceChange < 0 ? 'text-success' : ''
                       }`}>
                         {isIncrease ? (
                           <TrendingUp className="w-5 h-5" />

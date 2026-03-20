@@ -20,18 +20,18 @@ export function MarketSaturationAnalyzer() {
 
   const getSaturationColor = (level: string) => {
     switch (level.toLowerCase()) {
-      case 'low': return 'text-green-600';
-      case 'medium': return 'text-yellow-600';
-      case 'high': return 'text-red-600';
+      case 'low': return 'text-success';
+      case 'medium': return 'text-warning';
+      case 'high': return 'text-destructive';
       default: return 'text-gray-600';
     }
   };
 
   const getSaturationIcon = (level: string) => {
     switch (level.toLowerCase()) {
-      case 'low': return <CheckCircle className="w-5 h-5 text-green-600" />;
-      case 'medium': return <AlertTriangle className="w-5 h-5 text-yellow-600" />;
-      case 'high': return <AlertTriangle className="w-5 h-5 text-red-600" />;
+      case 'low': return <CheckCircle className="w-5 h-5 text-success" />;
+      case 'medium': return <AlertTriangle className="w-5 h-5 text-warning" />;
+      case 'high': return <AlertTriangle className="w-5 h-5 text-destructive" />;
       default: return <Activity className="w-5 h-5" />;
     }
   };

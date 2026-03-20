@@ -51,9 +51,9 @@ export function ProductsStatsHeader({
       label: 'Actifs',
       value: stats.active,
       icon: CheckCircle,
-      color: 'text-green-500',
-      bgColor: 'bg-green-500/10',
-      borderColor: 'border-green-500/20',
+      color: 'text-success',
+      bgColor: 'bg-success/10',
+      borderColor: 'border-success/20',
       subtitle: `${stats.total > 0 ? Math.round((stats.active / stats.total) * 100) : 0}% du catalogue`,
       trend: '+12%'
     },
@@ -62,9 +62,9 @@ export function ProductsStatsHeader({
       label: 'Score Moyen',
       value: auditStats?.averageScore || 75,
       icon: Target,
-      color: auditStats && auditStats.averageScore >= 70 ? 'text-green-500' : 'text-yellow-500',
-      bgColor: auditStats && auditStats.averageScore >= 70 ? 'bg-green-500/10' : 'bg-yellow-500/10',
-      borderColor: auditStats && auditStats.averageScore >= 70 ? 'border-green-500/20' : 'border-yellow-500/20',
+      color: auditStats && auditStats.averageScore >= 70 ? 'text-success' : 'text-warning',
+      bgColor: auditStats && auditStats.averageScore >= 70 ? 'bg-success/10' : 'bg-warning/10',
+      borderColor: auditStats && auditStats.averageScore >= 70 ? 'border-success/20' : 'border-warning/20',
       subtitle: `${auditStats?.excellentCount || 0} excellents`,
       isScore: true
     },
@@ -73,8 +73,8 @@ export function ProductsStatsHeader({
       label: 'Stock Faible',
       value: stats.lowStock,
       icon: AlertCircle,
-      color: stats.lowStock > 0 ? 'text-orange-500' : 'text-muted-foreground',
-      bgColor: stats.lowStock > 0 ? 'bg-orange-500/10' : 'bg-muted/50',
+      color: stats.lowStock > 0 ? 'text-warning' : 'text-muted-foreground',
+      bgColor: stats.lowStock > 0 ? 'bg-warning/10' : 'bg-muted/50',
       borderColor: stats.lowStock > 0 ? 'border-orange-500/20' : 'border-border',
       subtitle: 'à réapprovisionner',
       isWarning: stats.lowStock > 5
@@ -84,9 +84,9 @@ export function ProductsStatsHeader({
       label: 'À Optimiser',
       value: auditStats?.poorCount || 0,
       icon: TrendingUp,
-      color: auditStats && auditStats.poorCount > 0 ? 'text-red-500' : 'text-green-500',
-      bgColor: auditStats && auditStats.poorCount > 0 ? 'bg-red-500/10' : 'bg-green-500/10',
-      borderColor: auditStats && auditStats.poorCount > 0 ? 'border-red-500/20' : 'border-green-500/20',
+      color: auditStats && auditStats.poorCount > 0 ? 'text-destructive' : 'text-success',
+      bgColor: auditStats && auditStats.poorCount > 0 ? 'bg-destructive/10' : 'bg-success/10',
+      borderColor: auditStats && auditStats.poorCount > 0 ? 'border-destructive/20' : 'border-success/20',
       subtitle: auditStats && auditStats.poorCount > 0 ? 'score < 40' : 'tout va bien'
     }
   ];
@@ -115,7 +115,7 @@ export function ProductsStatsHeader({
                 <stat.icon className={cn("h-4 w-4", stat.color)} />
               </div>
               {stat.trend && (
-                <Badge variant="secondary" className="text-[10px] bg-green-500/10 text-green-600">
+                <Badge variant="secondary" className="text-[10px] bg-success/10 text-success">
                   {stat.trend}
                 </Badge>
               )}

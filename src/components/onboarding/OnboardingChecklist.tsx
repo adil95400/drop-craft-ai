@@ -164,7 +164,7 @@ export const OnboardingChecklist = () => {
               key={step.id}
               className={`flex items-center justify-between p-3 rounded-lg border transition-colors ${
                 step.completed 
-                  ? 'bg-green-50 border-green-200 dark:bg-green-950/20 dark:border-green-800' 
+                  ? 'bg-success/5 border-success/20 dark:bg-green-950/20 dark:border-green-800' 
                   : isLocked
                   ? 'bg-gray-50 border-gray-200 dark:bg-gray-950/20 dark:border-gray-700'
                   : 'bg-white border-gray-200 hover:border-primary/30 dark:bg-gray-900 dark:border-gray-700'
@@ -172,22 +172,22 @@ export const OnboardingChecklist = () => {
             >
               <div className="flex items-center gap-3">
                 {step.completed ? (
-                  <CheckCircle2 className="h-5 w-5 text-green-600" />
+                  <CheckCircle2 className="h-5 w-5 text-success" />
                 ) : (
                   <Circle className="h-5 w-5 text-gray-400" />
                 )}
                 <IconComponent className={`h-5 w-5 ${
-                  step.completed ? 'text-green-600' : isLocked ? 'text-gray-400' : 'text-primary'
+                  step.completed ? 'text-success' : isLocked ? 'text-gray-400' : 'text-primary'
                 }`} />
                 <div>
                   <h4 className={`font-medium ${
-                    step.completed ? 'text-green-800 dark:text-green-300' : 
+                    step.completed ? 'text-success dark:text-green-300' : 
                     isLocked ? 'text-gray-500' : 'text-foreground'
                   }`}>
                     {step.title}
                   </h4>
                   <p className={`text-sm ${
-                    step.completed ? 'text-green-600 dark:text-green-400' : 
+                    step.completed ? 'text-success dark:text-green-400' : 
                     isLocked ? 'text-gray-400' : 'text-muted-foreground'
                   }`}>
                     {step.description}
@@ -213,7 +213,7 @@ export const OnboardingChecklist = () => {
                   </Button>
                 )}
                 {step.completed && (
-                  <Badge variant="default" className="bg-green-100 text-green-800">
+                  <Badge variant="default" className="bg-success/10 text-success">
                     Terminé
                   </Badge>
                 )}

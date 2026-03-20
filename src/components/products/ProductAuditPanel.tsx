@@ -72,11 +72,11 @@ export function ProductAuditPanel({
   const getSeverityIcon = (severity: string) => {
     switch (severity) {
       case 'critical':
-        return <AlertCircle className="h-4 w-4 text-red-600" />;
+        return <AlertCircle className="h-4 w-4 text-destructive" />;
       case 'warning':
-        return <AlertCircle className="h-4 w-4 text-orange-600" />;
+        return <AlertCircle className="h-4 w-4 text-warning" />;
       case 'info':
-        return <Info className="h-4 w-4 text-blue-600" />;
+        return <Info className="h-4 w-4 text-info" />;
       default:
         return <Info className="h-4 w-4" />;
     }
@@ -100,9 +100,9 @@ export function ProductAuditPanel({
   };
 
   const getScoreColor = (score: number) => {
-    if (score >= 70) return 'text-green-600';
-    if (score >= 40) return 'text-orange-600';
-    return 'text-red-600';
+    if (score >= 70) return 'text-success';
+    if (score >= 40) return 'text-warning';
+    return 'text-destructive';
   };
 
   const criticalIssues = issues.filter(i => i.severity === 'critical');
@@ -192,7 +192,7 @@ export function ProductAuditPanel({
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <CheckCircle className="h-5 w-5 text-green-600" />
+              <CheckCircle className="h-5 w-5 text-success" />
               Points Forts
             </CardTitle>
           </CardHeader>
@@ -200,7 +200,7 @@ export function ProductAuditPanel({
             <ul className="space-y-2">
               {strengths.map((strength, index) => (
                 <li key={index} className="flex items-center gap-2 text-sm">
-                  <CheckCircle className="h-4 w-4 text-green-600" />
+                  <CheckCircle className="h-4 w-4 text-success" />
                   {strength}
                 </li>
               ))}
@@ -211,7 +211,7 @@ export function ProductAuditPanel({
 
       {/* Issues critiques */}
       {criticalIssues.length > 0 && (
-        <Card className="border-red-200 bg-red-50/50 dark:bg-red-950/20">
+        <Card className="border-destructive/20 bg-destructive/5/50 dark:bg-red-950/20">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-red-700 dark:text-red-400">
               <AlertCircle className="h-5 w-5" />

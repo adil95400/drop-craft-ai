@@ -26,10 +26,10 @@ const STEP_TYPES: StepType[] = [
 ];
 
 const CATEGORIES = [
-  { id: 'logic', label: 'Logique', color: 'bg-blue-500' },
-  { id: 'action', label: 'Actions', color: 'bg-green-500' },
+  { id: 'logic', label: 'Logique', color: 'bg-info' },
+  { id: 'action', label: 'Actions', color: 'bg-success' },
   { id: 'data', label: 'Données', color: 'bg-purple-500' },
-  { id: 'control', label: 'Contrôle', color: 'bg-orange-500' },
+  { id: 'control', label: 'Contrôle', color: 'bg-warning' },
 ];
 
 interface MobileStepsPaletteProps {

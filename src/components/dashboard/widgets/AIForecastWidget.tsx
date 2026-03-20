@@ -108,10 +108,10 @@ const getIcon = (type: Forecast['type']) => {
 
 const getIconColor = (type: Forecast['type']) => {
   switch (type) {
-    case 'revenue': return 'text-green-500 bg-green-500/10';
-    case 'orders': return 'text-blue-500 bg-blue-500/10';
-    case 'stock': return 'text-amber-500 bg-amber-500/10';
-    case 'churn': return 'text-red-500 bg-red-500/10';
+    case 'revenue': return 'text-success bg-success/10';
+    case 'orders': return 'text-info bg-info/10';
+    case 'stock': return 'text-warning bg-warning/10';
+    case 'churn': return 'text-destructive bg-destructive/10';
   }
 };
 
@@ -194,15 +194,15 @@ export function AIForecastWidget({ timeRange, settings, lastRefresh }: AIForecas
                   <div className="text-right">
                     <p className={cn(
                       "font-bold",
-                      forecast.change > 0 ? "text-green-600" : "text-red-600"
+                      forecast.change > 0 ? "text-success" : "text-destructive"
                     )}>
                       {forecast.value}
                     </p>
                     <div className="flex items-center gap-1 text-xs text-muted-foreground">
                       {forecast.change > 0 ? (
-                        <ArrowUpRight className="h-3 w-3 text-green-500" />
+                        <ArrowUpRight className="h-3 w-3 text-success" />
                       ) : (
-                        <ArrowDownRight className="h-3 w-3 text-red-500" />
+                        <ArrowDownRight className="h-3 w-3 text-destructive" />
                       )}
                       {forecast.timeframe}
                     </div>

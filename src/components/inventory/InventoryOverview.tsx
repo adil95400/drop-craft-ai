@@ -17,10 +17,10 @@ export function InventoryOverview() {
 
   const getStockStatus = (current: number, reorder: number) => {
     const percentage = (current / reorder) * 100;
-    if (current === 0) return { label: 'Rupture', color: 'bg-red-500', variant: 'destructive' as const };
-    if (percentage <= 50) return { label: 'Critique', color: 'bg-orange-500', variant: 'destructive' as const };
-    if (percentage <= 100) return { label: 'Bas', color: 'bg-yellow-500', variant: 'secondary' as const };
-    return { label: 'Normal', color: 'bg-green-500', variant: 'default' as const };
+    if (current === 0) return { label: 'Rupture', color: 'bg-destructive', variant: 'destructive' as const };
+    if (percentage <= 50) return { label: 'Critique', color: 'bg-warning', variant: 'destructive' as const };
+    if (percentage <= 100) return { label: 'Bas', color: 'bg-warning', variant: 'secondary' as const };
+    return { label: 'Normal', color: 'bg-success', variant: 'default' as const };
   };
 
   return (
@@ -86,7 +86,7 @@ export function InventoryOverview() {
                     <p className="text-2xl font-bold flex items-center gap-2">
                       {item.current_stock}
                       {item.current_stock <= item.reorder_point && (
-                        <TrendingDown className="h-5 w-5 text-orange-500" />
+                        <TrendingDown className="h-5 w-5 text-warning" />
                       )}
                     </p>
                   </div>

@@ -25,10 +25,10 @@ const TYPE_ICONS: Record<string, React.ElementType> = {
 };
 
 const TYPE_COLORS: Record<string, string> = {
-  success: "bg-emerald-100 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400",
-  error: "bg-red-100 text-red-600 dark:bg-red-500/20 dark:text-red-400",
-  warning: "bg-amber-100 text-amber-600 dark:bg-amber-500/20 dark:text-amber-400",
-  info: "bg-blue-100 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400",
+  success: "bg-emerald-100 text-success dark:bg-success/20 dark:text-emerald-400",
+  error: "bg-destructive/10 text-destructive dark:bg-destructive/20 dark:text-red-400",
+  warning: "bg-amber-100 text-warning dark:bg-warning/20 dark:text-amber-400",
+  info: "bg-info/10 text-info dark:bg-info/20 dark:text-blue-400",
 };
 
 export function NotificationDropdown() {

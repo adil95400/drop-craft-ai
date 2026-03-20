@@ -29,9 +29,9 @@ export function StockPredictionsPanel() {
   const getTrendIcon = (trend: string) => {
     switch (trend) {
       case 'increasing':
-        return <TrendingUp className="h-4 w-4 text-green-500" />;
+        return <TrendingUp className="h-4 w-4 text-success" />;
       case 'decreasing':
-        return <TrendingDown className="h-4 w-4 text-red-500" />;
+        return <TrendingDown className="h-4 w-4 text-destructive" />;
       default:
         return <Minus className="h-4 w-4 text-muted-foreground" />;
     }
@@ -39,17 +39,17 @@ export function StockPredictionsPanel() {
 
   const getUrgencyColor = (days: number | null) => {
     if (days === null) return 'bg-muted';
-    if (days <= 3) return 'bg-red-500';
-    if (days <= 7) return 'bg-orange-500';
-    if (days <= 14) return 'bg-yellow-500';
-    return 'bg-green-500';
+    if (days <= 3) return 'bg-destructive';
+    if (days <= 7) return 'bg-warning';
+    if (days <= 14) return 'bg-warning';
+    return 'bg-success';
   };
 
   const getUrgencyBadge = (days: number | null) => {
     if (days === null) return <Badge variant="outline">Stock OK</Badge>;
     if (days <= 3) return <Badge variant="destructive">Critique</Badge>;
-    if (days <= 7) return <Badge className="bg-orange-500">Urgent</Badge>;
-    if (days <= 14) return <Badge className="bg-yellow-500 text-black">À surveiller</Badge>;
+    if (days <= 7) return <Badge className="bg-warning">Urgent</Badge>;
+    if (days <= 14) return <Badge className="bg-warning text-black">À surveiller</Badge>;
     return <Badge variant="secondary">Normal</Badge>;
   };
 
@@ -104,7 +104,7 @@ export function StockPredictionsPanel() {
             {/* Produits critiques */}
             {criticalProducts.length > 0 && (
               <div>
-                <h3 className="font-semibold flex items-center gap-2 mb-3 text-red-600">
+                <h3 className="font-semibold flex items-center gap-2 mb-3 text-destructive">
                   <AlertTriangle className="h-4 w-4" />
                   Attention requise ({criticalProducts.length})
                 </h3>
@@ -169,8 +169,8 @@ function PredictionCard({ prediction }: { prediction: StockPrediction }) {
           <p className="text-muted-foreground">Ventes/jour</p>
           <p className="font-semibold flex items-center gap-1">
             {prediction.average_daily_sales.toFixed(1)}
-            {prediction.sales_trend === 'increasing' && <TrendingUp className="h-3 w-3 text-green-500" />}
-            {prediction.sales_trend === 'decreasing' && <TrendingDown className="h-3 w-3 text-red-500" />}
+            {prediction.sales_trend === 'increasing' && <TrendingUp className="h-3 w-3 text-success" />}
+            {prediction.sales_trend === 'decreasing' && <TrendingDown className="h-3 w-3 text-destructive" />}
           </p>
         </div>
         <div>
@@ -194,7 +194,7 @@ function PredictionCard({ prediction }: { prediction: StockPrediction }) {
         </div>
         <Progress 
           value={stockPercentage} 
-          className={`h-2 ${daysLeft !== null && daysLeft <= 7 ? '[&>div]:bg-red-500' : ''}`}
+          className={`h-2 ${daysLeft !== null && daysLeft <= 7 ? '[&>div]:bg-destructive' : ''}`}
         />
       </div>
     </div>

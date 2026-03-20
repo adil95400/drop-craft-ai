@@ -38,7 +38,7 @@ export function ImageAuditProgress({ progress, isProcessing }: ImageAuditProgres
           <Progress value={percentage} className="h-2 mb-3" />
           
           <div className="flex gap-6 text-sm">
-            <span className="text-green-500 flex items-center gap-1.5">
+            <span className="text-success flex items-center gap-1.5">
               <CheckCircle className="h-4 w-4" />
               {progress.success} réussis
             </span>

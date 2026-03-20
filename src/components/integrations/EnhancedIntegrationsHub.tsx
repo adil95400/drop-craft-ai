@@ -193,10 +193,10 @@ export const EnhancedIntegrationsHub: React.FC = () => {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'available': return 'bg-green-500'
-      case 'beta': return 'bg-orange-500'
+      case 'available': return 'bg-success'
+      case 'beta': return 'bg-warning'
       case 'coming_soon': return 'bg-gray-400'
-      default: return 'bg-green-500'
+      default: return 'bg-success'
     }
   }
 
@@ -247,19 +247,19 @@ export const EnhancedIntegrationsHub: React.FC = () => {
           </Card>
           <Card className="text-center">
             <CardContent className="pt-4">
-              <div className="text-2xl font-bold text-green-600">{connectedCount}</div>
+              <div className="text-2xl font-bold text-success">{connectedCount}</div>
               <div className="text-sm text-muted-foreground">Connectées</div>
             </CardContent>
           </Card>
           <Card className="text-center">
             <CardContent className="pt-4">
-              <div className="text-2xl font-bold text-blue-600">{totalInstalls.toLocaleString()}</div>
+              <div className="text-2xl font-bold text-info">{totalInstalls.toLocaleString()}</div>
               <div className="text-sm text-muted-foreground">Installations</div>
             </CardContent>
           </Card>
           <Card className="text-center">
             <CardContent className="pt-4">
-              <div className="text-2xl font-bold text-orange-600">4.7</div>
+              <div className="text-2xl font-bold text-warning">4.7</div>
               <div className="text-sm text-muted-foreground">Note moyenne</div>
             </CardContent>
           </Card>
@@ -339,7 +339,7 @@ export const EnhancedIntegrationsHub: React.FC = () => {
                             </Badge>
                           )}
                           {isConnected && (
-                            <Badge variant="default" className="bg-green-500 text-white text-xs">
+                            <Badge variant="default" className="bg-success text-white text-xs">
                               <Check className="w-3 h-3 mr-1" />
                               Connecté
                             </Badge>
@@ -354,7 +354,7 @@ export const EnhancedIntegrationsHub: React.FC = () => {
                     <CardContent className="space-y-4">
                       <div className="flex items-center justify-between text-sm">
                         <div className="flex items-center gap-1">
-                          <Star className="w-4 h-4 text-yellow-500" />
+                          <Star className="w-4 h-4 text-warning" />
                           <span>{template.rating}</span>
                         </div>
                         <span className="text-muted-foreground">

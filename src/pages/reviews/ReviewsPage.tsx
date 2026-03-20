@@ -45,7 +45,7 @@ function StatCard({ label, value, icon: Icon, trend, color }: {
           <div>
             <p className="text-sm text-muted-foreground">{label}</p>
             <p className="text-2xl font-bold">{value}</p>
-            {trend && <p className="text-xs text-emerald-600">{trend}</p>}
+            {trend && <p className="text-xs text-success">{trend}</p>}
           </div>
           <div className={cn('h-10 w-10 rounded-lg flex items-center justify-center', color || 'bg-primary/10')}>
             <Icon className={cn('h-5 w-5', color ? 'text-white' : 'text-primary')} />
@@ -60,7 +60,7 @@ function RatingStars({ rating }: { rating: number }) {
   return (
     <div className="flex gap-0.5">
       {[1, 2, 3, 4, 5].map(i => (
-        <Star key={i} className={`h-4 w-4 ${i <= rating ? 'text-yellow-500 fill-yellow-500' : 'text-muted-foreground/30'}`} />
+        <Star key={i} className={`h-4 w-4 ${i <= rating ? 'text-warning fill-yellow-500' : 'text-muted-foreground/30'}`} />
       ))}
     </div>
   );
@@ -71,7 +71,7 @@ function RatingInput({ value, onChange }: { value: number; onChange: (v: number)
     <div className="flex gap-1">
       {[1, 2, 3, 4, 5].map(i => (
         <button key={i} type="button" onClick={() => onChange(i)} className="focus:outline-none">
-          <Star className={`h-6 w-6 transition-colors ${i <= value ? 'text-yellow-500 fill-yellow-500' : 'text-muted-foreground/30 hover:text-yellow-400'}`} />
+          <Star className={`h-6 w-6 transition-colors ${i <= value ? 'text-warning fill-yellow-500' : 'text-muted-foreground/30 hover:text-yellow-400'}`} />
         </button>
       ))}
     </div>
@@ -364,10 +364,10 @@ export default function ReviewsPage() {
 function ReviewCard({ review, onDelete }: { review: ProductReview; onDelete: (id: string) => void }) {
   const platformColors: Record<string, string> = {
     aliexpress: 'bg-orange-100 text-orange-700 border-orange-200',
-    amazon: 'bg-yellow-100 text-yellow-700 border-yellow-200',
+    amazon: 'bg-warning/10 text-yellow-700 border-warning/20',
     tiktok: 'bg-pink-100 text-pink-700 border-pink-200',
-    shopify: 'bg-green-100 text-green-700 border-green-200',
-    ebay: 'bg-blue-100 text-blue-700 border-blue-200',
+    shopify: 'bg-success/10 text-success border-success/20',
+    ebay: 'bg-info/10 text-blue-700 border-info/20',
     manual: 'bg-muted text-muted-foreground',
   };
 

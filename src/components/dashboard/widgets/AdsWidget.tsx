@@ -65,14 +65,14 @@ export function AdsWidget({ isCustomizing }: AdsWidgetProps) {
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1">
                 <div className="flex items-center gap-1">
-                  <Eye className="h-3 w-3 text-blue-600" />
+                  <Eye className="h-3 w-3 text-info" />
                   <p className="text-xs text-muted-foreground">{t('ads.impressions', 'Impressions')}</p>
                 </div>
                 <p className="text-xl font-bold">{formatNumber(stats.totalImpressions)}</p>
               </div>
               <div className="space-y-1">
                 <div className="flex items-center gap-1">
-                  <TrendingUp className="h-3 w-3 text-green-600" />
+                  <TrendingUp className="h-3 w-3 text-success" />
                   <p className="text-xs text-muted-foreground">{t('ads.clicks', 'Clics')}</p>
                 </div>
                 <p className="text-xl font-bold">{formatNumber(stats.totalClicks)}</p>
@@ -90,7 +90,7 @@ export function AdsWidget({ isCustomizing }: AdsWidgetProps) {
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-sm text-muted-foreground">ROAS</span>
-                <span className="font-semibold text-green-600">{stats.roas.toFixed(1)}x</span>
+                <span className="font-semibold text-success">{stats.roas.toFixed(1)}x</span>
               </div>
             </div>
 

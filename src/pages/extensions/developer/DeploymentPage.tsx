@@ -140,9 +140,9 @@ export default function DeploymentPage() {
     switch (status) {
       case 'success':
       case 'completed':
-        return <CheckCircle className="w-4 h-4 text-green-500" />
+        return <CheckCircle className="w-4 h-4 text-success" />
       case 'failed':
-        return <XCircle className="w-4 h-4 text-red-500" />
+        return <XCircle className="w-4 h-4 text-destructive" />
       case 'running':
         return <div className="w-4 h-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
       default:

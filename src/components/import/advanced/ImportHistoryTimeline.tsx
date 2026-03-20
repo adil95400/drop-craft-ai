@@ -31,9 +31,9 @@ export const ImportHistoryTimeline = ({ jobs, products }: ImportHistoryTimelineP
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-2">
-              <CheckCircle2 className="h-4 w-4 text-green-600" />
+              <CheckCircle2 className="h-4 w-4 text-success" />
               <div>
-                <p className="text-2xl font-bold text-green-600">
+                <p className="text-2xl font-bold text-success">
                   {jobs.filter(j => j.status === 'completed').length}
                 </p>
                 <p className="text-xs text-muted-foreground">Réussis</p>
@@ -76,15 +76,15 @@ export const ImportHistoryTimeline = ({ jobs, products }: ImportHistoryTimelineP
                   <div className="flex flex-col items-center">
                     <div className={`rounded-full p-2 ${
                       job.status === 'completed' 
-                        ? 'bg-green-100' 
+                        ? 'bg-success/10' 
                         : job.status === 'failed' 
-                        ? 'bg-red-100' 
+                        ? 'bg-destructive/10' 
                         : 'bg-gray-100'
                     }`}>
                       {job.status === 'completed' ? (
-                        <CheckCircle2 className="h-4 w-4 text-green-600" />
+                        <CheckCircle2 className="h-4 w-4 text-success" />
                       ) : job.status === 'failed' ? (
-                        <XCircle className="h-4 w-4 text-red-600" />
+                        <XCircle className="h-4 w-4 text-destructive" />
                       ) : (
                         <History className="h-4 w-4 text-gray-600" />
                       )}
@@ -120,10 +120,10 @@ export const ImportHistoryTimeline = ({ jobs, products }: ImportHistoryTimelineP
                         <span>Total: {job.total_rows}</span>
                       )}
                       {job.success_rows !== undefined && (
-                        <span className="text-green-600">✓ {job.success_rows}</span>
+                        <span className="text-success">✓ {job.success_rows}</span>
                       )}
                       {job.error_rows !== undefined && job.error_rows > 0 && (
-                        <span className="text-red-600">✗ {job.error_rows}</span>
+                        <span className="text-destructive">✗ {job.error_rows}</span>
                       )}
                     </div>
                   </div>

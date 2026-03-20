@@ -24,9 +24,9 @@ const planConfig = {
     name: 'Pro',
     icon: Star,
     price: '29€',
-    color: 'text-blue-600',
-    bgColor: 'bg-blue-50',
-    borderColor: 'border-blue-200',
+    color: 'text-info',
+    bgColor: 'bg-info/5',
+    borderColor: 'border-info/20',
     features: [
       'Imports avancés',
       'Analyses AI',
@@ -108,7 +108,7 @@ export const UpgradeDialog = ({ requiredPlan, isOpen = true, onClose }: UpgradeD
             <ul className="space-y-2">
               {config.features.map((feature, index) => (
                 <li key={index} className="flex items-center gap-2 text-sm">
-                  <Zap className="h-4 w-4 text-green-500 flex-shrink-0" />
+                  <Zap className="h-4 w-4 text-success flex-shrink-0" />
                   {feature}
                 </li>
               ))}

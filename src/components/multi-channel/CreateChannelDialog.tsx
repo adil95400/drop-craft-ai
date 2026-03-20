@@ -68,9 +68,9 @@ const channelOptions = [
     value: 'shopify', 
     label: 'Shopify', 
     icon: ShoppingCart,
-    color: 'from-green-500 to-emerald-600',
-    bgColor: 'bg-green-500/10',
-    borderColor: 'border-green-500/30',
+    color: 'from-success to-emerald-600',
+    bgColor: 'bg-success/10',
+    borderColor: 'border-success/30',
     description: 'Plateforme e-commerce populaire',
     features: ['Sync automatique', 'Webhooks temps réel', 'Multi-devises']
   },
@@ -79,7 +79,7 @@ const channelOptions = [
     label: 'Amazon', 
     icon: Package,
     color: 'from-orange-500 to-amber-600',
-    bgColor: 'bg-orange-500/10',
+    bgColor: 'bg-warning/10',
     borderColor: 'border-orange-500/30',
     description: 'Marketplace mondiale',
     features: ['FBA intégré', 'Gestion stock', 'Multi-pays']
@@ -88,9 +88,9 @@ const channelOptions = [
     value: 'ebay', 
     label: 'eBay', 
     icon: Tag,
-    color: 'from-blue-500 to-indigo-600',
-    bgColor: 'bg-blue-500/10',
-    borderColor: 'border-blue-500/30',
+    color: 'from-info to-indigo-600',
+    bgColor: 'bg-info/10',
+    borderColor: 'border-info/30',
     description: 'Enchères et vente directe',
     features: ['Enchères auto', 'Frais optimisés', 'Analytics']
   },
@@ -521,7 +521,7 @@ export function CreateChannelDialog({ open, onOpenChange }: CreateChannelDialogP
                     {/* Summary Card */}
                     <div className="mt-6 p-4 rounded-xl bg-muted/50 border border-border/50">
                       <div className="flex items-center gap-2 mb-3">
-                        <Zap className="h-4 w-4 text-amber-500" />
+                        <Zap className="h-4 w-4 text-warning" />
                         <span className="text-sm font-medium">Résumé de configuration</span>
                       </div>
                       <div className="space-y-2 text-sm">

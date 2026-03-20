@@ -53,7 +53,7 @@ export const ExportInterface: React.FC<ExportInterfaceProps> = ({
       icon: Store,
       status: 'connected',
       description: 'Boutique e-commerce complète',
-      color: 'text-green-600'
+      color: 'text-success'
     },
     {
       id: 'amazon',
@@ -61,7 +61,7 @@ export const ExportInterface: React.FC<ExportInterfaceProps> = ({
       icon: Package,
       status: 'available',
       description: 'Marketplace mondiale',
-      color: 'text-orange-600'
+      color: 'text-warning'
     },
     {
       id: 'ebay',
@@ -69,7 +69,7 @@ export const ExportInterface: React.FC<ExportInterfaceProps> = ({
       icon: ShoppingCart,
       status: 'configured',
       description: 'Ventes aux enchères et achats immédiats',
-      color: 'text-blue-600'
+      color: 'text-info'
     },
     {
       id: 'cdiscount',
@@ -77,7 +77,7 @@ export const ExportInterface: React.FC<ExportInterfaceProps> = ({
       icon: Truck,
       status: 'available',
       description: 'Marketplace française',
-      color: 'text-red-600'
+      color: 'text-destructive'
     }
   ]
 
@@ -149,9 +149,9 @@ export const ExportInterface: React.FC<ExportInterfaceProps> = ({
   const getPlatformStatusBadge = (status: string) => {
     switch (status) {
       case 'connected':
-        return <Badge className="bg-green-100 text-green-800"><CheckCircle className="h-3 w-3 mr-1" />Connecté</Badge>
+        return <Badge className="bg-success/10 text-success"><CheckCircle className="h-3 w-3 mr-1" />Connecté</Badge>
       case 'configured':
-        return <Badge className="bg-blue-100 text-blue-800"><Globe className="h-3 w-3 mr-1" />Configuré</Badge>
+        return <Badge className="bg-info/10 text-blue-800"><Globe className="h-3 w-3 mr-1" />Configuré</Badge>
       case 'available':
         return <Badge variant="outline">Disponible</Badge>
       default:

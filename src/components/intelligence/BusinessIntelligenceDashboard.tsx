@@ -58,9 +58,9 @@ export function BusinessIntelligenceDashboard() {
   const { toast } = useToast();
 
   const analysisOptions = [
-    { value: 'product_optimization', label: 'Optimisation Produits', icon: ShoppingCart, color: 'text-blue-600' },
-    { value: 'price_strategy', label: 'Stratégie Prix', icon: DollarSign, color: 'text-green-600' },
-    { value: 'demand_forecast', label: 'Prédiction Demande', icon: TrendingUp, color: 'text-orange-600' },
+    { value: 'product_optimization', label: 'Optimisation Produits', icon: ShoppingCart, color: 'text-info' },
+    { value: 'price_strategy', label: 'Stratégie Prix', icon: DollarSign, color: 'text-success' },
+    { value: 'demand_forecast', label: 'Prédiction Demande', icon: TrendingUp, color: 'text-warning' },
     { value: 'market_analysis', label: 'Analyse Marché', icon: BarChart3, color: 'text-purple-600' },
     { value: 'customer_segmentation', label: 'Segmentation Client', icon: Users, color: 'text-pink-600' }
   ];
@@ -167,17 +167,17 @@ export function BusinessIntelligenceDashboard() {
 
   const getPriorityIcon = (priority: string) => {
     switch (priority) {
-      case 'high': return <AlertTriangle className="w-4 h-4 text-red-500" />;
-      case 'medium': return <Target className="w-4 h-4 text-yellow-500" />;
-      default: return <CheckCircle className="w-4 h-4 text-green-500" />;
+      case 'high': return <AlertTriangle className="w-4 h-4 text-destructive" />;
+      case 'medium': return <Target className="w-4 h-4 text-warning" />;
+      default: return <CheckCircle className="w-4 h-4 text-success" />;
     }
   };
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
-      case 'high': return 'bg-red-100 text-red-700 border-red-200';
-      case 'medium': return 'bg-yellow-100 text-yellow-700 border-yellow-200';
-      default: return 'bg-green-100 text-green-700 border-green-200';
+      case 'high': return 'bg-destructive/10 text-red-700 border-destructive/20';
+      case 'medium': return 'bg-warning/10 text-yellow-700 border-warning/20';
+      default: return 'bg-success/10 text-success border-success/20';
     }
   };
 
@@ -187,7 +187,7 @@ export function BusinessIntelligenceDashboard() {
       const Icon = option.icon;
       return <Icon className={`w-5 h-5 ${option.color}`} />;
     }
-    return <Brain className="w-5 h-5 text-blue-600" />;
+    return <Brain className="w-5 h-5 text-info" />;
   };
 
   const highPriorityInsights = insights.filter(i => i.priority === 'high').length;
@@ -260,8 +260,8 @@ export function BusinessIntelligenceDashboard() {
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-red-100 rounded-lg">
-                <AlertTriangle className="w-5 h-5 text-red-600" />
+              <div className="p-2 bg-destructive/10 rounded-lg">
+                <AlertTriangle className="w-5 h-5 text-destructive" />
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Priorité Haute</p>
@@ -274,8 +274,8 @@ export function BusinessIntelligenceDashboard() {
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-blue-100 rounded-lg">
-                <Star className="w-5 h-5 text-blue-600" />
+              <div className="p-2 bg-info/10 rounded-lg">
+                <Star className="w-5 h-5 text-info" />
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Confiance IA</p>
@@ -288,8 +288,8 @@ export function BusinessIntelligenceDashboard() {
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-green-100 rounded-lg">
-                <Eye className="w-5 h-5 text-green-600" />
+              <div className="p-2 bg-success/10 rounded-lg">
+                <Eye className="w-5 h-5 text-success" />
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Nouveaux</p>
@@ -378,7 +378,7 @@ export function BusinessIntelligenceDashboard() {
                       <ul className="space-y-1">
                         {insight.actionable_recommendations.slice(0, 2).map((rec, index) => (
                           <li key={index} className="text-sm text-muted-foreground flex items-center gap-2">
-                            <div className="w-1.5 h-1.5 bg-blue-500 rounded-full flex-shrink-0" />
+                            <div className="w-1.5 h-1.5 bg-info rounded-full flex-shrink-0" />
                             {rec}
                           </li>
                         ))}
@@ -455,7 +455,7 @@ export function BusinessIntelligenceDashboard() {
                   
                   <div className="flex justify-between items-center">
                     <span className="text-sm">ROI moyen des actions</span>
-                    <span className="font-medium text-green-600">+23%</span>
+                    <span className="font-medium text-success">+23%</span>
                   </div>
                   <Progress value={85} />
                   

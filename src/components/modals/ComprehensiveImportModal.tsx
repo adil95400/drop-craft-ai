@@ -301,9 +301,9 @@ export const ComprehensiveImportModal: React.FC<ComprehensiveImportModalProps> =
                     </div>
 
                     {importConfig.file && (
-                      <div className="mt-4 p-4 border rounded-lg bg-green-50">
+                      <div className="mt-4 p-4 border rounded-lg bg-success/5">
                         <div className="flex items-center gap-3">
-                          <CheckCircle className="w-5 h-5 text-green-500" />
+                          <CheckCircle className="w-5 h-5 text-success" />
                           <div>
                             <div className="font-medium">{importConfig.file.name}</div>
                             <div className="text-sm text-muted-foreground">

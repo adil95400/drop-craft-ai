@@ -157,7 +157,7 @@ export const SubscriptionManagement: React.FC = () => {
         </div>
       </div>
 
-      <Card className="bg-gradient-to-br from-blue-50 to-purple-50 border-2 border-blue-200">
+      <Card className="bg-gradient-to-br from-blue-50 to-purple-50 border-2 border-info/20">
         <CardHeader>
           <div className="flex items-center justify-between">
             <div>
@@ -169,12 +169,12 @@ export const SubscriptionManagement: React.FC = () => {
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <div className="text-center p-4 bg-white/60 rounded-lg">
-              <BarChart3 className="w-8 h-8 mx-auto mb-2 text-blue-600" />
+              <BarChart3 className="w-8 h-8 mx-auto mb-2 text-info" />
               <p className="text-2xl font-bold">—</p>
               <p className="text-sm text-muted-foreground">Produits importés</p>
             </div>
             <div className="text-center p-4 bg-white/60 rounded-lg">
-              <Calendar className="w-8 h-8 mx-auto mb-2 text-green-600" />
+              <Calendar className="w-8 h-8 mx-auto mb-2 text-success" />
               <p className="text-2xl font-bold">—</p>
               <p className="text-sm text-muted-foreground">Commandes traitées</p>
             </div>
@@ -184,7 +184,7 @@ export const SubscriptionManagement: React.FC = () => {
               <p className="text-sm text-muted-foreground">Générations IA</p>
             </div>
             <div className="text-center p-4 bg-white/60 rounded-lg">
-              <Users className="w-8 h-8 mx-auto mb-2 text-orange-600" />
+              <Users className="w-8 h-8 mx-auto mb-2 text-warning" />
               <p className="text-2xl font-bold">1</p>
               <p className="text-sm text-muted-foreground">Membres équipe</p>
             </div>
@@ -231,11 +231,11 @@ export const SubscriptionManagement: React.FC = () => {
                 <CardDescription>Optimisez votre utilisation</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="flex items-start gap-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                  <CheckCircle2 className="w-5 h-5 text-blue-600 mt-0.5" />
+                <div className="flex items-start gap-3 p-3 bg-info/5 border border-info/20 rounded-lg">
+                  <CheckCircle2 className="w-5 h-5 text-info mt-0.5" />
                   <div>
                     <p className="text-sm font-medium text-blue-800">Optimisation IA disponible</p>
-                    <p className="text-xs text-blue-600">Passez au plan Pro pour l'IA illimitée.</p>
+                    <p className="text-xs text-info">Passez au plan Pro pour l'IA illimitée.</p>
                   </div>
                 </div>
               </CardContent>
@@ -266,13 +266,13 @@ export const SubscriptionManagement: React.FC = () => {
                   <div className="space-y-3">
                     {plan.features.map((feature, index) => (
                       <div key={index} className="flex items-start gap-2">
-                        {feature.included ? <Check className="w-4 h-4 text-green-600 mt-0.5 flex-shrink-0" /> : <X className="w-4 h-4 text-gray-400 mt-0.5 flex-shrink-0" />}
+                        {feature.included ? <Check className="w-4 h-4 text-success mt-0.5 flex-shrink-0" /> : <X className="w-4 h-4 text-gray-400 mt-0.5 flex-shrink-0" />}
                         <span className={`text-sm ${feature.included ? '' : 'text-muted-foreground line-through'}`}>{feature.name}</span>
                       </div>
                     ))}
                   </div>
                   <Button 
-                    className={`w-full ${currentPlan === plan.id ? 'bg-gray-200 text-gray-600' : plan.popular ? 'bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600' : ''}`}
+                    className={`w-full ${currentPlan === plan.id ? 'bg-gray-200 text-gray-600' : plan.popular ? 'bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-info' : ''}`}
                     disabled={currentPlan === plan.id || upgrading === plan.id}
                     onClick={() => handleUpgrade(plan.id)}
                   >

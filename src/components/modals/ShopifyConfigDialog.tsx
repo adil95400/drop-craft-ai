@@ -50,7 +50,7 @@ export const ShopifyConfigDialog = ({ open, onOpenChange }: ShopifyConfigDialogP
           description: "Intégration Shopify",
           category: "ecommerce",
           logo: '🛍️',
-          color: 'bg-green-500',
+          color: 'bg-success',
           features: [],
           setupSteps: [],
           status: 'available'

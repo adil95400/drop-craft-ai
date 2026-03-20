@@ -157,7 +157,7 @@ function StatCard({ title, value, subtitle, icon: Icon, trend }: {
         <div className="flex items-center gap-1 mt-1">
           {trend !== undefined && (
             trend >= 0
-              ? <TrendingUp className="h-3 w-3 text-emerald-500" />
+              ? <TrendingUp className="h-3 w-3 text-success" />
               : <TrendingDown className="h-3 w-3 text-destructive" />
           )}
           <p className="text-xs text-muted-foreground">{subtitle}</p>

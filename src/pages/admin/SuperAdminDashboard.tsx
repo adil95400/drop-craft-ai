@@ -232,10 +232,10 @@ const SuperAdminDashboard = () => {
 
   const getSeverityColor = (severity: RecentActivity['severity']) => {
     switch (severity) {
-      case 'success': return 'text-green-600';
-      case 'warning': return 'text-yellow-600';
-      case 'error': return 'text-red-600';
-      default: return 'text-blue-600';
+      case 'success': return 'text-success';
+      case 'warning': return 'text-warning';
+      case 'error': return 'text-destructive';
+      default: return 'text-info';
     }
   };
 
@@ -297,8 +297,8 @@ const SuperAdminDashboard = () => {
           <CardContent>
             <div className="text-2xl font-bold">{metrics.totalUsers.toLocaleString()}</div>
             <div className="flex items-center gap-2 text-xs text-muted-foreground">
-              <TrendingUp className="h-3 w-3 text-green-600" />
-              <span className="text-green-600">+12.5%</span>
+              <TrendingUp className="h-3 w-3 text-success" />
+              <span className="text-success">+12.5%</span>
               <span>{metrics.activeUsers.toLocaleString()} actifs</span>
             </div>
           </CardContent>
@@ -312,8 +312,8 @@ const SuperAdminDashboard = () => {
           <CardContent>
             <div className="text-2xl font-bold">€{(metrics.totalRevenue / 1000000).toFixed(1)}M</div>
             <div className="flex items-center gap-2 text-xs text-muted-foreground">
-              <TrendingUp className="h-3 w-3 text-green-600" />
-              <span className="text-green-600">+18.2%</span>
+              <TrendingUp className="h-3 w-3 text-success" />
+              <span className="text-success">+18.2%</span>
               <span>ce mois</span>
             </div>
           </CardContent>
@@ -327,7 +327,7 @@ const SuperAdminDashboard = () => {
           <CardContent>
             <div className="text-2xl font-bold">{(metrics.totalProducts / 1000).toFixed(0)}K</div>
             <div className="flex items-center gap-2 text-xs text-muted-foreground">
-              <Upload className="h-3 w-3 text-blue-600" />
+              <Upload className="h-3 w-3 text-info" />
               <span>+3.2K cette semaine</span>
             </div>
           </CardContent>
@@ -341,7 +341,7 @@ const SuperAdminDashboard = () => {
           <CardContent>
             <div className="text-2xl font-bold">{(100 - metrics.systemLoad).toFixed(1)}%</div>
             <div className="flex items-center gap-2 text-xs text-muted-foreground">
-              <CheckCircle className="h-3 w-3 text-green-600" />
+              <CheckCircle className="h-3 w-3 text-success" />
               <span>Tous services opérationnels</span>
             </div>
           </CardContent>
@@ -411,7 +411,7 @@ const SuperAdminDashboard = () => {
                 <div>
                   <div className="flex justify-between text-sm mb-2">
                     <span>Charge CPU</span>
-                    <span className={metrics.systemLoad > 80 ? 'text-red-600' : metrics.systemLoad > 60 ? 'text-yellow-600' : 'text-green-600'}>
+                    <span className={metrics.systemLoad > 80 ? 'text-destructive' : metrics.systemLoad > 60 ? 'text-warning' : 'text-success'}>
                       {metrics.systemLoad.toFixed(1)}%
                     </span>
                   </div>
@@ -429,7 +429,7 @@ const SuperAdminDashboard = () => {
                 <div>
                   <div className="flex justify-between text-sm mb-2">
                     <span>Taux d'erreur API</span>
-                    <span className={metrics.errorRate > 0.05 ? 'text-red-600' : metrics.errorRate > 0.02 ? 'text-yellow-600' : 'text-green-600'}>
+                    <span className={metrics.errorRate > 0.05 ? 'text-destructive' : metrics.errorRate > 0.02 ? 'text-warning' : 'text-success'}>
                       {(metrics.errorRate * 100).toFixed(2)}%
                     </span>
                   </div>
@@ -523,7 +523,7 @@ const SuperAdminDashboard = () => {
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-sm">Disponibilité</span>
-                  <span className="font-medium text-green-600">99.97%</span>
+                  <span className="font-medium text-success">99.97%</span>
                 </div>
               </CardContent>
             </Card>
@@ -571,25 +571,25 @@ const SuperAdminDashboard = () => {
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
-                  <div className="flex items-center justify-between p-3 rounded-lg bg-red-50 border border-red-200">
+                  <div className="flex items-center justify-between p-3 rounded-lg bg-destructive/5 border border-destructive/20">
                     <div className="flex items-center gap-2">
-                      <AlertTriangle className="h-4 w-4 text-red-600" />
+                      <AlertTriangle className="h-4 w-4 text-destructive" />
                       <span className="text-sm font-medium">Tentatives de connexion suspectes</span>
                     </div>
                     <Badge variant="destructive">3</Badge>
                   </div>
                   
-                  <div className="flex items-center justify-between p-3 rounded-lg bg-yellow-50 border border-yellow-200">
+                  <div className="flex items-center justify-between p-3 rounded-lg bg-warning/5 border border-warning/20">
                     <div className="flex items-center gap-2">
-                      <Eye className="h-4 w-4 text-yellow-600" />
+                      <Eye className="h-4 w-4 text-warning" />
                       <span className="text-sm font-medium">Accès données sensibles</span>
                     </div>
                     <Badge variant="secondary">12</Badge>
                   </div>
                   
-                  <div className="flex items-center justify-between p-3 rounded-lg bg-green-50 border border-green-200">
+                  <div className="flex items-center justify-between p-3 rounded-lg bg-success/5 border border-success/20">
                     <div className="flex items-center gap-2">
-                      <CheckCircle className="h-4 w-4 text-green-600" />
+                      <CheckCircle className="h-4 w-4 text-success" />
                       <span className="text-sm font-medium">Connexions réussies</span>
                     </div>
                     <Badge variant="default">847</Badge>

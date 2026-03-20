@@ -52,15 +52,15 @@ interface WebhookEventsLogProps {
 }
 
 const eventTypeConfig: Record<string, { icon: React.ReactNode; color: string; label: string }> = {
-  product_create: { icon: <Package className="h-4 w-4" />, color: 'bg-blue-500', label: 'Produit créé' },
+  product_create: { icon: <Package className="h-4 w-4" />, color: 'bg-info', label: 'Produit créé' },
   product_update: { icon: <Package className="h-4 w-4" />, color: 'bg-blue-400', label: 'Produit mis à jour' },
-  product_delete: { icon: <Package className="h-4 w-4" />, color: 'bg-red-500', label: 'Produit supprimé' },
-  order_create: { icon: <ShoppingCart className="h-4 w-4" />, color: 'bg-green-500', label: 'Commande créée' },
+  product_delete: { icon: <Package className="h-4 w-4" />, color: 'bg-destructive', label: 'Produit supprimé' },
+  order_create: { icon: <ShoppingCart className="h-4 w-4" />, color: 'bg-success', label: 'Commande créée' },
   order_update: { icon: <ShoppingCart className="h-4 w-4" />, color: 'bg-green-400', label: 'Commande mise à jour' },
   order_fulfill: { icon: <ShoppingCart className="h-4 w-4" />, color: 'bg-purple-500', label: 'Commande expédiée' },
-  order_cancel: { icon: <ShoppingCart className="h-4 w-4" />, color: 'bg-orange-500', label: 'Commande annulée' },
+  order_cancel: { icon: <ShoppingCart className="h-4 w-4" />, color: 'bg-warning', label: 'Commande annulée' },
   inventory_update: { icon: <Database className="h-4 w-4" />, color: 'bg-purple-400', label: 'Stock mis à jour' },
-  sync_update: { icon: <Zap className="h-4 w-4" />, color: 'bg-yellow-500', label: 'Sync' },
+  sync_update: { icon: <Zap className="h-4 w-4" />, color: 'bg-warning', label: 'Sync' },
 }
 
 export function WebhookEventsLog({ 
@@ -142,7 +142,7 @@ export function WebhookEventsLog({
               Événements Webhook
             </CardTitle>
             {showRealtime && isConnected && (
-              <Badge variant="outline" className="gap-1 text-green-600 border-green-500/30">
+              <Badge variant="outline" className="gap-1 text-success border-success/30">
                 <Wifi className="h-3 w-3" />
                 Live
               </Badge>
@@ -193,7 +193,7 @@ export function WebhookEventsLog({
         <div className="flex items-center gap-4 mb-4 text-sm text-muted-foreground">
           <span>{filteredEvents.length} événement(s)</span>
           {eventCount > 0 && (
-            <span className="text-green-600">+{eventCount} en temps réel</span>
+            <span className="text-success">+{eventCount} en temps réel</span>
           )}
         </div>
 
@@ -201,9 +201,9 @@ export function WebhookEventsLog({
           <div className="space-y-2">
             {/* Real-time last event */}
             {showRealtime && lastEvent && (
-              <div className="p-3 rounded-lg border border-green-500/30 bg-green-500/5 animate-pulse">
+              <div className="p-3 rounded-lg border border-success/30 bg-success/5 animate-pulse">
                 <div className="flex items-center gap-3">
-                  <div className="p-2 rounded-lg bg-green-500 text-white">
+                  <div className="p-2 rounded-lg bg-success text-white">
                     <Zap className="h-4 w-4" />
                   </div>
                   <div className="flex-1 min-w-0">
@@ -212,7 +212,7 @@ export function WebhookEventsLog({
                       <Badge variant="outline" className="text-xs">
                         {lastEvent.platform}
                       </Badge>
-                      <Badge className="bg-green-500 text-white text-xs">LIVE</Badge>
+                      <Badge className="bg-success text-white text-xs">LIVE</Badge>
                     </div>
                     <p className="text-xs text-muted-foreground">À l'instant</p>
                   </div>
@@ -246,9 +246,9 @@ export function WebhookEventsLog({
                               {event.platform}
                             </Badge>
                             {event.processed ? (
-                              <CheckCircle2 className="h-3 w-3 text-green-500" />
+                              <CheckCircle2 className="h-3 w-3 text-success" />
                             ) : (
-                              <Clock className="h-3 w-3 text-orange-500" />
+                              <Clock className="h-3 w-3 text-warning" />
                             )}
                           </div>
                           <p className="text-xs text-muted-foreground">

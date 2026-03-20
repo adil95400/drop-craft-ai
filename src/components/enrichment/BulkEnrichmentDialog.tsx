@@ -72,21 +72,21 @@ const marketplaceSources: MarketplaceSource[] = [
     name: 'Amazon', 
     description: 'PA-API / Rainforest',
     icon: ShoppingBag,
-    color: 'bg-orange-500'
+    color: 'bg-warning'
   },
   { 
     id: 'aliexpress', 
     name: 'AliExpress', 
     description: 'Affiliate API',
     icon: Globe,
-    color: 'bg-red-500'
+    color: 'bg-destructive'
   },
   { 
     id: 'ebay', 
     name: 'eBay', 
     description: 'Browse API',
     icon: Store,
-    color: 'bg-blue-500'
+    color: 'bg-info'
   },
   { 
     id: 'cdiscount', 
@@ -657,7 +657,7 @@ export function BulkEnrichmentDialog({
                 {results.length > 0 && (
                   <div className="flex items-center justify-center gap-4">
                     <Badge variant="outline" className="gap-1.5 py-1 px-3">
-                      <CheckCircle2 className="h-3.5 w-3.5 text-green-500" />
+                      <CheckCircle2 className="h-3.5 w-3.5 text-success" />
                       {successCount} réussis
                     </Badge>
                     {errorCount > 0 && (
@@ -689,12 +689,12 @@ export function BulkEnrichmentDialog({
                   >
                     <div className={cn(
                       "p-4 rounded-full",
-                      errorCount === 0 ? "bg-green-500/10" : "bg-yellow-500/10"
+                      errorCount === 0 ? "bg-success/10" : "bg-warning/10"
                     )}>
                       {errorCount === 0 ? (
-                        <CheckCircle2 className="h-10 w-10 text-green-500" />
+                        <CheckCircle2 className="h-10 w-10 text-success" />
                       ) : (
-                        <AlertCircle className="h-10 w-10 text-yellow-500" />
+                        <AlertCircle className="h-10 w-10 text-warning" />
                       )}
                     </div>
                   </motion.div>
@@ -711,13 +711,13 @@ export function BulkEnrichmentDialog({
 
                 {/* Results Summary */}
                 <div className="grid grid-cols-2 gap-4">
-                  <Card className="bg-green-500/5 border-green-500/20">
+                  <Card className="bg-success/5 border-success/20">
                     <CardContent className="p-4 flex items-center gap-3">
-                      <div className="p-2 rounded-full bg-green-500/10">
-                        <Check className="h-5 w-5 text-green-500" />
+                      <div className="p-2 rounded-full bg-success/10">
+                        <Check className="h-5 w-5 text-success" />
                       </div>
                       <div>
-                        <p className="text-2xl font-bold text-green-600">{successCount}</p>
+                        <p className="text-2xl font-bold text-success">{successCount}</p>
                         <p className="text-xs text-muted-foreground">Réussis</p>
                       </div>
                     </CardContent>

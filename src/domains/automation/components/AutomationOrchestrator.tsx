@@ -269,8 +269,8 @@ export const AutomationOrchestrator: React.FC = () => {
   const getCategoryColor = (category: string) => {
     switch (category) {
       case 'marketing': return 'bg-purple-100 text-purple-800 border-purple-200';
-      case 'sales': return 'bg-green-100 text-green-800 border-green-200';
-      case 'operations': return 'bg-blue-100 text-blue-800 border-blue-200';
+      case 'sales': return 'bg-success/10 text-success border-success/20';
+      case 'operations': return 'bg-info/10 text-blue-800 border-info/20';
       case 'support': return 'bg-orange-100 text-orange-800 border-orange-200';
       default: return 'bg-gray-100 text-gray-800 border-gray-200';
     }
@@ -278,19 +278,19 @@ export const AutomationOrchestrator: React.FC = () => {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'active': return 'bg-green-100 text-green-800 border-green-200';
-      case 'paused': return 'bg-yellow-100 text-yellow-800 border-yellow-200';
+      case 'active': return 'bg-success/10 text-success border-success/20';
+      case 'paused': return 'bg-warning/10 text-yellow-800 border-warning/20';
       case 'draft': return 'bg-gray-100 text-gray-800 border-gray-200';
-      case 'error': return 'bg-red-100 text-red-800 border-red-200';
+      case 'error': return 'bg-destructive/10 text-red-800 border-destructive/20';
       default: return 'bg-gray-100 text-gray-800 border-gray-200';
     }
   };
 
   const getStepStatusIcon = (status: string) => {
     switch (status) {
-      case 'completed': return <CheckCircle className="h-4 w-4 text-green-500" />;
-      case 'running': return <RefreshCw className="h-4 w-4 text-blue-500 animate-spin" />;
-      case 'failed': return <AlertCircle className="h-4 w-4 text-red-500" />;
+      case 'completed': return <CheckCircle className="h-4 w-4 text-success" />;
+      case 'running': return <RefreshCw className="h-4 w-4 text-info animate-spin" />;
+      case 'failed': return <AlertCircle className="h-4 w-4 text-destructive" />;
       default: return <Clock className="h-4 w-4 text-gray-400" />;
     }
   };
@@ -333,7 +333,7 @@ export const AutomationOrchestrator: React.FC = () => {
             <Activity className="h-3 w-3 mr-1" />
             AI Powered
           </Badge>
-          <Badge variant="secondary" className="bg-green-100 text-green-800">
+          <Badge variant="secondary" className="bg-success/10 text-success">
             <Zap className="h-3 w-3 mr-1" />
             Active
           </Badge>
@@ -346,7 +346,7 @@ export const AutomationOrchestrator: React.FC = () => {
           <Card>
             <CardContent className="pt-6">
               <div className="flex items-center space-x-2">
-                <Workflow className="h-4 w-4 text-blue-500" />
+                <Workflow className="h-4 w-4 text-info" />
                 <div className="space-y-1">
                   <p className="text-sm font-medium leading-none">Active Workflows</p>
                   <div className="flex items-baseline space-x-1">
@@ -361,7 +361,7 @@ export const AutomationOrchestrator: React.FC = () => {
           <Card>
             <CardContent className="pt-6">
               <div className="flex items-center space-x-2">
-                <TrendingUp className="h-4 w-4 text-green-500" />
+                <TrendingUp className="h-4 w-4 text-success" />
                 <div className="space-y-1">
                   <p className="text-sm font-medium leading-none">Success Rate</p>
                   <p className="text-2xl font-bold">{metrics.success_rate}%</p>
@@ -373,7 +373,7 @@ export const AutomationOrchestrator: React.FC = () => {
           <Card>
             <CardContent className="pt-6">
               <div className="flex items-center space-x-2">
-                <Clock className="h-4 w-4 text-orange-500" />
+                <Clock className="h-4 w-4 text-warning" />
                 <div className="space-y-1">
                   <p className="text-sm font-medium leading-none">Time Saved Today</p>
                   <p className="text-2xl font-bold">{metrics.time_saved_today}m</p>
@@ -452,15 +452,15 @@ export const AutomationOrchestrator: React.FC = () => {
                   <div className="grid grid-cols-4 gap-4">
                     <div className="text-center">
                       <p className="text-sm font-medium text-gray-500">Success Rate</p>
-                      <p className="text-2xl font-bold text-green-600">{workflow.success_rate}%</p>
+                      <p className="text-2xl font-bold text-success">{workflow.success_rate}%</p>
                     </div>
                     <div className="text-center">
                       <p className="text-sm font-medium text-gray-500">Executions Today</p>
-                      <p className="text-2xl font-bold text-blue-600">{workflow.executions_today}</p>
+                      <p className="text-2xl font-bold text-info">{workflow.executions_today}</p>
                     </div>
                     <div className="text-center">
                       <p className="text-sm font-medium text-gray-500">Avg Time</p>
-                      <p className="text-2xl font-bold text-orange-600">{workflow.avg_execution_time}s</p>
+                      <p className="text-2xl font-bold text-warning">{workflow.avg_execution_time}s</p>
                     </div>
                     <div className="text-center">
                       <p className="text-sm font-medium text-gray-500">ROI</p>
@@ -499,18 +499,18 @@ export const AutomationOrchestrator: React.FC = () => {
 
                   {/* AI Optimizations */}
                   {workflow.ai_optimizations.suggested_improvements.length > 0 && (
-                    <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                    <div className="bg-info/5 p-4 rounded-lg border border-info/20">
                       <div className="flex items-center space-x-2 mb-2">
-                        <Bot className="h-4 w-4 text-blue-600" />
+                        <Bot className="h-4 w-4 text-info" />
                         <h4 className="font-medium text-sm text-blue-900">AI Optimization Suggestions</h4>
-                        <Badge variant="outline" className="bg-blue-100 text-blue-700 text-xs">
+                        <Badge variant="outline" className="bg-info/10 text-blue-700 text-xs">
                           Score: {workflow.ai_optimizations.optimization_score}/100
                         </Badge>
                       </div>
                       <ul className="space-y-1">
                         {workflow.ai_optimizations.suggested_improvements.map((improvement, idx) => (
                           <li key={idx} className="text-sm text-blue-800 flex items-center space-x-2">
-                            <Zap className="h-3 w-3 text-blue-600" />
+                            <Zap className="h-3 w-3 text-info" />
                             <span>{improvement}</span>
                           </li>
                         ))}

@@ -24,7 +24,7 @@ export const ImportProgress = memo(function ImportProgress({
   const getIcon = () => {
     switch (status) {
       case 'success':
-        return <CheckCircle2 className="w-8 h-8 text-green-500 animate-in zoom-in" />;
+        return <CheckCircle2 className="w-8 h-8 text-success animate-in zoom-in" />;
       case 'error':
         return <AlertCircle className="w-8 h-8 text-destructive animate-in zoom-in" />;
       case 'processing':
@@ -37,7 +37,7 @@ export const ImportProgress = memo(function ImportProgress({
   const getStatusColor = () => {
     switch (status) {
       case 'success':
-        return 'text-green-500';
+        return 'text-success';
       case 'error':
         return 'text-destructive';
       case 'processing':
@@ -80,7 +80,7 @@ export const ImportProgress = memo(function ImportProgress({
           )}
           {details.processed !== undefined && (
             <div className="text-center">
-              <p className="text-2xl font-bold text-green-500">{details.processed}</p>
+              <p className="text-2xl font-bold text-success">{details.processed}</p>
               <p className="text-xs text-muted-foreground">Traités</p>
             </div>
           )}

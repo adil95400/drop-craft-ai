@@ -324,7 +324,7 @@ export default function ComplianceCenter() {
             <Shield className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-green-600">{overallCompliance}%</div>
+            <div className="text-2xl font-bold text-success">{overallCompliance}%</div>
             <Progress value={overallCompliance} className="mt-2" />
             <p className="text-xs text-muted-foreground mt-1">
               {frameworks.filter(f => f.status === 'compliant').length}/{frameworks.length} frameworks
@@ -338,7 +338,7 @@ export default function ComplianceCenter() {
             <AlertTriangle className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className={`text-2xl font-bold ${criticalIssues > 0 ? 'text-red-600' : 'text-green-600'}`}>
+            <div className={`text-2xl font-bold ${criticalIssues > 0 ? 'text-destructive' : 'text-success'}`}>
               {criticalIssues}
             </div>
             <p className="text-xs text-muted-foreground">À résoudre immédiatement</p>
@@ -364,7 +364,7 @@ export default function ComplianceCenter() {
             <Award className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-blue-600">
+            <div className="text-2xl font-bold text-info">
               {frameworks.filter(f => f.status === 'compliant').length}
             </div>
             <p className="text-xs text-muted-foreground">Actives</p>

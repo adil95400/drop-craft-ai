@@ -32,10 +32,10 @@ interface AutomationFlowCanvasProps {
 
 const NODE_TYPES = [
   { type: 'trigger', label: 'Déclencheur', icon: Zap, color: 'border-purple-500 bg-purple-500/10' },
-  { type: 'condition', label: 'Condition IF', icon: GitBranch, color: 'border-amber-500 bg-amber-500/10' },
-  { type: 'action', label: 'Action', icon: Zap, color: 'border-blue-500 bg-blue-500/10' },
+  { type: 'condition', label: 'Condition IF', icon: GitBranch, color: 'border-amber-500 bg-warning/10' },
+  { type: 'action', label: 'Action', icon: Zap, color: 'border-info bg-info/10' },
   { type: 'delay', label: 'Délai', icon: Clock, color: 'border-gray-500 bg-gray-500/10' },
-  { type: 'branch', label: 'Branche', icon: Filter, color: 'border-green-500 bg-green-500/10' },
+  { type: 'branch', label: 'Branche', icon: Filter, color: 'border-success bg-success/10' },
 ] as const;
 
 const ACTION_PRESETS = [
@@ -89,9 +89,9 @@ export function AutomationFlowCanvas({ nodes: externalNodes, onNodesChange, read
 
   const getStatusIndicator = (status?: string) => {
     switch (status) {
-      case 'success': return <CheckCircle2 className="h-4 w-4 text-green-500" />;
-      case 'failed': return <XCircle className="h-4 w-4 text-red-500" />;
-      case 'running': return <RefreshCw className="h-4 w-4 text-blue-500 animate-spin" />;
+      case 'success': return <CheckCircle2 className="h-4 w-4 text-success" />;
+      case 'failed': return <XCircle className="h-4 w-4 text-destructive" />;
+      case 'running': return <RefreshCw className="h-4 w-4 text-info animate-spin" />;
       default: return <div className="h-4 w-4 rounded-full border-2 border-muted-foreground/30" />;
     }
   };

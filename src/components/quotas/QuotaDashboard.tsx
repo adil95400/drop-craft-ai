@@ -21,10 +21,10 @@ import {
 import { useNavigate } from 'react-router-dom';
 
 const QUOTA_ICONS: Record<string, React.ReactNode> = {
-  products: <Package className="h-4 w-4 text-blue-500" />,
-  imports_monthly: <Download className="h-4 w-4 text-green-500" />,
+  products: <Package className="h-4 w-4 text-info" />,
+  imports_monthly: <Download className="h-4 w-4 text-success" />,
   ai_generations: <Sparkles className="h-4 w-4 text-purple-500" />,
-  stores: <Store className="h-4 w-4 text-orange-500" />,
+  stores: <Store className="h-4 w-4 text-warning" />,
   suppliers: <Truck className="h-4 w-4 text-cyan-500" />,
   workflows: <Workflow className="h-4 w-4 text-pink-500" />,
   storage_mb: <HardDrive className="h-4 w-4 text-gray-500" />,
@@ -32,7 +32,7 @@ const QUOTA_ICONS: Record<string, React.ReactNode> = {
 
 const PLAN_LABELS: Record<string, { label: string; color: string }> = {
   free: { label: 'Gratuit', color: 'bg-gray-500' },
-  standard: { label: 'Standard', color: 'bg-blue-500' },
+  standard: { label: 'Standard', color: 'bg-info' },
   pro: { label: 'Pro', color: 'bg-purple-500' },
   ultra_pro: { label: 'Ultra Pro', color: 'bg-gradient-to-r from-amber-500 to-orange-500' },
 };
@@ -77,7 +77,7 @@ export function QuotaDashboard() {
           <div className="flex items-center justify-between">
             <div>
               <CardTitle className="flex items-center gap-3">
-                <Crown className="h-5 w-5 text-amber-500" />
+                <Crown className="h-5 w-5 text-warning" />
                 Mon Plan
                 <Badge className={planInfo.color + " text-white"}>
                   {planInfo.label}

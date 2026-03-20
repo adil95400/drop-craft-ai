@@ -188,8 +188,8 @@ function HeroStats({ healthChecks, unacknowledgedAlerts }: { healthChecks: Healt
       </div>
       {degraded > 0 && (
         <div className="flex items-center gap-2">
-          <div className="w-10 h-10 rounded-lg bg-amber-500/10 flex items-center justify-center">
-            <AlertTriangle className="w-5 h-5 text-amber-500" />
+          <div className="w-10 h-10 rounded-lg bg-warning/10 flex items-center justify-center">
+            <AlertTriangle className="w-5 h-5 text-warning" />
           </div>
           <div>
             <p className="text-2xl font-bold">{degraded}</p>
@@ -234,7 +234,7 @@ function HeroStats({ healthChecks, unacknowledgedAlerts }: { healthChecks: Healt
 function HealthCheckCard({ check }: { check: HealthCheck }) {
   const statusStyles = {
     healthy: { border: 'border-success/30 hover:border-success/50', badge: 'bg-success/10 text-success border-success/30', icon: <CheckCircle2 className="h-3 w-3" /> },
-    degraded: { border: 'border-amber-500/30 hover:border-amber-500/50', badge: 'bg-amber-500/10 text-amber-600 border-amber-500/30', icon: <AlertTriangle className="h-3 w-3" /> },
+    degraded: { border: 'border-amber-500/30 hover:border-amber-500/50', badge: 'bg-warning/10 text-warning border-amber-500/30', icon: <AlertTriangle className="h-3 w-3" /> },
     down: { border: 'border-destructive/30 hover:border-destructive/50', badge: 'bg-destructive/10 text-destructive border-destructive/30', icon: <XCircle className="h-3 w-3" /> },
   };
   const style = statusStyles[check.status];
@@ -271,7 +271,7 @@ function WebVitalCard({ vital }: { vital: WebVital }) {
   };
   const ratingBadge = {
     good: { class: 'bg-success/10 text-success border-success/30', label: 'Bon' },
-    'needs-improvement': { class: 'bg-amber-500/10 text-amber-600 border-amber-500/30', label: 'À améliorer' },
+    'needs-improvement': { class: 'bg-warning/10 text-warning border-amber-500/30', label: 'À améliorer' },
     poor: { class: 'bg-destructive/10 text-destructive border-destructive/30', label: 'Mauvais' },
   };
   const percent = Math.min((vital.value / vital.target) * 100, 100);
@@ -301,7 +301,7 @@ function WebVitalCard({ vital }: { vital: WebVital }) {
 function AlertItem({ alert, onAcknowledge }: { alert: SystemAlert; onAcknowledge: (id: string) => void }) {
   const typeStyles = {
     critical: { icon: <XCircle className="h-5 w-5 text-destructive" />, border: 'border-l-destructive' },
-    warning: { icon: <AlertTriangle className="h-5 w-5 text-amber-500" />, border: 'border-l-amber-500' },
+    warning: { icon: <AlertTriangle className="h-5 w-5 text-warning" />, border: 'border-l-amber-500' },
     info: { icon: <AlertCircle className="h-5 w-5 text-primary" />, border: 'border-l-primary' },
   };
   const style = typeStyles[alert.type];
@@ -407,7 +407,7 @@ function SystemMetricCard({ metric }: { metric: SystemMetric }) {
             <div className="p-2 rounded-lg bg-primary/10 text-primary">{metric.icon}</div>
             <span className="font-medium text-sm">{metric.label}</span>
           </div>
-          <div className={cn("flex items-center gap-1 text-xs", metric.trend === 'up' ? 'text-amber-500' : metric.trend === 'down' ? 'text-success' : 'text-muted-foreground')}>
+          <div className={cn("flex items-center gap-1 text-xs", metric.trend === 'up' ? 'text-warning' : metric.trend === 'down' ? 'text-success' : 'text-muted-foreground')}>
             {metric.trend === 'up' ? <ArrowUp className="h-3 w-3" /> : metric.trend === 'down' ? <ArrowDown className="h-3 w-3" /> : null}
             {metric.trendValue}
           </div>

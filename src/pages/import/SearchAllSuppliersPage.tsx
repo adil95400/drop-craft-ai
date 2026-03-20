@@ -27,10 +27,10 @@ export default function SearchAllSuppliersPage() {
     >
       {/* Features */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card className="bg-gradient-to-br from-blue-500/10 to-blue-600/5 border-blue-500/20">
+        <Card className="bg-gradient-to-br from-info/10 to-info/5 border-info/20">
           <CardContent className="p-4 flex items-start gap-3">
-            <div className="p-2 rounded-lg bg-blue-500/20">
-              <Search className="h-5 w-5 text-blue-600" />
+            <div className="p-2 rounded-lg bg-info/20">
+              <Search className="h-5 w-5 text-info" />
             </div>
             <div>
               <h3 className="font-semibold">Recherche Multi-Plateforme</h3>
@@ -38,10 +38,10 @@ export default function SearchAllSuppliersPage() {
             </div>
           </CardContent>
         </Card>
-        <Card className="bg-gradient-to-br from-green-500/10 to-green-600/5 border-green-500/20">
+        <Card className="bg-gradient-to-br from-success/10 to-success/5 border-success/20">
           <CardContent className="p-4 flex items-start gap-3">
-            <div className="p-2 rounded-lg bg-green-500/20">
-              <TrendingUp className="h-5 w-5 text-green-600" />
+            <div className="p-2 rounded-lg bg-success/20">
+              <TrendingUp className="h-5 w-5 text-success" />
             </div>
             <div>
               <h3 className="font-semibold">Score de Qualité</h3>

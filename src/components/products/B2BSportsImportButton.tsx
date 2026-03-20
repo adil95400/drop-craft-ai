@@ -131,11 +131,11 @@ export function B2BSportsImportButton() {
 
           {result && (
             <div className="mt-4 p-4 rounded-lg bg-muted/50 text-center">
-              <p className="text-lg font-semibold text-green-600">
+              <p className="text-lg font-semibold text-success">
                 {result.imported} produits importés
               </p>
               {result.errors > 0 && (
-                <p className="text-sm text-orange-600">
+                <p className="text-sm text-warning">
                   {result.errors} erreurs
                 </p>
               )}

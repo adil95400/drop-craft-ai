@@ -67,7 +67,7 @@ export default function MarketplacePublish() {
       <Card className="max-w-2xl mx-auto">
         <CardContent className="pt-6">
           <div className="text-center space-y-4 py-8">
-            <CheckCircle className="h-16 w-16 text-green-500 mx-auto" />
+            <CheckCircle className="h-16 w-16 text-success mx-auto" />
             <h3 className="text-2xl font-bold">Extension Soumise !</h3>
             <p className="text-muted-foreground">
               Votre extension est en cours de review. Vous recevrez une notification 
@@ -218,23 +218,23 @@ export default function MarketplacePublish() {
         <CardContent>
           <ul className="space-y-2 text-sm">
             <li className="flex items-center gap-2">
-              <CheckCircle className="h-4 w-4 text-green-500" />
+              <CheckCircle className="h-4 w-4 text-success" />
               L'extension fonctionne correctement
             </li>
             <li className="flex items-center gap-2">
-              <CheckCircle className="h-4 w-4 text-green-500" />
+              <CheckCircle className="h-4 w-4 text-success" />
               Documentation complète incluse
             </li>
             <li className="flex items-center gap-2">
-              <CheckCircle className="h-4 w-4 text-green-500" />
+              <CheckCircle className="h-4 w-4 text-success" />
               Pas de code malveillant
             </li>
             <li className="flex items-center gap-2">
-              <CheckCircle className="h-4 w-4 text-green-500" />
+              <CheckCircle className="h-4 w-4 text-success" />
               Respect de la vie privée des utilisateurs
             </li>
             <li className="flex items-center gap-2">
-              <CheckCircle className="h-4 w-4 text-green-500" />
+              <CheckCircle className="h-4 w-4 text-success" />
               Interface utilisateur claire
             </li>
           </ul>

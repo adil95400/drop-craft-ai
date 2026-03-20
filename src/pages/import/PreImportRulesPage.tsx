@@ -235,7 +235,7 @@ export default function PreImportRulesPage() {
             <div className="flex items-center gap-2 text-muted-foreground text-sm mb-1">
               <Zap className="h-4 w-4" /> Auto-catégorisés
             </div>
-            <div className="text-2xl font-bold text-green-600">156</div>
+            <div className="text-2xl font-bold text-success">156</div>
           </CardContent>
         </Card>
       </div>

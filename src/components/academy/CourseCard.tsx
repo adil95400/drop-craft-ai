@@ -17,8 +17,8 @@ export function CourseCard({ course, showProgress }: CourseCardProps) {
   const { isFavorite, toggleFavorite } = useAcademyFavorites();
 
   const levelColors = {
-    beginner: 'bg-green-500/10 text-green-500 border-green-500/20',
-    intermediate: 'bg-blue-500/10 text-blue-500 border-blue-500/20',
+    beginner: 'bg-success/10 text-success border-success/20',
+    intermediate: 'bg-info/10 text-info border-info/20',
     advanced: 'bg-purple-500/10 text-purple-500 border-purple-500/20',
   };
 
@@ -51,7 +51,7 @@ export function CourseCard({ course, showProgress }: CourseCardProps) {
             toggleFavorite(course.id);
           }}
         >
-          <Heart className={`h-4 w-4 ${isFavorite(course.id) ? 'fill-red-500 text-red-500' : ''}`} />
+          <Heart className={`h-4 w-4 ${isFavorite(course.id) ? 'fill-red-500 text-destructive' : ''}`} />
         </Button>
       </div>
 
@@ -86,7 +86,7 @@ export function CourseCard({ course, showProgress }: CourseCardProps) {
           </div>
           {course.instructor_name && (
             <div className="flex items-center gap-1">
-              <Star className="h-4 w-4 fill-yellow-500 text-yellow-500" />
+              <Star className="h-4 w-4 fill-yellow-500 text-warning" />
               4.8
             </div>
           )}

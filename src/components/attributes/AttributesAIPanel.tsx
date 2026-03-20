@@ -27,15 +27,15 @@ import {
 import { cn } from '@/lib/utils'
 
 const priorityColors = {
-  high: 'border-red-500/50 bg-red-500/5',
-  medium: 'border-yellow-500/50 bg-yellow-500/5',
-  low: 'border-blue-500/50 bg-blue-500/5'
+  high: 'border-destructive/50 bg-destructive/5',
+  medium: 'border-warning/50 bg-warning/5',
+  low: 'border-info/50 bg-info/5'
 }
 
 const priorityBadges = {
-  high: 'bg-red-500/10 text-red-600 border-red-500/30',
-  medium: 'bg-yellow-500/10 text-yellow-600 border-yellow-500/30',
-  low: 'bg-blue-500/10 text-blue-600 border-blue-500/30'
+  high: 'bg-destructive/10 text-destructive border-destructive/30',
+  medium: 'bg-warning/10 text-warning border-warning/30',
+  low: 'bg-info/10 text-info border-info/30'
 }
 
 export function AttributesAIPanel() {
@@ -87,8 +87,8 @@ export function AttributesAIPanel() {
           <Card className="border-border/50 bg-card/50">
             <CardContent className="pt-6">
               <div className="flex items-center justify-between mb-3">
-                <div className="p-2 rounded-lg bg-red-500/10">
-                  <AlertCircle className="h-5 w-5 text-red-500" />
+                <div className="p-2 rounded-lg bg-destructive/10">
+                  <AlertCircle className="h-5 w-5 text-destructive" />
                 </div>
               </div>
               <div className="text-3xl font-bold mb-1">{stats.productsWithIssues}</div>
@@ -105,8 +105,8 @@ export function AttributesAIPanel() {
           <Card className="border-border/50 bg-card/50">
             <CardContent className="pt-6">
               <div className="flex items-center justify-between mb-3">
-                <div className="p-2 rounded-lg bg-green-500/10">
-                  <TrendingUp className="h-5 w-5 text-green-500" />
+                <div className="p-2 rounded-lg bg-success/10">
+                  <TrendingUp className="h-5 w-5 text-success" />
                 </div>
               </div>
               <div className="text-3xl font-bold mb-1">+{stats.potentialVisibilityGain}%</div>
@@ -123,8 +123,8 @@ export function AttributesAIPanel() {
           <Card className="border-border/50 bg-card/50">
             <CardContent className="pt-6">
               <div className="flex items-center justify-between mb-3">
-                <div className="p-2 rounded-lg bg-blue-500/10">
-                  <Clock className="h-5 w-5 text-blue-500" />
+                <div className="p-2 rounded-lg bg-info/10">
+                  <Clock className="h-5 w-5 text-info" />
                 </div>
               </div>
               <div className="text-3xl font-bold mb-1">{stats.estimatedTimeSaved}h</div>
@@ -156,7 +156,7 @@ export function AttributesAIPanel() {
           <CardContent>
             {recommendations.length === 0 ? (
               <div className="text-center py-8">
-                <CheckCircle2 className="h-12 w-12 mx-auto text-green-500 mb-3" />
+                <CheckCircle2 className="h-12 w-12 mx-auto text-success mb-3" />
                 <p className="font-medium">Excellent !</p>
                 <p className="text-sm text-muted-foreground">
                   Tous vos attributs sont optimisés
@@ -193,7 +193,7 @@ export function AttributesAIPanel() {
                           <span className="text-muted-foreground">
                             {rec.impactedProducts} produits
                           </span>
-                          <span className="text-green-600 font-medium">
+                          <span className="text-success font-medium">
                             {rec.estimatedImpact}
                           </span>
                         </div>
@@ -257,9 +257,9 @@ export function AttributesAIPanel() {
                     value={mp.score} 
                     className={cn(
                       'h-2',
-                      mp.score >= 80 ? '[&>div]:bg-green-500' : 
-                      mp.score >= 50 ? '[&>div]:bg-yellow-500' : 
-                      '[&>div]:bg-red-500'
+                      mp.score >= 80 ? '[&>div]:bg-success' : 
+                      mp.score >= 50 ? '[&>div]:bg-warning' : 
+                      '[&>div]:bg-destructive'
                     )} 
                   />
                   {mp.topIssues.length > 0 && (

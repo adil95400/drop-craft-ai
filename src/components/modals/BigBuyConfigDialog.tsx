@@ -50,7 +50,7 @@ export const BigBuyConfigDialog = ({ open, onOpenChange }: BigBuyConfigDialogPro
           description: "Intégration BigBuy - Grossiste européen",
           category: "ecommerce",
           logo: '🏪',
-          color: 'bg-blue-500',
+          color: 'bg-info',
           features: [],
           setupSteps: [],
           status: 'available'
@@ -226,7 +226,7 @@ export const BigBuyConfigDialog = ({ open, onOpenChange }: BigBuyConfigDialogPro
 
             <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
               <div className="flex items-center gap-2 mb-2">
-                <AlertTriangle className="w-4 h-4 text-orange-600" />
+                <AlertTriangle className="w-4 h-4 text-warning" />
                 <span className="font-medium text-orange-800">Information importante</span>
               </div>
               <p className="text-sm text-orange-700">

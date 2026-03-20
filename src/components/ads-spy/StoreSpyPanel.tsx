@@ -128,9 +128,9 @@ export function StoreSpyPanel() {
   ];
 
   const platformColors: Record<string, string> = {
-    shopify: 'bg-green-500',
+    shopify: 'bg-success',
     woocommerce: 'bg-purple-500',
-    magento: 'bg-orange-500',
+    magento: 'bg-warning',
     other: 'bg-gray-500',
   };
 
@@ -268,7 +268,7 @@ export function StoreSpyPanel() {
                     </div>
                     <div className="flex items-center gap-2">
                       <Progress value={store.growthScore} className="h-2 flex-1" />
-                      <span className="font-medium text-green-600">+{store.growthScore}%</span>
+                      <span className="font-medium text-success">+{store.growthScore}%</span>
                     </div>
                   </div>
                 </div>
@@ -276,12 +276,12 @@ export function StoreSpyPanel() {
                 {/* Stats */}
                 <div className="grid grid-cols-3 gap-2 text-xs">
                   <div className="text-center p-2 bg-muted rounded-lg">
-                    <DollarSign className="w-4 h-4 mx-auto text-green-600" />
+                    <DollarSign className="w-4 h-4 mx-auto text-success" />
                     <p className="font-medium mt-1">{store.estimatedRevenue}</p>
                     <p className="text-muted-foreground">CA estimé</p>
                   </div>
                   <div className="text-center p-2 bg-muted rounded-lg">
-                    <ShoppingBag className="w-4 h-4 mx-auto text-blue-600" />
+                    <ShoppingBag className="w-4 h-4 mx-auto text-info" />
                     <p className="font-medium mt-1">{store.productsCount}</p>
                     <p className="text-muted-foreground">Produits</p>
                   </div>

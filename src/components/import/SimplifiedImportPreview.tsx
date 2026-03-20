@@ -118,12 +118,12 @@ export function SimplifiedImportPreview({ data, onConfirm, onCancel }: Simplifie
               <div className="text-2xl font-bold">{data.summary?.total || 0}</div>
               <div className="text-sm text-muted-foreground">Total</div>
             </div>
-            <div className="text-center p-4 rounded-lg bg-green-500/10">
-              <div className="text-2xl font-bold text-green-600">{validProducts.length}</div>
+            <div className="text-center p-4 rounded-lg bg-success/10">
+              <div className="text-2xl font-bold text-success">{validProducts.length}</div>
               <div className="text-sm text-muted-foreground">Valides</div>
             </div>
-            <div className="text-center p-4 rounded-lg bg-red-500/10">
-              <div className="text-2xl font-bold text-red-600">{errorProducts.length}</div>
+            <div className="text-center p-4 rounded-lg bg-destructive/10">
+              <div className="text-2xl font-bold text-destructive">{errorProducts.length}</div>
               <div className="text-sm text-muted-foreground">Erreurs</div>
             </div>
             <div className="text-center p-4 rounded-lg bg-primary/10">
@@ -176,8 +176,8 @@ export function SimplifiedImportPreview({ data, onConfirm, onCancel }: Simplifie
                 </p>
                 {product.errors && product.errors.length > 0 && (
                   <div className="flex items-center space-x-1 mt-1">
-                    <XCircle className="w-3 h-3 text-red-500" />
-                    <span className="text-xs text-red-600">{product.errors.join(', ')}</span>
+                    <XCircle className="w-3 h-3 text-destructive" />
+                    <span className="text-xs text-destructive">{product.errors.join(', ')}</span>
                   </div>
                 )}
               </div>

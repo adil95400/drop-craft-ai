@@ -30,9 +30,9 @@ const channelIcons: Record<string, React.ReactNode> = {
 
 const statusConfig: Record<string, { color: string; icon: React.ReactNode; label: string }> = {
   success: { color: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400', icon: <CheckCircle2 className="h-3 w-3" />, label: 'Publié' },
-  failed: { color: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400', icon: <XCircle className="h-3 w-3" />, label: 'Échoué' },
+  failed: { color: 'bg-destructive/10 text-red-800 dark:bg-red-900/30 dark:text-red-400', icon: <XCircle className="h-3 w-3" />, label: 'Échoué' },
   pending: { color: 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400', icon: <Clock className="h-3 w-3" />, label: 'En attente' },
-  scheduled: { color: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400', icon: <Calendar className="h-3 w-3" />, label: 'Planifié' },
+  scheduled: { color: 'bg-info/10 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400', icon: <Calendar className="h-3 w-3" />, label: 'Planifié' },
   publishing: { color: 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400', icon: <Loader2 className="h-3 w-3 animate-spin" />, label: 'En cours' },
   cancelled: { color: 'bg-muted text-muted-foreground', icon: <X className="h-3 w-3" />, label: 'Annulé' },
 };

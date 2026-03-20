@@ -217,9 +217,9 @@ export const TemplateMarketplace = () => {
 
   const getComplexityColor = (complexity: string) => {
     switch (complexity) {
-      case 'Facile': return 'bg-green-100 text-green-800'
-      case 'Moyen': return 'bg-yellow-100 text-yellow-800'
-      case 'Avancé': return 'bg-red-100 text-red-800'
+      case 'Facile': return 'bg-success/10 text-success'
+      case 'Moyen': return 'bg-warning/10 text-yellow-800'
+      case 'Avancé': return 'bg-destructive/10 text-red-800'
       default: return 'bg-gray-100 text-gray-800'
     }
   }
@@ -234,10 +234,10 @@ export const TemplateMarketplace = () => {
                 {template.name}
               </CardTitle>
               {template.featured && (
-                <Award className="w-4 h-4 text-yellow-500" />
+                <Award className="w-4 h-4 text-warning" />
               )}
               {template.author.verified && (
-                <CheckCircle className="w-3 h-3 text-blue-500" />
+                <CheckCircle className="w-3 h-3 text-info" />
               )}
             </div>
             <p className="text-sm text-muted-foreground line-clamp-2">
@@ -250,7 +250,7 @@ export const TemplateMarketplace = () => {
             onClick={() => toggleFavorite(template.id)}
             className="shrink-0 ml-2"
           >
-            <Heart className={`w-4 h-4 ${favorites.has(template.id) ? 'fill-red-500 text-red-500' : ''}`} />
+            <Heart className={`w-4 h-4 ${favorites.has(template.id) ? 'fill-red-500 text-destructive' : ''}`} />
           </Button>
         </div>
       </CardHeader>
@@ -329,14 +329,14 @@ export const TemplateMarketplace = () => {
                     <div className="bg-muted/30 rounded-lg p-4">
                       <div className="space-y-2">
                         <div className="flex items-center gap-2 text-sm">
-                          <Zap className="w-4 h-4 text-blue-600" />
+                          <Zap className="w-4 h-4 text-info" />
                           <span className="font-medium">Déclencheur:</span>
                           <span>{template.preview.trigger}</span>
                         </div>
                         <div className="ml-6 space-y-1">
                           {template.preview.actions.map((action: string, index: number) => (
                             <div key={index} className="flex items-center gap-2 text-sm">
-                              <Play className="w-3 h-3 text-green-600" />
+                              <Play className="w-3 h-3 text-success" />
                               <span>{index + 1}. {action}</span>
                             </div>
                           ))}
@@ -351,7 +351,7 @@ export const TemplateMarketplace = () => {
                       Utiliser ce Template
                     </Button>
                     <Button variant="outline" onClick={() => toggleFavorite(template.id)}>
-                      <Heart className={`w-4 h-4 ${favorites.has(template.id) ? 'fill-red-500 text-red-500' : ''}`} />
+                      <Heart className={`w-4 h-4 ${favorites.has(template.id) ? 'fill-red-500 text-destructive' : ''}`} />
                     </Button>
                   </div>
                 </div>
@@ -424,7 +424,7 @@ export const TemplateMarketplace = () => {
       {selectedCategory === 'all' && searchTerm === '' && (
         <div>
           <h4 className="font-medium mb-4 flex items-center gap-2">
-            <Award className="w-4 h-4 text-yellow-500" />
+            <Award className="w-4 h-4 text-warning" />
             Templates Vedettes
           </h4>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

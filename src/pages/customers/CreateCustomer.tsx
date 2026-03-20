@@ -637,20 +637,20 @@ export default function CreateCustomer() {
                   </CardContent>
                 </Card>
 
-                <Card className="border-green-200 bg-green-50/50 dark:bg-green-950/20">
+                <Card className="border-success/20 bg-success/5/50 dark:bg-green-950/20">
                   <CardContent className="pt-6">
                     <div className="space-y-3">
                       <div className="flex items-center gap-2 text-green-900 dark:text-green-100">
                         <UserCircle2 className="h-5 w-5" />
                         <p className="font-medium">Profil complet</p>
                       </div>
-                      <div className="space-y-2 text-sm text-green-700 dark:text-green-300">
+                      <div className="space-y-2 text-sm text-success dark:text-green-300">
                         <div className="flex items-center gap-2">
-                          <div className="h-2 w-2 rounded-full bg-green-500" />
+                          <div className="h-2 w-2 rounded-full bg-success" />
                           <span>Informations de contact</span>
                         </div>
                         <div className="flex items-center gap-2">
-                          <div className="h-2 w-2 rounded-full bg-green-500" />
+                          <div className="h-2 w-2 rounded-full bg-success" />
                           <span>Au moins une adresse</span>
                         </div>
                         <div className="flex items-center gap-2">

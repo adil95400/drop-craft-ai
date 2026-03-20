@@ -531,7 +531,7 @@ function HeroHexagons() {
     'from-yellow-400 to-yellow-500',
     'from-emerald-400 to-green-500',
     'from-cyan-400 to-blue-500',
-    'from-blue-500 to-indigo-600',
+    'from-info to-indigo-600',
     'from-purple-500 to-violet-600',
     'from-fuchsia-500 to-pink-500',
   ]
@@ -761,8 +761,8 @@ function IntegrationSetupModal({
             <div className={cn(
               "p-3 rounded-lg border flex items-center gap-2",
               testResult.success 
-                ? "bg-green-50 border-green-200 text-green-700 dark:bg-green-950/20 dark:text-green-400"
-                : "bg-red-50 border-red-200 text-red-700 dark:bg-red-950/20 dark:text-red-400"
+                ? "bg-success/5 border-success/20 text-success dark:bg-green-950/20 dark:text-green-400"
+                : "bg-destructive/5 border-destructive/20 text-red-700 dark:bg-red-950/20 dark:text-red-400"
             )}>
               {testResult.success ? <CheckCircle2 className="w-4 h-4" /> : <AlertCircle className="w-4 h-4" />}
               {testResult.message}

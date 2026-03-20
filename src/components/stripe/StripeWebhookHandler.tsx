@@ -193,21 +193,21 @@ export const StripeWebhookHandler = () => {
 
   const getEventStatusIcon = (event: WebhookEvent) => {
     if (event.processed && !event.error) {
-      return <CheckCircle className="h-4 w-4 text-green-500" />;
+      return <CheckCircle className="h-4 w-4 text-success" />;
     } else if (event.error) {
-      return <AlertCircle className="h-4 w-4 text-red-500" />;
+      return <AlertCircle className="h-4 w-4 text-destructive" />;
     } else {
-      return <Clock className="h-4 w-4 text-yellow-500" />;
+      return <Clock className="h-4 w-4 text-warning" />;
     }
   };
 
   const getEventStatusBadge = (event: WebhookEvent) => {
     if (event.processed && !event.error) {
-      return <Badge className="bg-green-100 text-green-800">Traité</Badge>;
+      return <Badge className="bg-success/10 text-success">Traité</Badge>;
     } else if (event.error) {
-      return <Badge className="bg-red-100 text-red-800">Erreur</Badge>;
+      return <Badge className="bg-destructive/10 text-red-800">Erreur</Badge>;
     } else {
-      return <Badge className="bg-yellow-100 text-yellow-800">En attente</Badge>;
+      return <Badge className="bg-warning/10 text-yellow-800">En attente</Badge>;
     }
   };
 
@@ -335,7 +335,7 @@ export const StripeWebhookHandler = () => {
                   </div>
                   
                   {event.error && (
-                    <div className="mt-2 p-2 bg-red-50 border border-red-200 rounded text-sm text-red-600">
+                    <div className="mt-2 p-2 bg-destructive/5 border border-destructive/20 rounded text-sm text-destructive">
                       {event.error}
                     </div>
                   )}

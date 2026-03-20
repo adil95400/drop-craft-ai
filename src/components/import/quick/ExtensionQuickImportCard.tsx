@@ -65,7 +65,7 @@ export const ExtensionQuickImportCard: React.FC<ExtensionQuickImportCardProps> =
                 <h3 className="font-semibold text-foreground flex items-center gap-2">
                   Mode Rapide
                   {enabled && (
-                    <Badge variant="secondary" className="text-[10px] px-1.5 py-0 h-4 bg-green-500/10 text-green-600 border-green-500/20">
+                    <Badge variant="secondary" className="text-[10px] px-1.5 py-0 h-4 bg-success/10 text-success border-success/20">
                       Actif
                     </Badge>
                   )}

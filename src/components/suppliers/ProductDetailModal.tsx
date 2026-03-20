@@ -95,15 +95,15 @@ export function ProductDetailModal({
   const profit = product.retail_price - product.cost_price;
   
   const getScoreColor = (score: number) => {
-    if (score >= 80) return 'text-green-500';
-    if (score >= 60) return 'text-yellow-500';
-    return 'text-red-500';
+    if (score >= 80) return 'text-success';
+    if (score >= 60) return 'text-warning';
+    return 'text-destructive';
   };
 
   const getScoreBg = (score: number) => {
-    if (score >= 80) return 'bg-green-500';
-    if (score >= 60) return 'bg-yellow-500';
-    return 'bg-red-500';
+    if (score >= 80) return 'bg-success';
+    if (score >= 60) return 'bg-warning';
+    return 'bg-destructive';
   };
 
   const getStockStatus = (quantity?: number) => {
@@ -146,7 +146,7 @@ export function ProductDetailModal({
               className="h-8 w-8"
               onClick={() => setIsLiked(!isLiked)}
             >
-              <Heart className={cn("h-4 w-4 transition-colors", isLiked && "fill-red-500 text-red-500")} />
+              <Heart className={cn("h-4 w-4 transition-colors", isLiked && "fill-red-500 text-destructive")} />
             </Button>
             <Button variant="ghost" size="icon" className="h-8 w-8">
               <Share2 className="h-4 w-4" />
@@ -281,12 +281,12 @@ export function ProductDetailModal({
                     {product.cost_price.toFixed(2)}€
                   </p>
                 </div>
-                <div className="p-4 rounded-xl bg-green-500/5 border border-green-500/10">
+                <div className="p-4 rounded-xl bg-success/5 border border-success/10">
                   <p className="text-xs text-muted-foreground mb-1">Marge</p>
-                  <p className="text-xl font-bold text-green-600">
+                  <p className="text-xl font-bold text-success">
                     +{profit.toFixed(2)}€
                   </p>
-                  <p className="text-xs text-green-600/80">
+                  <p className="text-xs text-success/80">
                     {product.profit_margin.toFixed(1)}%
                   </p>
                 </div>

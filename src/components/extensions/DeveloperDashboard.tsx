@@ -164,11 +164,11 @@ export const DeveloperDashboard = () => {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'published':
-        return <Badge className="bg-green-100 text-green-800"><CheckCircle className="h-3 w-3 mr-1" />Publiée</Badge>
+        return <Badge className="bg-success/10 text-success"><CheckCircle className="h-3 w-3 mr-1" />Publiée</Badge>
       case 'pending_review':
-        return <Badge className="bg-yellow-100 text-yellow-800"><Clock className="h-3 w-3 mr-1" />En révision</Badge>
+        return <Badge className="bg-warning/10 text-yellow-800"><Clock className="h-3 w-3 mr-1" />En révision</Badge>
       case 'rejected':
-        return <Badge className="bg-red-100 text-red-800"><AlertCircle className="h-3 w-3 mr-1" />Rejetée</Badge>
+        return <Badge className="bg-destructive/10 text-red-800"><AlertCircle className="h-3 w-3 mr-1" />Rejetée</Badge>
       default:
         return <Badge variant="outline">Brouillon</Badge>
     }
@@ -236,12 +236,12 @@ export const DeveloperDashboard = () => {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <DollarSign className="h-5 w-5 text-green-500" />
+                  <DollarSign className="h-5 w-5 text-success" />
                   Revenus ce mois
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-3xl font-bold text-green-600 mb-2">
+                <div className="text-3xl font-bold text-success mb-2">
                   {DEVELOPER_DATA.extensions.reduce((sum, ext) => sum + ext.revenue_this_month, 0).toLocaleString()}€
                 </div>
                 <div className="text-sm text-muted-foreground">
@@ -255,12 +255,12 @@ export const DeveloperDashboard = () => {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <Package className="h-5 w-5 text-blue-500" />
+                  <Package className="h-5 w-5 text-info" />
                   Extensions Actives
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-3xl font-bold text-blue-600 mb-2">
+                <div className="text-3xl font-bold text-info mb-2">
                   {DEVELOPER_DATA.extensions.filter(ext => ext.status === 'published').length}
                 </div>
                 <div className="text-sm text-muted-foreground">
@@ -298,7 +298,7 @@ export const DeveloperDashboard = () => {
             <CardContent>
               <div className="space-y-4">
                 <div className="flex items-start gap-3 p-3 border rounded-lg">
-                  <CheckCircle className="h-5 w-5 text-green-500 mt-0.5" />
+                  <CheckCircle className="h-5 w-5 text-success mt-0.5" />
                   <div className="flex-1">
                     <p className="font-medium">Advanced Analytics Suite v4.2.1 approuvée</p>
                     <p className="text-sm text-muted-foreground">Votre mise à jour a été approuvée et est maintenant live</p>
@@ -306,7 +306,7 @@ export const DeveloperDashboard = () => {
                   </div>
                 </div>
                 <div className="flex items-start gap-3 p-3 border rounded-lg">
-                  <DollarSign className="h-5 w-5 text-green-500 mt-0.5" />
+                  <DollarSign className="h-5 w-5 text-success mt-0.5" />
                   <div className="flex-1">
                     <p className="font-medium">Paiement de 4,752.58€ effectué</p>
                     <p className="text-sm text-muted-foreground">Revenus de janvier transférés sur votre compte</p>
@@ -314,7 +314,7 @@ export const DeveloperDashboard = () => {
                   </div>
                 </div>
                 <div className="flex items-start gap-3 p-3 border rounded-lg">
-                  <Clock className="h-5 w-5 text-yellow-500 mt-0.5" />
+                  <Clock className="h-5 w-5 text-warning mt-0.5" />
                   <div className="flex-1">
                     <p className="font-medium">Conversion Optimizer AI en révision</p>
                     <p className="text-sm text-muted-foreground">Votre extension est en cours d'examen par notre équipe</p>
@@ -458,10 +458,10 @@ export const DeveloperDashboard = () => {
                       </div>
                     </div>
                     <div className="text-right">
-                      <div className="font-bold text-lg text-green-600">
+                      <div className="font-bold text-lg text-success">
                         {payout.amount.toLocaleString()}€
                       </div>
-                      <Badge className="bg-green-100 text-green-800">Payé</Badge>
+                      <Badge className="bg-success/10 text-success">Payé</Badge>
                     </div>
                   </div>
                 ))}

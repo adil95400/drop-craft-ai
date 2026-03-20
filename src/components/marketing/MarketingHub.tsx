@@ -136,9 +136,9 @@ export function MarketingHub() {
 
   const getStatusColor = (status: MarketingCampaign['status']) => {
     switch (status) {
-      case 'active': return 'text-green-600 bg-green-50 border-green-200'
-      case 'paused': return 'text-yellow-600 bg-yellow-50 border-yellow-200'
-      case 'completed': return 'text-blue-600 bg-blue-50 border-blue-200'
+      case 'active': return 'text-success bg-success/5 border-success/20'
+      case 'paused': return 'text-warning bg-warning/5 border-warning/20'
+      case 'completed': return 'text-info bg-info/5 border-info/20'
       default: return 'text-gray-600 bg-gray-50 border-gray-200'
     }
   }
@@ -166,7 +166,7 @@ export function MarketingHub() {
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+          <Badge variant="outline" className="bg-info/5 text-blue-700 border-info/20">
             <Zap className="h-3 w-3 mr-1" />
             Optimisation IA
           </Badge>
@@ -224,10 +224,10 @@ export function MarketingHub() {
                 <TrendingUp className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-green-600">
+                <div className="text-2xl font-bold text-success">
                   {(metrics.avgROI * 100).toFixed(1)}%
                 </div>
-                <p className="text-xs text-green-600 flex items-center">
+                <p className="text-xs text-success flex items-center">
                   <ArrowUpRight className="h-3 w-3 mr-1" />
                   +12% vs mois dernier
                 </p>
@@ -290,7 +290,7 @@ export function MarketingHub() {
               <CardContent className="space-y-4">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <Eye className="h-4 w-4 text-blue-600" />
+                    <Eye className="h-4 w-4 text-info" />
                     <span>Impressions</span>
                   </div>
                   <span className="font-semibold">{formatNumber(metrics.totalImpressions)}</span>
@@ -298,7 +298,7 @@ export function MarketingHub() {
                 
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <MousePointer className="h-4 w-4 text-green-600" />
+                    <MousePointer className="h-4 w-4 text-success" />
                     <span>Clics</span>
                   </div>
                   <span className="font-semibold">{formatNumber(metrics.totalClicks)}</span>
@@ -355,7 +355,7 @@ export function MarketingHub() {
                     {campaign.performance_metrics?.roi && (
                       <div className="flex justify-between text-sm">
                         <span>ROI:</span>
-                        <span className="font-medium text-green-600">
+                        <span className="font-medium text-success">
                           {(campaign.performance_metrics.roi * 100).toFixed(1)}%
                         </span>
                       </div>
@@ -410,14 +410,14 @@ export function MarketingHub() {
                 <CardDescription>Suggestions d'optimisation automatiques</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="border-l-4 border-blue-500 pl-4">
+                <div className="border-l-4 border-info pl-4">
                   <h4 className="font-medium">Optimiser les heures de diffusion</h4>
                   <p className="text-sm text-muted-foreground">
                     Vos campagnes email performent mieux entre 9h et 11h
                   </p>
                 </div>
                 
-                <div className="border-l-4 border-green-500 pl-4">
+                <div className="border-l-4 border-success pl-4">
                   <h4 className="font-medium">Augmenter le budget publicitaire</h4>
                   <p className="text-sm text-muted-foreground">
                     Potentiel d'augmentation du ROI de 25% avec +500€ de budget

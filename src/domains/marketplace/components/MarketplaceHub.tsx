@@ -180,7 +180,7 @@ export const MarketplaceHub = () => {
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'connected':
-        return <CheckCircle2 className="h-5 w-5 text-green-500" />
+        return <CheckCircle2 className="h-5 w-5 text-success" />
       case 'error':
         return <AlertCircle className="h-5 w-5 text-destructive" />
       default:
@@ -456,7 +456,7 @@ export const MarketplaceHub = () => {
               <TrendingUp className="h-4 w-4" />
               Revenus total
             </CardDescription>
-            <CardTitle className="text-3xl text-green-600">
+            <CardTitle className="text-3xl text-success">
               {totalRevenue.toFixed(2)} €
             </CardTitle>
           </CardHeader>
@@ -720,7 +720,7 @@ export const MarketplaceHub = () => {
             <Card>
               <CardHeader className="pb-3">
                 <CardDescription>Taux de synchronisation</CardDescription>
-                <CardTitle className="text-2xl text-green-600">98.5%</CardTitle>
+                <CardTitle className="text-2xl text-success">98.5%</CardTitle>
                 <Progress value={98.5} className="mt-2" />
               </CardHeader>
             </Card>

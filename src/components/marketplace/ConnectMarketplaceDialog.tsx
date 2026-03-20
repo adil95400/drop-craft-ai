@@ -363,10 +363,10 @@ export function ConnectMarketplaceDialog({ trigger, onSuccess }: ConnectMarketpl
           )}
 
           {testResult && (
-            <div className={`p-4 rounded-lg space-y-2 ${testResult.success ? 'bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-800' : 'bg-destructive/10 border border-destructive/30'}`}>
+            <div className={`p-4 rounded-lg space-y-2 ${testResult.success ? 'bg-success/5 dark:bg-green-950/30 border border-success/20 dark:border-green-800' : 'bg-destructive/10 border border-destructive/30'}`}>
               <div className="flex items-start gap-2">
                 {testResult.success ? (
-                  <div className="text-green-600 dark:text-green-400 font-semibold">✓ Test réussi</div>
+                  <div className="text-success dark:text-green-400 font-semibold">✓ Test réussi</div>
                 ) : (
                   <div className="text-destructive font-semibold flex items-center gap-2">
                     <AlertCircle className="h-4 w-4" />
@@ -375,7 +375,7 @@ export function ConnectMarketplaceDialog({ trigger, onSuccess }: ConnectMarketpl
                 )}
               </div>
               {(testResult.message || testResult.details) && (
-                <p className={`text-sm ${testResult.success ? 'text-green-700 dark:text-green-300' : 'text-destructive'}`}>
+                <p className={`text-sm ${testResult.success ? 'text-success dark:text-green-300' : 'text-destructive'}`}>
                   {testResult.message || testResult.details}
                 </p>
               )}

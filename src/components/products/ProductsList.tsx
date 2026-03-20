@@ -133,7 +133,7 @@ export function ProductsList() {
     }
     
     return product.status === 'active' ? (
-      <Badge variant="secondary" className="bg-green-100 text-green-800">En stock</Badge>
+      <Badge variant="secondary" className="bg-success/10 text-success">En stock</Badge>
     ) : (
       <Badge variant="secondary">Inactif</Badge>
     )
@@ -147,9 +147,9 @@ export function ProductsList() {
     if (margin < 10) {
       return <Badge variant="destructive">{margin.toFixed(1)}%</Badge>
     } else if (margin < 30) {
-      return <Badge variant="secondary" className="bg-yellow-100 text-yellow-800">{margin.toFixed(1)}%</Badge>
+      return <Badge variant="secondary" className="bg-warning/10 text-yellow-800">{margin.toFixed(1)}%</Badge>
     } else {
-      return <Badge variant="secondary" className="bg-green-100 text-green-800">{margin.toFixed(1)}%</Badge>
+      return <Badge variant="secondary" className="bg-success/10 text-success">{margin.toFixed(1)}%</Badge>
     }
   }
 
@@ -200,15 +200,15 @@ export function ProductsList() {
               <div className="text-sm text-muted-foreground">Total</div>
             </div>
             <div className="text-center p-3 bg-muted/50 rounded-lg">
-              <div className="text-2xl font-bold text-green-600">{stats.active}</div>
+              <div className="text-2xl font-bold text-success">{stats.active}</div>
               <div className="text-sm text-muted-foreground">Actifs</div>
             </div>
             <div className="text-center p-3 bg-muted/50 rounded-lg">
-              <div className="text-2xl font-bold text-orange-500">{stats.lowStock}</div>
+              <div className="text-2xl font-bold text-warning">{stats.lowStock}</div>
               <div className="text-sm text-muted-foreground">Stock faible</div>
             </div>
             <div className="text-center p-3 bg-muted/50 rounded-lg">
-              <div className="text-2xl font-bold text-blue-600">
+              <div className="text-2xl font-bold text-info">
                 {formatPrice(stats.totalValue)}
               </div>
               <div className="text-sm text-muted-foreground">Valeur stock</div>
@@ -345,11 +345,11 @@ export function ProductsList() {
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-1">
-                        <span className={`${(product.stock_quantity || 0) < 10 ? 'text-orange-600 font-medium' : ''}`}>
+                        <span className={`${(product.stock_quantity || 0) < 10 ? 'text-warning font-medium' : ''}`}>
                           {product.stock_quantity || 0}
                         </span>
                         {(product.stock_quantity || 0) < 10 && (
-                          <AlertTriangle className="h-4 w-4 text-orange-500" />
+                          <AlertTriangle className="h-4 w-4 text-warning" />
                         )}
                       </div>
                     </TableCell>

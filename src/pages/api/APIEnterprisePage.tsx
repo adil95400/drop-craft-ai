@@ -20,9 +20,9 @@ import {
 
 const RATE_LIMIT_TIERS = [
   { plan: 'free', label: 'Free', rpm: 60, daily: 1000, monthly: 10000, color: 'text-muted-foreground' },
-  { plan: 'pro', label: 'Pro', rpm: 300, daily: 10000, monthly: 100000, color: 'text-blue-500' },
+  { plan: 'pro', label: 'Pro', rpm: 300, daily: 10000, monthly: 100000, color: 'text-info' },
   { plan: 'ultra_pro', label: 'Ultra Pro', rpm: 1000, daily: 50000, monthly: 500000, color: 'text-purple-500' },
-  { plan: 'enterprise', label: 'Enterprise', rpm: 5000, daily: -1, monthly: -1, color: 'text-amber-500' },
+  { plan: 'enterprise', label: 'Enterprise', rpm: 5000, daily: -1, monthly: -1, color: 'text-warning' },
 ];
 
 const API_ENDPOINTS = [
@@ -42,10 +42,10 @@ const API_ENDPOINTS = [
 
 const METHOD_COLORS: Record<string, string> = {
   GET: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400',
-  POST: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400',
+  POST: 'bg-info/10 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400',
   PATCH: 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400',
   PUT: 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400',
-  DELETE: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400',
+  DELETE: 'bg-destructive/10 text-red-800 dark:bg-red-900/30 dark:text-red-400',
 };
 
 export default function APIEnterprisePage() {
@@ -158,7 +158,7 @@ export default function APIEnterprisePage() {
           </Card>
           <Card>
             <CardContent className="p-4 flex items-center gap-3">
-              <Zap className="h-5 w-5 text-amber-500" />
+              <Zap className="h-5 w-5 text-warning" />
               <div>
                 <p className="text-sm text-muted-foreground">Rate limit</p>
                 <p className="text-xl font-bold">{currentTier.rpm}/min</p>
@@ -167,7 +167,7 @@ export default function APIEnterprisePage() {
           </Card>
           <Card>
             <CardContent className="p-4 flex items-center gap-3">
-              <BarChart3 className="h-5 w-5 text-blue-500" />
+              <BarChart3 className="h-5 w-5 text-info" />
               <div>
                 <p className="text-sm text-muted-foreground">Requêtes ce mois</p>
                 <p className="text-xl font-bold">{apiLogs.length > 0 ? apiLogs.length + '+' : '0'}</p>
@@ -176,7 +176,7 @@ export default function APIEnterprisePage() {
           </Card>
           <Card>
             <CardContent className="p-4 flex items-center gap-3">
-              <Globe className="h-5 w-5 text-emerald-500" />
+              <Globe className="h-5 w-5 text-success" />
               <div>
                 <p className="text-sm text-muted-foreground">Plan</p>
                 <p className={`text-xl font-bold capitalize ${currentTier.color}`}>{currentTier.label}</p>

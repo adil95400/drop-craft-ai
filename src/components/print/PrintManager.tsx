@@ -145,10 +145,10 @@ const printJobs: PrintJob[] = [
 
 const getStatusColor = (status: string) => {
   switch (status) {
-    case 'completed': return 'bg-green-100 text-green-800'
-    case 'printing': return 'bg-blue-100 text-blue-800'
-    case 'pending': return 'bg-yellow-100 text-yellow-800'
-    case 'failed': return 'bg-red-100 text-red-800'
+    case 'completed': return 'bg-success/10 text-success'
+    case 'printing': return 'bg-info/10 text-blue-800'
+    case 'pending': return 'bg-warning/10 text-yellow-800'
+    case 'failed': return 'bg-destructive/10 text-red-800'
     default: return 'bg-gray-100 text-gray-800'
   }
 }
@@ -218,16 +218,16 @@ export const PrintManager: React.FC = () => {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <Card>
           <CardContent className="p-4 text-center">
-            <FileText className="w-8 h-8 text-blue-600 mx-auto mb-2" />
-            <div className="text-2xl font-bold text-blue-600">{printTemplates.length}</div>
+            <FileText className="w-8 h-8 text-info mx-auto mb-2" />
+            <div className="text-2xl font-bold text-info">{printTemplates.length}</div>
             <div className="text-sm text-muted-foreground">Templates</div>
           </CardContent>
         </Card>
         
         <Card>
           <CardContent className="p-4 text-center">
-            <Printer className="w-8 h-8 text-green-600 mx-auto mb-2" />
-            <div className="text-2xl font-bold text-green-600">
+            <Printer className="w-8 h-8 text-success mx-auto mb-2" />
+            <div className="text-2xl font-bold text-success">
               {printJobs.filter(job => job.status === 'printing').length}
             </div>
             <div className="text-sm text-muted-foreground">En cours</div>
@@ -246,8 +246,8 @@ export const PrintManager: React.FC = () => {
         
         <Card>
           <CardContent className="p-4 text-center">
-            <Calendar className="w-8 h-8 text-orange-600 mx-auto mb-2" />
-            <div className="text-2xl font-bold text-orange-600">24h</div>
+            <Calendar className="w-8 h-8 text-warning mx-auto mb-2" />
+            <div className="text-2xl font-bold text-warning">24h</div>
             <div className="text-sm text-muted-foreground">Dernière impression</div>
           </CardContent>
         </Card>

@@ -22,7 +22,7 @@ const platforms = [
     icon: '🛍️',
     features: ['OAuth', 'Webhooks', 'GraphQL', 'Temps réel'],
     difficulty: 'Facile',
-    color: 'bg-green-500',
+    color: 'bg-success',
     popularity: 95
   },
   {
@@ -42,7 +42,7 @@ const platforms = [
     icon: '🛒',
     features: ['Webservice', 'Multi-boutique', 'Modules'],
     difficulty: 'Moyen',
-    color: 'bg-blue-500',
+    color: 'bg-info',
     popularity: 75
   },
   {
@@ -52,7 +52,7 @@ const platforms = [
     icon: '⚡',
     features: ['API REST', 'GraphQL', 'MSI', 'Enterprise'],
     difficulty: 'Avancé',
-    color: 'bg-orange-500',
+    color: 'bg-warning',
     popularity: 70
   },
   {
@@ -62,7 +62,7 @@ const platforms = [
     icon: '🏪',
     features: ['API REST v3', 'Webhooks', 'Multi-store'],
     difficulty: 'Moyen',
-    color: 'bg-red-500',
+    color: 'bg-destructive',
     popularity: 60
   },
   {

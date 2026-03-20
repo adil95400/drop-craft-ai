@@ -184,15 +184,15 @@ export function ExtensionRemoteControl() {
       {/* Header with Connection Status */}
       <Card className={cn(
         "border-2",
-        connectionStatus?.connected ? "border-green-500/30 bg-green-500/5" : "border-yellow-500/30 bg-yellow-500/5"
+        connectionStatus?.connected ? "border-success/30 bg-success/5" : "border-warning/30 bg-warning/5"
       )}>
         <CardContent className="p-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               {connectionStatus?.connected ? (
-                <Wifi className="h-5 w-5 text-green-500" />
+                <Wifi className="h-5 w-5 text-success" />
               ) : (
-                <WifiOff className="h-5 w-5 text-yellow-500" />
+                <WifiOff className="h-5 w-5 text-warning" />
               )}
               <div>
                 <p className="font-medium">
@@ -209,7 +209,7 @@ export function ExtensionRemoteControl() {
             
             <div className="flex items-center gap-2">
               {hasChanges && (
-                <Badge variant="outline" className="bg-yellow-500/10 text-yellow-600 border-yellow-500/30">
+                <Badge variant="outline" className="bg-warning/10 text-warning border-warning/30">
                   <AlertTriangle className="h-3 w-3 mr-1" />
                   Changements non envoyés
                 </Badge>
@@ -268,7 +268,7 @@ export function ExtensionRemoteControl() {
                 {/* Auto Import */}
                 <div className="flex items-center justify-between p-4 rounded-lg border">
                   <div className="flex items-center gap-3">
-                    <Zap className={cn("h-5 w-5", config.autoImport ? "text-green-500" : "text-muted-foreground")} />
+                    <Zap className={cn("h-5 w-5", config.autoImport ? "text-success" : "text-muted-foreground")} />
                     <div>
                       <Label>Import automatique</Label>
                       <p className="text-xs text-muted-foreground">
@@ -285,7 +285,7 @@ export function ExtensionRemoteControl() {
                 {/* Import Images */}
                 <div className="flex items-center justify-between p-4 rounded-lg border">
                   <div className="flex items-center gap-3">
-                    <Image className={cn("h-5 w-5", config.importImages ? "text-blue-500" : "text-muted-foreground")} />
+                    <Image className={cn("h-5 w-5", config.importImages ? "text-info" : "text-muted-foreground")} />
                     <div>
                       <Label>Importer les images</Label>
                       <p className="text-xs text-muted-foreground">
@@ -302,7 +302,7 @@ export function ExtensionRemoteControl() {
                 {/* Import Reviews */}
                 <div className="flex items-center justify-between p-4 rounded-lg border">
                   <div className="flex items-center gap-3">
-                    <Star className={cn("h-5 w-5", config.importReviews ? "text-yellow-500" : "text-muted-foreground")} />
+                    <Star className={cn("h-5 w-5", config.importReviews ? "text-warning" : "text-muted-foreground")} />
                     <div>
                       <Label>Importer les avis</Label>
                       <p className="text-xs text-muted-foreground">
@@ -388,7 +388,7 @@ export function ExtensionRemoteControl() {
                       Pourcentage ajouté au prix fournisseur
                     </p>
                   </div>
-                  <Badge className="bg-green-500/10 text-green-600 text-lg font-mono">
+                  <Badge className="bg-success/10 text-success text-lg font-mono">
                     +{config.priceMarkup}%
                   </Badge>
                 </div>
@@ -432,7 +432,7 @@ export function ExtensionRemoteControl() {
               {/* Price Rounding */}
               <div className="flex items-center justify-between p-4 rounded-lg border">
                 <div className="flex items-center gap-3">
-                  <Percent className="h-5 w-5 text-blue-500" />
+                  <Percent className="h-5 w-5 text-info" />
                   <div>
                     <Label>Arrondir les prix</Label>
                     <p className="text-xs text-muted-foreground">
@@ -485,7 +485,7 @@ export function ExtensionRemoteControl() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="flex items-center justify-between p-4 rounded-lg border">
                   <div className="flex items-center gap-3">
-                    <Bell className={cn("h-5 w-5", config.notifications ? "text-blue-500" : "text-muted-foreground")} />
+                    <Bell className={cn("h-5 w-5", config.notifications ? "text-info" : "text-muted-foreground")} />
                     <div>
                       <Label>Notifications</Label>
                       <p className="text-xs text-muted-foreground">Alertes dans le navigateur</p>
@@ -499,7 +499,7 @@ export function ExtensionRemoteControl() {
 
                 <div className="flex items-center justify-between p-4 rounded-lg border">
                   <div className="flex items-center gap-3">
-                    <DollarSign className={cn("h-5 w-5", config.priceTracking ? "text-green-500" : "text-muted-foreground")} />
+                    <DollarSign className={cn("h-5 w-5", config.priceTracking ? "text-success" : "text-muted-foreground")} />
                     <div>
                       <Label>Suivi des prix</Label>
                       <p className="text-xs text-muted-foreground">Alertes changement de prix</p>
@@ -513,7 +513,7 @@ export function ExtensionRemoteControl() {
 
                 <div className="flex items-center justify-between p-4 rounded-lg border">
                   <div className="flex items-center gap-3">
-                    <Package className={cn("h-5 w-5", config.stockAlerts ? "text-orange-500" : "text-muted-foreground")} />
+                    <Package className={cn("h-5 w-5", config.stockAlerts ? "text-warning" : "text-muted-foreground")} />
                     <div>
                       <Label>Alertes stock</Label>
                       <p className="text-xs text-muted-foreground">Notifier rupture de stock</p>
@@ -606,7 +606,7 @@ export function ExtensionRemoteControl() {
                 {/* Language Detection */}
                 <div className="flex items-center justify-between p-4 rounded-lg border">
                   <div className="flex items-center gap-3">
-                    <Globe className="h-5 w-5 text-blue-500" />
+                    <Globe className="h-5 w-5 text-info" />
                     <div>
                       <Label>Détection langue</Label>
                       <p className="text-xs text-muted-foreground">Auto-traduire si besoin</p>
@@ -628,7 +628,7 @@ export function ExtensionRemoteControl() {
         <Card className="bg-muted/30">
           <CardContent className="p-4">
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <Check className="h-4 w-4 text-green-500" />
+              <Check className="h-4 w-4 text-success" />
               <span>Dernière synchronisation: {new Date(lastPushed).toLocaleString('fr-FR')}</span>
             </div>
           </CardContent>

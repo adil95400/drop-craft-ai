@@ -95,7 +95,7 @@ export const PrestaShopConfigDialog = ({ open, onOpenChange }: PrestaShopConfigD
           description: "Intégration PrestaShop",
           category: "ecommerce",
           logo: '🏬',
-          color: 'bg-blue-500',
+          color: 'bg-info',
           features: [],
           setupSteps: [],
           status: 'available'

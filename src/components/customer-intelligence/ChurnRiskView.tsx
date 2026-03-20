@@ -26,39 +26,39 @@ export function ChurnRiskView() {
 
       {/* Risk Overview */}
       <div className="grid gap-4 md:grid-cols-4">
-        <Card className="p-6 border-red-200 bg-red-50 dark:bg-red-950/20">
+        <Card className="p-6 border-destructive/20 bg-destructive/5 dark:bg-red-950/20">
           <div className="flex items-center justify-between mb-2">
             <p className="text-sm font-medium">Critique</p>
-            <XCircle className="h-5 w-5 text-red-500" />
+            <XCircle className="h-5 w-5 text-destructive" />
           </div>
-          <p className="text-3xl font-bold text-red-600">{riskLevels.critical.length}</p>
+          <p className="text-3xl font-bold text-destructive">{riskLevels.critical.length}</p>
           <p className="text-xs text-muted-foreground mt-1">≥75% risque</p>
         </Card>
 
         <Card className="p-6 border-orange-200 bg-orange-50 dark:bg-orange-950/20">
           <div className="flex items-center justify-between mb-2">
             <p className="text-sm font-medium">Élevé</p>
-            <AlertTriangle className="h-5 w-5 text-orange-500" />
+            <AlertTriangle className="h-5 w-5 text-warning" />
           </div>
-          <p className="text-3xl font-bold text-orange-600">{riskLevels.high.length}</p>
+          <p className="text-3xl font-bold text-warning">{riskLevels.high.length}</p>
           <p className="text-xs text-muted-foreground mt-1">50-74% risque</p>
         </Card>
 
-        <Card className="p-6 border-yellow-200 bg-yellow-50 dark:bg-yellow-950/20">
+        <Card className="p-6 border-warning/20 bg-warning/5 dark:bg-yellow-950/20">
           <div className="flex items-center justify-between mb-2">
             <p className="text-sm font-medium">Moyen</p>
-            <AlertCircle className="h-5 w-5 text-yellow-500" />
+            <AlertCircle className="h-5 w-5 text-warning" />
           </div>
-          <p className="text-3xl font-bold text-yellow-600">{riskLevels.medium.length}</p>
+          <p className="text-3xl font-bold text-warning">{riskLevels.medium.length}</p>
           <p className="text-xs text-muted-foreground mt-1">25-49% risque</p>
         </Card>
 
-        <Card className="p-6 border-green-200 bg-green-50 dark:bg-green-950/20">
+        <Card className="p-6 border-success/20 bg-success/5 dark:bg-green-950/20">
           <div className="flex items-center justify-between mb-2">
             <p className="text-sm font-medium">Faible</p>
-            <CheckCircle className="h-5 w-5 text-green-500" />
+            <CheckCircle className="h-5 w-5 text-success" />
           </div>
-          <p className="text-3xl font-bold text-green-600">{riskLevels.low.length}</p>
+          <p className="text-3xl font-bold text-success">{riskLevels.low.length}</p>
           <p className="text-xs text-muted-foreground mt-1">&lt;25% risque</p>
         </Card>
       </div>
@@ -76,14 +76,14 @@ export function ChurnRiskView() {
 
       {/* High Risk Customers */}
       {riskLevels.critical.length > 0 && (
-        <Card className="p-6 border-red-200">
-          <h3 className="text-xl font-semibold mb-4 flex items-center gap-2 text-red-600">
+        <Card className="p-6 border-destructive/20">
+          <h3 className="text-xl font-semibold mb-4 flex items-center gap-2 text-destructive">
             <XCircle className="h-5 w-5" />
             Clients à Risque Critique ({riskLevels.critical.length})
           </h3>
           <div className="space-y-3">
             {riskLevels.critical.map((customer) => (
-              <div key={customer.id} className="p-4 bg-red-50 dark:bg-red-950/20 rounded-lg">
+              <div key={customer.id} className="p-4 bg-destructive/5 dark:bg-red-950/20 rounded-lg">
                 <div className="flex items-start justify-between mb-3">
                   <div>
                     <p className="font-medium">
@@ -132,7 +132,7 @@ export function ChurnRiskView() {
       {/* High Risk Customers */}
       {riskLevels.high.length > 0 && (
         <Card className="p-6 border-orange-200">
-          <h3 className="text-xl font-semibold mb-4 flex items-center gap-2 text-orange-600">
+          <h3 className="text-xl font-semibold mb-4 flex items-center gap-2 text-warning">
             <AlertTriangle className="h-5 w-5" />
             Clients à Risque Élevé ({riskLevels.high.length})
           </h3>

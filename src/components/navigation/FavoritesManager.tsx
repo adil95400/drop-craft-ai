@@ -59,7 +59,7 @@ function SortableFavoriteItem({ moduleId, onRemove }: SortableFavoriteItemProps)
         <GripVertical className="h-5 w-5" />
       </button>
       
-      <Star className="h-4 w-4 fill-yellow-500 text-yellow-500 flex-shrink-0" />
+      <Star className="h-4 w-4 fill-yellow-500 text-warning flex-shrink-0" />
       
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
@@ -126,7 +126,7 @@ export function FavoritesManager() {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button variant="outline" size="sm" className="gap-2">
-          <Star className="h-4 w-4 fill-yellow-500 text-yellow-500" />
+          <Star className="h-4 w-4 fill-yellow-500 text-warning" />
           Gérer les favoris
           <Badge variant="secondary" className="text-xs">
             {favoriteModuleIds.length}
@@ -136,7 +136,7 @@ export function FavoritesManager() {
       <DialogContent className="max-w-2xl">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Star className="h-5 w-5 fill-yellow-500 text-yellow-500" />
+            <Star className="h-5 w-5 fill-yellow-500 text-warning" />
             Gérer mes favoris
           </DialogTitle>
           <DialogDescription>

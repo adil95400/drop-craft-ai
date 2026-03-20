@@ -402,15 +402,15 @@ export const AdvancedMapping = () => {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                <div className="flex items-center gap-2 text-green-600">
+                <div className="flex items-center gap-2 text-success">
                   <Target className="w-4 h-4" />
                   <span>Tous les champs requis sont mappés</span>
                 </div>
-                <div className="flex items-center gap-2 text-green-600">
+                <div className="flex items-center gap-2 text-success">
                   <Target className="w-4 h-4" />
                   <span>Aucun conflit de mapping détecté</span>
                 </div>
-                <div className="flex items-center gap-2 text-yellow-600">
+                <div className="flex items-center gap-2 text-warning">
                   <Filter className="w-4 h-4" />
                   <span>2 transformations recommandées non appliquées</span>
                 </div>

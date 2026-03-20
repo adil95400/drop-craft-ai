@@ -26,30 +26,30 @@ interface StockPredictionsAlertProps {
 
 const urgencyConfig = {
   critical: {
-    color: 'text-red-600 dark:text-red-400',
-    bgColor: 'bg-red-500/10',
-    borderColor: 'border-red-500/50',
+    color: 'text-destructive dark:text-red-400',
+    bgColor: 'bg-destructive/10',
+    borderColor: 'border-destructive/50',
     label: 'Critique',
     icon: AlertTriangle
   },
   high: {
-    color: 'text-orange-600 dark:text-orange-400',
-    bgColor: 'bg-orange-500/10',
+    color: 'text-warning dark:text-orange-400',
+    bgColor: 'bg-warning/10',
     borderColor: 'border-orange-500/50',
     label: 'Haute',
     icon: Clock
   },
   medium: {
-    color: 'text-amber-600 dark:text-amber-400',
-    bgColor: 'bg-amber-500/10',
+    color: 'text-warning dark:text-amber-400',
+    bgColor: 'bg-warning/10',
     borderColor: 'border-amber-500/50',
     label: 'Moyenne',
     icon: TrendingDown
   },
   low: {
-    color: 'text-blue-600 dark:text-blue-400',
-    bgColor: 'bg-blue-500/10',
-    borderColor: 'border-blue-500/50',
+    color: 'text-info dark:text-blue-400',
+    bgColor: 'bg-info/10',
+    borderColor: 'border-info/50',
     label: 'Basse',
     icon: Package
   }
@@ -76,13 +76,13 @@ export function StockPredictionsAlert({
         className={cn(
           'flex items-center gap-3 p-3 rounded-lg border',
           criticalCount > 0 
-            ? 'bg-red-500/10 border-red-500/30' 
-            : 'bg-orange-500/10 border-orange-500/30'
+            ? 'bg-destructive/10 border-destructive/30' 
+            : 'bg-warning/10 border-orange-500/30'
         )}
       >
         <Bell className={cn(
           'h-5 w-5 animate-pulse',
-          criticalCount > 0 ? 'text-red-500' : 'text-orange-500'
+          criticalCount > 0 ? 'text-destructive' : 'text-warning'
         )} />
         <div className="flex-1">
           <p className="text-sm font-medium">
@@ -107,20 +107,20 @@ export function StockPredictionsAlert({
     <Alert className={cn(
       'border-2',
       criticalCount > 0 
-        ? 'border-red-500/50 bg-red-500/5' 
-        : 'border-orange-500/50 bg-orange-500/5'
+        ? 'border-destructive/50 bg-destructive/5' 
+        : 'border-orange-500/50 bg-warning/5'
     )}>
       <AlertTriangle className={cn(
         'h-5 w-5',
-        criticalCount > 0 ? 'text-red-500' : 'text-orange-500'
+        criticalCount > 0 ? 'text-destructive' : 'text-warning'
       )} />
       <AlertTitle className="flex items-center gap-2">
         Alertes Stock Prédictives
         <Badge variant="outline" className={cn(
           'text-[10px]',
           criticalCount > 0 
-            ? 'bg-red-500/10 border-red-500/30' 
-            : 'bg-orange-500/10 border-orange-500/30'
+            ? 'bg-destructive/10 border-destructive/30' 
+            : 'bg-warning/10 border-orange-500/30'
         )}>
           IA
         </Badge>

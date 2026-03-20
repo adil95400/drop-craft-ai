@@ -23,11 +23,11 @@ interface AdCardProps {
 }
 
 const platformColors: Record<string, string> = {
-  facebook: 'bg-blue-500',
+  facebook: 'bg-info',
   tiktok: 'bg-black',
   instagram: 'bg-gradient-to-r from-purple-500 to-pink-500',
-  google: 'bg-red-500',
-  pinterest: 'bg-red-600',
+  google: 'bg-destructive',
+  pinterest: 'bg-destructive',
 };
 
 const formatNumber = (num?: number) => {
@@ -44,10 +44,10 @@ const formatCurrency = (num?: number) => {
 
 export function AdCard({ ad, onAnalyze, onSave, isAnalyzing, showAnalysis = false }: AdCardProps) {
   const performanceColor = {
-    viral: 'text-green-500 bg-green-500/10',
-    high: 'text-blue-500 bg-blue-500/10',
-    medium: 'text-yellow-500 bg-yellow-500/10',
-    low: 'text-red-500 bg-red-500/10',
+    viral: 'text-success bg-success/10',
+    high: 'text-info bg-info/10',
+    medium: 'text-warning bg-warning/10',
+    low: 'text-destructive bg-destructive/10',
   };
 
   return (
@@ -81,7 +81,7 @@ export function AdCard({ ad, onAnalyze, onSave, isAnalyzing, showAnalysis = fals
             )}
           </div>
           {ad.is_active && (
-            <Badge variant="outline" className="shrink-0 text-green-600 border-green-300">
+            <Badge variant="outline" className="shrink-0 text-success border-green-300">
               Active
             </Badge>
           )}

@@ -32,10 +32,10 @@ export function EnhancedStatsGrid() {
   }
 
   const scoreColor = (stats?.optimizationScore || 0) >= 70 
-    ? 'text-green-600' 
+    ? 'text-success' 
     : (stats?.optimizationScore || 0) >= 40 
-      ? 'text-amber-600' 
-      : 'text-red-600';
+      ? 'text-warning' 
+      : 'text-destructive';
 
   const statsItems = [
     {
@@ -57,8 +57,8 @@ export function EnhancedStatsGrid() {
       label: 'Règles Actives',
       value: stats?.activeRules || 0,
       subtext: `sur ${stats?.totalRules || 0} règles`,
-      color: 'text-green-600',
-      bgColor: 'bg-green-100',
+      color: 'text-success',
+      bgColor: 'bg-success/10',
     },
     {
       icon: Package,
@@ -68,11 +68,11 @@ export function EnhancedStatsGrid() {
         ? `${stats.productsWithoutRules} sans règle` 
         : 'Tous couverts',
       color: stats?.productsWithoutRules && stats.productsWithoutRules > 0 
-        ? 'text-amber-600' 
-        : 'text-blue-600',
+        ? 'text-warning' 
+        : 'text-info',
       bgColor: stats?.productsWithoutRules && stats.productsWithoutRules > 0 
         ? 'bg-amber-100' 
-        : 'bg-blue-100',
+        : 'bg-info/10',
     },
     {
       icon: TrendingUp,
@@ -82,10 +82,10 @@ export function EnhancedStatsGrid() {
         ? 'Saine' 
         : 'Faible',
       color: (stats?.avgMarginPercent || 0) >= 25 
-        ? 'text-green-600' 
-        : 'text-amber-600',
+        ? 'text-success' 
+        : 'text-warning',
       bgColor: (stats?.avgMarginPercent || 0) >= 25 
-        ? 'bg-green-100' 
+        ? 'bg-success/10' 
         : 'bg-amber-100',
     },
   ];
@@ -153,7 +153,7 @@ export function EnhancedStatsGrid() {
         {/* Potential gain */}
         <Card className={cn(
           stats?.potentialRevenueGain && stats.potentialRevenueGain > 0 
-            ? 'border-green-200 bg-green-50/50' 
+            ? 'border-success/20 bg-success/5/50' 
             : ''
         )}>
           <CardContent className="py-4">
@@ -162,13 +162,13 @@ export function EnhancedStatsGrid() {
                 <div className={cn(
                   'p-2 rounded-lg',
                   stats?.potentialRevenueGain && stats.potentialRevenueGain > 0 
-                    ? 'bg-green-100' 
+                    ? 'bg-success/10' 
                     : 'bg-muted'
                 )}>
                   {stats?.potentialRevenueGain && stats.potentialRevenueGain > 0 ? (
-                    <DollarSign className="h-5 w-5 text-green-600" />
+                    <DollarSign className="h-5 w-5 text-success" />
                   ) : (
-                    <CheckCircle2 className="h-5 w-5 text-green-600" />
+                    <CheckCircle2 className="h-5 w-5 text-success" />
                   )}
                 </div>
                 <div>
@@ -187,7 +187,7 @@ export function EnhancedStatsGrid() {
                 </div>
               </div>
               {stats?.potentialRevenueGain && stats.potentialRevenueGain > 0 && (
-                <span className="text-xl font-bold text-green-600">
+                <span className="text-xl font-bold text-success">
                   +{stats.potentialRevenueGain.toFixed(0)}€
                 </span>
               )}

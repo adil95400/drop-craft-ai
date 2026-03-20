@@ -54,7 +54,7 @@ export function AIIntegrationRecommendations() {
       ],
       estimated_setup_time: '2-3 jours',
       logo: '🛍️',
-      color: 'bg-green-100 text-green-700'
+      color: 'bg-success/10 text-success'
     },
     {
       id: '2',
@@ -98,7 +98,7 @@ export function AIIntegrationRecommendations() {
       ],
       estimated_setup_time: '4-6 heures',
       logo: '💳',
-      color: 'bg-blue-100 text-blue-700'
+      color: 'bg-info/10 text-blue-700'
     }
   ]);
 
@@ -119,27 +119,27 @@ export function AIIntegrationRecommendations() {
 
   const getPriorityIcon = (priority: string) => {
     switch (priority) {
-      case 'high': return <Target className="w-4 h-4 text-red-500" />;
-      case 'medium': return <TrendingUp className="w-4 h-4 text-yellow-500" />;
-      default: return <CheckCircle className="w-4 h-4 text-green-500" />;
+      case 'high': return <Target className="w-4 h-4 text-destructive" />;
+      case 'medium': return <TrendingUp className="w-4 h-4 text-warning" />;
+      default: return <CheckCircle className="w-4 h-4 text-success" />;
     }
   };
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
-      case 'high': return 'bg-red-100 text-red-700 border-red-200';
-      case 'medium': return 'bg-yellow-100 text-yellow-700 border-yellow-200';
-      default: return 'bg-green-100 text-green-700 border-green-200';
+      case 'high': return 'bg-destructive/10 text-red-700 border-destructive/20';
+      case 'medium': return 'bg-warning/10 text-yellow-700 border-warning/20';
+      default: return 'bg-success/10 text-success border-success/20';
     }
   };
 
   return (
     <div className="space-y-6">
       {/* Header */}
-      <Card className="bg-gradient-to-r from-blue-50 to-purple-50 border-blue-200">
+      <Card className="bg-gradient-to-r from-blue-50 to-purple-50 border-info/20">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Bot className="w-6 h-6 text-blue-600" />
+            <Bot className="w-6 h-6 text-info" />
             Recommandations IA d'Intégrations
           </CardTitle>
           <CardDescription>
@@ -149,11 +149,11 @@ export function AIIntegrationRecommendations() {
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div className="text-center">
-              <div className="text-2xl font-bold text-blue-600">{recommendations.length}</div>
+              <div className="text-2xl font-bold text-info">{recommendations.length}</div>
               <p className="text-sm text-muted-foreground">Recommandations</p>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold text-green-600">
+              <div className="text-2xl font-bold text-success">
                 €{recommendations.reduce((sum, r) => sum + r.roi_estimate, 0)}k
               </div>
               <p className="text-sm text-muted-foreground">ROI Estimé/an</p>
@@ -165,7 +165,7 @@ export function AIIntegrationRecommendations() {
               <p className="text-sm text-muted-foreground">Confiance IA</p>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold text-orange-600">
+              <div className="text-2xl font-bold text-warning">
                 {recommendations.filter(r => r.priority === 'high').length}
               </div>
               <p className="text-sm text-muted-foreground">Priorité Haute</p>
@@ -197,7 +197,7 @@ export function AIIntegrationRecommendations() {
                 </div>
                 <div className="text-right">
                   <div className="flex items-center gap-1 mb-1">
-                    <Star className="w-4 h-4 text-yellow-500" />
+                    <Star className="w-4 h-4 text-warning" />
                     <span className="text-sm font-medium">{recommendation.impact_score}/100</span>
                   </div>
                   <div className="text-xs text-muted-foreground">Score d'impact</div>
@@ -208,21 +208,21 @@ export function AIIntegrationRecommendations() {
             <CardContent className="space-y-4">
               {/* Metrics */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="bg-green-50 p-3 rounded-lg">
+                <div className="bg-success/5 p-3 rounded-lg">
                   <div className="flex items-center gap-2">
-                    <DollarSign className="w-4 h-4 text-green-600" />
+                    <DollarSign className="w-4 h-4 text-success" />
                     <span className="text-sm font-medium">ROI Annuel</span>
                   </div>
-                  <div className="text-xl font-bold text-green-600">
+                  <div className="text-xl font-bold text-success">
                     +€{recommendation.roi_estimate}k
                   </div>
                 </div>
-                <div className="bg-blue-50 p-3 rounded-lg">
+                <div className="bg-info/5 p-3 rounded-lg">
                   <div className="flex items-center gap-2">
-                    <Brain className="w-4 h-4 text-blue-600" />
+                    <Brain className="w-4 h-4 text-info" />
                     <span className="text-sm font-medium">Confiance IA</span>
                   </div>
-                  <div className="text-xl font-bold text-blue-600">
+                  <div className="text-xl font-bold text-info">
                     {recommendation.confidence}%
                   </div>
                   <Progress value={recommendation.confidence} className="mt-1 h-1" />
@@ -241,13 +241,13 @@ export function AIIntegrationRecommendations() {
               {/* Reasons */}
               <div>
                 <h4 className="font-medium mb-2 flex items-center gap-2">
-                  <Sparkles className="w-4 h-4 text-yellow-500" />
+                  <Sparkles className="w-4 h-4 text-warning" />
                   Pourquoi cette recommandation ?
                 </h4>
                 <ul className="space-y-1">
                   {recommendation.reasons.map((reason, index) => (
                     <li key={index} className="text-sm text-muted-foreground flex items-center gap-2">
-                      <div className="w-1.5 h-1.5 bg-blue-500 rounded-full flex-shrink-0" />
+                      <div className="w-1.5 h-1.5 bg-info rounded-full flex-shrink-0" />
                       {reason}
                     </li>
                   ))}
@@ -257,7 +257,7 @@ export function AIIntegrationRecommendations() {
               {/* Benefits */}
               <div>
                 <h4 className="font-medium mb-2 flex items-center gap-2">
-                  <TrendingUp className="w-4 h-4 text-green-500" />
+                  <TrendingUp className="w-4 h-4 text-success" />
                   Bénéfices attendus
                 </h4>
                 <div className="flex flex-wrap gap-2">

@@ -271,10 +271,10 @@ export function AutoSyncSettings({
             {/* Products */}
             <div className={cn(
               "flex items-center justify-between p-4 rounded-lg border transition-colors",
-              config.syncProducts ? "bg-blue-500/5 border-blue-500/20" : ""
+              config.syncProducts ? "bg-info/5 border-info/20" : ""
             )}>
               <div className="flex items-center gap-3">
-                <Package className="h-5 w-5 text-blue-600" />
+                <Package className="h-5 w-5 text-info" />
                 <div>
                   <p className="font-medium">Produits</p>
                   <p className="text-xs text-muted-foreground">Titre, prix, images</p>
@@ -290,10 +290,10 @@ export function AutoSyncSettings({
             {/* Orders */}
             <div className={cn(
               "flex items-center justify-between p-4 rounded-lg border transition-colors",
-              config.syncOrders ? "bg-green-500/5 border-green-500/20" : ""
+              config.syncOrders ? "bg-success/5 border-success/20" : ""
             )}>
               <div className="flex items-center gap-3">
-                <ShoppingCart className="h-5 w-5 text-green-600" />
+                <ShoppingCart className="h-5 w-5 text-success" />
                 <div>
                   <p className="font-medium">Commandes</p>
                   <p className="text-xs text-muted-foreground">Nouvelles commandes</p>
@@ -328,10 +328,10 @@ export function AutoSyncSettings({
             {/* Prices */}
             <div className={cn(
               "flex items-center justify-between p-4 rounded-lg border transition-colors",
-              config.syncPrices ? "bg-orange-500/5 border-orange-500/20" : ""
+              config.syncPrices ? "bg-warning/5 border-orange-500/20" : ""
             )}>
               <div className="flex items-center gap-3">
-                <TrendingUp className="h-5 w-5 text-orange-600" />
+                <TrendingUp className="h-5 w-5 text-warning" />
                 <div>
                   <p className="font-medium">Prix</p>
                   <p className="text-xs text-muted-foreground">Mises à jour prix</p>

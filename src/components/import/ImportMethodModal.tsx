@@ -173,7 +173,7 @@ export function ImportMethodModal({ method, isOpen, onClose, onImportStart }: Im
       case 'chrome-extension':
         return (
           <div className="space-y-4">
-            <div className="p-4 bg-blue-50 dark:bg-blue-950 rounded-lg">
+            <div className="p-4 bg-info/5 dark:bg-blue-950 rounded-lg">
               <h4 className="font-medium flex items-center gap-2 mb-2">
                 <Smartphone className="h-4 w-4" />
                 Extension Chrome requise
@@ -375,7 +375,7 @@ export function ImportMethodModal({ method, isOpen, onClose, onImportStart }: Im
             )}
 
             {authType === 'oauth' && (
-              <div className="p-4 bg-blue-50 dark:bg-blue-950 rounded-lg">
+              <div className="p-4 bg-info/5 dark:bg-blue-950 rounded-lg">
                 <p className="text-sm text-muted-foreground">
                   OAuth 2.0 nécessite une configuration avancée. Contactez le support pour l'activer.
                 </p>

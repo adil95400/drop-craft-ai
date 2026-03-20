@@ -249,10 +249,10 @@ export const SecurityMonitor = () => {
 
   const getSeverityColor = (severity: SecurityThreat['severity']) => {
     switch (severity) {
-      case 'critical': return 'text-red-600 bg-red-50 border-red-200';
-      case 'high': return 'text-orange-600 bg-orange-50 border-orange-200';
-      case 'medium': return 'text-yellow-600 bg-yellow-50 border-yellow-200';
-      case 'low': return 'text-blue-600 bg-blue-50 border-blue-200';
+      case 'critical': return 'text-destructive bg-destructive/5 border-destructive/20';
+      case 'high': return 'text-warning bg-orange-50 border-orange-200';
+      case 'medium': return 'text-warning bg-warning/5 border-warning/20';
+      case 'low': return 'text-info bg-info/5 border-info/20';
       default: return 'text-gray-600 bg-gray-50 border-gray-200';
     }
   };
@@ -316,8 +316,8 @@ export const SecurityMonitor = () => {
           <CardContent>
             <div className="text-2xl font-bold">{metrics.totalEvents.toLocaleString()}</div>
             <div className="flex items-center gap-2 text-xs text-muted-foreground">
-              <AlertTriangle className="h-3 w-3 text-red-600" />
-              <span className="text-red-600">{metrics.criticalEvents} critiques</span>
+              <AlertTriangle className="h-3 w-3 text-destructive" />
+              <span className="text-destructive">{metrics.criticalEvents} critiques</span>
             </div>
           </CardContent>
         </Card>
@@ -330,8 +330,8 @@ export const SecurityMonitor = () => {
           <CardContent>
             <div className="text-2xl font-bold">{metrics.blockedAttacks}</div>
             <div className="flex items-center gap-2 text-xs text-muted-foreground">
-              <TrendingUp className="h-3 w-3 text-green-600" />
-              <span className="text-green-600">{metrics.successRate.toFixed(1)}% succès</span>
+              <TrendingUp className="h-3 w-3 text-success" />
+              <span className="text-success">{metrics.successRate.toFixed(1)}% succès</span>
             </div>
           </CardContent>
         </Card>
@@ -344,7 +344,7 @@ export const SecurityMonitor = () => {
           <CardContent>
             <div className="text-2xl font-bold">{metrics.responseTime.toFixed(1)}s</div>
             <div className="flex items-center gap-2 text-xs text-muted-foreground">
-              <CheckCircle className="h-3 w-3 text-green-600" />
+              <CheckCircle className="h-3 w-3 text-success" />
               <span>Sous la cible (3s)</span>
             </div>
           </CardContent>
@@ -358,7 +358,7 @@ export const SecurityMonitor = () => {
           <CardContent>
             <div className="text-2xl font-bold">{metrics.complianceScore.toFixed(1)}%</div>
             <div className="flex items-center gap-2 text-xs text-muted-foreground">
-              <Shield className="h-3 w-3 text-blue-600" />
+              <Shield className="h-3 w-3 text-info" />
               <span>GDPR/ISO 27001</span>
             </div>
           </CardContent>
@@ -367,8 +367,8 @@ export const SecurityMonitor = () => {
 
       {/* Alertes critiques */}
       {threats.filter(t => t.severity === 'critical' && t.status === 'active').length > 0 && (
-        <Alert className="border-red-200 bg-red-50">
-          <AlertTriangle className="h-4 w-4 text-red-600" />
+        <Alert className="border-destructive/20 bg-destructive/5">
+          <AlertTriangle className="h-4 w-4 text-destructive" />
           <AlertDescription className="text-red-800">
             <strong>Alerte critique :</strong> {threats.filter(t => t.severity === 'critical' && t.status === 'active').length} menace(s) critique(s) détectée(s). Action immédiate requise.
           </AlertDescription>
@@ -455,7 +455,7 @@ export const SecurityMonitor = () => {
                 
                 {threats.length === 0 && (
                   <div className="text-center py-8 text-muted-foreground">
-                    <Shield className="h-12 w-12 mx-auto mb-4 text-green-600" />
+                    <Shield className="h-12 w-12 mx-auto mb-4 text-success" />
                     <p>Aucune menace active détectée</p>
                     <p className="text-sm">Tous les systèmes sont sécurisés</p>
                   </div>
@@ -478,7 +478,7 @@ export const SecurityMonitor = () => {
                 <div>
                   <div className="flex justify-between text-sm mb-2">
                     <span>Tentatives de connexion</span>
-                    <span className="text-green-600">Normal</span>
+                    <span className="text-success">Normal</span>
                   </div>
                   <Progress value={25} className="h-2" />
                 </div>
@@ -486,7 +486,7 @@ export const SecurityMonitor = () => {
                 <div>
                   <div className="flex justify-between text-sm mb-2">
                     <span>Trafic réseau</span>
-                    <span className="text-yellow-600">Élevé</span>
+                    <span className="text-warning">Élevé</span>
                   </div>
                   <Progress value={75} className="h-2" />
                 </div>
@@ -494,7 +494,7 @@ export const SecurityMonitor = () => {
                 <div>
                   <div className="flex justify-between text-sm mb-2">
                     <span>Accès aux données</span>
-                    <span className="text-green-600">Sécurisé</span>
+                    <span className="text-success">Sécurisé</span>
                   </div>
                   <Progress value={15} className="h-2" />
                 </div>
@@ -502,7 +502,7 @@ export const SecurityMonitor = () => {
                 <div>
                   <div className="flex justify-between text-sm mb-2">
                     <span>Anomalies détectées</span>
-                    <span className="text-red-600">Attention</span>
+                    <span className="text-destructive">Attention</span>
                   </div>
                   <Progress value={45} className="h-2" />
                 </div>
@@ -557,7 +557,7 @@ export const SecurityMonitor = () => {
                 <div>
                   <div className="flex justify-between text-sm mb-2">
                     <span>GDPR (Protection des données)</span>
-                    <span className="text-green-600">{metrics.complianceScore.toFixed(0)}%</span>
+                    <span className="text-success">{metrics.complianceScore.toFixed(0)}%</span>
                   </div>
                   <Progress value={metrics.complianceScore} className="h-2" />
                 </div>
@@ -565,7 +565,7 @@ export const SecurityMonitor = () => {
                 <div>
                   <div className="flex justify-between text-sm mb-2">
                     <span>ISO 27001 (Sécurité)</span>
-                    <span className="text-green-600">{metrics.patchLevel.toFixed(0)}%</span>
+                    <span className="text-success">{metrics.patchLevel.toFixed(0)}%</span>
                   </div>
                   <Progress value={metrics.patchLevel} className="h-2" />
                 </div>
@@ -573,7 +573,7 @@ export const SecurityMonitor = () => {
                 <div>
                   <div className="flex justify-between text-sm mb-2">
                     <span>PCI DSS (Paiements)</span>
-                    <span className="text-yellow-600">82%</span>
+                    <span className="text-warning">82%</span>
                   </div>
                   <Progress value={82} className="h-2" />
                 </div>
@@ -581,7 +581,7 @@ export const SecurityMonitor = () => {
                 <div>
                   <div className="flex justify-between text-sm mb-2">
                     <span>SOC 2 (Contrôles)</span>
-                    <span className="text-green-600">95%</span>
+                    <span className="text-success">95%</span>
                   </div>
                   <Progress value={95} className="h-2" />
                 </div>
@@ -597,7 +597,7 @@ export const SecurityMonitor = () => {
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
-                  <div className="flex items-center justify-between p-3 rounded-lg bg-red-50 border border-red-200">
+                  <div className="flex items-center justify-between p-3 rounded-lg bg-destructive/5 border border-destructive/20">
                     <div>
                       <p className="text-sm font-medium">Haute priorité</p>
                       <p className="text-xs text-muted-foreground">Correctifs critiques</p>
@@ -605,7 +605,7 @@ export const SecurityMonitor = () => {
                     <Badge variant="destructive">{Math.max(0, metrics.vulnerabilities - 3)}</Badge>
                   </div>
                   
-                  <div className="flex items-center justify-between p-3 rounded-lg bg-yellow-50 border border-yellow-200">
+                  <div className="flex items-center justify-between p-3 rounded-lg bg-warning/5 border border-warning/20">
                     <div>
                       <p className="text-sm font-medium">Moyenne priorité</p>
                       <p className="text-xs text-muted-foreground">Améliorations sécurité</p>
@@ -613,7 +613,7 @@ export const SecurityMonitor = () => {
                     <Badge variant="secondary">7</Badge>
                   </div>
                   
-                  <div className="flex items-center justify-between p-3 rounded-lg bg-blue-50 border border-blue-200">
+                  <div className="flex items-center justify-between p-3 rounded-lg bg-info/5 border border-info/20">
                     <div>
                       <p className="text-sm font-medium">Basse priorité</p>
                       <p className="text-xs text-muted-foreground">Optimisations</p>
