@@ -399,6 +399,32 @@ export default function AdvancedMediaEditorPage() {
               </TabsContent>
 
               <TabsContent value="tools" className="space-y-4 mt-4">
+                {/* Crop */}
+                <Card>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm flex items-center gap-1.5">
+                      <Crop className="h-3.5 w-3.5" />Recadrage
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    {isCropping ? (
+                      <ImageCropTool
+                        imageUrl={imageUrl!}
+                        onCrop={(croppedUrl) => {
+                          setImageUrl(croppedUrl);
+                          setIsCropping(false);
+                          toast.success('Image recadrée');
+                        }}
+                        onCancel={() => setIsCropping(false)}
+                      />
+                    ) : (
+                      <Button variant="outline" size="sm" className="w-full gap-2" onClick={() => setIsCropping(true)}>
+                        <Crop className="h-4 w-4" />Ouvrir l'outil de recadrage
+                      </Button>
+                    )}
+                  </CardContent>
+                </Card>
+
                 {/* Watermark */}
                 <Card>
                   <CardHeader className="pb-2">
@@ -449,6 +475,27 @@ export default function AdvancedMediaEditorPage() {
                     </Button>
                   </CardContent>
                 </Card>
+              </TabsContent>
+
+              <TabsContent value="ai" className="space-y-4 mt-4">
+                {/* Background Removal */}
+                <Card>
+                  <CardContent className="pt-4">
+                    <BackgroundRemovalTool
+                      imageUrl={imageUrl!}
+                      onResult={(resultUrl) => {
+                        setImageUrl(resultUrl);
+                        toast.success('Arrière-plan supprimé, image mise à jour');
+                      }}
+                    />
+                  </CardContent>
+                </Card>
+
+                {/* Video Generation */}
+                <VideoGeneratorTool
+                  imageUrl={imageUrl || undefined}
+                  productName={imageName?.replace(/\.\w+$/, '')}
+                />
               </TabsContent>
             </Tabs>
           </div>
