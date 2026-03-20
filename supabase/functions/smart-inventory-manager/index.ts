@@ -93,7 +93,7 @@ Deno.serve(async (req) => {
 })
 
 async function analyzeDemand(productData: any) {
-  const apiKey = Deno.env.get('OPENAI_API_KEY')
+  const apiKey = Deno.env.get('OPENAI_API_KEY_AUTOMATION') || Deno.env.get('OPENAI_API_KEY')
   if (!apiKey) {
     return { trend: 'stable', avgDemandPerDay: 1, seasonality: {}, forecast: { next7Days: 7, next30Days: 30 }, variability: 'medium', accuracy: 70 }
   }

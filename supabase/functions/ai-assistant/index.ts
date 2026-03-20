@@ -15,7 +15,7 @@ serve(async (req) => {
 
   try {
     const { messages, context } = await req.json();
-    const OPENAI_API_KEY = Deno.env.get("OPENAI_API_KEY");
+    const OPENAI_API_KEY = Deno.env.get("OPENAI_API_KEY_CHAT") || Deno.env.get("OPENAI_API_KEY");
     if (!OPENAI_API_KEY) throw new Error("OPENAI_API_KEY is not configured");
 
     if (!Array.isArray(messages) || messages.length === 0) {

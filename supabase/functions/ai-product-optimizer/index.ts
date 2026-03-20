@@ -73,7 +73,7 @@ serve(async (req) => {
   const corsHeaders = getSecureCorsHeaders(req);
 
   try {
-    const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY');
+    const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY_PRODUCT') || Deno.env.get('OPENAI_API_KEY');
     if (!OPENAI_API_KEY) {
       console.error('[AI-OPTIMIZER] OPENAI_API_KEY not configured');
       return new Response(

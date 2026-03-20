@@ -75,7 +75,7 @@ Deno.serve(async (req) => {
       }
 
       // Use Lovable AI for SEO analysis
-      const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY')
+      const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY_SEO') || Deno.env.get('OPENAI_API_KEY')
       if (!OPENAI_API_KEY) {
         results.push({ productId, status: 'error', message: 'AI non configurée' })
         continue

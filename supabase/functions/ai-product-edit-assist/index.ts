@@ -10,7 +10,7 @@ serve(async (req) => {
 
   try {
     const { systemPrompt, userPrompt, field } = await req.json();
-    const OPENAI_API_KEY = Deno.env.get("OPENAI_API_KEY");
+    const OPENAI_API_KEY = Deno.env.get("OPENAI_API_KEY_PRODUCT") || Deno.env.get("OPENAI_API_KEY");
     if (!OPENAI_API_KEY) throw new Error("OPENAI_API_KEY not configured");
 
     const response = await fetch("https://api.openai.com/v1/chat/completions", {

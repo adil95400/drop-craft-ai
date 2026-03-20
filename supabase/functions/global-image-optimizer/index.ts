@@ -107,7 +107,7 @@ serve(async (req) => {
     if (action === 'optimize') {
       console.log(`🎨 Optimizing image: ${imageUrl}`);
 
-      const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY');
+      const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY_PRODUCT') || Deno.env.get('OPENAI_API_KEY');
       
       const optimizations = [];
 

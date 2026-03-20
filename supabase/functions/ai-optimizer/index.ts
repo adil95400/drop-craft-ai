@@ -116,7 +116,7 @@ serve(async (req) => {
 async function optimizeSEO(productData: any, preferences: any) {
   console.log('🔍 Optimizing SEO with AI...')
   
-  const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY')
+  const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY_AUTOMATION') || Deno.env.get('OPENAI_API_KEY')
   if (!OPENAI_API_KEY) {
     console.warn('OPENAI_API_KEY not configured, using fallback optimization')
     

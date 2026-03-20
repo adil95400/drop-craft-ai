@@ -64,7 +64,7 @@ serve(async (req) => {
       }
 
       // Use AI to generate smart recommendations
-      const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY');
+      const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY_PRODUCT') || Deno.env.get('OPENAI_API_KEY');
       
       const productSummary = products.slice(0, 50).map(p => ({
         id: p.id,

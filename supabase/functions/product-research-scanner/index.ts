@@ -27,7 +27,7 @@ serve(async (req) => {
     const { data: { user }, error: userError } = await supabase.auth.getUser(token);
     if (userError || !user) throw new Error('Utilisateur non authentifié');
 
-    const lovableApiKey = Deno.env.get('OPENAI_API_KEY');
+    const lovableApiKey = Deno.env.get('OPENAI_API_KEY_PRODUCT') || Deno.env.get('OPENAI_API_KEY');
     if (!lovableApiKey) throw new Error('OPENAI_API_KEY non configurée');
 
     let result;

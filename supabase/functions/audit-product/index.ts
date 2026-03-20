@@ -241,7 +241,7 @@ function auditVariants(product: any): { score: number; errors: any[]; warnings: 
 }
 
 async function generateAISuggestions(product: any): Promise<{ title?: string; description?: string; tags?: string[] }> {
-  const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY')
+  const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY_PRODUCT') || Deno.env.get('OPENAI_API_KEY')
   if (!OPENAI_API_KEY) {
     console.log('OPENAI_API_KEY not configured, skipping AI suggestions')
     return {}

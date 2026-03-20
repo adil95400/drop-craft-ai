@@ -63,7 +63,7 @@ serve(
     // Validate input
     const { analysisType, data, timeRange, metrics } = await parseJsonValidated(req, BodySchema);
 
-    const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY');
+    const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY_AUTOMATION') || Deno.env.get('OPENAI_API_KEY');
     if (!OPENAI_API_KEY) {
       throw new Error('AI service not configured');
     }

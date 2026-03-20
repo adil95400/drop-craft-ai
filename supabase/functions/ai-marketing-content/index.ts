@@ -87,7 +87,7 @@ serve(async (req) => {
     const { contentType, productInfo, platform, campaignGoal } = parseResult.data;
     
     // Use Lovable AI Gateway (no external API key needed)
-    const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY');
+    const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY_MARKETING') || Deno.env.get('OPENAI_API_KEY');
 
     if (!OPENAI_API_KEY) {
       throw new Error('AI service not configured');

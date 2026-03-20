@@ -38,7 +38,7 @@ Deno.serve(async (req) => {
       }
 
       case 'analyze_lead_score': {
-        const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY')
+        const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY_AUTOMATION') || Deno.env.get('OPENAI_API_KEY')
         if (!OPENAI_API_KEY) return errorResponse('OPENAI_API_KEY not configured', corsHeaders, 500)
 
         if (!data.contact_id) return errorResponse('contact_id required', corsHeaders, 400)
@@ -70,7 +70,7 @@ Deno.serve(async (req) => {
       }
 
       case 'generate_email_template': {
-        const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY')
+        const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY_AUTOMATION') || Deno.env.get('OPENAI_API_KEY')
         if (!OPENAI_API_KEY) return errorResponse('OPENAI_API_KEY not configured', corsHeaders, 500)
 
         const response = await fetch('https://api.openai.com/v1/chat/completions', {

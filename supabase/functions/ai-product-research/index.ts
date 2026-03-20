@@ -16,7 +16,7 @@ Deno.serve(async (req) => {
 
     if (!query && !niche) throw new Error('query ou niche requis')
 
-    const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY')
+    const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY_PRODUCT') || Deno.env.get('OPENAI_API_KEY')
     if (!OPENAI_API_KEY) throw new Error('AI service not configured')
 
     // Get user context

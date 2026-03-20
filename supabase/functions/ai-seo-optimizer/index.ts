@@ -25,7 +25,7 @@ const handler = createEdgeFunction<SEOInput>({
   rateLimit: { maxRequests: 30, windowMinutes: 60, action: 'ai_seo_optimizer' }
 }, async (ctx) => {
   const { user, input, correlationId } = ctx
-  const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY')
+  const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY_SEO') || Deno.env.get('OPENAI_API_KEY')
   if (!OPENAI_API_KEY) throw new Error('OPENAI_API_KEY not configured')
 
   console.log(`[${correlationId}] SEO ${input.action} for user ${user.id}`)

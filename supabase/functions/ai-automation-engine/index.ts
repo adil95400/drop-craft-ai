@@ -138,7 +138,7 @@ serve(async (req) => {
 });
 
 async function analyzeAutomationData(rule: any, inputData: any) {
-  const lovableApiKey = Deno.env.get('OPENAI_API_KEY');
+  const lovableApiKey = Deno.env.get('OPENAI_API_KEY_AUTOMATION') || Deno.env.get('OPENAI_API_KEY');
   
   if (!lovableApiKey) {
     console.warn('OPENAI_API_KEY not configured, using fallback analysis');

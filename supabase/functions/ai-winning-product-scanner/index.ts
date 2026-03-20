@@ -52,7 +52,7 @@ async function scanTikTokAds(params: any, userId: string, supabase: any) {
   const { keywords, category, region = 'US', limit = 20 } = params
 
   // Use Lovable AI to analyze TikTok ad trends and generate winning product insights
-  const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY')
+  const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY_PRODUCT') || Deno.env.get('OPENAI_API_KEY')
   if (!OPENAI_API_KEY) throw new Error('OPENAI_API_KEY not configured')
 
   const prompt = `You are a TikTok ads product research expert. Analyze current TikTok Shop trends and generate a list of ${limit} winning products for the ${region} market.
@@ -184,7 +184,7 @@ async function scoreProductsWithAI(params: any, userId: string, supabase: any) {
 
   if (!products?.length) throw new Error('No products found')
 
-  const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY')
+  const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY_PRODUCT') || Deno.env.get('OPENAI_API_KEY')
   if (!OPENAI_API_KEY) throw new Error('OPENAI_API_KEY not configured')
 
   const productList = products.map((p: any) => `- ${p.name} (${p.price}${p.currency || 'USD'}, category: ${p.category || 'unknown'})`).join('\n')

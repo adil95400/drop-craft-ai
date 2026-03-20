@@ -95,7 +95,7 @@ serve(async (req) => {
     if (action === 'optimize') {
       console.log('Starting global translation optimization for locales:', targetLocales);
 
-      const lovableApiKey = Deno.env.get('OPENAI_API_KEY');
+      const lovableApiKey = Deno.env.get('OPENAI_API_KEY_SEO') || Deno.env.get('OPENAI_API_KEY');
       let translatedCount = 0;
 
       // Get untranslated products
