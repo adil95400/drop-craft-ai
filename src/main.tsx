@@ -19,9 +19,7 @@ const queryClient = new QueryClient({
       refetchOnWindowFocus: false,
       refetchOnReconnect: 'always',
       networkMode: 'offlineFirst',
-      // Structural sharing reduces re-renders when data hasn't changed
       structuralSharing: true,
-      // Deduplicate in-flight requests automatically
       refetchOnMount: 'always',
     },
     mutations: {
@@ -49,7 +47,9 @@ createRoot(document.getElementById('root')!).render(
         <BrowserRouter>
           <App />
           <Toaster />
-          <Suspense fallback={null}><CookieBanner /></Suspense>
+          <Suspense fallback={null}>
+            <CookieBanner />
+          </Suspense>
         </BrowserRouter>
       </QueryClientProvider>
     </HelmetProvider>
