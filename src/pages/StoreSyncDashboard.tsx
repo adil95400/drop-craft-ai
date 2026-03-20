@@ -66,10 +66,10 @@ function SyncStatCard({
   onClick?: () => void;
 }) {
   const colorClasses: Record<string, string> = {
-    blue: 'from-blue-500/20 to-blue-600/10 text-info',
-    green: 'from-green-500/20 to-green-600/10 text-success',
+    blue: 'from-info/20 to-info/10 text-info',
+    green: 'from-success/20 to-success/10 text-success',
     yellow: 'from-yellow-500/20 to-yellow-600/10 text-warning',
-    red: 'from-red-500/20 to-red-600/10 text-destructive',
+    red: 'from-destructive/20 to-destructive/10 text-destructive',
     purple: 'from-purple-500/20 to-purple-600/10 text-purple-500',
     primary: 'from-primary/20 to-primary/10 text-primary',
   };
@@ -485,7 +485,7 @@ export default function StoreSyncDashboard() {
                   initial={{ opacity: 0, y: -10 }}
                   animate={{ opacity: 1, y: 0 }}
                 >
-                  <Card className="p-4 bg-warning/10 border-yellow-500/30">
+                  <Card className="p-4 bg-warning/10 border-warning/30">
                     <div className="flex items-center gap-3">
                       <AlertTriangle className="h-5 w-5 text-warning" />
                       <div className="flex-1">

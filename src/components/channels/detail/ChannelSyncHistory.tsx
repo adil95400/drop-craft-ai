@@ -177,7 +177,7 @@ export function ChannelSyncHistory({
           <motion.div
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
-            className="mt-3 p-3 rounded-lg bg-info/10 border border-blue-500/20"
+            className="mt-3 p-3 rounded-lg bg-info/10 border border-info/20"
           >
             <div className="flex items-center justify-between mb-1.5">
               <div className="flex items-center gap-2">

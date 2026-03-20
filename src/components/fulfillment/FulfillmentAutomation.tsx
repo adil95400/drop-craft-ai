@@ -712,7 +712,7 @@ export function FulfillmentAutomation() {
                         {/* Auto Label */}
                         <div className={cn(
                           "flex items-center justify-between p-4 rounded-xl border transition-all",
-                          formData.auto_label ? "border-green-500/50 bg-success/5" : "border-border bg-muted/20"
+                          formData.auto_label ? "border-success/50 bg-success/5" : "border-border bg-muted/20"
                         )}>
                           <div className="flex items-center gap-4">
                             <div className={cn(
@@ -739,7 +739,7 @@ export function FulfillmentAutomation() {
                         {/* Auto Print */}
                         <div className={cn(
                           "flex items-center justify-between p-4 rounded-xl border transition-all",
-                          formData.auto_print ? "border-blue-500/50 bg-info/5" : "border-border bg-muted/20"
+                          formData.auto_print ? "border-info/50 bg-info/5" : "border-border bg-muted/20"
                         )}>
                           <div className="flex items-center gap-4">
                             <div className={cn(
@@ -960,7 +960,7 @@ export function FulfillmentAutomation() {
                             variant={rule.is_active ? "default" : "secondary"}
                             className={cn(
                               "shrink-0",
-                              rule.is_active && "bg-success/10 text-success border-green-500/20"
+                              rule.is_active && "bg-success/10 text-success border-success/20"
                             )}
                           >
                             {rule.is_active ? (

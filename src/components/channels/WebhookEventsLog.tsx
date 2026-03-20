@@ -142,7 +142,7 @@ export function WebhookEventsLog({
               Événements Webhook
             </CardTitle>
             {showRealtime && isConnected && (
-              <Badge variant="outline" className="gap-1 text-success border-green-500/30">
+              <Badge variant="outline" className="gap-1 text-success border-success/30">
                 <Wifi className="h-3 w-3" />
                 Live
               </Badge>
@@ -201,7 +201,7 @@ export function WebhookEventsLog({
           <div className="space-y-2">
             {/* Real-time last event */}
             {showRealtime && lastEvent && (
-              <div className="p-3 rounded-lg border border-green-500/30 bg-success/5 animate-pulse">
+              <div className="p-3 rounded-lg border border-success/30 bg-success/5 animate-pulse">
                 <div className="flex items-center gap-3">
                   <div className="p-2 rounded-lg bg-success text-white">
                     <Zap className="h-4 w-4" />

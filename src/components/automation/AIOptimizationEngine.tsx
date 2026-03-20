@@ -333,7 +333,7 @@ export const AIOptimizationEngine = () => {
           </CardContent>
         </Card>
 
-        <Card className="border-blue-200 bg-gradient-to-br from-blue-50 to-blue-100">
+        <Card className="border-info/20 bg-gradient-to-br from-blue-50 to-blue-100">
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
@@ -345,7 +345,7 @@ export const AIOptimizationEngine = () => {
           </CardContent>
         </Card>
 
-        <Card className="border-green-200 bg-gradient-to-br from-green-50 to-green-100">
+        <Card className="border-success/20 bg-gradient-to-br from-green-50 to-green-100">
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>

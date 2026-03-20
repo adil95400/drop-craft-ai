@@ -143,9 +143,9 @@ export function InfluencerSpyPanel() {
   };
 
   const performanceColors = {
-    high: 'bg-success/20 text-success border-green-500/30',
-    medium: 'bg-warning/20 text-warning border-yellow-500/30',
-    low: 'bg-destructive/20 text-destructive border-red-500/30',
+    high: 'bg-success/20 text-success border-success/30',
+    medium: 'bg-warning/20 text-warning border-warning/30',
+    low: 'bg-destructive/20 text-destructive border-destructive/30',
   };
 
   return (

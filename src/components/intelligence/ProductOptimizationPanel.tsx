@@ -146,7 +146,7 @@ export function ProductOptimizationPanel() {
   return (
     <div className="space-y-6">
       {/* Header avec métriques */}
-      <Card className="bg-gradient-to-r from-blue-50 to-purple-50 border-blue-200">
+      <Card className="bg-gradient-to-r from-blue-50 to-purple-50 border-info/20">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Target className="w-6 h-6 text-info" />

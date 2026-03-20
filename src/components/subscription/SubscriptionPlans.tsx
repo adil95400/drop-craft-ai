@@ -75,7 +75,7 @@ export function SubscriptionPlans() {
             className={cn(
               "relative",
               plan.popular && "border-primary shadow-lg scale-105",
-              isCurrent && "border-green-500 border-2"
+              isCurrent && "border-success border-2"
             )}
           >
             {plan.popular && (

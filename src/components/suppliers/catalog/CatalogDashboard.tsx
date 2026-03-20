@@ -52,8 +52,8 @@ const colorClasses = {
   primary: 'bg-primary/10 text-primary border-primary/20',
   success: 'bg-success/10 text-success border-emerald-500/20',
   warning: 'bg-warning/10 text-warning border-amber-500/20',
-  danger: 'bg-destructive/10 text-destructive border-red-500/20',
-  info: 'bg-info/10 text-info border-blue-500/20',
+  danger: 'bg-destructive/10 text-destructive border-destructive/20',
+  info: 'bg-info/10 text-info border-info/20',
 };
 
 const iconColorClasses = {

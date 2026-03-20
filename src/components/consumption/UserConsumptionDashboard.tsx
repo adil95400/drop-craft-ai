@@ -83,8 +83,8 @@ function QuotaCard({ quotaKey, label, current, limit, percentage, isUnlimited }:
   return (
     <Card className={cn(
       'transition-all hover:shadow-md',
-      isExhausted && 'border-red-500 bg-destructive/5/50 dark:bg-red-950/20',
-      isNearLimit && !isExhausted && 'border-yellow-500 bg-warning/5/50 dark:bg-yellow-950/20'
+      isExhausted && 'border-destructive bg-destructive/5/50 dark:bg-red-950/20',
+      isNearLimit && !isExhausted && 'border-warning bg-warning/5/50 dark:bg-yellow-950/20'
     )}>
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between">
@@ -99,7 +99,7 @@ function QuotaCard({ quotaKey, label, current, limit, percentage, isUnlimited }:
             </Badge>
           )}
           {isNearLimit && !isExhausted && (
-            <Badge variant="outline" className="text-xs text-warning border-yellow-500">
+            <Badge variant="outline" className="text-xs text-warning border-warning">
               <AlertTriangle className="h-3 w-3 mr-1" />
               Bas
             </Badge>
@@ -207,7 +207,7 @@ export function UserConsumptionDashboard() {
                 </Badge>
               ))}
               {nearLimitQuotas.filter(q => !exhaustedQuotas.includes(q)).map(q => (
-                <Badge key={q.key} variant="outline" className="text-warning border-yellow-500">
+                <Badge key={q.key} variant="outline" className="text-warning border-warning">
                   {q.label}: {Math.round(100 - q.percentage)}% restant
                 </Badge>
               ))}

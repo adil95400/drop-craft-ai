@@ -43,7 +43,7 @@ const colorClasses = {
     bg: 'bg-warning/10',
   },
   blue: {
-    gradient: 'from-blue-500/20 to-blue-500/5',
+    gradient: 'from-info/20 to-blue-500/5',
     text: 'text-info dark:text-blue-400',
     bg: 'bg-info/10',
   },

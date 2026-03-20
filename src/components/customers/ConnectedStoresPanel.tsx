@@ -42,7 +42,7 @@ const platformConfig: Record<string, { icon: React.ReactNode; color: string; gra
   shopify: { 
     icon: <ShoppingBag className="h-4 w-4" />, 
     color: 'text-success',
-    gradient: 'from-green-500/20 to-green-600/10'
+    gradient: 'from-success/20 to-success/10'
   },
   woocommerce: { 
     icon: <Store className="h-4 w-4" />, 
@@ -62,7 +62,7 @@ const platformConfig: Record<string, { icon: React.ReactNode; color: string; gra
   default: { 
     icon: <Globe className="h-4 w-4" />, 
     color: 'text-info',
-    gradient: 'from-blue-500/20 to-blue-600/10'
+    gradient: 'from-info/20 to-info/10'
   }
 }
 
@@ -269,7 +269,7 @@ export function ConnectedStoresPanel({ onImportComplete, autoSync = true }: Conn
                       {activeStores.length}/{connectedIntegrations.length} actives
                     </Badge>
                     {isSyncingAny && (
-                      <Badge variant="outline" className="text-xs gap-1 animate-pulse border-blue-500/30 text-info">
+                      <Badge variant="outline" className="text-xs gap-1 animate-pulse border-info/30 text-info">
                         <Loader2 className="h-3 w-3 animate-spin" />
                         Sync...
                       </Badge>

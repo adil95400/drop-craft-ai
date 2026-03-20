@@ -160,7 +160,7 @@ export function ABTestManager() {
                     const winnerIdx = calculateWinner(test.variants);
                     const isWinner = winnerIdx === idx;
                     return (
-                      <div key={variant.name} className={`p-4 rounded-lg border ${isWinner ? 'border-green-500 bg-success/5 dark:bg-green-950' : ''}`}>
+                      <div key={variant.name} className={`p-4 rounded-lg border ${isWinner ? 'border-success bg-success/5 dark:bg-green-950' : ''}`}>
                         <div className="flex items-center justify-between mb-2">
                           <span className="font-semibold">{variant.name}</span>
                           {isWinner && (

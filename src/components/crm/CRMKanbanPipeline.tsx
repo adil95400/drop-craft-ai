@@ -45,12 +45,12 @@ interface PipelineStage {
 }
 
 const stages: PipelineStage[] = [
-  { id: 'prospecting', name: 'Prospection', color: 'text-info', bgColor: 'bg-info/5 border-blue-200', probability: 10 },
+  { id: 'prospecting', name: 'Prospection', color: 'text-info', bgColor: 'bg-info/5 border-info/20', probability: 10 },
   { id: 'qualification', name: 'Qualification', color: 'text-purple-600', bgColor: 'bg-purple-50 border-purple-200', probability: 25 },
   { id: 'proposal', name: 'Proposition', color: 'text-warning', bgColor: 'bg-amber-50 border-amber-200', probability: 50 },
   { id: 'negotiation', name: 'Négociation', color: 'text-warning', bgColor: 'bg-orange-50 border-orange-200', probability: 75 },
-  { id: 'closed_won', name: 'Gagné', color: 'text-success', bgColor: 'bg-success/5 border-green-200', probability: 100 },
-  { id: 'closed_lost', name: 'Perdu', color: 'text-destructive', bgColor: 'bg-destructive/5 border-red-200', probability: 0 },
+  { id: 'closed_won', name: 'Gagné', color: 'text-success', bgColor: 'bg-success/5 border-success/20', probability: 100 },
+  { id: 'closed_lost', name: 'Perdu', color: 'text-destructive', bgColor: 'bg-destructive/5 border-destructive/20', probability: 0 },
 ];
 
 interface DealCardProps {

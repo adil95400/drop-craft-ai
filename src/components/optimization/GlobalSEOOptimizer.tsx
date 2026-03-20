@@ -49,13 +49,13 @@ export function GlobalSEOOptimizer() {
   const getSeverityColor = (severity: string) => {
     switch (severity) {
       case 'critical':
-        return 'bg-destructive/10 text-red-800 border-red-200';
+        return 'bg-destructive/10 text-red-800 border-destructive/20';
       case 'warning':
-        return 'bg-warning/10 text-yellow-800 border-yellow-200';
+        return 'bg-warning/10 text-yellow-800 border-warning/20';
       case 'info':
-        return 'bg-info/10 text-blue-800 border-blue-200';
+        return 'bg-info/10 text-blue-800 border-info/20';
       default:
-        return 'bg-success/10 text-success border-green-200';
+        return 'bg-success/10 text-success border-success/20';
     }
   };
 
@@ -251,9 +251,9 @@ export function GlobalSEOOptimizer() {
                           <Badge 
                             variant="outline"
                             className={
-                              page.score >= 80 ? 'border-green-500 text-success' :
-                              page.score >= 60 ? 'border-yellow-500 text-yellow-700' :
-                              'border-red-500 text-red-700'
+                              page.score >= 80 ? 'border-success text-success' :
+                              page.score >= 60 ? 'border-warning text-yellow-700' :
+                              'border-destructive text-red-700'
                             }
                           >
                             Score: {page.score}/100

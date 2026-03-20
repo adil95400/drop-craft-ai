@@ -64,7 +64,7 @@ export function StockAlertsDashboard() {
             <div className="text-2xl font-bold">{stats.unresolved}</div>
           </CardContent>
         </Card>
-        <Card className="border-red-200 bg-destructive/5/50 dark:bg-red-950/20">
+        <Card className="border-destructive/20 bg-destructive/5/50 dark:bg-red-950/20">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Critiques</CardTitle>
             <AlertTriangle className="h-4 w-4 text-destructive" />
@@ -82,7 +82,7 @@ export function StockAlertsDashboard() {
             <div className="text-2xl font-bold text-warning">{stats.outOfStock}</div>
           </CardContent>
         </Card>
-        <Card className="border-yellow-200 bg-warning/5/50 dark:bg-yellow-950/20">
+        <Card className="border-warning/20 bg-warning/5/50 dark:bg-yellow-950/20">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Stock bas</CardTitle>
             <Package className="h-4 w-4 text-warning" />

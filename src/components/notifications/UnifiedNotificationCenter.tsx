@@ -291,7 +291,7 @@ export function UnifiedNotificationCenter() {
                 ) : (
                   filteredNotifications.map((notification) => (
                     <Card key={notification.id} className={`transition-colors ${
-                      !notification.read ? 'bg-info/5 border-blue-200' : 'hover:bg-muted/20'
+                      !notification.read ? 'bg-info/5 border-info/20' : 'hover:bg-muted/20'
                     }`}>
                       <CardContent className="p-4">
                         <div className="flex items-start justify-between gap-3">

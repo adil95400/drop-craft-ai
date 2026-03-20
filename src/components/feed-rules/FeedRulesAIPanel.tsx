@@ -58,9 +58,9 @@ export function FeedRulesAIPanel() {
 
   const getPriorityColor = (priority: FeedRuleRecommendation['priority']) => {
     switch (priority) {
-      case 'high': return 'bg-destructive/10 text-destructive border-red-500/20';
+      case 'high': return 'bg-destructive/10 text-destructive border-destructive/20';
       case 'medium': return 'bg-warning/10 text-warning border-amber-500/20';
-      case 'low': return 'bg-info/10 text-info border-blue-500/20';
+      case 'low': return 'bg-info/10 text-info border-info/20';
     }
   };
 

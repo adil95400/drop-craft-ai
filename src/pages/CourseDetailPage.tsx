@@ -376,7 +376,7 @@ export default function CourseDetailPage() {
                          <div className="flex items-start gap-3">
                            <div className={`flex-shrink-0 w-10 h-10 rounded-lg border-2 flex items-center justify-center ${
                              isLessonCompleted(lesson.id) 
-                               ? 'bg-success/10 border-green-500' 
+                               ? 'bg-success/10 border-success' 
                                : currentLesson?.id === lesson.id 
                                ? 'bg-primary/10 border-primary'
                                : 'border-border'

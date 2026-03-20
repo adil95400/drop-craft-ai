@@ -258,7 +258,7 @@ export function RealTimePerformanceTracker() {
       </div>
 
       {alertsEnabled && (
-        <Card className="border-yellow-200 bg-warning/5">
+        <Card className="border-warning/20 bg-warning/5">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-yellow-800">
               <Bell className="h-5 w-5" />

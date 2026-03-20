@@ -224,10 +224,10 @@ export default function ChannableStoresPage() {
                     <Badge 
                       className={`${
                         integration.connection_status === 'connected' 
-                          ? 'bg-success/10 text-success border-green-500/30' 
+                          ? 'bg-success/10 text-success border-success/30' 
                           : integration.connection_status === 'error'
-                          ? 'bg-destructive/10 text-destructive border-red-500/30'
-                          : 'bg-warning/10 text-warning border-yellow-500/30'
+                          ? 'bg-destructive/10 text-destructive border-destructive/30'
+                          : 'bg-warning/10 text-warning border-warning/30'
                       } border`}
                     >
                       {integration.connection_status === 'connected' ? (

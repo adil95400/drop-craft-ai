@@ -272,7 +272,7 @@ export const ImportAnalyticsDashboard = ({ jobs, products }: ImportAnalyticsDash
             )}
             
             {weekTrend > 0 && (
-              <div className="flex items-start gap-3 p-3 rounded-lg bg-success/10 border border-green-500/20">
+              <div className="flex items-start gap-3 p-3 rounded-lg bg-success/10 border border-success/20">
                 <TrendingUp className="h-5 w-5 text-success mt-0.5" />
                 <div className="flex-1">
                   <p className="text-sm font-medium">Activité en hausse</p>
@@ -296,7 +296,7 @@ export const ImportAnalyticsDashboard = ({ jobs, products }: ImportAnalyticsDash
             )}
 
             {successRate >= 90 && (
-              <div className="flex items-start gap-3 p-3 rounded-lg bg-success/10 border border-green-500/20">
+              <div className="flex items-start gap-3 p-3 rounded-lg bg-success/10 border border-success/20">
                 <TrendingUp className="h-5 w-5 text-success mt-0.5" />
                 <div className="flex-1">
                   <p className="text-sm font-medium">Excellente performance</p>

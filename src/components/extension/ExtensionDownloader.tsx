@@ -192,7 +192,7 @@ export function ExtensionDownloader() {
         )}
 
         {status === 'success' && (
-          <div className="flex items-center gap-2 p-3 bg-success/10 border border-green-500/20 rounded-lg">
+          <div className="flex items-center gap-2 p-3 bg-success/10 border border-success/20 rounded-lg">
             <Check className="h-5 w-5 text-success" />
             <span className="text-success dark:text-green-400">
               Téléchargement réussi ! Décompressez le ZIP et chargez-le dans Chrome.
@@ -201,7 +201,7 @@ export function ExtensionDownloader() {
         )}
 
         {status === 'error' && (
-          <div className="flex items-center gap-2 p-3 bg-destructive/10 border border-red-500/20 rounded-lg">
+          <div className="flex items-center gap-2 p-3 bg-destructive/10 border border-destructive/20 rounded-lg">
             <AlertCircle className="h-5 w-5 text-destructive" />
             <span className="text-red-700 dark:text-red-400">{errorMessage}</span>
           </div>
@@ -252,7 +252,7 @@ export function ExtensionDownloader() {
           </ol>
         </div>
 
-        <div className="flex items-center gap-2 p-3 bg-info/10 border border-blue-500/20 rounded-lg">
+        <div className="flex items-center gap-2 p-3 bg-info/10 border border-info/20 rounded-lg">
           <FolderOpen className="h-5 w-5 text-info flex-shrink-0" />
           <span className="text-sm text-blue-700 dark:text-blue-400">
             <strong>Contenu :</strong> {EXTENSION_FILES.length} fichiers incluant extracteurs, 

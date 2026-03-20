@@ -75,9 +75,9 @@ export function ChannableChannelHealth({
           <TooltipTrigger asChild>
             <div className={cn(
               "flex items-center gap-2 px-3 py-1.5 rounded-full border cursor-help",
-              overallStatus === 'good' && "border-green-500/30 bg-success/10",
+              overallStatus === 'good' && "border-success/30 bg-success/10",
               overallStatus === 'warning' && "border-amber-500/30 bg-warning/10",
-              overallStatus === 'critical' && "border-red-500/30 bg-destructive/10",
+              overallStatus === 'critical' && "border-destructive/30 bg-destructive/10",
               className
             )}>
               <StatusIcon className={cn("h-4 w-4", statusConfig.color)} />
@@ -133,9 +133,9 @@ export function ChannableChannelHealth({
           <div className={cn(
             "relative w-20 h-20 rounded-full flex items-center justify-center",
             "bg-gradient-to-br from-background to-muted border-4",
-            overallStatus === 'good' && "border-green-500/50",
+            overallStatus === 'good' && "border-success/50",
             overallStatus === 'warning' && "border-amber-500/50",
-            overallStatus === 'critical' && "border-red-500/50"
+            overallStatus === 'critical' && "border-destructive/50"
           )}>
             <motion.div
               initial={{ scale: 0 }}

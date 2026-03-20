@@ -198,7 +198,7 @@ const DocumentationPage = () => {
               </div>
 
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold mb-6 tracking-tight">
-                Centre de <span className="bg-gradient-to-r from-primary via-primary to-blue-600 bg-clip-text text-transparent">documentation</span>
+                Centre de <span className="bg-gradient-to-r from-primary via-primary to-info bg-clip-text text-transparent">documentation</span>
               </h1>
 
               <p className="text-lg md:text-xl text-muted-foreground mb-10 max-w-2xl mx-auto leading-relaxed">

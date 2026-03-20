@@ -759,7 +759,7 @@ export function AdvancedSupplierEngine() {
             {/* Auto-Order */}
             <Card className={cn(
               "transition-all",
-              automationStatus.autoOrder && "border-green-500/50 bg-success/5"
+              automationStatus.autoOrder && "border-success/50 bg-success/5"
             )}>
               <CardHeader>
                 <div className="flex items-center justify-between">
@@ -800,7 +800,7 @@ export function AdvancedSupplierEngine() {
             {/* Auto-Fulfillment */}
             <Card className={cn(
               "transition-all",
-              automationStatus.autoFulfillment && "border-blue-500/50 bg-info/5"
+              automationStatus.autoFulfillment && "border-info/50 bg-info/5"
             )}>
               <CardHeader>
                 <div className="flex items-center justify-between">

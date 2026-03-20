@@ -212,7 +212,7 @@ export const FinalHealthCheck = () => {
   return (
     <div className="space-y-6">
       {/* Overall Status */}
-      <Card className="border-green-200 bg-success/5">
+      <Card className="border-success/20 bg-success/5">
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle className="text-2xl flex items-center gap-3">

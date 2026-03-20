@@ -206,7 +206,7 @@ export function PerformanceMonitor({ store }: PerformanceMonitorProps) {
         {/* Alertes de performance */}
         <div className="space-y-2">
           {metrics.apiLatency > 200 && (
-            <div className="flex items-center gap-2 p-2 rounded-lg bg-warning/5 border border-yellow-200">
+            <div className="flex items-center gap-2 p-2 rounded-lg bg-warning/5 border border-warning/20">
               <AlertTriangle className="w-4 h-4 text-warning" />
               <span className="text-sm text-yellow-800">
                 Latence API élevée détectée
@@ -215,7 +215,7 @@ export function PerformanceMonitor({ store }: PerformanceMonitorProps) {
           )}
 
           {metrics.errorRate > 2 && (
-            <div className="flex items-center gap-2 p-2 rounded-lg bg-destructive/5 border border-red-200">
+            <div className="flex items-center gap-2 p-2 rounded-lg bg-destructive/5 border border-destructive/20">
               <AlertTriangle className="w-4 h-4 text-destructive" />
               <span className="text-sm text-red-800">
                 Taux d'erreur élevé - Vérifiez la configuration
@@ -224,7 +224,7 @@ export function PerformanceMonitor({ store }: PerformanceMonitorProps) {
           )}
 
           {metrics.uptime < 98 && (
-            <div className="flex items-center gap-2 p-2 rounded-lg bg-destructive/5 border border-red-200">
+            <div className="flex items-center gap-2 p-2 rounded-lg bg-destructive/5 border border-destructive/20">
               <AlertTriangle className="w-4 h-4 text-destructive" />
               <span className="text-sm text-red-800">
                 Disponibilité dégradée - Contactez le support

@@ -707,12 +707,12 @@ export function CSVImportWizard() {
                 <h4 className="font-medium text-sm mb-1">Mapping intelligent</h4>
                 <p className="text-xs text-muted-foreground">Détection automatique des colonnes</p>
               </div>
-              <div className="p-4 rounded-lg bg-success/5 border border-green-500/10">
+              <div className="p-4 rounded-lg bg-success/5 border border-success/10">
                 <Check className="w-5 h-5 text-success mb-2" />
                 <h4 className="font-medium text-sm mb-1">Validation avancée</h4>
                 <p className="text-xs text-muted-foreground">Vérification des données en temps réel</p>
               </div>
-              <div className="p-4 rounded-lg bg-info/5 border border-blue-500/10">
+              <div className="p-4 rounded-lg bg-info/5 border border-info/10">
                 <FileText className="w-5 h-5 text-info mb-2" />
                 <h4 className="font-medium text-sm mb-1">Format Shopify</h4>
                 <p className="text-xs text-muted-foreground">Compatible template Shopify FR/EN</p>
@@ -823,7 +823,7 @@ export function CSVImportWizard() {
                           className={cn(
                             "flex items-center gap-4 p-3 border rounded-xl transition-all duration-200 hover:shadow-sm",
                             isAutoMapped && "border-primary/40 bg-gradient-to-r from-primary/5 to-transparent",
-                            !isAutoMapped && isMapped && "border-green-500/40 bg-gradient-to-r from-green-500/5 to-transparent",
+                            !isAutoMapped && isMapped && "border-success/40 bg-gradient-to-r from-success/5 to-transparent",
                             !isMapped && "hover:border-muted-foreground/50"
                           )}
                         >
@@ -872,7 +872,7 @@ export function CSVImportWizard() {
                             >
                               <SelectTrigger className={cn(
                                 "transition-colors",
-                                isMapped && "border-green-500/50 bg-success/5"
+                                isMapped && "border-success/50 bg-success/5"
                               )}>
                                 <SelectValue placeholder="Sélectionner un champ..." />
                               </SelectTrigger>
@@ -969,7 +969,7 @@ export function CSVImportWizard() {
                         </Badge>
                       )}
                       {errorsByCategory.format.length > 0 && (
-                        <Badge variant="outline" className="text-xs border-yellow-500 text-warning">
+                        <Badge variant="outline" className="text-xs border-warning text-warning">
                           {errorsByCategory.format.length} format invalide
                         </Badge>
                       )}

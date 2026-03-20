@@ -34,10 +34,10 @@ interface ImportRecord {
 }
 
 const statusConfig = {
-  active: { label: 'Réussi', color: 'bg-success/10 text-success border-green-500/30', icon: CheckCircle2 },
-  pending: { label: 'En cours', color: 'bg-warning/10 text-warning border-yellow-500/30', icon: Clock },
-  draft: { label: 'Brouillon', color: 'bg-info/10 text-info border-blue-500/30', icon: Package },
-  error: { label: 'Erreur', color: 'bg-destructive/10 text-destructive border-red-500/30', icon: XCircle },
+  active: { label: 'Réussi', color: 'bg-success/10 text-success border-success/30', icon: CheckCircle2 },
+  pending: { label: 'En cours', color: 'bg-warning/10 text-warning border-warning/30', icon: Clock },
+  draft: { label: 'Brouillon', color: 'bg-info/10 text-info border-info/30', icon: Package },
+  error: { label: 'Erreur', color: 'bg-destructive/10 text-destructive border-destructive/30', icon: XCircle },
 };
 
 const platformIcons: Record<string, string> = {

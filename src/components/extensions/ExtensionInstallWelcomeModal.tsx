@@ -105,7 +105,7 @@ export function ExtensionInstallWelcomeModal({
               exit={{ opacity: 0, y: -10 }}
             >
               <DialogHeader className="text-center">
-                <div className="mx-auto mb-4 h-16 w-16 rounded-full bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center">
+                <div className="mx-auto mb-4 h-16 w-16 rounded-full bg-gradient-to-br from-cyan-500 to-info flex items-center justify-center">
                   <Chrome className="h-8 w-8 text-white" />
                 </div>
                 <DialogTitle className="text-xl">
@@ -137,7 +137,7 @@ export function ExtensionInstallWelcomeModal({
               <DialogFooter className="flex-col gap-2 sm:flex-col">
                 {user ? (
                   <Button 
-                    className="w-full bg-gradient-to-r from-cyan-500 to-blue-600"
+                    className="w-full bg-gradient-to-r from-cyan-500 to-info"
                     onClick={() => setStep('generate')}
                   >
                     Connecter l'extension
@@ -175,7 +175,7 @@ export function ExtensionInstallWelcomeModal({
               </DialogHeader>
 
               <div className="py-6 space-y-4">
-                <Alert className="bg-warning/10 border-yellow-500/20">
+                <Alert className="bg-warning/10 border-warning/20">
                   <AlertDescription className="text-sm">
                     ⚠️ Gardez ce token secret. Il donne accès à votre compte depuis l'extension.
                   </AlertDescription>

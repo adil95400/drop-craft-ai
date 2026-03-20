@@ -260,7 +260,7 @@ export const WinnersAlertSystem = () => {
         </div>
 
         {/* Info */}
-        <div className="flex items-start gap-2 p-3 bg-info/5 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+        <div className="flex items-start gap-2 p-3 bg-info/5 dark:bg-blue-950/20 border border-info/20 dark:border-blue-800 rounded-lg">
           <Bell className="w-4 h-4 text-info mt-0.5" />
           <div className="text-sm text-blue-900 dark:text-blue-100">
             <p className="font-semibold mb-1">💡 Astuce</p>

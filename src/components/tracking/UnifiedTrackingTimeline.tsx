@@ -386,7 +386,7 @@ export function UnifiedTrackingTimeline({
 
         {/* No tracking warning */}
         {!trackingNumber && normalizedEvents.length === 0 && (
-          <div className="flex items-center gap-3 p-4 rounded-lg bg-warning/10 border border-yellow-500/20">
+          <div className="flex items-center gap-3 p-4 rounded-lg bg-warning/10 border border-warning/20">
             <AlertCircle className="h-5 w-5 text-warning flex-shrink-0" />
             <div>
               <p className="font-medium text-sm">Numéro de suivi non disponible</p>

@@ -405,7 +405,7 @@ export function ImportCSVWithValidation() {
             <TabsContent value="errors" className="space-y-2">
               <div className="max-h-96 overflow-y-auto space-y-2">
                 {errorRows.map((row) => (
-                  <Card key={row.row} className="border-red-200">
+                  <Card key={row.row} className="border-destructive/20">
                     <CardContent className="p-4">
                       <div className="flex items-start gap-3">
                         <AlertCircle className="h-5 w-5 text-destructive flex-shrink-0 mt-0.5" />
@@ -450,7 +450,7 @@ export function ImportCSVWithValidation() {
       {/* Done Step */}
       {step === 'done' && importResult && (
         <div className="space-y-4">
-          <Card className="border-green-200 bg-success/5">
+          <Card className="border-success/20 bg-success/5">
             <CardContent className="pt-6">
               <div className="text-center space-y-4">
                 <CheckCircle2 className="h-16 w-16 mx-auto text-success" />

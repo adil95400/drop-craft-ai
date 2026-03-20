@@ -190,7 +190,7 @@ const ChannableNavItem = memo(({
                 
                 {!hasAccess && !isComingSoon && <Lock className="h-3 w-3 text-muted-foreground/60" aria-label={t('errors.forbidden')} />}
                 
-                {module.badge && !isComingSoon && <Badge className={cn("text-[9px] px-1.5 py-0 h-4 font-bold border-0 uppercase tracking-wide", module.badge === 'pro' && "bg-gradient-to-r from-amber-500/90 to-orange-500/90 text-white shadow-sm", module.badge === 'new' && "bg-gradient-to-r from-emerald-500/90 to-green-500/90 text-white shadow-sm", module.badge === 'beta' && "bg-gradient-to-r from-blue-500/90 to-cyan-500/90 text-white shadow-sm")}>
+                {module.badge && !isComingSoon && <Badge className={cn("text-[9px] px-1.5 py-0 h-4 font-bold border-0 uppercase tracking-wide", module.badge === 'pro' && "bg-gradient-to-r from-amber-500/90 to-orange-500/90 text-white shadow-sm", module.badge === 'new' && "bg-gradient-to-r from-emerald-500/90 to-green-500/90 text-white shadow-sm", module.badge === 'beta' && "bg-gradient-to-r from-info/90 to-cyan-500/90 text-white shadow-sm")}>
                     {module.badge}
                   </Badge>}
                 

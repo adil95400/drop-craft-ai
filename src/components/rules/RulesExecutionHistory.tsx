@@ -52,7 +52,7 @@ export function RulesExecutionHistory({ onRefresh }: RulesExecutionHistoryProps)
   const getStatusBadge = (status: 'success' | 'error' | 'partial') => {
     const variants: Record<string, { class: string; label: string }> = {
       success: { class: 'bg-success/10 text-success border-emerald-500/20', label: 'Succès' },
-      error: { class: 'bg-destructive/10 text-destructive border-red-500/20', label: 'Erreur' },
+      error: { class: 'bg-destructive/10 text-destructive border-destructive/20', label: 'Erreur' },
       partial: { class: 'bg-warning/10 text-warning border-amber-500/20', label: 'Partiel' },
     };
     const variant = variants[status];

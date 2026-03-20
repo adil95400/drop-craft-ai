@@ -129,8 +129,8 @@ export function TrackingList({
               key={track.id} 
               className={cn(
                 "p-4 transition-all hover:shadow-md cursor-pointer",
-                track.status === 'delivered' && "border-green-500/30 bg-success/5/30 dark:bg-green-900/10",
-                track.status === 'exception' && "border-red-500/30 bg-destructive/5/30 dark:bg-red-900/10"
+                track.status === 'delivered' && "border-success/30 bg-success/5/30 dark:bg-green-900/10",
+                track.status === 'exception' && "border-destructive/30 bg-destructive/5/30 dark:bg-red-900/10"
               )}
               onClick={() => onViewDetails(track)}
             >

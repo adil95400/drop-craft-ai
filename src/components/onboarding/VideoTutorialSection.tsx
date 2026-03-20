@@ -231,7 +231,7 @@ export function VideoStep({ video, isCompleted, onPlay }: VideoStepProps) {
       className={cn(
         'flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors',
         isCompleted
-          ? 'bg-success/5 border-green-200 dark:bg-green-950/20 dark:border-green-900'
+          ? 'bg-success/5 border-success/20 dark:bg-green-950/20 dark:border-green-900'
           : 'bg-card border-border hover:bg-accent'
       )}
     >

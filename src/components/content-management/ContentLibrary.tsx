@@ -194,7 +194,7 @@ export function ContentLibrary() {
             </div>
           </CardContent>
         </Card>
-        <Card className="bg-gradient-to-br from-blue-500/10 to-blue-500/5">
+        <Card className="bg-gradient-to-br from-info/10 to-blue-500/5">
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-info/20 rounded-lg">
@@ -209,7 +209,7 @@ export function ContentLibrary() {
             </div>
           </CardContent>
         </Card>
-        <Card className="bg-gradient-to-br from-green-500/10 to-green-500/5">
+        <Card className="bg-gradient-to-br from-success/10 to-green-500/5">
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-success/20 rounded-lg">

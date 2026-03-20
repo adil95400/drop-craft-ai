@@ -57,7 +57,7 @@ export function CatalogHealthAIPanel() {
     low: 'bg-success/10 text-emerald-700 border-emerald-500/20',
     medium: 'bg-warning/10 text-amber-700 border-amber-500/20',
     high: 'bg-warning/10 text-orange-700 border-orange-500/20',
-    critical: 'bg-destructive/10 text-red-700 border-red-500/20'
+    critical: 'bg-destructive/10 text-red-700 border-destructive/20'
   }
 
   return (
@@ -236,7 +236,7 @@ export function CatalogHealthAIPanel() {
       </Card>
 
       {/* Benchmark */}
-      <Card className="bg-gradient-to-br from-blue-500/5 to-cyan-500/5 border-blue-500/20">
+      <Card className="bg-gradient-to-br from-info/5 to-cyan-500/5 border-info/20">
         <CardContent className="p-6">
           <div className="flex items-center justify-between">
             <div>

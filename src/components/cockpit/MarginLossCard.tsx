@@ -111,7 +111,7 @@ export function MarginLossCard({ products }: MarginLossCardProps) {
                   <span className="text-xs text-muted-foreground">{formatCurrency(p.price)}</span>
                   <Badge variant="outline" className={cn(
                     "text-[10px]",
-                    p.calculatedMargin < 0 ? "text-destructive border-destructive/30" : "text-warning border-yellow-500/30"
+                    p.calculatedMargin < 0 ? "text-destructive border-destructive/30" : "text-warning border-warning/30"
                   )}>
                     {p.calculatedMargin.toFixed(1)}%
                   </Badge>

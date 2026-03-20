@@ -583,7 +583,7 @@ export const ReportDialog: React.FC<ReportDialogProps> = ({
                   {formData.isAutomated && (
                     <div className="space-y-2">
                       <Label>Automatisation</Label>
-                      <div className="p-3 bg-success/5 border border-green-200 rounded-lg">
+                      <div className="p-3 bg-success/5 border border-success/20 rounded-lg">
                         <div className="flex items-center gap-2 mb-1">
                           <Mail className="h-4 w-4 text-success" />
                           <span className="text-sm font-medium text-success">Rapport automatisé</span>

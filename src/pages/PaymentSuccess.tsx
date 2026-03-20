@@ -85,7 +85,7 @@ export default function PaymentSuccess() {
               </div>
             ) : (
               <>
-                <div className="bg-success/5 border border-green-200 rounded-lg p-6 space-y-3">
+                <div className="bg-success/5 border border-success/20 rounded-lg p-6 space-y-3">
                   <h3 className="font-semibold text-lg">🎉 Bienvenue dans votre nouveau plan !</h3>
                   <p className="text-sm text-muted-foreground">
                     Votre abonnement a été activé avec succès. Vous avez maintenant accès à toutes les fonctionnalités premium.

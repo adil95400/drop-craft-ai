@@ -216,7 +216,7 @@ export const SubscriptionManager: React.FC = () => {
     <div className="space-y-8">
       {/* Current Subscription Status */}
       {subscription && (
-        <Card className={`${subscription.subscribed ? 'bg-success/5 border-green-200' : 'bg-muted/30'}`}>
+        <Card className={`${subscription.subscribed ? 'bg-success/5 border-success/20' : 'bg-muted/30'}`}>
           <CardHeader>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">

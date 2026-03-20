@@ -90,7 +90,7 @@ export function AdvancedFeatureGuide({
 
   const levelConfig = {
     beginner: { label: 'Débutant', color: 'bg-success/10 text-success border-emerald-500/20', icon: Zap },
-    intermediate: { label: 'Intermédiaire', color: 'bg-info/10 text-info border-blue-500/20', icon: Monitor },
+    intermediate: { label: 'Intermédiaire', color: 'bg-info/10 text-info border-info/20', icon: Monitor },
     advanced: { label: 'Avancé', color: 'bg-purple-500/10 text-purple-600 border-purple-500/20', icon: Award }
   }
 
@@ -127,7 +127,7 @@ export function AdvancedFeatureGuide({
               </div>
               <div className="flex items-center gap-2">
                 {videos.length > 0 && (
-                  <Badge variant="outline" className="text-[10px] px-1.5 border-blue-500/20 text-info">
+                  <Badge variant="outline" className="text-[10px] px-1.5 border-info/20 text-info">
                     <Video className="h-3 w-3 mr-0.5" />{videos.length} vidéo{videos.length > 1 ? 's' : ''}
                   </Badge>
                 )}
@@ -208,7 +208,7 @@ export function AdvancedFeatureGuide({
                 {tips.map((tip, index) => {
                   if (dismissedTips.includes(index)) return null
                   const tipConfig = {
-                    info: { style: 'bg-info/5 border-blue-500/20 text-blue-700 dark:text-blue-400', icon: Info },
+                    info: { style: 'bg-info/5 border-info/20 text-blue-700 dark:text-blue-400', icon: Info },
                     warning: { style: 'bg-warning/5 border-amber-500/20 text-amber-700 dark:text-amber-400', icon: AlertTriangle },
                     pro: { style: 'bg-purple-500/5 border-purple-500/20 text-purple-700 dark:text-purple-400', icon: Sparkles }
                   }

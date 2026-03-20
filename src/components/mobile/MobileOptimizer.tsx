@@ -212,9 +212,9 @@ export function MobileOptimizer() {
   return (
     <div className="space-y-6">
       {/* Performance Overview */}
-      <Card className={`${performanceScore >= 80 ? 'border-green-200 bg-success/5' : 
+      <Card className={`${performanceScore >= 80 ? 'border-success/20 bg-success/5' : 
                        performanceScore >= 60 ? 'border-orange-200 bg-orange-50' : 
-                       'border-red-200 bg-destructive/5'}`}>
+                       'border-destructive/20 bg-destructive/5'}`}>
         <CardHeader>
           <CardTitle className="flex items-center justify-between">
             <span className="flex items-center">

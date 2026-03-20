@@ -615,9 +615,9 @@ export default function ImportHistoryPage() {
                 {/* Header with gradient */}
                 <div className={cn(
                   "relative px-6 py-8 text-white overflow-hidden",
-                  selectedJob.status === 'completed' && "bg-gradient-to-br from-green-500 to-emerald-600",
-                  selectedJob.status === 'failed' && "bg-gradient-to-br from-red-500 to-rose-600",
-                  selectedJob.status === 'processing' && "bg-gradient-to-br from-blue-500 to-indigo-600",
+                  selectedJob.status === 'completed' && "bg-gradient-to-br from-success to-emerald-600",
+                  selectedJob.status === 'failed' && "bg-gradient-to-br from-destructive to-rose-600",
+                  selectedJob.status === 'processing' && "bg-gradient-to-br from-info to-indigo-600",
                   selectedJob.status === 'pending' && "bg-gradient-to-br from-amber-500 to-orange-600"
                 )}>
                   {/* Background pattern */}
@@ -782,7 +782,7 @@ export default function ImportHistoryPage() {
                           {selectedJob.errors.slice(0, 5).map((error, i) => (
                             <div 
                               key={i} 
-                              className="flex items-start gap-3 p-3 bg-destructive/5 dark:bg-red-950/20 rounded-lg border border-red-200 dark:border-red-800"
+                              className="flex items-start gap-3 p-3 bg-destructive/5 dark:bg-red-950/20 rounded-lg border border-destructive/20 dark:border-red-800"
                             >
                               <XCircle className="w-4 h-4 text-destructive mt-0.5 shrink-0" />
                               <p className="text-sm text-red-700 dark:text-red-400">{error}</p>

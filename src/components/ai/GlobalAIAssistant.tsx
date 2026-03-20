@@ -265,7 +265,7 @@ export function GlobalAIAssistant() {
                 </div>
                 <div>
                   <h3 className="font-semibold text-sm">Assistant IA</h3>
-                  <Badge variant="outline" className="text-[10px] h-4 bg-success/10 text-success border-green-500/20">
+                  <Badge variant="outline" className="text-[10px] h-4 bg-success/10 text-success border-success/20">
                     <span className="w-1.5 h-1.5 bg-success rounded-full mr-1 animate-pulse" />
                     En ligne
                   </Badge>

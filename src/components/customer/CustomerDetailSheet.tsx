@@ -106,13 +106,13 @@ export function CustomerDetailSheet({
     switch (status.toLowerCase()) {
       case 'completed':
       case 'delivered':
-        return 'bg-success/10 text-success border-green-500/20';
+        return 'bg-success/10 text-success border-success/20';
       case 'pending':
       case 'processing':
-        return 'bg-warning/10 text-warning border-yellow-500/20';
+        return 'bg-warning/10 text-warning border-warning/20';
       case 'cancelled':
       case 'refunded':
-        return 'bg-destructive/10 text-destructive border-red-500/20';
+        return 'bg-destructive/10 text-destructive border-destructive/20';
       default:
         return 'bg-muted text-muted-foreground';
     }

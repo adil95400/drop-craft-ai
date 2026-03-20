@@ -326,7 +326,7 @@ export const AdvancedSupplierIntegration = () => {
                   <Button 
                     className={`w-full ${
                       supplier.status === 'connected' 
-                        ? 'bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600' 
+                        ? 'bg-gradient-to-r from-success to-emerald-500 hover:from-green-600 hover:to-emerald-600' 
                         : supplier.isPro 
                           ? 'bg-gradient-primary hover:bg-gradient-accent' 
                           : 'bg-secondary hover:bg-secondary/80'

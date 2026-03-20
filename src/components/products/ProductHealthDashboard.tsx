@@ -407,9 +407,9 @@ export function ProductHealthDashboard() {
                             variant="outline"
                             className={cn(
                               "text-xs",
-                              issue.severity === 'high' && "bg-destructive/10 text-destructive border-red-500/20",
-                              issue.severity === 'medium' && "bg-warning/10 text-warning border-yellow-500/20",
-                              issue.severity === 'low' && "bg-info/10 text-info border-blue-500/20"
+                              issue.severity === 'high' && "bg-destructive/10 text-destructive border-destructive/20",
+                              issue.severity === 'medium' && "bg-warning/10 text-warning border-warning/20",
+                              issue.severity === 'low' && "bg-info/10 text-info border-info/20"
                             )}
                           >
                             {issue.message}

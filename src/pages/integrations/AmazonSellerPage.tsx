@@ -124,7 +124,7 @@ export default function AmazonSellerPage() {
             <h1 className="text-2xl font-bold flex items-center gap-2">
               Amazon Seller Central
               {isConnected ? (
-                <Badge className="bg-success/10 text-success border-green-500/30"><CheckCircle2 className="h-3 w-3 mr-1" />Connecté</Badge>
+                <Badge className="bg-success/10 text-success border-success/30"><CheckCircle2 className="h-3 w-3 mr-1" />Connecté</Badge>
               ) : (
                 <Badge variant="secondary"><AlertCircle className="h-3 w-3 mr-1" />Non connecté</Badge>
               )}

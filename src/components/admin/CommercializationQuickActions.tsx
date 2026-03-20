@@ -123,7 +123,7 @@ export function CommercializationQuickActions() {
           })}
         </div>
         
-        <div className="mt-4 p-3 bg-success/5 dark:bg-green-950 border border-green-200 dark:border-green-800 rounded-lg">
+        <div className="mt-4 p-3 bg-success/5 dark:bg-green-950 border border-success/20 dark:border-green-800 rounded-lg">
           <div className="flex items-center gap-2 text-success dark:text-green-200">
             <CheckCircle className="h-4 w-4" />
             <span className="font-medium text-sm">Drop Craft AI est prêt pour la commercialisation</span>

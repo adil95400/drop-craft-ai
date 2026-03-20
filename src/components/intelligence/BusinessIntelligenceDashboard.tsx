@@ -175,9 +175,9 @@ export function BusinessIntelligenceDashboard() {
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
-      case 'high': return 'bg-destructive/10 text-red-700 border-red-200';
-      case 'medium': return 'bg-warning/10 text-yellow-700 border-yellow-200';
-      default: return 'bg-success/10 text-success border-green-200';
+      case 'high': return 'bg-destructive/10 text-red-700 border-destructive/20';
+      case 'medium': return 'bg-warning/10 text-yellow-700 border-warning/20';
+      default: return 'bg-success/10 text-success border-success/20';
     }
   };
 

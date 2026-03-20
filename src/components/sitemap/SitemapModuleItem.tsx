@@ -102,7 +102,7 @@ export const SitemapModuleItem = memo<SitemapModuleItemProps>(({
                 variant="secondary" 
                 className={cn(
                   "text-[10px] px-1.5 py-0 h-4",
-                  module.badge === 'new' && "bg-success/15 text-success border-green-500/30",
+                  module.badge === 'new' && "bg-success/15 text-success border-success/30",
                   module.badge === 'beta' && "bg-warning/15 text-warning border-amber-500/30"
                 )}
               >

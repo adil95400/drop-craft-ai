@@ -42,13 +42,13 @@ interface PremiumSupplier {
 const tierColors = {
   gold: 'from-yellow-400 to-yellow-600',
   platinum: 'from-slate-300 to-slate-500',
-  diamond: 'from-cyan-400 to-blue-600'
+  diamond: 'from-cyan-400 to-info'
 };
 
 const tierBadgeColors = {
   gold: 'bg-gradient-to-r from-yellow-400 to-yellow-600',
   platinum: 'bg-gradient-to-r from-slate-300 to-slate-500',
-  diamond: 'bg-gradient-to-r from-cyan-400 to-blue-600'
+  diamond: 'bg-gradient-to-r from-cyan-400 to-info'
 };
 
 export default function PremiumSuppliersHub() {

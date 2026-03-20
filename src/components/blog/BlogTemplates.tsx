@@ -490,7 +490,7 @@ Comment adapter votre stratégie à ces tendances...
         <TabsContent value="premium">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {templates.filter(t => t.isPremium).map((template) => (
-              <Card key={template.id} className="hover-scale border-yellow-200">
+              <Card key={template.id} className="hover-scale border-warning/20">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     {template.name}

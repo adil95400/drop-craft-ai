@@ -281,7 +281,7 @@ export function ProductDetailModal({
                     {product.cost_price.toFixed(2)}€
                   </p>
                 </div>
-                <div className="p-4 rounded-xl bg-success/5 border border-green-500/10">
+                <div className="p-4 rounded-xl bg-success/5 border border-success/10">
                   <p className="text-xs text-muted-foreground mb-1">Marge</p>
                   <p className="text-xl font-bold text-success">
                     +{profit.toFixed(2)}€

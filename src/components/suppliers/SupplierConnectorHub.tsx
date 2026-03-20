@@ -428,7 +428,7 @@ export function SupplierConnectorHub() {
           const isConnected = !!connection;
 
           return (
-            <Card key={supplier.id} className={`relative ${isConnected ? 'border-green-500/50' : ''}`}>
+            <Card key={supplier.id} className={`relative ${isConnected ? 'border-success/50' : ''}`}>
               {isConnected && (
                 <div className="absolute top-2 right-2">
                   <Badge className="bg-success">

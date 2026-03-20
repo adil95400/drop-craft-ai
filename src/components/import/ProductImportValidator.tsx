@@ -226,9 +226,9 @@ export const ProductImportValidator: React.FC<ProductImportValidatorProps> = ({
 
   const getSeverityColor = (severity: string) => {
     switch (severity) {
-      case 'error': return 'text-destructive bg-destructive/5 border-red-200';
-      case 'warning': return 'text-warning bg-warning/5 border-yellow-200';
-      case 'info': return 'text-info bg-info/5 border-blue-200';
+      case 'error': return 'text-destructive bg-destructive/5 border-destructive/20';
+      case 'warning': return 'text-warning bg-warning/5 border-warning/20';
+      case 'info': return 'text-info bg-info/5 border-info/20';
       default: return 'text-gray-600 bg-gray-50 border-gray-200';
     }
   };
@@ -339,7 +339,7 @@ export const ProductImportValidator: React.FC<ProductImportValidatorProps> = ({
             <TabsContent value="products" className="space-y-4">
               <div className="space-y-3">
                 {validatedProducts.slice(0, 10).map((product: any, index: number) => (
-                  <Card key={index} className={`p-4 ${product.validation.isValid ? 'border-green-200 bg-success/5/30' : 'border-red-200 bg-destructive/5/30'}`}>
+                  <Card key={index} className={`p-4 ${product.validation.isValid ? 'border-success/20 bg-success/5/30' : 'border-destructive/20 bg-destructive/5/30'}`}>
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
                         <div className={`p-2 rounded ${product.validation.isValid ? 'bg-success/10 text-success' : 'bg-destructive/10 text-destructive'}`}>

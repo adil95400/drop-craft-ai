@@ -711,7 +711,7 @@ export function BulkEnrichmentDialog({
 
                 {/* Results Summary */}
                 <div className="grid grid-cols-2 gap-4">
-                  <Card className="bg-success/5 border-green-500/20">
+                  <Card className="bg-success/5 border-success/20">
                     <CardContent className="p-4 flex items-center gap-3">
                       <div className="p-2 rounded-full bg-success/10">
                         <Check className="h-5 w-5 text-success" />

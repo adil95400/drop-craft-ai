@@ -20,8 +20,8 @@ const statItems = [
   { key: 'all' as const, label: 'Total', color: 'text-foreground', border: 'border-border' },
   { key: '0' as const, label: '0 image', color: 'text-destructive', border: 'border-destructive/50' },
   { key: '1' as const, label: '1 image', color: 'text-warning', border: 'border-orange-500/50' },
-  { key: '2' as const, label: '2 images', color: 'text-warning', border: 'border-yellow-500/50' },
-  { key: '3+' as const, label: '3+ images', color: 'text-success', border: 'border-green-500/50' },
+  { key: '2' as const, label: '2 images', color: 'text-warning', border: 'border-warning/50' },
+  { key: '3+' as const, label: '3+ images', color: 'text-success', border: 'border-success/50' },
 ];
 
 export function ImageAuditStats({ stats, activeFilter, onFilterChange }: ImageAuditStatsProps) {

@@ -742,7 +742,7 @@ export function ProductPreviewEditModal({
                         )}
                         <div className="flex items-center gap-2 text-[10px] text-muted-foreground/60">
                           {review.verified_purchase && (
-                            <Badge variant="outline" className="text-[10px] h-4 px-1.5 border-green-500/30 text-success">
+                            <Badge variant="outline" className="text-[10px] h-4 px-1.5 border-success/30 text-success">
                               Achat vérifié
                             </Badge>
                           )}

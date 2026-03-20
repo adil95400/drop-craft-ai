@@ -99,7 +99,7 @@ export function ChannelLogsTab({ channelId }: ChannelLogsTabProps) {
       case 'failed':
         return { icon: XCircle, color: 'text-destructive', bg: 'bg-destructive/10 border-destructive/30', label: 'Échec' }
       case 'in_progress':
-        return { icon: Loader2, color: 'text-info', bg: 'bg-info/10 border-blue-500/30', label: 'En cours' }
+        return { icon: Loader2, color: 'text-info', bg: 'bg-info/10 border-info/30', label: 'En cours' }
       default:
         return { icon: Clock, color: 'text-warning', bg: 'bg-warning/10 border-amber-500/30', label: 'En attente' }
     }

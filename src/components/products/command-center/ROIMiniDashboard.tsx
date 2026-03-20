@@ -203,7 +203,7 @@ export function ROIMiniDashboard({
                       ? 'bg-success/10 border-emerald-500/30 text-success' 
                       : metrics.healthScore >= 40
                         ? 'bg-warning/10 border-amber-500/30 text-warning'
-                        : 'bg-destructive/10 border-red-500/30 text-destructive'
+                        : 'bg-destructive/10 border-destructive/30 text-destructive'
                   )}
                 >
                   <Target className="h-3 w-3 mr-1" />

@@ -193,7 +193,7 @@ export default function ImportPublishingPage() {
 
       {/* Publication Progress */}
       {publishing && (
-        <Card className="border-blue-200 bg-info/5/50">
+        <Card className="border-info/20 bg-info/5/50">
           <CardContent className="p-6">
             <div className="flex items-center gap-4">
               <RefreshCw className="w-6 h-6 text-info animate-spin" />
@@ -441,7 +441,7 @@ export default function ImportPublishingPage() {
                     <p className="text-sm text-muted-foreground">{product.sku}</p>
                   </div>
                 </div>
-                <Badge className="bg-success/10 text-success border-green-500/20">
+                <Badge className="bg-success/10 text-success border-success/20">
                   <CheckCircle className="w-3 h-3 mr-1" />
                   Publié
                 </Badge>

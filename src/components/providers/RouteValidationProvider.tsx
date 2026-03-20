@@ -107,7 +107,7 @@ export function RouteValidationProvider({
   if (import.meta.env.DEV && validationResults?.isValid) {
     return <>
         <div className="fixed bottom-4 left-4 z-50 animate-in fade-in slide-in-from-bottom-5 duration-500">
-          <Card className="border-green-500 shadow-lg">
+          <Card className="border-success shadow-lg">
             
           </Card>
         </div>

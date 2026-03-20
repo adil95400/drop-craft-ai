@@ -81,7 +81,7 @@ export const WinnersImportFlow = ({ product, isOpen, onClose, onConfirm }: Winne
           </div>
 
           {/* AI Insights */}
-          <div className="p-4 bg-info/10 border border-blue-500/20 rounded-lg">
+          <div className="p-4 bg-info/10 border border-info/20 rounded-lg">
             <div className="flex items-center gap-2 mb-2">
               <TrendingUp className="h-4 w-4 text-info" />
               <h4 className="font-semibold text-sm">Insights IA</h4>

@@ -81,7 +81,7 @@ export function TrendingSuppliers() {
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <Badge variant="outline" className="bg-success/5 text-success border-green-200">
+              <Badge variant="outline" className="bg-success/5 text-success border-success/20">
                 {supplier.trend}
               </Badge>
             </div>

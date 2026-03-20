@@ -153,7 +153,7 @@ export function EnhancedStatsGrid() {
         {/* Potential gain */}
         <Card className={cn(
           stats?.potentialRevenueGain && stats.potentialRevenueGain > 0 
-            ? 'border-green-200 bg-success/5/50' 
+            ? 'border-success/20 bg-success/5/50' 
             : ''
         )}>
           <CardContent className="py-4">

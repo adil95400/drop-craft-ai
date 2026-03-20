@@ -165,11 +165,11 @@ export const RealTimeStats: React.FC = () => {
     const ratio = value / threshold;
     if (inverse) {
       if (ratio < 0.3) return <Badge variant="secondary" className="bg-success/10 text-success">Optimal</Badge>;
-      if (ratio < 0.6) return <Badge variant="outline" className="border-yellow-500 text-yellow-700">Attention</Badge>;
+      if (ratio < 0.6) return <Badge variant="outline" className="border-warning text-yellow-700">Attention</Badge>;
       return <Badge variant="destructive">Critique</Badge>;
     }
     if (ratio < 0.6) return <Badge variant="secondary" className="bg-success/10 text-success">Optimal</Badge>;
-    if (ratio < 0.8) return <Badge variant="outline" className="border-yellow-500 text-yellow-700">Attention</Badge>;
+    if (ratio < 0.8) return <Badge variant="outline" className="border-warning text-yellow-700">Attention</Badge>;
     return <Badge variant="destructive">Critique</Badge>;
   };
 

@@ -46,10 +46,10 @@ export const SupplierCard = ({ supplier, onEdit, onDelete, onSync, isSyncing, sy
 
   const getStatusBadge = (status: string) => {
     const statusColors = {
-      connected: 'bg-success/10 text-success border-green-200',
+      connected: 'bg-success/10 text-success border-success/20',
       disconnected: 'bg-gray-100 text-gray-800 border-gray-200',
-      error: 'bg-destructive/10 text-red-800 border-red-200',
-      pending: 'bg-warning/10 text-yellow-800 border-yellow-200'
+      error: 'bg-destructive/10 text-red-800 border-destructive/20',
+      pending: 'bg-warning/10 text-yellow-800 border-warning/20'
     }
 
     const statusLabels = {

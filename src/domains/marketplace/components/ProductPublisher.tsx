@@ -188,8 +188,8 @@ export function ProductPublisher({
                   key={index}
                   className={`flex items-center justify-between p-3 rounded-lg border ${
                     result.success
-                      ? 'border-green-200 bg-success/5 dark:border-green-900 dark:bg-green-950'
-                      : 'border-red-200 bg-destructive/5 dark:border-red-900 dark:bg-red-950'
+                      ? 'border-success/20 bg-success/5 dark:border-green-900 dark:bg-green-950'
+                      : 'border-destructive/20 bg-destructive/5 dark:border-red-900 dark:bg-red-950'
                   }`}
                 >
                   <div className="flex items-center gap-3">

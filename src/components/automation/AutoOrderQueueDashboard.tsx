@@ -43,10 +43,10 @@ const supplierNames: Record<string, string> = {
 }
 
 const statusConfig: Record<string, { label: string, color: string, icon: React.ReactNode }> = {
-  pending: { label: 'En attente', color: 'bg-warning/10 text-warning border-yellow-500/20', icon: <Clock className="h-3 w-3" /> },
-  processing: { label: 'En cours', color: 'bg-info/10 text-info border-blue-500/20', icon: <Loader2 className="h-3 w-3 animate-spin" /> },
-  completed: { label: 'Terminé', color: 'bg-success/10 text-success border-green-500/20', icon: <CheckCircle className="h-3 w-3" /> },
-  failed: { label: 'Échoué', color: 'bg-destructive/10 text-destructive border-red-500/20', icon: <XCircle className="h-3 w-3" /> },
+  pending: { label: 'En attente', color: 'bg-warning/10 text-warning border-warning/20', icon: <Clock className="h-3 w-3" /> },
+  processing: { label: 'En cours', color: 'bg-info/10 text-info border-info/20', icon: <Loader2 className="h-3 w-3 animate-spin" /> },
+  completed: { label: 'Terminé', color: 'bg-success/10 text-success border-success/20', icon: <CheckCircle className="h-3 w-3" /> },
+  failed: { label: 'Échoué', color: 'bg-destructive/10 text-destructive border-destructive/20', icon: <XCircle className="h-3 w-3" /> },
   retry: { label: 'Retry planifié', color: 'bg-warning/10 text-warning border-orange-500/20', icon: <RotateCcw className="h-3 w-3" /> },
   cancelled: { label: 'Annulé', color: 'bg-gray-500/10 text-gray-600 border-gray-500/20', icon: <X className="h-3 w-3" /> }
 }

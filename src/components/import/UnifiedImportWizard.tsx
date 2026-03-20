@@ -420,7 +420,7 @@ export function UnifiedImportWizard() {
                       className={cn(
                         "flex items-center gap-4 p-4 border rounded-lg transition-colors",
                         product.selected ? "bg-primary/5 border-primary/30" : "bg-muted/30",
-                        product.status === 'error' && "border-red-500/30 bg-destructive/5"
+                        product.status === 'error' && "border-destructive/30 bg-destructive/5"
                       )}
                     >
                       <Checkbox
@@ -563,7 +563,7 @@ export function UnifiedImportWizard() {
                 <ArrowLeft className="h-4 w-4 mr-2" />
                 Retour
               </Button>
-              <Button onClick={handleStartImport} className="bg-gradient-to-r from-green-500 to-emerald-500">
+              <Button onClick={handleStartImport} className="bg-gradient-to-r from-success to-emerald-500">
                 <Download className="h-4 w-4 mr-2" />
                 Lancer l'import
               </Button>
@@ -607,13 +607,13 @@ export function UnifiedImportWizard() {
                     <p className="text-sm text-muted-foreground">Total</p>
                   </CardContent>
                 </Card>
-                <Card className="border-green-500/30">
+                <Card className="border-success/30">
                   <CardContent className="pt-6 text-center">
                     <p className="text-3xl font-bold text-success">{importResult.success}</p>
                     <p className="text-sm text-muted-foreground">Réussis</p>
                   </CardContent>
                 </Card>
-                <Card className="border-red-500/30">
+                <Card className="border-destructive/30">
                   <CardContent className="pt-6 text-center">
                     <p className="text-3xl font-bold text-destructive">{importResult.failed}</p>
                     <p className="text-sm text-muted-foreground">Échoués</p>

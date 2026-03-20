@@ -66,7 +66,7 @@ export default function TikTokShopPage() {
           </div>
         </div>
         {isConnected && (
-          <Badge variant="outline" className="bg-success/10 text-success border-green-500/30">
+          <Badge variant="outline" className="bg-success/10 text-success border-success/30">
             <CheckCircle2 className="h-4 w-4 mr-1" /> Connecté
           </Badge>
         )}

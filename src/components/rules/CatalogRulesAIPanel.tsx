@@ -31,9 +31,9 @@ const RECOMMENDATION_ICONS = {
 };
 
 const IMPACT_COLORS = {
-  high: 'bg-destructive/10 text-destructive border-red-500/20',
+  high: 'bg-destructive/10 text-destructive border-destructive/20',
   medium: 'bg-warning/10 text-warning border-amber-500/20',
-  low: 'bg-info/10 text-info border-blue-500/20',
+  low: 'bg-info/10 text-info border-info/20',
 };
 
 const IMPACT_LABELS = {

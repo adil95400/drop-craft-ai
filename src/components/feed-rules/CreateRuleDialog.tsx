@@ -264,7 +264,7 @@ export function CreateRuleDialog({ open, onOpenChange, editRule, onClose }: Crea
               </Button>
             </div>
 
-            <div className="space-y-2 pl-4 border-l-2 border-green-500/20">
+            <div className="space-y-2 pl-4 border-l-2 border-success/20">
               {actions.map((action, index) => {
                 const actionDef = actionOptions.find(a => a.value === action.type);
                 const isPricingAction = ['apply_margin', 'percentage_adjust', 'round_psychological', 'set_compare_at_price', 'min_price', 'max_price'].includes(action.type);

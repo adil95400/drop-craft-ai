@@ -19,7 +19,7 @@ const defaultHexColors = [
   'from-yellow-400 to-yellow-500',
   'from-emerald-400 to-green-500',
   'from-cyan-400 to-blue-500',
-  'from-blue-500 to-indigo-600',
+  'from-info to-indigo-600',
   'from-purple-500 to-violet-600',
   'from-fuchsia-500 to-pink-500',
 ]

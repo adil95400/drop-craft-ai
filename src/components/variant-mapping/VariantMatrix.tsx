@@ -272,12 +272,12 @@ export function VariantMatrix() {
       return 'bg-muted/30 border-dashed cursor-pointer hover:bg-muted/50';
     }
     if ((cell.stock ?? 0) === 0) {
-      return 'bg-destructive/5 dark:bg-red-950/20 border-red-200';
+      return 'bg-destructive/5 dark:bg-red-950/20 border-destructive/20';
     }
     if ((cell.stock ?? 0) < 5) {
-      return 'bg-warning/5 dark:bg-yellow-950/20 border-yellow-200';
+      return 'bg-warning/5 dark:bg-yellow-950/20 border-warning/20';
     }
-    return 'bg-success/5 dark:bg-green-950/20 border-green-200';
+    return 'bg-success/5 dark:bg-green-950/20 border-success/20';
   };
 
   const missingCount = matrixData 

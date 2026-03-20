@@ -290,7 +290,7 @@ export const RealQuickUrlImport: React.FC = () => {
 
         {/* Imported product preview */}
         {importedProduct && (
-          <Card className="border-green-200 bg-success/5 dark:bg-green-950/20">
+          <Card className="border-success/20 bg-success/5 dark:bg-green-950/20">
             <CardContent className="p-4">
               <div className="flex items-start gap-3">
                 {importedProduct.image_url ? (

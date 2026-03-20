@@ -76,8 +76,8 @@ export function StockAlertsPanel({ limit, compact }: StockAlertsPanelProps) {
     switch (severity) {
       case 'critical': return 'border-destructive bg-destructive/10';
       case 'high': return 'border-orange-500 bg-warning/10';
-      case 'medium': return 'border-yellow-500 bg-warning/10';
-      default: return 'border-blue-500 bg-info/10';
+      case 'medium': return 'border-warning bg-warning/10';
+      default: return 'border-info bg-info/10';
     }
   };
 
@@ -142,7 +142,7 @@ export function StockAlertsPanel({ limit, compact }: StockAlertsPanelProps) {
     <div className="space-y-6">
       {/* Stats Summary */}
       <div className="grid gap-4 md:grid-cols-4">
-        <Card className="border-red-500">
+        <Card className="border-destructive">
           <CardHeader className="pb-3">
             <CardTitle className="text-sm flex items-center gap-2">
               <AlertTriangle className="h-4 w-4 text-destructive" />

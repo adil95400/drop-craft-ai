@@ -184,8 +184,8 @@ export function ABTestManager() {
 
   const getStatusBadge = (status: string | null) => {
     switch (status) {
-      case 'running': return <Badge className="bg-success/10 text-success border-green-200">En cours</Badge>;
-      case 'completed': return <Badge className="bg-info/10 text-info border-blue-200">Terminé</Badge>;
+      case 'running': return <Badge className="bg-success/10 text-success border-success/20">En cours</Badge>;
+      case 'completed': return <Badge className="bg-info/10 text-info border-info/20">Terminé</Badge>;
       case 'paused': return <Badge variant="secondary">Pause</Badge>;
       default: return <Badge variant="outline">Brouillon</Badge>;
     }

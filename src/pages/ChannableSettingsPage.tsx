@@ -352,7 +352,7 @@ export default function ChannableSettingsPage() {
                 <Card>
                   <CardHeader>
                     <div className="flex items-center gap-3">
-                      <div className="p-2 rounded-xl bg-gradient-to-br from-green-500/20 to-green-500/5">
+                      <div className="p-2 rounded-xl bg-gradient-to-br from-success/20 to-green-500/5">
                         <Eye className="w-5 h-5 text-success" />
                       </div>
                       <div>
@@ -408,7 +408,7 @@ export default function ChannableSettingsPage() {
                 <Card>
                   <CardHeader>
                     <div className="flex items-center gap-3">
-                      <div className="p-2 rounded-xl bg-gradient-to-br from-red-500/20 to-red-500/5">
+                      <div className="p-2 rounded-xl bg-gradient-to-br from-destructive/20 to-red-500/5">
                         <Shield className="w-5 h-5 text-destructive" />
                       </div>
                       <div>
@@ -516,7 +516,7 @@ export default function ChannableSettingsPage() {
                 <Card>
                   <CardHeader>
                     <div className="flex items-center gap-3">
-                      <div className="p-2 rounded-xl bg-gradient-to-br from-blue-500/20 to-blue-500/5">
+                      <div className="p-2 rounded-xl bg-gradient-to-br from-info/20 to-blue-500/5">
                         <User className="w-5 h-5 text-info" />
                       </div>
                       <div>
@@ -539,7 +539,7 @@ export default function ChannableSettingsPage() {
                   </CardContent>
                 </Card>
 
-                <Card className="border-red-500/30">
+                <Card className="border-destructive/30">
                   <CardHeader>
                     <div className="flex items-center gap-3">
                       <div className="p-2 rounded-xl bg-destructive/10">

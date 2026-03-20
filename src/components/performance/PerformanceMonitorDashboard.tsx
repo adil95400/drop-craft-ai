@@ -146,9 +146,9 @@ export function PerformanceMonitorDashboard() {
 
   const ratingColor = (rating: string) => {
     switch (rating) {
-      case 'good': return 'bg-success/10 text-success border-green-500/20';
-      case 'needs-improvement': return 'bg-warning/10 text-yellow-700 border-yellow-500/20';
-      case 'poor': return 'bg-destructive/10 text-red-700 border-red-500/20';
+      case 'good': return 'bg-success/10 text-success border-success/20';
+      case 'needs-improvement': return 'bg-warning/10 text-yellow-700 border-warning/20';
+      case 'poor': return 'bg-destructive/10 text-red-700 border-destructive/20';
       default: return '';
     }
   };

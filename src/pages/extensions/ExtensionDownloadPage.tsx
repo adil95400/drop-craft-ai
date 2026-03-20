@@ -177,7 +177,7 @@ export default function ExtensionDownloadPage() {
           size="lg" 
           onClick={handleDownload}
           disabled={isDownloading}
-          className="bg-gradient-to-r from-primary to-blue-600 hover:from-primary/90 hover:to-blue-600/90"
+          className="bg-gradient-to-r from-primary to-info hover:from-primary/90 hover:to-info/90"
         >
           {isDownloading ? (
             <>

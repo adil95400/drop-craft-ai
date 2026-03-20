@@ -218,7 +218,7 @@ export function ProductEditModal({ product, open, onOpenChange, onSuccess }: Pro
                         <Input 
                           {...field} 
                           placeholder="Ex: T-shirt Premium Bio"
-                          className={cn(form.formState.errors.name && "border-red-500")}
+                          className={cn(form.formState.errors.name && "border-destructive")}
                         />
                       </FormControl>
                       <FormMessage />
@@ -343,9 +343,9 @@ export function ProductEditModal({ product, open, onOpenChange, onSuccess }: Pro
                   <Label>Marge</Label>
                   <div className={cn(
                     "h-10 px-3 flex items-center rounded-md border text-sm font-medium",
-                    parseFloat(calculateMargin()) > 30 ? "bg-success/5 text-success border-green-200" :
+                    parseFloat(calculateMargin()) > 30 ? "bg-success/5 text-success border-success/20" :
                     parseFloat(calculateMargin()) > 15 ? "bg-amber-50 text-amber-700 border-amber-200" :
-                    "bg-destructive/5 text-red-700 border-red-200"
+                    "bg-destructive/5 text-red-700 border-destructive/20"
                   )}>
                     {calculateMargin()}%
                   </div>

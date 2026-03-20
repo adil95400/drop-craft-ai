@@ -97,9 +97,9 @@ export function AIOptimizer() {
 
   const getImpactColor = (impact: string) => {
     switch (impact) {
-      case 'high': return 'text-success bg-success/5 border-green-200';
+      case 'high': return 'text-success bg-success/5 border-success/20';
       case 'medium': return 'text-warning bg-orange-50 border-orange-200';
-      case 'low': return 'text-info bg-info/5 border-blue-200';
+      case 'low': return 'text-info bg-info/5 border-info/20';
       default: return 'text-gray-600 bg-gray-50 border-gray-200';
     }
   };

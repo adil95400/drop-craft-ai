@@ -191,7 +191,7 @@ const LegalCompliancePage = () => {
               </div>
               <Button onClick={checkOss} disabled={loading || !ossAnnualSales}>Vérifier le seuil</Button>
               {ossResult && (
-                <Card className={ossResult.exceeds_threshold ? 'border-destructive/50 bg-destructive/5' : 'border-green-500/50 bg-success/5'}>
+                <Card className={ossResult.exceeds_threshold ? 'border-destructive/50 bg-destructive/5' : 'border-success/50 bg-success/5'}>
                   <CardContent className="pt-4 space-y-2">
                     <div className="flex items-center gap-2">
                       {ossResult.exceeds_threshold ? (

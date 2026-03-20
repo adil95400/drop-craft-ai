@@ -331,9 +331,9 @@ export function ShopifyDiagnostic({
                 <div 
                   key={index} 
                   className={`p-4 rounded-lg border ${
-                    result.status === 'error' ? 'border-red-200 bg-destructive/5' :
-                    result.status === 'warning' ? 'border-yellow-200 bg-warning/5' :
-                    'border-green-200 bg-success/5'
+                    result.status === 'error' ? 'border-destructive/20 bg-destructive/5' :
+                    result.status === 'warning' ? 'border-warning/20 bg-warning/5' :
+                    'border-success/20 bg-success/5'
                   }`}
                 >
                   <div className="flex items-start justify-between">

@@ -116,7 +116,7 @@ export default function ShopifyStoreImportPage() {
       )}
 
       {importResult && importResult.success && (
-        <Card className="border-green-500/50 bg-success/5">
+        <Card className="border-success/50 bg-success/5">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-success">
               <CheckCircle2 className="h-5 w-5" />

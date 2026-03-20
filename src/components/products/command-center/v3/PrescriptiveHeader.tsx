@@ -180,8 +180,8 @@ export const PrescriptiveHeader = memo(function PrescriptiveHeader({
                     'relative w-16 h-16 rounded-full flex items-center justify-center',
                     'border-4',
                     status.color === 'emerald' && 'border-emerald-500',
-                    status.color === 'yellow' && 'border-yellow-500',
-                    status.color === 'red' && 'border-red-500'
+                    status.color === 'yellow' && 'border-warning',
+                    status.color === 'red' && 'border-destructive'
                   )}
                   whileHover={{ scale: 1.1 }}
                 >

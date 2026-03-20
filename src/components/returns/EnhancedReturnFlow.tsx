@@ -469,7 +469,7 @@ export function EnhancedReturnFlow({ returnItem, onClose }: EnhancedReturnFlowPr
             {returnItem.refund_amount && (
               <div>
                 <h4 className="text-sm font-medium text-muted-foreground mb-2">Remboursement</h4>
-                <Card className="border-green-200 bg-success/5">
+                <Card className="border-success/20 bg-success/5">
                   <CardContent className="p-4 flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       <CreditCard className="h-5 w-5 text-success" />

@@ -87,7 +87,7 @@ export function PlanGuard({
   if (resource && !canAddResource(resource)) {
     return (
       fallback || (
-        <Card className="border-2 border-dashed border-yellow-500/50">
+        <Card className="border-2 border-dashed border-warning/50">
           <CardHeader>
             <div className="flex items-center gap-3">
               <div className="p-3 rounded-full bg-warning/10">

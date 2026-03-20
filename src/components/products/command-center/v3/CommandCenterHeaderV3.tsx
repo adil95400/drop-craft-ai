@@ -41,7 +41,7 @@ export function CommandCenterHeaderV3({
     ? 'from-emerald-500/20 to-green-500/10' 
     : healthScore >= 60 
     ? 'from-yellow-500/20 to-amber-500/10' 
-    : 'from-red-500/20 to-orange-500/10'
+    : 'from-destructive/20 to-orange-500/10'
   
   return (
     <motion.div 

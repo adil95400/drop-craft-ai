@@ -63,7 +63,7 @@ export function SiteOptimizationDashboard() {
       description: 'Référencement naturel',
       icon: Search,
       score: siteHealth.seo,
-      color: 'from-blue-500 to-blue-600'
+      color: 'from-info to-info'
     },
     {
       key: 'images',
@@ -79,7 +79,7 @@ export function SiteOptimizationDashboard() {
       description: 'Qualité du contenu',
       icon: FileText,
       score: siteHealth.content,
-      color: 'from-green-500 to-green-600'
+      color: 'from-success to-success'
     },
     {
       key: 'translations',

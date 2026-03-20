@@ -176,7 +176,7 @@ const BlogPage = () => {
             </div>
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight">
               Le blog de référence pour
-              <span className="block bg-gradient-to-r from-primary via-primary to-blue-600 bg-clip-text text-transparent mt-2">
+              <span className="block bg-gradient-to-r from-primary via-primary to-info bg-clip-text text-transparent mt-2">
                 l'E-commerce Intelligent
               </span>
             </h1>

@@ -72,9 +72,9 @@ interface FAQRow {
 const segmentColors: Record<string, string> = {
   VIP: 'bg-warning/10 text-warning border-amber-500/30',
   Active: 'bg-success/10 text-success border-emerald-500/30',
-  New: 'bg-info/10 text-info border-blue-500/30',
+  New: 'bg-info/10 text-info border-info/30',
   Repeat: 'bg-violet-500/10 text-violet-600 border-violet-500/30',
-  'At Risk': 'bg-destructive/10 text-destructive border-red-500/30',
+  'At Risk': 'bg-destructive/10 text-destructive border-destructive/30',
 };
 
 function getCustomerSegment(c: CustomerRow): string {
@@ -102,10 +102,10 @@ function getCustomerLoyalty(c: CustomerRow): string {
 }
 
 const priorityConfig: Record<string, { color: string; label: string }> = {
-  urgent: { color: 'bg-destructive/10 text-destructive border-red-500/30', label: 'Urgent' },
+  urgent: { color: 'bg-destructive/10 text-destructive border-destructive/30', label: 'Urgent' },
   high: { color: 'bg-warning/10 text-warning border-orange-500/30', label: 'Haute' },
-  medium: { color: 'bg-warning/10 text-warning border-yellow-500/30', label: 'Moyenne' },
-  low: { color: 'bg-success/10 text-success border-green-500/30', label: 'Basse' },
+  medium: { color: 'bg-warning/10 text-warning border-warning/30', label: 'Moyenne' },
+  low: { color: 'bg-success/10 text-success border-success/30', label: 'Basse' },
 };
 
 const statusConfig: Record<string, { color: string; label: string; icon: typeof CheckCircle2 }> = {

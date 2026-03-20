@@ -300,7 +300,7 @@ const ConnectorForm: React.FC<ConnectorFormProps> = ({
                     value={credentials[field.name] || ''}
                     onChange={(e) => handleFieldChange(field.name, e.target.value)}
                     className={testResult?.success === false && field.required && !credentials[field.name] 
-                      ? 'border-red-500' : ''
+                      ? 'border-destructive' : ''
                     }
                   />
                   {field.description && (
@@ -316,8 +316,8 @@ const ConnectorForm: React.FC<ConnectorFormProps> = ({
               {testResult && (
                 <div className={`p-3 rounded-md border ${
                   testResult.success 
-                    ? 'bg-success/5 border-green-200 text-success' 
-                    : 'bg-destructive/5 border-red-200 text-red-800'
+                    ? 'bg-success/5 border-success/20 text-success' 
+                    : 'bg-destructive/5 border-destructive/20 text-red-800'
                 }`}>
                   <div className="flex items-center gap-2">
                     {testResult.success ? (

@@ -153,7 +153,7 @@ export const RealTimeMetrics: React.FC = () => {
 
       {/* Métriques temps réel */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card className="border-green-200 bg-success/5/50">
+        <Card className="border-success/20 bg-success/5/50">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Visiteurs actifs</CardTitle>
             <Users className="h-4 w-4 text-success" />
@@ -166,7 +166,7 @@ export const RealTimeMetrics: React.FC = () => {
           </CardContent>
         </Card>
 
-        <Card className="border-blue-200 bg-info/5/50">
+        <Card className="border-info/20 bg-info/5/50">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Commandes live</CardTitle>
             <ShoppingCart className="h-4 w-4 text-info" />
@@ -179,7 +179,7 @@ export const RealTimeMetrics: React.FC = () => {
           </CardContent>
         </Card>
 
-        <Card className="border-yellow-200 bg-warning/5/50">
+        <Card className="border-warning/20 bg-warning/5/50">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Paniers abandonnés</CardTitle>
             <AlertCircle className="h-4 w-4 text-warning" />

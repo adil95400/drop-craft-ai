@@ -31,7 +31,7 @@ const STEPS: OnboardingStep[] = [
     title: 'Connectez votre boutique',
     description: 'Liez votre boutique Shopify, WooCommerce ou autre pour synchroniser vos produits automatiquement.',
     icon: Store,
-    color: 'from-blue-500 to-cyan-500',
+    color: 'from-info to-cyan-500',
     action: 'Connecter ma boutique',
     route: '/stores-channels',
     tips: ['Synchronisation bidirectionnelle', 'Multi-boutiques supporté', 'Import automatique du catalogue']
@@ -61,7 +61,7 @@ const STEPS: OnboardingStep[] = [
     title: 'Automatisez le fulfillment',
     description: 'Configurez la commande automatique chez vos fournisseurs et le tracking des colis.',
     icon: ShoppingCart,
-    color: 'from-green-500 to-emerald-500',
+    color: 'from-success to-emerald-500',
     action: 'Configurer le fulfillment',
     route: '/auto-fulfillment',
     tips: ['Commande en 1-click', 'Tracking automatique', 'Multi-fournisseurs']
@@ -71,7 +71,7 @@ const STEPS: OnboardingStep[] = [
     title: 'Suivez vos performances',
     description: 'Accédez à vos analytics en temps réel, prédictions IA et rapports avancés.',
     icon: BarChart3,
-    color: 'from-red-500 to-rose-500',
+    color: 'from-destructive to-rose-500',
     action: 'Voir mes analytics',
     route: '/analytics',
     tips: ['Dashboard temps réel', 'Prédictions de ventes', 'Rapports exportables']

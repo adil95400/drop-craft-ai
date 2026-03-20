@@ -39,7 +39,7 @@ const extensionCards: ExtensionCard[] = [
     route: '/extensions/marketplace',
     planRequired: null,
     badge: 'Gratuit',
-    color: 'bg-info/5 border-blue-200 hover:bg-info/10',
+    color: 'bg-info/5 border-info/20 hover:bg-info/10',
     status: 'available'
   },
   {
@@ -50,7 +50,7 @@ const extensionCards: ExtensionCard[] = [
     route: '/extensions/developer',
     planRequired: null,
     badge: 'Dev',
-    color: 'bg-success/5 border-green-200 hover:bg-success/10',
+    color: 'bg-success/5 border-success/20 hover:bg-success/10',
     status: 'available'
   },
   {
@@ -83,7 +83,7 @@ const extensionCards: ExtensionCard[] = [
     route: '/extensions/sso',
     planRequired: 'ultra_pro',
     badge: 'Ultra Pro',
-    color: 'bg-destructive/5 border-red-200 hover:bg-destructive/10',
+    color: 'bg-destructive/5 border-destructive/20 hover:bg-destructive/10',
     status: 'available'
   },
   {
@@ -94,7 +94,7 @@ const extensionCards: ExtensionCard[] = [
     route: '/import',
     planRequired: 'pro',
     badge: 'IA',
-    color: 'bg-warning/5 border-yellow-200 hover:bg-warning/10',
+    color: 'bg-warning/5 border-warning/20 hover:bg-warning/10',
     status: 'available'
   },
   {

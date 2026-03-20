@@ -50,7 +50,7 @@ export function BacklogAIPanel() {
 
   const getPriorityStyles = (priority: string) => {
     switch (priority) {
-      case 'critical': return 'border-red-500/30 bg-destructive/5'
+      case 'critical': return 'border-destructive/30 bg-destructive/5'
       case 'high': return 'border-amber-500/30 bg-warning/5'
       default: return 'border-violet-500/30 bg-violet-500/5'
     }

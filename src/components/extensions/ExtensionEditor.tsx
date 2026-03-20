@@ -182,7 +182,7 @@ export default class MyExtension {
             {isSaving ? <RefreshCw className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}
             Sauvegarder
           </Button>
-          <Button onClick={handlePublish} className="bg-gradient-to-r from-green-600 to-blue-600">
+          <Button onClick={handlePublish} className="bg-gradient-to-r from-green-600 to-info">
             <Upload className="w-4 h-4 mr-2" />
             Publier
           </Button>

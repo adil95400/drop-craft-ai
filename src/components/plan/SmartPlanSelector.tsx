@@ -77,7 +77,7 @@ const smartPlanConfigs: Record<PlanType, SmartPlanConfig> = {
     icon: Star,
     color: 'text-info',
     bgColor: 'bg-info/5',
-    borderColor: 'border-blue-200',
+    borderColor: 'border-info/20',
     description: 'Idéal pour les professionnels',
     popular: true,
     savings: 'Économisez 25%',

@@ -248,7 +248,7 @@ window.TestExtension = TestExtension;`)
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-gradient-to-r from-green-600 to-blue-600">
+            <div className="p-2 rounded-lg bg-gradient-to-r from-green-600 to-info">
               <Bug className="w-8 h-8 text-white" />
             </div>
             Sandbox de Test
@@ -265,7 +265,7 @@ window.TestExtension = TestExtension;`)
           <Button 
             onClick={runTests} 
             disabled={isRunning}
-            className="bg-gradient-to-r from-green-600 to-blue-600"
+            className="bg-gradient-to-r from-green-600 to-info"
           >
             {isRunning ? (
               <RefreshCw className="w-4 h-4 mr-2 animate-spin" />

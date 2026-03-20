@@ -312,7 +312,7 @@ export function AutomationHub() {
                         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-3">
                           <div className="space-y-2">
                             <div className="text-sm font-medium text-gray-700">Déclencheur:</div>
-                            <div className="text-sm bg-info/5 p-2 rounded border-l-4 border-blue-500">
+                            <div className="text-sm bg-info/5 p-2 rounded border-l-4 border-info">
                               {automation.trigger}
                             </div>
                           </div>

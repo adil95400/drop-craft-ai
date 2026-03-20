@@ -311,7 +311,7 @@ export default function OnboardingWizardPage() {
               >
                 <div className="text-center space-y-4">
                   <motion.div
-                    className="mx-auto p-5 rounded-2xl bg-gradient-to-br from-emerald-500 to-green-600 w-fit"
+                    className="mx-auto p-5 rounded-2xl bg-gradient-to-br from-emerald-500 to-success w-fit"
                     animate={{ scale: [1, 1.1, 1], rotate: [0, 5, -5, 0] }}
                     transition={{ duration: 1.5, repeat: 2 }}
                   >
@@ -394,7 +394,7 @@ export default function OnboardingWizardPage() {
           ) : (
             <Button
               onClick={handleFinish}
-              className="bg-gradient-to-r from-emerald-500 to-green-600 hover:opacity-90"
+              className="bg-gradient-to-r from-emerald-500 to-success hover:opacity-90"
             >
               Lancer ShopOpti
               <ChevronRight className="h-4 w-4 ml-2" />

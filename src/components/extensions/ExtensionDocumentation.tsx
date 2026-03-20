@@ -339,7 +339,7 @@ results.forEach(result => {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-gradient-to-r from-blue-600 to-green-600">
+            <div className="p-2 rounded-lg bg-gradient-to-r from-blue-600 to-success">
               <BookOpen className="w-8 h-8 text-white" />
             </div>
             Générateur de Documentation
@@ -356,7 +356,7 @@ results.forEach(result => {
           <Button 
             onClick={generateDocumentation}
             disabled={isGenerating}
-            className="bg-gradient-to-r from-blue-600 to-green-600"
+            className="bg-gradient-to-r from-blue-600 to-success"
           >
             {isGenerating ? (
               <>

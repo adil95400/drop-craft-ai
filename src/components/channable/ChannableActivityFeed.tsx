@@ -176,8 +176,8 @@ export function ChannableActivityFeed({
                             variant="outline" 
                             className={cn(
                               "text-xs h-5",
-                              event.metadata.trend === 'up' && "text-success border-green-200",
-                              event.metadata.trend === 'down' && "text-destructive border-red-200"
+                              event.metadata.trend === 'up' && "text-success border-success/20",
+                              event.metadata.trend === 'down' && "text-destructive border-destructive/20"
                             )}
                           >
                             {event.metadata.trend === 'up' && <TrendingUp className="h-3 w-3 mr-1" />}

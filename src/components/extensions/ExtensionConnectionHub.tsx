@@ -120,10 +120,10 @@ export function ExtensionConnectionHub() {
   const getPlatformColor = (platform: string) => {
     const colors: Record<string, string> = {
       aliexpress: 'bg-warning/10 text-warning border-orange-500/30',
-      amazon: 'bg-warning/10 text-warning border-yellow-500/30',
-      ebay: 'bg-info/10 text-info border-blue-500/30',
+      amazon: 'bg-warning/10 text-warning border-warning/30',
+      ebay: 'bg-info/10 text-info border-info/30',
       temu: 'bg-pink-500/10 text-pink-600 border-pink-500/30',
-      shopify: 'bg-success/10 text-success border-green-500/30',
+      shopify: 'bg-success/10 text-success border-success/30',
       etsy: 'bg-warning/10 text-orange-700 border-orange-600/30',
     };
     return colors[platform] || 'bg-gray-500/10 text-gray-600 border-gray-500/30';
@@ -152,7 +152,7 @@ export function ExtensionConnectionHub() {
                 <CardTitle className="flex items-center gap-2">
                   Extension ShopOpti+
                   {connectionStatus?.connected ? (
-                    <Badge variant="outline" className="bg-success/10 text-success border-green-500/30">
+                    <Badge variant="outline" className="bg-success/10 text-success border-success/30">
                       <CheckCircle2 className="h-3 w-3 mr-1" />
                       Connectée
                     </Badge>

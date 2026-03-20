@@ -143,7 +143,7 @@ export function ImportAIMergePanel({ className }: ImportAIMergePanelProps) {
 
   const getConfidenceColor = (confidence: number) => {
     if (confidence >= 90) return 'text-success bg-success/10 border-emerald-500/30'
-    if (confidence >= 70) return 'text-info bg-info/10 border-blue-500/30'
+    if (confidence >= 70) return 'text-info bg-info/10 border-info/30'
     return 'text-warning bg-warning/10 border-amber-500/30'
   }
 

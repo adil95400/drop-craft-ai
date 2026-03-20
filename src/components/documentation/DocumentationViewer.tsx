@@ -252,7 +252,7 @@ export function DocumentationViewer({ module, onBack, onNavigateToModule }: Docu
                       )}
                       
                       {useCase.expectedOutcome && (
-                        <div className="p-3 rounded-lg bg-success/5 dark:bg-green-900/20 border border-green-200 dark:border-green-800">
+                        <div className="p-3 rounded-lg bg-success/5 dark:bg-green-900/20 border border-success/20 dark:border-green-800">
                           <p className="text-sm text-success dark:text-green-300 flex items-start gap-2">
                             <TrendingUp className="h-4 w-4 mt-0.5 flex-shrink-0" />
                             <span><strong>Résultat attendu:</strong> {useCase.expectedOutcome}</span>
@@ -297,7 +297,7 @@ export function DocumentationViewer({ module, onBack, onNavigateToModule }: Docu
                     <p className="text-sm text-muted-foreground">{step.description}</p>
                     
                     {step.tip && (
-                      <div className="p-3 rounded-lg bg-info/5 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800">
+                      <div className="p-3 rounded-lg bg-info/5 dark:bg-blue-900/20 border border-info/20 dark:border-blue-800">
                         <p className="text-sm text-blue-800 dark:text-blue-300 flex items-start gap-2">
                           <Lightbulb className="h-4 w-4 mt-0.5 flex-shrink-0" />
                           <span><strong>Astuce:</strong> {step.tip}</span>

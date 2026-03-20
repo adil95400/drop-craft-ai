@@ -56,9 +56,9 @@ export function ImportPerformancePanel({ stats, activeImports, className }: Impo
 
   const healthColors = {
     excellent: { bg: 'bg-success/10', text: 'text-success', border: 'border-emerald-500/30', label: 'Excellent' },
-    good: { bg: 'bg-info/10', text: 'text-info', border: 'border-blue-500/30', label: 'Bon' },
+    good: { bg: 'bg-info/10', text: 'text-info', border: 'border-info/30', label: 'Bon' },
     fair: { bg: 'bg-warning/10', text: 'text-warning', border: 'border-amber-500/30', label: 'Moyen' },
-    poor: { bg: 'bg-destructive/10', text: 'text-destructive', border: 'border-red-500/30', label: 'Faible' },
+    poor: { bg: 'bg-destructive/10', text: 'text-destructive', border: 'border-destructive/30', label: 'Faible' },
   }
 
   const health = healthColors[metrics.healthScore]
@@ -66,8 +66,8 @@ export function ImportPerformancePanel({ stats, activeImports, className }: Impo
     metrics.qualityScore >= 70 ? 'text-info' :
     metrics.qualityScore >= 50 ? 'text-warning' : 'text-destructive'
   const qualityBg = metrics.qualityScore >= 90 ? 'bg-success/10 border-emerald-500/30' :
-    metrics.qualityScore >= 70 ? 'bg-info/10 border-blue-500/30' :
-    metrics.qualityScore >= 50 ? 'bg-warning/10 border-amber-500/30' : 'bg-destructive/10 border-red-500/30'
+    metrics.qualityScore >= 70 ? 'bg-info/10 border-info/30' :
+    metrics.qualityScore >= 50 ? 'bg-warning/10 border-amber-500/30' : 'bg-destructive/10 border-destructive/30'
 
   return (
     <div className={cn('grid grid-cols-2 lg:grid-cols-6 gap-3', className)}>

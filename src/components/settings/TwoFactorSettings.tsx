@@ -151,7 +151,7 @@ export default function TwoFactorSettings() {
             </div>
           ) : isEnabled ? (
             <div className="space-y-4">
-              <div className="flex items-center gap-3 p-3 rounded-lg bg-success/10 border border-green-500/20">
+              <div className="flex items-center gap-3 p-3 rounded-lg bg-success/10 border border-success/20">
                 <CheckCircle2 className="h-5 w-5 text-success shrink-0" />
                 <div>
                   <p className="text-sm font-medium text-foreground">2FA active</p>

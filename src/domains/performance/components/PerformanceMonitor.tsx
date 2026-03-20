@@ -241,19 +241,19 @@ export const PerformanceMonitor: React.FC = () => {
 
   const getMetricStatusColor = (status: string) => {
     switch (status) {
-      case 'healthy': return 'bg-success/10 text-success border-green-200';
-      case 'warning': return 'bg-warning/10 text-yellow-800 border-yellow-200';
-      case 'critical': return 'bg-destructive/10 text-red-800 border-red-200';
+      case 'healthy': return 'bg-success/10 text-success border-success/20';
+      case 'warning': return 'bg-warning/10 text-yellow-800 border-warning/20';
+      case 'critical': return 'bg-destructive/10 text-red-800 border-destructive/20';
       default: return 'bg-gray-100 text-gray-800 border-gray-200';
     }
   };
 
   const getAlertSeverityColor = (severity: string) => {
     switch (severity) {
-      case 'info': return 'bg-info/10 text-blue-800 border-blue-200';
-      case 'warning': return 'bg-warning/10 text-yellow-800 border-yellow-200';
+      case 'info': return 'bg-info/10 text-blue-800 border-info/20';
+      case 'warning': return 'bg-warning/10 text-yellow-800 border-warning/20';
       case 'error': return 'bg-orange-100 text-orange-800 border-orange-200';
-      case 'critical': return 'bg-destructive/10 text-red-800 border-red-200';
+      case 'critical': return 'bg-destructive/10 text-red-800 border-destructive/20';
       default: return 'bg-gray-100 text-gray-800 border-gray-200';
     }
   };
@@ -276,8 +276,8 @@ export const PerformanceMonitor: React.FC = () => {
 
   const getRecommendationTypeColor = (type: string) => {
     switch (type) {
-      case 'scale_up': return 'bg-info/10 text-blue-800 border-blue-200';
-      case 'scale_down': return 'bg-success/10 text-success border-green-200';
+      case 'scale_up': return 'bg-info/10 text-blue-800 border-info/20';
+      case 'scale_down': return 'bg-success/10 text-success border-success/20';
       case 'optimize': return 'bg-purple-100 text-purple-800 border-purple-200';
       default: return 'bg-gray-100 text-gray-800 border-gray-200';
     }
@@ -423,7 +423,7 @@ export const PerformanceMonitor: React.FC = () => {
                 <CardContent className="space-y-4">
                   <p className="text-sm text-gray-700">{alert.description}</p>
                   
-                  <div className="bg-info/5 p-3 rounded-lg border border-blue-200">
+                  <div className="bg-info/5 p-3 rounded-lg border border-info/20">
                     <h4 className="font-medium text-sm text-blue-900 mb-1">Recommendation</h4>
                     <p className="text-sm text-blue-800">{alert.recommendation}</p>
                   </div>

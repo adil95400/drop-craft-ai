@@ -348,7 +348,7 @@ export default function ProductSourcingAssistant() {
         </Card>
 
         {/* AI Recommendations */}
-        <Card className="border-blue-200 bg-info/5/50">
+        <Card className="border-info/20 bg-info/5/50">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <TrendingUp className="h-5 w-5 text-info" />

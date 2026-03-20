@@ -35,7 +35,7 @@ export const RateLimitStatus = () => {
   const isNearLimit = usagePercent > 80
 
   return (
-    <Card className={isNearLimit ? 'border-yellow-500' : ''}>
+    <Card className={isNearLimit ? 'border-warning' : ''}>
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <CardTitle className="text-sm font-medium">

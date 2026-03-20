@@ -26,10 +26,10 @@ interface TicketsListProps {
 }
 
 const statusConfig = {
-  open: { label: 'Ouvert', color: 'bg-info/10 text-info border-blue-500/20', icon: MessageSquare },
-  pending: { label: 'En attente', color: 'bg-warning/10 text-warning border-yellow-500/20', icon: Clock },
+  open: { label: 'Ouvert', color: 'bg-info/10 text-info border-info/20', icon: MessageSquare },
+  pending: { label: 'En attente', color: 'bg-warning/10 text-warning border-warning/20', icon: Clock },
   in_progress: { label: 'En cours', color: 'bg-purple-500/10 text-purple-600 border-purple-500/20', icon: Loader2 },
-  resolved: { label: 'Résolu', color: 'bg-success/10 text-success border-green-500/20', icon: CheckCircle },
+  resolved: { label: 'Résolu', color: 'bg-success/10 text-success border-success/20', icon: CheckCircle },
   closed: { label: 'Fermé', color: 'bg-muted text-muted-foreground border-border', icon: AlertCircle },
 };
 

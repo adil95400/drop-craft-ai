@@ -29,7 +29,7 @@ export function ProductScoreBadge({
       label: 'Tendance',
       color: 'text-info',
       bg: 'bg-info/5',
-      border: 'border-blue-200'
+      border: 'border-info/20'
     },
     competition: {
       icon: Target,
@@ -43,7 +43,7 @@ export function ProductScoreBadge({
       label: 'Profit',
       color: 'text-success',
       bg: 'bg-success/5',
-      border: 'border-green-200'
+      border: 'border-success/20'
     }
   }
 
@@ -135,7 +135,7 @@ export function ProductBadgeGroup({
       <div
         key="trending"
         className={cn(
-          'inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-blue-500 to-cyan-500 text-white font-semibold',
+          'inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-info to-cyan-500 text-white font-semibold',
           sizeClasses[size]
         )}
       >
@@ -150,7 +150,7 @@ export function ProductBadgeGroup({
       <div
         key="bestseller"
         className={cn(
-          'inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-green-500 to-emerald-500 text-white font-semibold',
+          'inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-success to-emerald-500 text-white font-semibold',
           sizeClasses[size]
         )}
       >

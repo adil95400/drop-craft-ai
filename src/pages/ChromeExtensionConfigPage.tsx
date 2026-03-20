@@ -452,7 +452,7 @@ export default function ChromeExtensionConfigPage() {
                   <Badge className="bg-gradient-to-r from-pink-500 to-rose-500">Temu</Badge>
                   <Badge className="bg-gradient-to-r from-orange-500 to-red-500">AliExpress</Badge>
                   <Badge className="bg-gradient-to-r from-yellow-500 to-orange-500">Amazon</Badge>
-                  <Badge className="bg-gradient-to-r from-green-500 to-emerald-500">Shopify</Badge>
+                  <Badge className="bg-gradient-to-r from-success to-emerald-500">Shopify</Badge>
                   <Badge className="bg-gradient-to-r from-purple-500 to-pink-500">WooCommerce</Badge>
                   <Badge variant="secondary">+ Sites génériques</Badge>
                 </div>

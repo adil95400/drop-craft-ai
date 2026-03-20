@@ -79,7 +79,7 @@ export function ChannelProductsTab({
   const getStatusBadge = (status: string | null) => {
     switch (status) {
       case 'active':
-        return <Badge className="bg-success/20 text-success dark:text-green-400 border-green-500/30 text-xs">{t('products.active')}</Badge>
+        return <Badge className="bg-success/20 text-success dark:text-green-400 border-success/30 text-xs">{t('products.active')}</Badge>
       case 'draft':
         return <Badge variant="secondary" className="text-xs">{t('products.draft')}</Badge>
       case 'archived':

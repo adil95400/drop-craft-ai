@@ -377,7 +377,7 @@ export const SmartAutomationBuilder: React.FC = () => {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-3 text-xs">
-                    <div className="p-2 bg-info/5 border border-blue-200 rounded flex items-center gap-2">
+                    <div className="p-2 bg-info/5 border border-info/20 rounded flex items-center gap-2">
                       <Users className="h-3 w-3 text-info" />
                       <span>Nouveau client</span>
                     </div>
@@ -387,7 +387,7 @@ export const SmartAutomationBuilder: React.FC = () => {
                       <span>Attendre 1h</span>
                     </div>
                     <ArrowDown className="h-3 w-3 text-muted-foreground mx-auto" />
-                    <div className="p-2 bg-success/5 border border-green-200 rounded flex items-center gap-2">
+                    <div className="p-2 bg-success/5 border border-success/20 rounded flex items-center gap-2">
                       <Mail className="h-3 w-3 text-success" />
                       <span>Email bienvenue</span>
                     </div>

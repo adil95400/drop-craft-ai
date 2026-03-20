@@ -34,7 +34,7 @@ const priorityConfig: Record<RecommendationPriority, {
   critical: {
     color: 'text-destructive dark:text-red-400',
     bgColor: 'bg-destructive/10',
-    borderColor: 'border-red-500/30',
+    borderColor: 'border-destructive/30',
     label: 'Critique'
   },
   high: {
@@ -52,7 +52,7 @@ const priorityConfig: Record<RecommendationPriority, {
   low: {
     color: 'text-info dark:text-blue-400',
     bgColor: 'bg-info/10',
-    borderColor: 'border-blue-500/30',
+    borderColor: 'border-info/30',
     label: 'Basse'
   }
 }

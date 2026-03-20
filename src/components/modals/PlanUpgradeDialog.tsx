@@ -233,7 +233,7 @@ export const PlanUpgradeDialog = ({
           <Card className={`relative ${currentPlan === 'ultra_pro' ? 'ring-2 ring-primary' : 'ring-2 ring-purple-500'}`}>
             {currentPlan !== 'ultra_pro' && (
               <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
-                <Badge className="bg-gradient-to-r from-purple-600 to-blue-600 text-white">
+                <Badge className="bg-gradient-to-r from-purple-600 to-info text-white">
                   <Crown className="h-3 w-3 mr-1" />
                   Premium
                 </Badge>
@@ -267,7 +267,7 @@ export const PlanUpgradeDialog = ({
               ))}
               {currentPlan !== 'ultra_pro' && (
                 <Button 
-                  className="w-full mt-4 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700" 
+                  className="w-full mt-4 bg-gradient-to-r from-purple-600 to-info hover:from-purple-700 hover:to-blue-700" 
                   onClick={() => handleUpgrade('ultra_pro')}
                   disabled={isUpgrading}
                 >

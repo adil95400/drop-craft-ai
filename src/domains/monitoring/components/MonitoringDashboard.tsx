@@ -172,7 +172,7 @@ export function MonitoringDashboard() {
             variant="outline"
             size="sm"
             onClick={() => setAutoRefresh(!autoRefresh)}
-            className={cn(autoRefresh && 'border-green-500 text-success')}
+            className={cn(autoRefresh && 'border-success text-success')}
           >
             {autoRefresh ? (
               <>

@@ -87,9 +87,9 @@ export default function AdvancedTicketsPage() {
 
   const getPriorityBadge = (priority: string) => {
     const map: Record<string, string> = {
-      urgent: 'bg-destructive/10 text-red-700 border-red-200',
+      urgent: 'bg-destructive/10 text-red-700 border-destructive/20',
       high: 'bg-orange-100 text-orange-700 border-orange-200',
-      normal: 'bg-info/10 text-blue-700 border-blue-200',
+      normal: 'bg-info/10 text-blue-700 border-info/20',
       low: 'bg-muted text-muted-foreground',
     };
     return <Badge className={cn("text-xs", map[priority] || map.normal)}>{priority === 'urgent' ? '🔴 Urgent' : priority === 'high' ? '🟠 Haute' : priority === 'low' ? '🟢 Basse' : '🔵 Normale'}</Badge>;

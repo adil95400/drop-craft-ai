@@ -671,7 +671,7 @@ export default function CreateNotification() {
                   </CardContent>
                 </Card>
 
-                <Card className="border-yellow-200 bg-warning/5/50 dark:bg-yellow-950/20">
+                <Card className="border-warning/20 bg-warning/5/50 dark:bg-yellow-950/20">
                   <CardContent className="pt-6">
                     <div className="flex gap-3">
                       <Info className="h-5 w-5 text-warning flex-shrink-0 mt-0.5" />

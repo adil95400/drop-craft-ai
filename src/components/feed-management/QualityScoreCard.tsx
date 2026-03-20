@@ -71,9 +71,9 @@ export function QualityScoreCard({
 
   const getIssueBg = (type: QualityIssue['type']) => {
     switch (type) {
-      case 'error': return 'bg-destructive/10 border-red-500/20'
-      case 'warning': return 'bg-warning/10 border-yellow-500/20'
-      case 'info': return 'bg-info/10 border-blue-500/20'
+      case 'error': return 'bg-destructive/10 border-destructive/20'
+      case 'warning': return 'bg-warning/10 border-warning/20'
+      case 'info': return 'bg-info/10 border-info/20'
     }
   }
 
@@ -124,7 +124,7 @@ export function QualityScoreCard({
           {previousScore !== undefined && (
             <div className="flex items-center justify-center gap-2">
               {trend > 0 ? (
-                <Badge className="bg-success/20 text-success border-green-500/30">
+                <Badge className="bg-success/20 text-success border-success/30">
                   <TrendingUp className="h-3 w-3 mr-1" />
                   +{trend.toFixed(1)}%
                 </Badge>

@@ -335,7 +335,7 @@ export const StripeWebhookHandler = () => {
                   </div>
                   
                   {event.error && (
-                    <div className="mt-2 p-2 bg-destructive/5 border border-red-200 rounded text-sm text-destructive">
+                    <div className="mt-2 p-2 bg-destructive/5 border border-destructive/20 rounded text-sm text-destructive">
                       {event.error}
                     </div>
                   )}

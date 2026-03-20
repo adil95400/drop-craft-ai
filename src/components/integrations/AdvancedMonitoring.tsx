@@ -50,10 +50,10 @@ export const AdvancedMonitoring = () => {
   ]
 
   const statusColors = {
-    success: 'bg-success/10 text-success border-green-200',
-    warning: 'bg-warning/10 text-yellow-800 border-yellow-200',
-    error: 'bg-destructive/10 text-red-800 border-red-200',
-    info: 'bg-info/10 text-blue-800 border-blue-200'
+    success: 'bg-success/10 text-success border-success/20',
+    warning: 'bg-warning/10 text-yellow-800 border-warning/20',
+    error: 'bg-destructive/10 text-red-800 border-destructive/20',
+    info: 'bg-info/10 text-blue-800 border-info/20'
   }
 
   useEffect(() => {
@@ -381,7 +381,7 @@ export const AdvancedMonitoring = () => {
                 {alerts.length === 0 && <p className="text-muted-foreground text-center py-4">Aucune alerte active</p>}
                 {alerts.map(alert => (
                   <div key={alert.id} className={`p-4 rounded-lg border ${alert.acknowledged ? 'opacity-50' : ''} ${
-                    alert.type === 'error' ? 'border-red-200 bg-destructive/5' : alert.type === 'warning' ? 'border-yellow-200 bg-warning/5' : 'border-blue-200 bg-info/5'
+                    alert.type === 'error' ? 'border-destructive/20 bg-destructive/5' : alert.type === 'warning' ? 'border-warning/20 bg-warning/5' : 'border-info/20 bg-info/5'
                   }`}>
                     <div className="flex items-start justify-between">
                       <div className="flex items-start gap-3">

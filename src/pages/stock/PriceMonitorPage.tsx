@@ -191,7 +191,7 @@ export default function PriceMonitorPage() {
                     key={alert.id}
                     className={cn(
                       "flex items-center justify-between p-3 rounded-lg border",
-                      alert.severity === 'critical' && "border-red-500/30 bg-destructive/5",
+                      alert.severity === 'critical' && "border-destructive/30 bg-destructive/5",
                       alert.severity === 'warning' && "border-amber-500/30 bg-warning/5"
                     )}
                   >

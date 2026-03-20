@@ -203,7 +203,7 @@ export const WinnersMarketIntelligence = () => {
 
                 {/* Recommandation */}
                 {category.competition === 'low' && category.growthRate > 40 && (
-                  <div className="flex items-start gap-2 p-3 bg-success/5 dark:bg-green-950/20 border border-green-200 dark:border-green-800 rounded-lg">
+                  <div className="flex items-start gap-2 p-3 bg-success/5 dark:bg-green-950/20 border border-success/20 dark:border-green-800 rounded-lg">
                     <AlertCircle className="w-4 h-4 text-success mt-0.5" />
                     <div className="text-sm">
                       <span className="font-semibold text-green-900 dark:text-green-100">🎯 Opportunité excellente !</span>
@@ -232,7 +232,7 @@ export const WinnersMarketIntelligence = () => {
       </Card>
 
       {/* Insights AI */}
-      <Card className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20 border-blue-200 dark:border-blue-800">
+      <Card className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20 border-info/20 dark:border-blue-800">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-blue-900 dark:text-blue-100">
             🤖 Insights IA

@@ -268,7 +268,7 @@ export function AdminConsumptionDashboard() {
           </CardContent>
         </Card>
 
-        <Card className="border-red-200 dark:border-red-900">
+        <Card className="border-destructive/20 dark:border-red-900">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium flex items-center gap-2">
               <XCircle className="h-4 w-4 text-destructive" />
@@ -283,7 +283,7 @@ export function AdminConsumptionDashboard() {
           </CardContent>
         </Card>
 
-        <Card className="border-yellow-200 dark:border-yellow-900">
+        <Card className="border-warning/20 dark:border-yellow-900">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium flex items-center gap-2">
               <AlertTriangle className="h-4 w-4 text-warning" />
@@ -474,7 +474,7 @@ export function AdminConsumptionDashboard() {
                                   variant="outline"
                                   className={cn(
                                     'text-xs',
-                                    q.status === 'exhausted' ? 'border-red-500 text-destructive' : 'border-yellow-500 text-warning'
+                                    q.status === 'exhausted' ? 'border-destructive text-destructive' : 'border-warning text-warning'
                                   )}
                                 >
                                   {q.key}: {q.current}/{q.limit}

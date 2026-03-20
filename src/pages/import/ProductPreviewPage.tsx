@@ -948,7 +948,7 @@ export default function ProductPreviewPage() {
                           {review.comment && <p className="text-xs text-muted-foreground line-clamp-2">{review.comment}</p>}
                           <div className="flex items-center gap-2 text-[10px] text-muted-foreground/60">
                             {review.verified_purchase && (
-                              <Badge variant="outline" className="text-[10px] h-4 px-1 border-green-500/30 text-success">Vérifié</Badge>
+                              <Badge variant="outline" className="text-[10px] h-4 px-1 border-success/30 text-success">Vérifié</Badge>
                             )}
                             {review.review_date && <span>{new Date(review.review_date).toLocaleDateString('fr-FR')}</span>}
                           </div>
@@ -1144,7 +1144,7 @@ export default function ProductPreviewPage() {
                       onChange={e => handleFieldChange('suggested_price', parseFloat(e.target.value) || 0)}
                     />
                   </div>
-                  <div className="flex items-center justify-between p-2.5 rounded-lg bg-success/10 border border-green-500/20">
+                  <div className="flex items-center justify-between p-2.5 rounded-lg bg-success/10 border border-success/20">
                     <span className="text-xs text-success dark:text-green-400">Marge bénéficiaire</span>
                     <span className="text-sm font-bold text-success">{margin}%</span>
                   </div>

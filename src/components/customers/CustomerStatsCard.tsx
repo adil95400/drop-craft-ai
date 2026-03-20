@@ -36,8 +36,8 @@ export function CustomerStatsCard({
     success: {
       bg: 'bg-success/10',
       text: 'text-success',
-      border: 'border-green-500/20',
-      gradient: 'from-green-500/5 to-transparent'
+      border: 'border-success/20',
+      gradient: 'from-success/5 to-transparent'
     },
     warning: {
       bg: 'bg-warning/10',
@@ -48,8 +48,8 @@ export function CustomerStatsCard({
     info: {
       bg: 'bg-info/10',
       text: 'text-info',
-      border: 'border-blue-500/20',
-      gradient: 'from-blue-500/5 to-transparent'
+      border: 'border-info/20',
+      gradient: 'from-info/5 to-transparent'
     },
     purple: {
       bg: 'bg-purple-500/10',

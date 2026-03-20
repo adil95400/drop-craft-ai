@@ -27,15 +27,15 @@ import {
 import { cn } from '@/lib/utils'
 
 const priorityColors = {
-  high: 'border-red-500/50 bg-destructive/5',
-  medium: 'border-yellow-500/50 bg-warning/5',
-  low: 'border-blue-500/50 bg-info/5'
+  high: 'border-destructive/50 bg-destructive/5',
+  medium: 'border-warning/50 bg-warning/5',
+  low: 'border-info/50 bg-info/5'
 }
 
 const priorityBadges = {
-  high: 'bg-destructive/10 text-destructive border-red-500/30',
-  medium: 'bg-warning/10 text-warning border-yellow-500/30',
-  low: 'bg-info/10 text-info border-blue-500/30'
+  high: 'bg-destructive/10 text-destructive border-destructive/30',
+  medium: 'bg-warning/10 text-warning border-warning/30',
+  low: 'bg-info/10 text-info border-info/30'
 }
 
 export function AttributesAIPanel() {

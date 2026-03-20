@@ -88,7 +88,7 @@ export const ImportResultsPro = ({
             </p>
           </div>
         </div>
-        <Badge variant="outline" className="px-4 py-2 bg-success/5 text-success border-green-200">
+        <Badge variant="outline" className="px-4 py-2 bg-success/5 text-success border-success/20">
           <Zap className="w-4 h-4 mr-2" />
           {analysis.platform}
         </Badge>
@@ -283,7 +283,7 @@ export const ImportResultsPro = ({
           <div className="flex gap-3 pt-4 border-t">
             <Button 
               onClick={() => onAddToStore(product)} 
-              className="flex-1 bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700"
+              className="flex-1 bg-gradient-to-r from-green-600 to-info hover:from-green-700 hover:to-blue-700"
             >
               <ShoppingCart className="w-4 h-4 mr-2" />
               Ajouter au Catalogue

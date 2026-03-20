@@ -35,7 +35,7 @@ import { cn } from '@/lib/utils'
 function getScoreConfig(score: number) {
   if (score >= 70) return { label: 'Optimisé', icon: CheckCircle2, variant: 'optimized' as const, textClass: 'text-success', bgClass: 'bg-success/10', borderClass: 'border-emerald-200' }
   if (score >= 40) return { label: 'À améliorer', icon: AlertCircle, variant: 'needs_work' as const, textClass: 'text-warning', bgClass: 'bg-warning/10', borderClass: 'border-amber-200' }
-  return { label: 'Critique', icon: XCircle, variant: 'critical' as const, textClass: 'text-destructive', bgClass: 'bg-destructive/10', borderClass: 'border-red-200' }
+  return { label: 'Critique', icon: XCircle, variant: 'critical' as const, textClass: 'text-destructive', bgClass: 'bg-destructive/10', borderClass: 'border-destructive/20' }
 }
 
 function StatusBadge({ score, size = 'md' }: { score: number; size?: 'sm' | 'md' }) {
@@ -71,9 +71,9 @@ function ScoreRing({ score }: { score: number }) {
 
 function PriorityBadge({ priority }: { priority: string }) {
   const config: Record<string, { label: string; class: string }> = {
-    urgent: { label: '🔥 Urgent', class: 'bg-destructive/10 text-red-700 border-red-200' },
+    urgent: { label: '🔥 Urgent', class: 'bg-destructive/10 text-red-700 border-destructive/20' },
     high: { label: '⚡ High priority', class: 'bg-amber-100 text-amber-700 border-amber-200' },
-    normal: { label: '📋 Normal', class: 'bg-info/10 text-blue-700 border-blue-200' },
+    normal: { label: '📋 Normal', class: 'bg-info/10 text-blue-700 border-info/20' },
   }
   const c = config[priority] ?? config.normal
   return <span className={cn('text-[10px] px-2 py-0.5 rounded-full border font-medium', c.class)}>{c.label}</span>
@@ -83,7 +83,7 @@ function RankingBadge({ potential }: { potential?: string }) {
   if (!potential) return null
   const config: Record<string, { label: string; class: string }> = {
     top10: { label: 'Top 10', class: 'text-emerald-700 bg-emerald-50 border-emerald-200' },
-    top20: { label: 'Top 20', class: 'text-blue-700 bg-info/5 border-blue-200' },
+    top20: { label: 'Top 20', class: 'text-blue-700 bg-info/5 border-info/20' },
     top50: { label: 'Top 50', class: 'text-amber-700 bg-amber-50 border-amber-200' },
     low: { label: 'Low', class: 'text-muted-foreground bg-muted border-border' },
   }
@@ -486,7 +486,7 @@ export function ProductSeoHub() {
 
       {/* ── Quota Warning ── */}
       {showQuotaWarning && (
-        <Card className="border-yellow-500/50 bg-warning/5/50 dark:bg-yellow-950/20">
+        <Card className="border-warning/50 bg-warning/5/50 dark:bg-yellow-950/20">
           <CardContent className="p-3 flex items-center justify-between">
             <div className="flex items-center gap-2 text-sm">
               <ShieldAlert className="h-4 w-4 text-warning" />

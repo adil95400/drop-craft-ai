@@ -15,7 +15,7 @@ const plans = [
     price: 'Gratuit',
     description: 'Parfait pour démarrer',
     icon: Sparkles,
-    color: 'from-blue-500 to-cyan-500',
+    color: 'from-info to-cyan-500',
     features: [
       '1000 produits',
       'Import basique',
@@ -126,7 +126,7 @@ export default function PricingPlansPage() {
             return (
               <Card 
                 key={plan.id} 
-                className={`relative ${plan.popular ? 'border-primary shadow-lg scale-105' : ''} ${isCurrentPlan ? 'border-green-500' : ''}`}
+                className={`relative ${plan.popular ? 'border-primary shadow-lg scale-105' : ''} ${isCurrentPlan ? 'border-success' : ''}`}
               >
                 {plan.popular && (
                   <div className="absolute -top-4 left-1/2 -translate-x-1/2">

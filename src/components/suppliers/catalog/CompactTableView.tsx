@@ -124,7 +124,7 @@ export const CompactTableView = memo(function CompactTableView({
         );
       default:
         return (
-          <Badge className="bg-destructive/10 text-destructive border-red-500/20 text-xs">
+          <Badge className="bg-destructive/10 text-destructive border-destructive/20 text-xs">
             <Package className="h-3 w-3 mr-1" />
             0
           </Badge>

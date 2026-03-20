@@ -114,7 +114,7 @@ export const ExtensionDownloadPage = () => {
               </div>
             ))}
           </div>
-          <div className="mt-6 p-4 bg-info/5 dark:bg-blue-950 rounded-lg border border-blue-200 dark:border-blue-800">
+          <div className="mt-6 p-4 bg-info/5 dark:bg-blue-950 rounded-lg border border-info/20 dark:border-blue-800">
             <div className="flex items-start gap-3">
               <AlertCircle className="w-5 h-5 text-info mt-0.5" />
               <div>

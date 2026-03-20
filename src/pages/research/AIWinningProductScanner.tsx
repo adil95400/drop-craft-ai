@@ -162,9 +162,9 @@ export default function AIWinningProductScanner() {
   }
 
   const scoreBadge = (score: number) => {
-    if (score >= 85) return 'bg-success/10 text-success border-green-500/30'
-    if (score >= 70) return 'bg-warning/10 text-warning border-yellow-500/30'
-    return 'bg-destructive/10 text-destructive border-red-500/30'
+    if (score >= 85) return 'bg-success/10 text-success border-success/30'
+    if (score >= 70) return 'bg-warning/10 text-warning border-warning/30'
+    return 'bg-destructive/10 text-destructive border-destructive/30'
   }
 
   const displayProducts = activeTab === 'scanner' ? products : trending
@@ -368,7 +368,7 @@ export default function AIWinningProductScanner() {
 
                       {/* Margin badge */}
                       <div className="flex items-center justify-between pt-1">
-                        <Badge variant="outline" className="bg-success/10 text-success border-green-500/30 text-xs">
+                        <Badge variant="outline" className="bg-success/10 text-success border-success/30 text-xs">
                           Marge {product.margin_percent}%
                         </Badge>
                         {product.estimated_monthly_revenue && (

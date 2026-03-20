@@ -179,9 +179,9 @@ export default function AuditScoringPage() {
               {stats.topIssues.slice(0, 5).map((issue, idx) => (
                 <div key={idx} className={cn(
                   'flex items-center justify-between p-4 border rounded-lg',
-                  issue.type === 'error' ? 'bg-destructive/5 dark:bg-red-900/10 border-red-200' :
-                  issue.type === 'warning' ? 'bg-warning/5 dark:bg-yellow-900/10 border-yellow-200' :
-                  'bg-info/5 dark:bg-blue-900/10 border-blue-200'
+                  issue.type === 'error' ? 'bg-destructive/5 dark:bg-red-900/10 border-destructive/20' :
+                  issue.type === 'warning' ? 'bg-warning/5 dark:bg-yellow-900/10 border-warning/20' :
+                  'bg-info/5 dark:bg-blue-900/10 border-info/20'
                 )}>
                   <div className="flex items-center gap-4">
                     <AlertCircle className={cn('h-5 w-5',

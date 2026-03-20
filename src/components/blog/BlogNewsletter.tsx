@@ -40,7 +40,7 @@ export function BlogNewsletter() {
 
   if (isSubscribed) {
     return (
-      <Card className="bg-gradient-to-br from-green-50 to-emerald-50 border-green-200">
+      <Card className="bg-gradient-to-br from-green-50 to-emerald-50 border-success/20">
         <CardContent className="pt-6 text-center">
           <div className="w-16 h-16 bg-success/10 rounded-full flex items-center justify-center mx-auto mb-4">
             <CheckCircle className="w-8 h-8 text-success" />
@@ -51,7 +51,7 @@ export function BlogNewsletter() {
           <p className="text-success mb-4">
             Vérifiez votre boîte mail pour confirmer votre abonnement.
           </p>
-          <Badge className="bg-success/10 text-success border-green-200">
+          <Badge className="bg-success/10 text-success border-success/20">
             <Gift className="w-4 h-4 mr-1" />
             Guide gratuit en cours d'envoi
           </Badge>

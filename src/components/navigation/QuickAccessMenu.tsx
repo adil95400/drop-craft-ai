@@ -20,7 +20,7 @@ export function QuickAccessMenu() {
       url: '/import/advanced',
       icon: Upload,
       badge: 'Ultra',
-      color: 'from-blue-500 to-blue-600'
+      color: 'from-info to-info'
     },
     {
       title: 'Catalogue Ultra Pro',
@@ -28,7 +28,7 @@ export function QuickAccessMenu() {
       url: '/products/advanced',
       icon: Package,
       badge: 'Ultra',
-      color: 'from-green-500 to-green-600'
+      color: 'from-success to-success'
     },
     {
       title: 'Fournisseurs Pro',

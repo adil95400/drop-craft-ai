@@ -289,7 +289,7 @@ export function CatalogDashboard() {
 
             <TabsContent value="alerts" className="space-y-6">
               <div className="space-y-4">
-                <Card className="border-red-200 bg-destructive/5">
+                <Card className="border-destructive/20 bg-destructive/5">
                   <CardContent className="flex items-center p-4">
                     <AlertTriangle className="h-5 w-5 text-destructive mr-3" />
                     <div className="flex-1">
@@ -300,7 +300,7 @@ export function CatalogDashboard() {
                   </CardContent>
                 </Card>
 
-                <Card className="border-yellow-200 bg-warning/5">
+                <Card className="border-warning/20 bg-warning/5">
                   <CardContent className="flex items-center p-4">
                     <AlertTriangle className="h-5 w-5 text-warning mr-3" />
                     <div className="flex-1">
@@ -311,7 +311,7 @@ export function CatalogDashboard() {
                   </CardContent>
                 </Card>
 
-                <Card className="border-green-200 bg-success/5">
+                <Card className="border-success/20 bg-success/5">
                   <CardContent className="flex items-center p-4">
                     <CheckCircle className="h-5 w-5 text-success mr-3" />
                     <div className="flex-1">

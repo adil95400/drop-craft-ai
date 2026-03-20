@@ -96,7 +96,7 @@ export function ThemeToggle({
         "relative overflow-hidden transition-all duration-300 hover:scale-[1.02] group",
         "w-full justify-start gap-3 px-3 py-2.5 rounded-lg",
         isAuto && "hover:bg-gradient-to-r hover:from-purple-500/10 hover:to-purple-500/5 hover:border hover:border-purple-500/20",
-        isDark && !isAuto && "hover:bg-gradient-to-r hover:from-blue-500/10 hover:to-blue-500/5 hover:border hover:border-blue-500/20",
+        isDark && !isAuto && "hover:bg-gradient-to-r hover:from-info/10 hover:to-blue-500/5 hover:border hover:border-info/20",
         !isDark && !isAuto && "hover:bg-gradient-to-r hover:from-amber-500/10 hover:to-amber-500/5 hover:border hover:border-amber-500/20",
         "border border-transparent hover:shadow-md",
         className
@@ -133,7 +133,7 @@ export function ThemeToggle({
         isAuto
           ? "bg-gradient-to-r from-purple-500/20 to-purple-500/10 text-purple-400 border border-purple-500/30 shadow-purple-500/20"
           : isDark 
-          ? "bg-gradient-to-r from-blue-500/20 to-blue-500/10 text-blue-400 border border-blue-500/30 shadow-blue-500/20" 
+          ? "bg-gradient-to-r from-info/20 to-blue-500/10 text-blue-400 border border-info/30 shadow-blue-500/20" 
           : "bg-gradient-to-r from-amber-500/20 to-amber-500/10 text-warning border border-amber-500/30 shadow-amber-500/20"
       )}>
         {isAuto ? "🕐" : isDark ? "🌙" : "☀️"}

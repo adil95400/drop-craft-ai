@@ -289,7 +289,7 @@ export const XMLJSONImportInterface = ({ onImport }: XMLJSONImportInterfaceProps
 
             <TabsContent value="sync" className="mt-6">
               <div className="space-y-6">
-                <Card className="border-blue-200 bg-info/5">
+                <Card className="border-info/20 bg-info/5">
                   <CardContent className="p-4">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">

@@ -40,8 +40,8 @@ const AI_STATUS_CONFIG = {
     subtitle: 'Ce produit nécessite votre attention immédiate',
     ctaLabel: 'Corriger maintenant',
     ctaIcon: Zap,
-    gradient: 'from-red-500/20 via-red-500/10 to-transparent',
-    border: 'border-red-500/40',
+    gradient: 'from-destructive/20 via-red-500/10 to-transparent',
+    border: 'border-destructive/40',
     iconBg: 'bg-destructive/20',
     iconColor: 'text-destructive',
     textColor: 'text-destructive dark:text-red-400',
@@ -66,8 +66,8 @@ const AI_STATUS_CONFIG = {
     subtitle: 'Aucune action requise',
     ctaLabel: 'Voir détails',
     ctaIcon: ArrowRight,
-    gradient: 'from-blue-500/20 via-blue-500/10 to-transparent',
-    border: 'border-blue-500/40',
+    gradient: 'from-info/20 via-blue-500/10 to-transparent',
+    border: 'border-info/40',
     iconBg: 'bg-info/20',
     iconColor: 'text-info',
     textColor: 'text-info dark:text-blue-400',
@@ -229,7 +229,7 @@ export const PrescriptiveProductHeader = memo(function PrescriptiveProductHeader
       {/* Priority indicator bar */}
       {badgeType === 'risk' && aiBadge?.priority === 'critical' && (
         <motion.div
-          className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-red-500 via-orange-500 to-red-500"
+          className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-destructive via-orange-500 to-red-500"
           animate={{ backgroundPosition: ['0% 50%', '100% 50%', '0% 50%'] }}
           transition={{ duration: 3, repeat: Infinity }}
           style={{ backgroundSize: '200% 200%' }}

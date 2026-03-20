@@ -360,9 +360,9 @@ export function ProductDetailsModal({ product, open, onOpenChange }: ProductDeta
     switch (status) {
       case 'published':
       case 'active':
-        return { label: 'Publié', color: 'bg-success/10 text-success border-green-500/20', icon: CheckCircle }
+        return { label: 'Publié', color: 'bg-success/10 text-success border-success/20', icon: CheckCircle }
       case 'draft':
-        return { label: 'Brouillon', color: 'bg-warning/10 text-warning border-yellow-500/20', icon: FileText }
+        return { label: 'Brouillon', color: 'bg-warning/10 text-warning border-warning/20', icon: FileText }
       case 'archived':
         return { label: 'Archivé', color: 'bg-muted text-muted-foreground border-border', icon: Archive }
       default:
@@ -620,7 +620,7 @@ export function ProductDetailsModal({ product, open, onOpenChange }: ProductDeta
                     ) : (
                       <Button
                         variant="outline"
-                        className="w-full justify-start gap-2 h-10 border-green-500/30 hover:bg-success/10"
+                        className="w-full justify-start gap-2 h-10 border-success/30 hover:bg-success/10"
                         onClick={handlePublish}
                         disabled={isPublishing}
                       >
@@ -650,10 +650,10 @@ export function ProductDetailsModal({ product, open, onOpenChange }: ProductDeta
                   <Card className={cn(
                     "border",
                     (metrics?.margin || 0) >= 30 
-                      ? "bg-success/5 border-green-500/10" 
+                      ? "bg-success/5 border-success/10" 
                       : (metrics?.margin || 0) >= 15 
-                        ? "bg-warning/5 border-yellow-500/10"
-                        : "bg-destructive/5 border-red-500/10"
+                        ? "bg-warning/5 border-warning/10"
+                        : "bg-destructive/5 border-destructive/10"
                   )}>
                     <CardContent className="p-3 text-center">
                       <Percent className="h-5 w-5 mx-auto mb-1 text-muted-foreground" />
@@ -674,9 +674,9 @@ export function ProductDetailsModal({ product, open, onOpenChange }: ProductDeta
                   <Card className={cn(
                     "border",
                     metrics?.isOutOfStock 
-                      ? "bg-destructive/5 border-red-500/10" 
+                      ? "bg-destructive/5 border-destructive/10" 
                       : metrics?.isLowStock 
-                        ? "bg-warning/5 border-yellow-500/10"
+                        ? "bg-warning/5 border-warning/10"
                         : "bg-muted/50 border-border"
                   )}>
                     <CardContent className="p-3 text-center">
@@ -968,7 +968,7 @@ export function ProductDetailsModal({ product, open, onOpenChange }: ProductDeta
                       </div>
 
                       {/* Profit Visualization */}
-                      <Card className="bg-gradient-to-r from-green-500/5 to-emerald-500/5 border-green-500/20">
+                      <Card className="bg-gradient-to-r from-success/5 to-emerald-500/5 border-success/20">
                         <CardContent className="p-6">
                           <div className="flex items-center justify-between mb-4">
                             <div>

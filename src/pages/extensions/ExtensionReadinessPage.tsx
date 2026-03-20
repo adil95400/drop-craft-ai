@@ -119,9 +119,9 @@ export default function ExtensionReadinessPage() {
         <div 
           key={item.id}
           className={`flex items-center justify-between p-3 rounded-lg border ${
-            item.status === 'pass' ? 'border-green-200 bg-success/5' :
-            item.status === 'warning' ? 'border-yellow-200 bg-warning/5' :
-            item.status === 'fail' ? 'border-red-200 bg-destructive/5' :
+            item.status === 'pass' ? 'border-success/20 bg-success/5' :
+            item.status === 'warning' ? 'border-warning/20 bg-warning/5' :
+            item.status === 'fail' ? 'border-destructive/20 bg-destructive/5' :
             'border-muted'
           }`}
         >

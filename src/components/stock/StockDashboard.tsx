@@ -126,7 +126,7 @@ export const StockDashboard = () => {
 
       {/* Critical Alerts Banner */}
       {criticalAlerts.length > 0 && (
-        <Card className="border-red-500 bg-destructive/5 dark:bg-red-950/20">
+        <Card className="border-destructive bg-destructive/5 dark:bg-red-950/20">
           <CardHeader>
             <CardTitle className="text-destructive dark:text-red-400 flex items-center gap-2">
               <AlertTriangle className="h-5 w-5" />

@@ -644,7 +644,7 @@ export const RealtimeAIAssistant: React.FC = () => {
                       : message.type === 'system'
                       ? 'bg-muted text-muted-foreground'
                       : message.type === 'function_call'
-                      ? 'bg-info/5 text-blue-800 border border-blue-200'
+                      ? 'bg-info/5 text-blue-800 border border-info/20'
                       : 'bg-muted'
                   }`}>
                     {message.type === 'function_call' ? (

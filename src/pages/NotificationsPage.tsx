@@ -62,7 +62,7 @@ const CATEGORY_COLORS: Record<string, string> = {
   orders: 'text-success bg-success/10 border-emerald-500/20',
   stock: 'text-warning bg-warning/10 border-amber-500/20',
   marketing: 'text-pink-500 bg-pink-500/10 border-pink-500/20',
-  system: 'text-info bg-info/10 border-blue-500/20',
+  system: 'text-info bg-info/10 border-info/20',
   products: 'text-violet-500 bg-violet-500/10 border-violet-500/20',
   reports: 'text-cyan-500 bg-cyan-500/10 border-cyan-500/20',
 };

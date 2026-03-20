@@ -168,15 +168,15 @@ export function FeedRulesPanel({
   const getRuleTypeBadge = (type: FeedRule['type']) => {
     switch (type) {
       case 'filter':
-        return <Badge variant="outline" className="bg-destructive/10 text-red-700 border-red-500/30">Filtre</Badge>
+        return <Badge variant="outline" className="bg-destructive/10 text-red-700 border-destructive/30">Filtre</Badge>
       case 'transform':
-        return <Badge variant="outline" className="bg-info/10 text-blue-700 border-blue-500/30">Transformation</Badge>
+        return <Badge variant="outline" className="bg-info/10 text-blue-700 border-info/30">Transformation</Badge>
       case 'map':
         return <Badge variant="outline" className="bg-purple-500/10 text-purple-700 border-purple-500/30">Mapping</Badge>
       case 'combine':
-        return <Badge variant="outline" className="bg-success/10 text-success border-green-500/30">Combinaison</Badge>
+        return <Badge variant="outline" className="bg-success/10 text-success border-success/30">Combinaison</Badge>
       case 'split':
-        return <Badge variant="outline" className="bg-warning/10 text-yellow-700 border-yellow-500/30">Division</Badge>
+        return <Badge variant="outline" className="bg-warning/10 text-yellow-700 border-warning/30">Division</Badge>
       default:
         return <Badge variant="outline">Règle</Badge>
     }

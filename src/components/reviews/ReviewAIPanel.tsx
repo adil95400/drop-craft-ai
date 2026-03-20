@@ -198,7 +198,7 @@ export function ReviewAIPanel() {
       {sentimentResults && activeAnalysis === 'sentiment' && (
         <div className="space-y-4">
           {sentimentResults.summary && (
-            <Card className="border-blue-500/20">
+            <Card className="border-info/20">
               <CardHeader className="pb-3">
                 <CardTitle className="text-base flex items-center gap-2">
                   <Brain className="h-5 w-5 text-info" />

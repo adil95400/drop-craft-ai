@@ -235,7 +235,7 @@ export function AdvancedAPIKeyManager() {
 
         <CardContent>
           {copiedKey && (
-            <Card className="mb-4 bg-success/5 border-green-200">
+            <Card className="mb-4 bg-success/5 border-success/20">
               <CardContent className="p-4">
                 <div className="flex items-start gap-3">
                   <Check className="h-5 w-5 text-success flex-shrink-0 mt-0.5" />

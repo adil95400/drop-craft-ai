@@ -385,7 +385,7 @@ export function SupplierManagement() {
                   </CardContent>
                 </Card>
                 
-                <Card className="bg-gradient-to-br from-green-50 to-emerald-50 border-green-200">
+                <Card className="bg-gradient-to-br from-green-50 to-emerald-50 border-success/20">
                   <CardContent className="p-4">
                     <Shield className="h-8 w-8 text-success mb-2" />
                     <h3 className="font-semibold mb-2">Support prioritaire</h3>

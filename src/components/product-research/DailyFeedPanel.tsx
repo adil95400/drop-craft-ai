@@ -162,9 +162,9 @@ export function DailyFeedPanel() {
   };
 
   const getScoreBg = (score: number) => {
-    if (score >= 80) return 'bg-success/10 border-green-500/30';
-    if (score >= 60) return 'bg-warning/10 border-yellow-500/30';
-    return 'bg-destructive/10 border-red-500/30';
+    if (score >= 80) return 'bg-success/10 border-success/30';
+    if (score >= 60) return 'bg-warning/10 border-warning/30';
+    return 'bg-destructive/10 border-destructive/30';
   };
 
   const getSaturationBadge = (sat: string) => {
@@ -228,7 +228,7 @@ export function DailyFeedPanel() {
                 </SelectContent>
               </Select>
 
-              <Button onClick={loadFeed} disabled={isLoading} className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white">
+              <Button onClick={loadFeed} disabled={isLoading} className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-destructive text-white">
                 {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4 mr-1.5" />}
                 {isLoading ? 'Chargement...' : 'Actualiser'}
               </Button>

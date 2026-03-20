@@ -147,9 +147,9 @@ export function SmartAlertsPanel({ products, revenue }: SmartAlertsPanelProps) {
   }, [products, revenue])
 
   const severityConfig = {
-    critical: { icon: XCircle, color: 'text-destructive', bg: 'bg-destructive/5 dark:bg-red-950/30', border: 'border-red-200 dark:border-red-800', badge: 'bg-destructive/10 text-red-700' },
+    critical: { icon: XCircle, color: 'text-destructive', bg: 'bg-destructive/5 dark:bg-red-950/30', border: 'border-destructive/20 dark:border-red-800', badge: 'bg-destructive/10 text-red-700' },
     warning: { icon: AlertTriangle, color: 'text-warning', bg: 'bg-amber-50 dark:bg-amber-950/30', border: 'border-amber-200 dark:border-amber-800', badge: 'bg-amber-100 text-amber-700' },
-    info: { icon: Clock, color: 'text-info', bg: 'bg-info/5 dark:bg-blue-950/30', border: 'border-blue-200 dark:border-blue-800', badge: 'bg-info/10 text-blue-700' },
+    info: { icon: Clock, color: 'text-info', bg: 'bg-info/5 dark:bg-blue-950/30', border: 'border-info/20 dark:border-blue-800', badge: 'bg-info/10 text-blue-700' },
   }
 
   const criticalCount = alerts.filter(a => a.severity === 'critical').length

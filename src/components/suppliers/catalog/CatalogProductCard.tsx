@@ -106,7 +106,7 @@ export const CatalogProductCard = memo(function CatalogProductCard({
       default:
         return { 
           label: 'Rupture', 
-          color: 'bg-destructive/10 text-destructive border-red-500/20',
+          color: 'bg-destructive/10 text-destructive border-destructive/20',
           icon: Package 
         };
     }
@@ -321,7 +321,7 @@ export const CatalogProductCard = memo(function CatalogProductCard({
               "absolute bottom-2 right-2 p-2 rounded-full transition-all duration-200",
               "bg-background/90 backdrop-blur-sm border border-border/50 shadow-sm",
               "hover:scale-110 hover:bg-background",
-              isFavorite && "bg-destructive/5 border-red-200"
+              isFavorite && "bg-destructive/5 border-destructive/20"
             )}
           >
             <Heart className={cn(

@@ -385,7 +385,7 @@ export default function ChromeExtensionPage() {
             <div className="flex items-center gap-2">
               <Badge className="bg-cyan-500">Extension Chrome</Badge>
               <Badge variant="outline">v6.0.0</Badge>
-              <Badge variant="outline" className="bg-success/10 text-success border-green-500/30">
+              <Badge variant="outline" className="bg-success/10 text-success border-success/30">
                 <RefreshCw className="h-3 w-3 mr-1" />
                 Sync SaaS
               </Badge>
@@ -404,7 +404,7 @@ export default function ChromeExtensionPage() {
               {IS_PUBLISHED ? (
                 <Button 
                   size="lg" 
-                  className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700"
+                  className="bg-gradient-to-r from-cyan-500 to-info hover:from-cyan-600 hover:to-blue-700"
                   onClick={() => window.open(CHROME_STORE_URL, '_blank')}
                 >
                   <Chrome className="h-5 w-5 mr-2" />
@@ -450,7 +450,7 @@ export default function ChromeExtensionPage() {
           
           <div className="hidden md:block">
             <div className="relative">
-              <div className="w-48 h-48 bg-gradient-to-br from-cyan-500 to-blue-600 rounded-2xl flex items-center justify-center shadow-xl">
+              <div className="w-48 h-48 bg-gradient-to-br from-cyan-500 to-info rounded-2xl flex items-center justify-center shadow-xl">
                 <Chrome className="h-24 w-24 text-white" />
               </div>
               <div className="absolute -bottom-4 -right-4 bg-success text-white rounded-full p-2">
@@ -855,9 +855,9 @@ export default function ChromeExtensionPage() {
                           </div>
                           <Badge 
                             className={cn(
-                              item.status === 'success' && 'bg-success/10 text-success border-green-500/30',
-                              item.status === 'pending' && 'bg-warning/10 text-warning border-yellow-500/30',
-                              item.status === 'error' && 'bg-destructive/10 text-destructive border-red-500/30'
+                              item.status === 'success' && 'bg-success/10 text-success border-success/30',
+                              item.status === 'pending' && 'bg-warning/10 text-warning border-warning/30',
+                              item.status === 'error' && 'bg-destructive/10 text-destructive border-destructive/30'
                             )}
                           >
                             {item.status === 'success' && <CheckCircle className="h-3 w-3 mr-1" />}

@@ -205,7 +205,7 @@ function TestCard({
       {/* Comparaison des variantes */}
       <div className="grid grid-cols-2 gap-4 mb-4">
         {/* Variante A */}
-        <div className={`p-3 rounded-lg border-2 ${test.winner === 'A' ? 'border-green-500 bg-success/5/50 dark:bg-green-950/20' : 'border-muted'}`}>
+        <div className={`p-3 rounded-lg border-2 ${test.winner === 'A' ? 'border-success bg-success/5/50 dark:bg-green-950/20' : 'border-muted'}`}>
           <div className="flex items-center justify-between mb-2">
             <span className="font-semibold">Variante A</span>
             {test.winner === 'A' && <Trophy className="h-4 w-4 text-warning" />}
@@ -232,7 +232,7 @@ function TestCard({
         </div>
 
         {/* Variante B */}
-        <div className={`p-3 rounded-lg border-2 ${test.winner === 'B' ? 'border-green-500 bg-success/5/50 dark:bg-green-950/20' : 'border-muted'}`}>
+        <div className={`p-3 rounded-lg border-2 ${test.winner === 'B' ? 'border-success bg-success/5/50 dark:bg-green-950/20' : 'border-muted'}`}>
           <div className="flex items-center justify-between mb-2">
             <span className="font-semibold">Variante B</span>
             {test.winner === 'B' && <Trophy className="h-4 w-4 text-warning" />}

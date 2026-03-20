@@ -287,7 +287,7 @@ export function MultiDeviceSync() {
                             </Badge>
                           )}
                           {device.isOnline ? (
-                            <Badge variant="outline" className="text-xs text-success border-green-500/50">
+                            <Badge variant="outline" className="text-xs text-success border-success/50">
                               <Wifi className="h-3 w-3 mr-1" />
                               En ligne
                             </Badge>

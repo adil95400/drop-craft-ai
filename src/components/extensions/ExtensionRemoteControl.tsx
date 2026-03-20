@@ -184,7 +184,7 @@ export function ExtensionRemoteControl() {
       {/* Header with Connection Status */}
       <Card className={cn(
         "border-2",
-        connectionStatus?.connected ? "border-green-500/30 bg-success/5" : "border-yellow-500/30 bg-warning/5"
+        connectionStatus?.connected ? "border-success/30 bg-success/5" : "border-warning/30 bg-warning/5"
       )}>
         <CardContent className="p-4">
           <div className="flex items-center justify-between">
@@ -209,7 +209,7 @@ export function ExtensionRemoteControl() {
             
             <div className="flex items-center gap-2">
               {hasChanges && (
-                <Badge variant="outline" className="bg-warning/10 text-warning border-yellow-500/30">
+                <Badge variant="outline" className="bg-warning/10 text-warning border-warning/30">
                   <AlertTriangle className="h-3 w-3 mr-1" />
                   Changements non envoyés
                 </Badge>

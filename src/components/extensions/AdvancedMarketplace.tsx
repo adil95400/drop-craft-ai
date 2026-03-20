@@ -243,7 +243,7 @@ export const AdvancedMarketplace = () => {
         
         {extension.trending && (
           <div className="absolute top-2 right-2 z-10">
-            <Badge className="bg-gradient-to-r from-red-500 to-pink-500 text-white">
+            <Badge className="bg-gradient-to-r from-destructive to-pink-500 text-white">
               <Flame className="w-3 h-3 mr-1" />
               Tendance
             </Badge>

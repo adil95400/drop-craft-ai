@@ -29,9 +29,9 @@ import {
 import { cn } from '@/lib/utils'
 
 const priorityColors = {
-  high: 'border-red-500/50 bg-destructive/5',
-  medium: 'border-yellow-500/50 bg-warning/5',
-  low: 'border-blue-500/50 bg-info/5'
+  high: 'border-destructive/50 bg-destructive/5',
+  medium: 'border-warning/50 bg-warning/5',
+  low: 'border-info/50 bg-info/5'
 }
 
 const destinationColors = {
@@ -257,9 +257,9 @@ export function CategoryMappingAIPanel() {
                           variant="outline" 
                           className={cn(
                             'text-xs',
-                            suggestion.confidence >= 0.8 ? 'border-green-500/50 text-success' :
-                            suggestion.confidence >= 0.6 ? 'border-yellow-500/50 text-warning' :
-                            'border-red-500/50 text-destructive'
+                            suggestion.confidence >= 0.8 ? 'border-success/50 text-success' :
+                            suggestion.confidence >= 0.6 ? 'border-warning/50 text-warning' :
+                            'border-destructive/50 text-destructive'
                           )}
                         >
                           {Math.round(suggestion.confidence * 100)}% confiance

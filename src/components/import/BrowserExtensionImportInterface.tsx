@@ -350,7 +350,7 @@ export const BrowserExtensionImportInterface = () => {
           <CardContent className="space-y-4">
             {!isConnected ? (
               <>
-                <div className="bg-warning/5 border border-yellow-200 p-4 rounded-lg">
+                <div className="bg-warning/5 border border-warning/20 p-4 rounded-lg">
                   <div className="flex items-start gap-3">
                     <AlertTriangle className="h-5 w-5 text-warning mt-0.5" />
                     <div>
@@ -391,7 +391,7 @@ export const BrowserExtensionImportInterface = () => {
               </>
             ) : (
               <>
-                <div className="bg-success/5 border border-green-200 p-4 rounded-lg">
+                <div className="bg-success/5 border border-success/20 p-4 rounded-lg">
                   <div className="flex items-start gap-3">
                     <CheckCircle className="h-5 w-5 text-success mt-0.5" />
                     <div>

@@ -263,7 +263,7 @@ export default function ChannableAnalyticsPage() {
           <Card>
             <CardHeader>
               <div className="flex items-center gap-3">
-                <div className="p-2 rounded-xl bg-gradient-to-br from-green-500/20 to-green-500/5">
+                <div className="p-2 rounded-xl bg-gradient-to-br from-success/20 to-green-500/5">
                   <Zap className="w-5 h-5 text-success" />
                 </div>
                 <div>

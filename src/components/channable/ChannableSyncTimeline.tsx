@@ -52,12 +52,12 @@ const STATUS_CONFIG = {
   success: { 
     icon: CheckCircle2, 
     color: 'text-success bg-success/10',
-    badge: 'bg-success/20 text-success dark:text-green-400 border-green-500/30'
+    badge: 'bg-success/20 text-success dark:text-green-400 border-success/30'
   },
   error: { 
     icon: XCircle, 
     color: 'text-destructive bg-destructive/10',
-    badge: 'bg-destructive/20 text-red-700 dark:text-red-400 border-red-500/30'
+    badge: 'bg-destructive/20 text-red-700 dark:text-red-400 border-destructive/30'
   },
   warning: { 
     icon: AlertTriangle, 
@@ -72,7 +72,7 @@ const STATUS_CONFIG = {
   in_progress: { 
     icon: RefreshCw, 
     color: 'text-info bg-info/10',
-    badge: 'bg-info/20 text-blue-700 dark:text-blue-400 border-blue-500/30'
+    badge: 'bg-info/20 text-blue-700 dark:text-blue-400 border-info/30'
   },
 }
 
@@ -160,17 +160,17 @@ export function ChannableSyncTimeline({
               {event.details && (
                 <div className="flex items-center gap-2 text-xs">
                   {event.details.created !== undefined && event.details.created > 0 && (
-                    <Badge variant="outline" className="text-success border-green-200 bg-success/5 dark:bg-green-950">
+                    <Badge variant="outline" className="text-success border-success/20 bg-success/5 dark:bg-green-950">
                       +{event.details.created}
                     </Badge>
                   )}
                   {event.details.updated !== undefined && event.details.updated > 0 && (
-                    <Badge variant="outline" className="text-info border-blue-200 bg-info/5 dark:bg-blue-950">
+                    <Badge variant="outline" className="text-info border-info/20 bg-info/5 dark:bg-blue-950">
                       ↻{event.details.updated}
                     </Badge>
                   )}
                   {event.details.deleted !== undefined && event.details.deleted > 0 && (
-                    <Badge variant="outline" className="text-destructive border-red-200 bg-destructive/5 dark:bg-red-950">
+                    <Badge variant="outline" className="text-destructive border-destructive/20 bg-destructive/5 dark:bg-red-950">
                       -{event.details.deleted}
                     </Badge>
                   )}

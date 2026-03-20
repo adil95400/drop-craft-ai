@@ -63,9 +63,9 @@ export function WinnerProductCard({
   };
 
   const getScoreBg = (score: number) => {
-    if (score >= 80) return 'bg-success/10 border-green-500/30';
-    if (score >= 60) return 'bg-warning/10 border-yellow-500/30';
-    return 'bg-destructive/10 border-red-500/30';
+    if (score >= 80) return 'bg-success/10 border-success/30';
+    if (score >= 60) return 'bg-warning/10 border-warning/30';
+    return 'bg-destructive/10 border-destructive/30';
   };
 
   const getSaturationBadge = (saturation: string) => {

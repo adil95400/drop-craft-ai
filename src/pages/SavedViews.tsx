@@ -41,12 +41,12 @@ const COLOR_OPTIONS = [
 ]
 
 const COLOR_MAP: Record<string, string> = {
-  red: 'border-red-200 bg-destructive/5 dark:border-red-800 dark:bg-red-950/20',
+  red: 'border-destructive/20 bg-destructive/5 dark:border-red-800 dark:bg-red-950/20',
   orange: 'border-orange-200 bg-orange-50 dark:border-orange-800 dark:bg-orange-950/20',
   gray: 'border-gray-200 bg-gray-50 dark:border-gray-800 dark:bg-gray-950/20',
-  blue: 'border-blue-200 bg-info/5 dark:border-blue-800 dark:bg-blue-950/20',
-  yellow: 'border-yellow-200 bg-warning/5 dark:border-yellow-800 dark:bg-yellow-950/20',
-  green: 'border-green-200 bg-success/5 dark:border-green-800 dark:bg-green-950/20',
+  blue: 'border-info/20 bg-info/5 dark:border-blue-800 dark:bg-blue-950/20',
+  yellow: 'border-warning/20 bg-warning/5 dark:border-yellow-800 dark:bg-yellow-950/20',
+  green: 'border-success/20 bg-success/5 dark:border-green-800 dark:bg-green-950/20',
   purple: 'border-purple-200 bg-purple-50 dark:border-purple-800 dark:bg-purple-950/20',
 }
 

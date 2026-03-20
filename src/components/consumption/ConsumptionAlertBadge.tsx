@@ -22,7 +22,7 @@ const ALERT_STYLES = {
     icon: AlertTriangle,
     bgColor: 'bg-warning/5 dark:bg-yellow-950/30',
     textColor: 'text-yellow-700 dark:text-yellow-400',
-    borderColor: 'border-yellow-200 dark:border-yellow-800'
+    borderColor: 'border-warning/20 dark:border-yellow-800'
   },
   warning_5: {
     icon: AlertTriangle,
@@ -34,13 +34,13 @@ const ALERT_STYLES = {
     icon: XCircle,
     bgColor: 'bg-destructive/5 dark:bg-red-950/30',
     textColor: 'text-red-700 dark:text-red-400',
-    borderColor: 'border-red-200 dark:border-red-800'
+    borderColor: 'border-destructive/20 dark:border-red-800'
   },
   reset: {
     icon: CheckCircle,
     bgColor: 'bg-success/5 dark:bg-green-950/30',
     textColor: 'text-success dark:text-green-400',
-    borderColor: 'border-green-200 dark:border-green-800'
+    borderColor: 'border-success/20 dark:border-green-800'
   }
 };
 

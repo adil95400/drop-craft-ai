@@ -37,10 +37,10 @@ export function StockAlertsPanel() {
 
   const getSeverityColor = (severity: string) => {
     const colors = {
-      critical: 'border-red-500 bg-destructive/5 dark:bg-red-950/20',
+      critical: 'border-destructive bg-destructive/5 dark:bg-red-950/20',
       high: 'border-orange-500 bg-orange-50 dark:bg-orange-950/20',
-      medium: 'border-yellow-500 bg-warning/5 dark:bg-yellow-950/20',
-      low: 'border-blue-500 bg-info/5 dark:bg-blue-950/20',
+      medium: 'border-warning bg-warning/5 dark:bg-yellow-950/20',
+      low: 'border-info bg-info/5 dark:bg-blue-950/20',
     };
     return colors[severity as keyof typeof colors] || 'border-muted';
   };

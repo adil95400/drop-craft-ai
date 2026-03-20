@@ -44,7 +44,7 @@ export const ConnectedSupplierCard = memo(function ConnectedSupplierCard({
   return (
     <Card className={cn(
       "relative overflow-hidden transition-all",
-      isActive ? "border-green-500/30 bg-success/5" : "border-muted"
+      isActive ? "border-success/30 bg-success/5" : "border-muted"
     )}>
       <CardContent className="p-4">
         <div className="flex items-start justify-between">

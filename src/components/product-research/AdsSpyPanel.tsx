@@ -263,9 +263,9 @@ export function AdsSpyPanel() {
                         </Button>
                         <Badge variant="outline" className={cn(
                           "font-bold text-xs",
-                          ad.score >= 80 ? 'bg-success/10 text-success border-green-500/30' :
-                          ad.score >= 60 ? 'bg-warning/10 text-warning border-yellow-500/30' :
-                          'bg-destructive/10 text-destructive border-red-500/30'
+                          ad.score >= 80 ? 'bg-success/10 text-success border-success/30' :
+                          ad.score >= 60 ? 'bg-warning/10 text-warning border-warning/30' :
+                          'bg-destructive/10 text-destructive border-destructive/30'
                         )}>
                           {ad.score}/100
                         </Badge>
@@ -324,7 +324,7 @@ export function AdsSpyPanel() {
                         <Calendar className="h-3 w-3" />
                         Active depuis {ad.running_days}j
                       </span>
-                      <Badge variant="outline" className="text-xs bg-info/10 text-info border-blue-500/30">
+                      <Badge variant="outline" className="text-xs bg-info/10 text-info border-info/30">
                         {ad.engagement_rate}% eng.
                       </Badge>
                     </div>

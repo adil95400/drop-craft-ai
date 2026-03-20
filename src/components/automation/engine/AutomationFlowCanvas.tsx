@@ -33,9 +33,9 @@ interface AutomationFlowCanvasProps {
 const NODE_TYPES = [
   { type: 'trigger', label: 'Déclencheur', icon: Zap, color: 'border-purple-500 bg-purple-500/10' },
   { type: 'condition', label: 'Condition IF', icon: GitBranch, color: 'border-amber-500 bg-warning/10' },
-  { type: 'action', label: 'Action', icon: Zap, color: 'border-blue-500 bg-info/10' },
+  { type: 'action', label: 'Action', icon: Zap, color: 'border-info bg-info/10' },
   { type: 'delay', label: 'Délai', icon: Clock, color: 'border-gray-500 bg-gray-500/10' },
-  { type: 'branch', label: 'Branche', icon: Filter, color: 'border-green-500 bg-success/10' },
+  { type: 'branch', label: 'Branche', icon: Filter, color: 'border-success bg-success/10' },
 ] as const;
 
 const ACTION_PRESETS = [

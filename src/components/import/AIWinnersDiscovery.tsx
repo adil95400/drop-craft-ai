@@ -214,10 +214,10 @@ export const AIWinnersDiscovery = ({ onImportWinner }: AIWinnersDiscoveryProps) 
   return (
     <div className="space-y-6 animate-fade-in">
       {/* Header IA */}
-      <Card className="border-gradient-to-r from-blue-500 to-purple-600 bg-gradient-to-r from-blue-50 to-purple-50">
+      <Card className="border-gradient-to-r from-info to-purple-600 bg-gradient-to-r from-blue-50 to-purple-50">
         <CardHeader>
           <CardTitle className="flex items-center gap-3">
-            <div className="p-2 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg">
+            <div className="p-2 bg-gradient-to-r from-info to-purple-600 rounded-lg">
               <Sparkles className="h-5 w-5 text-white" />
             </div>
             <div>
@@ -263,7 +263,7 @@ export const AIWinnersDiscovery = ({ onImportWinner }: AIWinnersDiscoveryProps) 
       </div>
 
       {/* Call to action */}
-      <Card className="text-center bg-gradient-to-r from-green-50 to-emerald-50 border-green-200">
+      <Card className="text-center bg-gradient-to-r from-green-50 to-emerald-50 border-success/20">
         <CardContent className="py-6">
           <Award className="h-12 w-12 text-success mx-auto mb-3" />
           <h4 className="font-semibold text-success mb-2">

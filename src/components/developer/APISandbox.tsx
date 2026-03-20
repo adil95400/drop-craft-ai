@@ -155,7 +155,7 @@ export function APISandbox() {
               ) : (
                 <XCircle className="h-4 w-4 text-destructive" />
               )}
-              <Badge variant="outline" className={cn('text-xs', responseStatus && responseStatus < 300 ? 'border-green-500/30 text-success' : 'border-red-500/30 text-destructive')}>
+              <Badge variant="outline" className={cn('text-xs', responseStatus && responseStatus < 300 ? 'border-success/30 text-success' : 'border-destructive/30 text-destructive')}>
                 {responseStatus}
               </Badge>
               <span className="text-[10px] text-muted-foreground flex items-center gap-0.5">

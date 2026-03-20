@@ -75,9 +75,9 @@ export function SWOTAnalysisCard({ products, revenue, orders }: SWOTAnalysisCard
   }, [products, revenue, orders])
 
   const quadrants = [
-    { key: 'strengths', title: 'Forces', icon: Shield, items: swot.strengths, color: 'text-success', bg: 'bg-success/5 dark:bg-green-950/30', border: 'border-green-200 dark:border-green-800' },
-    { key: 'weaknesses', title: 'Faiblesses', icon: AlertTriangle, items: swot.weaknesses, color: 'text-destructive', bg: 'bg-destructive/5 dark:bg-red-950/30', border: 'border-red-200 dark:border-red-800' },
-    { key: 'opportunities', title: 'Opportunités', icon: TrendingUp, items: swot.opportunities, color: 'text-info', bg: 'bg-info/5 dark:bg-blue-950/30', border: 'border-blue-200 dark:border-blue-800' },
+    { key: 'strengths', title: 'Forces', icon: Shield, items: swot.strengths, color: 'text-success', bg: 'bg-success/5 dark:bg-green-950/30', border: 'border-success/20 dark:border-green-800' },
+    { key: 'weaknesses', title: 'Faiblesses', icon: AlertTriangle, items: swot.weaknesses, color: 'text-destructive', bg: 'bg-destructive/5 dark:bg-red-950/30', border: 'border-destructive/20 dark:border-red-800' },
+    { key: 'opportunities', title: 'Opportunités', icon: TrendingUp, items: swot.opportunities, color: 'text-info', bg: 'bg-info/5 dark:bg-blue-950/30', border: 'border-info/20 dark:border-blue-800' },
     { key: 'threats', title: 'Menaces', icon: Crosshair, items: swot.threats, color: 'text-warning', bg: 'bg-orange-50 dark:bg-orange-950/30', border: 'border-orange-200 dark:border-orange-800' },
   ]
 

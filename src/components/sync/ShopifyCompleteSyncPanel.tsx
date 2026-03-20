@@ -94,7 +94,7 @@ export function ShopifyCompleteSyncPanel() {
         <CardHeader className="pb-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-gradient-to-br from-green-500 to-emerald-600">
+              <div className="p-2 rounded-lg bg-gradient-to-br from-success to-emerald-600">
                 <RefreshCw className="h-5 w-5 text-white" />
               </div>
               <div>

@@ -119,8 +119,8 @@ function StatCard({ label, value, icon: Icon, color, delay = 0, onClick }: StatC
       icon: 'bg-warning/10 text-warning',
     },
     info: {
-      bg: 'bg-gradient-to-br from-blue-500/10 via-blue-500/5 to-transparent',
-      border: 'border-blue-500/20 hover:border-blue-500/40',
+      bg: 'bg-gradient-to-br from-info/10 via-blue-500/5 to-transparent',
+      border: 'border-info/20 hover:border-info/40',
       icon: 'bg-info/10 text-info',
     }
   };
@@ -276,9 +276,9 @@ export default function SupportMainPage() {
 
   const getPriorityConfig = (priority: string) => {
     const configs = {
-      high: { color: 'text-destructive', bg: 'bg-destructive/10 border-red-500/20', label: 'Haute' },
+      high: { color: 'text-destructive', bg: 'bg-destructive/10 border-destructive/20', label: 'Haute' },
       medium: { color: 'text-warning', bg: 'bg-warning/10 border-amber-500/20', label: 'Moyenne' },
-      low: { color: 'text-info', bg: 'bg-info/10 border-blue-500/20', label: 'Basse' }
+      low: { color: 'text-info', bg: 'bg-info/10 border-info/20', label: 'Basse' }
     };
     return configs[priority as keyof typeof configs] || configs.medium;
   };
@@ -423,7 +423,7 @@ export default function SupportMainPage() {
                                     <ThumbsUp className="h-3.5 w-3.5" />
                                     Oui
                                   </Button>
-                                  <Button variant="outline" size="sm" className="h-8 gap-1.5 hover:bg-destructive/10 hover:text-destructive hover:border-red-500/30">
+                                  <Button variant="outline" size="sm" className="h-8 gap-1.5 hover:bg-destructive/10 hover:text-destructive hover:border-destructive/30">
                                     <ThumbsDown className="h-3.5 w-3.5" />
                                     Non
                                   </Button>

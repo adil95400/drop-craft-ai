@@ -217,8 +217,8 @@ export default function SupplierDetails() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {[
               { label: 'Catalogue', desc: 'Produits du fournisseur', icon: Package, color: 'from-primary/5 to-primary/10 border-primary/20', path: `/suppliers/${supplierId}/catalog` },
-              { label: 'Importer', desc: 'Synchroniser les produits', icon: RefreshCw, color: 'from-green-500/5 to-green-500/10 border-green-500/20', path: `/suppliers/${supplierId}/import` },
-              { label: 'Feeds', desc: 'Flux multi-canaux', icon: Globe, color: 'from-blue-500/5 to-blue-500/10 border-blue-500/20', path: `/suppliers/${supplierId}/feeds` },
+              { label: 'Importer', desc: 'Synchroniser les produits', icon: RefreshCw, color: 'from-success/5 to-green-500/10 border-success/20', path: `/suppliers/${supplierId}/import` },
+              { label: 'Feeds', desc: 'Flux multi-canaux', icon: Globe, color: 'from-info/5 to-blue-500/10 border-info/20', path: `/suppliers/${supplierId}/feeds` },
             ].map((action, i) => (
               <motion.div
                 key={i}

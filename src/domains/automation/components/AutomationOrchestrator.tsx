@@ -269,8 +269,8 @@ export const AutomationOrchestrator: React.FC = () => {
   const getCategoryColor = (category: string) => {
     switch (category) {
       case 'marketing': return 'bg-purple-100 text-purple-800 border-purple-200';
-      case 'sales': return 'bg-success/10 text-success border-green-200';
-      case 'operations': return 'bg-info/10 text-blue-800 border-blue-200';
+      case 'sales': return 'bg-success/10 text-success border-success/20';
+      case 'operations': return 'bg-info/10 text-blue-800 border-info/20';
       case 'support': return 'bg-orange-100 text-orange-800 border-orange-200';
       default: return 'bg-gray-100 text-gray-800 border-gray-200';
     }
@@ -278,10 +278,10 @@ export const AutomationOrchestrator: React.FC = () => {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'active': return 'bg-success/10 text-success border-green-200';
-      case 'paused': return 'bg-warning/10 text-yellow-800 border-yellow-200';
+      case 'active': return 'bg-success/10 text-success border-success/20';
+      case 'paused': return 'bg-warning/10 text-yellow-800 border-warning/20';
       case 'draft': return 'bg-gray-100 text-gray-800 border-gray-200';
-      case 'error': return 'bg-destructive/10 text-red-800 border-red-200';
+      case 'error': return 'bg-destructive/10 text-red-800 border-destructive/20';
       default: return 'bg-gray-100 text-gray-800 border-gray-200';
     }
   };
@@ -499,7 +499,7 @@ export const AutomationOrchestrator: React.FC = () => {
 
                   {/* AI Optimizations */}
                   {workflow.ai_optimizations.suggested_improvements.length > 0 && (
-                    <div className="bg-info/5 p-4 rounded-lg border border-blue-200">
+                    <div className="bg-info/5 p-4 rounded-lg border border-info/20">
                       <div className="flex items-center space-x-2 mb-2">
                         <Bot className="h-4 w-4 text-info" />
                         <h4 className="font-medium text-sm text-blue-900">AI Optimization Suggestions</h4>

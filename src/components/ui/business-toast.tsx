@@ -34,7 +34,7 @@ const businessToastVariants = cva(
         default: 'border-border/50 bg-background/95 text-foreground',
         success: 'border-emerald-500/30 bg-success/10 text-foreground',
         opportunity: 'border-amber-500/30 bg-warning/10 text-foreground',
-        risk: 'border-red-500/30 bg-destructive/10 text-foreground',
+        risk: 'border-destructive/30 bg-destructive/10 text-foreground',
         destructive: 'border-destructive/50 bg-destructive/10 text-destructive-foreground',
       },
     },

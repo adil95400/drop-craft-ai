@@ -69,7 +69,7 @@ export function StatCard({
   const getTrendColor = () => {
     if (change === undefined) return '';
     if (change > 0) return 'text-success bg-emerald-50 border-emerald-200 dark:bg-emerald-950/50 dark:border-emerald-800';
-    if (change < 0) return 'text-destructive bg-destructive/5 border-red-200 dark:bg-red-950/50 dark:border-red-800';
+    if (change < 0) return 'text-destructive bg-destructive/5 border-destructive/20 dark:bg-red-950/50 dark:border-red-800';
     return 'text-gray-600 bg-gray-50 border-gray-200 dark:bg-gray-800 dark:border-gray-700';
   };
 

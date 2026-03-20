@@ -201,8 +201,8 @@ export function SocialMediaManager() {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'published': return 'bg-success/10 text-success border-green-200'
-      case 'scheduled': return 'bg-info/10 text-blue-800 border-blue-200'
+      case 'published': return 'bg-success/10 text-success border-success/20'
+      case 'scheduled': return 'bg-info/10 text-blue-800 border-info/20'
       case 'draft': return 'bg-gray-100 text-gray-800 border-gray-200'
       default: return 'bg-gray-100 text-gray-800 border-gray-200'
     }

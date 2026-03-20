@@ -196,7 +196,7 @@ export const IntelligentWorkflows = () => {
       {/* Workflows existants */}
       <div className="grid grid-cols-1 gap-4">
         {workflows.map(workflow => (
-          <Card key={workflow.id} className={`${workflow.enabled ? 'border-green-200 bg-success/5/30' : ''}`}>
+          <Card key={workflow.id} className={`${workflow.enabled ? 'border-success/20 bg-success/5/30' : ''}`}>
             <CardHeader>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">

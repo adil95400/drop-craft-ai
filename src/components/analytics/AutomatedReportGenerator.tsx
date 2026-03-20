@@ -103,7 +103,7 @@ export function AutomatedReportGenerator() {
   const getStatusBadge = (status: string | null) => {
     switch (status) {
       case 'generated': return <Badge className="bg-success/10 text-success border-emerald-500/20">Généré</Badge>;
-      case 'scheduled': return <Badge className="bg-info/10 text-info border-blue-500/20">Planifié</Badge>;
+      case 'scheduled': return <Badge className="bg-info/10 text-info border-info/20">Planifié</Badge>;
       default: return <Badge variant="secondary">Brouillon</Badge>;
     }
   };

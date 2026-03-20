@@ -147,7 +147,7 @@ export function MultiStoreImportDialog({
                     >
                       <span className="font-medium text-sm">{result.storeName}</span>
                       {result.success ? (
-                        <Badge variant="outline" className="bg-success/20 text-success border-green-500/30">
+                        <Badge variant="outline" className="bg-success/20 text-success border-success/30">
                           <CheckCircle2 className="h-3 w-3 mr-1" />
                           Importé
                         </Badge>

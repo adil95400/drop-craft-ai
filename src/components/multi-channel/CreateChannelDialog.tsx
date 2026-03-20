@@ -68,9 +68,9 @@ const channelOptions = [
     value: 'shopify', 
     label: 'Shopify', 
     icon: ShoppingCart,
-    color: 'from-green-500 to-emerald-600',
+    color: 'from-success to-emerald-600',
     bgColor: 'bg-success/10',
-    borderColor: 'border-green-500/30',
+    borderColor: 'border-success/30',
     description: 'Plateforme e-commerce populaire',
     features: ['Sync automatique', 'Webhooks temps réel', 'Multi-devises']
   },
@@ -88,9 +88,9 @@ const channelOptions = [
     value: 'ebay', 
     label: 'eBay', 
     icon: Tag,
-    color: 'from-blue-500 to-indigo-600',
+    color: 'from-info to-indigo-600',
     bgColor: 'bg-info/10',
-    borderColor: 'border-blue-500/30',
+    borderColor: 'border-info/30',
     description: 'Enchères et vente directe',
     features: ['Enchères auto', 'Frais optimisés', 'Analytics']
   },

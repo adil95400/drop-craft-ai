@@ -153,7 +153,7 @@ export function ProductPerformanceMetrics({ productId, sourceTable }: ProductPer
         )}
 
         {isHighTrafficLowConversion && (
-          <div className="mt-4 p-4 rounded-lg bg-destructive/5 border border-red-200">
+          <div className="mt-4 p-4 rounded-lg bg-destructive/5 border border-destructive/20">
             <p className="text-sm font-medium text-red-900">
               ⚠️ Fort trafic mais faible conversion
             </p>
@@ -164,7 +164,7 @@ export function ProductPerformanceMetrics({ productId, sourceTable }: ProductPer
         )}
 
         {isLowTrafficHighQuality && (
-          <div className="mt-4 p-4 rounded-lg bg-success/5 border border-green-200">
+          <div className="mt-4 p-4 rounded-lg bg-success/5 border border-success/20">
             <p className="text-sm font-medium text-green-900">
               ✨ Produit très performant mais peu visible
             </p>

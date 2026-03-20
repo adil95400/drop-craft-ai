@@ -113,7 +113,7 @@ export function SmartInventoryDashboard() {
 
       {/* Alertes et actions urgentes */}
       {highRiskItems && highRiskItems.length > 0 && (
-        <Card className="border-red-200 bg-destructive/5/50">
+        <Card className="border-destructive/20 bg-destructive/5/50">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-destructive">
               <AlertTriangle className="h-5 w-5" />

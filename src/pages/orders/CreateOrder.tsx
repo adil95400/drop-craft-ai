@@ -605,7 +605,7 @@ export default function CreateOrder() {
                             exit={{ opacity: 0, x: 20 }}
                             className={cn(
                               "p-4 rounded-xl border-2 transition-colors",
-                              item.product ? "border-green-500/20 bg-success/5" : "border-dashed border-muted-foreground/20"
+                              item.product ? "border-success/20 bg-success/5" : "border-dashed border-muted-foreground/20"
                             )}
                           >
                             <div className="flex items-center justify-between mb-3">
@@ -643,7 +643,7 @@ export default function CreateOrder() {
                                         variant="outline" 
                                         className={cn(
                                           "w-full justify-start h-auto py-2",
-                                          item.product && "border-green-500/30"
+                                          item.product && "border-success/30"
                                         )}
                                       >
                                         {item.product ? (
@@ -1081,7 +1081,7 @@ export default function CreateOrder() {
 
                       {/* Validation warnings */}
                       {(!selectedCustomer || itemsCount === 0) && (
-                        <div className="p-3 rounded-lg bg-warning/10 border border-yellow-500/20">
+                        <div className="p-3 rounded-lg bg-warning/10 border border-warning/20">
                           <div className="flex items-start gap-2 text-warning dark:text-warning">
                             <AlertCircle className="h-4 w-4 mt-0.5 shrink-0" />
                             <div className="text-xs">

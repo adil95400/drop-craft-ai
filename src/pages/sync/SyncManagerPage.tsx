@@ -303,7 +303,7 @@ export default function SyncManagerPage() {
                       </div>
 
                       {connection.error_message && (
-                        <div className="mt-4 p-3 bg-destructive/5 border border-red-200 rounded-lg">
+                        <div className="mt-4 p-3 bg-destructive/5 border border-destructive/20 rounded-lg">
                           <div className="flex items-center gap-2">
                             <AlertCircle className="h-4 w-4 text-destructive" />
                             <p className="text-sm text-red-800">
@@ -341,7 +341,7 @@ export default function SyncManagerPage() {
 
             <TabsContent value="errors" className="space-y-4 mt-4">
               {connections.filter(c => c.status === 'error').map((connection) => (
-                <Card key={connection.id} className="border-red-200">
+                <Card key={connection.id} className="border-destructive/20">
                   <CardContent className="pt-6">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-4">

@@ -74,9 +74,9 @@ const CATEGORY_CONFIG: Record<string, { icon: typeof Brain; color: string; label
 };
 
 const IMPACT_STYLES: Record<string, string> = {
-  high: 'bg-destructive/10 text-destructive border-red-500/20',
+  high: 'bg-destructive/10 text-destructive border-destructive/20',
   medium: 'bg-warning/10 text-warning border-amber-500/20',
-  low: 'bg-info/10 text-info border-blue-500/20',
+  low: 'bg-info/10 text-info border-info/20',
 };
 
 export default function AIBusinessInsightsPage() {
@@ -106,7 +106,7 @@ export default function AIBusinessInsightsPage() {
   const healthBg = (score: number) => {
     if (score >= 80) return 'from-emerald-500/20 to-emerald-500/5';
     if (score >= 60) return 'from-amber-500/20 to-amber-500/5';
-    return 'from-red-500/20 to-red-500/5';
+    return 'from-destructive/20 to-red-500/5';
   };
 
   const TrendIcon = ({ trend }: { trend: string }) => {

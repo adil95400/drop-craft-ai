@@ -688,7 +688,7 @@ export function AdvancedProductCatalog() {
                     </Button>
                   </div>
                   
-                  <div className="p-3 border-l-4 border-blue-500 bg-info/5">
+                  <div className="p-3 border-l-4 border-info bg-info/5">
                     <p className="font-medium text-blue-800">Descriptions à améliorer</p>
                     <p className="text-sm text-blue-700">15 produits ont des descriptions trop courtes</p>
                     <Button size="sm" className="mt-2" variant="outline">
@@ -696,7 +696,7 @@ export function AdvancedProductCatalog() {
                     </Button>
                   </div>
                   
-                  <div className="p-3 border-l-4 border-green-500 bg-success/5">
+                  <div className="p-3 border-l-4 border-success bg-success/5">
                     <p className="font-medium text-success">Opportunités SEO</p>
                     <p className="text-sm text-success">31 produits peuvent améliorer leur référencement</p>
                     <Button size="sm" className="mt-2" variant="outline">

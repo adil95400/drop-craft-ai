@@ -433,7 +433,7 @@ export function ProductQuickPreviewModal({
                               <Badge className={cn(
                                 margin >= 30 ? "bg-success/10 text-success border-emerald-500/30" :
                                 margin >= 15 ? "bg-warning/10 text-warning border-amber-500/30" :
-                                "bg-destructive/10 text-destructive border-red-500/30"
+                                "bg-destructive/10 text-destructive border-destructive/30"
                               )} variant="outline">
                                 <TrendingUp className="h-3 w-3 mr-1" />
                                 {margin}%
@@ -667,7 +667,7 @@ export function ProductQuickPreviewModal({
                         )}
                         <div className="flex items-center gap-2 text-[10px] text-muted-foreground/60">
                           {review.verified_purchase && (
-                            <Badge variant="outline" className="text-[10px] h-4 px-1.5 border-green-500/30 text-success">
+                            <Badge variant="outline" className="text-[10px] h-4 px-1.5 border-success/30 text-success">
                               <CheckCircle2 className="h-2.5 w-2.5 mr-0.5" />
                               Vérifié
                             </Badge>

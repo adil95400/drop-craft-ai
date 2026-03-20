@@ -136,9 +136,9 @@ export function MarketingHub() {
 
   const getStatusColor = (status: MarketingCampaign['status']) => {
     switch (status) {
-      case 'active': return 'text-success bg-success/5 border-green-200'
-      case 'paused': return 'text-warning bg-warning/5 border-yellow-200'
-      case 'completed': return 'text-info bg-info/5 border-blue-200'
+      case 'active': return 'text-success bg-success/5 border-success/20'
+      case 'paused': return 'text-warning bg-warning/5 border-warning/20'
+      case 'completed': return 'text-info bg-info/5 border-info/20'
       default: return 'text-gray-600 bg-gray-50 border-gray-200'
     }
   }
@@ -166,7 +166,7 @@ export function MarketingHub() {
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <Badge variant="outline" className="bg-info/5 text-blue-700 border-blue-200">
+          <Badge variant="outline" className="bg-info/5 text-blue-700 border-info/20">
             <Zap className="h-3 w-3 mr-1" />
             Optimisation IA
           </Badge>
@@ -410,14 +410,14 @@ export function MarketingHub() {
                 <CardDescription>Suggestions d'optimisation automatiques</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="border-l-4 border-blue-500 pl-4">
+                <div className="border-l-4 border-info pl-4">
                   <h4 className="font-medium">Optimiser les heures de diffusion</h4>
                   <p className="text-sm text-muted-foreground">
                     Vos campagnes email performent mieux entre 9h et 11h
                   </p>
                 </div>
                 
-                <div className="border-l-4 border-green-500 pl-4">
+                <div className="border-l-4 border-success pl-4">
                   <h4 className="font-medium">Augmenter le budget publicitaire</h4>
                   <p className="text-sm text-muted-foreground">
                     Potentiel d'augmentation du ROI de 25% avec +500€ de budget

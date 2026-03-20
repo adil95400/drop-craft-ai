@@ -313,7 +313,7 @@ export function VisualMappingEditor({
                   className={cn(
                     "grid grid-cols-1 md:grid-cols-12 gap-3 p-3 rounded-lg border transition-colors",
                     mapping.isConnected && mapping.sourceField && mapping.targetField
-                      ? "bg-success/5 border-green-500/20"
+                      ? "bg-success/5 border-success/20"
                       : mapping.required
                         ? "bg-warning/5 border-orange-500/20"
                         : "bg-muted/30"

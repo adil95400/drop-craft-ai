@@ -81,10 +81,10 @@ export function StockManagementHub() {
 
   const getUrgencyColor = (urgency: string) => {
     switch (urgency) {
-      case 'critical': return 'text-destructive bg-destructive/10 border-red-200'
+      case 'critical': return 'text-destructive bg-destructive/10 border-destructive/20'
       case 'high': return 'text-warning bg-orange-100 border-orange-200'
-      case 'medium': return 'text-warning bg-warning/10 border-yellow-200'
-      case 'low': return 'text-success bg-success/10 border-green-200'
+      case 'medium': return 'text-warning bg-warning/10 border-warning/20'
+      case 'low': return 'text-success bg-success/10 border-success/20'
       default: return 'text-gray-600 bg-gray-100 border-gray-200'
     }
   }
@@ -336,10 +336,10 @@ function StockAlertCard({
 }) {
   const getUrgencyColor = (urgency: string) => {
     switch (urgency) {
-      case 'critical': return 'text-destructive bg-destructive/10 border-red-200'
+      case 'critical': return 'text-destructive bg-destructive/10 border-destructive/20'
       case 'high': return 'text-warning bg-orange-100 border-orange-200'
-      case 'medium': return 'text-warning bg-warning/10 border-yellow-200'
-      case 'low': return 'text-success bg-success/10 border-green-200'
+      case 'medium': return 'text-warning bg-warning/10 border-warning/20'
+      case 'low': return 'text-success bg-success/10 border-success/20'
       default: return 'text-gray-600 bg-gray-100 border-gray-200'
     }
   }

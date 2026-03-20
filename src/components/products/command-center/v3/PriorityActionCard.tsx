@@ -42,8 +42,8 @@ const CARD_ICONS: Record<PriorityCardType, LucideIcon> = {
 // Styles par variant - Couleurs plus vives et contrastées
 const VARIANT_STYLES = {
   destructive: {
-    bg: 'bg-gradient-to-br from-red-500/15 to-red-600/5',
-    border: 'border-red-500/40',
+    bg: 'bg-gradient-to-br from-destructive/15 to-destructive/5',
+    border: 'border-destructive/40',
     iconBg: 'bg-destructive/20',
     iconColor: 'text-destructive',
     glow: 'hover:shadow-red-500/30',
@@ -60,8 +60,8 @@ const VARIANT_STYLES = {
     impactColor: 'text-warning dark:text-orange-400'
   },
   info: {
-    bg: 'bg-gradient-to-br from-blue-500/15 to-cyan-500/5',
-    border: 'border-blue-500/40',
+    bg: 'bg-gradient-to-br from-info/15 to-cyan-500/5',
+    border: 'border-info/40',
     iconBg: 'bg-info/20',
     iconColor: 'text-info',
     glow: 'hover:shadow-blue-500/30',

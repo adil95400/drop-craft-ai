@@ -214,7 +214,7 @@ export const EnhancedProductCard = memo(function EnhancedProductCard({
   const getScoreConfig = (score: number) => {
     if (score >= 80) return { color: 'text-success', bg: 'bg-success', label: 'Excellent', gradient: 'from-emerald-500 to-emerald-400' };
     if (score >= 60) return { color: 'text-warning', bg: 'bg-warning', label: 'Bon', gradient: 'from-amber-500 to-amber-400' };
-    return { color: 'text-destructive', bg: 'bg-destructive', label: 'À optimiser', gradient: 'from-red-500 to-red-400' };
+    return { color: 'text-destructive', bg: 'bg-destructive', label: 'À optimiser', gradient: 'from-destructive to-red-400' };
   };
 
   const stockStatus = getStockStatus();

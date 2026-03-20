@@ -46,7 +46,7 @@ const variantStyles: Record<ActionCardVariant, {
   destructive: {
     bg: 'bg-destructive/10',
     bgHover: 'hover:bg-destructive/20',
-    border: 'border-red-500/30',
+    border: 'border-destructive/30',
     text: 'text-destructive dark:text-red-400',
     iconBg: 'bg-destructive/20',
     glow: 'shadow-red-500/20'
@@ -62,7 +62,7 @@ const variantStyles: Record<ActionCardVariant, {
   info: {
     bg: 'bg-info/10',
     bgHover: 'hover:bg-info/20',
-    border: 'border-blue-500/30',
+    border: 'border-info/30',
     text: 'text-info dark:text-blue-400',
     iconBg: 'bg-info/20',
     glow: 'shadow-blue-500/20'

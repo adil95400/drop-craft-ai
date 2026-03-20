@@ -94,7 +94,7 @@ export const SmartImportInterface = () => {
       {/* Header */}
       <div className="text-center space-y-4">
         <div className="flex items-center justify-center gap-3">
-          <div className="p-3 rounded-xl bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500">
+          <div className="p-3 rounded-xl bg-gradient-to-r from-info via-purple-500 to-pink-500">
             <Brain className="w-7 h-7 text-white" />
           </div>
           <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
@@ -107,11 +107,11 @@ export const SmartImportInterface = () => {
         </p>
         
         <div className="flex items-center justify-center gap-3 flex-wrap">
-          <Badge variant="outline" className="bg-info/5 text-blue-700 border-blue-200 py-1 px-3">
+          <Badge variant="outline" className="bg-info/5 text-blue-700 border-info/20 py-1 px-3">
             <Brain className="w-3 h-3 mr-1" />
             IA GPT-4
           </Badge>
-          <Badge variant="outline" className="bg-success/5 text-success border-green-200 py-1 px-3">
+          <Badge variant="outline" className="bg-success/5 text-success border-success/20 py-1 px-3">
             <Shield className="w-3 h-3 mr-1" />
             Analyse Sécurisée
           </Badge>
@@ -285,7 +285,7 @@ export const SmartImportInterface = () => {
 
       {/* Fonctionnalités IA */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200 hover:shadow-lg transition-shadow">
+        <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-info/20 hover:shadow-lg transition-shadow">
           <CardContent className="p-6 text-center">
             <div className="w-12 h-12 bg-info rounded-full flex items-center justify-center mx-auto mb-4">
               <Brain className="w-6 h-6 text-white" />
@@ -297,7 +297,7 @@ export const SmartImportInterface = () => {
           </CardContent>
         </Card>
 
-        <Card className="bg-gradient-to-br from-green-50 to-green-100 border-green-200 hover:shadow-lg transition-shadow">
+        <Card className="bg-gradient-to-br from-green-50 to-green-100 border-success/20 hover:shadow-lg transition-shadow">
           <CardContent className="p-6 text-center">
             <div className="w-12 h-12 bg-success rounded-full flex items-center justify-center mx-auto mb-4">
               <TrendingUp className="w-6 h-6 text-white" />

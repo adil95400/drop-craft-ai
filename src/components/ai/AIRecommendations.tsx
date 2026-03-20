@@ -121,9 +121,9 @@ export function AIRecommendations({ limit = 6, types }: AIRecommendationsProps) 
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
-      case 'high': return 'border-red-200 bg-destructive/5';
-      case 'medium': return 'border-yellow-200 bg-warning/5';
-      case 'low': return 'border-blue-200 bg-info/5';
+      case 'high': return 'border-destructive/20 bg-destructive/5';
+      case 'medium': return 'border-warning/20 bg-warning/5';
+      case 'low': return 'border-info/20 bg-info/5';
       default: return '';
     }
   };

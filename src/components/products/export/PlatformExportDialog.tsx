@@ -82,8 +82,8 @@ const PLATFORM_CONFIG: Record<string, {
   shopify: { 
     name: 'Shopify', 
     icon: '🛍️', 
-    gradient: 'from-green-500 to-emerald-600',
-    bgClass: 'bg-success/10 border-green-500/20',
+    gradient: 'from-success to-emerald-600',
+    bgClass: 'bg-success/10 border-success/20',
     textClass: 'text-success dark:text-green-400'
   },
   woocommerce: { 
@@ -110,8 +110,8 @@ const PLATFORM_CONFIG: Record<string, {
   wix: { 
     name: 'Wix', 
     icon: '🌐', 
-    gradient: 'from-blue-500 to-cyan-600',
-    bgClass: 'bg-info/10 border-blue-500/20',
+    gradient: 'from-info to-cyan-600',
+    bgClass: 'bg-info/10 border-info/20',
     textClass: 'text-info dark:text-blue-400'
   },
   bigcommerce: { 
@@ -139,7 +139,7 @@ const PLATFORM_CONFIG: Record<string, {
     name: 'eBay', 
     icon: '🏷️', 
     gradient: 'from-yellow-500 to-orange-500',
-    bgClass: 'bg-warning/10 border-yellow-500/20',
+    bgClass: 'bg-warning/10 border-warning/20',
     textClass: 'text-warning dark:text-warning'
   },
   etsy: { 
@@ -648,7 +648,7 @@ export function PlatformExportDialog({
               className={cn(
                 "relative overflow-hidden p-6 rounded-2xl text-center",
                 result.success 
-                  ? "bg-gradient-to-br from-green-500/10 via-emerald-500/5 to-green-600/10 border border-green-500/20"
+                  ? "bg-gradient-to-br from-success/10 via-emerald-500/5 to-success/10 border border-success/20"
                   : "bg-gradient-to-br from-destructive/10 via-red-500/5 to-destructive/10 border border-destructive/20"
               )}
             >

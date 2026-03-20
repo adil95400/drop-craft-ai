@@ -219,7 +219,7 @@ export default function FeedOptimizationPage() {
             <ScrollArea className="h-[500px]">
               <div className="space-y-3 pr-4">
                 {analysisResults.map((result) => (
-                  <Card key={result.productId} className={result.score < 60 ? 'border-red-200' : ''}>
+                  <Card key={result.productId} className={result.score < 60 ? 'border-destructive/20' : ''}>
                     <CardContent className="py-4">
                       <div className="flex items-start justify-between gap-4">
                         <div className="flex-1 min-w-0">

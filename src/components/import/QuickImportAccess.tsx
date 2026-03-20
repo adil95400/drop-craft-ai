@@ -74,7 +74,7 @@ export const QuickImportAccess = ({ onMethodSelect }: QuickImportAccessProps) =>
     <Card className="bg-gradient-to-r from-blue-50 via-purple-50 to-pink-50 border-2 border-gradient">
       <CardHeader className="text-center pb-4">
         <div className="flex items-center justify-center gap-3 mb-2">
-          <div className="p-3 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full">
+          <div className="p-3 bg-gradient-to-r from-info to-purple-600 rounded-full">
             <Sparkles className="w-8 h-8 text-white" />
           </div>
         </div>

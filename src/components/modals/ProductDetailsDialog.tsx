@@ -410,7 +410,7 @@ export function ProductDetailsDialog({ open, onOpenChange, productId }: ProductD
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.1 }}
-                    className="flex items-center gap-4 p-4 border rounded-xl bg-gradient-to-br from-blue-500/10 to-blue-500/5"
+                    className="flex items-center gap-4 p-4 border rounded-xl bg-gradient-to-br from-info/10 to-blue-500/5"
                   >
                     <div className="p-3 rounded-xl bg-info/20">
                       <DollarSign className="h-6 w-6 text-info" />

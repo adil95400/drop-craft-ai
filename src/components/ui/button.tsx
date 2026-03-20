@@ -22,15 +22,15 @@ const buttonVariants = cva(
         link: 
           "text-primary underline-offset-4 hover:underline hover:text-primary/80",
         success:
-          "bg-gradient-to-r from-green-500 to-emerald-500 text-white hover:opacity-90 shadow-md hover:shadow-lg active:scale-95",
+          "bg-gradient-to-r from-success to-emerald-500 text-white hover:opacity-90 shadow-md hover:shadow-lg active:scale-95",
         warning:
           "bg-gradient-to-r from-orange-500 to-amber-500 text-white hover:opacity-90 shadow-md hover:shadow-lg active:scale-95",
         info:
-          "bg-gradient-to-r from-blue-500 to-cyan-500 text-white hover:opacity-90 shadow-md hover:shadow-lg active:scale-95",
+          "bg-gradient-to-r from-info to-cyan-500 text-white hover:opacity-90 shadow-md hover:shadow-lg active:scale-95",
         hero:
           "bg-gradient-primary text-primary-foreground hover:opacity-90 shadow-glow border-0 active:scale-95",
         premium:
-          "bg-gradient-to-r from-purple-600 via-pink-600 to-red-600 text-white hover:opacity-90 shadow-glow border-0 active:scale-95 animate-pulse-subtle",
+          "bg-gradient-to-r from-purple-600 via-pink-600 to-destructive text-white hover:opacity-90 shadow-glow border-0 active:scale-95 animate-pulse-subtle",
       },
       size: {
         default: "h-10 px-4 py-2",

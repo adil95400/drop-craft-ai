@@ -32,9 +32,9 @@ const BADGE_CONFIG = {
   risk: {
     icon: AlertTriangle,
     label: 'À risque',
-    colors: 'bg-destructive/10 text-destructive border-red-500/30',
+    colors: 'bg-destructive/10 text-destructive border-destructive/30',
     iconColor: 'text-destructive',
-    gradient: 'from-red-500/20 to-red-600/10'
+    gradient: 'from-destructive/20 to-destructive/10'
   },
   opportunity: {
     icon: TrendingUp,
@@ -46,9 +46,9 @@ const BADGE_CONFIG = {
   optimized: {
     icon: CheckCircle,
     label: 'Optimisé',
-    colors: 'bg-info/10 text-info border-blue-500/30',
+    colors: 'bg-info/10 text-info border-info/30',
     iconColor: 'text-info',
-    gradient: 'from-blue-500/20 to-blue-600/10'
+    gradient: 'from-info/20 to-info/10'
   },
   neutral: {
     icon: Minus,

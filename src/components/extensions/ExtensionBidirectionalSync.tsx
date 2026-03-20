@@ -216,7 +216,7 @@ export function ExtensionBidirectionalSync() {
         <CardHeader className="pb-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center">
+              <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-info to-purple-500 flex items-center justify-center">
                 <ArrowUpDown className="h-6 w-6 text-white" />
               </div>
               <div>
@@ -229,7 +229,7 @@ export function ExtensionBidirectionalSync() {
                 variant="outline"
                 size="sm"
                 onClick={() => setAutoSync(!autoSync)}
-                className={cn(autoSync && "border-green-500 text-success")}
+                className={cn(autoSync && "border-success text-success")}
               >
                 {autoSync ? <Play className="h-4 w-4 mr-1" /> : <Pause className="h-4 w-4 mr-1" />}
                 Auto-sync {autoSync ? 'ON' : 'OFF'}
@@ -249,7 +249,7 @@ export function ExtensionBidirectionalSync() {
               <span className="text-sm">Push vers Extension</span>
             </Button>
             <Button
-              className="h-20 flex flex-col items-center gap-2 bg-gradient-to-r from-blue-500 to-purple-500"
+              className="h-20 flex flex-col items-center gap-2 bg-gradient-to-r from-info to-purple-500"
               onClick={() => triggerSync.mutate('both')}
               disabled={syncInProgress}
             >

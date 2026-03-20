@@ -92,7 +92,7 @@ export function CouponApplicationForm({
         </div>
 
         {validatedDiscount && (
-          <div className="p-3 bg-success/10 border border-green-500/20 rounded-lg">
+          <div className="p-3 bg-success/10 border border-success/20 rounded-lg">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-success">

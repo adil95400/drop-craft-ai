@@ -201,8 +201,8 @@ export const BulkOptimizationPanel = ({ products, onComplete }: BulkOptimization
                   key={index}
                   className={`p-3 rounded-lg border ${
                     result.success
-                      ? 'bg-success/5 dark:bg-green-950/20 border-green-200 dark:border-green-800'
-                      : 'bg-destructive/5 dark:bg-red-950/20 border-red-200 dark:border-red-800'
+                      ? 'bg-success/5 dark:bg-green-950/20 border-success/20 dark:border-green-800'
+                      : 'bg-destructive/5 dark:bg-red-950/20 border-destructive/20 dark:border-red-800'
                   }`}
                 >
                   <div className="flex items-center justify-between">

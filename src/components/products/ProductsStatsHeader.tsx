@@ -53,7 +53,7 @@ export function ProductsStatsHeader({
       icon: CheckCircle,
       color: 'text-success',
       bgColor: 'bg-success/10',
-      borderColor: 'border-green-500/20',
+      borderColor: 'border-success/20',
       subtitle: `${stats.total > 0 ? Math.round((stats.active / stats.total) * 100) : 0}% du catalogue`,
       trend: '+12%'
     },
@@ -64,7 +64,7 @@ export function ProductsStatsHeader({
       icon: Target,
       color: auditStats && auditStats.averageScore >= 70 ? 'text-success' : 'text-warning',
       bgColor: auditStats && auditStats.averageScore >= 70 ? 'bg-success/10' : 'bg-warning/10',
-      borderColor: auditStats && auditStats.averageScore >= 70 ? 'border-green-500/20' : 'border-yellow-500/20',
+      borderColor: auditStats && auditStats.averageScore >= 70 ? 'border-success/20' : 'border-warning/20',
       subtitle: `${auditStats?.excellentCount || 0} excellents`,
       isScore: true
     },
@@ -86,7 +86,7 @@ export function ProductsStatsHeader({
       icon: TrendingUp,
       color: auditStats && auditStats.poorCount > 0 ? 'text-destructive' : 'text-success',
       bgColor: auditStats && auditStats.poorCount > 0 ? 'bg-destructive/10' : 'bg-success/10',
-      borderColor: auditStats && auditStats.poorCount > 0 ? 'border-red-500/20' : 'border-green-500/20',
+      borderColor: auditStats && auditStats.poorCount > 0 ? 'border-destructive/20' : 'border-success/20',
       subtitle: auditStats && auditStats.poorCount > 0 ? 'score < 40' : 'tout va bien'
     }
   ];

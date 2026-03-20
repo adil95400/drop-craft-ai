@@ -308,7 +308,7 @@ export const SmartImportRecommendations = () => {
           const isApplied = appliedRecommendations.has(recommendation.id)
           
           return (
-            <Card key={recommendation.id} className={isApplied ? 'opacity-60 border-green-200' : ''}>
+            <Card key={recommendation.id} className={isApplied ? 'opacity-60 border-success/20' : ''}>
               <CardHeader className="pb-3">
                 <div className="flex items-start justify-between">
                   <div className="flex items-start gap-3">
@@ -371,14 +371,14 @@ export const SmartImportRecommendations = () => {
                 </div>
 
                 {recommendation.actionRequired && !isApplied && (
-                  <div className="flex items-center gap-2 p-2 bg-warning/5 border border-yellow-200 rounded-md">
+                  <div className="flex items-center gap-2 p-2 bg-warning/5 border border-warning/20 rounded-md">
                     <AlertCircle className="w-4 h-4 text-warning" />
                     <span className="text-sm text-yellow-800">Action manuelle requise</span>
                   </div>
                 )}
 
                 {isApplied && (
-                  <div className="flex items-center gap-2 p-2 bg-success/5 border border-green-200 rounded-md">
+                  <div className="flex items-center gap-2 p-2 bg-success/5 border border-success/20 rounded-md">
                     <CheckCircle className="w-4 h-4 text-success" />
                     <span className="text-sm text-success">Recommandation appliquée</span>
                   </div>

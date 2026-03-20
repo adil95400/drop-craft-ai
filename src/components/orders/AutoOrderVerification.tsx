@@ -377,10 +377,10 @@ export function AutoOrderVerification({ onStatusChange }: AutoOrderVerificationP
               <div 
                 key={step.id}
                 className={`flex items-center justify-between p-3 rounded-lg border ${
-                  step.status === 'error' ? 'border-red-200 bg-destructive/5' :
-                  step.status === 'warning' ? 'border-yellow-200 bg-warning/5' :
-                  step.status === 'success' ? 'border-green-200 bg-success/5' :
-                  step.status === 'running' ? 'border-blue-200 bg-info/5' :
+                  step.status === 'error' ? 'border-destructive/20 bg-destructive/5' :
+                  step.status === 'warning' ? 'border-warning/20 bg-warning/5' :
+                  step.status === 'success' ? 'border-success/20 bg-success/5' :
+                  step.status === 'running' ? 'border-info/20 bg-info/5' :
                   'border-muted bg-muted/30'
                 }`}
               >

@@ -29,7 +29,7 @@ import { cn } from '@/lib/utils'
 
 const COLUMNS = [
   { id: 'pending', label: 'En attente', icon: Clock, color: 'bg-warning/10 border-amber-500/20', iconColor: 'text-warning' },
-  { id: 'approved', label: 'Approuvés', icon: CheckCircle, color: 'bg-info/10 border-blue-500/20', iconColor: 'text-info' },
+  { id: 'approved', label: 'Approuvés', icon: CheckCircle, color: 'bg-info/10 border-info/20', iconColor: 'text-info' },
   { id: 'received', label: 'Reçus', icon: Package, color: 'bg-purple-500/10 border-purple-500/20', iconColor: 'text-purple-500' },
   { id: 'inspecting', label: 'Inspection', icon: Eye, color: 'bg-warning/10 border-orange-500/20', iconColor: 'text-warning' },
   { id: 'refunded', label: 'Remboursés', icon: RefreshCw, color: 'bg-success/10 border-emerald-500/20', iconColor: 'text-success' },

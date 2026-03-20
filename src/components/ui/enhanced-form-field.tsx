@@ -89,7 +89,7 @@ export function EnhancedFormField({
       icon && "pl-10",
       showIcon && "pr-10",
       showError && "border-destructive focus-visible:ring-destructive/20",
-      showSuccess && "border-green-500 focus-visible:ring-green-500/20",
+      showSuccess && "border-success focus-visible:ring-green-500/20",
       isFocused && !showError && !showSuccess && "ring-2 ring-primary/20",
       inputClassName
     ),

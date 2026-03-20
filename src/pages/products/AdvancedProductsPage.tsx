@@ -35,8 +35,8 @@ const StatCard = ({
     primary: 'from-primary/20 to-primary/5 text-primary',
     success: 'from-emerald-500/20 to-emerald-500/5 text-success',
     warning: 'from-amber-500/20 to-amber-500/5 text-warning',
-    destructive: 'from-red-500/20 to-red-500/5 text-destructive',
-    info: 'from-blue-500/20 to-blue-500/5 text-info',
+    destructive: 'from-destructive/20 to-red-500/5 text-destructive',
+    info: 'from-info/20 to-blue-500/5 text-info',
     purple: 'from-purple-500/20 to-purple-500/5 text-purple-600'
   };
 

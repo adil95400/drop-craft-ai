@@ -138,11 +138,11 @@ export const RealTimeMonitor = () => {
   const getHealthBadge = (health: SystemStatus['system_health']) => {
     switch (health) {
       case 'excellent':
-        return <Badge className="bg-success/10 text-success border-green-200">Excellent</Badge>
+        return <Badge className="bg-success/10 text-success border-success/20">Excellent</Badge>
       case 'good':
-        return <Badge className="bg-info/10 text-blue-800 border-blue-200">Bon</Badge>
+        return <Badge className="bg-info/10 text-blue-800 border-info/20">Bon</Badge>
       case 'warning':
-        return <Badge className="bg-warning/10 text-yellow-800 border-yellow-200">Attention</Badge>
+        return <Badge className="bg-warning/10 text-yellow-800 border-warning/20">Attention</Badge>
       case 'critical':
         return <Badge variant="destructive">Critique</Badge>
     }

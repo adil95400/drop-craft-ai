@@ -51,7 +51,7 @@ export const EditIntegrationModal = ({ integration }: EditIntegrationModalProps)
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'connected':
-        return <Badge className="bg-success/10 text-success border-green-200">Connecté</Badge>
+        return <Badge className="bg-success/10 text-success border-success/20">Connecté</Badge>
       case 'error':
         return <Badge variant="destructive">Erreur</Badge>
       case 'disconnected':

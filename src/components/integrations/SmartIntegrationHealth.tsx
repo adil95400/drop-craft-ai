@@ -136,11 +136,11 @@ export function SmartIntegrationHealth() {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'healthy': return 'bg-success/10 text-success border-green-200';
-      case 'warning': return 'bg-warning/10 text-yellow-700 border-yellow-200';
-      case 'error': return 'bg-destructive/10 text-red-700 border-red-200';
+      case 'healthy': return 'bg-success/10 text-success border-success/20';
+      case 'warning': return 'bg-warning/10 text-yellow-700 border-warning/20';
+      case 'error': return 'bg-destructive/10 text-red-700 border-destructive/20';
       case 'offline': return 'bg-gray-100 text-gray-700 border-gray-200';
-      default: return 'bg-info/10 text-blue-700 border-blue-200';
+      default: return 'bg-info/10 text-blue-700 border-info/20';
     }
   };
 
@@ -166,7 +166,7 @@ export function SmartIntegrationHealth() {
   return (
     <div className="space-y-6">
       {/* Header avec métriques globales */}
-      <Card className="bg-gradient-to-r from-green-50 to-blue-50 border-green-200">
+      <Card className="bg-gradient-to-r from-green-50 to-blue-50 border-success/20">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Heart className="w-6 h-6 text-destructive" />
@@ -203,7 +203,7 @@ export function SmartIntegrationHealth() {
 
       {/* Alertes critiques */}
       {criticalIssues > 0 && (
-        <Alert className="border-red-200 bg-destructive/5">
+        <Alert className="border-destructive/20 bg-destructive/5">
           <AlertTriangle className="h-4 w-4 text-destructive" />
           <AlertDescription className="text-red-700">
             {criticalIssues} intégration(s) en erreur critique. Intervention recommandée.

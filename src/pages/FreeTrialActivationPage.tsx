@@ -66,7 +66,7 @@ export default function FreeTrialActivationPage() {
           {/* Plan Pro */}
           <Card
             className={`p-6 cursor-pointer transition-all ${
-              selectedPlan === 'pro' ? 'border-blue-500 shadow-lg shadow-blue-500/20' : 'border-border'
+              selectedPlan === 'pro' ? 'border-info shadow-lg shadow-blue-500/20' : 'border-border'
             }`}
             onClick={() => setSelectedPlan('pro')}
           >

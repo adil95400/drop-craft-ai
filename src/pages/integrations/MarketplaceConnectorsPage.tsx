@@ -332,7 +332,7 @@ export default function MarketplaceConnectorsPage() {
     <div 
       className={cn(
         "group flex items-center gap-4 p-3 rounded-lg border hover:bg-accent/50 transition-colors cursor-pointer",
-        connector.status === 'connected' && "bg-success/5/30 dark:bg-green-950/10 border-green-200 dark:border-green-900"
+        connector.status === 'connected' && "bg-success/5/30 dark:bg-green-950/10 border-success/20 dark:border-green-900"
       )}
       onClick={() => handleConnect(connector)}
     >

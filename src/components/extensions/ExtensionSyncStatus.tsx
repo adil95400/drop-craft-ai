@@ -144,11 +144,11 @@ export function ExtensionSyncStatus() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'synced':
-        return <Badge className="bg-success/10 text-success border-green-500/30"><CheckCircle className="h-3 w-3 mr-1" />Synchronisé</Badge>;
+        return <Badge className="bg-success/10 text-success border-success/30"><CheckCircle className="h-3 w-3 mr-1" />Synchronisé</Badge>;
       case 'syncing':
-        return <Badge className="bg-info/10 text-info border-blue-500/30"><RefreshCw className="h-3 w-3 mr-1 animate-spin" />Sync...</Badge>;
+        return <Badge className="bg-info/10 text-info border-info/30"><RefreshCw className="h-3 w-3 mr-1 animate-spin" />Sync...</Badge>;
       case 'error':
-        return <Badge className="bg-destructive/10 text-destructive border-red-500/30"><AlertCircle className="h-3 w-3 mr-1" />Erreur</Badge>;
+        return <Badge className="bg-destructive/10 text-destructive border-destructive/30"><AlertCircle className="h-3 w-3 mr-1" />Erreur</Badge>;
       default:
         return <Badge variant="secondary"><Clock className="h-3 w-3 mr-1" />En attente</Badge>;
     }
@@ -235,8 +235,8 @@ export function ExtensionSyncStatus() {
                 key={module.id}
                 className={cn(
                   "transition-all duration-200",
-                  module.status === 'synced' && "border-green-500/30",
-                  isSyncing && "border-blue-500/50 shadow-lg"
+                  module.status === 'synced' && "border-success/30",
+                  isSyncing && "border-info/50 shadow-lg"
                 )}
               >
                 <CardContent className="p-4">

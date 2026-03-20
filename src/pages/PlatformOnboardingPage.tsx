@@ -19,7 +19,7 @@ import { cn } from '@/lib/utils'
 const PLATFORMS = [
   { id: 'shopify', name: 'Shopify', icon: '🟢', color: 'border-emerald-500', desc: 'La plateforme e-commerce leader', fields: ['shop_domain', 'api_key'] },
   { id: 'woocommerce', name: 'WooCommerce', icon: '🟣', color: 'border-purple-500', desc: 'WordPress + WooCommerce', fields: ['site_url', 'consumer_key', 'consumer_secret'] },
-  { id: 'prestashop', name: 'PrestaShop', icon: '🔵', color: 'border-blue-500', desc: 'Solution open-source française', fields: ['site_url', 'api_key'] },
+  { id: 'prestashop', name: 'PrestaShop', icon: '🔵', color: 'border-info', desc: 'Solution open-source française', fields: ['site_url', 'api_key'] },
 ]
 
 const STEPS = [

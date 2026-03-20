@@ -163,7 +163,7 @@ export const APIKeysManager = () => {
                   </TableCell>
                   <TableCell>
                     {key.is_active ? (
-                      <Badge className="bg-success/10 text-success border-green-200"><CheckCircle className="w-3 h-3 mr-1" />Active</Badge>
+                      <Badge className="bg-success/10 text-success border-success/20"><CheckCircle className="w-3 h-3 mr-1" />Active</Badge>
                     ) : (
                       <Badge variant="outline">Inactive</Badge>
                     )}

@@ -40,7 +40,7 @@ const DECISION_CONFIG = {
     icon: AlertTriangle,
     label: 'Action requise',
     shortLabel: 'Action',
-    colors: 'bg-destructive/15 text-destructive dark:text-red-400 border-red-500/40',
+    colors: 'bg-destructive/15 text-destructive dark:text-red-400 border-destructive/40',
     iconColor: 'text-destructive',
     pulseColor: 'bg-destructive'
   },
@@ -60,7 +60,7 @@ const DECISION_CONFIG = {
     icon: CheckCircle,
     label: 'Optimisé',
     shortLabel: 'OK',
-    colors: 'bg-info/15 text-info dark:text-blue-400 border-blue-500/40',
+    colors: 'bg-info/15 text-info dark:text-blue-400 border-info/40',
     iconColor: 'text-info',
     pulseColor: 'bg-info'
   },

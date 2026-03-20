@@ -166,7 +166,7 @@ export function ShopifyCustomerImportDialog({
 
                   {/* Info box about what will be imported */}
                   {integrations?.length > 0 && (
-                    <Card className="bg-info/5 border-blue-500/20">
+                    <Card className="bg-info/5 border-info/20">
                       <CardContent className="p-3">
                         <div className="flex items-start gap-2">
                           <Mail className="h-4 w-4 text-info mt-0.5 flex-shrink-0" />

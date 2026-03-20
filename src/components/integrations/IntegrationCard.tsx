@@ -192,7 +192,7 @@ export const IntegrationCard = ({ integration, onEdit }: IntegrationCardProps) =
         )}
 
         {testResult && (
-          <div className={`p-3 rounded-lg border ${testResult.success ? 'bg-success/5 border-green-200 dark:bg-green-950/20' : 'bg-destructive/5 border-red-200 dark:bg-red-950/20'}`}>
+          <div className={`p-3 rounded-lg border ${testResult.success ? 'bg-success/5 border-success/20 dark:bg-green-950/20' : 'bg-destructive/5 border-destructive/20 dark:bg-red-950/20'}`}>
             <div className="flex items-center gap-2">
               {testResult.success ? (
                 <CheckCircle className="w-4 h-4 text-success" />

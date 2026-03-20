@@ -121,7 +121,7 @@ export default function ExtensionAPIPage() {
             
             {generatedKey ? (
               <div className="space-y-4">
-                <div className="p-4 bg-success/5 dark:bg-green-900/20 rounded-lg border border-green-200">
+                <div className="p-4 bg-success/5 dark:bg-green-900/20 rounded-lg border border-success/20">
                   <div className="flex items-center gap-2 mb-2">
                     <CheckCircle2 className="h-5 w-5 text-success" />
                     <span className="font-medium text-success dark:text-green-200">Clé générée avec succès</span>
@@ -130,7 +130,7 @@ export default function ExtensionAPIPage() {
                     {generatedKey}
                   </code>
                 </div>
-                <div className="flex items-center gap-2 p-3 bg-warning/5 dark:bg-yellow-900/20 rounded-lg border border-yellow-200">
+                <div className="flex items-center gap-2 p-3 bg-warning/5 dark:bg-yellow-900/20 rounded-lg border border-warning/20">
                   <AlertCircle className="h-4 w-4 text-warning" />
                   <span className="text-sm text-yellow-800 dark:text-yellow-200">
                     Cette clé ne sera plus visible après fermeture de cette fenêtre
@@ -210,7 +210,7 @@ export default function ExtensionAPIPage() {
             </div>
           </CardContent>
         </Card>
-        <Card className="border-green-200 bg-success/5/50 dark:bg-green-900/10">
+        <Card className="border-success/20 bg-success/5/50 dark:bg-green-900/10">
           <CardContent className="pt-6">
             <p className="text-sm text-success">Clés Actives</p>
             <div className="text-3xl font-bold text-success">{stats.activeKeys}</div>
@@ -269,7 +269,7 @@ export default function ExtensionAPIPage() {
                             <div className="flex items-center gap-2">
                               <h4 className="font-medium">{key.name}</h4>
                               {key.is_active ? (
-                                <Badge variant="outline" className="text-success border-green-200">Actif</Badge>
+                                <Badge variant="outline" className="text-success border-success/20">Actif</Badge>
                               ) : (
                                 <Badge variant="outline" className="text-gray-500">Inactif</Badge>
                               )}

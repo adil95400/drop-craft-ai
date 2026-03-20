@@ -17,8 +17,8 @@ interface StockAlertsCardProps {
 const urgencyConfig = {
   critical: { label: 'Critique', color: 'bg-destructive/10 text-destructive border-destructive/20' },
   high: { label: 'Élevée', color: 'bg-warning/10 text-warning border-orange-500/20' },
-  medium: { label: 'Moyenne', color: 'bg-warning/10 text-warning border-yellow-500/20' },
-  low: { label: 'Faible', color: 'bg-success/10 text-success border-green-500/20' },
+  medium: { label: 'Moyenne', color: 'bg-warning/10 text-warning border-warning/20' },
+  low: { label: 'Faible', color: 'bg-success/10 text-success border-success/20' },
 }
 
 export function StockAlertsCard({ alerts, stats }: StockAlertsCardProps) {

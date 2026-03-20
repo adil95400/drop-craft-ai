@@ -107,7 +107,7 @@ export default function ImportMarketplacePage() {
                       </div>
                     </div>
                     {isConnected ? (
-                      <Badge className="bg-success/10 text-success border-green-500/20">
+                      <Badge className="bg-success/10 text-success border-success/20">
                         <CheckCircle className="w-3 h-3 mr-1" />
                         Connecté
                       </Badge>

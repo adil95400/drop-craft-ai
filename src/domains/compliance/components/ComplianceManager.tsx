@@ -254,9 +254,9 @@ export const ComplianceManager: React.FC = () => {
 
   const getComplianceStatusColor = (status: string) => {
     switch (status) {
-      case 'compliant': return 'bg-success/10 text-success border-green-200';
-      case 'partial': return 'bg-warning/10 text-yellow-800 border-yellow-200';
-      case 'non_compliant': return 'bg-destructive/10 text-red-800 border-red-200';
+      case 'compliant': return 'bg-success/10 text-success border-success/20';
+      case 'partial': return 'bg-warning/10 text-yellow-800 border-warning/20';
+      case 'non_compliant': return 'bg-destructive/10 text-red-800 border-destructive/20';
       case 'not_applicable': return 'bg-gray-100 text-gray-800 border-gray-200';
       default: return 'bg-gray-100 text-gray-800 border-gray-200';
     }
@@ -265,8 +265,8 @@ export const ComplianceManager: React.FC = () => {
   const getCategoryColor = (category: string) => {
     switch (category) {
       case 'privacy': return 'bg-purple-100 text-purple-800 border-purple-200';
-      case 'security': return 'bg-info/10 text-blue-800 border-blue-200';
-      case 'financial': return 'bg-success/10 text-success border-green-200';
+      case 'security': return 'bg-info/10 text-blue-800 border-info/20';
+      case 'financial': return 'bg-success/10 text-success border-success/20';
       case 'industry': return 'bg-orange-100 text-orange-800 border-orange-200';
       case 'accessibility': return 'bg-pink-100 text-pink-800 border-pink-200';
       default: return 'bg-gray-100 text-gray-800 border-gray-200';
@@ -275,20 +275,20 @@ export const ComplianceManager: React.FC = () => {
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
-      case 'critical': return 'bg-destructive/10 text-red-800 border-red-200';
+      case 'critical': return 'bg-destructive/10 text-red-800 border-destructive/20';
       case 'high': return 'bg-orange-100 text-orange-800 border-orange-200';
-      case 'medium': return 'bg-warning/10 text-yellow-800 border-yellow-200';
-      case 'low': return 'bg-success/10 text-success border-green-200';
+      case 'medium': return 'bg-warning/10 text-yellow-800 border-warning/20';
+      case 'low': return 'bg-success/10 text-success border-success/20';
       default: return 'bg-gray-100 text-gray-800 border-gray-200';
     }
   };
 
   const getSeverityColor = (severity: string) => {
     switch (severity) {
-      case 'critical': return 'bg-destructive/10 text-red-800 border-red-200';
+      case 'critical': return 'bg-destructive/10 text-red-800 border-destructive/20';
       case 'high': return 'bg-orange-100 text-orange-800 border-orange-200';
-      case 'medium': return 'bg-warning/10 text-yellow-800 border-yellow-200';
-      case 'low': return 'bg-info/10 text-blue-800 border-blue-200';
+      case 'medium': return 'bg-warning/10 text-yellow-800 border-warning/20';
+      case 'low': return 'bg-info/10 text-blue-800 border-info/20';
       default: return 'bg-gray-100 text-gray-800 border-gray-200';
     }
   };

@@ -79,8 +79,8 @@ const QuickFilters = ({ onSelect, active }: { onSelect: (filter: string) => void
 // Stats Cards
 const StatsCards = ({ isLoading }: { isLoading: boolean }) => {
   const stats = [
-    { label: 'Pubs analysées', value: '12,847', icon: Search, color: 'from-blue-500/10 to-blue-600/5', border: 'border-blue-500/20' },
-    { label: 'Winners détectés', value: '1,234', icon: Trophy, color: 'from-green-500/10 to-green-600/5', border: 'border-green-500/20' },
+    { label: 'Pubs analysées', value: '12,847', icon: Search, color: 'from-info/10 to-info/5', border: 'border-info/20' },
+    { label: 'Winners détectés', value: '1,234', icon: Trophy, color: 'from-success/10 to-success/5', border: 'border-success/20' },
     { label: 'Boutiques espionnées', value: '567', icon: Store, color: 'from-purple-500/10 to-purple-600/5', border: 'border-purple-500/20' },
     { label: 'Influenceurs suivis', value: '89', icon: Users, color: 'from-pink-500/10 to-pink-600/5', border: 'border-pink-500/20' },
   ];

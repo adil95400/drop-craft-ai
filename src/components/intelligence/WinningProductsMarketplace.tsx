@@ -411,7 +411,7 @@ function ProductCard({ product, onImport, isImporting }: {
           <div className="flex items-center mt-1">
             <div className="flex-1 bg-background rounded-full h-2">
               <div 
-                className="bg-gradient-to-r from-blue-500 to-green-500 h-2 rounded-full transition-all duration-300"
+                className="bg-gradient-to-r from-info to-green-500 h-2 rounded-full transition-all duration-300"
                 style={{ width: `${Math.min(product.social_proof.viral_potential, 100)}%` }}
               />
             </div>

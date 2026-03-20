@@ -183,7 +183,7 @@ export function CompetitiveAnalysisPanel() {
                     <TabsContent value="strengths" className="mt-2">
                       <div className="space-y-1.5">
                         {result.strengths.map((s, i) => (
-                          <div key={i} className="flex items-center gap-2 text-sm p-2 rounded bg-info/5 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800">
+                          <div key={i} className="flex items-center gap-2 text-sm p-2 rounded bg-info/5 dark:bg-blue-950/30 border border-info/20 dark:border-blue-800">
                             <CheckCircle2 className="h-3.5 w-3.5 text-info shrink-0" />
                             <span>{s}</span>
                           </div>

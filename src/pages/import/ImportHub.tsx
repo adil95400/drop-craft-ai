@@ -69,7 +69,7 @@ const importMethodsConfig = [
     title: 'Import Rapide',
     description: 'Import unitaire ou en masse avec URL. La méthode la plus rapide.',
     icon: Bolt,
-    color: 'from-orange-500 to-red-600',
+    color: 'from-orange-500 to-destructive',
     bgColor: 'bg-warning/10',
     iconColor: 'text-warning',
     borderColor: 'border-orange-500/20 hover:border-orange-500/50',
@@ -101,10 +101,10 @@ const importMethodsConfig = [
     title: 'CSV / Excel',
     description: 'Importez vos catalogues depuis des fichiers avec mapping intelligent.',
     icon: FileSpreadsheet,
-    color: 'from-green-500 to-green-600',
+    color: 'from-success to-success',
     bgColor: 'bg-success/10',
     iconColor: 'text-success',
-    borderColor: 'border-green-500/20 hover:border-green-500/50',
+    borderColor: 'border-success/20 hover:border-success/50',
     link: '/import/quick',
     features: ['Glisser-déposer', 'Mapping automatique', 'Validation des colonnes'],
     avgTime: '~2 min',
@@ -455,7 +455,7 @@ function ImportHubContent() {
         <AnimatePresence>
           {activeImports.length > 0 && (
             <motion.div {...getMotionProps(prefersReducedMotion, { initial: { opacity: 0, height: 0 }, animate: { opacity: 1, height: 'auto' }, exit: { opacity: 0, height: 0 } })} className="mb-6">
-              <Card className="border-blue-500/30 bg-info/5">
+              <Card className="border-info/30 bg-info/5">
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
@@ -878,7 +878,7 @@ function ImportHubContent() {
                               </p>
                             </div>
                           </div>
-                          <Badge variant="outline" className="bg-success/10 text-success border-green-500/20">
+                          <Badge variant="outline" className="bg-success/10 text-success border-success/20">
                             <Wifi className="w-3 h-3 mr-1" />
                             Connecté
                           </Badge>
@@ -957,7 +957,7 @@ function ImportHubContent() {
                               <p className="text-xs text-muted-foreground">Marketplace</p>
                             </div>
                           </div>
-                          <Badge variant="outline" className="bg-success/10 text-success border-green-500/20">
+                          <Badge variant="outline" className="bg-success/10 text-success border-success/20">
                             <Wifi className="w-3 h-3 mr-1" />
                             Connecté
                           </Badge>

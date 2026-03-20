@@ -269,9 +269,9 @@ export const SecurityAudit = () => {
 
   const getSeverityBadge = (severity: string) => {
     const variants = {
-      high: 'bg-destructive/10 text-red-800 border-red-200',
-      medium: 'bg-warning/10 text-yellow-800 border-yellow-200',
-      low: 'bg-success/10 text-success border-green-200'
+      high: 'bg-destructive/10 text-red-800 border-destructive/20',
+      medium: 'bg-warning/10 text-yellow-800 border-warning/20',
+      low: 'bg-success/10 text-success border-success/20'
     }
     
     return (
@@ -419,7 +419,7 @@ export const SecurityAudit = () => {
                   <p className="mb-3">{result.description}</p>
                   
                   {result.recommendation && (
-                    <div className="p-3 bg-warning/5 border border-yellow-200 rounded-lg">
+                    <div className="p-3 bg-warning/5 border border-warning/20 rounded-lg">
                       <p className="text-sm">
                         <strong>Recommandation :</strong> {result.recommendation}
                       </p>

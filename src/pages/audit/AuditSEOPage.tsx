@@ -150,7 +150,7 @@ export default function AuditSEOPage() {
         'p-3 rounded-lg border transition-all',
         metric.status === 'good' ? 'bg-emerald-50 dark:bg-emerald-900/20 border-emerald-200' :
         metric.status === 'warning' ? 'bg-amber-50 dark:bg-amber-900/20 border-amber-200' :
-        'bg-destructive/5 dark:bg-red-900/20 border-red-200'
+        'bg-destructive/5 dark:bg-red-900/20 border-destructive/20'
       )}>
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2">
@@ -286,7 +286,7 @@ export default function AuditSEOPage() {
         </motion.div>
 
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
-          <Card className="border-red-200 dark:border-red-800 bg-gradient-to-br from-red-50 to-red-100/50 dark:from-red-900/20 dark:to-red-800/10">
+          <Card className="border-destructive/20 dark:border-red-800 bg-gradient-to-br from-red-50 to-red-100/50 dark:from-red-900/20 dark:to-red-800/10">
             <CardContent className="pt-6">
               <div className="flex items-center gap-3">
                 <div className="p-2 rounded-full bg-red-200 dark:bg-red-800">
@@ -493,7 +493,7 @@ export default function AuditSEOPage() {
                   </div>
                   <Progress value={stats.averageSeoScore * 0.6} className="h-2 [&>div]:bg-warning" />
                 </div>
-                <div className="p-4 rounded-lg border border-blue-200 bg-info/5/50">
+                <div className="p-4 rounded-lg border border-info/20 bg-info/5/50">
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-sm font-medium">{t('seo.conversions')}</span>
                     <Badge className="bg-info/10 text-blue-700">+{Math.round(stats.averageSeoScore * 0.15)}%</Badge>
@@ -777,9 +777,9 @@ export default function AuditSEOPage() {
                                         key={i} 
                                         className={cn(
                                           'p-3 rounded-lg border',
-                                          issue.type === 'error' ? 'bg-destructive/5 border-red-200' :
+                                          issue.type === 'error' ? 'bg-destructive/5 border-destructive/20' :
                                           issue.type === 'warning' ? 'bg-amber-50 border-amber-200' :
-                                          'bg-info/5 border-blue-200'
+                                          'bg-info/5 border-info/20'
                                         )}
                                       >
                                         <div className="flex items-start gap-2">
@@ -962,7 +962,7 @@ export default function AuditSEOPage() {
                 </Card>
 
                 <Card 
-                  className="border-2 border-dashed border-blue-200 hover:border-blue-400 transition-colors cursor-pointer"
+                  className="border-2 border-dashed border-info/20 hover:border-blue-400 transition-colors cursor-pointer"
                   onClick={() => {
                     setIssueFilter('image');
                     setActiveTab('products');

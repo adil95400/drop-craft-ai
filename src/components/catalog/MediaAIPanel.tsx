@@ -40,9 +40,9 @@ export function MediaAIPanel() {
 
   const getPriorityStyles = (priority: string) => {
     switch (priority) {
-      case 'critical': return { bg: 'bg-destructive/10', text: 'text-destructive', border: 'border-red-500/20' }
+      case 'critical': return { bg: 'bg-destructive/10', text: 'text-destructive', border: 'border-destructive/20' }
       case 'high': return { bg: 'bg-warning/10', text: 'text-warning', border: 'border-amber-500/20' }
-      case 'medium': return { bg: 'bg-info/10', text: 'text-info', border: 'border-blue-500/20' }
+      case 'medium': return { bg: 'bg-info/10', text: 'text-info', border: 'border-info/20' }
       default: return { bg: 'bg-muted', text: 'text-muted-foreground', border: 'border-muted' }
     }
   }

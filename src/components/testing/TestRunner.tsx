@@ -506,7 +506,7 @@ export const TestRunner: React.FC = () => {
                               </p>
                             )}
                             {test.error && (
-                              <div className="mt-2 p-2 bg-destructive/5 border border-red-200 rounded text-xs text-red-800">
+                              <div className="mt-2 p-2 bg-destructive/5 border border-destructive/20 rounded text-xs text-red-800">
                                 <p className="font-medium">Erreur:</p>
                                 <p>{test.error}</p>
                               </div>
@@ -514,7 +514,7 @@ export const TestRunner: React.FC = () => {
                             {test.assertions && test.assertions.some(a => !a.passed) && (
                               <div className="mt-2 space-y-1">
                                 {test.assertions.filter(a => !a.passed).map((assertion, index) => (
-                                  <div key={index} className="p-2 bg-destructive/5 border border-red-200 rounded text-xs">
+                                  <div key={index} className="p-2 bg-destructive/5 border border-destructive/20 rounded text-xs">
                                     <p className="font-medium text-red-800">{assertion.name}</p>
                                     <p className="text-destructive">
                                       Attendu: {JSON.stringify(assertion.expected)}, 

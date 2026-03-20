@@ -96,7 +96,7 @@ const onboardingSteps: OnboardingStep[] = [
       'Commissions plateforme (Stripe, Shopify)',
       'TVA et marge nette estimée',
     ],
-    color: 'from-green-500 to-emerald-600',
+    color: 'from-success to-emerald-600',
   },
 ];
 

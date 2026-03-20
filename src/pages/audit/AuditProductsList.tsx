@@ -637,7 +637,7 @@ export default function AuditProductsList() {
                     </h4>
                     <div className="flex flex-wrap gap-2">
                       {selectedAudit.strengths.map((strength, i) => (
-                        <Badge key={i} variant="outline" className="bg-success/5 text-success border-green-200">
+                        <Badge key={i} variant="outline" className="bg-success/5 text-success border-success/20">
                           ✓ {strength}
                         </Badge>
                       ))}

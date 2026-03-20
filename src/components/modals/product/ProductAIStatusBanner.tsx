@@ -47,8 +47,8 @@ const STATUS_CONFIG = {
   risk: {
     icon: AlertTriangle,
     label: 'Action requise',
-    bgClass: 'from-red-500/15 via-red-500/5 to-transparent',
-    borderClass: 'border-red-500/30',
+    bgClass: 'from-destructive/15 via-red-500/5 to-transparent',
+    borderClass: 'border-destructive/30',
     iconClass: 'bg-destructive/20 text-destructive',
     textClass: 'text-destructive dark:text-red-400',
     ctaClass: 'bg-destructive hover:bg-destructive text-white'
@@ -65,8 +65,8 @@ const STATUS_CONFIG = {
   optimized: {
     icon: CheckCircle,
     label: 'Optimisé',
-    bgClass: 'from-blue-500/15 via-blue-500/5 to-transparent',
-    borderClass: 'border-blue-500/30',
+    bgClass: 'from-info/15 via-blue-500/5 to-transparent',
+    borderClass: 'border-info/30',
     iconClass: 'bg-info/20 text-info',
     textClass: 'text-info dark:text-blue-400',
     ctaClass: 'bg-info hover:bg-info text-white'

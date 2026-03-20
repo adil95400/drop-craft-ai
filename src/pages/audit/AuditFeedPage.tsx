@@ -72,21 +72,21 @@ export default function AuditFeedPage() {
           </CardContent></Card>
         </motion.div>
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
-          <Card className="border-green-200 bg-success/5/50 dark:bg-green-900/10"><CardContent className="pt-6">
+          <Card className="border-success/20 bg-success/5/50 dark:bg-green-900/10"><CardContent className="pt-6">
             <p className="text-sm text-success">{t('feed.validProducts')}</p>
             <div className="text-3xl font-bold text-success">{stats.validProducts}</div>
             <Progress value={(stats.validProducts / stats.totalProducts) * 100 || 0} className="h-2 mt-2" />
           </CardContent></Card>
         </motion.div>
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
-          <Card className="border-green-200 bg-success/5/50 dark:bg-green-900/10"><CardContent className="pt-6">
+          <Card className="border-success/20 bg-success/5/50 dark:bg-green-900/10"><CardContent className="pt-6">
             <p className="text-sm text-success">{t('feed.healthyFeeds')}</p>
             <div className="text-3xl font-bold text-success">{stats.healthyFeeds}</div>
             <p className="text-xs text-muted-foreground">{t('feed.ofNChannels', { count: stats.totalFeeds })}</p>
           </CardContent></Card>
         </motion.div>
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
-          <Card className={cn(stats.productsWithIssues > 0 ? 'border-orange-200 bg-orange-50/50 dark:bg-orange-900/10' : 'border-green-200 bg-success/5/50')}>
+          <Card className={cn(stats.productsWithIssues > 0 ? 'border-orange-200 bg-orange-50/50 dark:bg-orange-900/10' : 'border-success/20 bg-success/5/50')}>
             <CardContent className="pt-6">
               <p className={cn('text-sm', stats.productsWithIssues > 0 ? 'text-orange-700' : 'text-success')}>{t('feed.productsWithIssues')}</p>
               <div className={cn('text-3xl font-bold', stats.productsWithIssues > 0 ? 'text-orange-700' : 'text-success')}>{stats.productsWithIssues}</div>
@@ -161,7 +161,7 @@ export default function AuditFeedPage() {
                       {selectedChannelData.validationErrors.map((error, idx) => (
                         <div key={idx} className={cn(
                           'flex items-center justify-between p-4 border rounded-lg',
-                          error.type === 'error' ? 'bg-destructive/5 dark:bg-red-900/10 border-red-200' : 'bg-warning/5 dark:bg-yellow-900/10 border-yellow-200'
+                          error.type === 'error' ? 'bg-destructive/5 dark:bg-red-900/10 border-destructive/20' : 'bg-warning/5 dark:bg-yellow-900/10 border-warning/20'
                         )}>
                           <div className="flex items-center gap-4">
                             {error.type === 'error' ? <XCircle className="h-5 w-5 text-destructive" /> : <AlertCircle className="h-5 w-5 text-warning" />}

@@ -41,10 +41,10 @@ const STEP_ICONS = {
 };
 
 const STEP_COLORS = {
-  email: 'border-blue-500/30 bg-info/5',
-  sms: 'border-green-500/30 bg-success/5',
+  email: 'border-info/30 bg-info/5',
+  sms: 'border-success/30 bg-success/5',
   push: 'border-purple-500/30 bg-purple-500/5',
-  delay: 'border-yellow-500/30 bg-warning/5',
+  delay: 'border-warning/30 bg-warning/5',
   condition: 'border-orange-500/30 bg-warning/5',
 };
 

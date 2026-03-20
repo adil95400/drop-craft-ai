@@ -50,9 +50,9 @@ const CARRIERS = [
 ];
 
 const STATUS_CONFIG: Record<string, { label: string; color: string; icon: any }> = {
-  pending: { label: 'En attente', color: 'bg-warning/10 text-warning border-yellow-500/20', icon: Clock },
-  processing: { label: 'En cours', color: 'bg-info/10 text-info border-blue-500/20', icon: RefreshCw },
-  completed: { label: 'Expédié', color: 'bg-success/10 text-success border-green-500/20', icon: CheckCircle2 },
+  pending: { label: 'En attente', color: 'bg-warning/10 text-warning border-warning/20', icon: Clock },
+  processing: { label: 'En cours', color: 'bg-info/10 text-info border-info/20', icon: RefreshCw },
+  completed: { label: 'Expédié', color: 'bg-success/10 text-success border-success/20', icon: CheckCircle2 },
   failed: { label: 'Échoué', color: 'bg-destructive/10 text-destructive border-destructive/20', icon: XCircle },
   retry: { label: 'Retry', color: 'bg-warning/10 text-warning border-orange-500/20', icon: RotateCcw },
 };

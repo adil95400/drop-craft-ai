@@ -17,7 +17,7 @@ const quickUpgrades = [
     icon: Star,
     color: 'text-info',
     bgColor: 'bg-info/5',
-    borderColor: 'border-blue-200'
+    borderColor: 'border-info/20'
   },
   {
     from: 'free',
@@ -62,7 +62,7 @@ export const PlanQuickActions = () => {
 
   if (availableUpgrades.length === 0) {
     return (
-      <Card className="bg-gradient-to-r from-green-50 to-green-100 border-green-200">
+      <Card className="bg-gradient-to-r from-green-50 to-green-100 border-success/20">
         <CardContent className="flex items-center justify-center p-6">
           <div className="text-center space-y-2">
             <Crown className="h-8 w-8 text-success mx-auto" />

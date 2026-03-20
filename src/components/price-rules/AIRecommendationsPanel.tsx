@@ -53,7 +53,7 @@ export function AIRecommendationsPanel() {
 
   if (recommendations.length === 0) {
     return (
-      <Card className="border-green-200 bg-success/5/50">
+      <Card className="border-success/20 bg-success/5/50">
         <CardContent className="py-8 text-center">
           <Check className="h-10 w-10 mx-auto mb-3 text-success" />
           <h3 className="font-medium text-success mb-1">Catalogue optimisé</h3>

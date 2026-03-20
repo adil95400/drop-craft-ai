@@ -54,7 +54,7 @@ export function ChannelHeader({ channel, webhooksConnected, isSyncing, onBack, o
     },
     connecting: {
       label: 'Connexion...',
-      className: 'bg-info/10 text-blue-700 dark:text-blue-400 border-blue-500/30',
+      className: 'bg-info/10 text-blue-700 dark:text-blue-400 border-info/30',
       icon: Loader2
     },
     error: {

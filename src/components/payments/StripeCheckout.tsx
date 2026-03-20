@@ -132,7 +132,7 @@ export function StripeCheckout() {
     <div className="space-y-8">
       {/* Current Subscription Status */}
       {hasActiveSubscription && (
-        <Card className="border-green-200 bg-success/5">
+        <Card className="border-success/20 bg-success/5">
           <CardHeader>
             <CardTitle className="text-success">Abonnement Actif</CardTitle>
             <CardDescription className="text-success">

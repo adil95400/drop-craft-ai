@@ -160,7 +160,7 @@ export function FeatureGuide({
                 {tips.map((tip, index) => {
                   if (dismissedTips.includes(index)) return null
                   const tipStyles = {
-                    info: 'bg-info/5 border-blue-500/20 text-blue-700 dark:text-blue-400',
+                    info: 'bg-info/5 border-info/20 text-blue-700 dark:text-blue-400',
                     warning: 'bg-warning/5 border-amber-500/20 text-amber-700 dark:text-amber-400',
                     pro: 'bg-purple-500/5 border-purple-500/20 text-purple-700 dark:text-purple-400'
                   }

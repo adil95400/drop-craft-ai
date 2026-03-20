@@ -186,7 +186,7 @@ export function AIAnalysisInterface({ products, onAnalysisComplete }: AIAnalysis
             <CardContent>
               <div className="space-y-3">
                 {analysis.growthOpportunities.map((opp: any, index: number) => (
-                  <div key={index} className="p-3 bg-info/5 border border-blue-200 rounded-lg">
+                  <div key={index} className="p-3 bg-info/5 border border-info/20 rounded-lg">
                     <h4 className="font-medium text-blue-900">{opp.opportunity}</h4>
                     <p className="text-sm text-blue-700">{opp.description}</p>
                     <div className="flex items-center gap-2 mt-2">

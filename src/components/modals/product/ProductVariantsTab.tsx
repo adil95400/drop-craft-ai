@@ -138,11 +138,11 @@ export function ProductVariantsTab({
   return (
     <div className="space-y-6">
       {/* Summary Card */}
-      <Card className="bg-gradient-to-br from-blue-500/5 to-cyan-500/5 border-blue-500/20">
+      <Card className="bg-gradient-to-br from-info/5 to-cyan-500/5 border-info/20">
         <CardContent className="p-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <div className="h-14 w-14 rounded-xl bg-gradient-to-br from-blue-500/20 to-cyan-500/20 flex items-center justify-center">
+              <div className="h-14 w-14 rounded-xl bg-gradient-to-br from-info/20 to-cyan-500/20 flex items-center justify-center">
                 <Layers className="h-7 w-7 text-info" />
               </div>
               <div>

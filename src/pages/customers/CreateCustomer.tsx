@@ -637,7 +637,7 @@ export default function CreateCustomer() {
                   </CardContent>
                 </Card>
 
-                <Card className="border-green-200 bg-success/5/50 dark:bg-green-950/20">
+                <Card className="border-success/20 bg-success/5/50 dark:bg-green-950/20">
                   <CardContent className="pt-6">
                     <div className="space-y-3">
                       <div className="flex items-center gap-2 text-green-900 dark:text-green-100">

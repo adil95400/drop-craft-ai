@@ -99,7 +99,7 @@ export function AutomaticAlertsPanel() {
                       alert.status === 'active'
                         ? 'bg-destructive/5 border-destructive/20'
                         : alert.status === 'acknowledged'
-                        ? 'bg-warning/5 border-yellow-500/20'
+                        ? 'bg-warning/5 border-warning/20'
                         : 'bg-muted/50 border-border opacity-60'
                     }`}
                   >

@@ -170,8 +170,8 @@ export const ActionCelebrationModal = memo(function ActionCelebrationModal({
               'relative w-full max-w-sm rounded-2xl border-2 p-6',
               'bg-background/95 backdrop-blur-xl shadow-2xl',
               result.type === 'success' && 'border-emerald-500/50',
-              result.type === 'partial' && 'border-yellow-500/50',
-              result.type === 'info' && 'border-blue-500/50'
+              result.type === 'partial' && 'border-warning/50',
+              result.type === 'info' && 'border-info/50'
             )}
             variants={modalVariants}
             initial="hidden"

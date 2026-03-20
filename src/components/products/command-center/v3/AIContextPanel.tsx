@@ -241,7 +241,7 @@ export function AIContextPanel({
                       className={cn(
                         'w-full p-3 rounded-lg border text-left transition-colors',
                         'hover:border-primary/50 hover:bg-primary/5',
-                        action.variant === 'destructive' && 'border-red-500/30 bg-destructive/5',
+                        action.variant === 'destructive' && 'border-destructive/30 bg-destructive/5',
                         action.variant === 'warning' && 'border-amber-500/30 bg-warning/5',
                         action.variant === 'primary' && 'border-primary/30 bg-primary/5'
                       )}

@@ -200,28 +200,28 @@ export const GlobalIntelligenceHub: React.FC = () => {
 
   const getRiskBadgeColor = (risk: string) => {
     switch (risk) {
-      case 'low': return 'bg-success/10 text-success border-green-200';
-      case 'medium': return 'bg-warning/10 text-yellow-800 border-yellow-200';
-      case 'high': return 'bg-destructive/10 text-red-800 border-red-200';
+      case 'low': return 'bg-success/10 text-success border-success/20';
+      case 'medium': return 'bg-warning/10 text-yellow-800 border-warning/20';
+      case 'high': return 'bg-destructive/10 text-red-800 border-destructive/20';
       default: return 'bg-gray-100 text-gray-800 border-gray-200';
     }
   };
 
   const getComplianceStatusColor = (status: string) => {
     switch (status) {
-      case 'compliant': return 'bg-success/10 text-success border-green-200';
-      case 'pending': return 'bg-warning/10 text-yellow-800 border-yellow-200';
-      case 'non_compliant': return 'bg-destructive/10 text-red-800 border-red-200';
+      case 'compliant': return 'bg-success/10 text-success border-success/20';
+      case 'pending': return 'bg-warning/10 text-yellow-800 border-warning/20';
+      case 'non_compliant': return 'bg-destructive/10 text-red-800 border-destructive/20';
       default: return 'bg-gray-100 text-gray-800 border-gray-200';
     }
   };
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
-      case 'critical': return 'bg-destructive/10 text-red-800 border-red-200';
+      case 'critical': return 'bg-destructive/10 text-red-800 border-destructive/20';
       case 'high': return 'bg-orange-100 text-orange-800 border-orange-200';
-      case 'medium': return 'bg-warning/10 text-yellow-800 border-yellow-200';
-      case 'low': return 'bg-success/10 text-success border-green-200';
+      case 'medium': return 'bg-warning/10 text-yellow-800 border-warning/20';
+      case 'low': return 'bg-success/10 text-success border-success/20';
       default: return 'bg-gray-100 text-gray-800 border-gray-200';
     }
   };

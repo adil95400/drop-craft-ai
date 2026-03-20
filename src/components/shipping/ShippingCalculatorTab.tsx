@@ -84,7 +84,7 @@ export function ShippingCalculatorTab() {
                     )}
                   </div>
                   {result.cost === 0 && (
-                    <Badge className="mt-2 bg-success/10 text-success border-green-500/20">
+                    <Badge className="mt-2 bg-success/10 text-success border-success/20">
                       <CheckCircle className="h-3 w-3 mr-1" />Seuil de livraison gratuite atteint
                     </Badge>
                   )}

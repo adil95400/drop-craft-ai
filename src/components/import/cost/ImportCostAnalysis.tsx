@@ -138,7 +138,7 @@ export function ImportCostAnalysis() {
       <CardHeader className="pb-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="p-2.5 rounded-xl bg-gradient-to-br from-green-500/20 to-emerald-500/10">
+            <div className="p-2.5 rounded-xl bg-gradient-to-br from-success/20 to-emerald-500/10">
               <Calculator className="w-5 h-5 text-success" />
             </div>
             <div>

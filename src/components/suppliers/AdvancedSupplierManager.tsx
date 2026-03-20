@@ -436,7 +436,7 @@ export function AdvancedSupplierManager() {
                     </Button>
                   </div>
 
-                  <div className="flex items-start gap-3 p-3 border rounded-lg border-blue-200 bg-info/5">
+                  <div className="flex items-start gap-3 p-3 border rounded-lg border-info/20 bg-info/5">
                     <Target className="h-4 w-4 text-info mt-0.5" />
                     <div className="flex-1">
                       <p className="font-medium text-sm">Opportunité de négociation</p>
@@ -451,7 +451,7 @@ export function AdvancedSupplierManager() {
                     </Button>
                   </div>
 
-                  <div className="flex items-start gap-3 p-3 border rounded-lg border-green-200 bg-success/5">
+                  <div className="flex items-start gap-3 p-3 border rounded-lg border-success/20 bg-success/5">
                     <CheckCircle className="h-4 w-4 text-success mt-0.5" />
                     <div className="flex-1">
                       <p className="font-medium text-sm">Nouveau certification</p>

@@ -237,7 +237,7 @@ export function PerformanceMonitor({ children, showWidget = false }: Performance
 
         {/* Alertes de performance */}
         {overallScore < 70 && (
-          <div className="flex items-center gap-2 p-3 bg-warning/5 dark:bg-yellow-900/20 rounded-lg border border-yellow-200 dark:border-yellow-800">
+          <div className="flex items-center gap-2 p-3 bg-warning/5 dark:bg-yellow-900/20 rounded-lg border border-warning/20 dark:border-yellow-800">
             <AlertTriangle className="h-4 w-4 text-warning" />
             <div className="text-sm">
               <p className="font-medium text-yellow-800 dark:text-yellow-200">

@@ -276,7 +276,7 @@ export function LeadsManager() {
                           <h3 className="font-semibold text-lg">{lead.name}</h3>
                           {getStatusBadge(lead.status)}
                           {lead.lead_score > 70 && (
-                            <Badge variant="outline" className="bg-warning/5 text-yellow-700 border-yellow-200">
+                            <Badge variant="outline" className="bg-warning/5 text-yellow-700 border-warning/20">
                               <Star className="w-3 h-3 mr-1" />
                               Score: {lead.lead_score}
                             </Badge>

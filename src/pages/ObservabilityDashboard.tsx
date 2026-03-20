@@ -14,7 +14,7 @@ const statusColors: Record<string, string> = {
   healthy: "bg-success/15 text-emerald-700 border-emerald-500/30",
   operational: "bg-success/15 text-emerald-700 border-emerald-500/30",
   warning: "bg-warning/15 text-amber-700 border-amber-500/30",
-  degraded: "bg-destructive/15 text-red-700 border-red-500/30",
+  degraded: "bg-destructive/15 text-red-700 border-destructive/30",
 };
 
 const severityColors: Record<string, string> = {

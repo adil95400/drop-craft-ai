@@ -98,19 +98,19 @@ export default function MultiMarketplacePage() {
 
       {/* Hero Section */}
       <section className="relative py-20 lg:py-32 overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 via-background to-cyan-500/5" />
+        <div className="absolute inset-0 bg-gradient-to-br from-info/5 via-background to-cyan-500/5" />
         
         <div className="container mx-auto px-4 sm:px-6 relative z-10">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div className="space-y-8">
-              <Badge className="px-4 py-2 bg-gradient-to-r from-blue-500/10 to-cyan-500/10 text-blue-700 dark:text-blue-300 border-blue-500/20">
+              <Badge className="px-4 py-2 bg-gradient-to-r from-info/10 to-cyan-500/10 text-blue-700 dark:text-blue-300 border-info/20">
                 <Globe className="h-4 w-4 mr-2" />
                 Multi-Plateforme
               </Badge>
               
               <h1 className="text-5xl lg:text-6xl font-bold tracking-tight">
                 Toutes vos boutiques
-                <span className="block bg-gradient-to-r from-blue-500 via-cyan-500 to-blue-500 bg-clip-text text-transparent">
+                <span className="block bg-gradient-to-r from-info via-cyan-500 to-blue-500 bg-clip-text text-transparent">
                   en un seul endroit
                 </span>
               </h1>
@@ -182,7 +182,7 @@ export default function MultiMarketplacePage() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
             {benefits.map((benefit, index) => (
               <div key={index} className="text-center space-y-2">
-                <div className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-blue-500 to-cyan-500 bg-clip-text text-transparent">
+                <div className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-info to-cyan-500 bg-clip-text text-transparent">
                   {benefit.stat}
                 </div>
                 <div className="text-sm text-muted-foreground">{benefit.label}</div>
@@ -206,9 +206,9 @@ export default function MultiMarketplacePage() {
             {features.map((feature, index) => {
               const IconComponent = feature.icon
               return (
-                <Card key={index} className="border-2 hover:border-blue-500/50 transition-all duration-300 hover:shadow-lg">
+                <Card key={index} className="border-2 hover:border-info/50 transition-all duration-300 hover:shadow-lg">
                   <CardHeader>
-                    <div className="p-3 rounded-xl bg-gradient-to-br from-blue-500/10 to-cyan-500/10 w-fit mb-4">
+                    <div className="p-3 rounded-xl bg-gradient-to-br from-info/10 to-cyan-500/10 w-fit mb-4">
                       <IconComponent className="h-6 w-6 text-info" />
                     </div>
                     <CardTitle className="text-xl">{feature.title}</CardTitle>
@@ -237,14 +237,14 @@ export default function MultiMarketplacePage() {
             {workflow.map((item, index) => (
               <div key={index} className="relative">
                 <div className="space-y-4">
-                  <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center text-white text-2xl font-bold">
+                  <div className="w-16 h-16 rounded-full bg-gradient-to-br from-info to-cyan-500 flex items-center justify-center text-white text-2xl font-bold">
                     {item.step}
                   </div>
                   <h3 className="text-xl font-bold">{item.title}</h3>
                   <p className="text-muted-foreground">{item.description}</p>
                 </div>
                 {index < workflow.length - 1 && (
-                  <div className="hidden md:block absolute top-8 left-full w-full h-0.5 bg-gradient-to-r from-blue-500 to-cyan-500 -z-10" />
+                  <div className="hidden md:block absolute top-8 left-full w-full h-0.5 bg-gradient-to-r from-info to-cyan-500 -z-10" />
                 )}
               </div>
             ))}
@@ -255,10 +255,10 @@ export default function MultiMarketplacePage() {
       {/* CTA Section */}
       <section className="py-20 bg-secondary/30">
         <div className="container mx-auto px-4 sm:px-6">
-          <Card className="border-2 bg-gradient-to-br from-blue-500/5 to-cyan-500/5">
+          <Card className="border-2 bg-gradient-to-br from-info/5 to-cyan-500/5">
             <CardContent className="p-12 text-center space-y-6">
               <div className="flex justify-center">
-                <div className="p-4 rounded-2xl bg-gradient-to-br from-blue-500 to-cyan-500">
+                <div className="p-4 rounded-2xl bg-gradient-to-br from-info to-cyan-500">
                   <Globe className="h-12 w-12 text-white" />
                 </div>
               </div>

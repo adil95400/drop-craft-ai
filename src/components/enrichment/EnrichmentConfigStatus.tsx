@@ -207,7 +207,7 @@ export function EnrichmentConfigStatus() {
             )}
 
             {configuredCount > 0 && configuredCount < totalCount && (
-              <div className="mt-4 p-4 rounded-lg bg-info/10 border border-blue-500/20">
+              <div className="mt-4 p-4 rounded-lg bg-info/10 border border-info/20">
                 <p className="text-xs text-blue-700 dark:text-blue-300">
                   💡 Ajoutez plus de sources d'enrichissement pour améliorer la couverture et la qualité des données.
                 </p>

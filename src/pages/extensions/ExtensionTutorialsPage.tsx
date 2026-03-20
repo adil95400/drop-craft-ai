@@ -83,9 +83,9 @@ export default function ExtensionTutorialsPage() {
 
   const getLevelColor = (level: string) => {
     switch (level) {
-      case 'Débutant': return 'bg-success/10 text-success border-green-500/20';
-      case 'Intermédiaire': return 'bg-warning/10 text-warning border-yellow-500/20';
-      case 'Avancé': return 'bg-destructive/10 text-destructive border-red-500/20';
+      case 'Débutant': return 'bg-success/10 text-success border-success/20';
+      case 'Intermédiaire': return 'bg-warning/10 text-warning border-warning/20';
+      case 'Avancé': return 'bg-destructive/10 text-destructive border-destructive/20';
       default: return '';
     }
   };

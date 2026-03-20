@@ -178,7 +178,7 @@ function ChannelCardPremium({ connection, viewMode, onSync, onManage, isSyncing,
     },
     error: { 
       color: 'text-destructive', 
-      bg: 'bg-destructive/10 border-red-500/30', 
+      bg: 'bg-destructive/10 border-destructive/30', 
       icon: AlertCircle, 
       label: t('hub.errorStatus'),
       dot: 'bg-destructive'
@@ -290,7 +290,7 @@ function ChannelCardPremium({ connection, viewMode, onSync, onManage, isSyncing,
       <div className={cn(
         "absolute top-0 left-0 right-0 h-1",
         connection.connection_status === 'connected' && "bg-gradient-to-r from-emerald-500 to-emerald-400",
-        connection.connection_status === 'error' && "bg-gradient-to-r from-red-500 to-red-400",
+        connection.connection_status === 'error' && "bg-gradient-to-r from-destructive to-red-400",
         connection.connection_status === 'connecting' && "bg-gradient-to-r from-amber-500 to-amber-400",
         connection.connection_status === 'disconnected' && "bg-gradient-to-r from-muted to-muted-foreground/50"
       )} />
@@ -681,7 +681,7 @@ export default function StoresAndChannelsHub() {
             change="+156"
             trend="up"
             icon={Package}
-            gradient="bg-gradient-to-r from-blue-500 to-blue-400"
+            gradient="bg-gradient-to-r from-info to-blue-400"
             delay={3}
             onClick={() => navigate('/products')}
           />

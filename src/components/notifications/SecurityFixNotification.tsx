@@ -22,7 +22,7 @@ export function SecurityFixNotification() {
   if (!isVisible) return null;
 
   return (
-    <Alert className="border-green-200 bg-success/5 text-success mb-6">
+    <Alert className="border-success/20 bg-success/5 text-success mb-6">
       <Shield className="h-4 w-4 text-success" />
       <div className="flex justify-between items-start w-full">
         <div className="flex-1">

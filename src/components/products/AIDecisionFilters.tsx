@@ -57,7 +57,7 @@ const AI_FILTERS: AIFilterConfig[] = [
     description: 'Problèmes critiques à corriger',
     colors: {
       active: 'bg-destructive text-white border-transparent',
-      inactive: 'bg-destructive/10 text-destructive border-red-500/30 hover:bg-destructive/20'
+      inactive: 'bg-destructive/10 text-destructive border-destructive/30 hover:bg-destructive/20'
     }
   },
   {
@@ -81,7 +81,7 @@ const AI_FILTERS: AIFilterConfig[] = [
     description: 'Produits performants',
     colors: {
       active: 'bg-info text-white border-transparent',
-      inactive: 'bg-info/10 text-info border-blue-500/30 hover:bg-info/20'
+      inactive: 'bg-info/10 text-info border-info/30 hover:bg-info/20'
     }
   },
   {

@@ -40,11 +40,11 @@ export function ChannelCard({ channel, onEdit, onSync, onToggle, viewMode = 'gri
   const getStatusBadge = () => {
     switch (channel.status) {
       case 'active':
-        return <Badge className="bg-success/20 text-success border-green-500/30"><CheckCircle className="h-3 w-3 mr-1" />Actif</Badge>
+        return <Badge className="bg-success/20 text-success border-success/30"><CheckCircle className="h-3 w-3 mr-1" />Actif</Badge>
       case 'paused':
         return <Badge variant="secondary"><Pause className="h-3 w-3 mr-1" />Pause</Badge>
       case 'syncing':
-        return <Badge className="bg-info/20 text-blue-700 border-blue-500/30"><RefreshCw className="h-3 w-3 mr-1 animate-spin" />Sync</Badge>
+        return <Badge className="bg-info/20 text-blue-700 border-info/30"><RefreshCw className="h-3 w-3 mr-1 animate-spin" />Sync</Badge>
       case 'error':
         return <Badge variant="destructive"><AlertTriangle className="h-3 w-3 mr-1" />Erreur</Badge>
       default:

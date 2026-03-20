@@ -157,7 +157,7 @@ export const SubscriptionManagement: React.FC = () => {
         </div>
       </div>
 
-      <Card className="bg-gradient-to-br from-blue-50 to-purple-50 border-2 border-blue-200">
+      <Card className="bg-gradient-to-br from-blue-50 to-purple-50 border-2 border-info/20">
         <CardHeader>
           <div className="flex items-center justify-between">
             <div>
@@ -231,7 +231,7 @@ export const SubscriptionManagement: React.FC = () => {
                 <CardDescription>Optimisez votre utilisation</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="flex items-start gap-3 p-3 bg-info/5 border border-blue-200 rounded-lg">
+                <div className="flex items-start gap-3 p-3 bg-info/5 border border-info/20 rounded-lg">
                   <CheckCircle2 className="w-5 h-5 text-info mt-0.5" />
                   <div>
                     <p className="text-sm font-medium text-blue-800">Optimisation IA disponible</p>
@@ -272,7 +272,7 @@ export const SubscriptionManagement: React.FC = () => {
                     ))}
                   </div>
                   <Button 
-                    className={`w-full ${currentPlan === plan.id ? 'bg-gray-200 text-gray-600' : plan.popular ? 'bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600' : ''}`}
+                    className={`w-full ${currentPlan === plan.id ? 'bg-gray-200 text-gray-600' : plan.popular ? 'bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-info' : ''}`}
                     disabled={currentPlan === plan.id || upgrading === plan.id}
                     onClick={() => handleUpgrade(plan.id)}
                   >

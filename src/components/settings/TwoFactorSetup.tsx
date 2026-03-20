@@ -86,7 +86,7 @@ export function TwoFactorSetup() {
   if (isEnrolled) {
     return (
       <div className="flex items-center gap-2">
-        <Badge className="bg-success/10 text-success border-green-200">
+        <Badge className="bg-success/10 text-success border-success/20">
           <CheckCircle className="h-3 w-3 mr-1" /> Activée
         </Badge>
         <Button variant="outline" size="sm" onClick={unenroll} disabled={loading}>

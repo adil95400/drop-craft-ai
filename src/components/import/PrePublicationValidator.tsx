@@ -309,9 +309,9 @@ export function PrePublicationValidator({
                     key={validation.productId}
                     className={cn(
                       "p-3 rounded-lg border",
-                      validation.status === 'error' && "border-red-200 bg-destructive/5/50 dark:bg-red-950/10",
-                      validation.status === 'warning' && "border-yellow-200 bg-warning/5/50 dark:bg-yellow-950/10",
-                      validation.status === 'valid' && "border-green-200 bg-success/5/50 dark:bg-green-950/10"
+                      validation.status === 'error' && "border-destructive/20 bg-destructive/5/50 dark:bg-red-950/10",
+                      validation.status === 'warning' && "border-warning/20 bg-warning/5/50 dark:bg-yellow-950/10",
+                      validation.status === 'valid' && "border-success/20 bg-success/5/50 dark:bg-green-950/10"
                     )}
                   >
                     <div className="flex items-start gap-3">

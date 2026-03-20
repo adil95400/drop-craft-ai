@@ -194,7 +194,7 @@ export const RecommendedFlows = () => {
   )]
 
   return (
-    <Card className="mb-6 border-blue-200 bg-info/5/50">
+    <Card className="mb-6 border-info/20 bg-info/5/50">
       <CardContent className="p-4">
         <div className="flex items-center gap-2 mb-3">
           <Zap className="h-4 w-4 text-info" />
@@ -203,7 +203,7 @@ export const RecommendedFlows = () => {
         
         <div className="space-y-2">
           {recommendedFlows.slice(0, 2).map((flowId) => (
-            <div key={flowId} className="flex items-center justify-between p-2 rounded-lg bg-white/60 border border-blue-200/50">
+            <div key={flowId} className="flex items-center justify-between p-2 rounded-lg bg-white/60 border border-info/20/50">
               <div>
                 <p className="font-medium text-sm capitalize">{flowId.replace('_', ' ')}</p>
                 <p className="text-xs text-muted-foreground">

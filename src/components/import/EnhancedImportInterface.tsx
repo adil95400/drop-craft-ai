@@ -178,7 +178,7 @@ export const EnhancedImportInterface = ({ selectedMethod, isImporting, importPro
                     getCurrentStep() === index 
                       ? 'bg-primary/10 border border-primary/20 animate-scale-in' 
                       : getCurrentStep() > index
-                      ? 'bg-success/5 border border-green-200'
+                      ? 'bg-success/5 border border-success/20'
                       : 'bg-muted/30'
                   }`}
                 >

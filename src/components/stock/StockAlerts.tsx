@@ -129,7 +129,7 @@ export function StockAlerts() {
     <div className="space-y-4">
       {/* Summary Cards */}
       <div className="grid gap-4 md:grid-cols-4">
-        <Card className="border-red-500">
+        <Card className="border-destructive">
           <CardHeader className="pb-3">
             <CardTitle className="text-sm flex items-center gap-2">
               <AlertTriangle className="h-4 w-4 text-destructive" />
@@ -153,7 +153,7 @@ export function StockAlerts() {
           </CardContent>
         </Card>
 
-        <Card className="border-yellow-500">
+        <Card className="border-warning">
           <CardHeader className="pb-3">
             <CardTitle className="text-sm flex items-center gap-2">
               <Clock className="h-4 w-4 text-warning" />
@@ -165,7 +165,7 @@ export function StockAlerts() {
           </CardContent>
         </Card>
 
-        <Card className="border-blue-500">
+        <Card className="border-info">
           <CardHeader className="pb-3">
             <CardTitle className="text-sm flex items-center gap-2">
               <Bell className="h-4 w-4 text-info" />

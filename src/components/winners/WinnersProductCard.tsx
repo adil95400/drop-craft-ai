@@ -36,16 +36,16 @@ export const WinnersProductCard = ({
   const [imageLoaded, setImageLoaded] = useState(false);
 
   const getScoreColor = (score: number) => {
-    if (score >= 80) return 'from-green-500 to-emerald-600';
+    if (score >= 80) return 'from-success to-emerald-600';
     if (score >= 60) return 'from-yellow-500 to-orange-500';
-    return 'from-red-500 to-rose-600';
+    return 'from-destructive to-rose-600';
   };
 
   const getSourceBadge = (source: string) => {
     const sourceMap: Record<string, { label: string; color: string; emoji: string }> = {
       amazon: { label: 'Amazon', color: 'bg-gradient-to-r from-orange-500 to-yellow-500', emoji: '📦' },
-      aliexpress: { label: 'AliExpress', color: 'bg-gradient-to-r from-red-500 to-pink-500', emoji: '🛍️' },
-      ebay: { label: 'eBay', color: 'bg-gradient-to-r from-blue-500 to-indigo-500', emoji: '🏪' },
+      aliexpress: { label: 'AliExpress', color: 'bg-gradient-to-r from-destructive to-pink-500', emoji: '🛍️' },
+      ebay: { label: 'eBay', color: 'bg-gradient-to-r from-info to-indigo-500', emoji: '🏪' },
       google_trends: { label: 'Trends', color: 'bg-gradient-to-r from-indigo-500 to-purple-500', emoji: '📊' },
       tiktok: { label: 'TikTok', color: 'bg-gradient-to-r from-gray-800 to-gray-900', emoji: '🎵' },
     };
@@ -140,7 +140,7 @@ export const WinnersProductCard = ({
                 )}
 
                 {product.market_demand > 80 && (
-                  <Badge className="bg-gradient-to-r from-red-500 to-orange-500 text-white shadow-lg animate-pulse">
+                  <Badge className="bg-gradient-to-r from-destructive to-orange-500 text-white shadow-lg animate-pulse">
                     <Zap className="h-3 w-3 mr-1" />
                     HOT
                   </Badge>
@@ -211,7 +211,7 @@ export const WinnersProductCard = ({
                 </div>
                 
                 <motion.div 
-                  className="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950/30 dark:to-emerald-950/20 rounded-lg p-3 space-y-2 border border-green-200/50 dark:border-green-800/50"
+                  className="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950/30 dark:to-emerald-950/20 rounded-lg p-3 space-y-2 border border-success/20/50 dark:border-green-800/50"
                   whileHover={{ scale: 1.02 }}
                   transition={{ duration: 0.2 }}
                 >
@@ -225,7 +225,7 @@ export const WinnersProductCard = ({
                       {formatPrice(profit, product.currency)}
                     </span>
                   </div>
-                  <div className="flex items-center justify-center gap-1 pt-1 border-t border-green-200/50 dark:border-green-800/50">
+                  <div className="flex items-center justify-center gap-1 pt-1 border-t border-success/20/50 dark:border-green-800/50">
                     <Target className="h-3 w-3 text-success dark:text-green-400" />
                     <span className="text-xs font-bold text-success dark:text-green-400">
                       Marge {margin}%
@@ -383,7 +383,7 @@ export const WinnersProductCard = ({
             {/* Details Section */}
             <div className="space-y-4">
               {/* Price Calculator */}
-              <Card className="p-4 bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950/30 dark:to-emerald-950/20 border-green-200 dark:border-green-800">
+              <Card className="p-4 bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950/30 dark:to-emerald-950/20 border-success/20 dark:border-green-800">
                 <div className="flex items-center gap-2 mb-4">
                   <div className="p-2 rounded-lg bg-success/10">
                     <Calculator className="h-5 w-5 text-success dark:text-green-400" />

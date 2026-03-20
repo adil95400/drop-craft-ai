@@ -435,7 +435,7 @@ export function FeedURLImporter({ onImportComplete, className }: FeedURLImporter
                 <Button 
                   onClick={handleImport}
                   disabled={!previewData.success || previewData.total_products === 0}
-                  className="sm:flex-1 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700"
+                  className="sm:flex-1 bg-gradient-to-r from-success to-emerald-600 hover:from-green-600 hover:to-emerald-700"
                 >
                   <Download className="w-4 h-4 mr-2" />
                   Importer ({previewData.total_products})

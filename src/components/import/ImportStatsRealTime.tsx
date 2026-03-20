@@ -218,7 +218,7 @@ export const ImportStatsRealTime = ({ refreshInterval = 5000 }: ImportStatsRealT
       </div>
 
       {/* Indicateur de performance */}
-      <Card className="bg-gradient-to-r from-green-50 to-blue-50 border-green-200">
+      <Card className="bg-gradient-to-r from-green-50 to-blue-50 border-success/20">
         <CardContent className="p-4">
           <div className="flex items-center justify-center gap-4">
             <div className="flex items-center gap-2">

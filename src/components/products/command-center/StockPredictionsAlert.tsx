@@ -28,7 +28,7 @@ const urgencyConfig = {
   critical: {
     color: 'text-destructive dark:text-red-400',
     bgColor: 'bg-destructive/10',
-    borderColor: 'border-red-500/50',
+    borderColor: 'border-destructive/50',
     label: 'Critique',
     icon: AlertTriangle
   },
@@ -49,7 +49,7 @@ const urgencyConfig = {
   low: {
     color: 'text-info dark:text-blue-400',
     bgColor: 'bg-info/10',
-    borderColor: 'border-blue-500/50',
+    borderColor: 'border-info/50',
     label: 'Basse',
     icon: Package
   }
@@ -76,7 +76,7 @@ export function StockPredictionsAlert({
         className={cn(
           'flex items-center gap-3 p-3 rounded-lg border',
           criticalCount > 0 
-            ? 'bg-destructive/10 border-red-500/30' 
+            ? 'bg-destructive/10 border-destructive/30' 
             : 'bg-warning/10 border-orange-500/30'
         )}
       >
@@ -107,7 +107,7 @@ export function StockPredictionsAlert({
     <Alert className={cn(
       'border-2',
       criticalCount > 0 
-        ? 'border-red-500/50 bg-destructive/5' 
+        ? 'border-destructive/50 bg-destructive/5' 
         : 'border-orange-500/50 bg-warning/5'
     )}>
       <AlertTriangle className={cn(
@@ -119,7 +119,7 @@ export function StockPredictionsAlert({
         <Badge variant="outline" className={cn(
           'text-[10px]',
           criticalCount > 0 
-            ? 'bg-destructive/10 border-red-500/30' 
+            ? 'bg-destructive/10 border-destructive/30' 
             : 'bg-warning/10 border-orange-500/30'
         )}>
           IA

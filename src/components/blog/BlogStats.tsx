@@ -101,7 +101,7 @@ export function BlogStats({
       </div>
 
       {/* Growth Banner */}
-      <Card className="bg-gradient-to-r from-green-50 to-emerald-50 border-green-200">
+      <Card className="bg-gradient-to-r from-green-50 to-emerald-50 border-success/20">
         <CardContent className="p-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
@@ -121,7 +121,7 @@ export function BlogStats({
               <div className="text-3xl font-bold text-success">
                 +{monthlyGrowth}%
               </div>
-              <Badge className="bg-success/10 text-success border-green-200">
+              <Badge className="bg-success/10 text-success border-success/20">
                 <Calendar className="w-4 h-4 mr-1" />
                 Ce mois
               </Badge>
@@ -132,7 +132,7 @@ export function BlogStats({
 
       {/* Quick Facts */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card className="bg-gradient-to-br from-blue-50 to-cyan-50 border-blue-200">
+        <Card className="bg-gradient-to-br from-blue-50 to-cyan-50 border-info/20">
           <CardContent className="p-4 text-center">
             <div className="text-xl font-bold text-blue-700 mb-1">
               5 min

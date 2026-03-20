@@ -394,7 +394,7 @@ export function ContentImportExport({ contentType }: ContentImportExportProps) {
             )}
 
             {importResult && (
-              <Card className={importResult.failed > 0 ? 'border-yellow-500' : 'border-green-500'}>
+              <Card className={importResult.failed > 0 ? 'border-warning' : 'border-success'}>
                 <CardContent className="p-4">
                   <div className="flex items-center gap-4">
                     {importResult.failed === 0 ? (

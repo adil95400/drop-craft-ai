@@ -26,7 +26,7 @@ const planConfig = {
     price: '29€',
     color: 'text-info',
     bgColor: 'bg-info/5',
-    borderColor: 'border-blue-200',
+    borderColor: 'border-info/20',
     features: [
       'Imports avancés',
       'Analyses AI',

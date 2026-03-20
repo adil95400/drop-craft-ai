@@ -77,11 +77,11 @@ export function SupplierComparisonTable({
   const getAvailabilityBadge = (availability: SupplierResult['availability']) => {
     switch (availability) {
       case 'in_stock':
-        return <Badge className="bg-success/10 text-success border-green-500/20"><Check className="h-3 w-3 mr-1" /> En stock</Badge>
+        return <Badge className="bg-success/10 text-success border-success/20"><Check className="h-3 w-3 mr-1" /> En stock</Badge>
       case 'low_stock':
-        return <Badge className="bg-warning/10 text-warning border-yellow-500/20"><AlertTriangle className="h-3 w-3 mr-1" /> Stock limité</Badge>
+        return <Badge className="bg-warning/10 text-warning border-warning/20"><AlertTriangle className="h-3 w-3 mr-1" /> Stock limité</Badge>
       case 'out_of_stock':
-        return <Badge className="bg-destructive/10 text-destructive border-red-500/20"><X className="h-3 w-3 mr-1" /> Rupture</Badge>
+        return <Badge className="bg-destructive/10 text-destructive border-destructive/20"><X className="h-3 w-3 mr-1" /> Rupture</Badge>
     }
   }
 

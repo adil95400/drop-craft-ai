@@ -35,10 +35,10 @@ export function BusinessIntelligenceDashboard() {
 
   const getSeverityColor = (severity: string) => {
     switch (severity) {
-      case 'critical': return 'text-destructive bg-destructive/10 border-red-200';
+      case 'critical': return 'text-destructive bg-destructive/10 border-destructive/20';
       case 'warning': return 'text-warning bg-orange-100 border-orange-200';
-      case 'opportunity': return 'text-success bg-success/10 border-green-200';
-      case 'info': return 'text-info bg-info/10 border-blue-200';
+      case 'opportunity': return 'text-success bg-success/10 border-success/20';
+      case 'info': return 'text-info bg-info/10 border-info/20';
       default: return 'text-gray-600 bg-gray-100 border-gray-200';
     }
   };
