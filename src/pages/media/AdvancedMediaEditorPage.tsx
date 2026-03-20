@@ -70,6 +70,7 @@ export default function AdvancedMediaEditorPage() {
   const [resizeWidth, setResizeWidth] = useState(0);
   const [resizeHeight, setResizeHeight] = useState(0);
   const [naturalSize, setNaturalSize] = useState({ w: 0, h: 0 });
+  const [isCropping, setIsCropping] = useState(false);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const imgRef = useRef<HTMLImageElement | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
