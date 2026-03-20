@@ -1,10 +1,18 @@
 /**
- * Lightweight auth context for initial page load
- * Defers heavy Supabase imports until actually needed
+ * LightAuthContext — Fast initial auth hint for routing
+ * 
+ * SECURITY NOTE: This context is a UX optimization ONLY. It checks localStorage
+ * for a Supabase session token to avoid a blank flash on page load. This is NOT
+ * a security gate — the actual authentication is handled by UnifiedAuthProvider
+ * which performs server-side token validation via supabase.auth.getSession().
+ * 
+ * Never use isAuthenticated from this context for access control decisions.
+ * It only determines whether to show the loading state or redirect to /auth.
  */
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 
 interface LightAuthContextType {
+  /** UX hint only — NOT a security assertion. See UnifiedAuthProvider for real auth. */
   isAuthenticated: boolean;
   isLoading: boolean;
   initializeAuth: () => Promise<void>;
@@ -21,11 +29,10 @@ export const LightAuthProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   const [isLoading, setIsLoading] = useState(true);
   const [authInitialized, setAuthInitialized] = useState(false);
 
-  // Check for existing session token in localStorage (fast, no network)
   useEffect(() => {
     const checkLocalSession = () => {
       try {
-        // Check for Supabase session in localStorage without importing supabase
+        // Find Supabase auth token in localStorage (fast, no network call)
         const storageKey = Object.keys(localStorage).find(key => 
           key.startsWith('sb-') && key.endsWith('-auth-token')
         );
@@ -34,17 +41,18 @@ export const LightAuthProvider: React.FC<{ children: React.ReactNode }> = ({ chi
           const sessionData = localStorage.getItem(storageKey);
           if (sessionData) {
             const parsed = JSON.parse(sessionData);
-            if (parsed?.access_token && parsed?.expires_at) {
-              // Check if token is not expired
-              const expiresAt = parsed.expires_at * 1000;
-              if (Date.now() < expiresAt) {
-                setIsAuthenticated(true);
-              }
+            // Validate token structure and expiry as a UX hint
+            if (
+              parsed?.access_token &&
+              typeof parsed.expires_at === 'number' &&
+              parsed.expires_at * 1000 > Date.now()
+            ) {
+              setIsAuthenticated(true);
             }
           }
         }
       } catch {
-        // Ignore errors, just mark as not authenticated
+        // Silently fail — UnifiedAuthProvider will handle real auth
       }
       setIsLoading(false);
     };
@@ -55,9 +63,7 @@ export const LightAuthProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   const initializeAuth = useCallback(async () => {
     if (authInitialized) return;
     setAuthInitialized(true);
-    
-    // This will be called by components that need full auth
-    // The actual auth initialization is handled by UnifiedAuthProvider
+    // Full auth initialization is deferred to UnifiedAuthProvider
   }, [authInitialized]);
 
   return (

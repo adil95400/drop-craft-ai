@@ -1,0 +1,49 @@
+/**
+ * Component classes — cards, buttons, sidebar, grids, page layout
+ */
+@layer components {
+  .card-hover { @apply transition-all duration-300 hover:shadow-lg hover:-translate-y-1 cursor-pointer; }
+  .card-interactive { @apply transition-all duration-300 hover:shadow-xl hover:-translate-y-2 hover:border-primary/20 cursor-pointer; }
+
+  .btn-gradient { @apply bg-gradient-to-r from-primary to-primary/80 text-primary-foreground border-0 hover:opacity-90 transition-all duration-300 hover:shadow-glow; }
+  .btn-gradient-secondary { @apply bg-gradient-to-r from-secondary to-accent text-secondary-foreground border-0 hover:opacity-90 transition-all duration-300; }
+
+  .stats-grid { @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4; }
+  .dashboard-grid { @apply grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6; }
+
+  .page-container { @apply w-full space-y-4 sm:space-y-6; }
+  .section-heading { @apply text-2xl sm:text-3xl font-heading font-bold tracking-tight mb-6; }
+
+  /* Page header */
+  .page-header { @apply flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4; }
+  .page-title { @apply text-xl sm:text-2xl lg:text-3xl font-bold text-foreground; }
+  .page-subtitle { @apply text-xs sm:text-sm text-muted-foreground mt-0.5 sm:mt-1; }
+
+  /* Sidebar */
+  .sidebar-section { @apply mb-6; }
+  .sidebar-section-title { @apply px-6 mb-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider; }
+  .sidebar-nav-item { @apply flex items-center space-x-3 rounded-lg px-3 py-2 text-sm transition-all duration-300; }
+  .sidebar-nav-item-active { @apply bg-gradient-to-r from-primary to-primary/90 text-primary-foreground font-semibold shadow-lg shadow-primary/30; }
+  .sidebar-nav-item-inactive { @apply text-foreground hover:bg-gradient-to-r hover:from-accent/80 hover:to-accent/40 hover:text-foreground hover:shadow-md backdrop-blur-sm; }
+  .sidebar-nav-item-disabled { @apply text-muted-foreground cursor-not-allowed opacity-50 hover:scale-100; }
+  .sidebar-glass { @apply bg-gradient-to-b from-card/80 to-background/60 backdrop-blur-xl backdrop-saturate-150 border-r border-border/50; }
+  .sidebar-header-glass { @apply bg-gradient-to-br from-background/95 via-muted/20 to-background/90 backdrop-blur-2xl border-b border-border/30; }
+
+  /* Responsive grids */
+  .responsive-grid-2 { @apply grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 lg:gap-6; }
+  .responsive-grid-3 { @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 lg:gap-6; }
+  .responsive-grid-4 { @apply grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6; }
+
+  /* Responsive tabs */
+  .responsive-tabs { @apply overflow-x-auto -mx-3 px-3 sm:mx-0 sm:px-0; }
+  .responsive-tabs [role="tablist"] { @apply w-max sm:w-full; }
+
+  /* Overflow safety */
+  .overflow-safe { @apply w-full max-w-full overflow-x-hidden min-w-0; }
+  [class*="flex-1"] { min-width: 0; }
+  .table-responsive { @apply w-full overflow-x-auto -mx-1 px-1; }
+
+  @media (min-width: 768px) and (max-width: 1024px) {
+    .grid { gap: clamp(0.5rem, 1.5vw, 1rem); }
+  }
+}
