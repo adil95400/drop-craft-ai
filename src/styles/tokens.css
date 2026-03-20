@@ -69,19 +69,19 @@
     
     /* Sidebar specific tokens */
     --sidebar-background: 220 30% 99%;
-    --sidebar-foreground: 222.2 84% 4.9%;
-    --sidebar-primary: 221 83% 53%;
+    --sidebar-foreground: 222 84% 4.9%;
+    --sidebar-primary: 217 91% 60%;
     --sidebar-primary-foreground: 210 40% 98%;
-    --sidebar-accent: 221 70% 96%;
-    --sidebar-accent-foreground: 221 83% 35%;
+    --sidebar-accent: 258 80% 96%;
+    --sidebar-accent-foreground: 258 90% 45%;
     --sidebar-border: 220 20% 92%;
-    --sidebar-ring: 221 83% 53%;
+    --sidebar-ring: 217 91% 60%;
     --sidebar-muted: 220 25% 96%;
     --sidebar-muted-foreground: 220 10% 50%;
     --sidebar-header-bg: 220 30% 98%;
-    --sidebar-group-hover: 221 70% 97%;
-    --sidebar-item-active-bg: 221 83% 53%;
-    --sidebar-item-active-glow: 221 83% 60%;
+    --sidebar-group-hover: 258 70% 97%;
+    --sidebar-item-active-bg: 217 91% 60%;
+    --sidebar-item-active-glow: 258 90% 66%;
     
     /* Gradients */
     --gradient-primary: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--primary-glow)) 50%, hsl(221 90% 68%) 100%);
