@@ -93,17 +93,17 @@ Deno.serve(async (req) => {
 })
 
 async function analyzeDemand(productData: any) {
-  const apiKey = Deno.env.get('LOVABLE_API_KEY')
+  const apiKey = Deno.env.get('OPENAI_API_KEY')
   if (!apiKey) {
     return { trend: 'stable', avgDemandPerDay: 1, seasonality: {}, forecast: { next7Days: 7, next30Days: 30 }, variability: 'medium', accuracy: 70 }
   }
 
   try {
-    const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        model: 'openai/gpt-5-nano',
+        model: 'gpt-4o-mini',
         messages: [
           { role: 'system', content: 'Expert en gestion de stock. Analyse et retourne du JSON uniquement.' },
           { role: 'user', content: `Analyse demande: stock=${productData.currentStock}, commandes=${productData.orderHistory.length}. Retourne JSON: { "trend": "stable|up|down", "avgDemandPerDay": number, "seasonality": {}, "forecast": { "next7Days": number, "next30Days": number }, "variability": "low|medium|high", "accuracy": number }` }

@@ -29,9 +29,9 @@ serve(async (req) => {
 
     const { productData, videoStyle = 'tiktok', duration = 15 } = await req.json();
 
-    const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
-    if (!LOVABLE_API_KEY) {
-      throw new Error('LOVABLE_API_KEY not configured');
+    const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY');
+    if (!OPENAI_API_KEY) {
+      throw new Error('OPENAI_API_KEY not configured');
     }
 
     console.log('🎬 Generating TikTok-style video frames for product:', productData.name);
@@ -58,14 +58,14 @@ Return JSON:
   "captions": ["text 1", "text 2", ...]
 }`;
 
-    const scriptResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+    const scriptResponse = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${LOVABLE_API_KEY}`,
+        'Authorization': `Bearer ${OPENAI_API_KEY}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'openai/gpt-5-nano',
+        model: 'gpt-4o-mini',
         messages: [
           { role: 'system', content: 'You are a viral TikTok content strategist specializing in product videos.' },
           { role: 'user', content: scriptPrompt }
@@ -91,10 +91,10 @@ Return JSON:
       const framePrompt = `Professional product video frame for TikTok: ${cue}. ${productData.name}. High quality, vibrant, trending style, vertical 9:16 format, eye-catching composition.`;
 
       try {
-        const frameResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+        const frameResponse = await fetch('https://api.openai.com/v1/chat/completions', {
           method: 'POST',
           headers: {
-            'Authorization': `Bearer ${LOVABLE_API_KEY}`,
+            'Authorization': `Bearer ${OPENAI_API_KEY}`,
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({

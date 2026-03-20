@@ -206,8 +206,8 @@ serve(async (req) => {
       ? productContext.substring(0, 200) 
       : 'e-commerce product';
 
-    const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
-    if (!LOVABLE_API_KEY) {
+    const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY');
+    if (!OPENAI_API_KEY) {
       throw new Error('AI service not configured');
     }
 
@@ -226,14 +226,14 @@ serve(async (req) => {
     const enhancePrompt = `${instruction}. Product: ${safeProductContext}. Maintain product authenticity.`;
 
     // Enhance image using AI
-    const enhanceResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+    const enhanceResponse = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${LOVABLE_API_KEY}`,
+        'Authorization': `Bearer ${OPENAI_API_KEY}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'openai/gpt-5-nano',
+        model: 'gpt-4o-mini',
         messages: [
           {
             role: 'user',
@@ -276,14 +276,14 @@ serve(async (req) => {
   "recommendations": ["recommendation 1"]
 }`;
 
-      const analysisResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+      const analysisResponse = await fetch('https://api.openai.com/v1/chat/completions', {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${LOVABLE_API_KEY}`,
+          'Authorization': `Bearer ${OPENAI_API_KEY}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          model: 'openai/gpt-5-nano',
+          model: 'gpt-4o-mini',
           messages: [
             {
               role: 'user',
@@ -323,7 +323,7 @@ serve(async (req) => {
         enhancementType,
         qualityAnalysis,
         processing: {
-          model: 'openai/gpt-5-nano',
+          model: 'gpt-4o-mini',
           method: 'ai-enhancement'
         }
       }),

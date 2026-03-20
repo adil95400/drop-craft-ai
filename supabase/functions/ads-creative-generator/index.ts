@@ -15,9 +15,9 @@ serve(async (req) => {
   try {
     const { campaignId, name, adType, headline, description, callToAction, aiPrompt } = await req.json();
     
-    const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
-    if (!LOVABLE_API_KEY) {
-      throw new Error('LOVABLE_API_KEY is not configured');
+    const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY');
+    if (!OPENAI_API_KEY) {
+      throw new Error('OPENAI_API_KEY is not configured');
     }
 
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
@@ -41,10 +41,10 @@ serve(async (req) => {
       const imagePrompt = `Create a professional advertising image: ${aiPrompt}. 
 High quality, suitable for ${adType} format, eye-catching and engaging.`;
 
-      const imageResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+      const imageResponse = await fetch('https://api.openai.com/v1/chat/completions', {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${LOVABLE_API_KEY}`,
+          'Authorization': `Bearer ${OPENAI_API_KEY}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
@@ -72,14 +72,14 @@ Type: ${adType}
 Consider: clarity, engagement, call-to-action strength, visual appeal.
 Return only a number between 0-100.`;
 
-    const scoreResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+    const scoreResponse = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${LOVABLE_API_KEY}`,
+        'Authorization': `Bearer ${OPENAI_API_KEY}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'openai/gpt-5-nano',
+        model: 'gpt-4o-mini',
         messages: [
           { role: 'system', content: 'You are an advertising expert. Return only numbers.' },
           { role: 'user', content: scorePrompt }

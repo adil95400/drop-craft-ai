@@ -9,7 +9,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { requireAuth, handlePreflight, errorResponse, successResponse } from "../_shared/jwt-auth.ts";
 
-const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+const OPENAI_API_KEY = Deno.env.get("OPENAI_API_KEY");
 
 serve(async (req) => {
   const preflight = handlePreflight(req);
@@ -91,7 +91,7 @@ async function generateAllRecommendations(userId: string, supabase: any, corsHea
   const avgOrderValue = orders?.length ? (totalRevenue / orders.length).toFixed(2) : "0";
 
   // 5. Call Lovable AI for intelligent recommendations
-  if (!LOVABLE_API_KEY) {
+  if (!OPENAI_API_KEY) {
     return errorResponse("AI service not configured", corsHeaders, 503);
   }
 
@@ -130,14 +130,14 @@ Types de recommandations attendus:
 - trending: produits avec potentiel de croissance
 - bundle: combinaisons de produits à promouvoir`;
 
-  const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+  const aiResponse = await fetch("https://api.openai.com/v1/chat/completions", {
     method: "POST",
     headers: {
-      Authorization: `Bearer ${LOVABLE_API_KEY}`,
+      Authorization: `Bearer ${OPENAI_API_KEY}`,
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      model: "openai/gpt-5-nano",
+      model: "gpt-4o-mini",
       messages: [
         { role: "system", content: "Tu es un moteur de recommandation e-commerce. Réponds toujours en JSON valide, sans markdown." },
         { role: "user", content: prompt },

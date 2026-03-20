@@ -250,11 +250,11 @@ async function compareSupplierPrices(req: Request, auth: Auth, reqId: string) {
 
 // ── AI ───────────────────────────────────────────────────────────
 async function aiCallGateway(systemPrompt: string, userPrompt: string, reqId: string) {
-  const apiKey = Deno.env.get("LOVABLE_API_KEY");
-  if (!apiKey) return errorResponse("CONFIG_ERROR", "LOVABLE_API_KEY not configured", 500, reqId);
-  const resp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+  const apiKey = Deno.env.get("OPENAI_API_KEY");
+  if (!apiKey) return errorResponse("CONFIG_ERROR", "OPENAI_API_KEY not configured", 500, reqId);
+  const resp = await fetch("https://api.openai.com/v1/chat/completions", {
     method: "POST", headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
-    body: JSON.stringify({ model: "openai/gpt-5-nano", messages: [{ role: "system", content: systemPrompt }, { role: "user", content: userPrompt }], temperature: 0.4 }),
+    body: JSON.stringify({ model: "gpt-4o-mini", messages: [{ role: "system", content: systemPrompt }, { role: "user", content: userPrompt }], temperature: 0.4 }),
   });
   if (!resp.ok) {
     if (resp.status === 429) return errorResponse("RATE_LIMITED", "AI rate limited", 429, reqId);

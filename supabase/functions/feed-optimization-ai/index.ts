@@ -40,17 +40,17 @@ serve(async (req) => {
 
   try {
     const { action, products, feedType } = await req.json();
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+    const OPENAI_API_KEY = Deno.env.get("OPENAI_API_KEY");
     
-    if (!LOVABLE_API_KEY) {
-      throw new Error("LOVABLE_API_KEY is not configured");
+    if (!OPENAI_API_KEY) {
+      throw new Error("OPENAI_API_KEY is not configured");
     }
 
     console.log(`[feed-optimization-ai] Action: ${action}, Products: ${products?.length || 0}`);
 
     if (action === 'analyze') {
       // Analyze products for optimization opportunities
-      const results = await analyzeProducts(products, feedType, LOVABLE_API_KEY);
+      const results = await analyzeProducts(products, feedType, OPENAI_API_KEY);
       return new Response(JSON.stringify({ results }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
@@ -58,7 +58,7 @@ serve(async (req) => {
 
     if (action === 'optimize') {
       // Optimize product content with AI
-      const results = await optimizeProducts(products, feedType, LOVABLE_API_KEY);
+      const results = await optimizeProducts(products, feedType, OPENAI_API_KEY);
       return new Response(JSON.stringify({ results }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
@@ -66,7 +66,7 @@ serve(async (req) => {
 
     if (action === 'recommendations') {
       // Get AI recommendations for feed improvement
-      const recommendations = await getRecommendations(products, feedType, LOVABLE_API_KEY);
+      const recommendations = await getRecommendations(products, feedType, OPENAI_API_KEY);
       return new Response(JSON.stringify({ recommendations }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
@@ -202,14 +202,14 @@ Réponds en JSON avec ce format exact:
   "suggestions": ["suggestion 1", "suggestion 2", "suggestion 3"]
 }`;
 
-      const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+      const response = await fetch("https://api.openai.com/v1/chat/completions", {
         method: "POST",
         headers: {
           Authorization: `Bearer ${apiKey}`,
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          model: "openai/gpt-5-nano",
+          model: "gpt-4o-mini",
           messages: [
             { role: "system", content: "Tu es un expert SEO e-commerce. Réponds uniquement en JSON valide." },
             { role: "user", content: prompt }
@@ -284,14 +284,14 @@ Réponds en JSON:
 }`;
 
   try {
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    const response = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
       headers: {
         Authorization: `Bearer ${apiKey}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "openai/gpt-5-nano",
+        model: "gpt-4o-mini",
         messages: [
           { role: "system", content: "Tu es un expert en optimisation de flux e-commerce. Réponds en JSON valide." },
           { role: "user", content: prompt }

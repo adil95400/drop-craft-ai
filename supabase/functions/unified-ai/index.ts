@@ -19,14 +19,14 @@ import { secureUpdate } from '../_shared/db-helpers.ts'
 
 const supabaseUrl = Deno.env.get('SUPABASE_URL')!
 const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
-const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY')!
-const AI_GATEWAY_URL = 'https://ai.gateway.lovable.dev/v1/chat/completions'
+const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY')!
+const AI_GATEWAY_URL = 'https://api.openai.com/v1/chat/completions'
 
 async function callAI(systemPrompt: string, userPrompt: string, options: { temperature?: number; maxTokens?: number; useToolCalling?: boolean; tools?: any[] } = {}) {
-  if (!LOVABLE_API_KEY) throw new Error('AI service not configured')
+  if (!OPENAI_API_KEY) throw new Error('AI service not configured')
 
   const body: any = {
-    model: 'openai/gpt-5-nano',
+    model: 'gpt-4o-mini',
     messages: [
       { role: 'system', content: systemPrompt },
       { role: 'user', content: userPrompt }
@@ -43,7 +43,7 @@ async function callAI(systemPrompt: string, userPrompt: string, options: { tempe
   const response = await fetch(AI_GATEWAY_URL, {
     method: 'POST',
     headers: {
-      'Authorization': `Bearer ${LOVABLE_API_KEY}`,
+      'Authorization': `Bearer ${OPENAI_API_KEY}`,
       'Content-Type': 'application/json',
     },
     body: JSON.stringify(body),

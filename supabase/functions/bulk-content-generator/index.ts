@@ -20,8 +20,8 @@ serve(async (req) => {
 
     const { jobId, jobType, inputData } = await req.json();
     
-    const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
-    if (!LOVABLE_API_KEY) throw new Error('LOVABLE_API_KEY is not configured');
+    const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY');
+    if (!OPENAI_API_KEY) throw new Error('OPENAI_API_KEY is not configured');
 
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')!;
@@ -97,14 +97,14 @@ serve(async (req) => {
             toolParams.alt_text_variants = { type: "array", items: { type: "string" }, description: "3 variantes de texte alternatif pour les images secondaires du produit" };
           }
 
-          const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+          const response = await fetch('https://api.openai.com/v1/chat/completions', {
             method: 'POST',
             headers: {
-              'Authorization': `Bearer ${LOVABLE_API_KEY}`,
+              'Authorization': `Bearer ${OPENAI_API_KEY}`,
               'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-              model: 'openai/gpt-5-nano',
+              model: 'gpt-4o-mini',
               messages: [
                 { role: 'system', content: systemPrompt },
                 { role: 'user', content: userPrompt }
@@ -180,14 +180,14 @@ serve(async (req) => {
         } else if (jobType === 'videos') {
           const videoPrompt = `Create a ${inputData.duration}-second ${inputData.videoStyle} video script for:\nProduct: ${product.name}\nDescription: ${product.description}\nPrice: ${product.price}\n\nReturn a JSON with: hook, problem, solution, cta`;
 
-          const videoResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+          const videoResponse = await fetch('https://api.openai.com/v1/chat/completions', {
             method: 'POST',
             headers: {
-              'Authorization': `Bearer ${LOVABLE_API_KEY}`,
+              'Authorization': `Bearer ${OPENAI_API_KEY}`,
               'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-              model: 'openai/gpt-5-nano',
+              model: 'gpt-4o-mini',
               messages: [
                 { role: 'system', content: 'You are a viral video script creator. Return only valid JSON.' },
                 { role: 'user', content: videoPrompt }
@@ -213,10 +213,10 @@ serve(async (req) => {
         } else if (jobType === 'images') {
           const imagePrompt = `Create a professional ${inputData.imageStyle} product image:\nProduct: ${product.name}\nDescription: ${product.description}\nVisual prompt: ${inputData.visualPrompt}\nAspect ratio: ${inputData.aspectRatio}\n\nGenerate a clean, professional product photo suitable for e-commerce.`;
 
-          const imageResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+          const imageResponse = await fetch('https://api.openai.com/v1/chat/completions', {
             method: 'POST',
             headers: {
-              'Authorization': `Bearer ${LOVABLE_API_KEY}`,
+              'Authorization': `Bearer ${OPENAI_API_KEY}`,
               'Content-Type': 'application/json',
             },
             body: JSON.stringify({

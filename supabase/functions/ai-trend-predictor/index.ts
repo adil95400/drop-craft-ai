@@ -4,7 +4,7 @@
  */
 import { requireAuth, handlePreflight, successResponse, errorResponse } from '../_shared/jwt-auth.ts'
 
-const AI_GATEWAY_URL = 'https://ai.gateway.lovable.dev/v1/chat/completions'
+const AI_GATEWAY_URL = 'https://api.openai.com/v1/chat/completions'
 
 Deno.serve(async (req) => {
   const preflight = handlePreflight(req)
@@ -16,8 +16,8 @@ Deno.serve(async (req) => {
 
     if (!product_name) throw new Error('product_name requis')
 
-    const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY')
-    if (!LOVABLE_API_KEY) throw new Error('AI service not configured')
+    const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY')
+    if (!OPENAI_API_KEY) throw new Error('AI service not configured')
 
     // Fetch real data for context
     const [trendRes, viralRes, ordersRes] = await Promise.all([
@@ -39,9 +39,9 @@ Deno.serve(async (req) => {
     // Call AI for deep analysis
     const aiResponse = await fetch(AI_GATEWAY_URL, {
       method: 'POST',
-      headers: { 'Authorization': `Bearer ${LOVABLE_API_KEY}`, 'Content-Type': 'application/json' },
+      headers: { 'Authorization': `Bearer ${OPENAI_API_KEY}`, 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        model: 'openai/gpt-5-nano',
+        model: 'gpt-4o-mini',
         messages: [
           { role: 'system', content: `Tu es un analyste de tendances e-commerce expert. Analyse les signaux de marché et prédit la trajectoire d'un produit. Réponds UNIQUEMENT en JSON valide.` },
           { role: 'user', content: `Analyse la tendance pour le produit "${product_name}".

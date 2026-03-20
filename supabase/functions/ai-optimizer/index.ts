@@ -116,9 +116,9 @@ serve(async (req) => {
 async function optimizeSEO(productData: any, preferences: any) {
   console.log('🔍 Optimizing SEO with AI...')
   
-  const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY')
-  if (!LOVABLE_API_KEY) {
-    console.warn('LOVABLE_API_KEY not configured, using fallback optimization')
+  const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY')
+  if (!OPENAI_API_KEY) {
+    console.warn('OPENAI_API_KEY not configured, using fallback optimization')
     
     // Fallback optimization sans IA
     return {
@@ -161,14 +161,14 @@ async function optimizeSEO(productData: any, preferences: any) {
   `
 
   try {
-    const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${LOVABLE_API_KEY}`,
+        'Authorization': `Bearer ${OPENAI_API_KEY}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'openai/gpt-5-nano',
+        model: 'gpt-4o-mini',
         messages: [
           { role: 'system', content: 'Tu es un expert SEO e-commerce. Réponds uniquement en JSON valide.' },
           { role: 'user', content: seoPrompt }
@@ -190,7 +190,7 @@ async function optimizeSEO(productData: any, preferences: any) {
       confidence: 0.92,
       ...seoOptimization,
       processing_time_ms: Date.now(),
-      ai_model: 'openai/gpt-5-nano'
+      ai_model: 'gpt-4o-mini'
     }
   } catch (error) {
     console.error('SEO optimization error:', error)

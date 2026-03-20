@@ -38,8 +38,8 @@ Deno.serve(async (req) => {
       }
 
       case 'analyze_lead_score': {
-        const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY')
-        if (!LOVABLE_API_KEY) return errorResponse('LOVABLE_API_KEY not configured', corsHeaders, 500)
+        const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY')
+        if (!OPENAI_API_KEY) return errorResponse('OPENAI_API_KEY not configured', corsHeaders, 500)
 
         if (!data.contact_id) return errorResponse('contact_id required', corsHeaders, 400)
 
@@ -47,11 +47,11 @@ Deno.serve(async (req) => {
         const { data: contact, error } = await supabase.from('crm_contacts').select('*').eq('id', data.contact_id).single()
         if (error || !contact) return errorResponse('Contact not found', corsHeaders, 404)
 
-        const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+        const response = await fetch('https://api.openai.com/v1/chat/completions', {
           method: 'POST',
-          headers: { Authorization: `Bearer ${LOVABLE_API_KEY}`, 'Content-Type': 'application/json' },
+          headers: { Authorization: `Bearer ${OPENAI_API_KEY}`, 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            model: 'openai/gpt-5-nano',
+            model: 'gpt-4o-mini',
             messages: [
               { role: 'system', content: 'You are a CRM expert specializing in lead scoring.' },
               { role: 'user', content: `Analyze lead: ${contact.name}, ${contact.company}, score: ${contact.lead_score}, tags: ${contact.tags?.join(', ')}. Provide recommended score (0-100) and next actions.` },
@@ -70,14 +70,14 @@ Deno.serve(async (req) => {
       }
 
       case 'generate_email_template': {
-        const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY')
-        if (!LOVABLE_API_KEY) return errorResponse('LOVABLE_API_KEY not configured', corsHeaders, 500)
+        const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY')
+        if (!OPENAI_API_KEY) return errorResponse('OPENAI_API_KEY not configured', corsHeaders, 500)
 
-        const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+        const response = await fetch('https://api.openai.com/v1/chat/completions', {
           method: 'POST',
-          headers: { Authorization: `Bearer ${LOVABLE_API_KEY}`, 'Content-Type': 'application/json' },
+          headers: { Authorization: `Bearer ${OPENAI_API_KEY}`, 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            model: 'openai/gpt-5-nano',
+            model: 'gpt-4o-mini',
             messages: [
               { role: 'system', content: 'You are an expert email marketing copywriter for French e-commerce.' },
               { role: 'user', content: `Create email template for ${data.template_type || 'marketing'}, segment: ${data.target_segment || 'general'}, product: ${data.product_info || 'e-commerce'}. Include subject, body, CTA.` },

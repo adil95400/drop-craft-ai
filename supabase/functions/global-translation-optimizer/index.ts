@@ -95,7 +95,7 @@ serve(async (req) => {
     if (action === 'optimize') {
       console.log('Starting global translation optimization for locales:', targetLocales);
 
-      const lovableApiKey = Deno.env.get('LOVABLE_API_KEY');
+      const lovableApiKey = Deno.env.get('OPENAI_API_KEY');
       let translatedCount = 0;
 
       // Get untranslated products
@@ -121,14 +121,14 @@ serve(async (req) => {
 
               if (lovableApiKey) {
                 try {
-                  const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+                  const response = await fetch('https://api.openai.com/v1/chat/completions', {
                     method: 'POST',
                     headers: {
                       'Authorization': `Bearer ${lovableApiKey}`,
                       'Content-Type': 'application/json',
                     },
                     body: JSON.stringify({
-                      model: 'openai/gpt-5-nano',
+                      model: 'gpt-4o-mini',
                       messages: [
                         {
                           role: 'system',

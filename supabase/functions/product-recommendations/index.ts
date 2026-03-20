@@ -64,7 +64,7 @@ serve(async (req) => {
       }
 
       // Use AI to generate smart recommendations
-      const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
+      const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY');
       
       const productSummary = products.slice(0, 50).map(p => ({
         id: p.id,
@@ -84,15 +84,15 @@ serve(async (req) => {
 
       let aiRecommendations: any[] = [];
       
-      if (LOVABLE_API_KEY) {
-        const aiResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+      if (OPENAI_API_KEY) {
+        const aiResponse = await fetch('https://api.openai.com/v1/chat/completions', {
           method: 'POST',
           headers: {
-            Authorization: `Bearer ${LOVABLE_API_KEY}`,
+            Authorization: `Bearer ${OPENAI_API_KEY}`,
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            model: 'openai/gpt-5-nano',
+            model: 'gpt-4o-mini',
             messages: [
               {
                 role: 'system',

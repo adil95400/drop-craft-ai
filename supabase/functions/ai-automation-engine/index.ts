@@ -138,10 +138,10 @@ serve(async (req) => {
 });
 
 async function analyzeAutomationData(rule: any, inputData: any) {
-  const lovableApiKey = Deno.env.get('LOVABLE_API_KEY');
+  const lovableApiKey = Deno.env.get('OPENAI_API_KEY');
   
   if (!lovableApiKey) {
-    console.warn('LOVABLE_API_KEY not configured, using fallback analysis');
+    console.warn('OPENAI_API_KEY not configured, using fallback analysis');
     return {
       shouldTrigger: false,
       confidence: 0,
@@ -167,14 +167,14 @@ Répondez en JSON avec: shouldTrigger, confidence, riskLevel, recommendations, r
 `;
 
   try {
-    const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${lovableApiKey}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'openai/gpt-5-nano',
+        model: 'gpt-4o-mini',
         messages: [
           { 
             role: 'system', 

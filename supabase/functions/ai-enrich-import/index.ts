@@ -3,7 +3,7 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.53.0'
 
 // ── Versioned prompts ──────────────────────────────────────────────────
 const PROMPT_VERSION = '1.3.0'
-const MODEL = 'openai/gpt-5-nano'
+const MODEL = 'gpt-4o-mini'
 
 const SYSTEM_PROMPT = `Tu es un expert en e-commerce et SEO. Tu enrichis les fiches produits pour maximiser les conversions et le référencement naturel. Tu retournes uniquement du JSON valide structuré.`
 
@@ -44,9 +44,9 @@ Deno.serve(async (req) => {
       return errorResponse('product_ids required', corsHeaders, 400)
     }
 
-    const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY')
-    if (!LOVABLE_API_KEY) {
-      return errorResponse('LOVABLE_API_KEY not configured', corsHeaders, 500)
+    const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY')
+    if (!OPENAI_API_KEY) {
+      return errorResponse('OPENAI_API_KEY not configured', corsHeaders, 500)
     }
 
     // Create job (use service-scoped client for background work)
@@ -103,9 +103,9 @@ Deno.serve(async (req) => {
 
           const userPrompt = buildUserPrompt(product, language, tone)
 
-          const aiResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+          const aiResponse = await fetch('https://api.openai.com/v1/chat/completions', {
             method: 'POST',
-            headers: { Authorization: `Bearer ${LOVABLE_API_KEY}`, 'Content-Type': 'application/json' },
+            headers: { Authorization: `Bearer ${OPENAI_API_KEY}`, 'Content-Type': 'application/json' },
             body: JSON.stringify({
               model: MODEL,
               messages: [
