@@ -9,44 +9,18 @@ import { useNavigate, Link } from "react-router-dom";
 import { SEO } from "@/components/SEO";
 import { SoftwareAppSchema, OrganizationSchema } from "@/components/seo/StructuredData";
 import { StickyCtaBar } from "@/components/landing/StickyCtaBar";
-import { memo, useEffect } from "react";
+import { memo, useEffect, useState } from "react";
 import logoPng from "@/assets/logo-shopopti.png";
-
-// ─── FAQ DATA (for SEO schema + UI) ──────────────────────────────────────────
-const FAQ_DATA = [
-  {
-    q: "What is ShopOpti+ and how does it work?",
-    a: "ShopOpti+ is an AI-powered Shopify automation platform that helps merchants find winning products, automate pricing, inventory management, and order fulfillment. Connect your store in 2 minutes and let AI handle the heavy lifting while you focus on growth."
-  },
-  {
-    q: "How much time can I save with ShopOpti+?",
-    a: "Our merchants save an average of 20+ hours per week by automating repetitive tasks like price updates, inventory syncing, order processing, and SEO optimization. That's over 80 hours per month you can reinvest in growing your business."
-  },
-  {
-    q: "Does ShopOpti+ work with my existing Shopify store?",
-    a: "Yes! ShopOpti+ integrates seamlessly with any Shopify store, plus WooCommerce, PrestaShop, and 24+ other platforms. It connects with 99+ suppliers including AliExpress, Amazon, CJ Dropshipping, Spocket, and BigBuy."
-  },
-  {
-    q: "Is there a free trial? Do I need a credit card?",
-    a: "Yes, we offer a full-featured 14-day free trial with no credit card required. You get access to all Pro features during your trial so you can experience the full power of ShopOpti+ before committing."
-  },
-  {
-    q: "How does the AI product research work?",
-    a: "Our AI analyzes market trends, competitor pricing, supplier reliability, and profit margins across 99+ suppliers to score and rank products. It identifies trending items with high demand and healthy margins, giving you a competitive edge in product selection."
-  },
-  {
-    q: "Can I manage multiple stores with ShopOpti+?",
-    a: "Absolutely. Our Pro plan supports unlimited stores, and our Ultra Pro plan includes multi-tenant capabilities perfect for agencies managing 30+ client stores. All stores sync in real-time through a single dashboard."
-  },
-  {
-    q: "What kind of support do you offer?",
-    a: "We offer email support on Basic, priority 24/7 support on Pro, and a dedicated account manager on Ultra Pro. All plans include access to our documentation, academy, and help center."
-  },
-  {
-    q: "Is my data secure with ShopOpti+?",
-    a: "Yes. We use enterprise-grade encryption (AES-256), GDPR-compliant data handling, and SOC 2-aligned security practices. Your store data and API keys are always encrypted at rest and in transit."
-  },
-];
+import {
+  PLANS,
+  SOCIAL_PROOF,
+  TESTIMONIALS,
+  INTEGRATION_CATEGORIES,
+  ALL_PLATFORMS,
+  TOTAL_INTEGRATIONS,
+  FAQ_DATA,
+  type PlanConfig,
+} from "@/config/landingPageConfig";
 
 // ─── FAQ SCHEMA ──────────────────────────────────────────────────────────────
 const faqSchema = {
@@ -55,10 +29,7 @@ const faqSchema = {
   "mainEntity": FAQ_DATA.map(faq => ({
     "@type": "Question",
     "name": faq.q,
-    "acceptedAnswer": {
-      "@type": "Answer",
-      "text": faq.a,
-    }
+    "acceptedAnswer": { "@type": "Answer", "text": faq.a },
   }))
 };
 
@@ -72,28 +43,23 @@ const softwareSchema = {
   "description": "AI-powered Shopify automation platform for product research, dynamic pricing, inventory management, and revenue growth.",
   "offers": {
     "@type": "AggregateOffer",
-    "lowPrice": "29",
-    "highPrice": "199",
+    "lowPrice": String(PLANS[0].monthlyPrice),
+    "highPrice": String(PLANS[PLANS.length - 1].monthlyPrice),
     "priceCurrency": "USD",
-    "offerCount": "3"
+    "offerCount": String(PLANS.length),
   },
   "aggregateRating": {
     "@type": "AggregateRating",
-    "ratingValue": "4.8",
-    "reviewCount": "247",
+    "ratingValue": SOCIAL_PROOF.rating.replace('/5', ''),
+    "reviewCount": String(SOCIAL_PROOF.reviewCount),
     "bestRating": "5",
-    "worstRating": "1"
+    "worstRating": "1",
   },
   "featureList": [
-    "AI Product Research",
-    "Dynamic Pricing Automation",
-    "Inventory Sync",
-    "Order Auto-Fulfillment",
-    "SEO Optimization",
-    "Multi-Store Management",
-    "99+ Supplier Integrations",
-    "Real-Time Analytics"
-  ]
+    "AI Product Research", "Dynamic Pricing Automation", "Inventory Sync",
+    "Order Auto-Fulfillment", "SEO Optimization", "Multi-Store Management",
+    `${SOCIAL_PROOF.supplierCount} Supplier Integrations`, "Real-Time Analytics",
+  ],
 };
 
 // ─── HERO ────────────────────────────────────────────────────────────────────
@@ -101,7 +67,6 @@ const HeroSection = memo(() => {
   const navigate = useNavigate();
   return (
     <section className="relative py-20 md:py-28 lg:py-36 overflow-hidden" aria-label="Hero">
-      {/* Background layers */}
       <div className="absolute inset-0 bg-gradient-to-br from-primary/8 via-background to-accent/10" />
       <div className="absolute inset-0 bg-grid-white/10 bg-grid-16 [mask-image:radial-gradient(ellipse_80%_50%_at_50%_0%,white,transparent_70%)]" />
       <div className="absolute top-20 left-10 w-72 h-72 bg-primary/10 rounded-full blur-3xl animate-pulse" aria-hidden="true" />
@@ -167,14 +132,14 @@ const SocialProofBar = () => (
   <section className="py-12 bg-secondary/30 border-y border-border/40" aria-label="Key metrics">
     <div className="container mx-auto px-4 sm:px-6">
       <p className="text-center text-sm text-muted-foreground mb-8 font-medium uppercase tracking-wider">
-        Trusted by 2,000+ Shopify &amp; e-commerce merchants worldwide
+        Trusted by {SOCIAL_PROOF.merchantCount} Shopify &amp; e-commerce merchants worldwide
       </p>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-8 max-w-4xl mx-auto">
         {[
-          { value: "2,000+", label: "Active merchants", icon: Users },
-          { value: "20h+", label: "Saved per week", icon: Clock },
-          { value: "99+", label: "Suppliers connected", icon: Globe },
-          { value: "4.8/5", label: "Average rating", icon: Star },
+          { value: SOCIAL_PROOF.merchantCount, label: "Active merchants", icon: Users },
+          { value: SOCIAL_PROOF.timeSaved, label: "Saved per week", icon: Clock },
+          { value: SOCIAL_PROOF.supplierCount, label: "Suppliers connected", icon: Globe },
+          { value: SOCIAL_PROOF.rating, label: "Average rating", icon: Star },
         ].map((s, i) => (
           <div key={i} className="text-center space-y-2">
             <s.icon className="h-5 w-5 mx-auto text-primary/60" aria-hidden="true" />
@@ -240,9 +205,7 @@ const HowItWorksSection = () => {
         </div>
 
         <div className="grid md:grid-cols-3 gap-8 relative">
-          {/* Connecting line (desktop) */}
           <div className="hidden md:block absolute top-16 left-[20%] right-[20%] h-0.5 bg-gradient-to-r from-primary via-accent to-success" aria-hidden="true" />
-          
           {steps.map((step, i) => (
             <div key={i} className="relative text-center space-y-4">
               <div className={`w-14 h-14 rounded-2xl ${step.color} text-primary-foreground flex items-center justify-center mx-auto shadow-lg relative z-10`}>
@@ -270,25 +233,19 @@ const SolutionSection = () => {
   const navigate = useNavigate();
   const pillars = [
     {
-      icon: Search,
-      badge: "Find",
-      title: "AI Product Research",
-      desc: "Discover winning products across 99+ suppliers with AI-powered scoring. Instantly identify trending items, reliable suppliers, and high-margin opportunities before your competitors.",
+      icon: Search, badge: "Find", title: "AI Product Research",
+      desc: `Discover winning products across ${SOCIAL_PROOF.supplierCount} suppliers with AI-powered scoring. Instantly identify trending items, reliable suppliers, and high-margin opportunities before your competitors.`,
       features: ["AI product scoring & ranking", "Supplier reliability analysis", "Real-time trend detection", "Profit margin calculator"],
       color: "from-blue-500 to-cyan-500",
     },
     {
-      icon: Bot,
-      badge: "Automate",
-      title: "Full-Store Automation",
+      icon: Bot, badge: "Automate", title: "Full-Store Automation",
       desc: "Put your entire Shopify store on autopilot. Dynamic pricing, inventory sync across suppliers, one-click order fulfillment, and SEO auto-optimization — all powered by AI.",
       features: ["Dynamic pricing AI engine", "Real-time inventory sync", "One-click order fulfillment", "Automated SEO optimization"],
       color: "from-primary to-primary/60",
     },
     {
-      icon: LineChart,
-      badge: "Grow",
-      title: "Revenue Growth Engine",
+      icon: LineChart, badge: "Grow", title: "Revenue Growth Engine",
       desc: "Real-time analytics and predictive AI insights to scale faster. Track every metric, forecast trends, automate marketing, and outpace competitors with data-driven decisions.",
       features: ["Real-time revenue dashboards", "AI-powered predictions", "Marketing automation suite", "Competitor price tracking"],
       color: "from-green-500 to-emerald-500",
@@ -356,7 +313,7 @@ const WhyShopOptiSection = () => (
         {[
           { icon: Shield, title: "Enterprise Security", desc: "AES-256 encryption, GDPR compliant, SOC 2 aligned. Your data is always safe." },
           { icon: RefreshCw, title: "Real-Time Sync", desc: "Prices, inventory, and orders sync across all channels in real-time. Never oversell." },
-          { icon: Layers, title: "99+ Integrations", desc: "AliExpress, Amazon, CJ, Spocket, BigBuy, and 94 more suppliers connected." },
+          { icon: Layers, title: `${SOCIAL_PROOF.supplierCount} Integrations`, desc: "AliExpress, Amazon, CJ, Spocket, BigBuy, and 94 more suppliers connected." },
           { icon: HeadphonesIcon, title: "24/7 Priority Support", desc: "Expert e-commerce support team available around the clock on Pro and Ultra plans." },
         ].map((item, i) => (
           <Card key={i} className="text-center hover:shadow-md transition-shadow">
@@ -375,86 +332,89 @@ const WhyShopOptiSection = () => (
 );
 
 // ─── PROOF / TESTIMONIALS ────────────────────────────────────────────────────
-const ProofSection = () => {
-  const testimonials = [
-    {
-      quote: "ShopOpti+ saved me 20 hours a week. My revenue went up 40% in just 2 months — I wish I'd started sooner.",
-      author: "Marie D.",
-      role: "Shopify merchant, €50K/mo",
-      avatar: "M",
-      metric: "+40% revenue",
-    },
-    {
-      quote: "The AI pricing alone paid for itself in the first week. It automatically adjusts my margins based on demand. Game changer.",
-      author: "Thomas M.",
-      role: "Dropshipping pro, 3 stores",
-      avatar: "T",
-      metric: "3x ROI in 7 days",
-    },
-    {
-      quote: "We manage 30+ client stores through ShopOpti+. The multi-tenant setup and API are enterprise-grade. Best tool in our stack.",
-      author: "Sophie L.",
-      role: "CEO, E-commerce Agency",
-      avatar: "S",
-      metric: "30+ stores managed",
-    },
-  ];
-
-  return (
-    <section className="py-16 lg:py-24" aria-label="Customer testimonials">
-      <div className="container mx-auto px-4 sm:px-6">
-        <div className="text-center space-y-4 mb-12">
-          <Badge className="px-4 py-2 bg-warning/15 text-warning border-warning/30">Social Proof</Badge>
-          <h2 className="text-3xl md:text-4xl font-bold">Merchants love ShopOpti+</h2>
-          <p className="text-lg text-muted-foreground">Join 2,000+ sellers who scaled their stores with AI automation.</p>
-        </div>
-
-        <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
-          {testimonials.map((t, i) => (
-            <Card key={i} className="hover:shadow-lg transition-shadow">
-              <CardContent className="pt-6 space-y-4">
-                <Badge variant="outline" className="bg-success/10 text-success border-success/30 text-xs">{t.metric}</Badge>
-                <div className="flex gap-1" aria-label={`5 out of 5 stars`}>
-                  {[...Array(5)].map((_, j) => <Star key={j} className="h-4 w-4 fill-warning text-warning" aria-hidden="true" />)}
-                </div>
-                <blockquote className="text-muted-foreground italic leading-relaxed">"{t.quote}"</blockquote>
-                <div className="flex items-center gap-3 pt-2">
-                  <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-semibold text-sm" aria-hidden="true">{t.avatar}</div>
-                  <div>
-                    <div className="font-semibold text-sm">{t.author}</div>
-                    <div className="text-xs text-muted-foreground">{t.role}</div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+const ProofSection = () => (
+  <section className="py-16 lg:py-24" aria-label="Customer testimonials">
+    <div className="container mx-auto px-4 sm:px-6">
+      <div className="text-center space-y-4 mb-12">
+        <Badge className="px-4 py-2 bg-warning/15 text-warning border-warning/30">Social Proof</Badge>
+        <h2 className="text-3xl md:text-4xl font-bold">Merchants love ShopOpti+</h2>
+        <p className="text-lg text-muted-foreground">Join {SOCIAL_PROOF.merchantCount} sellers who scaled their stores with AI automation.</p>
       </div>
-    </section>
-  );
-};
+
+      <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+        {TESTIMONIALS.map((t, i) => (
+          <Card key={i} className="hover:shadow-lg transition-shadow">
+            <CardContent className="pt-6 space-y-4">
+              <Badge variant="outline" className="bg-success/10 text-success border-success/30 text-xs">{t.metric}</Badge>
+              <div className="flex gap-1" aria-label="5 out of 5 stars">
+                {[...Array(5)].map((_, j) => <Star key={j} className="h-4 w-4 fill-warning text-warning" aria-hidden="true" />)}
+              </div>
+              <blockquote className="text-muted-foreground italic leading-relaxed">"{t.quote}"</blockquote>
+              <div className="flex items-center gap-3 pt-2">
+                <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-semibold text-sm" aria-hidden="true">{t.avatar}</div>
+                <div>
+                  <div className="font-semibold text-sm">{t.author}</div>
+                  <div className="text-xs text-muted-foreground">{t.role}</div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+    </div>
+  </section>
+);
 
 // ─── INTEGRATIONS ────────────────────────────────────────────────────────────
 const IntegrationsSection = () => {
   const navigate = useNavigate();
-  const platforms = [
-    "Shopify", "WooCommerce", "AliExpress", "Amazon", "eBay",
-    "BigBuy", "Spocket", "CJ Dropshipping", "TikTok Shop", "Etsy",
-    "PrestaShop", "Google Shopping",
-  ];
+  const [activeCategory, setActiveCategory] = useState<string | null>(null);
+
+  const visiblePlatforms = activeCategory
+    ? INTEGRATION_CATEGORIES.find(c => c.label === activeCategory)?.platforms ?? []
+    : ALL_PLATFORMS;
+
+  const remaining = TOTAL_INTEGRATIONS - ALL_PLATFORMS.length;
+
   return (
     <section className="py-16 lg:py-24 bg-secondary/20" aria-label="Integrations">
       <div className="container mx-auto px-4 sm:px-6 text-center">
         <Badge className="px-4 py-2 bg-primary/10 text-primary border-primary/20 mb-4">Integrations</Badge>
         <h2 className="text-3xl md:text-4xl font-bold mb-4">Connects with your entire e-commerce stack</h2>
-        <p className="text-lg text-muted-foreground max-w-xl mx-auto mb-10">
-          99+ suppliers and 24+ selling platforms, all synced in real time. One dashboard to rule them all.
+        <p className="text-lg text-muted-foreground max-w-xl mx-auto mb-8">
+          {TOTAL_INTEGRATIONS}+ suppliers and 24+ selling platforms, all synced in real time.
         </p>
+
+        {/* Category filters */}
+        <div className="flex flex-wrap justify-center gap-2 mb-8">
+          <Button
+            variant={activeCategory === null ? "default" : "outline"}
+            size="sm"
+            onClick={() => setActiveCategory(null)}
+          >
+            All
+          </Button>
+          {INTEGRATION_CATEGORIES.map(cat => (
+            <Button
+              key={cat.label}
+              variant={activeCategory === cat.label ? "default" : "outline"}
+              size="sm"
+              onClick={() => setActiveCategory(cat.label)}
+            >
+              {cat.label}
+            </Button>
+          ))}
+        </div>
+
         <div className="flex flex-wrap justify-center gap-3 max-w-3xl mx-auto">
-          {platforms.map((p) => (
+          {visiblePlatforms.map((p) => (
             <Badge key={p} variant="outline" className="px-4 py-2.5 text-sm bg-background hover:bg-primary/5 transition-colors">{p}</Badge>
           ))}
-          <Badge variant="outline" className="px-4 py-2.5 text-sm bg-primary/5 border-primary/30 text-primary font-semibold">+87 more</Badge>
+          {!activeCategory && (
+            <Badge variant="outline" className="px-4 py-2.5 text-sm bg-primary/5 border-primary/30 text-primary font-semibold">
+              +{remaining} more
+            </Badge>
+          )}
         </div>
         <Button variant="outline" className="mt-10" onClick={() => navigate('/integrations')}>
           View All Integrations <ArrowRight className="w-4 h-4 ml-2" />
@@ -464,55 +424,83 @@ const IntegrationsSection = () => {
   );
 };
 
-// ─── PRICING PREVIEW ─────────────────────────────────────────────────────────
+// ─── PRICING PREVIEW (with monthly/annual toggle) ────────────────────────────
 const PricingPreviewSection = () => {
   const navigate = useNavigate();
-  const plans = [
-    { name: "Basic", price: "$29", period: "/mo", desc: "For new merchants getting started", features: ["500 products", "1 store", "AI optimization", "Email support", "Basic analytics"], cta: "Start Free Trial", popular: false },
-    { name: "Pro", price: "$79", period: "/mo", desc: "For growing stores ready to scale", features: ["10,000 products", "Unlimited stores", "Advanced AI + Predictive Analytics", "Priority support 24/7", "Marketing automation", "Competitor tracking"], cta: "Start Free Trial", popular: true },
-    { name: "Ultra Pro", price: "$199", period: "/mo", desc: "For power sellers & agencies", features: ["Unlimited products", "Multi-tenant dashboard", "Dedicated REST API", "Account manager", "Custom integrations", "White-label options"], cta: "Contact Sales", popular: false },
-  ];
+  const [isAnnual, setIsAnnual] = useState(false);
+
+  const annualSavings = (plan: PlanConfig) => {
+    const diff = plan.monthlyPrice - plan.annualPrice;
+    return Math.round((diff / plan.monthlyPrice) * 100);
+  };
 
   return (
     <section className="py-16 lg:py-24" aria-label="Pricing plans">
       <div className="container mx-auto px-4 sm:px-6">
-        <div className="text-center space-y-4 mb-14">
+        <div className="text-center space-y-4 mb-10">
           <Badge className="px-4 py-2 bg-primary/10 text-primary border-primary/20">Pricing</Badge>
           <h2 className="text-3xl md:text-4xl font-bold">Simple, transparent pricing</h2>
           <p className="text-lg text-muted-foreground">Start free for 14 days. No credit card required. Scale as you grow.</p>
         </div>
 
+        {/* Monthly / Annual toggle */}
+        <div className="flex items-center justify-center gap-3 mb-10">
+          <span className={`text-sm font-medium ${!isAnnual ? 'text-foreground' : 'text-muted-foreground'}`}>Monthly</span>
+          <button
+            onClick={() => setIsAnnual(!isAnnual)}
+            className={`relative inline-flex h-7 w-14 items-center rounded-full transition-colors ${isAnnual ? 'bg-primary' : 'bg-muted'}`}
+            aria-label="Toggle annual billing"
+          >
+            <span className={`inline-block h-5 w-5 transform rounded-full bg-background shadow-sm transition-transform ${isAnnual ? 'translate-x-8' : 'translate-x-1'}`} />
+          </button>
+          <span className={`text-sm font-medium ${isAnnual ? 'text-foreground' : 'text-muted-foreground'}`}>
+            Annual
+            <Badge className="ml-2 bg-success/15 text-success border-success/30 text-xs">Save 20%</Badge>
+          </span>
+        </div>
+
         <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
-          {plans.map((p, i) => (
-            <Card key={i} className={`relative ${p.popular ? 'border-primary border-2 shadow-xl scale-[1.02]' : 'border-2'}`}>
-              {p.popular && <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground shadow-md">Most Popular</Badge>}
-              <CardHeader>
-                <CardTitle className="text-xl">{p.name}</CardTitle>
-                <CardDescription>{p.desc}</CardDescription>
-                <div className="pt-4">
-                  <span className="text-4xl font-bold">{p.price}</span>
-                  <span className="text-muted-foreground">{p.period}</span>
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <ul className="space-y-2.5 text-sm">
-                  {p.features.map((f, j) => (
-                    <li key={j} className="flex items-center gap-2">
-                      <CheckCircle2 className="h-4 w-4 text-success flex-shrink-0" aria-hidden="true" />
-                      <span>{f}</span>
-                    </li>
-                  ))}
-                </ul>
-                <Button
-                  className="w-full"
-                  variant={p.popular ? 'default' : 'outline'}
-                  onClick={() => navigate(p.name === 'Ultra Pro' ? '/contact' : '/auth?trial=true')}
-                >
-                  {p.cta}
-                </Button>
-              </CardContent>
-            </Card>
-          ))}
+          {PLANS.map((p, i) => {
+            const price = isAnnual ? p.annualPrice : p.monthlyPrice;
+            return (
+              <Card key={i} className={`relative ${p.popular ? 'border-primary border-2 shadow-xl scale-[1.02]' : 'border-2'}`}>
+                {p.popular && <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground shadow-md">Most Popular</Badge>}
+                <CardHeader>
+                  <CardTitle className="text-xl">{p.name}</CardTitle>
+                  <CardDescription>{p.desc}</CardDescription>
+                  <div className="pt-4">
+                    <span className="text-4xl font-bold">${price}</span>
+                    <span className="text-muted-foreground">/mo</span>
+                    {isAnnual && (
+                      <Badge variant="outline" className="ml-3 text-xs bg-success/10 text-success border-success/30">
+                        -{annualSavings(p)}%
+                      </Badge>
+                    )}
+                  </div>
+                  {isAnnual && (
+                    <p className="text-xs text-muted-foreground">Billed ${price * 12}/year</p>
+                  )}
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <ul className="space-y-2.5 text-sm">
+                    {p.features.map((f, j) => (
+                      <li key={j} className="flex items-center gap-2">
+                        <CheckCircle2 className="h-4 w-4 text-success flex-shrink-0" aria-hidden="true" />
+                        <span>{f}</span>
+                      </li>
+                    ))}
+                  </ul>
+                  <Button
+                    className="w-full"
+                    variant={p.popular ? 'default' : 'outline'}
+                    onClick={() => navigate(p.contactSales ? '/contact' : '/auth?trial=true')}
+                  >
+                    {p.cta}
+                  </Button>
+                </CardContent>
+              </Card>
+            );
+          })}
         </div>
         <div className="text-center mt-8">
           <Button variant="link" onClick={() => navigate('/pricing')}>
@@ -558,7 +546,7 @@ const FinalCTASection = () => {
       <div className="container mx-auto px-4 sm:px-6 text-center max-w-3xl space-y-8">
         <h2 className="text-3xl md:text-5xl font-bold leading-tight">Ready to put your Shopify store on autopilot?</h2>
         <p className="text-lg md:text-xl opacity-90">
-          Join 2,000+ merchants saving 20+ hours/week and growing revenue 40% faster with ShopOpti+.
+          Join {SOCIAL_PROOF.merchantCount} merchants saving {SOCIAL_PROOF.timeSaved}/week and growing revenue 40% faster with ShopOpti+.
         </p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
           <Button size="lg" variant="secondary" className="px-8 py-6 text-lg font-semibold" onClick={() => navigate('/auth?trial=true')}>
@@ -601,8 +589,6 @@ const Index = () => {
         jsonLd={softwareSchema}
       />
       <OrganizationSchema />
-
-      {/* FAQ Schema for rich snippets */}
       <SEO title="" description="" jsonLd={faqSchema} />
 
       <main>
