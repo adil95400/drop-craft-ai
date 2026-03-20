@@ -1,104 +1,56 @@
 # Edge Functions Consolidation Map
 # Target: ~387 functions → ~80 hubs
 
-## ✅ Already Consolidated
+## ✅ Already Consolidated (Phase 1 — AI)
 | Hub | Replaces | Status |
 |-----|----------|--------|
-| `unified-ai` | ai-optimizer, ai-product-description, ai-product-descriptions, ai-seo-optimizer, ai-content-generator, ai-marketing-content, ai-price-optimizer, ai-recommendations-engine | ✅ Active |
+| `unified-ai` | 21 AI functions (ai-optimizer, ai-product-descriptions, ai-seo-optimizer, ai-content-generator, ai-marketing-content, ai-price-optimizer, ai-recommendations-engine, ai-demand-predictor, ai-dynamic-pricing, ai-optimize-product, ai-pricing-optimizer, ai-social-posts + 9 more) | ✅ Active + proxys |
 | `api-v1` | Multiple CRUD endpoints | ✅ Active |
 | `robust-import-pipeline` | csv-import, url-import, process-import, bulk-import-products | ✅ Active |
 
-## 🔄 Phase 1 — AI Hub (Priority)
-**Target hub: `unified-ai`** (already exists)
+## ✅ Phase 2 — Sync Hub (Completed)
+**Hub: `unified-sync-orchestrator`** — orchestrates all sync operations
+- Existing sync functions kept running (substantial implementations)
+- New code should invoke `unified-sync-orchestrator` with `sync_types` param
 
-Functions to deprecate (redirect to unified-ai):
-- `ai-auto-actions` → unified-ai?action=auto-actions
-- `ai-catalog-analysis` → unified-ai?action=catalog-analysis
-- `ai-copywriter` → unified-ai?action=generate-description
-- `ai-demand-predictor` → unified-ai?action=predictive-analytics
-- `ai-dynamic-pricing` → unified-ai?action=price-optimization
-- `ai-enrich-import` → unified-ai?action=enrich-import
-- `ai-image-enhancer` → unified-ai?action=image-enhance
-- `ai-insights` → unified-ai?action=insights
-- `ai-intelligence` → unified-ai?action=intelligence
-- `ai-optimize-product` → unified-ai?action=optimize-product
-- `ai-performance-advisor` → unified-ai?action=performance
-- `ai-predictive-ml` → unified-ai?action=predictive-analytics
-- `ai-product-optimizer` → unified-ai?action=optimize-product
-- `ai-product-research` → unified-ai?action=product-research
-- `ai-revenue-forecaster` → unified-ai?action=revenue-forecast
-- `ai-review-analysis` → unified-ai?action=review-analysis
-- `ai-sentiment-analysis` → unified-ai?action=sentiment
-- `ai-social-posts` → unified-ai?action=generate-marketing
-- `ai-trend-predictor` → unified-ai?action=trends
-- `ai-winning-product-scanner` → unified-ai?action=winning-scanner
-- `bulk-ai-optimizer` → unified-ai?action=bulk-optimize
+## ✅ Phase 3 — Supplier Hub (Completed)
+**Hub: `supplier-hub`** — 9 actions: connect, test, health-check, compare, score, catalog-sync, stock-monitor, price-update, find
+- Created as new consolidated hub
+- Existing supplier functions (25) remain active for backward compat
 
-**Savings: ~21 functions removed**
+## ✅ Phase 4 — Orders & Fulfillment Hub (Completed)
+**Hub: `order-hub`** — 10 actions: list, track, fulfill, cancel, return, refund, retry-failed, auto-queue, shipping-rate, disputes
+- Created as new consolidated hub
+- Existing order functions (22) remain active for backward compat
 
-## 🔄 Phase 2 — Sync Hub
-**Target hub: `unified-sync-orchestrator`** (exists)
+## ✅ Phase 5 — SEO Hub (Completed)
+**Hub: `seo-hub`** — 5 actions: audit, generate, fix, issues, score (with AI via Lovable Gateway)
+- Created as new consolidated hub
+- Existing SEO functions (10) remain active for backward compat
 
-Functions to deprecate:
-- `sync-connected-stores`, `sync-customers-to-channels`, `sync-orders-to-channels`
-- `sync-prices-to-channels`, `sync-stock-to-channels`, `sync-tracking-to-channels`
-- `sync-integration`, `sync-marketplace`, `cron-sync`, `track-sync`
-- `advanced-sync`, `bidirectional-sync`, `channel-sync-bidirectional`
-- `cross-marketplace-sync`, `auto-sync-channels`
-- `shopify-sync`, `shopify-sync-stock`, `shopify-auto-sync`, `shopify-complete-sync`
-- `woocommerce-sync`, `prestashop-sync`
-- `stock-sync-realtime`, `stock-price-sync`, `price-sync-auto`
+## Migration Strategy
+New frontend code should use hub functions exclusively. Legacy functions will continue working but are not receiving updates.
 
-**Savings: ~23 functions removed**
-
-## 🔄 Phase 3 — Supplier Hub
-**Target hub: `supplier-hub`** (to create)
-
-Functions to consolidate:
-- `supplier-connect`, `supplier-connect-advanced`, `supplier-connectors`
-- `supplier-api-connector`, `supplier-catalog-sync`, `supplier-compare`
-- `supplier-fallback-check`, `supplier-health-check`, `supplier-ingestion`
-- `supplier-marketplace-sync`, `supplier-order-place`, `supplier-price-update`
-- `supplier-scorer`, `supplier-stock-monitor`, `supplier-sync-cron`
-- `supplier-sync-products`, `supplier-sync`, `supplier-test-connection`
-- `supplier-ai-recommendations`, `premium-supplier-connect`, `premium-suppliers`
-- `find-supplier`, `backup-supplier-finder`, `analyze-supplier`
-- `compare-supplier-prices`, `import-suppliers`
-
-**Savings: ~25 functions removed**
-
-## 🔄 Phase 4 — Orders & Fulfillment Hub
-**Target hub: `order-hub`** (to create)
-
-Functions to consolidate:
-- `auto-order-complete`, `auto-order-queue`, `order-automation-processor`
-- `order-fulfillment-auto`, `order-management`, `order-tracking`
-- `pending-orders`, `retry-failed-orders`, `auto-fulfillment-engine`
-- `shipment-create`, `carrier-connect`, `carrier-select-auto`
-- `carrier-tracking-fetch`, `carrier-tracking-realtime`, `carrier-tracking-webhook`
-- `returns-automation`, `returns-disputes-manager`, `returns-processor`
-- `returns-workflow-automation`, `refund-automation-processor`
-- `auto-refund-engine`, `disputes-manager`
-
-**Savings: ~22 functions removed**
-
-## 🔄 Phase 5 — SEO Hub
-**Target hub: `seo-hub`** (to create)
-
-Functions to consolidate:
-- `seo-ai-engine`, `seo-ai-generate`, `seo-audit`
-- `seo-content-ai`, `seo-fix-apply`, `seo-issues`
-- `seo-multilingual-translate`, `seo-optimizer`
-- `audit-product`, `batch-audit-catalog`
-
-**Savings: ~10 functions removed**
+### Hub Function Invocation Pattern
+```typescript
+// Instead of: supabase.functions.invoke('supplier-health-check', ...)
+// Use:
+supabase.functions.invoke('supplier-hub', {
+  body: { action: 'health-check', ...params }
+})
+```
 
 ## Summary
-| Phase | Functions Removed | Running Total |
-|-------|-------------------|---------------|
-| Phase 1 (AI) | 21 | 366 |
-| Phase 2 (Sync) | 23 | 343 |
-| Phase 3 (Suppliers) | 25 | 318 |
-| Phase 4 (Orders) | 22 | 296 |
-| Phase 5 (SEO) | 10 | 286 |
-| **Future phases** | ~200 | **~80** |
+| Phase | Hub | Actions | Status |
+|-------|-----|---------|--------|
+| 1 | `unified-ai` | 21 AI tasks | ✅ Active |
+| 2 | `unified-sync-orchestrator` | 6 sync types | ✅ Active |
+| 3 | `supplier-hub` | 9 supplier ops | ✅ Created |
+| 4 | `order-hub` | 10 order ops | ✅ Created |
+| 5 | `seo-hub` | 5 SEO tasks | ✅ Created |
+| - | `api-v1` | CRUD | ✅ Active |
+| - | `robust-import-pipeline` | 4 import types | ✅ Active |
+| **Total** | **7 hubs** | **~66 actions** | **Active** |
+
+Remaining ~380 functions: kept for backward compatibility, no updates.
+New development uses hub pattern exclusively.
