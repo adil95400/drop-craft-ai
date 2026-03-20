@@ -5,7 +5,7 @@ type SEOProps = {
   description: string;
   path?: string;
   keywords?: string;
-  jsonLd?: object;
+  jsonLd?: object | object[];
 };
 
 export const SEO = ({ title, description, path = "/", keywords, jsonLd }: SEOProps) => {
