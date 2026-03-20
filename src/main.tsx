@@ -40,7 +40,7 @@ requestAnimationFrame(() => {
   }
 });
 
-const root = document.getElementById('root')!;
+const root = document.getElementById('root')!
 
 createRoot(root).render(
   <StrictMode>
