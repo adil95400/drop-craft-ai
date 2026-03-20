@@ -1,4 +1,4 @@
-import { memo, useState, useCallback } from "react";
+import { memo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -12,9 +12,10 @@ const annualSavings = (plan: PlanConfig) => {
 
 interface PricingPreviewSectionProps {
   onNavigate: (path: string) => void;
+  plans?: PlanConfig[];
 }
 
-export const PricingPreviewSection = memo(({ onNavigate }: PricingPreviewSectionProps) => {
+export const PricingPreviewSection = memo(({ onNavigate, plans = PLANS }: PricingPreviewSectionProps) => {
   const [isAnnual, setIsAnnual] = useState(false);
 
   return (
@@ -45,7 +46,7 @@ export const PricingPreviewSection = memo(({ onNavigate }: PricingPreviewSection
         </div>
 
         <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
-          {PLANS.map((p, i) => {
+          {plans.map((p) => {
             const price = isAnnual ? p.annualPrice : p.monthlyPrice;
             return (
               <Card key={p.name} className={`relative ${p.popular ? 'border-primary border-2 shadow-xl scale-[1.02]' : 'border-2'}`}>
