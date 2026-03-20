@@ -51,6 +51,10 @@ export const ROUTES_REGISTRY: RouteConfig[] = [
   { path: '/finance', protected: true, category: 'core', description: 'Finance - P&L, dépenses, taxes', implemented: true },
   { path: '/customer-service', protected: true, category: 'core', description: 'Service client', implemented: true },
 
+  // ===== MEDIA =====
+  { path: '/catalog/media', protected: true, category: 'core', description: 'Médias - Qualité et optimisation', implemented: true, label: 'Médias' },
+  { path: '/media-editor', protected: true, category: 'core', description: 'Éditeur Média - Retouche, recadrage, watermark, IA', implemented: true, label: 'Éditeur Média', icon: 'Paintbrush' },
+
   // ===== ANALYTICS =====
   { path: '/analytics', protected: true, category: 'analytics', description: 'Analytics principal', implemented: true },
   { path: '/analytics/predictive', protected: true, category: 'analytics', description: 'Analytique prédictive', implemented: true },
