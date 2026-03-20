@@ -32,7 +32,7 @@ export const ImportResults = () => {
   });
 
   const getStatusBadge = (status: string) => {
-    if (status === 'published') return <Badge className="bg-green-100 text-success">Publié</Badge>;
+    if (status === 'published') return <Badge className="bg-success/10 text-success">Publié</Badge>;
     if (status === 'draft') return <Badge variant="secondary">Brouillon</Badge>;
     return <Badge variant="outline">En attente</Badge>;
   };

@@ -455,7 +455,7 @@ export const AdvancedFiltering = ({ onFiltersChange }: { onFiltersChange?: (filt
               <div key={condition.id}>
                 {index > 0 && (
                   <div className="text-center py-2">
-                    <Badge variant="outline" className="bg-blue-50 text-blue-700">
+                    <Badge variant="outline" className="bg-info/5 text-blue-700">
                       {logicalOperator.toUpperCase()}
                     </Badge>
                   </div>
@@ -511,7 +511,7 @@ export const AdvancedFiltering = ({ onFiltersChange }: { onFiltersChange?: (filt
           <CardContent>
             {testResults ? (
               <div className="space-y-3">
-                <div className={`p-3 rounded-lg ${testResults.passed ? 'bg-green-50 text-success' : 'bg-red-50 text-red-800'}`}>
+                <div className={`p-3 rounded-lg ${testResults.passed ? 'bg-success/5 text-success' : 'bg-destructive/5 text-red-800'}`}>
                   <div className="font-medium">
                     {testResults.passed ? '✓ Conditions satisfaites' : '✗ Conditions non satisfaites'}
                   </div>

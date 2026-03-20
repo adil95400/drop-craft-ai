@@ -37,9 +37,9 @@ const WinnerCard = ({ product, onImport }: WinnerCardProps) => {
     Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100) : 0
 
   const getScoreColor = (score: number) => {
-    if (score >= 90) return 'text-success bg-green-100'
-    if (score >= 70) return 'text-warning bg-yellow-100' 
-    return 'text-destructive bg-red-100'
+    if (score >= 90) return 'text-success bg-success/10'
+    if (score >= 70) return 'text-warning bg-warning/10' 
+    return 'text-destructive bg-destructive/10'
   }
 
   return (
@@ -51,7 +51,7 @@ const WinnerCard = ({ product, onImport }: WinnerCardProps) => {
           className="w-full h-48 object-cover rounded-t-lg"
         />
         <div className="absolute top-2 left-2 flex gap-1">
-          <Badge className="bg-red-500 text-white">
+          <Badge className="bg-destructive text-white">
             🔥 Hot
           </Badge>
           {discount > 0 && (
@@ -272,7 +272,7 @@ export const AIWinnersDiscovery = ({ onImportWinner }: AIWinnersDiscoveryProps) 
           <p className="text-sm text-success mb-4">
             Notre IA analyse 50,000+ produits chaque jour pour vous trouver les pépites
           </p>
-          <Button variant="default" className="bg-green-600 hover:bg-green-700">
+          <Button variant="default" className="bg-success hover:bg-green-700">
             <Sparkles className="h-4 w-4 mr-2" />
             Voir tous les Winners
           </Button>

@@ -67,10 +67,10 @@ export function CustomerSegmentationDashboard() {
   };
 
   const getRFMColor = (score: number) => {
-    if (score >= 4) return 'bg-green-500';
-    if (score >= 3) return 'bg-yellow-500';
-    if (score >= 2) return 'bg-orange-500';
-    return 'bg-red-500';
+    if (score >= 4) return 'bg-success';
+    if (score >= 3) return 'bg-warning';
+    if (score >= 2) return 'bg-warning';
+    return 'bg-destructive';
   };
 
   const getSegmentTypeBadge = (type: string) => {

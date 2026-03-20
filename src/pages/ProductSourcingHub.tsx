@@ -353,7 +353,7 @@ export default function ProductSourcingHub() {
           </Card>
           <Card>
             <CardContent className="p-4 flex items-center gap-3">
-              <div className="h-10 w-10 rounded-lg bg-emerald-500/10 flex items-center justify-center">
+              <div className="h-10 w-10 rounded-lg bg-success/10 flex items-center justify-center">
                 <DollarSign className="h-5 w-5 text-success" />
               </div>
               <div>
@@ -364,7 +364,7 @@ export default function ProductSourcingHub() {
           </Card>
           <Card>
             <CardContent className="p-4 flex items-center gap-3">
-              <div className="h-10 w-10 rounded-lg bg-amber-500/10 flex items-center justify-center">
+              <div className="h-10 w-10 rounded-lg bg-warning/10 flex items-center justify-center">
                 <Flame className="h-5 w-5 text-warning" />
               </div>
               <div>

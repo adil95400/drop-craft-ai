@@ -249,8 +249,8 @@ export function MediaUploadZone({
                   >
                     <div className={`
                       w-10 h-10 rounded-lg flex items-center justify-center
-                      ${file.status === 'uploaded' ? 'bg-green-100 text-success' :
-                        file.status === 'error' ? 'bg-red-100 text-destructive' :
+                      ${file.status === 'uploaded' ? 'bg-success/10 text-success' :
+                        file.status === 'error' ? 'bg-destructive/10 text-destructive' :
                         'bg-primary/10 text-primary'
                       }
                     `}>

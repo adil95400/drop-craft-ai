@@ -75,13 +75,13 @@ export function SWOTAnalysisCard({ products, revenue, orders }: SWOTAnalysisCard
   }, [products, revenue, orders])
 
   const quadrants = [
-    { key: 'strengths', title: 'Forces', icon: Shield, items: swot.strengths, color: 'text-success', bg: 'bg-green-50 dark:bg-green-950/30', border: 'border-green-200 dark:border-green-800' },
-    { key: 'weaknesses', title: 'Faiblesses', icon: AlertTriangle, items: swot.weaknesses, color: 'text-destructive', bg: 'bg-red-50 dark:bg-red-950/30', border: 'border-red-200 dark:border-red-800' },
-    { key: 'opportunities', title: 'Opportunités', icon: TrendingUp, items: swot.opportunities, color: 'text-info', bg: 'bg-blue-50 dark:bg-blue-950/30', border: 'border-blue-200 dark:border-blue-800' },
+    { key: 'strengths', title: 'Forces', icon: Shield, items: swot.strengths, color: 'text-success', bg: 'bg-success/5 dark:bg-green-950/30', border: 'border-green-200 dark:border-green-800' },
+    { key: 'weaknesses', title: 'Faiblesses', icon: AlertTriangle, items: swot.weaknesses, color: 'text-destructive', bg: 'bg-destructive/5 dark:bg-red-950/30', border: 'border-red-200 dark:border-red-800' },
+    { key: 'opportunities', title: 'Opportunités', icon: TrendingUp, items: swot.opportunities, color: 'text-info', bg: 'bg-info/5 dark:bg-blue-950/30', border: 'border-blue-200 dark:border-blue-800' },
     { key: 'threats', title: 'Menaces', icon: Crosshair, items: swot.threats, color: 'text-warning', bg: 'bg-orange-50 dark:bg-orange-950/30', border: 'border-orange-200 dark:border-orange-800' },
   ]
 
-  const impactColors = { high: 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300', medium: 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300', low: 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400' }
+  const impactColors = { high: 'bg-destructive/10 text-red-700 dark:bg-red-900/40 dark:text-red-300', medium: 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300', low: 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400' }
 
   return (
     <Card>

@@ -289,7 +289,7 @@ export const XMLJSONImportInterface = ({ onImport }: XMLJSONImportInterfaceProps
 
             <TabsContent value="sync" className="mt-6">
               <div className="space-y-6">
-                <Card className="border-blue-200 bg-blue-50">
+                <Card className="border-blue-200 bg-info/5">
                   <CardContent className="p-4">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
@@ -361,8 +361,8 @@ export const XMLJSONImportInterface = ({ onImport }: XMLJSONImportInterfaceProps
                       <div key={index} className="flex items-center justify-between p-3 bg-muted/30 rounded-lg">
                         <div className="flex items-center gap-3">
                           <div className={`w-2 h-2 rounded-full ${
-                            sync.status === 'active' ? 'bg-green-500' :
-                            sync.status === 'error' ? 'bg-red-500' : 'bg-gray-400'
+                            sync.status === 'active' ? 'bg-success' :
+                            sync.status === 'error' ? 'bg-destructive' : 'bg-gray-400'
                           }`} />
                           <div>
                             <p className="text-sm font-medium">{sync.name}</p>

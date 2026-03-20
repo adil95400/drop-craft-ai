@@ -185,7 +185,7 @@ export const PlanUpgradeDialog = ({
           <Card className={`relative ${currentPlan === 'pro' ? 'ring-2 ring-primary' : 'ring-2 ring-blue-500'}`}>
             {currentPlan !== 'pro' && (
               <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
-                <Badge className="bg-blue-500 text-white">
+                <Badge className="bg-info text-white">
                   <Star className="h-3 w-3 mr-1" />
                   Populaire
                 </Badge>

@@ -27,12 +27,12 @@ export function PlatformConnectionCard({ platform }: PlatformConnectionCardProps
     facebook: {
       name: 'Facebook Ads',
       icon: Facebook,
-      color: 'bg-blue-500',
+      color: 'bg-info',
     },
     google: {
       name: 'Google Ads',
       icon: Chrome,
-      color: 'bg-red-500',
+      color: 'bg-destructive',
     },
     instagram: {
       name: 'Instagram Ads',

@@ -46,7 +46,7 @@ export function ChannelConnectionInfo({ channel }: ChannelConnectionInfoProps) {
       label: 'Domaine boutique',
       value: shopDomain,
       copyable: true,
-      color: 'text-info dark:text-blue-400 bg-blue-500/10',
+      color: 'text-info dark:text-blue-400 bg-info/10',
     },
     {
       icon: Cpu,
@@ -60,14 +60,14 @@ export function ChannelConnectionInfo({ channel }: ChannelConnectionInfoProps) {
       label: 'Jeton d\'accès',
       value: hasAccessToken ? '••••••••' + (credentials.access_token?.slice(-6) || '') : 'Non configuré',
       status: hasAccessToken ? 'ok' : 'error',
-      color: 'text-warning dark:text-amber-400 bg-amber-500/10',
+      color: 'text-warning dark:text-amber-400 bg-warning/10',
     },
     {
       icon: Shield,
       label: 'Scopes',
       value: typeof scopes === 'string' ? scopes : Array.isArray(scopes) ? scopes.join(', ') : '—',
       copyable: false,
-      color: 'text-success dark:text-emerald-400 bg-emerald-500/10',
+      color: 'text-success dark:text-emerald-400 bg-success/10',
     },
     {
       icon: Calendar,
@@ -100,7 +100,7 @@ export function ChannelConnectionInfo({ channel }: ChannelConnectionInfoProps) {
             className={cn(
               "gap-1 text-xs",
               channel.connection_status === 'connected' 
-                ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/30"
+                ? "bg-success/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/30"
                 : "bg-destructive/10 text-destructive border-destructive/30"
             )}
           >
@@ -141,7 +141,7 @@ export function ChannelConnectionInfo({ channel }: ChannelConnectionInfoProps) {
               {'status' in row && (
                 <div className={cn(
                   "h-2 w-2 rounded-full shrink-0",
-                  row.status === 'ok' ? "bg-emerald-500" : "bg-destructive"
+                  row.status === 'ok' ? "bg-success" : "bg-destructive"
                 )} />
               )}
             </div>

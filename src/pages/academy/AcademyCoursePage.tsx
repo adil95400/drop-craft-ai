@@ -376,7 +376,7 @@ const AcademyCoursePage = () => {
                   <h2 className="text-2xl font-bold">Programme de la formation</h2>
                   <p className="text-muted-foreground">{course.modules.length} modules · {totalLessons} leçons · {course.duration}</p>
                 </div>
-                <Badge variant="outline" className="hidden sm:flex gap-1 text-success border-green-200 bg-green-50 dark:bg-green-950/20">
+                <Badge variant="outline" className="hidden sm:flex gap-1 text-success border-green-200 bg-success/5 dark:bg-green-950/20">
                   <Play className="h-3 w-3" />{freeLessons} leçons gratuites
                 </Badge>
               </div>
@@ -419,7 +419,7 @@ const AcademyCoursePage = () => {
                             </div>
                             <div className="flex items-center gap-2 shrink-0">
                               {lesson.free && (
-                                <Badge variant="outline" className="text-xs text-success border-green-200 bg-green-50 dark:bg-green-950/20">
+                                <Badge variant="outline" className="text-xs text-success border-green-200 bg-success/5 dark:bg-green-950/20">
                                   Gratuit
                                 </Badge>
                               )}

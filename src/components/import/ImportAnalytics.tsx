@@ -162,7 +162,7 @@ export const ImportAnalytics = () => {
               <div className="flex-1">
                 <div className="flex items-center gap-2 mb-1">
                   <span className="text-sm font-medium">{day.imports} imports</span>
-                  <Badge variant="outline" className="text-xs bg-green-50">
+                  <Badge variant="outline" className="text-xs bg-success/5">
                     {day.success} succès
                   </Badge>
                   {day.failed > 0 && (
@@ -173,7 +173,7 @@ export const ImportAnalytics = () => {
                 </div>
                 <div className="w-full bg-muted rounded-full h-2">
                   <div 
-                    className="bg-blue-500 h-2 rounded-full"
+                    className="bg-info h-2 rounded-full"
                     style={{ width: `${Math.min((day.imports / 40) * 100, 100)}%` }}
                   />
                 </div>
@@ -199,13 +199,13 @@ export const ImportAnalytics = () => {
           {categoryBreakdown.map((cat) => (
             <div key={cat.category} className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="w-2 h-2 bg-blue-500 rounded-full" />
+                <div className="w-2 h-2 bg-info rounded-full" />
                 <span className="font-medium">{cat.category}</span>
               </div>
               <div className="flex items-center gap-4">
                 <div className="w-32 bg-muted rounded-full h-2">
                   <div 
-                    className="bg-blue-500 h-2 rounded-full"
+                    className="bg-info h-2 rounded-full"
                     style={{ width: `${cat.percentage}%` }}
                   />
                 </div>
@@ -243,7 +243,7 @@ export const ImportAnalytics = () => {
                 </div>
                 <Badge 
                   variant={supplier.success_rate >= 90 ? "default" : "secondary"}
-                  className={supplier.success_rate >= 90 ? "bg-green-100 text-success" : ""}
+                  className={supplier.success_rate >= 90 ? "bg-success/10 text-success" : ""}
                 >
                   {supplier.success_rate >= 90 ? "Excellent" : "Correct"}
                 </Badge>
@@ -401,11 +401,11 @@ export const ImportAnalytics = () => {
                 <div className="space-y-4">
                   <div className="flex justify-between items-center">
                     <span className="text-sm">Amélioration SEO moyenne</span>
-                    <Badge className="bg-green-100 text-success">+23%</Badge>
+                    <Badge className="bg-success/10 text-success">+23%</Badge>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-sm">Optimisation images</span>
-                    <Badge className="bg-blue-100 text-blue-800">+67% qualité</Badge>
+                    <Badge className="bg-info/10 text-blue-800">+67% qualité</Badge>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-sm">Suggestions acceptées</span>

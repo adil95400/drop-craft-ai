@@ -32,7 +32,7 @@ const QUOTA_ICONS: Record<string, React.ReactNode> = {
 
 const PLAN_LABELS: Record<string, { label: string; color: string }> = {
   free: { label: 'Gratuit', color: 'bg-gray-500' },
-  standard: { label: 'Standard', color: 'bg-blue-500' },
+  standard: { label: 'Standard', color: 'bg-info' },
   pro: { label: 'Pro', color: 'bg-purple-500' },
   ultra_pro: { label: 'Ultra Pro', color: 'bg-gradient-to-r from-amber-500 to-orange-500' },
 };

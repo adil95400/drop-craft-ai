@@ -24,7 +24,7 @@ const DEMO_COHORTS: CohortData[] = [
 ];
 
 function getRetentionColor(value: number): string {
-  if (value >= 80) return 'bg-emerald-500/90 text-white';
+  if (value >= 80) return 'bg-success/90 text-white';
   if (value >= 50) return 'bg-emerald-400/70 text-white';
   if (value >= 35) return 'bg-emerald-300/60 text-emerald-900';
   if (value >= 20) return 'bg-amber-300/60 text-amber-900';

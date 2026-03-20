@@ -229,7 +229,7 @@ export function MultiStoreUrlImport({ className, onImportComplete }: MultiStoreU
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                className="flex items-center justify-center gap-4 p-4 rounded-lg bg-green-500/10 border border-green-500/20"
+                className="flex items-center justify-center gap-4 p-4 rounded-lg bg-success/10 border border-green-500/20"
               >
                 <CheckCircle2 className="h-5 w-5 text-success" />
                 <span className="font-medium text-success">

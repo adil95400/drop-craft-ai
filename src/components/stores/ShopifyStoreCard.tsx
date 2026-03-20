@@ -54,9 +54,9 @@ export function ShopifyStoreCard({ integration, stats }: ShopifyStoreCardProps) 
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'connected': return 'bg-green-500'
-      case 'disconnected': return 'bg-red-500'
-      case 'error': return 'bg-orange-500'
+      case 'connected': return 'bg-success'
+      case 'disconnected': return 'bg-destructive'
+      case 'error': return 'bg-warning'
       default: return 'bg-gray-500'
     }
   }
@@ -77,7 +77,7 @@ export function ShopifyStoreCard({ integration, stats }: ShopifyStoreCardProps) 
       <CardHeader className="pb-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-green-100">
+            <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-success/10">
               <span className="text-lg font-bold text-success">S</span>
             </div>
             <div>

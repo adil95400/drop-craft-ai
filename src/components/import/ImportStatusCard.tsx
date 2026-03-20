@@ -36,7 +36,7 @@ export const ImportStatusCard = ({
         return {
           icon: Loader2,
           color: 'blue',
-          bgColor: 'bg-blue-50',
+          bgColor: 'bg-info/5',
           borderColor: 'border-blue-200',
           textColor: 'text-blue-900',
           subTextColor: 'text-blue-700',
@@ -48,7 +48,7 @@ export const ImportStatusCard = ({
         return {
           icon: CheckCircle2,
           color: 'green',
-          bgColor: 'bg-green-50',
+          bgColor: 'bg-success/5',
           borderColor: 'border-green-200',
           textColor: 'text-green-900',
           subTextColor: 'text-success',
@@ -60,7 +60,7 @@ export const ImportStatusCard = ({
         return {
           icon: XCircle,
           color: 'red',
-          bgColor: 'bg-red-50',
+          bgColor: 'bg-destructive/5',
           borderColor: 'border-red-200',
           textColor: 'text-red-900',
           subTextColor: 'text-red-700',

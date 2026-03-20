@@ -325,7 +325,7 @@ export const ImportConfigurationDialog = ({
             ))}
 
             {method === 'woocommerce' && (
-              <div className="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
+              <div className="mt-4 p-3 bg-info/5 rounded-lg border border-blue-200">
                 <div className="flex items-center gap-2 text-blue-800">
                   <HelpCircle className="w-4 h-4" />
                   <span className="text-sm font-medium">Aide</span>

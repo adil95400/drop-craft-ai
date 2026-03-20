@@ -31,7 +31,7 @@ function MetricCard({ label, value, change, prefix = '', suffix = '', icon: Icon
       <CardContent className="p-4">
         <div className="flex items-center justify-between mb-3">
           <span className="text-xs text-muted-foreground font-medium">{label}</span>
-          <div className={cn('p-1.5 rounded-lg', isPositive ? 'bg-emerald-500/10' : 'bg-red-500/10')}>
+          <div className={cn('p-1.5 rounded-lg', isPositive ? 'bg-success/10' : 'bg-destructive/10')}>
             <Icon className={cn('h-4 w-4', isPositive ? 'text-success' : 'text-destructive')} />
           </div>
         </div>
@@ -284,7 +284,7 @@ export default function GrowthDashboardPage() {
                     <span className="font-medium">{label}</span>
                     <span className="text-muted-foreground">{value} <span className="text-[10px]">({target})</span></span>
                   </div>
-                  <Progress value={pct} className={cn('h-1.5', pct >= 80 ? '[&>div]:bg-emerald-500' : pct >= 50 ? '[&>div]:bg-amber-500' : '[&>div]:bg-red-500')} />
+                  <Progress value={pct} className={cn('h-1.5', pct >= 80 ? '[&>div]:bg-success' : pct >= 50 ? '[&>div]:bg-warning' : '[&>div]:bg-destructive')} />
                 </div>
               ))}
             </CardContent>

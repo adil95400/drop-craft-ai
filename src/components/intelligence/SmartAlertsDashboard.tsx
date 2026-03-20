@@ -27,8 +27,8 @@ const categoryIcons: Record<string, typeof Bell> = {
 
 const severityColors: Record<string, string> = {
   critical: 'border-destructive bg-destructive/5',
-  high: 'border-orange-500 bg-orange-500/5',
-  medium: 'border-amber-500 bg-amber-500/5',
+  high: 'border-orange-500 bg-warning/5',
+  medium: 'border-amber-500 bg-warning/5',
   low: 'border-muted',
   info: 'border-border',
 };

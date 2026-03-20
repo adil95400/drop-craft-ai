@@ -368,7 +368,7 @@ export default function AutomationPage() {
                       >
                         <div className={cn(
                           "p-2 rounded-full",
-                          workflow.is_active ? "bg-green-100" : "bg-gray-100"
+                          workflow.is_active ? "bg-success/10" : "bg-gray-100"
                         )}>
                           {workflow.is_active ? (
                             <CheckCircle2 className="h-4 w-4 text-success" />

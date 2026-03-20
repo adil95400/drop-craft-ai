@@ -523,9 +523,9 @@ export function UnifiedCatalog({ supplierId }: UnifiedCatalogProps) {
   const getStockBadge = (status: string, quantity: number) => {
     switch (status) {
       case 'in_stock':
-        return <Badge className="bg-emerald-500/10 text-success border-emerald-500/20 text-xs">{quantity} en stock</Badge>;
+        return <Badge className="bg-success/10 text-success border-emerald-500/20 text-xs">{quantity} en stock</Badge>;
       case 'low_stock':
-        return <Badge className="bg-amber-500/10 text-warning border-amber-500/20 text-xs">{quantity} restants</Badge>;
+        return <Badge className="bg-warning/10 text-warning border-amber-500/20 text-xs">{quantity} restants</Badge>;
       case 'out_of_stock':
         return <Badge variant="destructive" className="text-xs">Rupture</Badge>;
       default:
@@ -545,7 +545,7 @@ export function UnifiedCatalog({ supplierId }: UnifiedCatalogProps) {
     }
     if (percentage >= 70) {
       return (
-        <div className="flex items-center gap-1 bg-blue-500/10 text-info px-2 py-0.5 rounded-full text-xs font-medium">
+        <div className="flex items-center gap-1 bg-info/10 text-info px-2 py-0.5 rounded-full text-xs font-medium">
           <Sparkles className="h-3 w-3" />
           {percentage}%
         </div>
@@ -809,7 +809,7 @@ export function UnifiedCatalog({ supplierId }: UnifiedCatalogProps) {
                   <div className="absolute top-2 right-2 flex flex-col gap-1 items-end">
                     {getAIScoreBadge(product.ai_score, product.is_winner)}
                     {product.is_trending && (
-                      <Badge className="bg-green-500/90 text-white text-xs">
+                      <Badge className="bg-success/90 text-white text-xs">
                         <TrendingUp className="h-3 w-3 mr-1" />
                         Tendance
                       </Badge>
@@ -825,7 +825,7 @@ export function UnifiedCatalog({ supplierId }: UnifiedCatalogProps) {
                     className={cn(
                       "absolute bottom-2 right-2 p-1.5 rounded-full transition-colors",
                       favorites.has(product.id) 
-                        ? "bg-rose-500 text-white" 
+                        ? "bg-destructive text-white" 
                         : "bg-white/80 text-muted-foreground hover:text-destructive"
                     )}
                   >
@@ -914,7 +914,7 @@ export function UnifiedCatalog({ supplierId }: UnifiedCatalogProps) {
                         variant={product.status === 'active' ? 'default' : 'secondary'}
                         className={cn(
                           "text-xs",
-                          product.status === 'active' && "bg-emerald-500"
+                          product.status === 'active' && "bg-success"
                         )}
                       >
                         {product.status === 'active' ? 'active' : 'inactif'}
@@ -983,7 +983,7 @@ export function UnifiedCatalog({ supplierId }: UnifiedCatalogProps) {
                     {getAIScoreBadge(selectedProduct.ai_score, selectedProduct.is_winner)}
                     {getStockBadge(selectedProduct.stock_status, selectedProduct.stock_quantity)}
                     {selectedProduct.is_trending && (
-                      <Badge className="bg-green-500 text-white">
+                      <Badge className="bg-success text-white">
                         <TrendingUp className="h-3 w-3 mr-1" />
                         Tendance
                       </Badge>
@@ -1064,7 +1064,7 @@ export function UnifiedCatalog({ supplierId }: UnifiedCatalogProps) {
                         </Button>
                         <Button 
                           variant="outline"
-                          className="border-emerald-500/30 hover:bg-emerald-500/10"
+                          className="border-emerald-500/30 hover:bg-success/10"
                           onClick={() => handlePublishToMarketplace(selectedProduct)}
                         >
                           <Globe className="h-4 w-4 mr-2 text-success" />
@@ -1241,7 +1241,7 @@ export function UnifiedCatalog({ supplierId }: UnifiedCatalogProps) {
           </DialogHeader>
           <div className="py-6">
             <div className="flex flex-col items-center justify-center gap-4">
-              <div className="h-16 w-16 rounded-full bg-emerald-500/10 flex items-center justify-center">
+              <div className="h-16 w-16 rounded-full bg-success/10 flex items-center justify-center">
                 <CheckCircle2 className="h-8 w-8 text-success" />
               </div>
               <div className="text-center">
@@ -1540,7 +1540,7 @@ export function UnifiedCatalog({ supplierId }: UnifiedCatalogProps) {
                       className={cn(
                         "flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-all",
                         selectedMarketplaces.includes(marketplace.id)
-                          ? "border-emerald-500 bg-emerald-500/10" 
+                          ? "border-emerald-500 bg-success/10" 
                           : "border-border hover:border-emerald-500/50"
                       )}
                     >
@@ -1556,7 +1556,7 @@ export function UnifiedCatalog({ supplierId }: UnifiedCatalogProps) {
 
               {/* Selected count */}
               {selectedMarketplaces.length > 0 && (
-                <div className="flex items-center justify-between p-3 bg-emerald-500/10 rounded-lg border border-emerald-500/20">
+                <div className="flex items-center justify-between p-3 bg-success/10 rounded-lg border border-emerald-500/20">
                   <span className="text-sm font-medium text-emerald-700 dark:text-emerald-400">
                     {selectedMarketplaces.length} marketplace(s) sélectionnée(s)
                   </span>

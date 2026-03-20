@@ -62,9 +62,9 @@ interface BlogPost {
 
 const STATUS_OPTIONS = {
   draft: { label: 'Brouillon', color: 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200', icon: Clock },
-  scheduled: { label: 'Planifié', color: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200', icon: Calendar },
-  published: { label: 'Publié', color: 'bg-green-100 text-success dark:bg-green-900 dark:text-green-200', icon: CheckCircle },
-  archived: { label: 'Archivé', color: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200', icon: XCircle }
+  scheduled: { label: 'Planifié', color: 'bg-info/10 text-blue-800 dark:bg-blue-900 dark:text-blue-200', icon: Calendar },
+  published: { label: 'Publié', color: 'bg-success/10 text-success dark:bg-green-900 dark:text-green-200', icon: CheckCircle },
+  archived: { label: 'Archivé', color: 'bg-destructive/10 text-red-800 dark:bg-red-900 dark:text-red-200', icon: XCircle }
 };
 
 const CATEGORIES = ['Actualités', 'Tutoriels', 'Guides', 'Études de cas', 'Annonces', 'E-commerce', 'Marketing'];
@@ -311,7 +311,7 @@ export function BlogManager() {
         <Card className="bg-gradient-to-br from-green-500/10 to-green-500/5">
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-green-500/20 rounded-lg">
+              <div className="p-2 bg-success/20 rounded-lg">
                 <CheckCircle className="h-5 w-5 text-success" />
               </div>
               <div>
@@ -324,7 +324,7 @@ export function BlogManager() {
         <Card className="bg-gradient-to-br from-yellow-500/10 to-yellow-500/5">
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-yellow-500/20 rounded-lg">
+              <div className="p-2 bg-warning/20 rounded-lg">
                 <Clock className="h-5 w-5 text-warning" />
               </div>
               <div>
@@ -337,7 +337,7 @@ export function BlogManager() {
         <Card className="bg-gradient-to-br from-blue-500/10 to-blue-500/5">
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-blue-500/20 rounded-lg">
+              <div className="p-2 bg-info/20 rounded-lg">
                 <Eye className="h-5 w-5 text-info" />
               </div>
               <div>

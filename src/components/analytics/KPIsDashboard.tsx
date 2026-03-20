@@ -131,9 +131,9 @@ export function KPIsDashboard() {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'success': return 'bg-green-500';
-      case 'warning': return 'bg-yellow-500';
-      default: return 'bg-red-500';
+      case 'success': return 'bg-success';
+      case 'warning': return 'bg-warning';
+      default: return 'bg-destructive';
     }
   };
 

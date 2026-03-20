@@ -31,32 +31,32 @@ const ICON_OPTIONS = [
 ]
 
 const COLOR_OPTIONS = [
-  { value: 'blue', label: 'Bleu', dot: 'bg-blue-500' },
-  { value: 'green', label: 'Vert', dot: 'bg-green-500' },
-  { value: 'red', label: 'Rouge', dot: 'bg-red-500' },
-  { value: 'orange', label: 'Orange', dot: 'bg-orange-500' },
+  { value: 'blue', label: 'Bleu', dot: 'bg-info' },
+  { value: 'green', label: 'Vert', dot: 'bg-success' },
+  { value: 'red', label: 'Rouge', dot: 'bg-destructive' },
+  { value: 'orange', label: 'Orange', dot: 'bg-warning' },
   { value: 'purple', label: 'Violet', dot: 'bg-purple-500' },
-  { value: 'yellow', label: 'Jaune', dot: 'bg-yellow-500' },
+  { value: 'yellow', label: 'Jaune', dot: 'bg-warning' },
   { value: 'gray', label: 'Gris', dot: 'bg-gray-500' },
 ]
 
 const COLOR_MAP: Record<string, string> = {
-  red: 'border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-950/20',
+  red: 'border-red-200 bg-destructive/5 dark:border-red-800 dark:bg-red-950/20',
   orange: 'border-orange-200 bg-orange-50 dark:border-orange-800 dark:bg-orange-950/20',
   gray: 'border-gray-200 bg-gray-50 dark:border-gray-800 dark:bg-gray-950/20',
-  blue: 'border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-950/20',
-  yellow: 'border-yellow-200 bg-yellow-50 dark:border-yellow-800 dark:bg-yellow-950/20',
-  green: 'border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-950/20',
+  blue: 'border-blue-200 bg-info/5 dark:border-blue-800 dark:bg-blue-950/20',
+  yellow: 'border-yellow-200 bg-warning/5 dark:border-yellow-800 dark:bg-yellow-950/20',
+  green: 'border-green-200 bg-success/5 dark:border-green-800 dark:bg-green-950/20',
   purple: 'border-purple-200 bg-purple-50 dark:border-purple-800 dark:bg-purple-950/20',
 }
 
 const BADGE_COLOR_MAP: Record<string, string> = {
-  red: 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300',
+  red: 'bg-destructive/10 text-red-700 dark:bg-red-900/40 dark:text-red-300',
   orange: 'bg-orange-100 text-orange-700 dark:bg-orange-900/40 dark:text-orange-300',
   gray: 'bg-gray-100 text-gray-700 dark:bg-gray-900/40 dark:text-gray-300',
-  blue: 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300',
-  yellow: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/40 dark:text-yellow-300',
-  green: 'bg-green-100 text-success dark:bg-green-900/40 dark:text-green-300',
+  blue: 'bg-info/10 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300',
+  yellow: 'bg-warning/10 text-yellow-700 dark:bg-yellow-900/40 dark:text-yellow-300',
+  green: 'bg-success/10 text-success dark:bg-green-900/40 dark:text-green-300',
   purple: 'bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300',
 }
 

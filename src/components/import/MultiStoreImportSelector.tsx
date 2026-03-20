@@ -158,7 +158,7 @@ function ImportProgress({ progress }: { progress: MultiStoreImportProgress }) {
                 key={idx}
                 className={cn(
                   "text-xs px-2 py-1 rounded",
-                  result.success ? "bg-green-500/10 text-success" : "bg-destructive/10 text-destructive"
+                  result.success ? "bg-success/10 text-success" : "bg-destructive/10 text-destructive"
                 )}
               >
                 {result.storeName}: {result.success ? 'Importé' : result.error}

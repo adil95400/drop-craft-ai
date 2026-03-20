@@ -49,16 +49,16 @@ const KeywordResearch = () => {
   const isKeywordTracked = (kw: string) => trackedKeywords.some(tk => tk.keyword === kw);
 
   const getDifficultyColor = (difficulty: number) => {
-    if (difficulty < 30) return "bg-green-100 text-success";
+    if (difficulty < 30) return "bg-success/10 text-success";
     if (difficulty < 70) return "bg-orange-100 text-orange-800";
-    return "bg-red-100 text-red-800";
+    return "bg-destructive/10 text-red-800";
   };
 
   const getCompetitionColor = (competition: string) => {
     switch (competition) {
-      case 'Low': return "bg-green-100 text-success";
+      case 'Low': return "bg-success/10 text-success";
       case 'Medium': return "bg-orange-100 text-orange-800";
-      case 'High': return "bg-red-100 text-red-800";
+      case 'High': return "bg-destructive/10 text-red-800";
       default: return "bg-gray-100 text-gray-800";
     }
   };

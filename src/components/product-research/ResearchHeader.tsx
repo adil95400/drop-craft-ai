@@ -40,21 +40,21 @@ export function ResearchHeader({ stats }: ResearchHeaderProps) {
       value: formatNumber(displayStats.totalProducts),
       icon: BarChart3,
       color: 'text-info',
-      bgColor: 'bg-blue-500/10'
+      bgColor: 'bg-info/10'
     },
     {
       label: 'Tendances actives',
       value: formatNumber(displayStats.trendingNow),
       icon: TrendingUp,
       color: 'text-success',
-      bgColor: 'bg-green-500/10'
+      bgColor: 'bg-success/10'
     },
     {
       label: 'Score moyen',
       value: `${displayStats.avgScore}%`,
       icon: Target,
       color: 'text-warning',
-      bgColor: 'bg-orange-500/10'
+      bgColor: 'bg-warning/10'
     },
     {
       label: 'Mise à jour',

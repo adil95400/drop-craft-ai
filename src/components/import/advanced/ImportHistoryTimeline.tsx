@@ -76,9 +76,9 @@ export const ImportHistoryTimeline = ({ jobs, products }: ImportHistoryTimelineP
                   <div className="flex flex-col items-center">
                     <div className={`rounded-full p-2 ${
                       job.status === 'completed' 
-                        ? 'bg-green-100' 
+                        ? 'bg-success/10' 
                         : job.status === 'failed' 
-                        ? 'bg-red-100' 
+                        ? 'bg-destructive/10' 
                         : 'bg-gray-100'
                     }`}>
                       {job.status === 'completed' ? (

@@ -45,8 +45,8 @@ export default function AIEnrichmentPanel({ selectedProductIds, onComplete }: AI
 
   const getStatusBadge = (status: string) => {
     switch (status) {
-      case 'running': case 'processing': return <Badge className="bg-blue-500/20 text-blue-400 border-blue-500/30"><Loader2 className="w-3 h-3 mr-1 animate-spin" />En cours</Badge>
-      case 'completed': return <Badge className="bg-green-500/20 text-green-400 border-green-500/30"><CheckCircle2 className="w-3 h-3 mr-1" />Terminé</Badge>
+      case 'running': case 'processing': return <Badge className="bg-info/20 text-blue-400 border-blue-500/30"><Loader2 className="w-3 h-3 mr-1 animate-spin" />En cours</Badge>
+      case 'completed': return <Badge className="bg-success/20 text-green-400 border-green-500/30"><CheckCircle2 className="w-3 h-3 mr-1" />Terminé</Badge>
       case 'failed': return <Badge variant="destructive"><AlertTriangle className="w-3 h-3 mr-1" />Échoué</Badge>
       default: return <Badge variant="secondary"><Clock className="w-3 h-3 mr-1" />{status}</Badge>
     }

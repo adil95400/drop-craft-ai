@@ -107,11 +107,11 @@ export const SmartImportInterface = () => {
         </p>
         
         <div className="flex items-center justify-center gap-3 flex-wrap">
-          <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 py-1 px-3">
+          <Badge variant="outline" className="bg-info/5 text-blue-700 border-blue-200 py-1 px-3">
             <Brain className="w-3 h-3 mr-1" />
             IA GPT-4
           </Badge>
-          <Badge variant="outline" className="bg-green-50 text-success border-green-200 py-1 px-3">
+          <Badge variant="outline" className="bg-success/5 text-success border-green-200 py-1 px-3">
             <Shield className="w-3 h-3 mr-1" />
             Analyse Sécurisée
           </Badge>
@@ -287,7 +287,7 @@ export const SmartImportInterface = () => {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200 hover:shadow-lg transition-shadow">
           <CardContent className="p-6 text-center">
-            <div className="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center mx-auto mb-4">
+            <div className="w-12 h-12 bg-info rounded-full flex items-center justify-center mx-auto mb-4">
               <Brain className="w-6 h-6 text-white" />
             </div>
             <h3 className="font-semibold text-blue-900 mb-2">IA GPT-4 Avancée</h3>
@@ -299,7 +299,7 @@ export const SmartImportInterface = () => {
 
         <Card className="bg-gradient-to-br from-green-50 to-green-100 border-green-200 hover:shadow-lg transition-shadow">
           <CardContent className="p-6 text-center">
-            <div className="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-4">
+            <div className="w-12 h-12 bg-success rounded-full flex items-center justify-center mx-auto mb-4">
               <TrendingUp className="w-6 h-6 text-white" />
             </div>
             <h3 className="font-semibold text-green-900 mb-2">Analyse Marché</h3>

@@ -21,8 +21,8 @@ export function LiveCampaignMonitor() {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'active': return 'bg-green-100 text-success'
-      case 'paused': return 'bg-yellow-100 text-yellow-800'
+      case 'active': return 'bg-success/10 text-success'
+      case 'paused': return 'bg-warning/10 text-yellow-800'
       default: return 'bg-gray-100 text-gray-800'
     }
   }

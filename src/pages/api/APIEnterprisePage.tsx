@@ -42,10 +42,10 @@ const API_ENDPOINTS = [
 
 const METHOD_COLORS: Record<string, string> = {
   GET: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400',
-  POST: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400',
+  POST: 'bg-info/10 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400',
   PATCH: 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400',
   PUT: 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400',
-  DELETE: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400',
+  DELETE: 'bg-destructive/10 text-red-800 dark:bg-red-900/30 dark:text-red-400',
 };
 
 export default function APIEnterprisePage() {

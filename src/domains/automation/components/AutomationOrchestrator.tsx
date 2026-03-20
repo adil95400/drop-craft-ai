@@ -269,8 +269,8 @@ export const AutomationOrchestrator: React.FC = () => {
   const getCategoryColor = (category: string) => {
     switch (category) {
       case 'marketing': return 'bg-purple-100 text-purple-800 border-purple-200';
-      case 'sales': return 'bg-green-100 text-success border-green-200';
-      case 'operations': return 'bg-blue-100 text-blue-800 border-blue-200';
+      case 'sales': return 'bg-success/10 text-success border-green-200';
+      case 'operations': return 'bg-info/10 text-blue-800 border-blue-200';
       case 'support': return 'bg-orange-100 text-orange-800 border-orange-200';
       default: return 'bg-gray-100 text-gray-800 border-gray-200';
     }
@@ -278,10 +278,10 @@ export const AutomationOrchestrator: React.FC = () => {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'active': return 'bg-green-100 text-success border-green-200';
-      case 'paused': return 'bg-yellow-100 text-yellow-800 border-yellow-200';
+      case 'active': return 'bg-success/10 text-success border-green-200';
+      case 'paused': return 'bg-warning/10 text-yellow-800 border-yellow-200';
       case 'draft': return 'bg-gray-100 text-gray-800 border-gray-200';
-      case 'error': return 'bg-red-100 text-red-800 border-red-200';
+      case 'error': return 'bg-destructive/10 text-red-800 border-red-200';
       default: return 'bg-gray-100 text-gray-800 border-gray-200';
     }
   };
@@ -333,7 +333,7 @@ export const AutomationOrchestrator: React.FC = () => {
             <Activity className="h-3 w-3 mr-1" />
             AI Powered
           </Badge>
-          <Badge variant="secondary" className="bg-green-100 text-success">
+          <Badge variant="secondary" className="bg-success/10 text-success">
             <Zap className="h-3 w-3 mr-1" />
             Active
           </Badge>
@@ -499,11 +499,11 @@ export const AutomationOrchestrator: React.FC = () => {
 
                   {/* AI Optimizations */}
                   {workflow.ai_optimizations.suggested_improvements.length > 0 && (
-                    <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                    <div className="bg-info/5 p-4 rounded-lg border border-blue-200">
                       <div className="flex items-center space-x-2 mb-2">
                         <Bot className="h-4 w-4 text-info" />
                         <h4 className="font-medium text-sm text-blue-900">AI Optimization Suggestions</h4>
-                        <Badge variant="outline" className="bg-blue-100 text-blue-700 text-xs">
+                        <Badge variant="outline" className="bg-info/10 text-blue-700 text-xs">
                           Score: {workflow.ai_optimizations.optimization_score}/100
                         </Badge>
                       </div>

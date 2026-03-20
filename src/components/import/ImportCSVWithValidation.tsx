@@ -450,7 +450,7 @@ export function ImportCSVWithValidation() {
       {/* Done Step */}
       {step === 'done' && importResult && (
         <div className="space-y-4">
-          <Card className="border-green-200 bg-green-50">
+          <Card className="border-green-200 bg-success/5">
             <CardContent className="pt-6">
               <div className="text-center space-y-4">
                 <CheckCircle2 className="h-16 w-16 mx-auto text-success" />

@@ -50,7 +50,7 @@ export const BigBuyConfigDialog = ({ open, onOpenChange }: BigBuyConfigDialogPro
           description: "Intégration BigBuy - Grossiste européen",
           category: "ecommerce",
           logo: '🏪',
-          color: 'bg-blue-500',
+          color: 'bg-info',
           features: [],
           setupSteps: [],
           status: 'available'

@@ -196,9 +196,9 @@ export function AdvancedReportsCenter() {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'completed': return 'text-success bg-green-100';
-      case 'generating': return 'text-info bg-blue-100';
-      case 'failed': return 'text-destructive bg-red-100';
+      case 'completed': return 'text-success bg-success/10';
+      case 'generating': return 'text-info bg-info/10';
+      case 'failed': return 'text-destructive bg-destructive/10';
       default: return 'text-gray-600 bg-gray-100';
     }
   };
@@ -478,10 +478,10 @@ export function AdvancedReportsCenter() {
               <CardContent>
                 <div className="space-y-4">
                   {[
-                    { name: 'Technologie & IA', value: 78, color: 'bg-blue-500' },
-                    { name: 'Marketing & Ventes', value: 65, color: 'bg-green-500' },
+                    { name: 'Technologie & IA', value: 78, color: 'bg-info' },
+                    { name: 'Marketing & Ventes', value: 65, color: 'bg-success' },
                     { name: 'Opérations', value: 89, color: 'bg-purple-500' },
-                    { name: 'Support Client', value: 94, color: 'bg-orange-500' }
+                    { name: 'Support Client', value: 94, color: 'bg-warning' }
                   ].map((item, index) => (
                     <div key={index}>
                       <div className="flex justify-between text-sm mb-1">

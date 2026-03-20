@@ -59,10 +59,10 @@ export function ImportJobHistory() {
 
   const getStatusBadge = (status: string) => {
     const variants: Record<string, { label: string; className: string }> = {
-      completed: { label: 'Terminé', className: 'bg-green-500' },
-      failed: { label: 'Échoué', className: 'bg-red-500' },
-      processing: { label: 'En cours', className: 'bg-blue-500' },
-      pending: { label: 'En attente', className: 'bg-yellow-500' }
+      completed: { label: 'Terminé', className: 'bg-success' },
+      failed: { label: 'Échoué', className: 'bg-destructive' },
+      processing: { label: 'En cours', className: 'bg-info' },
+      pending: { label: 'En attente', className: 'bg-warning' }
     }
     
     const variant = variants[status] || { label: status, className: 'bg-gray-500' }

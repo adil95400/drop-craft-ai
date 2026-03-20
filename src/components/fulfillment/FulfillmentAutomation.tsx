@@ -517,19 +517,19 @@ export function FulfillmentAutomation() {
                             <SelectContent>
                               <SelectItem value="1">
                                 <div className="flex items-center gap-2">
-                                  <span className="w-2 h-2 rounded-full bg-red-500" />
+                                  <span className="w-2 h-2 rounded-full bg-destructive" />
                                   Haute - S'exécute en premier
                                 </div>
                               </SelectItem>
                               <SelectItem value="2">
                                 <div className="flex items-center gap-2">
-                                  <span className="w-2 h-2 rounded-full bg-amber-500" />
+                                  <span className="w-2 h-2 rounded-full bg-warning" />
                                   Moyenne - Priorité standard
                                 </div>
                               </SelectItem>
                               <SelectItem value="3">
                                 <div className="flex items-center gap-2">
-                                  <span className="w-2 h-2 rounded-full bg-green-500" />
+                                  <span className="w-2 h-2 rounded-full bg-success" />
                                   Basse - Fallback
                                 </div>
                               </SelectItem>
@@ -712,12 +712,12 @@ export function FulfillmentAutomation() {
                         {/* Auto Label */}
                         <div className={cn(
                           "flex items-center justify-between p-4 rounded-xl border transition-all",
-                          formData.auto_label ? "border-green-500/50 bg-green-500/5" : "border-border bg-muted/20"
+                          formData.auto_label ? "border-green-500/50 bg-success/5" : "border-border bg-muted/20"
                         )}>
                           <div className="flex items-center gap-4">
                             <div className={cn(
                               "p-3 rounded-xl",
-                              formData.auto_label ? "bg-green-500/10" : "bg-muted"
+                              formData.auto_label ? "bg-success/10" : "bg-muted"
                             )}>
                               <Package className={cn(
                                 "h-5 w-5",
@@ -732,19 +732,19 @@ export function FulfillmentAutomation() {
                           <Switch
                             checked={formData.auto_label}
                             onCheckedChange={(checked) => setFormData({ ...formData, auto_label: checked })}
-                            className="data-[state=checked]:bg-green-500"
+                            className="data-[state=checked]:bg-success"
                           />
                         </div>
                         
                         {/* Auto Print */}
                         <div className={cn(
                           "flex items-center justify-between p-4 rounded-xl border transition-all",
-                          formData.auto_print ? "border-blue-500/50 bg-blue-500/5" : "border-border bg-muted/20"
+                          formData.auto_print ? "border-blue-500/50 bg-info/5" : "border-border bg-muted/20"
                         )}>
                           <div className="flex items-center gap-4">
                             <div className={cn(
                               "p-3 rounded-xl",
-                              formData.auto_print ? "bg-blue-500/10" : "bg-muted"
+                              formData.auto_print ? "bg-info/10" : "bg-muted"
                             )}>
                               <Printer className={cn(
                                 "h-5 w-5",
@@ -759,7 +759,7 @@ export function FulfillmentAutomation() {
                           <Switch
                             checked={formData.auto_print}
                             onCheckedChange={(checked) => setFormData({ ...formData, auto_print: checked })}
-                            className="data-[state=checked]:bg-blue-500"
+                            className="data-[state=checked]:bg-info"
                           />
                         </div>
                         
@@ -798,12 +798,12 @@ export function FulfillmentAutomation() {
                         {/* Add Insurance */}
                         <div className={cn(
                           "flex items-center justify-between p-4 rounded-xl border transition-all",
-                          formData.add_insurance ? "border-amber-500/50 bg-amber-500/5" : "border-border bg-muted/20"
+                          formData.add_insurance ? "border-amber-500/50 bg-warning/5" : "border-border bg-muted/20"
                         )}>
                           <div className="flex items-center gap-4">
                             <div className={cn(
                               "p-3 rounded-xl",
-                              formData.add_insurance ? "bg-amber-500/10" : "bg-muted"
+                              formData.add_insurance ? "bg-warning/10" : "bg-muted"
                             )}>
                               <AlertTriangle className={cn(
                                 "h-5 w-5",
@@ -818,19 +818,19 @@ export function FulfillmentAutomation() {
                           <Switch
                             checked={formData.add_insurance}
                             onCheckedChange={(checked) => setFormData({ ...formData, add_insurance: checked })}
-                            className="data-[state=checked]:bg-amber-500"
+                            className="data-[state=checked]:bg-warning"
                           />
                         </div>
                         
                         {/* Priority Processing */}
                         <div className={cn(
                           "flex items-center justify-between p-4 rounded-xl border transition-all",
-                          formData.priority_processing ? "border-rose-500/50 bg-rose-500/5" : "border-border bg-muted/20"
+                          formData.priority_processing ? "border-rose-500/50 bg-destructive/5" : "border-border bg-muted/20"
                         )}>
                           <div className="flex items-center gap-4">
                             <div className={cn(
                               "p-3 rounded-xl",
-                              formData.priority_processing ? "bg-rose-500/10" : "bg-muted"
+                              formData.priority_processing ? "bg-destructive/10" : "bg-muted"
                             )}>
                               <Zap className={cn(
                                 "h-5 w-5",
@@ -845,7 +845,7 @@ export function FulfillmentAutomation() {
                           <Switch
                             checked={formData.priority_processing}
                             onCheckedChange={(checked) => setFormData({ ...formData, priority_processing: checked })}
-                            className="data-[state=checked]:bg-rose-500"
+                            className="data-[state=checked]:bg-destructive"
                           />
                         </div>
                       </div>
@@ -960,7 +960,7 @@ export function FulfillmentAutomation() {
                             variant={rule.is_active ? "default" : "secondary"}
                             className={cn(
                               "shrink-0",
-                              rule.is_active && "bg-green-500/10 text-success border-green-500/20"
+                              rule.is_active && "bg-success/10 text-success border-green-500/20"
                             )}
                           >
                             {rule.is_active ? (

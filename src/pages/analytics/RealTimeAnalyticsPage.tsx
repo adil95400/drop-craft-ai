@@ -147,7 +147,7 @@ export default function RealTimeAnalyticsPage() {
             { label: 'Taux de conversion', value: `${conversionRate}%`, icon: TrendingUp, trend: '+0.3%', up: true },
           ].map(kpi => (
             <Card key={kpi.label} className="relative overflow-hidden">
-              {kpi.live && isLive && <div className="absolute top-2 right-2 w-2 h-2 rounded-full bg-green-500 animate-pulse" />}
+              {kpi.live && isLive && <div className="absolute top-2 right-2 w-2 h-2 rounded-full bg-success animate-pulse" />}
               <CardHeader className="pb-2">
                 <CardDescription className="flex items-center gap-2"><kpi.icon className="h-4 w-4" />{kpi.label}</CardDescription>
                 <CardTitle className="text-2xl flex items-center gap-2">
@@ -168,7 +168,7 @@ export default function RealTimeAnalyticsPage() {
               <CardTitle className="flex items-center gap-2">
                 <Activity className="h-5 w-5 text-primary" />
                 Trafic en temps réel
-                {isLive && <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />}
+                {isLive && <span className="w-2 h-2 rounded-full bg-success animate-pulse" />}
               </CardTitle>
             </CardHeader>
             <CardContent>

@@ -55,10 +55,10 @@ const RankTracker = () => {
 
   const getPositionColor = (position: number | null) => {
     if (!position) return "bg-gray-100 text-gray-800";
-    if (position <= 3) return "bg-green-100 text-success";
-    if (position <= 10) return "bg-blue-100 text-blue-800";
+    if (position <= 3) return "bg-success/10 text-success";
+    if (position <= 10) return "bg-info/10 text-blue-800";
     if (position <= 20) return "bg-orange-100 text-orange-800";
-    return "bg-red-100 text-red-800";
+    return "bg-destructive/10 text-red-800";
   };
 
   // Use real keyword position history or show empty state
@@ -115,7 +115,7 @@ const RankTracker = () => {
             <Card>
               <CardContent className="p-6">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center">
+                  <div className="w-10 h-10 rounded-lg bg-info/10 flex items-center justify-center">
                     <BarChart3 className="w-5 h-5 text-info" />
                   </div>
                   <div>
@@ -129,7 +129,7 @@ const RankTracker = () => {
             <Card>
               <CardContent className="p-6">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center">
+                  <div className="w-10 h-10 rounded-lg bg-success/10 flex items-center justify-center">
                     <TrendingUp className="w-5 h-5 text-success" />
                   </div>
                   <div>

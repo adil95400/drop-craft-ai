@@ -150,7 +150,7 @@ export default function ChannableStyleSuppliersPage() {
             <RefreshCcw className="w-4 h-4" />
             <span className="hidden sm:inline">{t('page.synchronization')}</span>
             {activeSyncJobs.length > 0 && (
-              <span className="absolute -top-1 -right-1 w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+              <span className="absolute -top-1 -right-1 w-2 h-2 bg-success rounded-full animate-pulse" />
             )}
           </TabsTrigger>
         </TabsList>

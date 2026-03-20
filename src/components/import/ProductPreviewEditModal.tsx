@@ -334,7 +334,7 @@ export function ProductPreviewEditModal({
                     initial={{ opacity: 0, height: 0 }}
                     animate={{ opacity: 1, height: 'auto' }}
                     exit={{ opacity: 0, height: 0 }}
-                    className="flex items-center gap-2.5 p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-sm"
+                    className="flex items-center gap-2.5 p-3 rounded-xl bg-warning/10 border border-amber-500/20 text-sm"
                   >
                     <Copy className="h-4 w-4 text-warning shrink-0" />
                     <span className="text-amber-700 dark:text-amber-400">

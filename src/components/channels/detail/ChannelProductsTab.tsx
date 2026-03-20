@@ -79,7 +79,7 @@ export function ChannelProductsTab({
   const getStatusBadge = (status: string | null) => {
     switch (status) {
       case 'active':
-        return <Badge className="bg-green-500/20 text-success dark:text-green-400 border-green-500/30 text-xs">{t('products.active')}</Badge>
+        return <Badge className="bg-success/20 text-success dark:text-green-400 border-green-500/30 text-xs">{t('products.active')}</Badge>
       case 'draft':
         return <Badge variant="secondary" className="text-xs">{t('products.draft')}</Badge>
       case 'archived':
@@ -103,7 +103,7 @@ export function ChannelProductsTab({
       <CardHeader className="pb-4 bg-gradient-to-r from-muted/50 to-transparent">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <div className="p-2 rounded-xl bg-blue-500/10">
+            <div className="p-2 rounded-xl bg-info/10">
               <Package className="h-5 w-5 text-info dark:text-blue-400" />
             </div>
             <div>

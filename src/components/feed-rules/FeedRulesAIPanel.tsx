@@ -58,9 +58,9 @@ export function FeedRulesAIPanel() {
 
   const getPriorityColor = (priority: FeedRuleRecommendation['priority']) => {
     switch (priority) {
-      case 'high': return 'bg-red-500/10 text-destructive border-red-500/20';
-      case 'medium': return 'bg-amber-500/10 text-warning border-amber-500/20';
-      case 'low': return 'bg-blue-500/10 text-info border-blue-500/20';
+      case 'high': return 'bg-destructive/10 text-destructive border-red-500/20';
+      case 'medium': return 'bg-warning/10 text-warning border-amber-500/20';
+      case 'low': return 'bg-info/10 text-info border-blue-500/20';
     }
   };
 
@@ -73,7 +73,7 @@ export function FeedRulesAIPanel() {
             <div className="flex items-center gap-4">
               <div className={cn(
                 "p-2 rounded-lg",
-                stats.coverageScore >= 70 ? "bg-emerald-500/10" : "bg-amber-500/10"
+                stats.coverageScore >= 70 ? "bg-success/10" : "bg-warning/10"
               )}>
                 <Target className={cn(
                   "h-5 w-5",
@@ -109,7 +109,7 @@ export function FeedRulesAIPanel() {
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center gap-4">
-              <div className="p-2 bg-amber-500/10 rounded-lg">
+              <div className="p-2 bg-warning/10 rounded-lg">
                 <AlertTriangle className="h-5 w-5 text-warning" />
               </div>
               <div>
@@ -123,7 +123,7 @@ export function FeedRulesAIPanel() {
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center gap-4">
-              <div className="p-2 bg-emerald-500/10 rounded-lg">
+              <div className="p-2 bg-success/10 rounded-lg">
                 <TrendingUp className="h-5 w-5 text-success" />
               </div>
               <div>

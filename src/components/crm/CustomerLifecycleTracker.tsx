@@ -36,11 +36,11 @@ export function CustomerLifecycleTracker({
   const total = totalCustomers || 1;
 
   const stages: LifecycleStage[] = [
-    { id: 'new', name: 'Nouveaux', icon: UserPlus, count: newCustomers, percentage: (newCustomers / total) * 100, color: 'bg-blue-500' },
-    { id: 'active', name: 'Actifs', icon: ShoppingCart, count: activeCustomers, percentage: (activeCustomers / total) * 100, color: 'bg-green-500' },
+    { id: 'new', name: 'Nouveaux', icon: UserPlus, count: newCustomers, percentage: (newCustomers / total) * 100, color: 'bg-info' },
+    { id: 'active', name: 'Actifs', icon: ShoppingCart, count: activeCustomers, percentage: (activeCustomers / total) * 100, color: 'bg-success' },
     { id: 'repeat', name: 'Récurrents', icon: Repeat, count: repeatCustomers, percentage: (repeatCustomers / total) * 100, color: 'bg-purple-500' },
-    { id: 'vip', name: 'VIP', icon: Crown, count: vipCustomers, percentage: (vipCustomers / total) * 100, color: 'bg-yellow-500' },
-    { id: 'at-risk', name: 'À risque', icon: UserX, count: atRiskCustomers, percentage: (atRiskCustomers / total) * 100, color: 'bg-red-500' },
+    { id: 'vip', name: 'VIP', icon: Crown, count: vipCustomers, percentage: (vipCustomers / total) * 100, color: 'bg-warning' },
+    { id: 'at-risk', name: 'À risque', icon: UserX, count: atRiskCustomers, percentage: (atRiskCustomers / total) * 100, color: 'bg-destructive' },
   ];
 
   return (

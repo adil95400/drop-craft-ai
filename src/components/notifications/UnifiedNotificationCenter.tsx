@@ -291,7 +291,7 @@ export function UnifiedNotificationCenter() {
                 ) : (
                   filteredNotifications.map((notification) => (
                     <Card key={notification.id} className={`transition-colors ${
-                      !notification.read ? 'bg-blue-50 border-blue-200' : 'hover:bg-muted/20'
+                      !notification.read ? 'bg-info/5 border-blue-200' : 'hover:bg-muted/20'
                     }`}>
                       <CardContent className="p-4">
                         <div className="flex items-start justify-between gap-3">
@@ -304,7 +304,7 @@ export function UnifiedNotificationCenter() {
                                 <h4 className="font-medium text-sm">{notification.title}</h4>
                                 {getPriorityBadge(notification.priority)}
                                 {!notification.read && (
-                                  <div className="w-2 h-2 rounded-full bg-blue-600"></div>
+                                  <div className="w-2 h-2 rounded-full bg-info"></div>
                                 )}
                               </div>
                               <p className="text-sm text-muted-foreground mb-2">

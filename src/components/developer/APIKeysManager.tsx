@@ -129,7 +129,7 @@ export function APIKeysManager() {
       <CardContent className="space-y-3">
         {/* Just created key banner */}
         {justCreatedKey && (
-          <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="p-3 border border-green-500/30 bg-green-500/10 rounded-lg space-y-2">
+          <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="p-3 border border-green-500/30 bg-success/10 rounded-lg space-y-2">
             <div className="flex items-center gap-2">
               <Shield className="h-4 w-4 text-success" />
               <span className="text-sm font-semibold text-success">Nouvelle clé créée</span>

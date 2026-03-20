@@ -280,9 +280,9 @@ export const AdvancedImportMethods: React.FC = () => {
 
   const getComplexityColor = (complexity: string) => {
     switch (complexity) {
-      case 'easy': return 'bg-green-100 text-success'
-      case 'medium': return 'bg-yellow-100 text-yellow-800'
-      case 'advanced': return 'bg-red-100 text-red-800'
+      case 'easy': return 'bg-success/10 text-success'
+      case 'medium': return 'bg-warning/10 text-yellow-800'
+      case 'advanced': return 'bg-destructive/10 text-red-800'
       default: return 'bg-gray-100 text-gray-800'
     }
   }

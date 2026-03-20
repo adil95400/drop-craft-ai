@@ -540,7 +540,7 @@ export const WooCommerceIntegration: React.FC<WooCommerceIntegrationProps> = ({
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="bg-blue-50 p-4 rounded-lg">
+              <div className="bg-info/5 p-4 rounded-lg">
                 <div className="flex items-start gap-2">
                   <Download className="w-5 h-5 text-info mt-0.5" />
                   <div>

@@ -182,7 +182,7 @@ export const SupplierManagement = () => {
       description: 'Importez vos produits depuis un fichier CSV',
       icon: FileText,
       color: 'text-info',
-      bgColor: 'bg-blue-50'
+      bgColor: 'bg-info/5'
     },
     {
       id: 'url',
@@ -190,7 +190,7 @@ export const SupplierManagement = () => {
       description: 'Importez depuis une URL ou site web',
       icon: Globe,
       color: 'text-success',
-      bgColor: 'bg-green-50'
+      bgColor: 'bg-success/5'
     },
     {
       id: 'api',
@@ -442,8 +442,8 @@ export const SupplierManagement = () => {
   // Fonctions utilitaires
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'available': return 'bg-green-500'
-      case 'beta': return 'bg-orange-500'
+      case 'available': return 'bg-success'
+      case 'beta': return 'bg-warning'
       case 'coming_soon': return 'bg-slate-400'
       default: return 'bg-slate-400'
     }

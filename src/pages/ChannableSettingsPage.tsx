@@ -542,7 +542,7 @@ export default function ChannableSettingsPage() {
                 <Card className="border-red-500/30">
                   <CardHeader>
                     <div className="flex items-center gap-3">
-                      <div className="p-2 rounded-xl bg-red-500/10">
+                      <div className="p-2 rounded-xl bg-destructive/10">
                         <AlertTriangle className="w-5 h-5 text-destructive" />
                       </div>
                       <div>

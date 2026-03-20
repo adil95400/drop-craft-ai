@@ -36,9 +36,9 @@ import {
 } from '@/hooks/useUnifiedSync';
 
 const SYNC_MODULES = [
-  { id: 'products', label: 'Produits', icon: Package, color: 'bg-blue-500' },
-  { id: 'prices', label: 'Prix', icon: DollarSign, color: 'bg-green-500' },
-  { id: 'stock', label: 'Stock', icon: Warehouse, color: 'bg-orange-500' },
+  { id: 'products', label: 'Produits', icon: Package, color: 'bg-info' },
+  { id: 'prices', label: 'Prix', icon: DollarSign, color: 'bg-success' },
+  { id: 'stock', label: 'Stock', icon: Warehouse, color: 'bg-warning' },
   { id: 'orders', label: 'Commandes', icon: ShoppingCart, color: 'bg-purple-500' },
   { id: 'customers', label: 'Clients', icon: Users, color: 'bg-pink-500' },
   { id: 'tracking', label: 'Tracking', icon: Truck, color: 'bg-cyan-500' },

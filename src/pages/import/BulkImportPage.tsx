@@ -74,11 +74,11 @@ export default function BulkImportPage() {
 
   const getStatusConfig = (status: string) => {
     const configs: Record<string, { icon: any; color: string; bgColor: string; label: string }> = {
-      completed: { icon: CheckCircle, color: 'text-success', bgColor: 'bg-green-500/10', label: 'Terminé' },
-      processing: { icon: RefreshCw, color: 'text-info', bgColor: 'bg-blue-500/10', label: 'En cours' },
-      failed: { icon: AlertCircle, color: 'text-destructive', bgColor: 'bg-red-500/10', label: 'Échoué' },
-      pending: { icon: Clock, color: 'text-warning', bgColor: 'bg-amber-500/10', label: 'En attente' },
-      partial: { icon: AlertCircle, color: 'text-warning', bgColor: 'bg-orange-500/10', label: 'Partiel' },
+      completed: { icon: CheckCircle, color: 'text-success', bgColor: 'bg-success/10', label: 'Terminé' },
+      processing: { icon: RefreshCw, color: 'text-info', bgColor: 'bg-info/10', label: 'En cours' },
+      failed: { icon: AlertCircle, color: 'text-destructive', bgColor: 'bg-destructive/10', label: 'Échoué' },
+      pending: { icon: Clock, color: 'text-warning', bgColor: 'bg-warning/10', label: 'En attente' },
+      partial: { icon: AlertCircle, color: 'text-warning', bgColor: 'bg-warning/10', label: 'Partiel' },
     }
     return configs[status] || configs.pending
   }

@@ -106,7 +106,7 @@ export function ResponsiveProductTable({
   const getStatusBadge = (status?: string) => {
     switch (status) {
       case 'active':
-        return <Badge className="bg-green-500/20 text-success text-xs">Actif</Badge>
+        return <Badge className="bg-success/20 text-success text-xs">Actif</Badge>
       case 'draft':
         return <Badge variant="secondary" className="text-xs">Brouillon</Badge>
       case 'archived':

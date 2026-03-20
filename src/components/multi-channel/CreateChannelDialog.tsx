@@ -69,7 +69,7 @@ const channelOptions = [
     label: 'Shopify', 
     icon: ShoppingCart,
     color: 'from-green-500 to-emerald-600',
-    bgColor: 'bg-green-500/10',
+    bgColor: 'bg-success/10',
     borderColor: 'border-green-500/30',
     description: 'Plateforme e-commerce populaire',
     features: ['Sync automatique', 'Webhooks temps réel', 'Multi-devises']
@@ -79,7 +79,7 @@ const channelOptions = [
     label: 'Amazon', 
     icon: Package,
     color: 'from-orange-500 to-amber-600',
-    bgColor: 'bg-orange-500/10',
+    bgColor: 'bg-warning/10',
     borderColor: 'border-orange-500/30',
     description: 'Marketplace mondiale',
     features: ['FBA intégré', 'Gestion stock', 'Multi-pays']
@@ -89,7 +89,7 @@ const channelOptions = [
     label: 'eBay', 
     icon: Tag,
     color: 'from-blue-500 to-indigo-600',
-    bgColor: 'bg-blue-500/10',
+    bgColor: 'bg-info/10',
     borderColor: 'border-blue-500/30',
     description: 'Enchères et vente directe',
     features: ['Enchères auto', 'Frais optimisés', 'Analytics']

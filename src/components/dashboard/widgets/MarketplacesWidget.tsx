@@ -143,7 +143,7 @@ export function MarketplacesWidget({ settings }: MarketplacesWidgetProps) {
                   </div>
                   <div className="flex items-center gap-2">
                     {marketplace.connection_status === 'connected' ? (
-                      <Badge variant="default" className="text-[10px] bg-green-500">
+                      <Badge variant="default" className="text-[10px] bg-success">
                         <CheckCircle className="h-2 w-2 mr-1" />
                         Actif
                       </Badge>
@@ -169,7 +169,7 @@ export function MarketplacesWidget({ settings }: MarketplacesWidgetProps) {
         )}
 
         {showStats && orderStats && orderStats.totalRevenue > 0 && (
-          <div className="flex items-center justify-center gap-2 p-2 bg-green-500/10 rounded-lg">
+          <div className="flex items-center justify-center gap-2 p-2 bg-success/10 rounded-lg">
             <TrendingUp className="h-4 w-4 text-success" />
             <span className="text-sm font-medium">
               {orderStats.totalRevenue.toLocaleString('fr-FR')} € de revenus

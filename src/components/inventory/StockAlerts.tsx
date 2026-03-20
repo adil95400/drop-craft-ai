@@ -14,13 +14,13 @@ export function StockAlerts() {
   const getSeverityConfig = (severity: string) => {
     switch (severity) {
       case 'critical':
-        return { icon: XCircle, color: 'text-destructive', bg: 'bg-red-500', variant: 'destructive' as const };
+        return { icon: XCircle, color: 'text-destructive', bg: 'bg-destructive', variant: 'destructive' as const };
       case 'high':
-        return { icon: AlertTriangle, color: 'text-warning', bg: 'bg-orange-500', variant: 'destructive' as const };
+        return { icon: AlertTriangle, color: 'text-warning', bg: 'bg-warning', variant: 'destructive' as const };
       case 'medium':
-        return { icon: AlertCircle, color: 'text-warning', bg: 'bg-yellow-500', variant: 'secondary' as const };
+        return { icon: AlertCircle, color: 'text-warning', bg: 'bg-warning', variant: 'secondary' as const };
       default:
-        return { icon: AlertCircle, color: 'text-info', bg: 'bg-blue-500', variant: 'default' as const };
+        return { icon: AlertCircle, color: 'text-info', bg: 'bg-info', variant: 'default' as const };
     }
   };
 

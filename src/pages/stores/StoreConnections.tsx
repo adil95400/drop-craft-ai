@@ -75,8 +75,8 @@ export function StoreConnections() {
         </Card>
         <Card>
           <CardContent className="flex items-center p-6">
-            <div className="h-8 w-8 rounded-full bg-green-100 flex items-center justify-center">
-              <div className="h-3 w-3 rounded-full bg-green-500" />
+            <div className="h-8 w-8 rounded-full bg-success/10 flex items-center justify-center">
+              <div className="h-3 w-3 rounded-full bg-success" />
             </div>
             <div className="ml-4">
               <p className="text-sm font-medium text-muted-foreground">Connectées</p>
@@ -86,8 +86,8 @@ export function StoreConnections() {
         </Card>
         <Card>
           <CardContent className="flex items-center p-6">
-            <div className="h-8 w-8 rounded-full bg-red-100 flex items-center justify-center">
-              <div className="h-3 w-3 rounded-full bg-red-500" />
+            <div className="h-8 w-8 rounded-full bg-destructive/10 flex items-center justify-center">
+              <div className="h-3 w-3 rounded-full bg-destructive" />
             </div>
             <div className="ml-4">
               <p className="text-sm font-medium text-muted-foreground">Déconnectées</p>

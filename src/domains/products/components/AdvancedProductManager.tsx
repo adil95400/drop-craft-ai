@@ -71,8 +71,8 @@ export const AdvancedProductManager: React.FC = () => {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'active': return 'bg-green-500'
-      case 'paused': case 'inactive': return 'bg-red-500'
+      case 'active': return 'bg-success'
+      case 'paused': case 'inactive': return 'bg-destructive'
       case 'draft': return 'bg-gray-500'
       default: return 'bg-gray-500'
     }

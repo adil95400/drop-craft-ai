@@ -81,7 +81,7 @@ export function ProductsQuickFilters({
       label: 'Actifs', 
       icon: CheckCircle, 
       count: counts.active,
-      color: 'bg-green-500/10 text-success hover:bg-green-500/20'
+      color: 'bg-success/10 text-success hover:bg-success/20'
     },
     { 
       id: 'inactive', 
@@ -95,7 +95,7 @@ export function ProductsQuickFilters({
       label: 'Stock faible', 
       icon: AlertTriangle, 
       count: counts.lowStock,
-      color: 'bg-red-500/10 text-destructive hover:bg-red-500/20',
+      color: 'bg-destructive/10 text-destructive hover:bg-destructive/20',
       emoji: '⚠️'
     },
     { 
@@ -103,7 +103,7 @@ export function ProductsQuickFilters({
       label: 'Winners', 
       icon: Star, 
       count: counts.winners,
-      color: 'bg-yellow-500/10 text-warning hover:bg-yellow-500/20',
+      color: 'bg-warning/10 text-warning hover:bg-warning/20',
       emoji: '⭐'
     },
     { 
@@ -119,7 +119,7 @@ export function ProductsQuickFilters({
       label: 'Opportunités', 
       icon: Sparkles, 
       count: counts.toOptimize,
-      color: 'bg-emerald-500/10 text-success hover:bg-emerald-500/20',
+      color: 'bg-success/10 text-success hover:bg-success/20',
       emoji: '💰'
     }
   ];
@@ -180,7 +180,7 @@ export function ProductsQuickFilters({
                     variant={isActive ? 'secondary' : 'outline'} 
                     className={cn(
                       "h-5 min-w-[20px] px-1.5 text-xs font-bold",
-                      filter.isPrimary && !isActive && "bg-amber-500/20 text-amber-700 border-amber-500/30"
+                      filter.isPrimary && !isActive && "bg-warning/20 text-amber-700 border-amber-500/30"
                     )}
                   >
                     {filter.count}
@@ -192,7 +192,7 @@ export function ProductsQuickFilters({
                   <motion.div
                     animate={{ scale: [1, 1.2, 1], opacity: [1, 0.6, 1] }}
                     transition={{ duration: 1.5, repeat: Infinity }}
-                    className="h-2 w-2 rounded-full bg-amber-500"
+                    className="h-2 w-2 rounded-full bg-warning"
                   />
                 )}
               </Button>

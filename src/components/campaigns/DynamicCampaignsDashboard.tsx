@@ -27,10 +27,10 @@ const CAMPAIGN_TYPES = [
 ];
 
 const PLATFORMS = [
-  { value: 'facebook', label: 'Facebook/Instagram', color: 'bg-blue-500' },
-  { value: 'google', label: 'Google Ads', color: 'bg-red-500' },
+  { value: 'facebook', label: 'Facebook/Instagram', color: 'bg-info' },
+  { value: 'google', label: 'Google Ads', color: 'bg-destructive' },
   { value: 'tiktok', label: 'TikTok Ads', color: 'bg-black' },
-  { value: 'pinterest', label: 'Pinterest Ads', color: 'bg-red-600' }
+  { value: 'pinterest', label: 'Pinterest Ads', color: 'bg-destructive' }
 ];
 
 export function DynamicCampaignsDashboard() {
@@ -97,10 +97,10 @@ export function DynamicCampaignsDashboard() {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'active': return 'bg-green-500';
-      case 'paused': return 'bg-yellow-500';
+      case 'active': return 'bg-success';
+      case 'paused': return 'bg-warning';
       case 'draft': return 'bg-gray-500';
-      case 'completed': return 'bg-blue-500';
+      case 'completed': return 'bg-info';
       default: return 'bg-gray-400';
     }
   };

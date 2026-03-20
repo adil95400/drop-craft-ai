@@ -201,7 +201,7 @@ export function FeedRulesDashboard() {
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center gap-4">
-              <div className="p-2 bg-green-500/10 rounded-lg">
+              <div className="p-2 bg-success/10 rounded-lg">
                 <CheckCircle2 className="h-5 w-5 text-success" />
               </div>
               <div>
@@ -214,7 +214,7 @@ export function FeedRulesDashboard() {
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center gap-4">
-              <div className="p-2 bg-blue-500/10 rounded-lg">
+              <div className="p-2 bg-info/10 rounded-lg">
                 <Zap className="h-5 w-5 text-info" />
               </div>
               <div>
@@ -227,7 +227,7 @@ export function FeedRulesDashboard() {
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center gap-4">
-              <div className="p-2 bg-orange-500/10 rounded-lg">
+              <div className="p-2 bg-warning/10 rounded-lg">
                 <TrendingUp className="h-5 w-5 text-warning" />
               </div>
               <div>

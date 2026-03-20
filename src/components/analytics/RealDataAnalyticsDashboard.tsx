@@ -139,7 +139,7 @@ export function RealDataAnalyticsDashboard({ className }: RealDataAnalyticsDashb
     <div className={cn("space-y-4 sm:space-y-6", className)}>
       {/* Demo badge */}
       {analytics?.isDemo && (
-        <div className="bg-amber-500/10 border border-amber-500/20 rounded-lg p-3 flex items-center gap-2">
+        <div className="bg-warning/10 border border-amber-500/20 rounded-lg p-3 flex items-center gap-2">
           <AlertCircle className="h-4 w-4 text-warning" />
           <span className="text-sm text-warning">Données de démonstration - Ajoutez des commandes pour voir vos vraies statistiques</span>
         </div>
@@ -348,7 +348,7 @@ export function RealDataAnalyticsDashboard({ className }: RealDataAnalyticsDashb
                       <div className="flex items-center gap-3">
                         <div className={cn(
                           "w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold",
-                          index === 0 ? "bg-yellow-100 text-yellow-700" :
+                          index === 0 ? "bg-warning/10 text-yellow-700" :
                           index === 1 ? "bg-gray-100 text-gray-700" :
                           index === 2 ? "bg-orange-100 text-orange-700" :
                           "bg-muted text-muted-foreground"

@@ -47,9 +47,9 @@ export function BulkJobsMonitor() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'completed':
-        return <Badge className="bg-green-500"><CheckCircle2 className="h-3 w-3 mr-1" /> Terminé</Badge>;
+        return <Badge className="bg-success"><CheckCircle2 className="h-3 w-3 mr-1" /> Terminé</Badge>;
       case 'processing':
-        return <Badge className="bg-blue-500"><Activity className="h-3 w-3 mr-1 animate-spin" /> En cours</Badge>;
+        return <Badge className="bg-info"><Activity className="h-3 w-3 mr-1 animate-spin" /> En cours</Badge>;
       case 'failed':
         return <Badge variant="destructive"><XCircle className="h-3 w-3 mr-1" /> Échoué</Badge>;
       case 'cancelled':

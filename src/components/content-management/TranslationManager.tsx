@@ -74,9 +74,9 @@ const AVAILABLE_LANGUAGES = [
 
 const STATUS_CONFIG = {
   draft: { label: 'Brouillon', color: 'bg-gray-500', icon: Clock },
-  pending_review: { label: 'En révision', color: 'bg-yellow-500', icon: AlertCircle },
-  approved: { label: 'Approuvé', color: 'bg-green-500', icon: Check },
-  published: { label: 'Publié', color: 'bg-blue-500', icon: Globe },
+  pending_review: { label: 'En révision', color: 'bg-warning', icon: AlertCircle },
+  approved: { label: 'Approuvé', color: 'bg-success', icon: Check },
+  published: { label: 'Publié', color: 'bg-info', icon: Globe },
 };
 
 export function TranslationManager() {
@@ -294,7 +294,7 @@ export function TranslationManager() {
             </Card>
             <Card>
               <CardContent className="p-4 flex items-center gap-3">
-                <div className="p-2 bg-blue-500/10 rounded-lg">
+                <div className="p-2 bg-info/10 rounded-lg">
                   <Languages className="h-5 w-5 text-info" />
                 </div>
                 <div>
@@ -305,7 +305,7 @@ export function TranslationManager() {
             </Card>
             <Card>
               <CardContent className="p-4 flex items-center gap-3">
-                <div className="p-2 bg-yellow-500/10 rounded-lg">
+                <div className="p-2 bg-warning/10 rounded-lg">
                   <Clock className="h-5 w-5 text-warning" />
                 </div>
                 <div>
@@ -316,7 +316,7 @@ export function TranslationManager() {
             </Card>
             <Card>
               <CardContent className="p-4 flex items-center gap-3">
-                <div className="p-2 bg-green-500/10 rounded-lg">
+                <div className="p-2 bg-success/10 rounded-lg">
                   <Check className="h-5 w-5 text-success" />
                 </div>
                 <div>

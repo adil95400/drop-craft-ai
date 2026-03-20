@@ -198,7 +198,7 @@ export function CronJobsDashboard() {
       case 'running':
         return <Badge variant="secondary"><Loader2 className="h-3 w-3 mr-1 animate-spin" /> En cours</Badge>;
       case 'success':
-        return <Badge variant="default" className="bg-green-500"><CheckCircle2 className="h-3 w-3 mr-1" /> Succès</Badge>;
+        return <Badge variant="default" className="bg-success"><CheckCircle2 className="h-3 w-3 mr-1" /> Succès</Badge>;
       case 'error':
         return <Badge variant="destructive"><XCircle className="h-3 w-3 mr-1" /> Erreur</Badge>;
       default:

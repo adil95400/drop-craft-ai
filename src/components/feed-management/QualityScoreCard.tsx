@@ -50,9 +50,9 @@ export function QualityScoreCard({
   }
 
   const getScoreBg = (s: number) => {
-    if (s >= 90) return 'bg-green-500'
-    if (s >= 70) return 'bg-yellow-500'
-    return 'bg-red-500'
+    if (s >= 90) return 'bg-success'
+    if (s >= 70) return 'bg-warning'
+    return 'bg-destructive'
   }
 
   const getScoreRing = (s: number) => {
@@ -71,9 +71,9 @@ export function QualityScoreCard({
 
   const getIssueBg = (type: QualityIssue['type']) => {
     switch (type) {
-      case 'error': return 'bg-red-500/10 border-red-500/20'
-      case 'warning': return 'bg-yellow-500/10 border-yellow-500/20'
-      case 'info': return 'bg-blue-500/10 border-blue-500/20'
+      case 'error': return 'bg-destructive/10 border-red-500/20'
+      case 'warning': return 'bg-warning/10 border-yellow-500/20'
+      case 'info': return 'bg-info/10 border-blue-500/20'
     }
   }
 
@@ -124,7 +124,7 @@ export function QualityScoreCard({
           {previousScore !== undefined && (
             <div className="flex items-center justify-center gap-2">
               {trend > 0 ? (
-                <Badge className="bg-green-500/20 text-success border-green-500/30">
+                <Badge className="bg-success/20 text-success border-green-500/30">
                   <TrendingUp className="h-3 w-3 mr-1" />
                   +{trend.toFixed(1)}%
                 </Badge>
@@ -142,11 +142,11 @@ export function QualityScoreCard({
 
           {/* Quick Stats */}
           <div className="grid grid-cols-2 gap-2 pt-2 border-t">
-            <div className="text-center p-2 rounded-lg bg-red-500/10">
+            <div className="text-center p-2 rounded-lg bg-destructive/10">
               <p className="text-lg font-bold text-red-700">{errorCount}</p>
               <p className="text-xs text-muted-foreground">Erreurs</p>
             </div>
-            <div className="text-center p-2 rounded-lg bg-yellow-500/10">
+            <div className="text-center p-2 rounded-lg bg-warning/10">
               <p className="text-lg font-bold text-yellow-700">{warningCount}</p>
               <p className="text-xs text-muted-foreground">Alertes</p>
             </div>

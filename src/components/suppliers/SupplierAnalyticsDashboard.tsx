@@ -316,17 +316,17 @@ export function SupplierAnalyticsDashboard() {
                   </div>
                   <div>
                     {analytic.success_rate >= 95 ? (
-                      <Badge className="bg-green-100 text-success">
+                      <Badge className="bg-success/10 text-success">
                         <CheckCircle className="h-3 w-3 mr-1" />
                         Excellent
                       </Badge>
                     ) : analytic.success_rate >= 85 ? (
-                      <Badge className="bg-blue-100 text-blue-800">
+                      <Badge className="bg-info/10 text-blue-800">
                         <TrendingUp className="h-3 w-3 mr-1" />
                         Bon
                       </Badge>
                     ) : (
-                      <Badge className="bg-yellow-100 text-yellow-800">
+                      <Badge className="bg-warning/10 text-yellow-800">
                         <AlertTriangle className="h-3 w-3 mr-1" />
                         Moyen
                       </Badge>

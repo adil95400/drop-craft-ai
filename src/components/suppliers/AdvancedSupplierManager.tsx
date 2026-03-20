@@ -91,7 +91,7 @@ export function AdvancedSupplierManager() {
 
   const getStatusBadge = (status: string) => {
     switch (status) {
-      case 'active': return <Badge className="bg-green-500">Actif</Badge>
+      case 'active': return <Badge className="bg-success">Actif</Badge>
       case 'warning': return <Badge variant="destructive">Attention</Badge>
       case 'pending': return <Badge variant="secondary">En attente</Badge>
       case 'inactive': return <Badge variant="outline">Inactif</Badge>
@@ -393,9 +393,9 @@ export function AdvancedSupplierManager() {
                       <div key={supplier.id} className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
                           <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
-                            index === 0 ? 'bg-yellow-500 text-white' :
+                            index === 0 ? 'bg-warning text-white' :
                             index === 1 ? 'bg-gray-400 text-white' :
-                            index === 2 ? 'bg-orange-500 text-white' : 'bg-muted'
+                            index === 2 ? 'bg-warning text-white' : 'bg-muted'
                           }`}>
                             {index + 1}
                           </div>
@@ -436,7 +436,7 @@ export function AdvancedSupplierManager() {
                     </Button>
                   </div>
 
-                  <div className="flex items-start gap-3 p-3 border rounded-lg border-blue-200 bg-blue-50">
+                  <div className="flex items-start gap-3 p-3 border rounded-lg border-blue-200 bg-info/5">
                     <Target className="h-4 w-4 text-info mt-0.5" />
                     <div className="flex-1">
                       <p className="font-medium text-sm">Opportunité de négociation</p>
@@ -451,7 +451,7 @@ export function AdvancedSupplierManager() {
                     </Button>
                   </div>
 
-                  <div className="flex items-start gap-3 p-3 border rounded-lg border-green-200 bg-green-50">
+                  <div className="flex items-start gap-3 p-3 border rounded-lg border-green-200 bg-success/5">
                     <CheckCircle className="h-4 w-4 text-success mt-0.5" />
                     <div className="flex-1">
                       <p className="font-medium text-sm">Nouveau certification</p>
@@ -582,7 +582,7 @@ export function AdvancedSupplierManager() {
                   <div className="p-3 border rounded-lg">
                     <div className="flex items-center justify-between mb-2">
                       <span className="font-medium text-sm">Auto-sync quotidien</span>
-                      <Badge className="bg-green-500">Actif</Badge>
+                      <Badge className="bg-success">Actif</Badge>
                     </div>
                     <p className="text-xs text-muted-foreground">
                       Synchronisation automatique des stocks et prix à 6h00
@@ -592,7 +592,7 @@ export function AdvancedSupplierManager() {
                   <div className="p-3 border rounded-lg">
                     <div className="flex items-center justify-between mb-2">
                       <span className="font-medium text-sm">Alertes performance</span>
-                      <Badge className="bg-green-500">Actif</Badge>
+                      <Badge className="bg-success">Actif</Badge>
                     </div>
                     <p className="text-xs text-muted-foreground">
                       Notification si fiabilité &lt; 85% ou délai &gt; 15 jours

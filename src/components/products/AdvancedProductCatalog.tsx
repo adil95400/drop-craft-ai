@@ -91,10 +91,10 @@ const BULK_ACTIONS: BulkAction[] = [
 ]
 
 const CATEGORIES_ANALYTICS = [
-  { name: 'Électronique', count: 1247, revenue: '€124,750', growth: '+12%', color: 'bg-blue-500' },
+  { name: 'Électronique', count: 1247, revenue: '€124,750', growth: '+12%', color: 'bg-info' },
   { name: 'Mode', count: 856, revenue: '€86,430', growth: '+8%', color: 'bg-purple-500' },
-  { name: 'Maison', count: 2341, revenue: '€198,120', growth: '+15%', color: 'bg-green-500' },
-  { name: 'Sport', count: 432, revenue: '€45,890', growth: '+5%', color: 'bg-orange-500' },
+  { name: 'Maison', count: 2341, revenue: '€198,120', growth: '+15%', color: 'bg-success' },
+  { name: 'Sport', count: 432, revenue: '€45,890', growth: '+5%', color: 'bg-warning' },
   { name: 'Beauté', count: 678, revenue: '€78,650', growth: '+18%', color: 'bg-pink-500' }
 ]
 
@@ -383,7 +383,7 @@ export function AdvancedProductCatalog() {
                       
                       <div className="absolute top-2 right-2 flex gap-1">
                         {product.status === 'active' && (
-                          <Badge variant="outline" className="h-5 text-xs bg-green-50">
+                          <Badge variant="outline" className="h-5 text-xs bg-success/5">
                             Actif
                           </Badge>
                         )}

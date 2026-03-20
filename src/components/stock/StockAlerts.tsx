@@ -85,10 +85,10 @@ export function StockAlerts() {
 
   const getSeverityColor = (severity: string) => {
     switch (severity) {
-      case 'critical': return 'text-destructive bg-red-50 dark:bg-red-950/20';
+      case 'critical': return 'text-destructive bg-destructive/5 dark:bg-red-950/20';
       case 'high': return 'text-warning bg-orange-50 dark:bg-orange-950/20';
-      case 'medium': return 'text-warning bg-yellow-50 dark:bg-yellow-950/20';
-      default: return 'text-info bg-blue-50 dark:bg-blue-950/20';
+      case 'medium': return 'text-warning bg-warning/5 dark:bg-yellow-950/20';
+      default: return 'text-info bg-info/5 dark:bg-blue-950/20';
     }
   };
 

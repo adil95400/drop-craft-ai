@@ -29,16 +29,16 @@ import {
 import { cn } from '@/lib/utils'
 
 const priorityColors = {
-  high: 'border-red-500/50 bg-red-500/5',
-  medium: 'border-yellow-500/50 bg-yellow-500/5',
-  low: 'border-blue-500/50 bg-blue-500/5'
+  high: 'border-red-500/50 bg-destructive/5',
+  medium: 'border-yellow-500/50 bg-warning/5',
+  low: 'border-blue-500/50 bg-info/5'
 }
 
 const destinationColors = {
-  google: 'bg-red-500',
-  facebook: 'bg-blue-600',
-  amazon: 'bg-orange-500',
-  shopify: 'bg-green-600'
+  google: 'bg-destructive',
+  facebook: 'bg-info',
+  amazon: 'bg-warning',
+  shopify: 'bg-success'
 }
 
 const destinationLabels = {
@@ -98,7 +98,7 @@ export function CategoryMappingAIPanel() {
           <Card className="border-border/50 bg-card/50">
             <CardContent className="pt-6">
               <div className="flex items-center justify-between mb-3">
-                <div className="p-2 rounded-lg bg-yellow-500/10">
+                <div className="p-2 rounded-lg bg-warning/10">
                   <AlertTriangle className="h-5 w-5 text-warning" />
                 </div>
               </div>
@@ -116,7 +116,7 @@ export function CategoryMappingAIPanel() {
           <Card className="border-border/50 bg-card/50">
             <CardContent className="pt-6">
               <div className="flex items-center justify-between mb-3">
-                <div className="p-2 rounded-lg bg-green-500/10">
+                <div className="p-2 rounded-lg bg-success/10">
                   <TrendingUp className="h-5 w-5 text-success" />
                 </div>
               </div>
@@ -134,7 +134,7 @@ export function CategoryMappingAIPanel() {
           <Card className="border-border/50 bg-card/50">
             <CardContent className="pt-6">
               <div className="flex items-center justify-between mb-3">
-                <div className="p-2 rounded-lg bg-blue-500/10">
+                <div className="p-2 rounded-lg bg-info/10">
                   <Clock className="h-5 w-5 text-info" />
                 </div>
               </div>

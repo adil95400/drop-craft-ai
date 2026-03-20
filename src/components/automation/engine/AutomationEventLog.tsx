@@ -79,10 +79,10 @@ export function AutomationEventLog() {
 
   const getLevelConfig = (level: string) => {
     switch (level) {
-      case 'success': return { icon: CheckCircle2, color: 'text-success', bg: 'bg-green-500/10' };
-      case 'error': return { icon: XCircle, color: 'text-destructive', bg: 'bg-red-500/10' };
-      case 'warning': return { icon: AlertTriangle, color: 'text-warning', bg: 'bg-amber-500/10' };
-      default: return { icon: Info, color: 'text-info', bg: 'bg-blue-500/10' };
+      case 'success': return { icon: CheckCircle2, color: 'text-success', bg: 'bg-success/10' };
+      case 'error': return { icon: XCircle, color: 'text-destructive', bg: 'bg-destructive/10' };
+      case 'warning': return { icon: AlertTriangle, color: 'text-warning', bg: 'bg-warning/10' };
+      default: return { icon: Info, color: 'text-info', bg: 'bg-info/10' };
     }
   };
 
@@ -136,7 +136,7 @@ export function AutomationEventLog() {
               const config = getLevelConfig(log.level);
               const Icon = config.icon;
               return (
-                <div key={log.id} className={cn("flex items-start gap-2 p-2 rounded-md hover:bg-muted/50 transition-colors text-xs", log.level === 'error' && "bg-red-50/50 dark:bg-red-950/10")}>
+                <div key={log.id} className={cn("flex items-start gap-2 p-2 rounded-md hover:bg-muted/50 transition-colors text-xs", log.level === 'error' && "bg-destructive/5/50 dark:bg-red-950/10")}>
                   <Icon className={cn("h-3.5 w-3.5 mt-0.5 shrink-0", config.color)} />
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">

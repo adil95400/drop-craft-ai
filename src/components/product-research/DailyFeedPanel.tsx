@@ -162,16 +162,16 @@ export function DailyFeedPanel() {
   };
 
   const getScoreBg = (score: number) => {
-    if (score >= 80) return 'bg-green-500/10 border-green-500/30';
-    if (score >= 60) return 'bg-yellow-500/10 border-yellow-500/30';
-    return 'bg-red-500/10 border-red-500/30';
+    if (score >= 80) return 'bg-success/10 border-green-500/30';
+    if (score >= 60) return 'bg-warning/10 border-yellow-500/30';
+    return 'bg-destructive/10 border-red-500/30';
   };
 
   const getSaturationBadge = (sat: string) => {
     switch (sat) {
-      case 'low': return <Badge className="bg-green-500/20 text-success dark:text-green-400 border-0 text-xs">🟢 Faible</Badge>;
-      case 'medium': return <Badge className="bg-yellow-500/20 text-yellow-700 dark:text-yellow-400 border-0 text-xs">🟡 Modérée</Badge>;
-      case 'high': return <Badge className="bg-red-500/20 text-red-700 dark:text-red-400 border-0 text-xs">🔴 Élevée</Badge>;
+      case 'low': return <Badge className="bg-success/20 text-success dark:text-green-400 border-0 text-xs">🟢 Faible</Badge>;
+      case 'medium': return <Badge className="bg-warning/20 text-yellow-700 dark:text-yellow-400 border-0 text-xs">🟡 Modérée</Badge>;
+      case 'high': return <Badge className="bg-destructive/20 text-red-700 dark:text-red-400 border-0 text-xs">🔴 Élevée</Badge>;
       default: return null;
     }
   };
@@ -348,7 +348,7 @@ export function DailyFeedPanel() {
                         size="icon"
                         className={cn(
                           "h-7 w-7 rounded-full backdrop-blur-sm",
-                          favorites.has(product.product_name) ? "bg-red-500 text-white" : "bg-white/80 text-foreground"
+                          favorites.has(product.product_name) ? "bg-destructive text-white" : "bg-white/80 text-foreground"
                         )}
                         onClick={() => toggleFavorite(product.product_name)}
                       >
@@ -392,7 +392,7 @@ export function DailyFeedPanel() {
                     {/* Score breakdown */}
                     <div className="grid grid-cols-2 gap-2">
                       <div className="flex items-center gap-1.5 text-xs">
-                        <div className="p-1 rounded bg-blue-500/10"><TrendingUp className="h-3 w-3 text-info" /></div>
+                        <div className="p-1 rounded bg-info/10"><TrendingUp className="h-3 w-3 text-info" /></div>
                         <div>
                           <p className="text-muted-foreground">Tendance</p>
                           <p className="font-semibold">{product.trend_score}</p>
@@ -406,14 +406,14 @@ export function DailyFeedPanel() {
                         </div>
                       </div>
                       <div className="flex items-center gap-1.5 text-xs">
-                        <div className="p-1 rounded bg-green-500/10"><DollarSign className="h-3 w-3 text-success" /></div>
+                        <div className="p-1 rounded bg-success/10"><DollarSign className="h-3 w-3 text-success" /></div>
                         <div>
                           <p className="text-muted-foreground">Marge</p>
                           <p className="font-semibold text-success">{product.margin_percent}%</p>
                         </div>
                       </div>
                       <div className="flex items-center gap-1.5 text-xs">
-                        <div className="p-1 rounded bg-orange-500/10"><Eye className="h-3 w-3 text-warning" /></div>
+                        <div className="p-1 rounded bg-warning/10"><Eye className="h-3 w-3 text-warning" /></div>
                         <div>
                           <p className="text-muted-foreground">Vues</p>
                           <p className="font-semibold">{formatNumber(product.views)}</p>

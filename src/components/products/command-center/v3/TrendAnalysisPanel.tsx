@@ -29,13 +29,13 @@ const trendConfig = {
   growing: {
     icon: TrendingUp,
     color: 'text-success dark:text-emerald-400',
-    bgColor: 'bg-emerald-500/10',
+    bgColor: 'bg-success/10',
     label: 'En croissance'
   },
   declining: {
     icon: TrendingDown,
     color: 'text-warning dark:text-orange-400',
-    bgColor: 'bg-orange-500/10',
+    bgColor: 'bg-warning/10',
     label: 'En déclin'
   },
   stable: {
@@ -146,13 +146,13 @@ export const TrendAnalysisPanel = memo(function TrendAnalysisPanel({
         </div>
         <div className="flex items-center gap-2">
           {growingCount > 0 && (
-            <Badge variant="secondary" className="text-xs bg-emerald-500/10 text-success dark:text-emerald-400 border-0">
+            <Badge variant="secondary" className="text-xs bg-success/10 text-success dark:text-emerald-400 border-0">
               <TrendingUp className="h-3 w-3 mr-1" />
               {growingCount}
             </Badge>
           )}
           {decliningCount > 0 && (
-            <Badge variant="secondary" className="text-xs bg-orange-500/10 text-warning dark:text-orange-400 border-0">
+            <Badge variant="secondary" className="text-xs bg-warning/10 text-warning dark:text-orange-400 border-0">
               <TrendingDown className="h-3 w-3 mr-1" />
               {decliningCount}
             </Badge>

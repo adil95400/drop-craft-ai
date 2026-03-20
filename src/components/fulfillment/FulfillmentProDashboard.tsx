@@ -47,7 +47,7 @@ export function FulfillmentProDashboard() {
           change={stats.fulfillmentRateChange}
           icon={<CheckCircle className="h-5 w-5" />}
           color="text-success"
-          bgColor="bg-green-500/10"
+          bgColor="bg-success/10"
         />
         <KPICard
           title="Délai moyen"
@@ -55,7 +55,7 @@ export function FulfillmentProDashboard() {
           change={stats.avgDeliveryDaysChange}
           icon={<Clock className="h-5 w-5" />}
           color="text-info"
-          bgColor="bg-blue-500/10"
+          bgColor="bg-info/10"
           invertChange
         />
         <KPICard
@@ -64,7 +64,7 @@ export function FulfillmentProDashboard() {
           change={stats.shippingCostChange}
           icon={<DollarSign className="h-5 w-5" />}
           color="text-warning"
-          bgColor="bg-amber-500/10"
+          bgColor="bg-warning/10"
           invertChange
         />
         <KPICard
@@ -73,7 +73,7 @@ export function FulfillmentProDashboard() {
           change={stats.pendingChange}
           icon={<AlertTriangle className="h-5 w-5" />}
           color="text-warning"
-          bgColor="bg-orange-500/10"
+          bgColor="bg-warning/10"
           invertChange
         />
       </div>
@@ -207,7 +207,7 @@ export function FulfillmentProDashboard() {
         <Card className="border-border/50">
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
-              <div className="p-2.5 rounded-xl bg-green-500/10">
+              <div className="p-2.5 rounded-xl bg-success/10">
                 <ShieldCheck className="h-5 w-5 text-success" />
               </div>
               <div>
@@ -221,7 +221,7 @@ export function FulfillmentProDashboard() {
         <Card className="border-border/50">
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
-              <div className="p-2.5 rounded-xl bg-blue-500/10">
+              <div className="p-2.5 rounded-xl bg-info/10">
                 <Zap className="h-5 w-5 text-info" />
               </div>
               <div>
@@ -235,7 +235,7 @@ export function FulfillmentProDashboard() {
         <Card className="border-border/50">
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
-              <div className="p-2.5 rounded-xl bg-amber-500/10">
+              <div className="p-2.5 rounded-xl bg-warning/10">
                 <TrendingUp className="h-5 w-5 text-warning" />
               </div>
               <div>

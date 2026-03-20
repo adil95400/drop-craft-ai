@@ -36,10 +36,10 @@ interface ProductDemand {
 }
 
 const URGENCY_CONFIG = {
-  critical: { color: 'bg-red-500/10 text-destructive border-red-500/20', label: 'Critique', barColor: '#ef4444' },
-  high: { color: 'bg-orange-500/10 text-warning border-orange-500/20', label: 'Élevé', barColor: '#f97316' },
-  medium: { color: 'bg-amber-500/10 text-warning border-amber-500/20', label: 'Moyen', barColor: '#eab308' },
-  low: { color: 'bg-emerald-500/10 text-success border-emerald-500/20', label: 'Faible', barColor: '#22c55e' },
+  critical: { color: 'bg-destructive/10 text-destructive border-red-500/20', label: 'Critique', barColor: '#ef4444' },
+  high: { color: 'bg-warning/10 text-warning border-orange-500/20', label: 'Élevé', barColor: '#f97316' },
+  medium: { color: 'bg-warning/10 text-warning border-amber-500/20', label: 'Moyen', barColor: '#eab308' },
+  low: { color: 'bg-success/10 text-success border-emerald-500/20', label: 'Faible', barColor: '#22c55e' },
 };
 
 export default function PredictiveDemandPage() {

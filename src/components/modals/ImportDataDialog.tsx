@@ -458,15 +458,15 @@ export function ImportDataDialog({ open, onOpenChange, defaultType }: ImportData
               </div>
               
               <div className="grid grid-cols-3 gap-4 max-w-md mx-auto">
-                <div className="p-4 bg-green-50 rounded-lg">
+                <div className="p-4 bg-success/5 rounded-lg">
                   <div className="text-2xl font-bold text-success">{importResult.imported}</div>
                   <div className="text-sm text-success">Importés</div>
                 </div>
-                <div className="p-4 bg-yellow-50 rounded-lg">
+                <div className="p-4 bg-warning/5 rounded-lg">
                   <div className="text-2xl font-bold text-warning">{importResult.skipped}</div>
                   <div className="text-sm text-warning">Ignorés</div>
                 </div>
-                <div className="p-4 bg-red-50 rounded-lg">
+                <div className="p-4 bg-destructive/5 rounded-lg">
                   <div className="text-2xl font-bold text-destructive">{importResult.failed}</div>
                   <div className="text-sm text-destructive">Échoués</div>
                 </div>

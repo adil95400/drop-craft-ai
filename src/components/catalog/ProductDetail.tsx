@@ -147,7 +147,7 @@ export const ProductDetail = ({
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-muted-foreground">Marge</span>
-                    <Badge className="bg-green-100 text-success">{product.margin}%</Badge>
+                    <Badge className="bg-success/10 text-success">{product.margin}%</Badge>
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-muted-foreground">Bénéfice</span>
@@ -188,13 +188,13 @@ export const ProductDetail = ({
                   {/* Badges */}
                   <div className="flex flex-wrap gap-2">
                     {product.isWinner && (
-                      <Badge className="bg-yellow-500 text-black">
+                      <Badge className="bg-warning text-black">
                         <Zap className="w-3 h-3 mr-1" />
                         Winner détecté
                       </Badge>
                     )}
                     {product.isTrending && (
-                      <Badge className="bg-green-500 text-white">
+                      <Badge className="bg-success text-white">
                         <TrendingUp className="w-3 h-3 mr-1" />
                         Trending
                       </Badge>
@@ -387,14 +387,14 @@ export const ProductDetail = ({
                     <CardContent>
                       <div className="space-y-3">
                         <div className="flex items-start gap-3">
-                          <div className="w-2 h-2 bg-green-600 rounded-full mt-2"></div>
+                          <div className="w-2 h-2 bg-success rounded-full mt-2"></div>
                           <div>
                             <p className="text-sm font-medium">Produit ajouté au catalogue</p>
                             <p className="text-xs text-muted-foreground">Il y a 6 mois</p>
                           </div>
                         </div>
                         <div className="flex items-start gap-3">
-                          <div className="w-2 h-2 bg-blue-600 rounded-full mt-2"></div>
+                          <div className="w-2 h-2 bg-info rounded-full mt-2"></div>
                           <div>
                             <p className="text-sm font-medium">Détection Winner par IA</p>
                             <p className="text-xs text-muted-foreground">Il y a 3 mois</p>

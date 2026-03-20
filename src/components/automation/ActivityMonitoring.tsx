@@ -76,11 +76,11 @@ export function ActivityMonitoring() {
   const getStatusConfig = (status: string | null) => {
     switch (status) {
       case 'success':
-        return { icon: CheckCircle, color: 'text-success', bgColor: 'bg-green-500/10', label: 'Succès' };
+        return { icon: CheckCircle, color: 'text-success', bgColor: 'bg-success/10', label: 'Succès' };
       case 'failed':
-        return { icon: XCircle, color: 'text-destructive', bgColor: 'bg-red-500/10', label: 'Échec' };
+        return { icon: XCircle, color: 'text-destructive', bgColor: 'bg-destructive/10', label: 'Échec' };
       case 'pending':
-        return { icon: Clock, color: 'text-warning', bgColor: 'bg-amber-500/10', label: 'En attente' };
+        return { icon: Clock, color: 'text-warning', bgColor: 'bg-warning/10', label: 'En attente' };
       default:
         return { icon: Activity, color: 'text-muted-foreground', bgColor: 'bg-muted', label: 'Inconnu' };
     }
@@ -116,7 +116,7 @@ export function ActivityMonitoring() {
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-green-500/10 rounded-lg">
+              <div className="p-2 bg-success/10 rounded-lg">
                 <CheckCircle className="h-5 w-5 text-success" />
               </div>
               <div>
@@ -130,7 +130,7 @@ export function ActivityMonitoring() {
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-red-500/10 rounded-lg">
+              <div className="p-2 bg-destructive/10 rounded-lg">
                 <XCircle className="h-5 w-5 text-destructive" />
               </div>
               <div>
@@ -144,7 +144,7 @@ export function ActivityMonitoring() {
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-blue-500/10 rounded-lg">
+              <div className="p-2 bg-info/10 rounded-lg">
                 <Timer className="h-5 w-5 text-info" />
               </div>
               <div>

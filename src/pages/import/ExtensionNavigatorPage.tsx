@@ -46,7 +46,7 @@ const ExtensionNavigatorPage: React.FC = () => {
       features: ['Import en masse', 'SEO automatique', 'Prix dynamiques', 'Variants'],
       icon: Package,
       color: 'text-destructive',
-      bgColor: 'bg-red-100'
+      bgColor: 'bg-destructive/10'
     },
     {
       id: 'shopify-connector',
@@ -60,7 +60,7 @@ const ExtensionNavigatorPage: React.FC = () => {
       features: ['Sync temps réel', 'Inventaire', 'Commandes', 'Clients'],
       icon: Globe,
       color: 'text-success',
-      bgColor: 'bg-green-100'
+      bgColor: 'bg-success/10'
     },
     {
       id: 'universal-scraper',
@@ -74,7 +74,7 @@ const ExtensionNavigatorPage: React.FC = () => {
       features: ['IA detection', 'Anti-bot', 'Proxy rotation', 'JS rendering'],
       icon: Chrome,
       color: 'text-info',
-      bgColor: 'bg-blue-100'
+      bgColor: 'bg-info/10'
     }
   ];
 

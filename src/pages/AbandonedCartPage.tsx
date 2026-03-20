@@ -30,7 +30,7 @@ const AbandonedCartPage: React.FC = () => {
     switch (status) {
       case 'pending': return <Badge variant="outline" className="text-warning border-orange-300">En attente</Badge>;
       case 'contacted': return <Badge variant="outline" className="text-info border-blue-300">Contacté</Badge>;
-      case 'recovered': return <Badge className="bg-green-500 text-white">Récupéré</Badge>;
+      case 'recovered': return <Badge className="bg-success text-white">Récupéré</Badge>;
       case 'dismissed': return <Badge variant="secondary">Ignoré</Badge>;
       default: return <Badge variant="outline">{status}</Badge>;
     }
@@ -203,9 +203,9 @@ const AbandonedCartPage: React.FC = () => {
                 </CardHeader>
                 <CardContent className="space-y-4">
                   {[
-                    { label: 'En attente', count: stats.pending, color: 'bg-orange-500' },
-                    { label: 'Contactés', count: stats.contacted, color: 'bg-blue-500' },
-                    { label: 'Récupérés', count: stats.recovered, color: 'bg-green-500' },
+                    { label: 'En attente', count: stats.pending, color: 'bg-warning' },
+                    { label: 'Contactés', count: stats.contacted, color: 'bg-info' },
+                    { label: 'Récupérés', count: stats.recovered, color: 'bg-success' },
                   ].map(item => (
                     <div key={item.label} className="flex items-center justify-between">
                       <div className="flex items-center gap-2">

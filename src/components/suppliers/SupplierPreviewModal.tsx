@@ -34,7 +34,7 @@ export function SupplierPreviewModal({ open, onOpenChange, supplier, onConnect, 
                 <Badge variant="outline">{supplier.sector}</Badge>
                 <Badge variant="outline">{supplier.country}</Badge>
                 {supplier.is_featured && (
-                  <Badge className="bg-yellow-100 text-yellow-800">
+                  <Badge className="bg-warning/10 text-yellow-800">
                     <Star className="h-3 w-3 mr-1" fill="currentColor" />
                     Populaire
                   </Badge>
@@ -149,7 +149,7 @@ export function SupplierPreviewModal({ open, onOpenChange, supplier, onConnect, 
                 </div>
               )}
 
-              <div className="p-4 rounded-lg border bg-green-50">
+              <div className="p-4 rounded-lg border bg-success/5">
                 <div className="flex items-center gap-2 mb-2">
                   <TrendingUp className="h-5 w-5 text-success" />
                   <h4 className="font-semibold text-green-900">Marges recommandées</h4>

@@ -451,9 +451,9 @@ function QuickStatCard({
           </div>
           <div className={cn(
             'h-10 w-10 rounded-full flex items-center justify-center',
-            status === 'healthy' && 'bg-green-100 text-success dark:bg-green-900/30',
-            status === 'warning' && 'bg-yellow-100 text-warning dark:bg-yellow-900/30',
-            status === 'critical' && 'bg-red-100 text-destructive dark:bg-red-900/30',
+            status === 'healthy' && 'bg-success/10 text-success dark:bg-green-900/30',
+            status === 'warning' && 'bg-warning/10 text-warning dark:bg-yellow-900/30',
+            status === 'critical' && 'bg-destructive/10 text-destructive dark:bg-red-900/30',
             !status && 'bg-primary/10 text-primary'
           )}>
             <Icon className="h-5 w-5" />
@@ -495,9 +495,9 @@ function SystemHealthIndicator({
       <div className="flex items-center gap-2">
         <div className={cn(
           'h-3 w-3 rounded-full',
-          overallStatus === 'healthy' && 'bg-green-500',
-          overallStatus === 'warning' && 'bg-yellow-500',
-          overallStatus === 'critical' && 'bg-red-500 animate-pulse'
+          overallStatus === 'healthy' && 'bg-success',
+          overallStatus === 'warning' && 'bg-warning',
+          overallStatus === 'critical' && 'bg-destructive animate-pulse'
         )} />
         <span className="font-medium">
           {overallStatus === 'healthy' && 'Tous les systèmes opérationnels'}
@@ -568,7 +568,7 @@ function RecentAlertsList({
               </p>
             </div>
             {!alert.acknowledged && (
-              <div className="h-2 w-2 rounded-full bg-blue-500" />
+              <div className="h-2 w-2 rounded-full bg-info" />
             )}
           </button>
         ))}
@@ -944,9 +944,9 @@ function SeverityBadge({ severity }: { severity: Alert['severity'] }) {
 
 function StatusBadge({ status }: { status: 'healthy' | 'warning' | 'critical' }) {
   const colors = {
-    healthy: 'bg-green-100 text-success dark:bg-green-900/30 dark:text-green-400',
-    warning: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400',
-    critical: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400',
+    healthy: 'bg-success/10 text-success dark:bg-green-900/30 dark:text-green-400',
+    warning: 'bg-warning/10 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400',
+    critical: 'bg-destructive/10 text-red-800 dark:bg-red-900/30 dark:text-red-400',
   }
   return (
     <span className={cn('text-xs px-2 py-0.5 rounded-full', colors[status])}>
@@ -957,9 +957,9 @@ function StatusBadge({ status }: { status: 'healthy' | 'warning' | 'critical' })
 
 function StatusDot({ status }: { status: 'healthy' | 'warning' | 'critical' }) {
   const colors = {
-    healthy: 'bg-green-500',
-    warning: 'bg-yellow-500',
-    critical: 'bg-red-500 animate-pulse',
+    healthy: 'bg-success',
+    warning: 'bg-warning',
+    critical: 'bg-destructive animate-pulse',
   }
   return <div className={cn('h-2 w-2 rounded-full', colors[status])} />
 }

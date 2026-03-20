@@ -197,7 +197,7 @@ export function SupplierSecurityDashboard() {
                 </div>
                 <div className="flex items-center gap-3">
                   {supplier.api_endpoint ? (
-                    <Badge variant="default" className="bg-green-100 text-success">
+                    <Badge variant="default" className="bg-success/10 text-success">
                       <Lock className="h-3 w-3 mr-1" />
                       API configurée
                     </Badge>

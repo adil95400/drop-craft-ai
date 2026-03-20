@@ -432,7 +432,7 @@ export default function CreateOrder() {
                   <Card className="border-2 border-dashed border-muted-foreground/20 hover:border-primary/30 transition-colors">
                     <CardHeader className="pb-3">
                       <CardTitle className="flex items-center gap-2 text-lg">
-                        <div className="h-8 w-8 rounded-lg bg-blue-500/10 flex items-center justify-center">
+                        <div className="h-8 w-8 rounded-lg bg-info/10 flex items-center justify-center">
                           <User className="h-4 w-4 text-info" />
                         </div>
                         Client
@@ -579,7 +579,7 @@ export default function CreateOrder() {
                     <CardHeader className="pb-3">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
-                          <div className="h-8 w-8 rounded-lg bg-green-500/10 flex items-center justify-center">
+                          <div className="h-8 w-8 rounded-lg bg-success/10 flex items-center justify-center">
                             <Package className="h-4 w-4 text-success" />
                           </div>
                           <div>
@@ -605,7 +605,7 @@ export default function CreateOrder() {
                             exit={{ opacity: 0, x: 20 }}
                             className={cn(
                               "p-4 rounded-xl border-2 transition-colors",
-                              item.product ? "border-green-500/20 bg-green-500/5" : "border-dashed border-muted-foreground/20"
+                              item.product ? "border-green-500/20 bg-success/5" : "border-dashed border-muted-foreground/20"
                             )}
                           >
                             <div className="flex items-center justify-between mb-3">
@@ -826,19 +826,19 @@ export default function CreateOrder() {
                             <SelectContent>
                               <SelectItem value="pending">
                                 <div className="flex items-center gap-2">
-                                  <div className="h-2 w-2 rounded-full bg-yellow-500" />
+                                  <div className="h-2 w-2 rounded-full bg-warning" />
                                   En attente
                                 </div>
                               </SelectItem>
                               <SelectItem value="paid">
                                 <div className="flex items-center gap-2">
-                                  <div className="h-2 w-2 rounded-full bg-green-500" />
+                                  <div className="h-2 w-2 rounded-full bg-success" />
                                   Payé
                                 </div>
                               </SelectItem>
                               <SelectItem value="failed">
                                 <div className="flex items-center gap-2">
-                                  <div className="h-2 w-2 rounded-full bg-red-500" />
+                                  <div className="h-2 w-2 rounded-full bg-destructive" />
                                   Échoué
                                 </div>
                               </SelectItem>
@@ -857,7 +857,7 @@ export default function CreateOrder() {
                     <Card>
                       <CardHeader className="pb-3">
                         <CardTitle className="flex items-center gap-2 text-lg">
-                          <div className="h-8 w-8 rounded-lg bg-orange-500/10 flex items-center justify-center">
+                          <div className="h-8 w-8 rounded-lg bg-warning/10 flex items-center justify-center">
                             <Truck className="h-4 w-4 text-warning" />
                           </div>
                           Livraison
@@ -970,13 +970,13 @@ export default function CreateOrder() {
                         <SelectContent>
                           <SelectItem value="pending">
                             <div className="flex items-center gap-2">
-                              <div className="h-2 w-2 rounded-full bg-yellow-500" />
+                              <div className="h-2 w-2 rounded-full bg-warning" />
                               En attente
                             </div>
                           </SelectItem>
                           <SelectItem value="processing">
                             <div className="flex items-center gap-2">
-                              <div className="h-2 w-2 rounded-full bg-blue-500" />
+                              <div className="h-2 w-2 rounded-full bg-info" />
                               En traitement
                             </div>
                           </SelectItem>
@@ -988,13 +988,13 @@ export default function CreateOrder() {
                           </SelectItem>
                           <SelectItem value="delivered">
                             <div className="flex items-center gap-2">
-                              <div className="h-2 w-2 rounded-full bg-green-500" />
+                              <div className="h-2 w-2 rounded-full bg-success" />
                               Livrée
                             </div>
                           </SelectItem>
                           <SelectItem value="cancelled">
                             <div className="flex items-center gap-2">
-                              <div className="h-2 w-2 rounded-full bg-red-500" />
+                              <div className="h-2 w-2 rounded-full bg-destructive" />
                               Annulée
                             </div>
                           </SelectItem>
@@ -1081,7 +1081,7 @@ export default function CreateOrder() {
 
                       {/* Validation warnings */}
                       {(!selectedCustomer || itemsCount === 0) && (
-                        <div className="p-3 rounded-lg bg-yellow-500/10 border border-yellow-500/20">
+                        <div className="p-3 rounded-lg bg-warning/10 border border-yellow-500/20">
                           <div className="flex items-start gap-2 text-warning dark:text-warning">
                             <AlertCircle className="h-4 w-4 mt-0.5 shrink-0" />
                             <div className="text-xs">

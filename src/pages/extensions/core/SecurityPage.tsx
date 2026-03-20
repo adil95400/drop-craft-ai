@@ -313,9 +313,9 @@ export default function SecurityPage() {
               {securityEvents.map((event) => (
                 <div key={event.id} className="flex items-start space-x-3 p-3 border rounded-lg">
                   <div className={`p-1 rounded-full ${
-                    event.severity === 'high' ? 'bg-red-100 text-destructive' :
+                    event.severity === 'high' ? 'bg-destructive/10 text-destructive' :
                     event.severity === 'medium' ? 'bg-orange-100 text-warning' :
-                    'bg-blue-100 text-info'
+                    'bg-info/10 text-info'
                   }`}>
                     {event.severity === 'high' ? <AlertTriangle className="w-4 h-4" /> :
                      event.severity === 'medium' ? <Shield className="w-4 h-4" /> :

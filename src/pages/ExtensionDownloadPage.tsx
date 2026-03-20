@@ -104,7 +104,7 @@ export const ExtensionDownloadPage = () => {
           <div className="space-y-4">
             {installationSteps.map((step, index) => (
               <div key={index} className="flex items-start gap-4 p-4 rounded-lg border">
-                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${step.completed ? 'bg-green-500 text-white' : 'bg-muted text-muted-foreground'}`}>
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${step.completed ? 'bg-success text-white' : 'bg-muted text-muted-foreground'}`}>
                   {step.completed ? <CheckCircle className="w-5 h-5" /> : index + 1}
                 </div>
                 <div className="flex-1">
@@ -114,7 +114,7 @@ export const ExtensionDownloadPage = () => {
               </div>
             ))}
           </div>
-          <div className="mt-6 p-4 bg-blue-50 dark:bg-blue-950 rounded-lg border border-blue-200 dark:border-blue-800">
+          <div className="mt-6 p-4 bg-info/5 dark:bg-blue-950 rounded-lg border border-blue-200 dark:border-blue-800">
             <div className="flex items-start gap-3">
               <AlertCircle className="w-5 h-5 text-info mt-0.5" />
               <div>

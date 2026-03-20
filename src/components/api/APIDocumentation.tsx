@@ -51,11 +51,11 @@ const RATE_LIMITS = [
 ];
 
 const METHOD_COLORS: Record<string, string> = {
-  GET: 'bg-blue-500/10 text-blue-700 dark:text-blue-400 border-blue-500/30',
-  POST: 'bg-green-500/10 text-success dark:text-green-400 border-green-500/30',
-  PUT: 'bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/30',
-  PATCH: 'bg-orange-500/10 text-orange-700 dark:text-orange-400 border-orange-500/30',
-  DELETE: 'bg-red-500/10 text-red-700 dark:text-red-400 border-red-500/30',
+  GET: 'bg-info/10 text-blue-700 dark:text-blue-400 border-blue-500/30',
+  POST: 'bg-success/10 text-success dark:text-green-400 border-green-500/30',
+  PUT: 'bg-warning/10 text-amber-700 dark:text-amber-400 border-amber-500/30',
+  PATCH: 'bg-warning/10 text-orange-700 dark:text-orange-400 border-orange-500/30',
+  DELETE: 'bg-destructive/10 text-red-700 dark:text-red-400 border-red-500/30',
 };
 
 function CopyButton({ text }: { text: string }) {
@@ -279,12 +279,12 @@ curl -X GET "${API_BASE}/products" \\
               <div className="space-y-2">
                 <h4 className="font-semibold text-sm">Codes de réponse</h4>
                 <div className="grid grid-cols-2 gap-2 text-sm">
-                  <div className="flex items-center gap-2"><Badge className="bg-green-500/10 text-success border-green-500/30" variant="outline">200</Badge> Succès</div>
-                  <div className="flex items-center gap-2"><Badge className="bg-green-500/10 text-success border-green-500/30" variant="outline">201</Badge> Créé</div>
-                  <div className="flex items-center gap-2"><Badge className="bg-red-500/10 text-red-700 border-red-500/30" variant="outline">401</Badge> Non autorisé</div>
-                  <div className="flex items-center gap-2"><Badge className="bg-red-500/10 text-red-700 border-red-500/30" variant="outline">403</Badge> Interdit (scope manquant)</div>
-                  <div className="flex items-center gap-2"><Badge className="bg-red-500/10 text-red-700 border-red-500/30" variant="outline">404</Badge> Non trouvé</div>
-                  <div className="flex items-center gap-2"><Badge className="bg-red-500/10 text-red-700 border-red-500/30" variant="outline">429</Badge> Rate limit atteint</div>
+                  <div className="flex items-center gap-2"><Badge className="bg-success/10 text-success border-green-500/30" variant="outline">200</Badge> Succès</div>
+                  <div className="flex items-center gap-2"><Badge className="bg-success/10 text-success border-green-500/30" variant="outline">201</Badge> Créé</div>
+                  <div className="flex items-center gap-2"><Badge className="bg-destructive/10 text-red-700 border-red-500/30" variant="outline">401</Badge> Non autorisé</div>
+                  <div className="flex items-center gap-2"><Badge className="bg-destructive/10 text-red-700 border-red-500/30" variant="outline">403</Badge> Interdit (scope manquant)</div>
+                  <div className="flex items-center gap-2"><Badge className="bg-destructive/10 text-red-700 border-red-500/30" variant="outline">404</Badge> Non trouvé</div>
+                  <div className="flex items-center gap-2"><Badge className="bg-destructive/10 text-red-700 border-red-500/30" variant="outline">429</Badge> Rate limit atteint</div>
                 </div>
               </div>
             </CardContent>

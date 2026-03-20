@@ -168,15 +168,15 @@ export function FeedRulesPanel({
   const getRuleTypeBadge = (type: FeedRule['type']) => {
     switch (type) {
       case 'filter':
-        return <Badge variant="outline" className="bg-red-500/10 text-red-700 border-red-500/30">Filtre</Badge>
+        return <Badge variant="outline" className="bg-destructive/10 text-red-700 border-red-500/30">Filtre</Badge>
       case 'transform':
-        return <Badge variant="outline" className="bg-blue-500/10 text-blue-700 border-blue-500/30">Transformation</Badge>
+        return <Badge variant="outline" className="bg-info/10 text-blue-700 border-blue-500/30">Transformation</Badge>
       case 'map':
         return <Badge variant="outline" className="bg-purple-500/10 text-purple-700 border-purple-500/30">Mapping</Badge>
       case 'combine':
-        return <Badge variant="outline" className="bg-green-500/10 text-success border-green-500/30">Combinaison</Badge>
+        return <Badge variant="outline" className="bg-success/10 text-success border-green-500/30">Combinaison</Badge>
       case 'split':
-        return <Badge variant="outline" className="bg-yellow-500/10 text-yellow-700 border-yellow-500/30">Division</Badge>
+        return <Badge variant="outline" className="bg-warning/10 text-yellow-700 border-yellow-500/30">Division</Badge>
       default:
         return <Badge variant="outline">Règle</Badge>
     }
@@ -296,7 +296,7 @@ export function FeedRulesPanel({
                   {/* Actions */}
                   <div className="space-y-2">
                     <h5 className="text-sm font-medium flex items-center gap-2">
-                      <span className="px-2 py-0.5 bg-green-500/10 text-success rounded text-xs">THEN</span>
+                      <span className="px-2 py-0.5 bg-success/10 text-success rounded text-xs">THEN</span>
                       Actions
                     </h5>
                     <div className="space-y-2 pl-4">

@@ -157,10 +157,10 @@ export default function AdvancedImportPage() {
 
   const getStatusConfig = (status: string) => {
     const configs: Record<string, { icon: any; color: string; bgColor: string; label: string }> = {
-      completed: { icon: CheckCircle2, color: 'text-success', bgColor: 'bg-green-500/10', label: 'Terminé' },
-      processing: { icon: Clock, color: 'text-info', bgColor: 'bg-blue-500/10', label: 'En cours' },
-      failed: { icon: AlertCircle, color: 'text-destructive', bgColor: 'bg-red-500/10', label: 'Échoué' },
-      pending: { icon: Clock, color: 'text-warning', bgColor: 'bg-amber-500/10', label: 'En attente' },
+      completed: { icon: CheckCircle2, color: 'text-success', bgColor: 'bg-success/10', label: 'Terminé' },
+      processing: { icon: Clock, color: 'text-info', bgColor: 'bg-info/10', label: 'En cours' },
+      failed: { icon: AlertCircle, color: 'text-destructive', bgColor: 'bg-destructive/10', label: 'Échoué' },
+      pending: { icon: Clock, color: 'text-warning', bgColor: 'bg-warning/10', label: 'En attente' },
     }
     return configs[status] || configs.pending
   }

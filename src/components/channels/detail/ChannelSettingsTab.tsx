@@ -124,7 +124,7 @@ export function ChannelSettingsTab({ channelId, channel, onDisconnect, onConfigC
                 className={cn(
                   "gap-1",
                   testResult === 'success' 
-                    ? "bg-emerald-500/10 text-emerald-700 border-emerald-500/30" 
+                    ? "bg-success/10 text-emerald-700 border-emerald-500/30" 
                     : "bg-destructive/10 text-destructive border-destructive/30"
                 )}
               >

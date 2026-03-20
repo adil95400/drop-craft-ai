@@ -316,8 +316,8 @@ const ConnectorForm: React.FC<ConnectorFormProps> = ({
               {testResult && (
                 <div className={`p-3 rounded-md border ${
                   testResult.success 
-                    ? 'bg-green-50 border-green-200 text-success' 
-                    : 'bg-red-50 border-red-200 text-red-800'
+                    ? 'bg-success/5 border-green-200 text-success' 
+                    : 'bg-destructive/5 border-red-200 text-red-800'
                 }`}>
                   <div className="flex items-center gap-2">
                     {testResult.success ? (
@@ -368,7 +368,7 @@ const ConnectorForm: React.FC<ConnectorFormProps> = ({
                       <Settings className="h-4 w-4 text-info" />
                       <span className="font-medium">{permission}</span>
                     </div>
-                    <Badge variant="secondary" className="bg-green-100 text-success">
+                    <Badge variant="secondary" className="bg-success/10 text-success">
                       Requis
                     </Badge>
                   </div>

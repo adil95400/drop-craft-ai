@@ -157,7 +157,7 @@ export function SecurityTab() {
               <CheckCircle2 className="h-5 w-5 text-success" />
               <span className="text-sm">Mot de passe défini</span>
             </div>
-            <div className={`flex items-center gap-3 p-3 rounded-lg ${twoFactorEnabled ? 'bg-muted/50' : 'bg-yellow-500/10'}`}>
+            <div className={`flex items-center gap-3 p-3 rounded-lg ${twoFactorEnabled ? 'bg-muted/50' : 'bg-warning/10'}`}>
               {twoFactorEnabled ? (
                 <CheckCircle2 className="h-5 w-5 text-success" />
               ) : (
@@ -201,9 +201,9 @@ export function SecurityTab() {
                   <div className="h-1 flex-1 bg-muted rounded-full overflow-hidden">
                     <div 
                       className={`h-full transition-all ${
-                        passwordStrength === 'Fort' ? 'w-full bg-green-500' :
-                        passwordStrength === 'Moyen' ? 'w-2/3 bg-yellow-500' :
-                        'w-1/3 bg-red-500'
+                        passwordStrength === 'Fort' ? 'w-full bg-success' :
+                        passwordStrength === 'Moyen' ? 'w-2/3 bg-warning' :
+                        'w-1/3 bg-destructive'
                       }`}
                     />
                   </div>
@@ -245,7 +245,7 @@ export function SecurityTab() {
             <div>
               <div className="font-medium flex items-center gap-2">
                 2FA 
-                {twoFactorEnabled && <Badge className="bg-green-500">Activé</Badge>}
+                {twoFactorEnabled && <Badge className="bg-success">Activé</Badge>}
               </div>
               <div className="text-sm text-muted-foreground">
                 Ajoutez une couche de sécurité supplémentaire

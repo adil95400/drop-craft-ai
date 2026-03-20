@@ -102,7 +102,7 @@ export const ProductComparison = memo(function ProductComparison({
             key={idx}
             className={cn(
               "text-center py-2 px-3 rounded-lg font-medium",
-              isBest ? "bg-emerald-500/10 text-success" : "bg-muted/50"
+              isBest ? "bg-success/10 text-success" : "bg-muted/50"
             )}
           >
             {displayValue}
@@ -148,7 +148,7 @@ export const ProductComparison = memo(function ProductComparison({
                       className="w-full h-full object-cover"
                     />
                     {product.is_winner && (
-                      <Badge className="absolute top-1 left-1 bg-amber-500 text-white text-[10px] px-1">
+                      <Badge className="absolute top-1 left-1 bg-warning text-white text-[10px] px-1">
                         <Crown className="h-2.5 w-2.5 mr-0.5" />
                         Winner
                       </Badge>

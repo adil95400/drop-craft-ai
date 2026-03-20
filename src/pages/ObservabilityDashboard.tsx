@@ -11,17 +11,17 @@ import { useSystemHealthV2, useMetricsSnapshotV2, useUptimeReportV2, useLogAggre
 import { Skeleton } from "@/components/ui/skeleton";
 
 const statusColors: Record<string, string> = {
-  healthy: "bg-emerald-500/15 text-emerald-700 border-emerald-500/30",
-  operational: "bg-emerald-500/15 text-emerald-700 border-emerald-500/30",
-  warning: "bg-amber-500/15 text-amber-700 border-amber-500/30",
-  degraded: "bg-red-500/15 text-red-700 border-red-500/30",
+  healthy: "bg-success/15 text-emerald-700 border-emerald-500/30",
+  operational: "bg-success/15 text-emerald-700 border-emerald-500/30",
+  warning: "bg-warning/15 text-amber-700 border-amber-500/30",
+  degraded: "bg-destructive/15 text-red-700 border-red-500/30",
 };
 
 const severityColors: Record<string, string> = {
-  info: "bg-blue-500/15 text-blue-700",
-  warn: "bg-amber-500/15 text-amber-700",
-  error: "bg-red-500/15 text-red-700",
-  critical: "bg-red-600/15 text-red-800",
+  info: "bg-info/15 text-blue-700",
+  warn: "bg-warning/15 text-amber-700",
+  error: "bg-destructive/15 text-red-700",
+  critical: "bg-destructive/15 text-red-800",
 };
 
 export default function ObservabilityDashboard() {

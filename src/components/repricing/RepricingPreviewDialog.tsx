@@ -58,11 +58,11 @@ export function RepricingPreviewDialog({
         </DialogHeader>
 
         <div className="flex gap-4 mb-4">
-          <Badge variant="outline" className="bg-green-50">
+          <Badge variant="outline" className="bg-success/5">
             <TrendingUp className="h-3 w-3 mr-1" />
             {totalIncrease} hausses
           </Badge>
-          <Badge variant="outline" className="bg-red-50">
+          <Badge variant="outline" className="bg-destructive/5">
             <TrendingDown className="h-3 w-3 mr-1" />
             {totalDecrease} baisses
           </Badge>

@@ -123,9 +123,9 @@ function ConnectedStoreCard({ connection, onSync }: { connection: any; onSync: (
   };
 
   const statusColors: Record<string, string> = {
-    connected: 'bg-green-500',
-    error: 'bg-red-500',
-    connecting: 'bg-yellow-500',
+    connected: 'bg-success',
+    error: 'bg-destructive',
+    connecting: 'bg-warning',
     disconnected: 'bg-muted',
   };
 
@@ -227,9 +227,9 @@ function QueueItemCard({ item, onCancel }: { item: any; onCancel: () => void }) 
 // Log item component
 function LogItemCard({ log }: { log: any }) {
   const statusConfig: Record<string, { color: string; bgColor: string }> = {
-    success: { color: 'text-success', bgColor: 'bg-green-500/10' },
-    failed: { color: 'text-destructive', bgColor: 'bg-red-500/10' },
-    partial: { color: 'text-warning', bgColor: 'bg-yellow-500/10' },
+    success: { color: 'text-success', bgColor: 'bg-success/10' },
+    failed: { color: 'text-destructive', bgColor: 'bg-destructive/10' },
+    partial: { color: 'text-warning', bgColor: 'bg-warning/10' },
     skipped: { color: 'text-muted-foreground', bgColor: 'bg-muted/50' },
   };
 
@@ -485,7 +485,7 @@ export default function StoreSyncDashboard() {
                   initial={{ opacity: 0, y: -10 }}
                   animate={{ opacity: 1, y: 0 }}
                 >
-                  <Card className="p-4 bg-yellow-500/10 border-yellow-500/30">
+                  <Card className="p-4 bg-warning/10 border-yellow-500/30">
                     <div className="flex items-center gap-3">
                       <AlertTriangle className="h-5 w-5 text-warning" />
                       <div className="flex-1">
@@ -499,7 +499,7 @@ export default function StoreSyncDashboard() {
                       <Button 
                         size="sm" 
                         onClick={() => window.location.href = '/stores-channels'}
-                        className="bg-yellow-500/20 hover:bg-yellow-500/30 text-warning dark:text-yellow-400"
+                        className="bg-warning/20 hover:bg-warning/30 text-warning dark:text-yellow-400"
                       >
                         Connecter
                       </Button>
@@ -750,7 +750,7 @@ export default function StoreSyncDashboard() {
           <Card className="p-6 bg-card/60 backdrop-blur-xl">
             <h3 className="text-lg font-semibold mb-4">Statistiques Rapides</h3>
             <div className="space-y-3">
-              <div className="flex items-center justify-between p-3 rounded-lg bg-green-500/10">
+              <div className="flex items-center justify-between p-3 rounded-lg bg-success/10">
                 <div className="flex items-center gap-2">
                   <CheckCircle2 className="h-4 w-4 text-success" />
                   <span className="text-sm">Réussies aujourd'hui</span>
@@ -758,7 +758,7 @@ export default function StoreSyncDashboard() {
                 <span className="font-semibold">{syncStats?.todaySuccess || 0}</span>
               </div>
               
-              <div className="flex items-center justify-between p-3 rounded-lg bg-yellow-500/10">
+              <div className="flex items-center justify-between p-3 rounded-lg bg-warning/10">
                 <div className="flex items-center gap-2">
                   <AlertTriangle className="h-4 w-4 text-warning" />
                   <span className="text-sm">Partielles</span>
@@ -766,7 +766,7 @@ export default function StoreSyncDashboard() {
                 <span className="font-semibold">{syncStats?.todayPartial || 0}</span>
               </div>
               
-              <div className="flex items-center justify-between p-3 rounded-lg bg-red-500/10">
+              <div className="flex items-center justify-between p-3 rounded-lg bg-destructive/10">
                 <div className="flex items-center gap-2">
                   <XCircle className="h-4 w-4 text-destructive" />
                   <span className="text-sm">Échouées</span>
@@ -793,7 +793,7 @@ export default function StoreSyncDashboard() {
                     <div className="flex items-center gap-2">
                       <span className={cn(
                         "w-2 h-2 rounded-full",
-                        store.connection_status === 'connected' ? 'bg-green-500' : 'bg-red-500'
+                        store.connection_status === 'connected' ? 'bg-success' : 'bg-destructive'
                       )} />
                       <span className="text-sm font-medium truncate max-w-[150px]">
                         {store.platform_name}

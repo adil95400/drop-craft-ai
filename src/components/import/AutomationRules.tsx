@@ -236,12 +236,12 @@ export const AutomationRules = () => {
               <div className="space-y-4">
                 {/* Statistiques */}
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                  <div className="text-center p-3 bg-blue-50 rounded-lg">
+                  <div className="text-center p-3 bg-info/5 rounded-lg">
                     <Settings className="w-5 h-5 mx-auto mb-1 text-info" />
                     <p className="text-sm font-medium">{rules.length}</p>
                     <p className="text-xs text-muted-foreground">Règles totales</p>
                   </div>
-                  <div className="text-center p-3 bg-green-50 rounded-lg">
+                  <div className="text-center p-3 bg-success/5 rounded-lg">
                     <CheckCircle className="w-5 h-5 mx-auto mb-1 text-success" />
                     <p className="text-sm font-medium">{rules.filter(r => r.isActive).length}</p>
                     <p className="text-xs text-muted-foreground">Actives</p>

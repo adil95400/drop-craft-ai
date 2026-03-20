@@ -42,14 +42,14 @@ export function ChannelStatsBar({ productCount, orderCount, revenue, lastSync, h
       value: productCount.toLocaleString(locale),
       icon: Package,
       trend: null,
-      iconBg: 'bg-blue-500/10 text-info dark:text-blue-400',
+      iconBg: 'bg-info/10 text-info dark:text-blue-400',
     },
     {
       label: 'Commandes',
       value: orderCount.toLocaleString(locale),
       icon: ShoppingCart,
       trend: null,
-      iconBg: 'bg-emerald-500/10 text-success dark:text-emerald-400',
+      iconBg: 'bg-success/10 text-success dark:text-emerald-400',
     },
     {
       label: 'Chiffre d\'affaires',
@@ -64,8 +64,8 @@ export function ChannelStatsBar({ productCount, orderCount, revenue, lastSync, h
       icon: Activity,
       trend: errorRate > 5 ? { value: errorRate, positive: false } : syncRate >= 95 ? { value: syncRate, positive: true } : null,
       iconBg: syncRate >= 95 
-        ? 'bg-emerald-500/10 text-success dark:text-emerald-400' 
-        : 'bg-amber-500/10 text-warning dark:text-amber-400',
+        ? 'bg-success/10 text-success dark:text-emerald-400' 
+        : 'bg-warning/10 text-warning dark:text-amber-400',
     },
     {
       label: 'Dernière sync',

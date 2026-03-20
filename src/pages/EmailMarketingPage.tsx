@@ -65,7 +65,7 @@ const EmailMarketingPage: React.FC = () => {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'active':
-        return <Badge className="bg-green-500">Actif</Badge>;
+        return <Badge className="bg-success">Actif</Badge>;
       case 'completed':
         return <Badge>Terminé</Badge>;
       case 'scheduled':

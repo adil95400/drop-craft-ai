@@ -161,7 +161,7 @@ export default function MultiStoreImportPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
           >
-            <Card className="border-amber-500/50 bg-amber-500/5">
+            <Card className="border-amber-500/50 bg-warning/5">
               <CardContent className="p-6 text-center">
                 <Store className="h-12 w-12 mx-auto mb-4 text-warning" />
                 <h3 className="text-lg font-semibold mb-2">Aucune boutique connectée</h3>

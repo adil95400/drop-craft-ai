@@ -188,13 +188,13 @@ function TestCard({
         </div>
         <div className="flex items-center gap-2">
           {test.status === 'running' && (
-            <Badge className="bg-green-500 animate-pulse">En cours</Badge>
+            <Badge className="bg-success animate-pulse">En cours</Badge>
           )}
           {test.status === 'draft' && (
             <Badge variant="outline">Brouillon</Badge>
           )}
           {test.status === 'completed' && test.winner && (
-            <Badge className="bg-yellow-500 text-black">
+            <Badge className="bg-warning text-black">
               <Trophy className="h-3 w-3 mr-1" />
               Gagnant: {test.winner}
             </Badge>
@@ -205,7 +205,7 @@ function TestCard({
       {/* Comparaison des variantes */}
       <div className="grid grid-cols-2 gap-4 mb-4">
         {/* Variante A */}
-        <div className={`p-3 rounded-lg border-2 ${test.winner === 'A' ? 'border-green-500 bg-green-50/50 dark:bg-green-950/20' : 'border-muted'}`}>
+        <div className={`p-3 rounded-lg border-2 ${test.winner === 'A' ? 'border-green-500 bg-success/5/50 dark:bg-green-950/20' : 'border-muted'}`}>
           <div className="flex items-center justify-between mb-2">
             <span className="font-semibold">Variante A</span>
             {test.winner === 'A' && <Trophy className="h-4 w-4 text-warning" />}
@@ -232,7 +232,7 @@ function TestCard({
         </div>
 
         {/* Variante B */}
-        <div className={`p-3 rounded-lg border-2 ${test.winner === 'B' ? 'border-green-500 bg-green-50/50 dark:bg-green-950/20' : 'border-muted'}`}>
+        <div className={`p-3 rounded-lg border-2 ${test.winner === 'B' ? 'border-green-500 bg-success/5/50 dark:bg-green-950/20' : 'border-muted'}`}>
           <div className="flex items-center justify-between mb-2">
             <span className="font-semibold">Variante B</span>
             {test.winner === 'B' && <Trophy className="h-4 w-4 text-warning" />}
@@ -268,7 +268,7 @@ function TestCard({
           </div>
           <div className="flex h-2 rounded-full overflow-hidden">
             <div 
-              className="bg-blue-500" 
+              className="bg-info" 
               style={{ width: `${100 - test.traffic_split}%` }}
             />
             <div 

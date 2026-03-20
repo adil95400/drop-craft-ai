@@ -152,7 +152,7 @@ export function CommandCenterHeaderV3({
                 <Tooltip>
                   <TooltipTrigger>
                     <div className="flex items-center gap-2">
-                      <div className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center">
+                      <div className="w-8 h-8 rounded-lg bg-success/10 flex items-center justify-center">
                         <TrendingUp className="h-4 w-4 text-success" />
                       </div>
                       <div className="hidden sm:block">

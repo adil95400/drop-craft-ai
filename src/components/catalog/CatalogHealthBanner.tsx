@@ -17,11 +17,11 @@ import { useCatalogHealthEngine } from '@/hooks/catalog/useCatalogHealthEngine'
 import { useNavigate } from 'react-router-dom'
 
 const GRADE_STYLES: Record<string, { bg: string; text: string; ring: string }> = {
-  A: { bg: 'bg-emerald-500/10', text: 'text-success', ring: 'ring-emerald-500/30' },
-  B: { bg: 'bg-blue-500/10', text: 'text-info', ring: 'ring-blue-500/30' },
-  C: { bg: 'bg-amber-500/10', text: 'text-warning', ring: 'ring-amber-500/30' },
-  D: { bg: 'bg-orange-500/10', text: 'text-warning', ring: 'ring-orange-500/30' },
-  F: { bg: 'bg-red-500/10', text: 'text-destructive', ring: 'ring-red-500/30' },
+  A: { bg: 'bg-success/10', text: 'text-success', ring: 'ring-emerald-500/30' },
+  B: { bg: 'bg-info/10', text: 'text-info', ring: 'ring-blue-500/30' },
+  C: { bg: 'bg-warning/10', text: 'text-warning', ring: 'ring-amber-500/30' },
+  D: { bg: 'bg-warning/10', text: 'text-warning', ring: 'ring-orange-500/30' },
+  F: { bg: 'bg-destructive/10', text: 'text-destructive', ring: 'ring-red-500/30' },
 }
 
 export function CatalogHealthBanner() {
@@ -77,25 +77,25 @@ export function CatalogHealthBanner() {
               icon={CheckCircle}
               count={summary.distribution.excellent}
               label="Excellent"
-              className="text-success bg-emerald-500/10"
+              className="text-success bg-success/10"
             />
             <DistributionPill
               icon={ShieldCheck}
               count={summary.distribution.good}
               label="Bon"
-              className="text-info bg-blue-500/10"
+              className="text-info bg-info/10"
             />
             <DistributionPill
               icon={AlertTriangle}
               count={summary.distribution.warning}
               label="Attention"
-              className="text-warning bg-amber-500/10"
+              className="text-warning bg-warning/10"
             />
             <DistributionPill
               icon={XCircle}
               count={summary.distribution.critical}
               label="Critique"
-              className="text-destructive bg-red-500/10"
+              className="text-destructive bg-destructive/10"
             />
           </div>
 
@@ -113,8 +113,8 @@ export function CatalogHealthBanner() {
                         <div
                           className={cn(
                             "h-full rounded-full transition-all",
-                            pillar.avg >= 70 ? "bg-emerald-500" :
-                            pillar.avg >= 50 ? "bg-amber-500" : "bg-red-500"
+                            pillar.avg >= 70 ? "bg-success" :
+                            pillar.avg >= 50 ? "bg-warning" : "bg-destructive"
                           )}
                           style={{ width: `${pillar.avg}%` }}
                         />

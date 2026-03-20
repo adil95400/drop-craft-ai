@@ -266,7 +266,7 @@ export const ImportPublishOptions: React.FC<ImportPublishOptionsProps> = ({
                       <Badge variant="secondary" className="text-xs">Sélectionné</Badge>
                     )}
                     {publishedChannels.includes(channel.id) && (
-                      <Badge className="text-xs bg-green-500">Publié</Badge>
+                      <Badge className="text-xs bg-success">Publié</Badge>
                     )}
                   </div>
                 ))}
@@ -306,7 +306,7 @@ export const ImportPublishOptions: React.FC<ImportPublishOptionsProps> = ({
                       <Badge variant="secondary" className="text-xs">Sélectionné</Badge>
                     )}
                     {publishedChannels.includes(channel.id) && (
-                      <Badge className="text-xs bg-green-500">Publié</Badge>
+                      <Badge className="text-xs bg-success">Publié</Badge>
                     )}
                   </div>
                 ))}
@@ -346,7 +346,7 @@ export const ImportPublishOptions: React.FC<ImportPublishOptionsProps> = ({
                       <Badge variant="secondary" className="text-xs">Sélectionné</Badge>
                     )}
                     {publishedChannels.includes(channel.id) && (
-                      <Badge className="text-xs bg-green-500">Publié</Badge>
+                      <Badge className="text-xs bg-success">Publié</Badge>
                     )}
                   </div>
                 ))}
@@ -386,7 +386,7 @@ export const ImportPublishOptions: React.FC<ImportPublishOptionsProps> = ({
                       <Badge variant="secondary" className="text-xs">Sélectionné</Badge>
                     )}
                     {publishedChannels.includes(channel.id) && (
-                      <Badge className="text-xs bg-green-500">Publié</Badge>
+                      <Badge className="text-xs bg-success">Publié</Badge>
                     )}
                   </div>
                 ))}

@@ -211,7 +211,7 @@ export function ProductAuditPanel({
 
       {/* Issues critiques */}
       {criticalIssues.length > 0 && (
-        <Card className="border-red-200 bg-red-50/50 dark:bg-red-950/20">
+        <Card className="border-red-200 bg-destructive/5/50 dark:bg-red-950/20">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-red-700 dark:text-red-400">
               <AlertCircle className="h-5 w-5" />

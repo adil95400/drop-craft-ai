@@ -175,9 +175,9 @@ export function BusinessIntelligenceDashboard() {
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
-      case 'high': return 'bg-red-100 text-red-700 border-red-200';
-      case 'medium': return 'bg-yellow-100 text-yellow-700 border-yellow-200';
-      default: return 'bg-green-100 text-success border-green-200';
+      case 'high': return 'bg-destructive/10 text-red-700 border-red-200';
+      case 'medium': return 'bg-warning/10 text-yellow-700 border-yellow-200';
+      default: return 'bg-success/10 text-success border-green-200';
     }
   };
 
@@ -260,7 +260,7 @@ export function BusinessIntelligenceDashboard() {
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-red-100 rounded-lg">
+              <div className="p-2 bg-destructive/10 rounded-lg">
                 <AlertTriangle className="w-5 h-5 text-destructive" />
               </div>
               <div>
@@ -274,7 +274,7 @@ export function BusinessIntelligenceDashboard() {
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-blue-100 rounded-lg">
+              <div className="p-2 bg-info/10 rounded-lg">
                 <Star className="w-5 h-5 text-info" />
               </div>
               <div>
@@ -288,7 +288,7 @@ export function BusinessIntelligenceDashboard() {
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-green-100 rounded-lg">
+              <div className="p-2 bg-success/10 rounded-lg">
                 <Eye className="w-5 h-5 text-success" />
               </div>
               <div>
@@ -378,7 +378,7 @@ export function BusinessIntelligenceDashboard() {
                       <ul className="space-y-1">
                         {insight.actionable_recommendations.slice(0, 2).map((rec, index) => (
                           <li key={index} className="text-sm text-muted-foreground flex items-center gap-2">
-                            <div className="w-1.5 h-1.5 bg-blue-500 rounded-full flex-shrink-0" />
+                            <div className="w-1.5 h-1.5 bg-info rounded-full flex-shrink-0" />
                             {rec}
                           </li>
                         ))}

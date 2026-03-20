@@ -98,7 +98,7 @@ export const SupplierAnalyzer: React.FC = () => {
   const getReliabilityColor = (score: number) => {
     if (score >= 4) return 'text-success bg-emerald-50'
     if (score >= 3) return 'text-warning bg-orange-50'
-    return 'text-destructive bg-red-50'
+    return 'text-destructive bg-destructive/5'
   }
 
   return (

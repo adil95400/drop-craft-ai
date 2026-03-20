@@ -251,7 +251,7 @@ export function PredictionsPanel() {
             {predictions.map((prediction) => (
               <Card key={prediction.id} className="relative overflow-hidden">
                 <div className={`absolute top-0 left-0 w-1 h-full ${
-                  prediction.changePercent > 0 ? 'bg-green-500' : 'bg-red-500'
+                  prediction.changePercent > 0 ? 'bg-success' : 'bg-destructive'
                 }`} />
                 <CardHeader className="pb-2">
                   <div className="flex items-center justify-between">
@@ -349,8 +349,8 @@ export function PredictionsPanel() {
                 {aiInsights.map((insight, index) => (
                   <Card key={index} className="relative overflow-hidden">
                     <div className={`absolute top-0 left-0 w-1 h-full ${
-                      insight.priority === 'high' ? 'bg-red-500' : 
-                      insight.priority === 'medium' ? 'bg-yellow-500' : 'bg-green-500'
+                      insight.priority === 'high' ? 'bg-destructive' : 
+                      insight.priority === 'medium' ? 'bg-warning' : 'bg-success'
                     }`} />
                     <CardHeader className="pb-2">
                       <div className="flex items-center justify-between">

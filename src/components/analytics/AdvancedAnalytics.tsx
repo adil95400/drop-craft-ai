@@ -229,10 +229,10 @@ export const AdvancedAnalytics: React.FC = () => {
 
   const getInsightColor = (type: string) => {
     const colors = {
-      'opportunity': 'bg-green-100 text-success',
-      'trend': 'bg-blue-100 text-blue-800',
-      'anomaly': 'bg-red-100 text-red-800',
-      'recommendation': 'bg-yellow-100 text-yellow-800'
+      'opportunity': 'bg-success/10 text-success',
+      'trend': 'bg-info/10 text-blue-800',
+      'anomaly': 'bg-destructive/10 text-red-800',
+      'recommendation': 'bg-warning/10 text-yellow-800'
     };
     return colors[type as keyof typeof colors] || 'bg-gray-100 text-gray-800';
   };
@@ -307,7 +307,7 @@ export const AdvancedAnalytics: React.FC = () => {
                   <span className="text-xs">Excellent</span>
                 </div>
               </div>
-              <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+              <div className="w-12 h-12 bg-info/10 rounded-lg flex items-center justify-center">
                 <Brain className="w-6 h-6 text-info" />
               </div>
             </div>
@@ -325,7 +325,7 @@ export const AdvancedAnalytics: React.FC = () => {
                   <span className="text-xs">Conf: 91%</span>
                 </div>
               </div>
-              <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+              <div className="w-12 h-12 bg-success/10 rounded-lg flex items-center justify-center">
                 <TrendingUp className="w-6 h-6 text-success" />
               </div>
             </div>
@@ -509,9 +509,9 @@ export const AdvancedAnalytics: React.FC = () => {
                   <div key={index} className="p-4 border rounded-lg">
                     <div className="flex items-center justify-between mb-3">
                       <h4 className="font-medium">{segment.segment}</h4>
-                      <Badge className={segment.churn_risk > 50 ? 'bg-red-100 text-red-800' : 
-                                       segment.churn_risk > 25 ? 'bg-yellow-100 text-yellow-800' : 
-                                       'bg-green-100 text-success'} variant="outline">
+                      <Badge className={segment.churn_risk > 50 ? 'bg-destructive/10 text-red-800' : 
+                                       segment.churn_risk > 25 ? 'bg-warning/10 text-yellow-800' : 
+                                       'bg-success/10 text-success'} variant="outline">
                         Risque: {segment.churn_risk.toFixed(1)}%
                       </Badge>
                     </div>
@@ -563,9 +563,9 @@ export const AdvancedAnalytics: React.FC = () => {
                     <div className="text-right">
                       <div className="flex items-center gap-2 mb-1">
                         <span className="text-xs text-muted-foreground">Concurrence:</span>
-                        <Badge className={product.competition_level > 80 ? 'bg-red-100 text-red-800' : 
-                                         product.competition_level > 60 ? 'bg-yellow-100 text-yellow-800' : 
-                                         'bg-green-100 text-success'} variant="outline">
+                        <Badge className={product.competition_level > 80 ? 'bg-destructive/10 text-red-800' : 
+                                         product.competition_level > 60 ? 'bg-warning/10 text-yellow-800' : 
+                                         'bg-success/10 text-success'} variant="outline">
                           {product.competition_level.toFixed(0)}%
                         </Badge>
                       </div>
@@ -609,9 +609,9 @@ export const AdvancedAnalytics: React.FC = () => {
                       </div>
                     </div>
                     <Badge className={
-                      item.market_position === 'leader' ? 'bg-green-100 text-success' :
-                      item.market_position === 'favorable' ? 'bg-blue-100 text-blue-800' :
-                      'bg-yellow-100 text-yellow-800'
+                      item.market_position === 'leader' ? 'bg-success/10 text-success' :
+                      item.market_position === 'favorable' ? 'bg-info/10 text-blue-800' :
+                      'bg-warning/10 text-yellow-800'
                     } variant="outline">
                       {item.market_position === 'leader' ? 'Leader' :
                        item.market_position === 'favorable' ? 'Favorable' : 'Challenger'}

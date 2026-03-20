@@ -265,7 +265,7 @@ export function PricingEngineDashboard() {
                           className="flex items-center justify-between p-3 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors"
                         >
                           <div className="flex items-center gap-3">
-                            <div className={`p-1.5 rounded ${diff >= 0 ? 'bg-emerald-500/10' : 'bg-destructive/10'}`}>
+                            <div className={`p-1.5 rounded ${diff >= 0 ? 'bg-success/10' : 'bg-destructive/10'}`}>
                               <ArrowUpRight className={`h-4 w-4 ${diff >= 0 ? 'text-success' : 'text-destructive rotate-90'}`} />
                             </div>
                             <div>

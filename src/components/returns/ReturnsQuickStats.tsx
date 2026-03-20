@@ -34,10 +34,10 @@ interface StatCardProps {
 function StatCard({ title, value, subValue, icon: Icon, trend, trendValue, color, delay = 0 }: StatCardProps) {
   const colorClasses = {
     primary: 'bg-primary/10 text-primary',
-    warning: 'bg-amber-500/10 text-warning',
-    success: 'bg-emerald-500/10 text-success',
-    destructive: 'bg-red-500/10 text-destructive',
-    info: 'bg-blue-500/10 text-info'
+    warning: 'bg-warning/10 text-warning',
+    success: 'bg-success/10 text-success',
+    destructive: 'bg-destructive/10 text-destructive',
+    info: 'bg-info/10 text-info'
   }
 
   return (

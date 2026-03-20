@@ -191,7 +191,7 @@ export function EnrichmentConfigStatus() {
             ))}
 
             {configuredCount === 0 && (
-              <div className="mt-4 p-4 rounded-lg bg-amber-500/10 border border-amber-500/20">
+              <div className="mt-4 p-4 rounded-lg bg-warning/10 border border-amber-500/20">
                 <div className="flex items-start gap-3">
                   <AlertTriangle className="h-5 w-5 text-warning mt-0.5" />
                   <div>
@@ -207,7 +207,7 @@ export function EnrichmentConfigStatus() {
             )}
 
             {configuredCount > 0 && configuredCount < totalCount && (
-              <div className="mt-4 p-4 rounded-lg bg-blue-500/10 border border-blue-500/20">
+              <div className="mt-4 p-4 rounded-lg bg-info/10 border border-blue-500/20">
                 <p className="text-xs text-blue-700 dark:text-blue-300">
                   💡 Ajoutez plus de sources d'enrichissement pour améliorer la couverture et la qualité des données.
                 </p>

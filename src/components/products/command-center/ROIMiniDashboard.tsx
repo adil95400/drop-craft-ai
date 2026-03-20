@@ -200,10 +200,10 @@ export function ROIMiniDashboard({
                   className={cn(
                     'text-xs',
                     metrics.healthScore >= 70 
-                      ? 'bg-emerald-500/10 border-emerald-500/30 text-success' 
+                      ? 'bg-success/10 border-emerald-500/30 text-success' 
                       : metrics.healthScore >= 40
-                        ? 'bg-amber-500/10 border-amber-500/30 text-warning'
-                        : 'bg-red-500/10 border-red-500/30 text-destructive'
+                        ? 'bg-warning/10 border-amber-500/30 text-warning'
+                        : 'bg-destructive/10 border-red-500/30 text-destructive'
                   )}
                 >
                   <Target className="h-3 w-3 mr-1" />

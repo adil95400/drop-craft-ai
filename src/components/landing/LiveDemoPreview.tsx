@@ -96,9 +96,9 @@ export const LiveDemoPreview = memo(() => {
             <CardHeader className="border-b bg-muted/30">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <div className="h-3 w-3 rounded-full bg-red-500" />
-                  <div className="h-3 w-3 rounded-full bg-yellow-500" />
-                  <div className="h-3 w-3 rounded-full bg-green-500" />
+                  <div className="h-3 w-3 rounded-full bg-destructive" />
+                  <div className="h-3 w-3 rounded-full bg-warning" />
+                  <div className="h-3 w-3 rounded-full bg-success" />
                 </div>
                 <Badge variant="outline" className="text-xs">
                   Dashboard Live

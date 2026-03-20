@@ -188,7 +188,7 @@ function HeroStats({ healthChecks, unacknowledgedAlerts }: { healthChecks: Healt
       </div>
       {degraded > 0 && (
         <div className="flex items-center gap-2">
-          <div className="w-10 h-10 rounded-lg bg-amber-500/10 flex items-center justify-center">
+          <div className="w-10 h-10 rounded-lg bg-warning/10 flex items-center justify-center">
             <AlertTriangle className="w-5 h-5 text-warning" />
           </div>
           <div>
@@ -234,7 +234,7 @@ function HeroStats({ healthChecks, unacknowledgedAlerts }: { healthChecks: Healt
 function HealthCheckCard({ check }: { check: HealthCheck }) {
   const statusStyles = {
     healthy: { border: 'border-success/30 hover:border-success/50', badge: 'bg-success/10 text-success border-success/30', icon: <CheckCircle2 className="h-3 w-3" /> },
-    degraded: { border: 'border-amber-500/30 hover:border-amber-500/50', badge: 'bg-amber-500/10 text-warning border-amber-500/30', icon: <AlertTriangle className="h-3 w-3" /> },
+    degraded: { border: 'border-amber-500/30 hover:border-amber-500/50', badge: 'bg-warning/10 text-warning border-amber-500/30', icon: <AlertTriangle className="h-3 w-3" /> },
     down: { border: 'border-destructive/30 hover:border-destructive/50', badge: 'bg-destructive/10 text-destructive border-destructive/30', icon: <XCircle className="h-3 w-3" /> },
   };
   const style = statusStyles[check.status];
@@ -271,7 +271,7 @@ function WebVitalCard({ vital }: { vital: WebVital }) {
   };
   const ratingBadge = {
     good: { class: 'bg-success/10 text-success border-success/30', label: 'Bon' },
-    'needs-improvement': { class: 'bg-amber-500/10 text-warning border-amber-500/30', label: 'À améliorer' },
+    'needs-improvement': { class: 'bg-warning/10 text-warning border-amber-500/30', label: 'À améliorer' },
     poor: { class: 'bg-destructive/10 text-destructive border-destructive/30', label: 'Mauvais' },
   };
   const percent = Math.min((vital.value / vital.target) * 100, 100);

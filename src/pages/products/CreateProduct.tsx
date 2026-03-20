@@ -460,13 +460,13 @@ export default function CreateProduct() {
                             <SelectContent>
                               <SelectItem value="active">
                                 <div className="flex items-center gap-2">
-                                  <div className="h-2 w-2 rounded-full bg-green-500" />
+                                  <div className="h-2 w-2 rounded-full bg-success" />
                                   Actif
                                 </div>
                               </SelectItem>
                               <SelectItem value="draft">
                                 <div className="flex items-center gap-2">
-                                  <div className="h-2 w-2 rounded-full bg-yellow-500" />
+                                  <div className="h-2 w-2 rounded-full bg-warning" />
                                   Brouillon
                                 </div>
                               </SelectItem>
@@ -698,7 +698,7 @@ export default function CreateProduct() {
                               placeholder="39.99"
                             />
                             {compareAtPrice && formData.price && (
-                              <Badge className="absolute -top-2 -right-2 bg-red-500" variant="default">
+                              <Badge className="absolute -top-2 -right-2 bg-destructive" variant="default">
                                 -{calculateDiscount()}%
                               </Badge>
                             )}

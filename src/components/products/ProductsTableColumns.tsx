@@ -203,7 +203,7 @@ export const createProductsColumns = ({
       return (
         <Badge
           variant={status === 'active' ? 'default' : 'secondary'}
-          className={status === 'active' ? 'bg-green-500' : ''}
+          className={status === 'active' ? 'bg-success' : ''}
         >
           {status === 'active' ? 'Actif' : 'Inactif'}
         </Badge>

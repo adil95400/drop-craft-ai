@@ -177,7 +177,7 @@ const ChannableNavItem = memo(({
               
               <div className="flex items-center gap-1.5 ml-2 flex-shrink-0 pr-6">
                 {badgeCount != null && badgeCount > 0 && (
-                  <Badge className="text-[9px] px-1.5 py-0 h-4 font-bold border-0 bg-rose-500 text-white shadow-sm min-w-[1.25rem] text-center animate-pulse">
+                  <Badge className="text-[9px] px-1.5 py-0 h-4 font-bold border-0 bg-destructive text-white shadow-sm min-w-[1.25rem] text-center animate-pulse">
                     {badgeCount > 99 ? '99+' : badgeCount}
                   </Badge>
                 )}
@@ -369,7 +369,7 @@ const FavoritesSection = memo(({
         }} whileTap={prefersReducedMotion ? undefined : {
           scale: 0.98
         }} className={cn("w-full flex items-center gap-2.5 px-2.5 py-2 rounded-xl transition-all group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50", active ? "bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-md" : "hover:bg-sidebar-accent/40 dark:hover:bg-sidebar-accent/20")} role="listitem" aria-current={active ? "page" : undefined}>
-              <div className={cn("flex items-center justify-center w-7 h-7 rounded-lg", active ? "bg-white/20" : "bg-amber-500/10")} aria-hidden="true">
+              <div className={cn("flex items-center justify-center w-7 h-7 rounded-lg", active ? "bg-white/20" : "bg-warning/10")} aria-hidden="true">
                 <Icon className={cn("h-3.5 w-3.5", active ? "text-white" : "text-warning dark:text-amber-400")} />
               </div>
               {!collapsed && <span className={cn("flex-1 text-left text-[12px] font-medium truncate", active ? "text-white" : "text-foreground/80")}>

@@ -39,8 +39,8 @@ export default function CustomerServiceHubPage() {
   const getTicketStatusBadge = (status: string) => {
     switch (status) {
       case 'open': return <Badge className="bg-orange-100 text-orange-700">Ouvert</Badge>;
-      case 'in_progress': return <Badge className="bg-blue-100 text-blue-700">En cours</Badge>;
-      case 'resolved': return <Badge className="bg-green-100 text-success">Résolu</Badge>;
+      case 'in_progress': return <Badge className="bg-info/10 text-blue-700">En cours</Badge>;
+      case 'resolved': return <Badge className="bg-success/10 text-success">Résolu</Badge>;
       case 'closed': return <Badge variant="secondary">Fermé</Badge>;
       default: return <Badge variant="outline">{status}</Badge>;
     }
@@ -49,9 +49,9 @@ export default function CustomerServiceHubPage() {
   const getRefundStatusBadge = (status: string) => {
     switch (status) {
       case 'pending': return <Badge variant="outline" className="text-warning border-orange-300">En attente</Badge>;
-      case 'approved': return <Badge className="bg-blue-100 text-blue-700">Approuvé</Badge>;
+      case 'approved': return <Badge className="bg-info/10 text-blue-700">Approuvé</Badge>;
       case 'rejected': return <Badge variant="destructive">Rejeté</Badge>;
-      case 'refunded': return <Badge className="bg-green-100 text-success">Remboursé</Badge>;
+      case 'refunded': return <Badge className="bg-success/10 text-success">Remboursé</Badge>;
       default: return <Badge variant="outline">{status}</Badge>;
     }
   };

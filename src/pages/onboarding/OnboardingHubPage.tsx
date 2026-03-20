@@ -90,7 +90,7 @@ export default function OnboardingHubPage() {
                             <tutorial.icon className="w-6 h-6 text-white" />
                           </div>
                           {isCompleted ? (
-                            <Badge className="bg-green-500">
+                            <Badge className="bg-success">
                               <Check className="w-3 h-3 mr-1" />
                               Terminé
                             </Badge>
@@ -170,7 +170,7 @@ export default function OnboardingHubPage() {
                         {video.duration}
                       </div>
                       {progress[video.id]?.completed && (
-                        <div className="absolute top-2 right-2 bg-green-500 text-white p-1 rounded-full">
+                        <div className="absolute top-2 right-2 bg-success text-white p-1 rounded-full">
                           <Check className="w-3 h-3" />
                         </div>
                       )}

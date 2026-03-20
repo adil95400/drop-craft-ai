@@ -74,7 +74,7 @@ export function FeatureGuide({
                   <CardTitle className="text-base font-semibold flex items-center gap-2">
                     Guide : {featureName}
                     {completedSteps === steps.length && steps.length > 0 && (
-                      <Badge variant="secondary" className="bg-emerald-500/10 text-success text-xs">
+                      <Badge variant="secondary" className="bg-success/10 text-success text-xs">
                         <CheckCircle2 className="h-3 w-3 mr-1" />Complété
                       </Badge>
                     )}
@@ -116,14 +116,14 @@ export function FeatureGuide({
                         className={cn(
                           "flex items-start gap-3 p-3 rounded-lg border transition-colors",
                           step.completed
-                            ? "bg-emerald-500/5 border-emerald-500/20"
+                            ? "bg-success/5 border-emerald-500/20"
                             : "bg-card border-border"
                         )}
                       >
                         <div className={cn(
                           "flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold",
                           step.completed
-                            ? "bg-emerald-500 text-white"
+                            ? "bg-success text-white"
                             : "bg-muted text-muted-foreground"
                         )}>
                           {step.completed ? (
@@ -160,8 +160,8 @@ export function FeatureGuide({
                 {tips.map((tip, index) => {
                   if (dismissedTips.includes(index)) return null
                   const tipStyles = {
-                    info: 'bg-blue-500/5 border-blue-500/20 text-blue-700 dark:text-blue-400',
-                    warning: 'bg-amber-500/5 border-amber-500/20 text-amber-700 dark:text-amber-400',
+                    info: 'bg-info/5 border-blue-500/20 text-blue-700 dark:text-blue-400',
+                    warning: 'bg-warning/5 border-amber-500/20 text-amber-700 dark:text-amber-400',
                     pro: 'bg-purple-500/5 border-purple-500/20 text-purple-700 dark:text-purple-400'
                   }
                   return (

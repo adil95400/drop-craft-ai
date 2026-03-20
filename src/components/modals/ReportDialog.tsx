@@ -419,7 +419,7 @@ export const ReportDialog: React.FC<ReportDialogProps> = ({
 
             <TabsContent value="filters" className="space-y-6 mt-6">
               <div className="space-y-4">
-                <div className="flex items-center gap-2 p-3 bg-blue-50 rounded-lg">
+                <div className="flex items-center gap-2 p-3 bg-info/5 rounded-lg">
                   <Filter className="h-5 w-5 text-info" />
                   <span className="text-sm text-blue-800">
                     Affinez votre rapport avec des filtres personnalisés
@@ -583,7 +583,7 @@ export const ReportDialog: React.FC<ReportDialogProps> = ({
                   {formData.isAutomated && (
                     <div className="space-y-2">
                       <Label>Automatisation</Label>
-                      <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
+                      <div className="p-3 bg-success/5 border border-green-200 rounded-lg">
                         <div className="flex items-center gap-2 mb-1">
                           <Mail className="h-4 w-4 text-success" />
                           <span className="text-sm font-medium text-success">Rapport automatisé</span>

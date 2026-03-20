@@ -114,13 +114,13 @@ export function SegmentsTable({ onEdit, onView }: SegmentsTableProps) {
           <div className="font-semibold">{filteredSegments.length}</div>
           <div className="text-muted-foreground">Segments</div>
         </div>
-        <div className="bg-blue-50 rounded-lg p-3 text-center">
+        <div className="bg-info/5 rounded-lg p-3 text-center">
           <div className="font-semibold text-blue-700">
             {filteredSegments.reduce((sum, s) => sum + s.contact_count, 0)}
           </div>
           <div className="text-info">Contacts total</div>
         </div>
-        <div className="bg-green-50 rounded-lg p-3 text-center">
+        <div className="bg-success/5 rounded-lg p-3 text-center">
           <div className="font-semibold text-success">
             {filteredSegments.length > 0 ? 
               Math.round(filteredSegments.reduce((sum, s) => sum + s.contact_count, 0) / filteredSegments.length)

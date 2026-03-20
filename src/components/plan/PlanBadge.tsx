@@ -19,13 +19,13 @@ const planConfig = {
     label: 'Standard',
     icon: Star,
     variant: 'default' as const,
-    className: 'text-success bg-green-100'
+    className: 'text-success bg-success/10'
   },
   pro: {
     label: 'Pro',
     icon: Star,
     variant: 'default' as const,
-    className: 'text-info bg-blue-100'
+    className: 'text-info bg-info/10'
   },
   ultra_pro: {
     label: 'Ultra Pro',

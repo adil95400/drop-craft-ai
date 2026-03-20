@@ -191,7 +191,7 @@ export function ProductDetailsDialog({ open, onOpenChange, productId }: ProductD
       case 'inactive':
         return 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300';
       case 'draft':
-        return 'bg-yellow-100 text-yellow-700 dark:bg-yellow-950 dark:text-yellow-300';
+        return 'bg-warning/10 text-yellow-700 dark:bg-yellow-950 dark:text-yellow-300';
       default:
         return 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300';
     }
@@ -394,7 +394,7 @@ export function ProductDetailsDialog({ open, onOpenChange, productId }: ProductD
                   animate={{ opacity: 1, y: 0 }}
                   className="flex items-center gap-4 p-4 border rounded-xl bg-gradient-to-br from-emerald-500/10 to-emerald-500/5"
                 >
-                  <div className="p-3 rounded-xl bg-emerald-500/20">
+                  <div className="p-3 rounded-xl bg-success/20">
                     <DollarSign className="h-6 w-6 text-success" />
                   </div>
                   <div>
@@ -412,7 +412,7 @@ export function ProductDetailsDialog({ open, onOpenChange, productId }: ProductD
                     transition={{ delay: 0.1 }}
                     className="flex items-center gap-4 p-4 border rounded-xl bg-gradient-to-br from-blue-500/10 to-blue-500/5"
                   >
-                    <div className="p-3 rounded-xl bg-blue-500/20">
+                    <div className="p-3 rounded-xl bg-info/20">
                       <DollarSign className="h-6 w-6 text-info" />
                     </div>
                     <div>

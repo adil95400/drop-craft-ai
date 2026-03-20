@@ -363,7 +363,7 @@ export function ConnectMarketplaceDialog({ trigger, onSuccess }: ConnectMarketpl
           )}
 
           {testResult && (
-            <div className={`p-4 rounded-lg space-y-2 ${testResult.success ? 'bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-800' : 'bg-destructive/10 border border-destructive/30'}`}>
+            <div className={`p-4 rounded-lg space-y-2 ${testResult.success ? 'bg-success/5 dark:bg-green-950/30 border border-green-200 dark:border-green-800' : 'bg-destructive/10 border border-destructive/30'}`}>
               <div className="flex items-start gap-2">
                 {testResult.success ? (
                   <div className="text-success dark:text-green-400 font-semibold">✓ Test réussi</div>

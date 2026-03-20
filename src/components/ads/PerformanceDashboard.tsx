@@ -24,9 +24,9 @@ export function PerformanceDashboard() {
       case 'critical':
         return <Badge variant="destructive">Critique</Badge>;
       case 'high':
-        return <Badge className="bg-orange-500">Haute</Badge>;
+        return <Badge className="bg-warning">Haute</Badge>;
       case 'medium':
-        return <Badge className="bg-yellow-500">Moyenne</Badge>;
+        return <Badge className="bg-warning">Moyenne</Badge>;
       default:
         return <Badge variant="secondary">Basse</Badge>;
     }

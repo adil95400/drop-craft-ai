@@ -44,7 +44,7 @@ export default function AdsManagerPage() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'active':
-        return <Badge className="bg-green-500 hover:bg-green-600">Actif</Badge>;
+        return <Badge className="bg-success hover:bg-success">Actif</Badge>;
       case 'paused':
         return <Badge variant="secondary">En pause</Badge>;
       case 'completed':

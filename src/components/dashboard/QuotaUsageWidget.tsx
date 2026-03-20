@@ -7,9 +7,9 @@ import { useQuotaDashboard, getQuotaLabel } from '@/hooks/useQuotaDashboard';
 import { Skeleton } from '@/components/ui/skeleton';
 
 const STATUS_COLORS: Record<string, string> = {
-  ok: 'bg-emerald-500',
-  warning: 'bg-amber-500',
-  critical: 'bg-orange-500',
+  ok: 'bg-success',
+  warning: 'bg-warning',
+  critical: 'bg-warning',
   exceeded: 'bg-destructive',
 };
 

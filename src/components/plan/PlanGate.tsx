@@ -40,7 +40,7 @@ export const PlanGate = ({
       name: 'Pro',
       icon: Crown,
       color: 'text-info',
-      bgColor: 'bg-blue-50 border-blue-200',
+      bgColor: 'bg-info/5 border-blue-200',
       features: [
         'Import avancé CSV/XML/API',
         'Connexion fournisseurs illimitée', 

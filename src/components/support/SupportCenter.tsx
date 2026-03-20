@@ -110,8 +110,8 @@ export function SupportCenter() {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'open': return 'bg-destructive/10 text-destructive'
-      case 'pending': case 'in_progress': return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400'
-      case 'resolved': case 'closed': return 'bg-green-100 text-success dark:bg-green-900/30 dark:text-green-400'
+      case 'pending': case 'in_progress': return 'bg-warning/10 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400'
+      case 'resolved': case 'closed': return 'bg-success/10 text-success dark:bg-green-900/30 dark:text-green-400'
       default: return 'bg-muted text-muted-foreground'
     }
   }
@@ -120,7 +120,7 @@ export function SupportCenter() {
     switch (priority) {
       case 'high': case 'urgent': return 'bg-destructive/10 text-destructive'
       case 'medium': return 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400'
-      case 'low': return 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400'
+      case 'low': return 'bg-info/10 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400'
       default: return 'bg-muted text-muted-foreground'
     }
   }
@@ -295,7 +295,7 @@ export function SupportCenter() {
                 <p className="text-muted-foreground mb-4">Discutez avec notre équipe support en temps réel</p>
                 <div className="space-y-2 mb-4">
                   <div className="flex items-center justify-between text-sm"><span>Temps d'attente moyen:</span><Badge variant="secondary">2 min</Badge></div>
-                  <div className="flex items-center justify-between text-sm"><span>Disponibilité:</span><Badge className="bg-green-100 text-success dark:bg-green-900/30 dark:text-green-400">En ligne</Badge></div>
+                  <div className="flex items-center justify-between text-sm"><span>Disponibilité:</span><Badge className="bg-success/10 text-success dark:bg-green-900/30 dark:text-green-400">En ligne</Badge></div>
                 </div>
                 <Button className="w-full">Démarrer le chat</Button>
               </CardContent>

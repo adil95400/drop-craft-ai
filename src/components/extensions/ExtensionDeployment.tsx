@@ -236,9 +236,9 @@ export const ExtensionDeployment = () => {
 
   const getEnvironmentColor = (type: string) => {
     switch (type) {
-      case 'development': return 'border-blue-200 bg-blue-50'
-      case 'staging': return 'border-yellow-200 bg-yellow-50'
-      case 'production': return 'border-green-200 bg-green-50'
+      case 'development': return 'border-blue-200 bg-info/5'
+      case 'staging': return 'border-yellow-200 bg-warning/5'
+      case 'production': return 'border-green-200 bg-success/5'
       default: return 'border-gray-200 bg-gray-50'
     }
   }

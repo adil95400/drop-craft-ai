@@ -68,9 +68,9 @@ export const PrescriptiveHeader = memo(function PrescriptiveHeader({
           <motion.div 
             className={cn(
               'relative w-14 h-14 rounded-xl flex items-center justify-center shrink-0',
-              status.color === 'emerald' && 'bg-emerald-500/20',
-              status.color === 'yellow' && 'bg-yellow-500/20',
-              status.color === 'red' && 'bg-red-500/20'
+              status.color === 'emerald' && 'bg-success/20',
+              status.color === 'yellow' && 'bg-warning/20',
+              status.color === 'red' && 'bg-destructive/20'
             )}
             animate={hasIssues ? { 
               boxShadow: [
@@ -91,7 +91,7 @@ export const PrescriptiveHeader = memo(function PrescriptiveHeader({
             {/* Critical badge */}
             {hasIssues && totalIssues > 0 && (
               <motion.div
-                className="absolute -top-1 -right-1 w-6 h-6 rounded-full bg-red-500 text-white text-xs font-bold flex items-center justify-center"
+                className="absolute -top-1 -right-1 w-6 h-6 rounded-full bg-destructive text-white text-xs font-bold flex items-center justify-center"
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
                 transition={{ type: 'spring', stiffness: 500 }}
@@ -153,7 +153,7 @@ export const PrescriptiveHeader = memo(function PrescriptiveHeader({
               <Tooltip>
                 <TooltipTrigger>
                   <motion.div 
-                    className="px-3 py-2 rounded-xl bg-emerald-500/10 border border-emerald-500/30"
+                    className="px-3 py-2 rounded-xl bg-success/10 border border-emerald-500/30"
                     whileHover={{ scale: 1.05 }}
                   >
                     <p className="text-xs text-success dark:text-emerald-400 font-medium">

@@ -221,9 +221,9 @@ export function AdvancedImportHub() {
 
   const getDifficultyColor = (difficulty: string) => {
     switch (difficulty) {
-      case 'facile': return 'bg-green-500'
-      case 'moyen': return 'bg-yellow-500'
-      case 'avancé': return 'bg-red-500'
+      case 'facile': return 'bg-success'
+      case 'moyen': return 'bg-warning'
+      case 'avancé': return 'bg-destructive'
       default: return 'bg-gray-500'
     }
   }

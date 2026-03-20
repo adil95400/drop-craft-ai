@@ -270,9 +270,9 @@ export default function MarketplaceConnectorsPage() {
     }
     switch (connector.status) {
       case 'connected':
-        return <Badge className="bg-green-500 text-white text-[10px] px-1.5">Connecté</Badge>;
+        return <Badge className="bg-success text-white text-[10px] px-1.5">Connecté</Badge>;
       case 'beta':
-        return <Badge className="bg-blue-500 text-white text-[10px] px-1.5">BETA</Badge>;
+        return <Badge className="bg-info text-white text-[10px] px-1.5">BETA</Badge>;
       case 'coming_soon':
         return <Badge variant="secondary" className="text-[10px] px-1.5">Bientôt</Badge>;
       default:
@@ -284,7 +284,7 @@ export default function MarketplaceConnectorsPage() {
     <Card 
       className={cn(
         "group relative overflow-hidden hover:shadow-lg transition-all duration-200 cursor-pointer border",
-        connector.status === 'connected' && "ring-1 ring-green-500/20 bg-green-50/30 dark:bg-green-950/10"
+        connector.status === 'connected' && "ring-1 ring-green-500/20 bg-success/5/30 dark:bg-green-950/10"
       )}
       onClick={() => handleConnect(connector)}
     >
@@ -332,7 +332,7 @@ export default function MarketplaceConnectorsPage() {
     <div 
       className={cn(
         "group flex items-center gap-4 p-3 rounded-lg border hover:bg-accent/50 transition-colors cursor-pointer",
-        connector.status === 'connected' && "bg-green-50/30 dark:bg-green-950/10 border-green-200 dark:border-green-900"
+        connector.status === 'connected' && "bg-success/5/30 dark:bg-green-950/10 border-green-200 dark:border-green-900"
       )}
       onClick={() => handleConnect(connector)}
     >

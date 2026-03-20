@@ -82,17 +82,17 @@ export function AIRecommendationEngine() {
 
   const getCategoryColor = (category: Recommendation['category']) => {
     switch (category) {
-      case 'pricing': return 'bg-green-500';
-      case 'inventory': return 'bg-blue-500';
+      case 'pricing': return 'bg-success';
+      case 'inventory': return 'bg-info';
       case 'marketing': return 'bg-purple-500';
-      case 'customer': return 'bg-orange-500';
+      case 'customer': return 'bg-warning';
     }
   };
 
   const getPriorityColor = (priority: Recommendation['priority']) => {
     switch (priority) {
-      case 'high': return 'bg-red-500';
-      case 'medium': return 'bg-yellow-500';
+      case 'high': return 'bg-destructive';
+      case 'medium': return 'bg-warning';
       case 'low': return 'bg-gray-500';
     }
   };

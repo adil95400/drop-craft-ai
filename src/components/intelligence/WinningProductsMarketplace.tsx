@@ -108,16 +108,16 @@ export function WinningProductsMarketplace() {
   }, [user, toast])
 
   const getScoreColor = (score: number) => {
-    if (score >= 80) return 'text-success bg-green-100'
-    if (score >= 60) return 'text-warning bg-yellow-100'
-    return 'text-destructive bg-red-100'
+    if (score >= 80) return 'text-success bg-success/10'
+    if (score >= 60) return 'text-warning bg-warning/10'
+    return 'text-destructive bg-destructive/10'
   }
 
   const getRiskColor = (risk: string) => {
     switch (risk) {
-      case 'low': return 'text-success bg-green-100'
-      case 'medium': return 'text-warning bg-yellow-100'
-      case 'high': return 'text-destructive bg-red-100'
+      case 'low': return 'text-success bg-success/10'
+      case 'medium': return 'text-warning bg-warning/10'
+      case 'high': return 'text-destructive bg-destructive/10'
       default: return 'text-gray-600 bg-gray-100'
     }
   }
@@ -349,16 +349,16 @@ function ProductCard({ product, onImport, isImporting }: {
   isImporting?: boolean
 }) {
   const getScoreColor = (score: number) => {
-    if (score >= 80) return 'text-success bg-green-100'
-    if (score >= 60) return 'text-warning bg-yellow-100'
-    return 'text-destructive bg-red-100'
+    if (score >= 80) return 'text-success bg-success/10'
+    if (score >= 60) return 'text-warning bg-warning/10'
+    return 'text-destructive bg-destructive/10'
   }
 
   const getRiskColor = (risk: string) => {
     switch (risk) {
-      case 'low': return 'text-success bg-green-100'
-      case 'medium': return 'text-warning bg-yellow-100'  
-      case 'high': return 'text-destructive bg-red-100'
+      case 'low': return 'text-success bg-success/10'
+      case 'medium': return 'text-warning bg-warning/10'  
+      case 'high': return 'text-destructive bg-destructive/10'
       default: return 'text-gray-600 bg-gray-100'
     }
   }

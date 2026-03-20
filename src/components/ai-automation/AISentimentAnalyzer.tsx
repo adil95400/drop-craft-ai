@@ -191,7 +191,7 @@ export function AISentimentAnalyzer() {
                   </Label>
                   <div className="space-y-1">
                     {analysis.positiveAspects.slice(0, 5).map((aspect: any, idx: number) => (
-                      <div key={idx} className="flex items-center justify-between p-2 bg-green-500/10 rounded-lg text-sm">
+                      <div key={idx} className="flex items-center justify-between p-2 bg-success/10 rounded-lg text-sm">
                         <span>{aspect.aspect}</span>
                         <Badge variant="secondary">{aspect.mentions} mentions</Badge>
                       </div>
@@ -208,7 +208,7 @@ export function AISentimentAnalyzer() {
                   </Label>
                   <div className="space-y-1">
                     {analysis.concerns.slice(0, 5).map((concern: any, idx: number) => (
-                      <div key={idx} className="p-2 bg-red-500/10 rounded-lg text-sm">
+                      <div key={idx} className="p-2 bg-destructive/10 rounded-lg text-sm">
                         <div className="flex items-center justify-between mb-1">
                           <span className="font-medium">{concern.issue}</span>
                           <Badge variant={

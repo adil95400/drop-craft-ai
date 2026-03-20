@@ -180,7 +180,7 @@ export const ProductActions = ({ product, onEdit, onPublish, onRefresh }: Produc
               size="sm"
               onClick={() => updateReviewStatus('approved')}
               disabled={isUpdating}
-              className="h-8 w-8 p-0 text-success hover:text-success hover:bg-green-50"
+              className="h-8 w-8 p-0 text-success hover:text-success hover:bg-success/5"
             >
               <CheckCircle className="h-4 w-4" />
             </Button>
@@ -189,7 +189,7 @@ export const ProductActions = ({ product, onEdit, onPublish, onRefresh }: Produc
               size="sm"
               onClick={() => updateReviewStatus('rejected')}
               disabled={isUpdating}
-              className="h-8 w-8 p-0 text-destructive hover:text-red-700 hover:bg-red-50"
+              className="h-8 w-8 p-0 text-destructive hover:text-red-700 hover:bg-destructive/5"
             >
               <XCircle className="h-4 w-4" />
             </Button>
@@ -202,7 +202,7 @@ export const ProductActions = ({ product, onEdit, onPublish, onRefresh }: Produc
             size="sm"
             onClick={() => updateProductStatus('published')}
             disabled={isUpdating}
-            className="h-8 w-8 p-0 text-info hover:text-blue-700 hover:bg-blue-50"
+            className="h-8 w-8 p-0 text-info hover:text-blue-700 hover:bg-info/5"
           >
             <Globe className="h-4 w-4" />
           </Button>
@@ -300,7 +300,7 @@ export const ProductActions = ({ product, onEdit, onPublish, onRefresh }: Produc
             <AlertDialogCancel>Annuler</AlertDialogCancel>
             <AlertDialogAction 
               onClick={deleteProduct}
-              className="bg-red-600 hover:bg-red-700"
+              className="bg-destructive hover:bg-red-700"
               disabled={isUpdating}
             >
               Supprimer

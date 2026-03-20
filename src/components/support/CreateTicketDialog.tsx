@@ -56,9 +56,9 @@ const categories = [
 
 const priorities = [
   { value: 'low', label: 'Basse', icon: Clock, description: 'Réponse sous 48h', color: 'bg-muted hover:bg-muted/80 border-border', activeColor: 'bg-slate-500/10 border-slate-500 text-slate-600' },
-  { value: 'medium', label: 'Moyenne', icon: CheckCircle2, description: 'Réponse sous 24h', color: 'bg-muted hover:bg-muted/80 border-border', activeColor: 'bg-blue-500/10 border-blue-500 text-info' },
-  { value: 'high', label: 'Haute', icon: Zap, description: 'Réponse sous 12h', color: 'bg-muted hover:bg-muted/80 border-border', activeColor: 'bg-orange-500/10 border-orange-500 text-warning' },
-  { value: 'urgent', label: 'Urgente', icon: AlertTriangle, description: 'Réponse sous 4h', color: 'bg-muted hover:bg-muted/80 border-border', activeColor: 'bg-red-500/10 border-red-500 text-destructive' },
+  { value: 'medium', label: 'Moyenne', icon: CheckCircle2, description: 'Réponse sous 24h', color: 'bg-muted hover:bg-muted/80 border-border', activeColor: 'bg-info/10 border-blue-500 text-info' },
+  { value: 'high', label: 'Haute', icon: Zap, description: 'Réponse sous 12h', color: 'bg-muted hover:bg-muted/80 border-border', activeColor: 'bg-warning/10 border-orange-500 text-warning' },
+  { value: 'urgent', label: 'Urgente', icon: AlertTriangle, description: 'Réponse sous 4h', color: 'bg-muted hover:bg-muted/80 border-border', activeColor: 'bg-destructive/10 border-red-500 text-destructive' },
 ];
 
 export function CreateTicketDialog({ open, onOpenChange }: CreateTicketDialogProps) {

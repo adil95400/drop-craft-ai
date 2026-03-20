@@ -173,8 +173,8 @@ export function PickingPackingWorkflow() {
     : 0
 
   const priorityConfig = {
-    express: { label: 'Express', className: 'bg-red-500/10 text-red-700 border-red-200' },
-    urgent: { label: 'Urgent', className: 'bg-orange-500/10 text-orange-700 border-orange-200' },
+    express: { label: 'Express', className: 'bg-destructive/10 text-red-700 border-red-200' },
+    urgent: { label: 'Urgent', className: 'bg-warning/10 text-orange-700 border-orange-200' },
     normal: { label: 'Normal', className: 'bg-muted text-muted-foreground' },
   }
 
@@ -265,12 +265,12 @@ export function PickingPackingWorkflow() {
                           layout
                           className={cn(
                             "flex items-center gap-3 p-3 rounded-lg border transition-colors",
-                            isComplete ? "bg-green-500/5 border-green-200" : "bg-background"
+                            isComplete ? "bg-success/5 border-green-200" : "bg-background"
                           )}
                         >
                           <div className={cn(
                             "p-2 rounded-lg",
-                            isComplete ? "bg-green-500/10" : "bg-muted"
+                            isComplete ? "bg-success/10" : "bg-muted"
                           )}>
                             {isComplete
                               ? <CheckCircle className="h-5 w-5 text-success" />

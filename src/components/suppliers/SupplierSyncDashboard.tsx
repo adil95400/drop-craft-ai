@@ -55,7 +55,7 @@ export function SupplierSyncDashboard() {
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-green-100 rounded-lg">
+              <div className="p-2 bg-success/10 rounded-lg">
                 <CheckCircle className="h-5 w-5 text-success" />
               </div>
               <div>
@@ -70,7 +70,7 @@ export function SupplierSyncDashboard() {
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-red-100 rounded-lg">
+              <div className="p-2 bg-destructive/10 rounded-lg">
                 <AlertTriangle className="h-5 w-5 text-destructive" />
               </div>
               <div>

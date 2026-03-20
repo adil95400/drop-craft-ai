@@ -102,7 +102,7 @@ const SupplierImportDialog = ({ supplier, isOpen, onClose }: SupplierImportDialo
               )}
 
               {needsOAuth && (
-                <div className="p-3 bg-blue-50 rounded-lg">
+                <div className="p-3 bg-info/5 rounded-lg">
                   <p className="text-sm text-blue-800">
                     L'authentification OAuth sera requise pour connecter votre compte {supplier.displayName}.
                   </p>
@@ -179,8 +179,8 @@ export const SupplierSelector = () => {
   const popularSuppliers = getPopularSuppliers().filter(s => s.status === 'active')
 
   const getStatusBadge = (supplier: Supplier) => {
-    if (supplier.isNew) return <Badge className="bg-green-100 text-success">Nouveau</Badge>
-    if (supplier.isPopular) return <Badge className="bg-blue-100 text-blue-800">Populaire</Badge>
+    if (supplier.isNew) return <Badge className="bg-success/10 text-success">Nouveau</Badge>
+    if (supplier.isPopular) return <Badge className="bg-info/10 text-blue-800">Populaire</Badge>
     if (supplier.status === 'beta') return <Badge className="bg-orange-100 text-orange-800">Beta</Badge>
     return null
   }

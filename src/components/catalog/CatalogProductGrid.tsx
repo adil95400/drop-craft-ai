@@ -132,13 +132,13 @@ export const CatalogProductGrid = ({
                   {/* Badges */}
                   <div className="absolute top-2 left-2 flex flex-col gap-1">
                     {product.is_winner && (
-                      <Badge className="bg-yellow-500 text-black text-xs">
+                      <Badge className="bg-warning text-black text-xs">
                         <Crown className="w-3 h-3 mr-1" />
                         Winner
                       </Badge>
                     )}
                     {product.is_trending && (
-                      <Badge className="bg-green-500 text-white text-xs">
+                      <Badge className="bg-success text-white text-xs">
                         <TrendingUp className="w-3 h-3 mr-1" />
                         Trending
                       </Badge>

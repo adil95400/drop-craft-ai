@@ -28,7 +28,7 @@ export function ProductScoreBadge({
       icon: TrendingUp,
       label: 'Tendance',
       color: 'text-info',
-      bg: 'bg-blue-50',
+      bg: 'bg-info/5',
       border: 'border-blue-200'
     },
     competition: {
@@ -42,7 +42,7 @@ export function ProductScoreBadge({
       icon: Trophy,
       label: 'Profit',
       color: 'text-success',
-      bg: 'bg-green-50',
+      bg: 'bg-success/5',
       border: 'border-green-200'
     }
   }
@@ -62,10 +62,10 @@ export function ProductScoreBadge({
   }
 
   const getScoreColor = (score: number) => {
-    if (score >= 80) return 'text-success bg-green-100 border-green-300'
-    if (score >= 60) return 'text-blue-700 bg-blue-100 border-blue-300'
+    if (score >= 80) return 'text-success bg-success/10 border-green-300'
+    if (score >= 60) return 'text-blue-700 bg-info/10 border-blue-300'
     if (score >= 40) return 'text-orange-700 bg-orange-100 border-orange-300'
-    return 'text-red-700 bg-red-100 border-red-300'
+    return 'text-red-700 bg-destructive/10 border-red-300'
   }
 
   return (

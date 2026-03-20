@@ -76,7 +76,7 @@ export const SyncLogsTable = () => {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'success':
-        return <Badge className="bg-green-100 text-success border-green-200"><CheckCircle className="w-3 h-3 mr-1" />Réussi</Badge>
+        return <Badge className="bg-success/10 text-success border-green-200"><CheckCircle className="w-3 h-3 mr-1" />Réussi</Badge>
       case 'error':
         return <Badge variant="destructive"><AlertCircle className="w-3 h-3 mr-1" />Erreur</Badge>
       case 'in_progress':
@@ -88,8 +88,8 @@ export const SyncLogsTable = () => {
 
   const getTypeColor = (type: string) => {
     switch (type) {
-      case 'products': return 'bg-blue-100 text-blue-800 border-blue-200'
-      case 'orders': return 'bg-green-100 text-success border-green-200'
+      case 'products': return 'bg-info/10 text-blue-800 border-blue-200'
+      case 'orders': return 'bg-success/10 text-success border-green-200'
       case 'inventory': return 'bg-purple-100 text-purple-800 border-purple-200'
       default: return 'bg-gray-100 text-gray-800 border-gray-200'
     }

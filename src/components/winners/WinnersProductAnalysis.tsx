@@ -246,25 +246,25 @@ export const WinnersProductAnalysis = ({ product }: WinnersProductAnalysisProps)
                 <ul className="space-y-2">
                   {product.rating && product.rating > 4 && (
                     <li className="flex items-start gap-2">
-                      <div className="w-2 h-2 rounded-full bg-green-500 mt-1.5" />
+                      <div className="w-2 h-2 rounded-full bg-success mt-1.5" />
                       <span className="text-sm">Excellentes évaluations ({product.rating}/5)</span>
                     </li>
                   )}
                   {product.reviews && product.reviews > 100 && (
                     <li className="flex items-start gap-2">
-                      <div className="w-2 h-2 rounded-full bg-green-500 mt-1.5" />
+                      <div className="w-2 h-2 rounded-full bg-success mt-1.5" />
                       <span className="text-sm">Fort social proof ({product.reviews} avis)</span>
                     </li>
                   )}
                   {product.trending_score && product.trending_score > 70 && (
                     <li className="flex items-start gap-2">
-                      <div className="w-2 h-2 rounded-full bg-green-500 mt-1.5" />
+                      <div className="w-2 h-2 rounded-full bg-success mt-1.5" />
                       <span className="text-sm">Forte tendance actuelle</span>
                     </li>
                   )}
                   {product.price < 50 && (
                     <li className="flex items-start gap-2">
-                      <div className="w-2 h-2 rounded-full bg-green-500 mt-1.5" />
+                      <div className="w-2 h-2 rounded-full bg-success mt-1.5" />
                       <span className="text-sm">Prix accessible favorisant les achats impulsifs</span>
                     </li>
                   )}
@@ -279,18 +279,18 @@ export const WinnersProductAnalysis = ({ product }: WinnersProductAnalysisProps)
                 <ul className="space-y-2">
                   {(!product.rating || product.rating < 3.5) && (
                     <li className="flex items-start gap-2">
-                      <div className="w-2 h-2 rounded-full bg-orange-500 mt-1.5" />
+                      <div className="w-2 h-2 rounded-full bg-warning mt-1.5" />
                       <span className="text-sm">Notes faibles - Opportunité d'amélioration</span>
                     </li>
                   )}
                   {marketSaturation === 'Saturé' && (
                     <li className="flex items-start gap-2">
-                      <div className="w-2 h-2 rounded-full bg-orange-500 mt-1.5" />
+                      <div className="w-2 h-2 rounded-full bg-warning mt-1.5" />
                       <span className="text-sm">Marché saturé - Différenciation nécessaire</span>
                     </li>
                   )}
                   <li className="flex items-start gap-2">
-                    <div className="w-2 h-2 rounded-full bg-blue-500 mt-1.5" />
+                    <div className="w-2 h-2 rounded-full bg-info mt-1.5" />
                     <span className="text-sm">Analyser les stratégies des top vendeurs</span>
                   </li>
                 </ul>

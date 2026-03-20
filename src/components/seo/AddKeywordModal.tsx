@@ -71,9 +71,9 @@ export function AddKeywordModal({ open, onOpenChange }: AddKeywordModalProps) {
 
   const getCompetitionColor = (competition: string) => {
     switch (competition) {
-      case 'low': return 'text-success bg-green-100'
-      case 'medium': return 'text-warning bg-yellow-100'
-      case 'high': return 'text-destructive bg-red-100'
+      case 'low': return 'text-success bg-success/10'
+      case 'medium': return 'text-warning bg-warning/10'
+      case 'high': return 'text-destructive bg-destructive/10'
       default: return 'text-gray-600 bg-gray-100'
     }
   }
@@ -128,19 +128,19 @@ export function AddKeywordModal({ open, onOpenChange }: AddKeywordModalProps) {
               <SelectContent>
                 <SelectItem value="low">
                   <div className="flex items-center gap-2">
-                    <div className="w-2 h-2 rounded-full bg-green-500"></div>
+                    <div className="w-2 h-2 rounded-full bg-success"></div>
                     Faible - Facile à positionner
                   </div>
                 </SelectItem>
                 <SelectItem value="medium">
                   <div className="flex items-center gap-2">
-                    <div className="w-2 h-2 rounded-full bg-yellow-500"></div>
+                    <div className="w-2 h-2 rounded-full bg-warning"></div>
                     Moyenne - Effort modéré requis
                   </div>
                 </SelectItem>
                 <SelectItem value="high">
                   <div className="flex items-center gap-2">
-                    <div className="w-2 h-2 rounded-full bg-red-500"></div>
+                    <div className="w-2 h-2 rounded-full bg-destructive"></div>
                     Élevée - Stratégie avancée nécessaire
                   </div>
                 </SelectItem>

@@ -156,8 +156,8 @@ export function WorkflowManager() {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'active': return 'text-success bg-green-100';
-      case 'paused': return 'text-warning bg-yellow-100';
+      case 'active': return 'text-success bg-success/10';
+      case 'paused': return 'text-warning bg-warning/10';
       case 'draft': return 'text-gray-600 bg-gray-100';
       default: return 'text-gray-600 bg-gray-100';
     }
@@ -414,7 +414,7 @@ export function WorkflowManager() {
                 <Card key={index}>
                   <CardContent className="pt-4">
                     <div className="flex items-start gap-4">
-                      <div className="p-2 rounded-lg bg-yellow-100">
+                      <div className="p-2 rounded-lg bg-warning/10">
                         {rec.type === 'warning' ? (
                           <AlertTriangle className="h-5 w-5 text-warning" />
                         ) : (

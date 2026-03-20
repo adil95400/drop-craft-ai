@@ -73,9 +73,9 @@ export function VIPTicketForm({ onSuccess, onCancel }: VIPTicketFormProps) {
 
   const priorityOptions = [
     { value: 'low', label: 'Faible', color: 'bg-slate-500', description: 'Réponse sous 48h' },
-    { value: 'medium', label: 'Moyen', color: 'bg-blue-500', description: 'Réponse sous 24h' },
-    { value: 'high', label: 'Élevée', color: 'bg-orange-500', description: 'Réponse sous 4h', vipOnly: !isVIP },
-    { value: 'urgent', label: 'Urgent', color: 'bg-red-500', description: 'Réponse sous 2h', vipOnly: !isVIP },
+    { value: 'medium', label: 'Moyen', color: 'bg-info', description: 'Réponse sous 24h' },
+    { value: 'high', label: 'Élevée', color: 'bg-warning', description: 'Réponse sous 4h', vipOnly: !isVIP },
+    { value: 'urgent', label: 'Urgent', color: 'bg-destructive', description: 'Réponse sous 2h', vipOnly: !isVIP },
   ];
 
   const contactOptions = [
@@ -240,7 +240,7 @@ export function VIPTicketForm({ onSuccess, onCancel }: VIPTicketFormProps) {
 
           {/* VIP Guarantee */}
           {isVIP && (
-            <div className="flex items-start gap-2 p-3 bg-amber-500/10 rounded-lg border border-amber-500/20">
+            <div className="flex items-start gap-2 p-3 bg-warning/10 rounded-lg border border-amber-500/20">
               <Crown className="h-4 w-4 text-warning mt-0.5" />
               <div className="text-sm">
                 <p className="font-medium text-amber-700 dark:text-amber-400">

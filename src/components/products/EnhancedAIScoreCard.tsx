@@ -41,7 +41,7 @@ const DIMENSION_CONFIG = {
     label: 'SEO',
     icon: Search,
     color: 'text-info',
-    bgColor: 'bg-blue-100 dark:bg-blue-900/30',
+    bgColor: 'bg-info/10 dark:bg-blue-900/30',
     description: 'Titres, méta-descriptions, mots-clés'
   },
   content: {
@@ -55,7 +55,7 @@ const DIMENSION_CONFIG = {
     label: 'Images',
     icon: Image,
     color: 'text-success',
-    bgColor: 'bg-green-100 dark:bg-green-900/30',
+    bgColor: 'bg-success/10 dark:bg-green-900/30',
     description: 'Quantité et qualité des images'
   },
   data: {
@@ -82,10 +82,10 @@ function getScoreColor(score: number) {
 }
 
 function getScoreBgColor(score: number) {
-  if (score >= 80) return 'bg-green-100 dark:bg-green-900/30'
-  if (score >= 60) return 'bg-yellow-100 dark:bg-yellow-900/30'
+  if (score >= 80) return 'bg-success/10 dark:bg-green-900/30'
+  if (score >= 60) return 'bg-warning/10 dark:bg-yellow-900/30'
   if (score >= 40) return 'bg-orange-100 dark:bg-orange-900/30'
-  return 'bg-red-100 dark:bg-red-900/30'
+  return 'bg-destructive/10 dark:bg-red-900/30'
 }
 
 function getScoreLabel(score: number) {
@@ -96,10 +96,10 @@ function getScoreLabel(score: number) {
 }
 
 function getProgressColor(score: number) {
-  if (score >= 80) return 'bg-green-500'
-  if (score >= 60) return 'bg-yellow-500'
-  if (score >= 40) return 'bg-orange-500'
-  return 'bg-red-500'
+  if (score >= 80) return 'bg-success'
+  if (score >= 60) return 'bg-warning'
+  if (score >= 40) return 'bg-warning'
+  return 'bg-destructive'
 }
 
 export function EnhancedAIScoreCard({
@@ -268,8 +268,8 @@ export function EnhancedAIScoreCard({
                   className={cn(
                     "flex items-start gap-2 p-2 rounded-lg text-xs",
                     issue.severity === 'critical' 
-                      ? 'bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300'
-                      : 'bg-yellow-50 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-300'
+                      ? 'bg-destructive/5 dark:bg-red-900/20 text-red-700 dark:text-red-300'
+                      : 'bg-warning/5 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-300'
                   )}
                 >
                   {issue.severity === 'critical' ? (
@@ -305,7 +305,7 @@ export function EnhancedAIScoreCard({
               {recommendations.slice(0, 3).map((rec, idx) => (
                 <div 
                   key={idx}
-                  className="flex items-start gap-2 p-2 rounded-lg bg-green-50 dark:bg-green-900/20 text-xs"
+                  className="flex items-start gap-2 p-2 rounded-lg bg-success/5 dark:bg-green-900/20 text-xs"
                 >
                   <CheckCircle className="h-3.5 w-3.5 text-success flex-shrink-0 mt-0.5" />
                   <p className="text-success dark:text-green-300">{rec}</p>

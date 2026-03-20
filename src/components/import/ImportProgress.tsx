@@ -26,7 +26,7 @@ export function ImportProgress({ job, onRetry }: ImportProgressProps) {
   const getStatusColor = () => {
     switch (job.status) {
       case 'completed':
-        return 'bg-green-500';
+        return 'bg-success';
       case 'failed':
         return 'bg-destructive';
       case 'processing':

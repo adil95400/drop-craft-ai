@@ -81,10 +81,10 @@ export function StockManagementHub() {
 
   const getUrgencyColor = (urgency: string) => {
     switch (urgency) {
-      case 'critical': return 'text-destructive bg-red-100 border-red-200'
+      case 'critical': return 'text-destructive bg-destructive/10 border-red-200'
       case 'high': return 'text-warning bg-orange-100 border-orange-200'
-      case 'medium': return 'text-warning bg-yellow-100 border-yellow-200'
-      case 'low': return 'text-success bg-green-100 border-green-200'
+      case 'medium': return 'text-warning bg-warning/10 border-yellow-200'
+      case 'low': return 'text-success bg-success/10 border-green-200'
       default: return 'text-gray-600 bg-gray-100 border-gray-200'
     }
   }
@@ -336,10 +336,10 @@ function StockAlertCard({
 }) {
   const getUrgencyColor = (urgency: string) => {
     switch (urgency) {
-      case 'critical': return 'text-destructive bg-red-100 border-red-200'
+      case 'critical': return 'text-destructive bg-destructive/10 border-red-200'
       case 'high': return 'text-warning bg-orange-100 border-orange-200'
-      case 'medium': return 'text-warning bg-yellow-100 border-yellow-200'
-      case 'low': return 'text-success bg-green-100 border-green-200'
+      case 'medium': return 'text-warning bg-warning/10 border-yellow-200'
+      case 'low': return 'text-success bg-success/10 border-green-200'
       default: return 'text-gray-600 bg-gray-100 border-gray-200'
     }
   }
@@ -375,7 +375,7 @@ function StockAlertCard({
           </div>
           <Progress 
             value={Math.min(stockPercentage, 100)} 
-            className={`h-2 ${stockPercentage < 50 ? '[&>div]:bg-red-500' : stockPercentage < 80 ? '[&>div]:bg-yellow-500' : '[&>div]:bg-green-500'}`}
+            className={`h-2 ${stockPercentage < 50 ? '[&>div]:bg-destructive' : stockPercentage < 80 ? '[&>div]:bg-warning' : '[&>div]:bg-success'}`}
           />
         </div>
 

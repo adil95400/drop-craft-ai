@@ -206,7 +206,7 @@ export function ProductsDebugPanel() {
 
             {/* Help */}
             {debugInfo.totalProducts === 0 && (
-              <div className="p-2 bg-yellow-500/10 rounded-md text-yellow-700">
+              <div className="p-2 bg-warning/10 rounded-md text-yellow-700">
                 <AlertTriangle className="h-4 w-4 inline mr-2" />
                 Aucun produit trouvé pour votre compte. Vérifiez que vous êtes connecté 
                 avec le bon compte ou importez des produits.

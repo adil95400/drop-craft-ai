@@ -200,7 +200,7 @@ export function AdvancedSupplierAnalytics() {
         <div className="flex items-center gap-3">
           {/* Indicateur temps réel */}
           <div className="flex items-center gap-2">
-            <span className={`h-2 w-2 rounded-full ${isConnected ? 'bg-green-500 animate-pulse' : 'bg-red-500'}`} />
+            <span className={`h-2 w-2 rounded-full ${isConnected ? 'bg-success animate-pulse' : 'bg-destructive'}`} />
             <span className="text-sm text-muted-foreground">
               {isConnected ? 'Temps réel' : 'Déconnecté'}
             </span>
@@ -497,11 +497,11 @@ export function AdvancedSupplierAnalytics() {
                     </td>
                     <td className="text-center py-3 px-4">
                       {supplier.successRate >= 95 ? (
-                        <Badge className="bg-green-100 text-success">Excellent</Badge>
+                        <Badge className="bg-success/10 text-success">Excellent</Badge>
                       ) : supplier.successRate >= 85 ? (
-                        <Badge className="bg-yellow-100 text-yellow-800">Bon</Badge>
+                        <Badge className="bg-warning/10 text-yellow-800">Bon</Badge>
                       ) : (
-                        <Badge className="bg-red-100 text-red-800">À surveiller</Badge>
+                        <Badge className="bg-destructive/10 text-red-800">À surveiller</Badge>
                       )}
                     </td>
                   </tr>

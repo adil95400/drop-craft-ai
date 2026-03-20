@@ -151,11 +151,11 @@ export function ScheduleFormDialog({
   const isFormComplete = formData.name.trim().length > 0
 
   const sourceTypeOptions = [
-    { value: 'url', label: 'URL Produit', icon: Link, color: 'text-info bg-blue-500/10' },
-    { value: 'csv', label: 'Fichier CSV', icon: FileText, color: 'text-success bg-emerald-500/10' },
-    { value: 'xml', label: 'Flux XML', icon: Globe, color: 'text-warning bg-orange-500/10' },
+    { value: 'url', label: 'URL Produit', icon: Link, color: 'text-info bg-info/10' },
+    { value: 'csv', label: 'Fichier CSV', icon: FileText, color: 'text-success bg-success/10' },
+    { value: 'xml', label: 'Flux XML', icon: Globe, color: 'text-warning bg-warning/10' },
     { value: 'api', label: 'API REST', icon: Zap, color: 'text-purple-500 bg-purple-500/10' },
-    { value: 'ftp', label: 'FTP/SFTP', icon: Shield, color: 'text-destructive bg-rose-500/10' }
+    { value: 'ftp', label: 'FTP/SFTP', icon: Shield, color: 'text-destructive bg-destructive/10' }
   ]
 
   const frequencyOptions = [
@@ -273,7 +273,7 @@ export function ScheduleFormDialog({
 
                     <div className="flex items-center justify-between p-4 rounded-xl border bg-muted/30">
                       <div className="flex items-center gap-3">
-                        <div className="p-2 bg-emerald-500/10 rounded-lg">
+                        <div className="p-2 bg-success/10 rounded-lg">
                           <Sparkles className="w-4 h-4 text-success" />
                         </div>
                         <div>
@@ -595,7 +595,7 @@ export function ScheduleFormDialog({
                       <div className="p-3.5 rounded-xl border bg-muted/20">
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-3">
-                            <div className="p-1.5 bg-rose-500/10 rounded-lg">
+                            <div className="p-1.5 bg-destructive/10 rounded-lg">
                               <RefreshCw className="w-4 h-4 text-destructive" />
                             </div>
                             <div>

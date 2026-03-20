@@ -58,9 +58,9 @@ export function SyncProgressModal({
 
   const getStatusBadge = (status: SyncStep['status']) => {
     switch (status) {
-      case 'completed': return <Badge variant="default" className="bg-green-100 text-success">Terminé</Badge>
+      case 'completed': return <Badge variant="default" className="bg-success/10 text-success">Terminé</Badge>
       case 'error': return <Badge variant="destructive">Erreur</Badge>
-      case 'running': return <Badge variant="secondary" className="bg-blue-100 text-blue-700">En cours</Badge>
+      case 'running': return <Badge variant="secondary" className="bg-info/10 text-blue-700">En cours</Badge>
       default: return <Badge variant="outline">En attente</Badge>
     }
   }

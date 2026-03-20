@@ -82,7 +82,7 @@ export function GDPRComplianceCenter() {
       <div className="grid gap-4 md:grid-cols-3">
         <Card className="p-5">
           <div className="flex items-center gap-3">
-            <div className="p-3 bg-green-500/10 rounded-lg">
+            <div className="p-3 bg-success/10 rounded-lg">
               <CheckCircle2 className="h-5 w-5 text-success" />
             </div>
             <div>

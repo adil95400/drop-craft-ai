@@ -194,7 +194,7 @@ export const RecommendedFlows = () => {
   )]
 
   return (
-    <Card className="mb-6 border-blue-200 bg-blue-50/50">
+    <Card className="mb-6 border-blue-200 bg-info/5/50">
       <CardContent className="p-4">
         <div className="flex items-center gap-2 mb-3">
           <Zap className="h-4 w-4 text-info" />

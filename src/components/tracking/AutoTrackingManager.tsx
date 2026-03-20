@@ -183,10 +183,10 @@ export const AutoTrackingManager = () => {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'processing': return 'bg-yellow-100 text-yellow-800';
-      case 'shipped': return 'bg-blue-100 text-blue-800';
+      case 'processing': return 'bg-warning/10 text-yellow-800';
+      case 'shipped': return 'bg-info/10 text-blue-800';
       case 'in_transit': return 'bg-purple-100 text-purple-800';
-      case 'delivered': return 'bg-green-100 text-success';
+      case 'delivered': return 'bg-success/10 text-success';
       default: return 'bg-gray-100 text-gray-800';
     }
   };

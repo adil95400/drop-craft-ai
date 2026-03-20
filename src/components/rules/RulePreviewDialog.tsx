@@ -85,7 +85,7 @@ export function RulePreviewDialog({
                         Exclu
                       </Badge>
                     ) : result.appliedRules.length > 0 ? (
-                      <Badge variant="default" className="gap-1 bg-green-500">
+                      <Badge variant="default" className="gap-1 bg-success">
                         <Check className="h-3 w-3" />
                         Modifié
                       </Badge>

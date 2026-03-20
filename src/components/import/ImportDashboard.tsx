@@ -262,10 +262,10 @@ export const ImportDashboard = () => {
 
               const getStatusColor = (status: string) => {
                 switch (status) {
-                  case 'completed': return 'bg-green-500/10 text-success border-green-500/20';
-                  case 'processing': return 'bg-blue-500/10 text-blue-700 border-blue-500/20';
-                  case 'pending': return 'bg-yellow-500/10 text-yellow-700 border-yellow-500/20';
-                  case 'failed': return 'bg-red-500/10 text-red-700 border-red-500/20';
+                  case 'completed': return 'bg-success/10 text-success border-green-500/20';
+                  case 'processing': return 'bg-info/10 text-blue-700 border-blue-500/20';
+                  case 'pending': return 'bg-warning/10 text-yellow-700 border-yellow-500/20';
+                  case 'failed': return 'bg-destructive/10 text-red-700 border-red-500/20';
                   default: return 'bg-gray-500/10 text-gray-700 border-gray-500/20';
                 }
               };

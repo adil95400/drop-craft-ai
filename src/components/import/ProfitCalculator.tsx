@@ -123,15 +123,15 @@ export function ProfitCalculator({
 
   const getProfitBadge = () => {
     if (calculations.netMarginPercent >= 30) {
-      return <Badge className="bg-green-500/20 text-success border-green-500/30">Excellente marge</Badge>;
+      return <Badge className="bg-success/20 text-success border-green-500/30">Excellente marge</Badge>;
     }
     if (calculations.netMarginPercent >= 15) {
-      return <Badge className="bg-blue-500/20 text-info border-blue-500/30">Bonne marge</Badge>;
+      return <Badge className="bg-info/20 text-info border-blue-500/30">Bonne marge</Badge>;
     }
     if (calculations.netMarginPercent >= 5) {
-      return <Badge className="bg-yellow-500/20 text-warning border-yellow-500/30">Marge faible</Badge>;
+      return <Badge className="bg-warning/20 text-warning border-yellow-500/30">Marge faible</Badge>;
     }
-    return <Badge className="bg-red-500/20 text-destructive border-red-500/30">Non rentable</Badge>;
+    return <Badge className="bg-destructive/20 text-destructive border-red-500/30">Non rentable</Badge>;
   };
 
   if (compact) {

@@ -145,7 +145,7 @@ export function AutoReorderManager() {
                           {rec.urgency}
                         </Badge>
                         {rec.ai_prediction && (
-                          <Badge variant="outline" className="bg-blue-50">
+                          <Badge variant="outline" className="bg-info/5">
                             IA: {Math.round(rec.ai_prediction.confidence * 100)}% confiance
                           </Badge>
                         )}
@@ -175,7 +175,7 @@ export function AutoReorderManager() {
                       </div>
 
                       {rec.ai_prediction?.predicted_stockout_date && (
-                        <div className="mt-3 p-2 bg-blue-50 dark:bg-blue-950/20 rounded text-sm">
+                        <div className="mt-3 p-2 bg-info/5 dark:bg-blue-950/20 rounded text-sm">
                           <div className="flex items-center gap-2">
                             <AlertCircle className="h-4 w-4 text-info" />
                             <span>

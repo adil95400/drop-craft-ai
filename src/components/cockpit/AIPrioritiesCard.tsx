@@ -17,10 +17,10 @@ interface AIPrioritiesCardProps {
 }
 
 const categoryLabels: Record<string, { label: string; color: string }> = {
-  seo: { label: 'SEO', color: 'bg-blue-500/10 text-info' },
+  seo: { label: 'SEO', color: 'bg-info/10 text-info' },
   content: { label: 'Contenu', color: 'bg-purple-500/10 text-purple-600' },
-  pricing: { label: 'Prix', color: 'bg-yellow-500/10 text-warning' },
-  stock: { label: 'Stock', color: 'bg-green-500/10 text-success' },
+  pricing: { label: 'Prix', color: 'bg-warning/10 text-warning' },
+  stock: { label: 'Stock', color: 'bg-success/10 text-success' },
 }
 
 export function AIPrioritiesCard({ priorities }: AIPrioritiesCardProps) {

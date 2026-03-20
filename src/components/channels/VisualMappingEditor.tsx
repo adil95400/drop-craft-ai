@@ -313,9 +313,9 @@ export function VisualMappingEditor({
                   className={cn(
                     "grid grid-cols-1 md:grid-cols-12 gap-3 p-3 rounded-lg border transition-colors",
                     mapping.isConnected && mapping.sourceField && mapping.targetField
-                      ? "bg-green-500/5 border-green-500/20"
+                      ? "bg-success/5 border-green-500/20"
                       : mapping.required
-                        ? "bg-orange-500/5 border-orange-500/20"
+                        ? "bg-warning/5 border-orange-500/20"
                         : "bg-muted/30"
                   )}
                 >
@@ -444,7 +444,7 @@ export function VisualMappingEditor({
 
       {/* Validation warnings */}
       {stats.missingRequired > 0 && (
-        <Card className="border-orange-500/50 bg-orange-500/5">
+        <Card className="border-orange-500/50 bg-warning/5">
           <CardContent className="p-4">
             <div className="flex items-start gap-3">
               <AlertCircle className="h-5 w-5 text-warning mt-0.5" />

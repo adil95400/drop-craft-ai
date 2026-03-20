@@ -25,7 +25,7 @@ const planConfig = {
     icon: Star,
     price: '29€',
     color: 'text-info',
-    bgColor: 'bg-blue-50',
+    bgColor: 'bg-info/5',
     borderColor: 'border-blue-200',
     features: [
       'Imports avancés',

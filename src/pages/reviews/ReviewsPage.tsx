@@ -364,10 +364,10 @@ export default function ReviewsPage() {
 function ReviewCard({ review, onDelete }: { review: ProductReview; onDelete: (id: string) => void }) {
   const platformColors: Record<string, string> = {
     aliexpress: 'bg-orange-100 text-orange-700 border-orange-200',
-    amazon: 'bg-yellow-100 text-yellow-700 border-yellow-200',
+    amazon: 'bg-warning/10 text-yellow-700 border-yellow-200',
     tiktok: 'bg-pink-100 text-pink-700 border-pink-200',
-    shopify: 'bg-green-100 text-success border-green-200',
-    ebay: 'bg-blue-100 text-blue-700 border-blue-200',
+    shopify: 'bg-success/10 text-success border-green-200',
+    ebay: 'bg-info/10 text-blue-700 border-blue-200',
     manual: 'bg-muted text-muted-foreground',
   };
 

@@ -271,7 +271,7 @@ export function AutoSyncSettings({
             {/* Products */}
             <div className={cn(
               "flex items-center justify-between p-4 rounded-lg border transition-colors",
-              config.syncProducts ? "bg-blue-500/5 border-blue-500/20" : ""
+              config.syncProducts ? "bg-info/5 border-blue-500/20" : ""
             )}>
               <div className="flex items-center gap-3">
                 <Package className="h-5 w-5 text-info" />
@@ -290,7 +290,7 @@ export function AutoSyncSettings({
             {/* Orders */}
             <div className={cn(
               "flex items-center justify-between p-4 rounded-lg border transition-colors",
-              config.syncOrders ? "bg-green-500/5 border-green-500/20" : ""
+              config.syncOrders ? "bg-success/5 border-green-500/20" : ""
             )}>
               <div className="flex items-center gap-3">
                 <ShoppingCart className="h-5 w-5 text-success" />
@@ -328,7 +328,7 @@ export function AutoSyncSettings({
             {/* Prices */}
             <div className={cn(
               "flex items-center justify-between p-4 rounded-lg border transition-colors",
-              config.syncPrices ? "bg-orange-500/5 border-orange-500/20" : ""
+              config.syncPrices ? "bg-warning/5 border-orange-500/20" : ""
             )}>
               <div className="flex items-center gap-3">
                 <TrendingUp className="h-5 w-5 text-warning" />

@@ -63,9 +63,9 @@ export const IntegrationCard = ({ integration, onEdit }: IntegrationCardProps) =
   const { toast } = useToast();
 
   const statusConfig = {
-    connected: { color: 'bg-green-500', text: 'Connecté', icon: PlugZap },
+    connected: { color: 'bg-success', text: 'Connecté', icon: PlugZap },
     disconnected: { color: 'bg-gray-500', text: 'Non connecté', icon: Plug },
-    error: { color: 'bg-red-500', text: 'Erreur', icon: AlertCircle },
+    error: { color: 'bg-destructive', text: 'Erreur', icon: AlertCircle },
   };
 
   const handleSave = async () => {
@@ -192,7 +192,7 @@ export const IntegrationCard = ({ integration, onEdit }: IntegrationCardProps) =
         )}
 
         {testResult && (
-          <div className={`p-3 rounded-lg border ${testResult.success ? 'bg-green-50 border-green-200 dark:bg-green-950/20' : 'bg-red-50 border-red-200 dark:bg-red-950/20'}`}>
+          <div className={`p-3 rounded-lg border ${testResult.success ? 'bg-success/5 border-green-200 dark:bg-green-950/20' : 'bg-destructive/5 border-red-200 dark:bg-red-950/20'}`}>
             <div className="flex items-center gap-2">
               {testResult.success ? (
                 <CheckCircle className="w-4 h-4 text-success" />
@@ -262,7 +262,7 @@ export const IntegrationCard = ({ integration, onEdit }: IntegrationCardProps) =
                           onChange={(e) => setConfig({...config, credentials: {...config.credentials, access_token: e.target.value}})}
                         />
                       </div>
-                      <div className="text-sm text-muted-foreground bg-blue-50 dark:bg-blue-950/20 p-3 rounded-lg">
+                      <div className="text-sm text-muted-foreground bg-info/5 dark:bg-blue-950/20 p-3 rounded-lg">
                         <strong>📋 Instructions Shopify :</strong><br/>
                         1. Allez dans Paramètres → Applications et ventes → Développer des applications<br/>
                         2. Créez une application privée<br/>
@@ -300,7 +300,7 @@ export const IntegrationCard = ({ integration, onEdit }: IntegrationCardProps) =
                           onChange={(e) => setConfig({...config, credentials: {...config.credentials, api_secret: e.target.value}})}
                         />
                       </div>
-                      <div className="text-sm text-muted-foreground bg-blue-50 dark:bg-blue-950/20 p-3 rounded-lg">
+                      <div className="text-sm text-muted-foreground bg-info/5 dark:bg-blue-950/20 p-3 rounded-lg">
                         <strong>📋 Instructions Amazon :</strong><br/>
                         1. Connectez-vous à Seller Central<br/>
                         2. Paramètres → Paramètres du compte → API Marketplace Web Service<br/>
@@ -339,7 +339,7 @@ export const IntegrationCard = ({ integration, onEdit }: IntegrationCardProps) =
                           onChange={(e) => setConfig({...config, credentials: {...config.credentials, api_secret: e.target.value}})}
                         />
                       </div>
-                      <div className="text-sm text-muted-foreground bg-blue-50 dark:bg-blue-950/20 p-3 rounded-lg">
+                      <div className="text-sm text-muted-foreground bg-info/5 dark:bg-blue-950/20 p-3 rounded-lg">
                         <strong>📋 Instructions {integration.platform_name === 'woocommerce' ? 'WooCommerce' : 'BigCommerce'} :</strong><br/>
                         {integration.platform_name === 'woocommerce' ? (
                           <>1. WordPress Admin → WooCommerce → Paramètres → Avancé → API REST<br/>2. Créez une nouvelle clé API<br/>3. Autorisations : Lecture/Écriture</>

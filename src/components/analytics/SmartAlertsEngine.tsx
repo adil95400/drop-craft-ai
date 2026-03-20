@@ -115,10 +115,10 @@ export function SmartAlertsEngine() {
 
   const getSeverityColor = (severity: string | null) => {
     switch (severity) {
-      case 'critical': return 'bg-red-500/10 text-destructive border-red-500/20';
-      case 'high': return 'bg-orange-500/10 text-warning border-orange-500/20';
-      case 'medium': return 'bg-amber-500/10 text-warning border-amber-500/20';
-      default: return 'bg-blue-500/10 text-info border-blue-500/20';
+      case 'critical': return 'bg-destructive/10 text-destructive border-red-500/20';
+      case 'high': return 'bg-warning/10 text-warning border-orange-500/20';
+      case 'medium': return 'bg-warning/10 text-warning border-amber-500/20';
+      default: return 'bg-info/10 text-info border-blue-500/20';
     }
   };
 

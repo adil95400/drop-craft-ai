@@ -80,7 +80,7 @@ export default function OnboardingRetentionPage() {
                 <div>
                   <h3 className="text-lg font-semibold flex items-center gap-2">
                     Niveau {levelInfo.level}
-                    <Badge variant="secondary" className="bg-amber-500/10 text-warning border-amber-500/20">
+                    <Badge variant="secondary" className="bg-warning/10 text-warning border-amber-500/20">
                       {levelInfo.xp} XP
                     </Badge>
                   </h3>
@@ -89,7 +89,7 @@ export default function OnboardingRetentionPage() {
                   </p>
                 </div>
                 {streak > 0 && (
-                  <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-orange-500/10 border border-orange-500/20">
+                  <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-warning/10 border border-orange-500/20">
                     <Flame className="h-4 w-4 text-warning" />
                     <span className="text-sm font-semibold text-warning">{streak}j</span>
                   </div>
@@ -164,14 +164,14 @@ export default function OnboardingRetentionPage() {
                   <Card className={cn(
                     "transition-all",
                     unlocked 
-                      ? "border-emerald-500/30 bg-emerald-500/5" 
+                      ? "border-emerald-500/30 bg-success/5" 
                       : "opacity-70 hover:opacity-100"
                   )}>
                     <CardContent className="p-4">
                       <div className="flex items-start gap-3">
                         <div className={cn(
                           "text-2xl w-10 h-10 flex items-center justify-center rounded-lg",
-                          unlocked ? "bg-emerald-500/10" : "bg-muted/50 grayscale"
+                          unlocked ? "bg-success/10" : "bg-muted/50 grayscale"
                         )}>
                           {achievement.icon}
                         </div>

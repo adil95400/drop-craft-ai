@@ -157,7 +157,7 @@ export const BusinessIntelligence: React.FC = () => {
                       </Badge>
                     </div>
                     
-                    <div className="p-3 bg-blue-50 dark:bg-blue-950/20 rounded-lg">
+                    <div className="p-3 bg-info/5 dark:bg-blue-950/20 rounded-lg">
                       <p className="text-sm font-medium text-blue-900 dark:text-blue-100">
                         {insight.insight}
                       </p>
@@ -292,7 +292,7 @@ export const BusinessIntelligence: React.FC = () => {
                       </div>
                     </div>
                     
-                    <div className="p-3 bg-green-50 dark:bg-green-950/20 rounded-lg">
+                    <div className="p-3 bg-success/5 dark:bg-green-950/20 rounded-lg">
                       <p className="text-sm font-medium text-green-900 dark:text-green-100">
                         Action: {opportunity.action}
                       </p>
@@ -362,9 +362,9 @@ export const BusinessIntelligence: React.FC = () => {
                   <div className="space-y-3">
                     {[
                       { name: 'Électronique', value: 35, color: 'bg-primary' },
-                      { name: 'Mode', value: 28, color: 'bg-blue-500' },
-                      { name: 'Maison', value: 20, color: 'bg-green-500' },
-                      { name: 'Beauté', value: 12, color: 'bg-orange-500' },
+                      { name: 'Mode', value: 28, color: 'bg-info' },
+                      { name: 'Maison', value: 20, color: 'bg-success' },
+                      { name: 'Beauté', value: 12, color: 'bg-warning' },
                       { name: 'Autres', value: 5, color: 'bg-muted-foreground' },
                     ].map((item) => (
                       <div key={item.name} className="space-y-1">

@@ -193,10 +193,10 @@ export const EnhancedIntegrationsHub: React.FC = () => {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'available': return 'bg-green-500'
-      case 'beta': return 'bg-orange-500'
+      case 'available': return 'bg-success'
+      case 'beta': return 'bg-warning'
       case 'coming_soon': return 'bg-gray-400'
-      default: return 'bg-green-500'
+      default: return 'bg-success'
     }
   }
 
@@ -339,7 +339,7 @@ export const EnhancedIntegrationsHub: React.FC = () => {
                             </Badge>
                           )}
                           {isConnected && (
-                            <Badge variant="default" className="bg-green-500 text-white text-xs">
+                            <Badge variant="default" className="bg-success text-white text-xs">
                               <Check className="w-3 h-3 mr-1" />
                               Connecté
                             </Badge>

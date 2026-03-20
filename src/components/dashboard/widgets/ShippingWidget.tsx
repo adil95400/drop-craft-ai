@@ -87,22 +87,22 @@ export function ShippingWidget({ settings }: ShippingWidgetProps) {
       <CardContent className="space-y-4">
         {showDetails && (
           <div className="grid grid-cols-4 gap-2">
-            <div className="text-center p-2 bg-orange-500/10 rounded-lg">
+            <div className="text-center p-2 bg-warning/10 rounded-lg">
               <Clock className="h-4 w-4 mx-auto text-warning mb-1" />
               <p className="text-lg font-bold">{shippingStats.pending}</p>
               <p className="text-[10px] text-muted-foreground">En attente</p>
             </div>
-            <div className="text-center p-2 bg-blue-500/10 rounded-lg">
+            <div className="text-center p-2 bg-info/10 rounded-lg">
               <Truck className="h-4 w-4 mx-auto text-info mb-1" />
               <p className="text-lg font-bold">{shippingStats.shipped}</p>
               <p className="text-[10px] text-muted-foreground">Expédiées</p>
             </div>
-            <div className="text-center p-2 bg-green-500/10 rounded-lg">
+            <div className="text-center p-2 bg-success/10 rounded-lg">
               <CheckCircle className="h-4 w-4 mx-auto text-success mb-1" />
               <p className="text-lg font-bold">{shippingStats.delivered}</p>
               <p className="text-[10px] text-muted-foreground">Livrées</p>
             </div>
-            <div className="text-center p-2 bg-red-500/10 rounded-lg">
+            <div className="text-center p-2 bg-destructive/10 rounded-lg">
               <AlertCircle className="h-4 w-4 mx-auto text-destructive mb-1" />
               <p className="text-lg font-bold">{shippingStats.returned}</p>
               <p className="text-[10px] text-muted-foreground">Retours</p>

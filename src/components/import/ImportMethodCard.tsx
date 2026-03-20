@@ -45,14 +45,14 @@ export const ImportMethodCard = ({
           {isConnected ? (
             <>
               <CheckCircle className="w-4 h-4 text-success" />
-              <Badge variant="outline" className="bg-green-50 text-success border-green-200">
+              <Badge variant="outline" className="bg-success/5 text-success border-green-200">
                 Connecté
               </Badge>
             </>
           ) : (
             <>
               <AlertTriangle className="w-4 h-4 text-warning" />
-              <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-200">
+              <Badge variant="outline" className="bg-warning/5 text-yellow-700 border-yellow-200">
                 Non configuré
               </Badge>
             </>

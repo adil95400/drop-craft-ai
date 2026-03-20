@@ -32,10 +32,10 @@ import {
 
 // Platform options for step 1
 const PLATFORMS = [
-  { id: 'shopify', name: 'Shopify', icon: ShoppingCart, color: 'bg-green-500', popular: true },
+  { id: 'shopify', name: 'Shopify', icon: ShoppingCart, color: 'bg-success', popular: true },
   { id: 'woocommerce', name: 'WooCommerce', icon: Globe, color: 'bg-purple-500', popular: true },
   { id: 'prestashop', name: 'PrestaShop', icon: Store, color: 'bg-pink-500' },
-  { id: 'wix', name: 'Wix', icon: Zap, color: 'bg-blue-500' },
+  { id: 'wix', name: 'Wix', icon: Zap, color: 'bg-info' },
 ];
 
 // Supplier options for step 2

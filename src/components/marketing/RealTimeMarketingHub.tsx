@@ -265,7 +265,7 @@ export const RealTimeMarketingHub: React.FC = () => {
         <CardContent className="p-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className={`w-3 h-3 rounded-full ${isLive ? 'bg-green-500 animate-pulse' : 'bg-gray-400'}`} />
+              <div className={`w-3 h-3 rounded-full ${isLive ? 'bg-success animate-pulse' : 'bg-gray-400'}`} />
               <div>
                 <h3 className="font-semibold">Hub Marketing Temps Réel</h3>
                 <p className="text-sm text-muted-foreground">
@@ -306,7 +306,7 @@ export const RealTimeMarketingHub: React.FC = () => {
                 <Progress value={Math.min(progress, 100)} className="h-1" />
               </CardContent>
               {isLive && (
-                <div className="absolute top-2 right-2 w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+                <div className="absolute top-2 right-2 w-2 h-2 bg-success rounded-full animate-pulse" />
               )}
             </Card>
           );
@@ -447,10 +447,10 @@ export const RealTimeMarketingHub: React.FC = () => {
           <div className="flex items-center justify-between mt-4 text-xs text-muted-foreground">
             <span>Performance faible</span>
             <div className="flex items-center gap-1">
-              <div className="w-3 h-3 bg-red-500 rounded" />
-              <div className="w-3 h-3 bg-orange-500 rounded" />
-              <div className="w-3 h-3 bg-yellow-500 rounded" />
-              <div className="w-3 h-3 bg-green-500 rounded" />
+              <div className="w-3 h-3 bg-destructive rounded" />
+              <div className="w-3 h-3 bg-warning rounded" />
+              <div className="w-3 h-3 bg-warning rounded" />
+              <div className="w-3 h-3 bg-success rounded" />
             </div>
             <span>Performance élevée</span>
           </div>

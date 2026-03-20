@@ -99,12 +99,12 @@ export default function CDiscountPage() {
     <div className="container mx-auto p-6 space-y-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <div className="w-14 h-14 rounded-xl bg-blue-500/10 flex items-center justify-center text-3xl">🟦</div>
+          <div className="w-14 h-14 rounded-xl bg-info/10 flex items-center justify-center text-3xl">🟦</div>
           <div>
             <h1 className="text-2xl font-bold flex items-center gap-2">
               Cdiscount Marketplace
               {isConnected ? (
-                <Badge className="bg-green-500/10 text-success border-green-500/30"><CheckCircle2 className="h-3 w-3 mr-1" />Connecté</Badge>
+                <Badge className="bg-success/10 text-success border-green-500/30"><CheckCircle2 className="h-3 w-3 mr-1" />Connecté</Badge>
               ) : (
                 <Badge variant="secondary"><AlertCircle className="h-3 w-3 mr-1" />Non connecté</Badge>
               )}

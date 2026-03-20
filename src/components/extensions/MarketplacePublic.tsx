@@ -329,7 +329,7 @@ export const MarketplacePublic = () => {
             </div>
             <div className="text-right">
               {extension.price === 0 ? (
-                <Badge className="bg-green-100 text-success font-medium">Free</Badge>
+                <Badge className="bg-success/10 text-success font-medium">Free</Badge>
               ) : (
                 <Badge className="bg-primary/10 text-primary font-medium">Premium</Badge>
               )}

@@ -311,7 +311,7 @@ export default function PremiumSuppliersHub() {
         
         <Card className="p-4">
           <div className="flex items-center gap-3">
-            <div className="p-3 rounded-lg bg-green-500/10">
+            <div className="p-3 rounded-lg bg-success/10">
               <CheckCircle2 className="h-5 w-5 text-success" />
             </div>
             <div>
@@ -323,7 +323,7 @@ export default function PremiumSuppliersHub() {
 
         <Card className="p-4">
           <div className="flex items-center gap-3">
-            <div className="p-3 rounded-lg bg-yellow-500/10">
+            <div className="p-3 rounded-lg bg-warning/10">
               <Sparkles className="h-5 w-5 text-warning" />
             </div>
             <div>
@@ -335,7 +335,7 @@ export default function PremiumSuppliersHub() {
 
         <Card className="p-4">
           <div className="flex items-center gap-3">
-            <div className="p-3 rounded-lg bg-blue-500/10">
+            <div className="p-3 rounded-lg bg-info/10">
               <Truck className="h-5 w-5 text-info" />
             </div>
             <div>

@@ -53,7 +53,7 @@ export const MarketingAutomation: React.FC = () => {
   const chartData = data?.chartData || [];
   const stats = data?.stats || { openRate: 0, conversionRate: 0, revenue: 0 };
 
-  const getStatusColor = (status: boolean) => status ? 'bg-green-100 text-success' : 'bg-gray-100 text-gray-800';
+  const getStatusColor = (status: boolean) => status ? 'bg-success/10 text-success' : 'bg-gray-100 text-gray-800';
   const formatCurrency = (amount: number) => new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(amount);
 
   if (isLoading) {

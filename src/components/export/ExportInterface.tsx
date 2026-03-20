@@ -149,9 +149,9 @@ export const ExportInterface: React.FC<ExportInterfaceProps> = ({
   const getPlatformStatusBadge = (status: string) => {
     switch (status) {
       case 'connected':
-        return <Badge className="bg-green-100 text-success"><CheckCircle className="h-3 w-3 mr-1" />Connecté</Badge>
+        return <Badge className="bg-success/10 text-success"><CheckCircle className="h-3 w-3 mr-1" />Connecté</Badge>
       case 'configured':
-        return <Badge className="bg-blue-100 text-blue-800"><Globe className="h-3 w-3 mr-1" />Configuré</Badge>
+        return <Badge className="bg-info/10 text-blue-800"><Globe className="h-3 w-3 mr-1" />Configuré</Badge>
       case 'available':
         return <Badge variant="outline">Disponible</Badge>
       default:

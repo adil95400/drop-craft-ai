@@ -92,7 +92,7 @@ const ICON_MAP: Record<string, any> = {
 };
 
 const TYPE_COLORS: Record<string, string> = {
-  trigger: 'border-l-4 border-l-blue-500 bg-blue-50/50 dark:bg-blue-950/30',
+  trigger: 'border-l-4 border-l-blue-500 bg-info/5/50 dark:bg-blue-950/30',
   condition: 'border-l-4 border-l-amber-500 bg-amber-50/50 dark:bg-amber-950/30',
   action: 'border-l-4 border-l-emerald-500 bg-emerald-50/50 dark:bg-emerald-950/30',
   delay: 'border-l-4 border-l-purple-500 bg-purple-50/50 dark:bg-purple-950/30',
@@ -133,7 +133,7 @@ function SortableNode({
           </div>
           <div className={cn(
             'h-9 w-9 rounded-lg flex items-center justify-center shrink-0',
-            node.type === 'trigger' ? 'bg-blue-100 text-info dark:bg-blue-900 dark:text-blue-300' :
+            node.type === 'trigger' ? 'bg-info/10 text-info dark:bg-blue-900 dark:text-blue-300' :
             node.type === 'condition' ? 'bg-amber-100 text-warning dark:bg-amber-900 dark:text-amber-300' :
             'bg-emerald-100 text-success dark:bg-emerald-900 dark:text-emerald-300'
           )}>
@@ -216,7 +216,7 @@ export function VisualWorkflowCanvas({ nodes, onNodesChange, onNodeSelect, selec
             <Badge variant="outline" className="gap-1">
               <Zap className="h-3 w-3" /> {nodes.length} étapes
             </Badge>
-            {hasTrigger && <Badge className="gap-1 bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300">Trigger OK</Badge>}
+            {hasTrigger && <Badge className="gap-1 bg-info/10 text-blue-700 dark:bg-blue-900 dark:text-blue-300">Trigger OK</Badge>}
           </div>
           <Sheet open={paletteOpen} onOpenChange={setPaletteOpen}>
             <SheetTrigger asChild>

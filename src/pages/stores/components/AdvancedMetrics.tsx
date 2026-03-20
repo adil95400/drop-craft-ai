@@ -32,9 +32,9 @@ export function AdvancedMetrics({ store }: AdvancedMetricsProps) {
   }
 
   const getHealthBadge = (score: number) => {
-    if (score >= 80) return <Badge className="bg-green-100 text-success">Excellent</Badge>
-    if (score >= 60) return <Badge className="bg-yellow-100 text-yellow-700">Correct</Badge>
-    return <Badge className="bg-red-100 text-red-700">À améliorer</Badge>
+    if (score >= 80) return <Badge className="bg-success/10 text-success">Excellent</Badge>
+    if (score >= 60) return <Badge className="bg-warning/10 text-yellow-700">Correct</Badge>
+    return <Badge className="bg-destructive/10 text-red-700">À améliorer</Badge>
   }
 
   return (
@@ -142,7 +142,7 @@ export function AdvancedMetrics({ store }: AdvancedMetricsProps) {
         <CardContent>
           <div className="space-y-3">
             {syncHealth < 80 && (
-              <div className="flex items-start gap-3 p-3 rounded-lg bg-yellow-50 border border-yellow-200">
+              <div className="flex items-start gap-3 p-3 rounded-lg bg-warning/5 border border-yellow-200">
                 <AlertCircle className="w-4 h-4 text-warning mt-0.5" />
                 <div>
                   <p className="text-sm font-medium text-yellow-800">
@@ -156,7 +156,7 @@ export function AdvancedMetrics({ store }: AdvancedMetricsProps) {
             )}
 
             {!store.settings?.auto_sync && (
-              <div className="flex items-start gap-3 p-3 rounded-lg bg-blue-50 border border-blue-200">
+              <div className="flex items-start gap-3 p-3 rounded-lg bg-info/5 border border-blue-200">
                 <TrendingUp className="w-4 h-4 text-info mt-0.5" />
                 <div>
                   <p className="text-sm font-medium text-blue-800">
@@ -170,7 +170,7 @@ export function AdvancedMetrics({ store }: AdvancedMetricsProps) {
             )}
 
             {lastSyncHours && lastSyncHours > 24 && (
-              <div className="flex items-start gap-3 p-3 rounded-lg bg-red-50 border border-red-200">
+              <div className="flex items-start gap-3 p-3 rounded-lg bg-destructive/5 border border-red-200">
                 <Clock className="w-4 h-4 text-destructive mt-0.5" />
                 <div>
                   <p className="text-sm font-medium text-red-800">
@@ -184,7 +184,7 @@ export function AdvancedMetrics({ store }: AdvancedMetricsProps) {
             )}
 
             {syncHealth >= 80 && store.settings?.auto_sync && (!lastSyncHours || lastSyncHours < 2) && (
-              <div className="flex items-start gap-3 p-3 rounded-lg bg-green-50 border border-green-200">
+              <div className="flex items-start gap-3 p-3 rounded-lg bg-success/5 border border-green-200">
                 <CheckCircle className="w-4 h-4 text-success mt-0.5" />
                 <div>
                   <p className="text-sm font-medium text-success">

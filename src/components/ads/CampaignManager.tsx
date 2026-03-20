@@ -39,7 +39,7 @@ export function CampaignManager() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'active':
-        return <Badge className="bg-green-500">Actif</Badge>;
+        return <Badge className="bg-success">Actif</Badge>;
       case 'paused':
         return <Badge variant="secondary">En pause</Badge>;
       case 'completed':

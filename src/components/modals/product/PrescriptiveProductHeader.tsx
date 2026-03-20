@@ -42,10 +42,10 @@ const AI_STATUS_CONFIG = {
     ctaIcon: Zap,
     gradient: 'from-red-500/20 via-red-500/10 to-transparent',
     border: 'border-red-500/40',
-    iconBg: 'bg-red-500/20',
+    iconBg: 'bg-destructive/20',
     iconColor: 'text-destructive',
     textColor: 'text-destructive dark:text-red-400',
-    ctaClass: 'bg-red-500 hover:bg-red-600 text-white shadow-lg shadow-red-500/30'
+    ctaClass: 'bg-destructive hover:bg-destructive text-white shadow-lg shadow-red-500/30'
   },
   opportunity: {
     icon: TrendingUp,
@@ -55,10 +55,10 @@ const AI_STATUS_CONFIG = {
     ctaIcon: TrendingUp,
     gradient: 'from-emerald-500/20 via-emerald-500/10 to-transparent',
     border: 'border-emerald-500/40',
-    iconBg: 'bg-emerald-500/20',
+    iconBg: 'bg-success/20',
     iconColor: 'text-success',
     textColor: 'text-success dark:text-emerald-400',
-    ctaClass: 'bg-emerald-500 hover:bg-emerald-600 text-white shadow-lg shadow-emerald-500/30'
+    ctaClass: 'bg-success hover:bg-success text-white shadow-lg shadow-emerald-500/30'
   },
   optimized: {
     icon: CheckCircle,
@@ -68,10 +68,10 @@ const AI_STATUS_CONFIG = {
     ctaIcon: ArrowRight,
     gradient: 'from-blue-500/20 via-blue-500/10 to-transparent',
     border: 'border-blue-500/40',
-    iconBg: 'bg-blue-500/20',
+    iconBg: 'bg-info/20',
     iconColor: 'text-info',
     textColor: 'text-info dark:text-blue-400',
-    ctaClass: 'bg-blue-500 hover:bg-blue-600 text-white'
+    ctaClass: 'bg-info hover:bg-info text-white'
   },
   neutral: {
     icon: CheckCircle,

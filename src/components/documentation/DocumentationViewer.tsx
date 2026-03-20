@@ -27,12 +27,12 @@ import {
 const LEVEL_CONFIG: Record<UserLevel, { label: string; color: string; description: string }> = {
   beginner: { 
     label: 'Débutant', 
-    color: 'bg-green-100 text-success dark:bg-green-900/30 dark:text-green-400',
+    color: 'bg-success/10 text-success dark:bg-green-900/30 dark:text-green-400',
     description: 'Premiers pas avec le module'
   },
   intermediate: { 
     label: 'Intermédiaire', 
-    color: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400',
+    color: 'bg-info/10 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400',
     description: 'Fonctionnalités avancées'
   },
   advanced: { 
@@ -252,7 +252,7 @@ export function DocumentationViewer({ module, onBack, onNavigateToModule }: Docu
                       )}
                       
                       {useCase.expectedOutcome && (
-                        <div className="p-3 rounded-lg bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800">
+                        <div className="p-3 rounded-lg bg-success/5 dark:bg-green-900/20 border border-green-200 dark:border-green-800">
                           <p className="text-sm text-success dark:text-green-300 flex items-start gap-2">
                             <TrendingUp className="h-4 w-4 mt-0.5 flex-shrink-0" />
                             <span><strong>Résultat attendu:</strong> {useCase.expectedOutcome}</span>
@@ -297,7 +297,7 @@ export function DocumentationViewer({ module, onBack, onNavigateToModule }: Docu
                     <p className="text-sm text-muted-foreground">{step.description}</p>
                     
                     {step.tip && (
-                      <div className="p-3 rounded-lg bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800">
+                      <div className="p-3 rounded-lg bg-info/5 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800">
                         <p className="text-sm text-blue-800 dark:text-blue-300 flex items-start gap-2">
                           <Lightbulb className="h-4 w-4 mt-0.5 flex-shrink-0" />
                           <span><strong>Astuce:</strong> {step.tip}</span>
@@ -330,7 +330,7 @@ export function DocumentationViewer({ module, onBack, onNavigateToModule }: Docu
               </CardHeader>
               <CardContent className="space-y-3">
                 {module.bestPractices.recommendations.map((rec, idx) => (
-                  <div key={idx} className="p-3 rounded-lg bg-green-50/50 dark:bg-green-900/10 border border-green-100 dark:border-green-900/30">
+                  <div key={idx} className="p-3 rounded-lg bg-success/5/50 dark:bg-green-900/10 border border-green-100 dark:border-green-900/30">
                     <p className="font-medium text-sm">{rec.title}</p>
                     <p className="text-xs text-muted-foreground mt-1">{rec.description}</p>
                     <Badge variant="outline" className="mt-2 text-xs">
@@ -350,7 +350,7 @@ export function DocumentationViewer({ module, onBack, onNavigateToModule }: Docu
               </CardHeader>
               <CardContent className="space-y-3">
                 {module.bestPractices.pitfalls.map((pitfall, idx) => (
-                  <div key={idx} className="p-3 rounded-lg bg-red-50/50 dark:bg-red-900/10 border border-red-100 dark:border-red-900/30">
+                  <div key={idx} className="p-3 rounded-lg bg-destructive/5/50 dark:bg-red-900/10 border border-red-100 dark:border-red-900/30">
                     <p className="font-medium text-sm">{pitfall.title}</p>
                     <p className="text-xs text-muted-foreground mt-1">{pitfall.description}</p>
                   </div>

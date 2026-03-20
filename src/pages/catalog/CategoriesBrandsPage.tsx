@@ -23,8 +23,8 @@ export default function CategoriesBrandsPage() {
   const { metrics, issues, uncategorized, unbranded, withSuggestions, isLoading } = useCategoryClassification()
 
   const issueCategories = [
-    { id: 'no-category', label: 'Sans catégorie', icon: Folder, count: metrics.missingCategory, color: 'text-destructive', bg: 'bg-red-500/10', ring: 'ring-red-500' },
-    { id: 'no-brand', label: 'Sans marque', icon: Building, count: metrics.missingBrand, color: 'text-warning', bg: 'bg-amber-500/10', ring: 'ring-amber-500' },
+    { id: 'no-category', label: 'Sans catégorie', icon: Folder, count: metrics.missingCategory, color: 'text-destructive', bg: 'bg-destructive/10', ring: 'ring-red-500' },
+    { id: 'no-brand', label: 'Sans marque', icon: Building, count: metrics.missingBrand, color: 'text-warning', bg: 'bg-warning/10', ring: 'ring-amber-500' },
     { id: 'suggestions', label: 'Suggestions IA', icon: Sparkles, count: withSuggestions.length, color: 'text-purple-500', bg: 'bg-purple-500/10', ring: 'ring-purple-500' },
   ]
 

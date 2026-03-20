@@ -63,10 +63,10 @@ export function AnimatedBadge({
 }: AnimatedBadgeProps) {
   const variants = {
     default: "bg-primary/10 text-primary border-primary/20",
-    success: "bg-green-500/10 text-success border-green-500/20",
-    warning: "bg-yellow-500/10 text-warning border-yellow-500/20",
-    error: "bg-red-500/10 text-destructive border-red-500/20",
-    info: "bg-blue-500/10 text-info border-blue-500/20"
+    success: "bg-success/10 text-success border-green-500/20",
+    warning: "bg-warning/10 text-warning border-yellow-500/20",
+    error: "bg-destructive/10 text-destructive border-red-500/20",
+    info: "bg-info/10 text-info border-blue-500/20"
   }
 
   return (
@@ -106,9 +106,9 @@ export function GlowingIcon({
   const colors = {
     primary: "bg-primary/10 text-primary shadow-primary/30",
     accent: "bg-accent/10 text-accent shadow-accent/30",
-    success: "bg-green-500/10 text-success shadow-green-500/30",
-    warning: "bg-yellow-500/10 text-warning shadow-yellow-500/30",
-    error: "bg-red-500/10 text-destructive shadow-red-500/30"
+    success: "bg-success/10 text-success shadow-green-500/30",
+    warning: "bg-warning/10 text-warning shadow-yellow-500/30",
+    error: "bg-destructive/10 text-destructive shadow-red-500/30"
   }
 
   return (

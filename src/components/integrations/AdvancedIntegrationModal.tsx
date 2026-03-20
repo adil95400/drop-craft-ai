@@ -129,7 +129,7 @@ export const AdvancedIntegrationModal = ({
                 onChange={(e) => handleCredentialChange('apiSecret', e.target.value)}
               />
             </div>
-            <div className="p-3 bg-blue-50 rounded-lg">
+            <div className="p-3 bg-info/5 rounded-lg">
               <p className="text-sm text-blue-700">
                 💡 Inscrivez-vous au programme Portail Développeur AliExpress pour obtenir vos clés API
               </p>
@@ -150,7 +150,7 @@ export const AdvancedIntegrationModal = ({
                 onChange={(e) => handleCredentialChange('apiKey', e.target.value)}
               />
             </div>
-            <div className="p-3 bg-green-50 rounded-lg">
+            <div className="p-3 bg-success/5 rounded-lg">
               <p className="text-sm text-success">
                 ✓ API REST complète avec gestion des commandes et stock temps réel
               </p>
@@ -257,7 +257,7 @@ export const AdvancedIntegrationModal = ({
                 onChange={(e) => handleCredentialChange('accessToken', e.target.value)}
               />
             </div>
-            <div className="p-3 bg-blue-50 rounded-lg">
+            <div className="p-3 bg-info/5 rounded-lg">
               <p className="text-sm text-blue-700">
                 Générez un token longue durée depuis Facebook Developer Console
               </p>
@@ -278,7 +278,7 @@ export const AdvancedIntegrationModal = ({
                 onChange={(e) => handleCredentialChange('apiKey', e.target.value)}
               />
             </div>
-            <div className="p-3 bg-yellow-50 rounded-lg">
+            <div className="p-3 bg-warning/5 rounded-lg">
               <p className="text-sm text-yellow-700">
                 ⚠️ Utilisez votre clé de test pour les essais, puis passez en mode live
               </p>
@@ -589,7 +589,7 @@ export const AdvancedIntegrationModal = ({
                 <div className="flex items-center gap-2">
                   {integration.status === 'connected' ? (
                     <>
-                      <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+                      <div className="w-2 h-2 bg-success rounded-full animate-pulse" />
                       <span className="text-sm text-success">En ligne</span>
                     </>
                   ) : (

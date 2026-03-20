@@ -82,8 +82,8 @@ export const MarketingAutomation: React.FC = () => {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'active': return 'bg-green-500'
-      case 'paused': return 'bg-yellow-500'
+      case 'active': return 'bg-success'
+      case 'paused': return 'bg-warning'
       case 'draft': return 'bg-gray-500'
       default: return 'bg-gray-500'
     }

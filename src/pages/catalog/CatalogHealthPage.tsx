@@ -23,11 +23,11 @@ import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip as RTooltip, Resp
 import { useCatalogHealth } from '@/hooks/catalog'
 
 const GRADE_STYLES: Record<string, { bg: string; text: string; glow: string }> = {
-  A: { bg: 'bg-emerald-500/10', text: 'text-success', glow: 'shadow-emerald-500/20' },
-  B: { bg: 'bg-blue-500/10', text: 'text-info', glow: 'shadow-blue-500/20' },
-  C: { bg: 'bg-amber-500/10', text: 'text-warning', glow: 'shadow-amber-500/20' },
-  D: { bg: 'bg-orange-500/10', text: 'text-warning', glow: 'shadow-orange-500/20' },
-  F: { bg: 'bg-red-500/10', text: 'text-destructive', glow: 'shadow-red-500/20' },
+  A: { bg: 'bg-success/10', text: 'text-success', glow: 'shadow-emerald-500/20' },
+  B: { bg: 'bg-info/10', text: 'text-info', glow: 'shadow-blue-500/20' },
+  C: { bg: 'bg-warning/10', text: 'text-warning', glow: 'shadow-amber-500/20' },
+  D: { bg: 'bg-warning/10', text: 'text-warning', glow: 'shadow-orange-500/20' },
+  F: { bg: 'bg-destructive/10', text: 'text-destructive', glow: 'shadow-red-500/20' },
 }
 
 const stagger = { hidden: { opacity: 0 }, show: { opacity: 1, transition: { staggerChildren: 0.06 } } }
@@ -127,7 +127,7 @@ export default function CatalogHealthPage() {
                               {pillar.avg}%
                             </span>
                           </div>
-                          <Progress value={pillar.avg} className={cn("h-2.5", pillar.avg >= 70 ? "[&>div]:bg-emerald-500" : pillar.avg >= 50 ? "[&>div]:bg-amber-500" : "[&>div]:bg-red-500")} />
+                          <Progress value={pillar.avg} className={cn("h-2.5", pillar.avg >= 70 ? "[&>div]:bg-success" : pillar.avg >= 50 ? "[&>div]:bg-warning" : "[&>div]:bg-destructive")} />
                         </motion.div>
                       ))}
                     </CardContent>
@@ -151,9 +151,9 @@ export default function CatalogHealthPage() {
                             transition={{ delay: i * 0.03 }}
                             className={cn(
                               "flex items-center gap-3 p-3 rounded-xl border transition-all hover:shadow-sm",
-                              issue.severity === 'error' ? "border-l-4 border-l-red-500 bg-red-500/5" :
-                              issue.severity === 'warning' ? "border-l-4 border-l-amber-500 bg-amber-500/5" :
-                              "border-l-4 border-l-blue-500 bg-blue-500/5"
+                              issue.severity === 'error' ? "border-l-4 border-l-red-500 bg-destructive/5" :
+                              issue.severity === 'warning' ? "border-l-4 border-l-amber-500 bg-warning/5" :
+                              "border-l-4 border-l-blue-500 bg-info/5"
                             )}
                           >
                             <Badge variant="outline" className="shrink-0 tabular-nums font-bold">{issue.count}</Badge>

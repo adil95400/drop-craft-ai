@@ -38,12 +38,12 @@ import {
 
 // Connecteurs disponibles
 const CONNECTORS = [
-  { id: 'aliexpress', name: 'AliExpress', icon: '🛒', color: 'bg-orange-500/10 text-warning' },
-  { id: 'cj_dropshipping', name: 'CJ Dropshipping', icon: '📦', color: 'bg-blue-500/10 text-info' },
-  { id: 'bigbuy', name: 'BigBuy', icon: '🇪🇺', color: 'bg-yellow-500/10 text-warning' },
+  { id: 'aliexpress', name: 'AliExpress', icon: '🛒', color: 'bg-warning/10 text-warning' },
+  { id: 'cj_dropshipping', name: 'CJ Dropshipping', icon: '📦', color: 'bg-info/10 text-info' },
+  { id: 'bigbuy', name: 'BigBuy', icon: '🇪🇺', color: 'bg-warning/10 text-warning' },
   { id: 'spocket', name: 'Spocket', icon: '🚀', color: 'bg-purple-500/10 text-purple-600' },
   { id: 'printful', name: 'Printful', icon: '🎨', color: 'bg-pink-500/10 text-pink-600' },
-  { id: 'zendrop', name: 'Zendrop', icon: '⚡', color: 'bg-green-500/10 text-success' },
+  { id: 'zendrop', name: 'Zendrop', icon: '⚡', color: 'bg-success/10 text-success' },
   { id: 'bts', name: 'BTS Wholesaler', icon: '⚽', color: 'bg-cyan-500/10 text-cyan-600' },
 ];
 

@@ -51,13 +51,13 @@ export function SecurityDashboard() {
   const getSeverityColor = (severity: SecurityEvent['severity']) => {
     switch (severity) {
       case 'low':
-        return 'bg-green-500'
+        return 'bg-success'
       case 'medium':
-        return 'bg-yellow-500'
+        return 'bg-warning'
       case 'high':
-        return 'bg-orange-500'
+        return 'bg-warning'
       case 'critical':
-        return 'bg-red-500'
+        return 'bg-destructive'
       default:
         return 'bg-gray-500'
     }
@@ -118,8 +118,8 @@ export function SecurityDashboard() {
             Score de Sécurité
             <Badge 
               className={`ml-auto ${
-                securityScore >= 90 ? 'bg-green-500' :
-                securityScore >= 70 ? 'bg-yellow-500' : 'bg-red-500'
+                securityScore >= 90 ? 'bg-success' :
+                securityScore >= 70 ? 'bg-warning' : 'bg-destructive'
               }`}
             >
               {securityScore}/100

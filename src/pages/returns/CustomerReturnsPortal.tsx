@@ -419,7 +419,7 @@ export default function CustomerReturnsPortal() {
               {step === 'success' && (
                 <Card className="text-center">
                   <CardContent className="py-12 space-y-4">
-                    <div className="inline-flex items-center justify-center p-4 rounded-full bg-green-500/10">
+                    <div className="inline-flex items-center justify-center p-4 rounded-full bg-success/10">
                       <CheckCircle className="h-12 w-12 text-success" />
                     </div>
                     <h2 className="text-xl font-bold">Demande soumise !</h2>

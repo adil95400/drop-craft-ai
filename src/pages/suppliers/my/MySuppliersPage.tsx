@@ -54,7 +54,7 @@ export default function MySuppliersPage() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'active':
-        return <Badge className="bg-green-500 text-white"><CheckCircle className="h-3 w-3 mr-1" />Connecté</Badge>
+        return <Badge className="bg-success text-white"><CheckCircle className="h-3 w-3 mr-1" />Connecté</Badge>
       case 'error':
         return <Badge variant="destructive"><AlertCircle className="h-3 w-3 mr-1" />Erreur</Badge>
       case 'paused':

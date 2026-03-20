@@ -102,7 +102,7 @@ export function AlertsWidgetAdvanced({ timeRange, settings, lastRefresh }: Alert
       <CardHeader className="pb-2">
         <CardTitle className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="p-2 rounded-lg bg-red-500/10">
+            <div className="p-2 rounded-lg bg-destructive/10">
               <Bell className="h-5 w-5 text-destructive" />
             </div>
             <span>Alertes</span>

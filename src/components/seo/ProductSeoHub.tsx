@@ -33,9 +33,9 @@ import { cn } from '@/lib/utils'
 // ── Score Helpers ────────────────────────────────────────────
 
 function getScoreConfig(score: number) {
-  if (score >= 70) return { label: 'Optimisé', icon: CheckCircle2, variant: 'optimized' as const, textClass: 'text-success', bgClass: 'bg-emerald-500/10', borderClass: 'border-emerald-200' }
-  if (score >= 40) return { label: 'À améliorer', icon: AlertCircle, variant: 'needs_work' as const, textClass: 'text-warning', bgClass: 'bg-amber-500/10', borderClass: 'border-amber-200' }
-  return { label: 'Critique', icon: XCircle, variant: 'critical' as const, textClass: 'text-destructive', bgClass: 'bg-red-500/10', borderClass: 'border-red-200' }
+  if (score >= 70) return { label: 'Optimisé', icon: CheckCircle2, variant: 'optimized' as const, textClass: 'text-success', bgClass: 'bg-success/10', borderClass: 'border-emerald-200' }
+  if (score >= 40) return { label: 'À améliorer', icon: AlertCircle, variant: 'needs_work' as const, textClass: 'text-warning', bgClass: 'bg-warning/10', borderClass: 'border-amber-200' }
+  return { label: 'Critique', icon: XCircle, variant: 'critical' as const, textClass: 'text-destructive', bgClass: 'bg-destructive/10', borderClass: 'border-red-200' }
 }
 
 function StatusBadge({ score, size = 'md' }: { score: number; size?: 'sm' | 'md' }) {
@@ -71,9 +71,9 @@ function ScoreRing({ score }: { score: number }) {
 
 function PriorityBadge({ priority }: { priority: string }) {
   const config: Record<string, { label: string; class: string }> = {
-    urgent: { label: '🔥 Urgent', class: 'bg-red-100 text-red-700 border-red-200' },
+    urgent: { label: '🔥 Urgent', class: 'bg-destructive/10 text-red-700 border-red-200' },
     high: { label: '⚡ High priority', class: 'bg-amber-100 text-amber-700 border-amber-200' },
-    normal: { label: '📋 Normal', class: 'bg-blue-100 text-blue-700 border-blue-200' },
+    normal: { label: '📋 Normal', class: 'bg-info/10 text-blue-700 border-blue-200' },
   }
   const c = config[priority] ?? config.normal
   return <span className={cn('text-[10px] px-2 py-0.5 rounded-full border font-medium', c.class)}>{c.label}</span>
@@ -83,7 +83,7 @@ function RankingBadge({ potential }: { potential?: string }) {
   if (!potential) return null
   const config: Record<string, { label: string; class: string }> = {
     top10: { label: 'Top 10', class: 'text-emerald-700 bg-emerald-50 border-emerald-200' },
-    top20: { label: 'Top 20', class: 'text-blue-700 bg-blue-50 border-blue-200' },
+    top20: { label: 'Top 20', class: 'text-blue-700 bg-info/5 border-blue-200' },
     top50: { label: 'Top 50', class: 'text-amber-700 bg-amber-50 border-amber-200' },
     low: { label: 'Low', class: 'text-muted-foreground bg-muted border-border' },
   }
@@ -118,7 +118,7 @@ function ScoreCriteriaBar({ criteria }: { criteria: { key: string; value: number
                     </span>
                     <span className={cn('text-[10px] font-semibold', c.textClass)}>{value}</span>
                   </div>
-                  <Progress value={value} className={cn('h-1.5', value >= 70 ? '[&>div]:bg-emerald-500' : value >= 40 ? '[&>div]:bg-amber-500' : '[&>div]:bg-red-500')} />
+                  <Progress value={value} className={cn('h-1.5', value >= 70 ? '[&>div]:bg-success' : value >= 40 ? '[&>div]:bg-warning' : '[&>div]:bg-destructive')} />
                 </div>
               </TooltipTrigger>
               <TooltipContent side="bottom" className="text-xs">{description}: {value}/100</TooltipContent>
@@ -329,7 +329,7 @@ function QuotaBar({ label, icon: Icon, quota }: {
         value={quota.percentage}
         className={cn('h-1.5',
           quota.percentage >= 100 && '[&>div]:bg-destructive',
-          quota.percentage >= 80 && quota.percentage < 100 && '[&>div]:bg-yellow-500'
+          quota.percentage >= 80 && quota.percentage < 100 && '[&>div]:bg-warning'
         )}
       />
     </div>
@@ -421,10 +421,10 @@ export function ProductSeoHub() {
       <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
         {[
           { label: 'Products', value: stats.total, icon: Target, iconBg: 'bg-primary/10', iconColor: 'text-primary' },
-          { label: 'Avg. Score', value: stats.avg_score, icon: BarChart3, iconBg: 'bg-blue-500/10', iconColor: 'text-info', scoreColor: true },
-          { label: 'Optimized', value: stats.optimized, icon: CheckCircle2, iconBg: 'bg-emerald-500/10', iconColor: 'text-success', valueColor: 'text-success' },
-          { label: 'Needs work', value: stats.needs_work, icon: AlertCircle, iconBg: 'bg-amber-500/10', iconColor: 'text-warning', valueColor: 'text-warning' },
-          { label: 'Critical', value: stats.critical, icon: XCircle, iconBg: 'bg-red-500/10', iconColor: 'text-destructive', valueColor: 'text-destructive' },
+          { label: 'Avg. Score', value: stats.avg_score, icon: BarChart3, iconBg: 'bg-info/10', iconColor: 'text-info', scoreColor: true },
+          { label: 'Optimized', value: stats.optimized, icon: CheckCircle2, iconBg: 'bg-success/10', iconColor: 'text-success', valueColor: 'text-success' },
+          { label: 'Needs work', value: stats.needs_work, icon: AlertCircle, iconBg: 'bg-warning/10', iconColor: 'text-warning', valueColor: 'text-warning' },
+          { label: 'Critical', value: stats.critical, icon: XCircle, iconBg: 'bg-destructive/10', iconColor: 'text-destructive', valueColor: 'text-destructive' },
         ].map(({ label, value, icon: Icon, iconBg, iconColor, scoreColor, valueColor }) => (
           <Card key={label}>
             <CardContent className="p-4 flex items-center gap-3">
@@ -486,7 +486,7 @@ export function ProductSeoHub() {
 
       {/* ── Quota Warning ── */}
       {showQuotaWarning && (
-        <Card className="border-yellow-500/50 bg-yellow-50/50 dark:bg-yellow-950/20">
+        <Card className="border-yellow-500/50 bg-warning/5/50 dark:bg-yellow-950/20">
           <CardContent className="p-3 flex items-center justify-between">
             <div className="flex items-center gap-2 text-sm">
               <ShieldAlert className="h-4 w-4 text-warning" />

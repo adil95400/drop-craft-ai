@@ -322,7 +322,7 @@ export function WebhookManager() {
                           onClick={() => toggleWebhookMutation.mutate({ id: webhook.id, isActive: webhook.is_active })}
                         >
                           {webhook.is_active ? (
-                            <Badge className="bg-green-500">Actif</Badge>
+                            <Badge className="bg-success">Actif</Badge>
                           ) : (
                             <Badge variant="secondary">Inactif</Badge>
                           )}

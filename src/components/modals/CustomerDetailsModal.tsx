@@ -180,7 +180,7 @@ export function CustomerDetailsModal({ customer, open, onOpenChange }: CustomerD
                       {orders.map((order) => (
                       <div key={order.id} className="flex items-center justify-between p-3 border rounded-lg">
                         <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                          <div className="w-10 h-10 bg-info/10 rounded-lg flex items-center justify-center">
                             <Package className="w-5 h-5 text-info" />
                           </div>
                           <div>
@@ -216,7 +216,7 @@ export function CustomerDetailsModal({ customer, open, onOpenChange }: CustomerD
                 <CardContent>
                   <div className="space-y-3">
                     <div className="flex items-center gap-3 p-3 border rounded-lg">
-                      <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                      <div className="w-8 h-8 bg-success/10 rounded-full flex items-center justify-center">
                         <ShoppingCart className="w-4 h-4 text-success" />
                       </div>
                       <div>
@@ -226,7 +226,7 @@ export function CustomerDetailsModal({ customer, open, onOpenChange }: CustomerD
                     </div>
                     
                     <div className="flex items-center gap-3 p-3 border rounded-lg">
-                      <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                      <div className="w-8 h-8 bg-info/10 rounded-full flex items-center justify-center">
                         <Mail className="w-4 h-4 text-info" />
                       </div>
                       <div>

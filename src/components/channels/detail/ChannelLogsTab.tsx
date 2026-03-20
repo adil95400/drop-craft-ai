@@ -95,13 +95,13 @@ export function ChannelLogsTab({ channelId }: ChannelLogsTabProps) {
   const getStatusConfig = (status: string) => {
     switch (status) {
       case 'completed':
-        return { icon: CheckCircle2, color: 'text-success dark:text-emerald-400', bg: 'bg-emerald-500/10 border-emerald-500/30', label: 'Succès' }
+        return { icon: CheckCircle2, color: 'text-success dark:text-emerald-400', bg: 'bg-success/10 border-emerald-500/30', label: 'Succès' }
       case 'failed':
         return { icon: XCircle, color: 'text-destructive', bg: 'bg-destructive/10 border-destructive/30', label: 'Échec' }
       case 'in_progress':
-        return { icon: Loader2, color: 'text-info', bg: 'bg-blue-500/10 border-blue-500/30', label: 'En cours' }
+        return { icon: Loader2, color: 'text-info', bg: 'bg-info/10 border-blue-500/30', label: 'En cours' }
       default:
-        return { icon: Clock, color: 'text-warning', bg: 'bg-amber-500/10 border-amber-500/30', label: 'En attente' }
+        return { icon: Clock, color: 'text-warning', bg: 'bg-warning/10 border-amber-500/30', label: 'En attente' }
     }
   }
 

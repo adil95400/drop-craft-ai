@@ -398,7 +398,7 @@ function ViralProductCard({ product }: { product: any }) {
       <CardContent className="p-4">
         <div className="flex items-start justify-between mb-3">
           <h3 className="font-semibold line-clamp-2">{product.name}</h3>
-          <Badge className="bg-yellow-100 text-yellow-800">
+          <Badge className="bg-warning/10 text-yellow-800">
             <Zap className="h-3 w-3 mr-1" />
             Viral
           </Badge>

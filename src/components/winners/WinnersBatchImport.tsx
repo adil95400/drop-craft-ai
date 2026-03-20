@@ -111,11 +111,11 @@ export const WinnersBatchImport = ({ products, isOpen, onClose, onConfirm }: Win
         <div className="space-y-6">
           {/* Summary */}
           <div className="grid grid-cols-3 gap-4">
-            <div className="p-4 bg-blue-500/10 rounded-lg">
+            <div className="p-4 bg-info/10 rounded-lg">
               <p className="text-sm text-muted-foreground">Sélectionnés</p>
               <p className="text-2xl font-bold text-info">{selectedIds.size}</p>
             </div>
-            <div className="p-4 bg-green-500/10 rounded-lg">
+            <div className="p-4 bg-success/10 rounded-lg">
               <p className="text-sm text-muted-foreground">Importés</p>
               <p className="text-2xl font-bold text-success">{imported.length}</p>
             </div>

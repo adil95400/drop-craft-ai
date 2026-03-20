@@ -230,9 +230,9 @@ export const OperationalAI = () => {
 
   const getImpactColor = (impact: string) => {
     switch (impact) {
-      case 'high': return 'bg-red-100 text-red-800';
-      case 'medium': return 'bg-yellow-100 text-yellow-800';
-      case 'low': return 'bg-green-100 text-success';
+      case 'high': return 'bg-destructive/10 text-red-800';
+      case 'medium': return 'bg-warning/10 text-yellow-800';
+      case 'low': return 'bg-success/10 text-success';
       default: return 'bg-gray-100 text-gray-800';
     }
   };

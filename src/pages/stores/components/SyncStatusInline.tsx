@@ -122,7 +122,7 @@ export function SyncStatusInline({
         <Badge 
           variant={isInProgress ? 'secondary' : hasError ? 'destructive' : isComplete ? 'default' : 'outline'}
           className={cn(
-            isComplete && 'bg-green-100 text-success dark:bg-green-900/30 dark:text-green-400'
+            isComplete && 'bg-success/10 text-success dark:bg-green-900/30 dark:text-green-400'
           )}
         >
           {isInProgress ? 'En cours' : hasError ? 'Erreur' : isComplete ? 'Actif' : 'Inactif'}

@@ -39,17 +39,17 @@ export function StockPredictionsPanel() {
 
   const getUrgencyColor = (days: number | null) => {
     if (days === null) return 'bg-muted';
-    if (days <= 3) return 'bg-red-500';
-    if (days <= 7) return 'bg-orange-500';
-    if (days <= 14) return 'bg-yellow-500';
-    return 'bg-green-500';
+    if (days <= 3) return 'bg-destructive';
+    if (days <= 7) return 'bg-warning';
+    if (days <= 14) return 'bg-warning';
+    return 'bg-success';
   };
 
   const getUrgencyBadge = (days: number | null) => {
     if (days === null) return <Badge variant="outline">Stock OK</Badge>;
     if (days <= 3) return <Badge variant="destructive">Critique</Badge>;
-    if (days <= 7) return <Badge className="bg-orange-500">Urgent</Badge>;
-    if (days <= 14) return <Badge className="bg-yellow-500 text-black">À surveiller</Badge>;
+    if (days <= 7) return <Badge className="bg-warning">Urgent</Badge>;
+    if (days <= 14) return <Badge className="bg-warning text-black">À surveiller</Badge>;
     return <Badge variant="secondary">Normal</Badge>;
   };
 
@@ -194,7 +194,7 @@ function PredictionCard({ prediction }: { prediction: StockPrediction }) {
         </div>
         <Progress 
           value={stockPercentage} 
-          className={`h-2 ${daysLeft !== null && daysLeft <= 7 ? '[&>div]:bg-red-500' : ''}`}
+          className={`h-2 ${daysLeft !== null && daysLeft <= 7 ? '[&>div]:bg-destructive' : ''}`}
         />
       </div>
     </div>

@@ -35,10 +35,10 @@ export function BusinessIntelligenceDashboard() {
 
   const getSeverityColor = (severity: string) => {
     switch (severity) {
-      case 'critical': return 'text-destructive bg-red-100 border-red-200';
+      case 'critical': return 'text-destructive bg-destructive/10 border-red-200';
       case 'warning': return 'text-warning bg-orange-100 border-orange-200';
-      case 'opportunity': return 'text-success bg-green-100 border-green-200';
-      case 'info': return 'text-info bg-blue-100 border-blue-200';
+      case 'opportunity': return 'text-success bg-success/10 border-green-200';
+      case 'info': return 'text-info bg-info/10 border-blue-200';
       default: return 'text-gray-600 bg-gray-100 border-gray-200';
     }
   };
@@ -94,7 +94,7 @@ export function BusinessIntelligenceDashboard() {
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-red-100 rounded-lg">
+              <div className="p-2 bg-destructive/10 rounded-lg">
                 <AlertTriangle className="h-5 w-5 text-destructive" />
               </div>
               <div>
@@ -108,7 +108,7 @@ export function BusinessIntelligenceDashboard() {
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-green-100 rounded-lg">
+              <div className="p-2 bg-success/10 rounded-lg">
                 <Lightbulb className="h-5 w-5 text-success" />
               </div>
               <div>
@@ -122,7 +122,7 @@ export function BusinessIntelligenceDashboard() {
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-blue-100 rounded-lg">
+              <div className="p-2 bg-info/10 rounded-lg">
                 <Activity className="h-5 w-5 text-info" />
               </div>
               <div>

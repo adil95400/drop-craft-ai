@@ -61,7 +61,7 @@ const QUOTA_ICONS: Record<QuotaKey, React.ReactNode> = {
 
 const PLAN_LABELS: Record<string, { label: string; color: string; badge: string }> = {
   free: { label: 'Gratuit', color: 'bg-gray-500', badge: 'secondary' },
-  standard: { label: 'Standard', color: 'bg-blue-500', badge: 'default' },
+  standard: { label: 'Standard', color: 'bg-info', badge: 'default' },
   pro: { label: 'Pro', color: 'bg-purple-500', badge: 'default' },
   ultra_pro: { label: 'Ultra Pro', color: 'bg-gradient-to-r from-amber-500 to-orange-500', badge: 'default' },
 };
@@ -83,8 +83,8 @@ function QuotaCard({ quotaKey, label, current, limit, percentage, isUnlimited }:
   return (
     <Card className={cn(
       'transition-all hover:shadow-md',
-      isExhausted && 'border-red-500 bg-red-50/50 dark:bg-red-950/20',
-      isNearLimit && !isExhausted && 'border-yellow-500 bg-yellow-50/50 dark:bg-yellow-950/20'
+      isExhausted && 'border-red-500 bg-destructive/5/50 dark:bg-red-950/20',
+      isNearLimit && !isExhausted && 'border-yellow-500 bg-warning/5/50 dark:bg-yellow-950/20'
     )}>
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between">
@@ -124,8 +124,8 @@ function QuotaCard({ quotaKey, label, current, limit, percentage, isUnlimited }:
               value={percentage} 
               className={cn(
                 'h-2',
-                isExhausted && '[&>div]:bg-red-500',
-                isNearLimit && !isExhausted && '[&>div]:bg-yellow-500'
+                isExhausted && '[&>div]:bg-destructive',
+                isNearLimit && !isExhausted && '[&>div]:bg-warning'
               )} 
             />
           )}

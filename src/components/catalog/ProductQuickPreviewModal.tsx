@@ -111,7 +111,7 @@ function HealthScore({ product }: { product: QuickPreviewProduct }) {
   const percent = Math.round((score / total) * 100)
 
   const color = percent >= 80 ? 'text-success' : percent >= 50 ? 'text-warning' : 'text-destructive'
-  const bgColor = percent >= 80 ? 'bg-emerald-500' : percent >= 50 ? 'bg-amber-500' : 'bg-red-500'
+  const bgColor = percent >= 80 ? 'bg-success' : percent >= 50 ? 'bg-warning' : 'bg-destructive'
 
   return (
     <div className="space-y-3">
@@ -273,7 +273,7 @@ export function ProductQuickPreviewModal({
                     variant={product.status === 'active' ? 'default' : 'secondary'}
                     className={cn(
                       "shrink-0",
-                      product.status === 'draft' && "bg-amber-500/10 text-warning border-amber-500/30"
+                      product.status === 'draft' && "bg-warning/10 text-warning border-amber-500/30"
                     )}
                   >
                     {product.status === 'draft' ? '🔶 Brouillon' : product.status === 'active' ? '✅ Actif' : product.status}
@@ -431,9 +431,9 @@ export function ProductQuickPreviewModal({
                             <div className="flex justify-between items-center pt-1 border-t border-border/30">
                               <span className="text-xs text-muted-foreground">Marge</span>
                               <Badge className={cn(
-                                margin >= 30 ? "bg-emerald-500/10 text-success border-emerald-500/30" :
-                                margin >= 15 ? "bg-amber-500/10 text-warning border-amber-500/30" :
-                                "bg-red-500/10 text-destructive border-red-500/30"
+                                margin >= 30 ? "bg-success/10 text-success border-emerald-500/30" :
+                                margin >= 15 ? "bg-warning/10 text-warning border-amber-500/30" :
+                                "bg-destructive/10 text-destructive border-red-500/30"
                               )} variant="outline">
                                 <TrendingUp className="h-3 w-3 mr-1" />
                                 {margin}%

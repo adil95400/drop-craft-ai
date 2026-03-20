@@ -199,7 +199,7 @@ export function SupplierConnectionDialog({
 
             {/* Statut de connexion */}
             {connectionStatus === 'success' && (
-              <Alert className="bg-green-50 border-green-200">
+              <Alert className="bg-success/5 border-green-200">
                 <CheckCircle className="h-4 w-4 text-success" />
                 <AlertDescription className="text-success">
                   Connexion réussie ! Le fournisseur est maintenant actif.

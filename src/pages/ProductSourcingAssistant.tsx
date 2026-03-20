@@ -244,7 +244,7 @@ export default function ProductSourcingAssistant() {
                     <div className="flex items-center gap-2 mb-2">
                       <h3 className="font-semibold text-lg">{result.supplier}</h3>
                       {result.verified && (
-                        <Badge className="bg-blue-500">
+                        <Badge className="bg-info">
                           <Award className="h-3 w-3 mr-1" />
                           Vérifié
                         </Badge>
@@ -348,7 +348,7 @@ export default function ProductSourcingAssistant() {
         </Card>
 
         {/* AI Recommendations */}
-        <Card className="border-blue-200 bg-blue-50/50">
+        <Card className="border-blue-200 bg-info/5/50">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <TrendingUp className="h-5 w-5 text-info" />

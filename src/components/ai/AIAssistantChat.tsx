@@ -252,7 +252,7 @@ export const AIAssistantChat = ({ context, className }: AIAssistantChatProps) =>
                 
                 {message.role === 'user' && (
                   <Avatar className="h-8 w-8">
-                    <AvatarFallback className="bg-blue-100">
+                    <AvatarFallback className="bg-info/10">
                       <User className="h-4 w-4 text-info" />
                     </AvatarFallback>
                   </Avatar>

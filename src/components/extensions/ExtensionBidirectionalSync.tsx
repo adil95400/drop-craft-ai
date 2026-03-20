@@ -199,11 +199,11 @@ export function ExtensionBidirectionalSync() {
   const getStatusBadge = (status: SyncEvent['status']) => {
     switch (status) {
       case 'success':
-        return <Badge className="bg-green-500/10 text-success"><CheckCircle className="h-3 w-3 mr-1" />Succès</Badge>;
+        return <Badge className="bg-success/10 text-success"><CheckCircle className="h-3 w-3 mr-1" />Succès</Badge>;
       case 'syncing':
-        return <Badge className="bg-blue-500/10 text-info"><Loader2 className="h-3 w-3 mr-1 animate-spin" />En cours</Badge>;
+        return <Badge className="bg-info/10 text-info"><Loader2 className="h-3 w-3 mr-1 animate-spin" />En cours</Badge>;
       case 'error':
-        return <Badge className="bg-red-500/10 text-destructive"><AlertCircle className="h-3 w-3 mr-1" />Erreur</Badge>;
+        return <Badge className="bg-destructive/10 text-destructive"><AlertCircle className="h-3 w-3 mr-1" />Erreur</Badge>;
       default:
         return <Badge variant="secondary"><Clock className="h-3 w-3 mr-1" />En attente</Badge>;
     }
@@ -372,7 +372,7 @@ export function ExtensionBidirectionalSync() {
                   >
                     <div className={cn(
                       "h-10 w-10 rounded-lg flex items-center justify-center",
-                      event.type === 'push' ? "bg-blue-500/10" : "bg-green-500/10"
+                      event.type === 'push' ? "bg-info/10" : "bg-success/10"
                     )}>
                       {event.type === 'push' ? (
                         <ArrowUp className="h-5 w-5 text-info" />

@@ -164,7 +164,7 @@ export const OnboardingChecklist = () => {
               key={step.id}
               className={`flex items-center justify-between p-3 rounded-lg border transition-colors ${
                 step.completed 
-                  ? 'bg-green-50 border-green-200 dark:bg-green-950/20 dark:border-green-800' 
+                  ? 'bg-success/5 border-green-200 dark:bg-green-950/20 dark:border-green-800' 
                   : isLocked
                   ? 'bg-gray-50 border-gray-200 dark:bg-gray-950/20 dark:border-gray-700'
                   : 'bg-white border-gray-200 hover:border-primary/30 dark:bg-gray-900 dark:border-gray-700'
@@ -213,7 +213,7 @@ export const OnboardingChecklist = () => {
                   </Button>
                 )}
                 {step.completed && (
-                  <Badge variant="default" className="bg-green-100 text-success">
+                  <Badge variant="default" className="bg-success/10 text-success">
                     Terminé
                   </Badge>
                 )}

@@ -203,7 +203,7 @@ export const AutomatedSupplierWorkflows = () => {
   }
 
   const getStatusColor = (isActive: boolean) => {
-    return isActive ? 'text-success bg-green-100' : 'text-gray-600 bg-gray-100'
+    return isActive ? 'text-success bg-success/10' : 'text-gray-600 bg-gray-100'
   }
 
   const getSuccessRateColor = (rate: number) => {
@@ -370,7 +370,7 @@ export const AutomatedSupplierWorkflows = () => {
               <div className="border rounded-lg p-4 bg-muted/20">
                 <h4 className="font-medium mb-3">Workflow</h4>
                 <div className="flex items-center gap-2 text-sm">
-                  <div className="flex items-center gap-1 px-2 py-1 bg-blue-100 text-blue-800 rounded">
+                  <div className="flex items-center gap-1 px-2 py-1 bg-info/10 text-blue-800 rounded">
                     {getTriggerIcon(automation.trigger.type)}
                     <span>Trigger</span>
                   </div>
@@ -386,7 +386,7 @@ export const AutomatedSupplierWorkflows = () => {
                     </>
                   )}
                   
-                  <div className="flex items-center gap-1 px-2 py-1 bg-green-100 text-success rounded">
+                  <div className="flex items-center gap-1 px-2 py-1 bg-success/10 text-success rounded">
                     <Zap className="w-3 h-3" />
                     <span>{automation.actions.length} action(s)</span>
                   </div>

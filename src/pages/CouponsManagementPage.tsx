@@ -27,8 +27,8 @@ export default function CouponsManagementPage() {
 
   const getTypeColor = (type: string) => {
     const colors: Record<string, string> = {
-      percentage: 'bg-blue-500/10 text-info',
-      fixed_amount: 'bg-green-500/10 text-success',
+      percentage: 'bg-info/10 text-info',
+      fixed_amount: 'bg-success/10 text-success',
     }
     return colors[type] || 'bg-muted text-muted-foreground'
   }

@@ -16,7 +16,7 @@ const quickUpgrades = [
     benefits: ['AI Analytics', 'Import automatisé', 'Support prioritaire'],
     icon: Star,
     color: 'text-info',
-    bgColor: 'bg-blue-50',
+    bgColor: 'bg-info/5',
     borderColor: 'border-blue-200'
   },
   {

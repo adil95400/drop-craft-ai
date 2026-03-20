@@ -19,7 +19,7 @@ import {
 
 const TIER_CONFIG: Record<string, { label: string; color: string; icon: React.ReactNode }> = {
   platinum: { label: 'Platinum', color: 'bg-violet-100 text-violet-800 dark:bg-violet-900 dark:text-violet-200', icon: <Crown className="h-4 w-4" /> },
-  gold: { label: 'Gold', color: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200', icon: <Award className="h-4 w-4" /> },
+  gold: { label: 'Gold', color: 'bg-warning/10 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200', icon: <Award className="h-4 w-4" /> },
   silver: { label: 'Silver', color: 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300', icon: <Shield className="h-4 w-4" /> },
   standard: { label: 'Standard', color: 'bg-muted text-muted-foreground', icon: <Package className="h-4 w-4" /> },
 };
@@ -32,9 +32,9 @@ function getMarginColor(margin: number) {
 }
 
 function getMarginBadge(margin: number) {
-  if (margin >= 50) return { label: 'Haute marge', variant: 'default' as const, className: 'bg-green-100 text-success dark:bg-green-900 dark:text-green-200' };
+  if (margin >= 50) return { label: 'Haute marge', variant: 'default' as const, className: 'bg-success/10 text-success dark:bg-green-900 dark:text-green-200' };
   if (margin >= 30) return { label: 'Bonne marge', variant: 'default' as const, className: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-200' };
-  if (margin >= 15) return { label: 'Marge moyenne', variant: 'default' as const, className: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200' };
+  if (margin >= 15) return { label: 'Marge moyenne', variant: 'default' as const, className: 'bg-warning/10 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200' };
   return { label: 'Marge faible', variant: 'destructive' as const, className: '' };
 }
 

@@ -51,9 +51,9 @@ export function RulesExecutionHistory({ onRefresh }: RulesExecutionHistoryProps)
 
   const getStatusBadge = (status: 'success' | 'error' | 'partial') => {
     const variants: Record<string, { class: string; label: string }> = {
-      success: { class: 'bg-emerald-500/10 text-success border-emerald-500/20', label: 'Succès' },
-      error: { class: 'bg-red-500/10 text-destructive border-red-500/20', label: 'Erreur' },
-      partial: { class: 'bg-amber-500/10 text-warning border-amber-500/20', label: 'Partiel' },
+      success: { class: 'bg-success/10 text-success border-emerald-500/20', label: 'Succès' },
+      error: { class: 'bg-destructive/10 text-destructive border-red-500/20', label: 'Erreur' },
+      partial: { class: 'bg-warning/10 text-warning border-amber-500/20', label: 'Partiel' },
     };
     const variant = variants[status];
     return (
@@ -106,7 +106,7 @@ export function RulesExecutionHistory({ onRefresh }: RulesExecutionHistoryProps)
             <div className="flex items-center gap-4">
               <div className={cn(
                 "p-2 rounded-lg",
-                stats.successRate >= 80 ? "bg-emerald-500/10" : "bg-amber-500/10"
+                stats.successRate >= 80 ? "bg-success/10" : "bg-warning/10"
               )}>
                 <CheckCircle2 className={cn(
                   "h-5 w-5",
@@ -130,7 +130,7 @@ export function RulesExecutionHistory({ onRefresh }: RulesExecutionHistoryProps)
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center gap-4">
-              <div className="p-2 bg-blue-500/10 rounded-lg">
+              <div className="p-2 bg-info/10 rounded-lg">
                 <Package className="h-5 w-5 text-info" />
               </div>
               <div>
@@ -170,9 +170,9 @@ export function RulesExecutionHistory({ onRefresh }: RulesExecutionHistoryProps)
                 key={idx} 
                 className={cn(
                   "p-3 rounded-lg flex items-start gap-3",
-                  insight.type === 'warning' && "bg-amber-500/10",
-                  insight.type === 'success' && "bg-emerald-500/10",
-                  insight.type === 'info' && "bg-blue-500/10"
+                  insight.type === 'warning' && "bg-warning/10",
+                  insight.type === 'success' && "bg-success/10",
+                  insight.type === 'info' && "bg-info/10"
                 )}
               >
                 {insight.type === 'warning' && <AlertTriangle className="h-4 w-4 text-warning mt-0.5" />}
@@ -350,7 +350,7 @@ export function RulesExecutionHistory({ onRefresh }: RulesExecutionHistoryProps)
                                 </div>
                                 
                                 {exec.error && (
-                                  <div className="p-3 rounded-lg bg-red-500/10 text-destructive text-sm">
+                                  <div className="p-3 rounded-lg bg-destructive/10 text-destructive text-sm">
                                     <strong>Erreur:</strong> {exec.error}
                                   </div>
                                 )}
@@ -365,10 +365,10 @@ export function RulesExecutionHistory({ onRefresh }: RulesExecutionHistoryProps)
                                             {change.productName} • {change.field}
                                           </div>
                                           <div className="grid grid-cols-2 gap-2 text-xs">
-                                            <div className="p-1.5 rounded bg-red-500/10 line-through truncate">
+                                            <div className="p-1.5 rounded bg-destructive/10 line-through truncate">
                                               {change.before}
                                             </div>
-                                            <div className="p-1.5 rounded bg-emerald-500/10 truncate">
+                                            <div className="p-1.5 rounded bg-success/10 truncate">
                                               {change.after}
                                             </div>
                                           </div>

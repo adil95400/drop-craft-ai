@@ -273,7 +273,7 @@ export function IntegrationWorkflowBuilder() {
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-green-100 rounded-lg">
+              <div className="p-2 bg-success/10 rounded-lg">
                 <Play className="w-5 h-5 text-success" />
               </div>
               <div>
@@ -289,7 +289,7 @@ export function IntegrationWorkflowBuilder() {
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-blue-100 rounded-lg">
+              <div className="p-2 bg-info/10 rounded-lg">
                 <CheckCircle className="w-5 h-5 text-info" />
               </div>
               <div>

@@ -54,7 +54,7 @@ export function AIIntegrationRecommendations() {
       ],
       estimated_setup_time: '2-3 jours',
       logo: '🛍️',
-      color: 'bg-green-100 text-success'
+      color: 'bg-success/10 text-success'
     },
     {
       id: '2',
@@ -98,7 +98,7 @@ export function AIIntegrationRecommendations() {
       ],
       estimated_setup_time: '4-6 heures',
       logo: '💳',
-      color: 'bg-blue-100 text-blue-700'
+      color: 'bg-info/10 text-blue-700'
     }
   ]);
 
@@ -127,9 +127,9 @@ export function AIIntegrationRecommendations() {
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
-      case 'high': return 'bg-red-100 text-red-700 border-red-200';
-      case 'medium': return 'bg-yellow-100 text-yellow-700 border-yellow-200';
-      default: return 'bg-green-100 text-success border-green-200';
+      case 'high': return 'bg-destructive/10 text-red-700 border-red-200';
+      case 'medium': return 'bg-warning/10 text-yellow-700 border-yellow-200';
+      default: return 'bg-success/10 text-success border-green-200';
     }
   };
 
@@ -208,7 +208,7 @@ export function AIIntegrationRecommendations() {
             <CardContent className="space-y-4">
               {/* Metrics */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="bg-green-50 p-3 rounded-lg">
+                <div className="bg-success/5 p-3 rounded-lg">
                   <div className="flex items-center gap-2">
                     <DollarSign className="w-4 h-4 text-success" />
                     <span className="text-sm font-medium">ROI Annuel</span>
@@ -217,7 +217,7 @@ export function AIIntegrationRecommendations() {
                     +€{recommendation.roi_estimate}k
                   </div>
                 </div>
-                <div className="bg-blue-50 p-3 rounded-lg">
+                <div className="bg-info/5 p-3 rounded-lg">
                   <div className="flex items-center gap-2">
                     <Brain className="w-4 h-4 text-info" />
                     <span className="text-sm font-medium">Confiance IA</span>
@@ -247,7 +247,7 @@ export function AIIntegrationRecommendations() {
                 <ul className="space-y-1">
                   {recommendation.reasons.map((reason, index) => (
                     <li key={index} className="text-sm text-muted-foreground flex items-center gap-2">
-                      <div className="w-1.5 h-1.5 bg-blue-500 rounded-full flex-shrink-0" />
+                      <div className="w-1.5 h-1.5 bg-info rounded-full flex-shrink-0" />
                       {reason}
                     </li>
                   ))}

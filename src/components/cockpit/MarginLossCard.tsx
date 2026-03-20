@@ -61,7 +61,7 @@ export function MarginLossCard({ products }: MarginLossCardProps) {
             <p className="text-lg font-bold text-destructive">{negativeCount}</p>
             <p className="text-[10px] text-muted-foreground">Perte nette</p>
           </div>
-          <div className="p-2 rounded bg-yellow-500/10">
+          <div className="p-2 rounded bg-warning/10">
             <p className="text-lg font-bold text-warning">{lowCount}</p>
             <p className="text-[10px] text-muted-foreground">Marge &lt;15%</p>
           </div>

@@ -123,11 +123,11 @@ export function SupplierManagement() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'active':
-        return <Badge className="bg-green-100 text-success"><CheckCircle className="h-3 w-3 mr-1" />Actif</Badge>
+        return <Badge className="bg-success/10 text-success"><CheckCircle className="h-3 w-3 mr-1" />Actif</Badge>
       case 'inactive':
         return <Badge variant="destructive"><AlertTriangle className="h-3 w-3 mr-1" />Inactif</Badge>
       case 'pending':
-        return <Badge className="bg-yellow-100 text-yellow-800"><Clock className="h-3 w-3 mr-1" />En attente</Badge>
+        return <Badge className="bg-warning/10 text-yellow-800"><Clock className="h-3 w-3 mr-1" />En attente</Badge>
       default:
         return <Badge variant="outline">{status}</Badge>
     }
@@ -152,7 +152,7 @@ export function SupplierManagement() {
       value: suppliers.filter(s => s.status === 'active').length.toString(),
       icon: Truck,
       color: 'text-success',
-      bg: 'bg-green-100'
+      bg: 'bg-success/10'
     },
     {
       title: 'Fournisseurs Pro',
@@ -166,14 +166,14 @@ export function SupplierManagement() {
       value: (suppliers.reduce((sum, s) => sum + s.averageRating, 0) / suppliers.length).toFixed(1),
       icon: Star,
       color: 'text-warning',
-      bg: 'bg-yellow-100'
+      bg: 'bg-warning/10'
     },
     {
       title: 'Délai moyen',
       value: Math.round(suppliers.reduce((sum, s) => sum + s.averageDeliveryTime, 0) / suppliers.length) + 'j',
       icon: Clock,
       color: 'text-info',
-      bg: 'bg-blue-100'
+      bg: 'bg-info/10'
     }
   ]
 

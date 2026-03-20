@@ -93,7 +93,7 @@ export function TwoFactorSetup() {
       <Card className="p-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className={`p-3 rounded-lg ${is2FAEnabled ? 'bg-green-500/10' : 'bg-yellow-500/10'}`}>
+            <div className={`p-3 rounded-lg ${is2FAEnabled ? 'bg-success/10' : 'bg-warning/10'}`}>
               {is2FAEnabled ? (
                 <CheckCircle2 className="h-6 w-6 text-success" />
               ) : (

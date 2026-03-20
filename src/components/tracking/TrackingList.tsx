@@ -129,8 +129,8 @@ export function TrackingList({
               key={track.id} 
               className={cn(
                 "p-4 transition-all hover:shadow-md cursor-pointer",
-                track.status === 'delivered' && "border-green-500/30 bg-green-50/30 dark:bg-green-900/10",
-                track.status === 'exception' && "border-red-500/30 bg-red-50/30 dark:bg-red-900/10"
+                track.status === 'delivered' && "border-green-500/30 bg-success/5/30 dark:bg-green-900/10",
+                track.status === 'exception' && "border-red-500/30 bg-destructive/5/30 dark:bg-red-900/10"
               )}
               onClick={() => onViewDetails(track)}
             >
@@ -140,9 +140,9 @@ export function TrackingList({
                   <div className={cn(
                     "flex-shrink-0 flex items-center justify-center w-12 h-12 rounded-lg",
                     track.status === 'delivered' 
-                      ? "bg-green-100 dark:bg-green-900/30" 
+                      ? "bg-success/10 dark:bg-green-900/30" 
                       : track.status === 'exception'
-                        ? "bg-red-100 dark:bg-red-900/30"
+                        ? "bg-destructive/10 dark:bg-red-900/30"
                         : "bg-primary/10"
                   )}>
                     <Truck className={cn(

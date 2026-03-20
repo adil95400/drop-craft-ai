@@ -143,7 +143,7 @@ export function EmptyState({
     : 'bg-muted/30'
   
   const iconBgClass = variant === 'success'
-    ? 'bg-emerald-500/10'
+    ? 'bg-success/10'
     : 'bg-muted'
   
   const iconClass = variant === 'success'

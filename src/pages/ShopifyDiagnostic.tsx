@@ -147,7 +147,7 @@ export default function ShopifyDiagnostic() {
     }
     switch (status) {
       case 'connected':
-        return <Badge className="bg-green-500"><CheckCircle2 className="w-3 h-3 mr-1" />Connecté</Badge>;
+        return <Badge className="bg-success"><CheckCircle2 className="w-3 h-3 mr-1" />Connecté</Badge>;
       case 'error':
         return <Badge variant="destructive"><XCircle className="w-3 h-3 mr-1" />Erreur</Badge>;
       default:
@@ -266,7 +266,7 @@ export default function ShopifyDiagnostic() {
         </Card>
       </div>
 
-      <Card className="border-amber-500/20 bg-amber-500/5">
+      <Card className="border-amber-500/20 bg-warning/5">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-amber-700 dark:text-amber-400">
             <AlertCircle className="w-5 h-5" />

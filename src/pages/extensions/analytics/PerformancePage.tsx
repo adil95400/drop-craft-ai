@@ -132,10 +132,10 @@ export default function PerformancePage() {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'excellent': return 'bg-green-500'
-      case 'good': return 'bg-blue-500'
-      case 'warning': return 'bg-orange-500'
-      case 'critical': return 'bg-red-500'
+      case 'excellent': return 'bg-success'
+      case 'good': return 'bg-info'
+      case 'warning': return 'bg-warning'
+      case 'critical': return 'bg-destructive'
       default: return 'bg-gray-500'
     }
   }

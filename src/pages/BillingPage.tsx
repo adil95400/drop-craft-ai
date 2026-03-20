@@ -100,7 +100,7 @@ export default function BillingPage() {
 
         <Card className="p-4 sm:p-6">
           <div className="flex items-center gap-3 sm:gap-4">
-            <div className="p-2 sm:p-3 rounded-lg bg-green-500/10">
+            <div className="p-2 sm:p-3 rounded-lg bg-success/10">
               <DollarSign className="w-5 h-5 sm:w-6 sm:h-6 text-success" />
             </div>
             <div>
@@ -116,7 +116,7 @@ export default function BillingPage() {
 
         <Card className="p-4 sm:p-6">
           <div className="flex items-center gap-3 sm:gap-4">
-            <div className="p-2 sm:p-3 rounded-lg bg-blue-500/10">
+            <div className="p-2 sm:p-3 rounded-lg bg-info/10">
               <Calendar className="w-5 h-5 sm:w-6 sm:h-6 text-info" />
             </div>
             <div>

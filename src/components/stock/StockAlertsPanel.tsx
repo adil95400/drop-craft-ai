@@ -75,9 +75,9 @@ export function StockAlertsPanel({ limit, compact }: StockAlertsPanelProps) {
   const getSeverityColor = (severity: string) => {
     switch (severity) {
       case 'critical': return 'border-destructive bg-destructive/10';
-      case 'high': return 'border-orange-500 bg-orange-500/10';
-      case 'medium': return 'border-yellow-500 bg-yellow-500/10';
-      default: return 'border-blue-500 bg-blue-500/10';
+      case 'high': return 'border-orange-500 bg-warning/10';
+      case 'medium': return 'border-yellow-500 bg-warning/10';
+      default: return 'border-blue-500 bg-info/10';
     }
   };
 

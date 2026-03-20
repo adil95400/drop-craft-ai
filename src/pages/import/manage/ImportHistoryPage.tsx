@@ -140,10 +140,10 @@ export default function ImportHistoryPage() {
   // Status config
   const getStatusConfig = (status: string) => {
     const configs: Record<string, { icon: any; color: string; bgColor: string; label: string }> = {
-      completed: { icon: CheckCircle, color: 'text-success', bgColor: 'bg-green-500/10', label: 'Terminé' },
-      processing: { icon: Loader2, color: 'text-info', bgColor: 'bg-blue-500/10', label: 'En cours' },
-      failed: { icon: XCircle, color: 'text-destructive', bgColor: 'bg-red-500/10', label: 'Échoué' },
-      pending: { icon: Clock, color: 'text-warning', bgColor: 'bg-amber-500/10', label: 'En attente' }
+      completed: { icon: CheckCircle, color: 'text-success', bgColor: 'bg-success/10', label: 'Terminé' },
+      processing: { icon: Loader2, color: 'text-info', bgColor: 'bg-info/10', label: 'En cours' },
+      failed: { icon: XCircle, color: 'text-destructive', bgColor: 'bg-destructive/10', label: 'Échoué' },
+      pending: { icon: Clock, color: 'text-warning', bgColor: 'bg-warning/10', label: 'En attente' }
     }
     return configs[status] || configs.pending
   }
@@ -702,7 +702,7 @@ export default function ImportHistoryPage() {
                       <Card className="border-2">
                         <CardContent className="p-4">
                           <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-lg bg-blue-500/10 flex items-center justify-center">
+                            <div className="w-10 h-10 rounded-lg bg-info/10 flex items-center justify-center">
                               <Package className="w-5 h-5 text-info" />
                             </div>
                             <div>
@@ -718,7 +718,7 @@ export default function ImportHistoryPage() {
                       <Card className="border-2">
                         <CardContent className="p-4">
                           <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-lg bg-green-500/10 flex items-center justify-center">
+                            <div className="w-10 h-10 rounded-lg bg-success/10 flex items-center justify-center">
                               <Clock className="w-5 h-5 text-success" />
                             </div>
                             <div>
@@ -782,7 +782,7 @@ export default function ImportHistoryPage() {
                           {selectedJob.errors.slice(0, 5).map((error, i) => (
                             <div 
                               key={i} 
-                              className="flex items-start gap-3 p-3 bg-red-50 dark:bg-red-950/20 rounded-lg border border-red-200 dark:border-red-800"
+                              className="flex items-start gap-3 p-3 bg-destructive/5 dark:bg-red-950/20 rounded-lg border border-red-200 dark:border-red-800"
                             >
                               <XCircle className="w-4 h-4 text-destructive mt-0.5 shrink-0" />
                               <p className="text-sm text-red-700 dark:text-red-400">{error}</p>
@@ -815,7 +815,7 @@ export default function ImportHistoryPage() {
                         </div>
                         {selectedJob.started_at && (
                           <div className="relative">
-                            <div className="absolute -left-[18px] w-3 h-3 rounded-full bg-blue-500 border-2 border-background" />
+                            <div className="absolute -left-[18px] w-3 h-3 rounded-full bg-info border-2 border-background" />
                             <div className="text-sm">
                               <p className="font-medium">Démarré</p>
                               <p className="text-muted-foreground">
@@ -828,7 +828,7 @@ export default function ImportHistoryPage() {
                           <div className="relative">
                             <div className={cn(
                               "absolute -left-[18px] w-3 h-3 rounded-full border-2 border-background",
-                              selectedJob.status === 'completed' ? 'bg-green-500' : 'bg-red-500'
+                              selectedJob.status === 'completed' ? 'bg-success' : 'bg-destructive'
                             )} />
                             <div className="text-sm">
                               <p className="font-medium">

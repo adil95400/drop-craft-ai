@@ -113,7 +113,7 @@ export const FTPConnectorManager = ({
                           <AlertDialogCancel>Annuler</AlertDialogCancel>
                           <AlertDialogAction
                             onClick={() => onDelete(connector.id)}
-                            className="bg-red-600 hover:bg-red-700"
+                            className="bg-destructive hover:bg-red-700"
                           >
                             Supprimer
                           </AlertDialogAction>

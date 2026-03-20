@@ -82,9 +82,9 @@ export const TrendingNichesCard = ({
 
   const getCompetitionColor = (competition: string) => {
     switch (competition) {
-      case "Faible": return "text-success bg-green-50"
+      case "Faible": return "text-success bg-success/5"
       case "Moyenne": return "text-warning bg-orange-50"
-      case "Élevée": return "text-destructive bg-red-50"
+      case "Élevée": return "text-destructive bg-destructive/5"
       default: return "text-gray-600 bg-gray-50"
     }
   }

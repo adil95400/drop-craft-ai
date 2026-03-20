@@ -196,9 +196,9 @@ export const FinalHealthCheck = () => {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'complete': return 'bg-green-100 text-success';
-      case 'partial': return 'bg-yellow-100 text-yellow-800'; 
-      case 'missing': return 'bg-red-100 text-red-800';
+      case 'complete': return 'bg-success/10 text-success';
+      case 'partial': return 'bg-warning/10 text-yellow-800'; 
+      case 'missing': return 'bg-destructive/10 text-red-800';
       default: return 'bg-gray-100 text-gray-800';
     }
   };
@@ -212,7 +212,7 @@ export const FinalHealthCheck = () => {
   return (
     <div className="space-y-6">
       {/* Overall Status */}
-      <Card className="border-green-200 bg-green-50">
+      <Card className="border-green-200 bg-success/5">
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle className="text-2xl flex items-center gap-3">

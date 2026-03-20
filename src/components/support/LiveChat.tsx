@@ -128,7 +128,7 @@ export function LiveChat({ isOpen: externalIsOpen, onClose: externalOnClose }: L
           <div className="flex items-center gap-3">
             <div className="relative">
               <Bot className="h-8 w-8 text-primary" />
-              <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-green-500 rounded-full border-2 border-white" />
+              <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-success rounded-full border-2 border-white" />
             </div>
             <div>
               <h3 className="font-semibold flex items-center gap-2">

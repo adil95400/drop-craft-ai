@@ -214,7 +214,7 @@ export const OneClickImportConfig: React.FC = () => {
                       {lastResults.map((result, i) => (
                         <div
                           key={i}
-                          className={`flex items-center gap-2 p-2 rounded-md ${result.success ? 'bg-green-50 dark:bg-green-950 text-success dark:text-green-400' : 'bg-red-50 dark:bg-red-950 text-destructive dark:text-red-400'}`}
+                          className={`flex items-center gap-2 p-2 rounded-md ${result.success ? 'bg-success/5 dark:bg-green-950 text-success dark:text-green-400' : 'bg-destructive/5 dark:bg-red-950 text-destructive dark:text-red-400'}`}
                         >
                           {result.success ? <CheckCircle2 className="w-4 h-4" /> : <XCircle className="w-4 h-4" />}
                           <a href={result.url} target="_blank" rel="noopener noreferrer" className="underline">
@@ -307,7 +307,7 @@ export const OneClickImportConfig: React.FC = () => {
                           </div>
                           
                           {history.error_message && (
-                            <p className="text-xs text-destructive bg-red-50 dark:bg-red-950 p-2 rounded">
+                            <p className="text-xs text-destructive bg-destructive/5 dark:bg-red-950 p-2 rounded">
                               Erreur: {history.error_message}
                             </p>
                           )}

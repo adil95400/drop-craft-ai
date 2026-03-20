@@ -151,7 +151,7 @@ export default function FeedDiagnostics() {
                                 <TableCell className="text-xs text-muted-foreground">{item.suggestion || '—'}</TableCell>
                                 <TableCell>
                                   {item.auto_fixable ? (
-                                    <Badge className="bg-green-100 text-success text-xs"><Wrench className="h-3 w-3 mr-1" />Oui</Badge>
+                                    <Badge className="bg-success/10 text-success text-xs"><Wrench className="h-3 w-3 mr-1" />Oui</Badge>
                                   ) : (
                                     <span className="text-xs text-muted-foreground">Non</span>
                                   )}

@@ -73,8 +73,8 @@ export const CRMDashboard: React.FC = () => {
 
   const getStatusColor = (status: string) => {
     const colors = {
-      'active': 'bg-green-100 text-success',
-      'prospect': 'bg-blue-100 text-blue-800',
+      'active': 'bg-success/10 text-success',
+      'prospect': 'bg-info/10 text-blue-800',
       'customer': 'bg-purple-100 text-purple-800',
       'inactive': 'bg-gray-100 text-gray-800'
     };
@@ -84,8 +84,8 @@ export const CRMDashboard: React.FC = () => {
   const getSegmentColor = (segment: string) => {
     const colors = {
       'vip': 'bg-purple-100 text-purple-800',
-      'loyal': 'bg-blue-100 text-blue-800',
-      'new': 'bg-green-100 text-success',
+      'loyal': 'bg-info/10 text-blue-800',
+      'new': 'bg-success/10 text-success',
       'at_risk': 'bg-orange-100 text-orange-800',
       'inactive': 'bg-gray-100 text-gray-800'
     };
@@ -156,7 +156,7 @@ export const CRMDashboard: React.FC = () => {
                 <p className="text-sm font-medium text-muted-foreground">Total Clients</p>
                 <p className="text-2xl font-bold">{metrics?.total_customers || 0}</p>
               </div>
-              <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+              <div className="w-12 h-12 bg-info/10 rounded-lg flex items-center justify-center">
                 <Users className="w-6 h-6 text-info" />
               </div>
             </div>
@@ -170,7 +170,7 @@ export const CRMDashboard: React.FC = () => {
                 <p className="text-sm font-medium text-muted-foreground">Clients VIP</p>
                 <p className="text-2xl font-bold">{metrics?.vip_customers || 0}</p>
               </div>
-              <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+              <div className="w-12 h-12 bg-success/10 rounded-lg flex items-center justify-center">
                 <Target className="w-6 h-6 text-success" />
               </div>
             </div>

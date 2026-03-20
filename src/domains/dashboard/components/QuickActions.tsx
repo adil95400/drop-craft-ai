@@ -39,7 +39,7 @@ export const QuickActions: React.FC = () => {
       description: 'Ajouter des produits depuis URL ou fichier',
       icon: Upload,
       route: '/import',
-      color: 'bg-blue-500 hover:bg-blue-600',
+      color: 'bg-info hover:bg-info',
       priority: 'high',
       category: 'core'
     },
@@ -49,7 +49,7 @@ export const QuickActions: React.FC = () => {
       description: 'Traiter et suivre les commandes',
       icon: ShoppingCart,
       route: '/orders',
-      color: 'bg-green-500 hover:bg-green-600',
+      color: 'bg-success hover:bg-success',
       priority: 'high',
       category: 'core'
     },
@@ -83,7 +83,7 @@ export const QuickActions: React.FC = () => {
       description: 'Configurer les règles d\'automatisation',
       icon: Zap,
       route: '/automation',
-      color: 'bg-yellow-500 hover:bg-yellow-600',
+      color: 'bg-warning hover:bg-warning',
       badge: 'Pro',
       planRequired: 'pro',
       priority: 'medium',

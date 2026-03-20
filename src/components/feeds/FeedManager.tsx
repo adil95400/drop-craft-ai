@@ -64,11 +64,11 @@ const platformIcons: Record<string, string> = {
 };
 
 const statusColors: Record<string, string> = {
-  active: 'bg-green-500',
+  active: 'bg-success',
   draft: 'bg-gray-500',
-  paused: 'bg-yellow-500',
-  error: 'bg-red-500',
-  generating: 'bg-blue-500'
+  paused: 'bg-warning',
+  error: 'bg-destructive',
+  generating: 'bg-info'
 };
 
 export default function FeedManager() {
@@ -413,7 +413,7 @@ export default function FeedManager() {
         
         <Card className="p-4">
           <div className="flex items-center gap-3">
-            <div className="p-3 rounded-lg bg-green-500/10">
+            <div className="p-3 rounded-lg bg-success/10">
               <FileText className="h-5 w-5 text-success" />
             </div>
             <div>
@@ -427,7 +427,7 @@ export default function FeedManager() {
 
         <Card className="p-4">
           <div className="flex items-center gap-3">
-            <div className="p-3 rounded-lg bg-blue-500/10">
+            <div className="p-3 rounded-lg bg-info/10">
               <BarChart3 className="h-5 w-5 text-info" />
             </div>
             <div>

@@ -70,9 +70,9 @@ export function ABTestManager() {
   const getStatusBadge = (status: ABTest['status']) => {
     switch (status) {
       case 'running':
-        return <Badge className="bg-green-500">En cours</Badge>;
+        return <Badge className="bg-success">En cours</Badge>;
       case 'completed':
-        return <Badge className="bg-blue-500">Terminé</Badge>;
+        return <Badge className="bg-info">Terminé</Badge>;
       default:
         return <Badge variant="outline">Brouillon</Badge>;
     }
@@ -160,11 +160,11 @@ export function ABTestManager() {
                     const winnerIdx = calculateWinner(test.variants);
                     const isWinner = winnerIdx === idx;
                     return (
-                      <div key={variant.name} className={`p-4 rounded-lg border ${isWinner ? 'border-green-500 bg-green-50 dark:bg-green-950' : ''}`}>
+                      <div key={variant.name} className={`p-4 rounded-lg border ${isWinner ? 'border-green-500 bg-success/5 dark:bg-green-950' : ''}`}>
                         <div className="flex items-center justify-between mb-2">
                           <span className="font-semibold">{variant.name}</span>
                           {isWinner && (
-                            <Badge className="bg-green-500">
+                            <Badge className="bg-success">
                               <TrendingUp className="h-3 w-3 mr-1" />
                               Gagnant
                             </Badge>

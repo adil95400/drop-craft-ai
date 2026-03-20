@@ -186,7 +186,7 @@ export const BulkOptimizationPanel = ({ products, onComplete }: BulkOptimization
             <div className="flex items-center justify-between">
               <h4 className="font-semibold">Résultats</h4>
               <div className="flex gap-2">
-                <Badge variant="default" className="bg-green-500">
+                <Badge variant="default" className="bg-success">
                   ✓ {successCount}
                 </Badge>
                 {failureCount > 0 && (
@@ -201,8 +201,8 @@ export const BulkOptimizationPanel = ({ products, onComplete }: BulkOptimization
                   key={index}
                   className={`p-3 rounded-lg border ${
                     result.success
-                      ? 'bg-green-50 dark:bg-green-950/20 border-green-200 dark:border-green-800'
-                      : 'bg-red-50 dark:bg-red-950/20 border-red-200 dark:border-red-800'
+                      ? 'bg-success/5 dark:bg-green-950/20 border-green-200 dark:border-green-800'
+                      : 'bg-destructive/5 dark:bg-red-950/20 border-red-200 dark:border-red-800'
                   }`}
                 >
                   <div className="flex items-center justify-between">

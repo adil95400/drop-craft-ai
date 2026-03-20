@@ -186,7 +186,7 @@ export function SupplierScoring() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-3">
-          <div className="p-2 rounded-lg bg-amber-500/10">
+          <div className="p-2 rounded-lg bg-warning/10">
             <Award className="h-6 w-6 text-warning" />
           </div>
           <div>

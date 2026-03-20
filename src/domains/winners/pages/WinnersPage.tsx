@@ -288,7 +288,7 @@ const WinnersPage = () => {
           <Card className="border-border/50 shadow-sm">
             <CardHeader className="pb-3">
               <CardTitle className="text-sm font-semibold flex items-center gap-2">
-                <div className="p-1.5 rounded bg-green-500/10">
+                <div className="p-1.5 rounded bg-success/10">
                   <TrendingUp className="h-4 w-4 text-success dark:text-green-400" />
                 </div>
                 Performance Temps Réel
@@ -297,7 +297,7 @@ const WinnersPage = () => {
             <CardContent className="space-y-3">
               <div className="flex justify-between items-center text-sm p-2 rounded-lg bg-muted/50">
                 <span className="text-muted-foreground font-medium">Cache Hit:</span>
-                <Badge variant="secondary" className="bg-green-500/10 text-success dark:text-green-400 hover:bg-green-500/20">
+                <Badge variant="secondary" className="bg-success/10 text-success dark:text-green-400 hover:bg-success/20">
                   87%
                 </Badge>
               </div>
@@ -307,7 +307,7 @@ const WinnersPage = () => {
               </div>
               <div className="flex justify-between items-center text-sm p-2 rounded-lg bg-muted/50">
                 <span className="text-muted-foreground font-medium">Sources:</span>
-                <Badge variant="secondary" className="bg-green-500/10 text-success dark:text-green-400 hover:bg-green-500/20">
+                <Badge variant="secondary" className="bg-success/10 text-success dark:text-green-400 hover:bg-success/20">
                   3/3
                 </Badge>
               </div>

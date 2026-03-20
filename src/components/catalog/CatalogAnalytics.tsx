@@ -249,7 +249,7 @@ export const CatalogAnalytics = ({ products, stats }: CatalogAnalyticsProps) => 
                     </div>
                   </div>
                     <div className="flex items-center gap-2">
-                      <Badge className="bg-green-500 text-white">
+                      <Badge className="bg-success text-white">
                         {product.profit_margin.toFixed(0)}%
                       </Badge>
                       <span className="font-bold">{formatPrice(product.price)}</span>

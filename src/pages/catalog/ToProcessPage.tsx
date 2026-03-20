@@ -71,7 +71,7 @@ export default function ToProcessPage() {
   const statCards = [
     { id: 'all', label: 'Total à traiter', value: counts.total, icon: Filter, color: 'text-foreground', bg: 'bg-muted', ring: 'ring-primary' },
     { id: 'actions', label: 'Actions stock', value: counts.actions, icon: AlertCircle, color: 'text-destructive', bg: 'bg-destructive/10', ring: 'ring-destructive', extra: counts.critical > 0 ? `⚠️ ${counts.critical}` : null },
-    { id: 'opportunities', label: 'Opportunités marge', value: counts.opportunities, icon: TrendingUp, color: 'text-warning', bg: 'bg-amber-500/10', ring: 'ring-amber-500' },
+    { id: 'opportunities', label: 'Opportunités marge', value: counts.opportunities, icon: TrendingUp, color: 'text-warning', bg: 'bg-warning/10', ring: 'ring-amber-500' },
     { id: 'optimization', label: 'Optimisations', value: counts.optimization, icon: Sparkles, color: 'text-violet-600', bg: 'bg-violet-500/10', ring: 'ring-violet-500' },
   ]
 
@@ -129,7 +129,7 @@ export default function ToProcessPage() {
                   <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-emerald-400/5 to-transparent" />
                   <CardContent className="p-5 flex items-center justify-between relative">
                     <div className="flex items-center gap-4">
-                      <div className="p-3 rounded-2xl bg-emerald-500/10 shadow-lg shadow-emerald-500/10">
+                      <div className="p-3 rounded-2xl bg-success/10 shadow-lg shadow-emerald-500/10">
                         <Euro className="h-6 w-6 text-success" />
                       </div>
                       <div>

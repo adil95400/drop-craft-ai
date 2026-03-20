@@ -73,7 +73,7 @@ export function ReviewAIPanel() {
 
         <Card className="cursor-pointer hover:shadow-md transition-shadow border-2 border-transparent hover:border-primary/20" onClick={runSentiment}>
           <CardContent className="p-5 text-center space-y-3">
-            <div className="h-12 w-12 rounded-xl bg-blue-500/10 flex items-center justify-center mx-auto">
+            <div className="h-12 w-12 rounded-xl bg-info/10 flex items-center justify-center mx-auto">
               <Brain className="h-6 w-6 text-info" />
             </div>
             <div>
@@ -89,7 +89,7 @@ export function ReviewAIPanel() {
 
         <Card className="cursor-pointer hover:shadow-md transition-shadow border-2 border-transparent hover:border-primary/20">
           <CardContent className="p-5 text-center space-y-3">
-            <div className="h-12 w-12 rounded-xl bg-emerald-500/10 flex items-center justify-center mx-auto">
+            <div className="h-12 w-12 rounded-xl bg-success/10 flex items-center justify-center mx-auto">
               <Languages className="h-6 w-6 text-success" />
             </div>
             <div>
@@ -170,7 +170,7 @@ export function ReviewAIPanel() {
                     </div>
                     <Progress
                       value={r.fake_score}
-                      className={cn('w-20 h-2', r.fake_score > 60 ? '[&>div]:bg-destructive' : r.fake_score > 30 ? '[&>div]:bg-yellow-500' : '[&>div]:bg-emerald-500')}
+                      className={cn('w-20 h-2', r.fake_score > 60 ? '[&>div]:bg-destructive' : r.fake_score > 30 ? '[&>div]:bg-warning' : '[&>div]:bg-success')}
                     />
                     <div className="flex-1 min-w-0">
                       <p className="text-sm truncate">{r.summary}</p>

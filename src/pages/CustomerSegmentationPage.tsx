@@ -23,7 +23,7 @@ const CustomerSegmentationPage: React.FC = () => {
       count: 892,
       avgOrderValue: 45.30,
       totalRevenue: 40408,
-      color: 'bg-blue-500',
+      color: 'bg-info',
     },
     {
       id: 3,
@@ -32,7 +32,7 @@ const CustomerSegmentationPage: React.FC = () => {
       count: 456,
       avgOrderValue: 32.20,
       totalRevenue: 14683,
-      color: 'bg-green-500',
+      color: 'bg-success',
     },
     {
       id: 4,
@@ -41,7 +41,7 @@ const CustomerSegmentationPage: React.FC = () => {
       count: 178,
       avgOrderValue: 52.40,
       totalRevenue: 9327,
-      color: 'bg-orange-500',
+      color: 'bg-warning',
     },
   ];
 

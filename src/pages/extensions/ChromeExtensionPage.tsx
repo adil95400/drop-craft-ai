@@ -264,28 +264,28 @@ export default function ChromeExtensionPage() {
       title: 'Import 1-clic',
       description: 'Importez n\'importe quel produit en un seul clic',
       color: 'text-warning',
-      bgColor: 'bg-yellow-500/10',
+      bgColor: 'bg-warning/10',
     },
     {
       icon: Star,
       title: 'Import des avis',
       description: 'Récupérez automatiquement les avis clients',
       color: 'text-warning',
-      bgColor: 'bg-orange-500/10',
+      bgColor: 'bg-warning/10',
     },
     {
       icon: RefreshCw,
       title: 'Suivi des prix',
       description: 'Alertes automatiques sur les changements de prix',
       color: 'text-info',
-      bgColor: 'bg-blue-500/10',
+      bgColor: 'bg-info/10',
     },
     {
       icon: Package,
       title: 'Multi-plateformes',
       description: 'AliExpress, Amazon, eBay, Temu et plus',
       color: 'text-success',
-      bgColor: 'bg-green-500/10',
+      bgColor: 'bg-success/10',
     },
   ];
 
@@ -385,7 +385,7 @@ export default function ChromeExtensionPage() {
             <div className="flex items-center gap-2">
               <Badge className="bg-cyan-500">Extension Chrome</Badge>
               <Badge variant="outline">v6.0.0</Badge>
-              <Badge variant="outline" className="bg-green-500/10 text-success border-green-500/30">
+              <Badge variant="outline" className="bg-success/10 text-success border-green-500/30">
                 <RefreshCw className="h-3 w-3 mr-1" />
                 Sync SaaS
               </Badge>
@@ -453,7 +453,7 @@ export default function ChromeExtensionPage() {
               <div className="w-48 h-48 bg-gradient-to-br from-cyan-500 to-blue-600 rounded-2xl flex items-center justify-center shadow-xl">
                 <Chrome className="h-24 w-24 text-white" />
               </div>
-              <div className="absolute -bottom-4 -right-4 bg-green-500 text-white rounded-full p-2">
+              <div className="absolute -bottom-4 -right-4 bg-success text-white rounded-full p-2">
                 <CheckCircle className="h-6 w-6" />
               </div>
             </div>
@@ -615,7 +615,7 @@ export default function ChromeExtensionPage() {
                       <div className={cn(
                         "h-8 w-8 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0",
                         step.completed 
-                          ? "bg-green-500 text-white" 
+                          ? "bg-success text-white" 
                           : "bg-primary text-primary-foreground"
                       )}>
                         {step.completed ? <CheckCircle className="h-4 w-4" /> : step.step}
@@ -855,9 +855,9 @@ export default function ChromeExtensionPage() {
                           </div>
                           <Badge 
                             className={cn(
-                              item.status === 'success' && 'bg-green-500/10 text-success border-green-500/30',
-                              item.status === 'pending' && 'bg-yellow-500/10 text-warning border-yellow-500/30',
-                              item.status === 'error' && 'bg-red-500/10 text-destructive border-red-500/30'
+                              item.status === 'success' && 'bg-success/10 text-success border-green-500/30',
+                              item.status === 'pending' && 'bg-warning/10 text-warning border-yellow-500/30',
+                              item.status === 'error' && 'bg-destructive/10 text-destructive border-red-500/30'
                             )}
                           >
                             {item.status === 'success' && <CheckCircle className="h-3 w-3 mr-1" />}
@@ -1091,7 +1091,7 @@ export default function ChromeExtensionPage() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6">
-                  <div className="p-4 rounded-lg border border-amber-500/30 bg-amber-500/10">
+                  <div className="p-4 rounded-lg border border-amber-500/30 bg-warning/10">
                     <div className="flex items-start gap-3">
                       <AlertCircle className="h-5 w-5 text-warning flex-shrink-0 mt-0.5" />
                       <div>

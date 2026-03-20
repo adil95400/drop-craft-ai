@@ -156,9 +156,9 @@ export const RealTimeSupplierMonitor = () => {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'online': return 'text-success bg-green-100'
-      case 'syncing': return 'text-info bg-blue-100'
-      case 'error': return 'text-destructive bg-red-100'
+      case 'online': return 'text-success bg-success/10'
+      case 'syncing': return 'text-info bg-info/10'
+      case 'error': return 'text-destructive bg-destructive/10'
       default: return 'text-gray-600 bg-gray-100'
     }
   }
@@ -183,7 +183,7 @@ export const RealTimeSupplierMonitor = () => {
   const getTierColor = (tier: string) => {
     switch (tier) {
       case 'premium': return 'text-purple-600 bg-purple-100'
-      case 'standard': return 'text-info bg-blue-100'
+      case 'standard': return 'text-info bg-info/10'
       default: return 'text-gray-600 bg-gray-100'
     }
   }

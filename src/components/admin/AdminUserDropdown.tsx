@@ -61,7 +61,7 @@ export function AdminUserDropdown() {
               <Badge variant="outline" className="text-xs">
                 {userInfo.plan}
               </Badge>
-              <Badge variant="default" className="text-xs bg-green-500">
+              <Badge variant="default" className="text-xs bg-success">
                 Actif
               </Badge>
             </div>
@@ -101,7 +101,7 @@ export function AdminUserDropdown() {
           <DropdownMenuItem className="cursor-pointer">
             <Bell className="mr-2 h-4 w-4" />
             <span>Notifications</span>
-            <Badge className="ml-auto text-xs bg-red-500">3</Badge>
+            <Badge className="ml-auto text-xs bg-destructive">3</Badge>
           </DropdownMenuItem>
         </DropdownMenuGroup>
         

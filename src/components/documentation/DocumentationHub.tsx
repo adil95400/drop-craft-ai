@@ -38,8 +38,8 @@ const CATEGORY_ICONS: Record<ModuleCategory, React.ElementType> = {
 }
 
 const LEVEL_CONFIG: Record<UserLevel, { label: string; color: string; icon: React.ElementType }> = {
-  beginner: { label: 'Débutant', color: 'bg-green-100 text-success dark:bg-green-900/30 dark:text-green-400', icon: BookOpen },
-  intermediate: { label: 'Intermédiaire', color: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400', icon: Target },
+  beginner: { label: 'Débutant', color: 'bg-success/10 text-success dark:bg-green-900/30 dark:text-green-400', icon: BookOpen },
+  intermediate: { label: 'Intermédiaire', color: 'bg-info/10 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400', icon: Target },
   advanced: { label: 'Avancé', color: 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400', icon: Star },
   expert: { label: 'Expert', color: 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400', icon: Zap }
 }
@@ -117,7 +117,7 @@ export function DocumentationHub({ onSelectModule }: DocumentationHubProps) {
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-blue-100 dark:bg-blue-900/30">
+              <div className="p-2 rounded-lg bg-info/10 dark:bg-blue-900/30">
                 <Target className="h-5 w-5 text-info dark:text-blue-400" />
               </div>
               <div>
@@ -131,7 +131,7 @@ export function DocumentationHub({ onSelectModule }: DocumentationHubProps) {
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-green-100 dark:bg-green-900/30">
+              <div className="p-2 rounded-lg bg-success/10 dark:bg-green-900/30">
                 <HelpCircle className="h-5 w-5 text-success dark:text-green-400" />
               </div>
               <div>

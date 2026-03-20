@@ -196,7 +196,7 @@ export function CustomerSegmentationModal({ open, onOpenChange }: CustomerSegmen
               <Card>
                 <CardContent className="p-6">
                   <div className="flex items-center gap-4">
-                    <div className="p-3 rounded-lg bg-blue-500/10">
+                    <div className="p-3 rounded-lg bg-info/10">
                       <DollarSign className="w-6 h-6 text-info" />
                     </div>
                     <div>
@@ -211,7 +211,7 @@ export function CustomerSegmentationModal({ open, onOpenChange }: CustomerSegmen
               <Card>
                 <CardContent className="p-6">
                   <div className="flex items-center gap-4">
-                    <div className="p-3 rounded-lg bg-green-500/10">
+                    <div className="p-3 rounded-lg bg-success/10">
                       <TrendingUp className="w-6 h-6 text-success" />
                     </div>
                     <div>

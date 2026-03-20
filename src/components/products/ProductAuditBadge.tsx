@@ -27,9 +27,9 @@ export function ProductAuditBadge({
   };
 
   const getScoreColor = (score: number) => {
-    if (score >= 70) return 'text-success bg-green-100 border-green-300 dark:text-green-400 dark:bg-green-950';
+    if (score >= 70) return 'text-success bg-success/10 border-green-300 dark:text-green-400 dark:bg-green-950';
     if (score >= 40) return 'text-orange-700 bg-orange-100 border-orange-300 dark:text-orange-400 dark:bg-orange-950';
-    return 'text-red-700 bg-red-100 border-red-300 dark:text-red-400 dark:bg-red-950';
+    return 'text-red-700 bg-destructive/10 border-red-300 dark:text-red-400 dark:bg-red-950';
   };
 
   const sizeClasses = {

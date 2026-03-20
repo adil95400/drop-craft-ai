@@ -54,10 +54,10 @@ export function CatalogHealthAIPanel() {
                      aiStats.healthTrendPrediction === 'declining' ? 'text-destructive' : 'text-warning'
 
   const riskColors = {
-    low: 'bg-emerald-500/10 text-emerald-700 border-emerald-500/20',
-    medium: 'bg-amber-500/10 text-amber-700 border-amber-500/20',
-    high: 'bg-orange-500/10 text-orange-700 border-orange-500/20',
-    critical: 'bg-red-500/10 text-red-700 border-red-500/20'
+    low: 'bg-success/10 text-emerald-700 border-emerald-500/20',
+    medium: 'bg-warning/10 text-amber-700 border-amber-500/20',
+    high: 'bg-warning/10 text-orange-700 border-orange-500/20',
+    critical: 'bg-destructive/10 text-red-700 border-red-500/20'
   }
 
   return (
@@ -216,8 +216,8 @@ export function CatalogHealthAIPanel() {
                     value={insight.healthScore} 
                     className={cn(
                       "h-2",
-                      insight.healthScore >= 70 ? "[&>div]:bg-emerald-500" :
-                      insight.healthScore >= 50 ? "[&>div]:bg-amber-500" : "[&>div]:bg-red-500"
+                      insight.healthScore >= 70 ? "[&>div]:bg-success" :
+                      insight.healthScore >= 50 ? "[&>div]:bg-warning" : "[&>div]:bg-destructive"
                     )}
                   />
                   {insight.issues.length > 0 && (
@@ -272,10 +272,10 @@ export function CatalogHealthAIPanel() {
 // Sous-composant pour les actions prioritaires
 function PriorityActionCard({ action }: { action: HealthPriorityAction }) {
   const typeColors = {
-    critical: 'border-l-red-500 bg-red-500/5',
-    high: 'border-l-orange-500 bg-orange-500/5',
-    medium: 'border-l-amber-500 bg-amber-500/5',
-    low: 'border-l-blue-500 bg-blue-500/5'
+    critical: 'border-l-red-500 bg-destructive/5',
+    high: 'border-l-orange-500 bg-warning/5',
+    medium: 'border-l-amber-500 bg-warning/5',
+    low: 'border-l-blue-500 bg-info/5'
   }
 
   return (

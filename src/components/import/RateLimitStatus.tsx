@@ -65,7 +65,7 @@ export const RateLimitStatus = () => {
         </div>
 
         {isNearLimit && (
-          <div className="text-xs text-warning bg-yellow-50 dark:bg-yellow-950/20 p-2 rounded">
+          <div className="text-xs text-warning bg-warning/5 dark:bg-yellow-950/20 p-2 rounded">
             Vous approchez de votre limite d'imports horaire. 
             Attendez la réinitialisation ou contactez le support pour augmenter votre limite.
           </div>

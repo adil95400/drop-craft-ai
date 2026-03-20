@@ -193,9 +193,9 @@ export const ActionCelebrationModal = memo(function ActionCelebrationModal({
             >
               <div className={cn(
                 'w-16 h-16 rounded-full flex items-center justify-center',
-                result.type === 'success' && 'bg-emerald-500/20',
-                result.type === 'partial' && 'bg-yellow-500/20',
-                result.type === 'info' && 'bg-blue-500/20'
+                result.type === 'success' && 'bg-success/20',
+                result.type === 'partial' && 'bg-warning/20',
+                result.type === 'info' && 'bg-info/20'
               )}>
                 {result.type === 'success' ? (
                   <CheckCircle2 className="h-8 w-8 text-success" />
@@ -279,9 +279,9 @@ export const ActionCelebrationModal = memo(function ActionCelebrationModal({
               <motion.div 
                 className={cn(
                   'h-full rounded-full',
-                  result.type === 'success' && 'bg-emerald-500',
-                  result.type === 'partial' && 'bg-yellow-500',
-                  result.type === 'info' && 'bg-blue-500'
+                  result.type === 'success' && 'bg-success',
+                  result.type === 'partial' && 'bg-warning',
+                  result.type === 'info' && 'bg-info'
                 )}
                 style={{ width: `${progress}%` }}
                 transition={{ duration: 0.05 }}

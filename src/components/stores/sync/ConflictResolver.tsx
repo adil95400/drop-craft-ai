@@ -27,9 +27,9 @@ export function ConflictResolver() {
 
   const getConflictTypeBadge = (type: string) => {
     const colors: Record<string, string> = {
-      version_mismatch: 'bg-yellow-500',
-      concurrent_update: 'bg-orange-500',
-      deleted_remotely: 'bg-red-500',
+      version_mismatch: 'bg-warning',
+      concurrent_update: 'bg-warning',
+      deleted_remotely: 'bg-destructive',
       validation_error: 'bg-purple-500',
     };
 

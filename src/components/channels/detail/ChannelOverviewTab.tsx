@@ -52,10 +52,10 @@ export function ChannelOverviewTab({
   const { t } = useTranslation('channels')
   
   const dataTypes = [
-    { key: 'products', label: t('overview.products'), desc: t('overview.productsDesc'), icon: BoxIcon, color: 'text-info dark:text-blue-400 bg-blue-500/10' },
-    { key: 'orders', label: t('overview.orders'), desc: t('overview.ordersDesc'), icon: ShoppingCart, color: 'text-success dark:text-emerald-400 bg-emerald-500/10' },
+    { key: 'products', label: t('overview.products'), desc: t('overview.productsDesc'), icon: BoxIcon, color: 'text-info dark:text-blue-400 bg-info/10' },
+    { key: 'orders', label: t('overview.orders'), desc: t('overview.ordersDesc'), icon: ShoppingCart, color: 'text-success dark:text-emerald-400 bg-success/10' },
     { key: 'inventory', label: t('overview.inventory'), desc: t('overview.inventoryDesc'), icon: Package, color: 'text-purple-600 dark:text-purple-400 bg-purple-500/10' },
-    { key: 'prices', label: t('overview.prices'), desc: t('overview.pricesDesc'), icon: DollarSign, color: 'text-warning dark:text-amber-400 bg-amber-500/10' },
+    { key: 'prices', label: t('overview.prices'), desc: t('overview.pricesDesc'), icon: DollarSign, color: 'text-warning dark:text-amber-400 bg-warning/10' },
   ]
 
   const updateSetting = (key: keyof SyncSettings, value: boolean) => {
@@ -202,12 +202,12 @@ export function ChannelOverviewTab({
           <CardContent className="pt-0">
             <div className="space-y-1">
               {lastEvent && (
-                <div className="flex items-center justify-between py-2.5 px-3 rounded-lg bg-amber-500/10 border border-amber-500/20">
+                <div className="flex items-center justify-between py-2.5 px-3 rounded-lg bg-warning/10 border border-amber-500/20">
                   <div className="flex items-center gap-2">
                     <Zap className="h-3.5 w-3.5 text-warning" />
                     <span className="text-xs font-medium">{lastEvent.type}</span>
                   </div>
-                  <Badge className="bg-amber-500/20 text-amber-700 border-amber-500/30 text-[10px] h-5">Live</Badge>
+                  <Badge className="bg-warning/20 text-amber-700 border-amber-500/30 text-[10px] h-5">Live</Badge>
                 </div>
               )}
               {[
@@ -240,8 +240,8 @@ export function ChannelOverviewTab({
           <CardContent className="pt-0">
             <div className="space-y-4">
               {[
-                { label: t('overview.syncRate'), value: healthMetrics?.syncRate ?? 98, color: 'bg-emerald-500' },
-                { label: 'Uptime', value: healthMetrics?.uptime ?? 100, color: 'bg-blue-500' },
+                { label: t('overview.syncRate'), value: healthMetrics?.syncRate ?? 98, color: 'bg-success' },
+                { label: 'Uptime', value: healthMetrics?.uptime ?? 100, color: 'bg-info' },
                 { label: t('overview.syncedStock'), value: healthMetrics?.errorRate != null ? (100 - healthMetrics.errorRate) : 100, color: 'bg-purple-500' },
               ].map((item, index) => (
                 <div key={item.label}>

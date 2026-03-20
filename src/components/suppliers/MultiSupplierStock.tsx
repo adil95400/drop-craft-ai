@@ -135,21 +135,21 @@ export function MultiSupplierStock() {
     switch (status) {
       case 'in_stock':
         return (
-          <Badge className="bg-green-100 text-success">
+          <Badge className="bg-success/10 text-success">
             <CheckCircle className="h-3 w-3 mr-1" />
             En stock
           </Badge>
         )
       case 'low_stock':
         return (
-          <Badge className="bg-yellow-100 text-yellow-800">
+          <Badge className="bg-warning/10 text-yellow-800">
             <AlertTriangle className="h-3 w-3 mr-1" />
             Stock faible
           </Badge>
         )
       case 'out_of_stock':
         return (
-          <Badge className="bg-red-100 text-red-800">
+          <Badge className="bg-destructive/10 text-red-800">
             <Minus className="h-3 w-3 mr-1" />
             Rupture
           </Badge>
@@ -226,19 +226,19 @@ export function MultiSupplierStock() {
 
         {/* Stats */}
         <div className="grid grid-cols-3 gap-4">
-          <div className="p-4 rounded-lg border bg-green-50 dark:bg-green-950/20">
+          <div className="p-4 rounded-lg border bg-success/5 dark:bg-green-950/20">
             <p className="text-sm text-muted-foreground">En stock</p>
             <p className="text-2xl font-bold text-success">
               {stockMappings.filter(m => m.status === 'in_stock').length}
             </p>
           </div>
-          <div className="p-4 rounded-lg border bg-yellow-50 dark:bg-yellow-950/20">
+          <div className="p-4 rounded-lg border bg-warning/5 dark:bg-yellow-950/20">
             <p className="text-sm text-muted-foreground">Stock faible</p>
             <p className="text-2xl font-bold text-warning">
               {stockMappings.filter(m => m.status === 'low_stock').length}
             </p>
           </div>
-          <div className="p-4 rounded-lg border bg-red-50 dark:bg-red-950/20">
+          <div className="p-4 rounded-lg border bg-destructive/5 dark:bg-red-950/20">
             <p className="text-sm text-muted-foreground">Rupture</p>
             <p className="text-2xl font-bold text-destructive">
               {stockMappings.filter(m => m.status === 'out_of_stock').length}

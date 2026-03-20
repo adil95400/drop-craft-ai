@@ -80,7 +80,7 @@ export function QuickFilters({ onSelectFilter, activeFilter }: QuickFiltersProps
             >
               {filter.badge && (
                 <Badge 
-                  className="absolute -top-2 -right-2 text-[10px] px-1.5 py-0.5 bg-red-500 text-white border-0"
+                  className="absolute -top-2 -right-2 text-[10px] px-1.5 py-0.5 bg-destructive text-white border-0"
                 >
                   {filter.badge}
                 </Badge>

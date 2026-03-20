@@ -274,7 +274,7 @@ export function EmailTemplatesManager() {
                         {getCategoryLabel(template.category)}
                       </Badge>
                       {template.is_active ? (
-                        <Badge className="bg-green-500/10 text-success text-xs">
+                        <Badge className="bg-success/10 text-success text-xs">
                           <CheckCircle2 className="h-3 w-3 mr-1" />
                           Actif
                         </Badge>

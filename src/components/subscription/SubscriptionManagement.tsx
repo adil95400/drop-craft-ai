@@ -231,7 +231,7 @@ export const SubscriptionManagement: React.FC = () => {
                 <CardDescription>Optimisez votre utilisation</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="flex items-start gap-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                <div className="flex items-start gap-3 p-3 bg-info/5 border border-blue-200 rounded-lg">
                   <CheckCircle2 className="w-5 h-5 text-info mt-0.5" />
                   <div>
                     <p className="text-sm font-medium text-blue-800">Optimisation IA disponible</p>

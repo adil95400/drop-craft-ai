@@ -331,9 +331,9 @@ export function VariantAttributeDetector() {
 
   const getConfidenceBadge = (confidence: number) => {
     if (confidence >= 0.9) {
-      return <Badge className="bg-green-500/10 text-success">Haute</Badge>;
+      return <Badge className="bg-success/10 text-success">Haute</Badge>;
     } else if (confidence >= 0.7) {
-      return <Badge className="bg-yellow-500/10 text-warning">Moyenne</Badge>;
+      return <Badge className="bg-warning/10 text-warning">Moyenne</Badge>;
     }
     return <Badge className="bg-gray-500/10 text-gray-600">Faible</Badge>;
   };

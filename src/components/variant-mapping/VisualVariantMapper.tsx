@@ -77,7 +77,7 @@ function DraggableVariant({ item, side, isMapped }: { item: VariantItem; side: '
         "hover:border-primary/50 hover:shadow-sm",
         isDragging && "opacity-50 scale-95 border-dashed border-primary",
         isMapped
-          ? "bg-green-500/5 border-green-500/30 dark:bg-green-500/10"
+          ? "bg-success/5 border-green-500/30 dark:bg-success/10"
           : "bg-card border-border",
         side === 'source' && "cursor-grab active:cursor-grabbing"
       )}

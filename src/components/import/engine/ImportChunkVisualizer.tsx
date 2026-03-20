@@ -98,7 +98,7 @@ export function ImportChunkVisualizer({ activeImports, className }: ImportChunkV
   const statusColors = {
     queued: 'bg-muted text-muted-foreground border-border',
     processing: 'bg-primary/10 text-primary border-primary/30',
-    completed: 'bg-emerald-500/10 text-success border-emerald-500/30',
+    completed: 'bg-success/10 text-success border-emerald-500/30',
     failed: 'bg-destructive/10 text-destructive border-destructive/30',
   }
 

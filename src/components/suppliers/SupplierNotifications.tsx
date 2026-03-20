@@ -162,9 +162,9 @@ export function SupplierNotifications() {
       case 'error':
         return <Badge variant="destructive">Critique</Badge>;
       case 'warning':
-        return <Badge variant="default" className="bg-orange-500">Avertissement</Badge>;
+        return <Badge variant="default" className="bg-warning">Avertissement</Badge>;
       case 'success':
-        return <Badge variant="default" className="bg-green-500">Succès</Badge>;
+        return <Badge variant="default" className="bg-success">Succès</Badge>;
       default:
         return <Badge variant="outline">Info</Badge>;
     }

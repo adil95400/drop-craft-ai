@@ -240,10 +240,10 @@ function StatCard({
   color: 'blue' | 'red' | 'orange' | 'green'
 }) {
   const colors = {
-    blue: 'bg-blue-100 text-info dark:bg-blue-900/30 dark:text-blue-400',
-    red: 'bg-red-100 text-destructive dark:bg-red-900/30 dark:text-red-400',
+    blue: 'bg-info/10 text-info dark:bg-blue-900/30 dark:text-blue-400',
+    red: 'bg-destructive/10 text-destructive dark:bg-red-900/30 dark:text-red-400',
     orange: 'bg-orange-100 text-warning dark:bg-orange-900/30 dark:text-orange-400',
-    green: 'bg-green-100 text-success dark:bg-green-900/30 dark:text-green-400',
+    green: 'bg-success/10 text-success dark:bg-green-900/30 dark:text-green-400',
   }
 
   return (

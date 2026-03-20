@@ -76,7 +76,7 @@ const smartPlanConfigs: Record<PlanType, SmartPlanConfig> = {
     originalPrice: '39€',
     icon: Star,
     color: 'text-info',
-    bgColor: 'bg-blue-50',
+    bgColor: 'bg-info/5',
     borderColor: 'border-blue-200',
     description: 'Idéal pour les professionnels',
     popular: true,
@@ -203,7 +203,7 @@ export const SmartPlanSelector = () => {
               {/* Badges */}
               <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 flex gap-2">
                 {config.popular && (
-                  <Badge className="bg-blue-600 text-white shadow-md">
+                  <Badge className="bg-info text-white shadow-md">
                     <Star className="h-3 w-3 mr-1" />
                     Plus populaire
                   </Badge>

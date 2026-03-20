@@ -343,7 +343,7 @@ function TemplateCard({ template, onSelect, isPopular }: TemplateCardProps) {
             </h4>
           </div>
           {isPopular && (
-            <Badge className="shrink-0 bg-yellow-500/10 text-warning border-yellow-500/20 text-[10px]">
+            <Badge className="shrink-0 bg-warning/10 text-warning border-yellow-500/20 text-[10px]">
               <Zap className="h-2.5 w-2.5 mr-0.5" />
               Populaire
             </Badge>

@@ -64,8 +64,8 @@ export function StockPredictions({ productId, warehouseId, currentStock }: Stock
 
   const getRiskBadge = (risk: string) => {
     const variants: Record<string, any> = {
-      low: { variant: 'default', className: 'bg-green-500' },
-      medium: { variant: 'secondary', className: 'bg-yellow-500' },
+      low: { variant: 'default', className: 'bg-success' },
+      medium: { variant: 'secondary', className: 'bg-warning' },
       high: { variant: 'destructive', className: '' }
     };
     return variants[risk] || variants.low;

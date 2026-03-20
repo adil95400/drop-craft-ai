@@ -224,9 +224,9 @@ export function VariantStockSync() {
   const getStatusBadge = (status: SyncLog['status']) => {
     switch (status) {
       case 'success':
-        return <Badge className="bg-green-500/10 text-success"><Check className="h-3 w-3 mr-1" />Succès</Badge>;
+        return <Badge className="bg-success/10 text-success"><Check className="h-3 w-3 mr-1" />Succès</Badge>;
       case 'failed':
-        return <Badge className="bg-red-500/10 text-destructive"><X className="h-3 w-3 mr-1" />Échec</Badge>;
+        return <Badge className="bg-destructive/10 text-destructive"><X className="h-3 w-3 mr-1" />Échec</Badge>;
       case 'skipped':
         return <Badge variant="secondary"><Minus className="h-3 w-3 mr-1" />Ignoré</Badge>;
     }
@@ -252,11 +252,11 @@ export function VariantStockSync() {
               <p className="text-2xl font-bold">{autoSyncMappings.length}</p>
               <p className="text-sm text-muted-foreground">Mappings Auto-sync</p>
             </div>
-            <div className="p-4 bg-green-50 dark:bg-green-950/20 rounded-lg text-center">
+            <div className="p-4 bg-success/5 dark:bg-green-950/20 rounded-lg text-center">
               <p className="text-2xl font-bold text-success">{syncStats.successCount}</p>
               <p className="text-sm text-muted-foreground">Succès</p>
             </div>
-            <div className="p-4 bg-red-50 dark:bg-red-950/20 rounded-lg text-center">
+            <div className="p-4 bg-destructive/5 dark:bg-red-950/20 rounded-lg text-center">
               <p className="text-2xl font-bold text-destructive">{syncStats.failedCount}</p>
               <p className="text-sm text-muted-foreground">Échecs</p>
             </div>

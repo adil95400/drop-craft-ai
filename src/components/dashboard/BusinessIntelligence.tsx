@@ -138,9 +138,9 @@ export function BusinessIntelligence() {
   const getImpactColor = (impact: BusinessInsight['impact']) => {
     switch (impact) {
       case 'low': return 'bg-gray-500'
-      case 'medium': return 'bg-yellow-500'
-      case 'high': return 'bg-orange-500'
-      case 'critical': return 'bg-red-500'
+      case 'medium': return 'bg-warning'
+      case 'high': return 'bg-warning'
+      case 'critical': return 'bg-destructive'
       default: return 'bg-gray-500'
     }
   }
@@ -335,7 +335,7 @@ export function BusinessIntelligence() {
                 <div className="flex items-center justify-between mb-3">
                   <h4 className="font-semibold text-sm">{trend.category}</h4>
                   <Badge 
-                    className={`${trend.growth > 0 ? 'bg-green-500' : 'bg-red-500'} text-white text-xs`}
+                    className={`${trend.growth > 0 ? 'bg-success' : 'bg-destructive'} text-white text-xs`}
                   >
                     {trend.growth > 0 ? '+' : ''}{trend.growth}%
                   </Badge>

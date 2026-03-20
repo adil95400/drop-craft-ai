@@ -35,17 +35,17 @@ const colorClasses = {
   green: {
     gradient: 'from-emerald-500/20 to-emerald-500/5',
     text: 'text-success dark:text-emerald-400',
-    bg: 'bg-emerald-500/10',
+    bg: 'bg-success/10',
   },
   orange: {
     gradient: 'from-amber-500/20 to-amber-500/5',
     text: 'text-warning dark:text-amber-400',
-    bg: 'bg-amber-500/10',
+    bg: 'bg-warning/10',
   },
   blue: {
     gradient: 'from-blue-500/20 to-blue-500/5',
     text: 'text-info dark:text-blue-400',
-    bg: 'bg-blue-500/10',
+    bg: 'bg-info/10',
   },
   purple: {
     gradient: 'from-purple-500/20 to-purple-500/5',

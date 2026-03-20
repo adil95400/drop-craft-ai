@@ -20,10 +20,10 @@ export function AuditScoreGauge({
   label 
 }: AuditScoreGaugeProps) {
   const getScoreColor = (s: number) => {
-    if (s >= 80) return { stroke: 'hsl(var(--chart-2))', text: 'text-success', bg: 'bg-green-50' };
-    if (s >= 60) return { stroke: 'hsl(var(--chart-4))', text: 'text-warning', bg: 'bg-yellow-50' };
+    if (s >= 80) return { stroke: 'hsl(var(--chart-2))', text: 'text-success', bg: 'bg-success/5' };
+    if (s >= 60) return { stroke: 'hsl(var(--chart-4))', text: 'text-warning', bg: 'bg-warning/5' };
     if (s >= 40) return { stroke: 'hsl(var(--chart-5))', text: 'text-warning', bg: 'bg-orange-50' };
-    return { stroke: 'hsl(var(--destructive))', text: 'text-destructive', bg: 'bg-red-50' };
+    return { stroke: 'hsl(var(--destructive))', text: 'text-destructive', bg: 'bg-destructive/5' };
   };
 
   const sizeConfig = {

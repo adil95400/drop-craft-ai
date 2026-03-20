@@ -133,7 +133,7 @@ export function ProductsList() {
     }
     
     return product.status === 'active' ? (
-      <Badge variant="secondary" className="bg-green-100 text-success">En stock</Badge>
+      <Badge variant="secondary" className="bg-success/10 text-success">En stock</Badge>
     ) : (
       <Badge variant="secondary">Inactif</Badge>
     )
@@ -147,9 +147,9 @@ export function ProductsList() {
     if (margin < 10) {
       return <Badge variant="destructive">{margin.toFixed(1)}%</Badge>
     } else if (margin < 30) {
-      return <Badge variant="secondary" className="bg-yellow-100 text-yellow-800">{margin.toFixed(1)}%</Badge>
+      return <Badge variant="secondary" className="bg-warning/10 text-yellow-800">{margin.toFixed(1)}%</Badge>
     } else {
-      return <Badge variant="secondary" className="bg-green-100 text-success">{margin.toFixed(1)}%</Badge>
+      return <Badge variant="secondary" className="bg-success/10 text-success">{margin.toFixed(1)}%</Badge>
     }
   }
 

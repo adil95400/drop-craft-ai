@@ -80,7 +80,7 @@ export default function PublicApiDashboard() {
             <Badge variant="outline" className="px-3 py-1.5">
               <Layers className="h-3 w-3 mr-1" /> v1.0
             </Badge>
-            <Badge className="px-3 py-1.5 bg-emerald-500/15 text-emerald-700 border-emerald-500/30">
+            <Badge className="px-3 py-1.5 bg-success/15 text-emerald-700 border-emerald-500/30">
               <Shield className="h-3 w-3 mr-1" /> Stable
             </Badge>
           </div>
@@ -92,7 +92,7 @@ export default function PublicApiDashboard() {
             <CardContent className="pt-5 pb-4">
               {usageLoading ? <Skeleton className="h-14 w-full" /> : (
                 <div className="flex items-start gap-3">
-                  <div className="p-2 rounded-lg bg-blue-500/10"><Zap className="h-5 w-5 text-info" /></div>
+                  <div className="p-2 rounded-lg bg-info/10"><Zap className="h-5 w-5 text-info" /></div>
                   <div>
                     <p className="text-sm text-muted-foreground">Requêtes aujourd'hui</p>
                     <p className="text-2xl font-bold">{usage?.today?.total_requests ?? 0}</p>
@@ -104,7 +104,7 @@ export default function PublicApiDashboard() {
           <Card>
             <CardContent className="pt-5 pb-4">
               <div className="flex items-start gap-3">
-                <div className="p-2 rounded-lg bg-amber-500/10"><Key className="h-5 w-5 text-warning" /></div>
+                <div className="p-2 rounded-lg bg-warning/10"><Key className="h-5 w-5 text-warning" /></div>
                 <div>
                   <p className="text-sm text-muted-foreground">Clés API actives</p>
                   <p className="text-2xl font-bold">{usage?.api_keys?.filter((k: any) => k.is_active).length ?? 0}</p>
@@ -144,7 +144,7 @@ export default function PublicApiDashboard() {
                 <div className="space-y-2">
                   {ENDPOINTS.map((ep) => (
                     <div key={ep.action} className="flex items-center gap-4 py-3 px-4 rounded-lg bg-muted/50 hover:bg-muted transition-colors">
-                      <Badge variant="outline" className="font-mono text-xs shrink-0 bg-blue-500/10 text-blue-700">{ep.method}</Badge>
+                      <Badge variant="outline" className="font-mono text-xs shrink-0 bg-info/10 text-blue-700">{ep.method}</Badge>
                       <code className="font-mono text-sm font-medium flex-1">{ep.action}</code>
                       <span className="text-sm text-muted-foreground hidden md:block">{ep.description}</span>
                       <span className="text-xs text-muted-foreground hidden lg:block font-mono">{ep.params}</span>

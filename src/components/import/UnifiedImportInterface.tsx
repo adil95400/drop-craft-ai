@@ -52,10 +52,10 @@ export function UnifiedImportInterface() {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'completed': return 'bg-green-100 text-success'
-      case 'processing': return 'bg-blue-100 text-blue-800'
-      case 'failed': return 'bg-red-100 text-red-800'
-      case 'partial': return 'bg-yellow-100 text-yellow-800'
+      case 'completed': return 'bg-success/10 text-success'
+      case 'processing': return 'bg-info/10 text-blue-800'
+      case 'failed': return 'bg-destructive/10 text-red-800'
+      case 'partial': return 'bg-warning/10 text-yellow-800'
       default: return 'bg-gray-100 text-gray-800'
     }
   }

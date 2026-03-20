@@ -149,11 +149,11 @@ export const QuickSetup = () => {
   const getDifficultyBadge = (difficulty: string) => {
     switch (difficulty) {
       case 'Facile':
-        return <Badge className="bg-green-100 text-success">Facile</Badge>
+        return <Badge className="bg-success/10 text-success">Facile</Badge>
       case 'Moyen':
-        return <Badge className="bg-yellow-100 text-yellow-800">Moyen</Badge>
+        return <Badge className="bg-warning/10 text-yellow-800">Moyen</Badge>
       case 'Avancé':
-        return <Badge className="bg-red-100 text-red-800">Avancé</Badge>
+        return <Badge className="bg-destructive/10 text-red-800">Avancé</Badge>
       default:
         return <Badge variant="outline">{difficulty}</Badge>
     }

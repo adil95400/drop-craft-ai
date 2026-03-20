@@ -20,12 +20,12 @@ interface ResourceEntry {
 }
 
 const TYPE_COLORS: Record<string, string> = {
-  script: 'bg-yellow-500',
+  script: 'bg-warning',
   css: 'bg-purple-500',
-  img: 'bg-green-500',
-  font: 'bg-blue-500',
-  fetch: 'bg-orange-500',
-  xmlhttprequest: 'bg-orange-500',
+  img: 'bg-success',
+  font: 'bg-info',
+  fetch: 'bg-warning',
+  xmlhttprequest: 'bg-warning',
   other: 'bg-muted-foreground',
 };
 

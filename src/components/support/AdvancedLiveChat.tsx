@@ -236,7 +236,7 @@ export function AdvancedLiveChat({ isOpen: externalIsOpen, onClose: externalOnCl
               <div className="h-10 w-10 rounded-full bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center">
                 <Bot className="h-6 w-6 text-white" />
               </div>
-              <div className="absolute -bottom-1 -right-1 w-3.5 h-3.5 bg-emerald-500 rounded-full border-2 border-white animate-pulse" />
+              <div className="absolute -bottom-1 -right-1 w-3.5 h-3.5 bg-success rounded-full border-2 border-white animate-pulse" />
             </div>
             <div>
               <h3 className="font-semibold flex items-center gap-2">

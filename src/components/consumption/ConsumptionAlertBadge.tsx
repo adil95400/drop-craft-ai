@@ -20,7 +20,7 @@ import { cn } from '@/lib/utils';
 const ALERT_STYLES = {
   warning_10: {
     icon: AlertTriangle,
-    bgColor: 'bg-yellow-50 dark:bg-yellow-950/30',
+    bgColor: 'bg-warning/5 dark:bg-yellow-950/30',
     textColor: 'text-yellow-700 dark:text-yellow-400',
     borderColor: 'border-yellow-200 dark:border-yellow-800'
   },
@@ -32,13 +32,13 @@ const ALERT_STYLES = {
   },
   exhausted: {
     icon: XCircle,
-    bgColor: 'bg-red-50 dark:bg-red-950/30',
+    bgColor: 'bg-destructive/5 dark:bg-red-950/30',
     textColor: 'text-red-700 dark:text-red-400',
     borderColor: 'border-red-200 dark:border-red-800'
   },
   reset: {
     icon: CheckCircle,
-    bgColor: 'bg-green-50 dark:bg-green-950/30',
+    bgColor: 'bg-success/5 dark:bg-green-950/30',
     textColor: 'text-success dark:text-green-400',
     borderColor: 'border-green-200 dark:border-green-800'
   }

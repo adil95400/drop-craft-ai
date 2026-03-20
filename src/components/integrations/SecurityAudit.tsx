@@ -269,9 +269,9 @@ export const SecurityAudit = () => {
 
   const getSeverityBadge = (severity: string) => {
     const variants = {
-      high: 'bg-red-100 text-red-800 border-red-200',
-      medium: 'bg-yellow-100 text-yellow-800 border-yellow-200',
-      low: 'bg-green-100 text-success border-green-200'
+      high: 'bg-destructive/10 text-red-800 border-red-200',
+      medium: 'bg-warning/10 text-yellow-800 border-yellow-200',
+      low: 'bg-success/10 text-success border-green-200'
     }
     
     return (
@@ -419,7 +419,7 @@ export const SecurityAudit = () => {
                   <p className="mb-3">{result.description}</p>
                   
                   {result.recommendation && (
-                    <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                    <div className="p-3 bg-warning/5 border border-yellow-200 rounded-lg">
                       <p className="text-sm">
                         <strong>Recommandation :</strong> {result.recommendation}
                       </p>
@@ -447,8 +447,8 @@ export const SecurityAudit = () => {
                     <DialogTrigger asChild>
                       <div className="flex items-center gap-3 p-3 rounded-lg hover:bg-muted/50 cursor-pointer transition-colors">
                         <div className={`w-2 h-2 rounded-full ${
-                          event.severity === 'error' ? 'bg-red-500' :
-                          event.severity === 'warning' ? 'bg-yellow-500' : 'bg-blue-500'
+                          event.severity === 'error' ? 'bg-destructive' :
+                          event.severity === 'warning' ? 'bg-warning' : 'bg-info'
                         }`} />
                         
                         <div className="flex-1 min-w-0">

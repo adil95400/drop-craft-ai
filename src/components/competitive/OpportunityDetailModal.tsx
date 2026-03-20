@@ -57,7 +57,7 @@ export function OpportunityDetailModal({ opportunity, open, onOpenChange }: Oppo
             <Card>
               <CardContent className="pt-6">
                 <div className="flex items-center gap-3">
-                  <div className="p-3 bg-green-100 dark:bg-green-900/20 rounded-lg">
+                  <div className="p-3 bg-success/10 dark:bg-green-900/20 rounded-lg">
                     <DollarSign className="w-6 h-6 text-success" />
                   </div>
                   <div>
@@ -73,7 +73,7 @@ export function OpportunityDetailModal({ opportunity, open, onOpenChange }: Oppo
             <Card>
               <CardContent className="pt-6">
                 <div className="flex items-center gap-3">
-                  <div className="p-3 bg-blue-100 dark:bg-blue-900/20 rounded-lg">
+                  <div className="p-3 bg-info/10 dark:bg-blue-900/20 rounded-lg">
                     <Users className="w-6 h-6 text-info" />
                   </div>
                   <div>

@@ -83,7 +83,7 @@ const PLATFORM_CONFIG: Record<string, {
     name: 'Shopify', 
     icon: '🛍️', 
     gradient: 'from-green-500 to-emerald-600',
-    bgClass: 'bg-green-500/10 border-green-500/20',
+    bgClass: 'bg-success/10 border-green-500/20',
     textClass: 'text-success dark:text-green-400'
   },
   woocommerce: { 
@@ -104,14 +104,14 @@ const PLATFORM_CONFIG: Record<string, {
     name: 'Magento', 
     icon: '🧱', 
     gradient: 'from-orange-500 to-amber-600',
-    bgClass: 'bg-orange-500/10 border-orange-500/20',
+    bgClass: 'bg-warning/10 border-orange-500/20',
     textClass: 'text-warning dark:text-orange-400'
   },
   wix: { 
     name: 'Wix', 
     icon: '🌐', 
     gradient: 'from-blue-500 to-cyan-600',
-    bgClass: 'bg-blue-500/10 border-blue-500/20',
+    bgClass: 'bg-info/10 border-blue-500/20',
     textClass: 'text-info dark:text-blue-400'
   },
   bigcommerce: { 
@@ -132,21 +132,21 @@ const PLATFORM_CONFIG: Record<string, {
     name: 'Amazon', 
     icon: '📦', 
     gradient: 'from-amber-500 to-yellow-600',
-    bgClass: 'bg-amber-500/10 border-amber-500/20',
+    bgClass: 'bg-warning/10 border-amber-500/20',
     textClass: 'text-warning dark:text-amber-400'
   },
   ebay: { 
     name: 'eBay', 
     icon: '🏷️', 
     gradient: 'from-yellow-500 to-orange-500',
-    bgClass: 'bg-yellow-500/10 border-yellow-500/20',
+    bgClass: 'bg-warning/10 border-yellow-500/20',
     textClass: 'text-warning dark:text-warning'
   },
   etsy: { 
     name: 'Etsy', 
     icon: '🧶', 
     gradient: 'from-orange-500 to-red-500',
-    bgClass: 'bg-orange-500/10 border-orange-500/20',
+    bgClass: 'bg-warning/10 border-orange-500/20',
     textClass: 'text-warning dark:text-orange-400'
   },
 }
@@ -605,7 +605,7 @@ export function PlatformExportDialog({
                     transition={{ delay: idx * 0.02 }}
                     className={cn(
                       "flex items-center gap-3 p-2.5 rounded-lg text-sm",
-                      log.status === 'success' && "bg-green-500/10",
+                      log.status === 'success' && "bg-success/10",
                       log.status === 'error' && "bg-destructive/10",
                       log.status === 'pending' && "bg-muted/50"
                     )}
@@ -659,7 +659,7 @@ export function PlatformExportDialog({
                   transition={{ type: "spring", stiffness: 300, damping: 20, delay: 0.1 }}
                   className={cn(
                     "mx-auto w-16 h-16 rounded-full flex items-center justify-center mb-4",
-                    result.success ? "bg-green-500" : "bg-destructive"
+                    result.success ? "bg-success" : "bg-destructive"
                   )}
                 >
                   {result.success ? (
@@ -709,7 +709,7 @@ export function PlatformExportDialog({
                     transition={{ delay: idx * 0.03 }}
                     className={cn(
                       "flex items-center gap-3 p-2.5 rounded-lg text-sm",
-                      log.status === 'success' && "bg-green-500/5",
+                      log.status === 'success' && "bg-success/5",
                       log.status === 'error' && "bg-destructive/5"
                     )}
                   >

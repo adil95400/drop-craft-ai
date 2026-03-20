@@ -81,11 +81,11 @@ const PRODUCT_FIELDS = [
 
 const CHANNELS: { value: RuleChannel; label: string; color: string }[] = [
   { value: 'global', label: 'Global', color: 'bg-slate-500' },
-  { value: 'google', label: 'Google Shopping', color: 'bg-blue-500' },
+  { value: 'google', label: 'Google Shopping', color: 'bg-info' },
   { value: 'meta', label: 'Meta/Facebook', color: 'bg-indigo-500' },
   { value: 'tiktok', label: 'TikTok', color: 'bg-pink-500' },
-  { value: 'amazon', label: 'Amazon', color: 'bg-orange-500' },
-  { value: 'shopify', label: 'Shopify', color: 'bg-green-500' },
+  { value: 'amazon', label: 'Amazon', color: 'bg-warning' },
+  { value: 'shopify', label: 'Shopify', color: 'bg-success' },
 ]
 
 // Fallback products for preview when no real data available
@@ -286,7 +286,7 @@ export function RuleBuilder({ rule, open, onOpenChange, onSave }: RuleBuilderPro
               <DialogTitle className="flex items-center gap-2 text-xl">
                 {rule ? 'Éditer la règle' : 'Nouvelle règle'}
                 {enabled && (
-                  <Badge className="bg-emerald-500 text-white">Active</Badge>
+                  <Badge className="bg-success text-white">Active</Badge>
                 )}
               </DialogTitle>
               {name && (
@@ -709,7 +709,7 @@ export function RuleBuilder({ rule, open, onOpenChange, onSave }: RuleBuilderPro
                             className={cn(
                               "transition-all",
                               matches 
-                                ? "border-emerald-500/50 bg-emerald-500/5" 
+                                ? "border-emerald-500/50 bg-success/5" 
                                 : "opacity-50"
                             )}
                           >

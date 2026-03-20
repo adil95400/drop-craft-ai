@@ -103,7 +103,7 @@ export const ImportStatsRealTime = ({ refreshInterval = 5000 }: ImportStatsRealT
             <div className="flex items-center gap-1 mt-2">
               {stats.activeJobs > 0 ? (
                 <>
-                  <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                  <div className="w-2 h-2 bg-success rounded-full animate-pulse"></div>
                   <span className="text-xs text-muted-foreground">En cours</span>
                 </>
               ) : (
@@ -189,10 +189,10 @@ export const ImportStatsRealTime = ({ refreshInterval = 5000 }: ImportStatsRealT
                   >
                     <div className="flex items-center gap-3">
                       <div className={`w-2 h-2 rounded-full ${
-                        job.status === 'completed' ? 'bg-green-500' :
-                        job.status === 'processing' ? 'bg-blue-500 animate-pulse' :
-                        job.status === 'failed' ? 'bg-red-500' :
-                        'bg-yellow-500'
+                        job.status === 'completed' ? 'bg-success' :
+                        job.status === 'processing' ? 'bg-info animate-pulse' :
+                        job.status === 'failed' ? 'bg-destructive' :
+                        'bg-warning'
                       }`}></div>
                       <div>
                         <div className="font-medium text-sm capitalize">{job.source_type || 'Import'}</div>
@@ -222,13 +222,13 @@ export const ImportStatsRealTime = ({ refreshInterval = 5000 }: ImportStatsRealT
         <CardContent className="p-4">
           <div className="flex items-center justify-center gap-4">
             <div className="flex items-center gap-2">
-              <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
+              <div className="w-3 h-3 bg-success rounded-full animate-pulse"></div>
               <span className="text-sm font-medium">Système optimal</span>
             </div>
             <div className="text-sm text-muted-foreground">
               Tous les services fonctionnent parfaitement
             </div>
-            <Badge className="bg-green-500 text-white">
+            <Badge className="bg-success text-white">
               99.9% Disponibilité
             </Badge>
           </div>

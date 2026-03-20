@@ -90,7 +90,7 @@ export const ReturnsManagementPanel: React.FC = () => {
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-2">
-              <div className="p-2 bg-yellow-500/10 rounded-lg">
+              <div className="p-2 bg-warning/10 rounded-lg">
                 <Clock className="w-4 h-4 text-warning" />
               </div>
               <div>
@@ -104,7 +104,7 @@ export const ReturnsManagementPanel: React.FC = () => {
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-2">
-              <div className="p-2 bg-green-500/10 rounded-lg">
+              <div className="p-2 bg-success/10 rounded-lg">
                 <CheckCircle className="w-4 h-4 text-success" />
               </div>
               <div>
@@ -118,7 +118,7 @@ export const ReturnsManagementPanel: React.FC = () => {
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-2">
-              <div className="p-2 bg-blue-500/10 rounded-lg">
+              <div className="p-2 bg-info/10 rounded-lg">
                 <Package className="w-4 h-4 text-info" />
               </div>
               <div>
@@ -146,7 +146,7 @@ export const ReturnsManagementPanel: React.FC = () => {
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-2">
-              <div className="p-2 bg-red-500/10 rounded-lg">
+              <div className="p-2 bg-destructive/10 rounded-lg">
                 <TrendingDown className="w-4 h-4 text-destructive" />
               </div>
               <div>
@@ -160,7 +160,7 @@ export const ReturnsManagementPanel: React.FC = () => {
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-2">
-              <div className="p-2 bg-emerald-500/10 rounded-lg">
+              <div className="p-2 bg-success/10 rounded-lg">
                 <Zap className="w-4 h-4 text-success" />
               </div>
               <div>

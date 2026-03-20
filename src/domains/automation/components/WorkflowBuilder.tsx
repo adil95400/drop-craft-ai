@@ -67,7 +67,7 @@ const TRIGGER_TEMPLATES: BlockTemplate[] = [
     name: 'Nouvelle commande', 
     description: 'Déclenche quand une commande arrive',
     icon: ShoppingCart, 
-    color: 'bg-blue-500',
+    color: 'bg-info',
     type: 'trigger',
     defaultConfig: { stores: ['all'] }
   },
@@ -76,7 +76,7 @@ const TRIGGER_TEMPLATES: BlockTemplate[] = [
     name: 'Stock faible', 
     description: 'Alerte quand stock < seuil',
     icon: AlertTriangle, 
-    color: 'bg-orange-500',
+    color: 'bg-warning',
     type: 'trigger',
     defaultConfig: { threshold: 10 }
   },
@@ -106,7 +106,7 @@ const CONDITION_TEMPLATES: BlockTemplate[] = [
     name: 'Si marge > X%', 
     description: 'Condition sur la marge',
     icon: Calculator, 
-    color: 'bg-yellow-500',
+    color: 'bg-warning',
     type: 'condition',
     defaultConfig: { operator: '>', value: 20 }
   },
@@ -136,7 +136,7 @@ const ACTION_TEMPLATES: BlockTemplate[] = [
     name: 'Envoyer email', 
     description: 'Notification par email',
     icon: Mail, 
-    color: 'bg-green-500',
+    color: 'bg-success',
     type: 'action',
     defaultConfig: { template: 'default' }
   },
@@ -145,7 +145,7 @@ const ACTION_TEMPLATES: BlockTemplate[] = [
     name: 'Ajuster prix', 
     description: 'Modifie le prix automatiquement',
     icon: Calculator, 
-    color: 'bg-red-500',
+    color: 'bg-destructive',
     type: 'action',
     defaultConfig: { adjustment: -5, type: 'percent' }
   },

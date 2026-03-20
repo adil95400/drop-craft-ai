@@ -27,7 +27,7 @@ export function PricingAutomationHub() {
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-blue-100 dark:bg-blue-900 rounded-lg">
+              <div className="p-2 bg-info/10 dark:bg-blue-900 rounded-lg">
                 <DollarSign className="h-5 w-5 text-info dark:text-blue-400" />
               </div>
               <div>
@@ -45,7 +45,7 @@ export function PricingAutomationHub() {
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-green-100 dark:bg-green-900 rounded-lg">
+              <div className="p-2 bg-success/10 dark:bg-green-900 rounded-lg">
                 <TrendingUp className="h-5 w-5 text-success dark:text-green-400" />
               </div>
               <div>

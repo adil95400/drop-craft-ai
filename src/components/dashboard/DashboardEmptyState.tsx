@@ -45,7 +45,7 @@ function QuickAction({ icon: Icon, title, description, onClick, variant = 'secon
     >
       {badge && (
         <Badge 
-          className="absolute -top-2 -right-2 text-[10px] bg-amber-500/90 text-white border-0"
+          className="absolute -top-2 -right-2 text-[10px] bg-warning/90 text-white border-0"
         >
           {badge}
         </Badge>

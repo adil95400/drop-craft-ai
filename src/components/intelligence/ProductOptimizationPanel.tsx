@@ -349,7 +349,7 @@ export function ProductOptimizationPanel() {
                   <ul className="space-y-1">
                     {product.ai_recommendations.slice(0, 2).map((rec, index) => (
                       <li key={index} className="text-xs text-muted-foreground flex items-center gap-2">
-                        <div className="w-1.5 h-1.5 bg-blue-500 rounded-full flex-shrink-0" />
+                        <div className="w-1.5 h-1.5 bg-info rounded-full flex-shrink-0" />
                         {rec}
                       </li>
                     ))}
@@ -366,7 +366,7 @@ export function ProductOptimizationPanel() {
                     <ul className="space-y-1">
                       {product.risk_factors.map((risk, index) => (
                         <li key={index} className="text-xs text-destructive flex items-center gap-2">
-                          <div className="w-1.5 h-1.5 bg-red-500 rounded-full flex-shrink-0" />
+                          <div className="w-1.5 h-1.5 bg-destructive rounded-full flex-shrink-0" />
                           {risk}
                         </li>
                       ))}

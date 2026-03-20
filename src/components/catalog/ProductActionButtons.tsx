@@ -240,15 +240,15 @@ export const ProductActionButtons = ({
 
   const getStockBadge = () => {
     const stock = product.stock_quantity || 0;
-    if (stock > 50) return <Badge className="bg-green-500">Stock OK</Badge>;
-    if (stock > 10) return <Badge className="bg-orange-500">Stock limité</Badge>;
-    return <Badge className="bg-red-500">Stock faible</Badge>;
+    if (stock > 50) return <Badge className="bg-success">Stock OK</Badge>;
+    if (stock > 10) return <Badge className="bg-warning">Stock limité</Badge>;
+    return <Badge className="bg-destructive">Stock faible</Badge>;
   };
 
   const getProfitBadge = () => {
     const margin = product.profit_margin || 0;
-    if (margin > 50) return <Badge className="bg-green-500">+{margin}%</Badge>;
-    if (margin > 30) return <Badge className="bg-blue-500">+{margin}%</Badge>;
+    if (margin > 50) return <Badge className="bg-success">+{margin}%</Badge>;
+    if (margin > 30) return <Badge className="bg-info">+{margin}%</Badge>;
     return <Badge variant="outline">+{margin}%</Badge>;
   };
 

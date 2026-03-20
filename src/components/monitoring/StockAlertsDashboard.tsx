@@ -64,7 +64,7 @@ export function StockAlertsDashboard() {
             <div className="text-2xl font-bold">{stats.unresolved}</div>
           </CardContent>
         </Card>
-        <Card className="border-red-200 bg-red-50/50 dark:bg-red-950/20">
+        <Card className="border-red-200 bg-destructive/5/50 dark:bg-red-950/20">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Critiques</CardTitle>
             <AlertTriangle className="h-4 w-4 text-destructive" />
@@ -82,7 +82,7 @@ export function StockAlertsDashboard() {
             <div className="text-2xl font-bold text-warning">{stats.outOfStock}</div>
           </CardContent>
         </Card>
-        <Card className="border-yellow-200 bg-yellow-50/50 dark:bg-yellow-950/20">
+        <Card className="border-yellow-200 bg-warning/5/50 dark:bg-yellow-950/20">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Stock bas</CardTitle>
             <Package className="h-4 w-4 text-warning" />
@@ -171,10 +171,10 @@ function AlertCard({
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
             <div className={`h-10 w-10 rounded-full flex items-center justify-center ${
-              alert.severity === 'critical' ? 'bg-red-100 dark:bg-red-950' :
+              alert.severity === 'critical' ? 'bg-destructive/10 dark:bg-red-950' :
               alert.severity === 'high' ? 'bg-orange-100 dark:bg-orange-950' :
-              alert.severity === 'medium' ? 'bg-yellow-100 dark:bg-yellow-950' :
-              'bg-blue-100 dark:bg-blue-950'
+              alert.severity === 'medium' ? 'bg-warning/10 dark:bg-yellow-950' :
+              'bg-info/10 dark:bg-blue-950'
             }`}>
               <AlertTriangle className={`h-5 w-5 ${severityConfig.color}`} />
             </div>

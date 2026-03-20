@@ -121,7 +121,7 @@ export default function ExtensionAPIPage() {
             
             {generatedKey ? (
               <div className="space-y-4">
-                <div className="p-4 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200">
+                <div className="p-4 bg-success/5 dark:bg-green-900/20 rounded-lg border border-green-200">
                   <div className="flex items-center gap-2 mb-2">
                     <CheckCircle2 className="h-5 w-5 text-success" />
                     <span className="font-medium text-success dark:text-green-200">Clé générée avec succès</span>
@@ -130,7 +130,7 @@ export default function ExtensionAPIPage() {
                     {generatedKey}
                   </code>
                 </div>
-                <div className="flex items-center gap-2 p-3 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg border border-yellow-200">
+                <div className="flex items-center gap-2 p-3 bg-warning/5 dark:bg-yellow-900/20 rounded-lg border border-yellow-200">
                   <AlertCircle className="h-4 w-4 text-warning" />
                   <span className="text-sm text-yellow-800 dark:text-yellow-200">
                     Cette clé ne sera plus visible après fermeture de cette fenêtre
@@ -210,7 +210,7 @@ export default function ExtensionAPIPage() {
             </div>
           </CardContent>
         </Card>
-        <Card className="border-green-200 bg-green-50/50 dark:bg-green-900/10">
+        <Card className="border-green-200 bg-success/5/50 dark:bg-green-900/10">
           <CardContent className="pt-6">
             <p className="text-sm text-success">Clés Actives</p>
             <div className="text-3xl font-bold text-success">{stats.activeKeys}</div>
@@ -261,7 +261,7 @@ export default function ExtensionAPIPage() {
                         <div className="flex items-center gap-4">
                           <div className={cn(
                             'p-2 rounded-lg',
-                            key.is_active ? 'bg-green-100 dark:bg-green-900/30' : 'bg-gray-100 dark:bg-gray-800'
+                            key.is_active ? 'bg-success/10 dark:bg-green-900/30' : 'bg-gray-100 dark:bg-gray-800'
                           )}>
                             <Key className={cn('h-5 w-5', key.is_active ? 'text-success' : 'text-gray-400')} />
                           </div>

@@ -75,13 +75,13 @@ export function PerformanceMonitor({ store }: PerformanceMonitorProps) {
 
   const getStatusBadge = (value: number, thresholds: { good: number, warning: number }, reversed = false) => {
     if (reversed) {
-      if (value <= thresholds.good) return <Badge className="bg-green-100 text-success">Excellent</Badge>
-      if (value <= thresholds.warning) return <Badge className="bg-yellow-100 text-yellow-700">Correct</Badge>
-      return <Badge className="bg-red-100 text-red-700">Problème</Badge>
+      if (value <= thresholds.good) return <Badge className="bg-success/10 text-success">Excellent</Badge>
+      if (value <= thresholds.warning) return <Badge className="bg-warning/10 text-yellow-700">Correct</Badge>
+      return <Badge className="bg-destructive/10 text-red-700">Problème</Badge>
     } else {
-      if (value >= thresholds.good) return <Badge className="bg-green-100 text-success">Excellent</Badge>
-      if (value >= thresholds.warning) return <Badge className="bg-yellow-100 text-yellow-700">Correct</Badge>
-      return <Badge className="bg-red-100 text-red-700">Problème</Badge>
+      if (value >= thresholds.good) return <Badge className="bg-success/10 text-success">Excellent</Badge>
+      if (value >= thresholds.warning) return <Badge className="bg-warning/10 text-yellow-700">Correct</Badge>
+      return <Badge className="bg-destructive/10 text-red-700">Problème</Badge>
     }
   }
 
@@ -206,7 +206,7 @@ export function PerformanceMonitor({ store }: PerformanceMonitorProps) {
         {/* Alertes de performance */}
         <div className="space-y-2">
           {metrics.apiLatency > 200 && (
-            <div className="flex items-center gap-2 p-2 rounded-lg bg-yellow-50 border border-yellow-200">
+            <div className="flex items-center gap-2 p-2 rounded-lg bg-warning/5 border border-yellow-200">
               <AlertTriangle className="w-4 h-4 text-warning" />
               <span className="text-sm text-yellow-800">
                 Latence API élevée détectée
@@ -215,7 +215,7 @@ export function PerformanceMonitor({ store }: PerformanceMonitorProps) {
           )}
 
           {metrics.errorRate > 2 && (
-            <div className="flex items-center gap-2 p-2 rounded-lg bg-red-50 border border-red-200">
+            <div className="flex items-center gap-2 p-2 rounded-lg bg-destructive/5 border border-red-200">
               <AlertTriangle className="w-4 h-4 text-destructive" />
               <span className="text-sm text-red-800">
                 Taux d'erreur élevé - Vérifiez la configuration
@@ -224,7 +224,7 @@ export function PerformanceMonitor({ store }: PerformanceMonitorProps) {
           )}
 
           {metrics.uptime < 98 && (
-            <div className="flex items-center gap-2 p-2 rounded-lg bg-red-50 border border-red-200">
+            <div className="flex items-center gap-2 p-2 rounded-lg bg-destructive/5 border border-red-200">
               <AlertTriangle className="w-4 h-4 text-destructive" />
               <span className="text-sm text-red-800">
                 Disponibilité dégradée - Contactez le support

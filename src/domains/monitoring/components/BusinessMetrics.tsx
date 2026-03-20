@@ -87,9 +87,9 @@ export function BusinessMetrics() {
   }
 
   const getStatusColor = (status: string) => {
-    if (status === 'healthy') return 'bg-green-100 text-success'
-    if (status === 'warning') return 'bg-yellow-100 text-yellow-800'
-    return 'bg-red-100 text-red-800'
+    if (status === 'healthy') return 'bg-success/10 text-success'
+    if (status === 'warning') return 'bg-warning/10 text-yellow-800'
+    return 'bg-destructive/10 text-red-800'
   }
 
   if (isLoading) return <div className="flex items-center justify-center h-64"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" /></div>
@@ -138,7 +138,7 @@ export function BusinessMetrics() {
             <div className="space-y-3">
               {alerts.filter((a: any) => !a.resolved).map((alert: any) => (
                 <div key={alert.id} className="flex items-center space-x-3 p-3 border rounded-lg">
-                  <div className="w-2 h-2 rounded-full bg-orange-500" />
+                  <div className="w-2 h-2 rounded-full bg-warning" />
                   <div className="flex-1">
                     <h4 className="font-medium">{alert.title}</h4>
                     <p className="text-sm text-muted-foreground">{alert.description}</p>

@@ -13,12 +13,12 @@ export function SalesPipeline() {
   }
 
   const stages = [
-    { key: 'prospecting', label: 'Prospection', color: 'bg-blue-500' },
+    { key: 'prospecting', label: 'Prospection', color: 'bg-info' },
     { key: 'qualification', label: 'Qualification', color: 'bg-purple-500' },
-    { key: 'proposal', label: 'Proposition', color: 'bg-yellow-500' },
-    { key: 'negotiation', label: 'Négociation', color: 'bg-orange-500' },
-    { key: 'closed_won', label: 'Gagné', color: 'bg-green-500' },
-    { key: 'closed_lost', label: 'Perdu', color: 'bg-red-500' },
+    { key: 'proposal', label: 'Proposition', color: 'bg-warning' },
+    { key: 'negotiation', label: 'Négociation', color: 'bg-warning' },
+    { key: 'closed_won', label: 'Gagné', color: 'bg-success' },
+    { key: 'closed_lost', label: 'Perdu', color: 'bg-destructive' },
   ];
 
   return (

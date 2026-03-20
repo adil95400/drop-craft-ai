@@ -218,7 +218,7 @@ const SupplierCatalogPage: React.FC = () => {
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform"
                         />
                         {product.discount && (
-                          <Badge className="absolute top-2 left-2 bg-red-500">
+                          <Badge className="absolute top-2 left-2 bg-destructive">
                             -{product.discount}%
                           </Badge>
                         )}

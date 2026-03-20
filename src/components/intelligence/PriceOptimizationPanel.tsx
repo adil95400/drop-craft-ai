@@ -137,14 +137,14 @@ function OptimizationCard({
   const marginDiff = optimization.suggested_margin_percent - optimization.original_margin_percent;
 
   return (
-    <div className={`border rounded-lg p-4 ${optimization.status === 'applied' ? 'bg-green-50/50 dark:bg-green-950/20' : 'hover:bg-muted/50'} transition-colors`}>
+    <div className={`border rounded-lg p-4 ${optimization.status === 'applied' ? 'bg-success/5/50 dark:bg-green-950/20' : 'hover:bg-muted/50'} transition-colors`}>
       <div className="flex items-start justify-between mb-3">
         <div>
           <h4 className="font-medium">{optimization.products?.title || 'Produit'}</h4>
           <p className="text-sm text-muted-foreground">SKU: {optimization.products?.sku || '-'}</p>
         </div>
         {optimization.status === 'applied' ? (
-          <Badge variant="secondary" className="bg-green-100 text-success">
+          <Badge variant="secondary" className="bg-success/10 text-success">
             <Check className="h-3 w-3 mr-1" />
             Appliqué
           </Badge>

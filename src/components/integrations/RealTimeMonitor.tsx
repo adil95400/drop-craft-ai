@@ -138,11 +138,11 @@ export const RealTimeMonitor = () => {
   const getHealthBadge = (health: SystemStatus['system_health']) => {
     switch (health) {
       case 'excellent':
-        return <Badge className="bg-green-100 text-success border-green-200">Excellent</Badge>
+        return <Badge className="bg-success/10 text-success border-green-200">Excellent</Badge>
       case 'good':
-        return <Badge className="bg-blue-100 text-blue-800 border-blue-200">Bon</Badge>
+        return <Badge className="bg-info/10 text-blue-800 border-blue-200">Bon</Badge>
       case 'warning':
-        return <Badge className="bg-yellow-100 text-yellow-800 border-yellow-200">Attention</Badge>
+        return <Badge className="bg-warning/10 text-yellow-800 border-yellow-200">Attention</Badge>
       case 'critical':
         return <Badge variant="destructive">Critique</Badge>
     }
@@ -257,7 +257,7 @@ export const RealTimeMonitor = () => {
               </CardDescription>
             </div>
             <div className="flex items-center gap-2">
-              <div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-green-500' : 'bg-red-500'} animate-pulse`} />
+              <div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-success' : 'bg-destructive'} animate-pulse`} />
               <span className="text-sm text-muted-foreground">
                 {isConnected ? 'Connecté' : 'Déconnecté'}
               </span>

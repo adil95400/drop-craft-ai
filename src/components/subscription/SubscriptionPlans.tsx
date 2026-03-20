@@ -85,7 +85,7 @@ export function SubscriptionPlans() {
             )}
             
             {isCurrent && (
-              <Badge className="absolute -top-3 right-4 bg-green-500">
+              <Badge className="absolute -top-3 right-4 bg-success">
                 Plan actuel
               </Badge>
             )}

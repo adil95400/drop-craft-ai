@@ -58,7 +58,7 @@ export function UsageCard({
 
   const getProgressColor = (percentage: number) => {
     if (percentage >= 90) return 'bg-destructive';
-    if (percentage >= 75) return 'bg-yellow-500';
+    if (percentage >= 75) return 'bg-warning';
     return 'bg-primary';
   };
 
@@ -78,7 +78,7 @@ export function UsageCard({
           <div className="flex items-center gap-2">
             <Badge variant="default" className="bg-primary">{planName}</Badge>
             {trialDaysLeft !== undefined && trialDaysLeft > 0 && (
-              <Badge variant="secondary" className="bg-yellow-500/10 text-warning border-yellow-500/20">
+              <Badge variant="secondary" className="bg-warning/10 text-warning border-yellow-500/20">
                 <Clock className="mr-1 h-3 w-3" />
                 {trialDaysLeft}j d'essai
               </Badge>

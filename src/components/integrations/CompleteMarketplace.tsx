@@ -509,7 +509,7 @@ export const CompleteMarketplace = () => {
   const getStatusBadge = (marketplace: any) => {
     if (marketplace.isConnected) {
       return (
-        <Badge className="bg-green-100 text-success border-green-200">
+        <Badge className="bg-success/10 text-success border-green-200">
           <CheckCircle className="w-3 h-3 mr-1" />
           Connecté
         </Badge>

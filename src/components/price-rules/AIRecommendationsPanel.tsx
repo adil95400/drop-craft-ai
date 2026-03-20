@@ -19,9 +19,9 @@ import {
 } from '@/hooks/pricing';
 
 const priorityConfig = {
-  high: { label: 'Haute', color: 'text-destructive bg-red-100', icon: AlertTriangle },
+  high: { label: 'Haute', color: 'text-destructive bg-destructive/10', icon: AlertTriangle },
   medium: { label: 'Moyenne', color: 'text-warning bg-amber-100', icon: Target },
-  low: { label: 'Basse', color: 'text-info bg-blue-100', icon: Zap },
+  low: { label: 'Basse', color: 'text-info bg-info/10', icon: Zap },
 };
 
 const ruleTypeIcons: Record<string, typeof TrendingUp> = {
@@ -53,7 +53,7 @@ export function AIRecommendationsPanel() {
 
   if (recommendations.length === 0) {
     return (
-      <Card className="border-green-200 bg-green-50/50">
+      <Card className="border-green-200 bg-success/5/50">
         <CardContent className="py-8 text-center">
           <Check className="h-10 w-10 mx-auto mb-3 text-success" />
           <h3 className="font-medium text-success mb-1">Catalogue optimisé</h3>

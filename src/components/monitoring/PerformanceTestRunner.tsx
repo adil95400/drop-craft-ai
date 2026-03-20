@@ -233,11 +233,11 @@ export function PerformanceTestRunner() {
         {tests.length > 0 && (
           <>
             <div className="flex gap-4 mb-4">
-              <Badge variant="outline" className="bg-green-500/10">
+              <Badge variant="outline" className="bg-success/10">
                 <CheckCircle className="h-3 w-3 mr-1" />
                 {passedCount} réussis
               </Badge>
-              <Badge variant="outline" className="bg-red-500/10">
+              <Badge variant="outline" className="bg-destructive/10">
                 <XCircle className="h-3 w-3 mr-1" />
                 {failedCount} échoués
               </Badge>

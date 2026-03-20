@@ -222,7 +222,7 @@ const TermsOfService = () => {
           </div>
 
           {/* Important Notice */}
-          <Card className="border-blue-200 bg-blue-50 dark:bg-blue-950/20 dark:border-blue-800">
+          <Card className="border-blue-200 bg-info/5 dark:bg-blue-950/20 dark:border-blue-800">
             <CardContent className="p-6">
               <div className="flex items-start gap-3">
                 <AlertTriangle className="h-5 w-5 text-info mt-0.5 flex-shrink-0" />

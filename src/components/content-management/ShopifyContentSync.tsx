@@ -277,7 +277,7 @@ export function ShopifyContentSync() {
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-blue-500/10 rounded-lg">
+              <div className="p-2 bg-info/10 rounded-lg">
                 <Package className="h-5 w-5 text-info" />
               </div>
               <div>
@@ -290,7 +290,7 @@ export function ShopifyContentSync() {
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-green-500/10 rounded-lg">
+              <div className="p-2 bg-success/10 rounded-lg">
                 <ShoppingCart className="h-5 w-5 text-success" />
               </div>
               <div>
@@ -734,7 +734,7 @@ export function ShopifyContentSync() {
                       <div key={i} className="flex items-center justify-between p-3 border rounded-lg">
                         <div className="flex items-center gap-3">
                           <div className={`w-2 h-2 rounded-full ${
-                            store.connection_status === 'connected' ? 'bg-green-500' : 'bg-yellow-500'
+                            store.connection_status === 'connected' ? 'bg-success' : 'bg-warning'
                           }`} />
                           <div>
                             <p className="font-medium text-sm">{store.platform_name}</p>

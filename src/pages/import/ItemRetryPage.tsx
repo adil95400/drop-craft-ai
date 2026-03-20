@@ -116,7 +116,7 @@ export default function ItemRetryPage() {
 
   const statusLabel = (status: string) => {
     switch (status) {
-      case 'success': return <Badge className="bg-green-500/10 text-success border-green-500/20">Succès</Badge>
+      case 'success': return <Badge className="bg-success/10 text-success border-green-500/20">Succès</Badge>
       case 'failed': return <Badge variant="destructive">Échoué</Badge>
       case 'retrying': return <Badge className="bg-primary/10 text-primary border-primary/20">En cours...</Badge>
       case 'skipped': return <Badge variant="outline">Ignoré</Badge>

@@ -104,8 +104,8 @@ export function ChannelAlertsPanel({
 
   const severityStyles: Record<string, string> = {
     critical: 'border-destructive/30 bg-destructive/5',
-    warning: 'border-amber-500/30 bg-amber-500/5',
-    info: 'border-blue-500/30 bg-blue-500/5',
+    warning: 'border-amber-500/30 bg-warning/5',
+    info: 'border-blue-500/30 bg-info/5',
   }
 
   const formatTime = (date: Date) => {

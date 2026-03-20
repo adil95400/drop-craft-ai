@@ -221,7 +221,7 @@ export default function ReviewsImportPage() {
                   <Star className="h-4 w-4 text-yellow-400 fill-yellow-400" />
                 </p>
               </div>
-              <div className="h-10 w-10 rounded-full bg-yellow-500/10 flex items-center justify-center">
+              <div className="h-10 w-10 rounded-full bg-warning/10 flex items-center justify-center">
                 <Star className="h-5 w-5 text-warning" />
               </div>
             </div>
@@ -235,7 +235,7 @@ export default function ReviewsImportPage() {
                 <p className="text-sm text-muted-foreground">Achats Vérifiés</p>
                 <p className="text-2xl font-bold">{stats.verified}</p>
               </div>
-              <div className="h-10 w-10 rounded-full bg-green-500/10 flex items-center justify-center">
+              <div className="h-10 w-10 rounded-full bg-success/10 flex items-center justify-center">
                 <CheckCircle className="h-5 w-5 text-success" />
               </div>
             </div>
@@ -249,7 +249,7 @@ export default function ReviewsImportPage() {
                 <p className="text-sm text-muted-foreground">Sources</p>
                 <p className="text-2xl font-bold">{stats.sources.length}</p>
               </div>
-              <div className="h-10 w-10 rounded-full bg-blue-500/10 flex items-center justify-center">
+              <div className="h-10 w-10 rounded-full bg-info/10 flex items-center justify-center">
                 <Globe className="h-5 w-5 text-info" />
               </div>
             </div>

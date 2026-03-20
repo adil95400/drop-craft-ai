@@ -70,11 +70,11 @@ interface FAQRow {
 // Helpers
 // ============================================
 const segmentColors: Record<string, string> = {
-  VIP: 'bg-amber-500/10 text-warning border-amber-500/30',
-  Active: 'bg-emerald-500/10 text-success border-emerald-500/30',
-  New: 'bg-blue-500/10 text-info border-blue-500/30',
+  VIP: 'bg-warning/10 text-warning border-amber-500/30',
+  Active: 'bg-success/10 text-success border-emerald-500/30',
+  New: 'bg-info/10 text-info border-blue-500/30',
   Repeat: 'bg-violet-500/10 text-violet-600 border-violet-500/30',
-  'At Risk': 'bg-red-500/10 text-destructive border-red-500/30',
+  'At Risk': 'bg-destructive/10 text-destructive border-red-500/30',
 };
 
 function getCustomerSegment(c: CustomerRow): string {
@@ -102,16 +102,16 @@ function getCustomerLoyalty(c: CustomerRow): string {
 }
 
 const priorityConfig: Record<string, { color: string; label: string }> = {
-  urgent: { color: 'bg-red-500/10 text-destructive border-red-500/30', label: 'Urgent' },
-  high: { color: 'bg-orange-500/10 text-warning border-orange-500/30', label: 'Haute' },
-  medium: { color: 'bg-yellow-500/10 text-warning border-yellow-500/30', label: 'Moyenne' },
-  low: { color: 'bg-green-500/10 text-success border-green-500/30', label: 'Basse' },
+  urgent: { color: 'bg-destructive/10 text-destructive border-red-500/30', label: 'Urgent' },
+  high: { color: 'bg-warning/10 text-warning border-orange-500/30', label: 'Haute' },
+  medium: { color: 'bg-warning/10 text-warning border-yellow-500/30', label: 'Moyenne' },
+  low: { color: 'bg-success/10 text-success border-green-500/30', label: 'Basse' },
 };
 
 const statusConfig: Record<string, { color: string; label: string; icon: typeof CheckCircle2 }> = {
-  open: { color: 'bg-blue-500/10 text-info', label: 'Ouvert', icon: Inbox },
-  in_progress: { color: 'bg-amber-500/10 text-warning', label: 'En cours', icon: RefreshCw },
-  resolved: { color: 'bg-green-500/10 text-success', label: 'Résolu', icon: CheckCircle2 },
+  open: { color: 'bg-info/10 text-info', label: 'Ouvert', icon: Inbox },
+  in_progress: { color: 'bg-warning/10 text-warning', label: 'En cours', icon: RefreshCw },
+  resolved: { color: 'bg-success/10 text-success', label: 'Résolu', icon: CheckCircle2 },
   closed: { color: 'bg-muted text-muted-foreground', label: 'Fermé', icon: Archive },
 };
 
@@ -579,11 +579,11 @@ function LifecycleFunnel() {
     const atRisk = customers.filter(c => (c.total_orders ?? 0) === 0).length;
 
     return [
-      { name: 'Nouveaux', count: newCount, percent: Math.round((newCount / total) * 100), color: 'bg-blue-500' },
-      { name: 'Actifs', count: active, percent: Math.round((active / total) * 100), color: 'bg-emerald-500' },
+      { name: 'Nouveaux', count: newCount, percent: Math.round((newCount / total) * 100), color: 'bg-info' },
+      { name: 'Actifs', count: active, percent: Math.round((active / total) * 100), color: 'bg-success' },
       { name: 'Récurrents', count: repeat, percent: Math.round((repeat / total) * 100), color: 'bg-violet-500' },
-      { name: 'VIP', count: vip, percent: Math.round((vip / total) * 100), color: 'bg-amber-500' },
-      { name: 'À risque', count: atRisk, percent: Math.round((atRisk / total) * 100), color: 'bg-red-500' },
+      { name: 'VIP', count: vip, percent: Math.round((vip / total) * 100), color: 'bg-warning' },
+      { name: 'À risque', count: atRisk, percent: Math.round((atRisk / total) * 100), color: 'bg-destructive' },
     ];
   }, [customers]);
 
@@ -655,8 +655,8 @@ export default function CRMServicePage() {
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <StatCard icon={Users} label="Clients actifs" value={customerCount.toLocaleString('fr-FR')} color="bg-primary/10 text-primary" isLoading={isLoading} />
-        <StatCard icon={MessageSquare} label="Tickets ouverts" value={openTickets.toString()} color="bg-amber-500/10 text-warning" isLoading={isLoading} />
-        <StatCard icon={Star} label="Satisfaction" value="—" color="bg-emerald-500/10 text-success" />
+        <StatCard icon={MessageSquare} label="Tickets ouverts" value={openTickets.toString()} color="bg-warning/10 text-warning" isLoading={isLoading} />
+        <StatCard icon={Star} label="Satisfaction" value="—" color="bg-success/10 text-success" />
         <StatCard icon={Zap} label="Temps de réponse" value="—" color="bg-violet-500/10 text-violet-600" />
       </div>
 

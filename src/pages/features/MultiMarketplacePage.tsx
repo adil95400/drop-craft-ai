@@ -11,12 +11,12 @@ export default function MultiMarketplacePage() {
   const navigate = useNavigate()
 
   const platforms = [
-    { name: 'Shopify', status: 'Disponible', color: 'bg-green-500' },
+    { name: 'Shopify', status: 'Disponible', color: 'bg-success' },
     { name: 'WooCommerce', status: 'Disponible', color: 'bg-purple-500' },
-    { name: 'PrestaShop', status: 'Disponible', color: 'bg-blue-500' },
-    { name: 'Magento', status: 'Disponible', color: 'bg-orange-500' },
-    { name: 'Amazon', status: 'Bientôt', color: 'bg-amber-500' },
-    { name: 'eBay', status: 'Bientôt', color: 'bg-red-500' }
+    { name: 'PrestaShop', status: 'Disponible', color: 'bg-info' },
+    { name: 'Magento', status: 'Disponible', color: 'bg-warning' },
+    { name: 'Amazon', status: 'Bientôt', color: 'bg-warning' },
+    { name: 'eBay', status: 'Bientôt', color: 'bg-destructive' }
   ]
 
   const features = [

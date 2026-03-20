@@ -39,9 +39,9 @@ export const WinnersSearchInterface = () => {
   ]
 
   const sources = [
-    { id: 'trends', name: 'Google Trends', color: 'bg-blue-500' },
-    { id: 'ebay', name: 'eBay', color: 'bg-yellow-500' },
-    { id: 'amazon', name: 'Amazon', color: 'bg-orange-500' }
+    { id: 'trends', name: 'Google Trends', color: 'bg-info' },
+    { id: 'ebay', name: 'eBay', color: 'bg-warning' },
+    { id: 'amazon', name: 'Amazon', color: 'bg-warning' }
   ]
 
   return (

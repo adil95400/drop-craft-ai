@@ -348,7 +348,7 @@ export const SmartDataProcessor = () => {
             <TabsContent value="rules" className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {processingRules.map(rule => (
-                  <Card key={rule.id} className={`border ${rule.enabled ? 'border-green-200 bg-green-50' : 'border-gray-200'}`}>
+                  <Card key={rule.id} className={`border ${rule.enabled ? 'border-green-200 bg-success/5' : 'border-gray-200'}`}>
                     <CardContent className="p-4">
                       <div className="flex items-start justify-between">
                         <div className="flex items-start gap-3">
@@ -395,7 +395,7 @@ export const SmartDataProcessor = () => {
                             <p className="text-sm text-gray-600">{issue.suggestion}</p>
                           </div>
                           {issue.autoFixable && (
-                            <Badge variant="outline" className="bg-blue-50 text-blue-700">
+                            <Badge variant="outline" className="bg-info/5 text-blue-700">
                               Auto-corrigible
                             </Badge>
                           )}

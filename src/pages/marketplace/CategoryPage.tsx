@@ -194,7 +194,7 @@ const CategoryPage: React.FC = () => {
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform"
                       />
                       {product.discount && (
-                        <Badge className="absolute top-2 left-2 bg-red-500">
+                        <Badge className="absolute top-2 left-2 bg-destructive">
                           -{product.discount}%
                         </Badge>
                       )}
@@ -244,7 +244,7 @@ const CategoryPage: React.FC = () => {
                         className="w-full h-full object-cover rounded"
                       />
                       {product.discount && (
-                        <Badge className="absolute -top-1 -right-1 bg-red-500 text-xs">
+                        <Badge className="absolute -top-1 -right-1 bg-destructive text-xs">
                           -{product.discount}%
                         </Badge>
                       )}

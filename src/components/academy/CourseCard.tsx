@@ -17,8 +17,8 @@ export function CourseCard({ course, showProgress }: CourseCardProps) {
   const { isFavorite, toggleFavorite } = useAcademyFavorites();
 
   const levelColors = {
-    beginner: 'bg-green-500/10 text-success border-green-500/20',
-    intermediate: 'bg-blue-500/10 text-info border-blue-500/20',
+    beginner: 'bg-success/10 text-success border-green-500/20',
+    intermediate: 'bg-info/10 text-info border-blue-500/20',
     advanced: 'bg-purple-500/10 text-purple-500 border-purple-500/20',
   };
 

@@ -143,9 +143,9 @@ export function InfluencerSpyPanel() {
   };
 
   const performanceColors = {
-    high: 'bg-green-500/20 text-success border-green-500/30',
-    medium: 'bg-yellow-500/20 text-warning border-yellow-500/30',
-    low: 'bg-red-500/20 text-destructive border-red-500/30',
+    high: 'bg-success/20 text-success border-green-500/30',
+    medium: 'bg-warning/20 text-warning border-yellow-500/30',
+    low: 'bg-destructive/20 text-destructive border-red-500/30',
   };
 
   return (
@@ -245,7 +245,7 @@ export function InfluencerSpyPanel() {
                     <div className="flex items-center gap-1.5">
                       <CardTitle className="text-base">{influencer.name}</CardTitle>
                       {influencer.verified && (
-                        <Badge variant="secondary" className="h-4 w-4 p-0 flex items-center justify-center rounded-full bg-blue-500">
+                        <Badge variant="secondary" className="h-4 w-4 p-0 flex items-center justify-center rounded-full bg-info">
                           <span className="text-white text-[8px]">✓</span>
                         </Badge>
                       )}

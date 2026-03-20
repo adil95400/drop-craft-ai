@@ -168,7 +168,7 @@ export default function EnrichmentSnapshotsPage() {
                       <span className="font-semibold">{snap.productName}</span>
                     </div>
                     <Badge variant="secondary" className="text-xs">{contentTypeLabel(snap.contentType)}</Badge>
-                    {snap.status === 'applied' && <Badge className="bg-green-500/10 text-success border-green-500/20 text-xs">Appliqué</Badge>}
+                    {snap.status === 'applied' && <Badge className="bg-success/10 text-success border-green-500/20 text-xs">Appliqué</Badge>}
                     {snap.status === 'generated' && <Badge className="bg-primary/10 text-primary border-primary/20 text-xs">En attente</Badge>}
                     {snap.status === 'reverted' && <Badge variant="outline" className="text-xs">Révoqué</Badge>}
                   </div>

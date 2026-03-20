@@ -32,8 +32,8 @@ const SupplierConfigDialog = ({ supplier, isOpen, onClose }: SupplierConfigDialo
 
   // Enhanced import methods with more comprehensive options
   const importMethods = [
-    { id: 'csv', name: 'CSV', description: 'Fichiers séparés par virgules', icon: '📊', color: 'border-blue-400 bg-blue-50 dark:bg-blue-950/20' },
-    { id: 'excel', name: 'Excel', description: 'Fichiers .xlsx/.xls', icon: '📈', color: 'border-green-400 bg-green-50 dark:bg-green-950/20' },
+    { id: 'csv', name: 'CSV', description: 'Fichiers séparés par virgules', icon: '📊', color: 'border-blue-400 bg-info/5 dark:bg-blue-950/20' },
+    { id: 'excel', name: 'Excel', description: 'Fichiers .xlsx/.xls', icon: '📈', color: 'border-green-400 bg-success/5 dark:bg-green-950/20' },
     { id: 'xml', name: 'XML', description: 'Données structurées XML', icon: '🔗', color: 'border-purple-400 bg-purple-50 dark:bg-purple-950/20' },
     { id: 'api', name: 'API', description: 'Connexion API temps réel', icon: '⚡', color: 'border-orange-400 bg-orange-50 dark:bg-orange-950/20' },
     { id: 'ftp', name: 'FTP', description: 'Transfert fichiers FTP/SFTP', icon: '🌐', color: 'border-cyan-400 bg-cyan-50 dark:bg-cyan-950/20' },
@@ -253,7 +253,7 @@ const SupplierConfigDialog = ({ supplier, isOpen, onClose }: SupplierConfigDialo
         <div className="flex items-center justify-between mb-6">
           <div className={`flex items-center gap-2 ${currentStep === 'auth' ? 'text-primary' : authData.isConnected ? 'text-success' : 'text-muted-foreground'}`}>
             <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-              authData.isConnected ? 'bg-green-100 text-success' : 
+              authData.isConnected ? 'bg-success/10 text-success' : 
               currentStep === 'auth' ? 'bg-primary text-primary-foreground' : 'bg-muted'
             }`}>
               {authData.isConnected ? <CheckCircle className="h-4 w-4" /> : <Lock className="h-4 w-4" />}
@@ -293,7 +293,7 @@ const SupplierConfigDialog = ({ supplier, isOpen, onClose }: SupplierConfigDialo
             </div>
 
             {!supplier.requiresAuth ? (
-              <div className="p-4 bg-green-50 dark:bg-green-950/20 rounded-lg">
+              <div className="p-4 bg-success/5 dark:bg-green-950/20 rounded-lg">
                 <div className="flex items-center gap-2 text-success dark:text-green-200">
                   <CheckCircle className="h-4 w-4" />
                   <span className="text-sm font-medium">Aucune authentification requise</span>
@@ -308,7 +308,7 @@ const SupplierConfigDialog = ({ supplier, isOpen, onClose }: SupplierConfigDialo
               </div>
             ) : supplier.authType === 'oauth' ? (
               <div className="space-y-4">
-                <div className="p-4 bg-blue-50 dark:bg-blue-950/20 rounded-lg">
+                <div className="p-4 bg-info/5 dark:bg-blue-950/20 rounded-lg">
                   <h4 className="font-medium text-blue-800 dark:text-blue-200 mb-2">Connexion OAuth</h4>
                   <p className="text-sm text-blue-700 dark:text-blue-300 mb-3">
                     Connectez votre compte {supplier.displayName} personnel de manière sécurisée.
@@ -637,7 +637,7 @@ export const EnhancedSupplierSelector = () => {
                     <div>
                       <CardTitle className="text-sm flex items-center gap-1">
                         {supplier.displayName}
-                        {supplier.isNew && <Badge className="text-xs bg-green-500">Nouveau</Badge>}
+                        {supplier.isNew && <Badge className="text-xs bg-success">Nouveau</Badge>}
                         {supplier.status === 'beta' && <Badge variant="outline" className="text-xs">Beta</Badge>}
                       </CardTitle>
                       <CardDescription className="text-xs">{supplier.description}</CardDescription>

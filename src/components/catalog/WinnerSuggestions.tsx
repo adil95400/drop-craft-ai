@@ -127,7 +127,7 @@ export const WinnerSuggestions = ({ onViewProduct, onAnalyzeNiche }: WinnerSugge
                       <h4 className="font-medium">{product.name}</h4>
                       <p className="text-sm text-muted-foreground">Par {product.supplier}</p>
                     </div>
-                    <Badge className="bg-yellow-500 text-black">
+                    <Badge className="bg-warning text-black">
                       <Crown className="w-3 h-3 mr-1" />
                       Winner
                     </Badge>

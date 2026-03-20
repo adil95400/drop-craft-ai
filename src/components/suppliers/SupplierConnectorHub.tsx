@@ -431,7 +431,7 @@ export function SupplierConnectorHub() {
             <Card key={supplier.id} className={`relative ${isConnected ? 'border-green-500/50' : ''}`}>
               {isConnected && (
                 <div className="absolute top-2 right-2">
-                  <Badge className="bg-green-500">
+                  <Badge className="bg-success">
                     <Check className="h-3 w-3 mr-1" />
                     Connecté
                   </Badge>

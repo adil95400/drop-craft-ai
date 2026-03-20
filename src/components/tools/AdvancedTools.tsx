@@ -352,7 +352,7 @@ export function AdvancedTools() {
                     'Password changed successfully'
                   ].map((activity, index) => (
                     <div key={index} className="flex items-center text-sm">
-                      <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
+                      <div className="w-2 h-2 bg-success rounded-full mr-2"></div>
                       {activity}
                     </div>
                   ))}

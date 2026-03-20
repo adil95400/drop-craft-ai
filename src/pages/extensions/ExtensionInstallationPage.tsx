@@ -165,7 +165,7 @@ export default function ExtensionInstallationPage() {
             L'extension ShopOpti+ est maintenant installée ! Vous devriez voir apparaître 
             une nouvelle carte d'extension sur la page.
           </p>
-          <Alert className="bg-green-500/10 border-green-500/20">
+          <Alert className="bg-success/10 border-green-500/20">
             <CheckCircle className="h-4 w-4 text-success" />
             <AlertTitle className="text-success">Extension active</AlertTitle>
             <AlertDescription className="text-success">

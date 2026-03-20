@@ -90,7 +90,7 @@ export function VariantMappingDashboard() {
             <Card className="bg-gradient-to-br from-green-500/10 to-green-500/5">
               <CardContent className="p-4">
                 <div className="flex items-center gap-3">
-                  <div className="p-2 rounded-lg bg-green-500/20">
+                  <div className="p-2 rounded-lg bg-success/20">
                     <CheckCircle className="h-5 w-5 text-success" />
                   </div>
                   <div>
@@ -118,7 +118,7 @@ export function VariantMappingDashboard() {
             <Card className="bg-gradient-to-br from-orange-500/10 to-orange-500/5">
               <CardContent className="p-4">
                 <div className="flex items-center gap-3">
-                  <div className="p-2 rounded-lg bg-orange-500/20">
+                  <div className="p-2 rounded-lg bg-warning/20">
                     <Package className="h-5 w-5 text-warning" />
                   </div>
                   <div>

@@ -141,13 +141,13 @@ export function MultiStoreImportDialog({
                       className={cn(
                         "flex items-center justify-between p-2 rounded",
                         result.success 
-                          ? "bg-green-500/10" 
+                          ? "bg-success/10" 
                           : "bg-destructive/10"
                       )}
                     >
                       <span className="font-medium text-sm">{result.storeName}</span>
                       {result.success ? (
-                        <Badge variant="outline" className="bg-green-500/20 text-success border-green-500/30">
+                        <Badge variant="outline" className="bg-success/20 text-success border-green-500/30">
                           <CheckCircle2 className="h-3 w-3 mr-1" />
                           Importé
                         </Badge>

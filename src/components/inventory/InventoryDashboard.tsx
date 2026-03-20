@@ -98,10 +98,10 @@ export function InventoryDashboard() {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'in_stock': return 'bg-green-100 text-success';
-      case 'low_stock': return 'bg-yellow-100 text-yellow-800';
-      case 'out_of_stock': return 'bg-red-100 text-red-800';
-      case 'overstock': return 'bg-blue-100 text-blue-800';
+      case 'in_stock': return 'bg-success/10 text-success';
+      case 'low_stock': return 'bg-warning/10 text-yellow-800';
+      case 'out_of_stock': return 'bg-destructive/10 text-red-800';
+      case 'overstock': return 'bg-info/10 text-blue-800';
       default: return 'bg-gray-100 text-gray-800';
     }
   };
@@ -331,7 +331,7 @@ export function InventoryDashboard() {
                   <CardContent>
                     <div className="space-y-2">
                       {inventoryData.filter(item => item.status === 'out_of_stock').map(item => (
-                        <div key={item.id} className="flex items-center justify-between p-3 border rounded-lg bg-red-50">
+                        <div key={item.id} className="flex items-center justify-between p-3 border rounded-lg bg-destructive/5">
                           <div>
                             <div className="font-medium">{item.name}</div>
                             <div className="text-sm text-muted-foreground">

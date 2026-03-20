@@ -235,7 +235,7 @@ export function AdvancedAPIKeyManager() {
 
         <CardContent>
           {copiedKey && (
-            <Card className="mb-4 bg-green-50 border-green-200">
+            <Card className="mb-4 bg-success/5 border-green-200">
               <CardContent className="p-4">
                 <div className="flex items-start gap-3">
                   <Check className="h-5 w-5 text-success flex-shrink-0 mt-0.5" />
@@ -325,7 +325,7 @@ export function AdvancedAPIKeyManager() {
                         onClick={() => toggleKeyMutation.mutate({ id: key.id, isActive: key.is_active })}
                       >
                         {key.is_active ? (
-                          <Badge className="bg-green-500">Actif</Badge>
+                          <Badge className="bg-success">Actif</Badge>
                         ) : (
                           <Badge variant="secondary">Inactif</Badge>
                         )}

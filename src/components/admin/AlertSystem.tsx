@@ -349,7 +349,7 @@ export const AlertSystem: React.FC = () => {
       </CardHeader>
       <CardContent>
         {criticalCount > 0 && (
-          <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+          <div className="mb-4 p-3 bg-destructive/5 border border-red-200 rounded-lg">
             <div className="flex items-center gap-2 text-red-800">
               <AlertTriangle className="h-4 w-4" />
               <span className="font-semibold">
@@ -375,7 +375,7 @@ export const AlertSystem: React.FC = () => {
                     key={alert.id}
                     className={`p-3 border rounded-lg ${
                       alert.resolved ? 'bg-gray-50 opacity-75' : 
-                      alert.acknowledged ? 'bg-blue-50' : 'bg-white'
+                      alert.acknowledged ? 'bg-info/5' : 'bg-white'
                     }`}
                   >
                     <div className="flex items-start justify-between mb-2">

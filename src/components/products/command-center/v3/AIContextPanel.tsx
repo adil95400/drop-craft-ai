@@ -192,17 +192,17 @@ export function AIContextPanel({
           
           {/* Quick Stats */}
           <div className="grid grid-cols-3 gap-2">
-            <div className="text-center p-2 rounded-lg bg-red-500/10">
+            <div className="text-center p-2 rounded-lg bg-destructive/10">
               <AlertTriangle className="h-4 w-4 mx-auto text-destructive mb-1" />
               <p className="text-lg font-bold text-destructive">{contextStats.riskCount}</p>
               <p className="text-[10px] text-muted-foreground">Risques</p>
             </div>
-            <div className="text-center p-2 rounded-lg bg-emerald-500/10">
+            <div className="text-center p-2 rounded-lg bg-success/10">
               <TrendingUp className="h-4 w-4 mx-auto text-success mb-1" />
               <p className="text-lg font-bold text-success">{contextStats.opportunityCount}</p>
               <p className="text-[10px] text-muted-foreground">Opportunités</p>
             </div>
-            <div className="text-center p-2 rounded-lg bg-blue-500/10">
+            <div className="text-center p-2 rounded-lg bg-info/10">
               <CheckCircle className="h-4 w-4 mx-auto text-info mb-1" />
               <p className="text-lg font-bold text-info">{contextStats.optimizedCount}</p>
               <p className="text-[10px] text-muted-foreground">Optimisés</p>
@@ -241,8 +241,8 @@ export function AIContextPanel({
                       className={cn(
                         'w-full p-3 rounded-lg border text-left transition-colors',
                         'hover:border-primary/50 hover:bg-primary/5',
-                        action.variant === 'destructive' && 'border-red-500/30 bg-red-500/5',
-                        action.variant === 'warning' && 'border-amber-500/30 bg-amber-500/5',
+                        action.variant === 'destructive' && 'border-red-500/30 bg-destructive/5',
+                        action.variant === 'warning' && 'border-amber-500/30 bg-warning/5',
                         action.variant === 'primary' && 'border-primary/30 bg-primary/5'
                       )}
                     >

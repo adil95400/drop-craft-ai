@@ -49,10 +49,10 @@ const CATEGORY_ICONS: Record<AuditCategory, React.ReactNode> = {
 
 const SEVERITY_CONFIG: Record<AuditSeverity, { color: string; icon: React.ReactNode }> = {
   debug: { color: 'bg-muted text-muted-foreground', icon: <Info className="h-3 w-3" /> },
-  info: { color: 'bg-blue-500/10 text-info', icon: <CheckCircle className="h-3 w-3" /> },
-  warn: { color: 'bg-yellow-500/10 text-warning', icon: <AlertTriangle className="h-3 w-3" /> },
-  error: { color: 'bg-red-500/10 text-destructive', icon: <AlertCircle className="h-3 w-3" /> },
-  critical: { color: 'bg-red-600 text-white', icon: <AlertCircle className="h-3 w-3" /> }
+  info: { color: 'bg-info/10 text-info', icon: <CheckCircle className="h-3 w-3" /> },
+  warn: { color: 'bg-warning/10 text-warning', icon: <AlertTriangle className="h-3 w-3" /> },
+  error: { color: 'bg-destructive/10 text-destructive', icon: <AlertCircle className="h-3 w-3" /> },
+  critical: { color: 'bg-destructive text-white', icon: <AlertCircle className="h-3 w-3" /> }
 };
 
 const CATEGORIES: AuditCategory[] = [

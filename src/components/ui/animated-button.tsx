@@ -98,7 +98,7 @@ export function AnimatedButton({
       onClick={handleClick}
       className={cn(
         "relative overflow-hidden transition-all duration-200",
-        currentState === "success" && "bg-green-600 hover:bg-green-600",
+        currentState === "success" && "bg-success hover:bg-success",
         className
       )}
     >

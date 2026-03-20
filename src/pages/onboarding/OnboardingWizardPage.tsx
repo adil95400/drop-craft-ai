@@ -22,11 +22,11 @@ import {
 } from 'lucide-react'
 
 const PLATFORMS = [
-  { id: 'shopify', name: 'Shopify', icon: ShoppingCart, color: 'bg-green-500', desc: 'La plateforme e-commerce #1 mondiale' },
+  { id: 'shopify', name: 'Shopify', icon: ShoppingCart, color: 'bg-success', desc: 'La plateforme e-commerce #1 mondiale' },
   { id: 'woocommerce', name: 'WooCommerce', icon: Globe, color: 'bg-purple-500', desc: 'Extension WordPress puissante' },
-  { id: 'prestashop', name: 'PrestaShop', icon: Store, color: 'bg-blue-500', desc: 'Solution open-source française' },
-  { id: 'amazon', name: 'Amazon', icon: Package, color: 'bg-orange-500', desc: 'Marketplace mondiale' },
-  { id: 'etsy', name: 'Etsy', icon: Sparkles, color: 'bg-amber-500', desc: 'Marketplace créative et artisanale' },
+  { id: 'prestashop', name: 'PrestaShop', icon: Store, color: 'bg-info', desc: 'Solution open-source française' },
+  { id: 'amazon', name: 'Amazon', icon: Package, color: 'bg-warning', desc: 'Marketplace mondiale' },
+  { id: 'etsy', name: 'Etsy', icon: Sparkles, color: 'bg-warning', desc: 'Marketplace créative et artisanale' },
   { id: 'other', name: 'Autre', icon: Building2, color: 'bg-muted-foreground', desc: 'Autre plateforme ou démarrage from scratch' },
 ]
 

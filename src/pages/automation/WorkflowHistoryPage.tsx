@@ -91,7 +91,7 @@ export default function WorkflowHistoryPage() {
 
   const statusBadge = (status: string) => {
     const map: Record<string, string> = {
-      success: 'bg-emerald-500/10 text-success border-emerald-500/20',
+      success: 'bg-success/10 text-success border-emerald-500/20',
       failed: 'bg-destructive/10 text-destructive border-destructive/20',
       running: 'bg-primary/10 text-primary border-primary/20',
       skipped: 'bg-muted text-muted-foreground border-border',

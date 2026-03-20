@@ -265,7 +265,7 @@ export const AdvancedImportInterface = () => {
       <Card className="cursor-pointer hover:shadow-lg transition-shadow">
         <CardHeader>
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-blue-100 rounded-lg">
+            <div className="p-2 bg-info/10 rounded-lg">
               <FileText className="w-6 h-6 text-info" />
             </div>
             <div>
@@ -277,7 +277,7 @@ export const AdvancedImportInterface = () => {
         <CardContent>
           <div className="flex items-center gap-2 mb-3">
             <CheckCircle className="w-4 h-4 text-success" />
-            <Badge variant="outline" className="bg-green-50">Actif</Badge>
+            <Badge variant="outline" className="bg-success/5">Actif</Badge>
           </div>
           <div className="flex gap-2">
             <Button 
@@ -318,7 +318,7 @@ export const AdvancedImportInterface = () => {
         <CardContent>
           <div className="flex items-center gap-2 mb-3">
             <CheckCircle className="w-4 h-4 text-success" />
-            <Badge variant="outline" className="bg-green-50">Actif</Badge>
+            <Badge variant="outline" className="bg-success/5">Actif</Badge>
           </div>
           <div className="flex gap-2">
             <Button 
@@ -347,7 +347,7 @@ export const AdvancedImportInterface = () => {
       <Card className="cursor-pointer hover:shadow-lg transition-shadow">
         <CardHeader>
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-green-100 rounded-lg">
+            <div className="p-2 bg-success/10 rounded-lg">
               <ShoppingCart className="w-6 h-6 text-success" />
             </div>
             <div>
@@ -359,7 +359,7 @@ export const AdvancedImportInterface = () => {
         <CardContent>
           <div className="flex items-center gap-2 mb-3">
             <AlertTriangle className="w-4 h-4 text-warning" />
-            <Badge variant="outline" className="bg-yellow-50">Non configuré</Badge>
+            <Badge variant="outline" className="bg-warning/5">Non configuré</Badge>
           </div>
           <div className="flex gap-2">
             <Button 
@@ -400,7 +400,7 @@ export const AdvancedImportInterface = () => {
         <CardContent>
           <div className="flex items-center gap-2 mb-3">
             <AlertTriangle className="w-4 h-4 text-warning" />
-            <Badge variant="outline" className="bg-yellow-50">Non configuré</Badge>
+            <Badge variant="outline" className="bg-warning/5">Non configuré</Badge>
           </div>
           <div className="flex gap-2">
             <Button 
@@ -429,7 +429,7 @@ export const AdvancedImportInterface = () => {
       <Card className="cursor-pointer hover:shadow-lg transition-shadow">
         <CardHeader>
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-red-100 rounded-lg">
+            <div className="p-2 bg-destructive/10 rounded-lg">
               <FileText className="w-6 h-6 text-destructive" />
             </div>
             <div>
@@ -441,7 +441,7 @@ export const AdvancedImportInterface = () => {
         <CardContent>
           <div className="flex items-center gap-2 mb-3">
             <CheckCircle className="w-4 h-4 text-success" />
-            <Badge variant="outline" className="bg-green-50">Actif</Badge>
+            <Badge variant="outline" className="bg-success/5">Actif</Badge>
           </div>
           <div className="flex gap-2">
             <Button 
@@ -482,7 +482,7 @@ export const AdvancedImportInterface = () => {
         <CardContent>
           <div className="flex items-center gap-2 mb-3">
             <CheckCircle className="w-4 h-4 text-success" />
-            <Badge variant="outline" className="bg-green-50">Actif</Badge>
+            <Badge variant="outline" className="bg-success/5">Actif</Badge>
           </div>
           <div className="flex gap-2">
             <Button 

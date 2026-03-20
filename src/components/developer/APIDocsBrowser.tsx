@@ -36,11 +36,11 @@ const ENDPOINTS: APIEndpoint[] = [
 ]
 
 const METHOD_COLORS: Record<string, string> = {
-  GET: 'bg-green-100 text-success dark:bg-green-900/40 dark:text-green-300',
-  POST: 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300',
+  GET: 'bg-success/10 text-success dark:bg-green-900/40 dark:text-green-300',
+  POST: 'bg-info/10 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300',
   PUT: 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300',
   PATCH: 'bg-orange-100 text-orange-700 dark:bg-orange-900/40 dark:text-orange-300',
-  DELETE: 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300',
+  DELETE: 'bg-destructive/10 text-red-700 dark:bg-red-900/40 dark:text-red-300',
 }
 
 export function APIDocsBrowser() {

@@ -571,7 +571,7 @@ const SuperAdminDashboard = () => {
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
-                  <div className="flex items-center justify-between p-3 rounded-lg bg-red-50 border border-red-200">
+                  <div className="flex items-center justify-between p-3 rounded-lg bg-destructive/5 border border-red-200">
                     <div className="flex items-center gap-2">
                       <AlertTriangle className="h-4 w-4 text-destructive" />
                       <span className="text-sm font-medium">Tentatives de connexion suspectes</span>
@@ -579,7 +579,7 @@ const SuperAdminDashboard = () => {
                     <Badge variant="destructive">3</Badge>
                   </div>
                   
-                  <div className="flex items-center justify-between p-3 rounded-lg bg-yellow-50 border border-yellow-200">
+                  <div className="flex items-center justify-between p-3 rounded-lg bg-warning/5 border border-yellow-200">
                     <div className="flex items-center gap-2">
                       <Eye className="h-4 w-4 text-warning" />
                       <span className="text-sm font-medium">Accès données sensibles</span>
@@ -587,7 +587,7 @@ const SuperAdminDashboard = () => {
                     <Badge variant="secondary">12</Badge>
                   </div>
                   
-                  <div className="flex items-center justify-between p-3 rounded-lg bg-green-50 border border-green-200">
+                  <div className="flex items-center justify-between p-3 rounded-lg bg-success/5 border border-green-200">
                     <div className="flex items-center gap-2">
                       <CheckCircle className="h-4 w-4 text-success" />
                       <span className="text-sm font-medium">Connexions réussies</span>

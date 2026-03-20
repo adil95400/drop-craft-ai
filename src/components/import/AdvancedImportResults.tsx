@@ -111,7 +111,7 @@ export const AdvancedImportResults = () => {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'published':
-        return <Badge className="bg-green-100 text-success">Publié</Badge>;
+        return <Badge className="bg-success/10 text-success">Publié</Badge>;
       case 'draft':
         return <Badge variant="secondary">Brouillon</Badge>;
       default:
@@ -122,9 +122,9 @@ export const AdvancedImportResults = () => {
   const getReviewStatusBadge = (reviewStatus: string) => {
     switch (reviewStatus) {
       case 'approved':
-        return <Badge className="bg-green-100 text-success">Approuvé</Badge>;
+        return <Badge className="bg-success/10 text-success">Approuvé</Badge>;
       case 'rejected':
-        return <Badge className="bg-red-100 text-red-800">Rejeté</Badge>;
+        return <Badge className="bg-destructive/10 text-red-800">Rejeté</Badge>;
       default:
         return <Badge variant="outline">En attente</Badge>;
     }

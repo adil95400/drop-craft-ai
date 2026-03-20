@@ -87,9 +87,9 @@ export default function AdvancedTicketsPage() {
 
   const getPriorityBadge = (priority: string) => {
     const map: Record<string, string> = {
-      urgent: 'bg-red-100 text-red-700 border-red-200',
+      urgent: 'bg-destructive/10 text-red-700 border-red-200',
       high: 'bg-orange-100 text-orange-700 border-orange-200',
-      normal: 'bg-blue-100 text-blue-700 border-blue-200',
+      normal: 'bg-info/10 text-blue-700 border-blue-200',
       low: 'bg-muted text-muted-foreground',
     };
     return <Badge className={cn("text-xs", map[priority] || map.normal)}>{priority === 'urgent' ? '🔴 Urgent' : priority === 'high' ? '🟠 Haute' : priority === 'low' ? '🟢 Basse' : '🔵 Normale'}</Badge>;
@@ -197,7 +197,7 @@ export default function AdvancedTicketsPage() {
                             className={cn(
                               "h-2",
                               ticket.isBreached && "[&>div]:bg-destructive",
-                              ticket.isWarning && "[&>div]:bg-amber-500"
+                              ticket.isWarning && "[&>div]:bg-warning"
                             )} 
                           />
                           <span className={cn(

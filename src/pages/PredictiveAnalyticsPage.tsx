@@ -102,7 +102,7 @@ export default function PredictiveAnalyticsPage() {
                               <p className="font-medium">Produit #{rec.product_id.slice(0, 8)}</p>
                               <p className="text-sm text-muted-foreground">Stock: {rec.current_stock} | Recommandé: {rec.recommended_restock_quantity}</p>
                             </div>
-                            <span className={`px-2 py-1 rounded text-xs font-medium ${rec.urgency === 'critical' ? 'bg-destructive/20 text-destructive' : rec.urgency === 'high' ? 'bg-orange-500/20 text-warning' : 'bg-yellow-500/20 text-warning'}`}>{rec.urgency}</span>
+                            <span className={`px-2 py-1 rounded text-xs font-medium ${rec.urgency === 'critical' ? 'bg-destructive/20 text-destructive' : rec.urgency === 'high' ? 'bg-warning/20 text-warning' : 'bg-warning/20 text-warning'}`}>{rec.urgency}</span>
                           </div>
                         </div>
                       ))}

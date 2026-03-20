@@ -36,7 +36,7 @@ export function TrackingStatsCards({ stats }: TrackingStatsCardsProps) {
       value: stats.inTransit,
       icon: Truck,
       color: 'text-info dark:text-blue-400',
-      bgColor: 'bg-blue-100 dark:bg-blue-900/30'
+      bgColor: 'bg-info/10 dark:bg-blue-900/30'
     },
     {
       title: 'Livraison Jour',
@@ -50,14 +50,14 @@ export function TrackingStatsCards({ stats }: TrackingStatsCardsProps) {
       value: stats.delivered,
       icon: CheckCircle,
       color: 'text-success dark:text-green-400',
-      bgColor: 'bg-green-100 dark:bg-green-900/30'
+      bgColor: 'bg-success/10 dark:bg-green-900/30'
     },
     {
       title: 'Problèmes',
       value: stats.exception,
       icon: AlertTriangle,
       color: 'text-destructive dark:text-red-400',
-      bgColor: 'bg-red-100 dark:bg-red-900/30'
+      bgColor: 'bg-destructive/10 dark:bg-red-900/30'
     }
   ];
 
@@ -112,7 +112,7 @@ export function DeliveryRateCard({ stats }: TrackingStatsCardsProps) {
           <div 
             className={cn(
               "h-full transition-all duration-500",
-              rate >= 90 ? "bg-green-500" : rate >= 70 ? "bg-amber-500" : "bg-red-500"
+              rate >= 90 ? "bg-success" : rate >= 70 ? "bg-warning" : "bg-destructive"
             )}
             style={{ width: `${rate}%` }}
           />

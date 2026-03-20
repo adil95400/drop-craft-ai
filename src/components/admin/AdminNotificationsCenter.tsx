@@ -158,8 +158,8 @@ export const AdminNotificationsCenter: React.FC = () => {
   const getPriorityColor = (priority: AdminNotification['priority']) => {
     switch (priority) {
       case 'low': return 'bg-gray-100 text-gray-800';
-      case 'medium': return 'bg-blue-100 text-blue-800';
-      case 'high': return 'bg-red-100 text-red-800';
+      case 'medium': return 'bg-info/10 text-blue-800';
+      case 'high': return 'bg-destructive/10 text-red-800';
     }
   };
 

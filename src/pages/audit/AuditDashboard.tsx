@@ -57,9 +57,9 @@ export default function AuditDashboard() {
   }
 
   const getScoreBadge = (score: number) => {
-    if (score >= 80) return <Badge className="bg-green-100 text-success dark:bg-green-900/30 dark:text-green-400">{t('dashboard.excellent')}</Badge>
-    if (score >= 60) return <Badge className="bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400">{t('dashboard.average')}</Badge>
-    return <Badge className="bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400">{t('scoring.toImproveLabel')}</Badge>
+    if (score >= 80) return <Badge className="bg-success/10 text-success dark:bg-green-900/30 dark:text-green-400">{t('dashboard.excellent')}</Badge>
+    if (score >= 60) return <Badge className="bg-warning/10 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400">{t('dashboard.average')}</Badge>
+    return <Badge className="bg-destructive/10 text-red-800 dark:bg-red-900/30 dark:text-red-400">{t('scoring.toImproveLabel')}</Badge>
   }
 
   return (

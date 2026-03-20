@@ -32,9 +32,9 @@ const businessToastVariants = cva(
     variants: {
       variant: {
         default: 'border-border/50 bg-background/95 text-foreground',
-        success: 'border-emerald-500/30 bg-emerald-500/10 text-foreground',
-        opportunity: 'border-amber-500/30 bg-amber-500/10 text-foreground',
-        risk: 'border-red-500/30 bg-red-500/10 text-foreground',
+        success: 'border-emerald-500/30 bg-success/10 text-foreground',
+        opportunity: 'border-amber-500/30 bg-warning/10 text-foreground',
+        risk: 'border-red-500/30 bg-destructive/10 text-foreground',
         destructive: 'border-destructive/50 bg-destructive/10 text-destructive-foreground',
       },
     },
@@ -51,19 +51,19 @@ function ToastIcon({ variant }: { variant?: string }) {
   switch (variant) {
     case 'success':
       return (
-        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-emerald-500/20">
+        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-success/20">
           <CheckCircle2 className={cn(iconClass, 'text-success')} />
         </div>
       )
     case 'opportunity':
       return (
-        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-amber-500/20">
+        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-warning/20">
           <Sparkles className={cn(iconClass, 'text-warning')} />
         </div>
       )
     case 'risk':
       return (
-        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-red-500/20">
+        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-destructive/20">
           <ShieldCheck className={cn(iconClass, 'text-destructive')} />
         </div>
       )
@@ -103,9 +103,9 @@ const BusinessToast = React.forwardRef<
           <div className="mt-2 flex items-center gap-2 animate-fade-in">
             <div className={cn(
               'inline-flex items-center gap-1 rounded-md px-2 py-1 text-sm font-semibold',
-              variant === 'success' && 'bg-emerald-500/20 text-success',
-              variant === 'opportunity' && 'bg-amber-500/20 text-warning',
-              variant === 'risk' && 'bg-red-500/20 text-destructive',
+              variant === 'success' && 'bg-success/20 text-success',
+              variant === 'opportunity' && 'bg-warning/20 text-warning',
+              variant === 'risk' && 'bg-destructive/20 text-destructive',
               !variant && 'bg-primary/20 text-primary'
             )}>
               {impact.trend === 'up' && <TrendingUp className="h-3.5 w-3.5" />}

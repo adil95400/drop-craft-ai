@@ -46,10 +46,10 @@ interface ChannableActivityFeedProps {
 }
 
 const TYPE_CONFIG = {
-  sync: { icon: RefreshCw, color: 'text-info', bg: 'bg-blue-500/10' },
-  order: { icon: ShoppingCart, color: 'text-success', bg: 'bg-green-500/10' },
+  sync: { icon: RefreshCw, color: 'text-info', bg: 'bg-info/10' },
+  order: { icon: ShoppingCart, color: 'text-success', bg: 'bg-success/10' },
   product: { icon: Package, color: 'text-purple-500', bg: 'bg-purple-500/10' },
-  alert: { icon: AlertCircle, color: 'text-warning', bg: 'bg-amber-500/10' },
+  alert: { icon: AlertCircle, color: 'text-warning', bg: 'bg-warning/10' },
   system: { icon: Zap, color: 'text-primary', bg: 'bg-primary/10' },
 }
 
@@ -102,7 +102,7 @@ export function ChannableActivityFeed({
             {title}
             {realtime && (
               <Badge variant="outline" className="ml-2 text-xs animate-pulse">
-                <span className="w-2 h-2 bg-green-500 rounded-full mr-1.5" />
+                <span className="w-2 h-2 bg-success rounded-full mr-1.5" />
                 Live
               </Badge>
             )}

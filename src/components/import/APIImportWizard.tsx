@@ -612,7 +612,7 @@ export function APIImportWizard() {
             <Card>
               <CardContent className="pt-6">
                 <div className="text-center space-y-4">
-                  <div className="flex items-center justify-center w-16 h-16 mx-auto bg-green-100 rounded-full">
+                  <div className="flex items-center justify-center w-16 h-16 mx-auto bg-success/10 rounded-full">
                     <Check className="w-8 h-8 text-success" />
                   </div>
                   <h3 className="text-lg font-medium">Import en cours...</h3>

@@ -64,7 +64,7 @@ export default function PriceMonitorPage() {
           </Card>
           <Card>
             <CardContent className="p-4 flex items-center gap-4">
-              <div className="p-3 rounded-xl bg-emerald-500/10">
+              <div className="p-3 rounded-xl bg-success/10">
                 <CheckCircle className="h-5 w-5 text-success" />
               </div>
               <div>
@@ -75,7 +75,7 @@ export default function PriceMonitorPage() {
           </Card>
           <Card>
             <CardContent className="p-4 flex items-center gap-4">
-              <div className="p-3 rounded-xl bg-amber-500/10">
+              <div className="p-3 rounded-xl bg-warning/10">
                 <Bell className="h-5 w-5 text-warning" />
               </div>
               <div>
@@ -86,7 +86,7 @@ export default function PriceMonitorPage() {
           </Card>
           <Card>
             <CardContent className="p-4 flex items-center gap-4">
-              <div className="p-3 rounded-xl bg-blue-500/10">
+              <div className="p-3 rounded-xl bg-info/10">
                 <BarChart3 className="h-5 w-5 text-info" />
               </div>
               <div>
@@ -140,7 +140,7 @@ export default function PriceMonitorPage() {
                     <div className="flex items-center gap-4">
                       <div className={cn(
                         "p-2.5 rounded-xl",
-                        monitor.is_active ? "bg-emerald-500/10" : "bg-muted"
+                        monitor.is_active ? "bg-success/10" : "bg-muted"
                       )}>
                         <Activity className={cn(
                           "h-5 w-5",
@@ -191,8 +191,8 @@ export default function PriceMonitorPage() {
                     key={alert.id}
                     className={cn(
                       "flex items-center justify-between p-3 rounded-lg border",
-                      alert.severity === 'critical' && "border-red-500/30 bg-red-500/5",
-                      alert.severity === 'warning' && "border-amber-500/30 bg-amber-500/5"
+                      alert.severity === 'critical' && "border-red-500/30 bg-destructive/5",
+                      alert.severity === 'warning' && "border-amber-500/30 bg-warning/5"
                     )}
                   >
                     <div className="flex items-center gap-3">

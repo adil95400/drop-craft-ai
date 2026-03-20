@@ -173,7 +173,7 @@ export function MappingTable({
                 <TableCell>
                   <div className="flex items-center gap-2">
                     {mapping.is_active ? (
-                      <Badge className="bg-green-500/10 text-success hover:bg-green-500/20">
+                      <Badge className="bg-success/10 text-success hover:bg-success/20">
                         <CheckCircle className="h-3 w-3 mr-1" />
                         Actif
                       </Badge>

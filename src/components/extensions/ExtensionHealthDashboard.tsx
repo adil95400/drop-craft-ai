@@ -142,9 +142,9 @@ export function ExtensionHealthDashboard() {
   };
 
   const getStatusBadge = (rate: number) => {
-    if (rate >= 98) return <Badge className="bg-green-500/10 text-success">Excellent</Badge>;
-    if (rate >= 95) return <Badge className="bg-yellow-500/10 text-warning">Bon</Badge>;
-    return <Badge className="bg-red-500/10 text-destructive">Attention</Badge>;
+    if (rate >= 98) return <Badge className="bg-success/10 text-success">Excellent</Badge>;
+    if (rate >= 95) return <Badge className="bg-warning/10 text-warning">Bon</Badge>;
+    return <Badge className="bg-destructive/10 text-destructive">Attention</Badge>;
   };
 
   if (isLoading) {
@@ -330,7 +330,7 @@ export function ExtensionHealthDashboard() {
                 {Object.entries(metrics?.errorsByCode || {})
                   .sort(([, a], [, b]) => b - a)
                   .map(([code, count]) => (
-                    <div key={code} className="flex items-center justify-between p-2 rounded-lg bg-red-500/5 border border-red-500/10">
+                    <div key={code} className="flex items-center justify-between p-2 rounded-lg bg-destructive/5 border border-red-500/10">
                       <Badge variant="destructive" className="font-mono">{code}</Badge>
                       <span className="font-medium">{count}</span>
                     </div>

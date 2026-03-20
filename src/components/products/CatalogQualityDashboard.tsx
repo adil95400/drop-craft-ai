@@ -118,9 +118,9 @@ export function CatalogQualityDashboard({ products }: CatalogQualityDashboardPro
   }
 
   const getScoreBg = (score: number) => {
-    if (score >= 70) return 'bg-green-500'
-    if (score >= 40) return 'bg-orange-500'
-    return 'bg-red-500'
+    if (score >= 70) return 'bg-success'
+    if (score >= 40) return 'bg-warning'
+    return 'bg-destructive'
   }
 
   return (

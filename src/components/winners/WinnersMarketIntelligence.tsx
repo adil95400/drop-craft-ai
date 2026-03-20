@@ -114,7 +114,7 @@ export const WinnersMarketIntelligence = () => {
                 <div className="flex-1">
                   <div className="flex items-center justify-between mb-1">
                     <h4 className="font-semibold">{trend.trend}</h4>
-                    <Badge variant="default" className="bg-green-500">
+                    <Badge variant="default" className="bg-success">
                       <TrendingUp className="w-3 h-3 mr-1" />
                       {trend.growth}
                     </Badge>
@@ -203,7 +203,7 @@ export const WinnersMarketIntelligence = () => {
 
                 {/* Recommandation */}
                 {category.competition === 'low' && category.growthRate > 40 && (
-                  <div className="flex items-start gap-2 p-3 bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-800 rounded-lg">
+                  <div className="flex items-start gap-2 p-3 bg-success/5 dark:bg-green-950/20 border border-green-200 dark:border-green-800 rounded-lg">
                     <AlertCircle className="w-4 h-4 text-success mt-0.5" />
                     <div className="text-sm">
                       <span className="font-semibold text-green-900 dark:text-green-100">🎯 Opportunité excellente !</span>
@@ -240,19 +240,19 @@ export const WinnersMarketIntelligence = () => {
         </CardHeader>
         <CardContent className="space-y-3">
           <div className="flex items-start gap-3">
-            <div className="w-2 h-2 rounded-full bg-blue-500 mt-2" />
+            <div className="w-2 h-2 rounded-full bg-info mt-2" />
             <p className="text-sm text-blue-900 dark:text-blue-100">
               <strong>Sport & Fitness</strong> présente le meilleur ratio opportunité/concurrence ce mois-ci
             </p>
           </div>
           <div className="flex items-start gap-3">
-            <div className="w-2 h-2 rounded-full bg-blue-500 mt-2" />
+            <div className="w-2 h-2 rounded-full bg-info mt-2" />
             <p className="text-sm text-blue-900 dark:text-blue-100">
               Les produits <strong>écologiques</strong> génèrent 23% plus d'engagement que la moyenne
             </p>
           </div>
           <div className="flex items-start gap-3">
-            <div className="w-2 h-2 rounded-full bg-blue-500 mt-2" />
+            <div className="w-2 h-2 rounded-full bg-info mt-2" />
             <p className="text-sm text-blue-900 dark:text-blue-100">
               Pic de demande prévu pour <strong>Maison & Jardin</strong> dans les 4 prochaines semaines
             </p>

@@ -136,11 +136,11 @@ export function SmartIntegrationHealth() {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'healthy': return 'bg-green-100 text-success border-green-200';
-      case 'warning': return 'bg-yellow-100 text-yellow-700 border-yellow-200';
-      case 'error': return 'bg-red-100 text-red-700 border-red-200';
+      case 'healthy': return 'bg-success/10 text-success border-green-200';
+      case 'warning': return 'bg-warning/10 text-yellow-700 border-yellow-200';
+      case 'error': return 'bg-destructive/10 text-red-700 border-red-200';
       case 'offline': return 'bg-gray-100 text-gray-700 border-gray-200';
-      default: return 'bg-blue-100 text-blue-700 border-blue-200';
+      default: return 'bg-info/10 text-blue-700 border-blue-200';
     }
   };
 
@@ -203,7 +203,7 @@ export function SmartIntegrationHealth() {
 
       {/* Alertes critiques */}
       {criticalIssues > 0 && (
-        <Alert className="border-red-200 bg-red-50">
+        <Alert className="border-red-200 bg-destructive/5">
           <AlertTriangle className="h-4 w-4 text-destructive" />
           <AlertDescription className="text-red-700">
             {criticalIssues} intégration(s) en erreur critique. Intervention recommandée.
@@ -292,14 +292,14 @@ export function SmartIntegrationHealth() {
                   Prédictions IA
                 </h4>
                 {metric.predictions.nextFailure && (
-                  <div className="text-xs text-destructive bg-red-50 p-2 rounded">
+                  <div className="text-xs text-destructive bg-destructive/5 p-2 rounded">
                     ⚠️ Panne prédite: {new Date(metric.predictions.nextFailure).toLocaleString()}
                   </div>
                 )}
                 <div className="space-y-1">
                   {metric.predictions.recommendedActions.map((action, index) => (
                     <div key={index} className="text-xs text-muted-foreground flex items-center gap-2">
-                      <div className="w-1.5 h-1.5 bg-blue-500 rounded-full flex-shrink-0" />
+                      <div className="w-1.5 h-1.5 bg-info rounded-full flex-shrink-0" />
                       {action}
                     </div>
                   ))}

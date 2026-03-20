@@ -487,7 +487,7 @@ export function ShopifyStyleProductPreview({
 
                     {/* Duplicate alert */}
                     {duplicatesRemoved > 0 && (
-                      <div className="flex items-center gap-2 p-2.5 rounded-lg bg-amber-500/10 border border-amber-500/20 text-xs text-amber-700 dark:text-amber-400">
+                      <div className="flex items-center gap-2 p-2.5 rounded-lg bg-warning/10 border border-amber-500/20 text-xs text-amber-700 dark:text-amber-400">
                         <Copy className="h-3.5 w-3.5 shrink-0" />
                         {duplicatesRemoved} image(s) en double supprimée(s) automatiquement
                       </div>
@@ -759,7 +759,7 @@ export function ShopifyStyleProductPreview({
                       />
                     </div>
                     {/* Profit indicator */}
-                    <div className="flex items-center justify-between p-2.5 rounded-lg bg-green-500/10 border border-green-500/20">
+                    <div className="flex items-center justify-between p-2.5 rounded-lg bg-success/10 border border-green-500/20">
                       <span className="text-xs text-success dark:text-green-400">Marge bénéficiaire</span>
                       <span className="text-sm font-bold text-success">{margin}%</span>
                     </div>

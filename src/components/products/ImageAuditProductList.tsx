@@ -29,9 +29,9 @@ interface ImageAuditProductListProps {
 
 const getImageBadge = (count: number) => {
   if (count === 0) return <Badge variant="destructive" className="text-xs">0</Badge>;
-  if (count === 1) return <Badge className="bg-orange-500/20 text-warning text-xs">1</Badge>;
-  if (count === 2) return <Badge className="bg-yellow-500/20 text-warning text-xs">2</Badge>;
-  return <Badge className="bg-green-500/20 text-success text-xs">{count}</Badge>;
+  if (count === 1) return <Badge className="bg-warning/20 text-warning text-xs">1</Badge>;
+  if (count === 2) return <Badge className="bg-warning/20 text-warning text-xs">2</Badge>;
+  return <Badge className="bg-success/20 text-success text-xs">{count}</Badge>;
 };
 
 export function ImageAuditProductList({

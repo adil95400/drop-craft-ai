@@ -156,18 +156,18 @@ export const SmartImportRecommendations = () => {
 
   const getRecommendationColor = (type: string) => {
     switch (type) {
-      case 'opportunity': return 'text-success bg-green-100'
-      case 'optimization': return 'text-info bg-blue-100'
-      case 'warning': return 'text-destructive bg-red-100'
+      case 'opportunity': return 'text-success bg-success/10'
+      case 'optimization': return 'text-info bg-info/10'
+      case 'warning': return 'text-destructive bg-destructive/10'
       default: return 'text-purple-600 bg-purple-100'
     }
   }
 
   const getImpactColor = (impact: string) => {
     switch (impact) {
-      case 'high': return 'text-destructive bg-red-100'
+      case 'high': return 'text-destructive bg-destructive/10'
       case 'medium': return 'text-warning bg-orange-100'
-      default: return 'text-success bg-green-100'
+      default: return 'text-success bg-success/10'
     }
   }
 
@@ -371,14 +371,14 @@ export const SmartImportRecommendations = () => {
                 </div>
 
                 {recommendation.actionRequired && !isApplied && (
-                  <div className="flex items-center gap-2 p-2 bg-yellow-50 border border-yellow-200 rounded-md">
+                  <div className="flex items-center gap-2 p-2 bg-warning/5 border border-yellow-200 rounded-md">
                     <AlertCircle className="w-4 h-4 text-warning" />
                     <span className="text-sm text-yellow-800">Action manuelle requise</span>
                   </div>
                 )}
 
                 {isApplied && (
-                  <div className="flex items-center gap-2 p-2 bg-green-50 border border-green-200 rounded-md">
+                  <div className="flex items-center gap-2 p-2 bg-success/5 border border-green-200 rounded-md">
                     <CheckCircle className="w-4 h-4 text-success" />
                     <span className="text-sm text-success">Recommandation appliquée</span>
                   </div>

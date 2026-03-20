@@ -289,7 +289,7 @@ const ShopifyAppIntegration = () => {
               <CardContent>
                 <div className="space-y-4">
                   <div className="flex items-start gap-4 p-4 border rounded-lg">
-                    <Badge className="bg-green-500">Phase 1</Badge>
+                    <Badge className="bg-success">Phase 1</Badge>
                     <div>
                       <h4 className="font-semibold">Installation 1-Click</h4>
                       <p className="text-sm text-muted-foreground">

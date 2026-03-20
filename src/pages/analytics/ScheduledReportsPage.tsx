@@ -131,7 +131,7 @@ export default function ScheduledReportsPage() {
           </Card>
           <Card>
             <CardContent className="p-4 flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-emerald-500/10">
+              <div className="p-2 rounded-lg bg-success/10">
                 <Play className="h-5 w-5 text-success" />
               </div>
               <div>
@@ -144,7 +144,7 @@ export default function ScheduledReportsPage() {
           </Card>
           <Card>
             <CardContent className="p-4 flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-amber-500/10">
+              <div className="p-2 rounded-lg bg-warning/10">
                 <Clock className="h-5 w-5 text-warning" />
               </div>
               <div>
@@ -259,7 +259,7 @@ export default function ScheduledReportsPage() {
                       <Badge
                         className={
                           report.status === 'active'
-                            ? 'bg-emerald-500/10 text-success border-emerald-500/20'
+                            ? 'bg-success/10 text-success border-emerald-500/20'
                             : 'bg-muted text-muted-foreground'
                         }
                       >

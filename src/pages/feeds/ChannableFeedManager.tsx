@@ -115,9 +115,9 @@ const MarketplaceLogo = ({ id, emoji, size = 24 }: { id: string; emoji: string; 
 
 const QualityScore = ({ score, size = 'sm' }: { score: number; size?: 'sm' | 'lg' }) => {
   const getColor = () => {
-    if (score >= 80) return 'text-success bg-green-500/10 border-green-500/20'
-    if (score >= 50) return 'text-warning bg-amber-500/10 border-amber-500/20'
-    return 'text-destructive bg-red-500/10 border-red-500/20'
+    if (score >= 80) return 'text-success bg-success/10 border-green-500/20'
+    if (score >= 50) return 'text-warning bg-warning/10 border-amber-500/20'
+    return 'text-destructive bg-destructive/10 border-red-500/20'
   }
   const getIcon = () => {
     if (score >= 80) return <CheckCircle className={cn(size === 'lg' ? 'h-4 w-4' : 'h-3.5 w-3.5')} />
@@ -150,10 +150,10 @@ const QualityScore = ({ score, size = 'sm' }: { score: number; size?: 'sm' | 'lg
 
 const FeedStatusChip = ({ status }: { status: string | null }) => {
   const configs: Record<string, { color: string; icon: any; label: string }> = {
-    completed: { color: 'bg-green-500/10 text-success border-green-500/20', icon: CheckCircle, label: 'Actif' },
-    pending: { color: 'bg-amber-500/10 text-amber-700 border-amber-500/20', icon: Clock, label: 'En attente' },
-    error: { color: 'bg-red-500/10 text-red-700 border-red-500/20', icon: XCircle, label: 'Erreur' },
-    generating: { color: 'bg-blue-500/10 text-blue-700 border-blue-500/20', icon: RefreshCw, label: 'Génération...' },
+    completed: { color: 'bg-success/10 text-success border-green-500/20', icon: CheckCircle, label: 'Actif' },
+    pending: { color: 'bg-warning/10 text-amber-700 border-amber-500/20', icon: Clock, label: 'En attente' },
+    error: { color: 'bg-destructive/10 text-red-700 border-red-500/20', icon: XCircle, label: 'Erreur' },
+    generating: { color: 'bg-info/10 text-blue-700 border-blue-500/20', icon: RefreshCw, label: 'Génération...' },
   }
   const config = configs[status || 'pending'] || configs.pending
   const Icon = config.icon
@@ -367,7 +367,7 @@ function FeedSettingsModal({ feed, open, onOpenChange, onSave }: {
             ].map(rule => (
               <div key={rule.name} className="flex items-center justify-between p-3 rounded-lg border hover:bg-muted/30 transition-colors">
                 <div className="flex items-center gap-3">
-                  <div className={cn("w-2 h-2 rounded-full", rule.active ? "bg-green-500" : "bg-muted-foreground/30")} />
+                  <div className={cn("w-2 h-2 rounded-full", rule.active ? "bg-success" : "bg-muted-foreground/30")} />
                   <div>
                     <p className="text-sm font-medium">{rule.name}</p>
                     <p className="text-xs text-muted-foreground">{rule.type}</p>
@@ -396,11 +396,11 @@ function FeedSettingsModal({ feed, open, onOpenChange, onSave }: {
               return (
                 <div key={item.label} className={cn(
                   "flex items-start gap-3 p-3 rounded-lg border transition-colors",
-                  passed ? "bg-green-500/5 border-green-500/20" : "bg-muted/30"
+                  passed ? "bg-success/5 border-green-500/20" : "bg-muted/30"
                 )}>
                   <div className={cn(
                     "p-1.5 rounded-lg mt-0.5",
-                    passed ? "bg-green-500/10 text-success" : "bg-muted text-muted-foreground"
+                    passed ? "bg-success/10 text-success" : "bg-muted text-muted-foreground"
                   )}>
                     <ItemIcon className="h-3.5 w-3.5" />
                   </div>

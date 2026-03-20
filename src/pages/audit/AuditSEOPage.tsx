@@ -129,7 +129,7 @@ export default function AuditSEOPage() {
   const getScoreBg = (score: number) => {
     if (score >= 80) return 'bg-emerald-100 dark:bg-emerald-900/30';
     if (score >= 50) return 'bg-amber-100 dark:bg-amber-900/30';
-    return 'bg-red-100 dark:bg-red-900/30';
+    return 'bg-destructive/10 dark:bg-red-900/30';
   };
 
   const getStatusIcon = (status: 'good' | 'warning' | 'error') => {
@@ -150,7 +150,7 @@ export default function AuditSEOPage() {
         'p-3 rounded-lg border transition-all',
         metric.status === 'good' ? 'bg-emerald-50 dark:bg-emerald-900/20 border-emerald-200' :
         metric.status === 'warning' ? 'bg-amber-50 dark:bg-amber-900/20 border-amber-200' :
-        'bg-red-50 dark:bg-red-900/20 border-red-200'
+        'bg-destructive/5 dark:bg-red-900/20 border-red-200'
       )}>
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2">
@@ -162,9 +162,9 @@ export default function AuditSEOPage() {
         <Progress 
           value={metric.score} 
           className={cn('h-2', 
-            metric.status === 'good' ? '[&>div]:bg-emerald-500' :
-            metric.status === 'warning' ? '[&>div]:bg-amber-500' :
-            '[&>div]:bg-red-500'
+            metric.status === 'good' ? '[&>div]:bg-success' :
+            metric.status === 'warning' ? '[&>div]:bg-warning' :
+            '[&>div]:bg-destructive'
           )} 
         />
         <p className="text-xs text-muted-foreground mt-1">{metric.details}</p>
@@ -491,14 +491,14 @@ export default function AuditSEOPage() {
                     <span className="text-sm font-medium">{t('seo.potentialCTR')}</span>
                     <Badge className="bg-amber-100 text-amber-700">+{Math.round(stats.averageSeoScore * 0.2)}%</Badge>
                   </div>
-                  <Progress value={stats.averageSeoScore * 0.6} className="h-2 [&>div]:bg-amber-500" />
+                  <Progress value={stats.averageSeoScore * 0.6} className="h-2 [&>div]:bg-warning" />
                 </div>
-                <div className="p-4 rounded-lg border border-blue-200 bg-blue-50/50">
+                <div className="p-4 rounded-lg border border-blue-200 bg-info/5/50">
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-sm font-medium">{t('seo.conversions')}</span>
-                    <Badge className="bg-blue-100 text-blue-700">+{Math.round(stats.averageSeoScore * 0.15)}%</Badge>
+                    <Badge className="bg-info/10 text-blue-700">+{Math.round(stats.averageSeoScore * 0.15)}%</Badge>
                   </div>
-                  <Progress value={stats.averageSeoScore * 0.5} className="h-2 [&>div]:bg-blue-500" />
+                  <Progress value={stats.averageSeoScore * 0.5} className="h-2 [&>div]:bg-info" />
                 </div>
               </CardContent>
             </Card>
@@ -709,7 +709,7 @@ export default function AuditSEOPage() {
                                       'inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium',
                                       metric.status === 'good' ? 'bg-emerald-100 text-emerald-700' :
                                       metric.status === 'warning' ? 'bg-amber-100 text-amber-700' :
-                                      'bg-red-100 text-red-700'
+                                      'bg-destructive/10 text-red-700'
                                     )}>
                                       {getStatusIcon(metric.status)}
                                       {metric.score}
@@ -777,9 +777,9 @@ export default function AuditSEOPage() {
                                         key={i} 
                                         className={cn(
                                           'p-3 rounded-lg border',
-                                          issue.type === 'error' ? 'bg-red-50 border-red-200' :
+                                          issue.type === 'error' ? 'bg-destructive/5 border-red-200' :
                                           issue.type === 'warning' ? 'bg-amber-50 border-amber-200' :
-                                          'bg-blue-50 border-blue-200'
+                                          'bg-info/5 border-blue-200'
                                         )}
                                       >
                                         <div className="flex items-start gap-2">
@@ -970,12 +970,12 @@ export default function AuditSEOPage() {
                   }}
                 >
                   <CardContent className="pt-6 text-center">
-                    <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center mx-auto mb-4">
+                    <div className="w-12 h-12 rounded-full bg-info/10 flex items-center justify-center mx-auto mb-4">
                       <Image className="h-6 w-6 text-info" />
                     </div>
                     <h4 className="font-semibold mb-2">{t('seo.altTextImages')}</h4>
                     <p className="text-sm text-muted-foreground mb-4">{t('seo.altTextImagesDesc')}</p>
-                    <Badge className="bg-blue-100 text-blue-700">
+                    <Badge className="bg-info/10 text-blue-700">
                       {t('seo.nImages', { count: stats.issueBreakdown.imageIssues })}
                     </Badge>
                   </CardContent>

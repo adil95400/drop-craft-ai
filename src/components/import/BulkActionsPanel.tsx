@@ -182,7 +182,7 @@ export const BulkActionsPanel = ({
                 size="sm"
                 onClick={() => handleBulkAction('approve')}
                 disabled={isProcessing}
-                className="text-success border-green-200 hover:bg-green-50"
+                className="text-success border-green-200 hover:bg-success/5"
               >
                 <CheckCircle className="w-4 h-4 mr-1" />
                 Approuver tout
@@ -193,7 +193,7 @@ export const BulkActionsPanel = ({
                 size="sm"
                 onClick={() => handleBulkAction('publish')}
                 disabled={isProcessing}
-                className="text-info border-blue-200 hover:bg-blue-50"
+                className="text-info border-blue-200 hover:bg-info/5"
               >
                 <Upload className="w-4 h-4 mr-1" />
                 Publier tout
@@ -242,7 +242,7 @@ export const BulkActionsPanel = ({
                   <Button
                     variant="outline"
                     size="sm"
-                    className="text-destructive border-red-200 hover:bg-red-50"
+                    className="text-destructive border-red-200 hover:bg-destructive/5"
                   >
                     <Trash2 className="w-4 h-4 mr-1" />
                     Supprimer
@@ -260,7 +260,7 @@ export const BulkActionsPanel = ({
                     <AlertDialogCancel>Annuler</AlertDialogCancel>
                     <AlertDialogAction 
                       onClick={() => handleBulkAction('delete')}
-                      className="bg-red-600 hover:bg-red-700"
+                      className="bg-destructive hover:bg-red-700"
                     >
                       Supprimer
                     </AlertDialogAction>

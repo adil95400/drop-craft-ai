@@ -164,7 +164,7 @@ export function PremiumSupplierDirectory() {
         </Card>
         <Card>
           <CardContent className="p-4 flex items-center gap-3">
-            <div className="h-10 w-10 rounded-lg bg-blue-100 dark:bg-blue-900 flex items-center justify-center">
+            <div className="h-10 w-10 rounded-lg bg-info/10 dark:bg-blue-900 flex items-center justify-center">
               <MapPin className="h-5 w-5 text-info dark:text-blue-300" />
             </div>
             <div>

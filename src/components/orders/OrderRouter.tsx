@@ -245,7 +245,7 @@ export const OrderRouter = () => {
       case 'pending':
         return <Badge variant="secondary"><Clock className="h-3 w-3 mr-1" />En attente</Badge>
       case 'routed':
-        return <Badge variant="secondary" className="bg-green-100 text-success"><CheckCircle className="h-3 w-3 mr-1" />Routée</Badge>
+        return <Badge variant="secondary" className="bg-success/10 text-success"><CheckCircle className="h-3 w-3 mr-1" />Routée</Badge>
       case 'failed':
         return <Badge variant="destructive"><AlertCircle className="h-3 w-3 mr-1" />Échec</Badge>
     }

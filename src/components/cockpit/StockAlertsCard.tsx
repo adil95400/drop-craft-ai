@@ -16,9 +16,9 @@ interface StockAlertsCardProps {
 
 const urgencyConfig = {
   critical: { label: 'Critique', color: 'bg-destructive/10 text-destructive border-destructive/20' },
-  high: { label: 'Élevée', color: 'bg-orange-500/10 text-warning border-orange-500/20' },
-  medium: { label: 'Moyenne', color: 'bg-yellow-500/10 text-warning border-yellow-500/20' },
-  low: { label: 'Faible', color: 'bg-green-500/10 text-success border-green-500/20' },
+  high: { label: 'Élevée', color: 'bg-warning/10 text-warning border-orange-500/20' },
+  medium: { label: 'Moyenne', color: 'bg-warning/10 text-warning border-yellow-500/20' },
+  low: { label: 'Faible', color: 'bg-success/10 text-success border-green-500/20' },
 }
 
 export function StockAlertsCard({ alerts, stats }: StockAlertsCardProps) {
@@ -47,7 +47,7 @@ export function StockAlertsCard({ alerts, stats }: StockAlertsCardProps) {
             <p className="text-lg font-bold text-destructive">{stats.criticalCount}</p>
             <p className="text-[10px] text-muted-foreground">Critiques</p>
           </div>
-          <div className="p-2 rounded bg-orange-500/10">
+          <div className="p-2 rounded bg-warning/10">
             <p className="text-lg font-bold text-warning">{stats.highCount}</p>
             <p className="text-[10px] text-muted-foreground">Élevées</p>
           </div>

@@ -46,7 +46,7 @@ export function GoalsWidget({ settings }: GoalsWidgetProps) {
         current: monthlyRevenue, 
         unit: '€',
         deadline: currentMonth,
-        color: 'bg-blue-500'
+        color: 'bg-info'
       },
       { 
         id: 2, 
@@ -55,7 +55,7 @@ export function GoalsWidget({ settings }: GoalsWidgetProps) {
         current: monthlyCustomers.length, 
         unit: '',
         deadline: currentMonth,
-        color: 'bg-green-500'
+        color: 'bg-success'
       },
       { 
         id: 3, 
@@ -73,7 +73,7 @@ export function GoalsWidget({ settings }: GoalsWidgetProps) {
         current: products?.length || 0, 
         unit: '',
         deadline: 'Objectif annuel',
-        color: 'bg-orange-500'
+        color: 'bg-warning'
       },
     ];
   }, [orders, customers, products]);

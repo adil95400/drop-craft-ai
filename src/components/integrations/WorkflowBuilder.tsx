@@ -249,7 +249,7 @@ export const WorkflowBuilder = () => {
       <div
         className={`absolute bg-white border-2 rounded-lg p-3 min-w-[160px] cursor-pointer transition-all duration-200 ${
           isSelected ? 'border-primary shadow-lg scale-105' : 'border-gray-300 hover:border-gray-400'
-        } ${type === 'trigger' ? 'bg-blue-50' : 'bg-gray-50'}`}
+        } ${type === 'trigger' ? 'bg-info/5' : 'bg-gray-50'}`}
         style={{ 
           left: node.position?.x || 0, 
           top: node.position?.y || 0,

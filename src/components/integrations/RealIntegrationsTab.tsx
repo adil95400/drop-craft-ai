@@ -105,15 +105,15 @@ export const RealIntegrationsTab = () => {
               <div className="text-2xl font-bold text-primary">{stats.total}</div>
               <div className="text-sm text-muted-foreground">Total</div>
             </div>
-            <div className="text-center p-4 bg-green-50 dark:bg-green-950/20 rounded-lg">
+            <div className="text-center p-4 bg-success/5 dark:bg-green-950/20 rounded-lg">
               <div className="text-2xl font-bold text-success">{stats.connected}</div>
               <div className="text-sm text-muted-foreground">Connectées</div>
             </div>
-            <div className="text-center p-4 bg-blue-50 dark:bg-blue-950/20 rounded-lg">
+            <div className="text-center p-4 bg-info/5 dark:bg-blue-950/20 rounded-lg">
               <div className="text-2xl font-bold text-info">{stats.active}</div>
               <div className="text-sm text-muted-foreground">Actives</div>
             </div>
-            <div className="text-center p-4 bg-red-50 dark:bg-red-950/20 rounded-lg">
+            <div className="text-center p-4 bg-destructive/5 dark:bg-red-950/20 rounded-lg">
               <div className="text-2xl font-bold text-destructive">{stats.errors}</div>
               <div className="text-sm text-muted-foreground">Erreurs</div>
             </div>
@@ -288,7 +288,7 @@ export const RealIntegrationsTab = () => {
                   <CheckCircle2 className="w-4 h-4 text-success" />
                   <span className="text-sm">APIs externes</span>
                 </div>
-                <Badge variant="secondary" className="bg-green-100 text-success">Opérationnel</Badge>
+                <Badge variant="secondary" className="bg-success/10 text-success">Opérationnel</Badge>
               </div>
               
               <div className="flex items-center justify-between">
@@ -296,7 +296,7 @@ export const RealIntegrationsTab = () => {
                   <Activity className="w-4 h-4 text-info" />
                   <span className="text-sm">Synchronisation</span>
                 </div>
-                <Badge variant="secondary" className="bg-blue-100 text-blue-700">Actif</Badge>
+                <Badge variant="secondary" className="bg-info/10 text-blue-700">Actif</Badge>
               </div>
               
               <div className="flex items-center justify-between">
@@ -312,7 +312,7 @@ export const RealIntegrationsTab = () => {
                   <Globe className="w-4 h-4 text-success" />
                   <span className="text-sm">Réseau</span>
                 </div>
-                <Badge variant="secondary" className="bg-green-100 text-success">Normal</Badge>
+                <Badge variant="secondary" className="bg-success/10 text-success">Normal</Badge>
               </div>
             </CardContent>
           </Card>

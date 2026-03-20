@@ -26,7 +26,7 @@ export function ChurnRiskView() {
 
       {/* Risk Overview */}
       <div className="grid gap-4 md:grid-cols-4">
-        <Card className="p-6 border-red-200 bg-red-50 dark:bg-red-950/20">
+        <Card className="p-6 border-red-200 bg-destructive/5 dark:bg-red-950/20">
           <div className="flex items-center justify-between mb-2">
             <p className="text-sm font-medium">Critique</p>
             <XCircle className="h-5 w-5 text-destructive" />
@@ -44,7 +44,7 @@ export function ChurnRiskView() {
           <p className="text-xs text-muted-foreground mt-1">50-74% risque</p>
         </Card>
 
-        <Card className="p-6 border-yellow-200 bg-yellow-50 dark:bg-yellow-950/20">
+        <Card className="p-6 border-yellow-200 bg-warning/5 dark:bg-yellow-950/20">
           <div className="flex items-center justify-between mb-2">
             <p className="text-sm font-medium">Moyen</p>
             <AlertCircle className="h-5 w-5 text-warning" />
@@ -53,7 +53,7 @@ export function ChurnRiskView() {
           <p className="text-xs text-muted-foreground mt-1">25-49% risque</p>
         </Card>
 
-        <Card className="p-6 border-green-200 bg-green-50 dark:bg-green-950/20">
+        <Card className="p-6 border-green-200 bg-success/5 dark:bg-green-950/20">
           <div className="flex items-center justify-between mb-2">
             <p className="text-sm font-medium">Faible</p>
             <CheckCircle className="h-5 w-5 text-success" />
@@ -83,7 +83,7 @@ export function ChurnRiskView() {
           </h3>
           <div className="space-y-3">
             {riskLevels.critical.map((customer) => (
-              <div key={customer.id} className="p-4 bg-red-50 dark:bg-red-950/20 rounded-lg">
+              <div key={customer.id} className="p-4 bg-destructive/5 dark:bg-red-950/20 rounded-lg">
                 <div className="flex items-start justify-between mb-3">
                   <div>
                     <p className="font-medium">

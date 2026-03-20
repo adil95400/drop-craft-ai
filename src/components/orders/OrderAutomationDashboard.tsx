@@ -76,7 +76,7 @@ export const OrderAutomationDashboard: React.FC = () => {
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-2">
-              <div className="p-2 bg-yellow-500/10 rounded-lg">
+              <div className="p-2 bg-warning/10 rounded-lg">
                 <Clock className="w-4 h-4 text-warning" />
               </div>
               <div>
@@ -90,7 +90,7 @@ export const OrderAutomationDashboard: React.FC = () => {
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-2">
-              <div className="p-2 bg-blue-500/10 rounded-lg">
+              <div className="p-2 bg-info/10 rounded-lg">
                 <Send className="w-4 h-4 text-info" />
               </div>
               <div>
@@ -118,7 +118,7 @@ export const OrderAutomationDashboard: React.FC = () => {
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-2">
-              <div className="p-2 bg-green-500/10 rounded-lg">
+              <div className="p-2 bg-success/10 rounded-lg">
                 <CheckCircle className="w-4 h-4 text-success" />
               </div>
               <div>
@@ -132,7 +132,7 @@ export const OrderAutomationDashboard: React.FC = () => {
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-2">
-              <div className="p-2 bg-emerald-500/10 rounded-lg">
+              <div className="p-2 bg-success/10 rounded-lg">
                 <TrendingUp className="w-4 h-4 text-success" />
               </div>
               <div>
@@ -350,7 +350,7 @@ export const OrderAutomationDashboard: React.FC = () => {
                       className="p-4 border rounded-lg flex items-center justify-between"
                     >
                       <div className="flex items-center gap-4">
-                        <div className={`p-2 rounded-lg ${rule.isActive ? 'bg-green-500/10' : 'bg-muted'}`}>
+                        <div className={`p-2 rounded-lg ${rule.isActive ? 'bg-success/10' : 'bg-muted'}`}>
                           <Zap className={`w-5 h-5 ${rule.isActive ? 'text-success' : 'text-muted-foreground'}`} />
                         </div>
                         <div>

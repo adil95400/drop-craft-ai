@@ -126,7 +126,7 @@ export default function WebhooksOutgoingPage() {
             <Card className="border-border/50">
               <CardContent className="p-5">
                 <div className="flex items-start gap-4">
-                  <div className={`p-2.5 rounded-lg ${endpoint.enabled ? 'bg-emerald-50 text-success dark:bg-emerald-500/10 dark:text-emerald-400' : 'bg-muted text-muted-foreground'}`}>
+                  <div className={`p-2.5 rounded-lg ${endpoint.enabled ? 'bg-emerald-50 text-success dark:bg-success/10 dark:text-emerald-400' : 'bg-muted text-muted-foreground'}`}>
                     <Webhook className="h-5 w-5" />
                   </div>
                   <div className="flex-1 min-w-0 space-y-2">

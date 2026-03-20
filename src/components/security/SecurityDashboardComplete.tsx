@@ -116,7 +116,7 @@ export function SecurityDashboardComplete() {
 
       {/* Vue d'ensemble de la sécurité */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card className="border-green-200 bg-green-50">
+        <Card className="border-green-200 bg-success/5">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Clients Protégés</CardTitle>
             <Shield className="h-4 w-4 text-success" />
@@ -129,7 +129,7 @@ export function SecurityDashboardComplete() {
           </CardContent>
         </Card>
 
-        <Card className="border-blue-200 bg-blue-50">
+        <Card className="border-blue-200 bg-info/5">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Fournisseurs Sécurisés</CardTitle>
             <Lock className="h-4 w-4 text-info" />
@@ -171,7 +171,7 @@ export function SecurityDashboardComplete() {
 
       {/* Alertes de sécurité */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <Alert className="border-green-200 bg-green-50">
+        <Alert className="border-green-200 bg-success/5">
           <CheckCircle className="h-4 w-4 text-success" />
           <AlertDescription className="text-success">
             🔒 <strong>Sécurité Maximale Activée</strong><br/>
@@ -182,7 +182,7 @@ export function SecurityDashboardComplete() {
           </AlertDescription>
         </Alert>
 
-        <Alert className="border-blue-200 bg-blue-50">
+        <Alert className="border-blue-200 bg-info/5">
           <Shield className="h-4 w-4 text-info" />
           <AlertDescription className="text-blue-800">
             🛡️ <strong>Protection RLS Avancée</strong><br/>
@@ -196,7 +196,7 @@ export function SecurityDashboardComplete() {
 
       {/* Activité suspecte détectée */}
       {suspiciousActivity.length > 0 && (
-        <Card className="border-red-200 bg-red-50">
+        <Card className="border-red-200 bg-destructive/5">
           <CardHeader>
             <CardTitle className="text-red-800 flex items-center">
               <AlertTriangle className="h-5 w-5 mr-2" />

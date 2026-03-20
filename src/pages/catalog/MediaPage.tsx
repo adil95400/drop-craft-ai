@@ -32,9 +32,9 @@ export default function MediaPage() {
   }, [issues, activeTab])
 
   const issueCategories = [
-    { id: 'critical', label: 'Critiques', icon: AlertTriangle, count: issues.filter(i => i.severity === 'critical').length, color: 'text-destructive', bg: 'bg-red-500/10', ring: 'ring-red-500' },
-    { id: 'non_compliant', label: 'Non conformes', icon: ImageOff, count: stats.nonCompliant, color: 'text-warning', bg: 'bg-amber-500/10', ring: 'ring-amber-500' },
-    { id: 'missing_video', label: 'Sans vidéo', icon: VideoOff, count: stats.total - stats.withVideos, color: 'text-info', bg: 'bg-blue-500/10', ring: 'ring-blue-500' },
+    { id: 'critical', label: 'Critiques', icon: AlertTriangle, count: issues.filter(i => i.severity === 'critical').length, color: 'text-destructive', bg: 'bg-destructive/10', ring: 'ring-red-500' },
+    { id: 'non_compliant', label: 'Non conformes', icon: ImageOff, count: stats.nonCompliant, color: 'text-warning', bg: 'bg-warning/10', ring: 'ring-amber-500' },
+    { id: 'missing_video', label: 'Sans vidéo', icon: VideoOff, count: stats.total - stats.withVideos, color: 'text-info', bg: 'bg-info/10', ring: 'ring-blue-500' },
     { id: 'optimize', label: 'À optimiser', icon: Sparkles, count: stats.total - stats.withMultipleImages, color: 'text-purple-500', bg: 'bg-purple-500/10', ring: 'ring-purple-500' },
   ]
 
@@ -108,7 +108,7 @@ export default function MediaPage() {
                 </div>
 
                 {stats.estimatedImpactWithImages > 0 && (
-                  <div className="mt-4 p-3 bg-emerald-500/10 rounded-xl border border-emerald-500/20">
+                  <div className="mt-4 p-3 bg-success/10 rounded-xl border border-emerald-500/20">
                     <div className="flex items-center gap-2">
                       <Euro className="h-4 w-4 text-success" />
                       <span className="text-sm font-semibold text-success">+{stats.estimatedImpactWithImages.toLocaleString()}€ potentiel</span>

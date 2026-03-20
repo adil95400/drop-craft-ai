@@ -57,10 +57,10 @@ const defaultRules: ScoringRule[] = [
 ];
 
 const scoreThresholds = [
-  { min: 0, max: 25, label: 'Froid', color: 'bg-blue-500', textColor: 'text-info' },
-  { min: 26, max: 50, label: 'Tiède', color: 'bg-amber-500', textColor: 'text-warning' },
-  { min: 51, max: 75, label: 'Chaud', color: 'bg-orange-500', textColor: 'text-warning' },
-  { min: 76, max: 100, label: 'Brûlant', color: 'bg-red-500', textColor: 'text-destructive' },
+  { min: 0, max: 25, label: 'Froid', color: 'bg-info', textColor: 'text-info' },
+  { min: 26, max: 50, label: 'Tiède', color: 'bg-warning', textColor: 'text-warning' },
+  { min: 51, max: 75, label: 'Chaud', color: 'bg-warning', textColor: 'text-warning' },
+  { min: 76, max: 100, label: 'Brûlant', color: 'bg-destructive', textColor: 'text-destructive' },
 ];
 
 function getScoreCategory(score: number) {
@@ -191,7 +191,7 @@ export function LeadScoring() {
                 <div className="text-2xl font-bold text-destructive">{hotLeads.length}</div>
                 <div className="text-sm text-muted-foreground">Leads brûlants</div>
               </div>
-              <div className="p-3 rounded-full bg-red-100">
+              <div className="p-3 rounded-full bg-destructive/10">
                 <Zap className="h-6 w-6 text-destructive" />
               </div>
             </div>

@@ -37,21 +37,21 @@ export function BlogStats({
       label: 'Vues totales',
       value: totalViews.toLocaleString(),
       color: 'text-info',
-      bgColor: 'bg-blue-100',
+      bgColor: 'bg-info/10',
     },
     {
       icon: Heart,
       label: 'J\'aime',
       value: totalLikes.toLocaleString(),
       color: 'text-destructive',
-      bgColor: 'bg-red-100',
+      bgColor: 'bg-destructive/10',
     },
     {
       icon: Share2,
       label: 'Partages',
       value: totalShares.toLocaleString(),
       color: 'text-success',
-      bgColor: 'bg-green-100',
+      bgColor: 'bg-success/10',
     },
     {
       icon: MessageCircle,
@@ -105,7 +105,7 @@ export function BlogStats({
         <CardContent className="p-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+              <div className="w-12 h-12 bg-success/10 rounded-lg flex items-center justify-center">
                 <TrendingUp className="w-6 h-6 text-success" />
               </div>
               <div>
@@ -121,7 +121,7 @@ export function BlogStats({
               <div className="text-3xl font-bold text-success">
                 +{monthlyGrowth}%
               </div>
-              <Badge className="bg-green-100 text-success border-green-200">
+              <Badge className="bg-success/10 text-success border-green-200">
                 <Calendar className="w-4 h-4 mr-1" />
                 Ce mois
               </Badge>

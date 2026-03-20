@@ -74,7 +74,7 @@ export const WinnersStatsCards = ({
         value={stats.winnersDetected}
         subtitle="Score > 70"
         icon={TrendingUp}
-        className="border-green-200 bg-green-50/50"
+        className="border-green-200 bg-success/5/50"
         href="/winners"
       />
       
@@ -91,7 +91,7 @@ export const WinnersStatsCards = ({
         value={`${stats.successRate}%`}
         subtitle="Taux de succès"
         icon={Star}
-        className="border-blue-200 bg-blue-50/50"
+        className="border-blue-200 bg-info/5/50"
         href="/automation/ai-hub"
       />
     </div>

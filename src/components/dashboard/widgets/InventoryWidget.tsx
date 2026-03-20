@@ -48,7 +48,7 @@ export function InventoryWidget({ isCustomizing }: InventoryWidgetProps) {
         </div>
 
         <div className="space-y-2">
-          <div className="flex items-center justify-between p-2 rounded-lg bg-green-500/10">
+          <div className="flex items-center justify-between p-2 rounded-lg bg-success/10">
             <div className="flex items-center gap-2">
               <CheckCircle className="h-4 w-4 text-success" />
               <span className="text-sm">En stock</span>
@@ -56,7 +56,7 @@ export function InventoryWidget({ isCustomizing }: InventoryWidgetProps) {
             <Badge variant="secondary">{inStock}</Badge>
           </div>
 
-          <div className="flex items-center justify-between p-2 rounded-lg bg-orange-500/10">
+          <div className="flex items-center justify-between p-2 rounded-lg bg-warning/10">
             <div className="flex items-center gap-2">
               <AlertTriangle className="h-4 w-4 text-warning" />
               <span className="text-sm">Stock bas</span>
@@ -64,7 +64,7 @@ export function InventoryWidget({ isCustomizing }: InventoryWidgetProps) {
             <Badge variant="secondary">{lowStock}</Badge>
           </div>
 
-          <div className="flex items-center justify-between p-2 rounded-lg bg-red-500/10">
+          <div className="flex items-center justify-between p-2 rounded-lg bg-destructive/10">
             <div className="flex items-center gap-2">
               <AlertTriangle className="h-4 w-4 text-destructive" />
               <span className="text-sm">Rupture</span>

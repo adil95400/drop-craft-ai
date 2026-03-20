@@ -151,7 +151,7 @@ export const BigBuySync = () => {
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <h3 className="font-semibold">Dernière synchronisation</h3>
-                <Badge className={lastSyncJob.status === 'completed' ? 'bg-green-100 text-success' : lastSyncJob.status === 'failed' ? 'bg-red-100 text-red-800' : 'bg-blue-100 text-blue-800'}>
+                <Badge className={lastSyncJob.status === 'completed' ? 'bg-success/10 text-success' : lastSyncJob.status === 'failed' ? 'bg-destructive/10 text-red-800' : 'bg-info/10 text-blue-800'}>
                   {lastSyncJob.status === 'completed' && 'Terminée'}{lastSyncJob.status === 'running' && 'En cours'}{lastSyncJob.status === 'failed' && 'Échouée'}{lastSyncJob.status === 'pending' && 'En attente'}
                 </Badge>
               </div>
@@ -163,9 +163,9 @@ export const BigBuySync = () => {
               )}
               {lastSyncJob.status === 'completed' && (
                 <div className="grid grid-cols-3 gap-4">
-                  <div className="text-center p-4 bg-green-50 rounded-lg"><p className="text-2xl font-bold text-success">{lastSyncJob.imported_products}</p><p className="text-sm text-success">Importés</p></div>
-                  <div className="text-center p-4 bg-blue-50 rounded-lg"><p className="text-2xl font-bold text-info">{lastSyncJob.processed_products}</p><p className="text-sm text-blue-700">Traités</p></div>
-                  <div className="text-center p-4 bg-red-50 rounded-lg"><p className="text-2xl font-bold text-destructive">{lastSyncJob.failed_products}</p><p className="text-sm text-red-700">Échoués</p></div>
+                  <div className="text-center p-4 bg-success/5 rounded-lg"><p className="text-2xl font-bold text-success">{lastSyncJob.imported_products}</p><p className="text-sm text-success">Importés</p></div>
+                  <div className="text-center p-4 bg-info/5 rounded-lg"><p className="text-2xl font-bold text-info">{lastSyncJob.processed_products}</p><p className="text-sm text-blue-700">Traités</p></div>
+                  <div className="text-center p-4 bg-destructive/5 rounded-lg"><p className="text-2xl font-bold text-destructive">{lastSyncJob.failed_products}</p><p className="text-sm text-red-700">Échoués</p></div>
                 </div>
               )}
             </div>

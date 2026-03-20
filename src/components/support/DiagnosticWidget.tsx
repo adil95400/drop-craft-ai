@@ -374,8 +374,8 @@ const DIAGNOSTIC_TREE: DiagnosticStep[] = [
 // ─── Severity Helpers ────────────────────────────────────────────
 const severityConfig: Record<Severity, { label: string; icon: typeof CheckCircle2; className: string }> = {
   critical: { label: 'Critique', icon: XCircle, className: 'bg-destructive/10 text-destructive border-destructive/20' },
-  important: { label: 'Important', icon: AlertTriangle, className: 'bg-orange-500/10 text-warning border-orange-500/20' },
-  minor: { label: 'Mineur', icon: CheckCircle2, className: 'bg-emerald-500/10 text-success border-emerald-500/20' },
+  important: { label: 'Important', icon: AlertTriangle, className: 'bg-warning/10 text-warning border-orange-500/20' },
+  minor: { label: 'Mineur', icon: CheckCircle2, className: 'bg-success/10 text-success border-emerald-500/20' },
 }
 
 // ─── Component ───────────────────────────────────────────────────

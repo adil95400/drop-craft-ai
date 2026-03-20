@@ -135,11 +135,11 @@ export function ImportRollbackManager() {
   const getStatusBadge = (status: ImportJob['status']) => {
     switch (status) {
       case 'completed':
-        return <Badge className="bg-green-500/10 text-success"><CheckCircle className="h-3 w-3 mr-1" />Terminé</Badge>;
+        return <Badge className="bg-success/10 text-success"><CheckCircle className="h-3 w-3 mr-1" />Terminé</Badge>;
       case 'partial':
-        return <Badge className="bg-yellow-500/10 text-warning"><AlertTriangle className="h-3 w-3 mr-1" />Partiel</Badge>;
+        return <Badge className="bg-warning/10 text-warning"><AlertTriangle className="h-3 w-3 mr-1" />Partiel</Badge>;
       case 'failed':
-        return <Badge className="bg-red-500/10 text-destructive"><XCircle className="h-3 w-3 mr-1" />Échoué</Badge>;
+        return <Badge className="bg-destructive/10 text-destructive"><XCircle className="h-3 w-3 mr-1" />Échoué</Badge>;
       case 'rolled_back':
         return <Badge variant="secondary"><RotateCcw className="h-3 w-3 mr-1" />Annulé</Badge>;
       default:
@@ -277,7 +277,7 @@ export function ImportRollbackManager() {
                     <div className="text-right shrink-0">
                       {job.canRollback ? (
                         <div className="space-y-2">
-                          <Badge variant="outline" className="bg-orange-500/10 text-warning border-orange-500/20">
+                          <Badge variant="outline" className="bg-warning/10 text-warning border-orange-500/20">
                             <Clock className="h-3 w-3 mr-1" />
                             Expire {formatDistanceToNow(new Date(job.rollbackDeadline), { addSuffix: true, locale: getDateFnsLocale() })}
                           </Badge>

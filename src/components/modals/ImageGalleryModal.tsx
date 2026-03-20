@@ -409,7 +409,7 @@ export function ImageGalleryModal({
 
                     {/* Primary Badge */}
                     {currentIndex === 0 && (
-                      <Badge className="absolute top-4 left-4 bg-amber-500 text-white border-0 gap-1">
+                      <Badge className="absolute top-4 left-4 bg-warning text-white border-0 gap-1">
                         <Star className="h-3 w-3 fill-current" />
                         Principale
                       </Badge>
@@ -523,7 +523,7 @@ export function ImageGalleryModal({
                                 <Button
                                   variant="ghost"
                                   size="icon"
-                                  className="h-9 w-9 text-amber-400 hover:text-amber-300 hover:bg-amber-500/20"
+                                  className="h-9 w-9 text-amber-400 hover:text-amber-300 hover:bg-warning/20"
                                   onClick={() => handleSetPrimary(currentIndex)}
                                 >
                                   <Star className="h-4 w-4" />
@@ -538,7 +538,7 @@ export function ImageGalleryModal({
                               <Button
                                 variant="ghost"
                                 size="icon"
-                                className="h-9 w-9 text-red-400 hover:text-red-300 hover:bg-red-500/20"
+                                className="h-9 w-9 text-red-400 hover:text-red-300 hover:bg-destructive/20"
                                 onClick={() => handleRemoveImage(currentIndex)}
                               >
                                 <Trash2 className="h-4 w-4" />
@@ -683,7 +683,7 @@ export function ImageGalleryModal({
                     <div className="space-y-4">
                       <Card className="p-4 border-dashed">
                         <div className="flex items-start gap-4">
-                          <div className="h-10 w-10 rounded-lg bg-blue-500/10 flex items-center justify-center flex-shrink-0">
+                          <div className="h-10 w-10 rounded-lg bg-info/10 flex items-center justify-center flex-shrink-0">
                             <RefreshCw className="h-5 w-5 text-info" />
                           </div>
                           <div className="flex-1">
@@ -710,7 +710,7 @@ export function ImageGalleryModal({
 
                       <Card className="p-4 border-dashed">
                         <div className="flex items-start gap-4">
-                          <div className="h-10 w-10 rounded-lg bg-emerald-500/10 flex items-center justify-center flex-shrink-0">
+                          <div className="h-10 w-10 rounded-lg bg-success/10 flex items-center justify-center flex-shrink-0">
                             <Search className="h-5 w-5 text-success" />
                           </div>
                           <div className="flex-1">

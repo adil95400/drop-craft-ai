@@ -36,9 +36,9 @@ export function BulkEnrichmentPanel({ productIds, onComplete }: BulkEnrichmentPa
   const { toast } = useToast();
 
   const sources = [
-    { id: 'amazon', label: 'Amazon', color: 'bg-orange-500' },
-    { id: 'aliexpress', label: 'AliExpress', color: 'bg-red-500' },
-    { id: 'ebay', label: 'eBay', color: 'bg-blue-500' },
+    { id: 'amazon', label: 'Amazon', color: 'bg-warning' },
+    { id: 'aliexpress', label: 'AliExpress', color: 'bg-destructive' },
+    { id: 'ebay', label: 'eBay', color: 'bg-info' },
   ];
 
   const toggleSource = (sourceId: string) => {

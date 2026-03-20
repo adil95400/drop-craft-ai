@@ -59,7 +59,7 @@ export const ImportTemplates = ({ onSelectTemplate }: ImportTemplatesProps) => {
       description: 'Spécialisé pour smartphones, ordinateurs et gadgets',
       category: 'Popular',
       icon: <Smartphone className="w-6 h-6" />,
-      color: 'bg-blue-500',
+      color: 'bg-info',
       popularity: 92,
       examples: [
         'https://www.amazon.fr/dp/B08N5WRWNW',
@@ -79,7 +79,7 @@ export const ImportTemplates = ({ onSelectTemplate }: ImportTemplatesProps) => {
       description: 'Parfait pour meubles, décoration et jardinage',
       category: 'Trending',
       icon: <Home className="w-6 h-6" />,
-      color: 'bg-green-500',
+      color: 'bg-success',
       popularity: 88,
       examples: [
         'https://www.ikea.com/fr/fr/p/malm-commode-6-tiroirs-blanc-00360455/',
@@ -99,7 +99,7 @@ export const ImportTemplates = ({ onSelectTemplate }: ImportTemplatesProps) => {
       description: 'Optimisé pour produits de beauté et soins',
       category: 'Trending',
       icon: <Heart className="w-6 h-6" />,
-      color: 'bg-rose-500',
+      color: 'bg-destructive',
       popularity: 85,
       examples: [
         'https://www.sephora.fr/p/fond-de-teint-longue-tenue-P3525017.html',
@@ -139,7 +139,7 @@ export const ImportTemplates = ({ onSelectTemplate }: ImportTemplatesProps) => {
       description: 'Adapté pour livres, ebooks et contenus éducatifs',
       category: 'Niche',
       icon: <Book className="w-6 h-6" />,
-      color: 'bg-amber-600',
+      color: 'bg-warning',
       popularity: 70,
       examples: [
         'https://www.amazon.fr/Atomic-Habits-Proven-Build-Break/dp/0735211299',
@@ -186,8 +186,8 @@ export const ImportTemplates = ({ onSelectTemplate }: ImportTemplatesProps) => {
 
   const getCategoryColor = (category: string) => {
     switch (category) {
-      case 'Popular': return 'bg-red-100 text-red-700 border-red-200'
-      case 'Trending': return 'bg-blue-100 text-blue-700 border-blue-200'
+      case 'Popular': return 'bg-destructive/10 text-red-700 border-red-200'
+      case 'Trending': return 'bg-info/10 text-blue-700 border-blue-200'
       case 'Seasonal': return 'bg-purple-100 text-purple-700 border-purple-200'
       case 'Niche': return 'bg-gray-100 text-gray-700 border-gray-200'
       default: return 'bg-gray-100 text-gray-700 border-gray-200'
@@ -282,11 +282,11 @@ export const ImportTemplates = ({ onSelectTemplate }: ImportTemplatesProps) => {
       <div className="text-center text-sm text-muted-foreground">
         <div className="flex items-center justify-center gap-4 flex-wrap">
           <div className="flex items-center gap-2">
-            <div className="w-3 h-3 bg-red-500 rounded"></div>
+            <div className="w-3 h-3 bg-destructive rounded"></div>
             <span>Popular (90%+ utilisé)</span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-3 h-3 bg-blue-500 rounded"></div>
+            <div className="w-3 h-3 bg-info rounded"></div>
             <span>Trending (80%+ utilisé)</span>
           </div>
           <div className="flex items-center gap-2">

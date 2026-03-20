@@ -50,8 +50,8 @@ const MetricCard = memo(function MetricCard({
 }) {
   const variantStyles = {
     default: 'bg-card/50',
-    success: 'bg-emerald-500/5',
-    warning: 'bg-orange-500/5',
+    success: 'bg-success/5',
+    warning: 'bg-warning/5',
     primary: 'bg-primary/5'
   }
 

@@ -96,7 +96,7 @@ export const PricingCard: React.FC<PricingCardProps> = ({
 
         {isCurrentPlan && (
           <div className="text-center">
-            <Badge variant="secondary" className="bg-green-100 text-success">
+            <Badge variant="secondary" className="bg-success/10 text-success">
               <Check className="w-3 h-3 mr-1" />
               Plan actif
             </Badge>

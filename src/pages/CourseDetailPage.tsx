@@ -209,7 +209,7 @@ export default function CourseDetailPage() {
                       )}
                     </div>
                     {isLessonCompleted(currentLesson.id) && (
-                      <Badge className="bg-green-500 shrink-0">
+                      <Badge className="bg-success shrink-0">
                         <CheckCircle2 className="h-3 w-3 mr-1" />
                         Complété
                       </Badge>
@@ -376,7 +376,7 @@ export default function CourseDetailPage() {
                          <div className="flex items-start gap-3">
                            <div className={`flex-shrink-0 w-10 h-10 rounded-lg border-2 flex items-center justify-center ${
                              isLessonCompleted(lesson.id) 
-                               ? 'bg-green-500/10 border-green-500' 
+                               ? 'bg-success/10 border-green-500' 
                                : currentLesson?.id === lesson.id 
                                ? 'bg-primary/10 border-primary'
                                : 'border-border'

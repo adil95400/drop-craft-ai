@@ -467,8 +467,8 @@ export function AdvancedSupplierEngine() {
                         <div className="flex items-center gap-3">
                           <div className={cn(
                             "w-2 h-2 rounded-full",
-                            supplier.status === 'success' ? "bg-green-500" :
-                            supplier.status === 'warning' ? "bg-yellow-500" : "bg-red-500"
+                            supplier.status === 'success' ? "bg-success" :
+                            supplier.status === 'warning' ? "bg-warning" : "bg-destructive"
                           )} />
                           <div>
                             <div className="font-medium">{supplier.name}</div>
@@ -759,7 +759,7 @@ export function AdvancedSupplierEngine() {
             {/* Auto-Order */}
             <Card className={cn(
               "transition-all",
-              automationStatus.autoOrder && "border-green-500/50 bg-green-500/5"
+              automationStatus.autoOrder && "border-green-500/50 bg-success/5"
             )}>
               <CardHeader>
                 <div className="flex items-center justify-between">
@@ -800,7 +800,7 @@ export function AdvancedSupplierEngine() {
             {/* Auto-Fulfillment */}
             <Card className={cn(
               "transition-all",
-              automationStatus.autoFulfillment && "border-blue-500/50 bg-blue-500/5"
+              automationStatus.autoFulfillment && "border-blue-500/50 bg-info/5"
             )}>
               <CardHeader>
                 <div className="flex items-center justify-between">
@@ -966,8 +966,8 @@ export function AdvancedSupplierEngine() {
                           <div className="flex items-center gap-3">
                             <div className={cn(
                               "w-3 h-3 rounded-full",
-                              supplier.status === 'success' ? "bg-green-500" :
-                              supplier.status === 'warning' ? "bg-yellow-500" : "bg-red-500"
+                              supplier.status === 'success' ? "bg-success" :
+                              supplier.status === 'warning' ? "bg-warning" : "bg-destructive"
                             )} />
                             <span className="font-medium">{supplier.name}</span>
                           </div>

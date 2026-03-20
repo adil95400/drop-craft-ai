@@ -248,7 +248,7 @@ export function FinanceDashboard() {
                     <CardTitle className="text-lg">Alertes Financières</CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-3">
-                    <div className="flex items-center gap-3 p-3 border rounded-lg bg-red-50">
+                    <div className="flex items-center gap-3 p-3 border rounded-lg bg-destructive/5">
                       <AlertCircle className="w-5 h-5 text-destructive" />
                       <div className="flex-1">
                         <div className="font-medium text-sm">Factures en retard</div>
@@ -258,7 +258,7 @@ export function FinanceDashboard() {
                       </div>
                     </div>
                     
-                    <div className="flex items-center gap-3 p-3 border rounded-lg bg-yellow-50">
+                    <div className="flex items-center gap-3 p-3 border rounded-lg bg-warning/5">
                       <Clock className="w-5 h-5 text-warning" />
                       <div className="flex-1">
                         <div className="font-medium text-sm">Factures en attente</div>
@@ -268,7 +268,7 @@ export function FinanceDashboard() {
                       </div>
                     </div>
                     
-                    <div className="flex items-center gap-3 p-3 border rounded-lg bg-green-50">
+                    <div className="flex items-center gap-3 p-3 border rounded-lg bg-success/5">
                       <CheckCircle className="w-5 h-5 text-success" />
                       <div className="flex-1">
                         <div className="font-medium text-sm">Trésorerie saine</div>

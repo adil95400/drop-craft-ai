@@ -362,7 +362,7 @@ export function RuleTesterDialog({ rule, open, onOpenChange }: RuleTesterDialogP
                     if (!result) return null;
 
                     return (
-                      <Card key={product.id} className={`transition-all ${result.matches ? 'border-green-500 bg-green-500/5' : 'border-muted'}`}>
+                      <Card key={product.id} className={`transition-all ${result.matches ? 'border-green-500 bg-success/5' : 'border-muted'}`}>
                         <CardContent className="p-4">
                           <div className="flex items-start justify-between">
                             <div className="flex-1">
@@ -401,7 +401,7 @@ export function RuleTesterDialog({ rule, open, onOpenChange }: RuleTesterDialogP
                             </div>
 
                             {result.matches && (
-                              <Badge className="bg-green-500 shrink-0">Match</Badge>
+                              <Badge className="bg-success shrink-0">Match</Badge>
                             )}
                           </div>
 

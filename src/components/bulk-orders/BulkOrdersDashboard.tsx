@@ -35,11 +35,11 @@ import { getDateFnsLocale } from '@/utils/dateFnsLocale';
 
 const STATUS_CONFIG = {
   draft: { label: 'Brouillon', color: 'bg-gray-500', icon: FileText },
-  pending: { label: 'En attente', color: 'bg-yellow-500', icon: Clock },
-  processing: { label: 'Traitement', color: 'bg-blue-500', icon: RefreshCw },
+  pending: { label: 'En attente', color: 'bg-warning', icon: Clock },
+  processing: { label: 'Traitement', color: 'bg-info', icon: RefreshCw },
   shipped: { label: 'Expédiée', color: 'bg-purple-500', icon: Truck },
-  completed: { label: 'Terminée', color: 'bg-green-500', icon: CheckCircle },
-  cancelled: { label: 'Annulée', color: 'bg-red-500', icon: XCircle },
+  completed: { label: 'Terminée', color: 'bg-success', icon: CheckCircle },
+  cancelled: { label: 'Annulée', color: 'bg-destructive', icon: XCircle },
 };
 
 export function BulkOrdersDashboard() {
@@ -88,7 +88,7 @@ export function BulkOrdersDashboard() {
             <Card className="bg-gradient-to-br from-yellow-500/10 to-yellow-500/5">
               <CardContent className="p-4">
                 <div className="flex items-center gap-3">
-                  <div className="p-2 rounded-lg bg-yellow-500/20">
+                  <div className="p-2 rounded-lg bg-warning/20">
                     <FileText className="h-5 w-5 text-warning" />
                   </div>
                   <div>
@@ -102,7 +102,7 @@ export function BulkOrdersDashboard() {
             <Card className="bg-gradient-to-br from-blue-500/10 to-blue-500/5">
               <CardContent className="p-4">
                 <div className="flex items-center gap-3">
-                  <div className="p-2 rounded-lg bg-blue-500/20">
+                  <div className="p-2 rounded-lg bg-info/20">
                     <Clock className="h-5 w-5 text-info" />
                   </div>
                   <div>
@@ -130,7 +130,7 @@ export function BulkOrdersDashboard() {
             <Card className="bg-gradient-to-br from-green-500/10 to-green-500/5">
               <CardContent className="p-4">
                 <div className="flex items-center gap-3">
-                  <div className="p-2 rounded-lg bg-green-500/20">
+                  <div className="p-2 rounded-lg bg-success/20">
                     <DollarSign className="h-5 w-5 text-success" />
                   </div>
                   <div>

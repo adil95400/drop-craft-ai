@@ -249,10 +249,10 @@ export const SecurityMonitor = () => {
 
   const getSeverityColor = (severity: SecurityThreat['severity']) => {
     switch (severity) {
-      case 'critical': return 'text-destructive bg-red-50 border-red-200';
+      case 'critical': return 'text-destructive bg-destructive/5 border-red-200';
       case 'high': return 'text-warning bg-orange-50 border-orange-200';
-      case 'medium': return 'text-warning bg-yellow-50 border-yellow-200';
-      case 'low': return 'text-info bg-blue-50 border-blue-200';
+      case 'medium': return 'text-warning bg-warning/5 border-yellow-200';
+      case 'low': return 'text-info bg-info/5 border-blue-200';
       default: return 'text-gray-600 bg-gray-50 border-gray-200';
     }
   };
@@ -367,7 +367,7 @@ export const SecurityMonitor = () => {
 
       {/* Alertes critiques */}
       {threats.filter(t => t.severity === 'critical' && t.status === 'active').length > 0 && (
-        <Alert className="border-red-200 bg-red-50">
+        <Alert className="border-red-200 bg-destructive/5">
           <AlertTriangle className="h-4 w-4 text-destructive" />
           <AlertDescription className="text-red-800">
             <strong>Alerte critique :</strong> {threats.filter(t => t.severity === 'critical' && t.status === 'active').length} menace(s) critique(s) détectée(s). Action immédiate requise.
@@ -597,7 +597,7 @@ export const SecurityMonitor = () => {
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
-                  <div className="flex items-center justify-between p-3 rounded-lg bg-red-50 border border-red-200">
+                  <div className="flex items-center justify-between p-3 rounded-lg bg-destructive/5 border border-red-200">
                     <div>
                       <p className="text-sm font-medium">Haute priorité</p>
                       <p className="text-xs text-muted-foreground">Correctifs critiques</p>
@@ -605,7 +605,7 @@ export const SecurityMonitor = () => {
                     <Badge variant="destructive">{Math.max(0, metrics.vulnerabilities - 3)}</Badge>
                   </div>
                   
-                  <div className="flex items-center justify-between p-3 rounded-lg bg-yellow-50 border border-yellow-200">
+                  <div className="flex items-center justify-between p-3 rounded-lg bg-warning/5 border border-yellow-200">
                     <div>
                       <p className="text-sm font-medium">Moyenne priorité</p>
                       <p className="text-xs text-muted-foreground">Améliorations sécurité</p>
@@ -613,7 +613,7 @@ export const SecurityMonitor = () => {
                     <Badge variant="secondary">7</Badge>
                   </div>
                   
-                  <div className="flex items-center justify-between p-3 rounded-lg bg-blue-50 border border-blue-200">
+                  <div className="flex items-center justify-between p-3 rounded-lg bg-info/5 border border-blue-200">
                     <div>
                       <p className="text-sm font-medium">Basse priorité</p>
                       <p className="text-xs text-muted-foreground">Optimisations</p>

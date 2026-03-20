@@ -200,28 +200,28 @@ export const GlobalIntelligenceHub: React.FC = () => {
 
   const getRiskBadgeColor = (risk: string) => {
     switch (risk) {
-      case 'low': return 'bg-green-100 text-success border-green-200';
-      case 'medium': return 'bg-yellow-100 text-yellow-800 border-yellow-200';
-      case 'high': return 'bg-red-100 text-red-800 border-red-200';
+      case 'low': return 'bg-success/10 text-success border-green-200';
+      case 'medium': return 'bg-warning/10 text-yellow-800 border-yellow-200';
+      case 'high': return 'bg-destructive/10 text-red-800 border-red-200';
       default: return 'bg-gray-100 text-gray-800 border-gray-200';
     }
   };
 
   const getComplianceStatusColor = (status: string) => {
     switch (status) {
-      case 'compliant': return 'bg-green-100 text-success border-green-200';
-      case 'pending': return 'bg-yellow-100 text-yellow-800 border-yellow-200';
-      case 'non_compliant': return 'bg-red-100 text-red-800 border-red-200';
+      case 'compliant': return 'bg-success/10 text-success border-green-200';
+      case 'pending': return 'bg-warning/10 text-yellow-800 border-yellow-200';
+      case 'non_compliant': return 'bg-destructive/10 text-red-800 border-red-200';
       default: return 'bg-gray-100 text-gray-800 border-gray-200';
     }
   };
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
-      case 'critical': return 'bg-red-100 text-red-800 border-red-200';
+      case 'critical': return 'bg-destructive/10 text-red-800 border-red-200';
       case 'high': return 'bg-orange-100 text-orange-800 border-orange-200';
-      case 'medium': return 'bg-yellow-100 text-yellow-800 border-yellow-200';
-      case 'low': return 'bg-green-100 text-success border-green-200';
+      case 'medium': return 'bg-warning/10 text-yellow-800 border-yellow-200';
+      case 'low': return 'bg-success/10 text-success border-green-200';
       default: return 'bg-gray-100 text-gray-800 border-gray-200';
     }
   };
@@ -241,7 +241,7 @@ export const GlobalIntelligenceHub: React.FC = () => {
     <div className="space-y-6 p-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-3">
-          <div className="p-2 bg-blue-100 rounded-lg">
+          <div className="p-2 bg-info/10 rounded-lg">
             <Globe className="h-6 w-6 text-info" />
           </div>
           <div>
@@ -252,11 +252,11 @@ export const GlobalIntelligenceHub: React.FC = () => {
           </div>
         </div>
         <div className="flex space-x-2">
-          <Badge variant="secondary" className="bg-blue-100 text-blue-800">
+          <Badge variant="secondary" className="bg-info/10 text-blue-800">
             <MapPin className="h-3 w-3 mr-1" />
             Global Coverage
           </Badge>
-          <Badge variant="secondary" className="bg-green-100 text-success">
+          <Badge variant="secondary" className="bg-success/10 text-success">
             <Clock className="h-3 w-3 mr-1" />
             Real-time Updates
           </Badge>
@@ -300,7 +300,7 @@ export const GlobalIntelligenceHub: React.FC = () => {
                         {insight.region} • Opportunity Score: {insight.opportunity_score}/100
                       </CardDescription>
                     </div>
-                    <Badge variant="outline" className="bg-blue-50 text-blue-700">
+                    <Badge variant="outline" className="bg-info/5 text-blue-700">
                       {insight.region}
                     </Badge>
                   </div>
@@ -388,9 +388,9 @@ export const GlobalIntelligenceHub: React.FC = () => {
                     </div>
                     <Badge 
                       variant="secondary"
-                      className={trend.timeline === 'short' ? 'bg-red-100 text-red-800' : 
-                               trend.timeline === 'medium' ? 'bg-yellow-100 text-yellow-800' : 
-                               'bg-green-100 text-success'}
+                      className={trend.timeline === 'short' ? 'bg-destructive/10 text-red-800' : 
+                               trend.timeline === 'medium' ? 'bg-warning/10 text-yellow-800' : 
+                               'bg-success/10 text-success'}
                     >
                       {trend.timeline}-term
                     </Badge>

@@ -80,16 +80,16 @@ export const EnhancedProductGrid = ({
   };
 
   const getMarginColor = (margin: number) => {
-    if (margin >= 50) return 'text-success bg-green-50';
-    if (margin >= 40) return 'text-info bg-blue-50';
+    if (margin >= 50) return 'text-success bg-success/5';
+    if (margin >= 40) return 'text-info bg-info/5';
     if (margin >= 30) return 'text-warning bg-orange-50';
-    return 'text-destructive bg-red-50';
+    return 'text-destructive bg-destructive/5';
   };
 
   const getStockStatus = (stock: number) => {
-    if (stock > 100) return { color: 'text-success', icon: CheckCircle, text: 'En stock', bg: 'bg-green-50' };
+    if (stock > 100) return { color: 'text-success', icon: CheckCircle, text: 'En stock', bg: 'bg-success/5' };
     if (stock > 20) return { color: 'text-warning', icon: AlertTriangle, text: 'Stock limité', bg: 'bg-orange-50' };
-    return { color: 'text-destructive', icon: AlertTriangle, text: 'Stock faible', bg: 'bg-red-50' };
+    return { color: 'text-destructive', icon: AlertTriangle, text: 'Stock faible', bg: 'bg-destructive/5' };
   };
 
   const handleBulkImport = () => {

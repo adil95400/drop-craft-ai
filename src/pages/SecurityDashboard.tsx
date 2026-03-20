@@ -15,8 +15,8 @@ import { GDPRComplianceCenter } from '@/components/security/GDPRComplianceCenter
 import { TwoFactorSetup } from '@/components/security/TwoFactorSetup';
 
 const severityColors: Record<string, string> = {
-  info: 'bg-blue-500/10 text-info',
-  warning: 'bg-yellow-500/10 text-warning',
+  info: 'bg-info/10 text-info',
+  warning: 'bg-warning/10 text-warning',
   error: 'bg-destructive/10 text-destructive',
   critical: 'bg-red-700/10 text-red-700',
 };

@@ -50,10 +50,10 @@ interface StatCardProps {
 
 const colorClasses = {
   primary: 'bg-primary/10 text-primary border-primary/20',
-  success: 'bg-emerald-500/10 text-success border-emerald-500/20',
-  warning: 'bg-amber-500/10 text-warning border-amber-500/20',
-  danger: 'bg-red-500/10 text-destructive border-red-500/20',
-  info: 'bg-blue-500/10 text-info border-blue-500/20',
+  success: 'bg-success/10 text-success border-emerald-500/20',
+  warning: 'bg-warning/10 text-warning border-amber-500/20',
+  danger: 'bg-destructive/10 text-destructive border-red-500/20',
+  info: 'bg-info/10 text-info border-blue-500/20',
 };
 
 const iconColorClasses = {
@@ -205,8 +205,8 @@ export const CatalogDashboard = memo(function CatalogDashboard({
           <div className="flex items-center gap-2">
             <div className={cn(
               "h-2 w-2 rounded-full",
-              stats.healthScore >= 70 ? "bg-emerald-500" : 
-              stats.healthScore >= 40 ? "bg-amber-500" : "bg-red-500"
+              stats.healthScore >= 70 ? "bg-success" : 
+              stats.healthScore >= 40 ? "bg-warning" : "bg-destructive"
             )} />
             <span className="text-sm font-medium">
               Santé catalogue: {stats.healthScore}%

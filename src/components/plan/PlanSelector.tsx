@@ -64,7 +64,7 @@ const planConfigs: Record<PlanType, PlanConfig> = {
     price: '29€/mois',
     icon: Star,
     color: 'text-info',
-    bgColor: 'bg-blue-50',
+    bgColor: 'bg-info/5',
     description: 'Pour les professionnels',
     popular: true,
     features: [

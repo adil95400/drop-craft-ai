@@ -158,7 +158,7 @@ export const SupplierPerformanceAnalytics = () => {
   const getTierColor = (tier: string) => {
     switch (tier) {
       case 'premium': return 'text-purple-600 bg-purple-100'
-      case 'gold': return 'text-warning bg-yellow-100'
+      case 'gold': return 'text-warning bg-warning/10'
       case 'silver': return 'text-gray-600 bg-gray-100'
       case 'bronze': return 'text-warning bg-orange-100'
       default: return 'text-gray-600 bg-gray-100'
@@ -511,7 +511,7 @@ export const SupplierPerformanceAnalytics = () => {
                         <div className="flex items-center gap-2">
                           <div className="w-20 bg-gray-200 rounded-full h-2">
                             <div 
-                              className="bg-blue-500 h-2 rounded-full" 
+                              className="bg-info h-2 rounded-full" 
                               style={{ width: `${metric.value}%` }}
                             />
                           </div>

@@ -254,9 +254,9 @@ export const ComplianceManager: React.FC = () => {
 
   const getComplianceStatusColor = (status: string) => {
     switch (status) {
-      case 'compliant': return 'bg-green-100 text-success border-green-200';
-      case 'partial': return 'bg-yellow-100 text-yellow-800 border-yellow-200';
-      case 'non_compliant': return 'bg-red-100 text-red-800 border-red-200';
+      case 'compliant': return 'bg-success/10 text-success border-green-200';
+      case 'partial': return 'bg-warning/10 text-yellow-800 border-yellow-200';
+      case 'non_compliant': return 'bg-destructive/10 text-red-800 border-red-200';
       case 'not_applicable': return 'bg-gray-100 text-gray-800 border-gray-200';
       default: return 'bg-gray-100 text-gray-800 border-gray-200';
     }
@@ -265,8 +265,8 @@ export const ComplianceManager: React.FC = () => {
   const getCategoryColor = (category: string) => {
     switch (category) {
       case 'privacy': return 'bg-purple-100 text-purple-800 border-purple-200';
-      case 'security': return 'bg-blue-100 text-blue-800 border-blue-200';
-      case 'financial': return 'bg-green-100 text-success border-green-200';
+      case 'security': return 'bg-info/10 text-blue-800 border-blue-200';
+      case 'financial': return 'bg-success/10 text-success border-green-200';
       case 'industry': return 'bg-orange-100 text-orange-800 border-orange-200';
       case 'accessibility': return 'bg-pink-100 text-pink-800 border-pink-200';
       default: return 'bg-gray-100 text-gray-800 border-gray-200';
@@ -275,20 +275,20 @@ export const ComplianceManager: React.FC = () => {
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
-      case 'critical': return 'bg-red-100 text-red-800 border-red-200';
+      case 'critical': return 'bg-destructive/10 text-red-800 border-red-200';
       case 'high': return 'bg-orange-100 text-orange-800 border-orange-200';
-      case 'medium': return 'bg-yellow-100 text-yellow-800 border-yellow-200';
-      case 'low': return 'bg-green-100 text-success border-green-200';
+      case 'medium': return 'bg-warning/10 text-yellow-800 border-yellow-200';
+      case 'low': return 'bg-success/10 text-success border-green-200';
       default: return 'bg-gray-100 text-gray-800 border-gray-200';
     }
   };
 
   const getSeverityColor = (severity: string) => {
     switch (severity) {
-      case 'critical': return 'bg-red-100 text-red-800 border-red-200';
+      case 'critical': return 'bg-destructive/10 text-red-800 border-red-200';
       case 'high': return 'bg-orange-100 text-orange-800 border-orange-200';
-      case 'medium': return 'bg-yellow-100 text-yellow-800 border-yellow-200';
-      case 'low': return 'bg-blue-100 text-blue-800 border-blue-200';
+      case 'medium': return 'bg-warning/10 text-yellow-800 border-yellow-200';
+      case 'low': return 'bg-info/10 text-blue-800 border-blue-200';
       default: return 'bg-gray-100 text-gray-800 border-gray-200';
     }
   };
@@ -316,7 +316,7 @@ export const ComplianceManager: React.FC = () => {
     <div className="space-y-6 p-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-3">
-          <div className="p-2 bg-blue-100 rounded-lg">
+          <div className="p-2 bg-info/10 rounded-lg">
             <Shield className="h-6 w-6 text-info" />
           </div>
           <div>
@@ -327,7 +327,7 @@ export const ComplianceManager: React.FC = () => {
           </div>
         </div>
         <div className="flex space-x-2">
-          <Badge variant="secondary" className="bg-green-100 text-success">
+          <Badge variant="secondary" className="bg-success/10 text-success">
             <CheckCircle className="h-3 w-3 mr-1" />
             3 Frameworks Compliant
           </Badge>
@@ -580,7 +580,7 @@ export const ComplianceManager: React.FC = () => {
                         <div>
                           <p className="text-sm font-medium text-gray-500">Outcome</p>
                           <Badge className={report.certification_outcome === 'passed' ? 
-                            'bg-green-100 text-success' : 'bg-red-100 text-red-800'}>
+                            'bg-success/10 text-success' : 'bg-destructive/10 text-red-800'}>
                             {report.certification_outcome}
                           </Badge>
                         </div>

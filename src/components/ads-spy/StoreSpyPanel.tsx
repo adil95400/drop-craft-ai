@@ -128,9 +128,9 @@ export function StoreSpyPanel() {
   ];
 
   const platformColors: Record<string, string> = {
-    shopify: 'bg-green-500',
+    shopify: 'bg-success',
     woocommerce: 'bg-purple-500',
-    magento: 'bg-orange-500',
+    magento: 'bg-warning',
     other: 'bg-gray-500',
   };
 

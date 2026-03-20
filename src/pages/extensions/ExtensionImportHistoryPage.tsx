@@ -138,9 +138,9 @@ export default function ExtensionImportHistoryPage() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'active':
-        return <Badge className="bg-green-500/10 text-success border-green-500/20"><CheckCircle className="h-3 w-3 mr-1" />Actif</Badge>;
+        return <Badge className="bg-success/10 text-success border-green-500/20"><CheckCircle className="h-3 w-3 mr-1" />Actif</Badge>;
       case 'pending':
-        return <Badge className="bg-yellow-500/10 text-warning border-yellow-500/20"><Clock className="h-3 w-3 mr-1" />En attente</Badge>;
+        return <Badge className="bg-warning/10 text-warning border-yellow-500/20"><Clock className="h-3 w-3 mr-1" />En attente</Badge>;
       case 'draft':
         return <Badge className="bg-gray-500/10 text-gray-600 border-gray-500/20">Brouillon</Badge>;
       default:

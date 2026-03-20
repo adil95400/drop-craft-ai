@@ -377,19 +377,19 @@ export function AutoOrderVerification({ onStatusChange }: AutoOrderVerificationP
               <div 
                 key={step.id}
                 className={`flex items-center justify-between p-3 rounded-lg border ${
-                  step.status === 'error' ? 'border-red-200 bg-red-50' :
-                  step.status === 'warning' ? 'border-yellow-200 bg-yellow-50' :
-                  step.status === 'success' ? 'border-green-200 bg-green-50' :
-                  step.status === 'running' ? 'border-blue-200 bg-blue-50' :
+                  step.status === 'error' ? 'border-red-200 bg-destructive/5' :
+                  step.status === 'warning' ? 'border-yellow-200 bg-warning/5' :
+                  step.status === 'success' ? 'border-green-200 bg-success/5' :
+                  step.status === 'running' ? 'border-blue-200 bg-info/5' :
                   'border-muted bg-muted/30'
                 }`}
               >
                 <div className="flex items-center gap-3">
                   <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                    step.status === 'success' ? 'bg-green-100' :
-                    step.status === 'warning' ? 'bg-yellow-100' :
-                    step.status === 'error' ? 'bg-red-100' :
-                    step.status === 'running' ? 'bg-blue-100' :
+                    step.status === 'success' ? 'bg-success/10' :
+                    step.status === 'warning' ? 'bg-warning/10' :
+                    step.status === 'error' ? 'bg-destructive/10' :
+                    step.status === 'running' ? 'bg-info/10' :
                     'bg-muted'
                   }`}>
                     <StepIcon className={`w-4 h-4 ${

@@ -349,7 +349,7 @@ export function DeveloperConsole() {
                         Créée le {new Date(apiKey.created).toLocaleDateString()}
                       </CardDescription>
                     </div>
-                    <Badge className={apiKey.status === 'active' ? 'bg-green-100 text-success' : 'bg-red-100 text-red-800'}>
+                    <Badge className={apiKey.status === 'active' ? 'bg-success/10 text-success' : 'bg-destructive/10 text-red-800'}>
                       {apiKey.status}
                     </Badge>
                   </div>
@@ -480,7 +480,7 @@ export function DeveloperConsole() {
                       </CardDescription>
                     </div>
                     <div className="flex items-center space-x-2">
-                      <Badge className={webhook.status === 'active' ? 'bg-green-100 text-success' : 'bg-gray-100 text-gray-800'}>
+                      <Badge className={webhook.status === 'active' ? 'bg-success/10 text-success' : 'bg-gray-100 text-gray-800'}>
                         {webhook.status}
                       </Badge>
                       <Badge variant="outline">
@@ -565,7 +565,7 @@ export function DeveloperConsole() {
                   <div className="space-y-3">
                     <div className="border rounded-lg p-4">
                       <div className="flex items-center space-x-2 mb-2">
-                        <Badge className="bg-green-100 text-success">GET</Badge>
+                        <Badge className="bg-success/10 text-success">GET</Badge>
                         <code className="text-sm">/api/v1/products</code>
                       </div>
                       <p className="text-sm text-muted-foreground mb-2">
@@ -578,7 +578,7 @@ export function DeveloperConsole() {
                     
                     <div className="border rounded-lg p-4">
                       <div className="flex items-center space-x-2 mb-2">
-                        <Badge className="bg-blue-100 text-blue-800">POST</Badge>
+                        <Badge className="bg-info/10 text-blue-800">POST</Badge>
                         <code className="text-sm">/api/v1/products</code>
                       </div>
                       <p className="text-sm text-muted-foreground mb-2">
@@ -591,7 +591,7 @@ export function DeveloperConsole() {
                     
                     <div className="border rounded-lg p-4">
                       <div className="flex items-center space-x-2 mb-2">
-                        <Badge className="bg-green-100 text-success">GET</Badge>
+                        <Badge className="bg-success/10 text-success">GET</Badge>
                         <code className="text-sm">/api/v1/orders</code>
                       </div>
                       <p className="text-sm text-muted-foreground mb-2">
@@ -666,9 +666,9 @@ export function DeveloperConsole() {
                       <span className="text-sm text-muted-foreground">{log.time}</span>
                       <Badge 
                         className={
-                          log.method === 'GET' ? 'bg-green-100 text-success' :
-                          log.method === 'POST' ? 'bg-blue-100 text-blue-800' :
-                          'bg-yellow-100 text-yellow-800'
+                          log.method === 'GET' ? 'bg-success/10 text-success' :
+                          log.method === 'POST' ? 'bg-info/10 text-blue-800' :
+                          'bg-warning/10 text-yellow-800'
                         }
                       >
                         {log.method}
@@ -678,9 +678,9 @@ export function DeveloperConsole() {
                     <div className="flex items-center space-x-2">
                       <Badge 
                         className={
-                          log.status === 200 || log.status === 201 ? 'bg-green-100 text-success' :
-                          log.status === 429 ? 'bg-red-100 text-red-800' :
-                          'bg-yellow-100 text-yellow-800'
+                          log.status === 200 || log.status === 201 ? 'bg-success/10 text-success' :
+                          log.status === 429 ? 'bg-destructive/10 text-red-800' :
+                          'bg-warning/10 text-yellow-800'
                         }
                       >
                         {log.status}

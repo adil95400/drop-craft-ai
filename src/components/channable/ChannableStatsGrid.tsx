@@ -17,10 +17,10 @@ interface ChannableStatsGridProps {
 
 const colorClasses = {
   primary: 'bg-primary/10 text-primary',
-  success: 'bg-green-500/10 text-success dark:text-green-400',
-  warning: 'bg-yellow-500/10 text-warning dark:text-yellow-400',
+  success: 'bg-success/10 text-success dark:text-green-400',
+  warning: 'bg-warning/10 text-warning dark:text-yellow-400',
   destructive: 'bg-destructive/10 text-destructive',
-  info: 'bg-blue-500/10 text-info dark:text-blue-400'
+  info: 'bg-info/10 text-info dark:text-blue-400'
 };
 
 export function ChannableStatsGrid({
@@ -62,10 +62,10 @@ export function ChannableStatsGrid({
               <div className={cn(
                 "absolute top-0 left-0 w-1 h-full",
                 color === 'primary' && "bg-primary",
-                color === 'success' && "bg-green-500",
-                color === 'warning' && "bg-yellow-500",
+                color === 'success' && "bg-success",
+                color === 'warning' && "bg-warning",
                 color === 'destructive' && "bg-destructive",
-                color === 'info' && "bg-blue-500"
+                color === 'info' && "bg-info"
               )} />
 
               

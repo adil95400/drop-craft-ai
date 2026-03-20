@@ -83,8 +83,8 @@ export default function LiveChatPage() {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'active': return 'bg-emerald-500';
-      case 'waiting': return 'bg-amber-500';
+      case 'active': return 'bg-success';
+      case 'waiting': return 'bg-warning';
       case 'closed': return 'bg-muted-foreground/50';
       default: return 'bg-muted-foreground/30';
     }
@@ -192,7 +192,7 @@ export default function LiveChatPage() {
               </div>
               <div className="flex gap-1 text-xs">
                 <Badge variant="secondary" className="gap-1">
-                  <div className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                  <div className="h-1.5 w-1.5 rounded-full bg-success" />
                   {activeSessions.length} actives
                 </Badge>
                 <Badge variant="outline" className="gap-1 text-muted-foreground">

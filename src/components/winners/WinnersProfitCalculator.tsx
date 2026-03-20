@@ -236,7 +236,7 @@ export const WinnersProfitCalculator = ({ product }: WinnersProfitCalculatorProp
           </div>
 
           {/* Recommandations */}
-          <div className="space-y-2 p-4 bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+          <div className="space-y-2 p-4 bg-info/5 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-lg">
             <h5 className="font-semibold text-sm text-blue-900 dark:text-blue-100">💡 Recommandations</h5>
             <ul className="text-sm space-y-1 text-blue-800 dark:text-blue-200">
               {profitMargin < 20 && (

@@ -43,7 +43,7 @@ export function ProgressDashboard() {
       total: stats?.totalCourses || 0,
       icon: BookOpen,
       color: 'text-info',
-      bgColor: 'bg-blue-500/10'
+      bgColor: 'bg-info/10'
     },
     {
       title: 'Certificats Obtenus',
@@ -57,14 +57,14 @@ export function ProgressDashboard() {
       value: stats?.totalPoints || 0,
       icon: Zap,
       color: 'text-warning',
-      bgColor: 'bg-yellow-500/10'
+      bgColor: 'bg-warning/10'
     },
     {
       title: 'Temps Total',
       value: `${Math.floor((stats?.totalTimeSpent || 0) / 60)}h${(stats?.totalTimeSpent || 0) % 60}m`,
       icon: Clock,
       color: 'text-success',
-      bgColor: 'bg-green-500/10'
+      bgColor: 'bg-success/10'
     }
   ];
 
@@ -177,7 +177,7 @@ export function ProgressDashboard() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {certificates.map((cert: any) => (
                 <div key={cert.id} className="flex items-center gap-4 p-4 rounded-lg border bg-gradient-to-r from-yellow-500/10 to-orange-500/10">
-                  <div className="p-3 rounded-lg bg-yellow-500/20">
+                  <div className="p-3 rounded-lg bg-warning/20">
                     <Award className="h-6 w-6 text-warning" />
                   </div>
                   <div className="flex-1">

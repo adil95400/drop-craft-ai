@@ -129,7 +129,7 @@ export default function MarginCalculatorPage() {
   }, [costs]);
 
   const marginColor = margins.grossMargin >= 30 ? 'text-success' : margins.grossMargin >= 15 ? 'text-warning' : 'text-destructive';
-  const marginBg = margins.grossMargin >= 30 ? 'bg-green-500/10' : margins.grossMargin >= 15 ? 'bg-yellow-500/10' : 'bg-destructive/10';
+  const marginBg = margins.grossMargin >= 30 ? 'bg-success/10' : margins.grossMargin >= 15 ? 'bg-warning/10' : 'bg-destructive/10';
 
   return (
     <>

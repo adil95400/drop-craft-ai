@@ -63,7 +63,7 @@ export default function PaymentCancelled() {
               </ul>
             </div>
 
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <div className="bg-info/5 border border-blue-200 rounded-lg p-4">
               <p className="text-sm text-blue-900">
                 💡 <strong>Astuce :</strong> Nos plans sont sans engagement. 
                 Vous pouvez annuler à tout moment depuis votre espace client.

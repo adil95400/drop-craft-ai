@@ -173,9 +173,9 @@ export default function ImportScheduledPage() {
   const getFrequencyBadge = (freq: string) => {
     const colors: Record<string, string> = {
       hourly: 'bg-purple-500/10 text-purple-500',
-      daily: 'bg-blue-500/10 text-info',
-      weekly: 'bg-green-500/10 text-success',
-      monthly: 'bg-orange-500/10 text-warning'
+      daily: 'bg-info/10 text-info',
+      weekly: 'bg-success/10 text-success',
+      monthly: 'bg-warning/10 text-warning'
     }
     return (
       <Badge variant="secondary" className={cn("flex items-center gap-1", colors[freq] || colors.daily)}>

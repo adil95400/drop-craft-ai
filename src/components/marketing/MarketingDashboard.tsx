@@ -49,7 +49,7 @@ export const MarketingDashboard = () => {
 
         <Card className="p-6 relative overflow-hidden">
           <div className="flex items-center gap-4">
-            <div className="p-3 bg-blue-500/10 rounded-lg">
+            <div className="p-3 bg-info/10 rounded-lg">
               <Eye className="w-6 h-6 text-info" />
             </div>
             <div>
@@ -70,7 +70,7 @@ export const MarketingDashboard = () => {
 
         <Card className="p-6 relative overflow-hidden">
           <div className="flex items-center gap-4">
-            <div className="p-3 bg-emerald-500/10 rounded-lg">
+            <div className="p-3 bg-success/10 rounded-lg">
               <TrendingUp className="w-6 h-6 text-success" />
             </div>
             <div>
@@ -93,7 +93,7 @@ export const MarketingDashboard = () => {
           <div className="flex items-center gap-4">
             <div className={cn(
               "p-3 rounded-lg",
-              (stats?.avgROI ?? 0) >= 100 ? "bg-emerald-500/10" : "bg-amber-500/10"
+              (stats?.avgROI ?? 0) >= 100 ? "bg-success/10" : "bg-warning/10"
             )}>
               <DollarSign className={cn(
                 "w-6 h-6",

@@ -360,9 +360,9 @@ export function ProductDetailsModal({ product, open, onOpenChange }: ProductDeta
     switch (status) {
       case 'published':
       case 'active':
-        return { label: 'Publié', color: 'bg-green-500/10 text-success border-green-500/20', icon: CheckCircle }
+        return { label: 'Publié', color: 'bg-success/10 text-success border-green-500/20', icon: CheckCircle }
       case 'draft':
-        return { label: 'Brouillon', color: 'bg-yellow-500/10 text-warning border-yellow-500/20', icon: FileText }
+        return { label: 'Brouillon', color: 'bg-warning/10 text-warning border-yellow-500/20', icon: FileText }
       case 'archived':
         return { label: 'Archivé', color: 'bg-muted text-muted-foreground border-border', icon: Archive }
       default:
@@ -620,7 +620,7 @@ export function ProductDetailsModal({ product, open, onOpenChange }: ProductDeta
                     ) : (
                       <Button
                         variant="outline"
-                        className="w-full justify-start gap-2 h-10 border-green-500/30 hover:bg-green-500/10"
+                        className="w-full justify-start gap-2 h-10 border-green-500/30 hover:bg-success/10"
                         onClick={handlePublish}
                         disabled={isPublishing}
                       >
@@ -650,10 +650,10 @@ export function ProductDetailsModal({ product, open, onOpenChange }: ProductDeta
                   <Card className={cn(
                     "border",
                     (metrics?.margin || 0) >= 30 
-                      ? "bg-green-500/5 border-green-500/10" 
+                      ? "bg-success/5 border-green-500/10" 
                       : (metrics?.margin || 0) >= 15 
-                        ? "bg-yellow-500/5 border-yellow-500/10"
-                        : "bg-red-500/5 border-red-500/10"
+                        ? "bg-warning/5 border-yellow-500/10"
+                        : "bg-destructive/5 border-red-500/10"
                   )}>
                     <CardContent className="p-3 text-center">
                       <Percent className="h-5 w-5 mx-auto mb-1 text-muted-foreground" />
@@ -674,9 +674,9 @@ export function ProductDetailsModal({ product, open, onOpenChange }: ProductDeta
                   <Card className={cn(
                     "border",
                     metrics?.isOutOfStock 
-                      ? "bg-red-500/5 border-red-500/10" 
+                      ? "bg-destructive/5 border-red-500/10" 
                       : metrics?.isLowStock 
-                        ? "bg-yellow-500/5 border-yellow-500/10"
+                        ? "bg-warning/5 border-yellow-500/10"
                         : "bg-muted/50 border-border"
                   )}>
                     <CardContent className="p-3 text-center">
@@ -852,7 +852,7 @@ export function ProductDetailsModal({ product, open, onOpenChange }: ProductDeta
 
                         <Card>
                           <CardContent className="p-4 flex items-center gap-4">
-                            <div className="h-12 w-12 rounded-xl bg-green-500/10 flex items-center justify-center">
+                            <div className="h-12 w-12 rounded-xl bg-success/10 flex items-center justify-center">
                               <TrendingUp className="h-6 w-6 text-success" />
                             </div>
                             <div>
@@ -1236,7 +1236,7 @@ export function ProductDetailsModal({ product, open, onOpenChange }: ProductDeta
                             </div>
 
                             <div className="flex items-start gap-4 p-3 rounded-lg bg-muted/50">
-                              <div className="h-8 w-8 rounded-full bg-green-500/10 flex items-center justify-center shrink-0">
+                              <div className="h-8 w-8 rounded-full bg-success/10 flex items-center justify-center shrink-0">
                                 <CheckCircle className="h-4 w-4 text-success" />
                               </div>
                               <div className="flex-1 min-w-0">

@@ -44,28 +44,28 @@ const VARIANT_STYLES = {
   destructive: {
     bg: 'bg-gradient-to-br from-red-500/15 to-red-600/5',
     border: 'border-red-500/40',
-    iconBg: 'bg-red-500/20',
+    iconBg: 'bg-destructive/20',
     iconColor: 'text-destructive',
     glow: 'hover:shadow-red-500/30',
-    ctaBg: 'bg-red-500 hover:bg-red-600 text-white',
+    ctaBg: 'bg-destructive hover:bg-destructive text-white',
     impactColor: 'text-destructive dark:text-red-400'
   },
   warning: {
     bg: 'bg-gradient-to-br from-orange-500/15 to-amber-500/5',
     border: 'border-orange-500/40',
-    iconBg: 'bg-orange-500/20',
+    iconBg: 'bg-warning/20',
     iconColor: 'text-warning',
     glow: 'hover:shadow-orange-500/30',
-    ctaBg: 'bg-orange-500 hover:bg-orange-600 text-white',
+    ctaBg: 'bg-warning hover:bg-warning text-white',
     impactColor: 'text-warning dark:text-orange-400'
   },
   info: {
     bg: 'bg-gradient-to-br from-blue-500/15 to-cyan-500/5',
     border: 'border-blue-500/40',
-    iconBg: 'bg-blue-500/20',
+    iconBg: 'bg-info/20',
     iconColor: 'text-info',
     glow: 'hover:shadow-blue-500/30',
-    ctaBg: 'bg-blue-500 hover:bg-blue-600 text-white',
+    ctaBg: 'bg-info hover:bg-info text-white',
     impactColor: 'text-info dark:text-blue-400'
   },
   primary: {
@@ -145,7 +145,7 @@ export const PriorityActionCard = memo(function PriorityActionCard({
               <motion.div
                 className={cn(
                   'absolute top-3 right-3 w-2.5 h-2.5 rounded-full',
-                  config.variant === 'destructive' ? 'bg-red-500' : 'bg-orange-500'
+                  config.variant === 'destructive' ? 'bg-destructive' : 'bg-warning'
                 )}
                 animate={{ 
                   scale: [1, 1.5, 1],
@@ -270,11 +270,11 @@ export const PriorityCardsGrid = memo(function PriorityCardsGrid({
   if (visibleCards.length === 0) {
     return (
       <motion.div 
-        className="p-6 rounded-2xl bg-emerald-500/5 border-2 border-emerald-500/30 text-center"
+        className="p-6 rounded-2xl bg-success/5 border-2 border-emerald-500/30 text-center"
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
       >
-        <div className="w-12 h-12 rounded-full bg-emerald-500/20 flex items-center justify-center mx-auto mb-3">
+        <div className="w-12 h-12 rounded-full bg-success/20 flex items-center justify-center mx-auto mb-3">
           <Sparkles className="h-6 w-6 text-success" />
         </div>
         <h3 className="text-lg font-bold text-success dark:text-emerald-400">

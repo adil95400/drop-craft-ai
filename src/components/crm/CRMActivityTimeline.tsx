@@ -22,8 +22,8 @@ import {
 import { cn } from '@/lib/utils';
 
 const activityConfig = {
-  call: { icon: Phone, label: 'Appel', color: 'text-info', bg: 'bg-blue-100' },
-  email: { icon: Mail, label: 'Email', color: 'text-success', bg: 'bg-green-100' },
+  call: { icon: Phone, label: 'Appel', color: 'text-info', bg: 'bg-info/10' },
+  email: { icon: Mail, label: 'Email', color: 'text-success', bg: 'bg-success/10' },
   meeting: { icon: Calendar, label: 'Réunion', color: 'text-purple-600', bg: 'bg-purple-100' },
   note: { icon: MessageSquare, label: 'Note', color: 'text-warning', bg: 'bg-amber-100' },
   task: { icon: CheckSquare, label: 'Tâche', color: 'text-warning', bg: 'bg-orange-100' },

@@ -157,7 +157,7 @@ export const AddIntegrationDialog = () => {
           description: `Intégration ${selectedPlatform}`,
           category: selectedCategory,
           logo: '🔗',
-          color: 'bg-blue-500',
+          color: 'bg-info',
           features: [],
           setupSteps: [],
           status: 'available'
@@ -330,7 +330,7 @@ export const AddIntegrationDialog = () => {
                 </Select>
               </div>
 
-              <div className="text-sm text-muted-foreground bg-blue-50 dark:bg-blue-950/20 p-3 rounded-lg">
+              <div className="text-sm text-muted-foreground bg-info/5 dark:bg-blue-950/20 p-3 rounded-lg">
                 <strong>💡 Astuce:</strong> Vous pourrez tester et configurer cette intégration après l'avoir créée.
               </div>
 

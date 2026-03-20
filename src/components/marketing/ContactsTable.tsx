@@ -83,10 +83,10 @@ export function ContactsTable({ onEdit, onView }: ContactsTableProps) {
 
   const getLifecycleStageColor = (stage: string) => {
     switch (stage) {
-      case 'subscriber': return 'bg-blue-100 text-blue-800'
-      case 'lead': return 'bg-yellow-100 text-yellow-800'
+      case 'subscriber': return 'bg-info/10 text-blue-800'
+      case 'lead': return 'bg-warning/10 text-yellow-800'
       case 'prospect': return 'bg-orange-100 text-orange-800'
-      case 'customer': return 'bg-green-100 text-success'
+      case 'customer': return 'bg-success/10 text-success'
       case 'evangelist': return 'bg-purple-100 text-purple-800'
       default: return 'bg-gray-100 text-gray-800'
     }

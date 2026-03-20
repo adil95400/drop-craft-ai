@@ -57,10 +57,10 @@ export default function AuditScoringPage() {
   };
 
   const getScoreBg = (score: number) => {
-    if (score >= 80) return 'bg-green-50 dark:bg-green-900/20';
-    if (score >= 60) return 'bg-yellow-50 dark:bg-yellow-900/20';
+    if (score >= 80) return 'bg-success/5 dark:bg-green-900/20';
+    if (score >= 60) return 'bg-warning/5 dark:bg-yellow-900/20';
     if (score >= 40) return 'bg-orange-50 dark:bg-orange-900/20';
-    return 'bg-red-50 dark:bg-red-900/20';
+    return 'bg-destructive/5 dark:bg-red-900/20';
   };
 
   if (isLoading) {
@@ -116,11 +116,11 @@ export default function AuditScoringPage() {
                 </div>
               </div>
               <div className="grid grid-cols-4 gap-4 text-center">
-                <div className="p-3 rounded-lg bg-green-50 dark:bg-green-900/20">
+                <div className="p-3 rounded-lg bg-success/5 dark:bg-green-900/20">
                   <div className="text-2xl font-bold text-success">{stats.excellentCount}</div>
                   <div className="text-xs text-muted-foreground">{t('scoring.excellents')}</div>
                 </div>
-                <div className="p-3 rounded-lg bg-yellow-50 dark:bg-yellow-900/20">
+                <div className="p-3 rounded-lg bg-warning/5 dark:bg-yellow-900/20">
                   <div className="text-2xl font-bold text-warning">{stats.goodCount}</div>
                   <div className="text-xs text-muted-foreground">{t('scoring.goods')}</div>
                 </div>
@@ -128,7 +128,7 @@ export default function AuditScoringPage() {
                   <div className="text-2xl font-bold text-warning">{stats.needsWorkCount}</div>
                   <div className="text-xs text-muted-foreground">{t('scoring.toImproveLabel')}</div>
                 </div>
-                <div className="p-3 rounded-lg bg-red-50 dark:bg-red-900/20">
+                <div className="p-3 rounded-lg bg-destructive/5 dark:bg-red-900/20">
                   <div className="text-2xl font-bold text-destructive">{stats.poorCount}</div>
                   <div className="text-xs text-muted-foreground">{t('scoring.criticalLabel')}</div>
                 </div>
@@ -179,9 +179,9 @@ export default function AuditScoringPage() {
               {stats.topIssues.slice(0, 5).map((issue, idx) => (
                 <div key={idx} className={cn(
                   'flex items-center justify-between p-4 border rounded-lg',
-                  issue.type === 'error' ? 'bg-red-50 dark:bg-red-900/10 border-red-200' :
-                  issue.type === 'warning' ? 'bg-yellow-50 dark:bg-yellow-900/10 border-yellow-200' :
-                  'bg-blue-50 dark:bg-blue-900/10 border-blue-200'
+                  issue.type === 'error' ? 'bg-destructive/5 dark:bg-red-900/10 border-red-200' :
+                  issue.type === 'warning' ? 'bg-warning/5 dark:bg-yellow-900/10 border-yellow-200' :
+                  'bg-info/5 dark:bg-blue-900/10 border-blue-200'
                 )}>
                   <div className="flex items-center gap-4">
                     <AlertCircle className={cn('h-5 w-5',

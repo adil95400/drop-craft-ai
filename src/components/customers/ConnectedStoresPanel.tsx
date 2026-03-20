@@ -259,7 +259,7 @@ export function ConnectedStoresPanel({ onImportComplete, autoSync = true }: Conn
                   </div>
                   <span className={cn(
                     "absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full border-2 border-background shadow-sm",
-                    isSyncingAny ? 'bg-blue-500 animate-pulse' : activeStores.length > 0 ? 'bg-green-500' : 'bg-amber-500'
+                    isSyncingAny ? 'bg-info animate-pulse' : activeStores.length > 0 ? 'bg-success' : 'bg-warning'
                   )} />
                 </div>
                 <div>
@@ -394,7 +394,7 @@ export function ConnectedStoresPanel({ onImportComplete, autoSync = true }: Conn
                                 <Switch
                                   checked={integration.is_active}
                                   onCheckedChange={(checked) => handleToggleStore(integration, checked)}
-                                  className="data-[state=checked]:bg-green-500"
+                                  className="data-[state=checked]:bg-success"
                                 />
                               </div>
                             </div>

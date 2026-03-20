@@ -328,7 +328,7 @@ export default function AuditProductsList() {
   const getSeverityBadge = (severity: string) => {
     switch (severity) {
       case 'critical': return <Badge variant="destructive">{t('productsList.severityCritical')}</Badge>;
-      case 'warning': return <Badge variant="secondary" className="bg-yellow-100 text-yellow-800">{t('productsList.severityWarning')}</Badge>;
+      case 'warning': return <Badge variant="secondary" className="bg-warning/10 text-yellow-800">{t('productsList.severityWarning')}</Badge>;
       default: return <Badge variant="outline">{t('productsList.severityInfo')}</Badge>;
     }
   };
@@ -637,7 +637,7 @@ export default function AuditProductsList() {
                     </h4>
                     <div className="flex flex-wrap gap-2">
                       {selectedAudit.strengths.map((strength, i) => (
-                        <Badge key={i} variant="outline" className="bg-green-50 text-success border-green-200">
+                        <Badge key={i} variant="outline" className="bg-success/5 text-success border-green-200">
                           ✓ {strength}
                         </Badge>
                       ))}

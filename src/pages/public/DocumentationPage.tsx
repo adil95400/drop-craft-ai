@@ -29,7 +29,7 @@ const DocumentationPage = () => {
 
   const categories = [
     {
-      title: "Catalogue Produits", icon: Package, color: "bg-blue-500/10 text-info",
+      title: "Catalogue Produits", icon: Package, color: "bg-info/10 text-info",
       articles: [
         { title: "Importer depuis AliExpress", link: "/documentation/importer-depuis-aliexpress" },
         { title: "Optimisation IA des fiches produits", link: "/documentation/optimisation-ia-des-fiches-produits" },
@@ -40,7 +40,7 @@ const DocumentationPage = () => {
       ]
     },
     {
-      title: "Fournisseurs & Sourcing", icon: Users, color: "bg-green-500/10 text-success",
+      title: "Fournisseurs & Sourcing", icon: Users, color: "bg-success/10 text-success",
       articles: [
         { title: "Connecter un fournisseur", link: "/documentation/connecter-un-fournisseur" },
         { title: "Synchronisation automatique", link: "/documentation/synchronisation-automatique" },
@@ -62,7 +62,7 @@ const DocumentationPage = () => {
       ]
     },
     {
-      title: "Commandes & Expéditions", icon: Truck, color: "bg-orange-500/10 text-warning",
+      title: "Commandes & Expéditions", icon: Truck, color: "bg-warning/10 text-warning",
       articles: [
         { title: "Traitement automatique (fulfillment)", link: "/documentation/traitement-automatique-fulfillment" },
         { title: "Suivi des expéditions", link: "/documentation/suivi-des-expeditions" },
@@ -73,7 +73,7 @@ const DocumentationPage = () => {
       ]
     },
     {
-      title: "Marketing & Ventes", icon: Target, color: "bg-red-500/10 text-destructive",
+      title: "Marketing & Ventes", icon: Target, color: "bg-destructive/10 text-destructive",
       articles: [
         { title: "Campagnes email automatisées", link: "/documentation/campagnes-email-automatisees" },
         { title: "Publicité Facebook & Instagram", link: "/documentation/publicite-facebook-instagram" },
@@ -106,7 +106,7 @@ const DocumentationPage = () => {
       ]
     },
     {
-      title: "Facturation & Plans", icon: CreditCard, color: "bg-yellow-500/10 text-warning",
+      title: "Facturation & Plans", icon: CreditCard, color: "bg-warning/10 text-warning",
       articles: [
         { title: "Plans et tarifs", link: "/documentation/plans-et-tarifs" },
         { title: "Gérer son abonnement", link: "/documentation/gerer-son-abonnement" },

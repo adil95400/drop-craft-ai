@@ -74,9 +74,9 @@ const CATEGORY_CONFIG: Record<string, { icon: typeof Brain; color: string; label
 };
 
 const IMPACT_STYLES: Record<string, string> = {
-  high: 'bg-red-500/10 text-destructive border-red-500/20',
-  medium: 'bg-amber-500/10 text-warning border-amber-500/20',
-  low: 'bg-blue-500/10 text-info border-blue-500/20',
+  high: 'bg-destructive/10 text-destructive border-red-500/20',
+  medium: 'bg-warning/10 text-warning border-amber-500/20',
+  low: 'bg-info/10 text-info border-blue-500/20',
 };
 
 export default function AIBusinessInsightsPage() {

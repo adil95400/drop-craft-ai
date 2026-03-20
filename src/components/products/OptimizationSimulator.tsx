@@ -151,7 +151,7 @@ export function OptimizationSimulator({ productIds, onExecute }: OptimizationSim
             <div className="font-semibold text-lg">Résultats de la Simulation</div>
             
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="p-3 rounded-lg bg-blue-50">
+              <div className="p-3 rounded-lg bg-info/5">
                 <div className="flex items-center gap-2 mb-1">
                   <Target className="h-4 w-4 text-info" />
                   <span className="text-xs font-medium">Amélioration SEO</span>
@@ -161,7 +161,7 @@ export function OptimizationSimulator({ productIds, onExecute }: OptimizationSim
                 </div>
               </div>
 
-              <div className="p-3 rounded-lg bg-green-50">
+              <div className="p-3 rounded-lg bg-success/5">
                 <div className="flex items-center gap-2 mb-1">
                   <TrendingUp className="h-4 w-4 text-success" />
                   <span className="text-xs font-medium">Conversions</span>

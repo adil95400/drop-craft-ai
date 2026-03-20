@@ -175,7 +175,7 @@ export function ExtensionInstallWelcomeModal({
               </DialogHeader>
 
               <div className="py-6 space-y-4">
-                <Alert className="bg-yellow-500/10 border-yellow-500/20">
+                <Alert className="bg-warning/10 border-yellow-500/20">
                   <AlertDescription className="text-sm">
                     ⚠️ Gardez ce token secret. Il donne accès à votre compte depuis l'extension.
                   </AlertDescription>
@@ -216,7 +216,7 @@ export function ExtensionInstallWelcomeModal({
               exit={{ opacity: 0, y: -10 }}
             >
               <DialogHeader className="text-center">
-                <div className="mx-auto mb-4 h-16 w-16 rounded-full bg-green-500/10 flex items-center justify-center">
+                <div className="mx-auto mb-4 h-16 w-16 rounded-full bg-success/10 flex items-center justify-center">
                   <CheckCircle className="h-8 w-8 text-success" />
                 </div>
                 <DialogTitle>Token généré avec succès !</DialogTitle>

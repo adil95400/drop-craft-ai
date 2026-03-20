@@ -26,9 +26,9 @@ export default function AttributesPage() {
   const { stats, marketplaceAnalysis, productIssues, enrichableProducts, aiSuggestions, isLoading, enrichProduct, bulkEnrich } = useAttributeAnalysis()
 
   const issueCategories = [
-    { id: 'category', label: 'Sans catégorie', icon: Tag, count: stats.missingCategory, color: 'text-destructive', bg: 'bg-red-500/10', ring: 'ring-red-500' },
-    { id: 'brand', label: 'Sans marque', icon: ShoppingBag, count: stats.missingBrand, color: 'text-warning', bg: 'bg-amber-500/10', ring: 'ring-amber-500' },
-    { id: 'gtin', label: 'Sans GTIN/EAN', icon: FileWarning, count: stats.missingGTIN, color: 'text-info', bg: 'bg-blue-500/10', ring: 'ring-blue-500' },
+    { id: 'category', label: 'Sans catégorie', icon: Tag, count: stats.missingCategory, color: 'text-destructive', bg: 'bg-destructive/10', ring: 'ring-red-500' },
+    { id: 'brand', label: 'Sans marque', icon: ShoppingBag, count: stats.missingBrand, color: 'text-warning', bg: 'bg-warning/10', ring: 'ring-amber-500' },
+    { id: 'gtin', label: 'Sans GTIN/EAN', icon: FileWarning, count: stats.missingGTIN, color: 'text-info', bg: 'bg-info/10', ring: 'ring-blue-500' },
     { id: 'description', label: 'Description courte', icon: AlertTriangle, count: stats.missingDescription, color: 'text-purple-500', bg: 'bg-purple-500/10', ring: 'ring-purple-500' },
   ]
 
@@ -75,7 +75,7 @@ export default function AttributesPage() {
               <Progress value={stats.completenessScore} className="h-3" />
 
               {stats.completenessScore < 80 && (
-                <div className="mt-4 p-3 bg-amber-500/10 rounded-xl border border-amber-500/20">
+                <div className="mt-4 p-3 bg-warning/10 rounded-xl border border-amber-500/20">
                   <div className="flex items-center gap-2">
                     <TrendingUp className="h-4 w-4 text-warning" />
                     <span className="text-sm font-semibold text-warning">+{Math.round((80 - stats.completenessScore) * 0.5)}% de visibilité potentielle</span>
@@ -275,11 +275,11 @@ function SuggestionCard({ suggestion, idx = 0 }: { suggestion: AttributeSuggesti
       transition={{ delay: idx * 0.03 }}
       className={cn(
         "flex items-center justify-between p-3 rounded-xl border transition-all",
-        status === 'accepted' ? "bg-emerald-500/10 border-emerald-500/20" : "bg-card hover:bg-accent/50"
+        status === 'accepted' ? "bg-success/10 border-emerald-500/20" : "bg-card hover:bg-accent/50"
       )}
     >
       <div className="flex items-center gap-3 min-w-0">
-        <div className={cn("p-2 rounded-xl", status === 'accepted' ? "bg-emerald-500/20" : "bg-purple-500/10")}>
+        <div className={cn("p-2 rounded-xl", status === 'accepted' ? "bg-success/20" : "bg-purple-500/10")}>
           {status === 'accepted' ? <CheckCircle className="h-4 w-4 text-success" /> : <Sparkles className="h-4 w-4 text-purple-500" />}
         </div>
         <div className="min-w-0">
@@ -295,15 +295,15 @@ function SuggestionCard({ suggestion, idx = 0 }: { suggestion: AttributeSuggesti
         <Badge variant="secondary" className="text-xs tabular-nums">{Math.round(suggestion.confidence * 100)}%</Badge>
         {status === 'pending' && (
           <>
-            <Button size="icon" variant="ghost" className="h-8 w-8 hover:bg-emerald-500/10" onClick={() => setStatus('accepted')}>
+            <Button size="icon" variant="ghost" className="h-8 w-8 hover:bg-success/10" onClick={() => setStatus('accepted')}>
               <Check className="h-4 w-4 text-success" />
             </Button>
-            <Button size="icon" variant="ghost" className="h-8 w-8 hover:bg-red-500/10" onClick={() => setStatus('rejected')}>
+            <Button size="icon" variant="ghost" className="h-8 w-8 hover:bg-destructive/10" onClick={() => setStatus('rejected')}>
               <X className="h-4 w-4 text-destructive" />
             </Button>
           </>
         )}
-        {status === 'accepted' && <Badge className="bg-emerald-500 shadow-sm">Appliqué</Badge>}
+        {status === 'accepted' && <Badge className="bg-success shadow-sm">Appliqué</Badge>}
       </div>
     </motion.div>
   )

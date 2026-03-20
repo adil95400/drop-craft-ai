@@ -200,7 +200,7 @@ export function MultiDeviceSync() {
                 <p className="text-sm text-muted-foreground">En ligne</p>
                 <p className="text-2xl font-bold text-success">{onlineDevices}</p>
               </div>
-              <div className="h-12 w-12 bg-green-500/10 rounded-full flex items-center justify-center">
+              <div className="h-12 w-12 bg-success/10 rounded-full flex items-center justify-center">
                 <Wifi className="h-6 w-6 text-success" />
               </div>
             </div>
@@ -214,7 +214,7 @@ export function MultiDeviceSync() {
                 <p className="text-sm text-muted-foreground">Données sync</p>
                 <p className="text-2xl font-bold">{(totalSyncSize / 1024).toFixed(1)} MB</p>
               </div>
-              <div className="h-12 w-12 bg-blue-500/10 rounded-full flex items-center justify-center">
+              <div className="h-12 w-12 bg-info/10 rounded-full flex items-center justify-center">
                 <Activity className="h-6 w-6 text-info" />
               </div>
             </div>
@@ -274,7 +274,7 @@ export function MultiDeviceSync() {
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-4">
                       <div className={`h-12 w-12 rounded-full flex items-center justify-center ${
-                        device.isOnline ? 'bg-green-500/10' : 'bg-muted'
+                        device.isOnline ? 'bg-success/10' : 'bg-muted'
                       }`}>
                         {getDeviceIcon(device.type)}
                       </div>

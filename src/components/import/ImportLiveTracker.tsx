@@ -208,7 +208,7 @@ function ImportJobRow({ job, onDismiss, onViewProducts }: {
       {/* Status icon */}
       <div className={cn(
         'p-1.5 rounded-lg shrink-0',
-        isActive ? 'bg-primary/10' : job.status === 'completed' ? 'bg-green-500/10' : 'bg-destructive/10'
+        isActive ? 'bg-primary/10' : job.status === 'completed' ? 'bg-success/10' : 'bg-destructive/10'
       )}>
         <StatusIcon className={cn(
           'h-4 w-4',

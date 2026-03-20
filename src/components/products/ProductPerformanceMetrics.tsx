@@ -78,7 +78,7 @@ export function ProductPerformanceMetrics({ productId, sourceTable }: ProductPer
       value: performance.views.toLocaleString(),
       icon: Eye,
       color: 'text-info',
-      bg: 'bg-blue-50'
+      bg: 'bg-info/5'
     },
     {
       label: 'Ajouts panier',
@@ -94,7 +94,7 @@ export function ProductPerformanceMetrics({ productId, sourceTable }: ProductPer
       rate: performance.conversionRate > 0 ? `${performance.conversionRate.toFixed(1)}%` : undefined,
       icon: Target,
       color: 'text-success',
-      bg: 'bg-green-50'
+      bg: 'bg-success/5'
     },
     {
       label: 'Chiffre d\'affaires',
@@ -153,7 +153,7 @@ export function ProductPerformanceMetrics({ productId, sourceTable }: ProductPer
         )}
 
         {isHighTrafficLowConversion && (
-          <div className="mt-4 p-4 rounded-lg bg-red-50 border border-red-200">
+          <div className="mt-4 p-4 rounded-lg bg-destructive/5 border border-red-200">
             <p className="text-sm font-medium text-red-900">
               ⚠️ Fort trafic mais faible conversion
             </p>
@@ -164,7 +164,7 @@ export function ProductPerformanceMetrics({ productId, sourceTable }: ProductPer
         )}
 
         {isLowTrafficHighQuality && (
-          <div className="mt-4 p-4 rounded-lg bg-green-50 border border-green-200">
+          <div className="mt-4 p-4 rounded-lg bg-success/5 border border-green-200">
             <p className="text-sm font-medium text-green-900">
               ✨ Produit très performant mais peu visible
             </p>

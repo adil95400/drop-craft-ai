@@ -367,9 +367,9 @@ export function ImportCostAnalysis() {
             <div className="grid grid-cols-2 gap-3">
               <div className={cn(
                 "p-4 rounded-xl text-center",
-                analysis.isHealthy && "bg-green-500/10",
-                analysis.isWarning && "bg-amber-500/10",
-                analysis.isDanger && "bg-red-500/10"
+                analysis.isHealthy && "bg-success/10",
+                analysis.isWarning && "bg-warning/10",
+                analysis.isDanger && "bg-destructive/10"
               )}>
                 <div className="flex items-center justify-center gap-1 mb-1">
                   {analysis.netMarginPercent >= 0 ? (
@@ -405,9 +405,9 @@ export function ImportCostAnalysis() {
             {/* Health indicator */}
             <div className={cn(
               "flex items-center gap-2 p-3 rounded-lg",
-              analysis.isHealthy && "bg-green-500/10 text-success",
-              analysis.isWarning && "bg-amber-500/10 text-amber-700",
-              analysis.isDanger && "bg-red-500/10 text-red-700"
+              analysis.isHealthy && "bg-success/10 text-success",
+              analysis.isWarning && "bg-warning/10 text-amber-700",
+              analysis.isDanger && "bg-destructive/10 text-red-700"
             )}>
               {analysis.isHealthy && <CheckCircle className="w-4 h-4" />}
               {analysis.isWarning && <AlertTriangle className="w-4 h-4" />}

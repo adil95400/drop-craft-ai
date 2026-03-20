@@ -101,10 +101,10 @@ export function CustomersSyncStatus() {
 
   const getStatusColor = (status: SyncChannel['status']) => {
     switch (status) {
-      case 'synced': return 'bg-green-500'
-      case 'syncing': return 'bg-blue-500 animate-pulse'
-      case 'error': return 'bg-red-500'
-      default: return 'bg-amber-500'
+      case 'synced': return 'bg-success'
+      case 'syncing': return 'bg-info animate-pulse'
+      case 'error': return 'bg-destructive'
+      default: return 'bg-warning'
     }
   }
 
@@ -177,7 +177,7 @@ export function CustomersSyncStatus() {
                 </div>
                 <span className={cn(
                   "absolute -top-1 -right-1 w-3 h-3 rounded-full border-2 border-background",
-                  isSyncingAny ? 'bg-blue-500 animate-pulse' : 'bg-green-500'
+                  isSyncingAny ? 'bg-info animate-pulse' : 'bg-success'
                 )} />
               </div>
               <div>

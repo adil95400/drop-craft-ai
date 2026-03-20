@@ -37,7 +37,7 @@ export function RealIntegrationsManager() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'connected':
-        return <Badge variant="default" className="bg-green-500"><CheckCircle className="w-3 h-3 mr-1" />Connecté</Badge>
+        return <Badge variant="default" className="bg-success"><CheckCircle className="w-3 h-3 mr-1" />Connecté</Badge>
       case 'error':
         return <Badge variant="destructive"><AlertCircle className="w-3 h-3 mr-1" />Erreur</Badge>
       default:

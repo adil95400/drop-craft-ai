@@ -49,10 +49,10 @@ const calculateSEOScore = (product: Product): number => {
 }
 
 const getSEOStatus = (score: number) => {
-  if (score >= 80) return { label: 'Excellent', color: 'bg-green-500', variant: 'default' as const }
-  if (score >= 60) return { label: 'Bon', color: 'bg-blue-500', variant: 'secondary' as const }
-  if (score >= 40) return { label: 'Moyen', color: 'bg-yellow-500', variant: 'outline' as const }
-  return { label: 'Faible', color: 'bg-red-500', variant: 'destructive' as const }
+  if (score >= 80) return { label: 'Excellent', color: 'bg-success', variant: 'default' as const }
+  if (score >= 60) return { label: 'Bon', color: 'bg-info', variant: 'secondary' as const }
+  if (score >= 40) return { label: 'Moyen', color: 'bg-warning', variant: 'outline' as const }
+  return { label: 'Faible', color: 'bg-destructive', variant: 'destructive' as const }
 }
 
 export function ProductSEO() {

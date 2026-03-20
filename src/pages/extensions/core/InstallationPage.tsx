@@ -203,11 +203,11 @@ export default function InstallationPage() {
                   <h4 className="font-semibold">Extension ne se charge pas</h4>
                   <p className="text-sm mt-1">Vérifiez que le mode développeur est activé et rechargez l'extension.</p>
                 </div>
-                <div className="border-l-4 border-red-500 bg-red-50 p-4 rounded-r-lg">
+                <div className="border-l-4 border-red-500 bg-destructive/5 p-4 rounded-r-lg">
                   <h4 className="font-semibold">Erreur de permissions</h4>
                   <p className="text-sm mt-1">Accordez les permissions nécessaires dans le manifest.json.</p>
                 </div>
-                <div className="border-l-4 border-blue-500 bg-blue-50 p-4 rounded-r-lg">
+                <div className="border-l-4 border-blue-500 bg-info/5 p-4 rounded-r-lg">
                   <h4 className="font-semibold">Problème de compatibilité</h4>
                   <p className="text-sm mt-1">Vérifiez la version de Chrome et les dépendances requises.</p>
                 </div>

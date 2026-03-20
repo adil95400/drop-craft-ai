@@ -12,19 +12,19 @@ export function StoreConnectionStatus({ status, className }: StoreConnectionStat
       icon: CheckCircle,
       text: 'Connecté',
       variant: 'default' as const,
-      className: 'bg-green-100 text-success hover:bg-green-100'
+      className: 'bg-success/10 text-success hover:bg-success/10'
     },
     connecting: {
       icon: Clock,
       text: 'Connexion...',
       variant: 'secondary' as const,
-      className: 'bg-blue-100 text-blue-800 hover:bg-blue-100'
+      className: 'bg-info/10 text-blue-800 hover:bg-info/10'
     },
     error: {
       icon: AlertCircle,
       text: 'Erreur',
       variant: 'destructive' as const,
-      className: 'bg-red-100 text-red-800 hover:bg-red-100'
+      className: 'bg-destructive/10 text-red-800 hover:bg-destructive/10'
     },
     disconnected: {
       icon: XCircle,

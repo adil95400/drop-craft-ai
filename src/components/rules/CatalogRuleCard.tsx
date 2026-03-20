@@ -33,11 +33,11 @@ interface CatalogRuleCardProps {
 
 const CHANNEL_COLORS: Record<string, string> = {
   global: 'bg-slate-500',
-  google: 'bg-blue-500',
+  google: 'bg-info',
   meta: 'bg-indigo-500',
   tiktok: 'bg-pink-500',
-  amazon: 'bg-orange-500',
-  shopify: 'bg-green-500'
+  amazon: 'bg-warning',
+  shopify: 'bg-success'
 };
 
 const CHANNEL_LABELS: Record<string, string> = {
@@ -110,7 +110,7 @@ export function CatalogRuleCard({
               <Switch
                 checked={rule.enabled}
                 onCheckedChange={(checked) => onToggle({ id: rule.id, enabled: checked })}
-                className="data-[state=checked]:bg-emerald-500"
+                className="data-[state=checked]:bg-success"
               />
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -162,9 +162,9 @@ export function CatalogRuleCard({
               <div 
                 className={cn(
                   "flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-medium",
-                  successRate >= 90 ? "bg-emerald-500/10 text-success" :
-                  successRate >= 70 ? "bg-amber-500/10 text-warning" :
-                  "bg-red-500/10 text-destructive"
+                  successRate >= 90 ? "bg-success/10 text-success" :
+                  successRate >= 70 ? "bg-warning/10 text-warning" :
+                  "bg-destructive/10 text-destructive"
                 )}
                 title="Taux de succès"
               >

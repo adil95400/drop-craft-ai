@@ -300,7 +300,7 @@ export function TransformationRulesEditor({
                       {testResult?.ruleId === rule.id && (
                         <Badge className={cn(
                           "gap-1",
-                          testResult.success ? "bg-green-500/20 text-success" : "bg-red-500/20 text-red-700"
+                          testResult.success ? "bg-success/20 text-success" : "bg-destructive/20 text-red-700"
                         )}>
                           {testResult.success ? <CheckCircle2 className="h-3 w-3" /> : <AlertCircle className="h-3 w-3" />}
                           <span className="hidden sm:inline">{testResult.message}</span>
@@ -372,7 +372,7 @@ export function TransformationRulesEditor({
                           <div className="space-y-3">
                             <div className="flex items-center justify-between">
                               <Label className="text-base font-semibold flex items-center gap-2">
-                                <Badge variant="outline" className="bg-blue-500/10 text-blue-700">SI</Badge>
+                                <Badge variant="outline" className="bg-info/10 text-blue-700">SI</Badge>
                                 Conditions
                               </Label>
                               <div className="flex items-center gap-2">
@@ -467,7 +467,7 @@ export function TransformationRulesEditor({
                           {/* Actions - ALORS */}
                           <div className="space-y-3">
                             <Label className="text-base font-semibold flex items-center gap-2">
-                              <Badge variant="outline" className="bg-green-500/10 text-success">ALORS</Badge>
+                              <Badge variant="outline" className="bg-success/10 text-success">ALORS</Badge>
                               Actions
                             </Label>
 

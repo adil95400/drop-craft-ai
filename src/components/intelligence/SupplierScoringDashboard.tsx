@@ -13,7 +13,7 @@ const recommendationConfig: Record<string, { label: string; color: string }> = {
   preferred: { label: 'Préféré', color: 'bg-primary text-primary-foreground' },
   recommended: { label: 'Recommandé', color: 'bg-primary/80 text-primary-foreground' },
   neutral: { label: 'Neutre', color: 'bg-secondary text-secondary-foreground' },
-  caution: { label: 'Attention', color: 'bg-amber-500 text-white' },
+  caution: { label: 'Attention', color: 'bg-warning text-white' },
   avoid: { label: 'À éviter', color: 'bg-destructive text-destructive-foreground' },
 };
 

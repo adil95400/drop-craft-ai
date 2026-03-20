@@ -132,7 +132,7 @@ export function ImportPreviewDialog({
             <ScrollArea className="h-[400px]">
               <div className="space-y-3 p-1">
                 {preview.new.map((product, index) => (
-                  <div key={index} className="rounded-lg border p-4 bg-green-50/50 dark:bg-green-950/20">
+                  <div key={index} className="rounded-lg border p-4 bg-success/5/50 dark:bg-green-950/20">
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
                         <div className="flex items-center gap-2 mb-2">
@@ -173,7 +173,7 @@ export function ImportPreviewDialog({
             <ScrollArea className="h-[400px]">
               <div className="space-y-3 p-1">
                 {preview.updates.map((update, index) => (
-                  <div key={index} className="rounded-lg border p-4 bg-blue-50/50 dark:bg-blue-950/20">
+                  <div key={index} className="rounded-lg border p-4 bg-info/5/50 dark:bg-blue-950/20">
                     <div className="flex items-start justify-between mb-3">
                       <div className="flex items-center gap-2">
                         <h4 className="font-semibold">{update.product.name}</h4>
@@ -253,7 +253,7 @@ export function ImportPreviewDialog({
             <ScrollArea className="h-[400px]">
               <div className="space-y-3 p-1">
                 {preview.errors.map((error, index) => (
-                  <div key={index} className="rounded-lg border p-4 bg-red-50/50 dark:bg-red-950/20">
+                  <div key={index} className="rounded-lg border p-4 bg-destructive/5/50 dark:bg-red-950/20">
                     <div className="flex items-start gap-3">
                       <XCircle className="h-5 w-5 text-destructive flex-shrink-0 mt-0.5" />
                       <div className="flex-1">

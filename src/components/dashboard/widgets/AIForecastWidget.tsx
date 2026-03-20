@@ -108,10 +108,10 @@ const getIcon = (type: Forecast['type']) => {
 
 const getIconColor = (type: Forecast['type']) => {
   switch (type) {
-    case 'revenue': return 'text-success bg-green-500/10';
-    case 'orders': return 'text-info bg-blue-500/10';
-    case 'stock': return 'text-warning bg-amber-500/10';
-    case 'churn': return 'text-destructive bg-red-500/10';
+    case 'revenue': return 'text-success bg-success/10';
+    case 'orders': return 'text-info bg-info/10';
+    case 'stock': return 'text-warning bg-warning/10';
+    case 'churn': return 'text-destructive bg-destructive/10';
   }
 };
 

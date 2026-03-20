@@ -86,9 +86,9 @@ export function UnifiedMarketingHub() {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'active': return 'bg-green-100 text-success border-green-200'
-      case 'paused': return 'bg-yellow-100 text-yellow-800 border-yellow-200'
-      case 'completed': return 'bg-blue-100 text-blue-800 border-blue-200'
+      case 'active': return 'bg-success/10 text-success border-green-200'
+      case 'paused': return 'bg-warning/10 text-yellow-800 border-yellow-200'
+      case 'completed': return 'bg-info/10 text-blue-800 border-blue-200'
       case 'draft': return 'bg-gray-100 text-gray-800 border-gray-200'
       default: return 'bg-gray-100 text-gray-800 border-gray-200'
     }
@@ -339,9 +339,9 @@ export function UnifiedMarketingHub() {
                   <div key={job.id} className="flex items-center justify-between p-4 border rounded-lg">
                     <div className="flex items-center gap-3">
                       <div className={`w-2 h-2 rounded-full ${
-                        job.status === 'completed' ? 'bg-green-500' :
-                        job.status === 'running' ? 'bg-blue-500' :
-                        job.status === 'failed' ? 'bg-red-500' :
+                        job.status === 'completed' ? 'bg-success' :
+                        job.status === 'running' ? 'bg-info' :
+                        job.status === 'failed' ? 'bg-destructive' :
                         'bg-gray-500'
                       }`} />
                       <div>

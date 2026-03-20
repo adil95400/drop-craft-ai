@@ -451,10 +451,10 @@ export const ImportMethodsGrid = () => {
               <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
                 {[
                   { type: 'XML', icon: '🗂️', color: 'bg-gray-100', accept: '.xml' },
-                  { type: 'CSV', icon: '📊', color: 'bg-green-100', accept: '.csv' },
-                  { type: 'Text', icon: '📄', color: 'bg-red-100', accept: '.txt' },
-                  { type: 'JSON', icon: '📋', color: 'bg-blue-100', accept: '.json' },
-                  { type: 'Google sheets', icon: '📈', color: 'bg-green-100', accept: '.xlsx,.xls' }
+                  { type: 'CSV', icon: '📊', color: 'bg-success/10', accept: '.csv' },
+                  { type: 'Text', icon: '📄', color: 'bg-destructive/10', accept: '.txt' },
+                  { type: 'JSON', icon: '📋', color: 'bg-info/10', accept: '.json' },
+                  { type: 'Google sheets', icon: '📈', color: 'bg-success/10', accept: '.xlsx,.xls' }
                 ].map((format) => (
                   <label
                     key={format.type}

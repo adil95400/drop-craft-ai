@@ -23,10 +23,10 @@ export function SmartInventoryDashboard() {
 
   const getRiskColor = (riskLevel: string) => {
     switch (riskLevel) {
-      case 'critical': return 'text-destructive bg-red-100';
+      case 'critical': return 'text-destructive bg-destructive/10';
       case 'high': return 'text-warning bg-orange-100';
-      case 'medium': return 'text-warning bg-yellow-100';
-      case 'low': return 'text-success bg-green-100';
+      case 'medium': return 'text-warning bg-warning/10';
+      case 'low': return 'text-success bg-success/10';
       default: return 'text-gray-600 bg-gray-100';
     }
   };
@@ -57,7 +57,7 @@ export function SmartInventoryDashboard() {
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-blue-100 rounded-lg">
+              <div className="p-2 bg-info/10 rounded-lg">
                 <Package className="h-5 w-5 text-info" />
               </div>
               <div>
@@ -71,7 +71,7 @@ export function SmartInventoryDashboard() {
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-red-100 rounded-lg">
+              <div className="p-2 bg-destructive/10 rounded-lg">
                 <AlertTriangle className="h-5 w-5 text-destructive" />
               </div>
               <div>
@@ -85,7 +85,7 @@ export function SmartInventoryDashboard() {
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-green-100 rounded-lg">
+              <div className="p-2 bg-success/10 rounded-lg">
                 <Zap className="h-5 w-5 text-success" />
               </div>
               <div>
@@ -113,7 +113,7 @@ export function SmartInventoryDashboard() {
 
       {/* Alertes et actions urgentes */}
       {highRiskItems && highRiskItems.length > 0 && (
-        <Card className="border-red-200 bg-red-50/50">
+        <Card className="border-red-200 bg-destructive/5/50">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-destructive">
               <AlertTriangle className="h-5 w-5" />
@@ -137,7 +137,7 @@ export function SmartInventoryDashboard() {
                     <Badge className={getRiskColor(item.stock_risk_level)}>
                       {getRiskLabel(item.stock_risk_level)}
                     </Badge>
-                    <Button size="sm" className="bg-red-600 hover:bg-red-700">
+                    <Button size="sm" className="bg-destructive hover:bg-red-700">
                       <ShoppingCart className="h-4 w-4 mr-1" />
                       Réapprovisionner
                     </Button>
@@ -221,7 +221,7 @@ export function SmartInventoryDashboard() {
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="p-4 bg-blue-50 rounded-lg">
+              <div className="p-4 bg-info/5 rounded-lg">
                 <h4 className="font-semibold text-blue-700 mb-2">Prochains 7 jours</h4>
                 <p className="text-2xl font-bold text-info">{insights.next7Days}</p>
                 <p className="text-sm text-info">réapprovisionnements</p>
@@ -233,7 +233,7 @@ export function SmartInventoryDashboard() {
                 <p className="text-sm text-warning">requises</p>
               </div>
               
-              <div className="p-4 bg-green-50 rounded-lg">
+              <div className="p-4 bg-success/5 rounded-lg">
                 <h4 className="font-semibold text-success mb-2">Total Prévu</h4>
                 <p className="text-2xl font-bold text-success">{insights.upcomingReorders}</p>
                 <p className="text-sm text-success">réapprovisionnements</p>

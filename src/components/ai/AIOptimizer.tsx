@@ -97,18 +97,18 @@ export function AIOptimizer() {
 
   const getImpactColor = (impact: string) => {
     switch (impact) {
-      case 'high': return 'text-success bg-green-50 border-green-200';
+      case 'high': return 'text-success bg-success/5 border-green-200';
       case 'medium': return 'text-warning bg-orange-50 border-orange-200';
-      case 'low': return 'text-info bg-blue-50 border-blue-200';
+      case 'low': return 'text-info bg-info/5 border-blue-200';
       default: return 'text-gray-600 bg-gray-50 border-gray-200';
     }
   };
 
   const getEffortColor = (effort: string) => {
     switch (effort) {
-      case 'low': return 'bg-green-500';
-      case 'medium': return 'bg-orange-500';
-      case 'high': return 'bg-red-500';
+      case 'low': return 'bg-success';
+      case 'medium': return 'bg-warning';
+      case 'high': return 'bg-destructive';
       default: return 'bg-gray-500';
     }
   };

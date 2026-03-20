@@ -110,8 +110,8 @@ export function AIRecommendations({ limit = 6, types }: AIRecommendationsProps) 
 
   const getTypeColor = (type: string) => {
     switch (type) {
-      case 'pricing': return 'text-success bg-green-100';
-      case 'product': return 'text-info bg-blue-100';
+      case 'pricing': return 'text-success bg-success/10';
+      case 'product': return 'text-info bg-info/10';
       case 'marketing': return 'text-purple-600 bg-purple-100';
       case 'inventory': return 'text-warning bg-orange-100';
       case 'seo': return 'text-pink-600 bg-pink-100';
@@ -121,9 +121,9 @@ export function AIRecommendations({ limit = 6, types }: AIRecommendationsProps) 
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
-      case 'high': return 'border-red-200 bg-red-50';
-      case 'medium': return 'border-yellow-200 bg-yellow-50';
-      case 'low': return 'border-blue-200 bg-blue-50';
+      case 'high': return 'border-red-200 bg-destructive/5';
+      case 'medium': return 'border-yellow-200 bg-warning/5';
+      case 'low': return 'border-blue-200 bg-info/5';
       default: return '';
     }
   };
@@ -236,7 +236,7 @@ export function AIRecommendations({ limit = 6, types }: AIRecommendationsProps) 
                 {recommendation.metrics && (
                   <div className="grid grid-cols-2 gap-2 text-xs">
                     {recommendation.metrics.potential_revenue && (
-                      <div className="text-center p-1 bg-green-50 rounded">
+                      <div className="text-center p-1 bg-success/5 rounded">
                         <div className="font-medium text-success">
                           +€{recommendation.metrics.potential_revenue}
                         </div>
@@ -244,7 +244,7 @@ export function AIRecommendations({ limit = 6, types }: AIRecommendationsProps) 
                       </div>
                     )}
                     {recommendation.metrics.conversion_lift && (
-                      <div className="text-center p-1 bg-blue-50 rounded">
+                      <div className="text-center p-1 bg-info/5 rounded">
                         <div className="font-medium text-info">
                           +{recommendation.metrics.conversion_lift}%
                         </div>

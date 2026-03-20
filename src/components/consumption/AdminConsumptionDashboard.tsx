@@ -55,10 +55,10 @@ import { format } from 'date-fns';
 import { getDateFnsLocale } from '@/utils/dateFnsLocale';
 
 const STATUS_STYLES = {
-  ok: { label: 'OK', icon: Activity, color: 'text-success', bg: 'bg-green-50 dark:bg-green-950/30' },
-  warning: { label: 'Alerte', icon: AlertTriangle, color: 'text-warning', bg: 'bg-yellow-50 dark:bg-yellow-950/30' },
-  exhausted: { label: 'Épuisé', icon: XCircle, color: 'text-destructive', bg: 'bg-red-50 dark:bg-red-950/30' },
-  unlimited: { label: 'Illimité', icon: Zap, color: 'text-info', bg: 'bg-blue-50 dark:bg-blue-950/30' },
+  ok: { label: 'OK', icon: Activity, color: 'text-success', bg: 'bg-success/5 dark:bg-green-950/30' },
+  warning: { label: 'Alerte', icon: AlertTriangle, color: 'text-warning', bg: 'bg-warning/5 dark:bg-yellow-950/30' },
+  exhausted: { label: 'Épuisé', icon: XCircle, color: 'text-destructive', bg: 'bg-destructive/5 dark:bg-red-950/30' },
+  unlimited: { label: 'Illimité', icon: Zap, color: 'text-info', bg: 'bg-info/5 dark:bg-blue-950/30' },
 };
 
 const PLAN_BADGES: Record<string, { label: string; variant: 'default' | 'secondary' | 'outline' }> = {

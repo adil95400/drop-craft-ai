@@ -144,7 +144,7 @@ export function ShopifyCustomerImportDialog({
                           <CardContent className="p-4">
                             <div className="flex items-center justify-between">
                               <div className="flex items-center gap-3">
-                                <div className="p-2 rounded-lg bg-green-500/10">
+                                <div className="p-2 rounded-lg bg-success/10">
                                   <Store className="h-5 w-5 text-success" />
                                 </div>
                                 <div>
@@ -154,7 +154,7 @@ export function ShopifyCustomerImportDialog({
                                   </p>
                                 </div>
                               </div>
-                              <Badge variant="secondary" className="bg-green-500/10 text-success border-0">
+                              <Badge variant="secondary" className="bg-success/10 text-success border-0">
                                 Connecté
                               </Badge>
                             </div>
@@ -166,7 +166,7 @@ export function ShopifyCustomerImportDialog({
 
                   {/* Info box about what will be imported */}
                   {integrations?.length > 0 && (
-                    <Card className="bg-blue-500/5 border-blue-500/20">
+                    <Card className="bg-info/5 border-blue-500/20">
                       <CardContent className="p-3">
                         <div className="flex items-start gap-2">
                           <Mail className="h-4 w-4 text-info mt-0.5 flex-shrink-0" />
@@ -223,7 +223,7 @@ export function ShopifyCustomerImportDialog({
                 exit={{ opacity: 0, scale: 0.95 }}
                 className="text-center py-4"
               >
-                <div className="p-4 rounded-full bg-green-500/10 inline-flex mb-4">
+                <div className="p-4 rounded-full bg-success/10 inline-flex mb-4">
                   <CheckCircle2 className="h-10 w-10 text-success" />
                 </div>
                 <h3 className="text-lg font-semibold mb-1">Import réussi !</h3>
@@ -248,7 +248,7 @@ export function ShopifyCustomerImportDialog({
                       </div>
                       <p className="text-xs text-muted-foreground">Acheteurs</p>
                     </div>
-                    <div className="p-3 rounded-lg bg-blue-500/10">
+                    <div className="p-3 rounded-lg bg-info/10">
                       <div className="flex items-center justify-center gap-1 text-lg font-semibold text-info">
                         <Mail className="h-4 w-4" />
                         {breakdown.email_subscribers}

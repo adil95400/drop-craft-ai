@@ -166,7 +166,7 @@ export default function StockManagementPage() {
       {(stats?.low_stock_items || 0) > 0 && (
         <Card className="border-orange-500/50 bg-gradient-to-r from-orange-50/50 to-yellow-50/50 dark:from-orange-950/20 dark:to-yellow-950/20">
           <CardContent className="p-4 flex items-center gap-4">
-            <div className="h-10 w-10 rounded-lg bg-orange-500/20 flex items-center justify-center">
+            <div className="h-10 w-10 rounded-lg bg-warning/20 flex items-center justify-center">
               <AlertTriangle className="h-5 w-5 text-warning" />
             </div>
             <div className="flex-1">

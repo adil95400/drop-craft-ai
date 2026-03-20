@@ -14,13 +14,13 @@ export function RestockSuggestions() {
   const getPriorityConfig = (priority: string) => {
     switch (priority) {
       case 'urgent':
-        return { color: 'bg-red-500', variant: 'destructive' as const, label: 'Urgent' };
+        return { color: 'bg-destructive', variant: 'destructive' as const, label: 'Urgent' };
       case 'high':
-        return { color: 'bg-orange-500', variant: 'destructive' as const, label: 'Haute' };
+        return { color: 'bg-warning', variant: 'destructive' as const, label: 'Haute' };
       case 'medium':
-        return { color: 'bg-yellow-500', variant: 'secondary' as const, label: 'Moyenne' };
+        return { color: 'bg-warning', variant: 'secondary' as const, label: 'Moyenne' };
       default:
-        return { color: 'bg-blue-500', variant: 'default' as const, label: 'Basse' };
+        return { color: 'bg-info', variant: 'default' as const, label: 'Basse' };
     }
   };
 

@@ -49,13 +49,13 @@ export function GlobalSEOOptimizer() {
   const getSeverityColor = (severity: string) => {
     switch (severity) {
       case 'critical':
-        return 'bg-red-100 text-red-800 border-red-200';
+        return 'bg-destructive/10 text-red-800 border-red-200';
       case 'warning':
-        return 'bg-yellow-100 text-yellow-800 border-yellow-200';
+        return 'bg-warning/10 text-yellow-800 border-yellow-200';
       case 'info':
-        return 'bg-blue-100 text-blue-800 border-blue-200';
+        return 'bg-info/10 text-blue-800 border-blue-200';
       default:
-        return 'bg-green-100 text-success border-green-200';
+        return 'bg-success/10 text-success border-green-200';
     }
   };
 

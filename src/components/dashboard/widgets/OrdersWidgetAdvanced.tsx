@@ -87,7 +87,7 @@ export function OrdersWidgetAdvanced({ timeRange, settings, lastRefresh }: Order
       <CardHeader className="pb-2">
         <CardTitle className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="p-2 rounded-lg bg-blue-500/10">
+            <div className="p-2 rounded-lg bg-info/10">
               <ShoppingCart className="h-5 w-5 text-info" />
             </div>
             <span>Commandes</span>

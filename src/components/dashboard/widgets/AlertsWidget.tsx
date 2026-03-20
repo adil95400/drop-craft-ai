@@ -40,11 +40,11 @@ export function AlertsWidget({ isCustomizing }: AlertsWidgetProps) {
   const getAlertBgColor = (type: string) => {
     switch (type) {
       case 'warning':
-        return 'bg-red-500/10 border-red-500/20';
+        return 'bg-destructive/10 border-red-500/20';
       case 'info':
-        return 'bg-blue-500/10 border-blue-500/20';
+        return 'bg-info/10 border-blue-500/20';
       default:
-        return 'bg-orange-500/10 border-orange-500/20';
+        return 'bg-warning/10 border-orange-500/20';
     }
   };
 

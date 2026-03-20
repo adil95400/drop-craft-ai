@@ -77,9 +77,9 @@ export const TrendPredictor = () => {
 
   const getMomentumColor = (momentum: string) => {
     switch (momentum) {
-      case 'viral': return 'bg-red-500'
-      case 'fast': return 'bg-orange-500'
-      case 'moderate': return 'bg-blue-500'
+      case 'viral': return 'bg-destructive'
+      case 'fast': return 'bg-warning'
+      case 'moderate': return 'bg-info'
       default: return 'bg-gray-500'
     }
   }
@@ -192,7 +192,7 @@ export const TrendPredictor = () => {
               </div>
 
               {prediction.seasonality && (
-                <div className="flex items-center gap-2 p-3 bg-blue-50 text-blue-900 rounded-lg">
+                <div className="flex items-center gap-2 p-3 bg-info/5 text-blue-900 rounded-lg">
                   <Calendar className="h-4 w-4" />
                   <span className="text-sm">
                     <strong>Saisonnalité détectée:</strong> {prediction.seasonality}

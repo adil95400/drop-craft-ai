@@ -38,9 +38,9 @@ const StatCard = ({
 }) => {
   const colorClasses = {
     primary: 'bg-primary/10 text-primary',
-    green: 'bg-green-500/10 text-success',
-    blue: 'bg-blue-500/10 text-info',
-    yellow: 'bg-yellow-500/10 text-warning'
+    green: 'bg-success/10 text-success',
+    blue: 'bg-info/10 text-info',
+    yellow: 'bg-warning/10 text-warning'
   }
 
   return (

@@ -343,9 +343,9 @@ function PricingSuggestions({
             <div 
               key={idx}
               className={`flex items-start gap-2 p-2 rounded text-xs ${
-                warning.severity === 'high' ? 'bg-red-50 text-red-700 dark:bg-red-950/20 dark:text-red-400' :
-                warning.severity === 'medium' ? 'bg-yellow-50 text-yellow-700 dark:bg-yellow-950/20 dark:text-yellow-400' :
-                'bg-blue-50 text-blue-700 dark:bg-blue-950/20 dark:text-blue-400'
+                warning.severity === 'high' ? 'bg-destructive/5 text-red-700 dark:bg-red-950/20 dark:text-red-400' :
+                warning.severity === 'medium' ? 'bg-warning/5 text-yellow-700 dark:bg-yellow-950/20 dark:text-yellow-400' :
+                'bg-info/5 text-blue-700 dark:bg-blue-950/20 dark:text-blue-400'
               }`}
             >
               <AlertCircle className="h-3 w-3 mt-0.5 flex-shrink-0" />

@@ -50,8 +50,8 @@ export function BacklogAIPanel() {
 
   const getPriorityStyles = (priority: string) => {
     switch (priority) {
-      case 'critical': return 'border-red-500/30 bg-red-500/5'
-      case 'high': return 'border-amber-500/30 bg-amber-500/5'
+      case 'critical': return 'border-red-500/30 bg-destructive/5'
+      case 'high': return 'border-amber-500/30 bg-warning/5'
       default: return 'border-violet-500/30 bg-violet-500/5'
     }
   }
@@ -112,7 +112,7 @@ export function BacklogAIPanel() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card>
           <CardContent className="p-4 flex items-center gap-4">
-            <div className="p-3 rounded-xl bg-emerald-500/10">
+            <div className="p-3 rounded-xl bg-success/10">
               <Euro className="h-5 w-5 text-success" />
             </div>
             <div>
@@ -126,7 +126,7 @@ export function BacklogAIPanel() {
 
         <Card>
           <CardContent className="p-4 flex items-center gap-4">
-            <div className="p-3 rounded-xl bg-blue-500/10">
+            <div className="p-3 rounded-xl bg-info/10">
               <Bot className="h-5 w-5 text-info" />
             </div>
             <div>
@@ -140,7 +140,7 @@ export function BacklogAIPanel() {
 
         <Card>
           <CardContent className="p-4 flex items-center gap-4">
-            <div className="p-3 rounded-xl bg-amber-500/10">
+            <div className="p-3 rounded-xl bg-warning/10">
               <AlertTriangle className="h-5 w-5 text-warning" />
             </div>
             <div>
@@ -172,7 +172,7 @@ export function BacklogAIPanel() {
             )}
             {stats.urgencyDistribution.high > 0 && (
               <div className="flex items-center gap-3">
-                <Badge className="w-20 justify-center bg-amber-500">Urgent</Badge>
+                <Badge className="w-20 justify-center bg-warning">Urgent</Badge>
                 <Progress value={(stats.urgencyDistribution.high / (stats.urgencyDistribution.critical + stats.urgencyDistribution.high + stats.urgencyDistribution.medium + stats.urgencyDistribution.low)) * 100} className="flex-1 h-2" />
                 <span className="text-sm font-medium w-8">{stats.urgencyDistribution.high}</span>
               </div>

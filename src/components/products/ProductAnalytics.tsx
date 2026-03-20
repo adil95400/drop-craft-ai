@@ -280,7 +280,7 @@ const ProductAnalytics = ({ productId }: ProductAnalyticsProps) => {
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-sm text-muted-foreground">Tendance</span>
-                  <Badge variant="default" className="bg-green-100 text-success">
+                  <Badge variant="default" className="bg-success/10 text-success">
                     Croissante
                   </Badge>
                 </div>
@@ -328,11 +328,11 @@ const ProductAnalytics = ({ productId }: ProductAnalyticsProps) => {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  <div className="flex justify-between items-center p-3 bg-blue-50 rounded">
+                  <div className="flex justify-between items-center p-3 bg-info/5 rounded">
                     <span>Vues produit</span>
                     <span className="font-bold">12,450</span>
                   </div>
-                  <div className="flex justify-between items-center p-3 bg-blue-100 rounded">
+                  <div className="flex justify-between items-center p-3 bg-info/10 rounded">
                     <span>Ajouts panier</span>
                     <span className="font-bold">1,245 (10%)</span>
                   </div>
@@ -354,7 +354,7 @@ const ProductAnalytics = ({ productId }: ProductAnalyticsProps) => {
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
-                  <div className="flex items-start gap-3 p-3 bg-yellow-50 rounded">
+                  <div className="flex items-start gap-3 p-3 bg-warning/5 rounded">
                     <Badge variant="secondary">SEO</Badge>
                     <div>
                       <p className="text-sm font-medium">Améliorer le titre</p>
@@ -364,7 +364,7 @@ const ProductAnalytics = ({ productId }: ProductAnalyticsProps) => {
                     </div>
                   </div>
                   
-                  <div className="flex items-start gap-3 p-3 bg-green-50 rounded">
+                  <div className="flex items-start gap-3 p-3 bg-success/5 rounded">
                     <Badge variant="default">Prix</Badge>
                     <div>
                       <p className="text-sm font-medium">Test prix dynamique</p>
@@ -374,7 +374,7 @@ const ProductAnalytics = ({ productId }: ProductAnalyticsProps) => {
                     </div>
                   </div>
                   
-                  <div className="flex items-start gap-3 p-3 bg-blue-50 rounded">
+                  <div className="flex items-start gap-3 p-3 bg-info/5 rounded">
                     <Badge variant="outline">Images</Badge>
                     <div>
                       <p className="text-sm font-medium">Ajouter des images</p>

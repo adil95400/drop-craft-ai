@@ -69,8 +69,8 @@ const FORMAT_ICONS: Record<string, React.ElementType> = {
 };
 
 const FORMAT_COLORS: Record<string, string> = {
-  csv: 'text-success bg-green-500/10',
-  json: 'text-info bg-blue-500/10',
+  csv: 'text-success bg-success/10',
+  json: 'text-info bg-info/10',
   xml: 'text-purple-500 bg-purple-500/10',
 };
 
@@ -481,7 +481,7 @@ export function FeedURLImporter({ onImportComplete, className }: FeedURLImporter
               className="space-y-6 py-6"
             >
               <div className="text-center space-y-4">
-                <div className="mx-auto w-16 h-16 rounded-full bg-green-500/10 flex items-center justify-center">
+                <div className="mx-auto w-16 h-16 rounded-full bg-success/10 flex items-center justify-center">
                   <CheckCircle className="w-8 h-8 text-success" />
                 </div>
                 <div>
@@ -494,7 +494,7 @@ export function FeedURLImporter({ onImportComplete, className }: FeedURLImporter
 
               {/* Stats */}
               <div className="grid grid-cols-3 gap-4">
-                <div className="text-center p-4 bg-green-500/10 rounded-lg">
+                <div className="text-center p-4 bg-success/10 rounded-lg">
                   <p className="text-2xl font-bold text-success">
                     {importResult.data?.products_imported || 0}
                   </p>
@@ -506,7 +506,7 @@ export function FeedURLImporter({ onImportComplete, className }: FeedURLImporter
                   </p>
                   <p className="text-sm text-muted-foreground">Total</p>
                 </div>
-                <div className="text-center p-4 bg-red-500/10 rounded-lg">
+                <div className="text-center p-4 bg-destructive/10 rounded-lg">
                   <p className="text-2xl font-bold text-destructive">
                     {importResult.data?.errors || 0}
                   </p>

@@ -277,12 +277,12 @@ export default function ManageIntegrationPage() {
                           
                           <div className="grid grid-cols-3 gap-4 text-sm mb-2">
                             <div className="flex items-center gap-2">
-                              <div className="h-2 w-2 rounded-full bg-blue-500"></div>
+                              <div className="h-2 w-2 rounded-full bg-info"></div>
                               <span className="text-muted-foreground">Produits:</span>
                               <span className="font-semibold text-foreground">{log.products_synced || 0}</span>
                             </div>
                             <div className="flex items-center gap-2">
-                              <div className="h-2 w-2 rounded-full bg-green-500"></div>
+                              <div className="h-2 w-2 rounded-full bg-success"></div>
                               <span className="text-muted-foreground">Commandes:</span>
                               <span className="font-semibold text-foreground">{log.orders_synced || 0}</span>
                             </div>

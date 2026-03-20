@@ -321,13 +321,13 @@ export function ProductCatalogManager({ onImport }: ProductCatalogManagerProps) 
               {/* Badges overlay */}
               <div className="absolute top-2 left-2 flex flex-wrap gap-1">
                 {product.is_trending && (
-                  <Badge className="bg-red-500 text-white text-xs">
+                  <Badge className="bg-destructive text-white text-xs">
                     <TrendingUp className="h-3 w-3 mr-1" />
                     Tendance
                   </Badge>
                 )}
                 {product.is_bestseller && (
-                  <Badge className="bg-yellow-500 text-white text-xs">
+                  <Badge className="bg-warning text-white text-xs">
                     <Star className="h-3 w-3 mr-1" />
                     Best
                   </Badge>

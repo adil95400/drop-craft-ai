@@ -151,7 +151,7 @@ export function MappingRulesPanel() {
                         {TRANSFORMATION_TYPES.find(t => t.value === rule.transformation_type)?.label}
                       </Badge>
                       {rule.is_active ? (
-                        <Badge className="bg-green-500/10 text-success">
+                        <Badge className="bg-success/10 text-success">
                           <CheckCircle className="h-3 w-3 mr-1" />
                           Actif
                         </Badge>

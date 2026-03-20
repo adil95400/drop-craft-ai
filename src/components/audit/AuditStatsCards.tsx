@@ -36,10 +36,10 @@ interface AuditStatsCardsProps {
 
 export function AuditStatsCards({ stats, isLoading }: AuditStatsCardsProps) {
   const getScoreStatus = (score: number) => {
-    if (score >= 80) return { label: 'Excellent', color: 'text-success', bg: 'bg-green-50', icon: CheckCircle2 };
-    if (score >= 60) return { label: 'Bon', color: 'text-warning', bg: 'bg-yellow-50', icon: TrendingUp };
+    if (score >= 80) return { label: 'Excellent', color: 'text-success', bg: 'bg-success/5', icon: CheckCircle2 };
+    if (score >= 60) return { label: 'Bon', color: 'text-warning', bg: 'bg-warning/5', icon: TrendingUp };
     if (score >= 40) return { label: 'À améliorer', color: 'text-warning', bg: 'bg-orange-50', icon: TrendingDown };
-    return { label: 'Critique', color: 'text-destructive', bg: 'bg-red-50', icon: XCircle };
+    return { label: 'Critique', color: 'text-destructive', bg: 'bg-destructive/5', icon: XCircle };
   };
 
   const scoreStatus = getScoreStatus(stats.averageScore);
@@ -64,7 +64,7 @@ export function AuditStatsCards({ stats, isLoading }: AuditStatsCardsProps) {
       description: `${stats.excellentCount + stats.goodCount} produits OK`,
       icon: BarChart3,
       color: healthPercent >= 70 ? 'text-success' : 'text-warning',
-      bgColor: healthPercent >= 70 ? 'bg-green-50' : 'bg-orange-50',
+      bgColor: healthPercent >= 70 ? 'bg-success/5' : 'bg-orange-50',
       progress: healthPercent
     },
     {
@@ -73,7 +73,7 @@ export function AuditStatsCards({ stats, isLoading }: AuditStatsCardsProps) {
       description: 'À corriger en priorité',
       icon: AlertTriangle,
       color: stats.criticalIssuesCount > 0 ? 'text-destructive' : 'text-success',
-      bgColor: stats.criticalIssuesCount > 0 ? 'bg-red-50' : 'bg-green-50',
+      bgColor: stats.criticalIssuesCount > 0 ? 'bg-destructive/5' : 'bg-success/5',
       urgent: stats.criticalIssuesCount > 0
     },
     {

@@ -380,7 +380,7 @@ export const AdminActionCards = ({ className }: AdminActionCardsProps) => {
             </CardContent>
           </Card>
 
-          <Card className="hover:shadow-lg transition-all duration-200 border-2 border-green-200 bg-green-50/50">
+          <Card className="hover:shadow-lg transition-all duration-200 border-2 border-green-200 bg-success/5/50">
             <CardHeader className="pb-3">
               <CardTitle className="text-lg flex items-center gap-2">
                 <Activity className="h-5 w-5 text-success" />
@@ -394,7 +394,7 @@ export const AdminActionCards = ({ className }: AdminActionCardsProps) => {
             <CardContent>
               <AsyncButton
                 onClick={() => handleActionWithResult(AdminService.runHealthCheck, 'runHealthCheck')}
-                className="w-full bg-green-600 hover:bg-green-700"
+                className="w-full bg-success hover:bg-green-700"
                 loadingText="Contrôle..."
               >
                 <Activity className="h-4 w-4 mr-2" />

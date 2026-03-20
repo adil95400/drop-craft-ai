@@ -165,10 +165,10 @@ export default function AIIntelligenceHub() {
 
   const getImpactColor = (level: string) => {
     const colors: Record<string, string> = {
-      'critical': 'bg-red-500',
-      'high': 'bg-orange-500',
-      'medium': 'bg-yellow-500',
-      'low': 'bg-blue-500'
+      'critical': 'bg-destructive',
+      'high': 'bg-warning',
+      'medium': 'bg-warning',
+      'low': 'bg-info'
     };
     return colors[level] || 'bg-gray-500';
   };
@@ -234,7 +234,7 @@ export default function AIIntelligenceHub() {
         
         <Card className="p-4">
           <div className="flex items-center gap-3">
-            <div className="p-3 rounded-lg bg-blue-500/10">
+            <div className="p-3 rounded-lg bg-info/10">
               <TrendingUp className="h-5 w-5 text-info" />
             </div>
             <div>
@@ -246,7 +246,7 @@ export default function AIIntelligenceHub() {
 
         <Card className="p-4">
           <div className="flex items-center gap-3">
-            <div className="p-3 rounded-lg bg-yellow-500/10">
+            <div className="p-3 rounded-lg bg-warning/10">
               <Lightbulb className="h-5 w-5 text-warning" />
             </div>
             <div>
@@ -258,7 +258,7 @@ export default function AIIntelligenceHub() {
 
         <Card className="p-4">
           <div className="flex items-center gap-3">
-            <div className="p-3 rounded-lg bg-green-500/10">
+            <div className="p-3 rounded-lg bg-success/10">
               <DollarSign className="h-5 w-5 text-success" />
             </div>
             <div>

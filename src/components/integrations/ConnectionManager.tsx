@@ -198,11 +198,11 @@ export const ConnectionManager = () => {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'connected':
-        return <Badge className="bg-green-100 text-success">Connecté</Badge>
+        return <Badge className="bg-success/10 text-success">Connecté</Badge>
       case 'disconnected':
         return <Badge variant="outline">Déconnecté</Badge>
       default:
-        return <Badge className="bg-yellow-100 text-yellow-800">En cours</Badge>
+        return <Badge className="bg-warning/10 text-yellow-800">En cours</Badge>
     }
   }
 

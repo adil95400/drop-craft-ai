@@ -46,10 +46,10 @@ export const SupplierCard = ({ supplier, onEdit, onDelete, onSync, isSyncing, sy
 
   const getStatusBadge = (status: string) => {
     const statusColors = {
-      connected: 'bg-green-100 text-success border-green-200',
+      connected: 'bg-success/10 text-success border-green-200',
       disconnected: 'bg-gray-100 text-gray-800 border-gray-200',
-      error: 'bg-red-100 text-red-800 border-red-200',
-      pending: 'bg-yellow-100 text-yellow-800 border-yellow-200'
+      error: 'bg-destructive/10 text-red-800 border-red-200',
+      pending: 'bg-warning/10 text-yellow-800 border-yellow-200'
     }
 
     const statusLabels = {
@@ -68,7 +68,7 @@ export const SupplierCard = ({ supplier, onEdit, onDelete, onSync, isSyncing, sy
 
   const getTypeBadge = (type: string) => {
     const typeColors = {
-      api: 'bg-blue-100 text-blue-800',
+      api: 'bg-info/10 text-blue-800',
       csv: 'bg-purple-100 text-purple-800',
       xml: 'bg-orange-100 text-orange-800',
       ftp: 'bg-indigo-100 text-indigo-800',

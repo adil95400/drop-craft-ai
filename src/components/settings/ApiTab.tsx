@@ -152,7 +152,7 @@ export function ApiTab() {
       </Card>
 
       {/* Security Info */}
-      <Card className="border-yellow-500/30 bg-yellow-500/5">
+      <Card className="border-yellow-500/30 bg-warning/5">
         <CardContent className="pt-6">
           <div className="flex gap-3">
             <AlertTriangle className="h-5 w-5 text-warning flex-shrink-0 mt-0.5" />

@@ -211,7 +211,7 @@ export function WorkflowSandbox() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="p-2 rounded-lg bg-amber-500/10">
+          <div className="p-2 rounded-lg bg-warning/10">
             <FlaskConical className="h-6 w-6 text-warning" />
           </div>
           <div>
@@ -324,9 +324,9 @@ export function WorkflowSandbox() {
                               animate={{ opacity: 1, x: 0 }}
                               className={cn(
                                 "flex items-center gap-3 p-3 rounded-lg border",
-                                step.status === 'running' && "border-blue-300 bg-blue-50 dark:bg-blue-950/30",
-                                step.status === 'success' && "border-green-300 bg-green-50 dark:bg-green-950/30",
-                                step.status === 'failed' && "border-red-300 bg-red-50 dark:bg-red-950/30"
+                                step.status === 'running' && "border-blue-300 bg-info/5 dark:bg-blue-950/30",
+                                step.status === 'success' && "border-green-300 bg-success/5 dark:bg-green-950/30",
+                                step.status === 'failed' && "border-red-300 bg-destructive/5 dark:bg-red-950/30"
                               )}
                             >
                               {getStatusIcon(step.status)}

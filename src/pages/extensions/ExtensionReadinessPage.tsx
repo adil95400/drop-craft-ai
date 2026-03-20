@@ -119,9 +119,9 @@ export default function ExtensionReadinessPage() {
         <div 
           key={item.id}
           className={`flex items-center justify-between p-3 rounded-lg border ${
-            item.status === 'pass' ? 'border-green-200 bg-green-50' :
-            item.status === 'warning' ? 'border-yellow-200 bg-yellow-50' :
-            item.status === 'fail' ? 'border-red-200 bg-red-50' :
+            item.status === 'pass' ? 'border-green-200 bg-success/5' :
+            item.status === 'warning' ? 'border-yellow-200 bg-warning/5' :
+            item.status === 'fail' ? 'border-red-200 bg-destructive/5' :
             'border-muted'
           }`}
         >
@@ -183,7 +183,7 @@ export default function ExtensionReadinessPage() {
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-4">
                 <div className={`w-16 h-16 rounded-full flex items-center justify-center ${
-                  isReadyForStore ? 'bg-green-100' : 'bg-yellow-100'
+                  isReadyForStore ? 'bg-success/10' : 'bg-warning/10'
                 }`}>
                   {isReadyForStore ? (
                     <CheckCircle2 className="w-8 h-8 text-success" />
@@ -273,7 +273,7 @@ export default function ExtensionReadinessPage() {
                       <p className="text-sm text-muted-foreground">Version 6.0.0</p>
                       <div className="flex gap-1 mt-1">
                         <Badge variant="outline">Manifest V3</Badge>
-                        <Badge className="bg-green-500">Prêt</Badge>
+                        <Badge className="bg-success">Prêt</Badge>
                       </div>
                     </div>
                   </div>
@@ -402,7 +402,7 @@ export default function ExtensionReadinessPage() {
                 
                 <Separator className="my-6" />
                 
-                <div className="p-4 bg-blue-50 rounded-lg">
+                <div className="p-4 bg-info/5 rounded-lg">
                   <h4 className="font-medium text-blue-900 mb-2">
                     Prochaines étapes pour publier
                   </h4>

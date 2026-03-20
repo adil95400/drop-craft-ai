@@ -36,7 +36,7 @@ const PlanCard = ({
   } ${popular ? 'border-orange-200 bg-orange-50/30' : ''}`}>
     {popular && (
       <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
-        <Badge className="bg-orange-500 hover:bg-orange-600 text-white px-3 py-1">
+        <Badge className="bg-warning hover:bg-warning text-white px-3 py-1">
           <Sparkles className="w-3 h-3 mr-1" />
           Populaire
         </Badge>
@@ -216,7 +216,7 @@ export const SubscriptionManager: React.FC = () => {
     <div className="space-y-8">
       {/* Current Subscription Status */}
       {subscription && (
-        <Card className={`${subscription.subscribed ? 'bg-green-50 border-green-200' : 'bg-muted/30'}`}>
+        <Card className={`${subscription.subscribed ? 'bg-success/5 border-green-200' : 'bg-muted/30'}`}>
           <CardHeader>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
@@ -226,7 +226,7 @@ export const SubscriptionManager: React.FC = () => {
               
               <Badge 
                 variant={subscription.subscribed ? 'default' : 'secondary'}
-                className={subscription.subscribed ? 'bg-green-600' : ''}
+                className={subscription.subscribed ? 'bg-success' : ''}
               >
                 {subscription.subscription_tier?.toUpperCase() || 'GRATUIT'}
               </Badge>

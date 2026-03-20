@@ -43,11 +43,11 @@ const supplierNames: Record<string, string> = {
 }
 
 const statusConfig: Record<string, { label: string, color: string, icon: React.ReactNode }> = {
-  pending: { label: 'En attente', color: 'bg-yellow-500/10 text-warning border-yellow-500/20', icon: <Clock className="h-3 w-3" /> },
-  processing: { label: 'En cours', color: 'bg-blue-500/10 text-info border-blue-500/20', icon: <Loader2 className="h-3 w-3 animate-spin" /> },
-  completed: { label: 'Terminé', color: 'bg-green-500/10 text-success border-green-500/20', icon: <CheckCircle className="h-3 w-3" /> },
-  failed: { label: 'Échoué', color: 'bg-red-500/10 text-destructive border-red-500/20', icon: <XCircle className="h-3 w-3" /> },
-  retry: { label: 'Retry planifié', color: 'bg-orange-500/10 text-warning border-orange-500/20', icon: <RotateCcw className="h-3 w-3" /> },
+  pending: { label: 'En attente', color: 'bg-warning/10 text-warning border-yellow-500/20', icon: <Clock className="h-3 w-3" /> },
+  processing: { label: 'En cours', color: 'bg-info/10 text-info border-blue-500/20', icon: <Loader2 className="h-3 w-3 animate-spin" /> },
+  completed: { label: 'Terminé', color: 'bg-success/10 text-success border-green-500/20', icon: <CheckCircle className="h-3 w-3" /> },
+  failed: { label: 'Échoué', color: 'bg-destructive/10 text-destructive border-red-500/20', icon: <XCircle className="h-3 w-3" /> },
+  retry: { label: 'Retry planifié', color: 'bg-warning/10 text-warning border-orange-500/20', icon: <RotateCcw className="h-3 w-3" /> },
   cancelled: { label: 'Annulé', color: 'bg-gray-500/10 text-gray-600 border-gray-500/20', icon: <X className="h-3 w-3" /> }
 }
 
@@ -205,7 +205,7 @@ export function AutoOrderQueueDashboard() {
 
                   return (
                     <React.Fragment key={item.id}>
-                      <TableRow className={item.status === 'failed' ? 'bg-red-50 dark:bg-red-950/10' : ''}>
+                      <TableRow className={item.status === 'failed' ? 'bg-destructive/5 dark:bg-red-950/10' : ''}>
                         <TableCell>
                           <Button
                             variant="ghost"
@@ -277,7 +277,7 @@ export function AutoOrderQueueDashboard() {
                           <TableCell colSpan={7} className="bg-muted/30">
                             <div className="p-4 space-y-3">
                               {item.error_message && (
-                                <div className="flex items-start gap-2 p-3 bg-red-50 dark:bg-red-950/20 rounded-lg">
+                                <div className="flex items-start gap-2 p-3 bg-destructive/5 dark:bg-red-950/20 rounded-lg">
                                   <AlertTriangle className="h-5 w-5 text-destructive flex-shrink-0 mt-0.5" />
                                   <div>
                                     <p className="font-medium text-red-700 dark:text-red-400">Erreur</p>

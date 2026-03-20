@@ -74,7 +74,7 @@ export const UnifiedHeader: React.FC = () => {
               variant="destructive" 
               size="sm" 
               onClick={() => navigate('/admin-panel')}
-              className="flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white"
+              className="flex items-center gap-2 bg-destructive hover:bg-red-700 text-white"
             >
               <Shield className="h-4 w-4" />
               ADMIN
@@ -90,7 +90,7 @@ export const UnifiedHeader: React.FC = () => {
           <Button variant="ghost" size="icon" className="relative">
             <Bell className="h-5 w-5" />
             {isAdmin && (
-              <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full animate-pulse" />
+              <span className="absolute -top-1 -right-1 w-3 h-3 bg-destructive rounded-full animate-pulse" />
             )}
           </Button>
 

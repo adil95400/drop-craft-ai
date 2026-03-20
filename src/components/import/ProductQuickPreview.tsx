@@ -48,10 +48,10 @@ export const ProductQuickPreview = ({
   onSelect 
 }: ProductQuickPreviewProps) => {
   const getStatusColor = (status: string, reviewStatus: string) => {
-    if (status === 'published') return 'bg-green-100 text-success'
-    if (reviewStatus === 'rejected') return 'bg-red-100 text-red-800'
-    if (reviewStatus === 'approved') return 'bg-blue-100 text-blue-800'
-    return 'bg-yellow-100 text-yellow-800'
+    if (status === 'published') return 'bg-success/10 text-success'
+    if (reviewStatus === 'rejected') return 'bg-destructive/10 text-red-800'
+    if (reviewStatus === 'approved') return 'bg-info/10 text-blue-800'
+    return 'bg-warning/10 text-yellow-800'
   }
 
   const getQualityColor = (score?: number) => {

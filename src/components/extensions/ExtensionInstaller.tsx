@@ -224,7 +224,7 @@ export const ExtensionInstaller: React.FC<ExtensionInstallerProps> = ({
                     <span className="text-muted-foreground">{extension.downloads_count.toLocaleString()} téléchargements</span>
                   </div>
                   {extension.developer_verified && (
-                    <Badge variant="secondary" className="bg-green-100 text-success">
+                    <Badge variant="secondary" className="bg-success/10 text-success">
                       <CheckCircle className="w-3 h-3 mr-1" />
                       Vérifié
                     </Badge>
@@ -391,8 +391,8 @@ export const ExtensionInstaller: React.FC<ExtensionInstallerProps> = ({
                   {installationSteps.map((step, index) => (
                     <div key={step.id} className="flex items-center space-x-3">
                       <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                        index < currentStep ? 'bg-green-500 text-white' :
-                        index === currentStep ? 'bg-blue-500 text-white' :
+                        index < currentStep ? 'bg-success text-white' :
+                        index === currentStep ? 'bg-info text-white' :
                         'bg-muted text-muted-foreground'
                       }`}>
                         {index < currentStep ? (

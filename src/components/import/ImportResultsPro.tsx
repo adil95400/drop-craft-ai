@@ -52,9 +52,9 @@ export const ImportResultsPro = ({
   const analysis = result.analysis;
 
   const getScoreColor = (score: number) => {
-    if (score >= 90) return "text-success bg-green-100";
-    if (score >= 70) return "text-warning bg-yellow-100";
-    return "text-destructive bg-red-100";
+    if (score >= 90) return "text-success bg-success/10";
+    if (score >= 70) return "text-warning bg-warning/10";
+    return "text-destructive bg-destructive/10";
   };
 
   const getTrendIcon = (trend: string) => {
@@ -78,7 +78,7 @@ export const ImportResultsPro = ({
       {/* Header avec statut */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <div className="p-3 rounded-full bg-green-100">
+          <div className="p-3 rounded-full bg-success/10">
             <CheckCircle className="w-6 h-6 text-success" />
           </div>
           <div>
@@ -88,7 +88,7 @@ export const ImportResultsPro = ({
             </p>
           </div>
         </div>
-        <Badge variant="outline" className="px-4 py-2 bg-green-50 text-success border-green-200">
+        <Badge variant="outline" className="px-4 py-2 bg-success/5 text-success border-green-200">
           <Zap className="w-4 h-4 mr-2" />
           {analysis.platform}
         </Badge>
@@ -271,7 +271,7 @@ export const ImportResultsPro = ({
             </h4>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
               {analysis.recommendedActions.map((action: string, index: number) => (
-                <div key={index} className="flex items-center gap-2 p-2 bg-blue-50 rounded-lg">
+                <div key={index} className="flex items-center gap-2 p-2 bg-info/5 rounded-lg">
                   <AlertTriangle className="w-4 h-4 text-info" />
                   <span className="text-sm text-blue-800">{action}</span>
                 </div>

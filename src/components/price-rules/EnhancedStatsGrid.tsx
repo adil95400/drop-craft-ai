@@ -58,7 +58,7 @@ export function EnhancedStatsGrid() {
       value: stats?.activeRules || 0,
       subtext: `sur ${stats?.totalRules || 0} règles`,
       color: 'text-success',
-      bgColor: 'bg-green-100',
+      bgColor: 'bg-success/10',
     },
     {
       icon: Package,
@@ -72,7 +72,7 @@ export function EnhancedStatsGrid() {
         : 'text-info',
       bgColor: stats?.productsWithoutRules && stats.productsWithoutRules > 0 
         ? 'bg-amber-100' 
-        : 'bg-blue-100',
+        : 'bg-info/10',
     },
     {
       icon: TrendingUp,
@@ -85,7 +85,7 @@ export function EnhancedStatsGrid() {
         ? 'text-success' 
         : 'text-warning',
       bgColor: (stats?.avgMarginPercent || 0) >= 25 
-        ? 'bg-green-100' 
+        ? 'bg-success/10' 
         : 'bg-amber-100',
     },
   ];
@@ -153,7 +153,7 @@ export function EnhancedStatsGrid() {
         {/* Potential gain */}
         <Card className={cn(
           stats?.potentialRevenueGain && stats.potentialRevenueGain > 0 
-            ? 'border-green-200 bg-green-50/50' 
+            ? 'border-green-200 bg-success/5/50' 
             : ''
         )}>
           <CardContent className="py-4">
@@ -162,7 +162,7 @@ export function EnhancedStatsGrid() {
                 <div className={cn(
                   'p-2 rounded-lg',
                   stats?.potentialRevenueGain && stats.potentialRevenueGain > 0 
-                    ? 'bg-green-100' 
+                    ? 'bg-success/10' 
                     : 'bg-muted'
                 )}>
                   {stats?.potentialRevenueGain && stats.potentialRevenueGain > 0 ? (

@@ -132,7 +132,7 @@ export const ShopifyIntegration: React.FC<ShopifyIntegrationProps> = ({
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+          <div className="w-10 h-10 bg-success/10 rounded-lg flex items-center justify-center">
             <Store className="w-5 h-5 text-success" />
           </div>
           <div>
@@ -420,7 +420,7 @@ export const ShopifyIntegration: React.FC<ShopifyIntegrationProps> = ({
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="bg-blue-50 p-4 rounded-lg">
+              <div className="bg-info/5 p-4 rounded-lg">
                 <div className="flex items-start gap-2">
                   <AlertCircle className="w-5 h-5 text-info mt-0.5" />
                   <div>

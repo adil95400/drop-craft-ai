@@ -77,18 +77,18 @@ export function SupplierComparisonTable({
   const getAvailabilityBadge = (availability: SupplierResult['availability']) => {
     switch (availability) {
       case 'in_stock':
-        return <Badge className="bg-green-500/10 text-success border-green-500/20"><Check className="h-3 w-3 mr-1" /> En stock</Badge>
+        return <Badge className="bg-success/10 text-success border-green-500/20"><Check className="h-3 w-3 mr-1" /> En stock</Badge>
       case 'low_stock':
-        return <Badge className="bg-yellow-500/10 text-warning border-yellow-500/20"><AlertTriangle className="h-3 w-3 mr-1" /> Stock limité</Badge>
+        return <Badge className="bg-warning/10 text-warning border-yellow-500/20"><AlertTriangle className="h-3 w-3 mr-1" /> Stock limité</Badge>
       case 'out_of_stock':
-        return <Badge className="bg-red-500/10 text-destructive border-red-500/20"><X className="h-3 w-3 mr-1" /> Rupture</Badge>
+        return <Badge className="bg-destructive/10 text-destructive border-red-500/20"><X className="h-3 w-3 mr-1" /> Rupture</Badge>
     }
   }
 
   const getScoreBadge = (score: number) => {
-    if (score >= 70) return <Badge className="bg-green-500 text-white">{score}</Badge>
-    if (score >= 50) return <Badge className="bg-yellow-500 text-white">{score}</Badge>
-    return <Badge className="bg-red-500 text-white">{score}</Badge>
+    if (score >= 70) return <Badge className="bg-success text-white">{score}</Badge>
+    if (score >= 50) return <Badge className="bg-warning text-white">{score}</Badge>
+    return <Badge className="bg-destructive text-white">{score}</Badge>
   }
 
   if (isSearching) {
@@ -216,7 +216,7 @@ export function SupplierComparisonTable({
               <TableRow 
                 key={result.productUrl} 
                 className={`
-                  ${result.totalCost === bestPrice ? 'bg-green-50 dark:bg-green-950/20' : ''}
+                  ${result.totalCost === bestPrice ? 'bg-success/5 dark:bg-green-950/20' : ''}
                   ${index === 0 ? 'border-l-4 border-l-primary' : ''}
                 `}
               >

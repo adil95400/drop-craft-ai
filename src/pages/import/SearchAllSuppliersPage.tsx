@@ -29,7 +29,7 @@ export default function SearchAllSuppliersPage() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card className="bg-gradient-to-br from-blue-500/10 to-blue-600/5 border-blue-500/20">
           <CardContent className="p-4 flex items-start gap-3">
-            <div className="p-2 rounded-lg bg-blue-500/20">
+            <div className="p-2 rounded-lg bg-info/20">
               <Search className="h-5 w-5 text-info" />
             </div>
             <div>
@@ -40,7 +40,7 @@ export default function SearchAllSuppliersPage() {
         </Card>
         <Card className="bg-gradient-to-br from-green-500/10 to-green-600/5 border-green-500/20">
           <CardContent className="p-4 flex items-start gap-3">
-            <div className="p-2 rounded-lg bg-green-500/20">
+            <div className="p-2 rounded-lg bg-success/20">
               <TrendingUp className="h-5 w-5 text-success" />
             </div>
             <div>

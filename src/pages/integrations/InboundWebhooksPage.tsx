@@ -33,9 +33,9 @@ const PLATFORMS = [
 ];
 
 const STATUS_CONFIG: Record<string, { icon: React.ReactNode; color: string }> = {
-  received: { icon: <Clock className="h-3 w-3" />, color: 'bg-blue-500/10 text-info' },
-  processing: { icon: <RefreshCw className="h-3 w-3 animate-spin" />, color: 'bg-yellow-500/10 text-warning' },
-  processed: { icon: <CheckCircle2 className="h-3 w-3" />, color: 'bg-green-500/10 text-success' },
+  received: { icon: <Clock className="h-3 w-3" />, color: 'bg-info/10 text-info' },
+  processing: { icon: <RefreshCw className="h-3 w-3 animate-spin" />, color: 'bg-warning/10 text-warning' },
+  processed: { icon: <CheckCircle2 className="h-3 w-3" />, color: 'bg-success/10 text-success' },
   failed: { icon: <XCircle className="h-3 w-3" />, color: 'bg-destructive/10 text-destructive' },
 };
 

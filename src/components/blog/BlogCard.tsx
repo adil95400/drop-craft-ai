@@ -70,7 +70,7 @@ export function BlogCard({ post, variant = 'default', onClick }: BlogCardProps) 
     return (
       <Card className="overflow-hidden border-0 bg-gradient-to-br from-primary/5 via-background to-secondary/5 shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer group relative">
         {post.trending && (
-          <Badge className="absolute top-4 left-4 z-10 bg-red-500 text-white">
+          <Badge className="absolute top-4 left-4 z-10 bg-destructive text-white">
             <TrendingUp className="w-3 h-3 mr-1" />
             Trending
           </Badge>
@@ -234,7 +234,7 @@ export function BlogCard({ post, variant = 'default', onClick }: BlogCardProps) 
           {post.category}
         </Badge>
         {post.trending && (
-          <Badge className="absolute top-3 left-3 bg-red-500 text-white text-xs">
+          <Badge className="absolute top-3 left-3 bg-destructive text-white text-xs">
             <TrendingUp className="w-3 h-3 mr-1" />
             Trending
           </Badge>

@@ -186,7 +186,7 @@ export default function StoreDetailPage() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Statut</CardTitle>
-            <div className={`h-3 w-3 rounded-full ${store?.status === 'connected' ? 'bg-green-500' : store?.status === 'error' ? 'bg-destructive' : 'bg-muted'}`} />
+            <div className={`h-3 w-3 rounded-full ${store?.status === 'connected' ? 'bg-success' : store?.status === 'error' ? 'bg-destructive' : 'bg-muted'}`} />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{store?.status === 'connected' ? 'OK' : store?.status === 'error' ? 'Erreur' : 'Inactif'}</div>

@@ -73,9 +73,9 @@ export const SyncJobMonitor: React.FC<SyncJobMonitorProps> = ({
 
   const getJobStatusBadge = (status: string) => {
     const statusConfig = {
-      completed: { variant: 'default' as const, label: 'Terminé', className: 'bg-green-500' },
+      completed: { variant: 'default' as const, label: 'Terminé', className: 'bg-success' },
       failed: { variant: 'destructive' as const, label: 'Échoué', className: '' },
-      running: { variant: 'default' as const, label: 'En cours', className: 'bg-blue-500' },
+      running: { variant: 'default' as const, label: 'En cours', className: 'bg-info' },
       pending: { variant: 'secondary' as const, label: 'En attente', className: '' },
     };
 

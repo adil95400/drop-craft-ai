@@ -164,11 +164,11 @@ export const DeveloperDashboard = () => {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'published':
-        return <Badge className="bg-green-100 text-success"><CheckCircle className="h-3 w-3 mr-1" />Publiée</Badge>
+        return <Badge className="bg-success/10 text-success"><CheckCircle className="h-3 w-3 mr-1" />Publiée</Badge>
       case 'pending_review':
-        return <Badge className="bg-yellow-100 text-yellow-800"><Clock className="h-3 w-3 mr-1" />En révision</Badge>
+        return <Badge className="bg-warning/10 text-yellow-800"><Clock className="h-3 w-3 mr-1" />En révision</Badge>
       case 'rejected':
-        return <Badge className="bg-red-100 text-red-800"><AlertCircle className="h-3 w-3 mr-1" />Rejetée</Badge>
+        return <Badge className="bg-destructive/10 text-red-800"><AlertCircle className="h-3 w-3 mr-1" />Rejetée</Badge>
       default:
         return <Badge variant="outline">Brouillon</Badge>
     }
@@ -461,7 +461,7 @@ export const DeveloperDashboard = () => {
                       <div className="font-bold text-lg text-success">
                         {payout.amount.toLocaleString()}€
                       </div>
-                      <Badge className="bg-green-100 text-success">Payé</Badge>
+                      <Badge className="bg-success/10 text-success">Payé</Badge>
                     </div>
                   </div>
                 ))}

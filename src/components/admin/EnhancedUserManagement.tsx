@@ -141,7 +141,7 @@ export const EnhancedUserManagement = () => {
   const getPlanBadge = (plan: PlanType | null, subscriptionStatus?: string | null) => {
     const planConfig = {
       standard: { label: 'STANDARD', color: 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200' },
-      pro: { label: 'PRO', color: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' },
+      pro: { label: 'PRO', color: 'bg-info/10 text-blue-800 dark:bg-blue-900 dark:text-blue-200' },
       ultra_pro: { label: 'ULTRA PRO', color: 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200' }
     }
     

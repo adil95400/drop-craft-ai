@@ -69,7 +69,7 @@ function TimelineStep({ icon, title, description, date, isCompleted, isActive, i
         <div
           className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${
             isCompleted
-              ? 'bg-green-100 text-success'
+              ? 'bg-success/10 text-success'
               : isActive
               ? 'bg-primary text-primary-foreground'
               : 'bg-muted text-muted-foreground'
@@ -469,7 +469,7 @@ export function EnhancedReturnFlow({ returnItem, onClose }: EnhancedReturnFlowPr
             {returnItem.refund_amount && (
               <div>
                 <h4 className="text-sm font-medium text-muted-foreground mb-2">Remboursement</h4>
-                <Card className="border-green-200 bg-green-50">
+                <Card className="border-green-200 bg-success/5">
                   <CardContent className="p-4 flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       <CreditCard className="h-5 w-5 text-success" />

@@ -138,11 +138,11 @@ export const ShopifyImportExportManager = ({
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'success':
-        return 'bg-green-100 text-success';
+        return 'bg-success/10 text-success';
       case 'error':
-        return 'bg-red-100 text-red-800';
+        return 'bg-destructive/10 text-red-800';
       case 'loading':
-        return 'bg-blue-100 text-blue-800';
+        return 'bg-info/10 text-blue-800';
       default:
         return 'bg-gray-100 text-gray-800';
     }
@@ -163,7 +163,7 @@ export const ShopifyImportExportManager = ({
                 Boutique Shopify: {shopDomain}
               </CardDescription>
             </div>
-            <Badge variant="outline" className="bg-green-50 text-success">
+            <Badge variant="outline" className="bg-success/5 text-success">
               Connecté
             </Badge>
           </div>
@@ -352,7 +352,7 @@ export const ShopifyImportExportManager = ({
                 </Button>
               </div>
               
-              <div className="bg-blue-50 p-4 rounded-lg">
+              <div className="bg-info/5 p-4 rounded-lg">
                 <div className="flex items-start gap-2">
                   <AlertCircle className="h-5 w-5 text-info mt-0.5" />
                   <div className="text-sm text-blue-800">

@@ -90,7 +90,7 @@ export const AdminConfirmDialog: React.FC<AdminConfirmDialogProps> = ({
           </AlertDialogCancel>
           <AlertDialogAction
             onClick={handleConfirm}
-            className={variant === 'destructive' ? 'bg-red-600 hover:bg-red-700' : ''}
+            className={variant === 'destructive' ? 'bg-destructive hover:bg-red-700' : ''}
           >
             {doubleConfirm ? 'Confirmer définitivement' : actionText}
           </AlertDialogAction>

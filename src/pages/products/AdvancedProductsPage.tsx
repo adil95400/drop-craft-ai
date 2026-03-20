@@ -92,7 +92,7 @@ const ActionCard = ({
   const variants = {
     default: 'border-border/50 hover:border-primary/30',
     primary: 'border-primary/30 bg-primary/5',
-    success: 'border-emerald-500/30 bg-emerald-500/5'
+    success: 'border-emerald-500/30 bg-success/5'
   };
 
   return (

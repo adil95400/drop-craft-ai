@@ -226,7 +226,7 @@ export function ProductAuditBlock({ product, onOptimize }: ProductAuditBlockProp
             <div className="space-y-2">
               <h4 className="font-semibold">Résumé</h4>
               <div className="grid grid-cols-3 gap-2">
-                <div className="flex items-center gap-2 p-2 rounded bg-red-50">
+                <div className="flex items-center gap-2 p-2 rounded bg-destructive/5">
                   <XCircle className="h-4 w-4 text-destructive" />
                   <div>
                     <div className="text-xs text-muted-foreground">Critique</div>
@@ -240,7 +240,7 @@ export function ProductAuditBlock({ product, onOptimize }: ProductAuditBlockProp
                     <div className="font-bold">{errors.filter(e => e.severity === 'warning').length}</div>
                   </div>
                 </div>
-                <div className="flex items-center gap-2 p-2 rounded bg-blue-50">
+                <div className="flex items-center gap-2 p-2 rounded bg-info/5">
                   <CheckCircle2 className="h-4 w-4 text-info" />
                   <div>
                     <div className="text-xs text-muted-foreground">Suggestions</div>

@@ -364,7 +364,7 @@ export const SyncConfiguration: React.FC<SyncConfigurationProps> = ({ onConfigCh
 
           {/* Avertissement */}
           {!config.autoSync && (
-            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+            <div className="bg-warning/5 border border-yellow-200 rounded-lg p-4">
               <div className="flex items-start gap-3">
                 <AlertTriangle className="h-5 w-5 text-warning mt-0.5" />
                 <div>

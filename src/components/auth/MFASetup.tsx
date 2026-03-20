@@ -78,7 +78,7 @@ export function MFASetup() {
               </CardDescription>
             </div>
           </div>
-          <Badge variant={isEnabled ? "default" : "secondary"} className={isEnabled ? "bg-green-500/10 text-success border-green-500/20" : ""}>
+          <Badge variant={isEnabled ? "default" : "secondary"} className={isEnabled ? "bg-success/10 text-success border-green-500/20" : ""}>
             {isEnabled ? "Activé" : "Désactivé"}
           </Badge>
         </div>
@@ -86,7 +86,7 @@ export function MFASetup() {
       <CardContent className="space-y-4">
         {isEnabled ? (
           <div className="space-y-4">
-            <Alert className="border-green-500/20 bg-green-500/5">
+            <Alert className="border-green-500/20 bg-success/5">
               <ShieldCheck className="h-4 w-4 text-success" />
               <AlertDescription className="text-success dark:text-green-400">
                 Votre compte est protégé par l'authentification à deux facteurs.

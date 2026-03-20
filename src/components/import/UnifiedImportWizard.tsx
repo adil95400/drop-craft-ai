@@ -218,7 +218,7 @@ export function UnifiedImportWizard() {
                     <div className={cn(
                       "h-10 w-10 rounded-full flex items-center justify-center transition-colors",
                       isActive && "bg-primary text-primary-foreground",
-                      isCompleted && "bg-green-500 text-white",
+                      isCompleted && "bg-success text-white",
                       !isActive && !isCompleted && "bg-muted text-muted-foreground"
                     )}>
                       {isCompleted ? <Check className="h-5 w-5" /> : <Icon className="h-5 w-5" />}
@@ -235,7 +235,7 @@ export function UnifiedImportWizard() {
                   {index < steps.length - 1 && (
                     <div className={cn(
                       "h-0.5 w-8 md:w-16 mx-2",
-                      index < currentStepIndex ? "bg-green-500" : "bg-muted"
+                      index < currentStepIndex ? "bg-success" : "bg-muted"
                     )} />
                   )}
                 </div>
@@ -420,7 +420,7 @@ export function UnifiedImportWizard() {
                       className={cn(
                         "flex items-center gap-4 p-4 border rounded-lg transition-colors",
                         product.selected ? "bg-primary/5 border-primary/30" : "bg-muted/30",
-                        product.status === 'error' && "border-red-500/30 bg-red-500/5"
+                        product.status === 'error' && "border-red-500/30 bg-destructive/5"
                       )}
                     >
                       <Checkbox
@@ -447,7 +447,7 @@ export function UnifiedImportWizard() {
                         {product.issues && (
                           <div className="flex flex-wrap gap-1 mt-1">
                             {product.issues.map((issue, i) => (
-                              <Badge key={i} variant="outline" className="text-xs bg-yellow-500/10 text-warning">
+                              <Badge key={i} variant="outline" className="text-xs bg-warning/10 text-warning">
                                 {issue}
                               </Badge>
                             ))}
@@ -455,9 +455,9 @@ export function UnifiedImportWizard() {
                         )}
                       </div>
                       <Badge className={cn(
-                        product.status === 'valid' && "bg-green-500/10 text-success",
-                        product.status === 'warning' && "bg-yellow-500/10 text-warning",
-                        product.status === 'error' && "bg-red-500/10 text-destructive"
+                        product.status === 'valid' && "bg-success/10 text-success",
+                        product.status === 'warning' && "bg-warning/10 text-warning",
+                        product.status === 'error' && "bg-destructive/10 text-destructive"
                       )}>
                         {product.status === 'valid' && <CheckCircle className="h-3 w-3 mr-1" />}
                         {product.status === 'warning' && <AlertCircle className="h-3 w-3 mr-1" />}
@@ -500,7 +500,7 @@ export function UnifiedImportWizard() {
                 {['Titre', 'Prix', 'SKU', 'Description', 'Images', 'Catégorie'].map(field => (
                   <div key={field} className="flex items-center justify-between p-3 border rounded-lg">
                     <span className="text-sm font-medium">{field}</span>
-                    <Badge variant="secondary" className="bg-green-500/10 text-success">
+                    <Badge variant="secondary" className="bg-success/10 text-success">
                       <Check className="h-3 w-3 mr-1" />
                       Mappé
                     </Badge>
@@ -639,7 +639,7 @@ export function UnifiedImportWizard() {
                 {importResult.products.map(p => (
                   <div key={p.id} className="flex items-center justify-between py-2 border-b last:border-0">
                     <span className="text-sm">{p.title}</span>
-                    <Badge className={p.status === 'success' ? 'bg-green-500/10 text-success' : 'bg-red-500/10 text-destructive'}>
+                    <Badge className={p.status === 'success' ? 'bg-success/10 text-success' : 'bg-destructive/10 text-destructive'}>
                       {p.status === 'success' ? 'Importé' : 'Échec'}
                     </Badge>
                   </div>

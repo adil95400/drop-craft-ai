@@ -63,8 +63,8 @@ import { useIntegrationsUnified } from '@/hooks/unified/useIntegrationsUnified'
 // Segment config
 const segmentConfig = {
   vip: { label: 'VIP', color: 'bg-purple-500/10 text-purple-600 border-purple-500/30', icon: Crown },
-  regular: { label: 'Régulier', color: 'bg-blue-500/10 text-info border-blue-500/30', icon: UserCheck },
-  new: { label: 'Nouveau', color: 'bg-green-500/10 text-success border-green-500/30', icon: Sparkles },
+  regular: { label: 'Régulier', color: 'bg-info/10 text-info border-blue-500/30', icon: UserCheck },
+  new: { label: 'Nouveau', color: 'bg-success/10 text-success border-green-500/30', icon: Sparkles },
   inactive: { label: 'Inactif', color: 'bg-muted text-muted-foreground border-muted-foreground/20', icon: Clock },
 }
 

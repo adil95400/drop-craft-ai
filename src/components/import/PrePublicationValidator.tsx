@@ -265,17 +265,17 @@ export function PrePublicationValidator({
         {validations.length > 0 && !isValidating && (
           <>
             <div className="grid grid-cols-3 gap-4">
-              <div className="p-4 rounded-lg bg-green-50 dark:bg-green-950/20 text-center">
+              <div className="p-4 rounded-lg bg-success/5 dark:bg-green-950/20 text-center">
                 <CheckCircle2 className="h-6 w-6 text-success mx-auto mb-1" />
                 <p className="text-2xl font-bold text-success">{validCount}</p>
                 <p className="text-xs text-muted-foreground">Prêts</p>
               </div>
-              <div className="p-4 rounded-lg bg-yellow-50 dark:bg-yellow-950/20 text-center">
+              <div className="p-4 rounded-lg bg-warning/5 dark:bg-yellow-950/20 text-center">
                 <AlertTriangle className="h-6 w-6 text-warning mx-auto mb-1" />
                 <p className="text-2xl font-bold text-warning">{warningCount}</p>
                 <p className="text-xs text-muted-foreground">Avertissements</p>
               </div>
-              <div className="p-4 rounded-lg bg-red-50 dark:bg-red-950/20 text-center">
+              <div className="p-4 rounded-lg bg-destructive/5 dark:bg-red-950/20 text-center">
                 <XCircle className="h-6 w-6 text-destructive mx-auto mb-1" />
                 <p className="text-2xl font-bold text-destructive">{errorCount}</p>
                 <p className="text-xs text-muted-foreground">Erreurs</p>
@@ -309,9 +309,9 @@ export function PrePublicationValidator({
                     key={validation.productId}
                     className={cn(
                       "p-3 rounded-lg border",
-                      validation.status === 'error' && "border-red-200 bg-red-50/50 dark:bg-red-950/10",
-                      validation.status === 'warning' && "border-yellow-200 bg-yellow-50/50 dark:bg-yellow-950/10",
-                      validation.status === 'valid' && "border-green-200 bg-green-50/50 dark:bg-green-950/10"
+                      validation.status === 'error' && "border-red-200 bg-destructive/5/50 dark:bg-red-950/10",
+                      validation.status === 'warning' && "border-yellow-200 bg-warning/5/50 dark:bg-yellow-950/10",
+                      validation.status === 'valid' && "border-green-200 bg-success/5/50 dark:bg-green-950/10"
                     )}
                   >
                     <div className="flex items-start gap-3">

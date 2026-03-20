@@ -354,13 +354,13 @@ export function ProductVariantsTab({
                 </p>
                 <p className="text-xs text-muted-foreground">Stock total</p>
               </div>
-              <div className="p-4 rounded-xl bg-green-500/10 text-center">
+              <div className="p-4 rounded-xl bg-success/10 text-center">
                 <p className="text-2xl font-bold text-success">
                   {variants.filter(v => (v.stock_quantity || 0) > 10).length}
                 </p>
                 <p className="text-xs text-muted-foreground">En stock</p>
               </div>
-              <div className="p-4 rounded-xl bg-red-500/10 text-center">
+              <div className="p-4 rounded-xl bg-destructive/10 text-center">
                 <p className="text-2xl font-bold text-destructive">
                   {variants.filter(v => (v.stock_quantity || 0) <= 0).length}
                 </p>

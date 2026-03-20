@@ -17,7 +17,7 @@ export function AutomaticAlertsPanel() {
   const getSeverityBadge = (severity: string | null) => {
     switch (severity) {
       case 'critical': return <Badge variant="destructive">Critique</Badge>;
-      case 'high': return <Badge variant="destructive" className="bg-orange-600">Haute</Badge>;
+      case 'high': return <Badge variant="destructive" className="bg-warning">Haute</Badge>;
       case 'warning': return <Badge variant="secondary">Attention</Badge>;
       default: return <Badge variant="outline">Info</Badge>;
     }
@@ -99,7 +99,7 @@ export function AutomaticAlertsPanel() {
                       alert.status === 'active'
                         ? 'bg-destructive/5 border-destructive/20'
                         : alert.status === 'acknowledged'
-                        ? 'bg-yellow-500/5 border-yellow-500/20'
+                        ? 'bg-warning/5 border-yellow-500/20'
                         : 'bg-muted/50 border-border opacity-60'
                     }`}
                   >

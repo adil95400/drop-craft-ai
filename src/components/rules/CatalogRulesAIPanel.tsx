@@ -31,9 +31,9 @@ const RECOMMENDATION_ICONS = {
 };
 
 const IMPACT_COLORS = {
-  high: 'bg-red-500/10 text-destructive border-red-500/20',
-  medium: 'bg-amber-500/10 text-warning border-amber-500/20',
-  low: 'bg-blue-500/10 text-info border-blue-500/20',
+  high: 'bg-destructive/10 text-destructive border-red-500/20',
+  medium: 'bg-warning/10 text-warning border-amber-500/20',
+  low: 'bg-info/10 text-info border-blue-500/20',
 };
 
 const IMPACT_LABELS = {
@@ -187,7 +187,7 @@ export function CatalogRulesAIPanel() {
                   <p className="text-sm text-muted-foreground">À optimiser</p>
                   <p className="text-3xl font-bold">{stats.productsWithoutRules}</p>
                 </div>
-                <div className="h-12 w-12 rounded-xl bg-amber-500/10 flex items-center justify-center">
+                <div className="h-12 w-12 rounded-xl bg-warning/10 flex items-center justify-center">
                   <AlertTriangle className="h-6 w-6 text-warning" />
                 </div>
               </div>
@@ -208,7 +208,7 @@ export function CatalogRulesAIPanel() {
                   <p className="text-sm text-muted-foreground">Couverture auto</p>
                   <p className="text-3xl font-bold">{stats.automationCoverage}%</p>
                 </div>
-                <div className="h-12 w-12 rounded-xl bg-emerald-500/10 flex items-center justify-center">
+                <div className="h-12 w-12 rounded-xl bg-success/10 flex items-center justify-center">
                   <CheckCircle2 className="h-6 w-6 text-success" />
                 </div>
               </div>

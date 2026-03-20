@@ -84,11 +84,11 @@ const demoPairs: DuplicatePair[] = [
 ]
 
 const matchTypeConfig: Record<string, { icon: any; label: string; color: string; description: string }> = {
-  sku: { icon: Tag, label: 'SKU', color: 'text-success bg-emerald-500/10', description: 'SKU/référence identique' },
-  title: { icon: Sparkles, label: 'Titre', color: 'text-info bg-blue-500/10', description: 'Similarité textuelle du titre' },
+  sku: { icon: Tag, label: 'SKU', color: 'text-success bg-success/10', description: 'SKU/référence identique' },
+  title: { icon: Sparkles, label: 'Titre', color: 'text-info bg-info/10', description: 'Similarité textuelle du titre' },
   image_hash: { icon: Hash, label: 'Hash Image', color: 'text-purple-600 bg-purple-500/10', description: 'Hash perceptuel (pHash) similaire' },
-  url: { icon: Link2, label: 'URL source', color: 'text-warning bg-amber-500/10', description: 'URL source normalisée identique' },
-  barcode: { icon: ScanLine, label: 'Code-barres', color: 'text-destructive bg-rose-500/10', description: 'EAN/UPC identique' },
+  url: { icon: Link2, label: 'URL source', color: 'text-warning bg-warning/10', description: 'URL source normalisée identique' },
+  barcode: { icon: ScanLine, label: 'Code-barres', color: 'text-destructive bg-destructive/10', description: 'EAN/UPC identique' },
 }
 
 export function ImportAIMergePanel({ className }: ImportAIMergePanelProps) {
@@ -142,9 +142,9 @@ export function ImportAIMergePanel({ className }: ImportAIMergePanelProps) {
   }, [])
 
   const getConfidenceColor = (confidence: number) => {
-    if (confidence >= 90) return 'text-success bg-emerald-500/10 border-emerald-500/30'
-    if (confidence >= 70) return 'text-info bg-blue-500/10 border-blue-500/30'
-    return 'text-warning bg-amber-500/10 border-amber-500/30'
+    if (confidence >= 90) return 'text-success bg-success/10 border-emerald-500/30'
+    if (confidence >= 70) return 'text-info bg-info/10 border-blue-500/30'
+    return 'text-warning bg-warning/10 border-amber-500/30'
   }
 
   const stats = useMemo(() => ({
@@ -282,13 +282,13 @@ function DuplicatePairCard({
           </Badge>
         </div>
         {pair.suggestion === 'merge' && (
-          <Badge className="bg-emerald-500/10 text-success border-emerald-500/30 text-[10px]" variant="outline">
+          <Badge className="bg-success/10 text-success border-emerald-500/30 text-[10px]" variant="outline">
             <Check className="w-3 h-3 mr-1" />
             Fusion recommandée
           </Badge>
         )}
         {pair.suggestion === 'review' && (
-          <Badge className="bg-amber-500/10 text-warning border-amber-500/30 text-[10px]" variant="outline">
+          <Badge className="bg-warning/10 text-warning border-amber-500/30 text-[10px]" variant="outline">
             <AlertTriangle className="w-3 h-3 mr-1" />
             À vérifier
           </Badge>

@@ -118,11 +118,11 @@ export function SimplifiedImportPreview({ data, onConfirm, onCancel }: Simplifie
               <div className="text-2xl font-bold">{data.summary?.total || 0}</div>
               <div className="text-sm text-muted-foreground">Total</div>
             </div>
-            <div className="text-center p-4 rounded-lg bg-green-500/10">
+            <div className="text-center p-4 rounded-lg bg-success/10">
               <div className="text-2xl font-bold text-success">{validProducts.length}</div>
               <div className="text-sm text-muted-foreground">Valides</div>
             </div>
-            <div className="text-center p-4 rounded-lg bg-red-500/10">
+            <div className="text-center p-4 rounded-lg bg-destructive/10">
               <div className="text-2xl font-bold text-destructive">{errorProducts.length}</div>
               <div className="text-sm text-muted-foreground">Erreurs</div>
             </div>

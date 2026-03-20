@@ -73,7 +73,7 @@ export const AmazonConfigDialog = ({ open, onOpenChange }: AmazonConfigDialogPro
           description: "Intégration Amazon SP-API",
           category: "marketplace",
           logo: '📦',
-          color: 'bg-orange-500',
+          color: 'bg-warning',
           features: [],
           setupSteps: [],
           status: 'available',
@@ -227,7 +227,7 @@ export const AmazonConfigDialog = ({ open, onOpenChange }: AmazonConfigDialogPro
               </div>
             </div>
 
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <div className="bg-info/5 border border-blue-200 rounded-lg p-4">
               <div className="flex items-center gap-2 mb-2">
                 <AlertTriangle className="w-4 h-4 text-info" />
                 <span className="font-medium text-blue-800">Configuration SP-API</span>

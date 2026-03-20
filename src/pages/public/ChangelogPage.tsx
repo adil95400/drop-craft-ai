@@ -114,9 +114,9 @@ const CHANGELOG: ChangelogEntry[] = [
 ];
 
 const TYPE_CONFIG = {
-  feature: { icon: Sparkles, label: 'Nouveauté', color: 'bg-green-500/10 text-success border-green-500/20' },
-  improvement: { icon: Zap, label: 'Amélioration', color: 'bg-blue-500/10 text-info border-blue-500/20' },
-  fix: { icon: Bug, label: 'Correction', color: 'bg-orange-500/10 text-warning border-orange-500/20' },
+  feature: { icon: Sparkles, label: 'Nouveauté', color: 'bg-success/10 text-success border-green-500/20' },
+  improvement: { icon: Zap, label: 'Amélioration', color: 'bg-info/10 text-info border-blue-500/20' },
+  fix: { icon: Bug, label: 'Correction', color: 'bg-warning/10 text-warning border-orange-500/20' },
   security: { icon: Shield, label: 'Sécurité', color: 'bg-purple-500/10 text-purple-500 border-purple-500/20' },
 };
 

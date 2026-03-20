@@ -223,7 +223,7 @@ export function ProductInventory() {
                           Stock faible
                         </Badge>
                       ) : (
-                        <Badge variant="secondary" className="bg-green-100 text-success">
+                        <Badge variant="secondary" className="bg-success/10 text-success">
                           En stock
                         </Badge>
                       )}

@@ -86,7 +86,7 @@ export default function ProfitDashboard() {
             </p>
           )}
         </div>
-        <div className={`p-3 rounded-full ${value > 0 ? 'bg-green-100 text-success' : 'bg-red-100 text-destructive'}`}>
+        <div className={`p-3 rounded-full ${value > 0 ? 'bg-success/10 text-success' : 'bg-destructive/10 text-destructive'}`}>
           <Icon className="w-6 h-6" />
         </div>
       </div>

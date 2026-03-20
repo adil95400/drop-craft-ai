@@ -153,7 +153,7 @@ export function CohortAnalysis() {
   const ltvTrendData = data?.ltvTrend || [];
 
   const getRetentionColor = (value: number) => {
-    if (value >= 80) return 'bg-green-500';
+    if (value >= 80) return 'bg-success';
     if (value >= 60) return 'bg-green-400';
     if (value >= 40) return 'bg-yellow-400';
     if (value >= 20) return 'bg-orange-400';
@@ -245,7 +245,7 @@ export function CohortAnalysis() {
                 <p className="text-sm text-muted-foreground">Rétention M+1</p>
                 <p className="text-2xl font-bold">{kpis.avgRetention1m}%</p>
               </div>
-              <div className="p-2 rounded-full bg-green-100 dark:bg-green-900/30">
+              <div className="p-2 rounded-full bg-success/10 dark:bg-green-900/30">
                 <ArrowUpRight className="h-4 w-4 text-success" />
               </div>
             </div>
@@ -258,7 +258,7 @@ export function CohortAnalysis() {
                 <p className="text-sm text-muted-foreground">Rétention M+3</p>
                 <p className="text-2xl font-bold">{kpis.avgRetention3m}%</p>
               </div>
-              <div className="p-2 rounded-full bg-blue-100 dark:bg-blue-900/30">
+              <div className="p-2 rounded-full bg-info/10 dark:bg-blue-900/30">
                 <Target className="h-4 w-4 text-info" />
               </div>
             </div>
@@ -297,7 +297,7 @@ export function CohortAnalysis() {
                 <p className="text-sm text-muted-foreground">Taux de Churn</p>
                 <p className="text-2xl font-bold">{kpis.churnRate}%</p>
               </div>
-              <div className="p-2 rounded-full bg-red-100 dark:bg-red-900/30">
+              <div className="p-2 rounded-full bg-destructive/10 dark:bg-red-900/30">
                 <ArrowDownRight className="h-4 w-4 text-destructive" />
               </div>
             </div>

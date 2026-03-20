@@ -78,7 +78,7 @@ export function InventoryWidgetAdvanced({ timeRange, settings, lastRefresh }: In
       <CardHeader className="pb-2">
         <CardTitle className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="p-2 rounded-lg bg-amber-500/10">
+            <div className="p-2 rounded-lg bg-warning/10">
               <Package className="h-5 w-5 text-warning" />
             </div>
             <span>Inventaire</span>

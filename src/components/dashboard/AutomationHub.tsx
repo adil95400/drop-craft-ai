@@ -301,7 +301,7 @@ export function AutomationHub() {
                             {automation.priority}
                           </Badge>
                           {automation.isActive && (
-                            <Badge className="bg-green-500 text-white text-xs">
+                            <Badge className="bg-success text-white text-xs">
                               Actif
                             </Badge>
                           )}
@@ -312,7 +312,7 @@ export function AutomationHub() {
                         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-3">
                           <div className="space-y-2">
                             <div className="text-sm font-medium text-gray-700">Déclencheur:</div>
-                            <div className="text-sm bg-blue-50 p-2 rounded border-l-4 border-blue-500">
+                            <div className="text-sm bg-info/5 p-2 rounded border-l-4 border-blue-500">
                               {automation.trigger}
                             </div>
                           </div>
@@ -321,7 +321,7 @@ export function AutomationHub() {
                             <div className="text-sm font-medium text-gray-700">Actions:</div>
                             <div className="space-y-1">
                               {automation.actions.map((action, idx) => (
-                                <div key={idx} className="text-sm bg-green-50 p-2 rounded flex items-center gap-2">
+                                <div key={idx} className="text-sm bg-success/5 p-2 rounded flex items-center gap-2">
                                   <CheckCircle2 className="h-3 w-3 text-success" />
                                   {action}
                                 </div>

@@ -50,11 +50,11 @@ const CARRIERS = [
 ];
 
 const STATUS_CONFIG: Record<string, { label: string; color: string; icon: any }> = {
-  pending: { label: 'En attente', color: 'bg-yellow-500/10 text-warning border-yellow-500/20', icon: Clock },
-  processing: { label: 'En cours', color: 'bg-blue-500/10 text-info border-blue-500/20', icon: RefreshCw },
-  completed: { label: 'Expédié', color: 'bg-green-500/10 text-success border-green-500/20', icon: CheckCircle2 },
+  pending: { label: 'En attente', color: 'bg-warning/10 text-warning border-yellow-500/20', icon: Clock },
+  processing: { label: 'En cours', color: 'bg-info/10 text-info border-blue-500/20', icon: RefreshCw },
+  completed: { label: 'Expédié', color: 'bg-success/10 text-success border-green-500/20', icon: CheckCircle2 },
   failed: { label: 'Échoué', color: 'bg-destructive/10 text-destructive border-destructive/20', icon: XCircle },
-  retry: { label: 'Retry', color: 'bg-orange-500/10 text-warning border-orange-500/20', icon: RotateCcw },
+  retry: { label: 'Retry', color: 'bg-warning/10 text-warning border-orange-500/20', icon: RotateCcw },
 };
 
 const PIE_COLORS = ['hsl(var(--primary))', 'hsl(var(--destructive))', 'hsl(142 76% 36%)', 'hsl(48 96% 53%)', 'hsl(var(--muted-foreground))'];

@@ -21,11 +21,11 @@ import { cn } from '@/lib/utils'
 import { motion, AnimatePresence } from 'framer-motion'
 
 const TYPE_CONFIG: Record<string, { icon: any; color: string; label: string }> = {
-  trending: { icon: Flame, color: 'bg-orange-500', label: 'Tendance' },
+  trending: { icon: Flame, color: 'bg-warning', label: 'Tendance' },
   cross_sell: { icon: Link2, color: 'bg-purple-500', label: 'Cross-Sell' },
-  upsell: { icon: ArrowUpRight, color: 'bg-emerald-500', label: 'Up-Sell' },
-  restock: { icon: Package, color: 'bg-blue-500', label: 'Stock' },
-  pricing: { icon: DollarSign, color: 'bg-green-500', label: 'Prix' },
+  upsell: { icon: ArrowUpRight, color: 'bg-success', label: 'Up-Sell' },
+  restock: { icon: Package, color: 'bg-info', label: 'Stock' },
+  pricing: { icon: DollarSign, color: 'bg-success', label: 'Prix' },
   bundle: { icon: ShoppingBag, color: 'bg-pink-500', label: 'Bundle' },
 }
 
@@ -109,7 +109,7 @@ export default function AIRecommendationsPage() {
                   </p>
                   <p className="text-xs text-muted-foreground">{totalAccepted}/{totalGenerated} acceptées</p>
                 </div>
-                <div className="p-2 rounded-lg bg-emerald-500/10">
+                <div className="p-2 rounded-lg bg-success/10">
                   <Target className="h-5 w-5 text-success" />
                 </div>
               </div>
@@ -123,7 +123,7 @@ export default function AIRecommendationsPage() {
                   <p className="text-2xl font-bold">{avgConfidence}%</p>
                   <Progress value={avgConfidence} className="h-1.5 mt-2" />
                 </div>
-                <div className="p-2 rounded-lg bg-blue-500/10">
+                <div className="p-2 rounded-lg bg-info/10">
                   <BarChart3 className="h-5 w-5 text-info" />
                 </div>
               </div>
@@ -211,8 +211,8 @@ export default function AIRecommendationsPage() {
                                   <Badge variant="outline" className="text-[10px] shrink-0">{typeConf.label}</Badge>
                                   <Badge className={cn(
                                     "text-[10px] shrink-0",
-                                    rec.confidence_score >= 80 ? "bg-emerald-500" :
-                                    rec.confidence_score >= 60 ? "bg-amber-500" : "bg-muted"
+                                    rec.confidence_score >= 80 ? "bg-success" :
+                                    rec.confidence_score >= 60 ? "bg-warning" : "bg-muted"
                                   )}>
                                     {rec.confidence_score}%
                                   </Badge>

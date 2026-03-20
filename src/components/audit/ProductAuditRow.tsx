@@ -85,7 +85,7 @@ export function ProductAuditRow({
         <TooltipTrigger asChild>
           <div className={cn(
             "flex items-center gap-1 px-2 py-1 rounded-md text-xs",
-            good ? "bg-green-50 text-success" : "bg-red-50 text-red-700"
+            good ? "bg-success/5 text-success" : "bg-destructive/5 text-red-700"
           )}>
             <Icon className="h-3 w-3" />
             <span>{value}</span>

@@ -112,9 +112,9 @@ export const MobileAppDashboard = () => {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'published': return 'bg-green-500';
-      case 'testing': return 'bg-yellow-500';
-      case 'development': return 'bg-blue-500';
+      case 'published': return 'bg-success';
+      case 'testing': return 'bg-warning';
+      case 'development': return 'bg-info';
       case 'archived': return 'bg-gray-500';
       default: return 'bg-gray-500';
     }
@@ -122,10 +122,10 @@ export const MobileAppDashboard = () => {
 
   const getBuildStatusColor = (status: string) => {
     switch (status) {
-      case 'success': return 'bg-green-500';
-      case 'failed': return 'bg-red-500';
-      case 'building': return 'bg-yellow-500';
-      case 'testing': return 'bg-blue-500';
+      case 'success': return 'bg-success';
+      case 'failed': return 'bg-destructive';
+      case 'building': return 'bg-warning';
+      case 'testing': return 'bg-info';
       default: return 'bg-gray-500';
     }
   };
@@ -467,7 +467,7 @@ export const MobileAppDashboard = () => {
                           </div>
                           <div className="w-full bg-secondary rounded-full h-2 mt-1">
                             <div 
-                              className="bg-green-500 h-2 rounded-full" 
+                              className="bg-success h-2 rounded-full" 
                               style={{ width: `${selectedApp.performance_metrics.retention_rate * 100}%` }}
                             ></div>
                           </div>
@@ -479,7 +479,7 @@ export const MobileAppDashboard = () => {
                           </div>
                           <div className="w-full bg-secondary rounded-full h-2 mt-1">
                             <div 
-                              className="bg-red-500 h-2 rounded-full" 
+                              className="bg-destructive h-2 rounded-full" 
                               style={{ width: `${selectedApp.performance_metrics.crash_rate * 100}%` }}
                             ></div>
                           </div>

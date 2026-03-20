@@ -221,7 +221,7 @@ export function ExtensionTokenGenerator() {
           {/* Token nouvellement généré */}
           {generatedToken ? (
             <div className="space-y-4">
-              <Alert className="border-green-500/50 bg-green-500/10">
+              <Alert className="border-green-500/50 bg-success/10">
                 <CheckCircle className="h-4 w-4 text-success" />
                 <AlertDescription className="text-success dark:text-green-400">
                   Token généré avec succès ! Copiez-le maintenant, il ne sera plus affiché.

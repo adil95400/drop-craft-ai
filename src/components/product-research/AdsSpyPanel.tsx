@@ -263,9 +263,9 @@ export function AdsSpyPanel() {
                         </Button>
                         <Badge variant="outline" className={cn(
                           "font-bold text-xs",
-                          ad.score >= 80 ? 'bg-green-500/10 text-success border-green-500/30' :
-                          ad.score >= 60 ? 'bg-yellow-500/10 text-warning border-yellow-500/30' :
-                          'bg-red-500/10 text-destructive border-red-500/30'
+                          ad.score >= 80 ? 'bg-success/10 text-success border-green-500/30' :
+                          ad.score >= 60 ? 'bg-warning/10 text-warning border-yellow-500/30' :
+                          'bg-destructive/10 text-destructive border-red-500/30'
                         )}>
                           {ad.score}/100
                         </Badge>
@@ -309,7 +309,7 @@ export function AdsSpyPanel() {
                         <span className="text-muted-foreground block">Vente</span>
                         <p className="font-semibold text-success">${ad.selling_price}</p>
                       </div>
-                      <div className="p-2 rounded bg-green-500/10 text-center">
+                      <div className="p-2 rounded bg-success/10 text-center">
                         <span className="text-muted-foreground block">Marge</span>
                         <p className="font-bold text-success">{ad.margin_estimate}%</p>
                       </div>
@@ -324,7 +324,7 @@ export function AdsSpyPanel() {
                         <Calendar className="h-3 w-3" />
                         Active depuis {ad.running_days}j
                       </span>
-                      <Badge variant="outline" className="text-xs bg-blue-500/10 text-info border-blue-500/30">
+                      <Badge variant="outline" className="text-xs bg-info/10 text-info border-blue-500/30">
                         {ad.engagement_rate}% eng.
                       </Badge>
                     </div>

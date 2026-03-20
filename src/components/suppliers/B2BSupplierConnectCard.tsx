@@ -90,7 +90,7 @@ export function B2BSupplierConnectCard({ supplierId, className }: B2BSupplierCon
           </div>
           
           {connected ? (
-            <Badge className="bg-green-100 text-success dark:bg-green-900 dark:text-green-300">
+            <Badge className="bg-success/10 text-success dark:bg-green-900 dark:text-green-300">
               <Check className="w-3 h-3 mr-1" />
               Connecté
             </Badge>

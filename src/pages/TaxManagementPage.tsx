@@ -181,14 +181,14 @@ const TaxManagementPage: React.FC = () => {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    <div className="flex items-center gap-3 p-4 border rounded-lg bg-blue-50 dark:bg-blue-950">
+                    <div className="flex items-center gap-3 p-4 border rounded-lg bg-info/5 dark:bg-blue-950">
                       <AlertCircle className="h-5 w-5 text-info" />
                       <div>
                         <h4 className="font-semibold">Export hors UE</h4>
                         <p className="text-sm text-muted-foreground">Exonération automatique pour les expéditions hors Union Européenne</p>
                       </div>
                     </div>
-                    <div className="flex items-center gap-3 p-4 border rounded-lg bg-blue-50 dark:bg-blue-950">
+                    <div className="flex items-center gap-3 p-4 border rounded-lg bg-info/5 dark:bg-blue-950">
                       <AlertCircle className="h-5 w-5 text-info" />
                       <div>
                         <h4 className="font-semibold">Livraisons intracommunautaires</h4>

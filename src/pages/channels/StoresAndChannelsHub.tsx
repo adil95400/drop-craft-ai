@@ -135,8 +135,8 @@ function PremiumStatCard({ label, value, change, trend, icon: Icon, gradient, de
               variant="outline" 
               className={cn(
                 "text-xs font-medium border-0",
-                trend === 'up' && "bg-emerald-500/20 text-success dark:text-emerald-400",
-                trend === 'down' && "bg-red-500/20 text-destructive dark:text-red-400",
+                trend === 'up' && "bg-success/20 text-success dark:text-emerald-400",
+                trend === 'down' && "bg-destructive/20 text-destructive dark:text-red-400",
                 trend === 'neutral' && "bg-muted text-muted-foreground"
               )}
             >
@@ -171,24 +171,24 @@ function ChannelCardPremium({ connection, viewMode, onSync, onManage, isSyncing,
   const statusConfig = {
     connected: { 
       color: 'text-success', 
-      bg: 'bg-emerald-500/10 border-emerald-500/30', 
+      bg: 'bg-success/10 border-emerald-500/30', 
       icon: CheckCircle2, 
       label: t('hub.connectedStatus'),
-      dot: 'bg-emerald-500'
+      dot: 'bg-success'
     },
     error: { 
       color: 'text-destructive', 
-      bg: 'bg-red-500/10 border-red-500/30', 
+      bg: 'bg-destructive/10 border-red-500/30', 
       icon: AlertCircle, 
       label: t('hub.errorStatus'),
-      dot: 'bg-red-500'
+      dot: 'bg-destructive'
     },
     connecting: { 
       color: 'text-warning', 
-      bg: 'bg-amber-500/10 border-amber-500/30', 
+      bg: 'bg-warning/10 border-amber-500/30', 
       icon: Loader2, 
       label: t('hub.connectingStatus'),
-      dot: 'bg-amber-500'
+      dot: 'bg-warning'
     },
     disconnected: { 
       color: 'text-muted-foreground', 
@@ -430,9 +430,9 @@ interface HealthMetricProps {
 
 function HealthMetricCard({ icon: Icon, label, value, status }: HealthMetricProps) {
   const statusColors = {
-    good: 'text-success bg-emerald-500',
-    warning: 'text-warning bg-amber-500',
-    critical: 'text-destructive bg-red-500'
+    good: 'text-success bg-success',
+    warning: 'text-warning bg-warning',
+    critical: 'text-destructive bg-destructive'
   }
   
   return (
@@ -743,7 +743,7 @@ export default function StoresAndChannelsHub() {
               <section className="space-y-4">
                 <div className="flex items-center justify-between">
                   <h2 className="text-lg font-bold flex items-center gap-2">
-                    <div className="p-1.5 rounded-lg bg-emerald-500/10">
+                    <div className="p-1.5 rounded-lg bg-success/10">
                       <CheckCircle2 className="h-5 w-5 text-success" />
                     </div>
                     {t('hub.connectedChannels')}
@@ -811,7 +811,7 @@ export default function StoresAndChannelsHub() {
             {(activeTab === 'all' || activeTab === 'marketplaces') && availableMarketplaces.length > 0 && (
               <section className="space-y-4">
                 <h2 className="text-lg font-bold flex items-center gap-2">
-                  <div className="p-1.5 rounded-lg bg-amber-500/10">
+                  <div className="p-1.5 rounded-lg bg-warning/10">
                     <ShoppingCart className="h-5 w-5 text-warning" />
                   </div>
                   {t('hub.availableMarketplaces')}
@@ -843,10 +843,10 @@ export default function StoresAndChannelsHub() {
                     <Shield className="h-4 w-4 text-primary" />
                   </div>
                   {t('hub.channelHealth')}
-                  <Badge variant="outline" className="text-[10px] bg-emerald-500/10 text-success border-emerald-500/30 gap-1">
+                  <Badge variant="outline" className="text-[10px] bg-success/10 text-success border-emerald-500/30 gap-1">
                     <span className="relative flex h-1.5 w-1.5">
                       <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                      <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500"></span>
+                      <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-success"></span>
                     </span>
                     Live
                   </Badge>
@@ -884,7 +884,7 @@ export default function StoresAndChannelsHub() {
             <Card className="border-border/40 bg-card/60 backdrop-blur-xl rounded-2xl overflow-hidden">
               <CardHeader className="pb-3 border-b border-border/40">
                 <CardTitle className="text-sm flex items-center gap-2">
-                  <div className="p-1.5 rounded-lg bg-amber-500/10">
+                  <div className="p-1.5 rounded-lg bg-warning/10">
                     <Sparkles className="h-4 w-4 text-warning" />
                   </div>
                   {t('hub.recentActivity')}

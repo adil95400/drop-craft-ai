@@ -213,7 +213,7 @@ export function SyncManager({ onSyncCompleted }: SyncManagerProps) {
             </Label>
           </div>
           {realTimeEnabled && (
-            <div className="mt-4 p-4 bg-green-50 rounded-lg">
+            <div className="mt-4 p-4 bg-success/5 rounded-lg">
               <p className="text-sm text-success">
                 ✅ Sync temps réel activée - Les produits seront mis à jour automatiquement
               </p>

@@ -12,7 +12,7 @@ import i18n from '@/lib/i18n';
 import { useUserPreferences } from "@/stores/globalStore";
 
 const themes = [
-  { value: 'light', label: 'Clair', icon: Sun, color: 'bg-yellow-100 border-yellow-300' },
+  { value: 'light', label: 'Clair', icon: Sun, color: 'bg-warning/10 border-yellow-300' },
   { value: 'dark', label: 'Sombre', icon: Moon, color: 'bg-slate-800 border-slate-600' },
   { value: 'system', label: 'Système', icon: Monitor, color: 'bg-gradient-to-r from-yellow-100 to-slate-800' },
 ];

@@ -385,7 +385,7 @@ export const WinnersProductCard = ({
               {/* Price Calculator */}
               <Card className="p-4 bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950/30 dark:to-emerald-950/20 border-green-200 dark:border-green-800">
                 <div className="flex items-center gap-2 mb-4">
-                  <div className="p-2 rounded-lg bg-green-500/10">
+                  <div className="p-2 rounded-lg bg-success/10">
                     <Calculator className="h-5 w-5 text-success dark:text-green-400" />
                   </div>
                   <h3 className="font-bold text-lg">Calculateur de Profit</h3>
@@ -407,7 +407,7 @@ export const WinnersProductCard = ({
                     </span>
                   </div>
                   <div className="text-center pt-2">
-                    <Badge className="bg-green-600 dark:bg-green-500 text-white">
+                    <Badge className="bg-success dark:bg-success text-white">
                       Marge bénéficiaire: {margin}%
                     </Badge>
                   </div>

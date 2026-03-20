@@ -104,11 +104,11 @@ export const ImportURLInterface = () => {
           optimisation SEO automatique et recommandations personnalisées.
         </p>
         <div className="flex items-center justify-center gap-2 flex-wrap">
-          <Badge variant="outline" className="bg-green-50 text-success border-green-200">
+          <Badge variant="outline" className="bg-success/5 text-success border-green-200">
             <CheckCircle2 className="w-3 h-3 mr-1" />
             IA Avancée
           </Badge>
-          <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+          <Badge variant="outline" className="bg-info/5 text-blue-700 border-blue-200">
             <Shield className="w-3 h-3 mr-1" />
             Analyse Sécurisée
           </Badge>
@@ -144,7 +144,7 @@ export const ImportURLInterface = () => {
           </div>
 
           {isUrlImporting && (
-            <Card className="bg-blue-50 border-blue-200">
+            <Card className="bg-info/5 border-blue-200">
               <CardContent className="p-4">
                 <div className="flex items-center gap-3 mb-3">
                   <div className="animate-spin">
@@ -199,7 +199,7 @@ export const ImportURLInterface = () => {
                 <div className="text-2xl mb-1">{platform.icon}</div>
                 <div className="text-sm font-medium">{platform.name}</div>
                 <div className="flex items-center gap-1 mt-1">
-                  <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                  <div className="w-2 h-2 bg-success rounded-full"></div>
                   <span className="text-xs text-success">Actif</span>
                 </div>
               </div>

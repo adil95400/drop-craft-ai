@@ -112,15 +112,15 @@ export const PlanDashboard = () => {
             {plan === 'standard' && (
               <>
                 <div className="flex items-center gap-2 text-sm">
-                  <div className="h-2 w-2 bg-green-500 rounded-full"></div>
+                  <div className="h-2 w-2 bg-success rounded-full"></div>
                   Import basique inclus
                 </div>
                 <div className="flex items-center gap-2 text-sm">
-                  <div className="h-2 w-2 bg-green-500 rounded-full"></div>
+                  <div className="h-2 w-2 bg-success rounded-full"></div>
                   Catalogue de base
                 </div>
                 <div className="flex items-center gap-2 text-sm">
-                  <div className="h-2 w-2 bg-green-500 rounded-full"></div>
+                  <div className="h-2 w-2 bg-success rounded-full"></div>
                   Support email
                 </div>
               </>
@@ -128,23 +128,23 @@ export const PlanDashboard = () => {
             {plan === 'pro' && (
               <>
                 <div className="flex items-center gap-2 text-sm">
-                  <div className="h-2 w-2 bg-blue-500 rounded-full"></div>
+                  <div className="h-2 w-2 bg-info rounded-full"></div>
                   Import avancé avec IA
                 </div>
                 <div className="flex items-center gap-2 text-sm">
-                  <div className="h-2 w-2 bg-blue-500 rounded-full"></div>
+                  <div className="h-2 w-2 bg-info rounded-full"></div>
                   Catalogue illimité
                 </div>
                 <div className="flex items-center gap-2 text-sm">
-                  <div className="h-2 w-2 bg-blue-500 rounded-full"></div>
+                  <div className="h-2 w-2 bg-info rounded-full"></div>
                   Analytics avancés
                 </div>
                 <div className="flex items-center gap-2 text-sm">
-                  <div className="h-2 w-2 bg-blue-500 rounded-full"></div>
+                  <div className="h-2 w-2 bg-info rounded-full"></div>
                   Automatisation
                 </div>
                 <div className="flex items-center gap-2 text-sm">
-                  <div className="h-2 w-2 bg-blue-500 rounded-full"></div>
+                  <div className="h-2 w-2 bg-info rounded-full"></div>
                   Support prioritaire
                 </div>
               </>

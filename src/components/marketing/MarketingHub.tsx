@@ -136,9 +136,9 @@ export function MarketingHub() {
 
   const getStatusColor = (status: MarketingCampaign['status']) => {
     switch (status) {
-      case 'active': return 'text-success bg-green-50 border-green-200'
-      case 'paused': return 'text-warning bg-yellow-50 border-yellow-200'
-      case 'completed': return 'text-info bg-blue-50 border-blue-200'
+      case 'active': return 'text-success bg-success/5 border-green-200'
+      case 'paused': return 'text-warning bg-warning/5 border-yellow-200'
+      case 'completed': return 'text-info bg-info/5 border-blue-200'
       default: return 'text-gray-600 bg-gray-50 border-gray-200'
     }
   }
@@ -166,7 +166,7 @@ export function MarketingHub() {
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+          <Badge variant="outline" className="bg-info/5 text-blue-700 border-blue-200">
             <Zap className="h-3 w-3 mr-1" />
             Optimisation IA
           </Badge>

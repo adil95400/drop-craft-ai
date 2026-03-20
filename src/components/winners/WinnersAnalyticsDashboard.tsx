@@ -27,14 +27,14 @@ export const WinnersAnalyticsDashboard = ({ stats, isLoading }: WinnersAnalytics
       value: stats.totalAnalyzed.toLocaleString(),
       icon: Target,
       color: "text-info",
-      bgColor: "bg-blue-500/10"
+      bgColor: "bg-info/10"
     },
     {
       label: "Winners Détectés",
       value: stats.winnersDetected.toLocaleString(),
       icon: Award,
       color: "text-success",
-      bgColor: "bg-green-500/10"
+      bgColor: "bg-success/10"
     },
     {
       label: "Score Moyen",
@@ -48,14 +48,14 @@ export const WinnersAnalyticsDashboard = ({ stats, isLoading }: WinnersAnalytics
       value: `${stats.successRate.toFixed(1)}%`,
       icon: Zap,
       color: "text-warning",
-      bgColor: "bg-orange-500/10"
+      bgColor: "bg-warning/10"
     },
     {
       label: "Profit Potentiel",
       value: `€${((stats.winnersDetected * 25.5).toFixed(0))}`,
       icon: DollarSign,
       color: "text-success",
-      bgColor: "bg-emerald-500/10"
+      bgColor: "bg-success/10"
     },
     {
       label: "Opportunités",

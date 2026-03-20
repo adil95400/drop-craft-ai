@@ -126,7 +126,7 @@ export default function APIManagementPage() {
 
           <Card className="p-3 sm:p-6">
             <div className="flex items-center gap-2 sm:gap-4">
-              <div className="p-2 sm:p-3 rounded-lg bg-blue-500/10">
+              <div className="p-2 sm:p-3 rounded-lg bg-info/10">
                 <Activity className="w-4 h-4 sm:w-6 sm:h-6 text-info" />
               </div>
               <div>
@@ -138,7 +138,7 @@ export default function APIManagementPage() {
 
           <Card className="p-3 sm:p-6">
             <div className="flex items-center gap-2 sm:gap-4">
-              <div className="p-2 sm:p-3 rounded-lg bg-green-500/10">
+              <div className="p-2 sm:p-3 rounded-lg bg-success/10">
                 <Activity className="w-4 h-4 sm:w-6 sm:h-6 text-success" />
               </div>
               <div>
@@ -155,7 +155,7 @@ export default function APIManagementPage() {
 
           <Card className="p-3 sm:p-6">
             <div className="flex items-center gap-2 sm:gap-4">
-              <div className="p-2 sm:p-3 rounded-lg bg-red-500/10">
+              <div className="p-2 sm:p-3 rounded-lg bg-destructive/10">
                 <Activity className="w-4 h-4 sm:w-6 sm:h-6 text-destructive" />
               </div>
               <div>

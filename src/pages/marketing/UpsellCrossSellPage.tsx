@@ -200,7 +200,7 @@ export default function UpsellCrossSellPage() {
                         </Badge>
                         <Badge variant="outline">{rule.display_location.replace('_', ' ')}</Badge>
                         {rule.discount_percent > 0 && (
-                          <Badge className="bg-green-100 text-success">
+                          <Badge className="bg-success/10 text-success">
                             <Percent className="h-3 w-3 mr-1" />
                             -{rule.discount_percent}%
                           </Badge>

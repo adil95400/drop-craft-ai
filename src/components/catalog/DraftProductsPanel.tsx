@@ -87,7 +87,7 @@ function DraftProductCard({ product, issues, onValidate, onDelete, onPreview, is
                 {product.sku && <span className="ml-2">• SKU: {product.sku}</span>}
               </p>
             </div>
-            <Badge variant="outline" className="bg-amber-500/10 text-warning border-amber-500/30 flex-shrink-0">
+            <Badge variant="outline" className="bg-warning/10 text-warning border-amber-500/30 flex-shrink-0">
               <AlertTriangle className="h-3 w-3 mr-1" />
               Brouillon
             </Badge>
@@ -258,13 +258,13 @@ export function DraftProductsPanel() {
             </Badge>
           )}
           {stats.missingDescription > 0 && (
-            <Badge variant="outline" className="bg-amber-500/5">
+            <Badge variant="outline" className="bg-warning/5">
               <FileText className="h-3 w-3 mr-1" />
               {stats.missingDescription} sans description
             </Badge>
           )}
           {stats.missingCategory > 0 && (
-            <Badge variant="outline" className="bg-blue-500/5">
+            <Badge variant="outline" className="bg-info/5">
               <Tag className="h-3 w-3 mr-1" />
               {stats.missingCategory} sans catégorie
             </Badge>

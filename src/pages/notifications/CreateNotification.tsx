@@ -258,25 +258,25 @@ export default function CreateNotification() {
                           <SelectContent>
                             <SelectItem value="info">
                               <div className="flex items-center gap-2">
-                                <div className="h-2 w-2 rounded-full bg-blue-500" />
+                                <div className="h-2 w-2 rounded-full bg-info" />
                                 Information
                               </div>
                             </SelectItem>
                             <SelectItem value="warning">
                               <div className="flex items-center gap-2">
-                                <div className="h-2 w-2 rounded-full bg-yellow-500" />
+                                <div className="h-2 w-2 rounded-full bg-warning" />
                                 Avertissement
                               </div>
                             </SelectItem>
                             <SelectItem value="success">
                               <div className="flex items-center gap-2">
-                                <div className="h-2 w-2 rounded-full bg-green-500" />
+                                <div className="h-2 w-2 rounded-full bg-success" />
                                 Succès
                               </div>
                             </SelectItem>
                             <SelectItem value="error">
                               <div className="flex items-center gap-2">
-                                <div className="h-2 w-2 rounded-full bg-red-500" />
+                                <div className="h-2 w-2 rounded-full bg-destructive" />
                                 Erreur
                               </div>
                             </SelectItem>
@@ -473,7 +473,7 @@ export default function CreateNotification() {
                       </TabsList>
 
                       <TabsContent value="now" className="space-y-3">
-                        <div className="p-4 border rounded-lg bg-blue-50/50 dark:bg-blue-950/20">
+                        <div className="p-4 border rounded-lg bg-info/5/50 dark:bg-blue-950/20">
                           <p className="text-sm text-blue-900 dark:text-blue-100">
                             La notification sera envoyée immédiatement après validation
                           </p>
@@ -522,7 +522,7 @@ export default function CreateNotification() {
                         </div>
 
                         {scheduleDate && scheduleTime && (
-                          <div className="p-4 border rounded-lg bg-green-50/50 dark:bg-green-950/20">
+                          <div className="p-4 border rounded-lg bg-success/5/50 dark:bg-green-950/20">
                             <p className="text-sm text-green-900 dark:text-green-100">
                               Envoi prévu: {format(scheduleDate, 'EEEE d MMMM yyyy', { locale })} à {scheduleTime}
                             </p>
@@ -671,7 +671,7 @@ export default function CreateNotification() {
                   </CardContent>
                 </Card>
 
-                <Card className="border-yellow-200 bg-yellow-50/50 dark:bg-yellow-950/20">
+                <Card className="border-yellow-200 bg-warning/5/50 dark:bg-yellow-950/20">
                   <CardContent className="pt-6">
                     <div className="flex gap-3">
                       <Info className="h-5 w-5 text-warning flex-shrink-0 mt-0.5" />

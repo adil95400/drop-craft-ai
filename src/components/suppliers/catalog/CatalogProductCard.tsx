@@ -94,19 +94,19 @@ export const CatalogProductCard = memo(function CatalogProductCard({
       case 'in_stock':
         return { 
           label: 'En stock', 
-          color: 'bg-emerald-500/10 text-success border-emerald-500/20',
+          color: 'bg-success/10 text-success border-emerald-500/20',
           icon: CheckCircle 
         };
       case 'low_stock':
         return { 
           label: 'Stock faible', 
-          color: 'bg-amber-500/10 text-warning border-amber-500/20',
+          color: 'bg-warning/10 text-warning border-amber-500/20',
           icon: AlertTriangle 
         };
       default:
         return { 
           label: 'Rupture', 
-          color: 'bg-red-500/10 text-destructive border-red-500/20',
+          color: 'bg-destructive/10 text-destructive border-red-500/20',
           icon: Package 
         };
     }
@@ -122,9 +122,9 @@ export const CatalogProductCard = memo(function CatalogProductCard({
   };
 
   const getProgressColor = (score: number) => {
-    if (score >= 80) return 'bg-emerald-500';
-    if (score >= 60) return 'bg-amber-500';
-    return 'bg-red-500';
+    if (score >= 80) return 'bg-success';
+    if (score >= 60) return 'bg-warning';
+    return 'bg-destructive';
   };
 
   if (viewMode === 'list') {
@@ -192,7 +192,7 @@ export const CatalogProductCard = memo(function CatalogProductCard({
             <div className="text-right shrink-0">
               <div className="text-lg font-bold text-primary">{product.retail_price.toFixed(2)}€</div>
               <div className="text-sm text-muted-foreground">Achat: {product.cost_price.toFixed(2)}€</div>
-              <Badge className="bg-emerald-500/10 text-success mt-1">
+              <Badge className="bg-success/10 text-success mt-1">
                 +{product.profit.toFixed(2)}€ ({product.profit_margin.toFixed(0)}%)
               </Badge>
             </div>
@@ -321,7 +321,7 @@ export const CatalogProductCard = memo(function CatalogProductCard({
               "absolute bottom-2 right-2 p-2 rounded-full transition-all duration-200",
               "bg-background/90 backdrop-blur-sm border border-border/50 shadow-sm",
               "hover:scale-110 hover:bg-background",
-              isFavorite && "bg-red-50 border-red-200"
+              isFavorite && "bg-destructive/5 border-red-200"
             )}
           >
             <Heart className={cn(
@@ -358,7 +358,7 @@ export const CatalogProductCard = memo(function CatalogProductCard({
 
           {/* Margin & Stock */}
           <div className="flex items-center justify-between">
-            <Badge className="bg-emerald-500/10 text-success border-emerald-500/20 text-xs">
+            <Badge className="bg-success/10 text-success border-emerald-500/20 text-xs">
               +{product.profit.toFixed(2)}€ • {product.profit_margin.toFixed(0)}%
             </Badge>
             <Badge className={cn(stockConfig.color, "text-xs")}>

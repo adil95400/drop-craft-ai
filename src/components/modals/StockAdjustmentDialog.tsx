@@ -141,7 +141,7 @@ export const StockAdjustmentDialog = ({
                   stockDiff > 0 
                     ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300' 
                     : stockDiff < 0 
-                      ? 'bg-red-100 text-red-700 dark:bg-red-950 dark:text-red-300'
+                      ? 'bg-destructive/10 text-red-700 dark:bg-red-950 dark:text-red-300'
                       : 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300'
                 }`}
               >

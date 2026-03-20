@@ -42,7 +42,7 @@ export function BlogNewsletter() {
     return (
       <Card className="bg-gradient-to-br from-green-50 to-emerald-50 border-green-200">
         <CardContent className="pt-6 text-center">
-          <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+          <div className="w-16 h-16 bg-success/10 rounded-full flex items-center justify-center mx-auto mb-4">
             <CheckCircle className="w-8 h-8 text-success" />
           </div>
           <h3 className="text-xl font-semibold text-success mb-2">
@@ -51,7 +51,7 @@ export function BlogNewsletter() {
           <p className="text-success mb-4">
             Vérifiez votre boîte mail pour confirmer votre abonnement.
           </p>
-          <Badge className="bg-green-100 text-success border-green-200">
+          <Badge className="bg-success/10 text-success border-green-200">
             <Gift className="w-4 h-4 mr-1" />
             Guide gratuit en cours d'envoi
           </Badge>
@@ -80,7 +80,7 @@ export function BlogNewsletter() {
         {/* Benefits */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="flex items-center gap-3 p-3 rounded-lg bg-background/50">
-            <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+            <div className="w-10 h-10 bg-info/10 rounded-lg flex items-center justify-center">
               <TrendingUp className="w-5 h-5 text-info" />
             </div>
             <div>
@@ -100,7 +100,7 @@ export function BlogNewsletter() {
           </div>
           
           <div className="flex items-center gap-3 p-3 rounded-lg bg-background/50">
-            <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+            <div className="w-10 h-10 bg-success/10 rounded-lg flex items-center justify-center">
               <Gift className="w-5 h-5 text-success" />
             </div>
             <div>

@@ -79,10 +79,10 @@ export function MobileOptimizedDashboard() {
   };
 
   const statCards = [
-    { title: 'Produits', value: stats?.products?.toLocaleString() || '0', icon: Package, color: 'bg-blue-500' },
-    { title: 'Commandes', value: stats?.orders?.toLocaleString() || '0', icon: ShoppingCart, color: 'bg-green-500' },
+    { title: 'Produits', value: stats?.products?.toLocaleString() || '0', icon: Package, color: 'bg-info' },
+    { title: 'Commandes', value: stats?.orders?.toLocaleString() || '0', icon: ShoppingCart, color: 'bg-success' },
     { title: 'Clients', value: stats?.customers?.toLocaleString() || '0', icon: Users, color: 'bg-purple-500' },
-    { title: 'Revenus', value: `€${(stats?.revenue || 0).toLocaleString('fr-FR')}`, icon: TrendingUp, color: 'bg-orange-500' },
+    { title: 'Revenus', value: `€${(stats?.revenue || 0).toLocaleString('fr-FR')}`, icon: TrendingUp, color: 'bg-warning' },
   ];
 
   return (

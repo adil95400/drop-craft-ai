@@ -136,7 +136,7 @@ export function ExtensionQuickImportCard() {
               <div className="flex items-center justify-between">
                 <span className="text-sm">Statut de connexion</span>
                 {connectionStatus?.connected ? (
-                  <Badge className="bg-green-500">Connecté</Badge>
+                  <Badge className="bg-success">Connecté</Badge>
                 ) : (
                   <Badge variant="secondary">Déconnecté</Badge>
                 )}
@@ -272,7 +272,7 @@ function ConnectionStatus({ connected, isLoading }: { connected: boolean; isLoad
     <div className="flex items-center gap-2">
       <div className="relative">
         <Wifi className="h-5 w-5 text-success" />
-        <span className="absolute -top-0.5 -right-0.5 h-2 w-2 bg-green-500 rounded-full animate-pulse" />
+        <span className="absolute -top-0.5 -right-0.5 h-2 w-2 bg-success rounded-full animate-pulse" />
       </div>
       <span className="text-sm text-success font-medium">Connectée</span>
     </div>

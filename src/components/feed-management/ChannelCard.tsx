@@ -40,11 +40,11 @@ export function ChannelCard({ channel, onEdit, onSync, onToggle, viewMode = 'gri
   const getStatusBadge = () => {
     switch (channel.status) {
       case 'active':
-        return <Badge className="bg-green-500/20 text-success border-green-500/30"><CheckCircle className="h-3 w-3 mr-1" />Actif</Badge>
+        return <Badge className="bg-success/20 text-success border-green-500/30"><CheckCircle className="h-3 w-3 mr-1" />Actif</Badge>
       case 'paused':
         return <Badge variant="secondary"><Pause className="h-3 w-3 mr-1" />Pause</Badge>
       case 'syncing':
-        return <Badge className="bg-blue-500/20 text-blue-700 border-blue-500/30"><RefreshCw className="h-3 w-3 mr-1 animate-spin" />Sync</Badge>
+        return <Badge className="bg-info/20 text-blue-700 border-blue-500/30"><RefreshCw className="h-3 w-3 mr-1 animate-spin" />Sync</Badge>
       case 'error':
         return <Badge variant="destructive"><AlertTriangle className="h-3 w-3 mr-1" />Erreur</Badge>
       default:
@@ -59,9 +59,9 @@ export function ChannelCard({ channel, onEdit, onSync, onToggle, viewMode = 'gri
   }
 
   const getQualityBg = (score: number) => {
-    if (score >= 90) return 'bg-green-500'
-    if (score >= 70) return 'bg-yellow-500'
-    return 'bg-red-500'
+    if (score >= 90) return 'bg-success'
+    if (score >= 70) return 'bg-warning'
+    return 'bg-destructive'
   }
 
   const approvalRate = channel.products.total > 0 
@@ -184,15 +184,15 @@ export function ChannelCard({ channel, onEdit, onSync, onToggle, viewMode = 'gri
 
         {/* Products Stats */}
         <div className="grid grid-cols-3 gap-2 text-center text-sm">
-          <div className="p-2 rounded-lg bg-green-500/10">
+          <div className="p-2 rounded-lg bg-success/10">
             <p className="font-bold text-success">{channel.products.approved}</p>
             <p className="text-xs text-muted-foreground">Approuvés</p>
           </div>
-          <div className="p-2 rounded-lg bg-yellow-500/10">
+          <div className="p-2 rounded-lg bg-warning/10">
             <p className="font-bold text-yellow-700">{channel.products.pending}</p>
             <p className="text-xs text-muted-foreground">En attente</p>
           </div>
-          <div className="p-2 rounded-lg bg-red-500/10">
+          <div className="p-2 rounded-lg bg-destructive/10">
             <p className="font-bold text-red-700">{channel.products.rejected}</p>
             <p className="text-xs text-muted-foreground">Rejetés</p>
           </div>

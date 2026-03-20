@@ -305,7 +305,7 @@ export default function AIAutomationHubPage() {
                         <div className={cn(
                           'w-2 h-2 rounded-full mt-1.5 shrink-0',
                           rec.confidence_score >= 0.8 ? 'bg-destructive' :
-                            rec.confidence_score >= 0.5 ? 'bg-amber-500' : 'bg-blue-500'
+                            rec.confidence_score >= 0.5 ? 'bg-warning' : 'bg-info'
                         )} />
                         <div className="flex-1">
                           <span className="text-sm font-medium text-foreground">{rec.title}</span>

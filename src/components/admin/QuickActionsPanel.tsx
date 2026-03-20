@@ -269,8 +269,8 @@ export const QuickActionsPanel: React.FC = () => {
                     key={idx}
                     className={`text-xs p-2 rounded-lg flex items-center gap-2 ${
                       result.success 
-                        ? 'bg-green-50 text-success dark:bg-green-900/20 dark:text-green-400' 
-                        : 'bg-red-50 text-red-800 dark:bg-red-900/20 dark:text-red-400'
+                        ? 'bg-success/5 text-success dark:bg-green-900/20 dark:text-green-400' 
+                        : 'bg-destructive/5 text-red-800 dark:bg-red-900/20 dark:text-red-400'
                     }`}
                   >
                     {result.success ? (

@@ -19,7 +19,7 @@ export function CatalogDashboard() {
       change: '+12%',
       icon: Package,
       color: 'text-info',
-      bg: 'bg-blue-100',
+      bg: 'bg-info/10',
       trend: 'up'
     },
     {
@@ -28,7 +28,7 @@ export function CatalogDashboard() {
       change: '+23%',
       icon: DollarSign,
       color: 'text-success',
-      bg: 'bg-green-100',
+      bg: 'bg-success/10',
       trend: 'up'
     },
     {
@@ -155,9 +155,9 @@ export function CatalogDashboard() {
                         <div key={index} className="flex items-center justify-between">
                           <div className="flex items-center gap-3">
                             <div className={`p-2 rounded-full ${
-                              activity.type === 'product' ? 'bg-blue-100' :
-                              activity.type === 'supplier' ? 'bg-green-100' :
-                              activity.type === 'pricing' ? 'bg-yellow-100' :
+                              activity.type === 'product' ? 'bg-info/10' :
+                              activity.type === 'supplier' ? 'bg-success/10' :
+                              activity.type === 'pricing' ? 'bg-warning/10' :
                               activity.type === 'sync' ? 'bg-purple-100' :
                               'bg-gray-100'
                             }`}>
@@ -245,11 +245,11 @@ export function CatalogDashboard() {
                     <div className="space-y-3">
                       <div className="flex justify-between items-center">
                         <span className="text-sm">iPhone 15 Pro</span>
-                        <Badge className="bg-green-100 text-success">Top ventes</Badge>
+                        <Badge className="bg-success/10 text-success">Top ventes</Badge>
                       </div>
                       <div className="flex justify-between items-center">
                         <span className="text-sm">Samsung Galaxy S24</span>
-                        <Badge className="bg-blue-100 text-blue-800">Tendance</Badge>
+                        <Badge className="bg-info/10 text-blue-800">Tendance</Badge>
                       </div>
                       <div className="flex justify-between items-center">
                         <span className="text-sm">AirPods Pro</span>
@@ -289,7 +289,7 @@ export function CatalogDashboard() {
 
             <TabsContent value="alerts" className="space-y-6">
               <div className="space-y-4">
-                <Card className="border-red-200 bg-red-50">
+                <Card className="border-red-200 bg-destructive/5">
                   <CardContent className="flex items-center p-4">
                     <AlertTriangle className="h-5 w-5 text-destructive mr-3" />
                     <div className="flex-1">
@@ -300,7 +300,7 @@ export function CatalogDashboard() {
                   </CardContent>
                 </Card>
 
-                <Card className="border-yellow-200 bg-yellow-50">
+                <Card className="border-yellow-200 bg-warning/5">
                   <CardContent className="flex items-center p-4">
                     <AlertTriangle className="h-5 w-5 text-warning mr-3" />
                     <div className="flex-1">
@@ -311,7 +311,7 @@ export function CatalogDashboard() {
                   </CardContent>
                 </Card>
 
-                <Card className="border-green-200 bg-green-50">
+                <Card className="border-green-200 bg-success/5">
                   <CardContent className="flex items-center p-4">
                     <CheckCircle className="h-5 w-5 text-success mr-3" />
                     <div className="flex-1">

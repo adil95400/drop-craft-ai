@@ -226,7 +226,7 @@ export default function ExtensionDownloadPage() {
                 <div className="flex flex-col items-center">
                   <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
                     step.number === 6 
-                      ? 'bg-green-500 text-white' 
+                      ? 'bg-success text-white' 
                       : 'bg-primary/10 text-primary'
                   }`}>
                     {step.icon}

@@ -37,10 +37,10 @@ export const SyncStatusIndicator: React.FC<SyncStatusIndicatorProps> = ({ compac
   }
 
   const getStatusColor = () => {
-    if (isSyncing) return 'bg-blue-500'
+    if (isSyncing) return 'bg-info'
     if (!enableAutoSync) return 'bg-gray-500'
-    if (lastSyncTime && Date.now() - lastSyncTime < 2 * 60 * 1000) return 'bg-green-500'
-    return 'bg-orange-500'
+    if (lastSyncTime && Date.now() - lastSyncTime < 2 * 60 * 1000) return 'bg-success'
+    return 'bg-warning'
   }
 
   const getStatusIcon = () => {
