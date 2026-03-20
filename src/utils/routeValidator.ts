@@ -1,4 +1,5 @@
 import { MODULE_REGISTRY, type ModuleConfig, type SubModule } from '@/config/modules';
+import { logger } from '@/lib/logger';
 
 interface RouteDefinition {
   path: string;
