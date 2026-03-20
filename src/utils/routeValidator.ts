@@ -332,7 +332,7 @@ export function validateAllRoutes(): {
 export function logValidationResults(results: ReturnType<typeof validateAllRoutes>): void {
   if (!import.meta.env.DEV) return;
   
-  const { logger } = await import('@/lib/logger');
+  const { logger } = require('@/lib/logger') as typeof import('@/lib/logger');
   
   logger.info(`Route validation: Modules: ${results.summary.totalModules}, Sub-modules: ${results.summary.totalSubModules}, Errors: ${results.summary.errors}, Warnings: ${results.summary.warnings}`, { component: 'RouteValidator' });
   
@@ -341,9 +341,12 @@ export function logValidationResults(results: ReturnType<typeof validateAllRoute
   } else {
     logger.error('Route configuration errors detected', undefined, { component: 'RouteValidator' });
     
-    results.issues.forEach((issue, index) => {
-      const level = issue.type === 'error' ? 'error' : 'warn';
-      logger[level](`[${issue.category.toUpperCase()}] ${issue.name} | Route: ${issue.route} | ${issue.issue}`, undefined, { component: 'RouteValidator', suggestion: issue.suggestion });
+    results.issues.forEach((issue) => {
+      if (issue.type === 'error') {
+        logger.error(`[${issue.category.toUpperCase()}] ${issue.name} | Route: ${issue.route} | ${issue.issue}`, undefined, { component: 'RouteValidator' });
+      } else {
+        logger.warn(`[${issue.category.toUpperCase()}] ${issue.name} | Route: ${issue.route} | ${issue.issue}`, { component: 'RouteValidator' });
+      }
     });
   }
 }
