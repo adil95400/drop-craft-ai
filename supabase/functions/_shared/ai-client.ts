@@ -1,9 +1,22 @@
 /**
- * Client IA unifié — Appels directs à l'API OpenAI
- * Remplace le Lovable AI Gateway pour une architecture indépendante.
+ * Client IA unifié — Architecture multi-clés OpenAI par module
+ * Chaque module (seo, product, marketing, chat, automation) utilise sa propre clé API
+ * pour un tracking précis des coûts et la possibilité de couper un module indépendamment.
  */
 
 const OPENAI_API_URL = 'https://api.openai.com/v1/chat/completions';
+
+/** Modules IA disponibles */
+export type AIModule = 'seo' | 'product' | 'marketing' | 'chat' | 'automation';
+
+/** Mapping clé d'environnement par module */
+const MODULE_KEY_MAP: Record<AIModule, string> = {
+  seo: 'OPENAI_API_KEY_SEO',
+  product: 'OPENAI_API_KEY_PRODUCT',
+  marketing: 'OPENAI_API_KEY_MARKETING',
+  chat: 'OPENAI_API_KEY_CHAT',
+  automation: 'OPENAI_API_KEY_AUTOMATION',
+};
 
 /** Mapping des anciens modèles Lovable Gateway vers les modèles OpenAI natifs */
 const MODEL_MAP: Record<string, string> = {
@@ -23,8 +36,29 @@ function resolveModel(model?: string): string {
   return MODEL_MAP[model] ?? model;
 }
 
+/**
+ * Résout la clé API pour un module donné.
+ * Fallback: OPENAI_API_KEY (clé globale) si la clé module n'est pas configurée.
+ */
+function resolveApiKey(module?: AIModule): string {
+  if (module) {
+    const moduleKey = Deno.env.get(MODULE_KEY_MAP[module]);
+    if (moduleKey) return moduleKey;
+    console.warn(`[AI-CLIENT] No key for module "${module}", falling back to OPENAI_API_KEY`);
+  }
+  const globalKey = Deno.env.get('OPENAI_API_KEY');
+  if (!globalKey) {
+    throw new Error(
+      `No OpenAI API key configured${module ? ` for module "${module}"` : ''}. ` +
+      `Set ${module ? MODULE_KEY_MAP[module] + ' or ' : ''}OPENAI_API_KEY in your secrets.`
+    );
+  }
+  return globalKey;
+}
+
 export interface AIRequestOptions {
   model?: string;
+  module?: AIModule;
   temperature?: number;
   maxTokens?: number;
   stream?: boolean;
@@ -39,17 +73,13 @@ export interface AIMessage {
 }
 
 /**
- * Appelle l'API OpenAI directement.
- * Lève une erreur si OPENAI_API_KEY n'est pas configuré.
+ * Appelle l'API OpenAI directement avec la clé du module approprié.
  */
 export async function callOpenAI(
   messages: AIMessage[],
   options: AIRequestOptions = {}
 ): Promise<any> {
-  const apiKey = Deno.env.get('OPENAI_API_KEY');
-  if (!apiKey) {
-    throw new Error('OPENAI_API_KEY is not configured. Please add it to your secrets.');
-  }
+  const apiKey = resolveApiKey(options.module);
 
   const body: any = {
     model: resolveModel(options.model),
@@ -74,7 +104,7 @@ export async function callOpenAI(
 
   if (!response.ok) {
     const errorText = await response.text();
-    console.error(`[AI-CLIENT] OpenAI error ${response.status}:`, errorText);
+    console.error(`[AI-CLIENT][${options.module ?? 'global'}] OpenAI error ${response.status}:`, errorText);
     throw new Error(`OpenAI API error (${response.status}): ${errorText}`);
   }
 
