@@ -231,7 +231,11 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     description: 'Correction et optimisation des médias produits',
     category: 'product',
     order: 7,
-    groupId: 'catalog'
+    groupId: 'catalog',
+    subModules: [
+      { id: 'media-overview', name: 'Vue d\'ensemble', route: '/catalog/media', icon: 'Image', description: 'Santé et qualité des médias', features: ['overview'], order: 1 },
+      { id: 'media-editor', name: 'Éditeur Média', route: '/media-editor', icon: 'Paintbrush', description: 'Retouche, recadrage, watermark, suppression arrière-plan, vidéo IA', features: ['editor', 'crop', 'watermark', 'bg-removal', 'video-ai'], order: 2 }
+    ]
   },
 
   toProcess: {

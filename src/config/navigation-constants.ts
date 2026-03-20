@@ -12,7 +12,7 @@ import {
   Star, Lock, Crown, User, CreditCard, Receipt, Key, FlaskConical,
   BookmarkCheck, AlertCircle, Image, FolderTree, HeartPulse, Contact,
   Code, Stethoscope, PieChart, UserPlus, Award, Share2, Play, Palette,
-  FileText
+  FileText, Paintbrush
 } from "lucide-react"
 import type { NavGroupId } from "@/config/modules"
 
@@ -93,6 +93,7 @@ export const ICON_MAP: Record<string, React.ComponentType<{ className?: string }
   'Share2': Share2,
   'Play': Play,
   'Palette': Palette,
+  'Paintbrush': Paintbrush,
 } as const
 
 // Static group colors - 10 pôles métier
