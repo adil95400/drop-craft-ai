@@ -36,16 +36,17 @@ const CrossModuleMonitor = lazy(() => import('@/components/cross-module/CrossMod
 const initI18n = () => import('@/lib/i18n');
 
 // List of public route prefixes that DON'T need heavy providers
+const PUBLIC_EXACT = new Set(['/', '/pricing', '/pricing-plans', '/features', '/contact', '/faq', '/about',
+  '/privacy', '/terms', '/cgv', '/changelog', '/status', '/testimonials',
+  '/pwa-install', '/store']);
+
 const PUBLIC_PREFIXES = [
-  '/', '/pricing', '/features', '/contact', '/faq', '/about',
-  '/privacy', '/terms', '/cgv', '/blog', '/documentation', '/docs',
-  '/changelog', '/status', '/testimonials',
+  '/blog', '/documentation', '/docs', '/guides', '/academy',
   '/logiciel-', '/alternative-', '/optimisation-', '/gestion-',
   '/import-produits-', '/automatisation-', '/outil-pricing-',
   '/analyse-boutique-', '/shopify-', '/shopopti-vs-', '/dropshipping-',
   '/product-research-', '/how-to-', '/ai-tool-for-', '/payment/',
-  '/enterprise/observability', '/guides', '/academy', '/pwa-install',
-  '/store', '/pricing-plans',
+  '/enterprise/observability',
 ];
 
 function isPublicRoute(pathname: string): boolean {
