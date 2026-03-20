@@ -1,6 +1,6 @@
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { useRealAdsManager } from '@/hooks/useRealAdsManager';
+import { useRealAdsManager } from '@/hooks/useAdsManager';
 import { TrendingUp, TrendingDown, DollarSign, MousePointerClick, Eye, Target, Lightbulb } from 'lucide-react';
 
 export function PerformanceDashboard() {

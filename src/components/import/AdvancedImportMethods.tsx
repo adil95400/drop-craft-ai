@@ -26,7 +26,7 @@ import {
   WifiOff
 } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
-import { useRealImportMethods } from '@/hooks/useRealImportMethods'
+import { useRealImportMethods } from '@/hooks/useImportJobs'
 import { type ImportMethodTemplate } from '@/hooks/useImportMethods'
 import { unifiedImportService } from '@/services/UnifiedImportService'
 import { ImportProgress } from './ImportProgress'

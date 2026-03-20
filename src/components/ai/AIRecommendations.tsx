@@ -17,7 +17,7 @@ import {
   DollarSign
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { useRealAIRecommendations, AIRecommendation } from '@/hooks/useRealAIRecommendations';
+import { useRealAIRecommendations, AIRecommendation } from '@/hooks/useAIRecommendations';
 
 interface AIRecommendationsProps {
   limit?: number;

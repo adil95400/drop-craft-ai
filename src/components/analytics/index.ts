@@ -6,5 +6,5 @@ export { RealDataAnalyticsDashboard } from './RealDataAnalyticsDashboard';
 export { CohortAnalysis } from './CohortAnalysis';
 
 // Re-export hooks
-export { useRealAnalytics } from '@/hooks/useRealAnalytics';
-export type { RealAnalytics } from '@/hooks/useRealAnalytics';
+export { useAnalytics as useRealAnalytics } from '@/hooks/useAnalytics';
+export type { Analytics as RealAnalytics } from '@/hooks/useAnalytics';

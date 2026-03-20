@@ -17,7 +17,7 @@ import {
   Package
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { useRealAIOptimizer, OptimizationTask, OptimizationStats } from '@/hooks/useRealAIOptimizer';
+import { useRealAIOptimizer, OptimizationTask, OptimizationStats } from '@/hooks/useAIOptimizer';
 
 export function AIOptimizer() {
   const [runningTask, setRunningTask] = useState<string | null>(null);

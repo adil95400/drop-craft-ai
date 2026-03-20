@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { useRealPredictiveAI, PredictiveInsight, SalesData } from '@/hooks/useRealPredictiveAI';
+import { useRealPredictiveAI, PredictiveInsight, SalesData } from '@/hooks/usePredictiveAI';
 
 export const PredictiveAIInterface = () => {
   const [selectedPeriod, setSelectedPeriod] = useState('30d');

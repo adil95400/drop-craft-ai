@@ -14,7 +14,7 @@ import {
   Clock
 } from 'lucide-react'
 import { toast } from 'sonner'
-import { useRealSecurityEvents, SecurityEvent, SecurityMetric } from '@/hooks/useRealSecurityEvents'
+import { useRealSecurityEvents, SecurityEvent, SecurityMetric } from '@/hooks/useSecurityEvents'
 
 export function SecurityDashboard() {
   const {

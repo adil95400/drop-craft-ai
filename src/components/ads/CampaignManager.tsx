@@ -3,7 +3,7 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { useRealAdsManager } from '@/hooks/useRealAdsManager';
+import { useRealAdsManager } from '@/hooks/useAdsManager';
 import { Plus, Play, Pause, TrendingUp, DollarSign, Megaphone, Sparkles, Loader2 } from 'lucide-react';
 import { CreateCampaignDialog } from './CreateCampaignDialog';
 import { supabase } from '@/integrations/supabase/client';

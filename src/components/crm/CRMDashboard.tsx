@@ -20,7 +20,7 @@ import {
   Edit3
 } from 'lucide-react';
 import { LineChart, Line, AreaChart, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
-import { useRealCRMDashboard } from '@/hooks/useRealCRMDashboard';
+import { useRealCRMDashboard } from '@/hooks/useCRMDashboard';
 
 interface CRMContact {
   id: string;
