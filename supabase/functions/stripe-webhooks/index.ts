@@ -8,8 +8,8 @@ const log = (step: string, details?: unknown) => {
 
 // Product → plan mapping
 const PRODUCT_TO_PLAN: Record<string, string> = {
-  "prod_T3RS5DA7XYPWBP": "standard",
-  "prod_T3RTReiXnCg9hy": "pro",
+  "prod_TuImodwMnB71NS": "standard",
+  "prod_TuImFSanPs0svj": "pro",
   "prod_T3RTMipVwUA7Ud": "ultra_pro",
 };
 
