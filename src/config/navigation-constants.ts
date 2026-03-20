@@ -12,7 +12,7 @@ import {
   Star, Lock, Crown, User, CreditCard, Receipt, Key, FlaskConical,
   BookmarkCheck, AlertCircle, Image, FolderTree, HeartPulse, Contact,
   Code, Stethoscope, PieChart, UserPlus, Award, Share2, Play, Palette,
-  FileText
+  FileText, Paintbrush
 } from "lucide-react"
 import type { NavGroupId } from "@/config/modules"
 
