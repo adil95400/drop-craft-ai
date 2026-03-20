@@ -333,7 +333,6 @@ export function validateAllRoutes(): {
 export function logValidationResults(results: ReturnType<typeof validateAllRoutes>): void {
   if (!import.meta.env.DEV) return;
   
-  const { logger } = require('@/lib/logger') as typeof import('@/lib/logger');
   
   logger.info(`Route validation: Modules: ${results.summary.totalModules}, Sub-modules: ${results.summary.totalSubModules}, Errors: ${results.summary.errors}, Warnings: ${results.summary.warnings}`, { component: 'RouteValidator' });
   
