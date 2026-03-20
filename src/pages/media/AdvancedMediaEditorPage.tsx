@@ -1,6 +1,6 @@
 /**
  * Advanced Media Editor - Éditeur de médias avancé
- * Crop, watermark, suppression arrière-plan, filtres, redimensionnement
+ * Crop, watermark, suppression arrière-plan, filtres, redimensionnement, vidéo IA
  */
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
@@ -15,9 +15,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import {
   Image as ImageIcon, Upload, Crop, RotateCw, FlipHorizontal, FlipVertical,
   Sun, Contrast, Palette, Download, Type, Layers, Scissors, Maximize2,
-  ZoomIn, ZoomOut, Undo2, Redo2, Wand2, Sparkles, Grid3X3
+  ZoomIn, ZoomOut, Undo2, Redo2, Wand2, Sparkles, Grid3X3, Video
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { ImageCropTool } from '@/components/media/ImageCropTool';
+import { BackgroundRemovalTool } from '@/components/media/BackgroundRemovalTool';
+import { VideoGeneratorTool } from '@/components/media/VideoGeneratorTool';
 
 interface ImageState {
   brightness: number;
@@ -67,6 +70,7 @@ export default function AdvancedMediaEditorPage() {
   const [resizeWidth, setResizeWidth] = useState(0);
   const [resizeHeight, setResizeHeight] = useState(0);
   const [naturalSize, setNaturalSize] = useState({ w: 0, h: 0 });
+  const [isCropping, setIsCropping] = useState(false);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const imgRef = useRef<HTMLImageElement | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -284,11 +288,12 @@ export default function AdvancedMediaEditorPage() {
           {/* Editor Controls */}
           <div className="space-y-4">
             <Tabs defaultValue="adjust" className="w-full">
-              <TabsList className="grid grid-cols-4 w-full">
+              <TabsList className="grid grid-cols-5 w-full">
                 <TabsTrigger value="adjust"><Sun className="h-4 w-4" /></TabsTrigger>
                 <TabsTrigger value="transform"><Crop className="h-4 w-4" /></TabsTrigger>
                 <TabsTrigger value="presets"><Palette className="h-4 w-4" /></TabsTrigger>
                 <TabsTrigger value="tools"><Wand2 className="h-4 w-4" /></TabsTrigger>
+                <TabsTrigger value="ai"><Sparkles className="h-4 w-4" /></TabsTrigger>
               </TabsList>
 
               <TabsContent value="adjust" className="space-y-4 mt-4">
@@ -394,6 +399,32 @@ export default function AdvancedMediaEditorPage() {
               </TabsContent>
 
               <TabsContent value="tools" className="space-y-4 mt-4">
+                {/* Crop */}
+                <Card>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm flex items-center gap-1.5">
+                      <Crop className="h-3.5 w-3.5" />Recadrage
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    {isCropping ? (
+                      <ImageCropTool
+                        imageUrl={imageUrl!}
+                        onCrop={(croppedUrl) => {
+                          setImageUrl(croppedUrl);
+                          setIsCropping(false);
+                          toast.success('Image recadrée');
+                        }}
+                        onCancel={() => setIsCropping(false)}
+                      />
+                    ) : (
+                      <Button variant="outline" size="sm" className="w-full gap-2" onClick={() => setIsCropping(true)}>
+                        <Crop className="h-4 w-4" />Ouvrir l'outil de recadrage
+                      </Button>
+                    )}
+                  </CardContent>
+                </Card>
+
                 {/* Watermark */}
                 <Card>
                   <CardHeader className="pb-2">
@@ -444,6 +475,27 @@ export default function AdvancedMediaEditorPage() {
                     </Button>
                   </CardContent>
                 </Card>
+              </TabsContent>
+
+              <TabsContent value="ai" className="space-y-4 mt-4">
+                {/* Background Removal */}
+                <Card>
+                  <CardContent className="pt-4">
+                    <BackgroundRemovalTool
+                      imageUrl={imageUrl!}
+                      onResult={(resultUrl) => {
+                        setImageUrl(resultUrl);
+                        toast.success('Arrière-plan supprimé, image mise à jour');
+                      }}
+                    />
+                  </CardContent>
+                </Card>
+
+                {/* Video Generation */}
+                <VideoGeneratorTool
+                  imageUrl={imageUrl || undefined}
+                  productName={imageName?.replace(/\.\w+$/, '')}
+                />
               </TabsContent>
             </Tabs>
           </div>
