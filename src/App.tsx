@@ -50,8 +50,8 @@ const PUBLIC_PREFIXES = [
 ];
 
 function isPublicRoute(pathname: string): boolean {
-  if (pathname === '/') return true;
-  return PUBLIC_PREFIXES.some(prefix => prefix !== '/' && pathname.startsWith(prefix));
+  if (PUBLIC_EXACT.has(pathname)) return true;
+  return PUBLIC_PREFIXES.some(prefix => pathname.startsWith(prefix));
 }
 
 /**
