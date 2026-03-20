@@ -93,6 +93,7 @@ export const ICON_MAP: Record<string, React.ComponentType<{ className?: string }
   'Share2': Share2,
   'Play': Play,
   'Palette': Palette,
+  'Paintbrush': Paintbrush,
 } as const
 
 // Static group colors - 10 pôles métier
