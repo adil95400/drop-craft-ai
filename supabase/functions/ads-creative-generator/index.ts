@@ -15,7 +15,7 @@ serve(async (req) => {
   try {
     const { campaignId, name, adType, headline, description, callToAction, aiPrompt } = await req.json();
     
-    const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY');
+    const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY_MARKETING') || Deno.env.get('OPENAI_API_KEY');
     if (!OPENAI_API_KEY) {
       throw new Error('OPENAI_API_KEY is not configured');
     }

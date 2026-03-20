@@ -7,7 +7,7 @@ serve(async (req) => {
 
   try {
     const { userId, supabase, corsHeaders } = await requireAuth(req)
-    const lovableKey = Deno.env.get("OPENAI_API_KEY")
+    const lovableKey = Deno.env.get("OPENAI_API_KEY_AUTOMATION") || Deno.env.get("OPENAI_API_KEY")
 
     const { action, productId } = await req.json()
 

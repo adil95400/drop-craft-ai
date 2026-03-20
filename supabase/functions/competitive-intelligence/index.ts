@@ -21,7 +21,7 @@ serve(async (req) => {
     const { data: { user } } = await supabaseClient.auth.getUser()
     if (!user) throw new Error('Unauthorized')
 
-    const lovableApiKey = Deno.env.get('OPENAI_API_KEY')
+    const lovableApiKey = Deno.env.get('OPENAI_API_KEY_MARKETING') || Deno.env.get('OPENAI_API_KEY')
     if (!lovableApiKey) throw new Error('OPENAI_API_KEY not configured')
 
     const { action, product_url, category, competitor_urls } = await req.json()

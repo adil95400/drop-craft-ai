@@ -32,7 +32,7 @@ serve(async (req) => {
       case 'generate_upsells': {
         const { product_id, cart_items } = params;
         
-        const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY');
+        const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY_MARKETING') || Deno.env.get('OPENAI_API_KEY');
         
         const prompt = `Generate 3 upsell/cross-sell product suggestions for:
 Product ID: ${product_id}

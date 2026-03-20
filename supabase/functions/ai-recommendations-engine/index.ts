@@ -9,7 +9,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { requireAuth, handlePreflight, errorResponse, successResponse } from "../_shared/jwt-auth.ts";
 
-const OPENAI_API_KEY = Deno.env.get("OPENAI_API_KEY");
+const OPENAI_API_KEY = Deno.env.get("OPENAI_API_KEY_AUTOMATION") || Deno.env.get("OPENAI_API_KEY");
 
 serve(async (req) => {
   const preflight = handlePreflight(req);

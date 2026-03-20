@@ -24,7 +24,7 @@ const handler = createEdgeFunction<FunnelInput>({
   rateLimit: { maxRequests: 15, windowMinutes: 60, action: 'ai_funnel_builder' }
 }, async (ctx) => {
   const { user, input, correlationId } = ctx
-  const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY')
+  const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY_MARKETING') || Deno.env.get('OPENAI_API_KEY')
   if (!OPENAI_API_KEY) throw new Error('OPENAI_API_KEY not configured')
 
   console.log(`[${correlationId}] Funnel ${input.funnel_type} for user ${user.id}`)

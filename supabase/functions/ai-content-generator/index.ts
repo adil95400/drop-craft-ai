@@ -29,7 +29,7 @@ const handler = createEdgeFunction<AIContentInput>({
   
   console.log(`[${correlationId}] AI Content request from user: ${user.id}`)
 
-  const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY')
+  const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY_PRODUCT') || Deno.env.get('OPENAI_API_KEY')
 
   if (!OPENAI_API_KEY) {
     console.error('OPENAI_API_KEY not configured')

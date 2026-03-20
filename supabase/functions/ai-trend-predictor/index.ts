@@ -16,7 +16,7 @@ Deno.serve(async (req) => {
 
     if (!product_name) throw new Error('product_name requis')
 
-    const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY')
+    const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY_MARKETING') || Deno.env.get('OPENAI_API_KEY')
     if (!OPENAI_API_KEY) throw new Error('AI service not configured')
 
     // Fetch real data for context

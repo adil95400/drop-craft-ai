@@ -19,7 +19,7 @@ Deno.serve(async (req) => {
 
     console.log('Ad spy action:', action, { keyword, platform, category })
 
-    const lovableApiKey = Deno.env.get('OPENAI_API_KEY')
+    const lovableApiKey = Deno.env.get('OPENAI_API_KEY_MARKETING') || Deno.env.get('OPENAI_API_KEY')
     if (!lovableApiKey) throw new Error('OPENAI_API_KEY not configured')
 
     // Check cache

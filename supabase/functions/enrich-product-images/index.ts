@@ -115,7 +115,7 @@ async function generateAndStoreAltTexts(
   productTitle: string,
   category?: string | null
 ): Promise<number> {
-  const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY')
+  const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY_PRODUCT') || Deno.env.get('OPENAI_API_KEY')
   if (!OPENAI_API_KEY) {
     console.warn('[ALT-TEXT] OPENAI_API_KEY not configured, skipping')
     return 0
@@ -351,7 +351,7 @@ async function scrapeImagesFromSource(sourceUrl: string): Promise<string[]> {
 }
 
 async function generateImagesWithAI(productTitle: string, existingImageUrl: string | null): Promise<string[]> {
-  const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY')
+  const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY_PRODUCT') || Deno.env.get('OPENAI_API_KEY')
   if (!OPENAI_API_KEY) throw new Error('OPENAI_API_KEY not configured')
 
   const images: string[] = []

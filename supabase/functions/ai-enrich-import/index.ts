@@ -44,7 +44,7 @@ Deno.serve(async (req) => {
       return errorResponse('product_ids required', corsHeaders, 400)
     }
 
-    const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY')
+    const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY_PRODUCT') || Deno.env.get('OPENAI_API_KEY')
     if (!OPENAI_API_KEY) {
       return errorResponse('OPENAI_API_KEY not configured', corsHeaders, 500)
     }

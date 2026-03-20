@@ -51,7 +51,7 @@ Deno.serve(async (req) => {
     console.log(`[customer-intelligence] User ${auth.userId} analyzing: ${customerData.customer_email}`)
 
     // 4. AI analysis via Lovable AI
-    const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY')
+    const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY_AUTOMATION') || Deno.env.get('OPENAI_API_KEY')
     if (!OPENAI_API_KEY) {
       return errorResponse('AI service not configured', auth.corsHeaders, 500)
     }

@@ -72,7 +72,7 @@ serve(async (req) => {
       content: typeof msg.content === 'string' ? msg.content.substring(0, 4000) : ''
     }));
     
-    const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY');
+    const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY_CHAT') || Deno.env.get('OPENAI_API_KEY');
 
     if (!OPENAI_API_KEY) {
       throw new Error('OPENAI_API_KEY is not configured');

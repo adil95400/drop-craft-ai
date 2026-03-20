@@ -13,7 +13,7 @@ serve(async (req) => {
     const authHeader = req.headers.get("Authorization");
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const OPENAI_API_KEY = Deno.env.get("OPENAI_API_KEY");
+    const OPENAI_API_KEY = Deno.env.get("OPENAI_API_KEY_AUTOMATION") || Deno.env.get("OPENAI_API_KEY");
 
     if (!OPENAI_API_KEY) throw new Error("OPENAI_API_KEY not configured");
 

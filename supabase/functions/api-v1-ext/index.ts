@@ -250,7 +250,7 @@ async function compareSupplierPrices(req: Request, auth: Auth, reqId: string) {
 
 // ── AI ───────────────────────────────────────────────────────────
 async function aiCallGateway(systemPrompt: string, userPrompt: string, reqId: string) {
-  const apiKey = Deno.env.get("OPENAI_API_KEY");
+  const apiKey = Deno.env.get("OPENAI_API_KEY_AUTOMATION") || Deno.env.get("OPENAI_API_KEY");
   if (!apiKey) return errorResponse("CONFIG_ERROR", "OPENAI_API_KEY not configured", 500, reqId);
   const resp = await fetch("https://api.openai.com/v1/chat/completions", {
     method: "POST", headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
