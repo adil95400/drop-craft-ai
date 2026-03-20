@@ -32,7 +32,7 @@ export default function ProductSourcingPage() {
                   <p className="text-sm text-muted-foreground">Fournisseurs</p>
                   <p className="text-3xl font-bold">24</p>
                 </div>
-                <Globe className="h-8 w-8 text-blue-600" />
+                <Globe className="h-8 w-8 text-info" />
               </div>
             </CardContent>
           </Card>
@@ -44,7 +44,7 @@ export default function ProductSourcingPage() {
                   <p className="text-sm text-muted-foreground">Produits disponibles</p>
                   <p className="text-3xl font-bold">145K+</p>
                 </div>
-                <Package className="h-8 w-8 text-green-600" />
+                <Package className="h-8 w-8 text-success" />
               </div>
             </CardContent>
           </Card>
@@ -56,7 +56,7 @@ export default function ProductSourcingPage() {
                   <p className="text-sm text-muted-foreground">Winners détectés</p>
                   <p className="text-3xl font-bold">2,347</p>
                 </div>
-                <TrendingUp className="h-8 w-8 text-orange-600" />
+                <TrendingUp className="h-8 w-8 text-warning" />
               </div>
             </CardContent>
           </Card>

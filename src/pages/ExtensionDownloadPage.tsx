@@ -79,7 +79,7 @@ export const ExtensionDownloadPage = () => {
               {isDownloading ? "Téléchargement..." : "Télécharger l'Extension"}
             </Button>
             {downloadStep > 0 && (
-              <p className="text-sm text-green-600 mt-2 flex items-center gap-2"><CheckCircle className="w-4 h-4" />Extension téléchargée avec succès !</p>
+              <p className="text-sm text-success mt-2 flex items-center gap-2"><CheckCircle className="w-4 h-4" />Extension téléchargée avec succès !</p>
             )}
           </CardContent>
         </Card>
@@ -88,7 +88,7 @@ export const ExtensionDownloadPage = () => {
           <CardContent>
             <ul className="space-y-3">
               {['Scraping automatique des produits', 'Détection intelligente des données', 'Import en un clic vers Drop Craft', 'Synchronisation en temps réel', 'Support multi-plateformes'].map((f) => (
-                <li key={f} className="flex items-center gap-2"><CheckCircle className="w-4 h-4 text-green-500" />{f}</li>
+                <li key={f} className="flex items-center gap-2"><CheckCircle className="w-4 h-4 text-success" />{f}</li>
               ))}
             </ul>
           </CardContent>
@@ -116,7 +116,7 @@ export const ExtensionDownloadPage = () => {
           </div>
           <div className="mt-6 p-4 bg-blue-50 dark:bg-blue-950 rounded-lg border border-blue-200 dark:border-blue-800">
             <div className="flex items-start gap-3">
-              <AlertCircle className="w-5 h-5 text-blue-600 mt-0.5" />
+              <AlertCircle className="w-5 h-5 text-info mt-0.5" />
               <div>
                 <h4 className="font-semibold text-blue-900 dark:text-blue-100">Note importante</h4>
                 <p className="text-sm text-blue-700 dark:text-blue-300">Cette extension est actuellement en mode développeur. Les versions officielles arriveront bientôt.</p>

@@ -352,9 +352,9 @@ export function UltimateHealthCheck() {
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'success': return <CheckCircle className="w-4 h-4 text-green-500" />;
-      case 'warning': return <AlertTriangle className="w-4 h-4 text-yellow-500" />;
-      case 'error': return <XCircle className="w-4 h-4 text-red-500" />;
+      case 'success': return <CheckCircle className="w-4 h-4 text-success" />;
+      case 'warning': return <AlertTriangle className="w-4 h-4 text-warning" />;
+      case 'error': return <XCircle className="w-4 h-4 text-destructive" />;
       default: return <Activity className="w-4 h-4 text-gray-500" />;
     }
   };
@@ -372,9 +372,9 @@ export function UltimateHealthCheck() {
   };
 
   const getScoreColor = (score: number) => {
-    if (score >= 90) return 'text-green-500';
-    if (score >= 70) return 'text-yellow-500';
-    return 'text-red-500';
+    if (score >= 90) return 'text-success';
+    if (score >= 70) return 'text-warning';
+    return 'text-destructive';
   };
 
   const groupedResults = healthResults.reduce((acc, result) => {
@@ -443,25 +443,25 @@ export function UltimateHealthCheck() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <Card>
               <CardContent className="p-4 text-center">
-                <div className="text-2xl font-bold text-green-500">{systemStats.success}</div>
+                <div className="text-2xl font-bold text-success">{systemStats.success}</div>
                 <div className="text-sm text-muted-foreground">Succès</div>
               </CardContent>
             </Card>
             <Card>
               <CardContent className="p-4 text-center">
-                <div className="text-2xl font-bold text-yellow-500">{systemStats.warning}</div>
+                <div className="text-2xl font-bold text-warning">{systemStats.warning}</div>
                 <div className="text-sm text-muted-foreground">Avertissements</div>
               </CardContent>
             </Card>
             <Card>
               <CardContent className="p-4 text-center">
-                <div className="text-2xl font-bold text-red-500">{systemStats.error}</div>
+                <div className="text-2xl font-bold text-destructive">{systemStats.error}</div>
                 <div className="text-sm text-muted-foreground">Erreurs</div>
               </CardContent>
             </Card>
             <Card>
               <CardContent className="p-4 text-center">
-                <div className="text-2xl font-bold text-blue-500">
+                <div className="text-2xl font-bold text-info">
                   {Math.round(systemStats.avgPerformance)}ms
                 </div>
                 <div className="text-sm text-muted-foreground">Latence moy.</div>

@@ -193,7 +193,7 @@ export function AutomationConditionBuilder() {
                   <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={() => duplicateRule(rule)}>
                     <Copy className="h-3 w-3" />
                   </Button>
-                  <Button variant="ghost" size="sm" className="h-7 w-7 p-0 text-red-500" onClick={() => deleteRule(rule.id)}>
+                  <Button variant="ghost" size="sm" className="h-7 w-7 p-0 text-destructive" onClick={() => deleteRule(rule.id)}>
                     <Trash2 className="h-3 w-3" />
                   </Button>
                 </div>
@@ -243,7 +243,7 @@ export function AutomationConditionBuilder() {
 
               {/* THEN */}
               <div className="space-y-2">
-                <span className="text-xs font-bold text-green-600 uppercase">THEN</span>
+                <span className="text-xs font-bold text-success uppercase">THEN</span>
                 <div className="flex flex-wrap gap-1.5">
                   {ACTIONS.map(action => (
                     <Badge
@@ -260,7 +260,7 @@ export function AutomationConditionBuilder() {
 
               {/* ELSE */}
               <div className="space-y-2">
-                <span className="text-xs font-bold text-orange-600 uppercase">ELSE</span>
+                <span className="text-xs font-bold text-warning uppercase">ELSE</span>
                 <div className="flex flex-wrap gap-1.5">
                   {ACTIONS.map(action => (
                     <Badge

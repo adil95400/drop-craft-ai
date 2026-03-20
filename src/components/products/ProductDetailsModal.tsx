@@ -360,9 +360,9 @@ export function ProductDetailsModal({ product, open, onOpenChange }: ProductDeta
     switch (status) {
       case 'published':
       case 'active':
-        return { label: 'Publié', color: 'bg-green-500/10 text-green-600 border-green-500/20', icon: CheckCircle }
+        return { label: 'Publié', color: 'bg-green-500/10 text-success border-green-500/20', icon: CheckCircle }
       case 'draft':
-        return { label: 'Brouillon', color: 'bg-yellow-500/10 text-yellow-600 border-yellow-500/20', icon: FileText }
+        return { label: 'Brouillon', color: 'bg-yellow-500/10 text-warning border-yellow-500/20', icon: FileText }
       case 'archived':
         return { label: 'Archivé', color: 'bg-muted text-muted-foreground border-border', icon: Archive }
       default:
@@ -426,7 +426,7 @@ export function ProductDetailsModal({ product, open, onOpenChange }: ProductDeta
                       className="h-8 w-8"
                       onClick={() => setIsLiked(!isLiked)}
                     >
-                      <Heart className={cn("h-4 w-4 transition-all", isLiked && "fill-red-500 text-red-500 scale-110")} />
+                      <Heart className={cn("h-4 w-4 transition-all", isLiked && "fill-red-500 text-destructive scale-110")} />
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent>Ajouter aux favoris</TooltipContent>
@@ -613,7 +613,7 @@ export function ProductDetailsModal({ product, open, onOpenChange }: ProductDeta
                         {isUnpublishing ? (
                           <Loader2 className="h-4 w-4 animate-spin" />
                         ) : (
-                          <Archive className="h-4 w-4 text-orange-500" />
+                          <Archive className="h-4 w-4 text-warning" />
                         )}
                         <span>Dépublier</span>
                       </Button>
@@ -627,7 +627,7 @@ export function ProductDetailsModal({ product, open, onOpenChange }: ProductDeta
                         {isPublishing ? (
                           <Loader2 className="h-4 w-4 animate-spin" />
                         ) : (
-                          <Send className="h-4 w-4 text-green-500" />
+                          <Send className="h-4 w-4 text-success" />
                         )}
                         <span>Publier dans le catalogue</span>
                       </Button>
@@ -660,10 +660,10 @@ export function ProductDetailsModal({ product, open, onOpenChange }: ProductDeta
                       <p className={cn(
                         "text-lg font-bold",
                         (metrics?.margin || 0) >= 30 
-                          ? "text-green-600" 
+                          ? "text-success" 
                           : (metrics?.margin || 0) >= 15 
-                            ? "text-yellow-600"
-                            : "text-red-600"
+                            ? "text-warning"
+                            : "text-destructive"
                       )}>
                         {metrics?.margin.toFixed(1)}%
                       </p>
@@ -684,9 +684,9 @@ export function ProductDetailsModal({ product, open, onOpenChange }: ProductDeta
                       <p className={cn(
                         "text-lg font-bold",
                         metrics?.isOutOfStock 
-                          ? "text-red-600" 
+                          ? "text-destructive" 
                           : metrics?.isLowStock 
-                            ? "text-yellow-600"
+                            ? "text-warning"
                             : "text-foreground"
                       )}>
                         {metrics?.stock || 0}
@@ -853,11 +853,11 @@ export function ProductDetailsModal({ product, open, onOpenChange }: ProductDeta
                         <Card>
                           <CardContent className="p-4 flex items-center gap-4">
                             <div className="h-12 w-12 rounded-xl bg-green-500/10 flex items-center justify-center">
-                              <TrendingUp className="h-6 w-6 text-green-600" />
+                              <TrendingUp className="h-6 w-6 text-success" />
                             </div>
                             <div>
                               <p className="text-sm text-muted-foreground">Profit</p>
-                              <p className="text-xl font-bold text-green-600">
+                              <p className="text-xl font-bold text-success">
                                 +{formatCurrency(metrics?.profit || 0)}
                               </p>
                             </div>
@@ -973,13 +973,13 @@ export function ProductDetailsModal({ product, open, onOpenChange }: ProductDeta
                           <div className="flex items-center justify-between mb-4">
                             <div>
                               <p className="text-sm text-muted-foreground">Profit par unité</p>
-                              <p className="text-2xl font-bold text-green-600">
+                              <p className="text-2xl font-bold text-success">
                                 +{formatCurrency(metrics?.profit || 0)}
                               </p>
                             </div>
                             <div className="text-right">
                               <p className="text-sm text-muted-foreground">Marge bénéficiaire</p>
-                              <p className="text-2xl font-bold text-green-600">
+                              <p className="text-2xl font-bold text-success">
                                 {metrics?.margin.toFixed(1)}%
                               </p>
                             </div>
@@ -1195,10 +1195,10 @@ export function ProductDetailsModal({ product, open, onOpenChange }: ProductDeta
                         </CardHeader>
                         <CardContent>
                           <div className="p-4 bg-white rounded-lg border space-y-1">
-                            <p className="text-blue-600 text-lg hover:underline cursor-pointer truncate">
+                            <p className="text-info text-lg hover:underline cursor-pointer truncate">
                               {isEditing ? editedProduct.seo_title : (product.seo_title || product.name || 'Titre du produit')}
                             </p>
-                            <p className="text-green-700 text-sm truncate">
+                            <p className="text-success text-sm truncate">
                               www.votre-boutique.com › produits › {product.slug || product.name?.toLowerCase().replace(/\s+/g, '-') || 'produit'}
                             </p>
                             <p className="text-gray-600 text-sm line-clamp-2">
@@ -1237,7 +1237,7 @@ export function ProductDetailsModal({ product, open, onOpenChange }: ProductDeta
 
                             <div className="flex items-start gap-4 p-3 rounded-lg bg-muted/50">
                               <div className="h-8 w-8 rounded-full bg-green-500/10 flex items-center justify-center shrink-0">
-                                <CheckCircle className="h-4 w-4 text-green-600" />
+                                <CheckCircle className="h-4 w-4 text-success" />
                               </div>
                               <div className="flex-1 min-w-0">
                                 <p className="text-sm font-medium">Création</p>

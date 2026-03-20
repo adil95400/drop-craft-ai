@@ -152,7 +152,7 @@ export default function RealTimeAnalyticsPage() {
                 <CardDescription className="flex items-center gap-2"><kpi.icon className="h-4 w-4" />{kpi.label}</CardDescription>
                 <CardTitle className="text-2xl flex items-center gap-2">
                   {kpi.value}
-                  <Badge variant="secondary" className={`text-xs ${kpi.up ? 'text-green-600' : 'text-red-500'}`}>
+                  <Badge variant="secondary" className={`text-xs ${kpi.up ? 'text-success' : 'text-destructive'}`}>
                     {kpi.up ? <ArrowUpRight className="h-3 w-3" /> : <ArrowDownRight className="h-3 w-3" />}{kpi.trend}
                   </Badge>
                 </CardTitle>

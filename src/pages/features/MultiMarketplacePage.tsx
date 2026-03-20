@@ -209,7 +209,7 @@ export default function MultiMarketplacePage() {
                 <Card key={index} className="border-2 hover:border-blue-500/50 transition-all duration-300 hover:shadow-lg">
                   <CardHeader>
                     <div className="p-3 rounded-xl bg-gradient-to-br from-blue-500/10 to-cyan-500/10 w-fit mb-4">
-                      <IconComponent className="h-6 w-6 text-blue-500" />
+                      <IconComponent className="h-6 w-6 text-info" />
                     </div>
                     <CardTitle className="text-xl">{feature.title}</CardTitle>
                   </CardHeader>

@@ -81,7 +81,7 @@ export function ProductsQuickFilters({
       label: 'Actifs', 
       icon: CheckCircle, 
       count: counts.active,
-      color: 'bg-green-500/10 text-green-600 hover:bg-green-500/20'
+      color: 'bg-green-500/10 text-success hover:bg-green-500/20'
     },
     { 
       id: 'inactive', 
@@ -95,7 +95,7 @@ export function ProductsQuickFilters({
       label: 'Stock faible', 
       icon: AlertTriangle, 
       count: counts.lowStock,
-      color: 'bg-red-500/10 text-red-600 hover:bg-red-500/20',
+      color: 'bg-red-500/10 text-destructive hover:bg-red-500/20',
       emoji: '⚠️'
     },
     { 
@@ -103,7 +103,7 @@ export function ProductsQuickFilters({
       label: 'Winners', 
       icon: Star, 
       count: counts.winners,
-      color: 'bg-yellow-500/10 text-yellow-600 hover:bg-yellow-500/20',
+      color: 'bg-yellow-500/10 text-warning hover:bg-yellow-500/20',
       emoji: '⭐'
     },
     { 
@@ -119,7 +119,7 @@ export function ProductsQuickFilters({
       label: 'Opportunités', 
       icon: Sparkles, 
       count: counts.toOptimize,
-      color: 'bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500/20',
+      color: 'bg-emerald-500/10 text-success hover:bg-emerald-500/20',
       emoji: '💰'
     }
   ];

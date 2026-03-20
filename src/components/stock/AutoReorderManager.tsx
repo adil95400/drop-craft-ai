@@ -126,7 +126,7 @@ export function AutoReorderManager() {
                   <CardTitle className="text-sm">Commandes Critiques</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-2xl font-bold text-red-500">
+                  <p className="text-2xl font-bold text-destructive">
                     {recommendations.filter(r => r.urgency === 'critical').length}
                   </p>
                 </CardContent>
@@ -162,7 +162,7 @@ export function AutoReorderManager() {
                         </div>
                         <div>
                           <p className="text-muted-foreground">Quantité Recommandée</p>
-                          <p className="font-semibold text-green-600">
+                          <p className="font-semibold text-success">
                             {rec.recommended_quantity} unités
                           </p>
                         </div>
@@ -177,7 +177,7 @@ export function AutoReorderManager() {
                       {rec.ai_prediction?.predicted_stockout_date && (
                         <div className="mt-3 p-2 bg-blue-50 dark:bg-blue-950/20 rounded text-sm">
                           <div className="flex items-center gap-2">
-                            <AlertCircle className="h-4 w-4 text-blue-500" />
+                            <AlertCircle className="h-4 w-4 text-info" />
                             <span>
                               Rupture prévue: {' '}
                               {new Date(rec.ai_prediction.predicted_stockout_date).toLocaleDateString('fr-FR')}
@@ -220,7 +220,7 @@ export function AutoReorderManager() {
         {!loading && recommendations.length === 0 && (
           <CardContent>
             <div className="text-center py-12">
-              <CheckCircle className="h-12 w-12 text-green-500 mx-auto mb-4" />
+              <CheckCircle className="h-12 w-12 text-success mx-auto mb-4" />
               <p className="text-lg font-medium mb-2">Tous les stocks sont OK</p>
               <p className="text-sm text-muted-foreground">
                 Aucun réapprovisionnement nécessaire pour le moment

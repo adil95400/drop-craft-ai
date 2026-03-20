@@ -181,7 +181,7 @@ export const SupplierManagement = () => {
       title: 'Fichier CSV',
       description: 'Importez vos produits depuis un fichier CSV',
       icon: FileText,
-      color: 'text-blue-600',
+      color: 'text-info',
       bgColor: 'bg-blue-50'
     },
     {
@@ -189,7 +189,7 @@ export const SupplierManagement = () => {
       title: 'URL / Scraping',
       description: 'Importez depuis une URL ou site web',
       icon: Globe,
-      color: 'text-green-600',
+      color: 'text-success',
       bgColor: 'bg-green-50'
     },
     {
@@ -205,7 +205,7 @@ export const SupplierManagement = () => {
       title: 'Base de données',
       description: 'Import depuis une base de données',
       icon: Database,
-      color: 'text-orange-600',
+      color: 'text-warning',
       bgColor: 'bg-orange-50'
     }
   ]
@@ -460,9 +460,9 @@ export const SupplierManagement = () => {
 
   const getPricingColor = (pricing: string) => {
     switch (pricing) {
-      case 'free': return 'text-green-600'
-      case 'paid': return 'text-blue-600'
-      case 'commission': return 'text-orange-600'
+      case 'free': return 'text-success'
+      case 'paid': return 'text-info'
+      case 'commission': return 'text-warning'
       default: return 'text-slate-600'
     }
   }
@@ -479,11 +479,11 @@ export const SupplierManagement = () => {
   const getJobStatusIcon = (status: string) => {
     switch (status) {
       case 'completed':
-        return <CheckCircle className="h-4 w-4 text-green-600" />
+        return <CheckCircle className="h-4 w-4 text-success" />
       case 'failed':
-        return <XCircle className="h-4 w-4 text-red-600" />
+        return <XCircle className="h-4 w-4 text-destructive" />
       default:
-        return <Clock className="h-4 w-4 text-yellow-600" />
+        return <Clock className="h-4 w-4 text-warning" />
     }
   }
 
@@ -539,7 +539,7 @@ export const SupplierManagement = () => {
                 <p className="text-sm text-muted-foreground">Total Fournisseurs</p>
                 <p className="text-2xl font-bold">{stats.total}</p>
               </div>
-              <Building2 className="h-8 w-8 text-blue-500" />
+              <Building2 className="h-8 w-8 text-info" />
             </div>
           </CardContent>
         </Card>
@@ -551,7 +551,7 @@ export const SupplierManagement = () => {
                 <p className="text-sm text-muted-foreground">Connectés</p>
                 <p className="text-2xl font-bold">{stats.connected + connectedSuppliers.length}</p>
               </div>
-              <Wifi className="h-8 w-8 text-green-500" />
+              <Wifi className="h-8 w-8 text-success" />
             </div>
           </CardContent>
         </Card>
@@ -575,7 +575,7 @@ export const SupplierManagement = () => {
                 <p className="text-sm text-muted-foreground">Taux Succès</p>
                 <p className="text-2xl font-bold">{Math.round(stats.averageSuccessRate)}%</p>
               </div>
-              <TrendingUp className="h-8 w-8 text-orange-500" />
+              <TrendingUp className="h-8 w-8 text-warning" />
             </div>
           </CardContent>
         </Card>
@@ -738,7 +738,7 @@ export const SupplierManagement = () => {
                           {getStatusText(connector.status)}
                         </Badge>
                         {isConnected ? (
-                          <Wifi className="h-4 w-4 text-green-500" />
+                          <Wifi className="h-4 w-4 text-success" />
                         ) : (
                           <WifiOff className="h-4 w-4 text-muted-foreground" />
                         )}
@@ -752,15 +752,15 @@ export const SupplierManagement = () => {
                     {/* Metrics */}
                     <div className="grid grid-cols-2 gap-4 text-sm">
                       <div className="flex items-center gap-2">
-                        <Star className="h-4 w-4 text-yellow-500" />
+                        <Star className="h-4 w-4 text-warning" />
                         <span>{connector.rating}/5</span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <Package className="h-4 w-4 text-blue-500" />
+                        <Package className="h-4 w-4 text-info" />
                         <span>{connector.products.toLocaleString()}</span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <DollarSign className="h-4 w-4 text-green-500" />
+                        <DollarSign className="h-4 w-4 text-success" />
                         <span className={getPricingColor(connector.pricing)}>
                           {getPricingText(connector.pricing)}
                         </span>
@@ -937,11 +937,11 @@ export const SupplierManagement = () => {
                           </div>
                           <div>
                             <p className="text-muted-foreground">Succès</p>
-                            <p className="font-medium text-green-600">{job.success_rows || 0}</p>
+                            <p className="font-medium text-success">{job.success_rows || 0}</p>
                           </div>
                           <div>
                             <p className="text-muted-foreground">Erreurs</p>
-                            <p className="font-medium text-red-600">{job.error_rows || 0}</p>
+                            <p className="font-medium text-destructive">{job.error_rows || 0}</p>
                           </div>
                         </div>
                       )}

@@ -54,13 +54,13 @@ export function OrdersTable() {
         label: 'En attente', 
         variant: 'secondary' as const, 
         icon: Clock,
-        color: 'text-yellow-600'
+        color: 'text-warning'
       },
       processing: { 
         label: 'En cours', 
         variant: 'default' as const, 
         icon: Package,
-        color: 'text-blue-600'
+        color: 'text-info'
       },
       shipped: { 
         label: 'Expédiée', 

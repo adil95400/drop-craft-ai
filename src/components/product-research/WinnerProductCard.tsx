@@ -57,9 +57,9 @@ export function WinnerProductCard({
   const [isHovered, setIsHovered] = useState(false);
 
   const getScoreColor = (score: number) => {
-    if (score >= 80) return 'text-green-500';
-    if (score >= 60) return 'text-yellow-500';
-    return 'text-red-500';
+    if (score >= 80) return 'text-success';
+    if (score >= 60) return 'text-warning';
+    return 'text-destructive';
   };
 
   const getScoreBg = (score: number) => {
@@ -71,7 +71,7 @@ export function WinnerProductCard({
   const getSaturationBadge = (saturation: string) => {
     switch (saturation) {
       case 'low':
-        return <Badge className="bg-green-500/20 text-green-700 border-0">🟢 Faible</Badge>;
+        return <Badge className="bg-green-500/20 text-success border-0">🟢 Faible</Badge>;
       case 'medium':
         return <Badge className="bg-yellow-500/20 text-yellow-700 border-0">🟡 Modérée</Badge>;
       case 'high':
@@ -195,7 +195,7 @@ export function WinnerProductCard({
           <div className="grid grid-cols-2 gap-3">
             <div className="flex items-center gap-2 text-sm">
               <div className="p-1.5 rounded bg-blue-500/10">
-                <TrendingUp className="w-3.5 h-3.5 text-blue-500" />
+                <TrendingUp className="w-3.5 h-3.5 text-info" />
               </div>
               <div>
                 <p className="text-muted-foreground text-xs">Tendance</p>
@@ -215,17 +215,17 @@ export function WinnerProductCard({
             
             <div className="flex items-center gap-2 text-sm">
               <div className="p-1.5 rounded bg-green-500/10">
-                <DollarSign className="w-3.5 h-3.5 text-green-500" />
+                <DollarSign className="w-3.5 h-3.5 text-success" />
               </div>
               <div>
                 <p className="text-muted-foreground text-xs">Profit</p>
-                <p className="font-semibold text-green-600">+{profitMargin}%</p>
+                <p className="font-semibold text-success">+{profitMargin}%</p>
               </div>
             </div>
             
             <div className="flex items-center gap-2 text-sm">
               <div className="p-1.5 rounded bg-orange-500/10">
-                <Eye className="w-3.5 h-3.5 text-orange-500" />
+                <Eye className="w-3.5 h-3.5 text-warning" />
               </div>
               <div>
                 <p className="text-muted-foreground text-xs">Vues</p>

@@ -232,13 +232,13 @@ export const SmartAutomationBuilder: React.FC = () => {
             <CardContent>
               <div className="grid grid-cols-3 gap-4 text-center">
                 <div>
-                  <div className="text-2xl font-bold text-blue-600">
+                  <div className="text-2xl font-bold text-info">
                     {flow.stats.triggered}
                   </div>
                   <div className="text-xs text-muted-foreground">Déclenchements</div>
                 </div>
                 <div>
-                  <div className="text-2xl font-bold text-green-600">
+                  <div className="text-2xl font-bold text-success">
                     {flow.stats.completed}
                   </div>
                   <div className="text-xs text-muted-foreground">Complétés</div>
@@ -378,17 +378,17 @@ export const SmartAutomationBuilder: React.FC = () => {
                 <CardContent>
                   <div className="space-y-3 text-xs">
                     <div className="p-2 bg-blue-50 border border-blue-200 rounded flex items-center gap-2">
-                      <Users className="h-3 w-3 text-blue-600" />
+                      <Users className="h-3 w-3 text-info" />
                       <span>Nouveau client</span>
                     </div>
                     <ArrowDown className="h-3 w-3 text-muted-foreground mx-auto" />
                     <div className="p-2 bg-orange-50 border border-orange-200 rounded flex items-center gap-2">
-                      <Clock className="h-3 w-3 text-orange-600" />
+                      <Clock className="h-3 w-3 text-warning" />
                       <span>Attendre 1h</span>
                     </div>
                     <ArrowDown className="h-3 w-3 text-muted-foreground mx-auto" />
                     <div className="p-2 bg-green-50 border border-green-200 rounded flex items-center gap-2">
-                      <Mail className="h-3 w-3 text-green-600" />
+                      <Mail className="h-3 w-3 text-success" />
                       <span>Email bienvenue</span>
                     </div>
                   </div>

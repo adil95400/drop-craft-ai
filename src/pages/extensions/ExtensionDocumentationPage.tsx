@@ -264,19 +264,19 @@ Content-Type: application/json
             </p>
             <ul className="space-y-2 text-muted-foreground">
               <li className="flex items-center gap-2">
-                <Eye className="h-4 w-4 text-green-500" />
+                <Eye className="h-4 w-4 text-success" />
                 Données produit des pages visitées (uniquement sur les sites supportés)
               </li>
               <li className="flex items-center gap-2">
-                <Eye className="h-4 w-4 text-green-500" />
+                <Eye className="h-4 w-4 text-success" />
                 Préférences de configuration de l'extension
               </li>
               <li className="flex items-center gap-2">
-                <Eye className="h-4 w-4 text-red-500" />
+                <Eye className="h-4 w-4 text-destructive" />
                 Aucune donnée de navigation personnelle
               </li>
               <li className="flex items-center gap-2">
-                <Eye className="h-4 w-4 text-red-500" />
+                <Eye className="h-4 w-4 text-destructive" />
                 Aucun mot de passe ou information bancaire
               </li>
             </ul>

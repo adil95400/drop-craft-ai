@@ -122,7 +122,7 @@ export function ABTestingDashboard() {
 
                 {test.confidence_level && (
                   <div className="flex items-center gap-2 text-sm">
-                    <TrendingUp className="h-4 w-4 text-green-600" />
+                    <TrendingUp className="h-4 w-4 text-success" />
                     <span className="text-muted-foreground">Niveau de confiance:</span>
                     <span className="font-semibold">{test.confidence_level}%</span>
                   </div>

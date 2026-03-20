@@ -125,11 +125,11 @@ export const ShopifyImportExportManager = ({
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'success':
-        return <CheckCircle className="h-4 w-4 text-green-600" />;
+        return <CheckCircle className="h-4 w-4 text-success" />;
       case 'error':
-        return <AlertCircle className="h-4 w-4 text-red-600" />;
+        return <AlertCircle className="h-4 w-4 text-destructive" />;
       case 'loading':
-        return <Clock className="h-4 w-4 text-blue-600 animate-spin" />;
+        return <Clock className="h-4 w-4 text-info animate-spin" />;
       default:
         return <Clock className="h-4 w-4 text-gray-400" />;
     }
@@ -138,7 +138,7 @@ export const ShopifyImportExportManager = ({
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'success':
-        return 'bg-green-100 text-green-800';
+        return 'bg-green-100 text-success';
       case 'error':
         return 'bg-red-100 text-red-800';
       case 'loading':
@@ -163,7 +163,7 @@ export const ShopifyImportExportManager = ({
                 Boutique Shopify: {shopDomain}
               </CardDescription>
             </div>
-            <Badge variant="outline" className="bg-green-50 text-green-700">
+            <Badge variant="outline" className="bg-green-50 text-success">
               Connecté
             </Badge>
           </div>
@@ -176,7 +176,7 @@ export const ShopifyImportExportManager = ({
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <Package className="h-4 w-4 text-blue-600" />
+                <Package className="h-4 w-4 text-info" />
                 <span className="text-sm font-medium">Produits</span>
               </div>
               {getStatusIcon(stats.products.status)}
@@ -198,7 +198,7 @@ export const ShopifyImportExportManager = ({
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <ShoppingCart className="h-4 w-4 text-green-600" />
+                <ShoppingCart className="h-4 w-4 text-success" />
                 <span className="text-sm font-medium">Commandes</span>
               </div>
               {getStatusIcon(stats.orders.status)}
@@ -354,7 +354,7 @@ export const ShopifyImportExportManager = ({
               
               <div className="bg-blue-50 p-4 rounded-lg">
                 <div className="flex items-start gap-2">
-                  <AlertCircle className="h-5 w-5 text-blue-600 mt-0.5" />
+                  <AlertCircle className="h-5 w-5 text-info mt-0.5" />
                   <div className="text-sm text-blue-800">
                     <p className="font-medium">Optimisation IA</p>
                     <p>Les produits exportés incluront les optimisations SEO et les améliorations de contenu générées par l'IA.</p>

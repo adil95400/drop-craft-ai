@@ -45,7 +45,7 @@ const analysisTypes = [
     name: 'Prévisions de Ventes',
     icon: TrendingUp,
     description: 'Prédire les ventes futures basées sur les données historiques',
-    color: 'text-green-600',
+    color: 'text-success',
     sampleData: {
       monthly_sales: [12000, 15000, 18000, 22000, 19000, 25000],
       products: ['Produit A', 'Produit B', 'Produit C'],
@@ -58,7 +58,7 @@ const analysisTypes = [
     name: 'Comportement Client',
     icon: Users,
     description: 'Analyser les patterns d\'achat et prédire le churn',
-    color: 'text-blue-600',
+    color: 'text-info',
     sampleData: {
       customer_segments: ['Premium', 'Régulier', 'Occasionnel'],
       purchase_frequency: [2.5, 1.8, 0.6],
@@ -87,7 +87,7 @@ const analysisTypes = [
     name: 'Optimisation Stock',
     icon: Package,
     description: 'Optimiser les niveaux de stock et prédire la demande',
-    color: 'text-orange-600',
+    color: 'text-warning',
     sampleData: {
       current_stock: { 'Produit A': 150, 'Produit B': 89, 'Produit C': 234 },
       turnover_rate: { 'Produit A': 12, 'Produit B': 8, 'Produit C': 15 },
@@ -364,7 +364,7 @@ export const PredictiveAnalyzer = ({ className }: PredictiveAnalyzerProps) => {
                   <div className="flex items-center justify-between">
                     <div>
                       <CardTitle className="flex items-center gap-2">
-                        <CheckCircle className="h-5 w-5 text-green-600" />
+                        <CheckCircle className="h-5 w-5 text-success" />
                         Analyse Terminée
                       </CardTitle>
                       <CardDescription>

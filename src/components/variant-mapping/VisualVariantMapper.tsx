@@ -90,7 +90,7 @@ function DraggableVariant({ item, side, isMapped }: { item: VariantItem; side: '
         <p className="text-sm font-medium truncate">{item.optionValue}</p>
         <p className="text-xs text-muted-foreground truncate">{item.optionName}{item.sku ? ` · ${item.sku}` : ''}</p>
       </div>
-      {isMapped && <CheckCircle className="h-4 w-4 text-green-600 flex-shrink-0" />}
+      {isMapped && <CheckCircle className="h-4 w-4 text-success flex-shrink-0" />}
     </div>
   );
 }

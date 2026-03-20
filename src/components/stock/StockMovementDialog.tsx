@@ -164,9 +164,9 @@ export function StockMovementDialog({ open, onOpenChange }: StockMovementDialogP
 
   const getMovementIcon = (type: MovementType) => {
     switch (type) {
-      case 'in': return <ArrowDown className="h-4 w-4 text-green-600" />;
-      case 'out': return <ArrowUp className="h-4 w-4 text-red-600" />;
-      case 'adjustment': return <RefreshCw className="h-4 w-4 text-blue-600" />;
+      case 'in': return <ArrowDown className="h-4 w-4 text-success" />;
+      case 'out': return <ArrowUp className="h-4 w-4 text-destructive" />;
+      case 'adjustment': return <RefreshCw className="h-4 w-4 text-info" />;
     }
   };
 

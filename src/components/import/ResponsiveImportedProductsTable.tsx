@@ -62,7 +62,7 @@ interface ResponsiveImportedProductsTableProps {
 
 const StatusBadge = ({ status, reviewStatus }: { status: string; reviewStatus?: string }) => {
   if (reviewStatus === 'approved') {
-    return <Badge className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">Approuvé</Badge>;
+    return <Badge className="bg-green-100 text-success dark:bg-green-900 dark:text-green-200">Approuvé</Badge>;
   }
   if (reviewStatus === 'rejected') {
     return <Badge variant="destructive">Rejeté</Badge>;
@@ -81,7 +81,7 @@ const PlatformBadge = ({ platform }: { platform?: string }) => {
     amazon: 'bg-yellow-100 text-yellow-800',
     ebay: 'bg-blue-100 text-blue-800',
     etsy: 'bg-purple-100 text-purple-800',
-    shopify: 'bg-green-100 text-green-800',
+    shopify: 'bg-green-100 text-success',
     cjdropshipping: 'bg-indigo-100 text-indigo-800',
   };
 
@@ -193,19 +193,19 @@ const MobileProductCard = ({
             <DropdownMenuSeparator />
             {onApprove && product.review_status !== 'approved' && (
               <DropdownMenuItem onClick={() => onApprove(product.id)}>
-                <Check className="h-4 w-4 mr-2 text-green-600" />
+                <Check className="h-4 w-4 mr-2 text-success" />
                 Approuver
               </DropdownMenuItem>
             )}
             {onReject && product.review_status !== 'rejected' && (
               <DropdownMenuItem onClick={() => onReject(product.id)}>
-                <X className="h-4 w-4 mr-2 text-orange-600" />
+                <X className="h-4 w-4 mr-2 text-warning" />
                 Rejeter
               </DropdownMenuItem>
             )}
             {onPublish && product.review_status === 'approved' && product.status !== 'published' && (
               <DropdownMenuItem onClick={() => onPublish(product.id)}>
-                <Upload className="h-4 w-4 mr-2 text-blue-600" />
+                <Upload className="h-4 w-4 mr-2 text-info" />
                 Publier
               </DropdownMenuItem>
             )}
@@ -438,19 +438,19 @@ export const ResponsiveImportedProductsTable: React.FC<ResponsiveImportedProduct
                     <DropdownMenuSeparator />
                     {onApprove && product.review_status !== 'approved' && (
                       <DropdownMenuItem onClick={() => onApprove(product.id)}>
-                        <Check className="h-4 w-4 mr-2 text-green-600" />
+                        <Check className="h-4 w-4 mr-2 text-success" />
                         Approuver
                       </DropdownMenuItem>
                     )}
                     {onReject && product.review_status !== 'rejected' && (
                       <DropdownMenuItem onClick={() => onReject(product.id)}>
-                        <X className="h-4 w-4 mr-2 text-orange-600" />
+                        <X className="h-4 w-4 mr-2 text-warning" />
                         Rejeter
                       </DropdownMenuItem>
                     )}
                     {onPublish && product.review_status === 'approved' && product.status !== 'published' && (
                       <DropdownMenuItem onClick={() => onPublish(product.id)}>
-                        <Upload className="h-4 w-4 mr-2 text-blue-600" />
+                        <Upload className="h-4 w-4 mr-2 text-info" />
                         Publier
                       </DropdownMenuItem>
                     )}

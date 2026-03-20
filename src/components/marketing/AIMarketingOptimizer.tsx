@@ -87,7 +87,7 @@ export function AIMarketingOptimizer() {
     switch (priority) {
       case 'high': return 'bg-red-100 text-red-800 border-red-200'
       case 'medium': return 'bg-yellow-100 text-yellow-800 border-yellow-200'
-      case 'low': return 'bg-green-100 text-green-800 border-green-200'
+      case 'low': return 'bg-green-100 text-success border-green-200'
       default: return 'bg-gray-100 text-gray-800 border-gray-200'
     }
   }
@@ -143,12 +143,12 @@ export function AIMarketingOptimizer() {
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium flex items-center gap-2">
-              <TrendingUp className="h-4 w-4 text-green-600" />
+              <TrendingUp className="h-4 w-4 text-success" />
               Gains Potentiels
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-green-600">+€7,200</div>
+            <div className="text-2xl font-bold text-success">+€7,200</div>
             <p className="text-sm text-muted-foreground">Revenus mensuels estimés</p>
           </CardContent>
         </Card>
@@ -156,12 +156,12 @@ export function AIMarketingOptimizer() {
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium flex items-center gap-2">
-              <Target className="h-4 w-4 text-blue-600" />
+              <Target className="h-4 w-4 text-info" />
               Économies Possibles
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-blue-600">€1,800</div>
+            <div className="text-2xl font-bold text-info">€1,800</div>
             <p className="text-sm text-muted-foreground">Réduction CPA mensuelle</p>
           </CardContent>
         </Card>
@@ -182,12 +182,12 @@ export function AIMarketingOptimizer() {
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium flex items-center gap-2">
-              <CheckCircle2 className="h-4 w-4 text-orange-600" />
+              <CheckCircle2 className="h-4 w-4 text-warning" />
               Confiance Moyenne
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-orange-600">84%</div>
+            <div className="text-2xl font-bold text-warning">84%</div>
             <p className="text-sm text-muted-foreground">Fiabilité des recommandations</p>
           </CardContent>
         </Card>
@@ -222,8 +222,8 @@ export function AIMarketingOptimizer() {
                         </div>
                         <p className="text-sm text-muted-foreground">{rec.description}</p>
                         <div className="flex items-center gap-6 text-sm">
-                          <span className="text-green-600 font-medium">{rec.impact}</span>
-                          <span className="text-blue-600">{rec.effort}</span>
+                          <span className="text-success font-medium">{rec.impact}</span>
+                          <span className="text-info">{rec.effort}</span>
                         </div>
                       </div>
                       <Progress value={rec.confidence} className="w-20 h-2" />

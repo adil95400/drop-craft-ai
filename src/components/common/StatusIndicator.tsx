@@ -35,7 +35,7 @@ export const StatusIndicator = memo(function StatusIndicator({
     const configs = {
       success: {
         icon: CheckCircle,
-        color: 'text-green-600',
+        color: 'text-success',
         bgColor: 'bg-green-50',
         borderColor: 'border-green-200',
         badgeVariant: 'secondary' as const,
@@ -44,7 +44,7 @@ export const StatusIndicator = memo(function StatusIndicator({
       },
       error: {
         icon: XCircle,
-        color: 'text-red-600',
+        color: 'text-destructive',
         bgColor: 'bg-red-50',
         borderColor: 'border-red-200',
         badgeVariant: 'destructive' as const,
@@ -53,7 +53,7 @@ export const StatusIndicator = memo(function StatusIndicator({
       },
       warning: {
         icon: AlertCircle,
-        color: 'text-yellow-600',
+        color: 'text-warning',
         bgColor: 'bg-yellow-50',
         borderColor: 'border-yellow-200',
         badgeVariant: 'secondary' as const,
@@ -62,7 +62,7 @@ export const StatusIndicator = memo(function StatusIndicator({
       },
       info: {
         icon: AlertCircle,
-        color: 'text-blue-600',
+        color: 'text-info',
         bgColor: 'bg-blue-50',
         borderColor: 'border-blue-200',
         badgeVariant: 'secondary' as const,
@@ -71,7 +71,7 @@ export const StatusIndicator = memo(function StatusIndicator({
       },
       loading: {
         icon: Loader2,
-        color: 'text-blue-600',
+        color: 'text-info',
         bgColor: 'bg-blue-50',
         borderColor: 'border-blue-200',
         badgeVariant: 'secondary' as const,
@@ -80,7 +80,7 @@ export const StatusIndicator = memo(function StatusIndicator({
       },
       pending: {
         icon: Clock,
-        color: 'text-orange-600',
+        color: 'text-warning',
         bgColor: 'bg-orange-50',
         borderColor: 'border-orange-200',
         badgeVariant: 'secondary' as const,

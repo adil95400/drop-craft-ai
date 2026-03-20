@@ -62,7 +62,7 @@ export function MarginLossCard({ products }: MarginLossCardProps) {
             <p className="text-[10px] text-muted-foreground">Perte nette</p>
           </div>
           <div className="p-2 rounded bg-yellow-500/10">
-            <p className="text-lg font-bold text-yellow-600">{lowCount}</p>
+            <p className="text-lg font-bold text-warning">{lowCount}</p>
             <p className="text-[10px] text-muted-foreground">Marge &lt;15%</p>
           </div>
           <div className="p-2 rounded bg-muted">
@@ -111,7 +111,7 @@ export function MarginLossCard({ products }: MarginLossCardProps) {
                   <span className="text-xs text-muted-foreground">{formatCurrency(p.price)}</span>
                   <Badge variant="outline" className={cn(
                     "text-[10px]",
-                    p.calculatedMargin < 0 ? "text-destructive border-destructive/30" : "text-yellow-600 border-yellow-500/30"
+                    p.calculatedMargin < 0 ? "text-destructive border-destructive/30" : "text-warning border-yellow-500/30"
                   )}>
                     {p.calculatedMargin.toFixed(1)}%
                   </Badge>

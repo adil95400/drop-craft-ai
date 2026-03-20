@@ -50,8 +50,8 @@ export function CatalogHealthAIPanel() {
   const trendIcon = aiStats.healthTrendPrediction === 'improving' ? TrendingUp :
                     aiStats.healthTrendPrediction === 'declining' ? TrendingDown : Minus
   
-  const trendColor = aiStats.healthTrendPrediction === 'improving' ? 'text-emerald-500' :
-                     aiStats.healthTrendPrediction === 'declining' ? 'text-red-500' : 'text-amber-500'
+  const trendColor = aiStats.healthTrendPrediction === 'improving' ? 'text-success' :
+                     aiStats.healthTrendPrediction === 'declining' ? 'text-destructive' : 'text-warning'
 
   const riskColors = {
     low: 'bg-emerald-500/10 text-emerald-700 border-emerald-500/20',
@@ -140,7 +140,7 @@ export function CatalogHealthAIPanel() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-lg">
-            <AlertTriangle className="h-5 w-5 text-amber-500" />
+            <AlertTriangle className="h-5 w-5 text-warning" />
             Actions prioritaires
             <Badge variant="secondary" className="ml-2">
               {aiStats.priorityActions.length}
@@ -154,7 +154,7 @@ export function CatalogHealthAIPanel() {
             ))}
             {aiStats.priorityActions.length === 0 && (
               <div className="text-center py-8 text-muted-foreground">
-                <CheckCircle className="h-12 w-12 mx-auto mb-3 text-emerald-500" />
+                <CheckCircle className="h-12 w-12 mx-auto mb-3 text-success" />
                 <p>Aucune action prioritaire identifiée</p>
                 <p className="text-sm">Votre catalogue est en excellente santé !</p>
               </div>
@@ -203,13 +203,13 @@ export function CatalogHealthAIPanel() {
                     <div className="flex items-center gap-2">
                       <span className={cn(
                         "text-sm font-medium",
-                        insight.healthScore >= 70 ? "text-emerald-600" :
-                        insight.healthScore >= 50 ? "text-amber-600" : "text-red-600"
+                        insight.healthScore >= 70 ? "text-success" :
+                        insight.healthScore >= 50 ? "text-warning" : "text-destructive"
                       )}>
                         {insight.healthScore}%
                       </span>
-                      {insight.trend === 'up' && <TrendingUp className="h-4 w-4 text-emerald-500" />}
-                      {insight.trend === 'down' && <TrendingDown className="h-4 w-4 text-red-500" />}
+                      {insight.trend === 'up' && <TrendingUp className="h-4 w-4 text-success" />}
+                      {insight.trend === 'down' && <TrendingDown className="h-4 w-4 text-destructive" />}
                     </div>
                   </div>
                   <Progress 
@@ -329,9 +329,9 @@ function RecommendationCard({
   }
 
   const impactColors = {
-    high: 'text-emerald-600',
-    medium: 'text-amber-600',
-    low: 'text-blue-600'
+    high: 'text-success',
+    medium: 'text-warning',
+    low: 'text-info'
   }
 
   return (

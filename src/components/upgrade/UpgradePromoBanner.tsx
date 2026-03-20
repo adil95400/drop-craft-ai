@@ -63,7 +63,7 @@ export function UpgradePromoBanner({ currentPage, className = '' }: UpgradePromo
             <div className="flex flex-wrap gap-2">
               {content.features.map((feature, index) => (
                 <div key={index} className="flex items-center gap-1 text-xs">
-                  <Zap className="h-3 w-3 text-green-500" />
+                  <Zap className="h-3 w-3 text-success" />
                   <span className="text-muted-foreground">{feature}</span>
                 </div>
               ))}

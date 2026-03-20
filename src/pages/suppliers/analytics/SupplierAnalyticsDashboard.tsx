@@ -117,7 +117,7 @@ export default function SupplierAnalyticsDashboard() {
       value: `${(analyticsData?.totalRevenue || 0).toLocaleString()}€`,
       change: '+12.5%',
       trend: 'up',
-      color: 'text-green-600'
+      color: 'text-success'
     },
     { 
       icon: ShoppingCart, 
@@ -125,7 +125,7 @@ export default function SupplierAnalyticsDashboard() {
       value: analyticsData?.totalOrders || 0,
       change: '+8.3%',
       trend: 'up',
-      color: 'text-blue-600'
+      color: 'text-info'
     },
     { 
       icon: TrendingUp, 
@@ -141,7 +141,7 @@ export default function SupplierAnalyticsDashboard() {
       value: `${analyticsData?.avgDeliveryDays || 0}j`,
       change: '-0.5j',
       trend: 'up',
-      color: 'text-orange-600'
+      color: 'text-warning'
     },
     { 
       icon: CheckCircle, 
@@ -149,7 +149,7 @@ export default function SupplierAnalyticsDashboard() {
       value: `${analyticsData?.successRate || 0}%`,
       change: '+0.3%',
       trend: 'up',
-      color: 'text-emerald-600'
+      color: 'text-success'
     },
     { 
       icon: Store, 
@@ -330,14 +330,14 @@ export default function SupplierAnalyticsDashboard() {
                       <div className="flex items-center gap-4 text-sm text-muted-foreground">
                         <span>{supplier.orders} commandes</span>
                         <span className="flex items-center">
-                          <Star className="h-3 w-3 text-yellow-500 mr-1" />
+                          <Star className="h-3 w-3 text-warning mr-1" />
                           {supplier.rating}
                         </span>
                       </div>
                     </div>
                     <div className="text-right">
                       <p className="font-bold">{supplier.revenue.toLocaleString()}€</p>
-                      <p className="text-sm text-green-600">+{supplier.margin}% marge</p>
+                      <p className="text-sm text-success">+{supplier.margin}% marge</p>
                     </div>
                     <div className="w-24">
                       <Progress value={Number(supplier.margin) * 3} className="h-2" />

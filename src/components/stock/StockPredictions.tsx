@@ -56,8 +56,8 @@ export function StockPredictions({ productId, warehouseId, currentStock }: Stock
 
   const getTrendIcon = (trend: string) => {
     switch (trend) {
-      case 'increasing': return <TrendingUp className="h-4 w-4 text-green-500" />;
-      case 'decreasing': return <TrendingDown className="h-4 w-4 text-red-500" />;
+      case 'increasing': return <TrendingUp className="h-4 w-4 text-success" />;
+      case 'decreasing': return <TrendingDown className="h-4 w-4 text-destructive" />;
       default: return <Minus className="h-4 w-4 text-gray-500" />;
     }
   };
@@ -185,7 +185,7 @@ export function StockPredictions({ productId, warehouseId, currentStock }: Stock
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
-                    <CheckCircle className="h-5 w-5 text-blue-500" />
+                    <CheckCircle className="h-5 w-5 text-info" />
                     Insights IA
                   </CardTitle>
                 </CardHeader>
@@ -193,7 +193,7 @@ export function StockPredictions({ productId, warehouseId, currentStock }: Stock
                   <ul className="space-y-2">
                     {prediction.insights.map((insight: string, index: number) => (
                       <li key={index} className="flex items-start gap-2">
-                        <span className="text-blue-500 mt-1">•</span>
+                        <span className="text-info mt-1">•</span>
                         <span>{insight}</span>
                       </li>
                     ))}

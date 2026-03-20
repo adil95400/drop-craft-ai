@@ -326,13 +326,13 @@ export function BatchLabelGenerator({
         </Card>
         <Card>
           <CardContent className="py-4 text-center">
-            <div className="text-2xl font-bold text-amber-600">{pendingOrders.length}</div>
+            <div className="text-2xl font-bold text-warning">{pendingOrders.length}</div>
             <div className="text-sm text-muted-foreground">En attente</div>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="py-4 text-center">
-            <div className="text-2xl font-bold text-green-600">
+            <div className="text-2xl font-bold text-success">
               {orders.filter(o => o.status === 'shipped').length}
             </div>
             <div className="text-sm text-muted-foreground">Expédiées</div>

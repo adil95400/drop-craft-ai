@@ -49,9 +49,9 @@ const CATEGORY_ICONS: Record<AuditCategory, React.ReactNode> = {
 
 const SEVERITY_CONFIG: Record<AuditSeverity, { color: string; icon: React.ReactNode }> = {
   debug: { color: 'bg-muted text-muted-foreground', icon: <Info className="h-3 w-3" /> },
-  info: { color: 'bg-blue-500/10 text-blue-600', icon: <CheckCircle className="h-3 w-3" /> },
-  warn: { color: 'bg-yellow-500/10 text-yellow-600', icon: <AlertTriangle className="h-3 w-3" /> },
-  error: { color: 'bg-red-500/10 text-red-600', icon: <AlertCircle className="h-3 w-3" /> },
+  info: { color: 'bg-blue-500/10 text-info', icon: <CheckCircle className="h-3 w-3" /> },
+  warn: { color: 'bg-yellow-500/10 text-warning', icon: <AlertTriangle className="h-3 w-3" /> },
+  error: { color: 'bg-red-500/10 text-destructive', icon: <AlertCircle className="h-3 w-3" /> },
   critical: { color: 'bg-red-600 text-white', icon: <AlertCircle className="h-3 w-3" /> }
 };
 
@@ -108,7 +108,7 @@ export function AuditLogViewer() {
           <Card>
             <CardContent className="pt-6">
               <div className="flex items-center gap-2">
-                <User className="h-5 w-5 text-blue-500" />
+                <User className="h-5 w-5 text-info" />
                 <div>
                   <p className="text-2xl font-bold">{stats.unique_users || 0}</p>
                   <p className="text-xs text-muted-foreground">Utilisateurs actifs</p>
@@ -120,7 +120,7 @@ export function AuditLogViewer() {
           <Card>
             <CardContent className="pt-6">
               <div className="flex items-center gap-2">
-                <AlertTriangle className="h-5 w-5 text-yellow-500" />
+                <AlertTriangle className="h-5 w-5 text-warning" />
                 <div>
                   <p className="text-2xl font-bold">{stats.by_severity?.warn || 0}</p>
                   <p className="text-xs text-muted-foreground">Avertissements</p>
@@ -132,7 +132,7 @@ export function AuditLogViewer() {
           <Card>
             <CardContent className="pt-6">
               <div className="flex items-center gap-2">
-                <AlertCircle className="h-5 w-5 text-red-500" />
+                <AlertCircle className="h-5 w-5 text-destructive" />
                 <div>
                   <p className="text-2xl font-bold">{stats.critical_events || 0}</p>
                   <p className="text-xs text-muted-foreground">Événements critiques</p>

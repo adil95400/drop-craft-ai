@@ -50,7 +50,7 @@ export function CarrierDetailsModal({
       <DialogContent className="max-w-2xl">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Truck className="h-5 w-5 text-blue-600" />
+            <Truck className="h-5 w-5 text-info" />
             Détails de performance - {carrier}
           </DialogTitle>
         </DialogHeader>
@@ -60,32 +60,32 @@ export function CarrierDetailsModal({
           <div className="grid grid-cols-2 gap-4">
             <div className="p-4 border rounded-lg bg-card">
               <div className="flex items-center gap-2 mb-2">
-                <TrendingUp className="h-4 w-4 text-green-600" />
+                <TrendingUp className="h-4 w-4 text-success" />
                 <span className="text-sm font-medium">Taux de livraison</span>
               </div>
                <div className="space-y-2">
-                 <div className="text-2xl font-bold text-green-600">{actualMetrics.deliveryRate}</div>
+                 <div className="text-2xl font-bold text-success">{actualMetrics.deliveryRate}</div>
                  <Progress value={performanceScore} className="h-2" />
                </div>
              </div>
              
              <div className="p-4 border rounded-lg bg-card">
                <div className="flex items-center gap-2 mb-2">
-                 <Clock className="h-4 w-4 text-blue-600" />
+                 <Clock className="h-4 w-4 text-info" />
                  <span className="text-sm font-medium">Temps moyen</span>
                </div>
-               <div className="text-2xl font-bold text-blue-600">{actualMetrics.avgDeliveryTime}</div>
+               <div className="text-2xl font-bold text-info">{actualMetrics.avgDeliveryTime}</div>
             </div>
           </div>
           
           {/* Satisfaction client */}
           <div className="p-4 border rounded-lg bg-card">
             <div className="flex items-center gap-2 mb-3">
-              <Star className="h-4 w-4 text-amber-500" />
+              <Star className="h-4 w-4 text-warning" />
               <span className="text-sm font-medium">Satisfaction client</span>
             </div>
              <div className="flex items-center gap-4">
-               <div className="text-xl font-bold text-amber-600">{actualMetrics.customerSatisfaction}</div>
+               <div className="text-xl font-bold text-warning">{actualMetrics.customerSatisfaction}</div>
                <Progress value={satisfactionScore} className="flex-1 h-2" />
                <Badge variant={satisfactionScore >= 80 ? "default" : "secondary"}>
                  {satisfactionScore >= 80 ? "Excellent" : "Bon"}
@@ -96,7 +96,7 @@ export function CarrierDetailsModal({
            {/* Problèmes identifiés */}
            <div className="p-4 border rounded-lg bg-card">
              <div className="flex items-center gap-2 mb-3">
-               <AlertTriangle className="h-4 w-4 text-amber-500" />
+               <AlertTriangle className="h-4 w-4 text-warning" />
                <span className="text-sm font-medium">Problèmes identifiés</span>
              </div>
              <div className="bg-amber-50 border border-amber-200 rounded p-3">

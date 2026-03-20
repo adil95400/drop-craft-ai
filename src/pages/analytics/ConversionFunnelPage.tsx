@@ -162,7 +162,7 @@ const ConversionFunnelPage = () => {
                 Les données sont disponibles dans le tableau de bord Clarity.
               </p>
             </div>
-            <Badge className="bg-green-500/10 text-green-600 ml-auto">Actif</Badge>
+            <Badge className="bg-green-500/10 text-success ml-auto">Actif</Badge>
           </CardContent>
         </Card>
       </div>

@@ -111,7 +111,7 @@ const ProductAnalytics = ({ productId }: ProductAnalyticsProps) => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{productMetrics.totalSales}</div>
-            <div className="flex items-center text-xs text-green-600">
+            <div className="flex items-center text-xs text-success">
               <TrendingUp className="w-3 h-3 mr-1" />
               +12.5% vs mois dernier
             </div>
@@ -125,7 +125,7 @@ const ProductAnalytics = ({ productId }: ProductAnalyticsProps) => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{productMetrics.totalRevenue.toLocaleString('fr-FR')}€</div>
-            <div className="flex items-center text-xs text-green-600">
+            <div className="flex items-center text-xs text-success">
               <TrendingUp className="w-3 h-3 mr-1" />
               +8.3% vs mois dernier
             </div>
@@ -139,7 +139,7 @@ const ProductAnalytics = ({ productId }: ProductAnalyticsProps) => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{productMetrics.conversionRate}%</div>
-            <div className="flex items-center text-xs text-red-600">
+            <div className="flex items-center text-xs text-destructive">
               <TrendingDown className="w-3 h-3 mr-1" />
               -0.4% vs mois dernier
             </div>
@@ -153,7 +153,7 @@ const ProductAnalytics = ({ productId }: ProductAnalyticsProps) => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{productMetrics.totalViews.toLocaleString('fr-FR')}</div>
-            <div className="flex items-center text-xs text-green-600">
+            <div className="flex items-center text-xs text-success">
               <TrendingUp className="w-3 h-3 mr-1" />
               +15.7% vs mois dernier
             </div>
@@ -218,7 +218,7 @@ const ProductAnalytics = ({ productId }: ProductAnalyticsProps) => {
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-sm text-muted-foreground">Marge bénéficiaire</span>
-                  <span className="font-semibold text-green-600">{productMetrics.profitMargin}%</span>
+                  <span className="font-semibold text-success">{productMetrics.profitMargin}%</span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-sm text-muted-foreground">Rotation stock</span>
@@ -226,7 +226,7 @@ const ProductAnalytics = ({ productId }: ProductAnalyticsProps) => {
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-sm text-muted-foreground">Taux retour</span>
-                  <span className="font-semibold text-orange-600">{productMetrics.returnRate}%</span>
+                  <span className="font-semibold text-warning">{productMetrics.returnRate}%</span>
                 </div>
               </CardContent>
             </Card>
@@ -269,7 +269,7 @@ const ProductAnalytics = ({ productId }: ProductAnalyticsProps) => {
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-sm text-muted-foreground">vs Concurrence</span>
-                  <div className="flex items-center text-green-600">
+                  <div className="flex items-center text-success">
                     <TrendingUp className="w-3 h-3 mr-1" />
                     <span className="text-sm font-semibold">+23%</span>
                   </div>
@@ -280,7 +280,7 @@ const ProductAnalytics = ({ productId }: ProductAnalyticsProps) => {
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-sm text-muted-foreground">Tendance</span>
-                  <Badge variant="default" className="bg-green-100 text-green-800">
+                  <Badge variant="default" className="bg-green-100 text-success">
                     Croissante
                   </Badge>
                 </div>

@@ -67,9 +67,9 @@ export function ExtensionHealthMonitor() {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'healthy': return 'text-green-500'
-      case 'degraded': return 'text-yellow-500'
-      case 'critical': return 'text-red-500'
+      case 'healthy': return 'text-success'
+      case 'degraded': return 'text-warning'
+      case 'critical': return 'text-destructive'
       default: return 'text-gray-500'
     }
   }
@@ -155,7 +155,7 @@ export function ExtensionHealthMonitor() {
                 </div>
 
                 <div className="p-4 rounded-lg border bg-background">
-                  <div className="text-2xl font-bold text-green-600">{metrics.import_success_rate}%</div>
+                  <div className="text-2xl font-bold text-success">{metrics.import_success_rate}%</div>
                   <div className="text-sm text-muted-foreground">Taux de succès</div>
                   <div className="text-xs text-muted-foreground mt-1">Imports réussis</div>
                 </div>
@@ -167,13 +167,13 @@ export function ExtensionHealthMonitor() {
                 </div>
 
                 <div className="p-4 rounded-lg border bg-background">
-                  <div className="text-2xl font-bold text-yellow-600">{metrics.error_count_24h}</div>
+                  <div className="text-2xl font-bold text-warning">{metrics.error_count_24h}</div>
                   <div className="text-sm text-muted-foreground">Erreurs totales</div>
                   <div className="text-xs text-muted-foreground mt-1">(dernières 24h)</div>
                 </div>
 
                 <div className="p-4 rounded-lg border bg-background">
-                  <div className="text-2xl font-bold text-red-600">{metrics.critical_errors}</div>
+                  <div className="text-2xl font-bold text-destructive">{metrics.critical_errors}</div>
                   <div className="text-sm text-muted-foreground">Erreurs critiques</div>
                   <div className="text-xs text-muted-foreground mt-1">(dernières 24h)</div>
                 </div>
@@ -200,9 +200,9 @@ export function ExtensionHealthMonitor() {
                 >
                   <div className="flex items-center gap-3">
                     {test.passed ? (
-                      <CheckCircle className="h-5 w-5 text-green-500" />
+                      <CheckCircle className="h-5 w-5 text-success" />
                     ) : (
-                      <AlertCircle className="h-5 w-5 text-red-500" />
+                      <AlertCircle className="h-5 w-5 text-destructive" />
                     )}
                     <span className="font-medium">{test.name}</span>
                   </div>

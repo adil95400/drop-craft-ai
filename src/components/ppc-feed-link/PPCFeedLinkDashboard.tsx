@@ -107,7 +107,7 @@ export function PPCFeedLinkDashboard() {
           <CardContent className="pt-6">
             <div className="flex items-center gap-4">
               <div className="p-2 bg-green-500/10 rounded-lg">
-                <CheckCircle2 className="h-5 w-5 text-green-500" />
+                <CheckCircle2 className="h-5 w-5 text-success" />
               </div>
               <div>
                 <p className="text-2xl font-bold">{stats?.activeLinks || 0}</p>
@@ -120,7 +120,7 @@ export function PPCFeedLinkDashboard() {
           <CardContent className="pt-6">
             <div className="flex items-center gap-4">
               <div className="p-2 bg-blue-500/10 rounded-lg">
-                <Zap className="h-5 w-5 text-blue-500" />
+                <Zap className="h-5 w-5 text-info" />
               </div>
               <div>
                 <p className="text-2xl font-bold">{stats?.syncedToday || 0}</p>
@@ -133,7 +133,7 @@ export function PPCFeedLinkDashboard() {
           <CardContent className="pt-6">
             <div className="flex items-center gap-4">
               <div className="p-2 bg-red-500/10 rounded-lg">
-                <AlertCircle className="h-5 w-5 text-red-500" />
+                <AlertCircle className="h-5 w-5 text-destructive" />
               </div>
               <div>
                 <p className="text-2xl font-bold">{stats?.errorLinks || 0}</p>

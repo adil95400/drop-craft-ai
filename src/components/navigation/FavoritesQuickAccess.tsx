@@ -68,7 +68,7 @@ export function FavoritesQuickAccess({
             className="w-full justify-start gap-2 h-9"
             onClick={() => navigate(module.route)}
           >
-            <Star className="h-4 w-4 fill-yellow-500 text-yellow-500" />
+            <Star className="h-4 w-4 fill-yellow-500 text-warning" />
             <span className="truncate text-sm">{module.name}</span>
           </Button>
         ))}
@@ -81,7 +81,7 @@ export function FavoritesQuickAccess({
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <CardTitle className="text-base flex items-center gap-2">
-            <Star className="h-5 w-5 fill-yellow-500 text-yellow-500" />
+            <Star className="h-5 w-5 fill-yellow-500 text-warning" />
             Accès Rapide
             <Badge variant="secondary" className="text-xs">
               {favoriteModules.length}

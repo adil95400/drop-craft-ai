@@ -174,7 +174,7 @@ export default function InstallationPage() {
                   </div>
                   <Progress value={installProgress} />
                   {installStatus === 'completed' && (
-                    <p className="text-green-600 text-sm flex items-center">
+                    <p className="text-success text-sm flex items-center">
                       <CheckCircle className="w-4 h-4 mr-1" />
                       Installation terminée avec succès !
                     </p>

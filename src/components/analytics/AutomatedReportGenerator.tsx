@@ -102,8 +102,8 @@ export function AutomatedReportGenerator() {
 
   const getStatusBadge = (status: string | null) => {
     switch (status) {
-      case 'generated': return <Badge className="bg-emerald-500/10 text-emerald-600 border-emerald-500/20">Généré</Badge>;
-      case 'scheduled': return <Badge className="bg-blue-500/10 text-blue-600 border-blue-500/20">Planifié</Badge>;
+      case 'generated': return <Badge className="bg-emerald-500/10 text-success border-emerald-500/20">Généré</Badge>;
+      case 'scheduled': return <Badge className="bg-blue-500/10 text-info border-blue-500/20">Planifié</Badge>;
       default: return <Badge variant="secondary">Brouillon</Badge>;
     }
   };
@@ -193,7 +193,7 @@ export function AutomatedReportGenerator() {
                       size="icon" variant="ghost" className="h-7 w-7"
                       onClick={() => toggleFavorite.mutate({ id: report.id, fav: !report.is_favorite })}
                     >
-                      {report.is_favorite ? <Star className="h-3.5 w-3.5 text-amber-500 fill-amber-500" /> : <StarOff className="h-3.5 w-3.5" />}
+                      {report.is_favorite ? <Star className="h-3.5 w-3.5 text-warning fill-amber-500" /> : <StarOff className="h-3.5 w-3.5" />}
                     </Button>
                     <Button 
                       size="icon" variant="ghost" className="h-7 w-7"

@@ -19,9 +19,9 @@ import {
 } from '@/hooks/pricing';
 
 const priorityConfig = {
-  high: { label: 'Haute', color: 'text-red-600 bg-red-100', icon: AlertTriangle },
-  medium: { label: 'Moyenne', color: 'text-amber-600 bg-amber-100', icon: Target },
-  low: { label: 'Basse', color: 'text-blue-600 bg-blue-100', icon: Zap },
+  high: { label: 'Haute', color: 'text-destructive bg-red-100', icon: AlertTriangle },
+  medium: { label: 'Moyenne', color: 'text-warning bg-amber-100', icon: Target },
+  low: { label: 'Basse', color: 'text-info bg-blue-100', icon: Zap },
 };
 
 const ruleTypeIcons: Record<string, typeof TrendingUp> = {
@@ -55,9 +55,9 @@ export function AIRecommendationsPanel() {
     return (
       <Card className="border-green-200 bg-green-50/50">
         <CardContent className="py-8 text-center">
-          <Check className="h-10 w-10 mx-auto mb-3 text-green-600" />
-          <h3 className="font-medium text-green-800 mb-1">Catalogue optimisé</h3>
-          <p className="text-sm text-green-700">
+          <Check className="h-10 w-10 mx-auto mb-3 text-success" />
+          <h3 className="font-medium text-success mb-1">Catalogue optimisé</h3>
+          <p className="text-sm text-success">
             Aucune recommandation d'optimisation pour le moment
           </p>
         </CardContent>
@@ -136,7 +136,7 @@ export function AIRecommendationsPanel() {
                       </span>
                       <span className={cn(
                         'flex items-center gap-1 font-medium',
-                        rec.estimatedImpact.revenueChange >= 0 ? 'text-green-600' : 'text-red-600'
+                        rec.estimatedImpact.revenueChange >= 0 ? 'text-success' : 'text-destructive'
                       )}>
                         <TrendingUp className="h-3.5 w-3.5" />
                         {rec.estimatedImpact.revenueChange >= 0 ? '+' : ''}

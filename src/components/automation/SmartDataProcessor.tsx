@@ -259,7 +259,7 @@ export const SmartDataProcessor = () => {
                 <p className="text-sm font-medium text-gray-600">Produits</p>
                 <p className="text-2xl font-bold">{stats.totalProducts}</p>
               </div>
-              <BarChart3 className="w-8 h-8 text-blue-500" />
+              <BarChart3 className="w-8 h-8 text-info" />
             </div>
           </CardContent>
         </Card>
@@ -271,7 +271,7 @@ export const SmartDataProcessor = () => {
                 <p className="text-sm font-medium text-gray-600">Traités</p>
                 <p className="text-2xl font-bold">{stats.processedProducts}</p>
               </div>
-              <CheckCircle2 className="w-8 h-8 text-green-500" />
+              <CheckCircle2 className="w-8 h-8 text-success" />
             </div>
           </CardContent>
         </Card>
@@ -283,7 +283,7 @@ export const SmartDataProcessor = () => {
                 <p className="text-sm font-medium text-gray-600">Problèmes</p>
                 <p className="text-2xl font-bold">{stats.issuesFound}</p>
               </div>
-              <AlertTriangle className="w-8 h-8 text-orange-500" />
+              <AlertTriangle className="w-8 h-8 text-warning" />
             </div>
           </CardContent>
         </Card>
@@ -375,7 +375,7 @@ export const SmartDataProcessor = () => {
             <TabsContent value="issues" className="space-y-4">
               {issues.length === 0 ? (
                 <div className="text-center py-8">
-                  <CheckCircle2 className="w-12 h-12 text-green-500 mx-auto mb-4" />
+                  <CheckCircle2 className="w-12 h-12 text-success mx-auto mb-4" />
                   <h3 className="text-lg font-medium">Aucun problème détecté !</h3>
                   <p className="text-gray-600">Vos données semblent être de bonne qualité.</p>
                 </div>

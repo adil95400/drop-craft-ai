@@ -197,7 +197,7 @@ export function DeduplicationDashboard() {
           </Card>
           <Card>
             <CardContent className="pt-6">
-              <div className="text-2xl font-bold text-orange-600">{stats.totalDuplicates}</div>
+              <div className="text-2xl font-bold text-warning">{stats.totalDuplicates}</div>
               <p className="text-sm text-muted-foreground">Doublons détectés</p>
             </CardContent>
           </Card>
@@ -252,7 +252,7 @@ export function DeduplicationDashboard() {
       ) : stats ? (
         <Card>
           <CardContent className="py-12 text-center">
-            <CheckCircle2 className="h-12 w-12 mx-auto mb-4 text-green-500" />
+            <CheckCircle2 className="h-12 w-12 mx-auto mb-4 text-success" />
             <h3 className="text-lg font-semibold">Aucun doublon détecté</h3>
             <p className="text-muted-foreground mt-1">
               Votre catalogue est propre ! Essayez de baisser le seuil pour une analyse plus stricte.

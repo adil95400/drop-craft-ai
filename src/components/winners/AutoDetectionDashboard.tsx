@@ -221,7 +221,7 @@ export const AutoDetectionDashboard: React.FC = () => {
 
   const getCompetitionColor = (level: string) => {
     const colors: Record<string, string> = {
-      low: 'bg-green-100 text-green-800',
+      low: 'bg-green-100 text-success',
       medium: 'bg-yellow-100 text-yellow-800',
       high: 'bg-red-100 text-red-800'
     };
@@ -262,7 +262,7 @@ export const AutoDetectionDashboard: React.FC = () => {
                 <p className="text-sm text-muted-foreground">Score viral moyen</p>
                 <p className="text-3xl font-bold">{stats.avgViralityScore}%</p>
               </div>
-              <Sparkles className="w-8 h-8 text-yellow-500" />
+              <Sparkles className="w-8 h-8 text-warning" />
             </div>
           </CardContent>
         </Card>
@@ -274,7 +274,7 @@ export const AutoDetectionDashboard: React.FC = () => {
                 <p className="text-sm text-muted-foreground">Top plateforme</p>
                 <p className="text-2xl font-bold capitalize">{stats.topPlatform || '-'}</p>
               </div>
-              <TrendingUp className="w-8 h-8 text-green-500" />
+              <TrendingUp className="w-8 h-8 text-success" />
             </div>
           </CardContent>
         </Card>
@@ -286,7 +286,7 @@ export const AutoDetectionDashboard: React.FC = () => {
                 <p className="text-sm text-muted-foreground">Dernière màj</p>
                 <p className="text-xs font-medium">{stats.lastUpdate || '-'}</p>
               </div>
-              <Clock className="w-8 h-8 text-blue-500" />
+              <Clock className="w-8 h-8 text-info" />
             </div>
           </CardContent>
         </Card>
@@ -487,7 +487,7 @@ export const AutoDetectionDashboard: React.FC = () => {
                               {product.metadata?.confidence_level || '95%'} confiance
                             </Badge>
                             {product.trend_analysis?.trend_direction === 'up' && (
-                              <Badge className="bg-green-100 text-green-800">
+                              <Badge className="bg-green-100 text-success">
                                 <TrendingUp className="w-3 h-3 mr-1" />
                                 En hausse
                               </Badge>

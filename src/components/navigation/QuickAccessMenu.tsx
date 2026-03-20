@@ -45,7 +45,7 @@ export function QuickAccessMenu() {
       <CardContent className="p-4">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
-            <Crown className="h-5 w-5 text-yellow-500" />
+            <Crown className="h-5 w-5 text-warning" />
             <h3 className="font-semibold">Accès Rapide Ultra Pro</h3>
           </div>
           <Button variant="outline" size="sm" asChild>

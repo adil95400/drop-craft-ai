@@ -56,7 +56,7 @@ const BADGE_COLOR_MAP: Record<string, string> = {
   gray: 'bg-gray-100 text-gray-700 dark:bg-gray-900/40 dark:text-gray-300',
   blue: 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300',
   yellow: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/40 dark:text-yellow-300',
-  green: 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300',
+  green: 'bg-green-100 text-success dark:bg-green-900/40 dark:text-green-300',
   purple: 'bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300',
 }
 
@@ -153,7 +153,7 @@ export default function SavedViews() {
           <section>
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-semibold flex items-center gap-2">
-                <Star className="h-5 w-5 text-yellow-500" />
+                <Star className="h-5 w-5 text-warning" />
                 Filtres rapides métier
               </h2>
               <Badge variant="secondary">{presetCount} filtres</Badge>

@@ -190,7 +190,7 @@ export function QuickConnectSuppliers({
               />
             </div>
             <div className="p-4 bg-green-50 dark:bg-green-950/20 rounded-lg">
-              <p className="text-sm text-green-800 dark:text-green-200">
+              <p className="text-sm text-success dark:text-green-200">
                 ✓ Synchronisation automatique toutes les {parseInt(syncInterval) / 60} minutes
               </p>
             </div>
@@ -224,7 +224,7 @@ export function QuickConnectSuppliers({
               />
             </div>
             <div className="p-4 bg-green-50 dark:bg-green-950/20 rounded-lg">
-              <p className="text-sm text-green-800 dark:text-green-200">
+              <p className="text-sm text-success dark:text-green-200">
                 ✓ Synchronisation automatique toutes les {parseInt(syncInterval) / 60} minutes
               </p>
             </div>

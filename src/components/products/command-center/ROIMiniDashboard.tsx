@@ -146,11 +146,11 @@ export function ROIMiniDashboard({
     const isUp = current > previous * 1.05
     const isDown = current < previous * 0.95
     if (inverse) {
-      if (isUp) return 'text-red-500'
-      if (isDown) return 'text-emerald-500'
+      if (isUp) return 'text-destructive'
+      if (isDown) return 'text-success'
     } else {
-      if (isUp) return 'text-emerald-500'
-      if (isDown) return 'text-red-500'
+      if (isUp) return 'text-success'
+      if (isDown) return 'text-destructive'
     }
     return 'text-muted-foreground'
   }
@@ -190,7 +190,7 @@ export function ROIMiniDashboard({
         <CardHeader className="pb-2">
           <div className="flex items-center justify-between">
             <CardTitle className="text-sm font-medium flex items-center gap-2">
-              <BarChart3 className="h-4 w-4 text-emerald-600" />
+              <BarChart3 className="h-4 w-4 text-success" />
               Pilotage ROI temps réel
             </CardTitle>
             <Tooltip>
@@ -200,10 +200,10 @@ export function ROIMiniDashboard({
                   className={cn(
                     'text-xs',
                     metrics.healthScore >= 70 
-                      ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-600' 
+                      ? 'bg-emerald-500/10 border-emerald-500/30 text-success' 
                       : metrics.healthScore >= 40
-                        ? 'bg-amber-500/10 border-amber-500/30 text-amber-600'
-                        : 'bg-red-500/10 border-red-500/30 text-red-600'
+                        ? 'bg-amber-500/10 border-amber-500/30 text-warning'
+                        : 'bg-red-500/10 border-red-500/30 text-destructive'
                   )}
                 >
                   <Target className="h-3 w-3 mr-1" />

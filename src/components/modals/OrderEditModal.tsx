@@ -332,7 +332,7 @@ export function OrderEditModal({ open, onOpenChange, order, onSuccess }: OrderEd
                                 size="icon"
                                 onClick={() => copyToClipboard(field.value || '')}
                               >
-                                {copied ? <CheckCircle className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
+                                {copied ? <CheckCircle className="h-4 w-4 text-success" /> : <Copy className="h-4 w-4" />}
                               </Button>
                             )}
                           </div>

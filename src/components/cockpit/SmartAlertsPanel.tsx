@@ -147,9 +147,9 @@ export function SmartAlertsPanel({ products, revenue }: SmartAlertsPanelProps) {
   }, [products, revenue])
 
   const severityConfig = {
-    critical: { icon: XCircle, color: 'text-red-500', bg: 'bg-red-50 dark:bg-red-950/30', border: 'border-red-200 dark:border-red-800', badge: 'bg-red-100 text-red-700' },
-    warning: { icon: AlertTriangle, color: 'text-amber-500', bg: 'bg-amber-50 dark:bg-amber-950/30', border: 'border-amber-200 dark:border-amber-800', badge: 'bg-amber-100 text-amber-700' },
-    info: { icon: Clock, color: 'text-blue-500', bg: 'bg-blue-50 dark:bg-blue-950/30', border: 'border-blue-200 dark:border-blue-800', badge: 'bg-blue-100 text-blue-700' },
+    critical: { icon: XCircle, color: 'text-destructive', bg: 'bg-red-50 dark:bg-red-950/30', border: 'border-red-200 dark:border-red-800', badge: 'bg-red-100 text-red-700' },
+    warning: { icon: AlertTriangle, color: 'text-warning', bg: 'bg-amber-50 dark:bg-amber-950/30', border: 'border-amber-200 dark:border-amber-800', badge: 'bg-amber-100 text-amber-700' },
+    info: { icon: Clock, color: 'text-info', bg: 'bg-blue-50 dark:bg-blue-950/30', border: 'border-blue-200 dark:border-blue-800', badge: 'bg-blue-100 text-blue-700' },
   }
 
   const criticalCount = alerts.filter(a => a.severity === 'critical').length
@@ -169,7 +169,7 @@ export function SmartAlertsPanel({ products, revenue }: SmartAlertsPanelProps) {
       </CardHeader>
       <CardContent>
         {alerts.length === 0 ? (
-          <div className="flex items-center gap-2 p-4 rounded-lg bg-green-50 dark:bg-green-950/30 text-green-700 dark:text-green-300">
+          <div className="flex items-center gap-2 p-4 rounded-lg bg-green-50 dark:bg-green-950/30 text-success dark:text-green-300">
             <CheckCircle2 className="h-5 w-5" />
             <span className="text-sm font-medium">Aucune alerte — Tout est en ordre !</span>
           </div>

@@ -242,7 +242,7 @@ export const AdvancedUserManager = () => {
           <Card>
             <CardContent className="pt-4">
               <div className="flex items-center gap-2">
-                <Users className="h-4 w-4 text-blue-600" />
+                <Users className="h-4 w-4 text-info" />
                 <div>
                   <p className="text-xs text-muted-foreground">Total</p>
                   <p className="text-lg font-bold">{userStats.totalUsers}</p>
@@ -254,7 +254,7 @@ export const AdvancedUserManager = () => {
           <Card>
             <CardContent className="pt-4">
               <div className="flex items-center gap-2">
-                <Activity className="h-4 w-4 text-green-600" />
+                <Activity className="h-4 w-4 text-success" />
                 <div>
                   <p className="text-xs text-muted-foreground">Actifs (30j)</p>
                   <p className="text-lg font-bold">{userStats.activeUsers}</p>
@@ -278,7 +278,7 @@ export const AdvancedUserManager = () => {
           <Card>
             <CardContent className="pt-4">
               <div className="flex items-center gap-2">
-                <Ban className="h-4 w-4 text-red-600" />
+                <Ban className="h-4 w-4 text-destructive" />
                 <div>
                   <p className="text-xs text-muted-foreground">Suspendus</p>
                   <p className="text-lg font-bold">{userStats.suspendedUsers}</p>
@@ -290,7 +290,7 @@ export const AdvancedUserManager = () => {
           <Card>
             <CardContent className="pt-4">
               <div className="flex items-center gap-2">
-                <TrendingUp className="h-4 w-4 text-yellow-600" />
+                <TrendingUp className="h-4 w-4 text-warning" />
                 <div>
                   <p className="text-xs text-muted-foreground">Nouveaux</p>
                   <p className="text-lg font-bold">+{userStats.newUsersToday}</p>
@@ -302,7 +302,7 @@ export const AdvancedUserManager = () => {
           <Card>
             <CardContent className="pt-4">
               <div className="flex items-center gap-2">
-                <CreditCard className="h-4 w-4 text-green-600" />
+                <CreditCard className="h-4 w-4 text-success" />
                 <div>
                   <p className="text-xs text-muted-foreground">Rev/User</p>
                   <p className="text-lg font-bold">€{userStats.revenuePerUser.toFixed(0)}</p>

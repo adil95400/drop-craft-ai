@@ -31,7 +31,7 @@ export function TopProductsCard({ products }: TopProductsCardProps) {
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <CardTitle className="text-base flex items-center gap-2">
-            <Crown className="h-4 w-4 text-yellow-500" />
+            <Crown className="h-4 w-4 text-warning" />
             Top Produits
           </CardTitle>
           <Button variant="ghost" size="sm" className="gap-1 text-xs" onClick={() => navigate('/products')}>
@@ -71,7 +71,7 @@ export function TopProductsCard({ products }: TopProductsCardProps) {
                 >
                   <span className={cn(
                     "text-sm font-bold w-5 text-center shrink-0",
-                    i === 0 && "text-yellow-500",
+                    i === 0 && "text-warning",
                     i === 1 && "text-muted-foreground",
                     i === 2 && "text-orange-400",
                     i > 2 && "text-muted-foreground/60"
@@ -94,7 +94,7 @@ export function TopProductsCard({ products }: TopProductsCardProps) {
                     {margin != null && (
                       <Badge variant="outline" className={cn(
                         "text-[10px]",
-                        margin >= 30 ? "text-green-600" : margin >= 15 ? "text-yellow-600" : "text-destructive"
+                        margin >= 30 ? "text-success" : margin >= 15 ? "text-warning" : "text-destructive"
                       )}>
                         <TrendingUp className="h-2.5 w-2.5 mr-0.5" />
                         {margin.toFixed(0)}%

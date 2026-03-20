@@ -67,7 +67,7 @@ export function RouteValidationProvider({
                       </Badge>
                     </div>
                     <div className="text-muted-foreground">{issue.issue}</div>
-                    {issue.suggestion && <div className="text-xs text-blue-600 dark:text-blue-400">
+                    {issue.suggestion && <div className="text-xs text-info dark:text-blue-400">
                         💡 {issue.suggestion}
                       </div>}
                   </div>)}

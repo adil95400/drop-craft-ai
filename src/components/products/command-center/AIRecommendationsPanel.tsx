@@ -32,25 +32,25 @@ const priorityConfig: Record<RecommendationPriority, {
   label: string
 }> = {
   critical: {
-    color: 'text-red-600 dark:text-red-400',
+    color: 'text-destructive dark:text-red-400',
     bgColor: 'bg-red-500/10',
     borderColor: 'border-red-500/30',
     label: 'Critique'
   },
   high: {
-    color: 'text-orange-600 dark:text-orange-400',
+    color: 'text-warning dark:text-orange-400',
     bgColor: 'bg-orange-500/10',
     borderColor: 'border-orange-500/30',
     label: 'Haute'
   },
   medium: {
-    color: 'text-amber-600 dark:text-amber-400',
+    color: 'text-warning dark:text-amber-400',
     bgColor: 'bg-amber-500/10',
     borderColor: 'border-amber-500/30',
     label: 'Moyenne'
   },
   low: {
-    color: 'text-blue-600 dark:text-blue-400',
+    color: 'text-info dark:text-blue-400',
     bgColor: 'bg-blue-500/10',
     borderColor: 'border-blue-500/30',
     label: 'Basse'
@@ -112,7 +112,7 @@ export function AIRecommendationsPanel({
       <Card className="border-emerald-500/20 bg-gradient-to-br from-emerald-500/5 to-transparent">
         <CardContent className="flex items-center gap-4 p-6">
           <div className="w-12 h-12 rounded-full bg-emerald-500/20 flex items-center justify-center">
-            <Target className="h-6 w-6 text-emerald-500" />
+            <Target className="h-6 w-6 text-success" />
           </div>
           <div>
             <h3 className="font-semibold text-emerald-700 dark:text-emerald-400">

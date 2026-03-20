@@ -76,11 +76,11 @@ export function ActivityMonitoring() {
   const getStatusConfig = (status: string | null) => {
     switch (status) {
       case 'success':
-        return { icon: CheckCircle, color: 'text-green-500', bgColor: 'bg-green-500/10', label: 'Succès' };
+        return { icon: CheckCircle, color: 'text-success', bgColor: 'bg-green-500/10', label: 'Succès' };
       case 'failed':
-        return { icon: XCircle, color: 'text-red-500', bgColor: 'bg-red-500/10', label: 'Échec' };
+        return { icon: XCircle, color: 'text-destructive', bgColor: 'bg-red-500/10', label: 'Échec' };
       case 'pending':
-        return { icon: Clock, color: 'text-amber-500', bgColor: 'bg-amber-500/10', label: 'En attente' };
+        return { icon: Clock, color: 'text-warning', bgColor: 'bg-amber-500/10', label: 'En attente' };
       default:
         return { icon: Activity, color: 'text-muted-foreground', bgColor: 'bg-muted', label: 'Inconnu' };
     }
@@ -117,11 +117,11 @@ export function ActivityMonitoring() {
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-green-500/10 rounded-lg">
-                <CheckCircle className="h-5 w-5 text-green-500" />
+                <CheckCircle className="h-5 w-5 text-success" />
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Succès</p>
-                <p className="text-2xl font-bold text-green-500">{stats.success}</p>
+                <p className="text-2xl font-bold text-success">{stats.success}</p>
               </div>
             </div>
           </CardContent>
@@ -131,11 +131,11 @@ export function ActivityMonitoring() {
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-red-500/10 rounded-lg">
-                <XCircle className="h-5 w-5 text-red-500" />
+                <XCircle className="h-5 w-5 text-destructive" />
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Échecs</p>
-                <p className="text-2xl font-bold text-red-500">{stats.failed}</p>
+                <p className="text-2xl font-bold text-destructive">{stats.failed}</p>
               </div>
             </div>
           </CardContent>
@@ -145,7 +145,7 @@ export function ActivityMonitoring() {
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-blue-500/10 rounded-lg">
-                <Timer className="h-5 w-5 text-blue-500" />
+                <Timer className="h-5 w-5 text-info" />
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Durée moy.</p>
@@ -228,7 +228,7 @@ export function ActivityMonitoring() {
                             </Badge>
                           </div>
                           {log.error_message && (
-                            <p className="text-sm text-red-500 mt-1">{log.error_message}</p>
+                            <p className="text-sm text-destructive mt-1">{log.error_message}</p>
                           )}
                           <div className="flex items-center gap-4 text-sm text-muted-foreground mt-1">
                             <span className="flex items-center gap-1">

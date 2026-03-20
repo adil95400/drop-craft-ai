@@ -30,11 +30,11 @@ export function SyncQueueDashboard() {
       case 'pending':
         return <Clock className="h-4 w-4 text-muted-foreground" />;
       case 'processing':
-        return <PlayCircle className="h-4 w-4 text-blue-500 animate-pulse" />;
+        return <PlayCircle className="h-4 w-4 text-info animate-pulse" />;
       case 'completed':
-        return <CheckCircle2 className="h-4 w-4 text-green-500" />;
+        return <CheckCircle2 className="h-4 w-4 text-success" />;
       case 'failed':
-        return <AlertCircle className="h-4 w-4 text-red-500" />;
+        return <AlertCircle className="h-4 w-4 text-destructive" />;
       case 'cancelled':
         return <XCircle className="h-4 w-4 text-muted-foreground" />;
       default:
@@ -60,9 +60,9 @@ export function SyncQueueDashboard() {
   };
 
   const getPriorityColor = (priority: number) => {
-    if (priority <= 3) return 'text-red-500';
-    if (priority <= 6) return 'text-yellow-500';
-    return 'text-green-500';
+    if (priority <= 3) return 'text-destructive';
+    if (priority <= 6) return 'text-warning';
+    return 'text-success';
   };
 
   const stats = {
@@ -136,7 +136,7 @@ export function SyncQueueDashboard() {
               <p className="text-sm text-muted-foreground">En cours</p>
               <p className="text-2xl font-bold">{stats.processing}</p>
             </div>
-            <PlayCircle className="h-8 w-8 text-blue-500" />
+            <PlayCircle className="h-8 w-8 text-info" />
           </div>
         </Card>
 
@@ -146,7 +146,7 @@ export function SyncQueueDashboard() {
               <p className="text-sm text-muted-foreground">Terminées</p>
               <p className="text-2xl font-bold">{stats.completed}</p>
             </div>
-            <CheckCircle2 className="h-8 w-8 text-green-500" />
+            <CheckCircle2 className="h-8 w-8 text-success" />
           </div>
         </Card>
 
@@ -156,7 +156,7 @@ export function SyncQueueDashboard() {
               <p className="text-sm text-muted-foreground">Échouées</p>
               <p className="text-2xl font-bold">{stats.failed}</p>
             </div>
-            <AlertCircle className="h-8 w-8 text-red-500" />
+            <AlertCircle className="h-8 w-8 text-destructive" />
           </div>
         </Card>
       </div>
@@ -188,7 +188,7 @@ export function SyncQueueDashboard() {
                       <div>
                         <Badge variant="outline">{job.sync_type}</Badge>
                         {job.error_message && (
-                          <p className="text-xs text-red-500 mt-1">
+                          <p className="text-xs text-destructive mt-1">
                             {job.error_message}
                           </p>
                         )}

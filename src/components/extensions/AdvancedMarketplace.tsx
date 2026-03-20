@@ -261,7 +261,7 @@ export const AdvancedMarketplace = () => {
                 <div className="flex items-center gap-1">
                   <span className="text-sm font-medium">{extension.author}</span>
                   {extension.author_verified && (
-                    <CheckCircle className="w-4 h-4 text-blue-500" />
+                    <CheckCircle className="w-4 h-4 text-info" />
                   )}
                 </div>
                 <div className="text-xs text-muted-foreground">{extension.category}</div>
@@ -273,7 +273,7 @@ export const AdvancedMarketplace = () => {
               onClick={() => toggleWishlist(extension.id)}
               className="p-1"
             >
-              <Heart className={`w-4 h-4 ${isInWishlist ? 'fill-red-500 text-red-500' : ''}`} />
+              <Heart className={`w-4 h-4 ${isInWishlist ? 'fill-red-500 text-destructive' : ''}`} />
             </Button>
           </div>
           
@@ -374,7 +374,7 @@ export const AdvancedMarketplace = () => {
                   <div className="flex items-center gap-2 text-sm text-muted-foreground">
                     <span>{extension.author}</span>
                     {extension.author_verified && (
-                      <CheckCircle className="w-3 h-3 text-blue-500" />
+                      <CheckCircle className="w-3 h-3 text-info" />
                     )}
                     <span>•</span>
                     <span>{extension.category}</span>
@@ -385,7 +385,7 @@ export const AdvancedMarketplace = () => {
                   size="sm"
                   onClick={() => toggleWishlist(extension.id)}
                 >
-                  <Heart className={`w-4 h-4 ${isInWishlist ? 'fill-red-500 text-red-500' : ''}`} />
+                  <Heart className={`w-4 h-4 ${isInWishlist ? 'fill-red-500 text-destructive' : ''}`} />
                 </Button>
               </div>
               
@@ -514,7 +514,7 @@ export const AdvancedMarketplace = () => {
       {/* Featured Extensions */}
       <section>
         <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
-          <Crown className="w-6 h-6 text-yellow-500" />
+          <Crown className="w-6 h-6 text-warning" />
           Extensions mises en avant
         </h2>
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">

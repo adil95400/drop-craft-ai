@@ -296,11 +296,11 @@ export default function UsagePage() {
                         <p className="text-sm text-muted-foreground">Sessions</p>
                       </div>
                       <div className="text-center">
-                        <div className="text-2xl font-bold text-green-600">{Math.round(ext.sessions * 0.8)}</div>
+                        <div className="text-2xl font-bold text-success">{Math.round(ext.sessions * 0.8)}</div>
                         <p className="text-sm text-muted-foreground">Utilisateurs actifs</p>
                       </div>
                       <div className="text-center">
-                        <div className="text-2xl font-bold text-orange-600">{Math.round(ext.sessions * 2.3)}</div>
+                        <div className="text-2xl font-bold text-warning">{Math.round(ext.sessions * 2.3)}</div>
                         <p className="text-sm text-muted-foreground">Actions totales</p>
                       </div>
                     </div>
@@ -408,15 +408,15 @@ export default function UsagePage() {
               <CardContent className="space-y-6">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="text-center">
-                    <div className="text-2xl font-bold text-green-600">76%</div>
+                    <div className="text-2xl font-bold text-success">76%</div>
                     <p className="text-sm text-muted-foreground">Taux d'activation</p>
                   </div>
                   <div className="text-center">
-                    <div className="text-2xl font-bold text-blue-600">64%</div>
+                    <div className="text-2xl font-bold text-info">64%</div>
                     <p className="text-sm text-muted-foreground">Rétention 7 jours</p>
                   </div>
                   <div className="text-center">
-                    <div className="text-2xl font-bold text-orange-600">42%</div>
+                    <div className="text-2xl font-bold text-warning">42%</div>
                     <p className="text-sm text-muted-foreground">Rétention 30 jours</p>
                   </div>
                   <div className="text-center">

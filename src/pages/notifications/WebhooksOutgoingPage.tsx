@@ -126,7 +126,7 @@ export default function WebhooksOutgoingPage() {
             <Card className="border-border/50">
               <CardContent className="p-5">
                 <div className="flex items-start gap-4">
-                  <div className={`p-2.5 rounded-lg ${endpoint.enabled ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400' : 'bg-muted text-muted-foreground'}`}>
+                  <div className={`p-2.5 rounded-lg ${endpoint.enabled ? 'bg-emerald-50 text-success dark:bg-emerald-500/10 dark:text-emerald-400' : 'bg-muted text-muted-foreground'}`}>
                     <Webhook className="h-5 w-5" />
                   </div>
                   <div className="flex-1 min-w-0 space-y-2">
@@ -143,7 +143,7 @@ export default function WebhooksOutgoingPage() {
                     </div>
                     <div className="flex items-center gap-4 text-xs text-muted-foreground">
                       <span className="flex items-center gap-1">
-                        <CheckCircle2 className="h-3 w-3 text-emerald-500" />
+                        <CheckCircle2 className="h-3 w-3 text-success" />
                         {endpoint.successRate}% succès
                       </span>
                       <span>{endpoint.totalDeliveries} livraisons</span>

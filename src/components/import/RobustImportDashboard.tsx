@@ -71,7 +71,7 @@ function JobProgressPanel({ jobId }: { jobId: string }) {
         <div className="flex items-center justify-between">
           <CardTitle className="flex items-center gap-2 text-lg">
             {isActive && <RefreshCw className="h-5 w-5 animate-spin text-primary" />}
-            {status.status === 'completed' && <CheckCircle2 className="h-5 w-5 text-green-500" />}
+            {status.status === 'completed' && <CheckCircle2 className="h-5 w-5 text-success" />}
             {status.status === 'failed' && <XCircle className="h-5 w-5 text-destructive" />}
             Import {status.job_id.slice(0, 8)}
           </CardTitle>

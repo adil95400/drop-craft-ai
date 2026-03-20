@@ -48,11 +48,11 @@ export const SEOTechnicalDetailsModal = ({
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'success':
-        return 'text-green-600';
+        return 'text-success';
       case 'warning':
-        return 'text-yellow-600';
+        return 'text-warning';
       case 'error':
-        return 'text-red-600';
+        return 'text-destructive';
       default:
         return 'text-gray-600';
     }
@@ -178,9 +178,9 @@ export const SEOTechnicalDetailsModal = ({
                   <div key={index} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
                     <div className="flex items-center gap-2">
                       {metric.status === 'success' ? (
-                        <CheckCircle className="h-4 w-4 text-green-500" />
+                        <CheckCircle className="h-4 w-4 text-success" />
                       ) : (
-                        <AlertTriangle className="h-4 w-4 text-yellow-500" />
+                        <AlertTriangle className="h-4 w-4 text-warning" />
                       )}
                       <span className="text-sm font-medium">{metric.label}</span>
                     </div>

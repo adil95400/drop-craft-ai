@@ -98,8 +98,8 @@ export const TeamCollaboration = () => {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'active': return 'text-green-500';
-      case 'invited': return 'text-yellow-500';
+      case 'active': return 'text-success';
+      case 'invited': return 'text-warning';
       case 'inactive': return 'text-gray-500';
       default: return 'text-gray-500';
     }

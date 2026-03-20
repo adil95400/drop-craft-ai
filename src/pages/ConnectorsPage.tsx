@@ -131,7 +131,7 @@ export default function ConnectorsPage() {
                       <Badge variant="secondary" className="mt-1">{connector.category}</Badge>
                     </div>
                   </div>
-                  {isConnected && <CheckCircle className="h-5 w-5 text-green-500" />}
+                  {isConnected && <CheckCircle className="h-5 w-5 text-success" />}
                 </div>
               </CardHeader>
               <CardContent>

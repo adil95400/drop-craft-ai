@@ -90,11 +90,11 @@ export function AIInsightsDialog({ open, onOpenChange }: AIInsightsDialogProps) 
   const getImpactIcon = (impact: string) => {
     switch (impact) {
       case 'high':
-        return <TrendingUp className="h-5 w-5 text-red-500" />;
+        return <TrendingUp className="h-5 w-5 text-destructive" />;
       case 'medium':
-        return <Target className="h-5 w-5 text-amber-500" />;
+        return <Target className="h-5 w-5 text-warning" />;
       case 'low':
-        return <Lightbulb className="h-5 w-5 text-blue-500" />;
+        return <Lightbulb className="h-5 w-5 text-info" />;
       default:
         return <AlertCircle className="h-5 w-5 text-muted-foreground" />;
     }
@@ -104,10 +104,10 @@ export function AIInsightsDialog({ open, onOpenChange }: AIInsightsDialogProps) 
     switch (status) {
       case 'active':
       case 'new':
-        return <AlertCircle className="h-4 w-4 text-blue-500" />;
+        return <AlertCircle className="h-4 w-4 text-info" />;
       case 'implemented':
       case 'resolved':
-        return <CheckCircle2 className="h-4 w-4 text-green-500" />;
+        return <CheckCircle2 className="h-4 w-4 text-success" />;
       case 'dismissed':
         return <XCircle className="h-4 w-4 text-gray-500" />;
       default:

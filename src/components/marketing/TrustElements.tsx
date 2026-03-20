@@ -44,7 +44,7 @@ export function TestimonialCard({
               key={i} 
               className={cn(
                 "h-4 w-4",
-                i < rating ? "text-yellow-500 fill-yellow-500" : "text-muted"
+                i < rating ? "text-warning fill-yellow-500" : "text-muted"
               )} 
             />
           ))}

@@ -366,11 +366,11 @@ const CoreSyncDashboard: React.FC = () => {
                           </div>
                           <div>
                             <p className="text-muted-foreground">Success</p>
-                            <p className="font-semibold text-green-600">{operation.success_items}</p>
+                            <p className="font-semibold text-success">{operation.success_items}</p>
                           </div>
                           <div>
                             <p className="text-muted-foreground">Errors</p>
-                            <p className="font-semibold text-red-600">{operation.error_items}</p>
+                            <p className="font-semibold text-destructive">{operation.error_items}</p>
                           </div>
                         </div>
                         

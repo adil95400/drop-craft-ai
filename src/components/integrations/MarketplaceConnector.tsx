@@ -402,7 +402,7 @@ function ConnectionForm({ platform, onConnect, loading }) {
       {getCredentialFields().map((field) => (
         <div key={field.key} className="space-y-2">
           <Label htmlFor={field.key}>
-            {field.label} {field.required && <span className="text-red-500">*</span>}
+            {field.label} {field.required && <span className="text-destructive">*</span>}
           </Label>
           <Input
             id={field.key}

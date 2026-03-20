@@ -178,7 +178,7 @@ export function BulkActionsDialog({
             <div className="space-y-2 max-h-32 overflow-y-auto">
               {selectedItems.slice(0, 5).map((item, index) => (
                 <div key={index} className="flex items-center gap-2 text-sm">
-                  <CheckCircle className="w-4 h-4 text-green-500" />
+                  <CheckCircle className="w-4 h-4 text-success" />
                   <span>{item.name || item.title || item.id || `Élément ${index + 1}`}</span>
                 </div>
               ))}
@@ -239,7 +239,7 @@ export function BulkActionsDialog({
             {/* Avertissement pour actions destructives */}
             {currentAction?.requiresConfirmation && (
               <div className="flex items-start gap-3 p-3 bg-orange-50 border border-orange-200 rounded-lg">
-                <AlertTriangle className="w-5 h-5 text-orange-500 mt-0.5" />
+                <AlertTriangle className="w-5 h-5 text-warning mt-0.5" />
                 <div className="text-sm">
                   <p className="font-medium text-orange-800">Action irréversible</p>
                   <p className="text-orange-700">

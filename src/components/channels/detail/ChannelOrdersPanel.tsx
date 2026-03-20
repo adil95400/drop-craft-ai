@@ -64,7 +64,7 @@ export function ChannelOrdersPanel({ channelId, onRefresh }: ChannelOrdersPanelP
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <ShoppingCart className="h-4 w-4 text-emerald-500" />
+            <ShoppingCart className="h-4 w-4 text-success" />
             <div>
               <CardTitle className="text-sm font-semibold">Commandes récentes</CardTitle>
               <p className="text-[11px] text-muted-foreground">

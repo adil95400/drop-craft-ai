@@ -471,7 +471,7 @@ export default function ChannelConnectPage() {
                 className="space-y-3"
               >
                 <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
-                  <Sparkles className="h-4 w-4 text-amber-500" />
+                  <Sparkles className="h-4 w-4 text-warning" />
                   Plateformes populaires
                 </div>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">

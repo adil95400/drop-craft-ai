@@ -81,10 +81,10 @@ export function AdvancedSupplierManager() {
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'active': return <CheckCircle className="h-4 w-4 text-green-500" />
-      case 'warning': return <AlertCircle className="h-4 w-4 text-orange-500" />
-      case 'pending': return <Clock className="h-4 w-4 text-blue-500" />
-      case 'inactive': return <AlertCircle className="h-4 w-4 text-red-500" />
+      case 'active': return <CheckCircle className="h-4 w-4 text-success" />
+      case 'warning': return <AlertCircle className="h-4 w-4 text-warning" />
+      case 'pending': return <Clock className="h-4 w-4 text-info" />
+      case 'inactive': return <AlertCircle className="h-4 w-4 text-destructive" />
       default: return <Clock className="h-4 w-4 text-gray-500" />
     }
   }
@@ -100,18 +100,18 @@ export function AdvancedSupplierManager() {
   }
 
   const getScoreColor = (score: number) => {
-    if (score >= 95) return 'text-green-600'
-    if (score >= 85) return 'text-blue-600'
-    if (score >= 75) return 'text-orange-600'
-    return 'text-red-600'
+    if (score >= 95) return 'text-success'
+    if (score >= 85) return 'text-info'
+    if (score >= 75) return 'text-warning'
+    return 'text-destructive'
   }
 
   // Calculer les métriques de performance
   const performanceMetrics = [
-    { label: 'Fournisseurs Actifs', value: suppliers.filter(s => s.status === 'verified').length, trend: '+12%', icon: Users, color: 'text-blue-500' },
-    { label: 'Total Fournisseurs', value: suppliers.length, trend: '+8%', icon: Package, color: 'text-green-500' },
-    { label: 'Note moyenne', value: (suppliers.reduce((sum, s) => sum + (s.rating || 0), 0) / (suppliers.length || 1)).toFixed(1), trend: '+3%', icon: Star, color: 'text-yellow-500' },
-    { label: 'Pays', value: new Set(suppliers.map(s => s.country).filter(Boolean)).size, trend: '+15%', icon: Globe, color: 'text-orange-500' }
+    { label: 'Fournisseurs Actifs', value: suppliers.filter(s => s.status === 'verified').length, trend: '+12%', icon: Users, color: 'text-info' },
+    { label: 'Total Fournisseurs', value: suppliers.length, trend: '+8%', icon: Package, color: 'text-success' },
+    { label: 'Note moyenne', value: (suppliers.reduce((sum, s) => sum + (s.rating || 0), 0) / (suppliers.length || 1)).toFixed(1), trend: '+3%', icon: Star, color: 'text-warning' },
+    { label: 'Pays', value: new Set(suppliers.map(s => s.country).filter(Boolean)).size, trend: '+15%', icon: Globe, color: 'text-warning' }
   ]
 
   const filteredSuppliers = suppliers
@@ -178,7 +178,7 @@ export function AdvancedSupplierManager() {
                   <div>
                     <p className="text-sm font-medium text-muted-foreground">{metric.label}</p>
                     <p className="text-2xl font-bold">{metric.value}</p>
-                    <p className={`text-xs ${metric.trend.startsWith('+') ? 'text-green-600' : 'text-red-600'}`}>
+                    <p className={`text-xs ${metric.trend.startsWith('+') ? 'text-success' : 'text-destructive'}`}>
                       {metric.trend} vs mois dernier
                     </p>
                   </div>
@@ -284,7 +284,7 @@ export function AdvancedSupplierManager() {
                   {/* Rating et métriques principales */}
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-1">
-                      <Star className="h-4 w-4 text-yellow-500 fill-current" />
+                      <Star className="h-4 w-4 text-warning fill-current" />
                       <span className="font-bold">{supplier.rating || 'N/A'}</span>
                     </div>
                     <div className="text-right">
@@ -300,7 +300,7 @@ export function AdvancedSupplierManager() {
                       <span className="font-medium">{supplier.api_endpoint ? 'Configuré' : 'Non configuré'}</span>
                     </div>
                     {supplier.api_endpoint && (
-                      <div className="flex items-center gap-1 text-green-600">
+                      <div className="flex items-center gap-1 text-success">
                         <CheckCircle className="h-3 w-3" />
                         <span className="text-xs">API configurée</span>
                       </div>
@@ -351,7 +351,7 @@ export function AdvancedSupplierManager() {
                                 handleDisconnect(supplier.id, supplier.name)
                               }}
                               disabled={isDisconnecting}
-                              className="text-red-600"
+                              className="text-destructive"
                             >
                               <AlertCircle className="h-4 w-4 mr-2" />
                               Déconnecter
@@ -422,7 +422,7 @@ export function AdvancedSupplierManager() {
               <CardContent>
                 <div className="space-y-3">
                   <div className="flex items-start gap-3 p-3 border rounded-lg border-orange-200 bg-orange-50">
-                    <AlertCircle className="h-4 w-4 text-orange-500 mt-0.5" />
+                    <AlertCircle className="h-4 w-4 text-warning mt-0.5" />
                     <div className="flex-1">
                       <p className="font-medium text-sm">HomeDecor Masters</p>
                       <p className="text-xs text-muted-foreground">Pas de sync depuis 2h - vérifier la connexion API</p>
@@ -437,7 +437,7 @@ export function AdvancedSupplierManager() {
                   </div>
 
                   <div className="flex items-start gap-3 p-3 border rounded-lg border-blue-200 bg-blue-50">
-                    <Target className="h-4 w-4 text-blue-500 mt-0.5" />
+                    <Target className="h-4 w-4 text-info mt-0.5" />
                     <div className="flex-1">
                       <p className="font-medium text-sm">Opportunité de négociation</p>
                       <p className="text-xs text-muted-foreground">TechGlobal - volumes élevés, renégocier les tarifs</p>
@@ -452,7 +452,7 @@ export function AdvancedSupplierManager() {
                   </div>
 
                   <div className="flex items-start gap-3 p-3 border rounded-lg border-green-200 bg-green-50">
-                    <CheckCircle className="h-4 w-4 text-green-500 mt-0.5" />
+                    <CheckCircle className="h-4 w-4 text-success mt-0.5" />
                     <div className="flex-1">
                       <p className="font-medium text-sm">Nouveau certification</p>
                       <p className="text-xs text-muted-foreground">SportMax a obtenu une nouvelle certification ISO</p>
@@ -507,19 +507,19 @@ export function AdvancedSupplierManager() {
                 <div className="space-y-3">
                   <div className="flex justify-between">
                     <span className="text-sm">Nouveaux fournisseurs</span>
-                    <span className="font-bold text-green-600">+3</span>
+                    <span className="font-bold text-success">+3</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-sm">Commandes traitées</span>
-                    <span className="font-bold text-green-600">+18%</span>
+                    <span className="font-bold text-success">+18%</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-sm">Délais moyens</span>
-                    <span className="font-bold text-green-600">-15%</span>
+                    <span className="font-bold text-success">-15%</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-sm">Coûts logistiques</span>
-                    <span className="font-bold text-red-600">+3%</span>
+                    <span className="font-bold text-destructive">+3%</span>
                   </div>
                 </div>
               </CardContent>
@@ -532,7 +532,7 @@ export function AdvancedSupplierManager() {
               <CardContent>
                 <div className="space-y-3">
                   <div className="text-center">
-                    <p className="text-2xl font-bold text-green-600">€186K</p>
+                    <p className="text-2xl font-bold text-success">€186K</p>
                     <p className="text-sm text-muted-foreground">Économies ce mois</p>
                   </div>
                   <div className="text-center">

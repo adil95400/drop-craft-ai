@@ -133,7 +133,7 @@ export const ShopifyIntegration: React.FC<ShopifyIntegrationProps> = ({
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
-            <Store className="w-5 h-5 text-green-600" />
+            <Store className="w-5 h-5 text-success" />
           </div>
           <div>
             <h3 className="text-lg font-semibold">Shopify Integration</h3>
@@ -174,7 +174,7 @@ export const ShopifyIntegration: React.FC<ShopifyIntegrationProps> = ({
                   <p className="text-sm text-muted-foreground">Produits</p>
                   <p className="text-2xl font-bold">{stats.products}</p>
                 </div>
-                <ShoppingBag className="w-8 h-8 text-blue-500" />
+                <ShoppingBag className="w-8 h-8 text-info" />
               </div>
             </CardContent>
           </Card>
@@ -185,7 +185,7 @@ export const ShopifyIntegration: React.FC<ShopifyIntegrationProps> = ({
                   <p className="text-sm text-muted-foreground">Commandes</p>
                   <p className="text-2xl font-bold">{stats.orders}</p>
                 </div>
-                <Package className="w-8 h-8 text-green-500" />
+                <Package className="w-8 h-8 text-success" />
               </div>
             </CardContent>
           </Card>
@@ -209,7 +209,7 @@ export const ShopifyIntegration: React.FC<ShopifyIntegrationProps> = ({
                     {stats.lastSync ? new Date(stats.lastSync).toLocaleDateString() : 'Jamais'}
                   </p>
                 </div>
-                <RefreshCw className="w-8 h-8 text-orange-500" />
+                <RefreshCw className="w-8 h-8 text-warning" />
               </div>
             </CardContent>
           </Card>
@@ -422,7 +422,7 @@ export const ShopifyIntegration: React.FC<ShopifyIntegrationProps> = ({
             <CardContent className="space-y-4">
               <div className="bg-blue-50 p-4 rounded-lg">
                 <div className="flex items-start gap-2">
-                  <AlertCircle className="w-5 h-5 text-blue-500 mt-0.5" />
+                  <AlertCircle className="w-5 h-5 text-info mt-0.5" />
                   <div>
                     <h4 className="font-medium text-blue-900">URL de Webhook</h4>
                     <p className="text-sm text-blue-700 mb-2">

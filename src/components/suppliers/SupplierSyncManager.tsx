@@ -98,7 +98,7 @@ export function SupplierSyncManager({ supplierId, supplierName }: SupplierSyncMa
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'completed':
-        return <Badge className="bg-green-100 text-green-800"><CheckCircle className="h-3 w-3 mr-1" />Terminé</Badge>;
+        return <Badge className="bg-green-100 text-success"><CheckCircle className="h-3 w-3 mr-1" />Terminé</Badge>;
       case 'running':
         return <Badge className="bg-blue-100 text-blue-800"><Loader2 className="h-3 w-3 mr-1 animate-spin" />En cours</Badge>;
       case 'pending':

@@ -27,7 +27,7 @@ import { useIntegrationsUnified } from '@/hooks/unified/useIntegrationsUnified'
 const platformConfig: Record<string, { icon: React.ReactNode; color: string; label: string }> = {
   shopify: { 
     icon: <ShoppingBag className="h-4 w-4" />, 
-    color: 'text-green-600',
+    color: 'text-success',
     label: 'Shopify'
   },
   woocommerce: { 
@@ -42,12 +42,12 @@ const platformConfig: Record<string, { icon: React.ReactNode; color: string; lab
   },
   magento: { 
     icon: <Store className="h-4 w-4" />, 
-    color: 'text-orange-600',
+    color: 'text-warning',
     label: 'Magento'
   },
   default: { 
     icon: <Globe className="h-4 w-4" />, 
-    color: 'text-blue-600',
+    color: 'text-info',
     label: 'Boutique'
   }
 }

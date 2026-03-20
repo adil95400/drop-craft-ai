@@ -257,7 +257,7 @@ export function EnrichmentPreviewPanel({
                       <div className="p-3 bg-muted/50 rounded-lg flex-1">
                         <p className="text-xs text-muted-foreground mb-1">Note</p>
                         <div className="flex items-center gap-1">
-                          <Star className="h-4 w-4 text-yellow-500 fill-yellow-500" />
+                          <Star className="h-4 w-4 text-warning fill-yellow-500" />
                           <span className="font-bold">{enrichment.raw_rating}</span>
                           <span className="text-muted-foreground text-sm">
                             ({enrichment.raw_reviews_count} avis)
@@ -295,7 +295,7 @@ export function EnrichmentPreviewPanel({
                           onClick={() => handleCopy(aiOutput.optimized_title!, 'title')}
                         >
                           {copiedField === 'title' ? (
-                            <Check className="h-3 w-3 text-green-500" />
+                            <Check className="h-3 w-3 text-success" />
                           ) : (
                             <Copy className="h-3 w-3" />
                           )}
@@ -337,7 +337,7 @@ export function EnrichmentPreviewPanel({
                       onClick={() => handleCopy(aiOutput.optimized_description!, 'description')}
                     >
                       {copiedField === 'description' ? (
-                        <Check className="h-4 w-4 mr-2 text-green-500" />
+                        <Check className="h-4 w-4 mr-2 text-success" />
                       ) : (
                         <Copy className="h-4 w-4 mr-2" />
                       )}
@@ -357,7 +357,7 @@ export function EnrichmentPreviewPanel({
                   <ul className="space-y-2">
                     {aiOutput.bullets.map((bullet, index) => (
                       <li key={index} className="flex items-start gap-2 text-sm">
-                        <CheckCircle className="h-4 w-4 text-green-500 mt-0.5 shrink-0" />
+                        <CheckCircle className="h-4 w-4 text-success mt-0.5 shrink-0" />
                         <span>{bullet}</span>
                       </li>
                     ))}

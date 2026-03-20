@@ -251,9 +251,9 @@ const SupplierConfigDialog = ({ supplier, isOpen, onClose }: SupplierConfigDialo
 
         {/* Progress Indicator */}
         <div className="flex items-center justify-between mb-6">
-          <div className={`flex items-center gap-2 ${currentStep === 'auth' ? 'text-primary' : authData.isConnected ? 'text-green-600' : 'text-muted-foreground'}`}>
+          <div className={`flex items-center gap-2 ${currentStep === 'auth' ? 'text-primary' : authData.isConnected ? 'text-success' : 'text-muted-foreground'}`}>
             <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-              authData.isConnected ? 'bg-green-100 text-green-600' : 
+              authData.isConnected ? 'bg-green-100 text-success' : 
               currentStep === 'auth' ? 'bg-primary text-primary-foreground' : 'bg-muted'
             }`}>
               {authData.isConnected ? <CheckCircle className="h-4 w-4" /> : <Lock className="h-4 w-4" />}
@@ -294,11 +294,11 @@ const SupplierConfigDialog = ({ supplier, isOpen, onClose }: SupplierConfigDialo
 
             {!supplier.requiresAuth ? (
               <div className="p-4 bg-green-50 dark:bg-green-950/20 rounded-lg">
-                <div className="flex items-center gap-2 text-green-800 dark:text-green-200">
+                <div className="flex items-center gap-2 text-success dark:text-green-200">
                   <CheckCircle className="h-4 w-4" />
                   <span className="text-sm font-medium">Aucune authentification requise</span>
                 </div>
-                <p className="text-sm text-green-700 dark:text-green-300 mt-1">
+                <p className="text-sm text-success dark:text-green-300 mt-1">
                   Ce fournisseur ne nécessite pas d'authentification spéciale.
                 </p>
                 <Button className="mt-3" onClick={() => setCurrentStep('methods')}>
@@ -323,7 +323,7 @@ const SupplierConfigDialog = ({ supplier, isOpen, onClose }: SupplierConfigDialo
                       {isConnecting ? '🔄 Connexion OAuth...' : `🔐 Se connecter à ${supplier.displayName}`}
                     </Button>
                   ) : (
-                    <div className="flex items-center gap-2 text-green-600">
+                    <div className="flex items-center gap-2 text-success">
                       <CheckCircle className="h-4 w-4" />
                       <span className="text-sm font-medium">Connecté avec succès</span>
                     </div>
@@ -574,7 +574,7 @@ export const EnhancedSupplierSelector = () => {
       {searchTerm === '' && selectedCategory === 'all' && (
         <div className="space-y-4">
           <h3 className="text-lg font-semibold flex items-center gap-2">
-            <Star className="h-5 w-5 text-yellow-500" />
+            <Star className="h-5 w-5 text-warning" />
             Fournisseurs populaires
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
@@ -589,7 +589,7 @@ export const EnhancedSupplierSelector = () => {
                         <CardDescription className="text-xs">{supplier.description}</CardDescription>
                       </div>
                     </div>
-                    {supplier.isPopular && <Crown className="h-4 w-4 text-yellow-500" />}
+                    {supplier.isPopular && <Crown className="h-4 w-4 text-warning" />}
                   </div>
                 </CardHeader>
                 <CardContent className="pt-0">
@@ -644,8 +644,8 @@ export const EnhancedSupplierSelector = () => {
                     </div>
                   </div>
                   <div className="flex flex-col gap-1">
-                    {supplier.isPopular && <Crown className="h-4 w-4 text-yellow-500" />}
-                    {supplier.isNew && <Sparkles className="h-4 w-4 text-green-500" />}
+                    {supplier.isPopular && <Crown className="h-4 w-4 text-warning" />}
+                    {supplier.isNew && <Sparkles className="h-4 w-4 text-success" />}
                   </div>
                 </div>
               </CardHeader>

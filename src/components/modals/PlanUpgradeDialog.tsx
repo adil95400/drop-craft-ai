@@ -138,7 +138,7 @@ export const PlanUpgradeDialog = ({
       <DialogContent className="max-w-5xl max-h-[90vh] overflow-hidden">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Crown className="h-6 w-6 text-yellow-600" />
+            <Crown className="h-6 w-6 text-warning" />
             Upgrade Your Plan
           </DialogTitle>
           <DialogDescription>
@@ -169,7 +169,7 @@ export const PlanUpgradeDialog = ({
               {planFeatures.map((feature, index) => (
                 <div key={index} className="flex items-center gap-2">
                   <Check className={`h-4 w-4 ${
-                    feature.included.standard ? 'text-green-600' : 'text-gray-300'
+                    feature.included.standard ? 'text-success' : 'text-gray-300'
                   }`} />
                   <span className={`text-sm ${
                     feature.included.standard ? 'text-foreground' : 'text-muted-foreground'
@@ -194,7 +194,7 @@ export const PlanUpgradeDialog = ({
             <CardHeader>
               <div className="flex items-center justify-between">
                 <CardTitle className="flex items-center gap-2">
-                  <Zap className="h-5 w-5 text-blue-600" />
+                  <Zap className="h-5 w-5 text-info" />
                   Pro
                 </CardTitle>
                 {currentPlan === 'pro' && (
@@ -208,7 +208,7 @@ export const PlanUpgradeDialog = ({
               {planFeatures.map((feature, index) => (
                 <div key={index} className="flex items-center gap-2">
                   <Check className={`h-4 w-4 ${
-                    feature.included.pro ? 'text-green-600' : 'text-gray-300'
+                    feature.included.pro ? 'text-success' : 'text-gray-300'
                   }`} />
                   <span className={`text-sm ${
                     feature.included.pro ? 'text-foreground' : 'text-muted-foreground'
@@ -256,7 +256,7 @@ export const PlanUpgradeDialog = ({
               {planFeatures.map((feature, index) => (
                 <div key={index} className="flex items-center gap-2">
                   <Check className={`h-4 w-4 ${
-                    feature.included.ultra_pro ? 'text-green-600' : 'text-gray-300'
+                    feature.included.ultra_pro ? 'text-success' : 'text-gray-300'
                   }`} />
                   <span className={`text-sm ${
                     feature.included.ultra_pro ? 'text-foreground' : 'text-muted-foreground'

@@ -48,7 +48,7 @@ export const IntegrationsTable = () => {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'connected':
-        return <Badge className="bg-green-100 text-green-800 border-green-200"><CheckCircle className="w-3 h-3 mr-1" />Connecté</Badge>
+        return <Badge className="bg-green-100 text-success border-green-200"><CheckCircle className="w-3 h-3 mr-1" />Connecté</Badge>
       case 'error':
         return <Badge variant="destructive"><XCircle className="w-3 h-3 mr-1" />Erreur</Badge>
       case 'disconnected':
@@ -150,9 +150,9 @@ export const IntegrationsTable = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-muted-foreground">Connectées</p>
-                <p className="text-2xl font-bold text-green-600">{stats.connected}</p>
+                <p className="text-2xl font-bold text-success">{stats.connected}</p>
               </div>
-              <CheckCircle className="w-8 h-8 text-green-500" />
+              <CheckCircle className="w-8 h-8 text-success" />
             </div>
           </CardContent>
         </Card>
@@ -162,9 +162,9 @@ export const IntegrationsTable = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-muted-foreground">Actives</p>
-                <p className="text-2xl font-bold text-blue-600">{stats.active}</p>
+                <p className="text-2xl font-bold text-info">{stats.active}</p>
               </div>
-              <RefreshCw className="w-8 h-8 text-blue-500" />
+              <RefreshCw className="w-8 h-8 text-info" />
             </div>
           </CardContent>
         </Card>
@@ -174,9 +174,9 @@ export const IntegrationsTable = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-muted-foreground">Déconnectées</p>
-                <p className="text-2xl font-bold text-orange-600">{stats.disconnected}</p>
+                <p className="text-2xl font-bold text-warning">{stats.disconnected}</p>
               </div>
-              <AlertTriangle className="w-8 h-8 text-orange-500" />
+              <AlertTriangle className="w-8 h-8 text-warning" />
             </div>
           </CardContent>
         </Card>
@@ -256,9 +256,9 @@ export const IntegrationsTable = () => {
                       <TableCell>{getStatusBadge(integration.connection_status)}</TableCell>
                       <TableCell>
                         {integration.is_active ? (
-                          <CheckCircle className="w-4 h-4 text-green-500" />
+                          <CheckCircle className="w-4 h-4 text-success" />
                         ) : (
-                          <XCircle className="w-4 h-4 text-red-500" />
+                          <XCircle className="w-4 h-4 text-destructive" />
                         )}
                       </TableCell>
                       <TableCell>

@@ -38,7 +38,7 @@ export function SalesPipeline() {
                 </div>
                 <div className="text-sm text-muted-foreground">Valeur totale</div>
               </div>
-              <DollarSign className="w-8 h-8 text-blue-500" />
+              <DollarSign className="w-8 h-8 text-info" />
             </div>
           </CardContent>
         </Card>
@@ -74,7 +74,7 @@ export function SalesPipeline() {
                 </div>
                 <div className="text-sm text-muted-foreground">Taille moy. deal</div>
               </div>
-              <TrendingUp className="w-8 h-8 text-green-500" />
+              <TrendingUp className="w-8 h-8 text-success" />
             </div>
           </CardContent>
         </Card>

@@ -25,13 +25,13 @@ export function StockAlertsPanel() {
   const getSeverityIcon = (severity: string) => {
     switch (severity) {
       case 'critical':
-        return <AlertTriangle className="h-5 w-5 text-red-500" />;
+        return <AlertTriangle className="h-5 w-5 text-destructive" />;
       case 'high':
-        return <AlertCircle className="h-5 w-5 text-orange-500" />;
+        return <AlertCircle className="h-5 w-5 text-warning" />;
       case 'medium':
-        return <AlertCircle className="h-5 w-5 text-yellow-500" />;
+        return <AlertCircle className="h-5 w-5 text-warning" />;
       default:
-        return <Info className="h-5 w-5 text-blue-500" />;
+        return <Info className="h-5 w-5 text-info" />;
     }
   };
 
@@ -74,7 +74,7 @@ export function StockAlertsPanel() {
 
       {alerts.length === 0 ? (
         <div className="text-center py-12">
-          <CheckCircle2 className="h-12 w-12 text-green-500 mx-auto mb-4" />
+          <CheckCircle2 className="h-12 w-12 text-success mx-auto mb-4" />
           <p className="text-muted-foreground">Aucune alerte active</p>
           <p className="text-sm text-muted-foreground">
             Tout va bien avec votre stock !

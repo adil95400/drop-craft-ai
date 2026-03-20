@@ -128,7 +128,7 @@ export default function ShopifyImportHub() {
                           )}
                           {job.status === 'completed' && (
                             <div className="flex items-center gap-4 text-sm">
-                              <span className="flex items-center gap-1 text-green-600"><CheckCircle className="w-4 h-4" />{job.successful_imports} réussis</span>
+                              <span className="flex items-center gap-1 text-success"><CheckCircle className="w-4 h-4" />{job.successful_imports} réussis</span>
                               {job.failed_imports > 0 && <span className="flex items-center gap-1 text-destructive"><XCircle className="w-4 h-4" />{job.failed_imports} échecs</span>}
                             </div>
                           )}
@@ -155,7 +155,7 @@ export default function ShopifyImportHub() {
                     importHistory.map((entry: any) => (
                       <div key={entry.id} className="flex items-center justify-between p-3 hover:bg-muted/50 rounded-lg">
                         <div className="flex items-center gap-3">
-                          {entry.status === 'success' ? <CheckCircle className="w-5 h-5 text-green-600" /> : entry.status === 'failed' ? <XCircle className="w-5 h-5 text-destructive" /> : <Clock className="w-5 h-5 text-muted-foreground" />}
+                          {entry.status === 'success' ? <CheckCircle className="w-5 h-5 text-success" /> : entry.status === 'failed' ? <XCircle className="w-5 h-5 text-destructive" /> : <Clock className="w-5 h-5 text-muted-foreground" />}
                           <div>
                             <p className="font-medium">{entry.supplier_products?.name || 'Produit inconnu'}</p>
                             <p className="text-xs text-muted-foreground">{new Date(entry.created_at).toLocaleString()}</p>

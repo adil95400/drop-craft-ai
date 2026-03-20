@@ -235,7 +235,7 @@ const AdminPanelContent = () => {
                     {loading ? '...' : dashboardStats.totalUsers.toLocaleString()}
                   </div>
                   <p className="text-xs text-muted-foreground">
-                    <span className="text-green-600">+{dashboardStats.growth.users}%</span> ce mois
+                    <span className="text-success">+{dashboardStats.growth.users}%</span> ce mois
                     • {dashboardStats.activeUsers} actifs
                   </p>
                 </CardContent>
@@ -251,7 +251,7 @@ const AdminPanelContent = () => {
                     {loading ? '...' : `€${(dashboardStats.totalRevenue / 100).toLocaleString()}`}
                   </div>
                   <p className="text-xs text-muted-foreground">
-                    <span className="text-green-600">+{dashboardStats.growth.revenue}%</span> ce mois
+                    <span className="text-success">+{dashboardStats.growth.revenue}%</span> ce mois
                   </p>
                 </CardContent>
               </Card>
@@ -266,7 +266,7 @@ const AdminPanelContent = () => {
                     {loading ? '...' : dashboardStats.totalOrders.toLocaleString()}
                   </div>
                   <p className="text-xs text-muted-foreground">
-                    <span className="text-green-600">+{dashboardStats.growth.orders}%</span> ce mois
+                    <span className="text-success">+{dashboardStats.growth.orders}%</span> ce mois
                   </p>
                 </CardContent>
               </Card>
@@ -309,7 +309,7 @@ const AdminPanelContent = () => {
                         <div className="text-right">
                           <div className={`text-sm font-medium ${
                             quota.percentage > 80 ? 'text-destructive' : 
-                            quota.percentage > 60 ? 'text-yellow-600' : 'text-green-600'
+                            quota.percentage > 60 ? 'text-warning' : 'text-success'
                           }`}>
                             {quota.isUnlimited ? '∞' : `${Math.round(quota.percentage)}%`}
                           </div>

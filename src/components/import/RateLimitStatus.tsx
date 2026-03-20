@@ -42,12 +42,12 @@ export const RateLimitStatus = () => {
             Limite d'imports
           </CardTitle>
           {isNearLimit ? (
-            <Badge variant="outline" className="text-yellow-600">
+            <Badge variant="outline" className="text-warning">
               <AlertCircle className="h-3 w-3 mr-1" />
               Proche de la limite
             </Badge>
           ) : (
-            <Badge variant="outline" className="text-green-600">
+            <Badge variant="outline" className="text-success">
               <CheckCircle className="h-3 w-3 mr-1" />
               OK
             </Badge>
@@ -65,7 +65,7 @@ export const RateLimitStatus = () => {
         </div>
 
         {isNearLimit && (
-          <div className="text-xs text-yellow-600 bg-yellow-50 dark:bg-yellow-950/20 p-2 rounded">
+          <div className="text-xs text-warning bg-yellow-50 dark:bg-yellow-950/20 p-2 rounded">
             Vous approchez de votre limite d'imports horaire. 
             Attendez la réinitialisation ou contactez le support pour augmenter votre limite.
           </div>

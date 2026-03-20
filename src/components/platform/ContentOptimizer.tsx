@@ -239,7 +239,7 @@ export function ContentOptimizer() {
                 {optimizationResult.suggestions?.map((suggestion: any, idx: number) => (
                   <div key={idx} className="p-3 border rounded-lg">
                     <div className="flex items-start gap-2">
-                      <TrendingUp className="w-4 h-4 mt-1 text-blue-500" />
+                      <TrendingUp className="w-4 h-4 mt-1 text-info" />
                       <div>
                         <p className="font-medium capitalize">{suggestion.type}</p>
                         <p className="text-sm text-muted-foreground">{suggestion.message}</p>

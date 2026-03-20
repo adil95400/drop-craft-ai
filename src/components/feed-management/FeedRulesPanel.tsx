@@ -174,7 +174,7 @@ export function FeedRulesPanel({
       case 'map':
         return <Badge variant="outline" className="bg-purple-500/10 text-purple-700 border-purple-500/30">Mapping</Badge>
       case 'combine':
-        return <Badge variant="outline" className="bg-green-500/10 text-green-700 border-green-500/30">Combinaison</Badge>
+        return <Badge variant="outline" className="bg-green-500/10 text-success border-green-500/30">Combinaison</Badge>
       case 'split':
         return <Badge variant="outline" className="bg-yellow-500/10 text-yellow-700 border-yellow-500/30">Division</Badge>
       default:
@@ -296,7 +296,7 @@ export function FeedRulesPanel({
                   {/* Actions */}
                   <div className="space-y-2">
                     <h5 className="text-sm font-medium flex items-center gap-2">
-                      <span className="px-2 py-0.5 bg-green-500/10 text-green-700 rounded text-xs">THEN</span>
+                      <span className="px-2 py-0.5 bg-green-500/10 text-success rounded text-xs">THEN</span>
                       Actions
                     </h5>
                     <div className="space-y-2 pl-4">

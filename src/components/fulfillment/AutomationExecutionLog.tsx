@@ -29,9 +29,9 @@ interface ExecutionEntry {
 }
 
 const statusConfig = {
-  success: { label: 'Succès', icon: CheckCircle, color: 'text-emerald-500', bg: 'bg-emerald-500/10' },
+  success: { label: 'Succès', icon: CheckCircle, color: 'text-success', bg: 'bg-emerald-500/10' },
   failed: { label: 'Échoué', icon: XCircle, color: 'text-destructive', bg: 'bg-destructive/10' },
-  skipped: { label: 'Ignoré', icon: AlertTriangle, color: 'text-amber-500', bg: 'bg-amber-500/10' },
+  skipped: { label: 'Ignoré', icon: AlertTriangle, color: 'text-warning', bg: 'bg-amber-500/10' },
   pending: { label: 'En attente', icon: Clock, color: 'text-muted-foreground', bg: 'bg-muted' },
 };
 
@@ -87,7 +87,7 @@ export function AutomationExecutionLog() {
               <CardTitle className="text-base">Journal d'exécution</CardTitle>
               <CardDescription>
                 {executions.length} exécutions •{' '}
-                <span className="text-emerald-500">{successCount} succès</span>
+                <span className="text-success">{successCount} succès</span>
                 {failedCount > 0 && (
                   <span className="text-destructive"> • {failedCount} échecs</span>
                 )}

@@ -133,9 +133,9 @@ function SortableNode({
           </div>
           <div className={cn(
             'h-9 w-9 rounded-lg flex items-center justify-center shrink-0',
-            node.type === 'trigger' ? 'bg-blue-100 text-blue-600 dark:bg-blue-900 dark:text-blue-300' :
-            node.type === 'condition' ? 'bg-amber-100 text-amber-600 dark:bg-amber-900 dark:text-amber-300' :
-            'bg-emerald-100 text-emerald-600 dark:bg-emerald-900 dark:text-emerald-300'
+            node.type === 'trigger' ? 'bg-blue-100 text-info dark:bg-blue-900 dark:text-blue-300' :
+            node.type === 'condition' ? 'bg-amber-100 text-warning dark:bg-amber-900 dark:text-amber-300' :
+            'bg-emerald-100 text-success dark:bg-emerald-900 dark:text-emerald-300'
           )}>
             <Icon className="h-5 w-5" />
           </div>
@@ -230,7 +230,7 @@ export function VisualWorkflowCanvas({ nodes, onNodesChange, onNodeSelect, selec
                 <div className="space-y-6 pr-4">
                   {/* Triggers */}
                   <div>
-                    <h4 className="text-sm font-semibold text-blue-600 mb-2 flex items-center gap-2">
+                    <h4 className="text-sm font-semibold text-info mb-2 flex items-center gap-2">
                       <Zap className="h-4 w-4" /> Déclencheurs
                     </h4>
                     <div className="space-y-1">
@@ -244,7 +244,7 @@ export function VisualWorkflowCanvas({ nodes, onNodesChange, onNodeSelect, selec
                             onClick={() => addNode(t, 'trigger')}
                             disabled={hasTrigger}
                           >
-                            <I className="h-4 w-4 mr-3 text-blue-500 shrink-0" />
+                            <I className="h-4 w-4 mr-3 text-info shrink-0" />
                             <div className="text-left">
                               <div className="text-sm font-medium">{t.name}</div>
                               <div className="text-xs text-muted-foreground">{t.description}</div>
@@ -257,7 +257,7 @@ export function VisualWorkflowCanvas({ nodes, onNodesChange, onNodeSelect, selec
                   <Separator />
                   {/* Conditions */}
                   <div>
-                    <h4 className="text-sm font-semibold text-amber-600 mb-2 flex items-center gap-2">
+                    <h4 className="text-sm font-semibold text-warning mb-2 flex items-center gap-2">
                       <GitBranch className="h-4 w-4" /> Conditions
                     </h4>
                     <div className="space-y-1">
@@ -265,7 +265,7 @@ export function VisualWorkflowCanvas({ nodes, onNodesChange, onNodeSelect, selec
                         const I = ICON_MAP[t.icon] || GitBranch;
                         return (
                           <Button key={t.id} variant="ghost" className="w-full justify-start h-auto py-2 px-3" onClick={() => addNode(t, 'condition')}>
-                            <I className="h-4 w-4 mr-3 text-amber-500 shrink-0" />
+                            <I className="h-4 w-4 mr-3 text-warning shrink-0" />
                             <div className="text-left">
                               <div className="text-sm font-medium">{t.name}</div>
                               <div className="text-xs text-muted-foreground">{t.description}</div>
@@ -278,7 +278,7 @@ export function VisualWorkflowCanvas({ nodes, onNodesChange, onNodeSelect, selec
                   <Separator />
                   {/* Actions */}
                   <div>
-                    <h4 className="text-sm font-semibold text-emerald-600 mb-2 flex items-center gap-2">
+                    <h4 className="text-sm font-semibold text-success mb-2 flex items-center gap-2">
                       <Play className="h-4 w-4" /> Actions
                     </h4>
                     <div className="space-y-1">
@@ -286,7 +286,7 @@ export function VisualWorkflowCanvas({ nodes, onNodesChange, onNodeSelect, selec
                         const I = ICON_MAP[t.icon] || Zap;
                         return (
                           <Button key={t.id} variant="ghost" className="w-full justify-start h-auto py-2 px-3" onClick={() => addNode(t, 'action')}>
-                            <I className="h-4 w-4 mr-3 text-emerald-500 shrink-0" />
+                            <I className="h-4 w-4 mr-3 text-success shrink-0" />
                             <div className="text-left">
                               <div className="text-sm font-medium">{t.name}</div>
                               <div className="text-xs text-muted-foreground">{t.description}</div>

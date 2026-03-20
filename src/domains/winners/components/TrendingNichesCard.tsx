@@ -75,16 +75,16 @@ export const TrendingNichesCard = ({
 
   const getGrowthColor = (growth: string) => {
     const percentage = parseInt(growth.replace('+', '').replace('%', ''))
-    if (percentage >= 100) return "text-green-600"
-    if (percentage >= 50) return "text-orange-500"
-    return "text-blue-500"
+    if (percentage >= 100) return "text-success"
+    if (percentage >= 50) return "text-warning"
+    return "text-info"
   }
 
   const getCompetitionColor = (competition: string) => {
     switch (competition) {
-      case "Faible": return "text-green-600 bg-green-50"
-      case "Moyenne": return "text-orange-600 bg-orange-50"
-      case "Élevée": return "text-red-600 bg-red-50"
+      case "Faible": return "text-success bg-green-50"
+      case "Moyenne": return "text-warning bg-orange-50"
+      case "Élevée": return "text-destructive bg-red-50"
       default: return "text-gray-600 bg-gray-50"
     }
   }

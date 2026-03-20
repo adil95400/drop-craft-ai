@@ -204,7 +204,7 @@ export function ContentVersions({
                       <div className="space-y-2">
                         <div className="flex items-center gap-2">
                           <Badge variant="outline">Actuelle</Badge>
-                          <span className="text-xs text-green-600">
+                          <span className="text-xs text-success">
                             +{getDiff(selectedVersion.content, currentContent).additions} mots
                           </span>
                         </div>
@@ -217,7 +217,7 @@ export function ContentVersions({
                       <div className="space-y-2">
                         <div className="flex items-center gap-2">
                           <Badge variant="secondary">v{selectedVersion.version_number}</Badge>
-                          <span className="text-xs text-red-600">
+                          <span className="text-xs text-destructive">
                             -{getDiff(selectedVersion.content, currentContent).deletions} mots
                           </span>
                         </div>

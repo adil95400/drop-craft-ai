@@ -214,7 +214,7 @@ export function ConfigAutomationDialog({ open, onOpenChange, automationId }: Con
                     <div className="space-y-2">
                       {config.actions.map((action, index) => (
                         <div key={index} className="flex items-center gap-2 p-3 border rounded-lg">
-                          <Check className="h-4 w-4 text-green-500" />
+                          <Check className="h-4 w-4 text-success" />
                           <div className="flex-1">
                             <Badge variant="secondary">{action.type}</Badge>
                             <p className="text-xs text-muted-foreground mt-1">

@@ -430,7 +430,7 @@ export function SupplierImportPanel() {
             </div>
             <div className="flex items-center justify-between">
               <span className="text-sm text-muted-foreground">Taux de succès</span>
-              <span className="font-bold text-green-500">
+              <span className="font-bold text-success">
                 {importHistory.length > 0
                   ? Math.round((importHistory.filter((j: any) => j.status === 'completed').length / importHistory.length) * 100)
                   : 0}%

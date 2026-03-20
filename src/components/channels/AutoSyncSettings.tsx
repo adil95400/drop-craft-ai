@@ -274,7 +274,7 @@ export function AutoSyncSettings({
               config.syncProducts ? "bg-blue-500/5 border-blue-500/20" : ""
             )}>
               <div className="flex items-center gap-3">
-                <Package className="h-5 w-5 text-blue-600" />
+                <Package className="h-5 w-5 text-info" />
                 <div>
                   <p className="font-medium">Produits</p>
                   <p className="text-xs text-muted-foreground">Titre, prix, images</p>
@@ -293,7 +293,7 @@ export function AutoSyncSettings({
               config.syncOrders ? "bg-green-500/5 border-green-500/20" : ""
             )}>
               <div className="flex items-center gap-3">
-                <ShoppingCart className="h-5 w-5 text-green-600" />
+                <ShoppingCart className="h-5 w-5 text-success" />
                 <div>
                   <p className="font-medium">Commandes</p>
                   <p className="text-xs text-muted-foreground">Nouvelles commandes</p>
@@ -331,7 +331,7 @@ export function AutoSyncSettings({
               config.syncPrices ? "bg-orange-500/5 border-orange-500/20" : ""
             )}>
               <div className="flex items-center gap-3">
-                <TrendingUp className="h-5 w-5 text-orange-600" />
+                <TrendingUp className="h-5 w-5 text-warning" />
                 <div>
                   <p className="font-medium">Prix</p>
                   <p className="text-xs text-muted-foreground">Mises à jour prix</p>

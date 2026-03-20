@@ -45,12 +45,12 @@ interface PipelineStage {
 }
 
 const stages: PipelineStage[] = [
-  { id: 'prospecting', name: 'Prospection', color: 'text-blue-600', bgColor: 'bg-blue-50 border-blue-200', probability: 10 },
+  { id: 'prospecting', name: 'Prospection', color: 'text-info', bgColor: 'bg-blue-50 border-blue-200', probability: 10 },
   { id: 'qualification', name: 'Qualification', color: 'text-purple-600', bgColor: 'bg-purple-50 border-purple-200', probability: 25 },
-  { id: 'proposal', name: 'Proposition', color: 'text-amber-600', bgColor: 'bg-amber-50 border-amber-200', probability: 50 },
-  { id: 'negotiation', name: 'Négociation', color: 'text-orange-600', bgColor: 'bg-orange-50 border-orange-200', probability: 75 },
-  { id: 'closed_won', name: 'Gagné', color: 'text-green-600', bgColor: 'bg-green-50 border-green-200', probability: 100 },
-  { id: 'closed_lost', name: 'Perdu', color: 'text-red-600', bgColor: 'bg-red-50 border-red-200', probability: 0 },
+  { id: 'proposal', name: 'Proposition', color: 'text-warning', bgColor: 'bg-amber-50 border-amber-200', probability: 50 },
+  { id: 'negotiation', name: 'Négociation', color: 'text-warning', bgColor: 'bg-orange-50 border-orange-200', probability: 75 },
+  { id: 'closed_won', name: 'Gagné', color: 'text-success', bgColor: 'bg-green-50 border-green-200', probability: 100 },
+  { id: 'closed_lost', name: 'Perdu', color: 'text-destructive', bgColor: 'bg-red-50 border-red-200', probability: 0 },
 ];
 
 interface DealCardProps {
@@ -112,7 +112,7 @@ function DealCard({ deal, onMoveToStage, onEdit, onDelete }: DealCardProps) {
                   </DropdownMenuItem>
                 )}
                 <DropdownMenuItem 
-                  className="text-red-600"
+                  className="text-destructive"
                   onClick={() => onDelete(deal.id)}
                 >
                   <Trash2 className="h-4 w-4 mr-2" />
@@ -124,8 +124,8 @@ function DealCard({ deal, onMoveToStage, onEdit, onDelete }: DealCardProps) {
 
           {/* Value */}
           <div className="flex items-center gap-2">
-            <DollarSign className="h-4 w-4 text-green-600" />
-            <span className="font-semibold text-green-600">
+            <DollarSign className="h-4 w-4 text-success" />
+            <span className="font-semibold text-success">
               {new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(deal.value)}
             </span>
           </div>
@@ -266,7 +266,7 @@ export function CRMKanbanPipeline() {
                 </div>
                 <div className="text-sm text-muted-foreground">Valeur totale</div>
               </div>
-              <DollarSign className="h-8 w-8 text-green-600" />
+              <DollarSign className="h-8 w-8 text-success" />
             </div>
           </CardContent>
         </Card>
@@ -284,7 +284,7 @@ export function CRMKanbanPipeline() {
                 </div>
                 <div className="text-sm text-muted-foreground">Valeur pondérée</div>
               </div>
-              <Star className="h-8 w-8 text-amber-500" />
+              <Star className="h-8 w-8 text-warning" />
             </div>
           </CardContent>
         </Card>
@@ -293,7 +293,7 @@ export function CRMKanbanPipeline() {
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <div className="text-2xl font-bold text-green-600">{stats.won}</div>
+                <div className="text-2xl font-bold text-success">{stats.won}</div>
                 <div className="text-sm text-muted-foreground">Gagnés</div>
               </div>
               <Badge className="bg-green-500">{stats.lost} perdus</Badge>

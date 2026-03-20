@@ -343,7 +343,7 @@ export function CreativeStudio() {
                     {campaign.performance_metrics?.roi && (
                       <div className="flex justify-between text-sm">
                         <span>ROI:</span>
-                        <span className="text-green-600 font-semibold">
+                        <span className="text-success font-semibold">
                           {(campaign.performance_metrics.roi * 100).toFixed(1)}%
                         </span>
                       </div>

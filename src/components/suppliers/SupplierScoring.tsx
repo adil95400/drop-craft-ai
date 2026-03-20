@@ -166,9 +166,9 @@ export function SupplierScoring() {
   };
 
   const getScoreColor = (score: number) => {
-    if (score >= 85) return 'text-green-600';
-    if (score >= 70) return 'text-amber-600';
-    return 'text-red-600';
+    if (score >= 85) return 'text-success';
+    if (score >= 70) return 'text-warning';
+    return 'text-destructive';
   };
 
   const toggleSupplier = (id: string) => {
@@ -187,7 +187,7 @@ export function SupplierScoring() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           <div className="p-2 rounded-lg bg-amber-500/10">
-            <Award className="h-6 w-6 text-amber-500" />
+            <Award className="h-6 w-6 text-warning" />
           </div>
           <div>
             <h2 className="text-xl font-semibold">Scoring Fournisseurs</h2>
@@ -264,8 +264,8 @@ export function SupplierScoring() {
                         <div className="flex items-center gap-3">
                           <h3 className="font-semibold">{supplier.name}</h3>
                           {getTierBadge(supplier.tier)}
-                          {supplier.trend === 'up' && <TrendingUp className="h-4 w-4 text-green-500" />}
-                          {supplier.trend === 'down' && <TrendingDown className="h-4 w-4 text-red-500" />}
+                          {supplier.trend === 'up' && <TrendingUp className="h-4 w-4 text-success" />}
+                          {supplier.trend === 'down' && <TrendingDown className="h-4 w-4 text-destructive" />}
                         </div>
                         <p className="text-sm text-muted-foreground mt-1">{supplier.recommendation}</p>
                       </div>
@@ -406,17 +406,17 @@ export function SupplierScoring() {
                       <TableCell className="font-medium">{supplier.name}</TableCell>
                       <TableCell className="text-center">{getTierBadge(supplier.tier)}</TableCell>
                       <TableCell className="text-center">
-                        <span className={supplier.metrics.avgDeliveryDays <= 7 ? 'text-green-600' : supplier.metrics.avgDeliveryDays <= 14 ? 'text-amber-600' : 'text-red-600'}>
+                        <span className={supplier.metrics.avgDeliveryDays <= 7 ? 'text-success' : supplier.metrics.avgDeliveryDays <= 14 ? 'text-warning' : 'text-destructive'}>
                           {supplier.metrics.avgDeliveryDays} jours
                         </span>
                       </TableCell>
                       <TableCell className="text-center">
-                        <span className={supplier.metrics.onTimeRate >= 95 ? 'text-green-600' : supplier.metrics.onTimeRate >= 90 ? 'text-amber-600' : 'text-red-600'}>
+                        <span className={supplier.metrics.onTimeRate >= 95 ? 'text-success' : supplier.metrics.onTimeRate >= 90 ? 'text-warning' : 'text-destructive'}>
                           {supplier.metrics.onTimeRate}%
                         </span>
                       </TableCell>
                       <TableCell className="text-center">
-                        <span className={supplier.metrics.defectRate <= 2 ? 'text-green-600' : supplier.metrics.defectRate <= 4 ? 'text-amber-600' : 'text-red-600'}>
+                        <span className={supplier.metrics.defectRate <= 2 ? 'text-success' : supplier.metrics.defectRate <= 4 ? 'text-warning' : 'text-destructive'}>
                           {supplier.metrics.defectRate}%
                         </span>
                       </TableCell>

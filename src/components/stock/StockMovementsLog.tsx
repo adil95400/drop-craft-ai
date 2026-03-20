@@ -31,13 +31,13 @@ export function StockMovementsLog({ limit = 50, compact = false }: StockMovement
   const getMovementIcon = (type: string) => {
     switch (type) {
       case 'inbound':
-        return <ArrowDownLeft className="h-4 w-4 text-green-500" />;
+        return <ArrowDownLeft className="h-4 w-4 text-success" />;
       case 'outbound':
-        return <ArrowUpRight className="h-4 w-4 text-red-500" />;
+        return <ArrowUpRight className="h-4 w-4 text-destructive" />;
       case 'transfer':
-        return <ArrowLeftRight className="h-4 w-4 text-blue-500" />;
+        return <ArrowLeftRight className="h-4 w-4 text-info" />;
       case 'return':
-        return <RotateCcw className="h-4 w-4 text-orange-500" />;
+        return <RotateCcw className="h-4 w-4 text-warning" />;
       case 'damage':
       case 'expired':
         return <AlertTriangle className="h-4 w-4 text-destructive" />;
@@ -63,11 +63,11 @@ export function StockMovementsLog({ limit = 50, compact = false }: StockMovement
     switch (type) {
       case 'inbound':
       case 'return':
-        return 'text-green-600';
+        return 'text-success';
       case 'outbound':
       case 'damage':
       case 'expired':
-        return 'text-red-600';
+        return 'text-destructive';
       default:
         return 'text-muted-foreground';
     }

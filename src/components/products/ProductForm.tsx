@@ -431,13 +431,13 @@ const ProductForm = ({ productId, onSave, onCancel }: ProductFormProps) => {
                   <div className="grid grid-cols-3 gap-4 text-sm">
                     <div>
                       <p className="text-muted-foreground">Marge brute</p>
-                      <p className="font-semibold text-green-600">
+                      <p className="font-semibold text-success">
                         {(product.price - product.cost_price).toFixed(2)}€
                       </p>
                     </div>
                     <div>
                       <p className="text-muted-foreground">Marge (%)</p>
-                      <p className="font-semibold text-green-600">
+                      <p className="font-semibold text-success">
                         {(((product.price - product.cost_price) / product.price) * 100).toFixed(1)}%
                       </p>
                     </div>

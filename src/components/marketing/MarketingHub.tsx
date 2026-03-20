@@ -136,9 +136,9 @@ export function MarketingHub() {
 
   const getStatusColor = (status: MarketingCampaign['status']) => {
     switch (status) {
-      case 'active': return 'text-green-600 bg-green-50 border-green-200'
-      case 'paused': return 'text-yellow-600 bg-yellow-50 border-yellow-200'
-      case 'completed': return 'text-blue-600 bg-blue-50 border-blue-200'
+      case 'active': return 'text-success bg-green-50 border-green-200'
+      case 'paused': return 'text-warning bg-yellow-50 border-yellow-200'
+      case 'completed': return 'text-info bg-blue-50 border-blue-200'
       default: return 'text-gray-600 bg-gray-50 border-gray-200'
     }
   }
@@ -224,10 +224,10 @@ export function MarketingHub() {
                 <TrendingUp className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-green-600">
+                <div className="text-2xl font-bold text-success">
                   {(metrics.avgROI * 100).toFixed(1)}%
                 </div>
-                <p className="text-xs text-green-600 flex items-center">
+                <p className="text-xs text-success flex items-center">
                   <ArrowUpRight className="h-3 w-3 mr-1" />
                   +12% vs mois dernier
                 </p>
@@ -290,7 +290,7 @@ export function MarketingHub() {
               <CardContent className="space-y-4">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <Eye className="h-4 w-4 text-blue-600" />
+                    <Eye className="h-4 w-4 text-info" />
                     <span>Impressions</span>
                   </div>
                   <span className="font-semibold">{formatNumber(metrics.totalImpressions)}</span>
@@ -298,7 +298,7 @@ export function MarketingHub() {
                 
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <MousePointer className="h-4 w-4 text-green-600" />
+                    <MousePointer className="h-4 w-4 text-success" />
                     <span>Clics</span>
                   </div>
                   <span className="font-semibold">{formatNumber(metrics.totalClicks)}</span>
@@ -355,7 +355,7 @@ export function MarketingHub() {
                     {campaign.performance_metrics?.roi && (
                       <div className="flex justify-between text-sm">
                         <span>ROI:</span>
-                        <span className="font-medium text-green-600">
+                        <span className="font-medium text-success">
                           {(campaign.performance_metrics.roi * 100).toFixed(1)}%
                         </span>
                       </div>

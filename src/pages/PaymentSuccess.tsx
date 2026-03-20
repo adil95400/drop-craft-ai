@@ -67,9 +67,9 @@ export default function PaymentSuccess() {
               ) : (
                 <>
                   <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center">
-                    <CheckCircle className="w-10 h-10 text-green-600" />
+                    <CheckCircle className="w-10 h-10 text-success" />
                   </div>
-                  <CardTitle className="text-3xl text-center text-green-600">
+                  <CardTitle className="text-3xl text-center text-success">
                     Paiement Réussi !
                   </CardTitle>
                 </>

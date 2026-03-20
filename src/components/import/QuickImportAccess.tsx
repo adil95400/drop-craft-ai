@@ -33,7 +33,7 @@ export const QuickImportAccess = ({ onMethodSelect }: QuickImportAccessProps) =>
       title: "Shopify",
       description: "Synchronisation avec votre store Shopify",
       icon: <Package className="w-6 h-6" />,
-      color: "text-green-600",
+      color: "text-success",
       category: "E-commerce"
     },
     {
@@ -41,7 +41,7 @@ export const QuickImportAccess = ({ onMethodSelect }: QuickImportAccessProps) =>
       title: "CSV/Excel",
       description: "Import via fichier avec mapping IA automatique", 
       icon: <FileSpreadsheet className="w-6 h-6" />,
-      color: "text-blue-600",
+      color: "text-info",
       category: "Fichiers"
     },
     {
@@ -49,7 +49,7 @@ export const QuickImportAccess = ({ onMethodSelect }: QuickImportAccessProps) =>
       title: "XML/API",
       description: "Flux XML avec XPath et API REST", 
       icon: <Globe className="w-6 h-6" />,
-      color: "text-orange-600",
+      color: "text-warning",
       category: "API"
     },
     {
@@ -57,7 +57,7 @@ export const QuickImportAccess = ({ onMethodSelect }: QuickImportAccessProps) =>
       title: "PrestaShop",
       description: "Import depuis PrestaShop",
       icon: <ShoppingCart className="w-6 h-6" />,
-      color: "text-red-600",
+      color: "text-destructive",
       category: "E-commerce"
     },
     {
@@ -201,11 +201,11 @@ export const QuickImportAccess = ({ onMethodSelect }: QuickImportAccessProps) =>
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6 pt-6 border-t">
             <div className="text-center">
-              <div className="text-3xl font-bold text-blue-600">22+</div>
+              <div className="text-3xl font-bold text-info">22+</div>
               <div className="text-sm text-muted-foreground">Méthodes total</div>
             </div>
             <div className="text-center">
-              <div className="text-3xl font-bold text-green-600">5</div>
+              <div className="text-3xl font-bold text-success">5</div>
               <div className="text-sm text-muted-foreground">Catégories</div>
             </div>
             <div className="text-center">
@@ -213,7 +213,7 @@ export const QuickImportAccess = ({ onMethodSelect }: QuickImportAccessProps) =>
               <div className="text-sm text-muted-foreground">Automatisation</div>
             </div>
             <div className="text-center">
-              <div className="text-3xl font-bold text-orange-600">IA</div>
+              <div className="text-3xl font-bold text-warning">IA</div>
               <div className="text-sm text-muted-foreground">Optimisation</div>
             </div>
           </div>

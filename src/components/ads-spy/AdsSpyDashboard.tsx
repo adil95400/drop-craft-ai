@@ -28,10 +28,10 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 // Platform configurations
 const PLATFORMS = [
   { id: 'all', name: 'Toutes', icon: Globe },
-  { id: 'facebook', name: 'Facebook', icon: Facebook, color: 'text-blue-600' },
+  { id: 'facebook', name: 'Facebook', icon: Facebook, color: 'text-info' },
   { id: 'tiktok', name: 'TikTok', icon: Globe, color: 'text-pink-500' },
   { id: 'instagram', name: 'Instagram', icon: Instagram, color: 'text-purple-500' },
-  { id: 'pinterest', name: 'Pinterest', icon: Globe, color: 'text-red-500' },
+  { id: 'pinterest', name: 'Pinterest', icon: Globe, color: 'text-destructive' },
 ];
 
 const CATEGORIES = [
@@ -402,7 +402,7 @@ const TopWinnersDashboard = () => {
       {/* Winners Grid */}
       <div>
         <div className="flex items-center gap-2 mb-4">
-          <Flame className="w-5 h-5 text-orange-500" />
+          <Flame className="w-5 h-5 text-warning" />
           <h2 className="text-lg font-semibold">{periodLabels[period]}</h2>
           <Badge variant="secondary" className="text-xs">
             Mise à jour toutes les heures

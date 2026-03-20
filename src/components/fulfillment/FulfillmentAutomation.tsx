@@ -85,9 +85,9 @@ async function getCurrentUser() {
 
 // Trigger options with icons and descriptions
 const TRIGGER_OPTIONS = [
-  { value: 'paid', label: 'Commande payée', icon: Euro, color: 'text-green-500', description: 'Dès que le paiement est confirmé' },
-  { value: 'confirmed', label: 'Commande confirmée', icon: CheckCircle, color: 'text-blue-500', description: 'Après validation manuelle' },
-  { value: 'processing', label: 'En traitement', icon: Clock, color: 'text-amber-500', description: 'Lors du passage en préparation' },
+  { value: 'paid', label: 'Commande payée', icon: Euro, color: 'text-success', description: 'Dès que le paiement est confirmé' },
+  { value: 'confirmed', label: 'Commande confirmée', icon: CheckCircle, color: 'text-info', description: 'Après validation manuelle' },
+  { value: 'processing', label: 'En traitement', icon: Clock, color: 'text-warning', description: 'Lors du passage en préparation' },
   { value: 'stock_ready', label: 'Stock disponible', icon: Box, color: 'text-purple-500', description: 'Quand le stock est vérifié' },
 ];
 
@@ -388,7 +388,7 @@ export function FulfillmentAutomation() {
                 <p className="text-xs text-muted-foreground">Règles</p>
               </div>
               <div className="text-center px-4 py-2 rounded-lg bg-background/50 backdrop-blur-sm">
-                <p className="text-2xl font-bold text-green-500">{rules.filter(r => r.is_active).length}</p>
+                <p className="text-2xl font-bold text-success">{rules.filter(r => r.is_active).length}</p>
                 <p className="text-xs text-muted-foreground">Actives</p>
               </div>
             </div>
@@ -568,7 +568,7 @@ export function FulfillmentAutomation() {
                       {/* Trigger Selection */}
                       <div className="space-y-3">
                         <Label className="text-sm font-medium flex items-center gap-2">
-                          <Zap className="h-4 w-4 text-amber-500" />
+                          <Zap className="h-4 w-4 text-warning" />
                           Déclencheur
                         </Label>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -611,7 +611,7 @@ export function FulfillmentAutomation() {
                       {/* Carrier Selection */}
                       <div className="space-y-3">
                         <Label className="text-sm font-medium flex items-center gap-2">
-                          <Truck className="h-4 w-4 text-blue-500" />
+                          <Truck className="h-4 w-4 text-info" />
                           Sélection du transporteur
                         </Label>
                         <div className="grid grid-cols-1 gap-2">
@@ -721,7 +721,7 @@ export function FulfillmentAutomation() {
                             )}>
                               <Package className={cn(
                                 "h-5 w-5",
-                                formData.auto_label ? "text-green-600" : "text-muted-foreground"
+                                formData.auto_label ? "text-success" : "text-muted-foreground"
                               )} />
                             </div>
                             <div>
@@ -748,7 +748,7 @@ export function FulfillmentAutomation() {
                             )}>
                               <Printer className={cn(
                                 "h-5 w-5",
-                                formData.auto_print ? "text-blue-600" : "text-muted-foreground"
+                                formData.auto_print ? "text-info" : "text-muted-foreground"
                               )} />
                             </div>
                             <div>
@@ -807,7 +807,7 @@ export function FulfillmentAutomation() {
                             )}>
                               <AlertTriangle className={cn(
                                 "h-5 w-5",
-                                formData.add_insurance ? "text-amber-600" : "text-muted-foreground"
+                                formData.add_insurance ? "text-warning" : "text-muted-foreground"
                               )} />
                             </div>
                             <div>
@@ -834,7 +834,7 @@ export function FulfillmentAutomation() {
                             )}>
                               <Zap className={cn(
                                 "h-5 w-5",
-                                formData.priority_processing ? "text-rose-600" : "text-muted-foreground"
+                                formData.priority_processing ? "text-destructive" : "text-muted-foreground"
                               )} />
                             </div>
                             <div>
@@ -960,7 +960,7 @@ export function FulfillmentAutomation() {
                             variant={rule.is_active ? "default" : "secondary"}
                             className={cn(
                               "shrink-0",
-                              rule.is_active && "bg-green-500/10 text-green-600 border-green-500/20"
+                              rule.is_active && "bg-green-500/10 text-success border-green-500/20"
                             )}
                           >
                             {rule.is_active ? (
@@ -981,17 +981,17 @@ export function FulfillmentAutomation() {
                             {triggerLabels[trigger] || trigger}
                           </Badge>
                           <Badge variant="outline" className="gap-1.5 text-xs">
-                            <Truck className="h-3 w-3 text-blue-500" />
+                            <Truck className="h-3 w-3 text-info" />
                             {selectionLabels[carrierSelection] || carrierSelection}
                           </Badge>
                         </div>
                         
                         <div className="flex flex-wrap gap-3 text-xs">
-                          <span className={cn("flex items-center gap-1", autoLabel ? "text-green-600" : "text-muted-foreground")}>
+                          <span className={cn("flex items-center gap-1", autoLabel ? "text-success" : "text-muted-foreground")}>
                             {autoLabel ? <CheckCircle className="h-3 w-3" /> : <span className="w-3 h-3 rounded-full border" />}
                             Étiquette
                           </span>
-                          <span className={cn("flex items-center gap-1", autoPrint ? "text-blue-600" : "text-muted-foreground")}>
+                          <span className={cn("flex items-center gap-1", autoPrint ? "text-info" : "text-muted-foreground")}>
                             {autoPrint ? <CheckCircle className="h-3 w-3" /> : <span className="w-3 h-3 rounded-full border" />}
                             Impression
                           </span>
@@ -1000,13 +1000,13 @@ export function FulfillmentAutomation() {
                             Notification
                           </span>
                           {addInsurance && (
-                            <span className="flex items-center gap-1 text-amber-600">
+                            <span className="flex items-center gap-1 text-warning">
                               <CheckCircle className="h-3 w-3" />
                               Assurance
                             </span>
                           )}
                           {priorityProcessing && (
-                            <span className="flex items-center gap-1 text-rose-600">
+                            <span className="flex items-center gap-1 text-destructive">
                               <CheckCircle className="h-3 w-3" />
                               Prioritaire
                             </span>

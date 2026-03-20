@@ -433,7 +433,7 @@ export default function CreateOrder() {
                     <CardHeader className="pb-3">
                       <CardTitle className="flex items-center gap-2 text-lg">
                         <div className="h-8 w-8 rounded-lg bg-blue-500/10 flex items-center justify-center">
-                          <User className="h-4 w-4 text-blue-500" />
+                          <User className="h-4 w-4 text-info" />
                         </div>
                         Client
                         {selectedCustomer && (
@@ -580,7 +580,7 @@ export default function CreateOrder() {
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
                           <div className="h-8 w-8 rounded-lg bg-green-500/10 flex items-center justify-center">
-                            <Package className="h-4 w-4 text-green-500" />
+                            <Package className="h-4 w-4 text-success" />
                           </div>
                           <div>
                             <CardTitle className="text-lg">Produits</CardTitle>
@@ -858,7 +858,7 @@ export default function CreateOrder() {
                       <CardHeader className="pb-3">
                         <CardTitle className="flex items-center gap-2 text-lg">
                           <div className="h-8 w-8 rounded-lg bg-orange-500/10 flex items-center justify-center">
-                            <Truck className="h-4 w-4 text-orange-500" />
+                            <Truck className="h-4 w-4 text-warning" />
                           </div>
                           Livraison
                         </CardTitle>
@@ -1052,7 +1052,7 @@ export default function CreateOrder() {
                             />
                           </div>
                           {parseFloat(formData.discountValue) > 0 && (
-                            <div className="flex justify-between text-sm text-red-600">
+                            <div className="flex justify-between text-sm text-destructive">
                               <span>Réduction</span>
                               <span>-{calculateOrderDiscount().toFixed(2)}€</span>
                             </div>
@@ -1082,7 +1082,7 @@ export default function CreateOrder() {
                       {/* Validation warnings */}
                       {(!selectedCustomer || itemsCount === 0) && (
                         <div className="p-3 rounded-lg bg-yellow-500/10 border border-yellow-500/20">
-                          <div className="flex items-start gap-2 text-yellow-600 dark:text-yellow-500">
+                          <div className="flex items-start gap-2 text-warning dark:text-warning">
                             <AlertCircle className="h-4 w-4 mt-0.5 shrink-0" />
                             <div className="text-xs">
                               {!selectedCustomer && <p>• Sélectionnez un client</p>}

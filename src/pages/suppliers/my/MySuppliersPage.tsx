@@ -150,7 +150,7 @@ export default function MySuppliersPage() {
                           )}
                           {supplier.rating && (
                             <Badge variant="secondary" className="flex items-center gap-1">
-                              <Star className="h-3 w-3 text-yellow-500" />
+                              <Star className="h-3 w-3 text-warning" />
                               {supplier.rating}/5
                             </Badge>
                           )}

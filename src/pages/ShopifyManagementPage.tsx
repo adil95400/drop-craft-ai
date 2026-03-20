@@ -45,7 +45,7 @@ const ShopifyManagementPage = () => {
     switch (shopifyIntegration.connection_status) {
       case 'connected':
         return (
-          <Badge className="gap-2 bg-green-100 text-green-800 hover:bg-green-100">
+          <Badge className="gap-2 bg-green-100 text-success hover:bg-green-100">
             <CheckCircle2 className="h-3 w-3" />
             Connecté
           </Badge>

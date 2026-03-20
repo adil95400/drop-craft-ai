@@ -117,7 +117,7 @@ export const GlobalSearch: React.FC<GlobalSearchProps> = ({
   const getResultBadgeColor = (type: SearchResult['type']) => {
     switch (type) {
       case 'product': return 'bg-blue-100 text-blue-800';
-      case 'order': return 'bg-green-100 text-green-800';
+      case 'order': return 'bg-green-100 text-success';
       case 'customer': return 'bg-purple-100 text-purple-800';
       case 'campaign': return 'bg-orange-100 text-orange-800';
       case 'automation': return 'bg-indigo-100 text-indigo-800';

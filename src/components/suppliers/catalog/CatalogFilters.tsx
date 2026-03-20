@@ -274,7 +274,7 @@ export function CatalogFilters({
                     <div className="space-y-3">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
-                          <Crown className="h-4 w-4 text-amber-500" />
+                          <Crown className="h-4 w-4 text-warning" />
                           <span className="text-sm">Winners uniquement</span>
                         </div>
                         <Switch
@@ -294,7 +294,7 @@ export function CatalogFilters({
                       </div>
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
-                          <Package className="h-4 w-4 text-emerald-500" />
+                          <Package className="h-4 w-4 text-success" />
                           <span className="text-sm">En stock uniquement</span>
                         </div>
                         <Switch

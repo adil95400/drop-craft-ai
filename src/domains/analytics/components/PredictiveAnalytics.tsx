@@ -218,9 +218,9 @@ export const PredictiveAnalytics: React.FC = () => {
   }
 
   const getConfidenceColor = (confidence: number) => {
-    if (confidence >= 80) return 'text-green-600'
-    if (confidence >= 60) return 'text-yellow-600'
-    return 'text-red-600'
+    if (confidence >= 80) return 'text-success'
+    if (confidence >= 60) return 'text-warning'
+    return 'text-destructive'
   }
 
   const getImpactColor = (impact: string) => {
@@ -234,17 +234,17 @@ export const PredictiveAnalytics: React.FC = () => {
 
   const getTrendIcon = (trend: string) => {
     switch (trend) {
-      case 'up': return <TrendingUp className="h-4 w-4 text-green-500" />
-      case 'down': return <TrendingDown className="h-4 w-4 text-red-500" />
-      default: return <Activity className="h-4 w-4 text-blue-500" />
+      case 'up': return <TrendingUp className="h-4 w-4 text-success" />
+      case 'down': return <TrendingDown className="h-4 w-4 text-destructive" />
+      default: return <Activity className="h-4 w-4 text-info" />
     }
   }
 
   const getCompetitionColor = (level: string) => {
     switch (level) {
-      case 'low': return 'text-green-600'
-      case 'medium': return 'text-yellow-600'
-      case 'high': return 'text-red-600'
+      case 'low': return 'text-success'
+      case 'medium': return 'text-warning'
+      case 'high': return 'text-destructive'
       default: return 'text-gray-600'
     }
   }
@@ -413,7 +413,7 @@ export const PredictiveAnalytics: React.FC = () => {
                     <div className="flex items-center justify-between mb-2">
                       <span className="text-sm font-medium">Prédiction ({prediction.timeframe})</span>
                       <span className={`text-lg font-bold ${
-                        prediction.change_percentage > 0 ? 'text-green-600' : 'text-red-600'
+                        prediction.change_percentage > 0 ? 'text-success' : 'text-destructive'
                       }`}>
                         {prediction.change_percentage > 0 ? '+' : ''}{prediction.change_percentage.toFixed(1)}%
                       </span>
@@ -454,7 +454,7 @@ export const PredictiveAnalytics: React.FC = () => {
                       <ul className="space-y-1">
                         {prediction.recommendations.filter(Boolean).map((rec, idx) => (
                           <li key={idx} className="flex items-start gap-2 text-sm">
-                            <CheckCircle className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
+                            <CheckCircle className="h-4 w-4 text-success mt-0.5 flex-shrink-0" />
                             {rec}
                           </li>
                         ))}
@@ -557,7 +557,7 @@ export const PredictiveAnalytics: React.FC = () => {
                 <ul className="space-y-2">
                   {pred.recommendations.filter(Boolean).map((rec, idx) => (
                     <li key={idx} className="flex items-start gap-2">
-                      <CheckCircle className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
+                      <CheckCircle className="h-4 w-4 text-success mt-0.5 flex-shrink-0" />
                       <span className="text-sm">{rec}</span>
                     </li>
                   ))}

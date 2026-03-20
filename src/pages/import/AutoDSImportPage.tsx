@@ -475,11 +475,11 @@ export default function AutoDSImportPage() {
                               </div>
                               <ArrowRight className="h-3 w-3 text-muted-foreground" />
                               <div className="flex items-center gap-1.5 bg-green-500/10 px-2 py-0.5 rounded-md border border-green-500/20">
-                                <span className="text-green-700 dark:text-green-400 text-xs">Vente</span>
-                                <span className="font-bold text-sm text-green-600 dark:text-green-400">{(item.preview.suggested_price ?? 0).toFixed(2)} €</span>
+                                <span className="text-success dark:text-green-400 text-xs">Vente</span>
+                                <span className="font-bold text-sm text-success dark:text-green-400">{(item.preview.suggested_price ?? 0).toFixed(2)} €</span>
                               </div>
                               {item.preview.profit_margin > 0 && (
-                                <Badge variant="outline" className="text-green-600 dark:text-green-400 border-green-500/30 text-xs">
+                                <Badge variant="outline" className="text-success dark:text-green-400 border-green-500/30 text-xs">
                                   +{item.preview.profit_margin}%
                                 </Badge>
                               )}

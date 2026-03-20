@@ -152,14 +152,14 @@ export const NotificationSettingsDialog = ({ isOpen, onClose }: NotificationSett
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
                 <div className="flex items-center gap-2">
-                  <Mail className="h-4 w-4 text-blue-600" />
+                  <Mail className="h-4 w-4 text-info" />
                   <div>
                     <div className="font-medium">Email</div>
                     <div className="text-xs text-muted-foreground">Notifications par email</div>
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
-                  <MessageSquare className="h-4 w-4 text-green-600" />
+                  <MessageSquare className="h-4 w-4 text-success" />
                   <div>
                     <div className="font-medium">Push</div>
                     <div className="text-xs text-muted-foreground">Notifications web/app</div>
@@ -223,7 +223,7 @@ export const NotificationSettingsDialog = ({ isOpen, onClose }: NotificationSett
                           <div className="grid grid-cols-3 gap-4">
                             <div className="flex items-center justify-between">
                               <Label htmlFor={`${setting.id}_email`} className="flex items-center gap-2">
-                                <Mail className="h-4 w-4 text-blue-600" />
+                                <Mail className="h-4 w-4 text-info" />
                                 Email
                               </Label>
                               <Switch
@@ -237,7 +237,7 @@ export const NotificationSettingsDialog = ({ isOpen, onClose }: NotificationSett
                             
                             <div className="flex items-center justify-between">
                               <Label htmlFor={`${setting.id}_push`} className="flex items-center gap-2">
-                                <MessageSquare className="h-4 w-4 text-green-600" />
+                                <MessageSquare className="h-4 w-4 text-success" />
                                 Push
                               </Label>
                               <Switch

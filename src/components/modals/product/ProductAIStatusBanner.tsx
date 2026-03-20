@@ -49,8 +49,8 @@ const STATUS_CONFIG = {
     label: 'Action requise',
     bgClass: 'from-red-500/15 via-red-500/5 to-transparent',
     borderClass: 'border-red-500/30',
-    iconClass: 'bg-red-500/20 text-red-500',
-    textClass: 'text-red-600 dark:text-red-400',
+    iconClass: 'bg-red-500/20 text-destructive',
+    textClass: 'text-destructive dark:text-red-400',
     ctaClass: 'bg-red-500 hover:bg-red-600 text-white'
   },
   opportunity: {
@@ -58,8 +58,8 @@ const STATUS_CONFIG = {
     label: 'Opportunité',
     bgClass: 'from-emerald-500/15 via-emerald-500/5 to-transparent',
     borderClass: 'border-emerald-500/30',
-    iconClass: 'bg-emerald-500/20 text-emerald-500',
-    textClass: 'text-emerald-600 dark:text-emerald-400',
+    iconClass: 'bg-emerald-500/20 text-success',
+    textClass: 'text-success dark:text-emerald-400',
     ctaClass: 'bg-emerald-500 hover:bg-emerald-600 text-white'
   },
   optimized: {
@@ -67,8 +67,8 @@ const STATUS_CONFIG = {
     label: 'Optimisé',
     bgClass: 'from-blue-500/15 via-blue-500/5 to-transparent',
     borderClass: 'border-blue-500/30',
-    iconClass: 'bg-blue-500/20 text-blue-500',
-    textClass: 'text-blue-600 dark:text-blue-400',
+    iconClass: 'bg-blue-500/20 text-info',
+    textClass: 'text-info dark:text-blue-400',
     ctaClass: 'bg-blue-500 hover:bg-blue-600 text-white'
   },
   neutral: {

@@ -84,7 +84,7 @@ export function RouteDebugger() {
             {currentPath}
           </div>
           {matchingRoute ? (
-            <div className="flex items-center gap-2 text-xs text-green-600">
+            <div className="flex items-center gap-2 text-xs text-success">
               <CheckCircle className="h-3 w-3" />
               Route valide: {matchingRoute.name}
             </div>

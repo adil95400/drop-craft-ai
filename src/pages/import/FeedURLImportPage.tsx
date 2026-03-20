@@ -93,7 +93,7 @@ export default function FeedURLImportPage() {
               <CardContent className="space-y-2">
                 <div className="flex items-center justify-between text-sm">
                   <span>CSV Shopify</span>
-                  <Badge variant="secondary" className="bg-green-500/10 text-green-600 text-xs">Recommandé</Badge>
+                  <Badge variant="secondary" className="bg-green-500/10 text-success text-xs">Recommandé</Badge>
                 </div>
                 <div className="flex items-center justify-between text-sm">
                   <span>XML / RSS</span>

@@ -156,9 +156,9 @@ export const RealTimeSupplierMonitor = () => {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'online': return 'text-green-600 bg-green-100'
-      case 'syncing': return 'text-blue-600 bg-blue-100'
-      case 'error': return 'text-red-600 bg-red-100'
+      case 'online': return 'text-success bg-green-100'
+      case 'syncing': return 'text-info bg-blue-100'
+      case 'error': return 'text-destructive bg-red-100'
       default: return 'text-gray-600 bg-gray-100'
     }
   }
@@ -174,16 +174,16 @@ export const RealTimeSupplierMonitor = () => {
 
   const getAlertIcon = (type: string) => {
     switch (type) {
-      case 'error': return <AlertCircle className="w-4 h-4 text-red-500" />
-      case 'warning': return <AlertTriangle className="w-4 h-4 text-orange-500" />
-      default: return <CheckCircle className="w-4 h-4 text-blue-500" />
+      case 'error': return <AlertCircle className="w-4 h-4 text-destructive" />
+      case 'warning': return <AlertTriangle className="w-4 h-4 text-warning" />
+      default: return <CheckCircle className="w-4 h-4 text-info" />
     }
   }
 
   const getTierColor = (tier: string) => {
     switch (tier) {
       case 'premium': return 'text-purple-600 bg-purple-100'
-      case 'standard': return 'text-blue-600 bg-blue-100'
+      case 'standard': return 'text-info bg-blue-100'
       default: return 'text-gray-600 bg-gray-100'
     }
   }
@@ -235,7 +235,7 @@ export const RealTimeSupplierMonitor = () => {
             </Button>
           )}
           {isMonitoring && (
-            <Badge variant="outline" className="text-green-600 border-green-600">
+            <Badge variant="outline" className="text-success border-green-600">
               <Activity className="w-3 h-3 mr-1" /> En Direct
             </Badge>
           )}
@@ -251,7 +251,7 @@ export const RealTimeSupplierMonitor = () => {
                 <p className="text-sm text-muted-foreground">Fournisseurs Actifs</p>
                 <p className="text-2xl font-bold">{onlineSuppliers}/{suppliers.length}</p>
               </div>
-              <Wifi className="w-8 h-8 text-green-500" />
+              <Wifi className="w-8 h-8 text-success" />
             </div>
           </CardContent>
         </Card>
@@ -262,7 +262,7 @@ export const RealTimeSupplierMonitor = () => {
                 <p className="text-sm text-muted-foreground">Temps Réponse Moy.</p>
                 <p className="text-2xl font-bold">{Math.round(avgResponseTime)}ms</p>
               </div>
-              <Clock className="w-8 h-8 text-blue-500" />
+              <Clock className="w-8 h-8 text-info" />
             </div>
           </CardContent>
         </Card>
@@ -284,7 +284,7 @@ export const RealTimeSupplierMonitor = () => {
                 <p className="text-sm text-muted-foreground">Produits Total</p>
                 <p className="text-2xl font-bold">{totalProducts.toLocaleString()}</p>
               </div>
-              <Package className="w-8 h-8 text-orange-500" />
+              <Package className="w-8 h-8 text-warning" />
             </div>
           </CardContent>
         </Card>

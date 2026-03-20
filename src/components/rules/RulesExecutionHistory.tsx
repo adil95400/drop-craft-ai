@@ -41,19 +41,19 @@ export function RulesExecutionHistory({ onRefresh }: RulesExecutionHistoryProps)
   const getStatusIcon = (status: 'success' | 'error' | 'partial') => {
     switch (status) {
       case 'success':
-        return <CheckCircle2 className="h-4 w-4 text-emerald-500" />;
+        return <CheckCircle2 className="h-4 w-4 text-success" />;
       case 'error':
-        return <XCircle className="h-4 w-4 text-red-500" />;
+        return <XCircle className="h-4 w-4 text-destructive" />;
       case 'partial':
-        return <Clock className="h-4 w-4 text-amber-500" />;
+        return <Clock className="h-4 w-4 text-warning" />;
     }
   };
 
   const getStatusBadge = (status: 'success' | 'error' | 'partial') => {
     const variants: Record<string, { class: string; label: string }> = {
-      success: { class: 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20', label: 'Succès' },
-      error: { class: 'bg-red-500/10 text-red-600 border-red-500/20', label: 'Erreur' },
-      partial: { class: 'bg-amber-500/10 text-amber-600 border-amber-500/20', label: 'Partiel' },
+      success: { class: 'bg-emerald-500/10 text-success border-emerald-500/20', label: 'Succès' },
+      error: { class: 'bg-red-500/10 text-destructive border-red-500/20', label: 'Erreur' },
+      partial: { class: 'bg-amber-500/10 text-warning border-amber-500/20', label: 'Partiel' },
     };
     const variant = variants[status];
     return (
@@ -110,7 +110,7 @@ export function RulesExecutionHistory({ onRefresh }: RulesExecutionHistoryProps)
               )}>
                 <CheckCircle2 className={cn(
                   "h-5 w-5",
-                  stats.successRate >= 80 ? "text-emerald-500" : "text-amber-500"
+                  stats.successRate >= 80 ? "text-success" : "text-warning"
                 )} />
               </div>
               <div>
@@ -131,7 +131,7 @@ export function RulesExecutionHistory({ onRefresh }: RulesExecutionHistoryProps)
           <CardContent className="pt-6">
             <div className="flex items-center gap-4">
               <div className="p-2 bg-blue-500/10 rounded-lg">
-                <Package className="h-5 w-5 text-blue-500" />
+                <Package className="h-5 w-5 text-info" />
               </div>
               <div>
                 <p className="text-2xl font-bold">{stats.avgProductsPerExecution}</p>
@@ -175,9 +175,9 @@ export function RulesExecutionHistory({ onRefresh }: RulesExecutionHistoryProps)
                   insight.type === 'info' && "bg-blue-500/10"
                 )}
               >
-                {insight.type === 'warning' && <AlertTriangle className="h-4 w-4 text-amber-500 mt-0.5" />}
-                {insight.type === 'success' && <CheckCircle2 className="h-4 w-4 text-emerald-500 mt-0.5" />}
-                {insight.type === 'info' && <Zap className="h-4 w-4 text-blue-500 mt-0.5" />}
+                {insight.type === 'warning' && <AlertTriangle className="h-4 w-4 text-warning mt-0.5" />}
+                {insight.type === 'success' && <CheckCircle2 className="h-4 w-4 text-success mt-0.5" />}
+                {insight.type === 'info' && <Zap className="h-4 w-4 text-info mt-0.5" />}
                 <div className="flex-1">
                   <p className="font-medium text-sm">{insight.title}</p>
                   <p className="text-sm text-muted-foreground">{insight.description}</p>
@@ -196,7 +196,7 @@ export function RulesExecutionHistory({ onRefresh }: RulesExecutionHistoryProps)
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-base flex items-center gap-2">
-              <TrendingUp className="h-4 w-4 text-emerald-500" />
+              <TrendingUp className="h-4 w-4 text-success" />
               Règles les plus performantes
             </CardTitle>
           </CardHeader>
@@ -350,7 +350,7 @@ export function RulesExecutionHistory({ onRefresh }: RulesExecutionHistoryProps)
                                 </div>
                                 
                                 {exec.error && (
-                                  <div className="p-3 rounded-lg bg-red-500/10 text-red-600 text-sm">
+                                  <div className="p-3 rounded-lg bg-red-500/10 text-destructive text-sm">
                                     <strong>Erreur:</strong> {exec.error}
                                   </div>
                                 )}

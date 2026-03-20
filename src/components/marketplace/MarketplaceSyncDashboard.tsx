@@ -105,7 +105,7 @@ export function MarketplaceSyncDashboard() {
                 <p className="text-sm text-muted-foreground">Produits mappés</p>
                 <p className="text-2xl font-bold">245</p>
               </div>
-              <Package className="h-8 w-8 text-green-500" />
+              <Package className="h-8 w-8 text-success" />
             </div>
           </CardContent>
         </Card>
@@ -117,7 +117,7 @@ export function MarketplaceSyncDashboard() {
                 <p className="text-sm text-muted-foreground">Syncs aujourd'hui</p>
                 <p className="text-2xl font-bold">12</p>
               </div>
-              <ArrowRightLeft className="h-8 w-8 text-blue-500" />
+              <ArrowRightLeft className="h-8 w-8 text-info" />
             </div>
           </CardContent>
         </Card>

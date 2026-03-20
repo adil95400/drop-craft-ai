@@ -25,10 +25,10 @@ const LEVEL_TITLES = [
 ];
 
 const CATEGORY_LABELS: Record<string, { label: string; icon: React.ReactNode; color: string }> = {
-  onboarding: { label: 'Démarrage', icon: <Zap className="h-4 w-4" />, color: 'text-blue-500' },
-  products: { label: 'Catalogue', icon: <Target className="h-4 w-4" />, color: 'text-emerald-500' },
-  sales: { label: 'Ventes', icon: <TrendingUp className="h-4 w-4" />, color: 'text-amber-500' },
-  engagement: { label: 'Engagement', icon: <Flame className="h-4 w-4" />, color: 'text-orange-500' },
+  onboarding: { label: 'Démarrage', icon: <Zap className="h-4 w-4" />, color: 'text-info' },
+  products: { label: 'Catalogue', icon: <Target className="h-4 w-4" />, color: 'text-success' },
+  sales: { label: 'Ventes', icon: <TrendingUp className="h-4 w-4" />, color: 'text-warning' },
+  engagement: { label: 'Engagement', icon: <Flame className="h-4 w-4" />, color: 'text-warning' },
   mastery: { label: 'Maîtrise', icon: <Star className="h-4 w-4" />, color: 'text-violet-500' },
 };
 
@@ -50,7 +50,7 @@ export default function OnboardingRetentionPage() {
       {/* Header */}
       <div>
         <h1 className="text-2xl font-bold flex items-center gap-2">
-          <Trophy className="h-6 w-6 text-amber-500" />
+          <Trophy className="h-6 w-6 text-warning" />
           Progression & Récompenses
         </h1>
         <p className="text-muted-foreground mt-1">
@@ -80,7 +80,7 @@ export default function OnboardingRetentionPage() {
                 <div>
                   <h3 className="text-lg font-semibold flex items-center gap-2">
                     Niveau {levelInfo.level}
-                    <Badge variant="secondary" className="bg-amber-500/10 text-amber-600 border-amber-500/20">
+                    <Badge variant="secondary" className="bg-amber-500/10 text-warning border-amber-500/20">
                       {levelInfo.xp} XP
                     </Badge>
                   </h3>
@@ -90,15 +90,15 @@ export default function OnboardingRetentionPage() {
                 </div>
                 {streak > 0 && (
                   <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-orange-500/10 border border-orange-500/20">
-                    <Flame className="h-4 w-4 text-orange-500" />
-                    <span className="text-sm font-semibold text-orange-600">{streak}j</span>
+                    <Flame className="h-4 w-4 text-warning" />
+                    <span className="text-sm font-semibold text-warning">{streak}j</span>
                   </div>
                 )}
               </div>
               <Progress value={levelInfo.percent} className="h-3 bg-muted/50" />
               <div className="flex items-center gap-4 text-sm text-muted-foreground">
                 <span className="flex items-center gap-1">
-                  <Trophy className="h-3.5 w-3.5 text-amber-500" />
+                  <Trophy className="h-3.5 w-3.5 text-warning" />
                   {totalUnlocked}/{totalAchievements} succès
                 </span>
                 <span className="flex items-center gap-1">
@@ -179,7 +179,7 @@ export default function OnboardingRetentionPage() {
                           <div className="flex items-center gap-2">
                             <h4 className="font-medium text-sm truncate">{achievement.name}</h4>
                             {unlocked ? (
-                              <CheckCircle2 className="h-4 w-4 text-emerald-500 flex-shrink-0" />
+                              <CheckCircle2 className="h-4 w-4 text-success flex-shrink-0" />
                             ) : (
                               <Lock className="h-3.5 w-3.5 text-muted-foreground flex-shrink-0" />
                             )}

@@ -147,9 +147,9 @@ export function BusinessIntelligence() {
 
   const getTypeIcon = (type: BusinessInsight['type']) => {
     switch (type) {
-      case 'opportunity': return <Lightbulb className="h-5 w-5 text-green-500" />
-      case 'risk': return <AlertCircle className="h-5 w-5 text-red-500" />
-      case 'optimization': return <Target className="h-5 w-5 text-blue-500" />
+      case 'opportunity': return <Lightbulb className="h-5 w-5 text-success" />
+      case 'risk': return <AlertCircle className="h-5 w-5 text-destructive" />
+      case 'optimization': return <Target className="h-5 w-5 text-info" />
       case 'trend': return <TrendingUp className="h-5 w-5 text-purple-500" />
       default: return <Brain className="h-5 w-5 text-gray-500" />
     }
@@ -157,9 +157,9 @@ export function BusinessIntelligence() {
 
   const getImplementationColor = (implementation: BusinessInsight['implementation']) => {
     switch (implementation) {
-      case 'easy': return 'text-green-600'
-      case 'medium': return 'text-yellow-600'
-      case 'complex': return 'text-red-600'
+      case 'easy': return 'text-success'
+      case 'medium': return 'text-warning'
+      case 'complex': return 'text-destructive'
       default: return 'text-gray-600'
     }
   }
@@ -255,7 +255,7 @@ export function BusinessIntelligence() {
                   </div>
                 </div>
                 {insight.actionRequired && (
-                  <AlertCircle className="h-5 w-5 text-orange-500 animate-pulse" />
+                  <AlertCircle className="h-5 w-5 text-warning animate-pulse" />
                 )}
               </div>
             </CardHeader>
@@ -266,16 +266,16 @@ export function BusinessIntelligence() {
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div>
                     <div className="font-medium flex items-center gap-1">
-                      <DollarSign className="h-4 w-4 text-green-500" />
+                      <DollarSign className="h-4 w-4 text-success" />
                       Impact Financier
                     </div>
-                    <div className="text-lg font-bold text-green-600">
+                    <div className="text-lg font-bold text-success">
                       {insight.estimatedValue}
                     </div>
                   </div>
                   <div>
                     <div className="font-medium flex items-center gap-1">
-                      <Clock className="h-4 w-4 text-blue-500" />
+                      <Clock className="h-4 w-4 text-info" />
                       Délai
                     </div>
                     <div className="text-lg font-semibold">{insight.timeframe}</div>
@@ -321,7 +321,7 @@ export function BusinessIntelligence() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <TrendingUp className="h-5 w-5 text-green-500" />
+            <TrendingUp className="h-5 w-5 text-success" />
             Tendances du Marché
           </CardTitle>
           <CardDescription>
@@ -345,8 +345,8 @@ export function BusinessIntelligence() {
                   <div className="flex justify-between">
                     <span className="text-gray-600">Saisonnalité:</span>
                     <span className={`font-medium ${
-                      trend.seasonality === 'high' ? 'text-red-500' :
-                      trend.seasonality === 'medium' ? 'text-yellow-500' : 'text-green-500'
+                      trend.seasonality === 'high' ? 'text-destructive' :
+                      trend.seasonality === 'medium' ? 'text-warning' : 'text-success'
                     }`}>
                       {trend.seasonality === 'high' ? 'Élevée' :
                        trend.seasonality === 'medium' ? 'Modérée' : 'Faible'}
@@ -376,13 +376,13 @@ export function BusinessIntelligence() {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card className="text-center">
           <CardContent className="pt-6">
-            <div className="text-2xl font-bold text-blue-600">87%</div>
+            <div className="text-2xl font-bold text-info">87%</div>
             <div className="text-sm text-gray-500">Précision Prédictions</div>
           </CardContent>
         </Card>
         <Card className="text-center">
           <CardContent className="pt-6">
-            <div className="text-2xl font-bold text-green-600">+24%</div>
+            <div className="text-2xl font-bold text-success">+24%</div>
             <div className="text-sm text-gray-500">ROI Moyen</div>
           </CardContent>
         </Card>
@@ -394,7 +394,7 @@ export function BusinessIntelligence() {
         </Card>
         <Card className="text-center">
           <CardContent className="pt-6">
-            <div className="text-2xl font-bold text-orange-600">92%</div>
+            <div className="text-2xl font-bold text-warning">92%</div>
             <div className="text-sm text-gray-500">Taux d'Adoption</div>
           </CardContent>
         </Card>

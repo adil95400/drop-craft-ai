@@ -94,7 +94,7 @@ export function PageBuilderDashboard() {
               <CardContent className="p-4">
                 <div className="flex items-center gap-3">
                   <div className="p-2 rounded-lg bg-green-500/20">
-                    <Globe className="h-5 w-5 text-green-600" />
+                    <Globe className="h-5 w-5 text-success" />
                   </div>
                   <div>
                     <p className="text-2xl font-bold">{stats?.published_pages || 0}</p>
@@ -108,7 +108,7 @@ export function PageBuilderDashboard() {
               <CardContent className="p-4">
                 <div className="flex items-center gap-3">
                   <div className="p-2 rounded-lg bg-yellow-500/20">
-                    <FileText className="h-5 w-5 text-yellow-600" />
+                    <FileText className="h-5 w-5 text-warning" />
                   </div>
                   <div>
                     <p className="text-2xl font-bold">{stats?.draft_pages || 0}</p>

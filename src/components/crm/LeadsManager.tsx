@@ -113,7 +113,7 @@ export function LeadsManager() {
                 <div className="text-2xl font-bold">{stats.total}</div>
                 <div className="text-sm text-muted-foreground">Total Leads</div>
               </div>
-              <UserPlus className="w-8 h-8 text-blue-500" />
+              <UserPlus className="w-8 h-8 text-info" />
             </div>
           </CardContent>
         </Card>
@@ -137,7 +137,7 @@ export function LeadsManager() {
                 <div className="text-2xl font-bold">{stats.won}</div>
                 <div className="text-sm text-muted-foreground">Gagnés</div>
               </div>
-              <TrendingUp className="w-8 h-8 text-green-500" />
+              <TrendingUp className="w-8 h-8 text-success" />
             </div>
           </CardContent>
         </Card>
@@ -155,7 +155,7 @@ export function LeadsManager() {
                 </div>
                 <div className="text-sm text-muted-foreground">Valeur totale</div>
               </div>
-              <TrendingUp className="w-8 h-8 text-orange-500" />
+              <TrendingUp className="w-8 h-8 text-warning" />
             </div>
           </CardContent>
         </Card>
@@ -303,7 +303,7 @@ export function LeadsManager() {
                         </div>
 
                         {lead.estimated_value && lead.estimated_value > 0 && (
-                          <div className="text-sm font-medium text-green-600">
+                          <div className="text-sm font-medium text-success">
                             Valeur estimée: {new Intl.NumberFormat('fr-FR', { 
                               style: 'currency', 
                               currency: 'EUR' 
@@ -328,7 +328,7 @@ export function LeadsManager() {
                             Modifier
                           </DropdownMenuItem>
                           <DropdownMenuItem 
-                            className="text-red-600"
+                            className="text-destructive"
                             onClick={() => deleteLead(lead.id)}
                           >
                             <Trash2 className="w-4 h-4 mr-2" />

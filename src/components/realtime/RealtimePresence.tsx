@@ -181,7 +181,7 @@ export const RealtimePresence: React.FC<RealtimePresenceProps> = ({
             Utilisateurs en ligne
           </CardTitle>
           <Badge variant="outline" className="flex items-center gap-1">
-            <Circle className="w-2 h-2 fill-green-500 text-green-500" />
+            <Circle className="w-2 h-2 fill-green-500 text-success" />
             {presenceUsers.length}
           </Badge>
         </div>

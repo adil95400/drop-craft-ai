@@ -139,14 +139,14 @@ export default function AutoOrderSystem() {
               </Card>
               <Card>
                 <CardContent className="p-4 text-center">
-                  <CheckCircle className="h-6 w-6 text-green-600 mx-auto mb-2" />
+                  <CheckCircle className="h-6 w-6 text-success mx-auto mb-2" />
                   <div className="text-2xl font-bold">{stats?.successRate || 0}%</div>
                   <div className="text-sm text-muted-foreground">Taux réussite</div>
                 </CardContent>
               </Card>
               <Card>
                 <CardContent className="p-4 text-center">
-                  <Clock className="h-6 w-6 text-blue-600 mx-auto mb-2" />
+                  <Clock className="h-6 w-6 text-info mx-auto mb-2" />
                   <div className="text-2xl font-bold">{stats?.avgProcessingTime || 0} min</div>
                   <div className="text-sm text-muted-foreground">Temps moyen</div>
                 </CardContent>
@@ -329,7 +329,7 @@ export default function AutoOrderSystem() {
                 </>
               ) : (
                 <CardContent className="p-12 text-center">
-                  <CheckCircle className="h-12 w-12 text-green-600 mx-auto mb-4" />
+                  <CheckCircle className="h-12 w-12 text-success mx-auto mb-4" />
                   <h3 className="text-lg font-semibold mb-2">Aucune commande échouée</h3>
                   <p className="text-muted-foreground">
                     Toutes les commandes ont été traitées avec succès

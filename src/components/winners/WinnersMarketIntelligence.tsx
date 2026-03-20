@@ -156,11 +156,11 @@ export const WinnersMarketIntelligence = () => {
                     <div className="text-muted-foreground mb-1">Croissance</div>
                     <div className="flex items-center gap-1">
                       {category.growthRate > 40 ? (
-                        <TrendingUp className="w-4 h-4 text-green-500" />
+                        <TrendingUp className="w-4 h-4 text-success" />
                       ) : (
-                        <TrendingDown className="w-4 h-4 text-orange-500" />
+                        <TrendingDown className="w-4 h-4 text-warning" />
                       )}
-                      <span className={`font-semibold ${category.growthRate > 40 ? 'text-green-600' : 'text-orange-600'}`}>
+                      <span className={`font-semibold ${category.growthRate > 40 ? 'text-success' : 'text-warning'}`}>
                         +{category.growthRate}%
                       </span>
                     </div>
@@ -204,10 +204,10 @@ export const WinnersMarketIntelligence = () => {
                 {/* Recommandation */}
                 {category.competition === 'low' && category.growthRate > 40 && (
                   <div className="flex items-start gap-2 p-3 bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-800 rounded-lg">
-                    <AlertCircle className="w-4 h-4 text-green-600 mt-0.5" />
+                    <AlertCircle className="w-4 h-4 text-success mt-0.5" />
                     <div className="text-sm">
                       <span className="font-semibold text-green-900 dark:text-green-100">🎯 Opportunité excellente !</span>
-                      <p className="text-green-800 dark:text-green-200">
+                      <p className="text-success dark:text-green-200">
                         Forte croissance avec faible concurrence - Idéal pour démarrer rapidement
                       </p>
                     </div>
@@ -216,7 +216,7 @@ export const WinnersMarketIntelligence = () => {
 
                 {category.saturationLevel > 70 && (
                   <div className="flex items-start gap-2 p-3 bg-orange-50 dark:bg-orange-950/20 border border-orange-200 dark:border-orange-800 rounded-lg">
-                    <AlertCircle className="w-4 h-4 text-orange-600 mt-0.5" />
+                    <AlertCircle className="w-4 h-4 text-warning mt-0.5" />
                     <div className="text-sm">
                       <span className="font-semibold text-orange-900 dark:text-orange-100">⚠️ Marché saturé</span>
                       <p className="text-orange-800 dark:text-orange-200">

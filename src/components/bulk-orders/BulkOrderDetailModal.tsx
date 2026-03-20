@@ -103,7 +103,7 @@ export function BulkOrderDetailModal({ orderId, open, onOpenChange }: BulkOrderD
           <div className="grid grid-cols-3 gap-4 mb-4">
             <Card>
               <CardContent className="p-3 flex items-center gap-3">
-                <Layers className="h-5 w-5 text-blue-500" />
+                <Layers className="h-5 w-5 text-info" />
                 <div>
                   <p className="text-xl font-bold">{order.total_items}</p>
                   <p className="text-xs text-muted-foreground">Produits</p>
@@ -112,7 +112,7 @@ export function BulkOrderDetailModal({ orderId, open, onOpenChange }: BulkOrderD
             </Card>
             <Card>
               <CardContent className="p-3 flex items-center gap-3">
-                <DollarSign className="h-5 w-5 text-green-500" />
+                <DollarSign className="h-5 w-5 text-success" />
                 <div>
                   <p className="text-xl font-bold">
                     {parseFloat(order.total_amount as any).toLocaleString('fr-FR', { minimumFractionDigits: 2 })}€

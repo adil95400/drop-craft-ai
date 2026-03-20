@@ -94,11 +94,11 @@ export function ProfileCompletionCard({
             >
               <div className="flex items-center gap-3">
                 {item.completed ? (
-                  <CheckCircle2 className="h-4 w-4 text-green-500" />
+                  <CheckCircle2 className="h-4 w-4 text-success" />
                 ) : (
                   <Circle className="h-4 w-4 text-muted-foreground" />
                 )}
-                <item.icon className={`h-4 w-4 ${item.completed ? 'text-green-500' : 'text-muted-foreground'}`} />
+                <item.icon className={`h-4 w-4 ${item.completed ? 'text-success' : 'text-muted-foreground'}`} />
                 <span className={`text-sm ${item.completed ? 'text-foreground' : 'text-muted-foreground'}`}>
                   {item.label}
                 </span>

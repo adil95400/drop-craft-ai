@@ -63,14 +63,14 @@ export default function CommercePage() {
       value: `€${(analytics?.revenue || 0).toLocaleString('fr-FR')}`, 
       change: '+12.5%',
       icon: DollarSign, 
-      color: 'text-green-500' 
+      color: 'text-success' 
     },
     { 
       label: 'Commandes actives', 
       value: (analytics?.orders || 0).toString(), 
       change: `+${Math.floor((analytics?.orders || 0) * 0.08)}`,
       icon: ShoppingCart, 
-      color: 'text-blue-500' 
+      color: 'text-info' 
     },
     { 
       label: 'Produits en stock', 
@@ -84,7 +84,7 @@ export default function CommercePage() {
       value: (customerStats?.active || 0).toString(), 
       change: `+${Math.floor((customerStats?.active || 0) * 0.05)}`,
       icon: Users, 
-      color: 'text-orange-500' 
+      color: 'text-warning' 
     }
   ];
 
@@ -257,13 +257,13 @@ export default function CommercePage() {
                       </div>
                       <div className="flex items-center gap-2">
                         {item.status === 'critical' && (
-                          <AlertCircle className="h-4 w-4 text-red-500" />
+                          <AlertCircle className="h-4 w-4 text-destructive" />
                         )}
                         {item.status === 'low' && (
-                          <AlertCircle className="h-4 w-4 text-yellow-500" />
+                          <AlertCircle className="h-4 w-4 text-warning" />
                         )}
                         {item.status === 'normal' && (
-                          <CheckCircle className="h-4 w-4 text-green-500" />
+                          <CheckCircle className="h-4 w-4 text-success" />
                         )}
                         <span className="text-sm text-muted-foreground">
                           {item.available}/{item.stock} disponibles

@@ -28,10 +28,10 @@ import { PageLoading } from '@/components/ui/loading'
 import { EmptyState } from '@/components/ui/empty-state'
 
 const RULE_TYPES: Record<string, { label: string; icon: typeof TrendingUp; color: string }> = {
-  margin_based: { label: 'Basé sur la marge', icon: TrendingUp, color: 'text-green-600' },
-  competitor_based: { label: 'Concurrentiel', icon: BarChart3, color: 'text-blue-600' },
+  margin_based: { label: 'Basé sur la marge', icon: TrendingUp, color: 'text-success' },
+  competitor_based: { label: 'Concurrentiel', icon: BarChart3, color: 'text-info' },
   cost_plus: { label: 'Coût + marge', icon: DollarSign, color: 'text-purple-600' },
-  stock_based: { label: 'Basé sur le stock', icon: TrendingDown, color: 'text-orange-600' },
+  stock_based: { label: 'Basé sur le stock', icon: TrendingDown, color: 'text-warning' },
   time_based: { label: 'Temporel', icon: Settings, color: 'text-pink-600' }
 }
 
@@ -110,10 +110,10 @@ export function RepricingDashboard() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Actives</CardTitle>
-            <Play className="h-4 w-4 text-green-600" />
+            <Play className="h-4 w-4 text-success" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-green-600">{stats.activeRules}</div>
+            <div className="text-2xl font-bold text-success">{stats.activeRules}</div>
           </CardContent>
         </Card>
         <Card>
@@ -237,7 +237,7 @@ function RulesList({
                   {rule.target_margin && (
                     <div className="text-right">
                       <p className="text-sm font-medium">Marge cible</p>
-                      <p className="text-lg font-bold text-green-600">{rule.target_margin}%</p>
+                      <p className="text-lg font-bold text-success">{rule.target_margin}%</p>
                     </div>
                   )}
 

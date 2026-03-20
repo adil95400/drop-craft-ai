@@ -114,7 +114,7 @@ export function TrendScanner() {
                   </div>
                   <div className="space-y-1">
                     <p className="text-muted-foreground">Croissance</p>
-                    <p className="font-semibold text-green-600">+{trend.growth_rate}%</p>
+                    <p className="font-semibold text-success">+{trend.growth_rate}%</p>
                   </div>
                 </div>
 

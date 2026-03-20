@@ -37,9 +37,9 @@ const WinnerCard = ({ product, onImport }: WinnerCardProps) => {
     Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100) : 0
 
   const getScoreColor = (score: number) => {
-    if (score >= 90) return 'text-green-600 bg-green-100'
-    if (score >= 70) return 'text-yellow-600 bg-yellow-100' 
-    return 'text-red-600 bg-red-100'
+    if (score >= 90) return 'text-success bg-green-100'
+    if (score >= 70) return 'text-warning bg-yellow-100' 
+    return 'text-destructive bg-red-100'
   }
 
   return (
@@ -94,7 +94,7 @@ const WinnerCard = ({ product, onImport }: WinnerCardProps) => {
                   </span>
                 )}
               </div>
-              <div className="flex items-center gap-1 text-xs text-green-600">
+              <div className="flex items-center gap-1 text-xs text-success">
                 <TrendingUp className="h-3 w-3" />
                 <span>+{product.profit_potential}% profit</span>
               </div>
@@ -189,13 +189,13 @@ export const AIWinnersDiscovery = ({ onImportWinner }: AIWinnersDiscoveryProps) 
       icon: TrendingUp,
       title: "Tendances détectées", 
       value: "23 niches en croissance",
-      color: "text-green-600"
+      color: "text-success"
     },
     {
       icon: Target,
       title: "Précision IA",
       value: "94.7% de réussite",
-      color: "text-blue-600"
+      color: "text-info"
     },
     {
       icon: DollarSign,
@@ -207,7 +207,7 @@ export const AIWinnersDiscovery = ({ onImportWinner }: AIWinnersDiscoveryProps) 
       icon: Timer,
       title: "Mise à jour",
       value: "Il y a 5 min",
-      color: "text-orange-600"
+      color: "text-warning"
     }
   ]
 
@@ -265,11 +265,11 @@ export const AIWinnersDiscovery = ({ onImportWinner }: AIWinnersDiscoveryProps) 
       {/* Call to action */}
       <Card className="text-center bg-gradient-to-r from-green-50 to-emerald-50 border-green-200">
         <CardContent className="py-6">
-          <Award className="h-12 w-12 text-green-600 mx-auto mb-3" />
-          <h4 className="font-semibold text-green-800 mb-2">
+          <Award className="h-12 w-12 text-success mx-auto mb-3" />
+          <h4 className="font-semibold text-success mb-2">
             Découvrez plus de Winners
           </h4>
-          <p className="text-sm text-green-600 mb-4">
+          <p className="text-sm text-success mb-4">
             Notre IA analyse 50,000+ produits chaque jour pour vous trouver les pépites
           </p>
           <Button variant="default" className="bg-green-600 hover:bg-green-700">

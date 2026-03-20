@@ -109,7 +109,7 @@ export function CommercializationQuickActions() {
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
-                  <CheckCircle className="h-4 w-4 text-green-500" />
+                  <CheckCircle className="h-4 w-4 text-success" />
                   <Button 
                     size="sm" 
                     variant="ghost"
@@ -124,11 +124,11 @@ export function CommercializationQuickActions() {
         </div>
         
         <div className="mt-4 p-3 bg-green-50 dark:bg-green-950 border border-green-200 dark:border-green-800 rounded-lg">
-          <div className="flex items-center gap-2 text-green-800 dark:text-green-200">
+          <div className="flex items-center gap-2 text-success dark:text-green-200">
             <CheckCircle className="h-4 w-4" />
             <span className="font-medium text-sm">Drop Craft AI est prêt pour la commercialisation</span>
           </div>
-          <p className="text-xs text-green-700 dark:text-green-300 mt-1">
+          <p className="text-xs text-success dark:text-green-300 mt-1">
             Toutes les fonctionnalités premium sont implémentées avec monitoring, tests E2E et architecture scalable.
           </p>
         </div>

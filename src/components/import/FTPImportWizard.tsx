@@ -254,8 +254,8 @@ export function FTPImportWizard() {
         {testResult?.success ? (
           <>
             <div className="flex items-center gap-2 p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
-              <Check className="h-5 w-5 text-green-600" />
-              <p className="text-sm text-green-800 dark:text-green-300">
+              <Check className="h-5 w-5 text-success" />
+              <p className="text-sm text-success dark:text-green-300">
                 Connexion établie - {testResult.filesFound.length} fichier(s) trouvé(s)
               </p>
             </div>
@@ -300,7 +300,7 @@ export function FTPImportWizard() {
           </>
         ) : (
           <div className="flex items-center gap-2 p-3 bg-red-50 dark:bg-red-900/20 rounded-lg">
-            <AlertTriangle className="h-5 w-5 text-red-600" />
+            <AlertTriangle className="h-5 w-5 text-destructive" />
             <p className="text-sm text-red-800 dark:text-red-300">
               {testResult?.error || 'Erreur de connexion'}
             </p>

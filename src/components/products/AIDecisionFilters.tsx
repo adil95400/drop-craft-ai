@@ -44,7 +44,7 @@ const AI_FILTERS: AIFilterConfig[] = [
     description: 'Produits nécessitant une action immédiate',
     colors: {
       active: 'bg-gradient-to-r from-amber-500 to-orange-500 text-white border-transparent shadow-lg shadow-amber-500/30',
-      inactive: 'bg-amber-500/10 text-amber-600 border-amber-500/30 hover:bg-amber-500/20'
+      inactive: 'bg-amber-500/10 text-warning border-amber-500/30 hover:bg-amber-500/20'
     },
     isPrimary: true
   },
@@ -57,7 +57,7 @@ const AI_FILTERS: AIFilterConfig[] = [
     description: 'Problèmes critiques à corriger',
     colors: {
       active: 'bg-red-500 text-white border-transparent',
-      inactive: 'bg-red-500/10 text-red-600 border-red-500/30 hover:bg-red-500/20'
+      inactive: 'bg-red-500/10 text-destructive border-red-500/30 hover:bg-red-500/20'
     }
   },
   {
@@ -69,7 +69,7 @@ const AI_FILTERS: AIFilterConfig[] = [
     description: 'Gains potentiels identifiés',
     colors: {
       active: 'bg-emerald-500 text-white border-transparent',
-      inactive: 'bg-emerald-500/10 text-emerald-600 border-emerald-500/30 hover:bg-emerald-500/20'
+      inactive: 'bg-emerald-500/10 text-success border-emerald-500/30 hover:bg-emerald-500/20'
     }
   },
   {
@@ -81,7 +81,7 @@ const AI_FILTERS: AIFilterConfig[] = [
     description: 'Produits performants',
     colors: {
       active: 'bg-blue-500 text-white border-transparent',
-      inactive: 'bg-blue-500/10 text-blue-600 border-blue-500/30 hover:bg-blue-500/20'
+      inactive: 'bg-blue-500/10 text-info border-blue-500/30 hover:bg-blue-500/20'
     }
   },
   {
@@ -257,7 +257,7 @@ export const AIDecisionFilterBar = memo(function AIDecisionFilterBar({
             'gap-2 font-bold',
             isProcessActive 
               ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-lg' 
-              : 'bg-amber-500/10 text-amber-600 border-amber-500/30 hover:bg-amber-500/20 ring-2 ring-amber-500/20'
+              : 'bg-amber-500/10 text-warning border-amber-500/30 hover:bg-amber-500/20 ring-2 ring-amber-500/20'
           )}
         >
           <span>🎯</span>

@@ -310,11 +310,11 @@ export default function SimplifiedImportPage() {
                 <div className="text-sm text-muted-foreground">Total Rows</div>
               </div>
               <div className="text-center">
-                <div className="text-2xl font-bold text-green-600">{previewData.length - previewErrors.length}</div>
+                <div className="text-2xl font-bold text-success">{previewData.length - previewErrors.length}</div>
                 <div className="text-sm text-muted-foreground">Valid</div>
               </div>
               <div className="text-center">
-                <div className="text-2xl font-bold text-red-600">{previewErrors.length}</div>
+                <div className="text-2xl font-bold text-destructive">{previewErrors.length}</div>
                 <div className="text-sm text-muted-foreground">Errors</div>
               </div>
             </div>

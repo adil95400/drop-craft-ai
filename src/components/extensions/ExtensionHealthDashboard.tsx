@@ -136,15 +136,15 @@ export function ExtensionHealthDashboard() {
   });
 
   const getStatusColor = (rate: number) => {
-    if (rate >= 98) return 'text-green-500';
-    if (rate >= 95) return 'text-yellow-500';
-    return 'text-red-500';
+    if (rate >= 98) return 'text-success';
+    if (rate >= 95) return 'text-warning';
+    return 'text-destructive';
   };
 
   const getStatusBadge = (rate: number) => {
-    if (rate >= 98) return <Badge className="bg-green-500/10 text-green-500">Excellent</Badge>;
-    if (rate >= 95) return <Badge className="bg-yellow-500/10 text-yellow-500">Bon</Badge>;
-    return <Badge className="bg-red-500/10 text-red-500">Attention</Badge>;
+    if (rate >= 98) return <Badge className="bg-green-500/10 text-success">Excellent</Badge>;
+    if (rate >= 95) return <Badge className="bg-yellow-500/10 text-warning">Bon</Badge>;
+    return <Badge className="bg-red-500/10 text-destructive">Attention</Badge>;
   };
 
   if (isLoading) {
@@ -234,7 +234,7 @@ export function ExtensionHealthDashboard() {
             <AlertTriangle className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-red-500">
+            <div className="text-2xl font-bold text-destructive">
               {Object.values(metrics?.errorsByCode || {}).reduce((a, b) => a + b, 0)}
             </div>
             <p className="text-xs text-muted-foreground">
@@ -319,7 +319,7 @@ export function ExtensionHealthDashboard() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <AlertTriangle className="h-5 w-5 text-red-500" />
+              <AlertTriangle className="h-5 w-5 text-destructive" />
               Distribution des erreurs
             </CardTitle>
             <CardDescription>Codes d'erreur les plus fréquents</CardDescription>
@@ -337,7 +337,7 @@ export function ExtensionHealthDashboard() {
                   ))}
                 {Object.keys(metrics?.errorsByCode || {}).length === 0 && (
                   <div className="flex items-center justify-center py-8 text-muted-foreground">
-                    <CheckCircle2 className="h-5 w-5 mr-2 text-green-500" />
+                    <CheckCircle2 className="h-5 w-5 mr-2 text-success" />
                     Aucune erreur
                   </div>
                 )}
@@ -374,7 +374,7 @@ export function ExtensionHealthDashboard() {
                 ))}
                 {metrics?.recentErrors.length === 0 && (
                   <div className="flex items-center justify-center py-8 text-muted-foreground">
-                    <CheckCircle2 className="h-5 w-5 mr-2 text-green-500" />
+                    <CheckCircle2 className="h-5 w-5 mr-2 text-success" />
                     Aucune erreur récente
                   </div>
                 )}

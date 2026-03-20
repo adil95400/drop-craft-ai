@@ -269,7 +269,7 @@ export function AutomationHub() {
           <div className="flex items-center justify-between">
             <div>
               <CardTitle className="flex items-center gap-2">
-                <Bot className="h-5 w-5 text-blue-500" />
+                <Bot className="h-5 w-5 text-info" />
                 Hub d'Automatisation
               </CardTitle>
               <CardDescription>
@@ -322,7 +322,7 @@ export function AutomationHub() {
                             <div className="space-y-1">
                               {automation.actions.map((action, idx) => (
                                 <div key={idx} className="text-sm bg-green-50 p-2 rounded flex items-center gap-2">
-                                  <CheckCircle2 className="h-3 w-3 text-green-500" />
+                                  <CheckCircle2 className="h-3 w-3 text-success" />
                                   {action}
                                 </div>
                               ))}
@@ -355,7 +355,7 @@ export function AutomationHub() {
                         
                         <div className="flex items-center justify-between">
                           <div className="text-sm text-gray-600">
-                            💰 Économies estimées: <span className="font-semibold text-green-600">{automation.estimatedSavings}</span>
+                            💰 Économies estimées: <span className="font-semibold text-success">{automation.estimatedSavings}</span>
                           </div>
                         </div>
                       </div>
@@ -403,7 +403,7 @@ export function AutomationHub() {
         <Card>
           <CardContent className="pt-6">
             <div className="text-center space-y-2">
-              <Zap className="h-8 w-8 mx-auto text-blue-500" />
+              <Zap className="h-8 w-8 mx-auto text-info" />
               <h3 className="font-semibold">Templates d'Automation</h3>
               <p className="text-sm text-gray-600">Utilisez des modèles prêts à l'emploi</p>
               <Button variant="outline" size="sm" className="w-full">
@@ -416,7 +416,7 @@ export function AutomationHub() {
         <Card>
           <CardContent className="pt-6">
             <div className="text-center space-y-2">
-              <Calendar className="h-8 w-8 mx-auto text-green-500" />
+              <Calendar className="h-8 w-8 mx-auto text-success" />
               <h3 className="font-semibold">Planificateur</h3>
               <p className="text-sm text-gray-600">Programmez vos automations</p>
               <Button variant="outline" size="sm" className="w-full">

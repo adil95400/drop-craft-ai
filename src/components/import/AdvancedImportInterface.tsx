@@ -266,7 +266,7 @@ export const AdvancedImportInterface = () => {
         <CardHeader>
           <div className="flex items-center gap-3">
             <div className="p-2 bg-blue-100 rounded-lg">
-              <FileText className="w-6 h-6 text-blue-600" />
+              <FileText className="w-6 h-6 text-info" />
             </div>
             <div>
               <CardTitle className="text-lg">CSV/Excel</CardTitle>
@@ -276,7 +276,7 @@ export const AdvancedImportInterface = () => {
         </CardHeader>
         <CardContent>
           <div className="flex items-center gap-2 mb-3">
-            <CheckCircle className="w-4 h-4 text-green-500" />
+            <CheckCircle className="w-4 h-4 text-success" />
             <Badge variant="outline" className="bg-green-50">Actif</Badge>
           </div>
           <div className="flex gap-2">
@@ -317,7 +317,7 @@ export const AdvancedImportInterface = () => {
         </CardHeader>
         <CardContent>
           <div className="flex items-center gap-2 mb-3">
-            <CheckCircle className="w-4 h-4 text-green-500" />
+            <CheckCircle className="w-4 h-4 text-success" />
             <Badge variant="outline" className="bg-green-50">Actif</Badge>
           </div>
           <div className="flex gap-2">
@@ -348,7 +348,7 @@ export const AdvancedImportInterface = () => {
         <CardHeader>
           <div className="flex items-center gap-3">
             <div className="p-2 bg-green-100 rounded-lg">
-              <ShoppingCart className="w-6 h-6 text-green-600" />
+              <ShoppingCart className="w-6 h-6 text-success" />
             </div>
             <div>
               <CardTitle className="text-lg">Shopify</CardTitle>
@@ -358,7 +358,7 @@ export const AdvancedImportInterface = () => {
         </CardHeader>
         <CardContent>
           <div className="flex items-center gap-2 mb-3">
-            <AlertTriangle className="w-4 h-4 text-yellow-500" />
+            <AlertTriangle className="w-4 h-4 text-warning" />
             <Badge variant="outline" className="bg-yellow-50">Non configuré</Badge>
           </div>
           <div className="flex gap-2">
@@ -389,7 +389,7 @@ export const AdvancedImportInterface = () => {
         <CardHeader>
           <div className="flex items-center gap-3">
             <div className="p-2 bg-orange-100 rounded-lg">
-              <Database className="w-6 h-6 text-orange-600" />
+              <Database className="w-6 h-6 text-warning" />
             </div>
             <div>
               <CardTitle className="text-lg">WooCommerce</CardTitle>
@@ -399,7 +399,7 @@ export const AdvancedImportInterface = () => {
         </CardHeader>
         <CardContent>
           <div className="flex items-center gap-2 mb-3">
-            <AlertTriangle className="w-4 h-4 text-yellow-500" />
+            <AlertTriangle className="w-4 h-4 text-warning" />
             <Badge variant="outline" className="bg-yellow-50">Non configuré</Badge>
           </div>
           <div className="flex gap-2">
@@ -430,7 +430,7 @@ export const AdvancedImportInterface = () => {
         <CardHeader>
           <div className="flex items-center gap-3">
             <div className="p-2 bg-red-100 rounded-lg">
-              <FileText className="w-6 h-6 text-red-600" />
+              <FileText className="w-6 h-6 text-destructive" />
             </div>
             <div>
               <CardTitle className="text-lg">XML</CardTitle>
@@ -440,7 +440,7 @@ export const AdvancedImportInterface = () => {
         </CardHeader>
         <CardContent>
           <div className="flex items-center gap-2 mb-3">
-            <CheckCircle className="w-4 h-4 text-green-500" />
+            <CheckCircle className="w-4 h-4 text-success" />
             <Badge variant="outline" className="bg-green-50">Actif</Badge>
           </div>
           <div className="flex gap-2">
@@ -481,7 +481,7 @@ export const AdvancedImportInterface = () => {
         </CardHeader>
         <CardContent>
           <div className="flex items-center gap-2 mb-3">
-            <CheckCircle className="w-4 h-4 text-green-500" />
+            <CheckCircle className="w-4 h-4 text-success" />
             <Badge variant="outline" className="bg-green-50">Actif</Badge>
           </div>
           <div className="flex gap-2">
@@ -649,7 +649,7 @@ export const AdvancedImportInterface = () => {
                       <Share className="w-4 h-4 mr-2" />
                       Partager sur réseaux sociaux
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => handleBulkAction('delete')} className="text-red-600">
+                    <DropdownMenuItem onClick={() => handleBulkAction('delete')} className="text-destructive">
                       <Trash2 className="w-4 h-4 mr-2" />
                       Supprimer
                     </DropdownMenuItem>
@@ -742,7 +742,7 @@ export const AdvancedImportInterface = () => {
                             <Facebook className="w-4 h-4 mr-2" />
                             Partager sur Facebook
                           </DropdownMenuItem>
-                          <DropdownMenuItem className="text-red-600">
+                          <DropdownMenuItem className="text-destructive">
                             <Trash2 className="w-4 h-4 mr-2" />
                             Supprimer
                           </DropdownMenuItem>
@@ -770,7 +770,7 @@ export const AdvancedImportInterface = () => {
                 <div className="text-2xl font-bold">{allProducts.length}</div>
                 <p className="text-sm text-muted-foreground">Total Importé</p>
               </div>
-              <Database className="h-8 w-8 text-blue-500" />
+              <Database className="h-8 w-8 text-info" />
             </div>
           </CardContent>
         </Card>
@@ -779,12 +779,12 @@ export const AdvancedImportInterface = () => {
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <div className="text-2xl font-bold text-green-600">
+                <div className="text-2xl font-bold text-success">
                   {allProducts.filter(p => p.status === 'published').length}
                 </div>
                 <p className="text-sm text-muted-foreground">Publié</p>
               </div>
-              <CheckCircle className="h-8 w-8 text-green-500" />
+              <CheckCircle className="h-8 w-8 text-success" />
             </div>
           </CardContent>
         </Card>
@@ -793,12 +793,12 @@ export const AdvancedImportInterface = () => {
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <div className="text-2xl font-bold text-yellow-600">
+                <div className="text-2xl font-bold text-warning">
                   {allProducts.filter(p => p.status === 'draft').length}
                 </div>
                 <p className="text-sm text-muted-foreground">En Attente</p>
               </div>
-              <AlertTriangle className="h-8 w-8 text-yellow-500" />
+              <AlertTriangle className="h-8 w-8 text-warning" />
             </div>
           </CardContent>
         </Card>

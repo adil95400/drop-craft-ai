@@ -108,7 +108,7 @@ export function ExtensionQuickImportCard() {
                       size="icon"
                       onClick={copyToClipboard}
                     >
-                      {copied ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
+                      {copied ? <Check className="h-4 w-4 text-success" /> : <Copy className="h-4 w-4" />}
                     </Button>
                   </div>
                   <p className="text-xs text-muted-foreground">
@@ -271,10 +271,10 @@ function ConnectionStatus({ connected, isLoading }: { connected: boolean; isLoad
   return connected ? (
     <div className="flex items-center gap-2">
       <div className="relative">
-        <Wifi className="h-5 w-5 text-green-500" />
+        <Wifi className="h-5 w-5 text-success" />
         <span className="absolute -top-0.5 -right-0.5 h-2 w-2 bg-green-500 rounded-full animate-pulse" />
       </div>
-      <span className="text-sm text-green-600 font-medium">Connectée</span>
+      <span className="text-sm text-success font-medium">Connectée</span>
     </div>
   ) : (
     <div className="flex items-center gap-2">

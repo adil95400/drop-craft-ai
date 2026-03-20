@@ -98,7 +98,7 @@ export function CommentsSection({ courseId, lessonId }: CommentsSectionProps) {
                           <Star
                             className={`h-5 w-5 ${
                               rating && star <= rating
-                                ? 'fill-yellow-500 text-yellow-500'
+                                ? 'fill-yellow-500 text-warning'
                                 : 'text-muted-foreground'
                             }`}
                           />
@@ -175,7 +175,7 @@ export function CommentsSection({ courseId, lessonId }: CommentsSectionProps) {
                     {comment.rating && (
                       <div className="flex items-center gap-1">
                         {[...Array(comment.rating)].map((_, i) => (
-                          <Star key={i} className="h-3 w-3 fill-yellow-500 text-yellow-500" />
+                          <Star key={i} className="h-3 w-3 fill-yellow-500 text-warning" />
                         ))}
                       </div>
                     )}

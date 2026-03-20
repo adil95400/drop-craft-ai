@@ -384,7 +384,7 @@ export function ProductCatalogManager({ onImport }: ProductCatalogManagerProps) 
                   <Badge variant="secondary" className="text-xs">
                     {product.category}
                   </Badge>
-                  <span className="text-green-600">
+                  <span className="text-success">
                     📦 {product.delivery_time || '7-14j'}
                   </span>
                 </div>

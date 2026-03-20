@@ -104,7 +104,7 @@ export const ImportURLInterface = () => {
           optimisation SEO automatique et recommandations personnalisées.
         </p>
         <div className="flex items-center justify-center gap-2 flex-wrap">
-          <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+          <Badge variant="outline" className="bg-green-50 text-success border-green-200">
             <CheckCircle2 className="w-3 h-3 mr-1" />
             IA Avancée
           </Badge>
@@ -123,7 +123,7 @@ export const ImportURLInterface = () => {
       <Card className="shadow-lg border-0 bg-gradient-to-br from-white to-gray-50">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Link className="w-5 h-5 text-blue-600" />
+            <Link className="w-5 h-5 text-info" />
             Importer depuis une URL
           </CardTitle>
         </CardHeader>
@@ -148,7 +148,7 @@ export const ImportURLInterface = () => {
               <CardContent className="p-4">
                 <div className="flex items-center gap-3 mb-3">
                   <div className="animate-spin">
-                    <Cpu className="w-5 h-5 text-blue-600" />
+                    <Cpu className="w-5 h-5 text-info" />
                   </div>
                   <div>
                     <div className="font-medium text-blue-900">Analyse IA en cours...</div>
@@ -158,7 +158,7 @@ export const ImportURLInterface = () => {
                   </div>
                 </div>
                 <Progress value={85} className="w-full" />
-                <div className="text-sm text-blue-600 mt-2">Traitement avancé avec IA</div>
+                <div className="text-sm text-info mt-2">Traitement avancé avec IA</div>
               </CardContent>
             </Card>
           )}
@@ -200,7 +200,7 @@ export const ImportURLInterface = () => {
                 <div className="text-sm font-medium">{platform.name}</div>
                 <div className="flex items-center gap-1 mt-1">
                   <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                  <span className="text-xs text-green-600">Actif</span>
+                  <span className="text-xs text-success">Actif</span>
                 </div>
               </div>
             ))}
@@ -212,7 +212,7 @@ export const ImportURLInterface = () => {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200">
           <CardContent className="p-4 text-center">
-            <Brain className="w-8 h-8 text-blue-600 mx-auto mb-2" />
+            <Brain className="w-8 h-8 text-info mx-auto mb-2" />
             <h4 className="font-medium text-blue-900">Optimisation IA</h4>
             <p className="text-sm text-blue-700 mt-1">
               Titre, description et tags SEO générés automatiquement
@@ -222,9 +222,9 @@ export const ImportURLInterface = () => {
 
         <Card className="bg-gradient-to-br from-green-50 to-green-100 border-green-200">
           <CardContent className="p-4 text-center">
-            <TrendingUp className="w-8 h-8 text-green-600 mx-auto mb-2" />
+            <TrendingUp className="w-8 h-8 text-success mx-auto mb-2" />
             <h4 className="font-medium text-green-900">Analyse Marché</h4>
-            <p className="text-sm text-green-700 mt-1">
+            <p className="text-sm text-success mt-1">
               Tendances, concurrence et potentiel de vente
             </p>
           </CardContent>

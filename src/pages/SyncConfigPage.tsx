@@ -145,9 +145,9 @@ export default function SyncConfigPage() {
                     <div className="flex items-center gap-2">
                       <span className="capitalize">{integration.platform}</span>
                       {integration.is_active ? (
-                        <CheckCircle className="h-4 w-4 text-green-500" />
+                        <CheckCircle className="h-4 w-4 text-success" />
                       ) : (
-                        <AlertCircle className="h-4 w-4 text-yellow-500" />
+                        <AlertCircle className="h-4 w-4 text-warning" />
                       )}
                     </div>
                   </SelectItem>

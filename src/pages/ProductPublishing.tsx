@@ -193,31 +193,31 @@ export default function ProductPublishing() {
         <Card>
           <CardContent className="p-4">
             <div className="text-sm text-muted-foreground">Publiés</div>
-            <div className="text-2xl font-bold text-green-600">{stats.published}</div>
+            <div className="text-2xl font-bold text-success">{stats.published}</div>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-4">
             <div className="text-sm text-muted-foreground">Synchronisés</div>
-            <div className="text-2xl font-bold text-blue-600">{stats.synced}</div>
+            <div className="text-2xl font-bold text-info">{stats.synced}</div>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-4">
             <div className="text-sm text-muted-foreground">Obsolètes</div>
-            <div className="text-2xl font-bold text-orange-600">{stats.outdated}</div>
+            <div className="text-2xl font-bold text-warning">{stats.outdated}</div>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-4">
             <div className="text-sm text-muted-foreground">En attente</div>
-            <div className="text-2xl font-bold text-yellow-600">{stats.pending}</div>
+            <div className="text-2xl font-bold text-warning">{stats.pending}</div>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-4">
             <div className="text-sm text-muted-foreground">Erreurs</div>
-            <div className="text-2xl font-bold text-red-600">{stats.errors}</div>
+            <div className="text-2xl font-bold text-destructive">{stats.errors}</div>
           </CardContent>
         </Card>
       </div>

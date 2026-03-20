@@ -40,7 +40,7 @@ export default function CustomerServiceHubPage() {
     switch (status) {
       case 'open': return <Badge className="bg-orange-100 text-orange-700">Ouvert</Badge>;
       case 'in_progress': return <Badge className="bg-blue-100 text-blue-700">En cours</Badge>;
-      case 'resolved': return <Badge className="bg-green-100 text-green-700">Résolu</Badge>;
+      case 'resolved': return <Badge className="bg-green-100 text-success">Résolu</Badge>;
       case 'closed': return <Badge variant="secondary">Fermé</Badge>;
       default: return <Badge variant="outline">{status}</Badge>;
     }
@@ -48,10 +48,10 @@ export default function CustomerServiceHubPage() {
 
   const getRefundStatusBadge = (status: string) => {
     switch (status) {
-      case 'pending': return <Badge variant="outline" className="text-orange-600 border-orange-300">En attente</Badge>;
+      case 'pending': return <Badge variant="outline" className="text-warning border-orange-300">En attente</Badge>;
       case 'approved': return <Badge className="bg-blue-100 text-blue-700">Approuvé</Badge>;
       case 'rejected': return <Badge variant="destructive">Rejeté</Badge>;
-      case 'refunded': return <Badge className="bg-green-100 text-green-700">Remboursé</Badge>;
+      case 'refunded': return <Badge className="bg-green-100 text-success">Remboursé</Badge>;
       default: return <Badge variant="outline">{status}</Badge>;
     }
   };
@@ -72,9 +72,9 @@ export default function CustomerServiceHubPage() {
         {/* Quick Access Modules */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
           {[
-            { title: 'Chat en direct', desc: 'Messagerie temps réel avec vos clients', icon: MessageSquare, path: '/customer-service/live-chat', color: 'text-emerald-500' },
-            { title: 'Tickets avancés', desc: 'Suivi SLA, priorités et assignation', icon: Ticket, path: '/customer-service/tickets', color: 'text-blue-500' },
-            { title: 'Retours & Réclamations', desc: 'Gestion RMA et remboursements automatisés', icon: RotateCcw, path: '/customer-service/returns', color: 'text-amber-500' },
+            { title: 'Chat en direct', desc: 'Messagerie temps réel avec vos clients', icon: MessageSquare, path: '/customer-service/live-chat', color: 'text-success' },
+            { title: 'Tickets avancés', desc: 'Suivi SLA, priorités et assignation', icon: Ticket, path: '/customer-service/tickets', color: 'text-info' },
+            { title: 'Retours & Réclamations', desc: 'Gestion RMA et remboursements automatisés', icon: RotateCcw, path: '/customer-service/returns', color: 'text-warning' },
           ].map((mod, i) => (
             <Card key={i} className="cursor-pointer hover:shadow-md transition-shadow group" onClick={() => navigate(mod.path)}>
               <CardContent className="p-5 flex items-start gap-4">
@@ -95,7 +95,7 @@ export default function CustomerServiceHubPage() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <Card className="p-4">
             <div className="flex items-center gap-3">
-              <MessageSquare className="h-5 w-5 text-orange-500" />
+              <MessageSquare className="h-5 w-5 text-warning" />
               <div>
                 <p className="text-sm text-muted-foreground">Tickets ouverts</p>
                 <p className="text-2xl font-bold">{stats.openTickets}</p>
@@ -104,7 +104,7 @@ export default function CustomerServiceHubPage() {
           </Card>
           <Card className="p-4">
             <div className="flex items-center gap-3">
-              <Star className="h-5 w-5 text-yellow-500" />
+              <Star className="h-5 w-5 text-warning" />
               <div>
                 <p className="text-sm text-muted-foreground">Note moyenne</p>
                 <p className="text-2xl font-bold">{stats.avgRating}/5</p>
@@ -113,7 +113,7 @@ export default function CustomerServiceHubPage() {
           </Card>
           <Card className="p-4">
             <div className="flex items-center gap-3">
-              <RotateCcw className="h-5 w-5 text-red-500" />
+              <RotateCcw className="h-5 w-5 text-destructive" />
               <div>
                 <p className="text-sm text-muted-foreground">Remboursements en attente</p>
                 <p className="text-2xl font-bold">{stats.pendingRefunds}</p>
@@ -226,7 +226,7 @@ export default function CustomerServiceHubPage() {
                       <div className="flex items-center gap-3 mb-1">
                         <h3 className="font-semibold">{refund.customer_name || refund.customer_email}</h3>
                         {getRefundStatusBadge(refund.status)}
-                        {refund.auto_approved && <Badge variant="outline" className="text-green-600">Auto-approuvé</Badge>}
+                        {refund.auto_approved && <Badge variant="outline" className="text-success">Auto-approuvé</Badge>}
                         <Badge variant="outline" className="capitalize">{refund.reason_category?.replace('_', ' ')}</Badge>
                       </div>
                       <p className="text-sm text-muted-foreground">{refund.reason}</p>
@@ -292,7 +292,7 @@ export default function CustomerServiceHubPage() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <Card className="p-4">
                 <div className="text-center">
-                  <p className="text-4xl font-bold text-yellow-500">{stats.avgRating}</p>
+                  <p className="text-4xl font-bold text-warning">{stats.avgRating}</p>
                   <p className="text-sm text-muted-foreground mt-1">Note moyenne</p>
                   <div className="flex justify-center mt-2">
                     {[1,2,3,4,5].map(s => (
@@ -306,7 +306,7 @@ export default function CustomerServiceHubPage() {
                 <p className="text-sm text-muted-foreground mt-1">Taux de réponse</p>
               </Card>
               <Card className="p-4 text-center">
-                <p className="text-4xl font-bold text-green-500">{stats.reviewsReceived}</p>
+                <p className="text-4xl font-bold text-success">{stats.reviewsReceived}</p>
                 <p className="text-sm text-muted-foreground mt-1">Avis reçus</p>
               </Card>
             </div>

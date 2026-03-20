@@ -113,11 +113,11 @@ export const WinnersBatchImport = ({ products, isOpen, onClose, onConfirm }: Win
           <div className="grid grid-cols-3 gap-4">
             <div className="p-4 bg-blue-500/10 rounded-lg">
               <p className="text-sm text-muted-foreground">Sélectionnés</p>
-              <p className="text-2xl font-bold text-blue-600">{selectedIds.size}</p>
+              <p className="text-2xl font-bold text-info">{selectedIds.size}</p>
             </div>
             <div className="p-4 bg-green-500/10 rounded-lg">
               <p className="text-sm text-muted-foreground">Importés</p>
-              <p className="text-2xl font-bold text-green-600">{imported.length}</p>
+              <p className="text-2xl font-bold text-success">{imported.length}</p>
             </div>
             <div className="p-4 bg-purple-500/10 rounded-lg">
               <p className="text-sm text-muted-foreground">Profit estimé</p>
@@ -194,7 +194,7 @@ export const WinnersBatchImport = ({ products, isOpen, onClose, onConfirm }: Win
                   </div>
 
                   {isImported && (
-                    <Check className="h-5 w-5 text-green-500" />
+                    <Check className="h-5 w-5 text-success" />
                   )}
                   {isFailed && (
                     <X className="h-5 w-5 text-destructive" />

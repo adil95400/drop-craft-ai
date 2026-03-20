@@ -84,10 +84,10 @@ export const ShopifySyncManager = () => {
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'success': return <CheckCircle className="h-4 w-4 text-green-500" />
-      case 'error': return <XCircle className="h-4 w-4 text-red-500" />
+      case 'success': return <CheckCircle className="h-4 w-4 text-success" />
+      case 'error': return <XCircle className="h-4 w-4 text-destructive" />
       case 'syncing':
-      case 'running': return <RefreshCw className="h-4 w-4 text-blue-500 animate-spin" />
+      case 'running': return <RefreshCw className="h-4 w-4 text-info animate-spin" />
       default: return <Clock className="h-4 w-4 text-muted-foreground" />
     }
   }
@@ -228,15 +228,15 @@ export const ShopifySyncManager = () => {
                     </div>
                     <div>
                       <p className="text-muted-foreground">Créés</p>
-                      <p className="font-medium text-green-600">{(config.last_sync_result as any).created || 0}</p>
+                      <p className="font-medium text-success">{(config.last_sync_result as any).created || 0}</p>
                     </div>
                     <div>
                       <p className="text-muted-foreground">Mis à jour</p>
-                      <p className="font-medium text-blue-600">{(config.last_sync_result as any).updated || 0}</p>
+                      <p className="font-medium text-info">{(config.last_sync_result as any).updated || 0}</p>
                     </div>
                     <div>
                       <p className="text-muted-foreground">Ignorés</p>
-                      <p className="font-medium text-orange-600">{(config.last_sync_result as any).skipped || 0}</p>
+                      <p className="font-medium text-warning">{(config.last_sync_result as any).skipped || 0}</p>
                     </div>
                   </div>
                 )}
@@ -284,13 +284,13 @@ export const ShopifySyncManager = () => {
                 </TableCell>
                 <TableCell>
                   <div className="text-sm">
-                    <span className="text-green-600">+{log.products_created}</span>
+                    <span className="text-success">+{log.products_created}</span>
                     {' '}
-                    <span className="text-blue-600">~{log.products_updated}</span>
+                    <span className="text-info">~{log.products_updated}</span>
                     {log.products_skipped > 0 && (
                       <>
                         {' '}
-                        <span className="text-orange-600">-{log.products_skipped}</span>
+                        <span className="text-warning">-{log.products_skipped}</span>
                       </>
                     )}
                   </div>

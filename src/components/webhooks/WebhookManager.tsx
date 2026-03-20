@@ -73,7 +73,7 @@ export function WebhookManager({ integrationId }: WebhookManagerProps) {
   }, {} as Record<string, typeof AVAILABLE_TOPICS>);
 
   const getEventStatusIcon = (event: any) => {
-    if (event.processed) return <CheckCircle className="h-4 w-4 text-green-500" />;
+    if (event.processed) return <CheckCircle className="h-4 w-4 text-success" />;
     if (event.error_message) return <AlertTriangle className="h-4 w-4 text-destructive" />;
     return <Clock className="h-4 w-4 text-muted-foreground" />;
   };

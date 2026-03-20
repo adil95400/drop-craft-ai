@@ -280,7 +280,7 @@ export const AdvancedImportMethods: React.FC = () => {
 
   const getComplexityColor = (complexity: string) => {
     switch (complexity) {
-      case 'easy': return 'bg-green-100 text-green-800'
+      case 'easy': return 'bg-green-100 text-success'
       case 'medium': return 'bg-yellow-100 text-yellow-800'
       case 'advanced': return 'bg-red-100 text-red-800'
       default: return 'bg-gray-100 text-gray-800'
@@ -294,7 +294,7 @@ export const AdvancedImportMethods: React.FC = () => {
         <div className="flex items-center gap-2">
           {isConnected ? (
             <>
-              <Wifi className="h-4 w-4 text-green-600 dark:text-green-400" />
+              <Wifi className="h-4 w-4 text-success dark:text-green-400" />
               <span className="text-xs text-muted-foreground">
                 Suivi en temps réel actif
               </span>

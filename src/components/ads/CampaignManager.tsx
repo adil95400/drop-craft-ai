@@ -157,7 +157,7 @@ export function CampaignManager() {
                   <div>
                     <p className="text-sm text-muted-foreground">ROAS</p>
                     <p className="text-lg font-semibold flex items-center gap-1">
-                      <TrendingUp className="h-4 w-4 text-green-600" />
+                      <TrendingUp className="h-4 w-4 text-success" />
                       {campaign.performance_metrics?.roas || '0'}x
                     </p>
                   </div>

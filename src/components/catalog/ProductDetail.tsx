@@ -109,7 +109,7 @@ export const ProductDetail = ({
                 variant="ghost"
                 onClick={() => onToggleFavorite(product.id)}
               >
-                <Heart className={`w-4 h-4 ${isFavorite ? 'fill-red-500 text-red-500' : 'text-gray-600'}`} />
+                <Heart className={`w-4 h-4 ${isFavorite ? 'fill-red-500 text-destructive' : 'text-gray-600'}`} />
               </Button>
               <Button variant="ghost" onClick={onClose}>
                 ×
@@ -147,11 +147,11 @@ export const ProductDetail = ({
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-muted-foreground">Marge</span>
-                    <Badge className="bg-green-100 text-green-800">{product.margin}%</Badge>
+                    <Badge className="bg-green-100 text-success">{product.margin}%</Badge>
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-muted-foreground">Bénéfice</span>
-                    <span className="font-bold text-green-600">
+                    <span className="font-bold text-success">
                       {(product.price - product.costPrice).toFixed(2)}€
                     </span>
                   </div>
@@ -225,14 +225,14 @@ export const ProductDetail = ({
                     </Card>
                     <Card className="border-border/50">
                       <CardContent className="p-3 text-center">
-                        <Package className="w-6 h-6 mx-auto mb-2 text-green-600" />
+                        <Package className="w-6 h-6 mx-auto mb-2 text-success" />
                         <p className="text-lg font-bold">{product.stock}</p>
                         <p className="text-xs text-muted-foreground">En stock</p>
                       </CardContent>
                     </Card>
                     <Card className="border-border/50">
                       <CardContent className="p-3 text-center">
-                        <Truck className="w-6 h-6 mx-auto mb-2 text-blue-600" />
+                        <Truck className="w-6 h-6 mx-auto mb-2 text-info" />
                         <p className="text-lg font-bold">{product.deliveryTime}</p>
                         <p className="text-xs text-muted-foreground">Livraison</p>
                       </CardContent>
@@ -272,7 +272,7 @@ export const ProductDetail = ({
                           "Support client 24/7"
                         ]).map((feature, index) => (
                           <div key={index} className="flex items-center gap-2">
-                            <CheckCircle className="w-4 h-4 text-green-600" />
+                            <CheckCircle className="w-4 h-4 text-success" />
                             <span className="text-sm">{feature}</span>
                           </div>
                         ))}
@@ -335,15 +335,15 @@ export const ProductDetail = ({
                       </CardHeader>
                       <CardContent className="space-y-2">
                         <div className="flex items-start gap-2">
-                          <CheckCircle className="w-4 h-4 text-green-600 mt-0.5" />
+                          <CheckCircle className="w-4 h-4 text-success mt-0.5" />
                           <span className="text-sm">Produit Winner avec fort potentiel</span>
                         </div>
                         <div className="flex items-start gap-2">
-                          <CheckCircle className="w-4 h-4 text-green-600 mt-0.5" />
+                          <CheckCircle className="w-4 h-4 text-success mt-0.5" />
                           <span className="text-sm">Marge excellente (45%)</span>
                         </div>
                         <div className="flex items-start gap-2">
-                          <AlertTriangle className="w-4 h-4 text-orange-600 mt-0.5" />
+                          <AlertTriangle className="w-4 h-4 text-warning mt-0.5" />
                           <span className="text-sm">Stock en baisse (-15% ce mois)</span>
                         </div>
                       </CardContent>

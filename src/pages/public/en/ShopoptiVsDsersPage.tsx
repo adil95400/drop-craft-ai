@@ -77,8 +77,8 @@ export default function ShopoptiVsDsersPage() {
               {comparison.map((row) => (
                 <div key={row.feature} className="grid grid-cols-3 p-4 border-t items-center">
                   <span className="text-sm">{row.feature}</span>
-                  <span className="text-center">{row.shopopti ? <CheckCircle className="h-5 w-5 text-green-500 mx-auto" /> : <X className="h-5 w-5 text-muted-foreground mx-auto" />}</span>
-                  <span className="text-center">{row.competitor ? <CheckCircle className="h-5 w-5 text-green-500 mx-auto" /> : <X className="h-5 w-5 text-muted-foreground mx-auto" />}</span>
+                  <span className="text-center">{row.shopopti ? <CheckCircle className="h-5 w-5 text-success mx-auto" /> : <X className="h-5 w-5 text-muted-foreground mx-auto" />}</span>
+                  <span className="text-center">{row.competitor ? <CheckCircle className="h-5 w-5 text-success mx-auto" /> : <X className="h-5 w-5 text-muted-foreground mx-auto" />}</span>
                 </div>
               ))}
             </div>

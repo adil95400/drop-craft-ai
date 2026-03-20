@@ -17,11 +17,11 @@ import { useCatalogHealthEngine } from '@/hooks/catalog/useCatalogHealthEngine'
 import { useNavigate } from 'react-router-dom'
 
 const GRADE_STYLES: Record<string, { bg: string; text: string; ring: string }> = {
-  A: { bg: 'bg-emerald-500/10', text: 'text-emerald-600', ring: 'ring-emerald-500/30' },
-  B: { bg: 'bg-blue-500/10', text: 'text-blue-600', ring: 'ring-blue-500/30' },
-  C: { bg: 'bg-amber-500/10', text: 'text-amber-600', ring: 'ring-amber-500/30' },
-  D: { bg: 'bg-orange-500/10', text: 'text-orange-600', ring: 'ring-orange-500/30' },
-  F: { bg: 'bg-red-500/10', text: 'text-red-600', ring: 'ring-red-500/30' },
+  A: { bg: 'bg-emerald-500/10', text: 'text-success', ring: 'ring-emerald-500/30' },
+  B: { bg: 'bg-blue-500/10', text: 'text-info', ring: 'ring-blue-500/30' },
+  C: { bg: 'bg-amber-500/10', text: 'text-warning', ring: 'ring-amber-500/30' },
+  D: { bg: 'bg-orange-500/10', text: 'text-warning', ring: 'ring-orange-500/30' },
+  F: { bg: 'bg-red-500/10', text: 'text-destructive', ring: 'ring-red-500/30' },
 }
 
 export function CatalogHealthBanner() {
@@ -77,25 +77,25 @@ export function CatalogHealthBanner() {
               icon={CheckCircle}
               count={summary.distribution.excellent}
               label="Excellent"
-              className="text-emerald-600 bg-emerald-500/10"
+              className="text-success bg-emerald-500/10"
             />
             <DistributionPill
               icon={ShieldCheck}
               count={summary.distribution.good}
               label="Bon"
-              className="text-blue-600 bg-blue-500/10"
+              className="text-info bg-blue-500/10"
             />
             <DistributionPill
               icon={AlertTriangle}
               count={summary.distribution.warning}
               label="Attention"
-              className="text-amber-600 bg-amber-500/10"
+              className="text-warning bg-amber-500/10"
             />
             <DistributionPill
               icon={XCircle}
               count={summary.distribution.critical}
               label="Critique"
-              className="text-red-600 bg-red-500/10"
+              className="text-destructive bg-red-500/10"
             />
           </div>
 

@@ -316,7 +316,7 @@ export const URLImportInterface: React.FC<URLImportInterfaceProps> = ({
                     <div className="flex gap-4">
                       <div>
                         <Label className="text-xs text-muted-foreground">PRIX</Label>
-                        <p className="font-bold text-green-600">
+                        <p className="font-bold text-success">
                           {scrapedProduct.price} {scrapedProduct.currency}
                         </p>
                       </div>

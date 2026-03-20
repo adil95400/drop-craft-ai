@@ -203,13 +203,13 @@ export const AutomatedSupplierWorkflows = () => {
   }
 
   const getStatusColor = (isActive: boolean) => {
-    return isActive ? 'text-green-600 bg-green-100' : 'text-gray-600 bg-gray-100'
+    return isActive ? 'text-success bg-green-100' : 'text-gray-600 bg-gray-100'
   }
 
   const getSuccessRateColor = (rate: number) => {
-    if (rate >= 95) return 'text-green-600'
-    if (rate >= 85) return 'text-orange-600'
-    return 'text-red-600'
+    if (rate >= 95) return 'text-success'
+    if (rate >= 85) return 'text-warning'
+    return 'text-destructive'
   }
 
   const getTriggerIcon = (type: string) => {
@@ -261,7 +261,7 @@ export const AutomatedSupplierWorkflows = () => {
                 <p className="text-sm text-muted-foreground">Automations Actives</p>
                 <p className="text-2xl font-bold">{activeAutomations}/{automations.length}</p>
               </div>
-              <Zap className="w-8 h-8 text-green-500" />
+              <Zap className="w-8 h-8 text-success" />
             </div>
           </CardContent>
         </Card>
@@ -273,7 +273,7 @@ export const AutomatedSupplierWorkflows = () => {
                 <p className="text-sm text-muted-foreground">Exécutions Totales</p>
                 <p className="text-2xl font-bold">{totalExecutions}</p>
               </div>
-              <RefreshCw className="w-8 h-8 text-blue-500" />
+              <RefreshCw className="w-8 h-8 text-info" />
             </div>
           </CardContent>
         </Card>
@@ -298,9 +298,9 @@ export const AutomatedSupplierWorkflows = () => {
               <div>
                 <p className="text-sm text-muted-foreground">Temps Économisé</p>
                 <p className="text-2xl font-bold">24h</p>
-                <p className="text-xs text-green-600">Cette semaine</p>
+                <p className="text-xs text-success">Cette semaine</p>
               </div>
-              <Clock className="w-8 h-8 text-orange-500" />
+              <Clock className="w-8 h-8 text-warning" />
             </div>
           </CardContent>
         </Card>
@@ -386,7 +386,7 @@ export const AutomatedSupplierWorkflows = () => {
                     </>
                   )}
                   
-                  <div className="flex items-center gap-1 px-2 py-1 bg-green-100 text-green-800 rounded">
+                  <div className="flex items-center gap-1 px-2 py-1 bg-green-100 text-success rounded">
                     <Zap className="w-3 h-3" />
                     <span>{automation.actions.length} action(s)</span>
                   </div>

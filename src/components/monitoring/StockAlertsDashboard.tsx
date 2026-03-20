@@ -17,10 +17,10 @@ import { formatDistanceToNow } from 'date-fns'
 import { useDateFnsLocale } from '@/hooks/useDateFnsLocale'
 
 const SEVERITY_CONFIG = {
-  low: { label: 'Faible', variant: 'outline' as const, color: 'text-blue-600' },
-  medium: { label: 'Moyenne', variant: 'secondary' as const, color: 'text-yellow-600' },
-  high: { label: 'Haute', variant: 'default' as const, color: 'text-orange-600' },
-  critical: { label: 'Critique', variant: 'destructive' as const, color: 'text-red-600' }
+  low: { label: 'Faible', variant: 'outline' as const, color: 'text-info' },
+  medium: { label: 'Moyenne', variant: 'secondary' as const, color: 'text-warning' },
+  high: { label: 'Haute', variant: 'default' as const, color: 'text-warning' },
+  critical: { label: 'Critique', variant: 'destructive' as const, color: 'text-destructive' }
 }
 
 const ALERT_TYPE_LABELS: Record<string, string> = {
@@ -67,28 +67,28 @@ export function StockAlertsDashboard() {
         <Card className="border-red-200 bg-red-50/50 dark:bg-red-950/20">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Critiques</CardTitle>
-            <AlertTriangle className="h-4 w-4 text-red-600" />
+            <AlertTriangle className="h-4 w-4 text-destructive" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-red-600">{stats.critical}</div>
+            <div className="text-2xl font-bold text-destructive">{stats.critical}</div>
           </CardContent>
         </Card>
         <Card className="border-orange-200 bg-orange-50/50 dark:bg-orange-950/20">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Ruptures</CardTitle>
-            <XCircle className="h-4 w-4 text-orange-600" />
+            <XCircle className="h-4 w-4 text-warning" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-orange-600">{stats.outOfStock}</div>
+            <div className="text-2xl font-bold text-warning">{stats.outOfStock}</div>
           </CardContent>
         </Card>
         <Card className="border-yellow-200 bg-yellow-50/50 dark:bg-yellow-950/20">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Stock bas</CardTitle>
-            <Package className="h-4 w-4 text-yellow-600" />
+            <Package className="h-4 w-4 text-warning" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-yellow-600">{stats.lowStock}</div>
+            <div className="text-2xl font-bold text-warning">{stats.lowStock}</div>
           </CardContent>
         </Card>
       </div>

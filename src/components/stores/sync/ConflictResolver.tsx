@@ -59,7 +59,7 @@ export function ConflictResolver() {
       <div className="p-6">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
-            <AlertTriangle className="h-5 w-5 text-yellow-500" />
+            <AlertTriangle className="h-5 w-5 text-warning" />
             <h2 className="text-xl font-semibold">Conflits de synchronisation</h2>
           </div>
           {conflicts.length > 0 && (
@@ -69,7 +69,7 @@ export function ConflictResolver() {
 
         {conflicts.length === 0 ? (
           <div className="text-center py-12">
-            <CheckCircle2 className="h-12 w-12 text-green-500 mx-auto mb-4" />
+            <CheckCircle2 className="h-12 w-12 text-success mx-auto mb-4" />
             <p className="text-muted-foreground">
               Aucun conflit de synchronisation
             </p>

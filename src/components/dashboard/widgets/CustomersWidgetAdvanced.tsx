@@ -45,7 +45,7 @@ export function CustomersWidgetAdvanced({ timeRange, settings, lastRefresh }: Cu
         <CardTitle className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div className="p-2 rounded-lg bg-orange-500/10">
-              <Users className="h-5 w-5 text-orange-500" />
+              <Users className="h-5 w-5 text-warning" />
             </div>
             <span>Clients</span>
           </div>
@@ -89,14 +89,14 @@ export function CustomersWidgetAdvanced({ timeRange, settings, lastRefresh }: Cu
 
         <div className="grid grid-cols-2 gap-4 pt-2 border-t text-sm">
           <div className="flex items-center gap-2">
-            <UserPlus className="h-4 w-4 text-green-500" />
+            <UserPlus className="h-4 w-4 text-success" />
             <div>
               <p className="font-semibold">+24</p>
               <p className="text-xs text-muted-foreground">Nouveaux</p>
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <UserCheck className="h-4 w-4 text-blue-500" />
+            <UserCheck className="h-4 w-4 text-info" />
             <div>
               <p className="font-semibold">68%</p>
               <p className="text-xs text-muted-foreground">Fidèles</p>

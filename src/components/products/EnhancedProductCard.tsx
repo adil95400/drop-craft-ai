@@ -205,16 +205,16 @@ export const EnhancedProductCard = memo(function EnhancedProductCard({
 
   const getStockStatus = () => {
     const stock = product.stock_quantity || 0;
-    if (stock > 50) return { label: 'En stock', color: 'bg-emerald-500', textColor: 'text-emerald-600' };
-    if (stock > 10) return { label: 'Limité', color: 'bg-amber-500', textColor: 'text-amber-600' };
-    if (stock > 0) return { label: 'Faible', color: 'bg-orange-500', textColor: 'text-orange-600' };
-    return { label: 'Rupture', color: 'bg-red-500', textColor: 'text-red-600' };
+    if (stock > 50) return { label: 'En stock', color: 'bg-emerald-500', textColor: 'text-success' };
+    if (stock > 10) return { label: 'Limité', color: 'bg-amber-500', textColor: 'text-warning' };
+    if (stock > 0) return { label: 'Faible', color: 'bg-orange-500', textColor: 'text-warning' };
+    return { label: 'Rupture', color: 'bg-red-500', textColor: 'text-destructive' };
   };
 
   const getScoreConfig = (score: number) => {
-    if (score >= 80) return { color: 'text-emerald-500', bg: 'bg-emerald-500', label: 'Excellent', gradient: 'from-emerald-500 to-emerald-400' };
-    if (score >= 60) return { color: 'text-amber-500', bg: 'bg-amber-500', label: 'Bon', gradient: 'from-amber-500 to-amber-400' };
-    return { color: 'text-red-500', bg: 'bg-red-500', label: 'À optimiser', gradient: 'from-red-500 to-red-400' };
+    if (score >= 80) return { color: 'text-success', bg: 'bg-emerald-500', label: 'Excellent', gradient: 'from-emerald-500 to-emerald-400' };
+    if (score >= 60) return { color: 'text-warning', bg: 'bg-amber-500', label: 'Bon', gradient: 'from-amber-500 to-amber-400' };
+    return { color: 'text-destructive', bg: 'bg-red-500', label: 'À optimiser', gradient: 'from-red-500 to-red-400' };
   };
 
   const stockStatus = getStockStatus();
@@ -318,7 +318,7 @@ export const EnhancedProductCard = memo(function EnhancedProductCard({
                   Partager
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={handleToggleFavorite} className="gap-2">
-                  <Heart className={cn("h-4 w-4", isFavorite && "fill-red-500 text-red-500")} />
+                  <Heart className={cn("h-4 w-4", isFavorite && "fill-red-500 text-destructive")} />
                   {isFavorite ? 'Retirer des favoris' : 'Ajouter aux favoris'}
                 </DropdownMenuItem>
                 {product.status !== 'active' && (
@@ -442,7 +442,7 @@ export const EnhancedProductCard = memo(function EnhancedProductCard({
               className={cn(
                 "shrink-0 text-[10px] font-medium border-0",
                 product.status === 'active' 
-                  ? 'bg-emerald-500/10 text-emerald-600' 
+                  ? 'bg-emerald-500/10 text-success' 
                   : 'bg-muted text-muted-foreground'
               )}
             >
@@ -474,7 +474,7 @@ export const EnhancedProductCard = memo(function EnhancedProductCard({
                     )}>
                       <p className={cn(
                         "text-lg font-bold leading-none",
-                        margin >= 30 ? "text-emerald-600" : margin >= 15 ? "text-amber-600" : "text-red-600"
+                        margin >= 30 ? "text-success" : margin >= 15 ? "text-warning" : "text-destructive"
                       )}>
                         {margin >= 0 ? '+' : ''}{margin}%
                       </p>
@@ -612,7 +612,7 @@ export const EnhancedProductCard = memo(function EnhancedProductCard({
                   Partager
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={handleToggleFavorite} className="gap-2">
-                  <Heart className={cn("h-4 w-4", isFavorite && "fill-red-500 text-red-500")} />
+                  <Heart className={cn("h-4 w-4", isFavorite && "fill-red-500 text-destructive")} />
                   Favoris
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />

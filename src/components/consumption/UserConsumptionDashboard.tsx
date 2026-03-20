@@ -42,20 +42,20 @@ import { format } from 'date-fns';
 import { getDateFnsLocale } from '@/utils/dateFnsLocale';
 
 const QUOTA_ICONS: Record<QuotaKey, React.ReactNode> = {
-  products: <Package className="h-5 w-5 text-blue-500" />,
-  imports_monthly: <Download className="h-5 w-5 text-green-500" />,
+  products: <Package className="h-5 w-5 text-info" />,
+  imports_monthly: <Download className="h-5 w-5 text-success" />,
   ai_generations: <Sparkles className="h-5 w-5 text-purple-500" />,
-  stores: <Store className="h-5 w-5 text-orange-500" />,
+  stores: <Store className="h-5 w-5 text-warning" />,
   suppliers: <Truck className="h-5 w-5 text-cyan-500" />,
   workflows: <Workflow className="h-5 w-5 text-pink-500" />,
   storage_mb: <HardDrive className="h-5 w-5 text-gray-500" />,
   seo_audits: <BarChart3 className="h-5 w-5 text-indigo-500" />,
   seo_generations: <Sparkles className="h-5 w-5 text-violet-500" />,
-  seo_applies: <TrendingUp className="h-5 w-5 text-emerald-500" />,
+  seo_applies: <TrendingUp className="h-5 w-5 text-success" />,
   seo_category_audits: <BarChart3 className="h-5 w-5 text-indigo-400" />,
   seo_site_audits: <BarChart3 className="h-5 w-5 text-indigo-600" />,
   seo_languages: <Sparkles className="h-5 w-5 text-teal-500" />,
-  seo_bulk_limit: <Package className="h-5 w-5 text-amber-500" />,
+  seo_bulk_limit: <Package className="h-5 w-5 text-warning" />,
   seo_history_days: <TrendingUp className="h-5 w-5 text-slate-500" />,
 };
 
@@ -99,7 +99,7 @@ function QuotaCard({ quotaKey, label, current, limit, percentage, isUnlimited }:
             </Badge>
           )}
           {isNearLimit && !isExhausted && (
-            <Badge variant="outline" className="text-xs text-yellow-600 border-yellow-500">
+            <Badge variant="outline" className="text-xs text-warning border-yellow-500">
               <AlertTriangle className="h-3 w-3 mr-1" />
               Bas
             </Badge>
@@ -178,7 +178,7 @@ export function UserConsumptionDashboard() {
           <div className="flex items-center justify-between">
             <div>
               <CardTitle className="flex items-center gap-3">
-                <Crown className="h-6 w-6 text-amber-500" />
+                <Crown className="h-6 w-6 text-warning" />
                 Mon Abonnement
                 <Badge className={cn(planInfo.color, 'text-white')}>
                   {planInfo.label}
@@ -207,7 +207,7 @@ export function UserConsumptionDashboard() {
                 </Badge>
               ))}
               {nearLimitQuotas.filter(q => !exhaustedQuotas.includes(q)).map(q => (
-                <Badge key={q.key} variant="outline" className="text-yellow-600 border-yellow-500">
+                <Badge key={q.key} variant="outline" className="text-warning border-yellow-500">
                   {q.label}: {Math.round(100 - q.percentage)}% restant
                 </Badge>
               ))}

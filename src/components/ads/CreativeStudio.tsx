@@ -176,7 +176,7 @@ export function CreativeStudio() {
                   <div className="grid grid-cols-2 gap-2 text-sm">
                     <div className="p-3 border rounded">
                       <p className="text-muted-foreground">Score IA</p>
-                      <p className="text-lg font-semibold text-green-600">
+                      <p className="text-lg font-semibold text-success">
                         {generatedCreative.performanceScore || '85'}/100
                       </p>
                     </div>

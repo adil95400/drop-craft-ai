@@ -46,7 +46,7 @@ export function FulfillmentProDashboard() {
           value={`${stats.fulfillmentRate}%`}
           change={stats.fulfillmentRateChange}
           icon={<CheckCircle className="h-5 w-5" />}
-          color="text-green-500"
+          color="text-success"
           bgColor="bg-green-500/10"
         />
         <KPICard
@@ -54,7 +54,7 @@ export function FulfillmentProDashboard() {
           value={`${stats.avgDeliveryDays}j`}
           change={stats.avgDeliveryDaysChange}
           icon={<Clock className="h-5 w-5" />}
-          color="text-blue-500"
+          color="text-info"
           bgColor="bg-blue-500/10"
           invertChange
         />
@@ -63,7 +63,7 @@ export function FulfillmentProDashboard() {
           value={`${stats.totalShippingCost.toLocaleString('fr-FR')}€`}
           change={stats.shippingCostChange}
           icon={<DollarSign className="h-5 w-5" />}
-          color="text-amber-500"
+          color="text-warning"
           bgColor="bg-amber-500/10"
           invertChange
         />
@@ -72,7 +72,7 @@ export function FulfillmentProDashboard() {
           value={`${stats.pendingOrders}`}
           change={stats.pendingChange}
           icon={<AlertTriangle className="h-5 w-5" />}
-          color="text-orange-500"
+          color="text-warning"
           bgColor="bg-orange-500/10"
           invertChange
         />
@@ -208,7 +208,7 @@ export function FulfillmentProDashboard() {
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
               <div className="p-2.5 rounded-xl bg-green-500/10">
-                <ShieldCheck className="h-5 w-5 text-green-500" />
+                <ShieldCheck className="h-5 w-5 text-success" />
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Taux de succès</p>
@@ -222,7 +222,7 @@ export function FulfillmentProDashboard() {
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
               <div className="p-2.5 rounded-xl bg-blue-500/10">
-                <Zap className="h-5 w-5 text-blue-500" />
+                <Zap className="h-5 w-5 text-info" />
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Auto-fulfillment</p>
@@ -236,7 +236,7 @@ export function FulfillmentProDashboard() {
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
               <div className="p-2.5 rounded-xl bg-amber-500/10">
-                <TrendingUp className="h-5 w-5 text-amber-500" />
+                <TrendingUp className="h-5 w-5 text-warning" />
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Coût moyen / colis</p>
@@ -296,7 +296,7 @@ export function FulfillmentProDashboard() {
                 <p className="text-xs text-muted-foreground mt-1">Retours total</p>
               </div>
               <div className="p-3 rounded-lg bg-muted/50 text-center">
-                <p className="text-2xl font-bold text-amber-500">{stats.pendingReturns || 0}</p>
+                <p className="text-2xl font-bold text-warning">{stats.pendingReturns || 0}</p>
                 <p className="text-xs text-muted-foreground mt-1">En attente</p>
               </div>
               <div className="p-3 rounded-lg bg-muted/50 text-center">
@@ -335,11 +335,11 @@ function KPICard({ title, value, change, icon, color, bgColor, invertChange }: {
             <p className="text-2xl font-bold mt-1">{value}</p>
             <div className="flex items-center gap-1 mt-1">
               {isPositive ? (
-                <ArrowUpRight className="h-3 w-3 text-green-500" />
+                <ArrowUpRight className="h-3 w-3 text-success" />
               ) : (
-                <ArrowDownRight className="h-3 w-3 text-red-500" />
+                <ArrowDownRight className="h-3 w-3 text-destructive" />
               )}
-              <span className={`text-xs ${isPositive ? 'text-green-500' : 'text-red-500'}`}>
+              <span className={`text-xs ${isPositive ? 'text-success' : 'text-destructive'}`}>
                 {Math.abs(change)}%
               </span>
               <span className="text-xs text-muted-foreground">vs 30j</span>

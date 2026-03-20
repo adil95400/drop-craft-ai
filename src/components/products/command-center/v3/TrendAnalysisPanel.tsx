@@ -28,13 +28,13 @@ interface TrendAnalysisPanelProps {
 const trendConfig = {
   growing: {
     icon: TrendingUp,
-    color: 'text-emerald-600 dark:text-emerald-400',
+    color: 'text-success dark:text-emerald-400',
     bgColor: 'bg-emerald-500/10',
     label: 'En croissance'
   },
   declining: {
     icon: TrendingDown,
-    color: 'text-orange-600 dark:text-orange-400',
+    color: 'text-warning dark:text-orange-400',
     bgColor: 'bg-orange-500/10',
     label: 'En déclin'
   },
@@ -81,8 +81,8 @@ const TrendRow = memo(function TrendRow({
         <div className="text-right">
           <p className={cn(
             "text-sm font-medium",
-            trend.changePercent > 0 ? 'text-emerald-600 dark:text-emerald-400' : 
-            trend.changePercent < 0 ? 'text-orange-600 dark:text-orange-400' : 
+            trend.changePercent > 0 ? 'text-success dark:text-emerald-400' : 
+            trend.changePercent < 0 ? 'text-warning dark:text-orange-400' : 
             'text-muted-foreground'
           )}>
             {trend.changePercent > 0 ? '+' : ''}{trend.changePercent.toFixed(1)}%
@@ -146,13 +146,13 @@ export const TrendAnalysisPanel = memo(function TrendAnalysisPanel({
         </div>
         <div className="flex items-center gap-2">
           {growingCount > 0 && (
-            <Badge variant="secondary" className="text-xs bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-0">
+            <Badge variant="secondary" className="text-xs bg-emerald-500/10 text-success dark:text-emerald-400 border-0">
               <TrendingUp className="h-3 w-3 mr-1" />
               {growingCount}
             </Badge>
           )}
           {decliningCount > 0 && (
-            <Badge variant="secondary" className="text-xs bg-orange-500/10 text-orange-600 dark:text-orange-400 border-0">
+            <Badge variant="secondary" className="text-xs bg-orange-500/10 text-warning dark:text-orange-400 border-0">
               <TrendingDown className="h-3 w-3 mr-1" />
               {decliningCount}
             </Badge>

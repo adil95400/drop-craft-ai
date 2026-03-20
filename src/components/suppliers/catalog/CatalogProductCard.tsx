@@ -94,19 +94,19 @@ export const CatalogProductCard = memo(function CatalogProductCard({
       case 'in_stock':
         return { 
           label: 'En stock', 
-          color: 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20',
+          color: 'bg-emerald-500/10 text-success border-emerald-500/20',
           icon: CheckCircle 
         };
       case 'low_stock':
         return { 
           label: 'Stock faible', 
-          color: 'bg-amber-500/10 text-amber-600 border-amber-500/20',
+          color: 'bg-amber-500/10 text-warning border-amber-500/20',
           icon: AlertTriangle 
         };
       default:
         return { 
           label: 'Rupture', 
-          color: 'bg-red-500/10 text-red-600 border-red-500/20',
+          color: 'bg-red-500/10 text-destructive border-red-500/20',
           icon: Package 
         };
     }
@@ -116,9 +116,9 @@ export const CatalogProductCard = memo(function CatalogProductCard({
   const StockIcon = stockConfig.icon;
 
   const getScoreColor = (score: number) => {
-    if (score >= 80) return 'text-emerald-500';
-    if (score >= 60) return 'text-amber-500';
-    return 'text-red-500';
+    if (score >= 80) return 'text-success';
+    if (score >= 60) return 'text-warning';
+    return 'text-destructive';
   };
 
   const getProgressColor = (score: number) => {
@@ -192,7 +192,7 @@ export const CatalogProductCard = memo(function CatalogProductCard({
             <div className="text-right shrink-0">
               <div className="text-lg font-bold text-primary">{product.retail_price.toFixed(2)}€</div>
               <div className="text-sm text-muted-foreground">Achat: {product.cost_price.toFixed(2)}€</div>
-              <Badge className="bg-emerald-500/10 text-emerald-600 mt-1">
+              <Badge className="bg-emerald-500/10 text-success mt-1">
                 +{product.profit.toFixed(2)}€ ({product.profit_margin.toFixed(0)}%)
               </Badge>
             </div>
@@ -221,7 +221,7 @@ export const CatalogProductCard = memo(function CatalogProductCard({
                   onFavorite(product.id);
                 }}
               >
-                <Heart className={cn("h-4 w-4", isFavorite && "fill-red-500 text-red-500")} />
+                <Heart className={cn("h-4 w-4", isFavorite && "fill-red-500 text-destructive")} />
               </Button>
               <Button
                 variant="outline"
@@ -326,7 +326,7 @@ export const CatalogProductCard = memo(function CatalogProductCard({
           >
             <Heart className={cn(
               "h-4 w-4 transition-colors",
-              isFavorite ? "fill-red-500 text-red-500" : "text-muted-foreground hover:text-red-500"
+              isFavorite ? "fill-red-500 text-destructive" : "text-muted-foreground hover:text-destructive"
             )} />
           </button>
         </div>
@@ -358,7 +358,7 @@ export const CatalogProductCard = memo(function CatalogProductCard({
 
           {/* Margin & Stock */}
           <div className="flex items-center justify-between">
-            <Badge className="bg-emerald-500/10 text-emerald-600 border-emerald-500/20 text-xs">
+            <Badge className="bg-emerald-500/10 text-success border-emerald-500/20 text-xs">
               +{product.profit.toFixed(2)}€ • {product.profit_margin.toFixed(0)}%
             </Badge>
             <Badge className={cn(stockConfig.color, "text-xs")}>

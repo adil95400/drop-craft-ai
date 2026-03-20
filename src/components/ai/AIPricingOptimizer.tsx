@@ -146,7 +146,7 @@ export const AIPricingOptimizer = () => {
             {pricingData.margin && (
               <div className="flex items-center justify-between p-3 bg-green-50 dark:bg-green-950/20 rounded-lg">
                 <span className="text-sm font-medium">Marge Estimée</span>
-                <Badge variant="outline" className="bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300">
+                <Badge variant="outline" className="bg-green-100 dark:bg-green-900 text-success dark:text-green-300">
                   {pricingData.margin}%
                 </Badge>
               </div>

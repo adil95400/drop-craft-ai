@@ -66,17 +66,17 @@ interface BIReport {
 }
 
 const CATEGORY_CONFIG: Record<string, { icon: typeof Brain; color: string; label: string }> = {
-  revenue: { icon: DollarSign, color: 'text-emerald-600', label: 'Revenus' },
-  inventory: { icon: Package, color: 'text-orange-500', label: 'Inventaire' },
-  customers: { icon: Users, color: 'text-blue-500', label: 'Clients' },
+  revenue: { icon: DollarSign, color: 'text-success', label: 'Revenus' },
+  inventory: { icon: Package, color: 'text-warning', label: 'Inventaire' },
+  customers: { icon: Users, color: 'text-info', label: 'Clients' },
   growth: { icon: TrendingUp, color: 'text-purple-500', label: 'Croissance' },
-  risk: { icon: ShieldAlert, color: 'text-red-500', label: 'Risque' },
+  risk: { icon: ShieldAlert, color: 'text-destructive', label: 'Risque' },
 };
 
 const IMPACT_STYLES: Record<string, string> = {
-  high: 'bg-red-500/10 text-red-600 border-red-500/20',
-  medium: 'bg-amber-500/10 text-amber-600 border-amber-500/20',
-  low: 'bg-blue-500/10 text-blue-600 border-blue-500/20',
+  high: 'bg-red-500/10 text-destructive border-red-500/20',
+  medium: 'bg-amber-500/10 text-warning border-amber-500/20',
+  low: 'bg-blue-500/10 text-info border-blue-500/20',
 };
 
 export default function AIBusinessInsightsPage() {
@@ -98,9 +98,9 @@ export default function AIBusinessInsightsPage() {
   });
 
   const healthColor = (score: number) => {
-    if (score >= 80) return 'text-emerald-500';
-    if (score >= 60) return 'text-amber-500';
-    return 'text-red-500';
+    if (score >= 80) return 'text-success';
+    if (score >= 60) return 'text-warning';
+    return 'text-destructive';
   };
 
   const healthBg = (score: number) => {
@@ -110,8 +110,8 @@ export default function AIBusinessInsightsPage() {
   };
 
   const TrendIcon = ({ trend }: { trend: string }) => {
-    if (trend === 'up') return <ArrowUpRight className="h-4 w-4 text-emerald-500" />;
-    if (trend === 'down') return <ArrowDownRight className="h-4 w-4 text-red-500" />;
+    if (trend === 'up') return <ArrowUpRight className="h-4 w-4 text-success" />;
+    if (trend === 'down') return <ArrowDownRight className="h-4 w-4 text-destructive" />;
     return <Minus className="h-4 w-4 text-muted-foreground" />;
   };
 
@@ -144,7 +144,7 @@ export default function AIBusinessInsightsPage() {
           <div className="flex flex-col items-center justify-center py-20 gap-4">
             <div className="relative">
               <Brain className="h-12 w-12 text-primary animate-pulse" />
-              <Sparkles className="h-5 w-5 text-amber-500 absolute -top-1 -right-1 animate-bounce" />
+              <Sparkles className="h-5 w-5 text-warning absolute -top-1 -right-1 animate-bounce" />
             </div>
             <p className="text-muted-foreground font-medium">L'IA analyse vos données business…</p>
             <p className="text-sm text-muted-foreground">Cela peut prendre quelques secondes</p>
@@ -182,7 +182,7 @@ export default function AIBusinessInsightsPage() {
               <Card className="md:col-span-2">
                 <CardContent className="pt-6">
                   <div className="flex items-start gap-3">
-                    <Lightbulb className="h-5 w-5 text-amber-500 mt-0.5 flex-shrink-0" />
+                    <Lightbulb className="h-5 w-5 text-warning mt-0.5 flex-shrink-0" />
                     <div>
                       <p className="font-semibold mb-1">Résumé Exécutif</p>
                       <p className="text-sm text-muted-foreground">{report.summary}</p>
@@ -295,7 +295,7 @@ export default function AIBusinessInsightsPage() {
                             <TrendIcon trend={pred.trend} />
                             <div>
                               <p className="text-xs text-muted-foreground mb-0.5">Prédit</p>
-                              <p className={cn("text-lg font-bold", pred.trend === 'up' ? 'text-emerald-600' : pred.trend === 'down' ? 'text-red-600' : '')}>
+                              <p className={cn("text-lg font-bold", pred.trend === 'up' ? 'text-success' : pred.trend === 'down' ? 'text-destructive' : '')}>
                                 {pred.predicted_value > 100 ? formatCurrency(pred.predicted_value) : pred.predicted_value}
                               </p>
                             </div>
@@ -319,7 +319,7 @@ export default function AIBusinessInsightsPage() {
                 {report.anomalies.length === 0 ? (
                   <Card>
                     <CardContent className="py-12 text-center">
-                      <CheckCircle2 className="h-10 w-10 mx-auto text-emerald-500 mb-3" />
+                      <CheckCircle2 className="h-10 w-10 mx-auto text-success mb-3" />
                       <p className="font-medium">Aucune anomalie détectée</p>
                       <p className="text-sm text-muted-foreground">Tout semble normal dans vos données</p>
                     </CardContent>
@@ -340,8 +340,8 @@ export default function AIBusinessInsightsPage() {
                           <CardContent className="py-4">
                             <div className="flex items-center gap-3">
                               {anomaly.type === 'positive' 
-                                ? <TrendingUp className="h-5 w-5 text-emerald-500" />
-                                : <AlertTriangle className="h-5 w-5 text-red-500" />
+                                ? <TrendingUp className="h-5 w-5 text-success" />
+                                : <AlertTriangle className="h-5 w-5 text-destructive" />
                               }
                               <div className="flex-1">
                                 <p className="text-sm font-medium">{anomaly.description}</p>

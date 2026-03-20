@@ -18,7 +18,7 @@ export function CatalogDashboard() {
       value: '12,847',
       change: '+12%',
       icon: Package,
-      color: 'text-blue-600',
+      color: 'text-info',
       bg: 'bg-blue-100',
       trend: 'up'
     },
@@ -27,7 +27,7 @@ export function CatalogDashboard() {
       value: '€2.4M',
       change: '+23%',
       icon: DollarSign,
-      color: 'text-green-600',
+      color: 'text-success',
       bg: 'bg-green-100',
       trend: 'up'
     },
@@ -45,7 +45,7 @@ export function CatalogDashboard() {
       value: '3.2%',
       change: '-0.5%',
       icon: Target,
-      color: 'text-orange-600',
+      color: 'text-warning',
       bg: 'bg-orange-100',
       trend: 'down'
     }
@@ -120,8 +120,8 @@ export function CatalogDashboard() {
                     <p className="text-2xl font-bold">{stat.value}</p>
                     <p className="text-sm text-muted-foreground">{stat.title}</p>
                     <div className="flex items-center mt-1">
-                      <TrendingUp className={`h-3 w-3 mr-1 ${stat.trend === 'up' ? 'text-green-600' : 'text-red-600'}`} />
-                      <span className={`text-xs ${stat.trend === 'up' ? 'text-green-600' : 'text-red-600'}`}>
+                      <TrendingUp className={`h-3 w-3 mr-1 ${stat.trend === 'up' ? 'text-success' : 'text-destructive'}`} />
+                      <span className={`text-xs ${stat.trend === 'up' ? 'text-success' : 'text-destructive'}`}>
                         {stat.change}
                       </span>
                     </div>
@@ -161,9 +161,9 @@ export function CatalogDashboard() {
                               activity.type === 'sync' ? 'bg-purple-100' :
                               'bg-gray-100'
                             }`}>
-                              {activity.type === 'product' && <Package className="h-4 w-4 text-blue-600" />}
-                              {activity.type === 'supplier' && <Users className="h-4 w-4 text-green-600" />} 
-                              {activity.type === 'pricing' && <DollarSign className="h-4 w-4 text-yellow-600" />}
+                              {activity.type === 'product' && <Package className="h-4 w-4 text-info" />}
+                              {activity.type === 'supplier' && <Users className="h-4 w-4 text-success" />} 
+                              {activity.type === 'pricing' && <DollarSign className="h-4 w-4 text-warning" />}
                               {activity.type === 'sync' && <Zap className="h-4 w-4 text-purple-600" />}
                               {activity.type === 'report' && <BarChart3 className="h-4 w-4 text-gray-600" />}
                             </div>
@@ -224,8 +224,8 @@ export function CatalogDashboard() {
                         <div className="text-right">
                           <p className="font-semibold">{category.revenue}</p>
                           <div className="flex items-center gap-1">
-                            <TrendingUp className="h-3 w-3 text-green-600" />
-                            <span className="text-sm text-green-600">{category.growth}</span>
+                            <TrendingUp className="h-3 w-3 text-success" />
+                            <span className="text-sm text-success">{category.growth}</span>
                           </div>
                         </div>
                       </div>
@@ -245,7 +245,7 @@ export function CatalogDashboard() {
                     <div className="space-y-3">
                       <div className="flex justify-between items-center">
                         <span className="text-sm">iPhone 15 Pro</span>
-                        <Badge className="bg-green-100 text-green-800">Top ventes</Badge>
+                        <Badge className="bg-green-100 text-success">Top ventes</Badge>
                       </div>
                       <div className="flex justify-between items-center">
                         <span className="text-sm">Samsung Galaxy S24</span>
@@ -291,10 +291,10 @@ export function CatalogDashboard() {
               <div className="space-y-4">
                 <Card className="border-red-200 bg-red-50">
                   <CardContent className="flex items-center p-4">
-                    <AlertTriangle className="h-5 w-5 text-red-600 mr-3" />
+                    <AlertTriangle className="h-5 w-5 text-destructive mr-3" />
                     <div className="flex-1">
                       <p className="font-medium text-red-800">Stock faible détecté</p>
-                      <p className="text-sm text-red-600">12 produits en rupture de stock</p>
+                      <p className="text-sm text-destructive">12 produits en rupture de stock</p>
                     </div>
                     <Button variant="outline" size="sm">Voir</Button>
                   </CardContent>
@@ -302,10 +302,10 @@ export function CatalogDashboard() {
 
                 <Card className="border-yellow-200 bg-yellow-50">
                   <CardContent className="flex items-center p-4">
-                    <AlertTriangle className="h-5 w-5 text-yellow-600 mr-3" />
+                    <AlertTriangle className="h-5 w-5 text-warning mr-3" />
                     <div className="flex-1">
                       <p className="font-medium text-yellow-800">Prix non compétitifs</p>
-                      <p className="text-sm text-yellow-600">25 produits avec prix supérieurs à la concurrence</p>
+                      <p className="text-sm text-warning">25 produits avec prix supérieurs à la concurrence</p>
                     </div>
                     <Button variant="outline" size="sm">Optimiser</Button>
                   </CardContent>
@@ -313,10 +313,10 @@ export function CatalogDashboard() {
 
                 <Card className="border-green-200 bg-green-50">
                   <CardContent className="flex items-center p-4">
-                    <CheckCircle className="h-5 w-5 text-green-600 mr-3" />
+                    <CheckCircle className="h-5 w-5 text-success mr-3" />
                     <div className="flex-1">
-                      <p className="font-medium text-green-800">Synchronisation réussie</p>
-                      <p className="text-sm text-green-600">1,245 produits mis à jour avec succès</p>
+                      <p className="font-medium text-success">Synchronisation réussie</p>
+                      <p className="text-sm text-success">1,245 produits mis à jour avec succès</p>
                     </div>
                     <Button variant="outline" size="sm">Détails</Button>
                   </CardContent>

@@ -131,8 +131,8 @@ export function APIKeysManager() {
         {justCreatedKey && (
           <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="p-3 border border-green-500/30 bg-green-500/10 rounded-lg space-y-2">
             <div className="flex items-center gap-2">
-              <Shield className="h-4 w-4 text-green-600" />
-              <span className="text-sm font-semibold text-green-700">Nouvelle clé créée</span>
+              <Shield className="h-4 w-4 text-success" />
+              <span className="text-sm font-semibold text-success">Nouvelle clé créée</span>
             </div>
             <div className="flex items-center gap-2">
               <code className="text-xs font-mono bg-background p-1.5 rounded flex-1 break-all">{justCreatedKey}</code>
@@ -179,7 +179,7 @@ export function APIKeysManager() {
               <div className="flex-1 min-w-0 space-y-1">
                 <div className="flex items-center gap-2">
                   <span className="text-sm font-medium truncate">{k.name}</span>
-                  <Badge variant="outline" className={cn('text-[9px]', k.environment === 'live' ? 'border-green-500/30 text-green-600' : 'border-amber-500/30 text-amber-600')}>
+                  <Badge variant="outline" className={cn('text-[9px]', k.environment === 'live' ? 'border-green-500/30 text-success' : 'border-amber-500/30 text-warning')}>
                     {k.environment}
                   </Badge>
                 </div>

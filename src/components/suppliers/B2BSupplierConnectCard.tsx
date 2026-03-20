@@ -90,7 +90,7 @@ export function B2BSupplierConnectCard({ supplierId, className }: B2BSupplierCon
           </div>
           
           {connected ? (
-            <Badge className="bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300">
+            <Badge className="bg-green-100 text-success dark:bg-green-900 dark:text-green-300">
               <Check className="w-3 h-3 mr-1" />
               Connecté
             </Badge>
@@ -105,7 +105,7 @@ export function B2BSupplierConnectCard({ supplierId, className }: B2BSupplierCon
         <div className="grid grid-cols-3 gap-2 text-xs">
           {supplierDef?.rating && (
             <div className="flex items-center gap-1 text-muted-foreground">
-              <Star className="w-3 h-3 text-yellow-500" />
+              <Star className="w-3 h-3 text-warning" />
               <span>{supplierDef.rating}</span>
             </div>
           )}

@@ -163,7 +163,7 @@ export function EnrichmentConfigStatus() {
               >
                 <div className="flex items-center gap-3">
                   {api.configured ? (
-                    <CheckCircle className="h-5 w-5 text-green-600" />
+                    <CheckCircle className="h-5 w-5 text-success" />
                   ) : (
                     <XCircle className="h-5 w-5 text-muted-foreground" />
                   )}
@@ -193,7 +193,7 @@ export function EnrichmentConfigStatus() {
             {configuredCount === 0 && (
               <div className="mt-4 p-4 rounded-lg bg-amber-500/10 border border-amber-500/20">
                 <div className="flex items-start gap-3">
-                  <AlertTriangle className="h-5 w-5 text-amber-600 mt-0.5" />
+                  <AlertTriangle className="h-5 w-5 text-warning mt-0.5" />
                   <div>
                     <p className="text-sm font-medium text-amber-800 dark:text-amber-200">
                       Aucune API d'enrichissement configurée

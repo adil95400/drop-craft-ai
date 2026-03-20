@@ -25,14 +25,14 @@ const TIER_CONFIG: Record<string, { label: string; color: string; icon: React.Re
 };
 
 function getMarginColor(margin: number) {
-  if (margin >= 50) return 'text-green-600 dark:text-green-400';
-  if (margin >= 30) return 'text-emerald-500 dark:text-emerald-400';
-  if (margin >= 15) return 'text-yellow-600 dark:text-yellow-400';
-  return 'text-red-500 dark:text-red-400';
+  if (margin >= 50) return 'text-success dark:text-green-400';
+  if (margin >= 30) return 'text-success dark:text-emerald-400';
+  if (margin >= 15) return 'text-warning dark:text-yellow-400';
+  return 'text-destructive dark:text-red-400';
 }
 
 function getMarginBadge(margin: number) {
-  if (margin >= 50) return { label: 'Haute marge', variant: 'default' as const, className: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' };
+  if (margin >= 50) return { label: 'Haute marge', variant: 'default' as const, className: 'bg-green-100 text-success dark:bg-green-900 dark:text-green-200' };
   if (margin >= 30) return { label: 'Bonne marge', variant: 'default' as const, className: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-200' };
   if (margin >= 15) return { label: 'Marge moyenne', variant: 'default' as const, className: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200' };
   return { label: 'Marge faible', variant: 'destructive' as const, className: '' };
@@ -161,14 +161,14 @@ export default function PremiumSuppliersPage() {
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">Vérifiés</CardTitle>
-                <BadgeCheck className="h-4 w-4 text-green-500" />
+                <BadgeCheck className="h-4 w-4 text-success" />
               </CardHeader>
               <CardContent><div className="text-2xl font-bold">{verified.length}</div></CardContent>
             </Card>
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">Note moyenne</CardTitle>
-                <Star className="h-4 w-4 text-yellow-500" />
+                <Star className="h-4 w-4 text-warning" />
               </CardHeader>
               <CardContent><div className="text-2xl font-bold">{avgRating}/5</div></CardContent>
             </Card>
@@ -218,7 +218,7 @@ export default function PremiumSuppliersPage() {
                 return (
                   <Card key={supplier.id} className="relative overflow-hidden">
                     {supplier.is_verified && (
-                      <div className="absolute top-3 right-3"><BadgeCheck className="h-5 w-5 text-green-500" /></div>
+                      <div className="absolute top-3 right-3"><BadgeCheck className="h-5 w-5 text-success" /></div>
                     )}
                     <CardHeader className="pb-3">
                       <div className="flex items-center gap-3">
@@ -240,15 +240,15 @@ export default function PremiumSuppliersPage() {
                       {supplier.description && <p className="text-sm text-muted-foreground line-clamp-2">{supplier.description}</p>}
                       <div className="grid grid-cols-3 gap-2 text-center">
                         <div>
-                          <div className="flex items-center justify-center gap-1"><Star className="h-3.5 w-3.5 text-yellow-500" /><span className="font-semibold text-sm">{supplier.rating || '—'}</span></div>
+                          <div className="flex items-center justify-center gap-1"><Star className="h-3.5 w-3.5 text-warning" /><span className="font-semibold text-sm">{supplier.rating || '—'}</span></div>
                           <span className="text-xs text-muted-foreground">Note</span>
                         </div>
                         <div>
-                          <div className="flex items-center justify-center gap-1"><Truck className="h-3.5 w-3.5 text-blue-500" /><span className="font-semibold text-sm">{supplier.avg_delivery_days ? `${supplier.avg_delivery_days}j` : '—'}</span></div>
+                          <div className="flex items-center justify-center gap-1"><Truck className="h-3.5 w-3.5 text-info" /><span className="font-semibold text-sm">{supplier.avg_delivery_days ? `${supplier.avg_delivery_days}j` : '—'}</span></div>
                           <span className="text-xs text-muted-foreground">Livraison</span>
                         </div>
                         <div>
-                          <div className="flex items-center justify-center gap-1"><TrendingUp className="h-3.5 w-3.5 text-green-500" /><span className="font-semibold text-sm">{supplier.total_orders || 0}</span></div>
+                          <div className="flex items-center justify-center gap-1"><TrendingUp className="h-3.5 w-3.5 text-success" /><span className="font-semibold text-sm">{supplier.total_orders || 0}</span></div>
                           <span className="text-xs text-muted-foreground">Commandes</span>
                         </div>
                       </div>
@@ -280,7 +280,7 @@ export default function PremiumSuppliersPage() {
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">Marge moyenne</CardTitle>
-                <TrendingUp className="h-4 w-4 text-green-500" />
+                <TrendingUp className="h-4 w-4 text-success" />
               </CardHeader>
               <CardContent><div className="text-2xl font-bold">{avgMargin}%</div></CardContent>
             </Card>
@@ -294,7 +294,7 @@ export default function PremiumSuppliersPage() {
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">Profit total estimé</CardTitle>
-                <DollarSign className="h-4 w-4 text-emerald-500" />
+                <DollarSign className="h-4 w-4 text-success" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">
@@ -405,7 +405,7 @@ export default function PremiumSuppliersPage() {
                       {/* Profit */}
                       <div className="flex items-center justify-between text-sm bg-muted/50 rounded-lg px-3 py-2">
                         <span className="text-muted-foreground">Profit unitaire</span>
-                        <span className="font-bold text-green-600 dark:text-green-400">+{product.profit.toFixed(2)}€</span>
+                        <span className="font-bold text-success dark:text-green-400">+{product.profit.toFixed(2)}€</span>
                       </div>
 
                       {/* Meta */}

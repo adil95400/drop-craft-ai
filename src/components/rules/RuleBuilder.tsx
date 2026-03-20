@@ -716,7 +716,7 @@ export function RuleBuilder({ rule, open, onOpenChange, onSave }: RuleBuilderPro
                             <CardContent className="p-3">
                               <div className="flex items-start gap-2">
                                 {matches ? (
-                                  <CheckCircle2 className="h-4 w-4 text-emerald-500 mt-0.5 shrink-0" />
+                                  <CheckCircle2 className="h-4 w-4 text-success mt-0.5 shrink-0" />
                                 ) : (
                                   <AlertCircle className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
                                 )}
@@ -750,7 +750,7 @@ export function RuleBuilder({ rule, open, onOpenChange, onSave }: RuleBuilderPro
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               {!isValid && (
                 <>
-                  <AlertCircle className="h-4 w-4 text-amber-500" />
+                  <AlertCircle className="h-4 w-4 text-warning" />
                   <span>
                     {!name.trim() ? "Nom requis" : 
                      conditions.length === 0 ? "Ajoutez des conditions" : 

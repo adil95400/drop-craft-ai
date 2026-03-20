@@ -207,7 +207,7 @@ export const MultiTenantDashboard = () => {
               <DollarSign className="h-4 w-4" />
               MRR
             </CardDescription>
-            <CardTitle className="text-3xl text-green-600">
+            <CardTitle className="text-3xl text-success">
               {(tenants.length * 299).toLocaleString()} €
             </CardTitle>
             <Badge variant="secondary" className="mt-2">
@@ -324,14 +324,14 @@ export const MultiTenantDashboard = () => {
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <Activity className="h-4 w-4 text-green-500" />
+                  <Activity className="h-4 w-4 text-success" />
                   <span className="text-sm">API Calls</span>
                 </div>
                 <span className="font-bold">12.4K</span>
               </div>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <Users className="h-4 w-4 text-blue-500" />
+                  <Users className="h-4 w-4 text-info" />
                   <span className="text-sm">Sessions actives</span>
                 </div>
                 <span className="font-bold">342</span>

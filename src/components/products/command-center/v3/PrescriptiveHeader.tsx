@@ -83,9 +83,9 @@ export const PrescriptiveHeader = memo(function PrescriptiveHeader({
           >
             <StatusIcon className={cn(
               'h-7 w-7',
-              status.color === 'emerald' && 'text-emerald-500',
-              status.color === 'yellow' && 'text-yellow-500',
-              status.color === 'red' && 'text-red-500'
+              status.color === 'emerald' && 'text-success',
+              status.color === 'yellow' && 'text-warning',
+              status.color === 'red' && 'text-destructive'
             )} />
             
             {/* Critical badge */}
@@ -134,7 +134,7 @@ export const PrescriptiveHeader = memo(function PrescriptiveHeader({
             <p className="text-sm text-muted-foreground mt-0.5">
               {hasIssues && topPriorityAction ? (
                 <span className="flex items-center gap-1.5">
-                  <Zap className="h-3.5 w-3.5 text-orange-500" />
+                  <Zap className="h-3.5 w-3.5 text-warning" />
                   <span className="font-medium text-foreground">{topPriorityAction}</span>
                   <span>• priorité #1</span>
                 </span>
@@ -156,10 +156,10 @@ export const PrescriptiveHeader = memo(function PrescriptiveHeader({
                     className="px-3 py-2 rounded-xl bg-emerald-500/10 border border-emerald-500/30"
                     whileHover={{ scale: 1.05 }}
                   >
-                    <p className="text-xs text-emerald-600 dark:text-emerald-400 font-medium">
+                    <p className="text-xs text-success dark:text-emerald-400 font-medium">
                       Potentiel
                     </p>
-                    <p className="text-lg font-bold text-emerald-500">
+                    <p className="text-lg font-bold text-success">
                       +{estimatedPotentialGain.toLocaleString('fr-FR')}€
                     </p>
                   </motion.div>
@@ -188,9 +188,9 @@ export const PrescriptiveHeader = memo(function PrescriptiveHeader({
                   <div className="text-center">
                     <span className={cn(
                       'text-xl font-bold',
-                      status.color === 'emerald' && 'text-emerald-500',
-                      status.color === 'yellow' && 'text-yellow-500',
-                      status.color === 'red' && 'text-red-500'
+                      status.color === 'emerald' && 'text-success',
+                      status.color === 'yellow' && 'text-warning',
+                      status.color === 'red' && 'text-destructive'
                     )}>
                       {healthScore}
                     </span>

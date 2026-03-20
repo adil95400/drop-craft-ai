@@ -172,7 +172,7 @@ const KPIItem = memo(function KPIItem({
               <motion.div 
                 className={cn(
                   'flex items-center gap-1 text-xs font-medium px-2 py-1 rounded-md',
-                  trend.positive ? 'bg-emerald-500/10 text-emerald-600' : 'bg-red-500/10 text-red-600'
+                  trend.positive ? 'bg-emerald-500/10 text-success' : 'bg-red-500/10 text-destructive'
                 )}
                 initial={hasChanged ? { scale: 0.8, opacity: 0 } : false}
                 animate={{ scale: 1, opacity: 1 }}
@@ -225,7 +225,7 @@ export const KPIFeedbackBar = memo(function KPIFeedbackBar({
       tooltip: KPI_FEEDBACK_CONFIG.avg_margin.tooltip,
       icon: Percent,
       trend: calculateTrend(data.avgMargin, previousData?.avgMargin),
-      color: 'bg-blue-500/10 text-blue-500'
+      color: 'bg-blue-500/10 text-info'
     },
     {
       key: 'stock_value',
@@ -247,7 +247,7 @@ export const KPIFeedbackBar = memo(function KPIFeedbackBar({
       tooltip: KPI_FEEDBACK_CONFIG.potential_profit.tooltip,
       icon: DollarSign,
       trend: calculateTrend(data.potentialProfit, previousData?.potentialProfit),
-      color: 'bg-emerald-500/10 text-emerald-500'
+      color: 'bg-emerald-500/10 text-success'
     },
     {
       key: 'profitable_products',
@@ -258,7 +258,7 @@ export const KPIFeedbackBar = memo(function KPIFeedbackBar({
       tooltip: KPI_FEEDBACK_CONFIG.profitable_products.tooltip,
       icon: BarChart3,
       trend: calculateTrend(data.profitableProducts, previousData?.profitableProducts),
-      color: 'bg-amber-500/10 text-amber-500'
+      color: 'bg-amber-500/10 text-warning'
     }
   ], [data, previousData, currency])
   

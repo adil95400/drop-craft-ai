@@ -106,15 +106,15 @@ export const RealIntegrationsTab = () => {
               <div className="text-sm text-muted-foreground">Total</div>
             </div>
             <div className="text-center p-4 bg-green-50 dark:bg-green-950/20 rounded-lg">
-              <div className="text-2xl font-bold text-green-600">{stats.connected}</div>
+              <div className="text-2xl font-bold text-success">{stats.connected}</div>
               <div className="text-sm text-muted-foreground">Connectées</div>
             </div>
             <div className="text-center p-4 bg-blue-50 dark:bg-blue-950/20 rounded-lg">
-              <div className="text-2xl font-bold text-blue-600">{stats.active}</div>
+              <div className="text-2xl font-bold text-info">{stats.active}</div>
               <div className="text-sm text-muted-foreground">Actives</div>
             </div>
             <div className="text-center p-4 bg-red-50 dark:bg-red-950/20 rounded-lg">
-              <div className="text-2xl font-bold text-red-600">{stats.errors}</div>
+              <div className="text-2xl font-bold text-destructive">{stats.errors}</div>
               <div className="text-sm text-muted-foreground">Erreurs</div>
             </div>
           </div>
@@ -285,15 +285,15 @@ export const RealIntegrationsTab = () => {
             <CardContent className="space-y-3">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-green-500" />
+                  <CheckCircle2 className="w-4 h-4 text-success" />
                   <span className="text-sm">APIs externes</span>
                 </div>
-                <Badge variant="secondary" className="bg-green-100 text-green-700">Opérationnel</Badge>
+                <Badge variant="secondary" className="bg-green-100 text-success">Opérationnel</Badge>
               </div>
               
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <Activity className="w-4 h-4 text-blue-500" />
+                  <Activity className="w-4 h-4 text-info" />
                   <span className="text-sm">Synchronisation</span>
                 </div>
                 <Badge variant="secondary" className="bg-blue-100 text-blue-700">Actif</Badge>
@@ -301,7 +301,7 @@ export const RealIntegrationsTab = () => {
               
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <Database className="w-4 h-4 text-orange-500" />
+                  <Database className="w-4 h-4 text-warning" />
                   <span className="text-sm">Base de données</span>
                 </div>
                 <Badge variant="secondary" className="bg-orange-100 text-orange-700">Maintenance</Badge>
@@ -309,10 +309,10 @@ export const RealIntegrationsTab = () => {
               
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <Globe className="w-4 h-4 text-green-500" />
+                  <Globe className="w-4 h-4 text-success" />
                   <span className="text-sm">Réseau</span>
                 </div>
-                <Badge variant="secondary" className="bg-green-100 text-green-700">Normal</Badge>
+                <Badge variant="secondary" className="bg-green-100 text-success">Normal</Badge>
               </div>
             </CardContent>
           </Card>

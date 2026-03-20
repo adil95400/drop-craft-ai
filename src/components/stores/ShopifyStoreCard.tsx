@@ -78,7 +78,7 @@ export function ShopifyStoreCard({ integration, stats }: ShopifyStoreCardProps) 
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-green-100">
-              <span className="text-lg font-bold text-green-600">S</span>
+              <span className="text-lg font-bold text-success">S</span>
             </div>
             <div>
               <CardTitle className="text-lg">Shopify</CardTitle>
@@ -103,12 +103,12 @@ export function ShopifyStoreCard({ integration, stats }: ShopifyStoreCardProps) 
         {/* Statistiques */}
         <div className="grid grid-cols-3 gap-4">
           <div className="text-center p-3 bg-muted/50 rounded-lg">
-            <Package className="w-5 h-5 mx-auto mb-1 text-blue-500" />
+            <Package className="w-5 h-5 mx-auto mb-1 text-info" />
             <div className="text-2xl font-bold">{stats?.products || 0}</div>
             <div className="text-xs text-muted-foreground">Produits</div>
           </div>
           <div className="text-center p-3 bg-muted/50 rounded-lg">
-            <ShoppingCart className="w-5 h-5 mx-auto mb-1 text-green-500" />
+            <ShoppingCart className="w-5 h-5 mx-auto mb-1 text-success" />
             <div className="text-2xl font-bold">{stats?.orders || 0}</div>
             <div className="text-xs text-muted-foreground">Commandes</div>
           </div>

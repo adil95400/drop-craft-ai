@@ -25,7 +25,7 @@ export function FavoritesPanel({ favorites, onRemoveFavorite, onImport }: Favori
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base">
-            <Heart className="w-5 h-5 text-red-500" />
+            <Heart className="w-5 h-5 text-destructive" />
             Mes Favoris
           </CardTitle>
         </CardHeader>
@@ -45,7 +45,7 @@ export function FavoritesPanel({ favorites, onRemoveFavorite, onImport }: Favori
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <CardTitle className="flex items-center gap-2 text-base">
-            <Heart className="w-5 h-5 text-red-500 fill-red-500" />
+            <Heart className="w-5 h-5 text-destructive fill-red-500" />
             Mes Favoris
           </CardTitle>
           <Badge variant="secondary">{favorites.length}</Badge>
@@ -72,7 +72,7 @@ export function FavoritesPanel({ favorites, onRemoveFavorite, onImport }: Favori
                       <TrendingUp className="w-3 h-3 mr-1" />
                       {product.winnerScore}%
                     </Badge>
-                    <span className="text-sm font-semibold text-green-600">
+                    <span className="text-sm font-semibold text-success">
                       {product.price}€
                     </span>
                   </div>
@@ -90,7 +90,7 @@ export function FavoritesPanel({ favorites, onRemoveFavorite, onImport }: Favori
                   <Button 
                     variant="ghost" 
                     size="icon"
-                    className="h-7 w-7 text-red-500 hover:text-red-600"
+                    className="h-7 w-7 text-destructive hover:text-destructive"
                     onClick={() => onRemoveFavorite(product.id)}
                   >
                     <Trash2 className="w-4 h-4" />

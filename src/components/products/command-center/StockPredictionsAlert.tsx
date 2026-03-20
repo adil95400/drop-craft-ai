@@ -26,28 +26,28 @@ interface StockPredictionsAlertProps {
 
 const urgencyConfig = {
   critical: {
-    color: 'text-red-600 dark:text-red-400',
+    color: 'text-destructive dark:text-red-400',
     bgColor: 'bg-red-500/10',
     borderColor: 'border-red-500/50',
     label: 'Critique',
     icon: AlertTriangle
   },
   high: {
-    color: 'text-orange-600 dark:text-orange-400',
+    color: 'text-warning dark:text-orange-400',
     bgColor: 'bg-orange-500/10',
     borderColor: 'border-orange-500/50',
     label: 'Haute',
     icon: Clock
   },
   medium: {
-    color: 'text-amber-600 dark:text-amber-400',
+    color: 'text-warning dark:text-amber-400',
     bgColor: 'bg-amber-500/10',
     borderColor: 'border-amber-500/50',
     label: 'Moyenne',
     icon: TrendingDown
   },
   low: {
-    color: 'text-blue-600 dark:text-blue-400',
+    color: 'text-info dark:text-blue-400',
     bgColor: 'bg-blue-500/10',
     borderColor: 'border-blue-500/50',
     label: 'Basse',
@@ -82,7 +82,7 @@ export function StockPredictionsAlert({
       >
         <Bell className={cn(
           'h-5 w-5 animate-pulse',
-          criticalCount > 0 ? 'text-red-500' : 'text-orange-500'
+          criticalCount > 0 ? 'text-destructive' : 'text-warning'
         )} />
         <div className="flex-1">
           <p className="text-sm font-medium">
@@ -112,7 +112,7 @@ export function StockPredictionsAlert({
     )}>
       <AlertTriangle className={cn(
         'h-5 w-5',
-        criticalCount > 0 ? 'text-red-500' : 'text-orange-500'
+        criticalCount > 0 ? 'text-destructive' : 'text-warning'
       )} />
       <AlertTitle className="flex items-center gap-2">
         Alertes Stock Prédictives

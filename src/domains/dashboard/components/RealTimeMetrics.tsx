@@ -156,10 +156,10 @@ export const RealTimeMetrics: React.FC = () => {
         <Card className="border-green-200 bg-green-50/50">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Visiteurs actifs</CardTitle>
-            <Users className="h-4 w-4 text-green-600" />
+            <Users className="h-4 w-4 text-success" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-green-700">{realTimeData.activeVisitors}</div>
+            <div className="text-2xl font-bold text-success">{realTimeData.activeVisitors}</div>
             <p className="text-xs text-muted-foreground">
               {realTimeData.currentSessions} sessions actives
             </p>
@@ -169,7 +169,7 @@ export const RealTimeMetrics: React.FC = () => {
         <Card className="border-blue-200 bg-blue-50/50">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Commandes live</CardTitle>
-            <ShoppingCart className="h-4 w-4 text-blue-600" />
+            <ShoppingCart className="h-4 w-4 text-info" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-blue-700">{realTimeData.liveOrders}</div>
@@ -182,7 +182,7 @@ export const RealTimeMetrics: React.FC = () => {
         <Card className="border-yellow-200 bg-yellow-50/50">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Paniers abandonnés</CardTitle>
-            <AlertCircle className="h-4 w-4 text-yellow-600" />
+            <AlertCircle className="h-4 w-4 text-warning" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-yellow-700">{realTimeData.cartAbandonments}</div>
@@ -244,9 +244,9 @@ export const RealTimeMetrics: React.FC = () => {
             {realTimeData.recentActivity.map((activity, index) => (
               <div key={index} className="flex items-start gap-3 p-2 rounded-lg bg-muted/50">
                 <div className="mt-1">
-                  {activity.type === 'order' && <CheckCircle className="h-4 w-4 text-green-500" />}
-                  {activity.type === 'visitor' && <Eye className="h-4 w-4 text-blue-500" />}
-                  {activity.type === 'cart' && <ShoppingCart className="h-4 w-4 text-orange-500" />}
+                  {activity.type === 'order' && <CheckCircle className="h-4 w-4 text-success" />}
+                  {activity.type === 'visitor' && <Eye className="h-4 w-4 text-info" />}
+                  {activity.type === 'cart' && <ShoppingCart className="h-4 w-4 text-warning" />}
                 </div>
                 <div className="flex-1">
                   <p className="text-sm font-medium">{activity.message}</p>

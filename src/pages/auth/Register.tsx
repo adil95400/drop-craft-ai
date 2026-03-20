@@ -91,13 +91,13 @@ const Register = () => {
     switch (strength) {
       case 0:
       case 1:
-        return { label: t('register.strengthWeak'), color: 'text-red-500' };
+        return { label: t('register.strengthWeak'), color: 'text-destructive' };
       case 2:
-        return { label: t('register.strengthMedium'), color: 'text-yellow-500' };
+        return { label: t('register.strengthMedium'), color: 'text-warning' };
       case 3:
-        return { label: t('register.strengthStrong'), color: 'text-blue-500' };
+        return { label: t('register.strengthStrong'), color: 'text-info' };
       case 4:
-        return { label: t('register.strengthVeryStrong'), color: 'text-green-500' };
+        return { label: t('register.strengthVeryStrong'), color: 'text-success' };
       default:
         return { label: '', color: '' };
     }
@@ -236,7 +236,7 @@ const Register = () => {
                   </Button>
                 </div>
                 {confirmPassword && password === confirmPassword && (
-                  <div className="flex items-center gap-1 text-xs text-green-600">
+                  <div className="flex items-center gap-1 text-xs text-success">
                     <CheckCircle className="h-3 w-3" />
                     <span>{t('register.passwordsMatch')}</span>
                   </div>
@@ -283,19 +283,19 @@ const Register = () => {
               <p className="text-sm font-medium text-center">{t('register.includedTitle')}</p>
               <div className="grid grid-cols-1 gap-2 text-xs">
                 <div className="flex items-center gap-2">
-                  <CheckCircle className="h-3 w-3 text-green-600" />
+                  <CheckCircle className="h-3 w-3 text-success" />
                   <span>{t('register.featureDashboard')}</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <CheckCircle className="h-3 w-3 text-green-600" />
+                  <CheckCircle className="h-3 w-3 text-success" />
                   <span>{t('register.featureOrders')}</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <CheckCircle className="h-3 w-3 text-green-600" />
+                  <CheckCircle className="h-3 w-3 text-success" />
                   <span>{t('register.featureCustomers')}</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <CheckCircle className="h-3 w-3 text-green-600" />
+                  <CheckCircle className="h-3 w-3 text-success" />
                   <span>{t('register.featureProducts')}</span>
                 </div>
               </div>

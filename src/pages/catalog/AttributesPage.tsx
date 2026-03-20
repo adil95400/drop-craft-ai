@@ -26,9 +26,9 @@ export default function AttributesPage() {
   const { stats, marketplaceAnalysis, productIssues, enrichableProducts, aiSuggestions, isLoading, enrichProduct, bulkEnrich } = useAttributeAnalysis()
 
   const issueCategories = [
-    { id: 'category', label: 'Sans catégorie', icon: Tag, count: stats.missingCategory, color: 'text-red-500', bg: 'bg-red-500/10', ring: 'ring-red-500' },
-    { id: 'brand', label: 'Sans marque', icon: ShoppingBag, count: stats.missingBrand, color: 'text-amber-500', bg: 'bg-amber-500/10', ring: 'ring-amber-500' },
-    { id: 'gtin', label: 'Sans GTIN/EAN', icon: FileWarning, count: stats.missingGTIN, color: 'text-blue-500', bg: 'bg-blue-500/10', ring: 'ring-blue-500' },
+    { id: 'category', label: 'Sans catégorie', icon: Tag, count: stats.missingCategory, color: 'text-destructive', bg: 'bg-red-500/10', ring: 'ring-red-500' },
+    { id: 'brand', label: 'Sans marque', icon: ShoppingBag, count: stats.missingBrand, color: 'text-warning', bg: 'bg-amber-500/10', ring: 'ring-amber-500' },
+    { id: 'gtin', label: 'Sans GTIN/EAN', icon: FileWarning, count: stats.missingGTIN, color: 'text-info', bg: 'bg-blue-500/10', ring: 'ring-blue-500' },
     { id: 'description', label: 'Description courte', icon: AlertTriangle, count: stats.missingDescription, color: 'text-purple-500', bg: 'bg-purple-500/10', ring: 'ring-purple-500' },
   ]
 
@@ -66,7 +66,7 @@ export default function AttributesPage() {
                   <p className="text-sm text-muted-foreground">{stats.complete} produits complets sur {stats.total}</p>
                 </div>
                 <div className="text-right">
-                  <span className={cn("text-5xl font-black tracking-tight", stats.completenessScore >= 80 ? "text-emerald-500" : stats.completenessScore >= 60 ? "text-amber-500" : "text-red-500")}>
+                  <span className={cn("text-5xl font-black tracking-tight", stats.completenessScore >= 80 ? "text-success" : stats.completenessScore >= 60 ? "text-warning" : "text-destructive")}>
                     {stats.completenessScore}%
                   </span>
                   {stats.completenessScore < 80 && <p className="text-xs text-muted-foreground mt-1">Objectif: 80%</p>}
@@ -77,8 +77,8 @@ export default function AttributesPage() {
               {stats.completenessScore < 80 && (
                 <div className="mt-4 p-3 bg-amber-500/10 rounded-xl border border-amber-500/20">
                   <div className="flex items-center gap-2">
-                    <TrendingUp className="h-4 w-4 text-amber-500" />
-                    <span className="text-sm font-semibold text-amber-600">+{Math.round((80 - stats.completenessScore) * 0.5)}% de visibilité potentielle</span>
+                    <TrendingUp className="h-4 w-4 text-warning" />
+                    <span className="text-sm font-semibold text-warning">+{Math.round((80 - stats.completenessScore) * 0.5)}% de visibilité potentielle</span>
                   </div>
                   <p className="text-xs text-muted-foreground mt-1">Atteindre 80% de complétude améliore le classement sur Google Shopping et Amazon</p>
                 </div>
@@ -120,7 +120,7 @@ export default function AttributesPage() {
                   <CardHeader className="pb-3 border-b bg-muted/30">
                     <div className="flex items-center justify-between">
                       <CardTitle className="text-lg flex items-center gap-2">
-                        <AlertTriangle className="h-5 w-5 text-amber-500" />Produits à corriger
+                        <AlertTriangle className="h-5 w-5 text-warning" />Produits à corriger
                       </CardTitle>
                       <Badge variant="secondary">{productIssues.length} produits</Badge>
                     </div>
@@ -188,7 +188,7 @@ export default function AttributesPage() {
                 <CardContent className="p-4">
                   {aiSuggestions.length === 0 ? (
                     <div className="text-center py-12 text-muted-foreground">
-                      <CheckCircle className="h-16 w-16 mx-auto mb-3 text-emerald-500" />
+                      <CheckCircle className="h-16 w-16 mx-auto mb-3 text-success" />
                       <p className="font-medium">Aucune suggestion disponible</p>
                       <p className="text-sm">Vos produits semblent bien enrichis</p>
                     </div>
@@ -239,7 +239,7 @@ export default function AttributesPage() {
                             <TableCell className="text-center">
                               <div className="flex items-center justify-center gap-2">
                                 <Progress value={mp.readinessScore} className="w-16 h-2" />
-                                <span className={cn("text-sm font-bold tabular-nums", mp.readinessScore >= 80 ? "text-emerald-500" : mp.readinessScore >= 50 ? "text-amber-500" : "text-red-500")}>
+                                <span className={cn("text-sm font-bold tabular-nums", mp.readinessScore >= 80 ? "text-success" : mp.readinessScore >= 50 ? "text-warning" : "text-destructive")}>
                                   {mp.readinessScore}%
                                 </span>
                               </div>
@@ -280,7 +280,7 @@ function SuggestionCard({ suggestion, idx = 0 }: { suggestion: AttributeSuggesti
     >
       <div className="flex items-center gap-3 min-w-0">
         <div className={cn("p-2 rounded-xl", status === 'accepted' ? "bg-emerald-500/20" : "bg-purple-500/10")}>
-          {status === 'accepted' ? <CheckCircle className="h-4 w-4 text-emerald-500" /> : <Sparkles className="h-4 w-4 text-purple-500" />}
+          {status === 'accepted' ? <CheckCircle className="h-4 w-4 text-success" /> : <Sparkles className="h-4 w-4 text-purple-500" />}
         </div>
         <div className="min-w-0">
           <p className="font-semibold text-sm truncate">{suggestion.productName}</p>
@@ -296,10 +296,10 @@ function SuggestionCard({ suggestion, idx = 0 }: { suggestion: AttributeSuggesti
         {status === 'pending' && (
           <>
             <Button size="icon" variant="ghost" className="h-8 w-8 hover:bg-emerald-500/10" onClick={() => setStatus('accepted')}>
-              <Check className="h-4 w-4 text-emerald-500" />
+              <Check className="h-4 w-4 text-success" />
             </Button>
             <Button size="icon" variant="ghost" className="h-8 w-8 hover:bg-red-500/10" onClick={() => setStatus('rejected')}>
-              <X className="h-4 w-4 text-red-500" />
+              <X className="h-4 w-4 text-destructive" />
             </Button>
           </>
         )}

@@ -31,9 +31,9 @@ const RECOMMENDATION_ICONS = {
 };
 
 const IMPACT_COLORS = {
-  high: 'bg-red-500/10 text-red-600 border-red-500/20',
-  medium: 'bg-amber-500/10 text-amber-600 border-amber-500/20',
-  low: 'bg-blue-500/10 text-blue-600 border-blue-500/20',
+  high: 'bg-red-500/10 text-destructive border-red-500/20',
+  medium: 'bg-amber-500/10 text-warning border-amber-500/20',
+  low: 'bg-blue-500/10 text-info border-blue-500/20',
 };
 
 const IMPACT_LABELS = {
@@ -188,7 +188,7 @@ export function CatalogRulesAIPanel() {
                   <p className="text-3xl font-bold">{stats.productsWithoutRules}</p>
                 </div>
                 <div className="h-12 w-12 rounded-xl bg-amber-500/10 flex items-center justify-center">
-                  <AlertTriangle className="h-6 w-6 text-amber-600" />
+                  <AlertTriangle className="h-6 w-6 text-warning" />
                 </div>
               </div>
             </CardContent>
@@ -209,7 +209,7 @@ export function CatalogRulesAIPanel() {
                   <p className="text-3xl font-bold">{stats.automationCoverage}%</p>
                 </div>
                 <div className="h-12 w-12 rounded-xl bg-emerald-500/10 flex items-center justify-center">
-                  <CheckCircle2 className="h-6 w-6 text-emerald-600" />
+                  <CheckCircle2 className="h-6 w-6 text-success" />
                 </div>
               </div>
             </CardContent>
@@ -257,7 +257,7 @@ export function CatalogRulesAIPanel() {
         <CardContent>
           {stats.recommendations.length === 0 ? (
             <div className="text-center py-8">
-              <CheckCircle2 className="h-12 w-12 mx-auto text-emerald-500 mb-3" />
+              <CheckCircle2 className="h-12 w-12 mx-auto text-success mb-3" />
               <p className="font-medium">Catalogue optimisé !</p>
               <p className="text-sm text-muted-foreground">
                 Aucune amélioration majeure détectée

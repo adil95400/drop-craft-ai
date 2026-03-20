@@ -37,13 +37,13 @@ export function FeedRulesAIPanel() {
   const getTypeIcon = (type: FeedRuleRecommendation['type']) => {
     switch (type) {
       case 'optimization':
-        return <Sparkles className="h-4 w-4 text-blue-500" />;
+        return <Sparkles className="h-4 w-4 text-info" />;
       case 'new_rule':
         return <Lightbulb className="h-4 w-4 text-violet-500" />;
       case 'warning':
-        return <AlertTriangle className="h-4 w-4 text-amber-500" />;
+        return <AlertTriangle className="h-4 w-4 text-warning" />;
       case 'opportunity':
-        return <TrendingUp className="h-4 w-4 text-emerald-500" />;
+        return <TrendingUp className="h-4 w-4 text-success" />;
     }
   };
 
@@ -58,9 +58,9 @@ export function FeedRulesAIPanel() {
 
   const getPriorityColor = (priority: FeedRuleRecommendation['priority']) => {
     switch (priority) {
-      case 'high': return 'bg-red-500/10 text-red-600 border-red-500/20';
-      case 'medium': return 'bg-amber-500/10 text-amber-600 border-amber-500/20';
-      case 'low': return 'bg-blue-500/10 text-blue-600 border-blue-500/20';
+      case 'high': return 'bg-red-500/10 text-destructive border-red-500/20';
+      case 'medium': return 'bg-amber-500/10 text-warning border-amber-500/20';
+      case 'low': return 'bg-blue-500/10 text-info border-blue-500/20';
     }
   };
 
@@ -77,7 +77,7 @@ export function FeedRulesAIPanel() {
               )}>
                 <Target className={cn(
                   "h-5 w-5",
-                  stats.coverageScore >= 70 ? "text-emerald-500" : "text-amber-500"
+                  stats.coverageScore >= 70 ? "text-success" : "text-warning"
                 )} />
               </div>
               <div className="flex-1">
@@ -110,7 +110,7 @@ export function FeedRulesAIPanel() {
           <CardContent className="pt-6">
             <div className="flex items-center gap-4">
               <div className="p-2 bg-amber-500/10 rounded-lg">
-                <AlertTriangle className="h-5 w-5 text-amber-500" />
+                <AlertTriangle className="h-5 w-5 text-warning" />
               </div>
               <div>
                 <p className="text-2xl font-bold">{stats.productsWithoutRules}</p>
@@ -124,7 +124,7 @@ export function FeedRulesAIPanel() {
           <CardContent className="pt-6">
             <div className="flex items-center gap-4">
               <div className="p-2 bg-emerald-500/10 rounded-lg">
-                <TrendingUp className="h-5 w-5 text-emerald-500" />
+                <TrendingUp className="h-5 w-5 text-success" />
               </div>
               <div>
                 <p className="text-2xl font-bold">+{stats.estimatedQualityGain}%</p>
@@ -181,8 +181,8 @@ export function FeedRulesAIPanel() {
         <CardContent className="space-y-4">
           {recommendations.length === 0 ? (
             <div className="text-center py-12 border-2 border-dashed rounded-lg">
-              <Check className="h-12 w-12 mx-auto text-emerald-500 mb-4" />
-              <p className="font-medium text-emerald-600">Excellent !</p>
+              <Check className="h-12 w-12 mx-auto text-success mb-4" />
+              <p className="font-medium text-success">Excellent !</p>
               <p className="text-muted-foreground">
                 Aucune recommandation pour le moment. Vos règles sont bien configurées.
               </p>
@@ -211,7 +211,7 @@ export function FeedRulesAIPanel() {
                           <Target className="h-3 w-3" />
                           {rec.impact.productsAffected} produits
                         </span>
-                        <span className="flex items-center gap-1 text-emerald-600 font-medium">
+                        <span className="flex items-center gap-1 text-success font-medium">
                           <TrendingUp className="h-3 w-3" />
                           {rec.impact.estimatedImprovement}
                         </span>

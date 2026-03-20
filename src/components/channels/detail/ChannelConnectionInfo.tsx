@@ -46,7 +46,7 @@ export function ChannelConnectionInfo({ channel }: ChannelConnectionInfoProps) {
       label: 'Domaine boutique',
       value: shopDomain,
       copyable: true,
-      color: 'text-blue-600 dark:text-blue-400 bg-blue-500/10',
+      color: 'text-info dark:text-blue-400 bg-blue-500/10',
     },
     {
       icon: Cpu,
@@ -60,14 +60,14 @@ export function ChannelConnectionInfo({ channel }: ChannelConnectionInfoProps) {
       label: 'Jeton d\'accès',
       value: hasAccessToken ? '••••••••' + (credentials.access_token?.slice(-6) || '') : 'Non configuré',
       status: hasAccessToken ? 'ok' : 'error',
-      color: 'text-amber-600 dark:text-amber-400 bg-amber-500/10',
+      color: 'text-warning dark:text-amber-400 bg-amber-500/10',
     },
     {
       icon: Shield,
       label: 'Scopes',
       value: typeof scopes === 'string' ? scopes : Array.isArray(scopes) ? scopes.join(', ') : '—',
       copyable: false,
-      color: 'text-emerald-600 dark:text-emerald-400 bg-emerald-500/10',
+      color: 'text-success dark:text-emerald-400 bg-emerald-500/10',
     },
     {
       icon: Calendar,
@@ -92,7 +92,7 @@ export function ChannelConnectionInfo({ channel }: ChannelConnectionInfoProps) {
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <Globe className="h-4 w-4 text-blue-500" />
+            <Globe className="h-4 w-4 text-info" />
             <CardTitle className="text-sm font-semibold">Informations de connexion</CardTitle>
           </div>
           <Badge 

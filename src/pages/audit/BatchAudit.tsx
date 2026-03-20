@@ -210,7 +210,7 @@ export default function BatchAudit() {
                   </div>
                   <div className="space-y-3">
                     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex items-center gap-3 p-4 bg-blue-50 dark:bg-blue-950/50 rounded-lg border border-blue-200 dark:border-blue-800">
-                      <Clock className="h-5 w-5 text-blue-600" />
+                      <Clock className="h-5 w-5 text-info" />
                       <div className="flex-1">
                         <div className="font-medium text-sm">{t('batch.analyzing')}</div>
                         <div className="text-xs text-muted-foreground">{t('batch.analyzingProducts')}</div>
@@ -218,7 +218,7 @@ export default function BatchAudit() {
                     </motion.div>
                     {progress === 100 && (
                       <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="flex items-center gap-3 p-4 bg-green-50 dark:bg-green-950/50 rounded-lg border border-green-200 dark:border-green-800">
-                        <CheckCircle2 className="h-5 w-5 text-green-600" />
+                        <CheckCircle2 className="h-5 w-5 text-success" />
                         <div className="flex-1">
                           <div className="font-medium text-sm">{t('batch.auditComplete')}</div>
                           <div className="text-xs text-muted-foreground">{t('batch.allProductsAnalyzed')}</div>

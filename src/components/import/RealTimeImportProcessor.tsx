@@ -122,9 +122,9 @@ export const RealTimeImportProcessor = () => {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'completed': return 'text-green-600 bg-green-100'
-      case 'processing': return 'text-blue-600 bg-blue-100'
-      case 'failed': return 'text-red-600 bg-red-100'
+      case 'completed': return 'text-success bg-green-100'
+      case 'processing': return 'text-info bg-blue-100'
+      case 'failed': return 'text-destructive bg-red-100'
       default: return 'text-gray-600 bg-gray-100'
     }
   }
@@ -165,7 +165,7 @@ export const RealTimeImportProcessor = () => {
             Activer Temps Réel
           </Button>
         ) : (
-          <Badge variant="outline" className="text-green-600 border-green-600">
+          <Badge variant="outline" className="text-success border-green-600">
             <Activity className="w-3 h-3 mr-1" />
             En Direct
           </Badge>
@@ -180,7 +180,7 @@ export const RealTimeImportProcessor = () => {
               <CardContent className="p-4">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <Cpu className="w-4 h-4 text-blue-500" />
+                    <Cpu className="w-4 h-4 text-info" />
                     <span className="text-sm font-medium">CPU</span>
                   </div>
                   <span className="text-sm font-bold">{systemMetrics.cpuUsage.toFixed(1)}%</span>
@@ -193,7 +193,7 @@ export const RealTimeImportProcessor = () => {
               <CardContent className="p-4">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <Database className="w-4 h-4 text-green-500" />
+                    <Database className="w-4 h-4 text-success" />
                     <span className="text-sm font-medium">Mémoire</span>
                   </div>
                   <span className="text-sm font-bold">{systemMetrics.memoryUsage.toFixed(1)}%</span>
@@ -206,7 +206,7 @@ export const RealTimeImportProcessor = () => {
               <CardContent className="p-4">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <Network className="w-4 h-4 text-orange-500" />
+                    <Network className="w-4 h-4 text-warning" />
                     <span className="text-sm font-medium">Latence</span>
                   </div>
                   <span className="text-sm font-bold">{systemMetrics.networkLatency.toFixed(0)}ms</span>
@@ -265,7 +265,7 @@ export const RealTimeImportProcessor = () => {
                     </div>
                     <div>
                       <span className="text-muted-foreground">Erreurs:</span>
-                      <p className="font-medium text-red-600">{job.failedItems}</p>
+                      <p className="font-medium text-destructive">{job.failedItems}</p>
                     </div>
                     <div>
                       <span className="text-muted-foreground">ETA:</span>
@@ -283,11 +283,11 @@ export const RealTimeImportProcessor = () => {
                   {/* Errors */}
                   {job.errors.length > 0 && (
                     <div className="border-t pt-3">
-                      <span className="text-sm font-medium text-red-600">Erreurs récentes:</span>
+                      <span className="text-sm font-medium text-destructive">Erreurs récentes:</span>
                       <ScrollArea className="h-16 mt-1">
                         <div className="space-y-1">
                           {job.errors.map((error, index) => (
-                            <p key={index} className="text-xs text-red-600 bg-red-50 p-1 rounded">
+                            <p key={index} className="text-xs text-destructive bg-red-50 p-1 rounded">
                               {error}
                             </p>
                           ))}

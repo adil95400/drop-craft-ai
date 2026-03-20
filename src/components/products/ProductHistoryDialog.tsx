@@ -113,11 +113,11 @@ export function ProductHistoryDialog({
   const getChangeColor = (type: string) => {
     switch (type) {
       case 'created':
-        return 'bg-green-500/10 text-green-600 border-green-500/20'
+        return 'bg-green-500/10 text-success border-green-500/20'
       case 'updated':
-        return 'bg-blue-500/10 text-blue-600 border-blue-500/20'
+        return 'bg-blue-500/10 text-info border-blue-500/20'
       case 'deleted':
-        return 'bg-red-500/10 text-red-600 border-red-500/20'
+        return 'bg-red-500/10 text-destructive border-red-500/20'
       case 'restored':
         return 'bg-purple-500/10 text-purple-600 border-purple-500/20'
       default:

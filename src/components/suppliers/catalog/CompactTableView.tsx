@@ -110,21 +110,21 @@ export const CompactTableView = memo(function CompactTableView({
     switch (status) {
       case 'in_stock':
         return (
-          <Badge className="bg-emerald-500/10 text-emerald-600 border-emerald-500/20 text-xs">
+          <Badge className="bg-emerald-500/10 text-success border-emerald-500/20 text-xs">
             <CheckCircle className="h-3 w-3 mr-1" />
             {quantity}
           </Badge>
         );
       case 'low_stock':
         return (
-          <Badge className="bg-amber-500/10 text-amber-600 border-amber-500/20 text-xs">
+          <Badge className="bg-amber-500/10 text-warning border-amber-500/20 text-xs">
             <AlertTriangle className="h-3 w-3 mr-1" />
             {quantity}
           </Badge>
         );
       default:
         return (
-          <Badge className="bg-red-500/10 text-red-600 border-red-500/20 text-xs">
+          <Badge className="bg-red-500/10 text-destructive border-red-500/20 text-xs">
             <Package className="h-3 w-3 mr-1" />
             0
           </Badge>
@@ -133,9 +133,9 @@ export const CompactTableView = memo(function CompactTableView({
   };
 
   const getScoreColor = (score: number) => {
-    if (score >= 80) return 'text-emerald-500';
-    if (score >= 60) return 'text-amber-500';
-    return 'text-red-500';
+    if (score >= 80) return 'text-success';
+    if (score >= 60) return 'text-warning';
+    return 'text-destructive';
   };
 
   return (
@@ -212,7 +212,7 @@ export const CompactTableView = memo(function CompactTableView({
                       />
                       {product.is_winner && (
                         <div className="absolute -top-0.5 -right-0.5">
-                          <Crown className="h-3 w-3 text-amber-500 fill-amber-500" />
+                          <Crown className="h-3 w-3 text-warning fill-amber-500" />
                         </div>
                       )}
                     </div>
@@ -224,7 +224,7 @@ export const CompactTableView = memo(function CompactTableView({
                           {product.name}
                         </span>
                         {product.is_winner && (
-                          <Badge className="bg-amber-500/10 text-amber-600 text-[10px] px-1">Winner</Badge>
+                          <Badge className="bg-amber-500/10 text-warning text-[10px] px-1">Winner</Badge>
                         )}
                         {product.is_trending && (
                           <Badge className="bg-purple-500/10 text-purple-600 text-[10px] px-1">
@@ -244,7 +244,7 @@ export const CompactTableView = memo(function CompactTableView({
                     {product.cost_price.toFixed(2)}€
                   </TableCell>
                   <TableCell className="text-right">
-                    <Badge className="bg-emerald-500/10 text-emerald-600 border-emerald-500/20">
+                    <Badge className="bg-emerald-500/10 text-success border-emerald-500/20">
                       +{product.profit_margin.toFixed(0)}%
                     </Badge>
                   </TableCell>
@@ -272,7 +272,7 @@ export const CompactTableView = memo(function CompactTableView({
                       >
                         <Heart className={cn(
                           "h-3.5 w-3.5",
-                          isFav && "fill-red-500 text-red-500"
+                          isFav && "fill-red-500 text-destructive"
                         )} />
                       </Button>
                       <Button

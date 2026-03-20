@@ -25,7 +25,7 @@ export const SidebarFooterSection = memo<SidebarFooterSectionProps>(({ collapsed
 
   const planConfig: Record<string, { label: string; className: string }> = {
     free: { label: 'Free', className: 'bg-muted text-muted-foreground' },
-    standard: { label: 'Standard', className: 'bg-blue-500/20 text-blue-600 dark:text-blue-400' },
+    standard: { label: 'Standard', className: 'bg-blue-500/20 text-info dark:text-blue-400' },
     pro: { label: 'Pro', className: 'bg-primary/20 text-primary' },
     ultra_pro: { label: 'Ultra', className: 'bg-warning/20 text-warning' }
   }

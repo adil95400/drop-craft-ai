@@ -542,7 +542,7 @@ export const ProductDraftEditor: React.FC<ProductDraftEditorProps> = ({
                   <CardContent className="p-4">
                     <div className="flex items-center justify-between">
                       <span className="text-sm font-medium">Marge bénéficiaire</span>
-                      <span className="text-lg font-bold text-green-600">
+                      <span className="text-lg font-bold text-success">
                         {(((product.price - product.cost_price) / product.price) * 100).toFixed(1)}%
                       </span>
                     </div>

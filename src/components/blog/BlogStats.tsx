@@ -36,21 +36,21 @@ export function BlogStats({
       icon: Eye,
       label: 'Vues totales',
       value: totalViews.toLocaleString(),
-      color: 'text-blue-600',
+      color: 'text-info',
       bgColor: 'bg-blue-100',
     },
     {
       icon: Heart,
       label: 'J\'aime',
       value: totalLikes.toLocaleString(),
-      color: 'text-red-600',
+      color: 'text-destructive',
       bgColor: 'bg-red-100',
     },
     {
       icon: Share2,
       label: 'Partages',
       value: totalShares.toLocaleString(),
-      color: 'text-green-600',
+      color: 'text-success',
       bgColor: 'bg-green-100',
     },
     {
@@ -64,7 +64,7 @@ export function BlogStats({
       icon: Users,
       label: 'Abonnés',
       value: totalSubscribers.toLocaleString(),
-      color: 'text-orange-600',
+      color: 'text-warning',
       bgColor: 'bg-orange-100',
     },
     {
@@ -106,22 +106,22 @@ export function BlogStats({
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-                <TrendingUp className="w-6 h-6 text-green-600" />
+                <TrendingUp className="w-6 h-6 text-success" />
               </div>
               <div>
-                <h3 className="text-lg font-semibold text-green-800">
+                <h3 className="text-lg font-semibold text-success">
                   Croissance mensuelle
                 </h3>
-                <p className="text-green-600">
+                <p className="text-success">
                   Notre communauté grandit chaque mois
                 </p>
               </div>
             </div>
             <div className="text-right">
-              <div className="text-3xl font-bold text-green-700">
+              <div className="text-3xl font-bold text-success">
                 +{monthlyGrowth}%
               </div>
-              <Badge className="bg-green-100 text-green-800 border-green-200">
+              <Badge className="bg-green-100 text-success border-green-200">
                 <Calendar className="w-4 h-4 mr-1" />
                 Ce mois
               </Badge>
@@ -137,7 +137,7 @@ export function BlogStats({
             <div className="text-xl font-bold text-blue-700 mb-1">
               5 min
             </div>
-            <div className="text-sm text-blue-600">
+            <div className="text-sm text-info">
               Temps de lecture moyen
             </div>
           </CardContent>
@@ -159,7 +159,7 @@ export function BlogStats({
             <div className="text-xl font-bold text-orange-700 mb-1">
               98%
             </div>
-            <div className="text-sm text-orange-600">
+            <div className="text-sm text-warning">
               Satisfaction lecteurs
             </div>
           </CardContent>

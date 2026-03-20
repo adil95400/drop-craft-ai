@@ -313,17 +313,17 @@ export const TestRunner: React.FC = () => {
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'passed': return <CheckCircle2 className="w-4 h-4 text-green-600" />;
-      case 'failed': return <XCircle className="w-4 h-4 text-red-600" />;
-      case 'running': return <Clock className="w-4 h-4 text-blue-600 animate-spin" />;
-      case 'skipped': return <AlertTriangle className="w-4 h-4 text-yellow-600" />;
+      case 'passed': return <CheckCircle2 className="w-4 h-4 text-success" />;
+      case 'failed': return <XCircle className="w-4 h-4 text-destructive" />;
+      case 'running': return <Clock className="w-4 h-4 text-info animate-spin" />;
+      case 'skipped': return <AlertTriangle className="w-4 h-4 text-warning" />;
       default: return <Clock className="w-4 h-4 text-gray-400" />;
     }
   };
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'passed': return 'bg-green-100 text-green-800';
+      case 'passed': return 'bg-green-100 text-success';
       case 'failed': return 'bg-red-100 text-red-800';
       case 'running': return 'bg-blue-100 text-blue-800';
       case 'skipped': return 'bg-yellow-100 text-yellow-800';
@@ -382,9 +382,9 @@ export const TestRunner: React.FC = () => {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-muted-foreground">Tests Réussis</p>
-                  <p className="text-2xl font-bold text-green-600">{results.passed}</p>
+                  <p className="text-2xl font-bold text-success">{results.passed}</p>
                 </div>
-                <CheckCircle2 className="w-8 h-8 text-green-600" />
+                <CheckCircle2 className="w-8 h-8 text-success" />
               </div>
             </CardContent>
           </Card>
@@ -394,9 +394,9 @@ export const TestRunner: React.FC = () => {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-muted-foreground">Tests Échoués</p>
-                  <p className="text-2xl font-bold text-red-600">{results.failed}</p>
+                  <p className="text-2xl font-bold text-destructive">{results.failed}</p>
                 </div>
-                <XCircle className="w-8 h-8 text-red-600" />
+                <XCircle className="w-8 h-8 text-destructive" />
               </div>
             </CardContent>
           </Card>
@@ -406,9 +406,9 @@ export const TestRunner: React.FC = () => {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-muted-foreground">Couverture</p>
-                  <p className="text-2xl font-bold text-blue-600">{results.coverage?.toFixed(1)}%</p>
+                  <p className="text-2xl font-bold text-info">{results.coverage?.toFixed(1)}%</p>
                 </div>
-                <Target className="w-8 h-8 text-blue-600" />
+                <Target className="w-8 h-8 text-info" />
               </div>
             </CardContent>
           </Card>
@@ -443,7 +443,7 @@ export const TestRunner: React.FC = () => {
                     <div className="flex items-center justify-between">
                       <CardTitle className="text-lg">{suite.name}</CardTitle>
                       <div className="flex items-center gap-2">
-                        {suite.status === 'running' && <Clock className="w-4 h-4 text-blue-600 animate-spin" />}
+                        {suite.status === 'running' && <Clock className="w-4 h-4 text-info animate-spin" />}
                         <Badge className={getStatusColor(suite.status === 'completed' ? (suite.failed > 0 ? 'failed' : 'passed') : suite.status)}>
                           {suite.status === 'completed' ? 
                             (suite.failed > 0 ? 'Échecs' : 'Réussi') : 
@@ -516,7 +516,7 @@ export const TestRunner: React.FC = () => {
                                 {test.assertions.filter(a => !a.passed).map((assertion, index) => (
                                   <div key={index} className="p-2 bg-red-50 border border-red-200 rounded text-xs">
                                     <p className="font-medium text-red-800">{assertion.name}</p>
-                                    <p className="text-red-600">
+                                    <p className="text-destructive">
                                       Attendu: {JSON.stringify(assertion.expected)}, 
                                       Reçu: {JSON.stringify(assertion.actual)}
                                     </p>
@@ -575,7 +575,7 @@ export const TestRunner: React.FC = () => {
                   <div key={index} className="space-y-2">
                     <div className="flex justify-between text-sm">
                       <span className="font-medium">{item.file}</span>
-                      <span className={`font-bold ${item.coverage >= 90 ? 'text-green-600' : item.coverage >= 80 ? 'text-yellow-600' : 'text-red-600'}`}>
+                      <span className={`font-bold ${item.coverage >= 90 ? 'text-success' : item.coverage >= 80 ? 'text-warning' : 'text-destructive'}`}>
                         {item.coverage.toFixed(1)}%
                       </span>
                     </div>
@@ -593,19 +593,19 @@ export const TestRunner: React.FC = () => {
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="text-center p-3 bg-muted/50 rounded">
-                    <p className="text-2xl font-bold text-green-600">A</p>
+                    <p className="text-2xl font-bold text-success">A</p>
                     <p className="text-xs text-muted-foreground">Maintenabilité</p>
                   </div>
                   <div className="text-center p-3 bg-muted/50 rounded">
-                    <p className="text-2xl font-bold text-blue-600">B</p>
+                    <p className="text-2xl font-bold text-info">B</p>
                     <p className="text-xs text-muted-foreground">Fiabilité</p>
                   </div>
                   <div className="text-center p-3 bg-muted/50 rounded">
-                    <p className="text-2xl font-bold text-green-600">A</p>
+                    <p className="text-2xl font-bold text-success">A</p>
                     <p className="text-xs text-muted-foreground">Sécurité</p>
                   </div>
                   <div className="text-center p-3 bg-muted/50 rounded">
-                    <p className="text-2xl font-bold text-yellow-600">C</p>
+                    <p className="text-2xl font-bold text-warning">C</p>
                     <p className="text-xs text-muted-foreground">Performance</p>
                   </div>
                 </div>
@@ -617,11 +617,11 @@ export const TestRunner: React.FC = () => {
                   </div>
                   <div className="flex justify-between text-sm">
                     <span>Dette technique</span>
-                    <span className="font-bold text-yellow-600">2.1h</span>
+                    <span className="font-bold text-warning">2.1h</span>
                   </div>
                   <div className="flex justify-between text-sm">
                     <span>Duplications</span>
-                    <span className="font-bold text-green-600">1.2%</span>
+                    <span className="font-bold text-success">1.2%</span>
                   </div>
                 </div>
               </CardContent>

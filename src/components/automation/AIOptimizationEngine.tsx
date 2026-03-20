@@ -340,7 +340,7 @@ export const AIOptimizationEngine = () => {
                 <p className="text-sm font-medium text-blue-800">Suggestions</p>
                 <p className="text-2xl font-bold text-blue-900">{stats.suggestionsGenerated}</p>
               </div>
-              <Lightbulb className="w-8 h-8 text-blue-500" />
+              <Lightbulb className="w-8 h-8 text-info" />
             </div>
           </CardContent>
         </Card>
@@ -349,10 +349,10 @@ export const AIOptimizationEngine = () => {
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-green-800">Potentiel €</p>
+                <p className="text-sm font-medium text-success">Potentiel €</p>
                 <p className="text-2xl font-bold text-green-900">+{stats.potentialRevenue.toFixed(0)}€</p>
               </div>
-              <TrendingUp className="w-8 h-8 text-green-500" />
+              <TrendingUp className="w-8 h-8 text-success" />
             </div>
           </CardContent>
         </Card>
@@ -364,7 +364,7 @@ export const AIOptimizationEngine = () => {
                 <p className="text-sm font-medium text-orange-800">Score IA</p>
                 <p className="text-2xl font-bold text-orange-900">{stats.improvementScore}%</p>
               </div>
-              <Rocket className="w-8 h-8 text-orange-500" />
+              <Rocket className="w-8 h-8 text-warning" />
             </div>
           </CardContent>
         </Card>
@@ -456,7 +456,7 @@ export const AIOptimizationEngine = () => {
                                 </div>
                                 <div className="text-sm">
                                   <span className="text-gray-500">Suggéré:</span> 
-                                  <span className="font-medium text-green-600 ml-1">{suggestion.suggested}</span>
+                                  <span className="font-medium text-success ml-1">{suggestion.suggested}</span>
                                 </div>
                               </div>
 

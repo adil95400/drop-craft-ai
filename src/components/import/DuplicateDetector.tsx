@@ -165,8 +165,8 @@ export function DuplicateDetector({ products, onFilterDuplicates }: DuplicateDet
   if (duplicates.length === 0) {
     return (
       <div className="flex items-center gap-2 p-3 bg-green-500/5 border border-green-500/20 rounded-lg">
-        <CheckCircle2 className="w-4 h-4 text-green-500" />
-        <span className="text-sm text-green-700 dark:text-green-400">
+        <CheckCircle2 className="w-4 h-4 text-success" />
+        <span className="text-sm text-success dark:text-green-400">
           Aucun doublon détecté parmi {products.length} produits
         </span>
       </div>
@@ -178,7 +178,7 @@ export function DuplicateDetector({ products, onFilterDuplicates }: DuplicateDet
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <CardTitle className="text-base flex items-center gap-2">
-            <AlertTriangle className="w-4 h-4 text-yellow-500" />
+            <AlertTriangle className="w-4 h-4 text-warning" />
             {duplicates.length} doublons détectés
           </CardTitle>
           <div className="flex items-center gap-3">
@@ -219,7 +219,7 @@ export function DuplicateDetector({ products, onFilterDuplicates }: DuplicateDet
                   {skipDuplicates ? (
                     <XCircle className="w-4 h-4 text-muted-foreground" />
                   ) : (
-                    <Merge className="w-4 h-4 text-yellow-500" />
+                    <Merge className="w-4 h-4 text-warning" />
                   )}
                 </div>
                 <div className="flex-1 min-w-0">

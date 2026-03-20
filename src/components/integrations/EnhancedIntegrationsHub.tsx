@@ -247,19 +247,19 @@ export const EnhancedIntegrationsHub: React.FC = () => {
           </Card>
           <Card className="text-center">
             <CardContent className="pt-4">
-              <div className="text-2xl font-bold text-green-600">{connectedCount}</div>
+              <div className="text-2xl font-bold text-success">{connectedCount}</div>
               <div className="text-sm text-muted-foreground">Connectées</div>
             </CardContent>
           </Card>
           <Card className="text-center">
             <CardContent className="pt-4">
-              <div className="text-2xl font-bold text-blue-600">{totalInstalls.toLocaleString()}</div>
+              <div className="text-2xl font-bold text-info">{totalInstalls.toLocaleString()}</div>
               <div className="text-sm text-muted-foreground">Installations</div>
             </CardContent>
           </Card>
           <Card className="text-center">
             <CardContent className="pt-4">
-              <div className="text-2xl font-bold text-orange-600">4.7</div>
+              <div className="text-2xl font-bold text-warning">4.7</div>
               <div className="text-sm text-muted-foreground">Note moyenne</div>
             </CardContent>
           </Card>
@@ -354,7 +354,7 @@ export const EnhancedIntegrationsHub: React.FC = () => {
                     <CardContent className="space-y-4">
                       <div className="flex items-center justify-between text-sm">
                         <div className="flex items-center gap-1">
-                          <Star className="w-4 h-4 text-yellow-500" />
+                          <Star className="w-4 h-4 text-warning" />
                           <span>{template.rating}</span>
                         </div>
                         <span className="text-muted-foreground">

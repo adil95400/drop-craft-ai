@@ -127,8 +127,8 @@ export function AdsSpyPanel() {
   };
 
   const trendIcon = (trend: string) => {
-    if (trend === 'rising') return <ArrowUpRight className="h-3.5 w-3.5 text-green-500" />;
-    if (trend === 'declining') return <ArrowDownRight className="h-3.5 w-3.5 text-red-500" />;
+    if (trend === 'rising') return <ArrowUpRight className="h-3.5 w-3.5 text-success" />;
+    if (trend === 'declining') return <ArrowDownRight className="h-3.5 w-3.5 text-destructive" />;
     return <Minus className="h-3.5 w-3.5 text-muted-foreground" />;
   };
 
@@ -259,13 +259,13 @@ export function AdsSpyPanel() {
                           className="h-7 w-7"
                           onClick={() => toggleFavorite(ad.ad_id)}
                         >
-                          <Heart className={cn("h-3.5 w-3.5", favorites.has(ad.ad_id) && "fill-red-500 text-red-500")} />
+                          <Heart className={cn("h-3.5 w-3.5", favorites.has(ad.ad_id) && "fill-red-500 text-destructive")} />
                         </Button>
                         <Badge variant="outline" className={cn(
                           "font-bold text-xs",
-                          ad.score >= 80 ? 'bg-green-500/10 text-green-500 border-green-500/30' :
-                          ad.score >= 60 ? 'bg-yellow-500/10 text-yellow-500 border-yellow-500/30' :
-                          'bg-red-500/10 text-red-500 border-red-500/30'
+                          ad.score >= 80 ? 'bg-green-500/10 text-success border-green-500/30' :
+                          ad.score >= 60 ? 'bg-yellow-500/10 text-warning border-yellow-500/30' :
+                          'bg-red-500/10 text-destructive border-red-500/30'
                         )}>
                           {ad.score}/100
                         </Badge>
@@ -307,11 +307,11 @@ export function AdsSpyPanel() {
                       </div>
                       <div className="p-2 rounded bg-muted/50 text-center">
                         <span className="text-muted-foreground block">Vente</span>
-                        <p className="font-semibold text-green-600">${ad.selling_price}</p>
+                        <p className="font-semibold text-success">${ad.selling_price}</p>
                       </div>
                       <div className="p-2 rounded bg-green-500/10 text-center">
                         <span className="text-muted-foreground block">Marge</span>
-                        <p className="font-bold text-green-600">{ad.margin_estimate}%</p>
+                        <p className="font-bold text-success">{ad.margin_estimate}%</p>
                       </div>
                     </div>
 
@@ -324,7 +324,7 @@ export function AdsSpyPanel() {
                         <Calendar className="h-3 w-3" />
                         Active depuis {ad.running_days}j
                       </span>
-                      <Badge variant="outline" className="text-xs bg-blue-500/10 text-blue-600 border-blue-500/30">
+                      <Badge variant="outline" className="text-xs bg-blue-500/10 text-info border-blue-500/30">
                         {ad.engagement_rate}% eng.
                       </Badge>
                     </div>

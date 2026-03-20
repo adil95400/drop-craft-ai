@@ -33,7 +33,7 @@ const VARIANT_CONFIG: Record<TooltipVariant, {
 }> = {
   info: { 
     icon: Info, 
-    iconColor: 'text-blue-500',
+    iconColor: 'text-info',
     bgColor: 'bg-blue-500/10'
   },
   help: { 
@@ -43,7 +43,7 @@ const VARIANT_CONFIG: Record<TooltipVariant, {
   },
   warning: { 
     icon: AlertTriangle, 
-    iconColor: 'text-amber-500',
+    iconColor: 'text-warning',
     bgColor: 'bg-amber-500/10'
   },
   pro: { 
@@ -53,7 +53,7 @@ const VARIANT_CONFIG: Record<TooltipVariant, {
   },
   locked: { 
     icon: Lock, 
-    iconColor: 'text-orange-500',
+    iconColor: 'text-warning',
     bgColor: 'bg-orange-500/10'
   },
 };

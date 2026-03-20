@@ -44,10 +44,10 @@ export default function LogsPage() {
 
   const getLogIcon = (level: string) => {
     switch (level) {
-      case 'error': return <XCircle className="w-4 h-4 text-red-500" />
-      case 'warning': return <AlertCircle className="w-4 h-4 text-orange-500" />
-      case 'info': return <Info className="w-4 h-4 text-blue-500" />
-      case 'success': return <CheckCircle className="w-4 h-4 text-green-500" />
+      case 'error': return <XCircle className="w-4 h-4 text-destructive" />
+      case 'warning': return <AlertCircle className="w-4 h-4 text-warning" />
+      case 'info': return <Info className="w-4 h-4 text-info" />
+      case 'success': return <CheckCircle className="w-4 h-4 text-success" />
       default: return <Info className="w-4 h-4" />
     }
   }

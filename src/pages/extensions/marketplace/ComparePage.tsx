@@ -83,7 +83,7 @@ export default function ComparePage() {
 
   const renderFeatureValue = (value: boolean | string | number) => {
     if (typeof value === 'boolean') {
-      return value ? <Check className="w-4 h-4 text-green-500" /> : <X className="w-4 h-4 text-red-500" />
+      return value ? <Check className="w-4 h-4 text-success" /> : <X className="w-4 h-4 text-destructive" />
     }
     return value
   }
@@ -135,22 +135,22 @@ export default function ComparePage() {
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div>
-                    <h4 className="font-semibold text-sm mb-2 text-green-600">Points forts</h4>
+                    <h4 className="font-semibold text-sm mb-2 text-success">Points forts</h4>
                     <ul className="space-y-1">
                       {ext.pros.map((pro, index) => (
                         <li key={index} className="text-sm flex items-start">
-                          <Check className="w-3 h-3 text-green-500 mt-0.5 mr-2 flex-shrink-0" />
+                          <Check className="w-3 h-3 text-success mt-0.5 mr-2 flex-shrink-0" />
                           {pro}
                         </li>
                       ))}
                     </ul>
                   </div>
                   <div>
-                    <h4 className="font-semibold text-sm mb-2 text-orange-600">Limitations</h4>
+                    <h4 className="font-semibold text-sm mb-2 text-warning">Limitations</h4>
                     <ul className="space-y-1">
                       {ext.cons.map((con, index) => (
                         <li key={index} className="text-sm flex items-start">
-                          <X className="w-3 h-3 text-orange-500 mt-0.5 mr-2 flex-shrink-0" />
+                          <X className="w-3 h-3 text-warning mt-0.5 mr-2 flex-shrink-0" />
                           {con}
                         </li>
                       ))}
@@ -209,15 +209,15 @@ export default function ComparePage() {
                     <h4 className="font-semibold mb-3">{perf.metric}</h4>
                     <div className="grid grid-cols-3 gap-4">
                       <div className="text-center">
-                        <div className="text-2xl font-bold text-blue-600">{perf.ext1}%</div>
+                        <div className="text-2xl font-bold text-info">{perf.ext1}%</div>
                         <p className="text-sm text-muted-foreground">Data Scraper Pro</p>
                       </div>
                       <div className="text-center">
-                        <div className="text-2xl font-bold text-green-600">{perf.ext2}%</div>
+                        <div className="text-2xl font-bold text-success">{perf.ext2}%</div>
                         <p className="text-sm text-muted-foreground">Review Importer</p>
                       </div>
                       <div className="text-center">
-                        <div className="text-2xl font-bold text-orange-600">{perf.ext3}%</div>
+                        <div className="text-2xl font-bold text-warning">{perf.ext3}%</div>
                         <p className="text-sm text-muted-foreground">Price Monitor</p>
                       </div>
                     </div>

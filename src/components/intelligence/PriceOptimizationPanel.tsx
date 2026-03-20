@@ -99,7 +99,7 @@ export function PriceOptimizationPanel() {
             {/* Optimisations appliquées */}
             {appliedOptimizations.length > 0 && (
               <div>
-                <h3 className="font-semibold flex items-center gap-2 mb-3 text-green-600">
+                <h3 className="font-semibold flex items-center gap-2 mb-3 text-success">
                   <Check className="h-4 w-4" />
                   Récemment appliquées ({appliedOptimizations.length})
                 </h3>
@@ -144,7 +144,7 @@ function OptimizationCard({
           <p className="text-sm text-muted-foreground">SKU: {optimization.products?.sku || '-'}</p>
         </div>
         {optimization.status === 'applied' ? (
-          <Badge variant="secondary" className="bg-green-100 text-green-700">
+          <Badge variant="secondary" className="bg-green-100 text-success">
             <Check className="h-3 w-3 mr-1" />
             Appliqué
           </Badge>
@@ -163,7 +163,7 @@ function OptimizationCard({
         </div>
         <div>
           <p className="text-xs text-muted-foreground">Prix suggéré</p>
-          <p className={`font-semibold flex items-center gap-1 ${isIncrease ? 'text-green-600' : 'text-orange-600'}`}>
+          <p className={`font-semibold flex items-center gap-1 ${isIncrease ? 'text-success' : 'text-warning'}`}>
             {optimization.suggested_price.toFixed(2)} €
             {isIncrease ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
           </p>
@@ -173,10 +173,10 @@ function OptimizationCard({
         </div>
         <div>
           <p className="text-xs text-muted-foreground">Variation</p>
-          <p className={`font-semibold ${isIncrease ? 'text-green-600' : 'text-orange-600'}`}>
+          <p className={`font-semibold ${isIncrease ? 'text-success' : 'text-warning'}`}>
             {isIncrease ? '+' : ''}{priceDiff.toFixed(2)} €
           </p>
-          <p className={`text-xs ${marginDiff > 0 ? 'text-green-600' : 'text-orange-600'}`}>
+          <p className={`text-xs ${marginDiff > 0 ? 'text-success' : 'text-warning'}`}>
             {marginDiff > 0 ? '+' : ''}{marginDiff.toFixed(1)}% marge
           </p>
         </div>

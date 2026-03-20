@@ -114,7 +114,7 @@ export function SalesIntelligenceDashboard({ className }: SalesIntelligenceDashb
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
-              <Target className="h-8 w-8 text-green-600" />
+              <Target className="h-8 w-8 text-success" />
               <div>
                 <p className="text-sm text-muted-foreground">Confiance moyenne</p>
                 <p className="text-2xl font-bold">{stats.avgConfidenceScore}%</p>
@@ -125,7 +125,7 @@ export function SalesIntelligenceDashboard({ className }: SalesIntelligenceDashb
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
-              <CheckCircle className="h-8 w-8 text-blue-600" />
+              <CheckCircle className="h-8 w-8 text-info" />
               <div>
                 <p className="text-sm text-muted-foreground">Haute précision</p>
                 <p className="text-2xl font-bold">{stats.highConfidenceForecasts}</p>
@@ -329,7 +329,7 @@ export function SalesIntelligenceDashboard({ className }: SalesIntelligenceDashb
                 <div className="space-y-4">
                   {latestForecast.recommended_actions.map((action, index) => (
                     <div key={index} className="flex items-start gap-3 p-4 border rounded-lg">
-                      <div className={`mt-1 ${action.priority === 'high' ? 'text-red-500' : action.priority === 'medium' ? 'text-yellow-500' : 'text-green-500'}`}>
+                      <div className={`mt-1 ${action.priority === 'high' ? 'text-destructive' : action.priority === 'medium' ? 'text-warning' : 'text-success'}`}>
                         {action.priority === 'high' && <AlertTriangle className="h-5 w-5" />}
                         {action.priority === 'medium' && <Target className="h-5 w-5" />}
                         {action.priority === 'low' && <CheckCircle className="h-5 w-5" />}

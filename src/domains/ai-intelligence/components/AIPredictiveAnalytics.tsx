@@ -228,9 +228,9 @@ export const AIPredictiveAnalytics = () => {
             <CardHeader className="pb-3">
               <CardDescription className="flex items-center gap-2">
                 {pred.trend === 'up' ? (
-                  <ArrowUpRight className="h-4 w-4 text-green-500" />
+                  <ArrowUpRight className="h-4 w-4 text-success" />
                 ) : (
-                  <ArrowDownRight className="h-4 w-4 text-red-500" />
+                  <ArrowDownRight className="h-4 w-4 text-destructive" />
                 )}
                 {pred.metric}
               </CardDescription>
@@ -369,9 +369,9 @@ export const AIPredictiveAnalytics = () => {
                 <CardHeader>
                   <div className="flex items-start justify-between">
                     <div className="flex items-start gap-3">
-                      {insight.type === 'opportunity' && <Sparkles className="h-6 w-6 text-green-500 mt-1" />}
-                      {insight.type === 'warning' && <AlertTriangle className="h-6 w-6 text-yellow-500 mt-1" />}
-                      {insight.type === 'recommendation' && <Lightbulb className="h-6 w-6 text-blue-500 mt-1" />}
+                      {insight.type === 'opportunity' && <Sparkles className="h-6 w-6 text-success mt-1" />}
+                      {insight.type === 'warning' && <AlertTriangle className="h-6 w-6 text-warning mt-1" />}
+                      {insight.type === 'recommendation' && <Lightbulb className="h-6 w-6 text-info mt-1" />}
                       <div>
                         <CardTitle className="text-lg">{insight.title}</CardTitle>
                         <CardDescription className="mt-2">{insight.description}</CardDescription>
@@ -397,7 +397,7 @@ export const AIPredictiveAnalytics = () => {
                     <ul className="space-y-1">
                       {insight.action_items.map((action, idx) => (
                         <li key={idx} className="flex items-center gap-2 text-sm">
-                          <CheckCircle2 className="h-4 w-4 text-green-500 flex-shrink-0" />
+                          <CheckCircle2 className="h-4 w-4 text-success flex-shrink-0" />
                           {action}
                         </li>
                       ))}
@@ -498,12 +498,12 @@ export const AIPredictiveAnalytics = () => {
             <Card className="hover-scale animate-fade-in">
               <CardHeader>
                 <CardTitle className="text-base flex items-center gap-2">
-                  <TrendingUp className="h-5 w-5 text-green-500" />
+                  <TrendingUp className="h-5 w-5 text-success" />
                   ROI Optimisé
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-3xl font-bold text-green-600">+34.2%</div>
+                <div className="text-3xl font-bold text-success">+34.2%</div>
                 <p className="text-sm text-muted-foreground mt-2">
                   Amélioration prédite avec recommandations IA
                 </p>
@@ -514,12 +514,12 @@ export const AIPredictiveAnalytics = () => {
             <Card className="hover-scale animate-fade-in">
               <CardHeader>
                 <CardTitle className="text-base flex items-center gap-2">
-                  <Target className="h-5 w-5 text-blue-500" />
+                  <Target className="h-5 w-5 text-info" />
                   Conversion Rate
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-3xl font-bold text-blue-600">+50%</div>
+                <div className="text-3xl font-bold text-info">+50%</div>
                 <p className="text-sm text-muted-foreground mt-2">
                   Potentiel avec optimisation ML
                 </p>
@@ -555,7 +555,7 @@ export const AIPredictiveAnalytics = () => {
             <CardContent>
               <div className="space-y-3">
                 <div className="flex items-start gap-3 p-4 border rounded-lg hover:bg-accent/50 transition-colors">
-                  <CheckCircle2 className="h-5 w-5 text-green-500 mt-1" />
+                  <CheckCircle2 className="h-5 w-5 text-success mt-1" />
                   <div className="flex-1">
                     <h4 className="font-semibold">Optimisation pricing dynamique</h4>
                     <p className="text-sm text-muted-foreground mt-1">
@@ -566,7 +566,7 @@ export const AIPredictiveAnalytics = () => {
                 </div>
 
                 <div className="flex items-start gap-3 p-4 border rounded-lg hover:bg-accent/50 transition-colors">
-                  <CheckCircle2 className="h-5 w-5 text-green-500 mt-1" />
+                  <CheckCircle2 className="h-5 w-5 text-success mt-1" />
                   <div className="flex-1">
                     <h4 className="font-semibold">Campagne de réactivation ciblée</h4>
                     <p className="text-sm text-muted-foreground mt-1">
@@ -577,7 +577,7 @@ export const AIPredictiveAnalytics = () => {
                 </div>
 
                 <div className="flex items-start gap-3 p-4 border rounded-lg hover:bg-accent/50 transition-colors">
-                  <CheckCircle2 className="h-5 w-5 text-green-500 mt-1" />
+                  <CheckCircle2 className="h-5 w-5 text-success mt-1" />
                   <div className="flex-1">
                     <h4 className="font-semibold">Expansion catégorie "Tech"</h4>
                     <p className="text-sm text-muted-foreground mt-1">

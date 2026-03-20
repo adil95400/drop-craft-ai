@@ -134,7 +134,7 @@ export const ExtensionBridge = () => {
         <CardContent>
           {isExtensionConnected ? (
             <div className="space-y-4">
-              <div className="flex items-center gap-2 text-green-600">
+              <div className="flex items-center gap-2 text-success">
                 <Zap className="h-4 w-4" />
                 <span className="text-sm">Extension active et prête à scraper</span>
               </div>

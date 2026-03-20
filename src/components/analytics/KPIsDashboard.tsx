@@ -319,11 +319,11 @@ export function KPIsDashboard() {
                       </div>
                       <div className="flex items-center gap-1 text-sm">
                         {progress >= 100 ? (
-                          <TrendingUp className="h-4 w-4 text-green-500" />
+                          <TrendingUp className="h-4 w-4 text-success" />
                         ) : (
                           <TrendingDown className="h-4 w-4 text-muted-foreground" />
                         )}
-                        <span className={progress >= 100 ? 'text-green-500 font-medium' : 'text-muted-foreground'}>
+                        <span className={progress >= 100 ? 'text-success font-medium' : 'text-muted-foreground'}>
                           {progress.toFixed(0)}%
                         </span>
                       </div>

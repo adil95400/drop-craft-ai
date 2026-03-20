@@ -214,7 +214,7 @@ export default function FulfillmentPage() {
                 <p className="text-xl md:text-2xl font-bold mt-1">{stats?.total_shipments || 0}</p>
               </div>
               <div className="p-2 md:p-3 rounded-xl bg-blue-500/10">
-                <Package className="h-4 w-4 md:h-5 md:w-5 text-blue-500" />
+                <Package className="h-4 w-4 md:h-5 md:w-5 text-info" />
               </div>
             </div>
           </CardContent>
@@ -227,7 +227,7 @@ export default function FulfillmentPage() {
                 <p className="text-xl md:text-2xl font-bold mt-1">{stats?.in_transit || 0}</p>
               </div>
               <div className="p-2 md:p-3 rounded-xl bg-orange-500/10">
-                <Truck className="h-4 w-4 md:h-5 md:w-5 text-orange-500" />
+                <Truck className="h-4 w-4 md:h-5 md:w-5 text-warning" />
               </div>
             </div>
           </CardContent>
@@ -240,7 +240,7 @@ export default function FulfillmentPage() {
                 <p className="text-xl md:text-2xl font-bold mt-1">{stats?.delivered || 0}</p>
               </div>
               <div className="p-2 md:p-3 rounded-xl bg-green-500/10">
-                <CheckCircle className="h-4 w-4 md:h-5 md:w-5 text-green-500" />
+                <CheckCircle className="h-4 w-4 md:h-5 md:w-5 text-success" />
               </div>
             </div>
           </CardContent>

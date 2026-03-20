@@ -225,7 +225,7 @@ const TermsOfService = () => {
           <Card className="border-blue-200 bg-blue-50 dark:bg-blue-950/20 dark:border-blue-800">
             <CardContent className="p-6">
               <div className="flex items-start gap-3">
-                <AlertTriangle className="h-5 w-5 text-blue-500 mt-0.5 flex-shrink-0" />
+                <AlertTriangle className="h-5 w-5 text-info mt-0.5 flex-shrink-0" />
                 <div className="space-y-2">
                   <h3 className="font-semibold text-blue-800 dark:text-blue-200">Information importante</h3>
                   <p className="text-blue-700 dark:text-blue-300 text-sm">
@@ -248,17 +248,17 @@ const TermsOfService = () => {
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 <div className="text-center p-4 border rounded-lg">
-                  <Users className="h-6 w-6 text-blue-500 mx-auto mb-2" />
+                  <Users className="h-6 w-6 text-info mx-auto mb-2" />
                   <h3 className="font-semibold text-sm">Âge minimum</h3>
                   <p className="text-xs text-muted-foreground">18 ans requis</p>
                 </div>
                 <div className="text-center p-4 border rounded-lg">
-                  <CreditCard className="h-6 w-6 text-green-500 mx-auto mb-2" />
+                  <CreditCard className="h-6 w-6 text-success mx-auto mb-2" />
                   <h3 className="font-semibold text-sm">Paiement sécurisé</h3>
                   <p className="text-xs text-muted-foreground">Via Stripe</p>
                 </div>
                 <div className="text-center p-4 border rounded-lg">
-                  <RefreshCw className="h-6 w-6 text-orange-500 mx-auto mb-2" />
+                  <RefreshCw className="h-6 w-6 text-warning mx-auto mb-2" />
                   <h3 className="font-semibold text-sm">Rétractation</h3>
                   <p className="text-xs text-muted-foreground">14 jours</p>
                 </div>

@@ -15,9 +15,9 @@ const colors = ['primary', 'info', 'success', 'warning', 'destructive', 'destruc
 
 const colorMap = {
   primary: 'bg-primary/10 text-primary',
-  info: 'bg-blue-500/10 text-blue-600 dark:text-blue-400',
-  success: 'bg-green-500/10 text-green-600 dark:text-green-400',
-  warning: 'bg-yellow-500/10 text-yellow-600 dark:text-yellow-400',
+  info: 'bg-blue-500/10 text-info dark:text-blue-400',
+  success: 'bg-green-500/10 text-success dark:text-green-400',
+  warning: 'bg-yellow-500/10 text-warning dark:text-yellow-400',
   destructive: 'bg-destructive/10 text-destructive',
 }
 
@@ -57,7 +57,7 @@ export function CockpitKPIGrid({ kpis }: CockpitKPIGridProps) {
                   </div>
                   <TrendIcon className={cn(
                     "h-4 w-4",
-                    kpi.trend === 'up' && "text-green-500",
+                    kpi.trend === 'up' && "text-success",
                     kpi.trend === 'down' && "text-destructive",
                     kpi.trend === 'neutral' && "text-muted-foreground"
                   )} />

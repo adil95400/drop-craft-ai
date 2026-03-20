@@ -83,7 +83,7 @@ export function ProductReviewsTab({ productId, productName }: ProductReviewsTabP
             <div className="flex items-center gap-4">
               <div className="relative">
                 <div className="h-20 w-20 rounded-full bg-gradient-to-br from-amber-500/20 to-orange-500/20 flex items-center justify-center">
-                  <span className="text-3xl font-bold text-amber-600">
+                  <span className="text-3xl font-bold text-warning">
                     {stats.averageRating.toFixed(1)}
                   </span>
                 </div>
@@ -200,7 +200,7 @@ export function ProductReviewsTab({ productId, productName }: ProductReviewsTabP
                             </span>
                             {review.is_verified && (
                               <Badge variant="secondary" className="gap-1 text-xs py-0">
-                                <CheckCircle className="h-3 w-3 text-green-500" />
+                                <CheckCircle className="h-3 w-3 text-success" />
                                 Vérifié
                               </Badge>
                             )}

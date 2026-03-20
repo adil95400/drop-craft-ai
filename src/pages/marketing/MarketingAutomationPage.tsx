@@ -43,7 +43,7 @@ const TEMPLATES = [
     description: 'Séquence de 3 emails pour accueillir les nouveaux clients et les guider vers leur premier achat',
     icon: Mail,
     trigger: 'new_customer',
-    color: 'text-blue-500',
+    color: 'text-info',
     defaultSteps: [
       { id: '1', type: 'email' as const, name: 'Email de bienvenue', config: { subject: 'Bienvenue chez {{store_name}} !', content: 'Découvrez notre sélection...' } },
       { id: '2', type: 'delay' as const, name: 'Attente 2 jours', config: { delay_value: 2, delay_unit: 'days' as const } },
@@ -58,7 +58,7 @@ const TEMPLATES = [
     description: 'Séquence multi-canal pour récupérer les paniers non finalisés avec email et SMS',
     icon: ShoppingCart,
     trigger: 'cart_abandoned',
-    color: 'text-orange-500',
+    color: 'text-warning',
     defaultSteps: [
       { id: '1', type: 'delay' as const, name: 'Attente 1h', config: { delay_value: 1, delay_unit: 'hours' as const } },
       { id: '2', type: 'email' as const, name: 'Rappel panier', config: { subject: 'Vous avez oublié quelque chose...', content: 'Votre panier vous attend !' } },
@@ -87,7 +87,7 @@ const TEMPLATES = [
     description: 'Suivi après commande avec demande d\'avis et recommandations personnalisées',
     icon: Target,
     trigger: 'order_delivered',
-    color: 'text-green-500',
+    color: 'text-success',
     defaultSteps: [
       { id: '1', type: 'delay' as const, name: 'Attente livraison +3j', config: { delay_value: 3, delay_unit: 'days' as const } },
       { id: '2', type: 'email' as const, name: 'Demande avis', config: { subject: 'Comment trouvez-vous votre achat ?', content: 'Votre avis compte...' } },
@@ -101,7 +101,7 @@ const TEMPLATES = [
     description: 'Notification urgente multi-canal pour les ventes flash et promotions limitées',
     icon: Zap,
     trigger: 'manual',
-    color: 'text-yellow-500',
+    color: 'text-warning',
     defaultSteps: [
       { id: '1', type: 'email' as const, name: 'Email promo', config: { subject: '⚡ Vente Flash : -30% pendant 24h !', content: 'Ne manquez pas cette offre...' } },
       { id: '2', type: 'push' as const, name: 'Push notification', config: { content: '⚡ Vente Flash -30% ! Seulement 24h' } },
@@ -113,7 +113,7 @@ const TEMPLATES = [
     description: 'Notifier automatiquement les clients quand un produit souhaité est de retour',
     icon: Bell,
     trigger: 'product_restocked',
-    color: 'text-red-500',
+    color: 'text-destructive',
     defaultSteps: [
       { id: '1', type: 'email' as const, name: 'Retour en stock', config: { subject: '🎉 {{product_name}} est de retour !', content: 'Le produit que vous attendiez...' } },
       { id: '2', type: 'push' as const, name: 'Push alerte', config: { content: '{{product_name}} est de retour en stock !' } },
@@ -312,9 +312,9 @@ export default function MarketingAutomationPage() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {[
             { label: 'Automatisations', value: campaigns.length, icon: Repeat, color: 'text-primary' },
-            { label: 'Actives', value: activeCampaigns.length, icon: Play, color: 'text-green-500' },
-            { label: 'Déclenchements', value: totalTriggers.toLocaleString('fr-FR'), icon: Zap, color: 'text-yellow-500' },
-            { label: 'Taux Ouverture', value: '—', icon: Eye, color: 'text-blue-500' },
+            { label: 'Actives', value: activeCampaigns.length, icon: Play, color: 'text-success' },
+            { label: 'Déclenchements', value: totalTriggers.toLocaleString('fr-FR'), icon: Zap, color: 'text-warning' },
+            { label: 'Taux Ouverture', value: '—', icon: Eye, color: 'text-info' },
           ].map(kpi => (
             <Card key={kpi.label} className="p-4">
               <div className="flex items-center gap-3">

@@ -46,7 +46,7 @@ export const SupplierCard = ({ supplier, onEdit, onDelete, onSync, isSyncing, sy
 
   const getStatusBadge = (status: string) => {
     const statusColors = {
-      connected: 'bg-green-100 text-green-800 border-green-200',
+      connected: 'bg-green-100 text-success border-green-200',
       disconnected: 'bg-gray-100 text-gray-800 border-gray-200',
       error: 'bg-red-100 text-red-800 border-red-200',
       pending: 'bg-yellow-100 text-yellow-800 border-yellow-200'
@@ -187,7 +187,7 @@ export const SupplierCard = ({ supplier, onEdit, onDelete, onSync, isSyncing, sy
         )}
         
         {syncSuccessRecent && (
-          <div className="flex items-center gap-2 text-sm text-green-600">
+          <div className="flex items-center gap-2 text-sm text-success">
             <Package className="h-4 w-4" />
             <span>{syncProgress?.productsImported} produits importés</span>
           </div>

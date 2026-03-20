@@ -47,11 +47,11 @@ export const AdminConfirmDialog: React.FC<AdminConfirmDialogProps> = ({
   const getIcon = () => {
     switch (variant) {
       case 'destructive':
-        return <AlertTriangle className="h-6 w-6 text-red-600" />;
+        return <AlertTriangle className="h-6 w-6 text-destructive" />;
       case 'warning':
-        return <AlertTriangle className="h-6 w-6 text-yellow-600" />;
+        return <AlertTriangle className="h-6 w-6 text-warning" />;
       default:
-        return <Shield className="h-6 w-6 text-blue-600" />;
+        return <Shield className="h-6 w-6 text-info" />;
     }
   };
 

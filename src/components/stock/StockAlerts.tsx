@@ -85,19 +85,19 @@ export function StockAlerts() {
 
   const getSeverityColor = (severity: string) => {
     switch (severity) {
-      case 'critical': return 'text-red-500 bg-red-50 dark:bg-red-950/20';
-      case 'high': return 'text-orange-500 bg-orange-50 dark:bg-orange-950/20';
-      case 'medium': return 'text-yellow-500 bg-yellow-50 dark:bg-yellow-950/20';
-      default: return 'text-blue-500 bg-blue-50 dark:bg-blue-950/20';
+      case 'critical': return 'text-destructive bg-red-50 dark:bg-red-950/20';
+      case 'high': return 'text-warning bg-orange-50 dark:bg-orange-950/20';
+      case 'medium': return 'text-warning bg-yellow-50 dark:bg-yellow-950/20';
+      default: return 'text-info bg-blue-50 dark:bg-blue-950/20';
     }
   };
 
   const getSeverityIcon = (severity: string) => {
     switch (severity) {
-      case 'critical': return <AlertTriangle className="h-5 w-5 text-red-500" />;
-      case 'high': return <TrendingDown className="h-5 w-5 text-orange-500" />;
-      case 'medium': return <Clock className="h-5 w-5 text-yellow-500" />;
-      default: return <Bell className="h-5 w-5 text-blue-500" />;
+      case 'critical': return <AlertTriangle className="h-5 w-5 text-destructive" />;
+      case 'high': return <TrendingDown className="h-5 w-5 text-warning" />;
+      case 'medium': return <Clock className="h-5 w-5 text-warning" />;
+      default: return <Bell className="h-5 w-5 text-info" />;
     }
   };
 
@@ -132,48 +132,48 @@ export function StockAlerts() {
         <Card className="border-red-500">
           <CardHeader className="pb-3">
             <CardTitle className="text-sm flex items-center gap-2">
-              <AlertTriangle className="h-4 w-4 text-red-500" />
+              <AlertTriangle className="h-4 w-4 text-destructive" />
               Critiques
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-2xl font-bold text-red-500">{criticalAlerts.length}</p>
+            <p className="text-2xl font-bold text-destructive">{criticalAlerts.length}</p>
           </CardContent>
         </Card>
 
         <Card className="border-orange-500">
           <CardHeader className="pb-3">
             <CardTitle className="text-sm flex items-center gap-2">
-              <TrendingDown className="h-4 w-4 text-orange-500" />
+              <TrendingDown className="h-4 w-4 text-warning" />
               Élevées
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-2xl font-bold text-orange-500">{highAlerts.length}</p>
+            <p className="text-2xl font-bold text-warning">{highAlerts.length}</p>
           </CardContent>
         </Card>
 
         <Card className="border-yellow-500">
           <CardHeader className="pb-3">
             <CardTitle className="text-sm flex items-center gap-2">
-              <Clock className="h-4 w-4 text-yellow-500" />
+              <Clock className="h-4 w-4 text-warning" />
               Moyennes
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-2xl font-bold text-yellow-500">{mediumAlerts.length}</p>
+            <p className="text-2xl font-bold text-warning">{mediumAlerts.length}</p>
           </CardContent>
         </Card>
 
         <Card className="border-blue-500">
           <CardHeader className="pb-3">
             <CardTitle className="text-sm flex items-center gap-2">
-              <Bell className="h-4 w-4 text-blue-500" />
+              <Bell className="h-4 w-4 text-info" />
               Faibles
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-2xl font-bold text-blue-500">{lowAlerts.length}</p>
+            <p className="text-2xl font-bold text-info">{lowAlerts.length}</p>
           </CardContent>
         </Card>
       </div>
@@ -264,7 +264,7 @@ export function StockAlerts() {
             </div>
           ) : (
             <div className="text-center py-12">
-              <CheckCircle className="h-12 w-12 text-green-500 mx-auto mb-4" />
+              <CheckCircle className="h-12 w-12 text-success mx-auto mb-4" />
               <p className="text-lg font-medium mb-2">Aucune alerte active</p>
               <p className="text-sm text-muted-foreground">
                 Tous les niveaux de stock sont normaux

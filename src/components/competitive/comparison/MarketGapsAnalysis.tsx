@@ -89,9 +89,9 @@ export function MarketGapsAnalysis({ analyses }: MarketGapsAnalysisProps) {
 
   const getDifficultyColor = (difficulty: string) => {
     const colors = {
-      low: 'text-green-600',
-      medium: 'text-amber-600',
-      high: 'text-red-600'
+      low: 'text-success',
+      medium: 'text-warning',
+      high: 'text-destructive'
     };
     return colors[difficulty as keyof typeof colors] || colors.medium;
   };
@@ -119,7 +119,7 @@ export function MarketGapsAnalysis({ analyses }: MarketGapsAnalysisProps) {
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex-1 space-y-2">
                     <div className="flex items-center gap-2">
-                      <Lightbulb className="w-4 h-4 text-amber-500" />
+                      <Lightbulb className="w-4 h-4 text-warning" />
                       <h4 className="font-semibold">{opp.title}</h4>
                       {getPotentialBadge(opp.potential)}
                     </div>
@@ -133,7 +133,7 @@ export function MarketGapsAnalysis({ analyses }: MarketGapsAnalysisProps) {
                 <div className="grid grid-cols-3 gap-4 pt-2 border-t">
                   <div>
                     <p className="text-xs text-muted-foreground">Revenue potentiel</p>
-                    <p className="font-semibold text-green-600">+{opp.estimatedRevenue}€/mois</p>
+                    <p className="font-semibold text-success">+{opp.estimatedRevenue}€/mois</p>
                   </div>
                   <div>
                     <p className="text-xs text-muted-foreground">Difficulté</p>

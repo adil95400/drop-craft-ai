@@ -63,9 +63,9 @@ export default function RevenueForecastingPage() {
   ]
 
   const scenarios: Scenario[] = [
-    { name: 'Optimiste', growthRate: 15, projectedRevenue: currentRevenue * 1.15 * (months / 6), confidence: 25, color: 'text-green-600' },
+    { name: 'Optimiste', growthRate: 15, projectedRevenue: currentRevenue * 1.15 * (months / 6), confidence: 25, color: 'text-success' },
     { name: 'Réaliste', growthRate: 8, projectedRevenue: currentRevenue * 1.08 * (months / 6), confidence: 55, color: 'text-primary' },
-    { name: 'Conservateur', growthRate: 3, projectedRevenue: currentRevenue * 1.03 * (months / 6), confidence: 20, color: 'text-yellow-600' },
+    { name: 'Conservateur', growthRate: 3, projectedRevenue: currentRevenue * 1.03 * (months / 6), confidence: 20, color: 'text-warning' },
   ]
 
   const projectedAnnual = currentRevenue * 12 * 1.08
@@ -107,7 +107,7 @@ export default function RevenueForecastingPage() {
               <DollarSign className="h-4 w-4" /> Revenu actuel
             </div>
             <div className="text-2xl font-bold">{formatCurrency(currentRevenue)}</div>
-            <p className="text-xs text-green-600 mt-1 flex items-center gap-1"><ArrowUpRight className="h-3 w-3" /> +{financialData?.revenue.growth || 0}%</p>
+            <p className="text-xs text-success mt-1 flex items-center gap-1"><ArrowUpRight className="h-3 w-3" /> +{financialData?.revenue.growth || 0}%</p>
           </CardContent>
         </Card>
         <Card>
@@ -124,7 +124,7 @@ export default function RevenueForecastingPage() {
             <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
               <TrendingUp className="h-4 w-4" /> Profit projeté
             </div>
-            <div className="text-2xl font-bold text-green-600">{formatCurrency(projectedProfit)}</div>
+            <div className="text-2xl font-bold text-success">{formatCurrency(projectedProfit)}</div>
             <p className="text-xs text-muted-foreground mt-1">Marge {profitMargin.toFixed(1)}%</p>
           </CardContent>
         </Card>

@@ -150,7 +150,7 @@ export function ExportDataDialog({ open, onOpenChange, defaultType }: ExportData
 
         {exportResult?.success ? (
           <div className="py-8 text-center space-y-4">
-            <CheckCircle className="h-16 w-16 text-green-500 mx-auto" />
+            <CheckCircle className="h-16 w-16 text-success mx-auto" />
             <div>
               <h3 className="text-lg font-semibold">Export terminé !</h3>
               <p className="text-muted-foreground">

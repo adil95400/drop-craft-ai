@@ -22,16 +22,16 @@ import { useDateFnsLocale } from '@/hooks/useDateFnsLocale';
 import { motion } from 'framer-motion';
 
 const ruleTypeConfig: Record<string, { label: string; icon: typeof Percent; color: string }> = {
-  margin: { label: 'Marge cible', icon: Target, color: 'text-emerald-500' },
+  margin: { label: 'Marge cible', icon: Target, color: 'text-success' },
   markup: { label: 'Markup', icon: ArrowUpRight, color: 'text-primary' },
-  fixed: { label: 'Montant fixe', icon: DollarSign, color: 'text-amber-500' },
+  fixed: { label: 'Montant fixe', icon: DollarSign, color: 'text-warning' },
   competitive: { label: 'Compétitif', icon: Sparkles, color: 'text-violet-500' },
 };
 
 const jobStatusConfig: Record<string, { label: string; icon: typeof Clock; color: string }> = {
   pending: { label: 'En attente', icon: Clock, color: 'text-muted-foreground' },
   processing: { label: 'En cours', icon: RefreshCw, color: 'text-primary' },
-  completed: { label: 'Terminé', icon: CheckCircle2, color: 'text-emerald-500' },
+  completed: { label: 'Terminé', icon: CheckCircle2, color: 'text-success' },
   failed: { label: 'Échoué', icon: XCircle, color: 'text-destructive' },
 };
 
@@ -45,8 +45,8 @@ export function PricingEngineDashboard() {
 
   const statCards = [
     { title: 'Règles totales', value: stats.totalRules, icon: Layers, color: 'text-primary' },
-    { title: 'Règles actives', value: stats.activeRules, icon: Calculator, color: 'text-emerald-500' },
-    { title: 'Changements récents', value: stats.recentChanges, icon: ArrowUpRight, color: 'text-amber-500' },
+    { title: 'Règles actives', value: stats.activeRules, icon: Calculator, color: 'text-success' },
+    { title: 'Changements récents', value: stats.recentChanges, icon: ArrowUpRight, color: 'text-warning' },
     { title: 'Jobs en cours', value: stats.activeJobs, icon: Play, color: 'text-violet-500' },
   ];
 
@@ -266,7 +266,7 @@ export function PricingEngineDashboard() {
                         >
                           <div className="flex items-center gap-3">
                             <div className={`p-1.5 rounded ${diff >= 0 ? 'bg-emerald-500/10' : 'bg-destructive/10'}`}>
-                              <ArrowUpRight className={`h-4 w-4 ${diff >= 0 ? 'text-emerald-500' : 'text-destructive rotate-90'}`} />
+                              <ArrowUpRight className={`h-4 w-4 ${diff >= 0 ? 'text-success' : 'text-destructive rotate-90'}`} />
                             </div>
                             <div>
                               <p className="text-sm font-medium">
@@ -283,7 +283,7 @@ export function PricingEngineDashboard() {
                               <ArrowUpRight className="h-3 w-3 text-muted-foreground" />
                               <span className="font-bold">{newPrice.toFixed(2)}€</span>
                             </div>
-                            <p className={`text-xs ${diff >= 0 ? 'text-emerald-500' : 'text-destructive'}`}>
+                            <p className={`text-xs ${diff >= 0 ? 'text-success' : 'text-destructive'}`}>
                               {diff >= 0 ? '+' : ''}{diff.toFixed(2)}€ ({diffPercent.toFixed(1)}%)
                             </p>
                           </div>

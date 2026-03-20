@@ -77,7 +77,7 @@ export const OrderAutomationDashboard: React.FC = () => {
           <CardContent className="p-4">
             <div className="flex items-center gap-2">
               <div className="p-2 bg-yellow-500/10 rounded-lg">
-                <Clock className="w-4 h-4 text-yellow-600" />
+                <Clock className="w-4 h-4 text-warning" />
               </div>
               <div>
                 <p className="text-2xl font-bold">{stats?.pending || 0}</p>
@@ -91,7 +91,7 @@ export const OrderAutomationDashboard: React.FC = () => {
           <CardContent className="p-4">
             <div className="flex items-center gap-2">
               <div className="p-2 bg-blue-500/10 rounded-lg">
-                <Send className="w-4 h-4 text-blue-600" />
+                <Send className="w-4 h-4 text-info" />
               </div>
               <div>
                 <p className="text-2xl font-bold">{stats?.processing || 0}</p>
@@ -119,7 +119,7 @@ export const OrderAutomationDashboard: React.FC = () => {
           <CardContent className="p-4">
             <div className="flex items-center gap-2">
               <div className="p-2 bg-green-500/10 rounded-lg">
-                <CheckCircle className="w-4 h-4 text-green-600" />
+                <CheckCircle className="w-4 h-4 text-success" />
               </div>
               <div>
                 <p className="text-2xl font-bold">{stats?.delivered || 0}</p>
@@ -133,7 +133,7 @@ export const OrderAutomationDashboard: React.FC = () => {
           <CardContent className="p-4">
             <div className="flex items-center gap-2">
               <div className="p-2 bg-emerald-500/10 rounded-lg">
-                <TrendingUp className="w-4 h-4 text-emerald-600" />
+                <TrendingUp className="w-4 h-4 text-success" />
               </div>
               <div>
                 <p className="text-2xl font-bold">{stats?.successRate || 0}%</p>
@@ -351,7 +351,7 @@ export const OrderAutomationDashboard: React.FC = () => {
                     >
                       <div className="flex items-center gap-4">
                         <div className={`p-2 rounded-lg ${rule.isActive ? 'bg-green-500/10' : 'bg-muted'}`}>
-                          <Zap className={`w-5 h-5 ${rule.isActive ? 'text-green-600' : 'text-muted-foreground'}`} />
+                          <Zap className={`w-5 h-5 ${rule.isActive ? 'text-success' : 'text-muted-foreground'}`} />
                         </div>
                         <div>
                           <h4 className="font-medium">{rule.name}</h4>

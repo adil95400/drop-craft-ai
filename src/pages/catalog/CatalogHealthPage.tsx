@@ -23,11 +23,11 @@ import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip as RTooltip, Resp
 import { useCatalogHealth } from '@/hooks/catalog'
 
 const GRADE_STYLES: Record<string, { bg: string; text: string; glow: string }> = {
-  A: { bg: 'bg-emerald-500/10', text: 'text-emerald-600', glow: 'shadow-emerald-500/20' },
-  B: { bg: 'bg-blue-500/10', text: 'text-blue-600', glow: 'shadow-blue-500/20' },
-  C: { bg: 'bg-amber-500/10', text: 'text-amber-600', glow: 'shadow-amber-500/20' },
-  D: { bg: 'bg-orange-500/10', text: 'text-orange-600', glow: 'shadow-orange-500/20' },
-  F: { bg: 'bg-red-500/10', text: 'text-red-600', glow: 'shadow-red-500/20' },
+  A: { bg: 'bg-emerald-500/10', text: 'text-success', glow: 'shadow-emerald-500/20' },
+  B: { bg: 'bg-blue-500/10', text: 'text-info', glow: 'shadow-blue-500/20' },
+  C: { bg: 'bg-amber-500/10', text: 'text-warning', glow: 'shadow-amber-500/20' },
+  D: { bg: 'bg-orange-500/10', text: 'text-warning', glow: 'shadow-orange-500/20' },
+  F: { bg: 'bg-red-500/10', text: 'text-destructive', glow: 'shadow-red-500/20' },
 }
 
 const stagger = { hidden: { opacity: 0 }, show: { opacity: 1, transition: { staggerChildren: 0.06 } } }
@@ -123,7 +123,7 @@ export default function CatalogHealthPage() {
                         >
                           <div className="flex items-center justify-between">
                             <span className="text-sm font-semibold">{pillar.label}</span>
-                            <span className={cn("text-sm font-black tabular-nums", pillar.avg >= 70 ? "text-emerald-600" : pillar.avg >= 50 ? "text-amber-600" : "text-red-600")}>
+                            <span className={cn("text-sm font-black tabular-nums", pillar.avg >= 70 ? "text-success" : pillar.avg >= 50 ? "text-warning" : "text-destructive")}>
                               {pillar.avg}%
                             </span>
                           </div>
@@ -136,7 +136,7 @@ export default function CatalogHealthPage() {
                   <Card className="lg:col-span-2 overflow-hidden">
                     <CardHeader className="border-b bg-muted/30">
                       <CardTitle className="text-lg flex items-center gap-2">
-                        <AlertTriangle className="h-5 w-5 text-amber-500" />
+                        <AlertTriangle className="h-5 w-5 text-warning" />
                         Problèmes les plus fréquents
                         {fixableIssuesCount > 0 && <Badge variant="outline" className="ml-2 gap-1"><Zap className="h-3 w-3" />{fixableIssuesCount} auto-fixables</Badge>}
                       </CardTitle>
@@ -188,12 +188,12 @@ export default function CatalogHealthPage() {
             <TabsContent value="worst">
               <Card className="overflow-hidden">
                 <CardHeader className="border-b bg-muted/30">
-                  <CardTitle className="text-lg flex items-center gap-2"><XCircle className="h-5 w-5 text-red-500" />10 produits les plus faibles</CardTitle>
+                  <CardTitle className="text-lg flex items-center gap-2"><XCircle className="h-5 w-5 text-destructive" />10 produits les plus faibles</CardTitle>
                 </CardHeader>
                 <CardContent className="p-0">
                   {worstProducts.length === 0 ? (
                     <div className="text-center py-16 text-muted-foreground">
-                      <CheckCircle className="h-16 w-16 mx-auto mb-3 text-emerald-500" />
+                      <CheckCircle className="h-16 w-16 mx-auto mb-3 text-success" />
                       <p className="font-medium">Aucun produit à améliorer</p>
                     </div>
                   ) : (
@@ -223,7 +223,7 @@ export default function CatalogHealthPage() {
                                 <TooltipProvider key={p.key}>
                                   <Tooltip>
                                     <TooltipTrigger>
-                                      <Badge variant="outline" className="text-xs text-red-600">{p.label.slice(0, 3)}</Badge>
+                                      <Badge variant="outline" className="text-xs text-destructive">{p.label.slice(0, 3)}</Badge>
                                     </TooltipTrigger>
                                     <TooltipContent>{p.label}: {p.score}%</TooltipContent>
                                   </Tooltip>

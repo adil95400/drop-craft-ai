@@ -273,7 +273,7 @@ export function PickingPackingWorkflow() {
                             isComplete ? "bg-green-500/10" : "bg-muted"
                           )}>
                             {isComplete
-                              ? <CheckCircle className="h-5 w-5 text-green-600" />
+                              ? <CheckCircle className="h-5 w-5 text-success" />
                               : <Package className="h-5 w-5 text-muted-foreground" />
                             }
                           </div>

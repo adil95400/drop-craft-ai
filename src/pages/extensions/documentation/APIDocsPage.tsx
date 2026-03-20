@@ -196,7 +196,7 @@ export default function APIDocsPage() {
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center space-x-2 mb-2">
-              <Globe className="w-4 h-4 text-blue-500" />
+              <Globe className="w-4 h-4 text-info" />
               <span className="font-semibold">Base URL</span>
             </div>
             <code className="text-sm bg-muted p-2 rounded block">
@@ -208,7 +208,7 @@ export default function APIDocsPage() {
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center space-x-2 mb-2">
-              <Key className="w-4 h-4 text-green-500" />
+              <Key className="w-4 h-4 text-success" />
               <span className="font-semibold">Authentification</span>
             </div>
             <code className="text-sm bg-muted p-2 rounded block">
@@ -220,7 +220,7 @@ export default function APIDocsPage() {
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center space-x-2 mb-2">
-              <Zap className="w-4 h-4 text-orange-500" />
+              <Zap className="w-4 h-4 text-warning" />
               <span className="font-semibold">Rate Limit</span>
             </div>
             <code className="text-sm bg-muted p-2 rounded block">
@@ -282,10 +282,10 @@ export default function APIDocsPage() {
                               <Badge 
                                 variant="outline" 
                                 className={`text-xs ${
-                                  endpoint.method === 'GET' ? 'border-green-500 text-green-600' :
-                                  endpoint.method === 'POST' ? 'border-blue-500 text-blue-600' :
-                                  endpoint.method === 'PUT' ? 'border-orange-500 text-orange-600' :
-                                  'border-red-500 text-red-600'
+                                  endpoint.method === 'GET' ? 'border-green-500 text-success' :
+                                  endpoint.method === 'POST' ? 'border-blue-500 text-info' :
+                                  endpoint.method === 'PUT' ? 'border-orange-500 text-warning' :
+                                  'border-red-500 text-destructive'
                                 }`}
                               >
                                 {endpoint.method}
@@ -312,10 +312,10 @@ export default function APIDocsPage() {
                       <Badge 
                         variant="outline"
                         className={`${
-                          endpoint.method === 'GET' ? 'border-green-500 text-green-600' :
-                          endpoint.method === 'POST' ? 'border-blue-500 text-blue-600' :
-                          endpoint.method === 'PUT' ? 'border-orange-500 text-orange-600' :
-                          'border-red-500 text-red-600'
+                          endpoint.method === 'GET' ? 'border-green-500 text-success' :
+                          endpoint.method === 'POST' ? 'border-blue-500 text-info' :
+                          endpoint.method === 'PUT' ? 'border-orange-500 text-warning' :
+                          'border-red-500 text-destructive'
                         }`}
                       >
                         {endpoint.method}

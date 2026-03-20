@@ -339,7 +339,7 @@ export const AlertSystem: React.FC = () => {
               variant="outline"
               size="sm"
               onClick={toggleAlerts}
-              className={alertsEnabled ? 'text-green-600' : 'text-gray-500'}
+              className={alertsEnabled ? 'text-success' : 'text-gray-500'}
             >
               {alertsEnabled ? <Bell className="h-4 w-4" /> : <BellOff className="h-4 w-4" />}
               {alertsEnabled ? 'Activées' : 'Désactivées'}
@@ -363,7 +363,7 @@ export const AlertSystem: React.FC = () => {
           <div className="space-y-3">
             {alerts.length === 0 ? (
               <div className="text-center py-8 text-muted-foreground">
-                <CheckCircle className="h-8 w-8 mx-auto mb-2 text-green-500" />
+                <CheckCircle className="h-8 w-8 mx-auto mb-2 text-success" />
                 Aucune alerte active
               </div>
             ) : (

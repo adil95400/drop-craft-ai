@@ -23,10 +23,10 @@ export function SmartInventoryDashboard() {
 
   const getRiskColor = (riskLevel: string) => {
     switch (riskLevel) {
-      case 'critical': return 'text-red-600 bg-red-100';
-      case 'high': return 'text-orange-600 bg-orange-100';
-      case 'medium': return 'text-yellow-600 bg-yellow-100';
-      case 'low': return 'text-green-600 bg-green-100';
+      case 'critical': return 'text-destructive bg-red-100';
+      case 'high': return 'text-warning bg-orange-100';
+      case 'medium': return 'text-warning bg-yellow-100';
+      case 'low': return 'text-success bg-green-100';
       default: return 'text-gray-600 bg-gray-100';
     }
   };
@@ -58,7 +58,7 @@ export function SmartInventoryDashboard() {
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-blue-100 rounded-lg">
-                <Package className="h-5 w-5 text-blue-600" />
+                <Package className="h-5 w-5 text-info" />
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Produits Suivis</p>
@@ -72,11 +72,11 @@ export function SmartInventoryDashboard() {
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-red-100 rounded-lg">
-                <AlertTriangle className="h-5 w-5 text-red-600" />
+                <AlertTriangle className="h-5 w-5 text-destructive" />
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Risque Critique</p>
-                <p className="text-2xl font-bold text-red-600">{metrics?.criticalRisk || 0}</p>
+                <p className="text-2xl font-bold text-destructive">{metrics?.criticalRisk || 0}</p>
               </div>
             </div>
           </CardContent>
@@ -86,7 +86,7 @@ export function SmartInventoryDashboard() {
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-green-100 rounded-lg">
-                <Zap className="h-5 w-5 text-green-600" />
+                <Zap className="h-5 w-5 text-success" />
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Auto-Réappro</p>
@@ -115,7 +115,7 @@ export function SmartInventoryDashboard() {
       {highRiskItems && highRiskItems.length > 0 && (
         <Card className="border-red-200 bg-red-50/50">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-red-600">
+            <CardTitle className="flex items-center gap-2 text-destructive">
               <AlertTriangle className="h-5 w-5" />
               Actions Urgentes Requises
             </CardTitle>
@@ -125,7 +125,7 @@ export function SmartInventoryDashboard() {
               {highRiskItems.slice(0, 5).map((item) => (
                 <div key={item.id} className="flex items-center justify-between p-3 bg-white rounded-lg border">
                   <div className="flex items-center gap-3">
-                    <AlertTriangle className="h-4 w-4 text-red-500" />
+                    <AlertTriangle className="h-4 w-4 text-destructive" />
                     <div>
                       <p className="font-medium">Produit #{item.product_id.slice(0, 8)}</p>
                       <p className="text-sm text-muted-foreground">
@@ -172,7 +172,7 @@ export function SmartInventoryDashboard() {
                 <div key={rec.id} className="flex items-center justify-between p-4 border rounded-lg">
                   <div className="flex items-center gap-4">
                     <div className="p-2 bg-orange-100 rounded-lg">
-                      <Package className="h-5 w-5 text-orange-600" />
+                      <Package className="h-5 w-5 text-warning" />
                     </div>
                     <div>
                       <h4 className="font-semibold">
@@ -223,20 +223,20 @@ export function SmartInventoryDashboard() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="p-4 bg-blue-50 rounded-lg">
                 <h4 className="font-semibold text-blue-700 mb-2">Prochains 7 jours</h4>
-                <p className="text-2xl font-bold text-blue-600">{insights.next7Days}</p>
-                <p className="text-sm text-blue-600">réapprovisionnements</p>
+                <p className="text-2xl font-bold text-info">{insights.next7Days}</p>
+                <p className="text-sm text-info">réapprovisionnements</p>
               </div>
               
               <div className="p-4 bg-orange-50 rounded-lg">
                 <h4 className="font-semibold text-orange-700 mb-2">Actions Critiques</h4>
-                <p className="text-2xl font-bold text-orange-600">{insights.criticalActions}</p>
-                <p className="text-sm text-orange-600">requises</p>
+                <p className="text-2xl font-bold text-warning">{insights.criticalActions}</p>
+                <p className="text-sm text-warning">requises</p>
               </div>
               
               <div className="p-4 bg-green-50 rounded-lg">
-                <h4 className="font-semibold text-green-700 mb-2">Total Prévu</h4>
-                <p className="text-2xl font-bold text-green-600">{insights.upcomingReorders}</p>
-                <p className="text-sm text-green-600">réapprovisionnements</p>
+                <h4 className="font-semibold text-success mb-2">Total Prévu</h4>
+                <p className="text-2xl font-bold text-success">{insights.upcomingReorders}</p>
+                <p className="text-sm text-success">réapprovisionnements</p>
               </div>
             </div>
             

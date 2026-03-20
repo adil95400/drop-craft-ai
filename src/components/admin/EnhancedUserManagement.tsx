@@ -167,10 +167,10 @@ export const EnhancedUserManagement = () => {
     
     const daysSinceLogin = Math.floor((Date.now() - new Date(lastLogin).getTime()) / (1000 * 60 * 60 * 24))
     
-    if (daysSinceLogin === 0) return { status: 'Actif aujourd\'hui', color: 'text-green-600' }
-    if (daysSinceLogin <= 7) return { status: `Actif il y a ${daysSinceLogin}j`, color: 'text-blue-600' }
-    if (daysSinceLogin <= 30) return { status: `Inactif ${daysSinceLogin}j`, color: 'text-yellow-600' }
-    return { status: `Inactif +${daysSinceLogin}j`, color: 'text-red-600' }
+    if (daysSinceLogin === 0) return { status: 'Actif aujourd\'hui', color: 'text-success' }
+    if (daysSinceLogin <= 7) return { status: `Actif il y a ${daysSinceLogin}j`, color: 'text-info' }
+    if (daysSinceLogin <= 30) return { status: `Inactif ${daysSinceLogin}j`, color: 'text-warning' }
+    return { status: `Inactif +${daysSinceLogin}j`, color: 'text-destructive' }
   }
 
   if (loading && users.length === 0) {
@@ -204,13 +204,13 @@ export const EnhancedUserManagement = () => {
               <div className="text-sm text-muted-foreground">Utilisateurs totaux</div>
             </div>
             <div className="text-center p-4 border rounded-lg">
-              <div className="text-2xl font-bold text-green-600">
+              <div className="text-2xl font-bold text-success">
                 {users.filter(u => u.role === 'admin' || u.is_admin).length}
               </div>
               <div className="text-sm text-muted-foreground">Administrateurs</div>
             </div>
             <div className="text-center p-4 border rounded-lg">
-              <div className="text-2xl font-bold text-blue-600">
+              <div className="text-2xl font-bold text-info">
                 {users.filter(u => u.plan === 'pro' || u.plan === 'ultra_pro').length}
               </div>
               <div className="text-sm text-muted-foreground">Abonnés Premium</div>

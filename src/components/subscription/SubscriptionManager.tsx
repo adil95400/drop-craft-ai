@@ -125,7 +125,7 @@ export const SubscriptionManager = () => {
               <div className="flex items-center gap-2 mt-1">
                 {getPlanBadge(subscription?.plan)}
                 {subscription?.subscribed && (
-                  <Badge className="bg-green-100 text-green-800">Actif</Badge>
+                  <Badge className="bg-green-100 text-success">Actif</Badge>
                 )}
               </div>
             </div>
@@ -162,7 +162,7 @@ export const SubscriptionManager = () => {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
-                  <CreditCard className="w-4 h-4 text-blue-600" />
+                  <CreditCard className="w-4 h-4 text-info" />
                 </div>
                 Plan Pro
               </CardTitle>

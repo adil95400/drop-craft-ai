@@ -43,11 +43,11 @@ const supplierNames: Record<string, string> = {
 }
 
 const statusConfig: Record<string, { label: string, color: string, icon: React.ReactNode }> = {
-  pending: { label: 'En attente', color: 'bg-yellow-500/10 text-yellow-600 border-yellow-500/20', icon: <Clock className="h-3 w-3" /> },
-  processing: { label: 'En cours', color: 'bg-blue-500/10 text-blue-600 border-blue-500/20', icon: <Loader2 className="h-3 w-3 animate-spin" /> },
-  completed: { label: 'Terminé', color: 'bg-green-500/10 text-green-600 border-green-500/20', icon: <CheckCircle className="h-3 w-3" /> },
-  failed: { label: 'Échoué', color: 'bg-red-500/10 text-red-600 border-red-500/20', icon: <XCircle className="h-3 w-3" /> },
-  retry: { label: 'Retry planifié', color: 'bg-orange-500/10 text-orange-600 border-orange-500/20', icon: <RotateCcw className="h-3 w-3" /> },
+  pending: { label: 'En attente', color: 'bg-yellow-500/10 text-warning border-yellow-500/20', icon: <Clock className="h-3 w-3" /> },
+  processing: { label: 'En cours', color: 'bg-blue-500/10 text-info border-blue-500/20', icon: <Loader2 className="h-3 w-3 animate-spin" /> },
+  completed: { label: 'Terminé', color: 'bg-green-500/10 text-success border-green-500/20', icon: <CheckCircle className="h-3 w-3" /> },
+  failed: { label: 'Échoué', color: 'bg-red-500/10 text-destructive border-red-500/20', icon: <XCircle className="h-3 w-3" /> },
+  retry: { label: 'Retry planifié', color: 'bg-orange-500/10 text-warning border-orange-500/20', icon: <RotateCcw className="h-3 w-3" /> },
   cancelled: { label: 'Annulé', color: 'bg-gray-500/10 text-gray-600 border-gray-500/20', icon: <X className="h-3 w-3" /> }
 }
 
@@ -84,7 +84,7 @@ export function AutoOrderQueueDashboard() {
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-2">
-              <Clock className="h-5 w-5 text-yellow-500" />
+              <Clock className="h-5 w-5 text-warning" />
               <div>
                 <p className="text-2xl font-bold">{stats.pending}</p>
                 <p className="text-xs text-muted-foreground">En attente</p>
@@ -95,7 +95,7 @@ export function AutoOrderQueueDashboard() {
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-2">
-              <Loader2 className="h-5 w-5 text-blue-500 animate-spin" />
+              <Loader2 className="h-5 w-5 text-info animate-spin" />
               <div>
                 <p className="text-2xl font-bold">{stats.processing}</p>
                 <p className="text-xs text-muted-foreground">En cours</p>
@@ -106,7 +106,7 @@ export function AutoOrderQueueDashboard() {
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-2">
-              <CheckCircle className="h-5 w-5 text-green-500" />
+              <CheckCircle className="h-5 w-5 text-success" />
               <div>
                 <p className="text-2xl font-bold">{stats.completed}</p>
                 <p className="text-xs text-muted-foreground">Terminées</p>
@@ -117,7 +117,7 @@ export function AutoOrderQueueDashboard() {
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-2">
-              <XCircle className="h-5 w-5 text-red-500" />
+              <XCircle className="h-5 w-5 text-destructive" />
               <div>
                 <p className="text-2xl font-bold">{stats.failed}</p>
                 <p className="text-xs text-muted-foreground">Échouées</p>
@@ -128,7 +128,7 @@ export function AutoOrderQueueDashboard() {
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-2">
-              <RotateCcw className="h-5 w-5 text-orange-500" />
+              <RotateCcw className="h-5 w-5 text-warning" />
               <div>
                 <p className="text-2xl font-bold">{stats.retry}</p>
                 <p className="text-xs text-muted-foreground">Retry</p>
@@ -238,7 +238,7 @@ export function AutoOrderQueueDashboard() {
                           </Badge>
                         </TableCell>
                         <TableCell>
-                          <span className={item.retry_count >= item.max_retries ? 'text-red-500' : ''}>
+                          <span className={item.retry_count >= item.max_retries ? 'text-destructive' : ''}>
                             {item.retry_count}/{item.max_retries}
                           </span>
                         </TableCell>
@@ -278,10 +278,10 @@ export function AutoOrderQueueDashboard() {
                             <div className="p-4 space-y-3">
                               {item.error_message && (
                                 <div className="flex items-start gap-2 p-3 bg-red-50 dark:bg-red-950/20 rounded-lg">
-                                  <AlertTriangle className="h-5 w-5 text-red-500 flex-shrink-0 mt-0.5" />
+                                  <AlertTriangle className="h-5 w-5 text-destructive flex-shrink-0 mt-0.5" />
                                   <div>
                                     <p className="font-medium text-red-700 dark:text-red-400">Erreur</p>
-                                    <p className="text-sm text-red-600 dark:text-red-300">{item.error_message}</p>
+                                    <p className="text-sm text-destructive dark:text-red-300">{item.error_message}</p>
                                   </div>
                                 </div>
                               )}

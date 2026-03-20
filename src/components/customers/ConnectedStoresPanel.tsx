@@ -41,7 +41,7 @@ import {
 const platformConfig: Record<string, { icon: React.ReactNode; color: string; gradient: string }> = {
   shopify: { 
     icon: <ShoppingBag className="h-4 w-4" />, 
-    color: 'text-green-600',
+    color: 'text-success',
     gradient: 'from-green-500/20 to-green-600/10'
   },
   woocommerce: { 
@@ -56,12 +56,12 @@ const platformConfig: Record<string, { icon: React.ReactNode; color: string; gra
   },
   magento: { 
     icon: <Store className="h-4 w-4" />, 
-    color: 'text-orange-600',
+    color: 'text-warning',
     gradient: 'from-orange-500/20 to-orange-600/10'
   },
   default: { 
     icon: <Globe className="h-4 w-4" />, 
-    color: 'text-blue-600',
+    color: 'text-info',
     gradient: 'from-blue-500/20 to-blue-600/10'
   }
 }
@@ -269,7 +269,7 @@ export function ConnectedStoresPanel({ onImportComplete, autoSync = true }: Conn
                       {activeStores.length}/{connectedIntegrations.length} actives
                     </Badge>
                     {isSyncingAny && (
-                      <Badge variant="outline" className="text-xs gap-1 animate-pulse border-blue-500/30 text-blue-600">
+                      <Badge variant="outline" className="text-xs gap-1 animate-pulse border-blue-500/30 text-info">
                         <Loader2 className="h-3 w-3 animate-spin" />
                         Sync...
                       </Badge>
@@ -351,7 +351,7 @@ export function ConnectedStoresPanel({ onImportComplete, autoSync = true }: Conn
                                     {integration.platform_name || integration.platform}
                                   </p>
                                   {integration.is_active && (
-                                    <CheckCircle2 className="h-3.5 w-3.5 text-green-500" />
+                                    <CheckCircle2 className="h-3.5 w-3.5 text-success" />
                                   )}
                                 </div>
                                 <div className="flex items-center gap-3 text-xs text-muted-foreground mt-0.5">

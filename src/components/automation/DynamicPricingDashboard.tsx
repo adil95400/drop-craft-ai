@@ -23,18 +23,18 @@ export function DynamicPricingDashboard() {
 
   const getPriceChangeIcon = (currentPrice: number, suggestedPrice: number) => {
     return suggestedPrice > currentPrice ? 
-      <TrendingUp className="h-4 w-4 text-green-600" /> : 
-      <TrendingDown className="h-4 w-4 text-red-600" />;
+      <TrendingUp className="h-4 w-4 text-success" /> : 
+      <TrendingDown className="h-4 w-4 text-destructive" />;
   };
 
   const getPriceChangeColor = (currentPrice: number, suggestedPrice: number) => {
-    return suggestedPrice > currentPrice ? 'text-green-600' : 'text-red-600';
+    return suggestedPrice > currentPrice ? 'text-success' : 'text-destructive';
   };
 
   const getConfidenceColor = (confidence: number) => {
-    if (confidence >= 80) return 'text-green-600';
-    if (confidence >= 60) return 'text-yellow-600';
-    return 'text-red-600';
+    if (confidence >= 80) return 'text-success';
+    if (confidence >= 60) return 'text-warning';
+    return 'text-destructive';
   };
 
   if (isLoading || metricsLoading) {
@@ -54,7 +54,7 @@ export function DynamicPricingDashboard() {
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-blue-100 rounded-lg">
-                <Target className="h-5 w-5 text-blue-600" />
+                <Target className="h-5 w-5 text-info" />
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Recommandations</p>
@@ -68,7 +68,7 @@ export function DynamicPricingDashboard() {
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-green-100 rounded-lg">
-                <CheckCircle className="h-5 w-5 text-green-600" />
+                <CheckCircle className="h-5 w-5 text-success" />
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Appliquées</p>
@@ -96,7 +96,7 @@ export function DynamicPricingDashboard() {
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-orange-100 rounded-lg">
-                <DollarSign className="h-5 w-5 text-orange-600" />
+                <DollarSign className="h-5 w-5 text-warning" />
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Impact Profit</p>

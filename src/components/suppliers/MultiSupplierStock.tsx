@@ -135,7 +135,7 @@ export function MultiSupplierStock() {
     switch (status) {
       case 'in_stock':
         return (
-          <Badge className="bg-green-100 text-green-800">
+          <Badge className="bg-green-100 text-success">
             <CheckCircle className="h-3 w-3 mr-1" />
             En stock
           </Badge>
@@ -159,9 +159,9 @@ export function MultiSupplierStock() {
 
   const getStockTrend = (primary: number, backup: number) => {
     const total = primary + backup
-    if (total > 50) return <TrendingUp className="h-4 w-4 text-green-600" />
-    if (total < 10) return <TrendingDown className="h-4 w-4 text-red-600" />
-    return <Minus className="h-4 w-4 text-yellow-600" />
+    if (total > 50) return <TrendingUp className="h-4 w-4 text-success" />
+    if (total < 10) return <TrendingDown className="h-4 w-4 text-destructive" />
+    return <Minus className="h-4 w-4 text-warning" />
   }
 
   const filteredMappings = stockMappings.filter(mapping => {
@@ -228,19 +228,19 @@ export function MultiSupplierStock() {
         <div className="grid grid-cols-3 gap-4">
           <div className="p-4 rounded-lg border bg-green-50 dark:bg-green-950/20">
             <p className="text-sm text-muted-foreground">En stock</p>
-            <p className="text-2xl font-bold text-green-600">
+            <p className="text-2xl font-bold text-success">
               {stockMappings.filter(m => m.status === 'in_stock').length}
             </p>
           </div>
           <div className="p-4 rounded-lg border bg-yellow-50 dark:bg-yellow-950/20">
             <p className="text-sm text-muted-foreground">Stock faible</p>
-            <p className="text-2xl font-bold text-yellow-600">
+            <p className="text-2xl font-bold text-warning">
               {stockMappings.filter(m => m.status === 'low_stock').length}
             </p>
           </div>
           <div className="p-4 rounded-lg border bg-red-50 dark:bg-red-950/20">
             <p className="text-sm text-muted-foreground">Rupture</p>
-            <p className="text-2xl font-bold text-red-600">
+            <p className="text-2xl font-bold text-destructive">
               {stockMappings.filter(m => m.status === 'out_of_stock').length}
             </p>
           </div>

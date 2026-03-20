@@ -151,7 +151,7 @@ export const AdvancedIntegrationModal = ({
               />
             </div>
             <div className="p-3 bg-green-50 rounded-lg">
-              <p className="text-sm text-green-700">
+              <p className="text-sm text-success">
                 ✓ API REST complète avec gestion des commandes et stock temps réel
               </p>
             </div>
@@ -590,7 +590,7 @@ export const AdvancedIntegrationModal = ({
                   {integration.status === 'connected' ? (
                     <>
                       <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-                      <span className="text-sm text-green-600">En ligne</span>
+                      <span className="text-sm text-success">En ligne</span>
                     </>
                   ) : (
                     <>
@@ -630,11 +630,11 @@ export const AdvancedIntegrationModal = ({
                   </div>
                   <div className="flex justify-between text-sm">
                     <span>Erreurs ce mois</span>
-                    <span className="font-medium text-red-600">{integration.errors || 0}</span>
+                    <span className="font-medium text-destructive">{integration.errors || 0}</span>
                   </div>
                   <div className="flex justify-between text-sm">
                     <span>Taux de réussite</span>
-                    <span className="font-medium text-green-600">
+                    <span className="font-medium text-success">
                       {integration.successRate || 100}%
                     </span>
                   </div>
@@ -670,7 +670,7 @@ export const AdvancedIntegrationModal = ({
               <div className="space-y-2">
                 {integration.features?.map((feature: string, index: number) => (
                   <div key={index} className="flex items-center gap-2">
-                    <CheckCircle className="w-3 h-3 text-green-500" />
+                    <CheckCircle className="w-3 h-3 text-success" />
                     <span className="text-sm">{feature}</span>
                   </div>
                 ))}

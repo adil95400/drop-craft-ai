@@ -47,7 +47,7 @@ export const ImportStatsRealTime = ({ refreshInterval = 5000 }: ImportStatsRealT
       <div className="flex items-center justify-between">
         <h3 className="text-lg font-semibold">Statistiques en Temps Réel</h3>
         <div className="flex items-center gap-2">
-          <Activity className="w-4 h-4 text-green-500 animate-pulse" />
+          <Activity className="w-4 h-4 text-success animate-pulse" />
           <span className="text-sm text-muted-foreground">
             Données réelles
           </span>
@@ -60,16 +60,16 @@ export const ImportStatsRealTime = ({ refreshInterval = 5000 }: ImportStatsRealT
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <div className="text-2xl font-bold text-blue-600">
+                <div className="text-2xl font-bold text-info">
                   {stats.totalImportsToday.toLocaleString()}
                 </div>
                 <div className="text-sm text-muted-foreground">Imports aujourd'hui</div>
               </div>
-              <Package className="w-8 h-8 text-blue-500" />
+              <Package className="w-8 h-8 text-info" />
             </div>
             <div className="flex items-center gap-1 mt-2">
-              <TrendingUp className="w-3 h-3 text-blue-500" />
-              <span className="text-xs text-blue-600">Produits importés</span>
+              <TrendingUp className="w-3 h-3 text-info" />
+              <span className="text-xs text-info">Produits importés</span>
             </div>
           </CardContent>
         </Card>
@@ -78,12 +78,12 @@ export const ImportStatsRealTime = ({ refreshInterval = 5000 }: ImportStatsRealT
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <div className="text-2xl font-bold text-green-600">
+                <div className="text-2xl font-bold text-success">
                   {stats.successRate.toFixed(1)}%
                 </div>
                 <div className="text-sm text-muted-foreground">Taux de succès</div>
               </div>
-              <CheckCircle className="w-8 h-8 text-green-500" />
+              <CheckCircle className="w-8 h-8 text-success" />
             </div>
             <Progress value={stats.successRate} className="mt-2 h-2" />
           </CardContent>
@@ -117,16 +117,16 @@ export const ImportStatsRealTime = ({ refreshInterval = 5000 }: ImportStatsRealT
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <div className="text-2xl font-bold text-orange-600">
+                <div className="text-2xl font-bold text-warning">
                   {stats.topSources.length}
                 </div>
                 <div className="text-sm text-muted-foreground">Sources actives</div>
               </div>
-              <Globe className="w-8 h-8 text-orange-500" />
+              <Globe className="w-8 h-8 text-warning" />
             </div>
             <div className="flex items-center gap-1 mt-2">
-              <Zap className="w-3 h-3 text-orange-500" />
-              <span className="text-xs text-orange-600">Multi-sources</span>
+              <Zap className="w-3 h-3 text-warning" />
+              <span className="text-xs text-warning">Multi-sources</span>
             </div>
           </CardContent>
         </Card>

@@ -395,7 +395,7 @@ export function ProductDetailsDialog({ open, onOpenChange, productId }: ProductD
                   className="flex items-center gap-4 p-4 border rounded-xl bg-gradient-to-br from-emerald-500/10 to-emerald-500/5"
                 >
                   <div className="p-3 rounded-xl bg-emerald-500/20">
-                    <DollarSign className="h-6 w-6 text-emerald-600" />
+                    <DollarSign className="h-6 w-6 text-success" />
                   </div>
                   <div>
                     <p className="text-sm text-muted-foreground">Prix de vente</p>
@@ -413,7 +413,7 @@ export function ProductDetailsDialog({ open, onOpenChange, productId }: ProductD
                     className="flex items-center gap-4 p-4 border rounded-xl bg-gradient-to-br from-blue-500/10 to-blue-500/5"
                   >
                     <div className="p-3 rounded-xl bg-blue-500/20">
-                      <DollarSign className="h-6 w-6 text-blue-600" />
+                      <DollarSign className="h-6 w-6 text-info" />
                     </div>
                     <div>
                       <p className="text-sm text-muted-foreground">Prix de coût</p>
@@ -452,7 +452,7 @@ export function ProductDetailsDialog({ open, onOpenChange, productId }: ProductD
                   <div className="p-4 rounded-xl bg-gradient-to-br from-yellow-500/10 to-orange-500/10 border">
                     <div className="flex items-center gap-6">
                       <div className="text-center">
-                        <p className="text-4xl font-bold text-yellow-600">{getAverageRating().toFixed(1)}</p>
+                        <p className="text-4xl font-bold text-warning">{getAverageRating().toFixed(1)}</p>
                         <div className="flex justify-center mt-1">
                           {renderStars(getAverageRating())}
                         </div>

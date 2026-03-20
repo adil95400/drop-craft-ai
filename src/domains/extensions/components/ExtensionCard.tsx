@@ -45,7 +45,7 @@ export const ExtensionCard: React.FC<ExtensionCardProps> = ({
               <Shield className="h-5 w-5 text-primary" />
             </div>
             {extension.verified && (
-              <Shield className="h-4 w-4 text-green-500" />
+              <Shield className="h-4 w-4 text-success" />
             )}
           </div>
           <div className="flex items-center gap-2">
@@ -60,8 +60,8 @@ export const ExtensionCard: React.FC<ExtensionCardProps> = ({
                 <Heart 
                   className={`h-4 w-4 ${
                     isFavorite 
-                      ? 'fill-red-500 text-red-500' 
-                      : 'text-muted-foreground hover:text-red-500'
+                      ? 'fill-red-500 text-destructive' 
+                      : 'text-muted-foreground hover:text-destructive'
                   }`} 
                 />
               </Button>
@@ -80,7 +80,7 @@ export const ExtensionCard: React.FC<ExtensionCardProps> = ({
           
           <div className="flex items-center justify-between text-sm">
             <div className="flex items-center gap-1">
-              <Star className="h-4 w-4 fill-current text-yellow-500" />
+              <Star className="h-4 w-4 fill-current text-warning" />
               <span>{extension.rating}</span>
             </div>
             <div className="flex items-center gap-1">

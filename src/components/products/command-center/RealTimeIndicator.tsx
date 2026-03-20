@@ -30,7 +30,7 @@ export function RealTimeIndicator({ className }: RealTimeIndicatorProps) {
 
   const Icon = online ? Wifi : WifiOff
   const label = online ? 'En ligne' : 'Hors ligne'
-  const color = online ? 'text-emerald-500' : 'text-muted-foreground'
+  const color = online ? 'text-success' : 'text-muted-foreground'
   const bg = online ? 'bg-emerald-500/10 border-emerald-500/30' : 'bg-muted/50 border-muted-foreground/30'
 
   return (

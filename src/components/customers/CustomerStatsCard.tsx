@@ -35,19 +35,19 @@ export function CustomerStatsCard({
     },
     success: {
       bg: 'bg-green-500/10',
-      text: 'text-green-600',
+      text: 'text-success',
       border: 'border-green-500/20',
       gradient: 'from-green-500/5 to-transparent'
     },
     warning: {
       bg: 'bg-amber-500/10',
-      text: 'text-amber-600',
+      text: 'text-warning',
       border: 'border-amber-500/20',
       gradient: 'from-amber-500/5 to-transparent'
     },
     info: {
       bg: 'bg-blue-500/10',
-      text: 'text-blue-600',
+      text: 'text-info',
       border: 'border-blue-500/20',
       gradient: 'from-blue-500/5 to-transparent'
     },
@@ -93,8 +93,8 @@ export function CustomerStatsCard({
                 className={cn(
                   "text-xs font-medium border-0 gap-1",
                   isPositive 
-                    ? "bg-green-500/10 text-green-600" 
-                    : "bg-red-500/10 text-red-600"
+                    ? "bg-green-500/10 text-success" 
+                    : "bg-red-500/10 text-destructive"
                 )}
               >
                 {isPositive ? (

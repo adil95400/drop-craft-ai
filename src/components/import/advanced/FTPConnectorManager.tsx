@@ -72,7 +72,7 @@ export const FTPConnectorManager = ({
 
                   {connector.last_sync_at ? (
                     <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                      <CheckCircle2 className="h-3 w-3 text-green-600" />
+                      <CheckCircle2 className="h-3 w-3 text-success" />
                       Dernière sync: {new Date(connector.last_sync_at).toLocaleString()}
                     </div>
                   ) : (
@@ -99,7 +99,7 @@ export const FTPConnectorManager = ({
                     <AlertDialog>
                       <AlertDialogTrigger asChild>
                         <Button variant="outline" size="sm">
-                          <Trash2 className="h-4 w-4 text-red-600" />
+                          <Trash2 className="h-4 w-4 text-destructive" />
                         </Button>
                       </AlertDialogTrigger>
                       <AlertDialogContent>

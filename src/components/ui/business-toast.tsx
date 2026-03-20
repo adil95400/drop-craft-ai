@@ -52,19 +52,19 @@ function ToastIcon({ variant }: { variant?: string }) {
     case 'success':
       return (
         <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-emerald-500/20">
-          <CheckCircle2 className={cn(iconClass, 'text-emerald-500')} />
+          <CheckCircle2 className={cn(iconClass, 'text-success')} />
         </div>
       )
     case 'opportunity':
       return (
         <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-amber-500/20">
-          <Sparkles className={cn(iconClass, 'text-amber-500')} />
+          <Sparkles className={cn(iconClass, 'text-warning')} />
         </div>
       )
     case 'risk':
       return (
         <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-red-500/20">
-          <ShieldCheck className={cn(iconClass, 'text-red-500')} />
+          <ShieldCheck className={cn(iconClass, 'text-destructive')} />
         </div>
       )
     default:
@@ -103,9 +103,9 @@ const BusinessToast = React.forwardRef<
           <div className="mt-2 flex items-center gap-2 animate-fade-in">
             <div className={cn(
               'inline-flex items-center gap-1 rounded-md px-2 py-1 text-sm font-semibold',
-              variant === 'success' && 'bg-emerald-500/20 text-emerald-600',
-              variant === 'opportunity' && 'bg-amber-500/20 text-amber-600',
-              variant === 'risk' && 'bg-red-500/20 text-red-600',
+              variant === 'success' && 'bg-emerald-500/20 text-success',
+              variant === 'opportunity' && 'bg-amber-500/20 text-warning',
+              variant === 'risk' && 'bg-red-500/20 text-destructive',
               !variant && 'bg-primary/20 text-primary'
             )}>
               {impact.trend === 'up' && <TrendingUp className="h-3.5 w-3.5" />}

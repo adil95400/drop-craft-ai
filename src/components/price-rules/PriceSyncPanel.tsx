@@ -178,11 +178,11 @@ export function PriceSyncPanel() {
               <div>
                 <p className="text-sm text-muted-foreground">Synchronisations aujourd'hui</p>
                 <div className="flex items-center gap-4 mt-1">
-                  <span className="flex items-center gap-1 text-green-500">
+                  <span className="flex items-center gap-1 text-success">
                     <CheckCircle2 className="h-4 w-4" />
                     {stats?.successToday || 0} réussies
                   </span>
-                  <span className="flex items-center gap-1 text-red-500">
+                  <span className="flex items-center gap-1 text-destructive">
                     <XCircle className="h-4 w-4" />
                     {stats?.errorsToday || 0} erreurs
                   </span>
@@ -263,11 +263,11 @@ export function PriceSyncPanel() {
                       </div>
                       <div className="flex items-center gap-2">
                         {log.status === 'success' ? (
-                          <CheckCircle2 className="h-4 w-4 text-green-500" />
+                          <CheckCircle2 className="h-4 w-4 text-success" />
                         ) : log.status === 'error' ? (
-                          <XCircle className="h-4 w-4 text-red-500" />
+                          <XCircle className="h-4 w-4 text-destructive" />
                         ) : (
-                          <AlertTriangle className="h-4 w-4 text-yellow-500" />
+                          <AlertTriangle className="h-4 w-4 text-warning" />
                         )}
                         <span className="text-xs text-muted-foreground">
                           {formatDistanceToNow(new Date(log.created_at), { 
@@ -303,9 +303,9 @@ function StatCard({
 }) {
   const variantColors = {
     default: 'text-muted-foreground',
-    success: 'text-green-500',
-    error: 'text-red-500',
-    warning: 'text-yellow-500'
+    success: 'text-success',
+    error: 'text-destructive',
+    warning: 'text-warning'
   };
 
   return (
@@ -324,9 +324,9 @@ function StatCard({
 function StatusIcon({ status }: { status: string }) {
   switch (status) {
     case 'completed':
-      return <CheckCircle2 className="h-5 w-5 text-green-500" />;
+      return <CheckCircle2 className="h-5 w-5 text-success" />;
     case 'failed':
-      return <XCircle className="h-5 w-5 text-red-500" />;
+      return <XCircle className="h-5 w-5 text-destructive" />;
     case 'processing':
       return <Loader2 className="h-5 w-5 text-primary animate-spin" />;
     default:

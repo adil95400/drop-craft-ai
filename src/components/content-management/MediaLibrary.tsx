@@ -442,7 +442,7 @@ export function MediaLibrary() {
                     {isSelected && <Check className="h-4 w-4 text-white" />}
                   </div>
                   {asset.is_favorite && (
-                    <Star className="absolute top-2 right-2 h-4 w-4 text-yellow-500 fill-yellow-500" />
+                    <Star className="absolute top-2 right-2 h-4 w-4 text-warning fill-yellow-500" />
                   )}
                 </div>
               );

@@ -73,7 +73,7 @@ export const CRMDashboard: React.FC = () => {
 
   const getStatusColor = (status: string) => {
     const colors = {
-      'active': 'bg-green-100 text-green-800',
+      'active': 'bg-green-100 text-success',
       'prospect': 'bg-blue-100 text-blue-800',
       'customer': 'bg-purple-100 text-purple-800',
       'inactive': 'bg-gray-100 text-gray-800'
@@ -85,7 +85,7 @@ export const CRMDashboard: React.FC = () => {
     const colors = {
       'vip': 'bg-purple-100 text-purple-800',
       'loyal': 'bg-blue-100 text-blue-800',
-      'new': 'bg-green-100 text-green-800',
+      'new': 'bg-green-100 text-success',
       'at_risk': 'bg-orange-100 text-orange-800',
       'inactive': 'bg-gray-100 text-gray-800'
     };
@@ -157,7 +157,7 @@ export const CRMDashboard: React.FC = () => {
                 <p className="text-2xl font-bold">{metrics?.total_customers || 0}</p>
               </div>
               <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                <Users className="w-6 h-6 text-blue-600" />
+                <Users className="w-6 h-6 text-info" />
               </div>
             </div>
           </CardContent>
@@ -171,7 +171,7 @@ export const CRMDashboard: React.FC = () => {
                 <p className="text-2xl font-bold">{metrics?.vip_customers || 0}</p>
               </div>
               <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-                <Target className="w-6 h-6 text-green-600" />
+                <Target className="w-6 h-6 text-success" />
               </div>
             </div>
           </CardContent>
@@ -199,7 +199,7 @@ export const CRMDashboard: React.FC = () => {
                 <p className="text-2xl font-bold">{formatCurrency(metrics?.avg_lifetime_value || 0)}</p>
               </div>
               <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
-                <Star className="w-6 h-6 text-orange-600" />
+                <Star className="w-6 h-6 text-warning" />
               </div>
             </div>
           </CardContent>
@@ -315,7 +315,7 @@ export const CRMDashboard: React.FC = () => {
                       <div className="text-right">
                         <p className="text-sm font-medium">{formatCurrency(contact.lifetime_value)}</p>
                         <div className="flex items-center gap-1">
-                          <Star className="w-3 h-3 text-yellow-500" />
+                          <Star className="w-3 h-3 text-warning" />
                           <span className="text-xs text-muted-foreground">
                             {contact.total_orders} commandes
                           </span>

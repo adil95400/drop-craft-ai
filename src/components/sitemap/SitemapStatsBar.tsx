@@ -29,7 +29,7 @@ export const SitemapStatsBar = memo<SitemapStatsBarProps>(({ stats }) => {
       label: 'Sous-modules',
       value: stats.totalSubModules,
       icon: Layers,
-      color: 'text-blue-500 bg-blue-500/10'
+      color: 'text-info bg-blue-500/10'
     },
     {
       label: 'Pro',

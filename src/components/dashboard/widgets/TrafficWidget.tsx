@@ -85,7 +85,7 @@ export function TrafficWidget({ settings }: TrafficWidgetProps) {
               <Users className="h-3 w-3" />Visiteurs
             </div>
             <p className="text-2xl font-bold">{totalVisitors.toLocaleString()}</p>
-            <p className="text-xs text-green-500 flex items-center gap-1">
+            <p className="text-xs text-success flex items-center gap-1">
               <TrendingUp className="h-3 w-3" /> Basé sur vos clients
             </p>
           </div>

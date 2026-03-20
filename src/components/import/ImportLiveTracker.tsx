@@ -41,10 +41,10 @@ interface ImportJob {
 import { Sparkles } from 'lucide-react'
 
 const STATUS_MAP: Record<string, { label: string; icon: typeof CheckCircle2; color: string; pulse?: boolean }> = {
-  pending: { label: 'En attente', icon: Clock, color: 'text-amber-500' },
+  pending: { label: 'En attente', icon: Clock, color: 'text-warning' },
   running: { label: 'Import en cours', icon: Loader2, color: 'text-primary', pulse: true },
   processing: { label: 'Traitement', icon: Loader2, color: 'text-primary', pulse: true },
-  completed: { label: 'Terminé', icon: CheckCircle2, color: 'text-green-500' },
+  completed: { label: 'Terminé', icon: CheckCircle2, color: 'text-success' },
   failed: { label: 'Échoué', icon: XCircle, color: 'text-destructive' },
   cancelled: { label: 'Annulé', icon: X, color: 'text-muted-foreground' },
 }
@@ -244,7 +244,7 @@ function ImportJobRow({ job, onDismiss, onViewProducts }: {
             <span>{processed}/{total} traités</span>
           )}
           {succeeded > 0 && (
-            <span className="flex items-center gap-0.5 text-green-600 dark:text-green-400">
+            <span className="flex items-center gap-0.5 text-success dark:text-green-400">
               <CheckCircle2 className="h-3 w-3" />
               {succeeded} réussis
             </span>

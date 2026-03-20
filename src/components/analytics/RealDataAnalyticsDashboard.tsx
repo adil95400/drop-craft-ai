@@ -38,7 +38,7 @@ export function RealDataAnalyticsDashboard({ className }: RealDataAnalyticsDashb
     return (
       <div className={cn(
         "flex items-center gap-1 text-sm font-medium",
-        isPositive ? "text-emerald-600" : change < 0 ? "text-red-500" : "text-muted-foreground"
+        isPositive ? "text-success" : change < 0 ? "text-destructive" : "text-muted-foreground"
       )}>
         {isPositive ? <TrendingUp className="h-3 w-3" /> : change < 0 ? <TrendingDown className="h-3 w-3" /> : null}
         {change > 0 ? '+' : ''}{change.toFixed(1)}%
@@ -140,8 +140,8 @@ export function RealDataAnalyticsDashboard({ className }: RealDataAnalyticsDashb
       {/* Demo badge */}
       {analytics?.isDemo && (
         <div className="bg-amber-500/10 border border-amber-500/20 rounded-lg p-3 flex items-center gap-2">
-          <AlertCircle className="h-4 w-4 text-amber-500" />
-          <span className="text-sm text-amber-600">Données de démonstration - Ajoutez des commandes pour voir vos vraies statistiques</span>
+          <AlertCircle className="h-4 w-4 text-warning" />
+          <span className="text-sm text-warning">Données de démonstration - Ajoutez des commandes pour voir vos vraies statistiques</span>
         </div>
       )}
 
@@ -363,9 +363,9 @@ export function RealDataAnalyticsDashboard({ className }: RealDataAnalyticsDashb
                       <div className="text-right flex items-center gap-2">
                         <div className="font-bold">{formatCurrency(product.revenue)}</div>
                         {product.trend === 'up' ? (
-                          <TrendingUp className="h-4 w-4 text-emerald-500" />
+                          <TrendingUp className="h-4 w-4 text-success" />
                         ) : product.trend === 'down' ? (
-                          <TrendingDown className="h-4 w-4 text-red-500" />
+                          <TrendingDown className="h-4 w-4 text-destructive" />
                         ) : null}
                       </div>
                     </div>

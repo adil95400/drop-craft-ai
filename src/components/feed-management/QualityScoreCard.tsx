@@ -44,9 +44,9 @@ export function QualityScoreCard({
   onFixIssue,
 }: QualityScoreCardProps) {
   const getScoreColor = (s: number) => {
-    if (s >= 90) return 'text-green-600'
-    if (s >= 70) return 'text-yellow-600'
-    return 'text-red-600'
+    if (s >= 90) return 'text-success'
+    if (s >= 70) return 'text-warning'
+    return 'text-destructive'
   }
 
   const getScoreBg = (s: number) => {
@@ -63,9 +63,9 @@ export function QualityScoreCard({
 
   const getIssueIcon = (type: QualityIssue['type']) => {
     switch (type) {
-      case 'error': return <XCircle className="h-4 w-4 text-red-500" />
-      case 'warning': return <AlertTriangle className="h-4 w-4 text-yellow-500" />
-      case 'info': return <Info className="h-4 w-4 text-blue-500" />
+      case 'error': return <XCircle className="h-4 w-4 text-destructive" />
+      case 'warning': return <AlertTriangle className="h-4 w-4 text-warning" />
+      case 'info': return <Info className="h-4 w-4 text-info" />
     }
   }
 
@@ -124,7 +124,7 @@ export function QualityScoreCard({
           {previousScore !== undefined && (
             <div className="flex items-center justify-center gap-2">
               {trend > 0 ? (
-                <Badge className="bg-green-500/20 text-green-700 border-green-500/30">
+                <Badge className="bg-green-500/20 text-success border-green-500/30">
                   <TrendingUp className="h-3 w-3 mr-1" />
                   +{trend.toFixed(1)}%
                 </Badge>
@@ -227,7 +227,7 @@ export function QualityScoreCard({
 
           {issues.length === 0 && (
             <div className="text-center py-6">
-              <CheckCircle className="h-10 w-10 text-green-500 mx-auto mb-2" />
+              <CheckCircle className="h-10 w-10 text-success mx-auto mb-2" />
               <p className="text-sm font-medium">Aucun problème détecté</p>
               <p className="text-xs text-muted-foreground">Votre flux est optimisé</p>
             </div>

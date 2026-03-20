@@ -91,7 +91,7 @@ export function VIPTicketForm({ onSuccess, onCancel }: VIPTicketFormProps) {
         <div className="flex items-center justify-between">
           <div>
             <CardTitle className="flex items-center gap-2">
-              {isVIP && <Crown className="h-5 w-5 text-amber-500" />}
+              {isVIP && <Crown className="h-5 w-5 text-warning" />}
               Créer un ticket de support
             </CardTitle>
             <CardDescription>
@@ -166,7 +166,7 @@ export function VIPTicketForm({ onSuccess, onCancel }: VIPTicketFormProps) {
                     <div className={`w-3 h-3 rounded-full ${option.color}`} />
                     <span className="font-medium text-sm">{option.label}</span>
                     {option.vipOnly && (
-                      <Crown className="h-3 w-3 text-amber-500 ml-auto" />
+                      <Crown className="h-3 w-3 text-warning ml-auto" />
                     )}
                   </div>
                   <p className="text-xs text-muted-foreground mt-1">{option.description}</p>
@@ -202,7 +202,7 @@ export function VIPTicketForm({ onSuccess, onCancel }: VIPTicketFormProps) {
                       <Icon className="h-4 w-4" />
                       <span className="text-sm">{option.label}</span>
                       {option.vipOnly && (
-                        <Crown className="h-3 w-3 text-amber-500 ml-auto" />
+                        <Crown className="h-3 w-3 text-warning ml-auto" />
                       )}
                     </div>
                   </button>
@@ -241,7 +241,7 @@ export function VIPTicketForm({ onSuccess, onCancel }: VIPTicketFormProps) {
           {/* VIP Guarantee */}
           {isVIP && (
             <div className="flex items-start gap-2 p-3 bg-amber-500/10 rounded-lg border border-amber-500/20">
-              <Crown className="h-4 w-4 text-amber-500 mt-0.5" />
+              <Crown className="h-4 w-4 text-warning mt-0.5" />
               <div className="text-sm">
                 <p className="font-medium text-amber-700 dark:text-amber-400">
                   Garantie VIP

@@ -50,11 +50,11 @@ const CARRIERS = [
 ];
 
 const STATUS_CONFIG: Record<string, { label: string; color: string; icon: any }> = {
-  pending: { label: 'En attente', color: 'bg-yellow-500/10 text-yellow-600 border-yellow-500/20', icon: Clock },
-  processing: { label: 'En cours', color: 'bg-blue-500/10 text-blue-600 border-blue-500/20', icon: RefreshCw },
-  completed: { label: 'Expédié', color: 'bg-green-500/10 text-green-600 border-green-500/20', icon: CheckCircle2 },
+  pending: { label: 'En attente', color: 'bg-yellow-500/10 text-warning border-yellow-500/20', icon: Clock },
+  processing: { label: 'En cours', color: 'bg-blue-500/10 text-info border-blue-500/20', icon: RefreshCw },
+  completed: { label: 'Expédié', color: 'bg-green-500/10 text-success border-green-500/20', icon: CheckCircle2 },
   failed: { label: 'Échoué', color: 'bg-destructive/10 text-destructive border-destructive/20', icon: XCircle },
-  retry: { label: 'Retry', color: 'bg-orange-500/10 text-orange-600 border-orange-500/20', icon: RotateCcw },
+  retry: { label: 'Retry', color: 'bg-orange-500/10 text-warning border-orange-500/20', icon: RotateCcw },
 };
 
 const PIE_COLORS = ['hsl(var(--primary))', 'hsl(var(--destructive))', 'hsl(142 76% 36%)', 'hsl(48 96% 53%)', 'hsl(var(--muted-foreground))'];
@@ -91,12 +91,12 @@ function OrderPipelineTab() {
       {/* Pipeline KPIs */}
       <div className="grid grid-cols-2 md:grid-cols-6 gap-3">
         {[
-          { label: 'En attente', value: stats?.pending || 0, icon: Clock, color: 'text-yellow-600' },
-          { label: 'En cours', value: stats?.processing || 0, icon: RefreshCw, color: 'text-blue-600' },
-          { label: 'Expédiés', value: stats?.completed || 0, icon: CheckCircle2, color: 'text-green-600' },
+          { label: 'En attente', value: stats?.pending || 0, icon: Clock, color: 'text-warning' },
+          { label: 'En cours', value: stats?.processing || 0, icon: RefreshCw, color: 'text-info' },
+          { label: 'Expédiés', value: stats?.completed || 0, icon: CheckCircle2, color: 'text-success' },
           { label: 'Échoués', value: stats?.failed || 0, icon: XCircle, color: 'text-destructive' },
-          { label: 'Retry', value: stats?.retry || 0, icon: RotateCcw, color: 'text-orange-600' },
-          { label: 'Taux succès', value: `${successRate}%`, icon: TrendingUp, color: successRate >= 80 ? 'text-green-600' : 'text-destructive' },
+          { label: 'Retry', value: stats?.retry || 0, icon: RotateCcw, color: 'text-warning' },
+          { label: 'Taux succès', value: `${successRate}%`, icon: TrendingUp, color: successRate >= 80 ? 'text-success' : 'text-destructive' },
         ].map(kpi => {
           const Icon = kpi.icon;
           return (

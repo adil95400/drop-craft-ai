@@ -42,9 +42,9 @@ export default function IntegrationsPage() {
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'connected': case 'active': return <CheckCircle className="h-4 w-4 text-green-500" />
-      case 'error': return <AlertCircle className="h-4 w-4 text-red-500" />
-      case 'syncing': return <Loader2 className="h-4 w-4 text-blue-500 animate-spin" />
+      case 'connected': case 'active': return <CheckCircle className="h-4 w-4 text-success" />
+      case 'error': return <AlertCircle className="h-4 w-4 text-destructive" />
+      case 'syncing': return <Loader2 className="h-4 w-4 text-info animate-spin" />
       default: return <Clock className="h-4 w-4 text-muted-foreground" />
     }
   }
@@ -105,7 +105,7 @@ export default function IntegrationsPage() {
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card><CardContent className="pt-6"><div className="flex items-center justify-between"><div><p className="text-sm font-medium text-muted-foreground">Total</p><p className="text-2xl font-bold">{integrations.length}</p></div><Activity className="h-8 w-8 text-primary opacity-50" /></div></CardContent></Card>
-        <Card><CardContent className="pt-6"><div className="flex items-center justify-between"><div><p className="text-sm font-medium text-muted-foreground">Actives</p><p className="text-2xl font-bold text-green-600">{integrations.filter(i => i.connection_status === 'connected' || i.connection_status === 'active').length}</p></div><CheckCircle className="h-8 w-8 text-green-500 opacity-50" /></div></CardContent></Card>
+        <Card><CardContent className="pt-6"><div className="flex items-center justify-between"><div><p className="text-sm font-medium text-muted-foreground">Actives</p><p className="text-2xl font-bold text-success">{integrations.filter(i => i.connection_status === 'connected' || i.connection_status === 'active').length}</p></div><CheckCircle className="h-8 w-8 text-success opacity-50" /></div></CardContent></Card>
         <Card><CardContent className="pt-6"><div className="flex items-center justify-between"><div><p className="text-sm font-medium text-muted-foreground">Produits sync</p><p className="text-2xl font-bold">{syncStats.totalProducts}</p></div><div className="h-8 w-8 flex items-center justify-center text-2xl opacity-50">📦</div></div><Button variant="ghost" size="sm" className="w-full mt-3 text-xs" onClick={() => navigate('/stores-channels/imported-products')}>Voir les produits →</Button></CardContent></Card>
         <Card><CardContent className="pt-6"><div className="flex items-center justify-between"><div><p className="text-sm font-medium text-muted-foreground">Commandes sync</p><p className="text-2xl font-bold">{syncStats.totalOrders}</p></div><div className="h-8 w-8 flex items-center justify-center text-2xl opacity-50">🛒</div></div></CardContent></Card>
       </div>

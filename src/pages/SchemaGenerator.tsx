@@ -340,7 +340,7 @@ const SchemaGenerator = () => {
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <div className="h-8 w-8 rounded-lg bg-green-500/10 flex items-center justify-center">
-                    <CheckCircle className="w-4 h-4 text-green-500" />
+                    <CheckCircle className="w-4 h-4 text-success" />
                   </div>
                   <div>
                     <CardTitle>Schema Généré</CardTitle>

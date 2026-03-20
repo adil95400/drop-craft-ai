@@ -32,9 +32,9 @@ export default function MediaPage() {
   }, [issues, activeTab])
 
   const issueCategories = [
-    { id: 'critical', label: 'Critiques', icon: AlertTriangle, count: issues.filter(i => i.severity === 'critical').length, color: 'text-red-500', bg: 'bg-red-500/10', ring: 'ring-red-500' },
-    { id: 'non_compliant', label: 'Non conformes', icon: ImageOff, count: stats.nonCompliant, color: 'text-amber-500', bg: 'bg-amber-500/10', ring: 'ring-amber-500' },
-    { id: 'missing_video', label: 'Sans vidéo', icon: VideoOff, count: stats.total - stats.withVideos, color: 'text-blue-500', bg: 'bg-blue-500/10', ring: 'ring-blue-500' },
+    { id: 'critical', label: 'Critiques', icon: AlertTriangle, count: issues.filter(i => i.severity === 'critical').length, color: 'text-destructive', bg: 'bg-red-500/10', ring: 'ring-red-500' },
+    { id: 'non_compliant', label: 'Non conformes', icon: ImageOff, count: stats.nonCompliant, color: 'text-warning', bg: 'bg-amber-500/10', ring: 'ring-amber-500' },
+    { id: 'missing_video', label: 'Sans vidéo', icon: VideoOff, count: stats.total - stats.withVideos, color: 'text-info', bg: 'bg-blue-500/10', ring: 'ring-blue-500' },
     { id: 'optimize', label: 'À optimiser', icon: Sparkles, count: stats.total - stats.withMultipleImages, color: 'text-purple-500', bg: 'bg-purple-500/10', ring: 'ring-purple-500' },
   ]
 
@@ -95,7 +95,7 @@ export default function MediaPage() {
                     <p className="text-sm text-muted-foreground">{stats.withImages}/{stats.total} produits avec image principale</p>
                   </div>
                   <div className="text-right">
-                    <span className={cn("text-5xl font-black tracking-tight", stats.score >= 80 ? "text-emerald-500" : stats.score >= 60 ? "text-amber-500" : "text-red-500")}>
+                    <span className={cn("text-5xl font-black tracking-tight", stats.score >= 80 ? "text-success" : stats.score >= 60 ? "text-warning" : "text-destructive")}>
                       {stats.score}%
                     </span>
                     {stats.score < 80 && <p className="text-xs text-muted-foreground mt-1">Objectif: 80%</p>}
@@ -110,8 +110,8 @@ export default function MediaPage() {
                 {stats.estimatedImpactWithImages > 0 && (
                   <div className="mt-4 p-3 bg-emerald-500/10 rounded-xl border border-emerald-500/20">
                     <div className="flex items-center gap-2">
-                      <Euro className="h-4 w-4 text-emerald-500" />
-                      <span className="text-sm font-semibold text-emerald-600">+{stats.estimatedImpactWithImages.toLocaleString()}€ potentiel</span>
+                      <Euro className="h-4 w-4 text-success" />
+                      <span className="text-sm font-semibold text-success">+{stats.estimatedImpactWithImages.toLocaleString()}€ potentiel</span>
                     </div>
                     <p className="text-xs text-muted-foreground mt-1">Les produits avec images convertissent 30% mieux</p>
                   </div>
@@ -179,7 +179,7 @@ export default function MediaPage() {
                 ) : filteredIssues.length === 0 ? (
                   <div className="text-center py-16">
                     <motion.div initial={{ scale: 0.8 }} animate={{ scale: 1 }} transition={{ type: 'spring' }}>
-                      <CheckCircle className="h-16 w-16 text-emerald-500 mx-auto mb-4" />
+                      <CheckCircle className="h-16 w-16 text-success mx-auto mb-4" />
                     </motion.div>
                     <h3 className="text-lg font-semibold">Tous les médias sont en ordre !</h3>
                     <p className="text-muted-foreground">Votre catalogue est optimisé</p>

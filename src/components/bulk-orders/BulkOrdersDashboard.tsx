@@ -89,7 +89,7 @@ export function BulkOrdersDashboard() {
               <CardContent className="p-4">
                 <div className="flex items-center gap-3">
                   <div className="p-2 rounded-lg bg-yellow-500/20">
-                    <FileText className="h-5 w-5 text-yellow-600" />
+                    <FileText className="h-5 w-5 text-warning" />
                   </div>
                   <div>
                     <p className="text-2xl font-bold">{stats?.draft_orders || 0}</p>
@@ -103,7 +103,7 @@ export function BulkOrdersDashboard() {
               <CardContent className="p-4">
                 <div className="flex items-center gap-3">
                   <div className="p-2 rounded-lg bg-blue-500/20">
-                    <Clock className="h-5 w-5 text-blue-600" />
+                    <Clock className="h-5 w-5 text-info" />
                   </div>
                   <div>
                     <p className="text-2xl font-bold">{stats?.pending_orders || 0}</p>
@@ -131,7 +131,7 @@ export function BulkOrdersDashboard() {
               <CardContent className="p-4">
                 <div className="flex items-center gap-3">
                   <div className="p-2 rounded-lg bg-green-500/20">
-                    <DollarSign className="h-5 w-5 text-green-600" />
+                    <DollarSign className="h-5 w-5 text-success" />
                   </div>
                   <div>
                     <p className="text-2xl font-bold">

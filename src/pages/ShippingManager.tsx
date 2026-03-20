@@ -55,21 +55,21 @@ export default function ShippingManager() {
           </Card>
           <Card>
             <CardContent className="p-3 sm:p-4 text-center">
-              <Truck className="h-5 w-5 sm:h-6 sm:w-6 text-green-600 mx-auto mb-1 sm:mb-2" />
+              <Truck className="h-5 w-5 sm:h-6 sm:w-6 text-success mx-auto mb-1 sm:mb-2" />
               <div className="text-xl sm:text-2xl font-bold">{stats.delivered}</div>
               <div className="text-[10px] sm:text-sm text-muted-foreground">Livrés</div>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="p-3 sm:p-4 text-center">
-              <Clock className="h-5 w-5 sm:h-6 sm:w-6 text-orange-600 mx-auto mb-1 sm:mb-2" />
+              <Clock className="h-5 w-5 sm:h-6 sm:w-6 text-warning mx-auto mb-1 sm:mb-2" />
               <div className="text-xl sm:text-2xl font-bold">{stats.avgDeliveryTime} j</div>
               <div className="text-[10px] sm:text-sm text-muted-foreground">Délai moyen</div>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="p-3 sm:p-4 text-center">
-              <DollarSign className="h-5 w-5 sm:h-6 sm:w-6 text-blue-600 mx-auto mb-1 sm:mb-2" />
+              <DollarSign className="h-5 w-5 sm:h-6 sm:w-6 text-info mx-auto mb-1 sm:mb-2" />
               <div className="text-xl sm:text-2xl font-bold">{stats.avgCost}€</div>
               <div className="text-[10px] sm:text-sm text-muted-foreground">Coût moyen</div>
             </CardContent>

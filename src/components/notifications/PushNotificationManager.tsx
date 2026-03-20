@@ -242,7 +242,7 @@ export function PushNotificationManager() {
         </div>
         <div className="flex items-center gap-3">
           {permissionStatus === 'granted' ? (
-            <Badge className="bg-green-100 text-green-700">
+            <Badge className="bg-green-100 text-success">
               <CheckCircle2 className="h-3 w-3 mr-1" />
               Activées
             </Badge>
@@ -458,7 +458,7 @@ export function PushNotificationManager() {
                       </div>
                       <div className="flex items-center gap-3">
                         {device.is_active ? (
-                          <Badge className="bg-green-100 text-green-700">Actif</Badge>
+                          <Badge className="bg-green-100 text-success">Actif</Badge>
                         ) : (
                           <Badge variant="outline">Inactif</Badge>
                         )}

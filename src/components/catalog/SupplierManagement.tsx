@@ -123,7 +123,7 @@ export function SupplierManagement() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'active':
-        return <Badge className="bg-green-100 text-green-800"><CheckCircle className="h-3 w-3 mr-1" />Actif</Badge>
+        return <Badge className="bg-green-100 text-success"><CheckCircle className="h-3 w-3 mr-1" />Actif</Badge>
       case 'inactive':
         return <Badge variant="destructive"><AlertTriangle className="h-3 w-3 mr-1" />Inactif</Badge>
       case 'pending':
@@ -151,7 +151,7 @@ export function SupplierManagement() {
       title: 'Fournisseurs actifs',
       value: suppliers.filter(s => s.status === 'active').length.toString(),
       icon: Truck,
-      color: 'text-green-600',
+      color: 'text-success',
       bg: 'bg-green-100'
     },
     {
@@ -165,14 +165,14 @@ export function SupplierManagement() {
       title: 'Note moyenne',
       value: (suppliers.reduce((sum, s) => sum + s.averageRating, 0) / suppliers.length).toFixed(1),
       icon: Star,
-      color: 'text-yellow-600',
+      color: 'text-warning',
       bg: 'bg-yellow-100'
     },
     {
       title: 'Délai moyen',
       value: Math.round(suppliers.reduce((sum, s) => sum + s.averageDeliveryTime, 0) / suppliers.length) + 'j',
       icon: Clock,
-      color: 'text-blue-600',
+      color: 'text-info',
       bg: 'bg-blue-100'
     }
   ]
@@ -377,7 +377,7 @@ export function SupplierManagement() {
                 
                 <Card className="bg-gradient-to-br from-amber-50 to-orange-50 border-amber-200">
                   <CardContent className="p-4">
-                    <TrendingUp className="h-8 w-8 text-amber-600 mb-2" />
+                    <TrendingUp className="h-8 w-8 text-warning mb-2" />
                     <h3 className="font-semibold mb-2">Analytics avancées</h3>
                     <p className="text-sm text-muted-foreground">
                       Rapports détaillés de performance
@@ -387,7 +387,7 @@ export function SupplierManagement() {
                 
                 <Card className="bg-gradient-to-br from-green-50 to-emerald-50 border-green-200">
                   <CardContent className="p-4">
-                    <Shield className="h-8 w-8 text-green-600 mb-2" />
+                    <Shield className="h-8 w-8 text-success mb-2" />
                     <h3 className="font-semibold mb-2">Support prioritaire</h3>
                     <p className="text-sm text-muted-foreground">
                       Assistance dédiée 24/7

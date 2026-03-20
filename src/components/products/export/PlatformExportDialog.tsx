@@ -84,7 +84,7 @@ const PLATFORM_CONFIG: Record<string, {
     icon: '🛍️', 
     gradient: 'from-green-500 to-emerald-600',
     bgClass: 'bg-green-500/10 border-green-500/20',
-    textClass: 'text-green-600 dark:text-green-400'
+    textClass: 'text-success dark:text-green-400'
   },
   woocommerce: { 
     name: 'WooCommerce', 
@@ -105,14 +105,14 @@ const PLATFORM_CONFIG: Record<string, {
     icon: '🧱', 
     gradient: 'from-orange-500 to-amber-600',
     bgClass: 'bg-orange-500/10 border-orange-500/20',
-    textClass: 'text-orange-600 dark:text-orange-400'
+    textClass: 'text-warning dark:text-orange-400'
   },
   wix: { 
     name: 'Wix', 
     icon: '🌐', 
     gradient: 'from-blue-500 to-cyan-600',
     bgClass: 'bg-blue-500/10 border-blue-500/20',
-    textClass: 'text-blue-600 dark:text-blue-400'
+    textClass: 'text-info dark:text-blue-400'
   },
   bigcommerce: { 
     name: 'BigCommerce', 
@@ -133,21 +133,21 @@ const PLATFORM_CONFIG: Record<string, {
     icon: '📦', 
     gradient: 'from-amber-500 to-yellow-600',
     bgClass: 'bg-amber-500/10 border-amber-500/20',
-    textClass: 'text-amber-600 dark:text-amber-400'
+    textClass: 'text-warning dark:text-amber-400'
   },
   ebay: { 
     name: 'eBay', 
     icon: '🏷️', 
     gradient: 'from-yellow-500 to-orange-500',
     bgClass: 'bg-yellow-500/10 border-yellow-500/20',
-    textClass: 'text-yellow-600 dark:text-yellow-500'
+    textClass: 'text-warning dark:text-warning'
   },
   etsy: { 
     name: 'Etsy', 
     icon: '🧶', 
     gradient: 'from-orange-500 to-red-500',
     bgClass: 'bg-orange-500/10 border-orange-500/20',
-    textClass: 'text-orange-600 dark:text-orange-400'
+    textClass: 'text-warning dark:text-orange-400'
   },
 }
 
@@ -614,7 +614,7 @@ export function PlatformExportDialog({
                       <Loader2 className="h-4 w-4 animate-spin text-muted-foreground flex-shrink-0" />
                     )}
                     {log.status === 'success' && (
-                      <CheckCircle2 className="h-4 w-4 text-green-500 flex-shrink-0" />
+                      <CheckCircle2 className="h-4 w-4 text-success flex-shrink-0" />
                     )}
                     {log.status === 'error' && (
                       <XCircle className="h-4 w-4 text-destructive flex-shrink-0" />
@@ -675,7 +675,7 @@ export function PlatformExportDialog({
                 
                 <div className="flex items-center justify-center gap-4 text-sm">
                   {result.exported_count !== undefined && result.exported_count > 0 && (
-                    <div className="flex items-center gap-1.5 text-green-600 dark:text-green-400">
+                    <div className="flex items-center gap-1.5 text-success dark:text-green-400">
                       <CheckCircle2 className="h-4 w-4" />
                       <span className="font-medium">{result.exported_count} exporté(s)</span>
                     </div>
@@ -692,8 +692,8 @@ export function PlatformExportDialog({
               {/* Decorative Elements */}
               {result.success && (
                 <>
-                  <Sparkles className="absolute top-3 right-3 h-5 w-5 text-green-500/40" />
-                  <TrendingUp className="absolute bottom-3 left-3 h-5 w-5 text-green-500/40" />
+                  <Sparkles className="absolute top-3 right-3 h-5 w-5 text-success/40" />
+                  <TrendingUp className="absolute bottom-3 left-3 h-5 w-5 text-success/40" />
                 </>
               )}
             </motion.div>
@@ -714,7 +714,7 @@ export function PlatformExportDialog({
                     )}
                   >
                     {log.status === 'success' && (
-                      <CheckCircle2 className="h-4 w-4 text-green-500 flex-shrink-0" />
+                      <CheckCircle2 className="h-4 w-4 text-success flex-shrink-0" />
                     )}
                     {log.status === 'error' && (
                       <XCircle className="h-4 w-4 text-destructive flex-shrink-0" />

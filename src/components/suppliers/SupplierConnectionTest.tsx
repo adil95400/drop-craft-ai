@@ -106,9 +106,9 @@ export function SupplierConnectionTest({
           <Alert variant={testResult.success ? 'default' : 'destructive'}>
             <div className="flex items-center gap-2">
               {testResult.success ? (
-                <CheckCircle className="h-4 w-4 text-green-600" />
+                <CheckCircle className="h-4 w-4 text-success" />
               ) : (
-                <AlertCircle className="h-4 w-4 text-red-600" />
+                <AlertCircle className="h-4 w-4 text-destructive" />
               )}
               <AlertDescription>
                 <div className="space-y-2">
@@ -123,7 +123,7 @@ export function SupplierConnectionTest({
                         <p>Produits disponibles: {testResult.details.productsCount}</p>
                       )}
                       {testResult.details.error && (
-                        <p className="text-red-600">Erreur: {testResult.details.error}</p>
+                        <p className="text-destructive">Erreur: {testResult.details.error}</p>
                       )}
                     </div>
                   )}

@@ -316,7 +316,7 @@ function BulkConversionPanel() {
       {conversionResult && (
         <Card>
           <CardHeader>
-            <CardTitle className="text-base flex items-center gap-2 text-green-600">
+            <CardTitle className="text-base flex items-center gap-2 text-success">
               <CheckCircle2 className="h-5 w-5" />
               Conversion Terminée
             </CardTitle>
@@ -405,8 +405,8 @@ function StatCard({
   const colorClass = {
     default: 'text-foreground',
     muted: 'text-muted-foreground',
-    success: 'text-green-600',
-    destructive: 'text-red-600'
+    success: 'text-success',
+    destructive: 'text-destructive'
   }[variant];
 
   return (

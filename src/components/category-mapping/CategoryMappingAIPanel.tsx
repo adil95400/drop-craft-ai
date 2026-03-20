@@ -99,7 +99,7 @@ export function CategoryMappingAIPanel() {
             <CardContent className="pt-6">
               <div className="flex items-center justify-between mb-3">
                 <div className="p-2 rounded-lg bg-yellow-500/10">
-                  <AlertTriangle className="h-5 w-5 text-yellow-500" />
+                  <AlertTriangle className="h-5 w-5 text-warning" />
                 </div>
               </div>
               <div className="text-3xl font-bold mb-1">{stats.unmappedCategories}</div>
@@ -117,7 +117,7 @@ export function CategoryMappingAIPanel() {
             <CardContent className="pt-6">
               <div className="flex items-center justify-between mb-3">
                 <div className="p-2 rounded-lg bg-green-500/10">
-                  <TrendingUp className="h-5 w-5 text-green-500" />
+                  <TrendingUp className="h-5 w-5 text-success" />
                 </div>
               </div>
               <div className="text-3xl font-bold mb-1">{stats.coveragePercent}%</div>
@@ -135,7 +135,7 @@ export function CategoryMappingAIPanel() {
             <CardContent className="pt-6">
               <div className="flex items-center justify-between mb-3">
                 <div className="p-2 rounded-lg bg-blue-500/10">
-                  <Clock className="h-5 w-5 text-blue-500" />
+                  <Clock className="h-5 w-5 text-info" />
                 </div>
               </div>
               <div className="text-3xl font-bold mb-1">{stats.potentialTimeSaved}h</div>
@@ -151,7 +151,7 @@ export function CategoryMappingAIPanel() {
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
               <CardTitle className="flex items-center gap-2 text-lg">
-                <AlertTriangle className="h-5 w-5 text-yellow-500" />
+                <AlertTriangle className="h-5 w-5 text-warning" />
                 Actions recommandées
               </CardTitle>
             </div>
@@ -175,7 +175,7 @@ export function CategoryMappingAIPanel() {
                     <Badge variant="outline" className="text-xs">
                       {rec.impactedProducts} produits
                     </Badge>
-                    <span className="text-xs text-green-600 font-medium">
+                    <span className="text-xs text-success font-medium">
                       {rec.estimatedImpact}
                     </span>
                   </div>
@@ -214,7 +214,7 @@ export function CategoryMappingAIPanel() {
         <CardContent>
           {suggestions.length === 0 ? (
             <div className="text-center py-8">
-              <CheckCircle2 className="h-12 w-12 mx-auto text-green-500 mb-3" />
+              <CheckCircle2 className="h-12 w-12 mx-auto text-success mb-3" />
               <p className="font-medium">Toutes les catégories sont mappées</p>
               <p className="text-sm text-muted-foreground">
                 Aucune suggestion disponible
@@ -257,9 +257,9 @@ export function CategoryMappingAIPanel() {
                           variant="outline" 
                           className={cn(
                             'text-xs',
-                            suggestion.confidence >= 0.8 ? 'border-green-500/50 text-green-600' :
-                            suggestion.confidence >= 0.6 ? 'border-yellow-500/50 text-yellow-600' :
-                            'border-red-500/50 text-red-600'
+                            suggestion.confidence >= 0.8 ? 'border-green-500/50 text-success' :
+                            suggestion.confidence >= 0.6 ? 'border-yellow-500/50 text-warning' :
+                            'border-red-500/50 text-destructive'
                           )}
                         >
                           {Math.round(suggestion.confidence * 100)}% confiance

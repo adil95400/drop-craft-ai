@@ -170,7 +170,7 @@ export function AliExpressImporter() {
                           <Badge variant="outline">{scrapedProduct.category}</Badge>
                         </div>
                       </div>
-                      <CheckCircle2 className="h-6 w-6 text-green-500" />
+                      <CheckCircle2 className="h-6 w-6 text-success" />
                     </div>
                   </CardContent>
                 </Card>

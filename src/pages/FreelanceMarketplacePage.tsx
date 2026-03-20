@@ -112,7 +112,7 @@ export default function FreelanceMarketplacePage() {
                         </div>
                         <p className="text-sm text-muted-foreground mb-2">{f.specialty}</p>
                         <div className="flex items-center gap-3 text-xs mb-2">
-                          <span className="flex items-center gap-1"><Star className="h-3 w-3 text-amber-500" />{f.rating}</span>
+                          <span className="flex items-center gap-1"><Star className="h-3 w-3 text-warning" />{f.rating}</span>
                           <span className="text-muted-foreground">({f.reviews} avis)</span>
                           <span className="flex items-center gap-1"><Clock className="h-3 w-3" />{f.deliveryTime}</span>
                           <span className="flex items-center gap-1"><Globe className="h-3 w-3" />{f.languages.join(', ')}</span>

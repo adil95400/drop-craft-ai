@@ -37,9 +37,9 @@ export const ProductCard = ({
   };
 
   const getStockColor = (stock: number = 0) => {
-    if (stock > 50) return 'text-green-600';
-    if (stock > 10) return 'text-orange-600';
-    return 'text-red-600';
+    if (stock > 50) return 'text-success';
+    if (stock > 10) return 'text-warning';
+    return 'text-destructive';
   };
 
   const formatCurrency = (amount: number) => {
@@ -57,9 +57,9 @@ export const ProductCard = ({
   };
 
   const getMarginColor = (margin: number) => {
-    if (margin >= 50) return 'text-green-600';
-    if (margin >= 30) return 'text-blue-600';
-    return 'text-orange-600';
+    if (margin >= 50) return 'text-success';
+    if (margin >= 30) return 'text-info';
+    return 'text-warning';
   };
 
   return (

@@ -290,7 +290,7 @@ export function OrderFulfillmentPanel({
                           {item.fulfilled_quantity}/{item.quantity}
                         </Badge>
                         {isFullyFulfilled && (
-                          <CheckCircle2 className="h-4 w-4 text-green-500" />
+                          <CheckCircle2 className="h-4 w-4 text-success" />
                         )}
                       </div>
                     </div>

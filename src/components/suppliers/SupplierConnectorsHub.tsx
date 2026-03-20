@@ -51,11 +51,11 @@ interface ConnectionCredentials {
 }
 
 const CATEGORY_LABELS: Record<string, { label: string; icon: React.ReactNode; color: string }> = {
-  china: { label: 'Chine', icon: <Globe className="h-4 w-4" />, color: 'bg-red-500/10 text-red-500' },
-  europe: { label: 'Europe', icon: <Building2 className="h-4 w-4" />, color: 'bg-blue-500/10 text-blue-500' },
-  us: { label: 'USA', icon: <Truck className="h-4 w-4" />, color: 'bg-green-500/10 text-green-500' },
+  china: { label: 'Chine', icon: <Globe className="h-4 w-4" />, color: 'bg-red-500/10 text-destructive' },
+  europe: { label: 'Europe', icon: <Building2 className="h-4 w-4" />, color: 'bg-blue-500/10 text-info' },
+  us: { label: 'USA', icon: <Truck className="h-4 w-4" />, color: 'bg-green-500/10 text-success' },
   print_on_demand: { label: 'Print on Demand', icon: <Palette className="h-4 w-4" />, color: 'bg-purple-500/10 text-purple-500' },
-  wholesale: { label: 'Grossiste', icon: <Package className="h-4 w-4" />, color: 'bg-orange-500/10 text-orange-500' },
+  wholesale: { label: 'Grossiste', icon: <Package className="h-4 w-4" />, color: 'bg-orange-500/10 text-warning' },
   marketplace: { label: 'Marketplace', icon: <Globe className="h-4 w-4" />, color: 'bg-cyan-500/10 text-cyan-500' }
 };
 

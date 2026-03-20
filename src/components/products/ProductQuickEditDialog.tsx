@@ -158,7 +158,7 @@ export function ProductQuickEditDialog({
               </div>
               <div className="text-center">
                 <div className="text-sm text-muted-foreground">Profit</div>
-                <div className="font-medium text-green-600">
+                <div className="font-medium text-success">
                   +{calculateProfit()}€
                 </div>
               </div>

@@ -521,7 +521,7 @@ export function CreateChannelDialog({ open, onOpenChange }: CreateChannelDialogP
                     {/* Summary Card */}
                     <div className="mt-6 p-4 rounded-xl bg-muted/50 border border-border/50">
                       <div className="flex items-center gap-2 mb-3">
-                        <Zap className="h-4 w-4 text-amber-500" />
+                        <Zap className="h-4 w-4 text-warning" />
                         <span className="text-sm font-medium">Résumé de configuration</span>
                       </div>
                       <div className="space-y-2 text-sm">

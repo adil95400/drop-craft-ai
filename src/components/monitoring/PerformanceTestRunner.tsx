@@ -181,11 +181,11 @@ export function PerformanceTestRunner() {
   const getStatusIcon = (status: TestResult['status']) => {
     switch (status) {
       case 'passed':
-        return <CheckCircle className="h-4 w-4 text-green-500" />;
+        return <CheckCircle className="h-4 w-4 text-success" />;
       case 'failed':
-        return <XCircle className="h-4 w-4 text-red-500" />;
+        return <XCircle className="h-4 w-4 text-destructive" />;
       case 'running':
-        return <RefreshCw className="h-4 w-4 text-blue-500 animate-spin" />;
+        return <RefreshCw className="h-4 w-4 text-info animate-spin" />;
       default:
         return <Clock className="h-4 w-4 text-muted-foreground" />;
     }
@@ -260,7 +260,7 @@ export function PerformanceTestRunner() {
                       </span>
                     )}
                     {test.error && (
-                      <span className="text-sm text-red-500 max-w-[200px] truncate">
+                      <span className="text-sm text-destructive max-w-[200px] truncate">
                         {test.error}
                       </span>
                     )}

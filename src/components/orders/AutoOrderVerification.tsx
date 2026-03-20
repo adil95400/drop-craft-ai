@@ -297,10 +297,10 @@ export function AutoOrderVerification({ onStatusChange }: AutoOrderVerificationP
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'success': return <CheckCircle2 className="w-5 h-5 text-green-500" />;
-      case 'warning': return <AlertTriangle className="w-5 h-5 text-yellow-500" />;
-      case 'error': return <XCircle className="w-5 h-5 text-red-500" />;
-      case 'running': return <RefreshCw className="w-5 h-5 text-blue-500 animate-spin" />;
+      case 'success': return <CheckCircle2 className="w-5 h-5 text-success" />;
+      case 'warning': return <AlertTriangle className="w-5 h-5 text-warning" />;
+      case 'error': return <XCircle className="w-5 h-5 text-destructive" />;
+      case 'running': return <RefreshCw className="w-5 h-5 text-info animate-spin" />;
       default: return <div className="w-5 h-5 rounded-full border-2 border-muted" />;
     }
   };
@@ -314,7 +314,7 @@ export function AutoOrderVerification({ onStatusChange }: AutoOrderVerificationP
         <div className="flex items-center justify-between">
           <div>
             <CardTitle className="flex items-center gap-2">
-              <Zap className="w-5 h-5 text-yellow-500" />
+              <Zap className="w-5 h-5 text-warning" />
               Commande Automatique 1-Clic
             </CardTitle>
             <CardDescription>
@@ -393,10 +393,10 @@ export function AutoOrderVerification({ onStatusChange }: AutoOrderVerificationP
                     'bg-muted'
                   }`}>
                     <StepIcon className={`w-4 h-4 ${
-                      step.status === 'success' ? 'text-green-600' :
-                      step.status === 'warning' ? 'text-yellow-600' :
-                      step.status === 'error' ? 'text-red-600' :
-                      step.status === 'running' ? 'text-blue-600' :
+                      step.status === 'success' ? 'text-success' :
+                      step.status === 'warning' ? 'text-warning' :
+                      step.status === 'error' ? 'text-destructive' :
+                      step.status === 'running' ? 'text-info' :
                       'text-muted-foreground'
                     }`} />
                   </div>

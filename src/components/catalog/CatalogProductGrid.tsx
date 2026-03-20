@@ -47,16 +47,16 @@ export const CatalogProductGrid = ({
   }
 
   const getMarginColor = (margin: number) => {
-    if (margin >= 50) return 'text-green-600'
-    if (margin >= 40) return 'text-blue-600'
-    if (margin >= 30) return 'text-orange-600'
-    return 'text-red-600'
+    if (margin >= 50) return 'text-success'
+    if (margin >= 40) return 'text-info'
+    if (margin >= 30) return 'text-warning'
+    return 'text-destructive'
   }
 
   const getStockStatus = (stock: number) => {
-    if (stock > 100) return { color: 'text-green-600', icon: CheckCircle, text: 'En stock' }
-    if (stock > 20) return { color: 'text-orange-600', icon: AlertTriangle, text: 'Stock limité' }
-    return { color: 'text-red-600', icon: AlertTriangle, text: 'Stock faible' }
+    if (stock > 100) return { color: 'text-success', icon: CheckCircle, text: 'En stock' }
+    if (stock > 20) return { color: 'text-warning', icon: AlertTriangle, text: 'Stock limité' }
+    return { color: 'text-destructive', icon: AlertTriangle, text: 'Stock faible' }
   }
 
   const formatPrice = (price: number) => {
@@ -166,7 +166,7 @@ export const CatalogProductGrid = ({
                       onToggleFavorite(product.id, isFavorite)
                     }}
                   >
-                    <Heart className={`w-4 h-4 ${isFavorite ? 'fill-red-500 text-red-500' : 'text-gray-600'}`} />
+                    <Heart className={`w-4 h-4 ${isFavorite ? 'fill-red-500 text-destructive' : 'text-gray-600'}`} />
                   </Button>
                 </div>
 

@@ -26,9 +26,9 @@ export function AutomaticAlertsPanel() {
   const getSeverityIcon = (severity: string | null) => {
     switch (severity) {
       case 'critical': return <AlertCircle className="h-4 w-4 text-destructive" />;
-      case 'high': return <AlertTriangle className="h-4 w-4 text-orange-500" />;
-      case 'warning': return <AlertTriangle className="h-4 w-4 text-yellow-500" />;
-      default: return <Bell className="h-4 w-4 text-blue-500" />;
+      case 'high': return <AlertTriangle className="h-4 w-4 text-warning" />;
+      case 'warning': return <AlertTriangle className="h-4 w-4 text-warning" />;
+      default: return <Bell className="h-4 w-4 text-info" />;
     }
   };
 
@@ -47,7 +47,7 @@ export function AutomaticAlertsPanel() {
         </Card>
         <Card className="p-3">
           <div className="flex items-center gap-2">
-            <Eye className="h-5 w-5 text-yellow-500" />
+            <Eye className="h-5 w-5 text-warning" />
             <div>
               <p className="text-xl font-bold">{acknowledged.length}</p>
               <p className="text-[10px] text-muted-foreground">Acquittées</p>
@@ -56,9 +56,9 @@ export function AutomaticAlertsPanel() {
         </Card>
         <Card className="p-3">
           <div className="flex items-center gap-2">
-            <CheckCircle className="h-5 w-5 text-green-500" />
+            <CheckCircle className="h-5 w-5 text-success" />
             <div>
-              <p className="text-xl font-bold text-green-600">{resolved.length}</p>
+              <p className="text-xl font-bold text-success">{resolved.length}</p>
               <p className="text-[10px] text-muted-foreground">Résolues</p>
             </div>
           </div>
@@ -86,7 +86,7 @@ export function AutomaticAlertsPanel() {
           <ScrollArea className="h-[400px]">
             {activeAlerts.length === 0 ? (
               <div className="text-center py-12 text-muted-foreground">
-                <CheckCircle className="h-10 w-10 mx-auto mb-3 text-green-500" />
+                <CheckCircle className="h-10 w-10 mx-auto mb-3 text-success" />
                 <p className="font-medium">Aucune alerte</p>
                 <p className="text-sm">Tous les systèmes fonctionnent normalement</p>
               </div>

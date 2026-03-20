@@ -52,7 +52,7 @@ export function SmartAlertsDashboard() {
         {[
           { title: 'Non lues', value: stats.unread, icon: Bell, color: 'text-primary' },
           { title: 'Critiques', value: stats.critical, icon: AlertTriangle, color: 'text-destructive' },
-          { title: 'Stock', value: stats.byCategory.stock, icon: Package, color: 'text-amber-500' },
+          { title: 'Stock', value: stats.byCategory.stock, icon: Package, color: 'text-warning' },
           { title: 'Opportunités', value: stats.byCategory.opportunity, icon: Zap, color: 'text-primary' },
         ].map((s, i) => (
           <motion.div key={s.title} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}>

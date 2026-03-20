@@ -20,7 +20,7 @@ const planConfig = {
   standard: {
     name: 'Standard',
     icon: Zap,
-    color: 'text-blue-500',
+    color: 'text-info',
     description: 'Fonctionnalités de base pour commencer',
     price: 'Gratuit',
   },
@@ -34,7 +34,7 @@ const planConfig = {
   ultra_pro: {
     name: 'Ultra Pro',
     icon: Crown,
-    color: 'text-yellow-500',
+    color: 'text-warning',
     description: 'Toutes les fonctionnalités pour les experts',
     price: '99€/mois',
   },

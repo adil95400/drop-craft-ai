@@ -102,7 +102,7 @@ export default function PredictiveAnalyticsPage() {
                               <p className="font-medium">Produit #{rec.product_id.slice(0, 8)}</p>
                               <p className="text-sm text-muted-foreground">Stock: {rec.current_stock} | Recommandé: {rec.recommended_restock_quantity}</p>
                             </div>
-                            <span className={`px-2 py-1 rounded text-xs font-medium ${rec.urgency === 'critical' ? 'bg-destructive/20 text-destructive' : rec.urgency === 'high' ? 'bg-orange-500/20 text-orange-500' : 'bg-yellow-500/20 text-yellow-500'}`}>{rec.urgency}</span>
+                            <span className={`px-2 py-1 rounded text-xs font-medium ${rec.urgency === 'critical' ? 'bg-destructive/20 text-destructive' : rec.urgency === 'high' ? 'bg-orange-500/20 text-warning' : 'bg-yellow-500/20 text-warning'}`}>{rec.urgency}</span>
                           </div>
                         </div>
                       ))}
@@ -136,7 +136,7 @@ export default function PredictiveAnalyticsPage() {
                                 <DollarSign className="h-3 w-3" />
                                 <span className="font-bold text-primary">{rec.recommended_price}€</span>
                               </div>
-                              <p className="text-xs text-green-500">+{rec.expected_sales_lift_percent}% ventes</p>
+                              <p className="text-xs text-success">+{rec.expected_sales_lift_percent}% ventes</p>
                             </div>
                           </div>
                         </div>
@@ -182,7 +182,7 @@ export default function PredictiveAnalyticsPage() {
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
-                    <TrendingUp className="h-5 w-5 text-green-500" />
+                    <TrendingUp className="h-5 w-5 text-success" />
                     Produits en Hausse
                   </CardTitle>
                 </CardHeader>
@@ -194,7 +194,7 @@ export default function PredictiveAnalyticsPage() {
                       {dashboard?.trending_up.map((trend, idx) => (
                         <div key={idx} className="flex items-center justify-between">
                           <p className="font-medium">{trend.product_name}</p>
-                          <span className="text-green-500 font-bold">+{trend.growth_rate.toFixed(1)}%</span>
+                          <span className="text-success font-bold">+{trend.growth_rate.toFixed(1)}%</span>
                         </div>
                       ))}
                     </div>

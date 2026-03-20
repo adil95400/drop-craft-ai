@@ -452,30 +452,30 @@ export function ImportDataDialog({ open, onOpenChange, defaultType }: ImportData
 
           {step === 'complete' && importResult && (
             <div className="py-8 text-center space-y-6">
-              <CheckCircle className="h-16 w-16 text-green-500 mx-auto" />
+              <CheckCircle className="h-16 w-16 text-success mx-auto" />
               <div>
                 <h3 className="text-lg font-semibold">Import terminé !</h3>
               </div>
               
               <div className="grid grid-cols-3 gap-4 max-w-md mx-auto">
                 <div className="p-4 bg-green-50 rounded-lg">
-                  <div className="text-2xl font-bold text-green-600">{importResult.imported}</div>
-                  <div className="text-sm text-green-600">Importés</div>
+                  <div className="text-2xl font-bold text-success">{importResult.imported}</div>
+                  <div className="text-sm text-success">Importés</div>
                 </div>
                 <div className="p-4 bg-yellow-50 rounded-lg">
-                  <div className="text-2xl font-bold text-yellow-600">{importResult.skipped}</div>
-                  <div className="text-sm text-yellow-600">Ignorés</div>
+                  <div className="text-2xl font-bold text-warning">{importResult.skipped}</div>
+                  <div className="text-sm text-warning">Ignorés</div>
                 </div>
                 <div className="p-4 bg-red-50 rounded-lg">
-                  <div className="text-2xl font-bold text-red-600">{importResult.failed}</div>
-                  <div className="text-sm text-red-600">Échoués</div>
+                  <div className="text-2xl font-bold text-destructive">{importResult.failed}</div>
+                  <div className="text-sm text-destructive">Échoués</div>
                 </div>
               </div>
 
               {importResult.errors.length > 0 && (
                 <Card className="max-w-lg mx-auto text-left">
                   <CardHeader className="pb-2">
-                    <CardTitle className="text-sm text-red-600">Erreurs ({importResult.errors.length})</CardTitle>
+                    <CardTitle className="text-sm text-destructive">Erreurs ({importResult.errors.length})</CardTitle>
                   </CardHeader>
                   <CardContent>
                     <ScrollArea className="h-32">

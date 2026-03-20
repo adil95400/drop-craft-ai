@@ -54,7 +54,7 @@ export const PricingCard: React.FC<PricingCardProps> = ({
 
       <CardHeader className="text-center pb-8">
         <CardTitle className="text-2xl font-bold flex items-center justify-center gap-2">
-          {plan === 'ultra_pro' && <Zap className="w-6 h-6 text-yellow-500" />}
+          {plan === 'ultra_pro' && <Zap className="w-6 h-6 text-warning" />}
           {title}
         </CardTitle>
         <div className="mt-4">
@@ -68,7 +68,7 @@ export const PricingCard: React.FC<PricingCardProps> = ({
         <ul className="space-y-3">
           {features.map((feature, index) => (
             <li key={index} className="flex items-start gap-3">
-              <Check className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
+              <Check className="w-5 h-5 text-success mt-0.5 flex-shrink-0" />
               <span className="text-sm">{feature}</span>
             </li>
           ))}
@@ -96,7 +96,7 @@ export const PricingCard: React.FC<PricingCardProps> = ({
 
         {isCurrentPlan && (
           <div className="text-center">
-            <Badge variant="secondary" className="bg-green-100 text-green-800">
+            <Badge variant="secondary" className="bg-green-100 text-success">
               <Check className="w-3 h-3 mr-1" />
               Plan actif
             </Badge>

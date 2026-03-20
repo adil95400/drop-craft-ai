@@ -277,7 +277,7 @@ export const ExtensionSecurity = () => {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <Card>
           <CardContent className="p-4 text-center">
-            <div className={`text-3xl font-bold ${securityScore >= 80 ? 'text-green-600' : securityScore >= 60 ? 'text-yellow-600' : 'text-red-600'}`}>
+            <div className={`text-3xl font-bold ${securityScore >= 80 ? 'text-success' : securityScore >= 60 ? 'text-warning' : 'text-destructive'}`}>
               {securityScore}
             </div>
             <div className="text-sm text-muted-foreground">Score de sécurité</div>
@@ -289,25 +289,25 @@ export const ExtensionSecurity = () => {
 
         <Card>
           <CardContent className="p-4 text-center">
-            <div className="text-3xl font-bold text-red-600">{criticalIssues}</div>
+            <div className="text-3xl font-bold text-destructive">{criticalIssues}</div>
             <div className="text-sm text-muted-foreground">Critiques</div>
-            <div className="text-xs text-red-600 mt-1">Action requise</div>
+            <div className="text-xs text-destructive mt-1">Action requise</div>
           </CardContent>
         </Card>
 
         <Card>
           <CardContent className="p-4 text-center">
-            <div className="text-3xl font-bold text-orange-600">{highIssues}</div>
+            <div className="text-3xl font-bold text-warning">{highIssues}</div>
             <div className="text-sm text-muted-foreground">Hautes</div>
-            <div className="text-xs text-orange-600 mt-1">À corriger rapidement</div>
+            <div className="text-xs text-warning mt-1">À corriger rapidement</div>
           </CardContent>
         </Card>
 
         <Card>
           <CardContent className="p-4 text-center">
-            <div className="text-3xl font-bold text-blue-600">{totalIssues}</div>
+            <div className="text-3xl font-bold text-info">{totalIssues}</div>
             <div className="text-sm text-muted-foreground">Total problèmes</div>
-            <div className="text-xs text-blue-600 mt-1">Trouvés</div>
+            <div className="text-xs text-info mt-1">Trouvés</div>
           </CardContent>
         </Card>
       </div>
@@ -445,7 +445,7 @@ export const ExtensionSecurity = () => {
                 </div>
               ) : (
                 <div className="text-center py-12 text-muted-foreground">
-                  <CheckCircle className="w-16 h-16 mx-auto mb-4 text-green-600" />
+                  <CheckCircle className="w-16 h-16 mx-auto mb-4 text-success" />
                   <p className="text-lg font-medium mb-2">Aucun problème détecté</p>
                   <p className="text-sm">Votre extension semble sécurisée !</p>
                 </div>
@@ -473,7 +473,7 @@ export const ExtensionSecurity = () => {
                 {selectedIssue.fix && (
                   <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
                     <h4 className="font-medium text-green-900 mb-2">💡 Solution recommandée</h4>
-                    <p className="text-sm text-green-800">{selectedIssue.fix}</p>
+                    <p className="text-sm text-success">{selectedIssue.fix}</p>
                   </div>
                 )}
 

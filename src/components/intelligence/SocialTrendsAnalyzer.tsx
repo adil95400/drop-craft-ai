@@ -71,9 +71,9 @@ export function SocialTrendsAnalyzer() {
 
   const getTrendIcon = (direction: string) => {
     switch (direction) {
-      case 'up': return <TrendingUp className="h-4 w-4 text-green-600" />
-      case 'down': return <TrendingDown className="h-4 w-4 text-red-600" />
-      default: return <TrendingUp className="h-4 w-4 text-yellow-600" />
+      case 'up': return <TrendingUp className="h-4 w-4 text-success" />
+      case 'down': return <TrendingDown className="h-4 w-4 text-destructive" />
+      default: return <TrendingUp className="h-4 w-4 text-warning" />
     }
   }
 
@@ -134,7 +134,7 @@ export function SocialTrendsAnalyzer() {
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center">
-              <Target className="h-8 w-8 text-blue-600" />
+              <Target className="h-8 w-8 text-info" />
               <div className="ml-3">
                 <p className="text-sm font-medium text-muted-foreground">Tendances Actives</p>
                 <p className="text-2xl font-bold">{trends.length}</p>
@@ -146,7 +146,7 @@ export function SocialTrendsAnalyzer() {
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center">
-              <Zap className="h-8 w-8 text-yellow-600" />
+              <Zap className="h-8 w-8 text-warning" />
               <div className="ml-3">
                 <p className="text-sm font-medium text-muted-foreground">Produits Viraux</p>
                 <p className="text-2xl font-bold">{viralProducts.length}</p>
@@ -158,7 +158,7 @@ export function SocialTrendsAnalyzer() {
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center">
-              <Users className="h-8 w-8 text-green-600" />
+              <Users className="h-8 w-8 text-success" />
               <div className="ml-3">
                 <p className="text-sm font-medium text-muted-foreground">Volume Total</p>
                 <p className="text-2xl font-bold">
@@ -222,7 +222,7 @@ export function SocialTrendsAnalyzer() {
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
                 {topHashtags.map((hashtag, index) => (
                   <div key={index} className="flex items-center space-x-2 p-2 border rounded-lg">
-                    <Hash className="h-4 w-4 text-blue-600" />
+                    <Hash className="h-4 w-4 text-info" />
                     <span className="text-sm font-medium">{hashtag}</span>
                   </div>
                 ))}
@@ -288,9 +288,9 @@ export function SocialTrendsAnalyzer() {
 function TrendCard({ trend }: { trend: SocialMediaTrend }) {
   const getTrendIcon = (direction: string) => {
     switch (direction) {
-      case 'up': return <TrendingUp className="h-4 w-4 text-green-600" />
-      case 'down': return <TrendingDown className="h-4 w-4 text-red-600" />
-      default: return <TrendingUp className="h-4 w-4 text-yellow-600" />
+      case 'up': return <TrendingUp className="h-4 w-4 text-success" />
+      case 'down': return <TrendingDown className="h-4 w-4 text-destructive" />
+      default: return <TrendingUp className="h-4 w-4 text-warning" />
     }
   }
 
@@ -344,12 +344,12 @@ function TrendCard({ trend }: { trend: SocialMediaTrend }) {
               <div className="text-muted-foreground">Vidéos</div>
             </div>
             <div className="text-center">
-              <Eye className="h-4 w-4 mx-auto mb-1 text-blue-600" />
+              <Eye className="h-4 w-4 mx-auto mb-1 text-info" />
               <div className="font-medium">{formatNumber(trend.viral_content.avg_views)}</div>
               <div className="text-muted-foreground">Vues moy.</div>
             </div>
             <div className="text-center">
-              <Share className="h-4 w-4 mx-auto mb-1 text-green-600" />
+              <Share className="h-4 w-4 mx-auto mb-1 text-success" />
               <div className="font-medium">{trend.viral_content.posts}</div>
               <div className="text-muted-foreground">Posts</div>
             </div>

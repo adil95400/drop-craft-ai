@@ -254,7 +254,7 @@ export function PremiumSupplierSync() {
                 <p className="text-sm text-muted-foreground">Fournisseurs Disponibles</p>
                 <p className="text-2xl font-bold">{suppliers.length}</p>
               </div>
-              <Globe className="h-8 w-8 text-blue-500" />
+              <Globe className="h-8 w-8 text-info" />
             </div>
           </CardContent>
         </Card>
@@ -265,7 +265,7 @@ export function PremiumSupplierSync() {
                 <p className="text-sm text-muted-foreground">Connexions Actives</p>
                 <p className="text-2xl font-bold">{connections.filter(c => c.status === 'active').length}</p>
               </div>
-              <CheckCircle className="h-8 w-8 text-green-500" />
+              <CheckCircle className="h-8 w-8 text-success" />
             </div>
           </CardContent>
         </Card>
@@ -314,7 +314,7 @@ export function PremiumSupplierSync() {
                     </div>
                   </div>
                   {connected && (
-                    <CheckCircle className="h-5 w-5 text-green-500" />
+                    <CheckCircle className="h-5 w-5 text-success" />
                   )}
                 </div>
               </CardHeader>

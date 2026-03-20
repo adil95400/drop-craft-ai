@@ -135,7 +135,7 @@ export const ExtensionNavigator: React.FC = () => {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'available':
-        return <Badge className="bg-green-100 text-green-800">Disponible</Badge>
+        return <Badge className="bg-green-100 text-success">Disponible</Badge>
       case 'beta':
         return <Badge className="bg-orange-100 text-orange-800">Beta</Badge>
       case 'coming-soon':
@@ -163,11 +163,11 @@ export const ExtensionNavigator: React.FC = () => {
       {/* Quick Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <Card className="text-center p-4">
-          <div className="text-2xl font-bold text-blue-600">250+</div>
+          <div className="text-2xl font-bold text-info">250+</div>
           <div className="text-sm text-muted-foreground">Extensions disponibles</div>
         </Card>
         <Card className="text-center p-4">
-          <div className="text-2xl font-bold text-green-600">50k+</div>
+          <div className="text-2xl font-bold text-success">50k+</div>
           <div className="text-sm text-muted-foreground">Téléchargements</div>
         </Card>
         <Card className="text-center p-4">
@@ -175,7 +175,7 @@ export const ExtensionNavigator: React.FC = () => {
           <div className="text-sm text-muted-foreground">Développeurs</div>
         </Card>
         <Card className="text-center p-4">
-          <div className="text-2xl font-bold text-orange-600">4.8⭐</div>
+          <div className="text-2xl font-bold text-warning">4.8⭐</div>
           <div className="text-sm text-muted-foreground">Note moyenne</div>
         </Card>
       </div>

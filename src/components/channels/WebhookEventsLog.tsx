@@ -142,7 +142,7 @@ export function WebhookEventsLog({
               Événements Webhook
             </CardTitle>
             {showRealtime && isConnected && (
-              <Badge variant="outline" className="gap-1 text-green-600 border-green-500/30">
+              <Badge variant="outline" className="gap-1 text-success border-green-500/30">
                 <Wifi className="h-3 w-3" />
                 Live
               </Badge>
@@ -193,7 +193,7 @@ export function WebhookEventsLog({
         <div className="flex items-center gap-4 mb-4 text-sm text-muted-foreground">
           <span>{filteredEvents.length} événement(s)</span>
           {eventCount > 0 && (
-            <span className="text-green-600">+{eventCount} en temps réel</span>
+            <span className="text-success">+{eventCount} en temps réel</span>
           )}
         </div>
 
@@ -246,9 +246,9 @@ export function WebhookEventsLog({
                               {event.platform}
                             </Badge>
                             {event.processed ? (
-                              <CheckCircle2 className="h-3 w-3 text-green-500" />
+                              <CheckCircle2 className="h-3 w-3 text-success" />
                             ) : (
-                              <Clock className="h-3 w-3 text-orange-500" />
+                              <Clock className="h-3 w-3 text-warning" />
                             )}
                           </div>
                           <p className="text-xs text-muted-foreground">

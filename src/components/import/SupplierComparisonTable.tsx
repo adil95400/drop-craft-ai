@@ -77,11 +77,11 @@ export function SupplierComparisonTable({
   const getAvailabilityBadge = (availability: SupplierResult['availability']) => {
     switch (availability) {
       case 'in_stock':
-        return <Badge className="bg-green-500/10 text-green-600 border-green-500/20"><Check className="h-3 w-3 mr-1" /> En stock</Badge>
+        return <Badge className="bg-green-500/10 text-success border-green-500/20"><Check className="h-3 w-3 mr-1" /> En stock</Badge>
       case 'low_stock':
-        return <Badge className="bg-yellow-500/10 text-yellow-600 border-yellow-500/20"><AlertTriangle className="h-3 w-3 mr-1" /> Stock limité</Badge>
+        return <Badge className="bg-yellow-500/10 text-warning border-yellow-500/20"><AlertTriangle className="h-3 w-3 mr-1" /> Stock limité</Badge>
       case 'out_of_stock':
-        return <Badge className="bg-red-500/10 text-red-600 border-red-500/20"><X className="h-3 w-3 mr-1" /> Rupture</Badge>
+        return <Badge className="bg-red-500/10 text-destructive border-red-500/20"><X className="h-3 w-3 mr-1" /> Rupture</Badge>
     }
   }
 
@@ -137,11 +137,11 @@ export function SupplierComparisonTable({
         </div>
         <div className="bg-muted/50 rounded-lg p-4">
           <p className="text-sm text-muted-foreground">Meilleur prix total</p>
-          <p className="text-2xl font-bold text-green-600">${bestPrice.toFixed(2)}</p>
+          <p className="text-2xl font-bold text-success">${bestPrice.toFixed(2)}</p>
         </div>
         <div className="bg-muted/50 rounded-lg p-4">
           <p className="text-sm text-muted-foreground">Meilleure note</p>
-          <p className="text-2xl font-bold text-yellow-600">{bestRating.toFixed(1)} ★</p>
+          <p className="text-2xl font-bold text-warning">{bestRating.toFixed(1)} ★</p>
         </div>
         <div className="bg-muted/50 rounded-lg p-4">
           <p className="text-sm text-muted-foreground">Plateformes</p>
@@ -270,7 +270,7 @@ export function SupplierComparisonTable({
                 </TableCell>
                 <TableCell>
                   <div className="space-y-1">
-                    <p className={result.shipping === 0 ? 'text-green-600 font-medium' : ''}>
+                    <p className={result.shipping === 0 ? 'text-success font-medium' : ''}>
                       {result.shipping === 0 ? 'Gratuit' : `$${result.shipping.toFixed(2)}`}
                     </p>
                     <p className="text-xs text-muted-foreground flex items-center gap-1">
@@ -280,7 +280,7 @@ export function SupplierComparisonTable({
                   </div>
                 </TableCell>
                 <TableCell>
-                  <p className={`font-bold ${result.totalCost === bestPrice ? 'text-green-600' : ''}`}>
+                  <p className={`font-bold ${result.totalCost === bestPrice ? 'text-success' : ''}`}>
                     ${result.totalCost.toFixed(2)}
                   </p>
                 </TableCell>
@@ -300,7 +300,7 @@ export function SupplierComparisonTable({
                   <TooltipProvider>
                     <Tooltip>
                       <TooltipTrigger>
-                        <Badge variant="outline" className="text-green-600">
+                        <Badge variant="outline" className="text-success">
                           {result.margin?.toFixed(0)}%
                         </Badge>
                       </TooltipTrigger>

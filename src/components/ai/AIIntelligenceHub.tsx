@@ -158,9 +158,9 @@ export default function AIIntelligenceHub() {
   };
 
   const getScoreColor = (score: number) => {
-    if (score >= 80) return 'text-green-500';
-    if (score >= 60) return 'text-yellow-500';
-    return 'text-red-500';
+    if (score >= 80) return 'text-success';
+    if (score >= 60) return 'text-warning';
+    return 'text-destructive';
   };
 
   const getImpactColor = (level: string) => {
@@ -235,7 +235,7 @@ export default function AIIntelligenceHub() {
         <Card className="p-4">
           <div className="flex items-center gap-3">
             <div className="p-3 rounded-lg bg-blue-500/10">
-              <TrendingUp className="h-5 w-5 text-blue-500" />
+              <TrendingUp className="h-5 w-5 text-info" />
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Prédictions</p>
@@ -247,7 +247,7 @@ export default function AIIntelligenceHub() {
         <Card className="p-4">
           <div className="flex items-center gap-3">
             <div className="p-3 rounded-lg bg-yellow-500/10">
-              <Lightbulb className="h-5 w-5 text-yellow-500" />
+              <Lightbulb className="h-5 w-5 text-warning" />
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Insights actifs</p>
@@ -259,7 +259,7 @@ export default function AIIntelligenceHub() {
         <Card className="p-4">
           <div className="flex items-center gap-3">
             <div className="p-3 rounded-lg bg-green-500/10">
-              <DollarSign className="h-5 w-5 text-green-500" />
+              <DollarSign className="h-5 w-5 text-success" />
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Impact estimé</p>
@@ -380,9 +380,9 @@ export default function AIIntelligenceHub() {
                         <div className="flex items-center gap-3 mb-2">
                           <h3 className="font-bold text-lg">{prediction.entity_name}</h3>
                           {prediction.trend_direction === 'up' ? (
-                            <ArrowUpRight className="h-5 w-5 text-green-500" />
+                            <ArrowUpRight className="h-5 w-5 text-success" />
                           ) : (
-                            <ArrowDownRight className="h-5 w-5 text-red-500" />
+                            <ArrowDownRight className="h-5 w-5 text-destructive" />
                           )}
                         </div>
                         <p className="text-sm text-muted-foreground capitalize">
@@ -452,7 +452,7 @@ export default function AIIntelligenceHub() {
                         <div className="flex items-center gap-4">
                           <div>
                             <p className="text-xs text-muted-foreground">Impact estimé</p>
-                            <p className="font-bold text-green-500">
+                            <p className="font-bold text-success">
                               +${insight.estimated_revenue_impact?.toLocaleString()}
                             </p>
                           </div>

@@ -281,7 +281,7 @@ export default class MyExtension {
                     {manifest.tags.map(tag => (
                       <Badge key={tag} variant="secondary" className="flex items-center gap-1">
                         {tag}
-                        <button onClick={() => removeTag(tag)} className="ml-1 hover:text-red-600">
+                        <button onClick={() => removeTag(tag)} className="ml-1 hover:text-destructive">
                           <Trash2 className="w-3 h-3" />
                         </button>
                       </Badge>
@@ -462,11 +462,11 @@ export default class MyExtension {
                   </div>
                   <div className="flex justify-between">
                     <span>Commission plateforme (30%):</span>
-                    <span className="text-red-600">-{(manifest.price * 0.3).toFixed(2)}€</span>
+                    <span className="text-destructive">-{(manifest.price * 0.3).toFixed(2)}€</span>
                   </div>
                   <div className="flex justify-between font-bold">
                     <span>Vos revenus:</span>
-                    <span className="text-green-600">{(manifest.price * 0.7).toFixed(2)}€</span>
+                    <span className="text-success">{(manifest.price * 0.7).toFixed(2)}€</span>
                   </div>
                 </div>
               </div>
@@ -533,21 +533,21 @@ export default class MyExtension {
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
                     <span className="flex items-center gap-2">
-                      <CheckCircle className="w-4 h-4 text-green-600" />
+                      <CheckCircle className="w-4 h-4 text-success" />
                       Tests syntaxiques
                     </span>
                     <Badge variant="secondary">Passé</Badge>
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="flex items-center gap-2">
-                      <CheckCircle className="w-4 h-4 text-green-600" />
+                      <CheckCircle className="w-4 h-4 text-success" />
                       Tests de permissions
                     </span>
                     <Badge variant="secondary">Passé</Badge>
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="flex items-center gap-2">
-                      <AlertCircle className="w-4 h-4 text-yellow-600" />
+                      <AlertCircle className="w-4 h-4 text-warning" />
                       Tests de performance
                     </span>
                     <Badge variant="outline">En attente</Badge>
@@ -568,19 +568,19 @@ export default class MyExtension {
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
                     <span>Informations complètes</span>
-                    <CheckCircle className="w-4 h-4 text-green-600" />
+                    <CheckCircle className="w-4 h-4 text-success" />
                   </div>
                   <div className="flex items-center justify-between">
                     <span>Code valide</span>
-                    <CheckCircle className="w-4 h-4 text-green-600" />
+                    <CheckCircle className="w-4 h-4 text-success" />
                   </div>
                   <div className="flex items-center justify-between">
                     <span>Captures d'écran</span>
-                    <AlertCircle className="w-4 h-4 text-yellow-600" />
+                    <AlertCircle className="w-4 h-4 text-warning" />
                   </div>
                   <div className="flex items-center justify-between">
                     <span>Tests réussis</span>
-                    <AlertCircle className="w-4 h-4 text-yellow-600" />
+                    <AlertCircle className="w-4 h-4 text-warning" />
                   </div>
                 </div>
                 <div className="pt-4">

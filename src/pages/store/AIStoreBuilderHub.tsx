@@ -179,7 +179,7 @@ export default function AIStoreBuilderHub() {
 
             <Card className="p-6">
               <div className="flex items-center gap-3 mb-4">
-                <FileText className="h-5 w-5 text-green-500" />
+                <FileText className="h-5 w-5 text-success" />
                 <p className="text-sm text-muted-foreground">Pages générées</p>
               </div>
               <p className="text-3xl font-bold">
@@ -189,7 +189,7 @@ export default function AIStoreBuilderHub() {
 
             <Card className="p-6">
               <div className="flex items-center gap-3 mb-4">
-                <TrendingUp className="h-5 w-5 text-blue-500" />
+                <TrendingUp className="h-5 w-5 text-info" />
                 <p className="text-sm text-muted-foreground">SEO moyen</p>
               </div>
               <p className="text-3xl font-bold">

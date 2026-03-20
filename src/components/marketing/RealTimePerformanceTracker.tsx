@@ -174,7 +174,7 @@ export function RealTimePerformanceTracker() {
                   {getMetricIcon(metric.id)}
                   {metric.name}
                 </div>
-                {isLiveMode && <Activity className="h-3 w-3 text-green-500 animate-pulse" />}
+                {isLiveMode && <Activity className="h-3 w-3 text-success animate-pulse" />}
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -182,7 +182,7 @@ export function RealTimePerformanceTracker() {
                 <div className="flex items-baseline justify-between">
                   <span className="text-2xl font-bold">{metric.value}{metric.unit}</span>
                   <div className={`flex items-center gap-1 text-sm ${
-                    metric.changeType === 'increase' ? 'text-green-600' : 'text-red-600'
+                    metric.changeType === 'increase' ? 'text-success' : 'text-destructive'
                   }`}>
                     {metric.changeType === 'increase' ? (
                       <TrendingUp className="h-3 w-3" />

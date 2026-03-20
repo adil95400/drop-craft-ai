@@ -149,12 +149,12 @@ export function CatalogRuleCard({
             </div>
             
             <div className="flex items-center gap-1.5" title="Succès">
-              <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />
+              <CheckCircle2 className="h-3.5 w-3.5 text-success" />
               <span>{(rule.successCount || 0).toLocaleString()}</span>
             </div>
             
             <div className="flex items-center gap-1.5" title="Erreurs">
-              <XCircle className="h-3.5 w-3.5 text-red-500" />
+              <XCircle className="h-3.5 w-3.5 text-destructive" />
               <span>{(rule.errorCount || 0).toLocaleString()}</span>
             </div>
             
@@ -162,9 +162,9 @@ export function CatalogRuleCard({
               <div 
                 className={cn(
                   "flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-medium",
-                  successRate >= 90 ? "bg-emerald-500/10 text-emerald-600" :
-                  successRate >= 70 ? "bg-amber-500/10 text-amber-600" :
-                  "bg-red-500/10 text-red-600"
+                  successRate >= 90 ? "bg-emerald-500/10 text-success" :
+                  successRate >= 70 ? "bg-amber-500/10 text-warning" :
+                  "bg-red-500/10 text-destructive"
                 )}
                 title="Taux de succès"
               >

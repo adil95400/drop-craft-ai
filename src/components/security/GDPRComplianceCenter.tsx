@@ -83,7 +83,7 @@ export function GDPRComplianceCenter() {
         <Card className="p-5">
           <div className="flex items-center gap-3">
             <div className="p-3 bg-green-500/10 rounded-lg">
-              <CheckCircle2 className="h-5 w-5 text-green-500" />
+              <CheckCircle2 className="h-5 w-5 text-success" />
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Statut RGPD</p>

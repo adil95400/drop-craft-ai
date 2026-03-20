@@ -173,9 +173,9 @@ export default function ImportScheduledPage() {
   const getFrequencyBadge = (freq: string) => {
     const colors: Record<string, string> = {
       hourly: 'bg-purple-500/10 text-purple-500',
-      daily: 'bg-blue-500/10 text-blue-500',
-      weekly: 'bg-green-500/10 text-green-500',
-      monthly: 'bg-orange-500/10 text-orange-500'
+      daily: 'bg-blue-500/10 text-info',
+      weekly: 'bg-green-500/10 text-success',
+      monthly: 'bg-orange-500/10 text-warning'
     }
     return (
       <Badge variant="secondary" className={cn("flex items-center gap-1", colors[freq] || colors.daily)}>
@@ -187,10 +187,10 @@ export default function ImportScheduledPage() {
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'completed': return <CheckCircle className="w-4 h-4 text-green-500" />
-      case 'failed': return <AlertCircle className="w-4 h-4 text-red-500" />
-      case 'pending': return <Clock className="w-4 h-4 text-amber-500" />
-      case 'running': return <Loader2 className="w-4 h-4 text-blue-500 animate-spin" />
+      case 'completed': return <CheckCircle className="w-4 h-4 text-success" />
+      case 'failed': return <AlertCircle className="w-4 h-4 text-destructive" />
+      case 'pending': return <Clock className="w-4 h-4 text-warning" />
+      case 'running': return <Loader2 className="w-4 h-4 text-info animate-spin" />
       default: return <Clock className="w-4 h-4 text-muted-foreground" />
     }
   }
@@ -271,7 +271,7 @@ export default function ImportScheduledPage() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm font-medium text-muted-foreground">{stat.label}</p>
-                    <p className={cn("text-3xl font-bold mt-1", stat.color === 'green' && 'text-green-600')}>
+                    <p className={cn("text-3xl font-bold mt-1", stat.color === 'green' && 'text-success')}>
                       {stat.value}
                     </p>
                   </div>

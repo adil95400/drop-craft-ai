@@ -73,12 +73,12 @@ export const MarketingAnalytics: React.FC = () => {
         <Card className="border-l-4 border-l-blue-500">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium">Revenus totaux</CardTitle>
-            <DollarSign className="h-4 w-4 text-blue-500" />
+            <DollarSign className="h-4 w-4 text-info" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{totalRevenue.toLocaleString()}€</div>
             <p className="text-xs text-muted-foreground flex items-center gap-1">
-              <TrendingUp className="h-3 w-3 text-green-500" />
+              <TrendingUp className="h-3 w-3 text-success" />
               +12.5% vs mois dernier
             </p>
           </CardContent>
@@ -87,12 +87,12 @@ export const MarketingAnalytics: React.FC = () => {
         <Card className="border-l-4 border-l-green-500">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium">Taux de conversion</CardTitle>
-            <Target className="h-4 w-4 text-green-500" />
+            <Target className="h-4 w-4 text-success" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{avgConversionRate.toFixed(1)}%</div>
             <p className="text-xs text-muted-foreground flex items-center gap-1">
-              <TrendingUp className="h-3 w-3 text-green-500" />
+              <TrendingUp className="h-3 w-3 text-success" />
               +2.3% vs semaine dernière
             </p>
           </CardContent>
@@ -106,7 +106,7 @@ export const MarketingAnalytics: React.FC = () => {
           <CardContent>
             <div className="text-2xl font-bold">187.3%</div>
             <p className="text-xs text-muted-foreground flex items-center gap-1">
-              <TrendingUp className="h-3 w-3 text-green-500" />
+              <TrendingUp className="h-3 w-3 text-success" />
               +18.7% vs mois dernier
             </p>
           </CardContent>
@@ -115,12 +115,12 @@ export const MarketingAnalytics: React.FC = () => {
         <Card className="border-l-4 border-l-orange-500">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium">Engagement</CardTitle>
-            <Activity className="h-4 w-4 text-orange-500" />
+            <Activity className="h-4 w-4 text-warning" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">34.2%</div>
             <p className="text-xs text-muted-foreground flex items-center gap-1">
-              <TrendingDown className="h-3 w-3 text-red-500" />
+              <TrendingDown className="h-3 w-3 text-destructive" />
               -1.2% vs semaine dernière
             </p>
           </CardContent>
@@ -244,7 +244,7 @@ export const MarketingAnalytics: React.FC = () => {
                     </Badge>
                   </div>
                   <div className="grid grid-cols-3 gap-2 text-xs text-muted-foreground">
-                    <div>ROI: <span className="font-medium text-green-600">{campaign.roi}%</span></div>
+                    <div>ROI: <span className="font-medium text-success">{campaign.roi}%</span></div>
                     <div>Conv: <span className="font-medium">{campaign.conversion}%</span></div>
                     <div>Rev: <span className="font-medium">{campaign.revenue.toLocaleString()}€</span></div>
                   </div>
@@ -277,7 +277,7 @@ export const MarketingAnalytics: React.FC = () => {
             <Progress value={12.8} className="h-2" />
             <div className="flex items-center justify-between text-sm">
               <span>Désabonnements</span>
-              <span className="font-medium text-red-600">0.8%</span>
+              <span className="font-medium text-destructive">0.8%</span>
             </div>
             <Progress value={0.8} className="h-2" />
           </CardContent>
@@ -303,7 +303,7 @@ export const MarketingAnalytics: React.FC = () => {
             <Progress value={25.3} className="h-2" />
             <div className="flex items-center justify-between text-sm">
               <span>Opt-out</span>
-              <span className="font-medium text-red-600">1.2%</span>
+              <span className="font-medium text-destructive">1.2%</span>
             </div>
             <Progress value={1.2} className="h-2" />
           </CardContent>

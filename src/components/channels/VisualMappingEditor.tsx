@@ -261,19 +261,19 @@ export function VisualMappingEditor({
         </Card>
         <Card>
           <CardContent className="p-4 text-center">
-            <div className="text-2xl font-bold text-green-600">{stats.connected}</div>
+            <div className="text-2xl font-bold text-success">{stats.connected}</div>
             <div className="text-xs text-muted-foreground">Connectés</div>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-4 text-center">
-            <div className="text-2xl font-bold text-orange-600">{stats.required}</div>
+            <div className="text-2xl font-bold text-warning">{stats.required}</div>
             <div className="text-xs text-muted-foreground">Obligatoires</div>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-4 text-center">
-            <div className={cn("text-2xl font-bold", stats.missingRequired > 0 ? "text-red-600" : "text-green-600")}>
+            <div className={cn("text-2xl font-bold", stats.missingRequired > 0 ? "text-destructive" : "text-success")}>
               {stats.missingRequired}
             </div>
             <div className="text-xs text-muted-foreground">Manquants</div>
@@ -350,7 +350,7 @@ export function VisualMappingEditor({
                   {/* Arrow */}
                   <div className="hidden md:flex md:col-span-1 items-center justify-center">
                     {mapping.isConnected && mapping.sourceField && mapping.targetField ? (
-                      <Link2 className="h-4 w-4 text-green-600" />
+                      <Link2 className="h-4 w-4 text-success" />
                     ) : (
                       <Unlink className="h-4 w-4 text-muted-foreground" />
                     )}
@@ -447,10 +447,10 @@ export function VisualMappingEditor({
         <Card className="border-orange-500/50 bg-orange-500/5">
           <CardContent className="p-4">
             <div className="flex items-start gap-3">
-              <AlertCircle className="h-5 w-5 text-orange-600 mt-0.5" />
+              <AlertCircle className="h-5 w-5 text-warning mt-0.5" />
               <div>
                 <p className="font-medium text-orange-700">Champs obligatoires manquants</p>
-                <p className="text-sm text-orange-600">
+                <p className="text-sm text-warning">
                   {stats.missingRequired} champ(s) obligatoire(s) ne sont pas encore mappés. 
                   La synchronisation pourrait échouer sans ces champs.
                 </p>

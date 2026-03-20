@@ -127,9 +127,9 @@ export function PPCAutomationEngine() {
                 <div className="flex items-center justify-between mb-1">
                   <Icon className="h-4 w-4 text-muted-foreground" />
                   {m.positive ? (
-                    <Badge variant="secondary" className="text-[10px] text-green-600 bg-green-50 dark:bg-green-950 dark:text-green-400">{m.change}</Badge>
+                    <Badge variant="secondary" className="text-[10px] text-success bg-green-50 dark:bg-green-950 dark:text-green-400">{m.change}</Badge>
                   ) : (
-                    <Badge variant="secondary" className="text-[10px] text-red-600 bg-red-50 dark:bg-red-950 dark:text-red-400">{m.change}</Badge>
+                    <Badge variant="secondary" className="text-[10px] text-destructive bg-red-50 dark:bg-red-950 dark:text-red-400">{m.change}</Badge>
                   )}
                 </div>
                 <p className="text-lg font-bold">{m.value}</p>
@@ -252,13 +252,13 @@ export function PPCAutomationEngine() {
                     rec.severity === 'medium' ? 'bg-amber-100 dark:bg-amber-950' :
                     'bg-blue-100 dark:bg-blue-950'
                   )}>
-                    {rec.severity === 'high' ? <AlertTriangle className="h-4 w-4 text-red-500" /> :
-                     rec.severity === 'medium' ? <TrendingUp className="h-4 w-4 text-amber-500" /> :
-                     <Sparkles className="h-4 w-4 text-blue-500" />}
+                    {rec.severity === 'high' ? <AlertTriangle className="h-4 w-4 text-destructive" /> :
+                     rec.severity === 'medium' ? <TrendingUp className="h-4 w-4 text-warning" /> :
+                     <Sparkles className="h-4 w-4 text-info" />}
                   </div>
                   <div className="flex-1">
                     <p className="text-sm font-medium">{rec.title}</p>
-                    <p className="text-xs text-green-600 dark:text-green-400 mt-0.5">{rec.impact}</p>
+                    <p className="text-xs text-success dark:text-green-400 mt-0.5">{rec.impact}</p>
                   </div>
                   <Button size="sm" variant="outline">{rec.action}</Button>
                 </CardContent>

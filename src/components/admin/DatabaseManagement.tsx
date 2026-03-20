@@ -92,7 +92,7 @@ export const DatabaseManagement = () => {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'healthy':
-        return <Badge className="bg-green-100 text-green-800"><CheckCircle className="h-3 w-3 mr-1" />Saine</Badge>
+        return <Badge className="bg-green-100 text-success"><CheckCircle className="h-3 w-3 mr-1" />Saine</Badge>
       case 'warning':
         return <Badge variant="secondary"><AlertTriangle className="h-3 w-3 mr-1" />Attention</Badge>
       case 'error':
@@ -448,14 +448,14 @@ export const DatabaseManagement = () => {
               <CardContent>
                 <div className="space-y-3">
                   <div className="flex items-center gap-3 p-3 bg-yellow-50 rounded-lg">
-                    <AlertTriangle className="h-4 w-4 text-yellow-600" />
+                    <AlertTriangle className="h-4 w-4 text-warning" />
                     <div className="flex-1">
                       <p className="text-sm font-medium">Requête lente détectée</p>
                       <p className="text-xs text-muted-foreground">il y a 2 min</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-3 p-3 bg-green-50 rounded-lg">
-                    <CheckCircle className="h-4 w-4 text-green-600" />
+                    <CheckCircle className="h-4 w-4 text-success" />
                     <div className="flex-1">
                       <p className="text-sm font-medium">Sauvegarde terminée</p>
                       <p className="text-xs text-muted-foreground">il y a 1h</p>

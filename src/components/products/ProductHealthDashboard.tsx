@@ -198,9 +198,9 @@ export function ProductHealthDashboard() {
   };
 
   const getScoreColor = (score: number) => {
-    if (score >= 80) return 'text-green-600';
-    if (score >= 50) return 'text-yellow-600';
-    return 'text-red-600';
+    if (score >= 80) return 'text-success';
+    if (score >= 50) return 'text-warning';
+    return 'text-destructive';
   };
 
   const getScoreBg = (score: number) => {
@@ -240,10 +240,10 @@ export function ProductHealthDashboard() {
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-2xl font-bold text-green-600">{stats.healthyProducts}</p>
+                <p className="text-2xl font-bold text-success">{stats.healthyProducts}</p>
                 <p className="text-xs text-muted-foreground">Sains</p>
               </div>
-              <CheckCircle className="h-8 w-8 text-green-500/30" />
+              <CheckCircle className="h-8 w-8 text-success/30" />
             </div>
           </CardContent>
         </Card>
@@ -252,10 +252,10 @@ export function ProductHealthDashboard() {
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-2xl font-bold text-yellow-600">{stats.warningProducts}</p>
+                <p className="text-2xl font-bold text-warning">{stats.warningProducts}</p>
                 <p className="text-xs text-muted-foreground">Attention</p>
               </div>
-              <AlertTriangle className="h-8 w-8 text-yellow-500/30" />
+              <AlertTriangle className="h-8 w-8 text-warning/30" />
             </div>
           </CardContent>
         </Card>
@@ -264,10 +264,10 @@ export function ProductHealthDashboard() {
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-2xl font-bold text-red-600">{stats.criticalProducts}</p>
+                <p className="text-2xl font-bold text-destructive">{stats.criticalProducts}</p>
                 <p className="text-xs text-muted-foreground">Critiques</p>
               </div>
-              <XCircle className="h-8 w-8 text-red-500/30" />
+              <XCircle className="h-8 w-8 text-destructive/30" />
             </div>
           </CardContent>
         </Card>
@@ -290,7 +290,7 @@ export function ProductHealthDashboard() {
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-base flex items-center gap-2">
-              <AlertCircle className="h-5 w-5 text-yellow-500" />
+              <AlertCircle className="h-5 w-5 text-warning" />
               Problèmes les plus fréquents
             </CardTitle>
           </CardHeader>
@@ -407,9 +407,9 @@ export function ProductHealthDashboard() {
                             variant="outline"
                             className={cn(
                               "text-xs",
-                              issue.severity === 'high' && "bg-red-500/10 text-red-600 border-red-500/20",
-                              issue.severity === 'medium' && "bg-yellow-500/10 text-yellow-600 border-yellow-500/20",
-                              issue.severity === 'low' && "bg-blue-500/10 text-blue-600 border-blue-500/20"
+                              issue.severity === 'high' && "bg-red-500/10 text-destructive border-red-500/20",
+                              issue.severity === 'medium' && "bg-yellow-500/10 text-warning border-yellow-500/20",
+                              issue.severity === 'low' && "bg-blue-500/10 text-info border-blue-500/20"
                             )}
                           >
                             {issue.message}

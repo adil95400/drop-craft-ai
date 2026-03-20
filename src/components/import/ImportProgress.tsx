@@ -39,7 +39,7 @@ export function ImportProgress({ job, onRetry }: ImportProgressProps) {
   const getStatusIcon = () => {
     switch (job.status) {
       case 'completed':
-        return <CheckCircle className="w-5 h-5 text-green-500" />;
+        return <CheckCircle className="w-5 h-5 text-success" />;
       case 'failed':
         return <AlertCircle className="w-5 h-5 text-destructive" />;
       default:

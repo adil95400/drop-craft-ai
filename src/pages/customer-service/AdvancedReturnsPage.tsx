@@ -171,9 +171,9 @@ export default function AdvancedReturnsPage() {
         <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-6">
           {[
             { label: 'Total retours', value: stats.total, icon: Package, color: 'text-primary' },
-            { label: 'En attente', value: stats.pending, icon: Clock, color: 'text-amber-500' },
-            { label: 'En transit', value: stats.inTransit, icon: Truck, color: 'text-blue-500' },
-            { label: 'Complétés', value: stats.completed, icon: CheckCircle, color: 'text-emerald-500' },
+            { label: 'En attente', value: stats.pending, icon: Clock, color: 'text-warning' },
+            { label: 'En transit', value: stats.inTransit, icon: Truck, color: 'text-info' },
+            { label: 'Complétés', value: stats.completed, icon: CheckCircle, color: 'text-success' },
             { label: 'Valeur totale', value: `${stats.totalValue.toFixed(0)}€`, icon: Euro, color: 'text-primary' },
           ].map((s, i) => (
             <Card key={i}>

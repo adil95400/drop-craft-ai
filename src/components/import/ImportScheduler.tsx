@@ -131,7 +131,7 @@ function ScheduleRow({
           {schedule.last_run_at && (
             <span className="flex items-center gap-1">
               {schedule.last_run_status === 'completed' ? (
-                <CheckCircle2 className="h-3 w-3 text-emerald-500" />
+                <CheckCircle2 className="h-3 w-3 text-success" />
               ) : schedule.last_run_status === 'failed' ? (
                 <XCircle className="h-3 w-3 text-destructive" />
               ) : null}

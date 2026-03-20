@@ -83,9 +83,9 @@ export function FinanceDashboard() {
 
   const getInvoiceStatusIcon = (status: string) => {
     switch (status) {
-      case 'paid': return <CheckCircle className="w-4 h-4 text-green-500" />;
-      case 'pending': return <Clock className="w-4 h-4 text-yellow-500" />;
-      case 'overdue': return <AlertCircle className="w-4 h-4 text-red-500" />;
+      case 'paid': return <CheckCircle className="w-4 h-4 text-success" />;
+      case 'pending': return <Clock className="w-4 h-4 text-warning" />;
+      case 'overdue': return <AlertCircle className="w-4 h-4 text-destructive" />;
       case 'draft': return <FileText className="w-4 h-4 text-gray-500" />;
       default: return null;
     }
@@ -118,15 +118,15 @@ export function FinanceDashboard() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-muted-foreground">Chiffre d'Affaires</p>
-                <p className="text-2xl font-bold text-green-600">
+                <p className="text-2xl font-bold text-success">
                   {financeData.revenue.toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' })}
                 </p>
-                <p className="text-xs text-green-600 flex items-center mt-1">
+                <p className="text-xs text-success flex items-center mt-1">
                   <TrendingUp className="w-3 h-3 mr-1" />
                   +12.5% vs mois dernier
                 </p>
               </div>
-              <Euro className="w-8 h-8 text-green-500" />
+              <Euro className="w-8 h-8 text-success" />
             </div>
           </CardContent>
         </Card>
@@ -136,15 +136,15 @@ export function FinanceDashboard() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-muted-foreground">Dépenses</p>
-                <p className="text-2xl font-bold text-red-600">
+                <p className="text-2xl font-bold text-destructive">
                   {financeData.expenses.toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' })}
                 </p>
-                <p className="text-xs text-red-600 flex items-center mt-1">
+                <p className="text-xs text-destructive flex items-center mt-1">
                   <TrendingUp className="w-3 h-3 mr-1" />
                   +3.2% vs mois dernier
                 </p>
               </div>
-              <Receipt className="w-8 h-8 text-red-500" />
+              <Receipt className="w-8 h-8 text-destructive" />
             </div>
           </CardContent>
         </Card>
@@ -154,15 +154,15 @@ export function FinanceDashboard() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-muted-foreground">Bénéfice Net</p>
-                <p className="text-2xl font-bold text-blue-600">
+                <p className="text-2xl font-bold text-info">
                   {financeData.profit.toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' })}
                 </p>
-                <p className="text-xs text-blue-600 flex items-center mt-1">
+                <p className="text-xs text-info flex items-center mt-1">
                   <TrendingUp className="w-3 h-3 mr-1" />
                   Marge: {financeData.profitMargin}%
                 </p>
               </div>
-              <PieChart className="w-8 h-8 text-blue-500" />
+              <PieChart className="w-8 h-8 text-info" />
             </div>
           </CardContent>
         </Card>
@@ -214,7 +214,7 @@ export function FinanceDashboard() {
                     <div className="space-y-2">
                       <div className="flex justify-between text-sm">
                         <span>Chiffre d'affaires</span>
-                        <span className="font-medium text-green-600">
+                        <span className="font-medium text-success">
                           {financeData.revenue.toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' })}
                         </span>
                       </div>
@@ -224,7 +224,7 @@ export function FinanceDashboard() {
                     <div className="space-y-2">
                       <div className="flex justify-between text-sm">
                         <span>Dépenses</span>
-                        <span className="font-medium text-red-600">
+                        <span className="font-medium text-destructive">
                           {financeData.expenses.toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' })}
                         </span>
                       </div>
@@ -234,7 +234,7 @@ export function FinanceDashboard() {
                     <div className="pt-2 border-t">
                       <div className="flex justify-between">
                         <span className="font-medium">Bénéfice Net</span>
-                        <span className="font-bold text-blue-600">
+                        <span className="font-bold text-info">
                           {financeData.profit.toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' })}
                         </span>
                       </div>
@@ -249,7 +249,7 @@ export function FinanceDashboard() {
                   </CardHeader>
                   <CardContent className="space-y-3">
                     <div className="flex items-center gap-3 p-3 border rounded-lg bg-red-50">
-                      <AlertCircle className="w-5 h-5 text-red-500" />
+                      <AlertCircle className="w-5 h-5 text-destructive" />
                       <div className="flex-1">
                         <div className="font-medium text-sm">Factures en retard</div>
                         <div className="text-xs text-muted-foreground">
@@ -259,7 +259,7 @@ export function FinanceDashboard() {
                     </div>
                     
                     <div className="flex items-center gap-3 p-3 border rounded-lg bg-yellow-50">
-                      <Clock className="w-5 h-5 text-yellow-500" />
+                      <Clock className="w-5 h-5 text-warning" />
                       <div className="flex-1">
                         <div className="font-medium text-sm">Factures en attente</div>
                         <div className="text-xs text-muted-foreground">
@@ -269,7 +269,7 @@ export function FinanceDashboard() {
                     </div>
                     
                     <div className="flex items-center gap-3 p-3 border rounded-lg bg-green-50">
-                      <CheckCircle className="w-5 h-5 text-green-500" />
+                      <CheckCircle className="w-5 h-5 text-success" />
                       <div className="flex-1">
                         <div className="font-medium text-sm">Trésorerie saine</div>
                         <div className="text-xs text-muted-foreground">
@@ -344,7 +344,7 @@ export function FinanceDashboard() {
               <div className="grid md:grid-cols-2 gap-4">
                 <Card className="cursor-pointer hover:shadow-lg transition-shadow">
                   <CardContent className="p-6 text-center">
-                    <PieChart className="w-8 h-8 mx-auto mb-2 text-blue-500" />
+                    <PieChart className="w-8 h-8 mx-auto mb-2 text-info" />
                     <h3 className="font-medium mb-1">Rapport P&L</h3>
                     <p className="text-sm text-muted-foreground">Compte de résultat détaillé</p>
                   </CardContent>
@@ -352,7 +352,7 @@ export function FinanceDashboard() {
                 
                 <Card className="cursor-pointer hover:shadow-lg transition-shadow">
                   <CardContent className="p-6 text-center">
-                    <TrendingUp className="w-8 h-8 mx-auto mb-2 text-green-500" />
+                    <TrendingUp className="w-8 h-8 mx-auto mb-2 text-success" />
                     <h3 className="font-medium mb-1">Analyse de Rentabilité</h3>
                     <p className="text-sm text-muted-foreground">Marges et profitabilité par produit</p>
                   </CardContent>
@@ -368,7 +368,7 @@ export function FinanceDashboard() {
                 
                 <Card className="cursor-pointer hover:shadow-lg transition-shadow">
                   <CardContent className="p-6 text-center">
-                    <CreditCard className="w-8 h-8 mx-auto mb-2 text-orange-500" />
+                    <CreditCard className="w-8 h-8 mx-auto mb-2 text-warning" />
                     <h3 className="font-medium mb-1">Flux de Trésorerie</h3>
                     <p className="text-sm text-muted-foreground">Analyse des entrées et sorties</p>
                   </CardContent>
@@ -389,7 +389,7 @@ export function FinanceDashboard() {
                     <Card>
                       <CardContent className="p-4">
                         <div className="text-center">
-                          <p className="text-2xl font-bold text-blue-600">2,890€</p>
+                          <p className="text-2xl font-bold text-info">2,890€</p>
                           <p className="text-sm text-muted-foreground">TVA Collectée</p>
                         </div>
                       </CardContent>
@@ -398,7 +398,7 @@ export function FinanceDashboard() {
                     <Card>
                       <CardContent className="p-4">
                         <div className="text-center">
-                          <p className="text-2xl font-bold text-green-600">1,245€</p>
+                          <p className="text-2xl font-bold text-success">1,245€</p>
                           <p className="text-sm text-muted-foreground">TVA Déductible</p>
                         </div>
                       </CardContent>
@@ -407,7 +407,7 @@ export function FinanceDashboard() {
                     <Card>
                       <CardContent className="p-4">
                         <div className="text-center">
-                          <p className="text-2xl font-bold text-orange-600">1,645€</p>
+                          <p className="text-2xl font-bold text-warning">1,645€</p>
                           <p className="text-sm text-muted-foreground">TVA à Payer</p>
                         </div>
                       </CardContent>

@@ -44,14 +44,14 @@ export const ImportMethodCard = ({
         <div className="flex items-center gap-2 mb-4">
           {isConnected ? (
             <>
-              <CheckCircle className="w-4 h-4 text-green-500" />
-              <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+              <CheckCircle className="w-4 h-4 text-success" />
+              <Badge variant="outline" className="bg-green-50 text-success border-green-200">
                 Connecté
               </Badge>
             </>
           ) : (
             <>
-              <AlertTriangle className="w-4 h-4 text-yellow-500" />
+              <AlertTriangle className="w-4 h-4 text-warning" />
               <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-200">
                 Non configuré
               </Badge>

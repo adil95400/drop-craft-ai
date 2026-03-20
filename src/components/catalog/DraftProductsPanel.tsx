@@ -87,7 +87,7 @@ function DraftProductCard({ product, issues, onValidate, onDelete, onPreview, is
                 {product.sku && <span className="ml-2">• SKU: {product.sku}</span>}
               </p>
             </div>
-            <Badge variant="outline" className="bg-amber-500/10 text-amber-600 border-amber-500/30 flex-shrink-0">
+            <Badge variant="outline" className="bg-amber-500/10 text-warning border-amber-500/30 flex-shrink-0">
               <AlertTriangle className="h-3 w-3 mr-1" />
               Brouillon
             </Badge>
@@ -222,7 +222,7 @@ export function DraftProductsPanel() {
     return (
       <Card className="border-dashed">
         <CardContent className="py-12 text-center">
-          <CheckCircle2 className="h-12 w-12 text-emerald-500 mx-auto mb-4" />
+          <CheckCircle2 className="h-12 w-12 text-success mx-auto mb-4" />
           <h3 className="text-lg font-semibold">Aucun brouillon en attente</h3>
           <p className="text-muted-foreground text-sm">
             Tous vos produits importés sont complets et publiés
@@ -239,7 +239,7 @@ export function DraftProductsPanel() {
         <div className="flex items-center justify-between">
           <div>
             <CardTitle className="flex items-center gap-2">
-              <AlertTriangle className="h-5 w-5 text-amber-500" />
+              <AlertTriangle className="h-5 w-5 text-warning" />
               Produits brouillons
               <Badge variant="secondary">{stats.total}</Badge>
             </CardTitle>

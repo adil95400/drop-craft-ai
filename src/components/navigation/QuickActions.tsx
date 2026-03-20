@@ -12,7 +12,7 @@ const quickActions = [
     href: "/products/import/url",
     icon: LinkIcon,
     badge: "Nouveau",
-    color: "text-blue-600"
+    color: "text-info"
   },
   {
     title: "Import Produits",
@@ -20,7 +20,7 @@ const quickActions = [
     href: "/products/import/advanced",
     icon: Upload,
     badge: "Pro",
-    color: "text-blue-600"
+    color: "text-info"
   },
   {
     title: "Sync Manager", 
@@ -28,7 +28,7 @@ const quickActions = [
     href: "/sync-manager",
     icon: Activity,
     badge: "Nouveau",
-    color: "text-green-600"
+    color: "text-success"
   },
   {
     title: "Centre Commandes",
@@ -44,7 +44,7 @@ const quickActions = [
     href: "/analytics",
     icon: BarChart3,
     badge: "Pro",
-    color: "text-orange-600"
+    color: "text-warning"
   }
 ]
 

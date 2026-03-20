@@ -48,14 +48,14 @@ const RankTracker = () => {
 
   const getChangeIcon = (change: number | null) => {
     if (change === null) return <Minus className="w-4 h-4 text-gray-400" />;
-    if (change > 0) return <ArrowUp className="w-4 h-4 text-green-500" />;
-    if (change < 0) return <ArrowDown className="w-4 h-4 text-red-500" />;
+    if (change > 0) return <ArrowUp className="w-4 h-4 text-success" />;
+    if (change < 0) return <ArrowDown className="w-4 h-4 text-destructive" />;
     return <Minus className="w-4 h-4 text-gray-400" />;
   };
 
   const getPositionColor = (position: number | null) => {
     if (!position) return "bg-gray-100 text-gray-800";
-    if (position <= 3) return "bg-green-100 text-green-800";
+    if (position <= 3) return "bg-green-100 text-success";
     if (position <= 10) return "bg-blue-100 text-blue-800";
     if (position <= 20) return "bg-orange-100 text-orange-800";
     return "bg-red-100 text-red-800";
@@ -116,7 +116,7 @@ const RankTracker = () => {
               <CardContent className="p-6">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center">
-                    <BarChart3 className="w-5 h-5 text-blue-600" />
+                    <BarChart3 className="w-5 h-5 text-info" />
                   </div>
                   <div>
                     <div className="text-2xl font-bold">{stats.avgPosition || '-'}</div>
@@ -130,7 +130,7 @@ const RankTracker = () => {
               <CardContent className="p-6">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center">
-                    <TrendingUp className="w-5 h-5 text-green-600" />
+                    <TrendingUp className="w-5 h-5 text-success" />
                   </div>
                   <div>
                     <div className="text-2xl font-bold">{stats.top10}</div>
@@ -144,7 +144,7 @@ const RankTracker = () => {
               <CardContent className="p-6">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-lg bg-orange-100 flex items-center justify-center">
-                    <ArrowUp className="w-5 h-5 text-orange-600" />
+                    <ArrowUp className="w-5 h-5 text-warning" />
                   </div>
                   <div>
                     <div className="text-2xl font-bold">{stats.improving}</div>
@@ -256,7 +256,7 @@ const RankTracker = () => {
                             <div className="flex items-center gap-2">
                               {getChangeIcon(kw.change)}
                               {kw.change !== null && (
-                                <span className={`text-sm ${kw.change > 0 ? 'text-green-600' : kw.change < 0 ? 'text-red-600' : 'text-gray-600'}`}>
+                                <span className={`text-sm ${kw.change > 0 ? 'text-success' : kw.change < 0 ? 'text-destructive' : 'text-gray-600'}`}>
                                   {kw.change > 0 ? '+' : ''}{kw.change}
                                 </span>
                               )}
@@ -283,7 +283,7 @@ const RankTracker = () => {
                               size="sm"
                               variant="ghost"
                               onClick={() => removeKeyword(kw.id)}
-                              className="text-red-600 hover:text-red-700"
+                              className="text-destructive hover:text-red-700"
                             >
                               <Trash2 className="w-4 h-4" />
                             </Button>

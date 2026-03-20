@@ -109,7 +109,7 @@ export default function EnrichmentSnapshotsPage() {
         </CardContent></Card>
         <Card><CardContent className="pt-4 pb-3">
           <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1"><CheckCircle className="h-4 w-4" /> Appliqués</div>
-          <div className="text-2xl font-bold text-green-600">{appliedCount}</div>
+          <div className="text-2xl font-bold text-success">{appliedCount}</div>
         </CardContent></Card>
         <Card><CardContent className="pt-4 pb-3">
           <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1"><TrendingUp className="h-4 w-4" /> Score moyen</div>
@@ -168,7 +168,7 @@ export default function EnrichmentSnapshotsPage() {
                       <span className="font-semibold">{snap.productName}</span>
                     </div>
                     <Badge variant="secondary" className="text-xs">{contentTypeLabel(snap.contentType)}</Badge>
-                    {snap.status === 'applied' && <Badge className="bg-green-500/10 text-green-600 border-green-500/20 text-xs">Appliqué</Badge>}
+                    {snap.status === 'applied' && <Badge className="bg-green-500/10 text-success border-green-500/20 text-xs">Appliqué</Badge>}
                     {snap.status === 'generated' && <Badge className="bg-primary/10 text-primary border-primary/20 text-xs">En attente</Badge>}
                     {snap.status === 'reverted' && <Badge variant="outline" className="text-xs">Révoqué</Badge>}
                   </div>

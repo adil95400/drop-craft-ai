@@ -95,13 +95,13 @@ export function ChannelLogsTab({ channelId }: ChannelLogsTabProps) {
   const getStatusConfig = (status: string) => {
     switch (status) {
       case 'completed':
-        return { icon: CheckCircle2, color: 'text-emerald-600 dark:text-emerald-400', bg: 'bg-emerald-500/10 border-emerald-500/30', label: 'Succès' }
+        return { icon: CheckCircle2, color: 'text-success dark:text-emerald-400', bg: 'bg-emerald-500/10 border-emerald-500/30', label: 'Succès' }
       case 'failed':
         return { icon: XCircle, color: 'text-destructive', bg: 'bg-destructive/10 border-destructive/30', label: 'Échec' }
       case 'in_progress':
-        return { icon: Loader2, color: 'text-blue-600', bg: 'bg-blue-500/10 border-blue-500/30', label: 'En cours' }
+        return { icon: Loader2, color: 'text-info', bg: 'bg-blue-500/10 border-blue-500/30', label: 'En cours' }
       default:
-        return { icon: Clock, color: 'text-amber-600', bg: 'bg-amber-500/10 border-amber-500/30', label: 'En attente' }
+        return { icon: Clock, color: 'text-warning', bg: 'bg-amber-500/10 border-amber-500/30', label: 'En attente' }
     }
   }
 
@@ -125,9 +125,9 @@ export function ChannelLogsTab({ channelId }: ChannelLogsTabProps) {
       <div className="grid grid-cols-4 gap-3">
         {[
           { label: 'Total', value: stats.total, color: 'text-foreground' },
-          { label: 'Succès', value: stats.success, color: 'text-emerald-600 dark:text-emerald-400' },
+          { label: 'Succès', value: stats.success, color: 'text-success dark:text-emerald-400' },
           { label: 'Échecs', value: stats.failed, color: 'text-destructive' },
-          { label: 'En attente', value: stats.pending, color: 'text-amber-600 dark:text-amber-400' },
+          { label: 'En attente', value: stats.pending, color: 'text-warning dark:text-amber-400' },
         ].map((s) => (
           <div key={s.label} className="p-3 rounded-lg border border-border bg-card text-center">
             <p className={cn("text-xl font-bold tabular-nums", s.color)}>{s.value}</p>

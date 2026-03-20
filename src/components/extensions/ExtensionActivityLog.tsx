@@ -48,7 +48,7 @@ const ACTION_LABELS: Record<string, string> = {
 const STATUS_STYLES: Record<string, { icon: React.ReactNode; className: string }> = {
   'success': { 
     icon: <CheckCircle2 className="h-3 w-3" />, 
-    className: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' 
+    className: 'bg-green-100 text-success dark:bg-green-900/30 dark:text-green-400' 
   },
   'error': { 
     icon: <AlertCircle className="h-3 w-3" />, 
@@ -176,15 +176,15 @@ export function ExtensionActivityLog() {
             <div className="text-xs text-muted-foreground">Total</div>
           </div>
           <div className="p-2 rounded-lg bg-green-50 dark:bg-green-900/20 text-center">
-            <div className="text-lg font-bold text-green-600">{stats.success}</div>
+            <div className="text-lg font-bold text-success">{stats.success}</div>
             <div className="text-xs text-muted-foreground">Succès</div>
           </div>
           <div className="p-2 rounded-lg bg-red-50 dark:bg-red-900/20 text-center">
-            <div className="text-lg font-bold text-red-600">{stats.errors}</div>
+            <div className="text-lg font-bold text-destructive">{stats.errors}</div>
             <div className="text-xs text-muted-foreground">Erreurs</div>
           </div>
           <div className="p-2 rounded-lg bg-blue-50 dark:bg-blue-900/20 text-center">
-            <div className="text-lg font-bold text-blue-600">
+            <div className="text-lg font-bold text-info">
               {Object.keys(stats.byPlatform).length}
             </div>
             <div className="text-xs text-muted-foreground">Plateformes</div>

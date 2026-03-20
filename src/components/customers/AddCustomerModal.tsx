@@ -73,8 +73,8 @@ const initialFormData: CustomerFormData = {
 }
 
 const segmentOptions = [
-  { value: 'new', label: 'Nouveau', icon: Sparkles, color: 'text-green-600 bg-green-500/10' },
-  { value: 'regular', label: 'Régulier', icon: User, color: 'text-blue-600 bg-blue-500/10' },
+  { value: 'new', label: 'Nouveau', icon: Sparkles, color: 'text-success bg-green-500/10' },
+  { value: 'regular', label: 'Régulier', icon: User, color: 'text-info bg-blue-500/10' },
   { value: 'vip', label: 'VIP', icon: Crown, color: 'text-purple-600 bg-purple-500/10' },
 ]
 

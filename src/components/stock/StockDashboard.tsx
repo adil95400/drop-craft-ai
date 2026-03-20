@@ -94,10 +94,10 @@ export const StockDashboard = () => {
             <CardTitle className="text-sm font-medium">
               Stock Faible
             </CardTitle>
-            <TrendingDown className="h-4 w-4 text-orange-500" />
+            <TrendingDown className="h-4 w-4 text-warning" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-orange-500">
+            <div className="text-2xl font-bold text-warning">
               {stockStats.low_stock_items}
             </div>
             <p className="text-xs text-muted-foreground">
@@ -111,10 +111,10 @@ export const StockDashboard = () => {
             <CardTitle className="text-sm font-medium">
               Alertes Actives
             </CardTitle>
-            <AlertTriangle className="h-4 w-4 text-red-500" />
+            <AlertTriangle className="h-4 w-4 text-destructive" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-red-500">
+            <div className="text-2xl font-bold text-destructive">
               {stockStats.active_alerts}
             </div>
             <p className="text-xs text-muted-foreground">
@@ -128,7 +128,7 @@ export const StockDashboard = () => {
       {criticalAlerts.length > 0 && (
         <Card className="border-red-500 bg-red-50 dark:bg-red-950/20">
           <CardHeader>
-            <CardTitle className="text-red-600 dark:text-red-400 flex items-center gap-2">
+            <CardTitle className="text-destructive dark:text-red-400 flex items-center gap-2">
               <AlertTriangle className="h-5 w-5" />
               {criticalAlerts.length} Alerte{criticalAlerts.length > 1 ? 's' : ''} Critique{criticalAlerts.length > 1 ? 's' : ''}
             </CardTitle>
@@ -227,7 +227,7 @@ export const StockDashboard = () => {
                         </p>
                       </div>
                       <div className="text-right">
-                        <p className="text-sm font-medium text-orange-500">
+                        <p className="text-sm font-medium text-warning">
                           {level.available_quantity} restant{(level.available_quantity || 0) > 1 ? 's' : ''}
                         </p>
                         <p className="text-xs text-muted-foreground">

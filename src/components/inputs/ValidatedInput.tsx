@@ -55,7 +55,7 @@ export const ValidatedInput = ({
         {props.required && <span className="text-destructive">*</span>}
         {showValidation && touched && (
           isValid ? (
-            <CheckCircleIcon className="h-4 w-4 text-green-500" />
+            <CheckCircleIcon className="h-4 w-4 text-success" />
           ) : (
             <XCircleIcon className="h-4 w-4 text-destructive" />
           )

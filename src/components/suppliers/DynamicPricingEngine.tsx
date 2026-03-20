@@ -211,7 +211,7 @@ export function DynamicPricingEngine() {
         )
       case 'target_margin':
         return (
-          <Badge variant="outline" className="bg-green-50 text-green-700">
+          <Badge variant="outline" className="bg-green-50 text-success">
             <Target className="h-3 w-3 mr-1" />
             Marge cible
           </Badge>
@@ -263,13 +263,13 @@ export function DynamicPricingEngine() {
         <div className="grid grid-cols-3 gap-4">
           <div className="p-4 rounded-lg border bg-blue-50 dark:bg-blue-950/20">
             <p className="text-sm text-muted-foreground">Règles actives</p>
-            <p className="text-2xl font-bold text-blue-600">
+            <p className="text-2xl font-bold text-info">
               {pricingRules.filter(r => r.auto_update).length}
             </p>
           </div>
           <div className="p-4 rounded-lg border bg-green-50 dark:bg-green-950/20">
             <p className="text-sm text-muted-foreground">Marge moyenne</p>
-            <p className="text-2xl font-bold text-green-600">
+            <p className="text-2xl font-bold text-success">
               {pricingRules.length > 0
                 ? (pricingRules.reduce((sum, r) => 
                     sum + (r.fixed_markup_percentage || r.target_margin_percentage || 0), 0
@@ -287,7 +287,7 @@ export function DynamicPricingEngine() {
 
         {/* Info banner */}
         <div className="p-4 bg-yellow-50 dark:bg-yellow-950/20 rounded-lg flex items-start gap-3">
-          <AlertCircle className="h-5 w-5 text-yellow-600 mt-0.5" />
+          <AlertCircle className="h-5 w-5 text-warning mt-0.5" />
           <div>
             <p className="text-sm font-medium text-yellow-800 dark:text-yellow-200">
               Prix recalculés automatiquement

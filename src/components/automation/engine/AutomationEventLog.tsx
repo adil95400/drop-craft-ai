@@ -79,10 +79,10 @@ export function AutomationEventLog() {
 
   const getLevelConfig = (level: string) => {
     switch (level) {
-      case 'success': return { icon: CheckCircle2, color: 'text-green-500', bg: 'bg-green-500/10' };
-      case 'error': return { icon: XCircle, color: 'text-red-500', bg: 'bg-red-500/10' };
-      case 'warning': return { icon: AlertTriangle, color: 'text-amber-500', bg: 'bg-amber-500/10' };
-      default: return { icon: Info, color: 'text-blue-500', bg: 'bg-blue-500/10' };
+      case 'success': return { icon: CheckCircle2, color: 'text-success', bg: 'bg-green-500/10' };
+      case 'error': return { icon: XCircle, color: 'text-destructive', bg: 'bg-red-500/10' };
+      case 'warning': return { icon: AlertTriangle, color: 'text-warning', bg: 'bg-amber-500/10' };
+      default: return { icon: Info, color: 'text-info', bg: 'bg-blue-500/10' };
     }
   };
 

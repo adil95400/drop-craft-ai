@@ -57,9 +57,9 @@ export function BehaviorAnalysisDashboard() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-muted-foreground">Clients à Risque</p>
-              <p className="text-2xl font-bold text-red-500">{stats.highRiskCustomers}</p>
+              <p className="text-2xl font-bold text-destructive">{stats.highRiskCustomers}</p>
             </div>
-            <AlertCircle className="h-8 w-8 text-red-500 opacity-50" />
+            <AlertCircle className="h-8 w-8 text-destructive opacity-50" />
           </div>
         </Card>
       </div>

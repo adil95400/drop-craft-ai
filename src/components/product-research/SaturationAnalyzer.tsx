@@ -96,9 +96,9 @@ export const SaturationAnalyzer = () => {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'excellent': return 'text-green-600 bg-green-50 border-green-200'
-      case 'moderate': return 'text-yellow-600 bg-yellow-50 border-yellow-200'
-      case 'saturated': return 'text-red-600 bg-red-50 border-red-200'
+      case 'excellent': return 'text-success bg-green-50 border-green-200'
+      case 'moderate': return 'text-warning bg-yellow-50 border-yellow-200'
+      case 'saturated': return 'text-destructive bg-red-50 border-red-200'
       default: return ''
     }
   }

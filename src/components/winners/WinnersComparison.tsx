@@ -34,14 +34,14 @@ export const WinnersComparison = ({ products, selectedIds, onCompare }: WinnersC
       icon: TrendingUp,
       getValue: (p: WinnerProduct) => p.trending_score,
       format: (v: number) => `${v}/100`,
-      color: "text-blue-500"
+      color: "text-info"
     },
     {
       label: "Prix",
       icon: DollarSign,
       getValue: (p: WinnerProduct) => p.price,
       format: (v: number) => `€${v.toFixed(2)}`,
-      color: "text-green-500",
+      color: "text-success",
       inverse: true // Lower is better
     },
     {
@@ -49,7 +49,7 @@ export const WinnersComparison = ({ products, selectedIds, onCompare }: WinnersC
       icon: Star,
       getValue: (p: WinnerProduct) => p.rating || 0,
       format: (v: number) => `${v.toFixed(1)}/5`,
-      color: "text-yellow-500"
+      color: "text-warning"
     },
     {
       label: "Avis",
@@ -63,7 +63,7 @@ export const WinnersComparison = ({ products, selectedIds, onCompare }: WinnersC
       icon: TrendingUp,
       getValue: (p: WinnerProduct) => p.market_demand,
       format: (v: number) => `${v}/100`,
-      color: "text-orange-500"
+      color: "text-warning"
     }
   ];
 

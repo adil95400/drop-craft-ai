@@ -98,7 +98,7 @@ export function ImportChunkVisualizer({ activeImports, className }: ImportChunkV
   const statusColors = {
     queued: 'bg-muted text-muted-foreground border-border',
     processing: 'bg-primary/10 text-primary border-primary/30',
-    completed: 'bg-emerald-500/10 text-emerald-600 border-emerald-500/30',
+    completed: 'bg-emerald-500/10 text-success border-emerald-500/30',
     failed: 'bg-destructive/10 text-destructive border-destructive/30',
   }
 
@@ -140,7 +140,7 @@ export function ImportChunkVisualizer({ activeImports, className }: ImportChunkV
                     </div>
                     <div className="flex items-center gap-3 text-xs">
                       {succeeded > 0 && (
-                        <span className="flex items-center gap-1 text-emerald-600">
+                        <span className="flex items-center gap-1 text-success">
                           <Database className="w-3 h-3" />
                           {succeeded} OK
                         </span>

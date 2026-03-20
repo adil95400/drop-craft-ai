@@ -63,7 +63,7 @@ interface BlogPost {
 const STATUS_OPTIONS = {
   draft: { label: 'Brouillon', color: 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200', icon: Clock },
   scheduled: { label: 'Planifié', color: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200', icon: Calendar },
-  published: { label: 'Publié', color: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200', icon: CheckCircle },
+  published: { label: 'Publié', color: 'bg-green-100 text-success dark:bg-green-900 dark:text-green-200', icon: CheckCircle },
   archived: { label: 'Archivé', color: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200', icon: XCircle }
 };
 
@@ -312,7 +312,7 @@ export function BlogManager() {
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-green-500/20 rounded-lg">
-                <CheckCircle className="h-5 w-5 text-green-500" />
+                <CheckCircle className="h-5 w-5 text-success" />
               </div>
               <div>
                 <p className="text-2xl font-bold">{stats.published}</p>
@@ -325,7 +325,7 @@ export function BlogManager() {
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-yellow-500/20 rounded-lg">
-                <Clock className="h-5 w-5 text-yellow-500" />
+                <Clock className="h-5 w-5 text-warning" />
               </div>
               <div>
                 <p className="text-2xl font-bold">{stats.draft}</p>
@@ -338,7 +338,7 @@ export function BlogManager() {
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-blue-500/20 rounded-lg">
-                <Eye className="h-5 w-5 text-blue-500" />
+                <Eye className="h-5 w-5 text-info" />
               </div>
               <div>
                 <p className="text-2xl font-bold">{stats.views}</p>

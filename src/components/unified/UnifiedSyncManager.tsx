@@ -188,10 +188,10 @@ export function UnifiedSyncManager() {
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'synced': return <CheckCircle className="w-4 h-4 text-green-500" />;
-      case 'syncing': return <RefreshCw className="w-4 h-4 text-blue-500 animate-spin" />;
-      case 'error': return <AlertTriangle className="w-4 h-4 text-red-500" />;
-      case 'pending': return <Clock className="w-4 h-4 text-yellow-500" />;
+      case 'synced': return <CheckCircle className="w-4 h-4 text-success" />;
+      case 'syncing': return <RefreshCw className="w-4 h-4 text-info animate-spin" />;
+      case 'error': return <AlertTriangle className="w-4 h-4 text-destructive" />;
+      case 'pending': return <Clock className="w-4 h-4 text-warning" />;
       default: return null;
     }
   };
@@ -356,7 +356,7 @@ export function UnifiedSyncManager() {
                     </div>
                     <div className="flex justify-between">
                       <span>Modules en erreur</span>
-                      <span className="font-medium text-red-500">
+                      <span className="font-medium text-destructive">
                         {modules.filter(m => m.status === 'error').length}
                       </span>
                     </div>

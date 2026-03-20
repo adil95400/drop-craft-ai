@@ -155,9 +155,9 @@ export function AccessibilityPanel() {
             {WCAG_CHECKS.map(check => (
               <div key={check.id} className="flex items-center gap-2 p-3 border rounded-lg">
                 {check.status === 'pass' ? (
-                  <Check className="h-4 w-4 text-emerald-500 shrink-0" />
+                  <Check className="h-4 w-4 text-success shrink-0" />
                 ) : (
-                  <AlertTriangle className="h-4 w-4 text-amber-500 shrink-0" />
+                  <AlertTriangle className="h-4 w-4 text-warning shrink-0" />
                 )}
                 <div className="min-w-0">
                   <p className="text-sm font-medium truncate">{check.label}</p>

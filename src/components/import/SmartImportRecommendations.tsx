@@ -156,18 +156,18 @@ export const SmartImportRecommendations = () => {
 
   const getRecommendationColor = (type: string) => {
     switch (type) {
-      case 'opportunity': return 'text-green-600 bg-green-100'
-      case 'optimization': return 'text-blue-600 bg-blue-100'
-      case 'warning': return 'text-red-600 bg-red-100'
+      case 'opportunity': return 'text-success bg-green-100'
+      case 'optimization': return 'text-info bg-blue-100'
+      case 'warning': return 'text-destructive bg-red-100'
       default: return 'text-purple-600 bg-purple-100'
     }
   }
 
   const getImpactColor = (impact: string) => {
     switch (impact) {
-      case 'high': return 'text-red-600 bg-red-100'
-      case 'medium': return 'text-orange-600 bg-orange-100'
-      default: return 'text-green-600 bg-green-100'
+      case 'high': return 'text-destructive bg-red-100'
+      case 'medium': return 'text-warning bg-orange-100'
+      default: return 'text-success bg-green-100'
     }
   }
 
@@ -256,7 +256,7 @@ export const SmartImportRecommendations = () => {
                 <p className="text-sm text-muted-foreground">Recommandations</p>
                 <p className="text-2xl font-bold">{recommendations.length}</p>
               </div>
-              <Lightbulb className="w-8 h-8 text-yellow-500" />
+              <Lightbulb className="w-8 h-8 text-warning" />
             </div>
           </CardContent>
         </Card>
@@ -266,11 +266,11 @@ export const SmartImportRecommendations = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">Impact Élevé</p>
-                <p className="text-2xl font-bold text-red-600">
+                <p className="text-2xl font-bold text-destructive">
                   {recommendations.filter(r => r.impact === 'high').length}
                 </p>
               </div>
-              <AlertCircle className="w-8 h-8 text-red-500" />
+              <AlertCircle className="w-8 h-8 text-destructive" />
             </div>
           </CardContent>
         </Card>
@@ -280,11 +280,11 @@ export const SmartImportRecommendations = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">Auto-applicables</p>
-                <p className="text-2xl font-bold text-green-600">
+                <p className="text-2xl font-bold text-success">
                   {recommendations.filter(r => r.autoApplyAvailable).length}
                 </p>
               </div>
-              <Zap className="w-8 h-8 text-green-500" />
+              <Zap className="w-8 h-8 text-success" />
             </div>
           </CardContent>
         </Card>
@@ -294,9 +294,9 @@ export const SmartImportRecommendations = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">Appliquées</p>
-                <p className="text-2xl font-bold text-blue-600">{appliedRecommendations.size}</p>
+                <p className="text-2xl font-bold text-info">{appliedRecommendations.size}</p>
               </div>
-              <CheckCircle className="w-8 h-8 text-blue-500" />
+              <CheckCircle className="w-8 h-8 text-info" />
             </div>
           </CardContent>
         </Card>
@@ -318,7 +318,7 @@ export const SmartImportRecommendations = () => {
                     <div className="flex-1">
                       <CardTitle className="text-base flex items-center gap-2">
                         {recommendation.title}
-                        {isApplied && <CheckCircle className="w-4 h-4 text-green-600" />}
+                        {isApplied && <CheckCircle className="w-4 h-4 text-success" />}
                       </CardTitle>
                       <CardDescription className="mt-1">
                         {recommendation.description}
@@ -331,7 +331,7 @@ export const SmartImportRecommendations = () => {
                       Impact {recommendation.impact}
                     </Badge>
                     {recommendation.estimatedValue && (
-                      <span className="text-sm font-semibold text-green-600">
+                      <span className="text-sm font-semibold text-success">
                         {recommendation.estimatedValue}
                       </span>
                     )}
@@ -372,15 +372,15 @@ export const SmartImportRecommendations = () => {
 
                 {recommendation.actionRequired && !isApplied && (
                   <div className="flex items-center gap-2 p-2 bg-yellow-50 border border-yellow-200 rounded-md">
-                    <AlertCircle className="w-4 h-4 text-yellow-600" />
+                    <AlertCircle className="w-4 h-4 text-warning" />
                     <span className="text-sm text-yellow-800">Action manuelle requise</span>
                   </div>
                 )}
 
                 {isApplied && (
                   <div className="flex items-center gap-2 p-2 bg-green-50 border border-green-200 rounded-md">
-                    <CheckCircle className="w-4 h-4 text-green-600" />
-                    <span className="text-sm text-green-800">Recommandation appliquée</span>
+                    <CheckCircle className="w-4 h-4 text-success" />
+                    <span className="text-sm text-success">Recommandation appliquée</span>
                   </div>
                 )}
               </CardContent>

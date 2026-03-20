@@ -42,14 +42,14 @@ export function ChannelStatsBar({ productCount, orderCount, revenue, lastSync, h
       value: productCount.toLocaleString(locale),
       icon: Package,
       trend: null,
-      iconBg: 'bg-blue-500/10 text-blue-600 dark:text-blue-400',
+      iconBg: 'bg-blue-500/10 text-info dark:text-blue-400',
     },
     {
       label: 'Commandes',
       value: orderCount.toLocaleString(locale),
       icon: ShoppingCart,
       trend: null,
-      iconBg: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400',
+      iconBg: 'bg-emerald-500/10 text-success dark:text-emerald-400',
     },
     {
       label: 'Chiffre d\'affaires',
@@ -64,8 +64,8 @@ export function ChannelStatsBar({ productCount, orderCount, revenue, lastSync, h
       icon: Activity,
       trend: errorRate > 5 ? { value: errorRate, positive: false } : syncRate >= 95 ? { value: syncRate, positive: true } : null,
       iconBg: syncRate >= 95 
-        ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' 
-        : 'bg-amber-500/10 text-amber-600 dark:text-amber-400',
+        ? 'bg-emerald-500/10 text-success dark:text-emerald-400' 
+        : 'bg-amber-500/10 text-warning dark:text-amber-400',
     },
     {
       label: 'Dernière sync',
@@ -95,7 +95,7 @@ export function ChannelStatsBar({ productCount, orderCount, revenue, lastSync, h
               {stat.trend && (
                 <span className={cn(
                   "flex items-center gap-0.5 text-[11px] font-semibold tabular-nums",
-                  stat.trend.positive ? "text-emerald-600 dark:text-emerald-400" : "text-destructive"
+                  stat.trend.positive ? "text-success dark:text-emerald-400" : "text-destructive"
                 )}>
                   {stat.trend.positive ? (
                     <ArrowUpRight className="h-3 w-3" />

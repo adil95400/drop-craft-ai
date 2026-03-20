@@ -137,10 +137,10 @@ export function ProductSEO() {
           <Card className="border-primary/20 shadow-lg">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium">Excellents</CardTitle>
-              <CheckCircle2 className="h-4 w-4 text-green-500" />
+              <CheckCircle2 className="h-4 w-4 text-success" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-green-600">{excellentCount}</div>
+              <div className="text-2xl font-bold text-success">{excellentCount}</div>
               <p className="text-xs text-muted-foreground mt-1">
                 Score ≥ 80/100
               </p>
@@ -150,10 +150,10 @@ export function ProductSEO() {
           <Card className="border-primary/20 shadow-lg">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium">À Améliorer</CardTitle>
-              <AlertTriangle className="h-4 w-4 text-yellow-500" />
+              <AlertTriangle className="h-4 w-4 text-warning" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-yellow-600">{needsWorkCount}</div>
+              <div className="text-2xl font-bold text-warning">{needsWorkCount}</div>
               <p className="text-xs text-muted-foreground mt-1">
                 Score &lt; 60/100
               </p>

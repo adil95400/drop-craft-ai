@@ -89,8 +89,8 @@ export const RealExtensionManager: React.FC = () => {
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'active': return <CheckCircle className="w-4 h-4 text-green-500" />
-      case 'inactive': return <Pause className="w-4 h-4 text-yellow-500" />
+      case 'active': return <CheckCircle className="w-4 h-4 text-success" />
+      case 'inactive': return <Pause className="w-4 h-4 text-warning" />
       default: return <Clock className="w-4 h-4 text-gray-500" />
     }
   }
@@ -98,10 +98,10 @@ export const RealExtensionManager: React.FC = () => {
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card><CardContent className="p-4 flex items-center space-x-2"><Package className="w-5 h-5 text-blue-500" /><div><p className="text-sm text-muted-foreground">Installées</p><p className="text-2xl font-bold">{installedExtensions.length}</p></div></CardContent></Card>
-        <Card><CardContent className="p-4 flex items-center space-x-2"><Activity className="w-5 h-5 text-green-500" /><div><p className="text-sm text-muted-foreground">Actives</p><p className="text-2xl font-bold">{installedExtensions.filter((e: any) => e.status === 'active').length}</p></div></CardContent></Card>
+        <Card><CardContent className="p-4 flex items-center space-x-2"><Package className="w-5 h-5 text-info" /><div><p className="text-sm text-muted-foreground">Installées</p><p className="text-2xl font-bold">{installedExtensions.length}</p></div></CardContent></Card>
+        <Card><CardContent className="p-4 flex items-center space-x-2"><Activity className="w-5 h-5 text-success" /><div><p className="text-sm text-muted-foreground">Actives</p><p className="text-2xl font-bold">{installedExtensions.filter((e: any) => e.status === 'active').length}</p></div></CardContent></Card>
         <Card><CardContent className="p-4 flex items-center space-x-2"><BarChart3 className="w-5 h-5 text-purple-500" /><div><p className="text-sm text-muted-foreground">Tâches en cours</p><p className="text-2xl font-bold">{runningJobs.length}</p></div></CardContent></Card>
-        <Card><CardContent className="p-4 flex items-center space-x-2"><Shield className="w-5 h-5 text-orange-500" /><div><p className="text-sm text-muted-foreground">Santé</p><p className="text-2xl font-bold text-green-600">100%</p></div></CardContent></Card>
+        <Card><CardContent className="p-4 flex items-center space-x-2"><Shield className="w-5 h-5 text-warning" /><div><p className="text-sm text-muted-foreground">Santé</p><p className="text-2xl font-bold text-success">100%</p></div></CardContent></Card>
       </div>
 
       <div className="space-y-4">

@@ -614,7 +614,7 @@ export function AdvancedSupplierEngine() {
                 toast({ title: 'Actualisation...', description: 'Mise à jour des scores en cours' });
               }}
             >
-              <Star className="h-6 w-6 text-yellow-500" />
+              <Star className="h-6 w-6 text-warning" />
               <span>Actualiser Scores</span>
               <span className="text-xs text-muted-foreground">Fiabilité</span>
             </Button>
@@ -779,15 +779,15 @@ export function AdvancedSupplierEngine() {
               <CardContent className="space-y-4">
                 <div className="text-sm space-y-2">
                   <div className="flex items-center gap-2">
-                    <CheckCircle2 className="h-4 w-4 text-green-500" />
+                    <CheckCircle2 className="h-4 w-4 text-success" />
                     Détection nouvelles commandes
                   </div>
                   <div className="flex items-center gap-2">
-                    <CheckCircle2 className="h-4 w-4 text-green-500" />
+                    <CheckCircle2 className="h-4 w-4 text-success" />
                     Sélection fournisseur optimal
                   </div>
                   <div className="flex items-center gap-2">
-                    <CheckCircle2 className="h-4 w-4 text-green-500" />
+                    <CheckCircle2 className="h-4 w-4 text-success" />
                     Passage commande API
                   </div>
                 </div>
@@ -820,15 +820,15 @@ export function AdvancedSupplierEngine() {
               <CardContent className="space-y-4">
                 <div className="text-sm space-y-2">
                   <div className="flex items-center gap-2">
-                    <CheckCircle2 className="h-4 w-4 text-green-500" />
+                    <CheckCircle2 className="h-4 w-4 text-success" />
                     Récupération tracking fournisseur
                   </div>
                   <div className="flex items-center gap-2">
-                    <CheckCircle2 className="h-4 w-4 text-green-500" />
+                    <CheckCircle2 className="h-4 w-4 text-success" />
                     Mise à jour commande client
                   </div>
                   <div className="flex items-center gap-2">
-                    <CheckCircle2 className="h-4 w-4 text-green-500" />
+                    <CheckCircle2 className="h-4 w-4 text-success" />
                     Notification client automatique
                   </div>
                 </div>
@@ -861,15 +861,15 @@ export function AdvancedSupplierEngine() {
               <CardContent className="space-y-4">
                 <div className="text-sm space-y-2">
                   <div className="flex items-center gap-2">
-                    <CheckCircle2 className="h-4 w-4 text-green-500" />
+                    <CheckCircle2 className="h-4 w-4 text-success" />
                     Polling toutes les 5 min
                   </div>
                   <div className="flex items-center gap-2">
-                    <CheckCircle2 className="h-4 w-4 text-green-500" />
+                    <CheckCircle2 className="h-4 w-4 text-success" />
                     Webhooks temps réel
                   </div>
                   <div className="flex items-center gap-2">
-                    <CheckCircle2 className="h-4 w-4 text-green-500" />
+                    <CheckCircle2 className="h-4 w-4 text-success" />
                     Alertes rupture de stock
                   </div>
                 </div>

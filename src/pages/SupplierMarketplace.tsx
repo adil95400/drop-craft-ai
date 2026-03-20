@@ -124,7 +124,7 @@ export default function SupplierMarketplace() {
           </Card>
           <Card className="p-4">
             <div className="flex items-center gap-3">
-              <Shield className="h-8 w-8 text-green-500" />
+              <Shield className="h-8 w-8 text-success" />
               <div>
                 <p className="text-2xl font-bold">{isLoading ? '...' : verifiedCount}</p>
                 <p className="text-xs text-muted-foreground">Vérifiés</p>
@@ -142,7 +142,7 @@ export default function SupplierMarketplace() {
           </Card>
           <Card className="p-4">
             <div className="flex items-center gap-3">
-              <Globe className="h-8 w-8 text-blue-500" />
+              <Globe className="h-8 w-8 text-info" />
               <div>
                 <p className="text-2xl font-bold">{isLoading ? '...' : countriesCount}</p>
                 <p className="text-xs text-muted-foreground">Pays</p>
@@ -197,7 +197,7 @@ export default function SupplierMarketplace() {
                           {supplier.name}
                           {supplier.verified && (
                             <Badge variant="secondary" className="text-[10px] gap-1">
-                              <Shield className="h-3 w-3 text-green-500" /> Vérifié
+                              <Shield className="h-3 w-3 text-success" /> Vérifié
                             </Badge>
                           )}
                         </CardTitle>
@@ -226,12 +226,12 @@ export default function SupplierMarketplace() {
                       <p className="text-[10px] text-muted-foreground">Produits</p>
                     </div>
                     <div className="p-2 bg-muted/50 rounded-lg">
-                      <Truck className="h-3.5 w-3.5 mx-auto text-green-500 mb-1" />
+                      <Truck className="h-3.5 w-3.5 mx-auto text-success mb-1" />
                       <p className="text-xs font-medium">{(supplier.shipping_time || '').split('-')[0]}j</p>
                       <p className="text-[10px] text-muted-foreground">Livraison</p>
                     </div>
                     <div className="p-2 bg-muted/50 rounded-lg">
-                      <Clock className="h-3.5 w-3.5 mx-auto text-blue-500 mb-1" />
+                      <Clock className="h-3.5 w-3.5 mx-auto text-info mb-1" />
                       <p className="text-xs font-medium">{supplier.response_time}</p>
                       <p className="text-[10px] text-muted-foreground">Réponse</p>
                     </div>

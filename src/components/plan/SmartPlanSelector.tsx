@@ -75,7 +75,7 @@ const smartPlanConfigs: Record<PlanType, SmartPlanConfig> = {
     price: '29€',
     originalPrice: '39€',
     icon: Star,
-    color: 'text-blue-600',
+    color: 'text-info',
     bgColor: 'bg-blue-50',
     borderColor: 'border-blue-200',
     description: 'Idéal pour les professionnels',
@@ -242,14 +242,14 @@ export const SmartPlanSelector = () => {
                       <span className="text-sm text-muted-foreground line-through">
                         {config.originalPrice}/mois
                       </span>
-                      <Badge variant="secondary" className="text-green-600">
+                      <Badge variant="secondary" className="text-success">
                         {config.savings}
                       </Badge>
                     </div>
                   )}
                   
                   {billingCycle === 'yearly' && plan !== 'standard' && (
-                    <Badge variant="secondary" className="text-green-600">
+                    <Badge variant="secondary" className="text-success">
                       <Sparkles className="h-3 w-3 mr-1" />
                       2 mois offerts
                     </Badge>
@@ -265,7 +265,7 @@ export const SmartPlanSelector = () => {
                   {config.features.map((feature, index) => (
                     <div key={index} className="flex items-center gap-3">
                       {feature.included ? (
-                        <Check className="h-4 w-4 text-green-600 flex-shrink-0" />
+                        <Check className="h-4 w-4 text-success flex-shrink-0" />
                       ) : (
                         <X className="h-4 w-4 text-gray-400 flex-shrink-0" />
                       )}
@@ -318,15 +318,15 @@ export const SmartPlanSelector = () => {
       <div className="text-center space-y-4 max-w-2xl mx-auto">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-muted-foreground">
           <div className="flex items-center justify-center gap-2">
-            <Check className="h-4 w-4 text-green-600" />
+            <Check className="h-4 w-4 text-success" />
             Annulation à tout moment
           </div>
           <div className="flex items-center justify-center gap-2">
-            <Check className="h-4 w-4 text-green-600" />
+            <Check className="h-4 w-4 text-success" />
             Support dédié inclus
           </div>
           <div className="flex items-center justify-center gap-2">
-            <Check className="h-4 w-4 text-green-600" />
+            <Check className="h-4 w-4 text-success" />
             Mises à jour incluses
           </div>
         </div>

@@ -172,17 +172,17 @@ export const RealTimeMonitoring = () => {
   };
 
   const getStatusColor = (value: number, thresholds: { warning: number; danger: number }) => {
-    if (value > thresholds.danger) return 'text-red-500';
-    if (value > thresholds.warning) return 'text-yellow-500';
-    return 'text-green-500';
+    if (value > thresholds.danger) return 'text-destructive';
+    if (value > thresholds.warning) return 'text-warning';
+    return 'text-success';
   };
 
   const getSeverityIcon = (severity: string) => {
     switch (severity) {
-      case 'error': return <AlertTriangle className="h-4 w-4 text-red-500" />;
-      case 'warning': return <Clock className="h-4 w-4 text-yellow-500" />;
-      case 'success': return <CheckCircle className="h-4 w-4 text-green-500" />;
-      default: return <Activity className="h-4 w-4 text-blue-500" />;
+      case 'error': return <AlertTriangle className="h-4 w-4 text-destructive" />;
+      case 'warning': return <Clock className="h-4 w-4 text-warning" />;
+      case 'success': return <CheckCircle className="h-4 w-4 text-success" />;
+      default: return <Activity className="h-4 w-4 text-info" />;
     }
   };
 
@@ -216,7 +216,7 @@ export const RealTimeMonitoring = () => {
                 <p className="text-sm font-medium text-muted-foreground">Utilisateurs Actifs</p>
                 <p className="text-2xl font-bold">{metrics.activeUsers}</p>
               </div>
-              <Activity className="h-8 w-8 text-blue-500" />
+              <Activity className="h-8 w-8 text-info" />
             </div>
           </CardContent>
         </Card>
@@ -228,7 +228,7 @@ export const RealTimeMonitoring = () => {
                 <p className="text-sm font-medium text-muted-foreground">Commandes Totales</p>
                 <p className="text-2xl font-bold">{metrics.totalOrders}</p>
               </div>
-              <TrendingUp className="h-8 w-8 text-green-500" />
+              <TrendingUp className="h-8 w-8 text-success" />
             </div>
           </CardContent>
         </Card>
@@ -256,7 +256,7 @@ export const RealTimeMonitoring = () => {
                   {metrics.errorRate.toFixed(1)}%
                 </p>
               </div>
-              <AlertTriangle className="h-8 w-8 text-red-500" />
+              <AlertTriangle className="h-8 w-8 text-destructive" />
             </div>
           </CardContent>
         </Card>
@@ -287,8 +287,8 @@ export const RealTimeMonitoring = () => {
             </div>
             <Separator />
             <div className="flex items-center gap-2">
-              <Wifi className="h-4 w-4 text-green-500" />
-              <span className="text-sm text-green-600">Tous les services opérationnels</span>
+              <Wifi className="h-4 w-4 text-success" />
+              <span className="text-sm text-success">Tous les services opérationnels</span>
             </div>
           </CardContent>
         </Card>

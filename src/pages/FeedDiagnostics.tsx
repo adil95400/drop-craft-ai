@@ -10,10 +10,10 @@ import { useFeedReports, useFeedReportDetails, useRunFeedDiagnostic, FeedReport 
 import { Activity, AlertTriangle, CheckCircle2, XCircle, RefreshCw, ShoppingBag, Store, Facebook, Package, Loader2, Wrench } from 'lucide-react'
 
 const CHANNEL_META: Record<string, { label: string; icon: any; color: string }> = {
-  google_shopping: { label: 'Google Shopping', icon: ShoppingBag, color: 'text-blue-500' },
-  shopify: { label: 'Shopify', icon: Store, color: 'text-green-500' },
+  google_shopping: { label: 'Google Shopping', icon: ShoppingBag, color: 'text-info' },
+  shopify: { label: 'Shopify', icon: Store, color: 'text-success' },
   facebook: { label: 'Facebook Catalog', icon: Facebook, color: 'text-indigo-500' },
-  amazon: { label: 'Amazon', icon: Package, color: 'text-orange-500' },
+  amazon: { label: 'Amazon', icon: Package, color: 'text-warning' },
 }
 
 export default function FeedDiagnostics() {
@@ -29,9 +29,9 @@ export default function FeedDiagnostics() {
   }, {})
 
   const scoreColor = (score: number) => {
-    if (score >= 80) return 'text-green-600'
-    if (score >= 50) return 'text-yellow-600'
-    return 'text-red-600'
+    if (score >= 80) return 'text-success'
+    if (score >= 50) return 'text-warning'
+    return 'text-destructive'
   }
 
   return (
@@ -81,9 +81,9 @@ export default function FeedDiagnostics() {
                     <div className="space-y-2">
                       <Progress value={report.score} className="h-2" />
                       <div className="flex justify-between text-xs text-muted-foreground">
-                        <span className="flex items-center gap-1"><CheckCircle2 className="h-3 w-3 text-green-500" />{report.valid_products} OK</span>
-                        <span className="flex items-center gap-1"><AlertTriangle className="h-3 w-3 text-yellow-500" />{report.warning_products}</span>
-                        <span className="flex items-center gap-1"><XCircle className="h-3 w-3 text-red-500" />{report.error_products}</span>
+                        <span className="flex items-center gap-1"><CheckCircle2 className="h-3 w-3 text-success" />{report.valid_products} OK</span>
+                        <span className="flex items-center gap-1"><AlertTriangle className="h-3 w-3 text-warning" />{report.warning_products}</span>
+                        <span className="flex items-center gap-1"><XCircle className="h-3 w-3 text-destructive" />{report.error_products}</span>
                       </div>
                     </div>
                   ) : (
@@ -151,7 +151,7 @@ export default function FeedDiagnostics() {
                                 <TableCell className="text-xs text-muted-foreground">{item.suggestion || '—'}</TableCell>
                                 <TableCell>
                                   {item.auto_fixable ? (
-                                    <Badge className="bg-green-100 text-green-700 text-xs"><Wrench className="h-3 w-3 mr-1" />Oui</Badge>
+                                    <Badge className="bg-green-100 text-success text-xs"><Wrench className="h-3 w-3 mr-1" />Oui</Badge>
                                   ) : (
                                     <span className="text-xs text-muted-foreground">Non</span>
                                   )}

@@ -200,7 +200,7 @@ export const GlobalIntelligenceHub: React.FC = () => {
 
   const getRiskBadgeColor = (risk: string) => {
     switch (risk) {
-      case 'low': return 'bg-green-100 text-green-800 border-green-200';
+      case 'low': return 'bg-green-100 text-success border-green-200';
       case 'medium': return 'bg-yellow-100 text-yellow-800 border-yellow-200';
       case 'high': return 'bg-red-100 text-red-800 border-red-200';
       default: return 'bg-gray-100 text-gray-800 border-gray-200';
@@ -209,7 +209,7 @@ export const GlobalIntelligenceHub: React.FC = () => {
 
   const getComplianceStatusColor = (status: string) => {
     switch (status) {
-      case 'compliant': return 'bg-green-100 text-green-800 border-green-200';
+      case 'compliant': return 'bg-green-100 text-success border-green-200';
       case 'pending': return 'bg-yellow-100 text-yellow-800 border-yellow-200';
       case 'non_compliant': return 'bg-red-100 text-red-800 border-red-200';
       default: return 'bg-gray-100 text-gray-800 border-gray-200';
@@ -221,7 +221,7 @@ export const GlobalIntelligenceHub: React.FC = () => {
       case 'critical': return 'bg-red-100 text-red-800 border-red-200';
       case 'high': return 'bg-orange-100 text-orange-800 border-orange-200';
       case 'medium': return 'bg-yellow-100 text-yellow-800 border-yellow-200';
-      case 'low': return 'bg-green-100 text-green-800 border-green-200';
+      case 'low': return 'bg-green-100 text-success border-green-200';
       default: return 'bg-gray-100 text-gray-800 border-gray-200';
     }
   };
@@ -242,7 +242,7 @@ export const GlobalIntelligenceHub: React.FC = () => {
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-3">
           <div className="p-2 bg-blue-100 rounded-lg">
-            <Globe className="h-6 w-6 text-blue-600" />
+            <Globe className="h-6 w-6 text-info" />
           </div>
           <div>
             <h1 className="text-3xl font-bold">Global Intelligence Hub</h1>
@@ -256,7 +256,7 @@ export const GlobalIntelligenceHub: React.FC = () => {
             <MapPin className="h-3 w-3 mr-1" />
             Global Coverage
           </Badge>
-          <Badge variant="secondary" className="bg-green-100 text-green-800">
+          <Badge variant="secondary" className="bg-green-100 text-success">
             <Clock className="h-3 w-3 mr-1" />
             Real-time Updates
           </Badge>
@@ -336,7 +336,7 @@ export const GlobalIntelligenceHub: React.FC = () => {
                       <ul className="space-y-1">
                         {insight.entry_barriers.map((barrier, idx) => (
                           <li key={idx} className="text-sm text-muted-foreground flex items-center space-x-2">
-                            <AlertTriangle className="h-3 w-3 text-orange-500" />
+                            <AlertTriangle className="h-3 w-3 text-warning" />
                             <span>{barrier}</span>
                           </li>
                         ))}
@@ -347,7 +347,7 @@ export const GlobalIntelligenceHub: React.FC = () => {
                       <ul className="space-y-1">
                         {insight.recommended_actions.map((action, idx) => (
                           <li key={idx} className="text-sm text-muted-foreground flex items-center space-x-2">
-                            <Zap className="h-3 w-3 text-green-500" />
+                            <Zap className="h-3 w-3 text-success" />
                             <span>{action}</span>
                           </li>
                         ))}
@@ -390,7 +390,7 @@ export const GlobalIntelligenceHub: React.FC = () => {
                       variant="secondary"
                       className={trend.timeline === 'short' ? 'bg-red-100 text-red-800' : 
                                trend.timeline === 'medium' ? 'bg-yellow-100 text-yellow-800' : 
-                               'bg-green-100 text-green-800'}
+                               'bg-green-100 text-success'}
                     >
                       {trend.timeline}-term
                     </Badge>
@@ -425,7 +425,7 @@ export const GlobalIntelligenceHub: React.FC = () => {
                       <ul className="space-y-1">
                         {trend.actionable_insights.map((insight, idx) => (
                           <li key={idx} className="text-sm text-muted-foreground flex items-start space-x-2">
-                            <Zap className="h-3 w-3 text-green-500 mt-0.5 flex-shrink-0" />
+                            <Zap className="h-3 w-3 text-success mt-0.5 flex-shrink-0" />
                             <span>{insight}</span>
                           </li>
                         ))}
@@ -476,7 +476,7 @@ export const GlobalIntelligenceHub: React.FC = () => {
                       <ul className="space-y-1">
                         {requirement.requirements.map((req, idx) => (
                           <li key={idx} className="text-sm text-muted-foreground flex items-center space-x-2">
-                            <Shield className="h-3 w-3 text-blue-500" />
+                            <Shield className="h-3 w-3 text-info" />
                             <span>{req}</span>
                           </li>
                         ))}
@@ -487,7 +487,7 @@ export const GlobalIntelligenceHub: React.FC = () => {
                       <ul className="space-y-1">
                         {requirement.actions_needed.map((action, idx) => (
                           <li key={idx} className="text-sm text-muted-foreground flex items-center space-x-2">
-                            <Users className="h-3 w-3 text-orange-500" />
+                            <Users className="h-3 w-3 text-warning" />
                             <span>{action}</span>
                           </li>
                         ))}

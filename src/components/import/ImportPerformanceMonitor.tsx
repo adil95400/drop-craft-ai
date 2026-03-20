@@ -84,7 +84,7 @@ export const ImportPerformanceMonitor = () => {
     }
   })
 
-  const getMetricColor = (value: number) => value >= 90 ? 'text-green-600' : value >= 70 ? 'text-orange-600' : 'text-red-600'
+  const getMetricColor = (value: number) => value >= 90 ? 'text-success' : value >= 70 ? 'text-warning' : 'text-destructive'
 
   if (isLoading) {
     return <div className="space-y-6">{[1,2,3].map(i => <Skeleton key={i} className="h-32" />)}</div>
@@ -104,7 +104,7 @@ export const ImportPerformanceMonitor = () => {
               <p className="text-sm text-muted-foreground">Imports Totaux</p>
               <p className="text-2xl font-bold">{(data?.totalImports || 0).toLocaleString()}</p>
             </div>
-            <Database className="w-8 h-8 text-blue-500" />
+            <Database className="w-8 h-8 text-info" />
           </div>
         </CardContent></Card>
         <Card><CardContent className="p-4">
@@ -114,7 +114,7 @@ export const ImportPerformanceMonitor = () => {
               <p className={`text-2xl font-bold ${getMetricColor(data?.successRate || 0)}`}>{(data?.successRate || 0).toFixed(1)}%</p>
               <Progress value={data?.successRate || 0} className="h-2 mt-1" />
             </div>
-            <CheckCircle className="w-8 h-8 text-green-500" />
+            <CheckCircle className="w-8 h-8 text-success" />
           </div>
         </CardContent></Card>
         <Card><CardContent className="p-4">
@@ -123,7 +123,7 @@ export const ImportPerformanceMonitor = () => {
               <p className="text-sm text-muted-foreground">Temps Moyen</p>
               <p className="text-2xl font-bold">{(data?.avgProcessingTime || 0).toFixed(1)}s</p>
             </div>
-            <Clock className="w-8 h-8 text-orange-500" />
+            <Clock className="w-8 h-8 text-warning" />
           </div>
         </CardContent></Card>
         <Card><CardContent className="p-4">
@@ -191,7 +191,7 @@ export const ImportPerformanceMonitor = () => {
               {data!.errorTypes.map((error, index) => (
                 <div key={index} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
                   <div className="flex items-center gap-3">
-                    <AlertTriangle className="w-4 h-4 text-orange-500" />
+                    <AlertTriangle className="w-4 h-4 text-warning" />
                     <div>
                       <p className="font-medium">{error.type}</p>
                       <p className="text-sm text-muted-foreground">{error.count} occurrences</p>

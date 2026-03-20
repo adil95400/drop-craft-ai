@@ -201,7 +201,7 @@ export function SocialMediaManager() {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'published': return 'bg-green-100 text-green-800 border-green-200'
+      case 'published': return 'bg-green-100 text-success border-green-200'
       case 'scheduled': return 'bg-blue-100 text-blue-800 border-blue-200'
       case 'draft': return 'bg-gray-100 text-gray-800 border-gray-200'
       default: return 'bg-gray-100 text-gray-800 border-gray-200'
@@ -330,7 +330,7 @@ export function SocialMediaManager() {
                           {hashtag}
                           <button 
                             onClick={() => removeHashtag(hashtag)}
-                            className="ml-1 text-xs hover:text-red-500"
+                            className="ml-1 text-xs hover:text-destructive"
                           >
                             ×
                           </button>
@@ -480,7 +480,7 @@ export function SocialMediaManager() {
                 </div>
                 
                 {currentPost.hashtags.length > 0 && (
-                  <div className="text-xs text-blue-600">
+                  <div className="text-xs text-info">
                     {currentPost.hashtags.join(' ')}
                   </div>
                 )}
@@ -504,7 +504,7 @@ export function SocialMediaManager() {
               </div>
               <div className="flex justify-between">
                 <span className="text-sm text-muted-foreground">Nouveaux abonnés</span>
-                <span className="font-medium text-green-600">+127</span>
+                <span className="font-medium text-success">+127</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-sm text-muted-foreground">Meilleure heure</span>

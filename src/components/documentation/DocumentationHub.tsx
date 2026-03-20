@@ -38,7 +38,7 @@ const CATEGORY_ICONS: Record<ModuleCategory, React.ElementType> = {
 }
 
 const LEVEL_CONFIG: Record<UserLevel, { label: string; color: string; icon: React.ElementType }> = {
-  beginner: { label: 'Débutant', color: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400', icon: BookOpen },
+  beginner: { label: 'Débutant', color: 'bg-green-100 text-success dark:bg-green-900/30 dark:text-green-400', icon: BookOpen },
   intermediate: { label: 'Intermédiaire', color: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400', icon: Target },
   advanced: { label: 'Avancé', color: 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400', icon: Star },
   expert: { label: 'Expert', color: 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400', icon: Zap }
@@ -118,7 +118,7 @@ export function DocumentationHub({ onSelectModule }: DocumentationHubProps) {
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
               <div className="p-2 rounded-lg bg-blue-100 dark:bg-blue-900/30">
-                <Target className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                <Target className="h-5 w-5 text-info dark:text-blue-400" />
               </div>
               <div>
                 <p className="text-2xl font-bold">{stats.totalUseCases}</p>
@@ -132,7 +132,7 @@ export function DocumentationHub({ onSelectModule }: DocumentationHubProps) {
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
               <div className="p-2 rounded-lg bg-green-100 dark:bg-green-900/30">
-                <HelpCircle className="h-5 w-5 text-green-600 dark:text-green-400" />
+                <HelpCircle className="h-5 w-5 text-success dark:text-green-400" />
               </div>
               <div>
                 <p className="text-2xl font-bold">{stats.totalFAQs}</p>
@@ -146,7 +146,7 @@ export function DocumentationHub({ onSelectModule }: DocumentationHubProps) {
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
               <div className="p-2 rounded-lg bg-orange-100 dark:bg-orange-900/30">
-                <Clock className="h-5 w-5 text-orange-600 dark:text-orange-400" />
+                <Clock className="h-5 w-5 text-warning dark:text-orange-400" />
               </div>
               <div>
                 <p className="text-2xl font-bold">{stats.estimatedReadTime}min</p>

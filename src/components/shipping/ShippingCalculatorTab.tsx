@@ -78,13 +78,13 @@ export function ShippingCalculatorTab() {
                 <div className="text-center py-4">
                   <div className="text-4xl font-bold text-primary">
                     {result.cost === 0 ? (
-                      <span className="text-green-500">GRATUIT</span>
+                      <span className="text-success">GRATUIT</span>
                     ) : (
                       <>{result.cost.toFixed(2)} €</>
                     )}
                   </div>
                   {result.cost === 0 && (
-                    <Badge className="mt-2 bg-green-500/10 text-green-600 border-green-500/20">
+                    <Badge className="mt-2 bg-green-500/10 text-success border-green-500/20">
                       <CheckCircle className="h-3 w-3 mr-1" />Seuil de livraison gratuite atteint
                     </Badge>
                   )}

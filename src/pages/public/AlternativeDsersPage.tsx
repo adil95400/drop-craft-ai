@@ -105,10 +105,10 @@ const AlternativeDsersPage = () => {
                     <tr key={i} className={i % 2 === 0 ? 'bg-background' : 'bg-muted/20'}>
                       <td className="p-4 font-medium">{row.feature}</td>
                       <td className="p-4 text-center">
-                        {row.shopopti ? <CheckCircle className="h-5 w-5 text-green-500 mx-auto" /> : <X className="h-5 w-5 text-red-400 mx-auto" />}
+                        {row.shopopti ? <CheckCircle className="h-5 w-5 text-success mx-auto" /> : <X className="h-5 w-5 text-red-400 mx-auto" />}
                       </td>
                       <td className="p-4 text-center">
-                        {row.dsers ? <CheckCircle className="h-5 w-5 text-green-500 mx-auto" /> : <X className="h-5 w-5 text-red-400 mx-auto" />}
+                        {row.dsers ? <CheckCircle className="h-5 w-5 text-success mx-auto" /> : <X className="h-5 w-5 text-red-400 mx-auto" />}
                       </td>
                     </tr>
                   ))}

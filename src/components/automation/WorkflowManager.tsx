@@ -156,8 +156,8 @@ export function WorkflowManager() {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'active': return 'text-green-600 bg-green-100';
-      case 'paused': return 'text-yellow-600 bg-yellow-100';
+      case 'active': return 'text-success bg-green-100';
+      case 'paused': return 'text-warning bg-yellow-100';
       case 'draft': return 'text-gray-600 bg-gray-100';
       default: return 'text-gray-600 bg-gray-100';
     }
@@ -204,7 +204,7 @@ export function WorkflowManager() {
                   <p className="text-sm text-muted-foreground">Exécutions (30j)</p>
                   <p className="text-2xl font-bold">{performance.total_executions}</p>
                 </div>
-                <Play className="h-5 w-5 text-blue-600" />
+                <Play className="h-5 w-5 text-info" />
               </div>
             </CardContent>
           </Card>
@@ -214,9 +214,9 @@ export function WorkflowManager() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-muted-foreground">Taux de Succès</p>
-                  <p className="text-2xl font-bold text-green-600">{performance.success_rate}</p>
+                  <p className="text-2xl font-bold text-success">{performance.success_rate}</p>
                 </div>
-                <TrendingUp className="h-5 w-5 text-green-600" />
+                <TrendingUp className="h-5 w-5 text-success" />
               </div>
             </CardContent>
           </Card>
@@ -228,7 +228,7 @@ export function WorkflowManager() {
                   <p className="text-sm text-muted-foreground">Temps Moyen</p>
                   <p className="text-2xl font-bold">{performance.avg_execution_time}</p>
                 </div>
-                <Clock className="h-5 w-5 text-orange-600" />
+                <Clock className="h-5 w-5 text-warning" />
               </div>
             </CardContent>
           </Card>
@@ -370,11 +370,11 @@ export function WorkflowManager() {
                         </div>
                         <div className="flex justify-between">
                           <span className="text-muted-foreground">Succès</span>
-                          <span className="font-medium text-green-600">{performance.successful_executions}</span>
+                          <span className="font-medium text-success">{performance.successful_executions}</span>
                         </div>
                         <div className="flex justify-between">
                           <span className="text-muted-foreground">Échecs</span>
-                          <span className="font-medium text-red-600">{performance.failed_executions}</span>
+                          <span className="font-medium text-destructive">{performance.failed_executions}</span>
                         </div>
                         <div className="flex justify-between">
                           <span className="text-muted-foreground">Temps moyen</span>
@@ -392,7 +392,7 @@ export function WorkflowManager() {
                         </div>
                         <div className="flex justify-between">
                           <span className="text-muted-foreground">Actifs</span>
-                          <span className="font-medium text-green-600">{performance.active_workflows}</span>
+                          <span className="font-medium text-success">{performance.active_workflows}</span>
                         </div>
                         <div className="flex justify-between">
                           <span className="text-muted-foreground">Plus utilisé</span>
@@ -416,9 +416,9 @@ export function WorkflowManager() {
                     <div className="flex items-start gap-4">
                       <div className="p-2 rounded-lg bg-yellow-100">
                         {rec.type === 'warning' ? (
-                          <AlertTriangle className="h-5 w-5 text-yellow-600" />
+                          <AlertTriangle className="h-5 w-5 text-warning" />
                         ) : (
-                          <Zap className="h-5 w-5 text-blue-600" />
+                          <Zap className="h-5 w-5 text-info" />
                         )}
                       </div>
                       <div className="flex-1">
@@ -437,7 +437,7 @@ export function WorkflowManager() {
           ) : (
             <Card>
               <CardContent className="py-12 text-center">
-                <CheckCircle className="h-12 w-12 mx-auto mb-4 text-green-600 opacity-50" />
+                <CheckCircle className="h-12 w-12 mx-auto mb-4 text-success opacity-50" />
                 <p className="text-lg font-medium mb-2">Tout fonctionne parfaitement !</p>
                 <p className="text-muted-foreground">
                   Aucune recommandation d'optimisation pour le moment

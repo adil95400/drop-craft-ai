@@ -168,7 +168,7 @@ export const QuickUrlImport: React.FC = () => {
           </div>
 
           {detectedPlatform && !isImporting && (
-            <div className="flex items-center gap-2 text-sm text-green-600">
+            <div className="flex items-center gap-2 text-sm text-success">
               <CheckCircle className="w-4 h-4" />
               Plateforme détectée: {platforms.find(p => p.id === detectedPlatform)?.name}
             </div>
@@ -195,23 +195,23 @@ export const QuickUrlImport: React.FC = () => {
             <p className="font-semibold mb-2 text-sm">Fonctionnalités automatiques :</p>
             <ul className="space-y-1 text-sm">
               <li className="flex items-center gap-2">
-                <CheckCircle className="w-3 h-3 text-green-600" />
+                <CheckCircle className="w-3 h-3 text-success" />
                 Extraction automatique des images
               </li>
               <li className="flex items-center gap-2">
-                <CheckCircle className="w-3 h-3 text-green-600" />
+                <CheckCircle className="w-3 h-3 text-success" />
                 Import des variantes (tailles, couleurs)
               </li>
               <li className="flex items-center gap-2">
-                <CheckCircle className="w-3 h-3 text-green-600" />
+                <CheckCircle className="w-3 h-3 text-success" />
                 Optimisation SEO avec IA
               </li>
               <li className="flex items-center gap-2">
-                <CheckCircle className="w-3 h-3 text-green-600" />
+                <CheckCircle className="w-3 h-3 text-success" />
                 Calcul automatique des prix et marges
               </li>
               <li className="flex items-center gap-2">
-                <CheckCircle className="w-3 h-3 text-green-600" />
+                <CheckCircle className="w-3 h-3 text-success" />
                 Import des avis clients
               </li>
             </ul>

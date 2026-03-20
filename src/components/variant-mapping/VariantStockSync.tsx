@@ -216,17 +216,17 @@ export function VariantStockSync() {
   });
 
   const getChangeIcon = (change: number) => {
-    if (change > 0) return <TrendingUp className="h-4 w-4 text-green-500" />;
-    if (change < 0) return <TrendingDown className="h-4 w-4 text-red-500" />;
+    if (change > 0) return <TrendingUp className="h-4 w-4 text-success" />;
+    if (change < 0) return <TrendingDown className="h-4 w-4 text-destructive" />;
     return <Minus className="h-4 w-4 text-muted-foreground" />;
   };
 
   const getStatusBadge = (status: SyncLog['status']) => {
     switch (status) {
       case 'success':
-        return <Badge className="bg-green-500/10 text-green-600"><Check className="h-3 w-3 mr-1" />Succès</Badge>;
+        return <Badge className="bg-green-500/10 text-success"><Check className="h-3 w-3 mr-1" />Succès</Badge>;
       case 'failed':
-        return <Badge className="bg-red-500/10 text-red-600"><X className="h-3 w-3 mr-1" />Échec</Badge>;
+        return <Badge className="bg-red-500/10 text-destructive"><X className="h-3 w-3 mr-1" />Échec</Badge>;
       case 'skipped':
         return <Badge variant="secondary"><Minus className="h-3 w-3 mr-1" />Ignoré</Badge>;
     }
@@ -253,11 +253,11 @@ export function VariantStockSync() {
               <p className="text-sm text-muted-foreground">Mappings Auto-sync</p>
             </div>
             <div className="p-4 bg-green-50 dark:bg-green-950/20 rounded-lg text-center">
-              <p className="text-2xl font-bold text-green-600">{syncStats.successCount}</p>
+              <p className="text-2xl font-bold text-success">{syncStats.successCount}</p>
               <p className="text-sm text-muted-foreground">Succès</p>
             </div>
             <div className="p-4 bg-red-50 dark:bg-red-950/20 rounded-lg text-center">
-              <p className="text-2xl font-bold text-red-600">{syncStats.failedCount}</p>
+              <p className="text-2xl font-bold text-destructive">{syncStats.failedCount}</p>
               <p className="text-sm text-muted-foreground">Échecs</p>
             </div>
             <div className="p-4 bg-muted/50 rounded-lg text-center">
@@ -362,7 +362,7 @@ export function VariantStockSync() {
                       <TableCell>
                         <div className="flex items-center gap-1">
                           {getChangeIcon(log.change)}
-                          <span className={log.change > 0 ? 'text-green-600' : log.change < 0 ? 'text-red-600' : ''}>
+                          <span className={log.change > 0 ? 'text-success' : log.change < 0 ? 'text-destructive' : ''}>
                             {log.change > 0 ? '+' : ''}{log.change}
                           </span>
                         </div>
@@ -384,7 +384,7 @@ export function VariantStockSync() {
       <Card>
         <CardHeader>
           <CardTitle className="text-base flex items-center gap-2">
-            <Zap className="h-5 w-5 text-yellow-500" />
+            <Zap className="h-5 w-5 text-warning" />
             Mappings avec Auto-sync
           </CardTitle>
           <CardDescription>
@@ -446,7 +446,7 @@ export function VariantStockSync() {
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle className="flex items-center gap-2">
-              <AlertTriangle className="h-5 w-5 text-yellow-500" />
+              <AlertTriangle className="h-5 w-5 text-warning" />
               Confirmer la synchronisation
             </AlertDialogTitle>
             <AlertDialogDescription>

@@ -59,8 +59,8 @@ export function OrganizationManager() {
 
   const getRoleIcon = (role: string) => {
     switch (role) {
-      case 'owner': return <Crown className="h-4 w-4 text-yellow-500" />
-      case 'admin': return <Shield className="h-4 w-4 text-blue-500" />
+      case 'owner': return <Crown className="h-4 w-4 text-warning" />
+      case 'admin': return <Shield className="h-4 w-4 text-info" />
       default: return <Users className="h-4 w-4 text-muted-foreground" />
     }
   }
@@ -100,7 +100,7 @@ export function OrganizationManager() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card>
           <CardContent className="p-4 flex items-center gap-3">
-            <Users className="h-6 w-6 text-blue-500" />
+            <Users className="h-6 w-6 text-info" />
             <div>
               <p className="text-sm text-muted-foreground">Membres</p>
               <p className="text-lg font-semibold">{org?.members_count || 0}</p>
@@ -109,7 +109,7 @@ export function OrganizationManager() {
         </Card>
         <Card>
           <CardContent className="p-4 flex items-center gap-3">
-            <TrendingUp className="h-6 w-6 text-green-500" />
+            <TrendingUp className="h-6 w-6 text-success" />
             <div>
               <p className="text-sm text-muted-foreground">Produits</p>
               <p className="text-lg font-semibold">{org?.productsCount?.toLocaleString() || 0}</p>
@@ -118,7 +118,7 @@ export function OrganizationManager() {
         </Card>
         <Card>
           <CardContent className="p-4 flex items-center gap-3">
-            <Crown className="h-6 w-6 text-yellow-500" />
+            <Crown className="h-6 w-6 text-warning" />
             <div>
               <p className="text-sm text-muted-foreground">Plan</p>
               <p className="text-lg font-semibold capitalize">{org?.plan || 'free'}</p>

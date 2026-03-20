@@ -150,13 +150,13 @@ export function UnifiedNotificationCenter() {
   };
 
   const getNotificationColor = (type: string, priority: string) => {
-    if (priority === 'critical') return 'text-red-600';
+    if (priority === 'critical') return 'text-destructive';
     
     switch (type) {
-      case 'success': case 'sync': return 'text-green-600';
-      case 'warning': return 'text-yellow-600';
-      case 'error': return 'text-red-600';
-      default: return 'text-blue-600';
+      case 'success': case 'sync': return 'text-success';
+      case 'warning': return 'text-warning';
+      case 'error': return 'text-destructive';
+      default: return 'text-info';
     }
   };
 

@@ -194,9 +194,9 @@ export function WorkflowSandbox() {
 
   const getStatusIcon = (status: SandboxStep['status']) => {
     switch (status) {
-      case 'success': return <CheckCircle2 className="h-4 w-4 text-green-500" />;
-      case 'failed': return <XCircle className="h-4 w-4 text-red-500" />;
-      case 'running': return <Clock className="h-4 w-4 text-blue-500 animate-spin" />;
+      case 'success': return <CheckCircle2 className="h-4 w-4 text-success" />;
+      case 'failed': return <XCircle className="h-4 w-4 text-destructive" />;
+      case 'running': return <Clock className="h-4 w-4 text-info animate-spin" />;
       case 'skipped': return <ArrowRight className="h-4 w-4 text-muted-foreground" />;
       default: return <div className="h-4 w-4 rounded-full border-2 border-muted-foreground" />;
     }
@@ -212,7 +212,7 @@ export function WorkflowSandbox() {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="p-2 rounded-lg bg-amber-500/10">
-            <FlaskConical className="h-6 w-6 text-amber-500" />
+            <FlaskConical className="h-6 w-6 text-warning" />
           </div>
           <div>
             <h2 className="text-xl font-semibold">Mode Sandbox</h2>
@@ -221,14 +221,14 @@ export function WorkflowSandbox() {
             </p>
           </div>
         </div>
-        <Badge variant="outline" className="gap-1 text-amber-600 border-amber-300 bg-amber-50 dark:bg-amber-950">
+        <Badge variant="outline" className="gap-1 text-warning border-amber-300 bg-amber-50 dark:bg-amber-950">
           <Bug className="h-3 w-3" />
           Environnement de test
         </Badge>
       </div>
 
       <Alert className="border-amber-300 bg-amber-50 dark:bg-amber-950/50">
-        <AlertTriangle className="h-4 w-4 text-amber-600" />
+        <AlertTriangle className="h-4 w-4 text-warning" />
         <AlertDescription className="text-amber-800 dark:text-amber-200">
           <strong>Mode Sandbox actif:</strong> Aucune donnée réelle ne sera modifiée. 
           Les actions sont simulées pour validation avant mise en production.
@@ -337,7 +337,7 @@ export function WorkflowSandbox() {
                                 )}
                               </div>
                               {step.error && (
-                                <span className="text-xs text-red-600">{step.error}</span>
+                                <span className="text-xs text-destructive">{step.error}</span>
                               )}
                             </motion.div>
                           ))}

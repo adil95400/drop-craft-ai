@@ -76,7 +76,7 @@ export function APIAnalyticsDashboard() {
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium flex items-center gap-2">
-              <Activity className="h-4 w-4 text-blue-500" />
+              <Activity className="h-4 w-4 text-info" />
               Requêtes totales
             </CardTitle>
           </CardHeader>
@@ -89,7 +89,7 @@ export function APIAnalyticsDashboard() {
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium flex items-center gap-2">
-              <TrendingUp className="h-4 w-4 text-green-500" />
+              <TrendingUp className="h-4 w-4 text-success" />
               Taux de réussite
             </CardTitle>
           </CardHeader>
@@ -117,7 +117,7 @@ export function APIAnalyticsDashboard() {
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium flex items-center gap-2">
-              <Database className="h-4 w-4 text-orange-500" />
+              <Database className="h-4 w-4 text-warning" />
               Endpoints uniques
             </CardTitle>
           </CardHeader>

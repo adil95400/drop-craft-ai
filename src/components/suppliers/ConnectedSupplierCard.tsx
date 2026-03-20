@@ -67,7 +67,7 @@ export const ConnectedSupplierCard = memo(function ConnectedSupplierCard({
                 </Badge>
                 {supplier.rating && (
                   <span className="text-xs text-muted-foreground flex items-center gap-1">
-                    <Star className="w-3 h-3 fill-yellow-500 text-yellow-500" />
+                    <Star className="w-3 h-3 fill-yellow-500 text-warning" />
                     {supplier.rating}
                   </span>
                 )}

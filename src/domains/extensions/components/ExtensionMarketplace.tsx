@@ -305,7 +305,7 @@ export const ExtensionMarketplace: React.FC = () => {
             <Card>
               <CardHeader>
                 <CardTitle className="text-lg flex items-center gap-2">
-                  <Heart className="w-4 h-4 text-red-500" />
+                  <Heart className="w-4 h-4 text-destructive" />
                   Favorites
                 </CardTitle>
               </CardHeader>

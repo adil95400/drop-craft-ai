@@ -193,8 +193,8 @@ function SupplierCard({
   rank: number;
   onOpen: () => void;
 }) {
-  const confidenceColor = supplier.confidence >= 70 ? 'text-green-500' : 
-                          supplier.confidence >= 50 ? 'text-yellow-500' : 'text-red-500';
+  const confidenceColor = supplier.confidence >= 70 ? 'text-success' : 
+                          supplier.confidence >= 50 ? 'text-warning' : 'text-destructive';
 
   return (
     <div className="p-3 rounded-lg border bg-card hover:shadow-md transition-shadow">
@@ -216,7 +216,7 @@ function SupplierCard({
           </span>
         </div>
         {supplier.potentialMargin && (
-          <div className="flex items-center gap-1 text-green-600">
+          <div className="flex items-center gap-1 text-success">
             <TrendingUp className="h-3 w-3" />
             <span className="font-medium">+{supplier.potentialMargin.marginPercent}%</span>
           </div>
@@ -277,7 +277,7 @@ function PricingSuggestions({
           </span>
         </div>
         <div className="flex items-center gap-4 mt-2 text-sm">
-          <span className="text-green-600 font-medium">
+          <span className="text-success font-medium">
             +€{recommendation.profit.toFixed(2)} / vente
           </span>
           <span className="text-muted-foreground">

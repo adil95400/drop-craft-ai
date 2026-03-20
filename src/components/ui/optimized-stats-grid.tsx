@@ -68,8 +68,8 @@ export function StatCard({
 
   const getTrendColor = () => {
     if (change === undefined) return '';
-    if (change > 0) return 'text-emerald-600 bg-emerald-50 border-emerald-200 dark:bg-emerald-950/50 dark:border-emerald-800';
-    if (change < 0) return 'text-red-600 bg-red-50 border-red-200 dark:bg-red-950/50 dark:border-red-800';
+    if (change > 0) return 'text-success bg-emerald-50 border-emerald-200 dark:bg-emerald-950/50 dark:border-emerald-800';
+    if (change < 0) return 'text-destructive bg-red-50 border-red-200 dark:bg-red-950/50 dark:border-red-800';
     return 'text-gray-600 bg-gray-50 border-gray-200 dark:bg-gray-800 dark:border-gray-700';
   };
 
@@ -210,7 +210,7 @@ export function CompactStat({ label, value, icon: Icon, change, className }: Com
       {change !== undefined && (
         <Badge variant="outline" className={cn(
           'text-xs',
-          change > 0 ? 'text-emerald-600' : change < 0 ? 'text-red-600' : 'text-gray-600'
+          change > 0 ? 'text-success' : change < 0 ? 'text-destructive' : 'text-gray-600'
         )}>
           {change > 0 ? '+' : ''}{change}%
         </Badge>

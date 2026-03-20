@@ -163,7 +163,7 @@ const EmailMarketingPage: React.FC = () => {
               <>
                 <div className="text-2xl font-bold">{openRate}%</div>
                 <p className="text-xs text-muted-foreground flex items-center gap-1">
-                  <TrendingUp className="h-3 w-3 text-green-500" />
+                  <TrendingUp className="h-3 w-3 text-success" />
                   {totalOpened.toLocaleString()} ouvertures
                 </p>
               </>
@@ -337,11 +337,11 @@ const EmailMarketingPage: React.FC = () => {
                   <p className="text-sm text-muted-foreground">Campagnes créées</p>
                 </div>
                 <div className="p-4 border rounded-lg text-center">
-                  <p className="text-3xl font-bold text-green-500">{openRate}%</p>
+                  <p className="text-3xl font-bold text-success">{openRate}%</p>
                   <p className="text-sm text-muted-foreground">Taux d'ouverture moyen</p>
                 </div>
                 <div className="p-4 border rounded-lg text-center">
-                  <p className="text-3xl font-bold text-blue-500">{clickRate}%</p>
+                  <p className="text-3xl font-bold text-info">{clickRate}%</p>
                   <p className="text-sm text-muted-foreground">Taux de clic moyen</p>
                 </div>
               </div>

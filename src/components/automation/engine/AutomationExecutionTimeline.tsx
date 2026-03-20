@@ -101,15 +101,15 @@ export function AutomationExecutionTimeline({ executions: propExecutions, onRetr
     switch (status) {
       case 'success':
       case 'completed':
-        return { icon: CheckCircle2, color: 'text-green-500', bg: 'bg-green-500/10', label: 'Succès' };
+        return { icon: CheckCircle2, color: 'text-success', bg: 'bg-green-500/10', label: 'Succès' };
       case 'failed':
-        return { icon: XCircle, color: 'text-red-500', bg: 'bg-red-500/10', label: 'Échoué' };
+        return { icon: XCircle, color: 'text-destructive', bg: 'bg-red-500/10', label: 'Échoué' };
       case 'running':
-        return { icon: Activity, color: 'text-blue-500', bg: 'bg-blue-500/10', label: 'En cours' };
+        return { icon: Activity, color: 'text-info', bg: 'bg-blue-500/10', label: 'En cours' };
       case 'skipped':
         return { icon: ArrowRight, color: 'text-muted-foreground', bg: 'bg-muted', label: 'Ignoré' };
       case 'cancelled':
-        return { icon: XCircle, color: 'text-orange-500', bg: 'bg-orange-500/10', label: 'Annulé' };
+        return { icon: XCircle, color: 'text-warning', bg: 'bg-orange-500/10', label: 'Annulé' };
       default:
         return { icon: Clock, color: 'text-muted-foreground', bg: 'bg-muted', label: 'En attente' };
     }

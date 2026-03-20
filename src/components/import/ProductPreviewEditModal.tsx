@@ -336,7 +336,7 @@ export function ProductPreviewEditModal({
                     exit={{ opacity: 0, height: 0 }}
                     className="flex items-center gap-2.5 p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-sm"
                   >
-                    <Copy className="h-4 w-4 text-amber-600 shrink-0" />
+                    <Copy className="h-4 w-4 text-warning shrink-0" />
                     <span className="text-amber-700 dark:text-amber-400">
                       {duplicatesRemoved} image{duplicatesRemoved > 1 ? 's' : ''} en double supprimée{duplicatesRemoved > 1 ? 's' : ''} automatiquement
                     </span>
@@ -696,7 +696,7 @@ export function ProductPreviewEditModal({
                     <Badge variant="secondary" className="text-xs">{editedProduct.extracted_reviews?.length || 0}</Badge>
                     {editedProduct.reviews?.rating && (
                       <Badge variant="outline" className="text-xs flex items-center gap-1">
-                        <Star className="h-3 w-3 fill-amber-500 text-amber-500" />
+                        <Star className="h-3 w-3 fill-amber-500 text-warning" />
                         {editedProduct.reviews.rating.toFixed(1)}
                         {editedProduct.reviews.count && (
                           <span className="text-muted-foreground">({editedProduct.reviews.count})</span>
@@ -727,7 +727,7 @@ export function ProductPreviewEditModal({
                                 className={cn(
                                   "h-3 w-3",
                                   s < (review.rating || 0)
-                                    ? "fill-amber-500 text-amber-500"
+                                    ? "fill-amber-500 text-warning"
                                     : "text-muted-foreground/30"
                                 )}
                               />
@@ -742,7 +742,7 @@ export function ProductPreviewEditModal({
                         )}
                         <div className="flex items-center gap-2 text-[10px] text-muted-foreground/60">
                           {review.verified_purchase && (
-                            <Badge variant="outline" className="text-[10px] h-4 px-1.5 border-green-500/30 text-green-600">
+                            <Badge variant="outline" className="text-[10px] h-4 px-1.5 border-green-500/30 text-success">
                               Achat vérifié
                             </Badge>
                           )}

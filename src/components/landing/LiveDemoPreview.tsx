@@ -15,10 +15,10 @@ import { useNavigate } from 'react-router-dom';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
 
 const demoStats = [
-  { label: 'Produits', value: 2847, icon: Package, color: 'text-blue-500' },
-  { label: 'Commandes', value: 156, icon: ShoppingCart, color: 'text-emerald-500' },
+  { label: 'Produits', value: 2847, icon: Package, color: 'text-info' },
+  { label: 'Commandes', value: 156, icon: ShoppingCart, color: 'text-success' },
   { label: 'Revenue', value: '€12,458', icon: DollarSign, color: 'text-primary' },
-  { label: 'Croissance', value: '+27%', icon: TrendingUp, color: 'text-amber-500' },
+  { label: 'Croissance', value: '+27%', icon: TrendingUp, color: 'text-warning' },
 ];
 
 const demoFeatures = [

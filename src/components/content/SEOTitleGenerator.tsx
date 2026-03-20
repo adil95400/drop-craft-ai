@@ -129,9 +129,9 @@ Format de réponse souhaité (JSON):
   };
 
   const getScoreColor = (score: number) => {
-    if (score >= 80) return 'text-green-600 bg-green-100';
-    if (score >= 60) return 'text-yellow-600 bg-yellow-100';
-    return 'text-red-600 bg-red-100';
+    if (score >= 80) return 'text-success bg-green-100';
+    if (score >= 60) return 'text-warning bg-yellow-100';
+    return 'text-destructive bg-red-100';
   };
 
   return (
@@ -261,15 +261,15 @@ Format de réponse souhaité (JSON):
                         onClick={() => copyToClipboard(`${suggestion.title}\n\n${suggestion.metaDescription}`, index)}
                       >
                         {copiedIndex === index ? (
-                          <Check className="h-4 w-4 text-green-600" />
+                          <Check className="h-4 w-4 text-success" />
                         ) : (
                           <Copy className="h-4 w-4" />
                         )}
                       </Button>
-                      <Button variant="ghost" size="icon" className="text-green-600 hover:text-green-700">
+                      <Button variant="ghost" size="icon" className="text-success hover:text-success">
                         <ThumbsUp className="h-4 w-4" />
                       </Button>
-                      <Button variant="ghost" size="icon" className="text-red-600 hover:text-red-700">
+                      <Button variant="ghost" size="icon" className="text-destructive hover:text-red-700">
                         <ThumbsDown className="h-4 w-4" />
                       </Button>
                     </div>

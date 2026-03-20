@@ -77,15 +77,15 @@ export function UnifiedSyncDashboard() {
     switch (status) {
       case 'success':
       case 'completed':
-        return <CheckCircle className="h-4 w-4 text-green-500" />;
+        return <CheckCircle className="h-4 w-4 text-success" />;
       case 'failed':
-        return <XCircle className="h-4 w-4 text-red-500" />;
+        return <XCircle className="h-4 w-4 text-destructive" />;
       case 'partial':
-        return <AlertTriangle className="h-4 w-4 text-yellow-500" />;
+        return <AlertTriangle className="h-4 w-4 text-warning" />;
       case 'pending':
         return <Clock className="h-4 w-4 text-muted-foreground" />;
       case 'processing':
-        return <Loader2 className="h-4 w-4 text-blue-500 animate-spin" />;
+        return <Loader2 className="h-4 w-4 text-info animate-spin" />;
       default:
         return <Clock className="h-4 w-4 text-muted-foreground" />;
     }
@@ -147,7 +147,7 @@ export function UnifiedSyncDashboard() {
                 <p className="text-sm text-muted-foreground">En cours</p>
                 <p className="text-2xl font-bold">{stats?.processing || 0}</p>
               </div>
-              <Loader2 className="h-8 w-8 text-blue-500 animate-spin" />
+              <Loader2 className="h-8 w-8 text-info animate-spin" />
             </div>
           </CardContent>
         </Card>
@@ -156,9 +156,9 @@ export function UnifiedSyncDashboard() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">Réussies (24h)</p>
-                <p className="text-2xl font-bold text-green-600">{stats?.todaySuccess || 0}</p>
+                <p className="text-2xl font-bold text-success">{stats?.todaySuccess || 0}</p>
               </div>
-              <CheckCircle className="h-8 w-8 text-green-500" />
+              <CheckCircle className="h-8 w-8 text-success" />
             </div>
           </CardContent>
         </Card>
@@ -167,9 +167,9 @@ export function UnifiedSyncDashboard() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">Échouées (24h)</p>
-                <p className="text-2xl font-bold text-red-600">{stats?.todayFailed || 0}</p>
+                <p className="text-2xl font-bold text-destructive">{stats?.todayFailed || 0}</p>
               </div>
-              <XCircle className="h-8 w-8 text-red-500" />
+              <XCircle className="h-8 w-8 text-destructive" />
             </div>
           </CardContent>
         </Card>

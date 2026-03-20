@@ -107,7 +107,7 @@ export const ProductionCRMInterface = () => {
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-2">
-              <Users className="h-4 w-4 text-blue-500" />
+              <Users className="h-4 w-4 text-info" />
               <div>
                 <p className="text-2xl font-bold">{stats.total}</p>
                 <p className="text-xs text-muted-foreground">Total clients</p>
@@ -119,7 +119,7 @@ export const ProductionCRMInterface = () => {
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-2">
-              <User className="h-4 w-4 text-green-500" />
+              <User className="h-4 w-4 text-success" />
               <div>
                 <p className="text-2xl font-bold">{stats.active}</p>
                 <p className="text-xs text-muted-foreground">Clients actifs</p>
@@ -143,7 +143,7 @@ export const ProductionCRMInterface = () => {
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-2">
-              <ShoppingBag className="h-4 w-4 text-orange-500" />
+              <ShoppingBag className="h-4 w-4 text-warning" />
               <div>
                 <p className="text-2xl font-bold">{formatCurrency(stats.avgOrderValue)}</p>
                 <p className="text-xs text-muted-foreground">Panier moyen</p>

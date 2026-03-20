@@ -116,22 +116,22 @@ export function ProfitCalculator({
   };
 
   const getProfitColor = (profit: number) => {
-    if (profit > 10) return 'text-green-500';
-    if (profit > 0) return 'text-yellow-500';
-    return 'text-red-500';
+    if (profit > 10) return 'text-success';
+    if (profit > 0) return 'text-warning';
+    return 'text-destructive';
   };
 
   const getProfitBadge = () => {
     if (calculations.netMarginPercent >= 30) {
-      return <Badge className="bg-green-500/20 text-green-500 border-green-500/30">Excellente marge</Badge>;
+      return <Badge className="bg-green-500/20 text-success border-green-500/30">Excellente marge</Badge>;
     }
     if (calculations.netMarginPercent >= 15) {
-      return <Badge className="bg-blue-500/20 text-blue-500 border-blue-500/30">Bonne marge</Badge>;
+      return <Badge className="bg-blue-500/20 text-info border-blue-500/30">Bonne marge</Badge>;
     }
     if (calculations.netMarginPercent >= 5) {
-      return <Badge className="bg-yellow-500/20 text-yellow-500 border-yellow-500/30">Marge faible</Badge>;
+      return <Badge className="bg-yellow-500/20 text-warning border-yellow-500/30">Marge faible</Badge>;
     }
-    return <Badge className="bg-red-500/20 text-red-500 border-red-500/30">Non rentable</Badge>;
+    return <Badge className="bg-red-500/20 text-destructive border-red-500/30">Non rentable</Badge>;
   };
 
   if (compact) {
@@ -346,30 +346,30 @@ export function ProfitCalculator({
               <span>{formatCurrency(calculations.revenue)}</span>
             </div>
             
-            <div className="flex justify-between text-red-500/80">
+            <div className="flex justify-between text-destructive/80">
               <span>- Coût d'achat</span>
               <span>{formatCurrency(purchasePrice)}</span>
             </div>
             
-            <div className="flex justify-between text-red-500/80">
+            <div className="flex justify-between text-destructive/80">
               <span>- Frais Stripe</span>
               <span>{formatCurrency(calculations.stripeFees)}</span>
             </div>
             
-            <div className="flex justify-between text-red-500/80">
+            <div className="flex justify-between text-destructive/80">
               <span>- Commission plateforme</span>
               <span>{formatCurrency(calculations.platformFees)}</span>
             </div>
             
             {fees.shippingCost > 0 && (
-              <div className="flex justify-between text-red-500/80">
+              <div className="flex justify-between text-destructive/80">
                 <span>- Livraison</span>
                 <span>{formatCurrency(fees.shippingCost)}</span>
               </div>
             )}
             
             {includeVat && calculations.vatAmount > 0 && (
-              <div className="flex justify-between text-orange-500/80">
+              <div className="flex justify-between text-warning/80">
                 <span>- TVA ({fees.vatPercent}%)</span>
                 <span>{formatCurrency(calculations.vatAmount)}</span>
               </div>
@@ -382,9 +382,9 @@ export function ProfitCalculator({
           <div className="flex justify-between items-center">
             <div className="flex items-center gap-2">
               {calculations.isProfitable ? (
-                <TrendingUp className="h-5 w-5 text-green-500" />
+                <TrendingUp className="h-5 w-5 text-success" />
               ) : (
-                <TrendingDown className="h-5 w-5 text-red-500" />
+                <TrendingDown className="h-5 w-5 text-destructive" />
               )}
               <span className="font-semibold">Profit net</span>
             </div>

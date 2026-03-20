@@ -36,7 +36,7 @@ export function StoreSelector({ selectedStoreId, onStoreChange }: StoreSelectorP
               </Avatar>
               <span className="font-medium">{store.name}</span>
               {store.is_active && (
-                <CheckCircle2 className="h-4 w-4 text-green-500" />
+                <CheckCircle2 className="h-4 w-4 text-success" />
               )}
             </div>
           </SelectItem>

@@ -243,7 +243,7 @@ export function VirtualizedProductTable({
                         {product.profit_margin ? (
                           <span className={cn(
                             "font-medium",
-                            product.profit_margin > 0 ? "text-emerald-600" : "text-red-600"
+                            product.profit_margin > 0 ? "text-success" : "text-destructive"
                           )}>
                             {product.profit_margin.toFixed(1)}%
                           </span>

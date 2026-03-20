@@ -23,9 +23,9 @@ export function WinningScoreCard() {
   }
 
   const getScoreColor = (score: number) => {
-    if (score >= 80) return 'text-green-600';
-    if (score >= 60) return 'text-yellow-600';
-    return 'text-red-600';
+    if (score >= 80) return 'text-success';
+    if (score >= 60) return 'text-warning';
+    return 'text-destructive';
   };
 
   const getScoreBadge = (score: number) => {
@@ -84,7 +84,7 @@ export function WinningScoreCard() {
 
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                     <div className="flex items-center gap-2">
-                      <TrendingUp className="w-4 h-4 text-blue-500" />
+                      <TrendingUp className="w-4 h-4 text-info" />
                       <div>
                         <p className="text-xs text-muted-foreground">Tendance</p>
                         <p className="font-semibold">{product.trend_score}%</p>
@@ -93,7 +93,7 @@ export function WinningScoreCard() {
                     
                     {product.viral_score && (
                       <div className="flex items-center gap-2">
-                        <Award className="w-4 h-4 text-orange-500" />
+                        <Award className="w-4 h-4 text-warning" />
                         <div>
                           <p className="text-xs text-muted-foreground">Viral</p>
                           <p className="font-semibold">{product.viral_score}%</p>
@@ -103,7 +103,7 @@ export function WinningScoreCard() {
                     
                     {product.profit_margin && (
                       <div className="flex items-center gap-2">
-                        <DollarSign className="w-4 h-4 text-green-500" />
+                        <DollarSign className="w-4 h-4 text-success" />
                         <div>
                           <p className="text-xs text-muted-foreground">Marge</p>
                           <p className="font-semibold">{product.profit_margin}%</p>

@@ -644,7 +644,7 @@ export default function CreateCustomer() {
                         <UserCircle2 className="h-5 w-5" />
                         <p className="font-medium">Profil complet</p>
                       </div>
-                      <div className="space-y-2 text-sm text-green-700 dark:text-green-300">
+                      <div className="space-y-2 text-sm text-success dark:text-green-300">
                         <div className="flex items-center gap-2">
                           <div className="h-2 w-2 rounded-full bg-green-500" />
                           <span>Informations de contact</span>

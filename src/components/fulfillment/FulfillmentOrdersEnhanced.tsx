@@ -261,7 +261,7 @@ export function FulfillmentOrdersEnhanced() {
                           onClick={() => retryMutation.mutate(order.id)}
                           disabled={retryMutation.isPending}
                         >
-                          <RotateCcw className="h-4 w-4 text-orange-500" />
+                          <RotateCcw className="h-4 w-4 text-warning" />
                         </Button>
                       )}
                       <Button 

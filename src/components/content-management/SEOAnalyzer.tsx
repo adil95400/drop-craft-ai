@@ -281,9 +281,9 @@ export function SEOAnalyzer({
   }, [title, content, metaDescription, focusKeyword]);
 
   const getScoreColor = (score: number) => {
-    if (score >= 80) return 'text-green-500';
-    if (score >= 50) return 'text-yellow-500';
-    return 'text-red-500';
+    if (score >= 80) return 'text-success';
+    if (score >= 50) return 'text-warning';
+    return 'text-destructive';
   };
 
   const getScoreLabel = (score: number) => {
@@ -316,8 +316,8 @@ export function SEOAnalyzer({
               check.status === 'good' ? CheckCircle :
               check.status === 'warning' ? AlertTriangle : XCircle;
             const statusColor = 
-              check.status === 'good' ? 'text-green-500' :
-              check.status === 'warning' ? 'text-yellow-500' : 'text-red-500';
+              check.status === 'good' ? 'text-success' :
+              check.status === 'warning' ? 'text-warning' : 'text-destructive';
 
             return (
               <div key={check.id} className="flex items-start gap-2 p-2 rounded-lg hover:bg-muted/50">

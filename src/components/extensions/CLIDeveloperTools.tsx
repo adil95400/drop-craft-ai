@@ -265,11 +265,11 @@ export const CLIDeveloperTools = () => {
                   <div key={index} className="flex items-center justify-between p-3 border rounded-lg">
                     <div className="flex items-center gap-3">
                       {test.status === 'passed' ? (
-                        <CheckCircle className="h-5 w-5 text-green-500" />
+                        <CheckCircle className="h-5 w-5 text-success" />
                       ) : test.status === 'warning' ? (
-                        <Clock className="h-5 w-5 text-yellow-500" />
+                        <Clock className="h-5 w-5 text-warning" />
                       ) : (
-                        <XCircle className="h-5 w-5 text-red-500" />
+                        <XCircle className="h-5 w-5 text-destructive" />
                       )}
                       <div>
                         <div className="font-medium">{test.name}</div>

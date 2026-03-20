@@ -110,10 +110,10 @@ export function AIRecommendations({ limit = 6, types }: AIRecommendationsProps) 
 
   const getTypeColor = (type: string) => {
     switch (type) {
-      case 'pricing': return 'text-green-600 bg-green-100';
-      case 'product': return 'text-blue-600 bg-blue-100';
+      case 'pricing': return 'text-success bg-green-100';
+      case 'product': return 'text-info bg-blue-100';
       case 'marketing': return 'text-purple-600 bg-purple-100';
-      case 'inventory': return 'text-orange-600 bg-orange-100';
+      case 'inventory': return 'text-warning bg-orange-100';
       case 'seo': return 'text-pink-600 bg-pink-100';
       default: return 'text-gray-600 bg-gray-100';
     }
@@ -226,7 +226,7 @@ export function AIRecommendations({ limit = 6, types }: AIRecommendationsProps) 
                 </div>
 
                 <div className="bg-white/50 p-2 rounded text-xs">
-                  <div className="flex items-center text-green-600 mb-1">
+                  <div className="flex items-center text-success mb-1">
                     <TrendingUp className="h-3 w-3 mr-1" />
                     <span className="font-medium">Impact prévu :</span>
                   </div>
@@ -237,7 +237,7 @@ export function AIRecommendations({ limit = 6, types }: AIRecommendationsProps) 
                   <div className="grid grid-cols-2 gap-2 text-xs">
                     {recommendation.metrics.potential_revenue && (
                       <div className="text-center p-1 bg-green-50 rounded">
-                        <div className="font-medium text-green-600">
+                        <div className="font-medium text-success">
                           +€{recommendation.metrics.potential_revenue}
                         </div>
                         <div className="text-muted-foreground">Revenus</div>
@@ -245,7 +245,7 @@ export function AIRecommendations({ limit = 6, types }: AIRecommendationsProps) 
                     )}
                     {recommendation.metrics.conversion_lift && (
                       <div className="text-center p-1 bg-blue-50 rounded">
-                        <div className="font-medium text-blue-600">
+                        <div className="font-medium text-info">
                           +{recommendation.metrics.conversion_lift}%
                         </div>
                         <div className="text-muted-foreground">Conversion</div>

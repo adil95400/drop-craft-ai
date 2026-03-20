@@ -108,16 +108,16 @@ export function WinningProductsMarketplace() {
   }, [user, toast])
 
   const getScoreColor = (score: number) => {
-    if (score >= 80) return 'text-green-600 bg-green-100'
-    if (score >= 60) return 'text-yellow-600 bg-yellow-100'
-    return 'text-red-600 bg-red-100'
+    if (score >= 80) return 'text-success bg-green-100'
+    if (score >= 60) return 'text-warning bg-yellow-100'
+    return 'text-destructive bg-red-100'
   }
 
   const getRiskColor = (risk: string) => {
     switch (risk) {
-      case 'low': return 'text-green-600 bg-green-100'
-      case 'medium': return 'text-yellow-600 bg-yellow-100'
-      case 'high': return 'text-red-600 bg-red-100'
+      case 'low': return 'text-success bg-green-100'
+      case 'medium': return 'text-warning bg-yellow-100'
+      case 'high': return 'text-destructive bg-red-100'
       default: return 'text-gray-600 bg-gray-100'
     }
   }
@@ -232,7 +232,7 @@ export function WinningProductsMarketplace() {
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center">
-              <Target className="h-8 w-8 text-blue-600" />
+              <Target className="h-8 w-8 text-info" />
               <div className="ml-3">
                 <p className="text-sm font-medium text-muted-foreground">Produits Analysés</p>
                 <p className="text-2xl font-bold">{filteredProducts.length}</p>
@@ -244,7 +244,7 @@ export function WinningProductsMarketplace() {
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center">
-              <TrendingUp className="h-8 w-8 text-green-600" />
+              <TrendingUp className="h-8 w-8 text-success" />
               <div className="ml-3">
                 <p className="text-sm font-medium text-muted-foreground">Score Moyen</p>
                 <p className="text-2xl font-bold">
@@ -260,7 +260,7 @@ export function WinningProductsMarketplace() {
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center">
-              <Zap className="h-8 w-8 text-yellow-600" />
+              <Zap className="h-8 w-8 text-warning" />
               <div className="ml-3">
                 <p className="text-sm font-medium text-muted-foreground">Produits Viraux</p>
                 <p className="text-2xl font-bold">
@@ -349,16 +349,16 @@ function ProductCard({ product, onImport, isImporting }: {
   isImporting?: boolean
 }) {
   const getScoreColor = (score: number) => {
-    if (score >= 80) return 'text-green-600 bg-green-100'
-    if (score >= 60) return 'text-yellow-600 bg-yellow-100'
-    return 'text-red-600 bg-red-100'
+    if (score >= 80) return 'text-success bg-green-100'
+    if (score >= 60) return 'text-warning bg-yellow-100'
+    return 'text-destructive bg-red-100'
   }
 
   const getRiskColor = (risk: string) => {
     switch (risk) {
-      case 'low': return 'text-green-600 bg-green-100'
-      case 'medium': return 'text-yellow-600 bg-yellow-100'  
-      case 'high': return 'text-red-600 bg-red-100'
+      case 'low': return 'text-success bg-green-100'
+      case 'medium': return 'text-warning bg-yellow-100'  
+      case 'high': return 'text-destructive bg-red-100'
       default: return 'text-gray-600 bg-gray-100'
     }
   }
@@ -368,7 +368,7 @@ function ProductCard({ product, onImport, isImporting }: {
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between">
           <div className="flex-1">
-            <h3 className="font-semibold text-lg line-clamp-2 group-hover:text-blue-600 transition-colors">
+            <h3 className="font-semibold text-lg line-clamp-2 group-hover:text-info transition-colors">
               {product.name}
             </h3>
             <p className="text-sm text-muted-foreground">{product.category}</p>
@@ -383,15 +383,15 @@ function ProductCard({ product, onImport, isImporting }: {
         {/* Key Metrics */}
         <div className="grid grid-cols-2 gap-3 text-sm">
           <div className="flex items-center">
-            <DollarSign className="h-4 w-4 text-green-600 mr-2" />
+            <DollarSign className="h-4 w-4 text-success mr-2" />
             <span className="font-medium">{product.price}€</span>
           </div>
           <div className="flex items-center">
-            <TrendingUp className="h-4 w-4 text-blue-600 mr-2" />
+            <TrendingUp className="h-4 w-4 text-info mr-2" />
             <span>ROI {product.projected_roi}%</span>
           </div>
           <div className="flex items-center">
-            <Zap className="h-4 w-4 text-yellow-600 mr-2" />
+            <Zap className="h-4 w-4 text-warning mr-2" />
             <span>Viral {product.social_proof.viral_potential}/100</span>
           </div>
           <div className="flex items-center">

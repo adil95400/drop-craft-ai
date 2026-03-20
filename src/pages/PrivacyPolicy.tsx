@@ -231,12 +231,12 @@ const PrivacyPolicy = () => {
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 <div className="text-center p-4">
-                  <Shield className="h-8 w-8 text-green-500 mx-auto mb-2" />
+                  <Shield className="h-8 w-8 text-success mx-auto mb-2" />
                   <h3 className="font-semibold text-sm">Données protégées</h3>
                   <p className="text-xs text-muted-foreground">Chiffrement AES-256 + TLS 1.3</p>
                 </div>
                 <div className="text-center p-4">
-                  <Lock className="h-8 w-8 text-blue-500 mx-auto mb-2" />
+                  <Lock className="h-8 w-8 text-info mx-auto mb-2" />
                   <h3 className="font-semibold text-sm">Aucune vente</h3>
                   <p className="text-xs text-muted-foreground">Vos données ne sont jamais vendues</p>
                 </div>
@@ -246,7 +246,7 @@ const PrivacyPolicy = () => {
                   <p className="text-xs text-muted-foreground">Accès, rectification, effacement</p>
                 </div>
                 <div className="text-center p-4">
-                  <Globe className="h-8 w-8 text-orange-500 mx-auto mb-2" />
+                  <Globe className="h-8 w-8 text-warning mx-auto mb-2" />
                   <h3 className="font-semibold text-sm">Hébergement UE</h3>
                   <p className="text-xs text-muted-foreground">Données stockées en Europe</p>
                 </div>

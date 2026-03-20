@@ -82,7 +82,7 @@ export default function WorkflowHistoryPage() {
 
   const statusIcon = (status: string) => {
     switch (status) {
-      case 'success': return <CheckCircle2 className="h-4 w-4 text-emerald-500" />
+      case 'success': return <CheckCircle2 className="h-4 w-4 text-success" />
       case 'failed': return <XCircle className="h-4 w-4 text-destructive" />
       case 'running': return <RotateCcw className="h-4 w-4 text-primary animate-spin" />
       default: return <Clock className="h-4 w-4 text-muted-foreground" />
@@ -91,7 +91,7 @@ export default function WorkflowHistoryPage() {
 
   const statusBadge = (status: string) => {
     const map: Record<string, string> = {
-      success: 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20',
+      success: 'bg-emerald-500/10 text-success border-emerald-500/20',
       failed: 'bg-destructive/10 text-destructive border-destructive/20',
       running: 'bg-primary/10 text-primary border-primary/20',
       skipped: 'bg-muted text-muted-foreground border-border',
@@ -116,9 +116,9 @@ export default function WorkflowHistoryPage() {
         <div className="grid gap-4 md:grid-cols-4 mb-6">
           {[
             { label: 'Exécutions totales', value: stats.total, icon: Activity, color: 'text-primary' },
-            { label: 'Réussies', value: stats.success, icon: CheckCircle2, color: 'text-emerald-500' },
+            { label: 'Réussies', value: stats.success, icon: CheckCircle2, color: 'text-success' },
             { label: 'Échouées', value: stats.failed, icon: XCircle, color: 'text-destructive' },
-            { label: 'Durée moyenne', value: `${stats.avgDuration}ms`, icon: Clock, color: 'text-amber-500' },
+            { label: 'Durée moyenne', value: `${stats.avgDuration}ms`, icon: Clock, color: 'text-warning' },
           ].map((kpi, i) => (
             <Card key={i}>
               <CardContent className="p-4 flex items-center gap-3">

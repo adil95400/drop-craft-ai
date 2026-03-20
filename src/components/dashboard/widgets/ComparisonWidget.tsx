@@ -130,7 +130,7 @@ export function ComparisonWidget({ settings }: ComparisonWidgetProps) {
                     }
                   </p>
                   <div className={`flex items-center gap-1 text-xs ${
-                    isNeutral ? 'text-muted-foreground' : isPositive ? 'text-green-500' : 'text-red-500'
+                    isNeutral ? 'text-muted-foreground' : isPositive ? 'text-success' : 'text-destructive'
                   }`}>
                     {isNeutral ? (
                       <Minus className="h-3 w-3" />

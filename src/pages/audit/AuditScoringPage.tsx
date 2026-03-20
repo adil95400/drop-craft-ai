@@ -41,19 +41,19 @@ export default function AuditScoringPage() {
   });
 
   const categoryConfig = [
-    { key: 'title', label: t('seo.titles'), icon: FileText, color: 'text-blue-600' },
+    { key: 'title', label: t('seo.titles'), icon: FileText, color: 'text-info' },
     { key: 'description', label: t('seo.descriptions'), icon: FileText, color: 'text-purple-600' },
-    { key: 'images', label: t('seo.images'), icon: Image, color: 'text-green-600' },
-    { key: 'price', label: t('scoring.fix'), icon: DollarSign, color: 'text-yellow-600' },
-    { key: 'attributes', label: t('seo.categories'), icon: Tag, color: 'text-orange-600' },
+    { key: 'images', label: t('seo.images'), icon: Image, color: 'text-success' },
+    { key: 'price', label: t('scoring.fix'), icon: DollarSign, color: 'text-warning' },
+    { key: 'attributes', label: t('seo.categories'), icon: Tag, color: 'text-warning' },
     { key: 'seo', label: 'SEO', icon: Globe, color: 'text-pink-600' },
   ];
 
   const getScoreColor = (score: number) => {
-    if (score >= 80) return 'text-green-600';
-    if (score >= 60) return 'text-yellow-600';
-    if (score >= 40) return 'text-orange-600';
-    return 'text-red-600';
+    if (score >= 80) return 'text-success';
+    if (score >= 60) return 'text-warning';
+    if (score >= 40) return 'text-warning';
+    return 'text-destructive';
   };
 
   const getScoreBg = (score: number) => {
@@ -117,19 +117,19 @@ export default function AuditScoringPage() {
               </div>
               <div className="grid grid-cols-4 gap-4 text-center">
                 <div className="p-3 rounded-lg bg-green-50 dark:bg-green-900/20">
-                  <div className="text-2xl font-bold text-green-600">{stats.excellentCount}</div>
+                  <div className="text-2xl font-bold text-success">{stats.excellentCount}</div>
                   <div className="text-xs text-muted-foreground">{t('scoring.excellents')}</div>
                 </div>
                 <div className="p-3 rounded-lg bg-yellow-50 dark:bg-yellow-900/20">
-                  <div className="text-2xl font-bold text-yellow-600">{stats.goodCount}</div>
+                  <div className="text-2xl font-bold text-warning">{stats.goodCount}</div>
                   <div className="text-xs text-muted-foreground">{t('scoring.goods')}</div>
                 </div>
                 <div className="p-3 rounded-lg bg-orange-50 dark:bg-orange-900/20">
-                  <div className="text-2xl font-bold text-orange-600">{stats.needsWorkCount}</div>
+                  <div className="text-2xl font-bold text-warning">{stats.needsWorkCount}</div>
                   <div className="text-xs text-muted-foreground">{t('scoring.toImproveLabel')}</div>
                 </div>
                 <div className="p-3 rounded-lg bg-red-50 dark:bg-red-900/20">
-                  <div className="text-2xl font-bold text-red-600">{stats.poorCount}</div>
+                  <div className="text-2xl font-bold text-destructive">{stats.poorCount}</div>
                   <div className="text-xs text-muted-foreground">{t('scoring.criticalLabel')}</div>
                 </div>
               </div>
@@ -185,8 +185,8 @@ export default function AuditScoringPage() {
                 )}>
                   <div className="flex items-center gap-4">
                     <AlertCircle className={cn('h-5 w-5',
-                      issue.type === 'error' ? 'text-red-600' : 
-                      issue.type === 'warning' ? 'text-yellow-600' : 'text-blue-600'
+                      issue.type === 'error' ? 'text-destructive' : 
+                      issue.type === 'warning' ? 'text-warning' : 'text-info'
                     )} />
                     <div>
                       <span className="font-medium">{issue.message}</span>

@@ -155,7 +155,7 @@ export function ApiTab() {
       <Card className="border-yellow-500/30 bg-yellow-500/5">
         <CardContent className="pt-6">
           <div className="flex gap-3">
-            <AlertTriangle className="h-5 w-5 text-yellow-500 flex-shrink-0 mt-0.5" />
+            <AlertTriangle className="h-5 w-5 text-warning flex-shrink-0 mt-0.5" />
             <div className="space-y-2">
               <h5 className="font-semibold text-yellow-700 dark:text-yellow-400">Sécurité des clés API</h5>
               <ul className="space-y-1 text-sm text-muted-foreground">

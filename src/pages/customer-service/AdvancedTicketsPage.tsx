@@ -107,10 +107,10 @@ export default function AdvancedTicketsPage() {
         <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-6">
           {[
             { label: 'Total tickets', value: stats.total, icon: Ticket, color: 'text-primary' },
-            { label: 'Ouverts', value: stats.open, icon: AlertCircle, color: 'text-amber-500' },
+            { label: 'Ouverts', value: stats.open, icon: AlertCircle, color: 'text-warning' },
             { label: 'SLA dépassé', value: stats.breached, icon: Clock, color: 'text-destructive' },
-            { label: 'Âge moyen (h)', value: stats.avgAge, icon: TrendingUp, color: 'text-blue-500' },
-            { label: "Résolus aujourd'hui", value: stats.resolvedToday, icon: CheckCircle, color: 'text-emerald-500' },
+            { label: 'Âge moyen (h)', value: stats.avgAge, icon: TrendingUp, color: 'text-info' },
+            { label: "Résolus aujourd'hui", value: stats.resolvedToday, icon: CheckCircle, color: 'text-success' },
           ].map((s, i) => (
             <Card key={i}>
               <CardContent className="p-4 flex items-center gap-3">
@@ -202,7 +202,7 @@ export default function AdvancedTicketsPage() {
                           />
                           <span className={cn(
                             "text-[10px]",
-                            ticket.isBreached ? "text-destructive font-medium" : ticket.isWarning ? "text-amber-600" : "text-muted-foreground"
+                            ticket.isBreached ? "text-destructive font-medium" : ticket.isWarning ? "text-warning" : "text-muted-foreground"
                           )}>
                             {ticket.isBreached ? 'Dépassé !' : `${Math.round(ticket.slaPercentage)}%`}
                           </span>

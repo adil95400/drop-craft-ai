@@ -176,13 +176,13 @@ export const PerformanceOptimizer = () => {
 
   const getMetricColor = (value: number, reversed = false) => {
     if (reversed) {
-      if (value > 70) return 'text-red-500'
-      if (value > 40) return 'text-yellow-500'
-      return 'text-green-500'
+      if (value > 70) return 'text-destructive'
+      if (value > 40) return 'text-warning'
+      return 'text-success'
     } else {
-      if (value > 70) return 'text-green-500'
-      if (value > 40) return 'text-yellow-500'
-      return 'text-red-500'
+      if (value > 70) return 'text-success'
+      if (value > 40) return 'text-warning'
+      return 'text-destructive'
     }
   }
 
@@ -249,7 +249,7 @@ export const PerformanceOptimizer = () => {
             <Card>
               <CardContent className="p-4">
                 <div className="flex items-center gap-3">
-                  <Monitor className="h-5 w-5 text-blue-500" />
+                  <Monitor className="h-5 w-5 text-info" />
                   <div>
                     <p className="text-sm text-muted-foreground">FPS</p>
                     <p className={`text-xl font-bold ${getMetricColor(metrics.fps)}`}>
@@ -264,7 +264,7 @@ export const PerformanceOptimizer = () => {
             <Card>
               <CardContent className="p-4">
                 <div className="flex items-center gap-3">
-                  <Cpu className="h-5 w-5 text-orange-500" />
+                  <Cpu className="h-5 w-5 text-warning" />
                   <div>
                     <p className="text-sm text-muted-foreground">Mémoire</p>
                     <p className={`text-xl font-bold ${getMetricColor(metrics.memoryUsage, true)}`}>
@@ -279,7 +279,7 @@ export const PerformanceOptimizer = () => {
             <Card>
               <CardContent className="p-4">
                 <div className="flex items-center gap-3">
-                  <Wifi className="h-5 w-5 text-green-500" />
+                  <Wifi className="h-5 w-5 text-success" />
                   <div>
                     <p className="text-sm text-muted-foreground">Latence</p>
                     <p className={`text-xl font-bold ${getMetricColor(300 - metrics.networkLatency)}`}>
@@ -382,7 +382,7 @@ export const PerformanceOptimizer = () => {
           ) : (
             <Card>
               <CardContent className="p-8 text-center">
-                <CheckCircle className="h-12 w-12 text-green-500 mx-auto mb-4" />
+                <CheckCircle className="h-12 w-12 text-success mx-auto mb-4" />
                 <h3 className="text-lg font-medium mb-2">Performances optimales!</h3>
                 <p className="text-muted-foreground">
                   Aucune optimisation nécessaire pour le moment.

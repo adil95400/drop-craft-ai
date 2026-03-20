@@ -20,11 +20,11 @@ export function CatalogHealthCard({ health }: CatalogHealthCardProps) {
     ? Math.round(((health.healthy * 100) + (health.warning * 50) + (health.critical * 10)) / health.total)
     : 0
 
-  const scoreColor = overallScore >= 70 ? 'text-green-600' : overallScore >= 40 ? 'text-yellow-600' : 'text-destructive'
+  const scoreColor = overallScore >= 70 ? 'text-success' : overallScore >= 40 ? 'text-warning' : 'text-destructive'
 
   const segments = [
-    { label: 'Complets', count: health.healthy, percent: healthPercent, icon: CheckCircle2, color: 'text-green-600', bg: 'bg-green-500' },
-    { label: 'Partiels', count: health.warning, percent: warningPercent, icon: AlertTriangle, color: 'text-yellow-600', bg: 'bg-yellow-500' },
+    { label: 'Complets', count: health.healthy, percent: healthPercent, icon: CheckCircle2, color: 'text-success', bg: 'bg-green-500' },
+    { label: 'Partiels', count: health.warning, percent: warningPercent, icon: AlertTriangle, color: 'text-warning', bg: 'bg-yellow-500' },
     { label: 'Critiques', count: health.critical, percent: criticalPercent, icon: XCircle, color: 'text-destructive', bg: 'bg-destructive' },
   ]
 

@@ -181,7 +181,7 @@ export function ImportOnboardingModal({
             {step.features.map((feature, index) => (
               <div key={index} className="flex items-center gap-3">
                 <div className="w-5 h-5 rounded-full bg-green-500/20 flex items-center justify-center flex-shrink-0">
-                  <Check className="w-3 h-3 text-green-600" />
+                  <Check className="w-3 h-3 text-success" />
                 </div>
                 <span className="text-sm">{feature}</span>
               </div>

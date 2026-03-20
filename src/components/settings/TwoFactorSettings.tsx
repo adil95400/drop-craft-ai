@@ -152,7 +152,7 @@ export default function TwoFactorSettings() {
           ) : isEnabled ? (
             <div className="space-y-4">
               <div className="flex items-center gap-3 p-3 rounded-lg bg-green-500/10 border border-green-500/20">
-                <CheckCircle2 className="h-5 w-5 text-green-600 shrink-0" />
+                <CheckCircle2 className="h-5 w-5 text-success shrink-0" />
                 <div>
                   <p className="text-sm font-medium text-foreground">2FA active</p>
                   <p className="text-xs text-muted-foreground">
@@ -216,7 +216,7 @@ export default function TwoFactorSettings() {
           ) : (
             <div className="space-y-3">
               <div className="flex items-center gap-3 p-3 rounded-lg bg-amber-500/10 border border-amber-500/20">
-                <AlertTriangle className="h-5 w-5 text-amber-600 shrink-0" />
+                <AlertTriangle className="h-5 w-5 text-warning shrink-0" />
                 <div>
                   <p className="text-sm font-medium text-foreground">Compte non protégé</p>
                   <p className="text-xs text-muted-foreground">

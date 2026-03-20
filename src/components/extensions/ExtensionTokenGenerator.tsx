@@ -222,8 +222,8 @@ export function ExtensionTokenGenerator() {
           {generatedToken ? (
             <div className="space-y-4">
               <Alert className="border-green-500/50 bg-green-500/10">
-                <CheckCircle className="h-4 w-4 text-green-500" />
-                <AlertDescription className="text-green-700 dark:text-green-400">
+                <CheckCircle className="h-4 w-4 text-success" />
+                <AlertDescription className="text-success dark:text-green-400">
                   Token généré avec succès ! Copiez-le maintenant, il ne sera plus affiché.
                 </AlertDescription>
               </Alert>
@@ -246,7 +246,7 @@ export function ExtensionTokenGenerator() {
                       onClick={() => copyToClipboard(generatedToken.token, 'token')}
                     >
                       {copied === 'token' ? (
-                        <CheckCircle className="h-4 w-4 text-green-500" />
+                        <CheckCircle className="h-4 w-4 text-success" />
                       ) : (
                         <Copy className="h-4 w-4" />
                       )}
@@ -271,7 +271,7 @@ export function ExtensionTokenGenerator() {
                       onClick={() => copyToClipboard(generatedToken.refreshToken, 'refresh')}
                     >
                       {copied === 'refresh' ? (
-                        <CheckCircle className="h-4 w-4 text-green-500" />
+                        <CheckCircle className="h-4 w-4 text-success" />
                       ) : (
                         <Copy className="h-4 w-4" />
                       )}

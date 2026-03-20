@@ -72,10 +72,10 @@ export function AutomatedMarketingSync() {
                 {isLoadingStats ? (
                   <Skeleton className="h-8 w-12 mt-1" />
                 ) : (
-                  <p className="text-2xl font-bold text-green-600">{stats?.active_rules || 0}</p>
+                  <p className="text-2xl font-bold text-success">{stats?.active_rules || 0}</p>
                 )}
               </div>
-              <PlayCircle className="h-8 w-8 text-green-600" />
+              <PlayCircle className="h-8 w-8 text-success" />
             </div>
           </CardContent>
         </Card>
@@ -102,10 +102,10 @@ export function AutomatedMarketingSync() {
                 {isLoadingStats ? (
                   <Skeleton className="h-8 w-14 mt-1" />
                 ) : (
-                  <p className="text-2xl font-bold text-green-600">{stats?.success_rate || 0}%</p>
+                  <p className="text-2xl font-bold text-success">{stats?.success_rate || 0}%</p>
                 )}
               </div>
-              <CheckCircle2 className="h-8 w-8 text-green-600" />
+              <CheckCircle2 className="h-8 w-8 text-success" />
             </div>
           </CardContent>
         </Card>

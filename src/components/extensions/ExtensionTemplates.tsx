@@ -228,7 +228,7 @@ export const ExtensionTemplates = () => {
 
   const getDifficultyColor = (difficulty: string) => {
     switch (difficulty) {
-      case 'beginner': return 'bg-green-100 text-green-800'
+      case 'beginner': return 'bg-green-100 text-success'
       case 'intermediate': return 'bg-yellow-100 text-yellow-800'
       case 'advanced': return 'bg-red-100 text-red-800'
       default: return 'bg-gray-100 text-gray-800'
@@ -533,7 +533,7 @@ export const ExtensionTemplates = () => {
         </Card>
         <Card>
           <CardContent className="p-4 text-center">
-            <div className="text-2xl font-bold text-green-600">
+            <div className="text-2xl font-bold text-success">
               {TEMPLATES.reduce((sum, t) => sum + t.downloads, 0).toLocaleString()}
             </div>
             <div className="text-sm text-muted-foreground">Téléchargements totaux</div>
@@ -541,7 +541,7 @@ export const ExtensionTemplates = () => {
         </Card>
         <Card>
           <CardContent className="p-4 text-center">
-            <div className="text-2xl font-bold text-blue-600">
+            <div className="text-2xl font-bold text-info">
               {(TEMPLATES.reduce((sum, t) => sum + t.rating, 0) / TEMPLATES.length).toFixed(1)}
             </div>
             <div className="text-sm text-muted-foreground">Note moyenne</div>

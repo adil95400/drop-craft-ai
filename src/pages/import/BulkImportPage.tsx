@@ -74,11 +74,11 @@ export default function BulkImportPage() {
 
   const getStatusConfig = (status: string) => {
     const configs: Record<string, { icon: any; color: string; bgColor: string; label: string }> = {
-      completed: { icon: CheckCircle, color: 'text-green-500', bgColor: 'bg-green-500/10', label: 'Terminé' },
-      processing: { icon: RefreshCw, color: 'text-blue-500', bgColor: 'bg-blue-500/10', label: 'En cours' },
-      failed: { icon: AlertCircle, color: 'text-red-500', bgColor: 'bg-red-500/10', label: 'Échoué' },
-      pending: { icon: Clock, color: 'text-amber-500', bgColor: 'bg-amber-500/10', label: 'En attente' },
-      partial: { icon: AlertCircle, color: 'text-orange-500', bgColor: 'bg-orange-500/10', label: 'Partiel' },
+      completed: { icon: CheckCircle, color: 'text-success', bgColor: 'bg-green-500/10', label: 'Terminé' },
+      processing: { icon: RefreshCw, color: 'text-info', bgColor: 'bg-blue-500/10', label: 'En cours' },
+      failed: { icon: AlertCircle, color: 'text-destructive', bgColor: 'bg-red-500/10', label: 'Échoué' },
+      pending: { icon: Clock, color: 'text-warning', bgColor: 'bg-amber-500/10', label: 'En attente' },
+      partial: { icon: AlertCircle, color: 'text-warning', bgColor: 'bg-orange-500/10', label: 'Partiel' },
     }
     return configs[status] || configs.pending
   }
@@ -114,8 +114,8 @@ export default function BulkImportPage() {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {[
           { label: 'Imports totaux', value: stats.total, icon: Database, color: 'text-primary' },
-          { label: 'En cours', value: stats.processing, icon: RefreshCw, color: 'text-blue-500' },
-          { label: 'Terminés', value: stats.completed, icon: CheckCircle, color: 'text-green-500' },
+          { label: 'En cours', value: stats.processing, icon: RefreshCw, color: 'text-info' },
+          { label: 'Terminés', value: stats.completed, icon: CheckCircle, color: 'text-success' },
           { label: 'Produits', value: stats.totalProducts, icon: Package, color: 'text-purple-500' },
         ].map((stat, idx) => (
           <motion.div
@@ -201,12 +201,12 @@ export default function BulkImportPage() {
                         </p>
                         <div className="flex items-center gap-4 text-sm text-muted-foreground">
                           <span className="flex items-center gap-1">
-                            <CheckCircle className="w-3 h-3 text-green-500" />
+                            <CheckCircle className="w-3 h-3 text-success" />
                             {job.successful_imports} réussis
                           </span>
                           {job.failed_imports > 0 && (
                             <span className="flex items-center gap-1">
-                              <AlertCircle className="w-3 h-3 text-red-500" />
+                              <AlertCircle className="w-3 h-3 text-destructive" />
                               {job.failed_imports} erreurs
                             </span>
                           )}

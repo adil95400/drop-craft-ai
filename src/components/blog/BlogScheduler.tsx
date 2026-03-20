@@ -129,7 +129,7 @@ export function BlogScheduler() {
       case 'scheduled':
         return 'bg-blue-100 text-blue-800'
       case 'published':
-        return 'bg-green-100 text-green-800'
+        return 'bg-green-100 text-success'
       case 'failed':
         return 'bg-red-100 text-red-800'
       default:
@@ -464,7 +464,7 @@ export function BlogScheduler() {
                         <h3 className="font-medium">{rule.name}</h3>
                         <Badge variant="outline">{rule.category}</Badge>
                         {rule.isActive ? (
-                          <Badge className="bg-green-100 text-green-800">Actif</Badge>
+                          <Badge className="bg-green-100 text-success">Actif</Badge>
                         ) : (
                           <Badge variant="secondary">Inactif</Badge>
                         )}
@@ -504,7 +504,7 @@ export function BlogScheduler() {
               <CardContent className="p-6">
                 <div className="flex items-center gap-3">
                   <div className="p-3 bg-blue-100 rounded-full">
-                    <CalendarIcon className="h-6 w-6 text-blue-600" />
+                    <CalendarIcon className="h-6 w-6 text-info" />
                   </div>
                   <div>
                     <p className="text-2xl font-bold">{scheduledPosts.length}</p>
@@ -518,7 +518,7 @@ export function BlogScheduler() {
               <CardContent className="p-6">
                 <div className="flex items-center gap-3">
                   <div className="p-3 bg-green-100 rounded-full">
-                    <Settings className="h-6 w-6 text-green-600" />
+                    <Settings className="h-6 w-6 text-success" />
                   </div>
                   <div>
                     <p className="text-2xl font-bold">{automationRules.filter(r => r.isActive).length}</p>

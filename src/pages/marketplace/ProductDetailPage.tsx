@@ -215,7 +215,7 @@ const ProductDetailPage: React.FC = () => {
                   </Badge>
                 )}
               </div>
-              <p className="text-sm text-green-600 font-medium">
+              <p className="text-sm text-success font-medium">
                 Livraison gratuite • En stock ({product.stock} disponibles)
               </p>
             </div>

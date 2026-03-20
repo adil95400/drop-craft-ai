@@ -260,9 +260,9 @@ export const SecurityAudit = () => {
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'passed': return <CheckCircle className="w-4 h-4 text-green-600" />
-      case 'warning': return <AlertTriangle className="w-4 h-4 text-yellow-600" />
-      case 'failed': return <AlertTriangle className="w-4 h-4 text-red-600" />
+      case 'passed': return <CheckCircle className="w-4 h-4 text-success" />
+      case 'warning': return <AlertTriangle className="w-4 h-4 text-warning" />
+      case 'failed': return <AlertTriangle className="w-4 h-4 text-destructive" />
       default: return <Clock className="w-4 h-4 text-gray-400" />
     }
   }
@@ -271,7 +271,7 @@ export const SecurityAudit = () => {
     const variants = {
       high: 'bg-red-100 text-red-800 border-red-200',
       medium: 'bg-yellow-100 text-yellow-800 border-yellow-200',
-      low: 'bg-green-100 text-green-800 border-green-200'
+      low: 'bg-green-100 text-success border-green-200'
     }
     
     return (
@@ -282,9 +282,9 @@ export const SecurityAudit = () => {
   }
 
   const getScoreColor = (score: number) => {
-    if (score >= 90) return 'text-green-600'
-    if (score >= 70) return 'text-yellow-600'
-    return 'text-red-600'
+    if (score >= 90) return 'text-success'
+    if (score >= 70) return 'text-warning'
+    return 'text-destructive'
   }
 
   const formatTimestamp = (timestamp: string) => {
@@ -345,19 +345,19 @@ export const SecurityAudit = () => {
             
             <div className="grid grid-cols-3 gap-4 text-center">
               <div>
-                <div className="text-2xl font-bold text-green-600">
+                <div className="text-2xl font-bold text-success">
                   {auditResults.filter(r => r.status === 'passed').length}
                 </div>
                 <div className="text-sm text-muted-foreground">Tests réussis</div>
               </div>
               <div>
-                <div className="text-2xl font-bold text-yellow-600">
+                <div className="text-2xl font-bold text-warning">
                   {auditResults.filter(r => r.status === 'warning').length}
                 </div>
                 <div className="text-sm text-muted-foreground">Avertissements</div>
               </div>
               <div>
-                <div className="text-2xl font-bold text-red-600">
+                <div className="text-2xl font-bold text-destructive">
                   {auditResults.filter(r => r.status === 'failed').length}
                 </div>
                 <div className="text-sm text-muted-foreground">Échecs critiques</div>
@@ -539,9 +539,9 @@ export const SecurityAudit = () => {
                 {accessLogs.map(log => (
                   <div key={log.id} className="flex items-center gap-3 p-3 rounded-lg bg-muted/30">
                     {log.success ? (
-                      <CheckCircle className="w-4 h-4 text-green-600" />
+                      <CheckCircle className="w-4 h-4 text-success" />
                     ) : (
-                      <AlertTriangle className="w-4 h-4 text-red-600" />
+                      <AlertTriangle className="w-4 h-4 text-destructive" />
                     )}
                     
                     <div className="flex-1 min-w-0">
@@ -582,19 +582,19 @@ export const SecurityAudit = () => {
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
                     <span>Consentement des données</span>
-                    <CheckCircle className="w-5 h-5 text-green-600" />
+                    <CheckCircle className="w-5 h-5 text-success" />
                   </div>
                   <div className="flex items-center justify-between">
                     <span>Droit à l'oubli</span>
-                    <CheckCircle className="w-5 h-5 text-green-600" />
+                    <CheckCircle className="w-5 h-5 text-success" />
                   </div>
                   <div className="flex items-center justify-between">
                     <span>Portabilité des données</span>
-                    <AlertTriangle className="w-5 h-5 text-yellow-600" />
+                    <AlertTriangle className="w-5 h-5 text-warning" />
                   </div>
                   <div className="flex items-center justify-between">
                     <span>Chiffrement des données</span>
-                    <CheckCircle className="w-5 h-5 text-green-600" />
+                    <CheckCircle className="w-5 h-5 text-success" />
                   </div>
                 </div>
               </CardContent>
@@ -611,19 +611,19 @@ export const SecurityAudit = () => {
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
                     <span>Réseau sécurisé</span>
-                    <CheckCircle className="w-5 h-5 text-green-600" />
+                    <CheckCircle className="w-5 h-5 text-success" />
                   </div>
                   <div className="flex items-center justify-between">
                     <span>Protection des données</span>
-                    <CheckCircle className="w-5 h-5 text-green-600" />
+                    <CheckCircle className="w-5 h-5 text-success" />
                   </div>
                   <div className="flex items-center justify-between">
                     <span>Gestion des vulnérabilités</span>
-                    <AlertTriangle className="w-5 h-5 text-yellow-600" />
+                    <AlertTriangle className="w-5 h-5 text-warning" />
                   </div>
                   <div className="flex items-center justify-between">
                     <span>Contrôle d'accès</span>
-                    <CheckCircle className="w-5 h-5 text-green-600" />
+                    <CheckCircle className="w-5 h-5 text-success" />
                   </div>
                 </div>
               </CardContent>
@@ -640,19 +640,19 @@ export const SecurityAudit = () => {
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
                     <span>Politique de sécurité</span>
-                    <CheckCircle className="w-5 h-5 text-green-600" />
+                    <CheckCircle className="w-5 h-5 text-success" />
                   </div>
                   <div className="flex items-center justify-between">
                     <span>Gestion des risques</span>
-                    <CheckCircle className="w-5 h-5 text-green-600" />
+                    <CheckCircle className="w-5 h-5 text-success" />
                   </div>
                   <div className="flex items-center justify-between">
                     <span>Formation du personnel</span>
-                    <AlertTriangle className="w-5 h-5 text-yellow-600" />
+                    <AlertTriangle className="w-5 h-5 text-warning" />
                   </div>
                   <div className="flex items-center justify-between">
                     <span>Continuité d'activité</span>
-                    <CheckCircle className="w-5 h-5 text-green-600" />
+                    <CheckCircle className="w-5 h-5 text-success" />
                   </div>
                 </div>
               </CardContent>
@@ -669,19 +669,19 @@ export const SecurityAudit = () => {
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
                     <span>Sécurité</span>
-                    <CheckCircle className="w-5 h-5 text-green-600" />
+                    <CheckCircle className="w-5 h-5 text-success" />
                   </div>
                   <div className="flex items-center justify-between">
                     <span>Disponibilité</span>
-                    <CheckCircle className="w-5 h-5 text-green-600" />
+                    <CheckCircle className="w-5 h-5 text-success" />
                   </div>
                   <div className="flex items-center justify-between">
                     <span>Intégrité des données</span>
-                    <CheckCircle className="w-5 h-5 text-green-600" />
+                    <CheckCircle className="w-5 h-5 text-success" />
                   </div>
                   <div className="flex items-center justify-between">
                     <span>Confidentialité</span>
-                    <AlertTriangle className="w-5 h-5 text-yellow-600" />
+                    <AlertTriangle className="w-5 h-5 text-warning" />
                   </div>
                 </div>
               </CardContent>

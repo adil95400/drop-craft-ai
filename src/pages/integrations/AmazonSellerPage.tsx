@@ -124,7 +124,7 @@ export default function AmazonSellerPage() {
             <h1 className="text-2xl font-bold flex items-center gap-2">
               Amazon Seller Central
               {isConnected ? (
-                <Badge className="bg-green-500/10 text-green-600 border-green-500/30"><CheckCircle2 className="h-3 w-3 mr-1" />Connecté</Badge>
+                <Badge className="bg-green-500/10 text-success border-green-500/30"><CheckCircle2 className="h-3 w-3 mr-1" />Connecté</Badge>
               ) : (
                 <Badge variant="secondary"><AlertCircle className="h-3 w-3 mr-1" />Non connecté</Badge>
               )}
@@ -207,7 +207,7 @@ export default function AmazonSellerPage() {
                 <p className="text-sm font-medium">Fonctionnalités Amazon prises en charge</p>
                 <div className="grid grid-cols-2 gap-2 text-xs text-muted-foreground">
                   {['FBA & FBM', 'Buy Box Tracker', 'Multi-marketplace', 'A+ Content', 'Repricing', 'Ads PPC', 'Reviews', 'Rapports'].map(f => (
-                    <span key={f} className="flex items-center gap-1"><CheckCircle2 className="h-3 w-3 text-green-500" />{f}</span>
+                    <span key={f} className="flex items-center gap-1"><CheckCircle2 className="h-3 w-3 text-success" />{f}</span>
                   ))}
                 </div>
               </div>
@@ -238,7 +238,7 @@ export default function AmazonSellerPage() {
                     <CardDescription className="flex items-center gap-2"><s.icon className="h-4 w-4" />{s.label}</CardDescription>
                     <CardTitle className="text-2xl flex items-center gap-2">
                       {s.value}
-                      <Badge variant="secondary" className={`text-xs ${s.up ? 'text-green-600' : 'text-red-500'}`}>
+                      <Badge variant="secondary" className={`text-xs ${s.up ? 'text-success' : 'text-destructive'}`}>
                         {s.up ? <ArrowUpRight className="h-3 w-3" /> : <ArrowDownRight className="h-3 w-3" />}{s.trend}
                       </Badge>
                     </CardTitle>
@@ -325,7 +325,7 @@ export default function AmazonSellerPage() {
                     { text: 'Optimiser les frais d\'expédition FBM pour améliorer la compétitivité', priority: 'low' },
                   ].map((r, i) => (
                     <div key={i} className="flex items-start gap-3 p-3 rounded-lg border">
-                      <Star className={`h-4 w-4 mt-0.5 ${r.priority === 'high' ? 'text-red-500' : r.priority === 'medium' ? 'text-yellow-500' : 'text-muted-foreground'}`} />
+                      <Star className={`h-4 w-4 mt-0.5 ${r.priority === 'high' ? 'text-destructive' : r.priority === 'medium' ? 'text-warning' : 'text-muted-foreground'}`} />
                       <p className="text-sm">{r.text}</p>
                     </div>
                   ))}

@@ -34,7 +34,7 @@ const JOB_ICONS: Record<string, React.ElementType> = {
 const STATUS_CONFIG = {
   pending: { label: 'En attente', color: 'bg-muted text-muted-foreground', icon: Clock },
   running: { label: 'En cours', color: 'bg-primary/15 text-primary', icon: Loader2 },
-  completed: { label: 'Terminé', color: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400', icon: CheckCircle2 },
+  completed: { label: 'Terminé', color: 'bg-green-100 text-success dark:bg-green-900/30 dark:text-green-400', icon: CheckCircle2 },
   failed: { label: 'Échoué', color: 'bg-destructive/15 text-destructive', icon: XCircle },
   cancelled: { label: 'Annulé', color: 'bg-muted text-muted-foreground', icon: X },
 }
@@ -240,7 +240,7 @@ function JobItemRow({ item }: { item: any }) {
       isFail && 'bg-destructive/5',
     )}>
       {isSuccess ? (
-        <CheckCircle2 className="h-3 w-3 text-green-600 shrink-0" />
+        <CheckCircle2 className="h-3 w-3 text-success shrink-0" />
       ) : isFail ? (
         <XCircle className="h-3 w-3 text-destructive shrink-0" />
       ) : (

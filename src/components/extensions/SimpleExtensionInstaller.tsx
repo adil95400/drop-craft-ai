@@ -80,7 +80,7 @@ const SimpleExtensionInstaller: React.FC<SimpleExtensionInstallerProps> = ({
           <div>
             <CardTitle className="flex items-center gap-2">
               {extension.name}
-              {isInstalled && <CheckCircle className="w-5 h-5 text-green-500" />}
+              {isInstalled && <CheckCircle className="w-5 h-5 text-success" />}
             </CardTitle>
             <CardDescription>{extension.description}</CardDescription>
           </div>

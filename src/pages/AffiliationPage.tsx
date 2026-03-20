@@ -275,7 +275,7 @@ const AffiliationPage = () => {
                         <tr key={c.id} className="border-b">
                           <td className="p-3 font-medium">{c.affiliateName}</td>
                           <td className="p-3">€{c.saleAmount.toFixed(2)}</td>
-                          <td className="p-3 font-bold text-green-600">€{c.commissionAmount.toFixed(2)}</td>
+                          <td className="p-3 font-bold text-success">€{c.commissionAmount.toFixed(2)}</td>
                           <td className="p-3 text-muted-foreground">{c.date}</td>
                           <td className="p-3"><Badge variant="default">Approuvé</Badge></td>
                         </tr>

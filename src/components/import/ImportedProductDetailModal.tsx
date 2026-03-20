@@ -419,7 +419,7 @@ export function ImportedProductDetailModal({
                           )}
                         </div>
                         <div className="text-right">
-                          <p className={variant.stock_quantity > 0 ? 'text-green-600' : 'text-red-600'}>
+                          <p className={variant.stock_quantity > 0 ? 'text-success' : 'text-destructive'}>
                             {variant.stock_quantity} en stock
                           </p>
                         </div>

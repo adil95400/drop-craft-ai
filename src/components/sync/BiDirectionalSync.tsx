@@ -116,9 +116,9 @@ export function BiDirectionalSync() {
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'success': return <CheckCircle className="w-4 h-4 text-green-600" />
-      case 'failed': return <AlertTriangle className="w-4 h-4 text-red-600" />
-      case 'conflict': return <AlertTriangle className="w-4 h-4 text-yellow-600" />
+      case 'success': return <CheckCircle className="w-4 h-4 text-success" />
+      case 'failed': return <AlertTriangle className="w-4 h-4 text-destructive" />
+      case 'conflict': return <AlertTriangle className="w-4 h-4 text-warning" />
       default: return <Clock className="w-4 h-4 text-muted-foreground" />
     }
   }
@@ -148,9 +148,9 @@ export function BiDirectionalSync() {
       </Card>
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card><CardContent className="pt-6"><div className="text-2xl font-bold text-green-600">{syncRules.filter(r => r.is_active).length}</div><p className="text-xs text-muted-foreground">Règles actives</p></CardContent></Card>
-        <Card><CardContent className="pt-6"><div className="text-2xl font-bold text-blue-600">{syncActivity.filter(a => a.status === 'success').length}</div><p className="text-xs text-muted-foreground">Syncs réussies</p></CardContent></Card>
-        <Card><CardContent className="pt-6"><div className="text-2xl font-bold text-yellow-600">{syncActivity.filter(a => a.status === 'conflict').length}</div><p className="text-xs text-muted-foreground">Conflits</p></CardContent></Card>
+        <Card><CardContent className="pt-6"><div className="text-2xl font-bold text-success">{syncRules.filter(r => r.is_active).length}</div><p className="text-xs text-muted-foreground">Règles actives</p></CardContent></Card>
+        <Card><CardContent className="pt-6"><div className="text-2xl font-bold text-info">{syncActivity.filter(a => a.status === 'success').length}</div><p className="text-xs text-muted-foreground">Syncs réussies</p></CardContent></Card>
+        <Card><CardContent className="pt-6"><div className="text-2xl font-bold text-warning">{syncActivity.filter(a => a.status === 'conflict').length}</div><p className="text-xs text-muted-foreground">Conflits</p></CardContent></Card>
         <Card><CardContent className="pt-6"><div className="text-2xl font-bold">{syncRules.length > 0 ? Math.round(syncRules.reduce((a, r) => a + r.success_rate, 0) / syncRules.length) : 0}%</div><p className="text-xs text-muted-foreground">Taux de succès</p></CardContent></Card>
       </div>
 
@@ -207,7 +207,7 @@ export function BiDirectionalSync() {
                       </div>
                       <div className="space-y-1 text-xs text-muted-foreground">
                         <div className="flex justify-between"><span>Éléments traités:</span><span>{activity.processed_items}</span></div>
-                        {activity.failed_items > 0 && <div className="flex justify-between"><span>Échecs:</span><span className="text-red-600">{activity.failed_items}</span></div>}
+                        {activity.failed_items > 0 && <div className="flex justify-between"><span>Échecs:</span><span className="text-destructive">{activity.failed_items}</span></div>}
                         <div className="flex justify-between"><span>Heure:</span><span>{formatTimeAgo(activity.created_at)}</span></div>
                       </div>
                     </div>

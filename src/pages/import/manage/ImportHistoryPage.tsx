@@ -140,10 +140,10 @@ export default function ImportHistoryPage() {
   // Status config
   const getStatusConfig = (status: string) => {
     const configs: Record<string, { icon: any; color: string; bgColor: string; label: string }> = {
-      completed: { icon: CheckCircle, color: 'text-green-500', bgColor: 'bg-green-500/10', label: 'Terminé' },
-      processing: { icon: Loader2, color: 'text-blue-500', bgColor: 'bg-blue-500/10', label: 'En cours' },
-      failed: { icon: XCircle, color: 'text-red-500', bgColor: 'bg-red-500/10', label: 'Échoué' },
-      pending: { icon: Clock, color: 'text-amber-500', bgColor: 'bg-amber-500/10', label: 'En attente' }
+      completed: { icon: CheckCircle, color: 'text-success', bgColor: 'bg-green-500/10', label: 'Terminé' },
+      processing: { icon: Loader2, color: 'text-info', bgColor: 'bg-blue-500/10', label: 'En cours' },
+      failed: { icon: XCircle, color: 'text-destructive', bgColor: 'bg-red-500/10', label: 'Échoué' },
+      pending: { icon: Clock, color: 'text-warning', bgColor: 'bg-amber-500/10', label: 'En attente' }
     }
     return configs[status] || configs.pending
   }
@@ -444,10 +444,10 @@ export default function ImportHistoryPage() {
                       </div>
                       <div className="flex items-center gap-4">
                         <div className="text-right">
-                          <p className="text-lg font-bold text-green-600">{item.success_rows || 0}</p>
+                          <p className="text-lg font-bold text-success">{item.success_rows || 0}</p>
                           <p className="text-xs text-muted-foreground">
                             sur {item.total_rows || 0}
-                            {item.error_rows > 0 && <span className="text-red-500 ml-1">({item.error_rows} erreurs)</span>}
+                            {item.error_rows > 0 && <span className="text-destructive ml-1">({item.error_rows} erreurs)</span>}
                           </p>
                         </div>
                         
@@ -546,10 +546,10 @@ export default function ImportHistoryPage() {
                           
                           <div className="flex items-center justify-between">
                             <div>
-                              <p className="text-2xl font-bold text-green-600">{item.success_rows || 0}</p>
+                              <p className="text-2xl font-bold text-success">{item.success_rows || 0}</p>
                               <p className="text-xs text-muted-foreground">
                                 produits
-                                {item.error_rows > 0 && <span className="text-red-500 ml-1">({item.error_rows} erreurs)</span>}
+                                {item.error_rows > 0 && <span className="text-destructive ml-1">({item.error_rows} erreurs)</span>}
                               </p>
                             </div>
                             
@@ -703,7 +703,7 @@ export default function ImportHistoryPage() {
                         <CardContent className="p-4">
                           <div className="flex items-center gap-3">
                             <div className="w-10 h-10 rounded-lg bg-blue-500/10 flex items-center justify-center">
-                              <Package className="w-5 h-5 text-blue-500" />
+                              <Package className="w-5 h-5 text-info" />
                             </div>
                             <div>
                               <p className="text-xs text-muted-foreground">Type source</p>
@@ -719,7 +719,7 @@ export default function ImportHistoryPage() {
                         <CardContent className="p-4">
                           <div className="flex items-center gap-3">
                             <div className="w-10 h-10 rounded-lg bg-green-500/10 flex items-center justify-center">
-                              <Clock className="w-5 h-5 text-green-500" />
+                              <Clock className="w-5 h-5 text-success" />
                             </div>
                             <div>
                               <p className="text-xs text-muted-foreground">Démarré</p>
@@ -773,8 +773,8 @@ export default function ImportHistoryPage() {
                     {selectedJob.errors && selectedJob.errors.length > 0 && (
                       <div className="space-y-3">
                         <div className="flex items-center gap-2">
-                          <AlertTriangle className="w-4 h-4 text-red-500" />
-                          <p className="text-sm font-medium text-red-600">
+                          <AlertTriangle className="w-4 h-4 text-destructive" />
+                          <p className="text-sm font-medium text-destructive">
                             Erreurs détectées ({selectedJob.errors.length})
                           </p>
                         </div>
@@ -784,7 +784,7 @@ export default function ImportHistoryPage() {
                               key={i} 
                               className="flex items-start gap-3 p-3 bg-red-50 dark:bg-red-950/20 rounded-lg border border-red-200 dark:border-red-800"
                             >
-                              <XCircle className="w-4 h-4 text-red-500 mt-0.5 shrink-0" />
+                              <XCircle className="w-4 h-4 text-destructive mt-0.5 shrink-0" />
                               <p className="text-sm text-red-700 dark:text-red-400">{error}</p>
                             </div>
                           ))}

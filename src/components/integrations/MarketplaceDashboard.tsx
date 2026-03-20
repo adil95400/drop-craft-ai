@@ -89,13 +89,13 @@ export function MarketplaceDashboard() {
             <div className="flex items-center gap-2">
               {connectedCount > 0 ? (
                 <>
-                  <CheckCircle2 className="w-5 h-5 text-green-500" />
-                  <span className="text-lg font-semibold text-green-600">Opérationnel</span>
+                  <CheckCircle2 className="w-5 h-5 text-success" />
+                  <span className="text-lg font-semibold text-success">Opérationnel</span>
                 </>
               ) : (
                 <>
-                  <AlertTriangle className="w-5 h-5 text-yellow-500" />
-                  <span className="text-lg font-semibold text-yellow-600">Non configuré</span>
+                  <AlertTriangle className="w-5 h-5 text-warning" />
+                  <span className="text-lg font-semibold text-warning">Non configuré</span>
                 </>
               )}
             </div>

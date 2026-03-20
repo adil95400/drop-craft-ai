@@ -34,10 +34,10 @@ interface ImportRecord {
 }
 
 const statusConfig = {
-  active: { label: 'Réussi', color: 'bg-green-500/10 text-green-600 border-green-500/30', icon: CheckCircle2 },
-  pending: { label: 'En cours', color: 'bg-yellow-500/10 text-yellow-600 border-yellow-500/30', icon: Clock },
-  draft: { label: 'Brouillon', color: 'bg-blue-500/10 text-blue-600 border-blue-500/30', icon: Package },
-  error: { label: 'Erreur', color: 'bg-red-500/10 text-red-600 border-red-500/30', icon: XCircle },
+  active: { label: 'Réussi', color: 'bg-green-500/10 text-success border-green-500/30', icon: CheckCircle2 },
+  pending: { label: 'En cours', color: 'bg-yellow-500/10 text-warning border-yellow-500/30', icon: Clock },
+  draft: { label: 'Brouillon', color: 'bg-blue-500/10 text-info border-blue-500/30', icon: Package },
+  error: { label: 'Erreur', color: 'bg-red-500/10 text-destructive border-red-500/30', icon: XCircle },
 };
 
 const platformIcons: Record<string, string> = {
@@ -227,24 +227,24 @@ export function ExtensionImportHistoryTable() {
         </Card>
         <Card className="p-3">
           <div className="flex items-center gap-2 text-muted-foreground mb-1">
-            <CheckCircle2 className="h-4 w-4 text-green-500" />
+            <CheckCircle2 className="h-4 w-4 text-success" />
             <span className="text-xs">Réussis</span>
           </div>
-          <p className="text-xl font-bold text-green-600">{stats.success}</p>
+          <p className="text-xl font-bold text-success">{stats.success}</p>
         </Card>
         <Card className="p-3">
           <div className="flex items-center gap-2 text-muted-foreground mb-1">
-            <Clock className="h-4 w-4 text-yellow-500" />
+            <Clock className="h-4 w-4 text-warning" />
             <span className="text-xs">En cours</span>
           </div>
-          <p className="text-xl font-bold text-yellow-600">{stats.pending}</p>
+          <p className="text-xl font-bold text-warning">{stats.pending}</p>
         </Card>
         <Card className="p-3">
           <div className="flex items-center gap-2 text-muted-foreground mb-1">
-            <XCircle className="h-4 w-4 text-red-500" />
+            <XCircle className="h-4 w-4 text-destructive" />
             <span className="text-xs">Erreurs</span>
           </div>
-          <p className="text-xl font-bold text-red-600">{stats.errors}</p>
+          <p className="text-xl font-bold text-destructive">{stats.errors}</p>
         </Card>
         <Card className="p-3">
           <div className="flex items-center gap-2 text-muted-foreground mb-1">

@@ -59,10 +59,10 @@ const CATEGORY_ICONS: Record<string, React.ElementType> = {
 
 // Color map for categories
 const CATEGORY_COLORS: Record<string, string> = {
-  orders: 'text-emerald-500 bg-emerald-500/10 border-emerald-500/20',
-  stock: 'text-amber-500 bg-amber-500/10 border-amber-500/20',
+  orders: 'text-success bg-emerald-500/10 border-emerald-500/20',
+  stock: 'text-warning bg-amber-500/10 border-amber-500/20',
   marketing: 'text-pink-500 bg-pink-500/10 border-pink-500/20',
-  system: 'text-blue-500 bg-blue-500/10 border-blue-500/20',
+  system: 'text-info bg-blue-500/10 border-blue-500/20',
   products: 'text-violet-500 bg-violet-500/10 border-violet-500/20',
   reports: 'text-cyan-500 bg-cyan-500/10 border-cyan-500/20',
 };
@@ -282,7 +282,7 @@ export default function NotificationsPage() {
   const getIcon = useCallback((type: string) => {
     switch (type) {
       case 'success':
-        return <CheckCircle2 className="h-5 w-5 text-emerald-500" aria-hidden="true" />;
+        return <CheckCircle2 className="h-5 w-5 text-success" aria-hidden="true" />;
       case 'error':
         return <AlertCircle className="h-5 w-5 text-destructive" aria-hidden="true" />;
       case 'warning':

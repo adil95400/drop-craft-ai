@@ -45,28 +45,28 @@ const VARIANT_STYLES = {
     bg: 'bg-gradient-to-br from-red-500/15 to-red-600/5',
     border: 'border-red-500/40',
     iconBg: 'bg-red-500/20',
-    iconColor: 'text-red-500',
+    iconColor: 'text-destructive',
     glow: 'hover:shadow-red-500/30',
     ctaBg: 'bg-red-500 hover:bg-red-600 text-white',
-    impactColor: 'text-red-600 dark:text-red-400'
+    impactColor: 'text-destructive dark:text-red-400'
   },
   warning: {
     bg: 'bg-gradient-to-br from-orange-500/15 to-amber-500/5',
     border: 'border-orange-500/40',
     iconBg: 'bg-orange-500/20',
-    iconColor: 'text-orange-500',
+    iconColor: 'text-warning',
     glow: 'hover:shadow-orange-500/30',
     ctaBg: 'bg-orange-500 hover:bg-orange-600 text-white',
-    impactColor: 'text-orange-600 dark:text-orange-400'
+    impactColor: 'text-warning dark:text-orange-400'
   },
   info: {
     bg: 'bg-gradient-to-br from-blue-500/15 to-cyan-500/5',
     border: 'border-blue-500/40',
     iconBg: 'bg-blue-500/20',
-    iconColor: 'text-blue-500',
+    iconColor: 'text-info',
     glow: 'hover:shadow-blue-500/30',
     ctaBg: 'bg-blue-500 hover:bg-blue-600 text-white',
-    impactColor: 'text-blue-600 dark:text-blue-400'
+    impactColor: 'text-info dark:text-blue-400'
   },
   primary: {
     bg: 'bg-gradient-to-br from-purple-500/15 to-pink-500/5',
@@ -275,9 +275,9 @@ export const PriorityCardsGrid = memo(function PriorityCardsGrid({
         animate={{ opacity: 1, y: 0 }}
       >
         <div className="w-12 h-12 rounded-full bg-emerald-500/20 flex items-center justify-center mx-auto mb-3">
-          <Sparkles className="h-6 w-6 text-emerald-500" />
+          <Sparkles className="h-6 w-6 text-success" />
         </div>
-        <h3 className="text-lg font-bold text-emerald-600 dark:text-emerald-400">
+        <h3 className="text-lg font-bold text-success dark:text-emerald-400">
           Catalogue optimisé
         </h3>
         <p className="text-sm text-muted-foreground mt-1">

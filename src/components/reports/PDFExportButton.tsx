@@ -150,7 +150,7 @@ export function PDFExportButton({
           disabled={isLoading}
           className="gap-2"
         >
-          <FileText className="h-4 w-4 text-red-500" />
+          <FileText className="h-4 w-4 text-destructive" />
           <div className="flex flex-col">
             <span>PDF Complet</span>
             <span className="text-xs text-muted-foreground">Avec graphiques</span>
@@ -162,7 +162,7 @@ export function PDFExportButton({
           disabled={isLoading}
           className="gap-2"
         >
-          <Table className="h-4 w-4 text-red-500" />
+          <Table className="h-4 w-4 text-destructive" />
           <div className="flex flex-col">
             <span>PDF Données</span>
             <span className="text-xs text-muted-foreground">Tableaux uniquement</span>
@@ -173,7 +173,7 @@ export function PDFExportButton({
           <>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={onExportCSV} className="gap-2">
-              <FileSpreadsheet className="h-4 w-4 text-green-500" />
+              <FileSpreadsheet className="h-4 w-4 text-success" />
               <span>CSV</span>
             </DropdownMenuItem>
           </>
@@ -181,7 +181,7 @@ export function PDFExportButton({
         
         {onExportExcel && (
           <DropdownMenuItem onClick={onExportExcel} className="gap-2">
-            <BarChart3 className="h-4 w-4 text-green-600" />
+            <BarChart3 className="h-4 w-4 text-success" />
             <span>Excel</span>
           </DropdownMenuItem>
         )}

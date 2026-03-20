@@ -39,9 +39,9 @@ interface ChannableChannelHealthProps {
 }
 
 const STATUS_CONFIG = {
-  good: { color: 'text-green-500', bg: 'bg-green-500', icon: CheckCircle2 },
-  warning: { color: 'text-amber-500', bg: 'bg-amber-500', icon: AlertTriangle },
-  critical: { color: 'text-red-500', bg: 'bg-red-500', icon: XCircle },
+  good: { color: 'text-success', bg: 'bg-green-500', icon: CheckCircle2 },
+  warning: { color: 'text-warning', bg: 'bg-amber-500', icon: AlertTriangle },
+  critical: { color: 'text-destructive', bg: 'bg-red-500', icon: XCircle },
 }
 
 export function ChannableChannelHealth({
@@ -95,9 +95,9 @@ export function ChannableChannelHealth({
                     <span>{m.label}</span>
                     <span className={cn(
                       "font-medium",
-                      m.status === 'good' && "text-green-500",
-                      m.status === 'warning' && "text-amber-500",
-                      m.status === 'critical' && "text-red-500"
+                      m.status === 'good' && "text-success",
+                      m.status === 'warning' && "text-warning",
+                      m.status === 'critical' && "text-destructive"
                     )}>
                       {m.score}/{m.maxScore}
                     </span>

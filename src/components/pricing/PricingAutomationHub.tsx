@@ -28,7 +28,7 @@ export function PricingAutomationHub() {
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-blue-100 dark:bg-blue-900 rounded-lg">
-                <DollarSign className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                <DollarSign className="h-5 w-5 text-info dark:text-blue-400" />
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Règles Actives</p>
@@ -46,7 +46,7 @@ export function PricingAutomationHub() {
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-green-100 dark:bg-green-900 rounded-lg">
-                <TrendingUp className="h-5 w-5 text-green-600 dark:text-green-400" />
+                <TrendingUp className="h-5 w-5 text-success dark:text-green-400" />
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Marge Moyenne</p>
@@ -82,7 +82,7 @@ export function PricingAutomationHub() {
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-orange-100 dark:bg-orange-900 rounded-lg">
-                <Users className="h-5 w-5 text-orange-600 dark:text-orange-400" />
+                <Users className="h-5 w-5 text-warning dark:text-orange-400" />
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Concurrents</p>
@@ -149,7 +149,7 @@ export function PricingAutomationHub() {
                         <TableCell className="font-medium">{calc.product_name || 'Produit'}</TableCell>
                         <TableCell>{(calc.selling_price || 0).toFixed(2)}€</TableCell>
                         <TableCell>{(calc.cost_price || 0).toFixed(2)}€</TableCell>
-                        <TableCell className="text-green-600 font-semibold">
+                        <TableCell className="text-success font-semibold">
                           {(calc.net_profit || 0).toFixed(2)}€
                         </TableCell>
                         <TableCell>

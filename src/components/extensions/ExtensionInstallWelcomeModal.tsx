@@ -129,7 +129,7 @@ export function ExtensionInstallWelcomeModal({
                       <feature.icon className="h-4 w-4 text-primary" />
                     </div>
                     <span className="text-sm font-medium">{feature.text}</span>
-                    <CheckCircle className="h-4 w-4 text-green-500 ml-auto" />
+                    <CheckCircle className="h-4 w-4 text-success ml-auto" />
                   </motion.div>
                 ))}
               </div>
@@ -217,7 +217,7 @@ export function ExtensionInstallWelcomeModal({
             >
               <DialogHeader className="text-center">
                 <div className="mx-auto mb-4 h-16 w-16 rounded-full bg-green-500/10 flex items-center justify-center">
-                  <CheckCircle className="h-8 w-8 text-green-500" />
+                  <CheckCircle className="h-8 w-8 text-success" />
                 </div>
                 <DialogTitle>Token généré avec succès !</DialogTitle>
                 <DialogDescription>

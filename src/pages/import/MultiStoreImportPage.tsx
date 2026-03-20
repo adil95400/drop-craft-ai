@@ -57,13 +57,13 @@ export default function MultiStoreImportPage() {
           </Card>
           <Card>
             <CardContent className="p-4 text-center">
-              <div className="text-3xl font-bold text-green-500">{activeStores.length}</div>
+              <div className="text-3xl font-bold text-success">{activeStores.length}</div>
               <div className="text-sm text-muted-foreground">Boutiques actives</div>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="p-4 text-center">
-              <div className="text-3xl font-bold text-blue-500">25+</div>
+              <div className="text-3xl font-bold text-info">25+</div>
               <div className="text-sm text-muted-foreground">Plateformes sources</div>
             </CardContent>
           </Card>
@@ -163,7 +163,7 @@ export default function MultiStoreImportPage() {
           >
             <Card className="border-amber-500/50 bg-amber-500/5">
               <CardContent className="p-6 text-center">
-                <Store className="h-12 w-12 mx-auto mb-4 text-amber-500" />
+                <Store className="h-12 w-12 mx-auto mb-4 text-warning" />
                 <h3 className="text-lg font-semibold mb-2">Aucune boutique connectée</h3>
                 <p className="text-muted-foreground mb-4">
                   Connectez au moins une boutique pour utiliser l'import multi-boutiques

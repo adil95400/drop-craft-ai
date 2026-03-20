@@ -93,13 +93,13 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
               {metric.change !== undefined && (
                 <div className="flex items-center gap-1 mt-1">
                   {metric.trend === 'up' ? (
-                    <TrendingUp className="h-4 w-4 text-green-500" />
+                    <TrendingUp className="h-4 w-4 text-success" />
                   ) : metric.trend === 'down' ? (
-                    <TrendingDown className="h-4 w-4 text-red-500" />
+                    <TrendingDown className="h-4 w-4 text-destructive" />
                   ) : null}
                   <span className={`text-sm ${
-                    metric.trend === 'up' ? 'text-green-500' : 
-                    metric.trend === 'down' ? 'text-red-500' : 
+                    metric.trend === 'up' ? 'text-success' : 
+                    metric.trend === 'down' ? 'text-destructive' : 
                     'text-muted-foreground'
                   }`}>
                     {metric.change > 0 ? '+' : ''}{metric.change}%

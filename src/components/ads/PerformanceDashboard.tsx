@@ -58,7 +58,7 @@ export function PerformanceDashboard() {
               <p className="text-sm text-muted-foreground">Impressions</p>
               <p className="text-2xl font-bold">{totalStats.impressions.toLocaleString()}</p>
             </div>
-            <Eye className="h-8 w-8 text-blue-500" />
+            <Eye className="h-8 w-8 text-info" />
           </div>
         </Card>
 
@@ -68,7 +68,7 @@ export function PerformanceDashboard() {
               <p className="text-sm text-muted-foreground">Clics</p>
               <p className="text-2xl font-bold">{totalStats.clicks.toLocaleString()}</p>
             </div>
-            <MousePointerClick className="h-8 w-8 text-green-500" />
+            <MousePointerClick className="h-8 w-8 text-success" />
           </div>
         </Card>
 
@@ -78,14 +78,14 @@ export function PerformanceDashboard() {
               <p className="text-sm text-muted-foreground">CTR Moyen</p>
               <p className="text-2xl font-bold">{avgCTR}%</p>
             </div>
-            <Target className="h-8 w-8 text-orange-500" />
+            <Target className="h-8 w-8 text-warning" />
           </div>
         </Card>
       </div>
 
       <Card className="p-6">
         <h3 className="text-xl font-bold flex items-center gap-2 mb-4">
-          <Lightbulb className="h-6 w-6 text-yellow-500" />
+          <Lightbulb className="h-6 w-6 text-warning" />
           Performance par Plateforme
         </h3>
 

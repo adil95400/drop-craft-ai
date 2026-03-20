@@ -146,7 +146,7 @@ export default function SupplierDetails() {
                 </div>
               )}
               <div className="flex items-center gap-1">
-                <Star className="h-4 w-4 text-yellow-500 fill-current" />
+                <Star className="h-4 w-4 text-warning fill-current" />
                 <span className="font-medium">{supplier.rating || 'N/A'}</span>
               </div>
             </div>
@@ -176,9 +176,9 @@ export default function SupplierDetails() {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         {[
           { icon: ShoppingCart, label: 'Commandes totales', value: performanceData.orders.total, sub: '+12% vs mois dernier', color: 'text-primary' },
-          { icon: DollarSign, label: 'Valeur totale', value: `€${performanceData.financial.totalSpent.toLocaleString()}`, sub: `Moy: €${performanceData.financial.averageOrderValue}`, color: 'text-green-500' },
-          { icon: Activity, label: 'Fiabilité', value: `${performanceData.performance.reliability.toFixed(1)}%`, sub: 'Excellent', color: 'text-blue-500' },
-          { icon: Clock, label: 'Délai moyen', value: `${performanceData.performance.deliveryTime}j`, sub: `Réponse: ${performanceData.performance.responseTime}h`, color: 'text-orange-500' },
+          { icon: DollarSign, label: 'Valeur totale', value: `€${performanceData.financial.totalSpent.toLocaleString()}`, sub: `Moy: €${performanceData.financial.averageOrderValue}`, color: 'text-success' },
+          { icon: Activity, label: 'Fiabilité', value: `${performanceData.performance.reliability.toFixed(1)}%`, sub: 'Excellent', color: 'text-info' },
+          { icon: Clock, label: 'Délai moyen', value: `${performanceData.performance.deliveryTime}j`, sub: `Réponse: ${performanceData.performance.responseTime}h`, color: 'text-warning' },
         ].map((kpi, i) => (
           <motion.div
             key={i}

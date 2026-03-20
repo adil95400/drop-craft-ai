@@ -90,11 +90,11 @@ export function RepricingLogsPanel() {
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-green-100 rounded-lg">
-                <CheckCircle className="h-5 w-5 text-green-600" />
+                <CheckCircle className="h-5 w-5 text-success" />
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Réussies</p>
-                <p className="text-2xl font-bold text-green-600">{history.filter(l => l.status === 'success').length}</p>
+                <p className="text-2xl font-bold text-success">{history.filter(l => l.status === 'success').length}</p>
               </div>
             </div>
           </CardContent>
@@ -103,7 +103,7 @@ export function RepricingLogsPanel() {
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-blue-100 rounded-lg">
-                <TrendingUp className="h-5 w-5 text-blue-600" />
+                <TrendingUp className="h-5 w-5 text-info" />
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Produits modifiés</p>
@@ -141,7 +141,7 @@ export function RepricingLogsPanel() {
                 <div key={log.id} className="p-4 hover:bg-muted/50">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-4">
-                      <CheckCircle className="h-5 w-5 text-green-600" />
+                      <CheckCircle className="h-5 w-5 text-success" />
                       <div>
                         <div className="flex items-center gap-2 mb-1">
                           <span className="font-medium">{log.rule_name}</span>
@@ -154,7 +154,7 @@ export function RepricingLogsPanel() {
                         </div>
                       </div>
                     </div>
-                    <div className="flex items-center gap-1 text-green-600">
+                    <div className="flex items-center gap-1 text-success">
                       <TrendingUp className="h-4 w-4" />
                       <span className="font-medium">+{log.avg_price_change.toFixed(2)}%</span>
                     </div>

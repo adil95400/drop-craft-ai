@@ -198,7 +198,7 @@ export function MultiStoreUrlImport({ className, onImportComplete }: MultiStoreU
                   )}
                 </div>
               </div>
-              <CheckCircle2 className="h-5 w-5 text-green-500 shrink-0" />
+              <CheckCircle2 className="h-5 w-5 text-success shrink-0" />
             </div>
 
             {/* Store Selector */}
@@ -231,8 +231,8 @@ export function MultiStoreUrlImport({ className, onImportComplete }: MultiStoreU
                 animate={{ opacity: 1 }}
                 className="flex items-center justify-center gap-4 p-4 rounded-lg bg-green-500/10 border border-green-500/20"
               >
-                <CheckCircle2 className="h-5 w-5 text-green-500" />
-                <span className="font-medium text-green-700">
+                <CheckCircle2 className="h-5 w-5 text-success" />
+                <span className="font-medium text-success">
                   {progress.successful} importation(s) réussie(s)
                 </span>
                 {progress.failed > 0 && (

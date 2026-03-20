@@ -103,7 +103,7 @@ export function EnhancedFormField({
           className={cn(
             "text-sm font-medium transition-colors",
             showError && "text-destructive",
-            showSuccess && "text-green-600 dark:text-green-500"
+            showSuccess && "text-success dark:text-success"
           )}
         >
           {label}
@@ -149,7 +149,7 @@ export function EnhancedFormField({
                 <AlertCircle className="h-4 w-4 text-destructive" />
               )}
               {showSuccess && !loading && (
-                <CheckCircle2 className="h-4 w-4 text-green-500" />
+                <CheckCircle2 className="h-4 w-4 text-success" />
               )}
             </motion.div>
           )}

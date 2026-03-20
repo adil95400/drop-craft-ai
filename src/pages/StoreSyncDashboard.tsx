@@ -66,10 +66,10 @@ function SyncStatCard({
   onClick?: () => void;
 }) {
   const colorClasses: Record<string, string> = {
-    blue: 'from-blue-500/20 to-blue-600/10 text-blue-500',
-    green: 'from-green-500/20 to-green-600/10 text-green-500',
-    yellow: 'from-yellow-500/20 to-yellow-600/10 text-yellow-500',
-    red: 'from-red-500/20 to-red-600/10 text-red-500',
+    blue: 'from-blue-500/20 to-blue-600/10 text-info',
+    green: 'from-green-500/20 to-green-600/10 text-success',
+    yellow: 'from-yellow-500/20 to-yellow-600/10 text-warning',
+    red: 'from-red-500/20 to-red-600/10 text-destructive',
     purple: 'from-purple-500/20 to-purple-600/10 text-purple-500',
     primary: 'from-primary/20 to-primary/10 text-primary',
   };
@@ -169,9 +169,9 @@ function ConnectedStoreCard({ connection, onSync }: { connection: any; onSync: (
 function QueueItemCard({ item, onCancel }: { item: any; onCancel: () => void }) {
   const statusConfig: Record<string, { icon: any; color: string; label: string }> = {
     pending: { icon: Clock, color: 'text-muted-foreground', label: 'En attente' },
-    processing: { icon: Loader2, color: 'text-blue-500', label: 'En cours' },
-    completed: { icon: CheckCircle2, color: 'text-green-500', label: 'Terminé' },
-    failed: { icon: XCircle, color: 'text-red-500', label: 'Échoué' },
+    processing: { icon: Loader2, color: 'text-info', label: 'En cours' },
+    completed: { icon: CheckCircle2, color: 'text-success', label: 'Terminé' },
+    failed: { icon: XCircle, color: 'text-destructive', label: 'Échoué' },
     cancelled: { icon: XCircle, color: 'text-muted-foreground', label: 'Annulé' },
   };
 
@@ -227,9 +227,9 @@ function QueueItemCard({ item, onCancel }: { item: any; onCancel: () => void }) 
 // Log item component
 function LogItemCard({ log }: { log: any }) {
   const statusConfig: Record<string, { color: string; bgColor: string }> = {
-    success: { color: 'text-green-500', bgColor: 'bg-green-500/10' },
-    failed: { color: 'text-red-500', bgColor: 'bg-red-500/10' },
-    partial: { color: 'text-yellow-500', bgColor: 'bg-yellow-500/10' },
+    success: { color: 'text-success', bgColor: 'bg-green-500/10' },
+    failed: { color: 'text-destructive', bgColor: 'bg-red-500/10' },
+    partial: { color: 'text-warning', bgColor: 'bg-yellow-500/10' },
     skipped: { color: 'text-muted-foreground', bgColor: 'bg-muted/50' },
   };
 
@@ -256,7 +256,7 @@ function LogItemCard({ log }: { log: any }) {
             <p className="text-sm">
               {log.items_succeeded}/{log.items_processed} éléments traités
               {log.items_failed > 0 && (
-                <span className="text-red-500 ml-2">
+                <span className="text-destructive ml-2">
                   ({log.items_failed} échecs)
                 </span>
               )}
@@ -487,9 +487,9 @@ export default function StoreSyncDashboard() {
                 >
                   <Card className="p-4 bg-yellow-500/10 border-yellow-500/30">
                     <div className="flex items-center gap-3">
-                      <AlertTriangle className="h-5 w-5 text-yellow-500" />
+                      <AlertTriangle className="h-5 w-5 text-warning" />
                       <div className="flex-1">
-                        <p className="font-medium text-yellow-600 dark:text-yellow-400">
+                        <p className="font-medium text-warning dark:text-yellow-400">
                           Aucune boutique connectée
                         </p>
                         <p className="text-sm text-muted-foreground">
@@ -499,7 +499,7 @@ export default function StoreSyncDashboard() {
                       <Button 
                         size="sm" 
                         onClick={() => window.location.href = '/stores-channels'}
-                        className="bg-yellow-500/20 hover:bg-yellow-500/30 text-yellow-600 dark:text-yellow-400"
+                        className="bg-yellow-500/20 hover:bg-yellow-500/30 text-warning dark:text-yellow-400"
                       >
                         Connecter
                       </Button>
@@ -647,7 +647,7 @@ export default function StoreSyncDashboard() {
                   </div>
                 ) : activeQueueItems.length === 0 ? (
                   <div className="text-center py-12 text-muted-foreground">
-                    <CheckCircle2 className="h-16 w-16 mx-auto mb-4 text-green-500/50" />
+                    <CheckCircle2 className="h-16 w-16 mx-auto mb-4 text-success/50" />
                     <p className="text-lg font-medium">Aucune synchronisation en attente</p>
                     <p className="text-sm">Toutes vos boutiques sont à jour</p>
                   </div>
@@ -712,7 +712,7 @@ export default function StoreSyncDashboard() {
               <div>
                 <div className="flex justify-between text-sm mb-2">
                   <span>Taux de réussite</span>
-                  <span className="font-medium text-green-500">
+                  <span className="font-medium text-success">
                     {syncStats?.todaySuccess && syncStats.todaySuccess + (syncStats.todayFailed || 0) > 0
                       ? Math.round((syncStats.todaySuccess / (syncStats.todaySuccess + syncStats.todayFailed)) * 100)
                       : 100}%
@@ -752,7 +752,7 @@ export default function StoreSyncDashboard() {
             <div className="space-y-3">
               <div className="flex items-center justify-between p-3 rounded-lg bg-green-500/10">
                 <div className="flex items-center gap-2">
-                  <CheckCircle2 className="h-4 w-4 text-green-500" />
+                  <CheckCircle2 className="h-4 w-4 text-success" />
                   <span className="text-sm">Réussies aujourd'hui</span>
                 </div>
                 <span className="font-semibold">{syncStats?.todaySuccess || 0}</span>
@@ -760,7 +760,7 @@ export default function StoreSyncDashboard() {
               
               <div className="flex items-center justify-between p-3 rounded-lg bg-yellow-500/10">
                 <div className="flex items-center gap-2">
-                  <AlertTriangle className="h-4 w-4 text-yellow-500" />
+                  <AlertTriangle className="h-4 w-4 text-warning" />
                   <span className="text-sm">Partielles</span>
                 </div>
                 <span className="font-semibold">{syncStats?.todayPartial || 0}</span>
@@ -768,7 +768,7 @@ export default function StoreSyncDashboard() {
               
               <div className="flex items-center justify-between p-3 rounded-lg bg-red-500/10">
                 <div className="flex items-center gap-2">
-                  <XCircle className="h-4 w-4 text-red-500" />
+                  <XCircle className="h-4 w-4 text-destructive" />
                   <span className="text-sm">Échouées</span>
                 </div>
                 <span className="font-semibold">{syncStats?.todayFailed || 0}</span>

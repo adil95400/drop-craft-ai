@@ -28,8 +28,8 @@ const AbandonedCartPage: React.FC = () => {
 
   const getStatusBadge = (status: string) => {
     switch (status) {
-      case 'pending': return <Badge variant="outline" className="text-orange-600 border-orange-300">En attente</Badge>;
-      case 'contacted': return <Badge variant="outline" className="text-blue-600 border-blue-300">Contacté</Badge>;
+      case 'pending': return <Badge variant="outline" className="text-warning border-orange-300">En attente</Badge>;
+      case 'contacted': return <Badge variant="outline" className="text-info border-blue-300">Contacté</Badge>;
       case 'recovered': return <Badge className="bg-green-500 text-white">Récupéré</Badge>;
       case 'dismissed': return <Badge variant="secondary">Ignoré</Badge>;
       default: return <Badge variant="outline">{status}</Badge>;
@@ -54,7 +54,7 @@ const AbandonedCartPage: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <Card className="p-4">
             <div className="flex items-center gap-3">
-              <ShoppingCart className="h-5 w-5 text-orange-500" />
+              <ShoppingCart className="h-5 w-5 text-warning" />
               <div>
                 <p className="text-sm text-muted-foreground">Paniers abandonnés</p>
                 <p className="text-2xl font-bold">{stats.total}</p>
@@ -63,7 +63,7 @@ const AbandonedCartPage: React.FC = () => {
           </Card>
           <Card className="p-4">
             <div className="flex items-center gap-3">
-              <DollarSign className="h-5 w-5 text-red-500" />
+              <DollarSign className="h-5 w-5 text-destructive" />
               <div>
                 <p className="text-sm text-muted-foreground">Valeur perdue</p>
                 <p className="text-2xl font-bold">{stats.totalValue.toLocaleString('fr-FR')}€</p>
@@ -72,7 +72,7 @@ const AbandonedCartPage: React.FC = () => {
           </Card>
           <Card className="p-4">
             <div className="flex items-center gap-3">
-              <CheckCircle className="h-5 w-5 text-green-500" />
+              <CheckCircle className="h-5 w-5 text-success" />
               <div>
                 <p className="text-sm text-muted-foreground">Récupérés</p>
                 <p className="text-2xl font-bold">{stats.recovered}</p>
@@ -223,7 +223,7 @@ const AbandonedCartPage: React.FC = () => {
                 </CardHeader>
                 <CardContent>
                   <div className="text-center py-6">
-                    <p className="text-4xl font-bold text-green-600">
+                    <p className="text-4xl font-bold text-success">
                       {stats.recoveredValue.toLocaleString('fr-FR')}€
                     </p>
                     <p className="text-sm text-muted-foreground mt-2">

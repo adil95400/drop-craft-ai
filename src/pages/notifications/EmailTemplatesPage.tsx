@@ -44,9 +44,9 @@ const defaultTemplates: EmailTemplate[] = [
 ];
 
 const CATEGORY_MAP = {
-  transactional: { label: 'Transactionnel', color: 'text-blue-600 bg-blue-50 dark:bg-blue-500/10 dark:text-blue-400' },
+  transactional: { label: 'Transactionnel', color: 'text-info bg-blue-50 dark:bg-blue-500/10 dark:text-blue-400' },
   marketing: { label: 'Marketing', color: 'text-pink-600 bg-pink-50 dark:bg-pink-500/10 dark:text-pink-400' },
-  retention: { label: 'Rétention', color: 'text-amber-600 bg-amber-50 dark:bg-amber-500/10 dark:text-amber-400' },
+  retention: { label: 'Rétention', color: 'text-warning bg-amber-50 dark:bg-amber-500/10 dark:text-amber-400' },
 };
 
 export default function EmailTemplatesPage() {

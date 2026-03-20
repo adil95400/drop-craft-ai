@@ -28,7 +28,7 @@ export const QuickExtensionActions: React.FC = () => {
       description: 'Parcourir les extensions disponibles',
       icon: <Store className="w-5 h-5" />,
       route: '/extensions/marketplace',
-      color: 'bg-green-50 hover:bg-green-100 text-green-700'
+      color: 'bg-green-50 hover:bg-green-100 text-success'
     },
     {
       label: 'Developer Hub',

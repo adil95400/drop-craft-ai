@@ -125,7 +125,7 @@ export function CategoryMappingDashboard() {
               <CardContent className="pt-6">
                 <div className="flex items-center gap-4">
                   <div className="p-2 bg-green-500/10 rounded-lg">
-                    <CheckCircle2 className="h-5 w-5 text-green-500" />
+                    <CheckCircle2 className="h-5 w-5 text-success" />
                   </div>
                   <div>
                     <p className="text-2xl font-bold">{stats?.activeMappings || 0}</p>
@@ -138,7 +138,7 @@ export function CategoryMappingDashboard() {
               <CardContent className="pt-6">
                 <div className="flex items-center gap-4">
                   <div className="p-2 bg-blue-500/10 rounded-lg">
-                    <Package className="h-5 w-5 text-blue-500" />
+                    <Package className="h-5 w-5 text-info" />
                   </div>
                   <div>
                     <p className="text-2xl font-bold">{stats?.totalProductsMapped || 0}</p>
@@ -151,7 +151,7 @@ export function CategoryMappingDashboard() {
               <CardContent className="pt-6">
                 <div className="flex items-center gap-4">
                   <div className="p-2 bg-orange-500/10 rounded-lg">
-                    <Sparkles className="h-5 w-5 text-orange-500" />
+                    <Sparkles className="h-5 w-5 text-warning" />
                   </div>
                   <div>
                     <p className="text-2xl font-bold">{stats?.pendingSuggestions || 0}</p>

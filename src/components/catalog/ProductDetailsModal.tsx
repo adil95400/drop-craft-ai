@@ -21,7 +21,7 @@ export function ProductDetailsModal({ product, open, onClose }: ProductDetailsMo
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'in_stock':
-        return <Badge className="bg-green-100 text-green-800">En stock</Badge>
+        return <Badge className="bg-green-100 text-success">En stock</Badge>
       case 'out_of_stock':
         return <Badge variant="destructive">Rupture</Badge>
       case 'low_stock':
@@ -95,7 +95,7 @@ export function ProductDetailsModal({ product, open, onClose }: ProductDetailsMo
                       <p className="text-sm text-muted-foreground">Prix</p>
                       <p className="text-2xl font-bold">{formatCurrency(product.price || 0)}</p>
                     </div>
-                    <DollarSign className="h-8 w-8 text-green-600" />
+                    <DollarSign className="h-8 w-8 text-success" />
                   </div>
                 </CardContent>
               </Card>
@@ -107,7 +107,7 @@ export function ProductDetailsModal({ product, open, onClose }: ProductDetailsMo
                       <p className="text-sm text-muted-foreground">Stock</p>
                       <p className="text-2xl font-bold">{product.stock_quantity || 0}</p>
                     </div>
-                    <Package className="h-8 w-8 text-blue-600" />
+                    <Package className="h-8 w-8 text-info" />
                   </div>
                 </CardContent>
               </Card>

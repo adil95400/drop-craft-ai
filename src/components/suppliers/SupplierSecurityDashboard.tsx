@@ -117,7 +117,7 @@ export function SupplierSecurityDashboard() {
             <Lock className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-green-600">Secure</div>
+            <div className="text-2xl font-bold text-success">Secure</div>
             <p className="text-xs text-muted-foreground">
               All credentials encrypted
             </p>
@@ -197,7 +197,7 @@ export function SupplierSecurityDashboard() {
                 </div>
                 <div className="flex items-center gap-3">
                   {supplier.api_endpoint ? (
-                    <Badge variant="default" className="bg-green-100 text-green-800">
+                    <Badge variant="default" className="bg-green-100 text-success">
                       <Lock className="h-3 w-3 mr-1" />
                       API configurée
                     </Badge>

@@ -101,9 +101,9 @@ export default function ExtensionReadinessPage() {
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'pass': return <CheckCircle2 className="w-5 h-5 text-green-500" />;
-      case 'warning': return <AlertTriangle className="w-5 h-5 text-yellow-500" />;
-      case 'fail': return <XCircle className="w-5 h-5 text-red-500" />;
+      case 'pass': return <CheckCircle2 className="w-5 h-5 text-success" />;
+      case 'warning': return <AlertTriangle className="w-5 h-5 text-warning" />;
+      case 'fail': return <XCircle className="w-5 h-5 text-destructive" />;
       default: return <div className="w-5 h-5 rounded-full border-2 border-muted" />;
     }
   };
@@ -186,9 +186,9 @@ export default function ExtensionReadinessPage() {
                   isReadyForStore ? 'bg-green-100' : 'bg-yellow-100'
                 }`}>
                   {isReadyForStore ? (
-                    <CheckCircle2 className="w-8 h-8 text-green-600" />
+                    <CheckCircle2 className="w-8 h-8 text-success" />
                   ) : (
-                    <AlertTriangle className="w-8 h-8 text-yellow-600" />
+                    <AlertTriangle className="w-8 h-8 text-warning" />
                   )}
                 </div>
                 <div>
@@ -202,15 +202,15 @@ export default function ExtensionReadinessPage() {
               </div>
               <div className="flex gap-6 text-center">
                 <div>
-                  <div className="text-2xl font-bold text-green-600">{passed}</div>
+                  <div className="text-2xl font-bold text-success">{passed}</div>
                   <div className="text-xs text-muted-foreground">Passés</div>
                 </div>
                 <div>
-                  <div className="text-2xl font-bold text-yellow-600">{warnings}</div>
+                  <div className="text-2xl font-bold text-warning">{warnings}</div>
                   <div className="text-xs text-muted-foreground">Avertissements</div>
                 </div>
                 <div>
-                  <div className="text-2xl font-bold text-red-600">{failed}</div>
+                  <div className="text-2xl font-bold text-destructive">{failed}</div>
                   <div className="text-xs text-muted-foreground">Échecs</div>
                 </div>
               </div>

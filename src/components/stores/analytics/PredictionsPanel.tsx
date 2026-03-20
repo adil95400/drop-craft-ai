@@ -358,9 +358,9 @@ export function PredictionsPanel() {
                           {insight.category === 'Risque' ? (
                             <AlertTriangle className="h-5 w-5 text-destructive" />
                           ) : insight.category === 'Opportunité' ? (
-                            <TrendingUp className="h-5 w-5 text-green-500" />
+                            <TrendingUp className="h-5 w-5 text-success" />
                           ) : (
-                            <Zap className="h-5 w-5 text-yellow-500" />
+                            <Zap className="h-5 w-5 text-warning" />
                           )}
                           <div>
                             <Badge variant="outline" className="mb-1">{insight.category}</Badge>

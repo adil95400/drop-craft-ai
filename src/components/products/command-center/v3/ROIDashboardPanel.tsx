@@ -57,8 +57,8 @@ const MetricCard = memo(function MetricCard({
 
   const iconStyles = {
     default: 'text-muted-foreground',
-    success: 'text-emerald-600 dark:text-emerald-400',
-    warning: 'text-orange-600 dark:text-orange-400',
+    success: 'text-success dark:text-emerald-400',
+    warning: 'text-warning dark:text-orange-400',
     primary: 'text-primary'
   }
 
@@ -89,7 +89,7 @@ export const ROIDashboardPanel = memo(function ROIDashboardPanel({
       : Minus
 
   const trendColor = metrics.roiTrend === 'up'
-    ? 'text-emerald-600 dark:text-emerald-400'
+    ? 'text-success dark:text-emerald-400'
     : metrics.roiTrend === 'down'
       ? 'text-destructive'
       : 'text-muted-foreground'

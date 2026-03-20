@@ -138,10 +138,10 @@ export default function AutomationPage() {
               <Card>
                 <CardContent className="p-4">
                   <div className="flex items-center gap-2 text-muted-foreground mb-1">
-                    <CheckCircle2 className="h-4 w-4 text-green-500" />
+                    <CheckCircle2 className="h-4 w-4 text-success" />
                     <span className="text-xs">Actifs</span>
                   </div>
-                  <p className="text-2xl font-bold text-green-600">{statsData.activeWorkflows}</p>
+                  <p className="text-2xl font-bold text-success">{statsData.activeWorkflows}</p>
                 </CardContent>
               </Card>
               <Card>
@@ -371,7 +371,7 @@ export default function AutomationPage() {
                           workflow.is_active ? "bg-green-100" : "bg-gray-100"
                         )}>
                           {workflow.is_active ? (
-                            <CheckCircle2 className="h-4 w-4 text-green-600" />
+                            <CheckCircle2 className="h-4 w-4 text-success" />
                           ) : (
                             <XCircle className="h-4 w-4 text-gray-400" />
                           )}

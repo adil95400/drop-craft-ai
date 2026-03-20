@@ -80,8 +80,8 @@ export function UnifiedImportWizard() {
   const currentStepIndex = steps.findIndex(s => s.id === currentStep);
 
   const sources = [
-    { id: 'url', label: 'URL Produit', icon: Link, description: 'Importer depuis une URL de produit', color: 'text-blue-500' },
-    { id: 'file', label: 'Fichier CSV/XML', icon: FileSpreadsheet, description: 'Importer depuis un fichier', color: 'text-green-500' },
+    { id: 'url', label: 'URL Produit', icon: Link, description: 'Importer depuis une URL de produit', color: 'text-info' },
+    { id: 'file', label: 'Fichier CSV/XML', icon: FileSpreadsheet, description: 'Importer depuis un fichier', color: 'text-success' },
     { id: 'extension', label: 'Extension Chrome', icon: Chrome, description: 'Données depuis l\'extension', color: 'text-cyan-500' },
     { id: 'api', label: 'API Fournisseur', icon: Globe, description: 'Connexion API directe', color: 'text-purple-500' }
   ];
@@ -226,7 +226,7 @@ export function UnifiedImportWizard() {
                     <span className={cn(
                       "text-xs font-medium hidden sm:block",
                       isActive && "text-primary",
-                      isCompleted && "text-green-600",
+                      isCompleted && "text-success",
                       !isActive && !isCompleted && "text-muted-foreground"
                     )}>
                       {step.label}
@@ -329,7 +329,7 @@ export function UnifiedImportWizard() {
                   <input {...getInputProps()} />
                   {uploadedFile ? (
                     <div className="space-y-2">
-                      <FileSpreadsheet className="h-12 w-12 mx-auto text-green-500" />
+                      <FileSpreadsheet className="h-12 w-12 mx-auto text-success" />
                       <p className="font-medium">{uploadedFile.name}</p>
                       <p className="text-sm text-muted-foreground">
                         {(uploadedFile.size / 1024).toFixed(1)} KB
@@ -447,7 +447,7 @@ export function UnifiedImportWizard() {
                         {product.issues && (
                           <div className="flex flex-wrap gap-1 mt-1">
                             {product.issues.map((issue, i) => (
-                              <Badge key={i} variant="outline" className="text-xs bg-yellow-500/10 text-yellow-600">
+                              <Badge key={i} variant="outline" className="text-xs bg-yellow-500/10 text-warning">
                                 {issue}
                               </Badge>
                             ))}
@@ -455,9 +455,9 @@ export function UnifiedImportWizard() {
                         )}
                       </div>
                       <Badge className={cn(
-                        product.status === 'valid' && "bg-green-500/10 text-green-600",
-                        product.status === 'warning' && "bg-yellow-500/10 text-yellow-600",
-                        product.status === 'error' && "bg-red-500/10 text-red-600"
+                        product.status === 'valid' && "bg-green-500/10 text-success",
+                        product.status === 'warning' && "bg-yellow-500/10 text-warning",
+                        product.status === 'error' && "bg-red-500/10 text-destructive"
                       )}>
                         {product.status === 'valid' && <CheckCircle className="h-3 w-3 mr-1" />}
                         {product.status === 'warning' && <AlertCircle className="h-3 w-3 mr-1" />}
@@ -491,7 +491,7 @@ export function UnifiedImportWizard() {
             </CardHeader>
             <CardContent>
               <Alert className="mb-4">
-                <CheckCircle className="h-4 w-4 text-green-500" />
+                <CheckCircle className="h-4 w-4 text-success" />
                 <AlertDescription>
                   Mapping automatique détecté ! Les champs correspondent correctement.
                 </AlertDescription>
@@ -500,7 +500,7 @@ export function UnifiedImportWizard() {
                 {['Titre', 'Prix', 'SKU', 'Description', 'Images', 'Catégorie'].map(field => (
                   <div key={field} className="flex items-center justify-between p-3 border rounded-lg">
                     <span className="text-sm font-medium">{field}</span>
-                    <Badge variant="secondary" className="bg-green-500/10 text-green-600">
+                    <Badge variant="secondary" className="bg-green-500/10 text-success">
                       <Check className="h-3 w-3 mr-1" />
                       Mappé
                     </Badge>
@@ -594,7 +594,7 @@ export function UnifiedImportWizard() {
           <>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <CheckCircle className="h-6 w-6 text-green-500" />
+                <CheckCircle className="h-6 w-6 text-success" />
                 Import terminé
               </CardTitle>
               <CardDescription>Voici le résumé de l'import</CardDescription>
@@ -609,13 +609,13 @@ export function UnifiedImportWizard() {
                 </Card>
                 <Card className="border-green-500/30">
                   <CardContent className="pt-6 text-center">
-                    <p className="text-3xl font-bold text-green-600">{importResult.success}</p>
+                    <p className="text-3xl font-bold text-success">{importResult.success}</p>
                     <p className="text-sm text-muted-foreground">Réussis</p>
                   </CardContent>
                 </Card>
                 <Card className="border-red-500/30">
                   <CardContent className="pt-6 text-center">
-                    <p className="text-3xl font-bold text-red-600">{importResult.failed}</p>
+                    <p className="text-3xl font-bold text-destructive">{importResult.failed}</p>
                     <p className="text-sm text-muted-foreground">Échoués</p>
                   </CardContent>
                 </Card>
@@ -639,7 +639,7 @@ export function UnifiedImportWizard() {
                 {importResult.products.map(p => (
                   <div key={p.id} className="flex items-center justify-between py-2 border-b last:border-0">
                     <span className="text-sm">{p.title}</span>
-                    <Badge className={p.status === 'success' ? 'bg-green-500/10 text-green-600' : 'bg-red-500/10 text-red-600'}>
+                    <Badge className={p.status === 'success' ? 'bg-green-500/10 text-success' : 'bg-red-500/10 text-destructive'}>
                       {p.status === 'success' ? 'Importé' : 'Échec'}
                     </Badge>
                   </div>

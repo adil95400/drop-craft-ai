@@ -157,7 +157,7 @@ export default function ExtensionInstallationPage() {
       )
     },
     {
-      icon: <CheckCircle className="h-8 w-8 text-green-500" />,
+      icon: <CheckCircle className="h-8 w-8 text-success" />,
       title: "6. Installation terminée !",
       content: (
         <div className="space-y-4">
@@ -166,9 +166,9 @@ export default function ExtensionInstallationPage() {
             une nouvelle carte d'extension sur la page.
           </p>
           <Alert className="bg-green-500/10 border-green-500/20">
-            <CheckCircle className="h-4 w-4 text-green-500" />
-            <AlertTitle className="text-green-700">Extension active</AlertTitle>
-            <AlertDescription className="text-green-600">
+            <CheckCircle className="h-4 w-4 text-success" />
+            <AlertTitle className="text-success">Extension active</AlertTitle>
+            <AlertDescription className="text-success">
               ShopOpti+ est prêt à être utilisé sur AliExpress, Amazon et autres plateformes.
             </AlertDescription>
           </Alert>
@@ -252,7 +252,7 @@ export default function ExtensionInstallationPage() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <AlertTriangle className="h-5 w-5 text-yellow-500" />
+            <AlertTriangle className="h-5 w-5 text-warning" />
             Résolution des Problèmes
           </CardTitle>
         </CardHeader>

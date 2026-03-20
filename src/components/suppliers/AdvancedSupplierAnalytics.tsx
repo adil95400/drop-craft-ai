@@ -164,7 +164,7 @@ export function AdvancedSupplierAnalytics() {
             <p className="text-sm text-muted-foreground">{title}</p>
             <p className="text-2xl font-bold">{formatFn(value)}</p>
             {change !== undefined && (
-              <div className={`flex items-center text-xs ${change >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+              <div className={`flex items-center text-xs ${change >= 0 ? 'text-success' : 'text-destructive'}`}>
                 {change >= 0 ? <ArrowUpRight className="h-3 w-3" /> : <ArrowDownRight className="h-3 w-3" />}
                 <span>{Math.abs(change).toFixed(1)}% vs période précédente</span>
               </div>
@@ -288,14 +288,14 @@ export function AdvancedSupplierAnalytics() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">Taux d'erreur</p>
-                <p className={`text-xl font-bold ${aggregatedData.errorRate > 5 ? 'text-red-600' : 'text-green-600'}`}>
+                <p className={`text-xl font-bold ${aggregatedData.errorRate > 5 ? 'text-destructive' : 'text-success'}`}>
                   {aggregatedData.errorRate.toFixed(2)}%
                 </p>
               </div>
               {aggregatedData.errorRate > 5 ? (
-                <AlertTriangle className="h-5 w-5 text-red-600" />
+                <AlertTriangle className="h-5 w-5 text-destructive" />
               ) : (
-                <CheckCircle className="h-5 w-5 text-green-600" />
+                <CheckCircle className="h-5 w-5 text-success" />
               )}
             </div>
           </CardContent>
@@ -485,19 +485,19 @@ export function AdvancedSupplierAnalytics() {
                         <span className="font-medium">{supplier.name}</span>
                       </div>
                     </td>
-                    <td className="text-right py-3 px-4 font-medium text-green-600">
+                    <td className="text-right py-3 px-4 font-medium text-success">
                       {supplier.revenue.toFixed(0)}€
                     </td>
                     <td className="text-right py-3 px-4">{supplier.orders}</td>
                     <td className="text-right py-3 px-4">{supplier.products}</td>
                     <td className="text-right py-3 px-4">
-                      <span className={supplier.successRate >= 95 ? 'text-green-600' : supplier.successRate >= 85 ? 'text-yellow-600' : 'text-red-600'}>
+                      <span className={supplier.successRate >= 95 ? 'text-success' : supplier.successRate >= 85 ? 'text-warning' : 'text-destructive'}>
                         {supplier.successRate.toFixed(1)}%
                       </span>
                     </td>
                     <td className="text-center py-3 px-4">
                       {supplier.successRate >= 95 ? (
-                        <Badge className="bg-green-100 text-green-800">Excellent</Badge>
+                        <Badge className="bg-green-100 text-success">Excellent</Badge>
                       ) : supplier.successRate >= 85 ? (
                         <Badge className="bg-yellow-100 text-yellow-800">Bon</Badge>
                       ) : (

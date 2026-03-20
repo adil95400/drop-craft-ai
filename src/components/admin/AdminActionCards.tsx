@@ -110,7 +110,7 @@ export const AdminActionCards = ({ className }: AdminActionCardsProps) => {
           <Card className="hover:shadow-lg transition-all duration-200">
             <CardHeader className="pb-3">
               <CardTitle className="text-lg flex items-center gap-2">
-                <RefreshCw className="h-5 w-5 text-blue-600" />
+                <RefreshCw className="h-5 w-5 text-info" />
                 Actualiser Données
                 {getResultBadge('updateData')}
               </CardTitle>
@@ -133,7 +133,7 @@ export const AdminActionCards = ({ className }: AdminActionCardsProps) => {
           <Card className="hover:shadow-lg transition-all duration-200">
             <CardHeader className="pb-3">
               <CardTitle className="text-lg flex items-center gap-2">
-                <Database className="h-5 w-5 text-green-600" />
+                <Database className="h-5 w-5 text-success" />
                 Backup BDD
                 {getResultBadge('backupDatabase')}
               </CardTitle>
@@ -156,7 +156,7 @@ export const AdminActionCards = ({ className }: AdminActionCardsProps) => {
           <Card className="hover:shadow-lg transition-all duration-200">
             <CardHeader className="pb-3">
               <CardTitle className="text-lg flex items-center gap-2">
-                <Shield className="h-5 w-5 text-red-600" />
+                <Shield className="h-5 w-5 text-destructive" />
                 Scan Sécurité
                 {getResultBadge('runSecurityScan')}
               </CardTitle>
@@ -212,7 +212,7 @@ export const AdminActionCards = ({ className }: AdminActionCardsProps) => {
           <Card className="hover:shadow-lg transition-all duration-200">
             <CardHeader className="pb-3">
               <CardTitle className="text-lg flex items-center gap-2">
-                <BarChart3 className="h-5 w-5 text-blue-600" />
+                <BarChart3 className="h-5 w-5 text-info" />
                 Actualiser Statistiques
                 {getResultBadge('updateStatistics')}
               </CardTitle>
@@ -235,7 +235,7 @@ export const AdminActionCards = ({ className }: AdminActionCardsProps) => {
           <Card className="hover:shadow-lg transition-all duration-200">
             <CardHeader className="pb-3">
               <CardTitle className="text-lg flex items-center gap-2">
-                <CheckCircle className="h-5 w-5 text-green-600" />
+                <CheckCircle className="h-5 w-5 text-success" />
                 Vérifier Intégrité
                 {getResultBadge('verifyIntegrity')}
               </CardTitle>
@@ -258,7 +258,7 @@ export const AdminActionCards = ({ className }: AdminActionCardsProps) => {
           <Card className="hover:shadow-lg transition-all duration-200">
             <CardHeader className="pb-3">
               <CardTitle className="text-lg flex items-center gap-2">
-                <Zap className="h-5 w-5 text-yellow-600" />
+                <Zap className="h-5 w-5 text-warning" />
                 Optimiser Index
                 {getResultBadge('optimizeIndex')}
               </CardTitle>
@@ -281,7 +281,7 @@ export const AdminActionCards = ({ className }: AdminActionCardsProps) => {
           <Card className="hover:shadow-lg transition-all duration-200">
             <CardHeader className="pb-3">
               <CardTitle className="text-lg flex items-center gap-2">
-                <Trash2 className="h-5 w-5 text-red-600" />
+                <Trash2 className="h-5 w-5 text-destructive" />
                 Nettoyer Logs Anciens
                 {getResultBadge('cleanOldLogs')}
               </CardTitle>
@@ -314,7 +314,7 @@ export const AdminActionCards = ({ className }: AdminActionCardsProps) => {
           <Card className="hover:shadow-lg transition-all duration-200">
             <CardHeader className="pb-3">
               <CardTitle className="text-lg flex items-center gap-2">
-                <RotateCcw className="h-5 w-5 text-blue-600" />
+                <RotateCcw className="h-5 w-5 text-info" />
                 Redémarrer Services
                 {getResultBadge('restartServices')}
               </CardTitle>
@@ -337,7 +337,7 @@ export const AdminActionCards = ({ className }: AdminActionCardsProps) => {
           <Card className="hover:shadow-lg transition-all duration-200">
             <CardHeader className="pb-3">
               <CardTitle className="text-lg flex items-center gap-2">
-                <HardDrive className="h-5 w-5 text-green-600" />
+                <HardDrive className="h-5 w-5 text-success" />
                 Vider Cache
                 {getResultBadge('clearCache')}
               </CardTitle>
@@ -383,7 +383,7 @@ export const AdminActionCards = ({ className }: AdminActionCardsProps) => {
           <Card className="hover:shadow-lg transition-all duration-200 border-2 border-green-200 bg-green-50/50">
             <CardHeader className="pb-3">
               <CardTitle className="text-lg flex items-center gap-2">
-                <Activity className="h-5 w-5 text-green-600" />
+                <Activity className="h-5 w-5 text-success" />
                 Health Check
                 {getResultBadge('runHealthCheck')}
               </CardTitle>
@@ -409,7 +409,7 @@ export const AdminActionCards = ({ className }: AdminActionCardsProps) => {
       <Card className="bg-gradient-to-r from-green-50 to-green-100 border-green-200">
         <CardHeader>
           <CardTitle className="text-xl flex items-center gap-2">
-            <CheckCircle className="h-6 w-6 text-green-600" />
+            <CheckCircle className="h-6 w-6 text-success" />
             Projet Complété à 95%
           </CardTitle>
           <CardDescription>
@@ -420,15 +420,15 @@ export const AdminActionCards = ({ className }: AdminActionCardsProps) => {
           <Progress value={95} className="mb-4 h-3" />
           <div className="grid grid-cols-3 gap-4 text-center">
             <div>
-              <div className="text-2xl font-bold text-green-600">10</div>
+              <div className="text-2xl font-bold text-success">10</div>
               <div className="text-sm text-muted-foreground">Fonctionnalités Complètes</div>
             </div>
             <div>
-              <div className="text-2xl font-bold text-yellow-600">0</div>
+              <div className="text-2xl font-bold text-warning">0</div>
               <div className="text-sm text-muted-foreground">Partiellement Fini</div>
             </div>
             <div>
-              <div className="text-2xl font-bold text-red-600">0</div>
+              <div className="text-2xl font-bold text-destructive">0</div>
               <div className="text-sm text-muted-foreground">À Finaliser</div>
             </div>
           </div>
@@ -440,7 +440,7 @@ export const AdminActionCards = ({ className }: AdminActionCardsProps) => {
         <Card className="bg-gray-50 border-gray-200">
           <CardHeader>
             <CardTitle className="text-lg flex items-center gap-2">
-              <AlertTriangle className="h-5 w-5 text-yellow-600" />
+              <AlertTriangle className="h-5 w-5 text-warning" />
               Résultats des Dernières Actions
             </CardTitle>
           </CardHeader>

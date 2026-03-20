@@ -83,7 +83,7 @@ const FlashSalesPage: React.FC = () => {
           <CardContent>
             <div className="text-2xl font-bold">€17,457</div>
             <p className="text-xs text-muted-foreground flex items-center gap-1">
-              <TrendingUp className="h-3 w-3 text-green-500" />
+              <TrendingUp className="h-3 w-3 text-success" />
               {t('flashSales.thisMonth')}
             </p>
           </CardContent>

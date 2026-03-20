@@ -110,7 +110,7 @@ export default function AIRecommendationsPage() {
                   <p className="text-xs text-muted-foreground">{totalAccepted}/{totalGenerated} acceptées</p>
                 </div>
                 <div className="p-2 rounded-lg bg-emerald-500/10">
-                  <Target className="h-5 w-5 text-emerald-500" />
+                  <Target className="h-5 w-5 text-success" />
                 </div>
               </div>
             </CardContent>
@@ -124,7 +124,7 @@ export default function AIRecommendationsPage() {
                   <Progress value={avgConfidence} className="h-1.5 mt-2" />
                 </div>
                 <div className="p-2 rounded-lg bg-blue-500/10">
-                  <BarChart3 className="h-5 w-5 text-blue-500" />
+                  <BarChart3 className="h-5 w-5 text-info" />
                 </div>
               </div>
             </CardContent>
@@ -235,7 +235,7 @@ export default function AIRecommendationsPage() {
                                     <Button
                                       variant="ghost"
                                       size="sm"
-                                      className="h-7 text-xs text-red-500 hover:text-red-600"
+                                      className="h-7 text-xs text-destructive hover:text-destructive"
                                       onClick={() => updateStatus.mutate({ id: rec.id, action: 'dismiss' })}
                                     >
                                       <ThumbsDown className="h-3 w-3 mr-1" />Ignorer
@@ -351,7 +351,7 @@ export default function AIRecommendationsPage() {
                             <p className="text-sm font-medium truncate">{rec.title}</p>
                             <p className="text-xs text-muted-foreground">{rec.impact_estimate}</p>
                           </div>
-                          <Badge variant="outline" className="text-[10px] text-emerald-600 border-emerald-300 shrink-0">
+                          <Badge variant="outline" className="text-[10px] text-success border-emerald-300 shrink-0">
                             <CheckCircle2 className="h-3 w-3 mr-1" />Acceptée
                           </Badge>
                         </CardContent>

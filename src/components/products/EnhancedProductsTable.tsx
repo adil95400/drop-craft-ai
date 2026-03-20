@@ -119,7 +119,7 @@ export function EnhancedProductsTable({
       imported: { label: 'Importé', className: 'bg-blue-500/10 text-blue-700 border-blue-200' },
       catalog: { label: 'Catalogue', className: 'bg-purple-500/10 text-purple-700 border-purple-200' },
       premium: { label: 'Premium', className: 'bg-gradient-to-r from-purple-600 to-pink-600 text-white border-0' },
-      products: { label: 'Manuel', className: 'bg-green-500/10 text-green-700 border-green-200' }
+      products: { label: 'Manuel', className: 'bg-green-500/10 text-success border-green-200' }
     }
     const config = configs[source as keyof typeof configs] || { label: source, className: '' }
     return <Badge variant="outline" className={cn("text-xs", config.className)}>{config.label}</Badge>

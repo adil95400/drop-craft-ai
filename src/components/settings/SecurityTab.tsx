@@ -150,18 +150,18 @@ export function SecurityTab() {
           {/* Security Checklist */}
           <div className="space-y-3">
             <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
-              <CheckCircle2 className="h-5 w-5 text-green-500" />
+              <CheckCircle2 className="h-5 w-5 text-success" />
               <span className="text-sm">Email vérifié</span>
             </div>
             <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
-              <CheckCircle2 className="h-5 w-5 text-green-500" />
+              <CheckCircle2 className="h-5 w-5 text-success" />
               <span className="text-sm">Mot de passe défini</span>
             </div>
             <div className={`flex items-center gap-3 p-3 rounded-lg ${twoFactorEnabled ? 'bg-muted/50' : 'bg-yellow-500/10'}`}>
               {twoFactorEnabled ? (
-                <CheckCircle2 className="h-5 w-5 text-green-500" />
+                <CheckCircle2 className="h-5 w-5 text-success" />
               ) : (
-                <AlertCircle className="h-5 w-5 text-yellow-500" />
+                <AlertCircle className="h-5 w-5 text-warning" />
               )}
               <span className="text-sm">Authentification à deux facteurs {twoFactorEnabled ? 'activée' : 'désactivée'}</span>
             </div>
@@ -208,9 +208,9 @@ export function SecurityTab() {
                     />
                   </div>
                   <span className={`text-xs ${
-                    passwordStrength === 'Fort' ? 'text-green-500' :
-                    passwordStrength === 'Moyen' ? 'text-yellow-500' :
-                    'text-red-500'
+                    passwordStrength === 'Fort' ? 'text-success' :
+                    passwordStrength === 'Moyen' ? 'text-warning' :
+                    'text-destructive'
                   }`}>{passwordStrength}</span>
                 </div>
               )}

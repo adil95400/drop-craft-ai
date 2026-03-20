@@ -22,18 +22,18 @@ import {
 import { cn } from '@/lib/utils';
 
 const activityConfig = {
-  call: { icon: Phone, label: 'Appel', color: 'text-blue-600', bg: 'bg-blue-100' },
-  email: { icon: Mail, label: 'Email', color: 'text-green-600', bg: 'bg-green-100' },
+  call: { icon: Phone, label: 'Appel', color: 'text-info', bg: 'bg-blue-100' },
+  email: { icon: Mail, label: 'Email', color: 'text-success', bg: 'bg-green-100' },
   meeting: { icon: Calendar, label: 'Réunion', color: 'text-purple-600', bg: 'bg-purple-100' },
-  note: { icon: MessageSquare, label: 'Note', color: 'text-amber-600', bg: 'bg-amber-100' },
-  task: { icon: CheckSquare, label: 'Tâche', color: 'text-orange-600', bg: 'bg-orange-100' },
+  note: { icon: MessageSquare, label: 'Note', color: 'text-warning', bg: 'bg-amber-100' },
+  task: { icon: CheckSquare, label: 'Tâche', color: 'text-warning', bg: 'bg-orange-100' },
   sms: { icon: Send, label: 'SMS', color: 'text-pink-600', bg: 'bg-pink-100' },
 };
 
 const statusConfig = {
-  scheduled: { label: 'Planifié', icon: Clock, color: 'text-blue-600' },
-  completed: { label: 'Terminé', icon: CheckCircle2, color: 'text-green-600' },
-  cancelled: { label: 'Annulé', icon: XCircle, color: 'text-red-600' },
+  scheduled: { label: 'Planifié', icon: Clock, color: 'text-info' },
+  completed: { label: 'Terminé', icon: CheckCircle2, color: 'text-success' },
+  cancelled: { label: 'Annulé', icon: XCircle, color: 'text-destructive' },
 };
 
 interface Props {

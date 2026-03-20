@@ -164,8 +164,8 @@ const ConnectorForm: React.FC<ConnectorFormProps> = ({
     return (
       <Card>
         <CardContent className="p-6 text-center">
-          <AlertCircle className="h-12 w-12 mx-auto text-red-500 mb-4" />
-          <p className="text-red-600">Configuration non trouvée pour {connectorName}</p>
+          <AlertCircle className="h-12 w-12 mx-auto text-destructive mb-4" />
+          <p className="text-destructive">Configuration non trouvée pour {connectorName}</p>
           <Button variant="outline" onClick={onCancel} className="mt-4">
             Retour
           </Button>
@@ -291,7 +291,7 @@ const ConnectorForm: React.FC<ConnectorFormProps> = ({
                   <Label htmlFor={field.name} className="flex items-center gap-2">
                     <Key className="h-4 w-4" />
                     {field.label}
-                    {field.required && <span className="text-red-500">*</span>}
+                    {field.required && <span className="text-destructive">*</span>}
                   </Label>
                   <Input
                     id={field.name}
@@ -316,7 +316,7 @@ const ConnectorForm: React.FC<ConnectorFormProps> = ({
               {testResult && (
                 <div className={`p-3 rounded-md border ${
                   testResult.success 
-                    ? 'bg-green-50 border-green-200 text-green-800' 
+                    ? 'bg-green-50 border-green-200 text-success' 
                     : 'bg-red-50 border-red-200 text-red-800'
                 }`}>
                   <div className="flex items-center gap-2">
@@ -365,10 +365,10 @@ const ConnectorForm: React.FC<ConnectorFormProps> = ({
                 {config.permissions.map((permission, index) => (
                   <div key={index} className="flex items-center justify-between p-3 border rounded-lg">
                     <div className="flex items-center gap-3">
-                      <Settings className="h-4 w-4 text-blue-500" />
+                      <Settings className="h-4 w-4 text-info" />
                       <span className="font-medium">{permission}</span>
                     </div>
-                    <Badge variant="secondary" className="bg-green-100 text-green-800">
+                    <Badge variant="secondary" className="bg-green-100 text-success">
                       Requis
                     </Badge>
                   </div>
@@ -434,7 +434,7 @@ const ConnectorForm: React.FC<ConnectorFormProps> = ({
                 <p className="text-sm text-muted-foreground mb-2">
                   Endpoint de test: <code className="bg-muted px-1 py-0.5 rounded">{config.testEndpoint}</code>
                 </p>
-                <Button variant="link" className="p-0 h-auto text-blue-600">
+                <Button variant="link" className="p-0 h-auto text-info">
                   Voir la documentation complète →
                 </Button>
               </div>

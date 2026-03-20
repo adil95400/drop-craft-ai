@@ -148,9 +148,9 @@ export function TrackingList({
                     <Truck className={cn(
                       "h-6 w-6",
                       track.status === 'delivered' 
-                        ? "text-green-600 dark:text-green-400"
+                        ? "text-success dark:text-green-400"
                         : track.status === 'exception'
-                          ? "text-red-600 dark:text-red-400"
+                          ? "text-destructive dark:text-red-400"
                           : "text-primary"
                     )} />
                   </div>

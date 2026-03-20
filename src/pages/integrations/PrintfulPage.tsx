@@ -84,7 +84,7 @@ export default function PrintfulPage() {
             <h1 className="text-2xl font-bold flex items-center gap-2">
               Printful
               {isConnected ? (
-                <Badge className="bg-green-500/10 text-green-600 border-green-500/30"><CheckCircle2 className="h-3 w-3 mr-1" />Connecté</Badge>
+                <Badge className="bg-green-500/10 text-success border-green-500/30"><CheckCircle2 className="h-3 w-3 mr-1" />Connecté</Badge>
               ) : (
                 <Badge variant="secondary"><AlertCircle className="h-3 w-3 mr-1" />Non connecté</Badge>
               )}
@@ -190,7 +190,7 @@ export default function PrintfulPage() {
                       </div>
                     </div>
                     <div className="flex items-center gap-3">
-                      <Badge className="bg-green-500/10 text-green-600">{w.status}</Badge>
+                      <Badge className="bg-green-500/10 text-success">{w.status}</Badge>
                       <span className="text-xs text-muted-foreground">{w.capacity}% capacité</span>
                     </div>
                   </div>

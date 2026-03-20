@@ -174,7 +174,7 @@ export default function PlatformOnboardingPage() {
         {step === 3 && platform && (
           <Card className="max-w-lg mx-auto border-emerald-200">
             <CardContent className="py-12 text-center">
-              <CheckCircle2 className="h-16 w-16 mx-auto text-emerald-500 mb-4" />
+              <CheckCircle2 className="h-16 w-16 mx-auto text-success mb-4" />
               <h3 className="font-bold text-xl mb-2">🎉 {platform.name} connecté !</h3>
               <p className="text-sm text-muted-foreground mb-6">
                 Votre boutique est synchronisée. Vos produits sont prêts à être optimisés.

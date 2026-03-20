@@ -196,9 +196,9 @@ export function ImportDetailedLogs({ imports, onRetryItem, className }: ImportDe
   }, [logs, search, levelFilter])
 
   const levelConfig = {
-    info: { icon: Info, color: 'text-blue-500', bg: 'bg-blue-500/10', label: 'Info' },
-    success: { icon: CheckCircle2, color: 'text-emerald-500', bg: 'bg-emerald-500/10', label: 'Succès' },
-    warning: { icon: AlertTriangle, color: 'text-amber-500', bg: 'bg-amber-500/10', label: 'Alerte' },
+    info: { icon: Info, color: 'text-info', bg: 'bg-blue-500/10', label: 'Info' },
+    success: { icon: CheckCircle2, color: 'text-success', bg: 'bg-emerald-500/10', label: 'Succès' },
+    warning: { icon: AlertTriangle, color: 'text-warning', bg: 'bg-amber-500/10', label: 'Alerte' },
     error: { icon: XCircle, color: 'text-destructive', bg: 'bg-destructive/10', label: 'Erreur' },
   }
 
@@ -343,8 +343,8 @@ export function ImportDetailedLogs({ imports, onRetryItem, className }: ImportDe
                             variant="outline"
                             className={cn(
                               'text-[9px] h-4 shrink-0 gap-0.5',
-                              log.qualityScore >= 80 ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/30' :
-                              log.qualityScore >= 50 ? 'bg-amber-500/10 text-amber-600 border-amber-500/30' :
+                              log.qualityScore >= 80 ? 'bg-emerald-500/10 text-success border-emerald-500/30' :
+                              log.qualityScore >= 50 ? 'bg-amber-500/10 text-warning border-amber-500/30' :
                               'bg-destructive/10 text-destructive border-destructive/30'
                             )}
                           >

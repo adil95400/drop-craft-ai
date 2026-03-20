@@ -50,7 +50,7 @@ export const AdvancedMonitoring = () => {
   ]
 
   const statusColors = {
-    success: 'bg-green-100 text-green-800 border-green-200',
+    success: 'bg-green-100 text-success border-green-200',
     warning: 'bg-yellow-100 text-yellow-800 border-yellow-200',
     error: 'bg-red-100 text-red-800 border-red-200',
     info: 'bg-blue-100 text-blue-800 border-blue-200'
@@ -191,17 +191,17 @@ export const AdvancedMonitoring = () => {
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'success': return <CheckCircle className="w-4 h-4 text-green-600" />
-      case 'warning': return <AlertTriangle className="w-4 h-4 text-yellow-600" />
-      case 'error': return <AlertTriangle className="w-4 h-4 text-red-600" />
-      case 'info': return <Globe className="w-4 h-4 text-blue-600" />
+      case 'success': return <CheckCircle className="w-4 h-4 text-success" />
+      case 'warning': return <AlertTriangle className="w-4 h-4 text-warning" />
+      case 'error': return <AlertTriangle className="w-4 h-4 text-destructive" />
+      case 'info': return <Globe className="w-4 h-4 text-info" />
       default: return <Clock className="w-4 h-4 text-gray-400" />
     }
   }
 
   const getChangeIcon = (change: number) => {
-    if (change > 0) return <TrendingUp className="w-3 h-3 text-green-600" />
-    if (change < 0) return <TrendingDown className="w-3 h-3 text-red-600" />
+    if (change > 0) return <TrendingUp className="w-3 h-3 text-success" />
+    if (change < 0) return <TrendingDown className="w-3 h-3 text-destructive" />
     return null
   }
 

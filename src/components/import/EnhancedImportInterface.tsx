@@ -306,7 +306,7 @@ export const EnhancedImportInterface = ({ selectedMethod, isImporting, importPro
                     className="mt-1"
                   />
                   {selectedFile && (
-                    <p className="text-sm text-green-600 mt-1 animate-fade-in">
+                    <p className="text-sm text-success mt-1 animate-fade-in">
                       ✓ {selectedFile.name} sélectionné
                     </p>
                   )}
@@ -343,7 +343,7 @@ export const EnhancedImportInterface = ({ selectedMethod, isImporting, importPro
                     className="mt-1"
                   />
                   {imageFile && (
-                    <p className="text-sm text-green-600 mt-1 animate-fade-in">
+                    <p className="text-sm text-success mt-1 animate-fade-in">
                       ✓ {imageFile.name} sélectionné
                     </p>
                   )}
@@ -365,7 +365,7 @@ export const EnhancedImportInterface = ({ selectedMethod, isImporting, importPro
             <Card className="border-gradient-to-r from-yellow-500 to-orange-500">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <Bot className="w-5 h-5 text-yellow-600" />
+                  <Bot className="w-5 h-5 text-warning" />
                   Import Winners IA
                   <Badge className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white">
                     Ultra Pro

@@ -78,14 +78,14 @@ export default function AIOptimizationPage() {
       name: 'Descriptions Produits',
       description: 'Réécriture SEO-optimisée des descriptions',
       icon: FileText,
-      color: 'text-blue-500',
+      color: 'text-info',
     },
     {
       id: 'seo_title',
       name: 'Titres SEO',
       description: 'Optimisation des titres pour les moteurs de recherche',
       icon: Search,
-      color: 'text-green-500',
+      color: 'text-success',
     },
     {
       id: 'bullet_points',
@@ -99,7 +99,7 @@ export default function AIOptimizationPage() {
       name: 'Alt Images',
       description: 'Textes alternatifs pour l\'accessibilité et le SEO',
       icon: Image,
-      color: 'text-orange-500',
+      color: 'text-warning',
     },
   ];
 
@@ -128,7 +128,7 @@ export default function AIOptimizationPage() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           {[
             { label: 'Produits actifs', value: products.length, icon: FileText, color: 'text-primary' },
-            { label: 'Score SEO faible', value: lowScoreProducts.length, icon: AlertCircle, color: 'text-orange-500' },
+            { label: 'Score SEO faible', value: lowScoreProducts.length, icon: AlertCircle, color: 'text-warning' },
             { label: 'Générations récentes', value: generations.length, icon: Sparkles, color: 'text-purple-500' },
             { label: 'En attente', value: pendingGenerations.length, icon: Clock, color: 'text-muted-foreground' },
           ].map((kpi) => (
@@ -190,7 +190,7 @@ export default function AIOptimizationPage() {
             {lowScoreProducts.length > 0 && (
               <Card className="p-6 mt-6">
                 <h3 className="font-semibold mb-4 flex items-center gap-2">
-                  <AlertCircle className="h-5 w-5 text-orange-500" />
+                  <AlertCircle className="h-5 w-5 text-warning" />
                   Produits à optimiser en priorité
                 </h3>
                 <div className="space-y-3">

@@ -150,21 +150,21 @@ export default function AIWinningProductScanner() {
   }
 
   const trendIcon = (dir: string) => {
-    if (dir === 'rising') return <ArrowUpRight className="h-4 w-4 text-green-500" />
-    if (dir === 'declining') return <ArrowDownRight className="h-4 w-4 text-red-500" />
+    if (dir === 'rising') return <ArrowUpRight className="h-4 w-4 text-success" />
+    if (dir === 'declining') return <ArrowDownRight className="h-4 w-4 text-destructive" />
     return <Minus className="h-4 w-4 text-muted-foreground" />
   }
 
   const scoreColor = (score: number) => {
-    if (score >= 80) return 'text-green-500'
-    if (score >= 60) return 'text-yellow-500'
-    return 'text-red-500'
+    if (score >= 80) return 'text-success'
+    if (score >= 60) return 'text-warning'
+    return 'text-destructive'
   }
 
   const scoreBadge = (score: number) => {
-    if (score >= 85) return 'bg-green-500/10 text-green-500 border-green-500/30'
-    if (score >= 70) return 'bg-yellow-500/10 text-yellow-500 border-yellow-500/30'
-    return 'bg-red-500/10 text-red-500 border-red-500/30'
+    if (score >= 85) return 'bg-green-500/10 text-success border-green-500/30'
+    if (score >= 70) return 'bg-yellow-500/10 text-warning border-yellow-500/30'
+    return 'bg-red-500/10 text-destructive border-red-500/30'
   }
 
   const displayProducts = activeTab === 'scanner' ? products : trending
@@ -290,7 +290,7 @@ export default function AIWinningProductScanner() {
                 <div className="flex items-center gap-2 text-muted-foreground text-xs mb-1">
                   <TrendingUp className="h-3 w-3" /> En hausse
                 </div>
-                <p className="text-2xl font-bold text-green-500">
+                <p className="text-2xl font-bold text-success">
                   {displayProducts.filter(p => p.trend_direction === 'rising').length}
                 </p>
               </CardContent>
@@ -341,7 +341,7 @@ export default function AIWinningProductScanner() {
                         </div>
                         <div className="p-2 rounded bg-muted/50">
                           <span className="text-muted-foreground">Prix de vente</span>
-                          <p className="font-semibold text-green-500">${product.selling_price_suggested}</p>
+                          <p className="font-semibold text-success">${product.selling_price_suggested}</p>
                         </div>
                       </div>
 
@@ -368,7 +368,7 @@ export default function AIWinningProductScanner() {
 
                       {/* Margin badge */}
                       <div className="flex items-center justify-between pt-1">
-                        <Badge variant="outline" className="bg-green-500/10 text-green-500 border-green-500/30 text-xs">
+                        <Badge variant="outline" className="bg-green-500/10 text-success border-green-500/30 text-xs">
                           Marge {product.margin_percent}%
                         </Badge>
                         {product.estimated_monthly_revenue && (

@@ -23,7 +23,7 @@ const planNames = {
 
 const planColors = {
   free: 'text-gray-600 bg-gray-100',
-  pro: 'text-blue-600 bg-blue-100',
+  pro: 'text-info bg-blue-100',
   ultra_pro: 'text-purple-600 bg-purple-100'
 }
 
@@ -95,7 +95,7 @@ export const SubscriptionManager = () => {
               </div>
             </div>
             {subscription.subscribed && (
-              <Badge variant="outline" className="text-green-600 border-green-600">
+              <Badge variant="outline" className="text-success border-green-600">
                 Payé
               </Badge>
             )}

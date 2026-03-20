@@ -111,7 +111,7 @@ export function ConfigurationStep({ settings, setSettings }: ConfigurationStepPr
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.25 }}
-        className="flex items-start gap-3 p-4 rounded-xl bg-blue-500/10 border border-blue-500/20 text-blue-600 dark:text-blue-400"
+        className="flex items-start gap-3 p-4 rounded-xl bg-blue-500/10 border border-blue-500/20 text-info dark:text-blue-400"
       >
         <Clock className="h-5 w-5 flex-shrink-0 mt-0.5" />
         <div className="text-sm">

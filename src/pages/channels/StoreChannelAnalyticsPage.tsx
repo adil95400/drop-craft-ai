@@ -290,7 +290,7 @@ export default function StoreChannelAnalyticsPage() {
                       <div className="flex items-center gap-3">
                         <div className={cn(
                           'p-2 rounded-lg',
-                          channel.status === 'active' ? 'bg-green-500/10 text-green-600' : 'bg-amber-500/10 text-amber-600'
+                          channel.status === 'active' ? 'bg-green-500/10 text-success' : 'bg-amber-500/10 text-warning'
                         )}>
                           <Store className="h-5 w-5" />
                         </div>

@@ -47,9 +47,9 @@ function SplitOrdersTab() {
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
         {[
           { label: 'Total', value: stats.total, color: 'text-foreground' },
-          { label: 'En attente', value: stats.pending, color: 'text-yellow-600' },
-          { label: 'En cours', value: stats.processing, color: 'text-blue-600' },
-          { label: 'Expédiés', value: stats.shipped, color: 'text-green-600' },
+          { label: 'En attente', value: stats.pending, color: 'text-warning' },
+          { label: 'En cours', value: stats.processing, color: 'text-info' },
+          { label: 'Expédiés', value: stats.shipped, color: 'text-success' },
           { label: 'Échoués', value: stats.failed, color: 'text-destructive' },
         ].map(kpi => (
           <Card key={kpi.label}>
@@ -249,7 +249,7 @@ function PackingSlipsTab() {
                   <div>
                     <p className="font-semibold flex items-center gap-2">
                       {t.name}
-                      {t.is_default && <Star className="h-3.5 w-3.5 text-yellow-500 fill-yellow-500" />}
+                      {t.is_default && <Star className="h-3.5 w-3.5 text-warning fill-yellow-500" />}
                     </p>
                     <p className="text-xs text-muted-foreground capitalize">{t.template_style}</p>
                   </div>

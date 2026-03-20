@@ -141,11 +141,11 @@ export default function BusinessIntelligencePage() {
                     <div className="text-2xl font-bold">{kpi.value}</div>
                     <p className="text-xs text-muted-foreground flex items-center gap-1">
                       {kpi.positive ? (
-                        <ArrowUpRight className="h-3 w-3 text-green-500" />
+                        <ArrowUpRight className="h-3 w-3 text-success" />
                       ) : (
-                        <ArrowDownRight className="h-3 w-3 text-red-500" />
+                        <ArrowDownRight className="h-3 w-3 text-destructive" />
                       )}
-                      <span className={kpi.positive ? 'text-green-600' : 'text-red-600'}>{kpi.change}</span>
+                      <span className={kpi.positive ? 'text-success' : 'text-destructive'}>{kpi.change}</span>
                       vs période précédente
                     </p>
                   </>
@@ -246,7 +246,7 @@ export default function BusinessIntelligencePage() {
                     <div className="flex items-start justify-between">
                       <div className="space-y-2 flex-1">
                         <div className="flex items-center gap-3">
-                          <Lightbulb className="h-5 w-5 text-yellow-500" />
+                          <Lightbulb className="h-5 w-5 text-warning" />
                           <h3 className="font-semibold">{insight.metric_name}</h3>
                           {insight.category && <Badge variant="outline">{insight.category}</Badge>}
                         </div>
@@ -255,8 +255,8 @@ export default function BusinessIntelligencePage() {
                         </p>
                         {insight.trend && (
                           <div className="flex items-center gap-2 text-sm">
-                            <TrendingUp className={`h-4 w-4 ${insight.trend === 'up' ? 'text-green-500' : 'text-red-500'}`} />
-                            <span className={insight.trend === 'up' ? 'text-green-600' : 'text-red-600'}>
+                            <TrendingUp className={`h-4 w-4 ${insight.trend === 'up' ? 'text-success' : 'text-destructive'}`} />
+                            <span className={insight.trend === 'up' ? 'text-success' : 'text-destructive'}>
                               {insight.trend_percentage ? `${insight.trend_percentage > 0 ? '+' : ''}${insight.trend_percentage}%` : insight.trend}
                             </span>
                           </div>
@@ -327,7 +327,7 @@ export default function BusinessIntelligencePage() {
                     <div className="flex items-start justify-between">
                       <div className="space-y-2">
                         <div className="flex items-center gap-3">
-                          <Target className="h-5 w-5 text-green-500" />
+                          <Target className="h-5 w-5 text-success" />
                           <h3 className="font-semibold">{opp.metric_name}</h3>
                         </div>
                         <p className="text-sm text-muted-foreground">{opp.category}</p>

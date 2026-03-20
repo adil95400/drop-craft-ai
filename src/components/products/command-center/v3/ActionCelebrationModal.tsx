@@ -98,9 +98,9 @@ const MetricRow = memo(function MetricRow({
               transition={{ delay: 0.3 }}
             >
               {isPositive ? (
-                <TrendingUp className="h-4 w-4 text-emerald-500" />
+                <TrendingUp className="h-4 w-4 text-success" />
               ) : (
-                <TrendingDown className="h-4 w-4 text-red-500" />
+                <TrendingDown className="h-4 w-4 text-destructive" />
               )}
             </motion.div>
           </>
@@ -108,8 +108,8 @@ const MetricRow = memo(function MetricRow({
         <motion.span 
           className={cn(
             'text-sm font-bold',
-            hasChange && isPositive && 'text-emerald-500',
-            hasChange && !isPositive && 'text-red-500'
+            hasChange && isPositive && 'text-success',
+            hasChange && !isPositive && 'text-destructive'
           )}
           initial={{ opacity: 0, scale: 0.5 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -198,9 +198,9 @@ export const ActionCelebrationModal = memo(function ActionCelebrationModal({
                 result.type === 'info' && 'bg-blue-500/20'
               )}>
                 {result.type === 'success' ? (
-                  <CheckCircle2 className="h-8 w-8 text-emerald-500" />
+                  <CheckCircle2 className="h-8 w-8 text-success" />
                 ) : (
-                  <Sparkles className="h-8 w-8 text-yellow-500" />
+                  <Sparkles className="h-8 w-8 text-warning" />
                 )}
               </div>
             </motion.div>
@@ -239,7 +239,7 @@ export const ActionCelebrationModal = memo(function ActionCelebrationModal({
             <div className="flex items-center justify-center gap-4 text-sm">
               {result.estimatedGain !== undefined && result.estimatedGain > 0 && (
                 <motion.div 
-                  className="flex items-center gap-1.5 text-emerald-500"
+                  className="flex items-center gap-1.5 text-success"
                   initial={{ opacity: 0, x: -10 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.3 }}
@@ -251,7 +251,7 @@ export const ActionCelebrationModal = memo(function ActionCelebrationModal({
               
               {result.riskReduced !== undefined && result.riskReduced > 0 && (
                 <motion.div 
-                  className="flex items-center gap-1.5 text-blue-500"
+                  className="flex items-center gap-1.5 text-info"
                   initial={{ opacity: 0, x: -10 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.35 }}

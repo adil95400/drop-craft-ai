@@ -344,26 +344,26 @@ export function ImportCSVWithValidation() {
 
             <Card>
               <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-medium flex items-center gap-2 text-green-600">
+                <CardTitle className="text-sm font-medium flex items-center gap-2 text-success">
                   <CheckCircle2 className="h-4 w-4" />
                   Valides
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-green-600">{validRows.length}</div>
+                <div className="text-2xl font-bold text-success">{validRows.length}</div>
                 <p className="text-xs text-muted-foreground">prêts à importer</p>
               </CardContent>
             </Card>
 
             <Card>
               <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-medium flex items-center gap-2 text-red-600">
+                <CardTitle className="text-sm font-medium flex items-center gap-2 text-destructive">
                   <AlertCircle className="h-4 w-4" />
                   Erreurs
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-red-600">{errorRows.length}</div>
+                <div className="text-2xl font-bold text-destructive">{errorRows.length}</div>
                 <p className="text-xs text-muted-foreground">à corriger</p>
               </CardContent>
             </Card>
@@ -394,7 +394,7 @@ export function ImportCSVWithValidation() {
                             {row.data.price}€ • {row.data.sku} • {row.data.category}
                           </div>
                         </div>
-                        <CheckCircle2 className="h-5 w-5 text-green-600" />
+                        <CheckCircle2 className="h-5 w-5 text-success" />
                       </div>
                     </CardContent>
                   </Card>
@@ -408,13 +408,13 @@ export function ImportCSVWithValidation() {
                   <Card key={row.row} className="border-red-200">
                     <CardContent className="p-4">
                       <div className="flex items-start gap-3">
-                        <AlertCircle className="h-5 w-5 text-red-600 flex-shrink-0 mt-0.5" />
+                        <AlertCircle className="h-5 w-5 text-destructive flex-shrink-0 mt-0.5" />
                         <div className="flex-1">
                           <div className="flex items-center gap-2 mb-2">
                             <Badge variant="destructive">Ligne {row.row}</Badge>
                             <span className="font-medium">{row.data.name || 'Sans nom'}</span>
                           </div>
-                          <ul className="text-sm text-red-600 space-y-1">
+                          <ul className="text-sm text-destructive space-y-1">
                             {row.errors.map((error, idx) => (
                               <li key={idx}>• {error}</li>
                             ))}
@@ -453,9 +453,9 @@ export function ImportCSVWithValidation() {
           <Card className="border-green-200 bg-green-50">
             <CardContent className="pt-6">
               <div className="text-center space-y-4">
-                <CheckCircle2 className="h-16 w-16 mx-auto text-green-600" />
+                <CheckCircle2 className="h-16 w-16 mx-auto text-success" />
                 <div>
-                  <h3 className="text-2xl font-bold text-green-600">Import réussi !</h3>
+                  <h3 className="text-2xl font-bold text-success">Import réussi !</h3>
                   <p className="text-muted-foreground mt-2">
                     {importResult.imported} produits ont été importés avec succès
                   </p>
@@ -466,11 +466,11 @@ export function ImportCSVWithValidation() {
                     <div className="text-sm text-muted-foreground">Total</div>
                   </div>
                   <div>
-                    <div className="text-2xl font-bold text-green-600">{importResult.imported}</div>
+                    <div className="text-2xl font-bold text-success">{importResult.imported}</div>
                     <div className="text-sm text-muted-foreground">Importés</div>
                   </div>
                   <div>
-                    <div className="text-2xl font-bold text-red-600">{importResult.errors}</div>
+                    <div className="text-2xl font-bold text-destructive">{importResult.errors}</div>
                     <div className="text-sm text-muted-foreground">Erreurs</div>
                   </div>
                 </div>

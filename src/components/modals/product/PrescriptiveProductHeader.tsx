@@ -43,8 +43,8 @@ const AI_STATUS_CONFIG = {
     gradient: 'from-red-500/20 via-red-500/10 to-transparent',
     border: 'border-red-500/40',
     iconBg: 'bg-red-500/20',
-    iconColor: 'text-red-500',
-    textColor: 'text-red-600 dark:text-red-400',
+    iconColor: 'text-destructive',
+    textColor: 'text-destructive dark:text-red-400',
     ctaClass: 'bg-red-500 hover:bg-red-600 text-white shadow-lg shadow-red-500/30'
   },
   opportunity: {
@@ -56,8 +56,8 @@ const AI_STATUS_CONFIG = {
     gradient: 'from-emerald-500/20 via-emerald-500/10 to-transparent',
     border: 'border-emerald-500/40',
     iconBg: 'bg-emerald-500/20',
-    iconColor: 'text-emerald-500',
-    textColor: 'text-emerald-600 dark:text-emerald-400',
+    iconColor: 'text-success',
+    textColor: 'text-success dark:text-emerald-400',
     ctaClass: 'bg-emerald-500 hover:bg-emerald-600 text-white shadow-lg shadow-emerald-500/30'
   },
   optimized: {
@@ -69,8 +69,8 @@ const AI_STATUS_CONFIG = {
     gradient: 'from-blue-500/20 via-blue-500/10 to-transparent',
     border: 'border-blue-500/40',
     iconBg: 'bg-blue-500/20',
-    iconColor: 'text-blue-500',
-    textColor: 'text-blue-600 dark:text-blue-400',
+    iconColor: 'text-info',
+    textColor: 'text-info dark:text-blue-400',
     ctaClass: 'bg-blue-500 hover:bg-blue-600 text-white'
   },
   neutral: {

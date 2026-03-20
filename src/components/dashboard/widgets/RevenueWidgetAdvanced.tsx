@@ -47,7 +47,7 @@ export function RevenueWidgetAdvanced({ timeRange, settings, lastRefresh }: Reve
         <CardTitle className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div className="p-2 rounded-lg bg-green-500/10">
-              <DollarSign className="h-5 w-5 text-green-500" />
+              <DollarSign className="h-5 w-5 text-success" />
             </div>
             <span>Revenus</span>
           </div>

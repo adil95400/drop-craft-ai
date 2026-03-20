@@ -59,13 +59,13 @@ export const SyncJobMonitor: React.FC<SyncJobMonitorProps> = ({
   const getJobStatusIcon = (status: string) => {
     switch (status) {
       case 'completed':
-        return <CheckCircle2 className="h-4 w-4 text-green-500" />;
+        return <CheckCircle2 className="h-4 w-4 text-success" />;
       case 'failed':
-        return <XCircle className="h-4 w-4 text-red-500" />;
+        return <XCircle className="h-4 w-4 text-destructive" />;
       case 'running':
-        return <Loader2 className="h-4 w-4 text-blue-500 animate-spin" />;
+        return <Loader2 className="h-4 w-4 text-info animate-spin" />;
       case 'pending':
-        return <Clock className="h-4 w-4 text-yellow-500" />;
+        return <Clock className="h-4 w-4 text-warning" />;
       default:
         return <AlertCircle className="h-4 w-4 text-gray-500" />;
     }
@@ -129,9 +129,9 @@ export const SyncJobMonitor: React.FC<SyncJobMonitorProps> = ({
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-muted-foreground">En cours</p>
-                <p className="text-2xl font-bold text-blue-600">{queueStats?.running || 0}</p>
+                <p className="text-2xl font-bold text-info">{queueStats?.running || 0}</p>
               </div>
-              <Loader2 className="h-4 w-4 text-blue-500 animate-spin" />
+              <Loader2 className="h-4 w-4 text-info animate-spin" />
             </div>
           </CardContent>
         </Card>
@@ -141,9 +141,9 @@ export const SyncJobMonitor: React.FC<SyncJobMonitorProps> = ({
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-muted-foreground">Réussis</p>
-                <p className="text-2xl font-bold text-green-600">{queueStats?.completed || 0}</p>
+                <p className="text-2xl font-bold text-success">{queueStats?.completed || 0}</p>
               </div>
-              <CheckCircle2 className="h-4 w-4 text-green-500" />
+              <CheckCircle2 className="h-4 w-4 text-success" />
             </div>
           </CardContent>
         </Card>
@@ -153,9 +153,9 @@ export const SyncJobMonitor: React.FC<SyncJobMonitorProps> = ({
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-muted-foreground">Échecs</p>
-                <p className="text-2xl font-bold text-red-600">{queueStats?.failed || 0}</p>
+                <p className="text-2xl font-bold text-destructive">{queueStats?.failed || 0}</p>
               </div>
-              <XCircle className="h-4 w-4 text-red-500" />
+              <XCircle className="h-4 w-4 text-destructive" />
             </div>
           </CardContent>
         </Card>

@@ -22,14 +22,14 @@ export const ImportMethods = ({ selectedMethod, onMethodSelect }: ImportMethodsP
       title: "CSV/Excel",
       description: "Import via fichier avec mapping IA automatique",
       icon: <FileSpreadsheet className="w-8 h-8" />,
-      color: "text-green-600"
+      color: "text-success"
     },
     {
       id: "url",
       title: "URL Produit",
       description: "Extraction automatique depuis n'importe quel site",
       icon: <Link className="w-8 h-8" />,
-      color: "text-blue-600"
+      color: "text-info"
     },
     {
       id: "image",
@@ -43,7 +43,7 @@ export const ImportMethods = ({ selectedMethod, onMethodSelect }: ImportMethodsP
       title: "API Fournisseur",
       description: "BigBuy, EPROLO, Aliexpress et plus",
       icon: <Globe className="w-8 h-8" />,
-      color: "text-orange-600",
+      color: "text-warning",
       premium: true
     },
     {
@@ -51,7 +51,7 @@ export const ImportMethods = ({ selectedMethod, onMethodSelect }: ImportMethodsP
       title: "XML/FTP",
       description: "Import automatique des flux fournisseurs",
       icon: <Puzzle className="w-8 h-8" />,
-      color: "text-red-600",
+      color: "text-destructive",
       premium: true
     },
     {

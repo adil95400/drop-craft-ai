@@ -17,7 +17,7 @@ const testimonials = [
     stats: '+340%',
     statsLabel: 'productivité',
     icon: TrendingUp,
-    color: 'text-green-500'
+    color: 'text-success'
   },
   {
     name: 'Thomas B.',
@@ -28,7 +28,7 @@ const testimonials = [
     stats: '15K€',
     statsLabel: 'économisés',
     icon: DollarSign,
-    color: 'text-blue-500'
+    color: 'text-info'
   },
   {
     name: 'Sophie M.',

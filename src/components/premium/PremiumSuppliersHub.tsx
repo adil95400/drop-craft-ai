@@ -200,11 +200,11 @@ export default function PremiumSuppliersHub() {
               <span>{supplier.product_count} produits</span>
             </div>
             <div className="flex items-center gap-2 text-sm">
-              <Star className="h-4 w-4 text-yellow-500" />
+              <Star className="h-4 w-4 text-warning" />
               <span>{supplier.quality_score}/5.0</span>
             </div>
             <div className="flex items-center gap-2 text-sm">
-              <TrendingUp className="h-4 w-4 text-green-500" />
+              <TrendingUp className="h-4 w-4 text-success" />
               <span>{supplier.reliability_score}/5.0</span>
             </div>
           </div>
@@ -312,7 +312,7 @@ export default function PremiumSuppliersHub() {
         <Card className="p-4">
           <div className="flex items-center gap-3">
             <div className="p-3 rounded-lg bg-green-500/10">
-              <CheckCircle2 className="h-5 w-5 text-green-500" />
+              <CheckCircle2 className="h-5 w-5 text-success" />
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Connectés</p>
@@ -324,7 +324,7 @@ export default function PremiumSuppliersHub() {
         <Card className="p-4">
           <div className="flex items-center gap-3">
             <div className="p-3 rounded-lg bg-yellow-500/10">
-              <Sparkles className="h-5 w-5 text-yellow-500" />
+              <Sparkles className="h-5 w-5 text-warning" />
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Premium</p>
@@ -336,7 +336,7 @@ export default function PremiumSuppliersHub() {
         <Card className="p-4">
           <div className="flex items-center gap-3">
             <div className="p-3 rounded-lg bg-blue-500/10">
-              <Truck className="h-5 w-5 text-blue-500" />
+              <Truck className="h-5 w-5 text-info" />
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Livraison rapide</p>

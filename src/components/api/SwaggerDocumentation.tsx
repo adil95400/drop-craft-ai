@@ -669,7 +669,7 @@ export function SwaggerDocumentation() {
                                         <tr key={pIdx} className="border-t">
                                           <td className="p-2">
                                             <code className="text-xs">{param.name}</code>
-                                            {param.required && <span className="text-red-500 ml-1">*</span>}
+                                            {param.required && <span className="text-destructive ml-1">*</span>}
                                             <Badge variant="outline" className="ml-2 text-[10px]">{param.in}</Badge>
                                           </td>
                                           <td className="p-2 text-muted-foreground">{param.type}</td>
@@ -711,7 +711,7 @@ export function SwaggerDocumentation() {
                                           <td className="p-2">
                                             <code className="text-xs">{propName}</code>
                                             {endpoint.requestBody?.required?.includes(propName) && (
-                                              <span className="text-red-500 ml-1">*</span>
+                                              <span className="text-destructive ml-1">*</span>
                                             )}
                                           </td>
                                           <td className="p-2 text-muted-foreground">{prop.type}</td>

@@ -78,8 +78,8 @@ export default function ShopoptiVsAutodsPage() {
               {comparison.map((row) => (
                 <div key={row.feature} className="grid grid-cols-3 p-4 border-t items-center">
                   <span className="text-sm">{row.feature}</span>
-                  <span className="text-center">{row.shopopti ? <CheckCircle className="h-5 w-5 text-green-500 mx-auto" /> : <X className="h-5 w-5 text-muted-foreground mx-auto" />}</span>
-                  <span className="text-center">{row.competitor ? <CheckCircle className="h-5 w-5 text-green-500 mx-auto" /> : <X className="h-5 w-5 text-muted-foreground mx-auto" />}</span>
+                  <span className="text-center">{row.shopopti ? <CheckCircle className="h-5 w-5 text-success mx-auto" /> : <X className="h-5 w-5 text-muted-foreground mx-auto" />}</span>
+                  <span className="text-center">{row.competitor ? <CheckCircle className="h-5 w-5 text-success mx-auto" /> : <X className="h-5 w-5 text-muted-foreground mx-auto" />}</span>
                 </div>
               ))}
             </div>
@@ -96,7 +96,7 @@ export default function ShopoptiVsAutodsPage() {
                 <p className="text-4xl font-bold mb-4">$29<span className="text-lg font-normal text-muted-foreground">/mo</span></p>
                 <ul className="space-y-2 text-sm">
                   {["Full AI SEO", "99+ suppliers", "Multi-marketplace", "Dynamic pricing", "Predictive analytics", "14-day free trial"].map(f => (
-                    <li key={f} className="flex items-center gap-2"><CheckCircle className="h-4 w-4 text-green-500 shrink-0" />{f}</li>
+                    <li key={f} className="flex items-center gap-2"><CheckCircle className="h-4 w-4 text-success shrink-0" />{f}</li>
                   ))}
                 </ul>
               </div>

@@ -104,7 +104,7 @@ export const FlowProgressIndicator = () => {
               >
                 <div className="flex-shrink-0">
                   {isCompleted ? (
-                    <CheckCircle className="h-3 w-3 text-green-500 fill-current" />
+                    <CheckCircle className="h-3 w-3 text-success fill-current" />
                   ) : isCurrent ? (
                     <Circle className="h-3 w-3 text-primary fill-current" />
                   ) : (
@@ -114,7 +114,7 @@ export const FlowProgressIndicator = () => {
                 <span 
                   className={`flex-1 truncate ${
                     isCompleted 
-                      ? 'text-green-600 line-through' 
+                      ? 'text-success line-through' 
                       : isCurrent 
                         ? 'text-foreground font-medium' 
                         : 'text-muted-foreground'
@@ -197,7 +197,7 @@ export const RecommendedFlows = () => {
     <Card className="mb-6 border-blue-200 bg-blue-50/50">
       <CardContent className="p-4">
         <div className="flex items-center gap-2 mb-3">
-          <Zap className="h-4 w-4 text-blue-600" />
+          <Zap className="h-4 w-4 text-info" />
           <h3 className="font-medium text-sm">Flux recommandés</h3>
         </div>
         

@@ -77,13 +77,13 @@ export const ProductionTrackingInterface = () => {
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'delivered':
-        return <CheckCircle className="h-4 w-4 text-green-500" />
+        return <CheckCircle className="h-4 w-4 text-success" />
       case 'in_transit':
-        return <Truck className="h-4 w-4 text-blue-500" />
+        return <Truck className="h-4 w-4 text-info" />
       case 'pending':
-        return <Clock className="h-4 w-4 text-orange-500" />
+        return <Clock className="h-4 w-4 text-warning" />
       case 'exception':
-        return <XCircle className="h-4 w-4 text-red-500" />
+        return <XCircle className="h-4 w-4 text-destructive" />
       default:
         return <Package className="h-4 w-4 text-gray-500" />
     }
@@ -157,7 +157,7 @@ export const ProductionTrackingInterface = () => {
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-2">
-              <CheckCircle className="h-4 w-4 text-green-500" />
+              <CheckCircle className="h-4 w-4 text-success" />
               <div>
                 <p className="text-2xl font-bold">{stats.delivered}</p>
                 <p className="text-xs text-muted-foreground">Livrés</p>
@@ -169,7 +169,7 @@ export const ProductionTrackingInterface = () => {
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-2">
-              <Truck className="h-4 w-4 text-blue-500" />
+              <Truck className="h-4 w-4 text-info" />
               <div>
                 <p className="text-2xl font-bold">{stats.in_transit}</p>
                 <p className="text-xs text-muted-foreground">En transit</p>
@@ -181,7 +181,7 @@ export const ProductionTrackingInterface = () => {
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-2">
-              <Clock className="h-4 w-4 text-orange-500" />
+              <Clock className="h-4 w-4 text-warning" />
               <div>
                 <p className="text-2xl font-bold">{stats.pending}</p>
                 <p className="text-xs text-muted-foreground">En attente</p>
@@ -193,7 +193,7 @@ export const ProductionTrackingInterface = () => {
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-2">
-              <XCircle className="h-4 w-4 text-red-500" />
+              <XCircle className="h-4 w-4 text-destructive" />
               <div>
                 <p className="text-2xl font-bold">{stats.exceptions}</p>
                 <p className="text-xs text-muted-foreground">Problèmes</p>

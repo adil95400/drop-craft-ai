@@ -246,9 +246,9 @@ export function ScheduledReports() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">Actifs</p>
-                <p className="text-2xl font-bold text-green-500">{activeReports}</p>
+                <p className="text-2xl font-bold text-success">{activeReports}</p>
               </div>
-              <Play className="h-8 w-8 text-green-500" />
+              <Play className="h-8 w-8 text-success" />
             </div>
           </CardContent>
         </Card>
@@ -272,7 +272,7 @@ export function ScheduledReports() {
                 <p className="text-sm text-muted-foreground">Envoyés ce mois</p>
                 <p className="text-2xl font-bold">{history.length}</p>
               </div>
-              <Send className="h-8 w-8 text-blue-500" />
+              <Send className="h-8 w-8 text-info" />
             </div>
           </CardContent>
         </Card>
@@ -493,8 +493,8 @@ export function ScheduledReports() {
                             {report.lastRun && (
                               <div className="text-xs text-muted-foreground mt-1 flex items-center gap-2">
                                 <span>Dernier envoi: {formatDate(report.lastRun)}</span>
-                                {report.status === 'success' && <CheckCircle2 className="h-3 w-3 text-green-500" />}
-                                {report.status === 'failed' && <XCircle className="h-3 w-3 text-red-500" />}
+                                {report.status === 'success' && <CheckCircle2 className="h-3 w-3 text-success" />}
+                                {report.status === 'failed' && <XCircle className="h-3 w-3 text-destructive" />}
                               </div>
                             )}
                             <div className="text-xs text-muted-foreground">
@@ -544,9 +544,9 @@ export function ScheduledReports() {
                   <div key={item.id} className="flex items-center justify-between py-3 border-b last:border-0">
                     <div className="flex items-center gap-3">
                       {item.status === 'success' ? (
-                        <CheckCircle2 className="h-5 w-5 text-green-500" />
+                        <CheckCircle2 className="h-5 w-5 text-success" />
                       ) : (
-                        <XCircle className="h-5 w-5 text-red-500" />
+                        <XCircle className="h-5 w-5 text-destructive" />
                       )}
                       <div>
                         <span className="font-medium">{item.reportName}</span>

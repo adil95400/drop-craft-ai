@@ -97,9 +97,9 @@ export function AIOptimizer() {
 
   const getImpactColor = (impact: string) => {
     switch (impact) {
-      case 'high': return 'text-green-600 bg-green-50 border-green-200';
-      case 'medium': return 'text-orange-600 bg-orange-50 border-orange-200';
-      case 'low': return 'text-blue-600 bg-blue-50 border-blue-200';
+      case 'high': return 'text-success bg-green-50 border-green-200';
+      case 'medium': return 'text-warning bg-orange-50 border-orange-200';
+      case 'low': return 'text-info bg-blue-50 border-blue-200';
       default: return 'text-gray-600 bg-gray-50 border-gray-200';
     }
   };
@@ -185,7 +185,7 @@ export function AIOptimizer() {
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-green-600">
+            <div className="text-2xl font-bold text-success">
               {formatCurrency(stats?.revenue_generated || 0)}
             </div>
           </CardContent>
@@ -254,7 +254,7 @@ export function AIOptimizer() {
                         <div className="flex items-center space-x-4 text-xs text-muted-foreground">
                           <div className="flex items-center space-x-1">
                             <DollarSign className="h-3 w-3" />
-                            <span className="text-green-600 font-medium">
+                            <span className="text-success font-medium">
                               +{formatCurrency(task.estimated_revenue)}
                             </span>
                           </div>
@@ -315,11 +315,11 @@ export function AIOptimizer() {
                       )}
 
                       {task.status === 'completed' && (
-                        <CheckCircle className="h-4 w-4 text-green-500" />
+                        <CheckCircle className="h-4 w-4 text-success" />
                       )}
 
                       {task.status === 'failed' && (
-                        <AlertTriangle className="h-4 w-4 text-red-500" />
+                        <AlertTriangle className="h-4 w-4 text-destructive" />
                       )}
                     </div>
                   </div>

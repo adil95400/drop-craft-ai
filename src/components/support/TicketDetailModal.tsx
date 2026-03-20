@@ -32,17 +32,17 @@ interface TicketDetailModalProps {
 }
 
 const statusConfig = {
-  open: { label: 'Ouvert', color: 'bg-blue-500/10 text-blue-600 border-blue-500/20', icon: MessageSquare },
-  pending: { label: 'En attente', color: 'bg-yellow-500/10 text-yellow-600 border-yellow-500/20', icon: Clock },
+  open: { label: 'Ouvert', color: 'bg-blue-500/10 text-info border-blue-500/20', icon: MessageSquare },
+  pending: { label: 'En attente', color: 'bg-yellow-500/10 text-warning border-yellow-500/20', icon: Clock },
   in_progress: { label: 'En cours', color: 'bg-purple-500/10 text-purple-600 border-purple-500/20', icon: Loader2 },
-  resolved: { label: 'Résolu', color: 'bg-green-500/10 text-green-600 border-green-500/20', icon: CheckCircle },
+  resolved: { label: 'Résolu', color: 'bg-green-500/10 text-success border-green-500/20', icon: CheckCircle },
   closed: { label: 'Fermé', color: 'bg-muted text-muted-foreground border-border', icon: AlertCircle },
 };
 
 const priorityConfig = {
   low: { label: 'Basse', color: 'bg-muted text-muted-foreground' },
-  medium: { label: 'Moyenne', color: 'bg-blue-500/10 text-blue-600' },
-  high: { label: 'Haute', color: 'bg-orange-500/10 text-orange-600' },
+  medium: { label: 'Moyenne', color: 'bg-blue-500/10 text-info' },
+  high: { label: 'Haute', color: 'bg-orange-500/10 text-warning' },
   urgent: { label: 'Urgente', color: 'bg-destructive/10 text-destructive' },
 };
 
@@ -130,7 +130,7 @@ export function TicketDetailModal({ ticket, open, onOpenChange }: TicketDetailMo
                     className="flex gap-3"
                   >
                     <Avatar className="h-8 w-8">
-                      <AvatarFallback className={msg.is_staff ? 'bg-green-500/10 text-green-600' : 'bg-primary/10 text-primary'}>
+                      <AvatarFallback className={msg.is_staff ? 'bg-green-500/10 text-success' : 'bg-primary/10 text-primary'}>
                         {msg.is_staff ? <Headphones className="h-4 w-4" /> : <User className="h-4 w-4" />}
                       </AvatarFallback>
                     </Avatar>

@@ -127,7 +127,7 @@ export const SystemAnalytics = () => {
               <CardContent>
                 <div className="text-2xl font-bold">42,547</div>
                 <p className="text-xs text-muted-foreground">
-                  <span className="text-green-600">+12.5%</span> vs période précédente
+                  <span className="text-success">+12.5%</span> vs période précédente
                 </p>
               </CardContent>
             </Card>
@@ -140,7 +140,7 @@ export const SystemAnalytics = () => {
               <CardContent>
                 <div className="text-2xl font-bold">3.24%</div>
                 <p className="text-xs text-muted-foreground">
-                  <span className="text-green-600">+0.3%</span> vs période précédente
+                  <span className="text-success">+0.3%</span> vs période précédente
                 </p>
               </CardContent>
             </Card>
@@ -153,7 +153,7 @@ export const SystemAnalytics = () => {
               <CardContent>
                 <div className="text-2xl font-bold">2:43</div>
                 <p className="text-xs text-muted-foreground">
-                  <span className="text-red-600">-0:12</span> vs période précédente
+                  <span className="text-destructive">-0:12</span> vs période précédente
                 </p>
               </CardContent>
             </Card>
@@ -166,7 +166,7 @@ export const SystemAnalytics = () => {
               <CardContent>
                 <div className="text-2xl font-bold">34.2%</div>
                 <p className="text-xs text-muted-foreground">
-                  <span className="text-green-600">-2.1%</span> vs période précédente
+                  <span className="text-success">-2.1%</span> vs période précédente
                 </p>
               </CardContent>
             </Card>
@@ -256,7 +256,7 @@ export const SystemAnalytics = () => {
                     </div>
                     <div className="text-right">
                       <div className="font-medium">€{product.revenue.toLocaleString()}</div>
-                      <div className={`text-sm ${product.growth > 0 ? 'text-green-600' : 'text-red-600'}`}>
+                      <div className={`text-sm ${product.growth > 0 ? 'text-success' : 'text-destructive'}`}>
                         {product.growth > 0 ? '+' : ''}{product.growth}%
                       </div>
                     </div>

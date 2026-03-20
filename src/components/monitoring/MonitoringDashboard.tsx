@@ -215,13 +215,13 @@ export function MonitoringDashboard() {
                   <div className="grid grid-cols-2 gap-4 text-sm">
                     <div>
                       <p className="text-muted-foreground">Réussis</p>
-                      <p className="text-2xl font-bold text-green-600">
+                      <p className="text-2xl font-bold text-success">
                         {metrics.imports.successful_imports}
                       </p>
                     </div>
                     <div>
                       <p className="text-muted-foreground">Échoués</p>
-                      <p className="text-2xl font-bold text-red-600">
+                      <p className="text-2xl font-bold text-destructive">
                         {metrics.imports.failed_imports}
                       </p>
                     </div>
@@ -272,7 +272,7 @@ export function MonitoringDashboard() {
                     <CardTitle>Réussies</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="text-2xl font-bold text-green-600">
+                    <div className="text-2xl font-bold text-success">
                       {metrics.sync.successful_syncs}
                     </div>
                   </CardContent>
@@ -282,7 +282,7 @@ export function MonitoringDashboard() {
                     <CardTitle>Échouées</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="text-2xl font-bold text-red-600">
+                    <div className="text-2xl font-bold text-destructive">
                       {metrics.sync.failed_syncs}
                     </div>
                   </CardContent>
@@ -302,8 +302,8 @@ export function MonitoringDashboard() {
                           <Badge variant="outline">{(stats as SystemStats)?.total || 0} syncs</Badge>
                         </div>
                         <div className="flex items-center space-x-2">
-                          <span className="text-green-600 text-sm">{(stats as SystemStats)?.successful || 0} ✓</span>
-                          <span className="text-red-600 text-sm">{(stats as SystemStats)?.failed || 0} ✗</span>
+                          <span className="text-success text-sm">{(stats as SystemStats)?.successful || 0} ✓</span>
+                          <span className="text-destructive text-sm">{(stats as SystemStats)?.failed || 0} ✗</span>
                         </div>
                       </div>
                     ))}
@@ -407,9 +407,9 @@ export function MonitoringDashboard() {
 function HealthIndicator({ label, status, icon }) {
   const getStatusColor = (status) => {
     switch (status) {
-      case 'healthy': return 'text-green-600 bg-green-100';
-      case 'warning': return 'text-yellow-600 bg-yellow-100';
-      case 'critical': return 'text-red-600 bg-red-100';
+      case 'healthy': return 'text-success bg-green-100';
+      case 'warning': return 'text-warning bg-yellow-100';
+      case 'critical': return 'text-destructive bg-red-100';
       default: return 'text-gray-600 bg-gray-100';
     }
   };

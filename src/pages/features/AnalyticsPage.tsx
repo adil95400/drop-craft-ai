@@ -117,7 +117,7 @@ export default function AnalyticsPage() {
         <div className="container mx-auto px-4 sm:px-6 relative z-10">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div className="space-y-8">
-              <Badge className="px-4 py-2 bg-gradient-to-r from-green-500/10 to-emerald-500/10 text-green-700 dark:text-green-300 border-green-500/20">
+              <Badge className="px-4 py-2 bg-gradient-to-r from-green-500/10 to-emerald-500/10 text-success dark:text-green-300 border-green-500/20">
                 <BarChart3 className="h-4 w-4 mr-2" />
                 Business Intelligence
               </Badge>
@@ -192,7 +192,7 @@ export default function AnalyticsPage() {
                 <Card key={index} className="border-2 hover:border-green-500/50 transition-all duration-300 hover:shadow-lg">
                   <CardHeader>
                     <div className="p-3 rounded-xl bg-gradient-to-br from-green-500/10 to-emerald-500/10 w-fit mb-4">
-                      <IconComponent className="h-6 w-6 text-green-500" />
+                      <IconComponent className="h-6 w-6 text-success" />
                     </div>
                     <CardTitle className="text-xl">{feature.title}</CardTitle>
                   </CardHeader>

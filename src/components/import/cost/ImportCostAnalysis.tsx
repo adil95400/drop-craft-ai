@@ -139,7 +139,7 @@ export function ImportCostAnalysis() {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="p-2.5 rounded-xl bg-gradient-to-br from-green-500/20 to-emerald-500/10">
-              <Calculator className="w-5 h-5 text-green-600" />
+              <Calculator className="w-5 h-5 text-success" />
             </div>
             <div>
               <CardTitle className="text-lg">Calculateur de Marge</CardTitle>
@@ -353,9 +353,9 @@ export function ImportCostAnalysis() {
                   <span className="font-medium">Marge nette</span>
                   <span className={cn(
                     "font-bold",
-                    analysis.isHealthy && "text-green-600",
-                    analysis.isWarning && "text-amber-600",
-                    analysis.isDanger && "text-red-600"
+                    analysis.isHealthy && "text-success",
+                    analysis.isWarning && "text-warning",
+                    analysis.isDanger && "text-destructive"
                   )}>
                     {analysis.netMargin.toFixed(2)} {currencySymbol}
                   </span>
@@ -375,18 +375,18 @@ export function ImportCostAnalysis() {
                   {analysis.netMarginPercent >= 0 ? (
                     <TrendingUp className={cn(
                       "w-4 h-4",
-                      analysis.isHealthy && "text-green-600",
-                      analysis.isWarning && "text-amber-600",
-                      analysis.isDanger && "text-red-600"
+                      analysis.isHealthy && "text-success",
+                      analysis.isWarning && "text-warning",
+                      analysis.isDanger && "text-destructive"
                     )} />
                   ) : (
-                    <TrendingDown className="w-4 h-4 text-red-600" />
+                    <TrendingDown className="w-4 h-4 text-destructive" />
                   )}
                   <span className={cn(
                     "text-2xl font-bold",
-                    analysis.isHealthy && "text-green-600",
-                    analysis.isWarning && "text-amber-600",
-                    analysis.isDanger && "text-red-600"
+                    analysis.isHealthy && "text-success",
+                    analysis.isWarning && "text-warning",
+                    analysis.isDanger && "text-destructive"
                   )}>
                     {analysis.netMarginPercent.toFixed(1)}%
                   </span>
@@ -405,7 +405,7 @@ export function ImportCostAnalysis() {
             {/* Health indicator */}
             <div className={cn(
               "flex items-center gap-2 p-3 rounded-lg",
-              analysis.isHealthy && "bg-green-500/10 text-green-700",
+              analysis.isHealthy && "bg-green-500/10 text-success",
               analysis.isWarning && "bg-amber-500/10 text-amber-700",
               analysis.isDanger && "bg-red-500/10 text-red-700"
             )}>

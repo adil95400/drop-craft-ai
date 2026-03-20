@@ -38,9 +38,9 @@ const StatCard = ({
 }) => {
   const colorClasses = {
     primary: 'bg-primary/10 text-primary',
-    green: 'bg-green-500/10 text-green-600',
-    blue: 'bg-blue-500/10 text-blue-600',
-    yellow: 'bg-yellow-500/10 text-yellow-600'
+    green: 'bg-green-500/10 text-success',
+    blue: 'bg-blue-500/10 text-info',
+    yellow: 'bg-yellow-500/10 text-warning'
   }
 
   return (
@@ -258,9 +258,9 @@ export default function AttributesManager() {
                       <div className="text-center">
                         <div className="text-xs text-muted-foreground mb-1">Status</div>
                         {attr.is_approved ? (
-                          <CheckCircle2 className="h-5 w-5 text-green-600 mx-auto" />
+                          <CheckCircle2 className="h-5 w-5 text-success mx-auto" />
                         ) : (
-                          <XCircle className="h-5 w-5 text-red-500 mx-auto" />
+                          <XCircle className="h-5 w-5 text-destructive mx-auto" />
                         )}
                       </div>
                       <Button

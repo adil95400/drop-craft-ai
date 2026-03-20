@@ -65,7 +65,7 @@ export const ExtensionDetails: React.FC<ExtensionDetailsProps> = ({
               <p className="text-muted-foreground">{extension.description}</p>
               <div className="flex items-center gap-4 mt-3 text-sm">
                 <div className="flex items-center gap-1">
-                  <Star className="w-4 h-4 fill-yellow-500 text-yellow-500" />
+                  <Star className="w-4 h-4 fill-yellow-500 text-warning" />
                   <span className="font-medium">{extension.rating}</span>
                 </div>
                 <div className="flex items-center gap-1">
@@ -207,7 +207,7 @@ export const ExtensionDetails: React.FC<ExtensionDetailsProps> = ({
                   'Logs détaillés et monitoring'
                 ].map((feature, index) => (
                   <li key={index} className="flex items-start gap-3">
-                    <CheckCircle2 className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
+                    <CheckCircle2 className="w-5 h-5 text-success flex-shrink-0 mt-0.5" />
                     <span>{feature}</span>
                   </li>
                 ))}
@@ -278,7 +278,7 @@ export const ExtensionDetails: React.FC<ExtensionDetailsProps> = ({
                             key={i}
                             className={`w-4 h-4 ${
                               i < review.rating 
-                                ? 'fill-yellow-500 text-yellow-500' 
+                                ? 'fill-yellow-500 text-warning' 
                                 : 'text-gray-300'
                             }`}
                           />

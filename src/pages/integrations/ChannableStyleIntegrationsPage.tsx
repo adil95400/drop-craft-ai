@@ -761,7 +761,7 @@ function IntegrationSetupModal({
             <div className={cn(
               "p-3 rounded-lg border flex items-center gap-2",
               testResult.success 
-                ? "bg-green-50 border-green-200 text-green-700 dark:bg-green-950/20 dark:text-green-400"
+                ? "bg-green-50 border-green-200 text-success dark:bg-green-950/20 dark:text-green-400"
                 : "bg-red-50 border-red-200 text-red-700 dark:bg-red-950/20 dark:text-red-400"
             )}>
               {testResult.success ? <CheckCircle2 className="w-4 h-4" /> : <AlertCircle className="w-4 h-4" />}

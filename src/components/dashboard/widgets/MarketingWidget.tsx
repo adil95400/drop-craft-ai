@@ -76,17 +76,17 @@ export function MarketingWidget({ settings }: MarketingWidgetProps) {
       <CardContent className="space-y-4">
         <div className="grid grid-cols-3 gap-3">
           <div className="text-center p-2 bg-muted/50 rounded-lg">
-            <DollarSign className="h-4 w-4 mx-auto text-red-500 mb-1" />
+            <DollarSign className="h-4 w-4 mx-auto text-destructive mb-1" />
             <p className="text-lg font-bold">{totalSpend.toLocaleString('fr-FR')}€</p>
             <p className="text-xs text-muted-foreground">Dépenses</p>
           </div>
           <div className="text-center p-2 bg-muted/50 rounded-lg">
-            <TrendingUp className="h-4 w-4 mx-auto text-green-500 mb-1" />
+            <TrendingUp className="h-4 w-4 mx-auto text-success mb-1" />
             <p className="text-lg font-bold">{totalRevenue.toLocaleString('fr-FR')}€</p>
             <p className="text-xs text-muted-foreground">Revenus</p>
           </div>
           <div className="text-center p-2 bg-muted/50 rounded-lg">
-            <MousePointer className="h-4 w-4 mx-auto text-blue-500 mb-1" />
+            <MousePointer className="h-4 w-4 mx-auto text-info mb-1" />
             <p className="text-lg font-bold">{avgRoas}x</p>
             <p className="text-xs text-muted-foreground">ROAS</p>
           </div>

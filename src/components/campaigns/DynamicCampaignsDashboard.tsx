@@ -127,7 +127,7 @@ export function DynamicCampaignsDashboard() {
                 <p className="text-sm text-muted-foreground">Campagnes actives</p>
                 <p className="text-2xl font-bold">{activeCampaigns.length}</p>
               </div>
-              <Zap className="h-8 w-8 text-green-500" />
+              <Zap className="h-8 w-8 text-success" />
             </div>
           </CardContent>
         </Card>
@@ -139,7 +139,7 @@ export function DynamicCampaignsDashboard() {
                 <p className="text-sm text-muted-foreground">Budget dépensé</p>
                 <p className="text-2xl font-bold">{totalSpend.toFixed(2)}€</p>
               </div>
-              <DollarSign className="h-8 w-8 text-blue-500" />
+              <DollarSign className="h-8 w-8 text-info" />
             </div>
           </CardContent>
         </Card>
@@ -163,7 +163,7 @@ export function DynamicCampaignsDashboard() {
                 <p className="text-sm text-muted-foreground">Conversions</p>
                 <p className="text-2xl font-bold">156</p>
               </div>
-              <ShoppingCart className="h-8 w-8 text-orange-500" />
+              <ShoppingCart className="h-8 w-8 text-warning" />
             </div>
           </CardContent>
         </Card>
@@ -471,7 +471,7 @@ export function DynamicCampaignsDashboard() {
               <Card>
                 <CardHeader>
                   <CardTitle className="text-lg flex items-center gap-2">
-                    <Sparkles className="h-5 w-5 text-yellow-500" />
+                    <Sparkles className="h-5 w-5 text-warning" />
                     Optimisations suggérées par l'IA
                   </CardTitle>
                   <CardDescription>

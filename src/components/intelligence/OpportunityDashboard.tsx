@@ -15,7 +15,7 @@ import { motion } from 'framer-motion';
 
 const typeConfig: Record<string, { label: string; icon: typeof Sparkles; color: string }> = {
   high_margin: { label: 'Forte marge', icon: DollarSign, color: 'text-primary' },
-  trending: { label: 'Tendance', icon: TrendingUp, color: 'text-amber-500' },
+  trending: { label: 'Tendance', icon: TrendingUp, color: 'text-warning' },
   low_competition: { label: 'Faible concurrence', icon: Target, color: 'text-primary' },
   seasonal: { label: 'Saisonnier', icon: Zap, color: 'text-destructive' },
   bundle: { label: 'Bundle', icon: BarChart3, color: 'text-violet-500' },
@@ -24,8 +24,8 @@ const typeConfig: Record<string, { label: string; icon: typeof Sparkles; color: 
 
 const competitionColors: Record<string, string> = {
   low: 'text-primary',
-  medium: 'text-amber-500',
-  high: 'text-orange-500',
+  medium: 'text-warning',
+  high: 'text-warning',
   very_high: 'text-destructive',
 };
 
@@ -39,7 +39,7 @@ export function OpportunityDashboard() {
         {[
           { title: 'Opportunités', value: stats.total, icon: Sparkles, color: 'text-primary' },
           { title: 'Forte marge', value: stats.highMargin, icon: DollarSign, color: 'text-primary' },
-          { title: 'En tendance', value: stats.trending, icon: TrendingUp, color: 'text-amber-500' },
+          { title: 'En tendance', value: stats.trending, icon: TrendingUp, color: 'text-warning' },
           { title: 'Score moyen', value: stats.avgScore, icon: Target, color: 'text-primary' },
         ].map((s, i) => (
           <motion.div key={s.title} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}>

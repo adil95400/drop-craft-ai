@@ -55,7 +55,7 @@ export const SecureForm = forwardRef<HTMLFormElement, SecureFormProps>(
           <div className="absolute top-2 right-2">
             <div className="flex items-center gap-1 text-xs text-muted-foreground bg-muted/50 px-2 py-1 rounded">
               <svg
-                className="w-3 h-3 text-green-500"
+                className="w-3 h-3 text-success"
                 fill="currentColor"
                 viewBox="0 0 20 20"
               >

@@ -73,7 +73,7 @@ export function TrendingSuppliers() {
                 </div>
                 <div className="flex items-center gap-3 mt-1">
                   <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                    <Star className="h-3 w-3 text-yellow-500 fill-current" />
+                    <Star className="h-3 w-3 text-warning fill-current" />
                     <span>{supplier.rating}</span>
                   </div>
                   <span className="text-xs text-muted-foreground">{supplier.products} produits</span>
@@ -81,7 +81,7 @@ export function TrendingSuppliers() {
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+              <Badge variant="outline" className="bg-green-50 text-success border-green-200">
                 {supplier.trend}
               </Badge>
             </div>

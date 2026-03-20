@@ -105,7 +105,7 @@ export const SystemAlertsPanel: React.FC = () => {
           </div>
         ) : alerts.length === 0 ? (
           <div className="text-center py-8">
-            <CheckCircle className="h-12 w-12 text-green-500 mx-auto mb-2" />
+            <CheckCircle className="h-12 w-12 text-success mx-auto mb-2" />
             <p className="text-muted-foreground">Aucune alerte système active</p>
             <p className="text-sm text-muted-foreground mt-1">Tous les jobs fonctionnent normalement</p>
           </div>

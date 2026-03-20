@@ -92,7 +92,7 @@ export default function PublicApiDashboard() {
             <CardContent className="pt-5 pb-4">
               {usageLoading ? <Skeleton className="h-14 w-full" /> : (
                 <div className="flex items-start gap-3">
-                  <div className="p-2 rounded-lg bg-blue-500/10"><Zap className="h-5 w-5 text-blue-500" /></div>
+                  <div className="p-2 rounded-lg bg-blue-500/10"><Zap className="h-5 w-5 text-info" /></div>
                   <div>
                     <p className="text-sm text-muted-foreground">Requêtes aujourd'hui</p>
                     <p className="text-2xl font-bold">{usage?.today?.total_requests ?? 0}</p>
@@ -104,7 +104,7 @@ export default function PublicApiDashboard() {
           <Card>
             <CardContent className="pt-5 pb-4">
               <div className="flex items-start gap-3">
-                <div className="p-2 rounded-lg bg-amber-500/10"><Key className="h-5 w-5 text-amber-500" /></div>
+                <div className="p-2 rounded-lg bg-amber-500/10"><Key className="h-5 w-5 text-warning" /></div>
                 <div>
                   <p className="text-sm text-muted-foreground">Clés API actives</p>
                   <p className="text-2xl font-bold">{usage?.api_keys?.filter((k: any) => k.is_active).length ?? 0}</p>

@@ -127,7 +127,7 @@ export function AutomationWorkflows() {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'active': return 'bg-green-100 text-green-800 border-green-200'
+      case 'active': return 'bg-green-100 text-success border-green-200'
       case 'paused': return 'bg-yellow-100 text-yellow-800 border-yellow-200'
       case 'draft': return 'bg-gray-100 text-gray-800 border-gray-200'
       default: return 'bg-gray-100 text-gray-800 border-gray-200'
@@ -417,7 +417,7 @@ export function AutomationWorkflows() {
                     variant="outline" 
                     size="sm" 
                     onClick={() => handleDeleteWorkflow(workflow.id)}
-                    className="text-red-600 hover:text-red-700"
+                    className="text-destructive hover:text-red-700"
                   >
                     <Trash2 className="h-4 w-4" />
                   </Button>
@@ -457,7 +457,7 @@ export function AutomationWorkflows() {
                   <div className="text-xs text-muted-foreground">Exécutions</div>
                 </div>
                 <div>
-                  <div className="text-2xl font-bold text-green-600">{workflow.success_count.toLocaleString()}</div>
+                  <div className="text-2xl font-bold text-success">{workflow.success_count.toLocaleString()}</div>
                   <div className="text-xs text-muted-foreground">Succès</div>
                 </div>
                 <div>

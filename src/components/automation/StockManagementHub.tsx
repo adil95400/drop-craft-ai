@@ -81,20 +81,20 @@ export function StockManagementHub() {
 
   const getUrgencyColor = (urgency: string) => {
     switch (urgency) {
-      case 'critical': return 'text-red-600 bg-red-100 border-red-200'
-      case 'high': return 'text-orange-600 bg-orange-100 border-orange-200'
-      case 'medium': return 'text-yellow-600 bg-yellow-100 border-yellow-200'
-      case 'low': return 'text-green-600 bg-green-100 border-green-200'
+      case 'critical': return 'text-destructive bg-red-100 border-red-200'
+      case 'high': return 'text-warning bg-orange-100 border-orange-200'
+      case 'medium': return 'text-warning bg-yellow-100 border-yellow-200'
+      case 'low': return 'text-success bg-green-100 border-green-200'
       default: return 'text-gray-600 bg-gray-100 border-gray-200'
     }
   }
 
   const getMovementIcon = (type: string) => {
     switch (type) {
-      case 'in': return <ArrowUp className="h-4 w-4 text-green-600" />
-      case 'out': return <ArrowDown className="h-4 w-4 text-red-600" />
-      case 'adjustment': return <Settings className="h-4 w-4 text-blue-600" />
-      case 'reserved': return <Clock className="h-4 w-4 text-yellow-600" />
+      case 'in': return <ArrowUp className="h-4 w-4 text-success" />
+      case 'out': return <ArrowDown className="h-4 w-4 text-destructive" />
+      case 'adjustment': return <Settings className="h-4 w-4 text-info" />
+      case 'reserved': return <Clock className="h-4 w-4 text-warning" />
       case 'returned': return <RefreshCw className="h-4 w-4 text-purple-600" />
       default: return <Package className="h-4 w-4 text-gray-600" />
     }
@@ -135,7 +135,7 @@ export function StockManagementHub() {
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center">
-              <Package className="h-8 w-8 text-blue-600" />
+              <Package className="h-8 w-8 text-info" />
               <div className="ml-3">
                 <p className="text-sm font-medium text-muted-foreground">Produits Total</p>
                 <p className="text-2xl font-bold">{stats.total_products}</p>
@@ -147,7 +147,7 @@ export function StockManagementHub() {
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center">
-              <AlertTriangle className="h-8 w-8 text-yellow-600" />
+              <AlertTriangle className="h-8 w-8 text-warning" />
               <div className="ml-3">
                 <p className="text-sm font-medium text-muted-foreground">Stock Faible</p>
                 <p className="text-2xl font-bold">{stats.low_stock_products}</p>
@@ -159,7 +159,7 @@ export function StockManagementHub() {
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center">
-              <TrendingDown className="h-8 w-8 text-red-600" />
+              <TrendingDown className="h-8 w-8 text-destructive" />
               <div className="ml-3">
                 <p className="text-sm font-medium text-muted-foreground">Rupture Stock</p>
                 <p className="text-2xl font-bold">{stats.out_of_stock_products}</p>
@@ -171,7 +171,7 @@ export function StockManagementHub() {
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center">
-              <Target className="h-8 w-8 text-green-600" />
+              <Target className="h-8 w-8 text-success" />
               <div className="ml-3">
                 <p className="text-sm font-medium text-muted-foreground">Auto-Commandes</p>
                 <p className="text-2xl font-bold">{stats.auto_reorders_active}</p>
@@ -195,7 +195,7 @@ export function StockManagementHub() {
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center">
-              <DollarSign className="h-8 w-8 text-emerald-600" />
+              <DollarSign className="h-8 w-8 text-success" />
               <div className="ml-3">
                 <p className="text-sm font-medium text-muted-foreground">Valeur Stock</p>
                 <p className="text-2xl font-bold">{stats.stock_value.toLocaleString()}€</p>
@@ -336,10 +336,10 @@ function StockAlertCard({
 }) {
   const getUrgencyColor = (urgency: string) => {
     switch (urgency) {
-      case 'critical': return 'text-red-600 bg-red-100 border-red-200'
-      case 'high': return 'text-orange-600 bg-orange-100 border-orange-200'
-      case 'medium': return 'text-yellow-600 bg-yellow-100 border-yellow-200'
-      case 'low': return 'text-green-600 bg-green-100 border-green-200'
+      case 'critical': return 'text-destructive bg-red-100 border-red-200'
+      case 'high': return 'text-warning bg-orange-100 border-orange-200'
+      case 'medium': return 'text-warning bg-yellow-100 border-yellow-200'
+      case 'low': return 'text-success bg-green-100 border-green-200'
       default: return 'text-gray-600 bg-gray-100 border-gray-200'
     }
   }
@@ -450,10 +450,10 @@ function StockAlertCard({
 function StockMovementRow({ movement }: { movement: StockMovement }) {
   const getMovementIcon = (type: string) => {
     switch (type) {
-      case 'in': return <ArrowUp className="h-4 w-4 text-green-600" />
-      case 'out': return <ArrowDown className="h-4 w-4 text-red-600" />
-      case 'adjustment': return <Settings className="h-4 w-4 text-blue-600" />
-      case 'reserved': return <Clock className="h-4 w-4 text-yellow-600" />
+      case 'in': return <ArrowUp className="h-4 w-4 text-success" />
+      case 'out': return <ArrowDown className="h-4 w-4 text-destructive" />
+      case 'adjustment': return <Settings className="h-4 w-4 text-info" />
+      case 'reserved': return <Clock className="h-4 w-4 text-warning" />
       case 'returned': return <RefreshCw className="h-4 w-4 text-purple-600" />
       default: return <Package className="h-4 w-4 text-gray-600" />
     }
@@ -469,7 +469,7 @@ function StockMovementRow({ movement }: { movement: StockMovement }) {
         </div>
       </div>
       <div className="text-right">
-        <p className={`font-bold ${movement.movement_type === 'in' ? 'text-green-600' : 'text-red-600'}`}>
+        <p className={`font-bold ${movement.movement_type === 'in' ? 'text-success' : 'text-destructive'}`}>
           {movement.movement_type === 'in' ? '+' : '-'}{movement.quantity}
         </p>
         <p className="text-xs text-muted-foreground">

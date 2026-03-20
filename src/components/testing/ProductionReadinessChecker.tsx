@@ -209,9 +209,9 @@ export function ProductionReadinessChecker() {
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'pass': return <CheckCircle2 className="h-5 w-5 text-green-500" />
-      case 'fail': return <XCircle className="h-5 w-5 text-red-500" />
-      case 'warning': return <AlertTriangle className="h-5 w-5 text-yellow-500" />
+      case 'pass': return <CheckCircle2 className="h-5 w-5 text-success" />
+      case 'fail': return <XCircle className="h-5 w-5 text-destructive" />
+      case 'warning': return <AlertTriangle className="h-5 w-5 text-warning" />
       default: return <RefreshCw className="h-5 w-5 text-muted-foreground animate-spin" />
     }
   }
@@ -248,10 +248,10 @@ export function ProductionReadinessChecker() {
       <CardContent>
         {checks.length > 0 && (
           <div className="mb-4 flex gap-4">
-            <Badge variant="outline" className="text-green-600">
+            <Badge variant="outline" className="text-success">
               {passCount} Passed
             </Badge>
-            <Badge variant="outline" className="text-red-600">
+            <Badge variant="outline" className="text-destructive">
               {failCount} Failed
             </Badge>
           </div>

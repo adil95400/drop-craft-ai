@@ -80,11 +80,11 @@ export function QuizComponent({ quiz, onComplete }: QuizComponentProps) {
           <div className="mx-auto mb-4">
             {results.passed ? (
               <div className="h-20 w-20 rounded-full bg-green-500/10 flex items-center justify-center mx-auto">
-                <Trophy className="h-10 w-10 text-green-500" />
+                <Trophy className="h-10 w-10 text-success" />
               </div>
             ) : (
               <div className="h-20 w-20 rounded-full bg-red-500/10 flex items-center justify-center mx-auto">
-                <XCircle className="h-10 w-10 text-red-500" />
+                <XCircle className="h-10 w-10 text-destructive" />
               </div>
             )}
           </div>
@@ -123,9 +123,9 @@ export function QuizComponent({ quiz, onComplete }: QuizComponentProps) {
               return (
                 <div key={index} className="flex items-start gap-3 p-3 rounded-lg border">
                   {isCorrect ? (
-                    <CheckCircle2 className="h-5 w-5 text-green-500 flex-shrink-0 mt-0.5" />
+                    <CheckCircle2 className="h-5 w-5 text-success flex-shrink-0 mt-0.5" />
                   ) : (
-                    <XCircle className="h-5 w-5 text-red-500 flex-shrink-0 mt-0.5" />
+                    <XCircle className="h-5 w-5 text-destructive flex-shrink-0 mt-0.5" />
                   )}
                   <div className="flex-1 space-y-1">
                     <p className="font-medium text-sm">{q.question}</p>

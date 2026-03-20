@@ -86,17 +86,17 @@ export function ContactsTable({ onEdit, onView }: ContactsTableProps) {
       case 'subscriber': return 'bg-blue-100 text-blue-800'
       case 'lead': return 'bg-yellow-100 text-yellow-800'
       case 'prospect': return 'bg-orange-100 text-orange-800'
-      case 'customer': return 'bg-green-100 text-green-800'
+      case 'customer': return 'bg-green-100 text-success'
       case 'evangelist': return 'bg-purple-100 text-purple-800'
       default: return 'bg-gray-100 text-gray-800'
     }
   }
 
   const getLeadScoreColor = (score: number) => {
-    if (score >= 80) return 'text-green-600'
-    if (score >= 60) return 'text-yellow-600'
-    if (score >= 40) return 'text-orange-600'
-    return 'text-red-600'
+    if (score >= 80) return 'text-success'
+    if (score >= 60) return 'text-warning'
+    if (score >= 40) return 'text-warning'
+    return 'text-destructive'
   }
 
   if (isLoading) {
@@ -141,7 +141,7 @@ export function ContactsTable({ onEdit, onView }: ContactsTableProps) {
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-yellow-600">{leadContacts}</div>
+            <div className="text-2xl font-bold text-warning">{leadContacts}</div>
           </CardContent>
         </Card>
         <Card>
@@ -150,7 +150,7 @@ export function ContactsTable({ onEdit, onView }: ContactsTableProps) {
             <Star className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-green-600">{customerContacts}</div>
+            <div className="text-2xl font-bold text-success">{customerContacts}</div>
           </CardContent>
         </Card>
         <Card>

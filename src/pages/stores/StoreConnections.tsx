@@ -66,7 +66,7 @@ export function StoreConnections() {
       <div className="grid gap-4 md:grid-cols-4">
         <Card>
           <CardContent className="flex items-center p-6">
-            <Store className="h-8 w-8 text-blue-500" />
+            <Store className="h-8 w-8 text-info" />
             <div className="ml-4">
               <p className="text-sm font-medium text-muted-foreground">Total boutiques</p>
               <p className="text-2xl font-bold">{stats.total}</p>

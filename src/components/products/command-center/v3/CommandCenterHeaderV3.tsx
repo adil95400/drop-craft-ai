@@ -32,10 +32,10 @@ export function CommandCenterHeaderV3({
   isLoading = false
 }: CommandCenterHeaderV3Props) {
   const healthColor = healthScore >= 80 
-    ? 'text-emerald-500' 
+    ? 'text-success' 
     : healthScore >= 60 
-    ? 'text-yellow-500' 
-    : 'text-red-500'
+    ? 'text-warning' 
+    : 'text-destructive'
   
   const healthBg = healthScore >= 80 
     ? 'from-emerald-500/20 to-green-500/10' 
@@ -70,9 +70,9 @@ export function CommandCenterHeaderV3({
             transition={{ duration: 2, repeat: Infinity }}
           >
             {hasIssues ? (
-              <AlertTriangle className="h-7 w-7 text-orange-500" />
+              <AlertTriangle className="h-7 w-7 text-warning" />
             ) : (
-              <CheckCircle2 className="h-7 w-7 text-emerald-500" />
+              <CheckCircle2 className="h-7 w-7 text-success" />
             )}
           </motion.div>
           
@@ -153,11 +153,11 @@ export function CommandCenterHeaderV3({
                   <TooltipTrigger>
                     <div className="flex items-center gap-2">
                       <div className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center">
-                        <TrendingUp className="h-4 w-4 text-emerald-500" />
+                        <TrendingUp className="h-4 w-4 text-success" />
                       </div>
                       <div className="hidden sm:block">
                         <p className="text-xs text-muted-foreground">Potentiel</p>
-                        <p className="text-sm font-medium text-emerald-500">
+                        <p className="text-sm font-medium text-success">
                           +{estimatedPotentialGain.toLocaleString('fr-FR')}€
                         </p>
                       </div>

@@ -595,9 +595,9 @@ export function ProductViewModal({
     switch (status) {
       case 'published':
       case 'active':
-        return { label: 'Publié', color: 'bg-green-500/10 text-green-600 border-green-500/20', icon: CheckCircle }
+        return { label: 'Publié', color: 'bg-green-500/10 text-success border-green-500/20', icon: CheckCircle }
       case 'draft':
-        return { label: 'Brouillon', color: 'bg-yellow-500/10 text-yellow-600 border-yellow-500/20', icon: FileText }
+        return { label: 'Brouillon', color: 'bg-yellow-500/10 text-warning border-yellow-500/20', icon: FileText }
       case 'archived':
         return { label: 'Archivé', color: 'bg-muted text-muted-foreground border-border', icon: Archive }
       default:
@@ -670,7 +670,7 @@ export function ProductViewModal({
                       className="h-8 w-8"
                       onClick={() => setIsLiked(!isLiked)}
                     >
-                      <Heart className={cn("h-4 w-4 transition-all", isLiked && "fill-red-500 text-red-500 scale-110")} />
+                      <Heart className={cn("h-4 w-4 transition-all", isLiked && "fill-red-500 text-destructive scale-110")} />
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent>Ajouter aux favoris</TooltipContent>
@@ -858,8 +858,8 @@ export function ProductViewModal({
                   {aiScore > 0 && (
                     <div className="absolute top-3 right-3">
                       <div className="px-3 py-1.5 rounded-full backdrop-blur-md bg-background/80 border border-border flex items-center gap-2 shadow-lg">
-                        <Sparkles className={cn("h-4 w-4", aiScore >= 80 ? 'text-green-500' : aiScore >= 60 ? 'text-yellow-500' : 'text-red-500')} />
-                        <span className={cn("font-bold text-sm", aiScore >= 80 ? 'text-green-500' : aiScore >= 60 ? 'text-yellow-500' : 'text-red-500')}>
+                        <Sparkles className={cn("h-4 w-4", aiScore >= 80 ? 'text-success' : aiScore >= 60 ? 'text-warning' : 'text-destructive')} />
+                        <span className={cn("font-bold text-sm", aiScore >= 80 ? 'text-success' : aiScore >= 60 ? 'text-warning' : 'text-destructive')}>
                           {Math.round(aiScore * 100)}%
                         </span>
                       </div>
@@ -958,7 +958,7 @@ export function ProductViewModal({
                       className="w-full justify-start gap-2 h-10"
                       onClick={() => setShowImageGallery(true)}
                     >
-                      <ImageIcon className="h-4 w-4 text-emerald-500" />
+                      <ImageIcon className="h-4 w-4 text-success" />
                       <span>Gérer les images</span>
                       {images.length > 0 && (
                         <Badge variant="secondary" className="ml-auto text-xs">
@@ -977,7 +977,7 @@ export function ProductViewModal({
                       {isOptimizing ? (
                         <Loader2 className="h-4 w-4 animate-spin" />
                       ) : (
-                        <Search className="h-4 w-4 text-blue-500" />
+                        <Search className="h-4 w-4 text-info" />
                       )}
                       <span>Optimiser SEO</span>
                     </Button>
@@ -993,7 +993,7 @@ export function ProductViewModal({
                         {isUnpublishing ? (
                           <Loader2 className="h-4 w-4 animate-spin" />
                         ) : (
-                          <Archive className="h-4 w-4 text-orange-500" />
+                          <Archive className="h-4 w-4 text-warning" />
                         )}
                         <span>Dépublier</span>
                       </Button>
@@ -1007,7 +1007,7 @@ export function ProductViewModal({
                         {isPublishing ? (
                           <Loader2 className="h-4 w-4 animate-spin" />
                         ) : (
-                          <Send className="h-4 w-4 text-green-500" />
+                          <Send className="h-4 w-4 text-success" />
                         )}
                         <span>Publier dans le catalogue</span>
                       </Button>
@@ -1040,10 +1040,10 @@ export function ProductViewModal({
                       <p className={cn(
                         "text-lg font-bold",
                         (metrics?.margin || 0) >= 30 
-                          ? "text-green-600" 
+                          ? "text-success" 
                           : (metrics?.margin || 0) >= 15 
-                            ? "text-yellow-600"
-                            : "text-red-600"
+                            ? "text-warning"
+                            : "text-destructive"
                       )}>
                         {metrics?.margin.toFixed(1)}%
                       </p>
@@ -1064,9 +1064,9 @@ export function ProductViewModal({
                       <p className={cn(
                         "text-lg font-bold",
                         metrics?.isOutOfStock 
-                          ? "text-red-600" 
+                          ? "text-destructive" 
                           : metrics?.isLowStock 
-                            ? "text-yellow-600"
+                            ? "text-warning"
                             : "text-foreground"
                       )}>
                         {metrics?.stock || 0}
@@ -1234,11 +1234,11 @@ export function ProductViewModal({
                         <Card>
                           <CardContent className="p-4 flex items-center gap-4">
                             <div className="h-12 w-12 rounded-xl bg-green-500/10 flex items-center justify-center">
-                              <TrendingUp className="h-6 w-6 text-green-600" />
+                              <TrendingUp className="h-6 w-6 text-success" />
                             </div>
                             <div>
                               <p className="text-sm text-muted-foreground">Profit</p>
-                              <p className="text-xl font-bold text-green-600">
+                              <p className="text-xl font-bold text-success">
                                 +{formatCurrency(metrics?.profit || 0)}
                               </p>
                             </div>
@@ -1633,13 +1633,13 @@ export function ProductViewModal({
                           <div className="flex items-center justify-between mb-4">
                             <div>
                               <p className="text-sm text-muted-foreground">Profit par unité</p>
-                              <p className="text-2xl font-bold text-green-600">
+                              <p className="text-2xl font-bold text-success">
                                 +{formatCurrency(metrics?.profit || 0)}
                               </p>
                             </div>
                             <div className="text-right">
                               <p className="text-sm text-muted-foreground">Marge bénéficiaire</p>
-                              <p className="text-2xl font-bold text-green-600">
+                              <p className="text-2xl font-bold text-success">
                                 {metrics?.margin.toFixed(1)}%
                               </p>
                             </div>
@@ -1796,7 +1796,7 @@ export function ProductViewModal({
                         if (hasCategory) seoScore += 15;
                         if (product.description && product.description.length > 100) seoScore += 10;
                         
-                        const seoScoreColor = seoScore >= 80 ? 'text-green-600' : seoScore >= 50 ? 'text-yellow-600' : 'text-red-600';
+                        const seoScoreColor = seoScore >= 80 ? 'text-success' : seoScore >= 50 ? 'text-warning' : 'text-destructive';
                         const seoScoreBg = seoScore >= 80 ? 'from-green-500/10 to-emerald-500/10 border-green-500/20' : seoScore >= 50 ? 'from-yellow-500/10 to-orange-500/10 border-yellow-500/20' : 'from-red-500/10 to-pink-500/10 border-red-500/20';
                         
                         return (
@@ -1881,8 +1881,8 @@ export function ProductViewModal({
                                     <Label>Titre SEO</Label>
                                     <span className={cn(
                                       "text-xs font-medium",
-                                      titleLength >= 30 && titleLength <= 60 ? "text-green-600" :
-                                      titleLength > 60 ? "text-red-600" : "text-yellow-600"
+                                      titleLength >= 30 && titleLength <= 60 ? "text-success" :
+                                      titleLength > 60 ? "text-destructive" : "text-warning"
                                     )}>
                                       {titleLength}/60 caractères
                                       {titleLength >= 30 && titleLength <= 60 && " ✓"}
@@ -1913,8 +1913,8 @@ export function ProductViewModal({
                                     <Label>Meta description</Label>
                                     <span className={cn(
                                       "text-xs font-medium",
-                                      descLength >= 120 && descLength <= 160 ? "text-green-600" :
-                                      descLength > 160 ? "text-red-600" : "text-yellow-600"
+                                      descLength >= 120 && descLength <= 160 ? "text-success" :
+                                      descLength > 160 ? "text-destructive" : "text-warning"
                                     )}>
                                       {descLength}/160 caractères
                                       {descLength >= 120 && descLength <= 160 && " ✓"}
@@ -1962,10 +1962,10 @@ export function ProductViewModal({
                               </CardHeader>
                               <CardContent>
                                 <div className="p-4 bg-white rounded-lg border space-y-1 dark:bg-zinc-950">
-                                  <p className="text-blue-600 dark:text-blue-400 text-lg hover:underline cursor-pointer truncate font-medium">
+                                  <p className="text-info dark:text-blue-400 text-lg hover:underline cursor-pointer truncate font-medium">
                                     {seoTitle || 'Titre du produit'}
                                   </p>
-                                  <p className="text-green-700 dark:text-green-500 text-sm truncate">
+                                  <p className="text-success dark:text-success text-sm truncate">
                                     www.votre-boutique.com › produits › {(product as any).slug || product.name?.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '') || 'produit'}
                                   </p>
                                   <p className="text-gray-600 dark:text-gray-400 text-sm line-clamp-2">
@@ -2007,7 +2007,7 @@ export function ProductViewModal({
 
                             <div className="flex items-start gap-4 p-3 rounded-lg bg-muted/50">
                               <div className="h-8 w-8 rounded-full bg-green-500/10 flex items-center justify-center shrink-0">
-                                <CheckCircle className="h-4 w-4 text-green-600" />
+                                <CheckCircle className="h-4 w-4 text-success" />
                               </div>
                               <div className="flex-1 min-w-0">
                                 <p className="text-sm font-medium">Création</p>

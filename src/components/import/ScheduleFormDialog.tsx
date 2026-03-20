@@ -151,11 +151,11 @@ export function ScheduleFormDialog({
   const isFormComplete = formData.name.trim().length > 0
 
   const sourceTypeOptions = [
-    { value: 'url', label: 'URL Produit', icon: Link, color: 'text-blue-500 bg-blue-500/10' },
-    { value: 'csv', label: 'Fichier CSV', icon: FileText, color: 'text-emerald-500 bg-emerald-500/10' },
-    { value: 'xml', label: 'Flux XML', icon: Globe, color: 'text-orange-500 bg-orange-500/10' },
+    { value: 'url', label: 'URL Produit', icon: Link, color: 'text-info bg-blue-500/10' },
+    { value: 'csv', label: 'Fichier CSV', icon: FileText, color: 'text-success bg-emerald-500/10' },
+    { value: 'xml', label: 'Flux XML', icon: Globe, color: 'text-warning bg-orange-500/10' },
     { value: 'api', label: 'API REST', icon: Zap, color: 'text-purple-500 bg-purple-500/10' },
-    { value: 'ftp', label: 'FTP/SFTP', icon: Shield, color: 'text-rose-500 bg-rose-500/10' }
+    { value: 'ftp', label: 'FTP/SFTP', icon: Shield, color: 'text-destructive bg-rose-500/10' }
   ]
 
   const frequencyOptions = [
@@ -274,7 +274,7 @@ export function ScheduleFormDialog({
                     <div className="flex items-center justify-between p-4 rounded-xl border bg-muted/30">
                       <div className="flex items-center gap-3">
                         <div className="p-2 bg-emerald-500/10 rounded-lg">
-                          <Sparkles className="w-4 h-4 text-emerald-500" />
+                          <Sparkles className="w-4 h-4 text-success" />
                         </div>
                         <div>
                           <Label htmlFor="active" className="font-medium text-sm cursor-pointer">Activer immédiatement</Label>
@@ -357,7 +357,7 @@ export function ScheduleFormDialog({
                             {urlValid !== null && (
                               <div className={cn(
                                 "absolute right-3 top-1/2 -translate-y-1/2",
-                                urlValid ? "text-emerald-500" : "text-destructive"
+                                urlValid ? "text-success" : "text-destructive"
                               )}>
                                 {urlValid ? <CheckCircle2 className="w-4 h-4" /> : <AlertCircle className="w-4 h-4" />}
                               </div>
@@ -382,7 +382,7 @@ export function ScheduleFormDialog({
                           </Button>
                         </div>
                         {urlValid === true && (
-                          <p className="text-xs text-emerald-600 flex items-center gap-1">
+                          <p className="text-xs text-success flex items-center gap-1">
                             <CheckCircle2 className="w-3 h-3" /> URL accessible et valide
                           </p>
                         )}
@@ -560,7 +560,7 @@ export function ScheduleFormDialog({
                         description="Publier directement sur votre boutique"
                         checked={formData.auto_publish}
                         onChange={(v) => setFormData(prev => ({ ...prev, auto_publish: v }))}
-                        icon={<Upload className="w-4 h-4 text-blue-500" />}
+                        icon={<Upload className="w-4 h-4 text-info" />}
                       />
                     </div>
 
@@ -575,14 +575,14 @@ export function ScheduleFormDialog({
                         description="Notification quand l'import est terminé"
                         checked={formData.notify_on_complete}
                         onChange={(v) => setFormData(prev => ({ ...prev, notify_on_complete: v }))}
-                        icon={<CheckCircle2 className="w-4 h-4 text-emerald-500" />}
+                        icon={<CheckCircle2 className="w-4 h-4 text-success" />}
                       />
                       <OptionRow
                         label="Erreurs"
                         description="Alerte en cas de problème"
                         checked={formData.notify_on_error}
                         onChange={(v) => setFormData(prev => ({ ...prev, notify_on_error: v }))}
-                        icon={<AlertCircle className="w-4 h-4 text-amber-500" />}
+                        icon={<AlertCircle className="w-4 h-4 text-warning" />}
                       />
                     </div>
 
@@ -596,7 +596,7 @@ export function ScheduleFormDialog({
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-3">
                             <div className="p-1.5 bg-rose-500/10 rounded-lg">
-                              <RefreshCw className="w-4 h-4 text-rose-500" />
+                              <RefreshCw className="w-4 h-4 text-destructive" />
                             </div>
                             <div>
                               <p className="text-sm font-medium">Réessai automatique</p>

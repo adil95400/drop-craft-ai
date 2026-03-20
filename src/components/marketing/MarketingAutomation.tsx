@@ -53,7 +53,7 @@ export const MarketingAutomation: React.FC = () => {
   const chartData = data?.chartData || [];
   const stats = data?.stats || { openRate: 0, conversionRate: 0, revenue: 0 };
 
-  const getStatusColor = (status: boolean) => status ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800';
+  const getStatusColor = (status: boolean) => status ? 'bg-green-100 text-success' : 'bg-gray-100 text-gray-800';
   const formatCurrency = (amount: number) => new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(amount);
 
   if (isLoading) {
@@ -71,10 +71,10 @@ export const MarketingAutomation: React.FC = () => {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <Card className="border-l-4 border-l-blue-500"><CardContent className="p-6"><div className="flex items-center justify-between"><div><p className="text-sm text-muted-foreground">Campagnes Actives</p><p className="text-2xl font-bold">{campaigns.filter((c: any) => c.is_active).length}</p></div><Zap className="w-6 h-6 text-blue-600" /></div></CardContent></Card>
-        <Card className="border-l-4 border-l-green-500"><CardContent className="p-6"><div className="flex items-center justify-between"><div><p className="text-sm text-muted-foreground">Taux d'Ouverture</p><p className="text-2xl font-bold">{stats.openRate}%</p></div><Mail className="w-6 h-6 text-green-600" /></div></CardContent></Card>
+        <Card className="border-l-4 border-l-blue-500"><CardContent className="p-6"><div className="flex items-center justify-between"><div><p className="text-sm text-muted-foreground">Campagnes Actives</p><p className="text-2xl font-bold">{campaigns.filter((c: any) => c.is_active).length}</p></div><Zap className="w-6 h-6 text-info" /></div></CardContent></Card>
+        <Card className="border-l-4 border-l-green-500"><CardContent className="p-6"><div className="flex items-center justify-between"><div><p className="text-sm text-muted-foreground">Taux d'Ouverture</p><p className="text-2xl font-bold">{stats.openRate}%</p></div><Mail className="w-6 h-6 text-success" /></div></CardContent></Card>
         <Card className="border-l-4 border-l-purple-500"><CardContent className="p-6"><div className="flex items-center justify-between"><div><p className="text-sm text-muted-foreground">Conversion</p><p className="text-2xl font-bold">{stats.conversionRate}%</p></div><Target className="w-6 h-6 text-purple-600" /></div></CardContent></Card>
-        <Card className="border-l-4 border-l-orange-500"><CardContent className="p-6"><div className="flex items-center justify-between"><div><p className="text-sm text-muted-foreground">CA Généré</p><p className="text-2xl font-bold">{formatCurrency(stats.revenue)}</p></div><BarChart3 className="w-6 h-6 text-orange-600" /></div></CardContent></Card>
+        <Card className="border-l-4 border-l-orange-500"><CardContent className="p-6"><div className="flex items-center justify-between"><div><p className="text-sm text-muted-foreground">CA Généré</p><p className="text-2xl font-bold">{formatCurrency(stats.revenue)}</p></div><BarChart3 className="w-6 h-6 text-warning" /></div></CardContent></Card>
       </div>
 
       <Card>

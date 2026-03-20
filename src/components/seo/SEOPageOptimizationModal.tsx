@@ -202,9 +202,9 @@ export const SEOPageOptimizationModal = ({
                   {pageAnalysis.issues.map((issue, index) => (
                     <div key={index} className="flex items-start gap-2 p-3 border rounded-lg">
                       {issue.type === 'error' ? (
-                        <AlertTriangle className="h-4 w-4 text-red-500 mt-0.5" />
+                        <AlertTriangle className="h-4 w-4 text-destructive mt-0.5" />
                       ) : (
-                        <AlertTriangle className="h-4 w-4 text-yellow-500 mt-0.5" />
+                        <AlertTriangle className="h-4 w-4 text-warning mt-0.5" />
                       )}
                       <div className="flex-1">
                         <p className="text-sm font-medium">{issue.title}</p>
@@ -295,10 +295,10 @@ export const SEOPageOptimizationModal = ({
               {optimizedTitle && optimizedDescription ? (
                 <div className="p-4 border rounded-lg bg-muted/20">
                   <div className="space-y-1">
-                    <div className="text-blue-600 text-lg font-medium hover:underline cursor-pointer">
+                    <div className="text-info text-lg font-medium hover:underline cursor-pointer">
                       {optimizedTitle}
                     </div>
-                    <div className="text-green-700 text-sm">
+                    <div className="text-success text-sm">
                       https://shopopti.io{page.url}
                     </div>
                     <div className="text-gray-600 text-sm leading-relaxed">

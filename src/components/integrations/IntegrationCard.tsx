@@ -195,16 +195,16 @@ export const IntegrationCard = ({ integration, onEdit }: IntegrationCardProps) =
           <div className={`p-3 rounded-lg border ${testResult.success ? 'bg-green-50 border-green-200 dark:bg-green-950/20' : 'bg-red-50 border-red-200 dark:bg-red-950/20'}`}>
             <div className="flex items-center gap-2">
               {testResult.success ? (
-                <CheckCircle className="w-4 h-4 text-green-600" />
+                <CheckCircle className="w-4 h-4 text-success" />
               ) : (
-                <XCircle className="w-4 h-4 text-red-600" />
+                <XCircle className="w-4 h-4 text-destructive" />
               )}
               <span className="text-sm font-medium">
                 {testResult.success ? 'Connexion réussie' : 'Connexion échouée'}
               </span>
             </div>
             {testResult.error && (
-              <p className="text-sm text-red-600 mt-1">{testResult.error}</p>
+              <p className="text-sm text-destructive mt-1">{testResult.error}</p>
             )}
           </div>
         )}
@@ -703,15 +703,15 @@ export const IntegrationCard = ({ integration, onEdit }: IntegrationCardProps) =
                         <div className="space-y-2 text-sm">
                           <div className="flex justify-between">
                             <span>Produits synchronisés</span>
-                            <span className="text-green-600">✓ 42 éléments</span>
+                            <span className="text-success">✓ 42 éléments</span>
                           </div>
                           <div className="flex justify-between">
                             <span>Commandes synchronisées</span>
-                            <span className="text-green-600">✓ 15 éléments</span>
+                            <span className="text-success">✓ 15 éléments</span>
                           </div>
                           <div className="flex justify-between">
                             <span>Clients synchronisés</span>
-                            <span className="text-green-600">✓ 28 éléments</span>
+                            <span className="text-success">✓ 28 éléments</span>
                           </div>
                         </div>
                       </div>

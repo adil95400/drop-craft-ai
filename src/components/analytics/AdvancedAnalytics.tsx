@@ -229,7 +229,7 @@ export const AdvancedAnalytics: React.FC = () => {
 
   const getInsightColor = (type: string) => {
     const colors = {
-      'opportunity': 'bg-green-100 text-green-800',
+      'opportunity': 'bg-green-100 text-success',
       'trend': 'bg-blue-100 text-blue-800',
       'anomaly': 'bg-red-100 text-red-800',
       'recommendation': 'bg-yellow-100 text-yellow-800'
@@ -238,9 +238,9 @@ export const AdvancedAnalytics: React.FC = () => {
   };
 
   const getConfidenceColor = (confidence: number) => {
-    if (confidence >= 0.8) return 'text-green-600';
-    if (confidence >= 0.6) return 'text-yellow-600';
-    return 'text-red-600';
+    if (confidence >= 0.8) return 'text-success';
+    if (confidence >= 0.6) return 'text-warning';
+    return 'text-destructive';
   };
 
   const formatCurrency = (amount: number) => {
@@ -302,13 +302,13 @@ export const AdvancedAnalytics: React.FC = () => {
               <div>
                 <p className="text-sm font-medium text-muted-foreground">Score IA Global</p>
                 <p className="text-2xl font-bold">87.3</p>
-                <div className="flex items-center gap-1 text-blue-600">
+                <div className="flex items-center gap-1 text-info">
                   <Brain className="w-3 h-3" />
                   <span className="text-xs">Excellent</span>
                 </div>
               </div>
               <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                <Brain className="w-6 h-6 text-blue-600" />
+                <Brain className="w-6 h-6 text-info" />
               </div>
             </div>
           </CardContent>
@@ -320,13 +320,13 @@ export const AdvancedAnalytics: React.FC = () => {
               <div>
                 <p className="text-sm font-medium text-muted-foreground">Prédiction CA</p>
                 <p className="text-2xl font-bold">+24.5%</p>
-                <div className="flex items-center gap-1 text-green-600">
+                <div className="flex items-center gap-1 text-success">
                   <ArrowUpRight className="w-3 h-3" />
                   <span className="text-xs">Conf: 91%</span>
                 </div>
               </div>
               <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-                <TrendingUp className="w-6 h-6 text-green-600" />
+                <TrendingUp className="w-6 h-6 text-success" />
               </div>
             </div>
           </CardContent>
@@ -356,13 +356,13 @@ export const AdvancedAnalytics: React.FC = () => {
               <div>
                 <p className="text-sm font-medium text-muted-foreground">Anomalies</p>
                 <p className="text-2xl font-bold">{insights.filter(i => i.insight_type === 'anomaly').length}</p>
-                <div className="flex items-center gap-1 text-orange-600">
+                <div className="flex items-center gap-1 text-warning">
                   <AlertTriangle className="w-3 h-3" />
                   <span className="text-xs">Attention</span>
                 </div>
               </div>
               <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
-                <AlertTriangle className="w-6 h-6 text-orange-600" />
+                <AlertTriangle className="w-6 h-6 text-warning" />
               </div>
             </div>
           </CardContent>
@@ -473,7 +473,7 @@ export const AdvancedAnalytics: React.FC = () => {
                             <ul className="text-xs space-y-1">
                               {insight.actionable_recommendations.map((rec, index) => (
                                 <li key={index} className="flex items-start gap-2">
-                                  <CheckCircle2 className="w-3 h-3 text-green-600 mt-0.5 flex-shrink-0" />
+                                  <CheckCircle2 className="w-3 h-3 text-success mt-0.5 flex-shrink-0" />
                                   <span>{rec}</span>
                                 </li>
                               ))}
@@ -511,7 +511,7 @@ export const AdvancedAnalytics: React.FC = () => {
                       <h4 className="font-medium">{segment.segment}</h4>
                       <Badge className={segment.churn_risk > 50 ? 'bg-red-100 text-red-800' : 
                                        segment.churn_risk > 25 ? 'bg-yellow-100 text-yellow-800' : 
-                                       'bg-green-100 text-green-800'} variant="outline">
+                                       'bg-green-100 text-success'} variant="outline">
                         Risque: {segment.churn_risk.toFixed(1)}%
                       </Badge>
                     </div>
@@ -526,7 +526,7 @@ export const AdvancedAnalytics: React.FC = () => {
                       </div>
                       <div>
                         <p className="text-muted-foreground">Croissance</p>
-                        <p className={`font-bold ${segment.growth > 0 ? 'text-green-600' : 'text-red-600'}`}>
+                        <p className={`font-bold ${segment.growth > 0 ? 'text-success' : 'text-destructive'}`}>
                           {segment.growth > 0 ? '+' : ''}{segment.growth.toFixed(1)}%
                         </p>
                       </div>
@@ -565,7 +565,7 @@ export const AdvancedAnalytics: React.FC = () => {
                         <span className="text-xs text-muted-foreground">Concurrence:</span>
                         <Badge className={product.competition_level > 80 ? 'bg-red-100 text-red-800' : 
                                          product.competition_level > 60 ? 'bg-yellow-100 text-yellow-800' : 
-                                         'bg-green-100 text-green-800'} variant="outline">
+                                         'bg-green-100 text-success'} variant="outline">
                           {product.competition_level.toFixed(0)}%
                         </Badge>
                       </div>
@@ -609,7 +609,7 @@ export const AdvancedAnalytics: React.FC = () => {
                       </div>
                     </div>
                     <Badge className={
-                      item.market_position === 'leader' ? 'bg-green-100 text-green-800' :
+                      item.market_position === 'leader' ? 'bg-green-100 text-success' :
                       item.market_position === 'favorable' ? 'bg-blue-100 text-blue-800' :
                       'bg-yellow-100 text-yellow-800'
                     } variant="outline">

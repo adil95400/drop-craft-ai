@@ -244,14 +244,14 @@ export default function FeedManager() {
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <Eye className="h-4 w-4 text-blue-500" />
+              <Eye className="h-4 w-4 text-info" />
               <div>
                 <p className="text-xs text-muted-foreground">Impressions</p>
                 <p className="text-lg font-bold">{feed.impressions.toLocaleString()}</p>
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <Target className="h-4 w-4 text-green-500" />
+              <Target className="h-4 w-4 text-success" />
               <div>
                 <p className="text-xs text-muted-foreground">CTR</p>
                 <p className="text-lg font-bold">{ctr}%</p>
@@ -414,7 +414,7 @@ export default function FeedManager() {
         <Card className="p-4">
           <div className="flex items-center gap-3">
             <div className="p-3 rounded-lg bg-green-500/10">
-              <FileText className="h-5 w-5 text-green-500" />
+              <FileText className="h-5 w-5 text-success" />
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Produits optimisés</p>
@@ -428,7 +428,7 @@ export default function FeedManager() {
         <Card className="p-4">
           <div className="flex items-center gap-3">
             <div className="p-3 rounded-lg bg-blue-500/10">
-              <BarChart3 className="h-5 w-5 text-blue-500" />
+              <BarChart3 className="h-5 w-5 text-info" />
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Total impressions</p>

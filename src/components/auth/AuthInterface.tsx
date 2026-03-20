@@ -240,7 +240,7 @@ export const AuthInterface = () => {
                     disabled={isLoading}
                   />
                   {errors.email && (
-                    <p className="text-xs text-red-500 flex items-center gap-1 mt-1">
+                    <p className="text-xs text-destructive flex items-center gap-1 mt-1">
                       <AlertCircle className="h-3 w-3" />
                       {errors.email}
                     </p>
@@ -277,7 +277,7 @@ export const AuthInterface = () => {
                     </button>
                   </div>
                   {errors.password && (
-                    <p className="text-xs text-red-500 flex items-center gap-1 mt-1">
+                    <p className="text-xs text-destructive flex items-center gap-1 mt-1">
                       <AlertCircle className="h-3 w-3" />
                       {errors.password}
                     </p>
@@ -312,7 +312,7 @@ export const AuthInterface = () => {
                         disabled={isLoading}
                       />
                       {errors.confirmPassword && (
-                        <p className="text-xs text-red-500 flex items-center gap-1 mt-1">
+                        <p className="text-xs text-destructive flex items-center gap-1 mt-1">
                           <AlertCircle className="h-3 w-3" />
                           {errors.confirmPassword}
                         </p>

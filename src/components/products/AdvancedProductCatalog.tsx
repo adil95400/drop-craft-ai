@@ -212,7 +212,7 @@ export function AdvancedProductCatalog() {
                 <p className="text-sm font-medium text-muted-foreground">Valeur Totale</p>
                 <p className="text-2xl font-bold">€{stats.totalValue?.toLocaleString()}</p>
               </div>
-              <DollarSign className="h-8 w-8 text-green-500" />
+              <DollarSign className="h-8 w-8 text-success" />
             </div>
           </CardContent>
         </Card>
@@ -224,7 +224,7 @@ export function AdvancedProductCatalog() {
                 <p className="text-sm font-medium text-muted-foreground">Stock Faible</p>
                 <p className="text-2xl font-bold">{stats.lowStock}</p>
               </div>
-              <TrendingUp className="h-8 w-8 text-orange-500" />
+              <TrendingUp className="h-8 w-8 text-warning" />
             </div>
           </CardContent>
         </Card>
@@ -236,7 +236,7 @@ export function AdvancedProductCatalog() {
                 <p className="text-sm font-medium text-muted-foreground">Optimisés IA</p>
                 <p className="text-2xl font-bold">{Math.round(stats.total * 0.73)}</p>
               </div>
-              <Bot className="h-8 w-8 text-blue-500" />
+              <Bot className="h-8 w-8 text-info" />
             </div>
           </CardContent>
         </Card>
@@ -248,7 +248,7 @@ export function AdvancedProductCatalog() {
                 <p className="text-sm font-medium text-muted-foreground">Top Rated</p>
                 <p className="text-2xl font-bold">{Math.round(stats.total * 0.31)}</p>
               </div>
-              <Star className="h-8 w-8 text-yellow-500" />
+              <Star className="h-8 w-8 text-warning" />
             </div>
           </CardContent>
         </Card>
@@ -484,7 +484,7 @@ export function AdvancedProductCatalog() {
                                 Dupliquer
                               </DropdownMenuItem>
                               <DropdownMenuSeparator />
-                              <DropdownMenuItem className="text-red-600">
+                              <DropdownMenuItem className="text-destructive">
                                 <Trash className="h-4 w-4 mr-2" />
                                 Supprimer
                               </DropdownMenuItem>
@@ -519,7 +519,7 @@ export function AdvancedProductCatalog() {
                       </div>
                       <div className="text-right">
                         <p className="font-bold">{category.revenue}</p>
-                        <p className={`text-sm ${category.growth.startsWith('+') ? 'text-green-600' : 'text-red-600'}`}>
+                        <p className={`text-sm ${category.growth.startsWith('+') ? 'text-success' : 'text-destructive'}`}>
                           {category.growth}
                         </p>
                       </div>
@@ -585,13 +585,13 @@ export function AdvancedProductCatalog() {
                   
                   <div className="flex items-center justify-between text-sm">
                     <span>Descriptions manquantes</span>
-                    <span className="font-bold text-orange-600">23%</span>
+                    <span className="font-bold text-warning">23%</span>
                   </div>
                   <Progress value={77} className="h-2" />
                   
                   <div className="flex items-center justify-between text-sm">
                     <span>Images de qualité</span>
-                    <span className="font-bold text-green-600">91%</span>
+                    <span className="font-bold text-success">91%</span>
                   </div>
                   <Progress value={91} className="h-2" />
                 </div>

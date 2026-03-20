@@ -31,7 +31,7 @@ const faqItems = [
 
 const ShopoptiVsSellTheTrendPage = () => {
   const navigate = useNavigate();
-  const Icon = ({ ok }: { ok: boolean }) => ok ? <CheckCircle2 className="h-5 w-5 text-green-500" /> : <XCircle className="h-5 w-5 text-muted-foreground/40" />;
+  const Icon = ({ ok }: { ok: boolean }) => ok ? <CheckCircle2 className="h-5 w-5 text-success" /> : <XCircle className="h-5 w-5 text-muted-foreground/40" />;
 
   return (
     <PublicLayout>

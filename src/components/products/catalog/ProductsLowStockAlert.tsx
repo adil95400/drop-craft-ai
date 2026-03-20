@@ -27,7 +27,7 @@ export function ProductsLowStockAlert({ lowStockCount, onViewLowStock }: Product
             animate={{ scale: [1, 1.05, 1] }}
             transition={{ duration: 2, repeat: Infinity }}
           >
-            <AlertCircle className="h-5 w-5 text-orange-500" />
+            <AlertCircle className="h-5 w-5 text-warning" />
           </motion.div>
           <div>
             <p className="font-semibold text-foreground">

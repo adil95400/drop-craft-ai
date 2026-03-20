@@ -77,7 +77,7 @@ export function ProductPerformanceMetrics({ productId, sourceTable }: ProductPer
       label: 'Vues',
       value: performance.views.toLocaleString(),
       icon: Eye,
-      color: 'text-blue-600',
+      color: 'text-info',
       bg: 'bg-blue-50'
     },
     {
@@ -85,7 +85,7 @@ export function ProductPerformanceMetrics({ productId, sourceTable }: ProductPer
       value: performance.addToCart.toLocaleString(),
       rate: performance.addToCartRate > 0 ? `${performance.addToCartRate.toFixed(1)}%` : undefined,
       icon: ShoppingCart,
-      color: 'text-orange-600',
+      color: 'text-warning',
       bg: 'bg-orange-50'
     },
     {
@@ -93,7 +93,7 @@ export function ProductPerformanceMetrics({ productId, sourceTable }: ProductPer
       value: performance.purchases.toLocaleString(),
       rate: performance.conversionRate > 0 ? `${performance.conversionRate.toFixed(1)}%` : undefined,
       icon: Target,
-      color: 'text-green-600',
+      color: 'text-success',
       bg: 'bg-green-50'
     },
     {
@@ -168,7 +168,7 @@ export function ProductPerformanceMetrics({ productId, sourceTable }: ProductPer
             <p className="text-sm font-medium text-green-900">
               ✨ Produit très performant mais peu visible
             </p>
-            <p className="text-xs text-green-700 mt-1">
+            <p className="text-xs text-success mt-1">
               Excellent taux de conversion ! Investissez dans le SEO et la visibilité.
             </p>
           </div>

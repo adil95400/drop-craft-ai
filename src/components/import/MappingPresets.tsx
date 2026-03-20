@@ -109,7 +109,7 @@ const BUILT_IN_PRESETS: BuiltInPreset[] = [
 
 function getPresetIcon(icon: string) {
   switch (icon) {
-    case 'shopify': return <ShoppingCart className="w-4 h-4 text-green-500" />
+    case 'shopify': return <ShoppingCart className="w-4 h-4 text-success" />
     case 'woo': return <Globe className="w-4 h-4 text-purple-500" />
     default: return <FileSpreadsheet className="w-4 h-4 text-primary" />
   }

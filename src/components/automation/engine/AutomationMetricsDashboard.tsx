@@ -41,10 +41,10 @@ const TRIGGER_DISTRIBUTION = [
 ];
 
 const KPIS = [
-  { label: 'Exécutions totales', value: '1,247', trend: '+12%', icon: Activity, color: 'text-blue-500' },
-  { label: 'Taux de succès', value: '96.2%', trend: '+1.5%', icon: Target, color: 'text-green-500' },
-  { label: 'Temps moyen', value: '2.3s', trend: '-0.4s', icon: Timer, color: 'text-amber-500' },
-  { label: 'Erreurs cette semaine', value: '16', trend: '-8', icon: AlertTriangle, color: 'text-red-500' },
+  { label: 'Exécutions totales', value: '1,247', trend: '+12%', icon: Activity, color: 'text-info' },
+  { label: 'Taux de succès', value: '96.2%', trend: '+1.5%', icon: Target, color: 'text-success' },
+  { label: 'Temps moyen', value: '2.3s', trend: '-0.4s', icon: Timer, color: 'text-warning' },
+  { label: 'Erreurs cette semaine', value: '16', trend: '-8', icon: AlertTriangle, color: 'text-destructive' },
 ];
 
 export function AutomationMetricsDashboard() {
@@ -63,7 +63,7 @@ export function AutomationMetricsDashboard() {
                 <p className="text-2xl font-bold">{kpi.value}</p>
                 <Badge variant="outline" className={cn(
                   "text-[10px]",
-                  kpi.trend.startsWith('+') ? 'text-green-600' : kpi.trend.startsWith('-') && kpi.label.includes('Erreurs') ? 'text-green-600' : 'text-green-600'
+                  kpi.trend.startsWith('+') ? 'text-success' : kpi.trend.startsWith('-') && kpi.label.includes('Erreurs') ? 'text-success' : 'text-success'
                 )}>
                   {kpi.trend}
                 </Badge>

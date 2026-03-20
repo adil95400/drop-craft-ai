@@ -66,12 +66,12 @@ export function SecurityDashboard() {
   const getSeverityIcon = (severity: SecurityEvent['severity']) => {
     switch (severity) {
       case 'low':
-        return <CheckCircle2 className="h-4 w-4 text-green-500" />
+        return <CheckCircle2 className="h-4 w-4 text-success" />
       case 'medium':
-        return <Eye className="h-4 w-4 text-yellow-500" />
+        return <Eye className="h-4 w-4 text-warning" />
       case 'high':
       case 'critical':
-        return <AlertTriangle className="h-4 w-4 text-red-500" />
+        return <AlertTriangle className="h-4 w-4 text-destructive" />
       default:
         return <Activity className="h-4 w-4 text-gray-500" />
     }
@@ -80,11 +80,11 @@ export function SecurityDashboard() {
   const getStatusColor = (status: SecurityMetric['status']) => {
     switch (status) {
       case 'safe':
-        return 'text-green-600'
+        return 'text-success'
       case 'warning':
-        return 'text-yellow-600'
+        return 'text-warning'
       case 'danger':
-        return 'text-red-600'
+        return 'text-destructive'
       default:
         return 'text-gray-600'
     }
@@ -114,7 +114,7 @@ export function SecurityDashboard() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Shield className="h-5 w-5 text-blue-500" />
+            <Shield className="h-5 w-5 text-info" />
             Score de Sécurité
             <Badge 
               className={`ml-auto ${
@@ -152,8 +152,8 @@ export function SecurityDashboard() {
                     fill="transparent" 
                     strokeDasharray={`${securityScore * 3.39} 339`}
                     className={
-                      securityScore >= 90 ? 'text-green-500' :
-                      securityScore >= 70 ? 'text-yellow-500' : 'text-red-500'
+                      securityScore >= 90 ? 'text-success' :
+                      securityScore >= 70 ? 'text-warning' : 'text-destructive'
                     }
                   />
                 </svg>
@@ -206,7 +206,7 @@ export function SecurityDashboard() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Activity className="h-5 w-5 text-orange-500" />
+            <Activity className="h-5 w-5 text-warning" />
             Événements de Sécurité
             <Badge variant="secondary" className="ml-auto">
               {securityEvents.filter(e => !e.resolved).length} Non résolus
@@ -271,11 +271,11 @@ export function SecurityDashboard() {
 
           <div className="grid grid-cols-3 gap-4 text-center">
             <div>
-              <div className="text-lg font-bold text-green-600">{lastAttackHoursAgo}h</div>
+              <div className="text-lg font-bold text-success">{lastAttackHoursAgo}h</div>
               <div className="text-xs text-gray-500">Dernière Attaque</div>
             </div>
             <div>
-              <div className="text-lg font-bold text-blue-600">{blockedAttempts}</div>
+              <div className="text-lg font-bold text-info">{blockedAttempts}</div>
               <div className="text-xs text-gray-500">Tentatives Bloquées</div>
             </div>
             <div>

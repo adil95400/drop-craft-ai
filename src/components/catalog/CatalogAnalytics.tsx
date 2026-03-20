@@ -82,7 +82,7 @@ export const CatalogAnalytics = ({ products, stats }: CatalogAnalyticsProps) => 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Produits Winners</CardTitle>
-            <Crown className="h-4 w-4 text-yellow-500" />
+            <Crown className="h-4 w-4 text-warning" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.winners}</div>
@@ -108,7 +108,7 @@ export const CatalogAnalytics = ({ products, stats }: CatalogAnalyticsProps) => 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Note Moyenne</CardTitle>
-            <Star className="h-4 w-4 text-yellow-500" />
+            <Star className="h-4 w-4 text-warning" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.averageRating.toFixed(1)}</div>
@@ -173,12 +173,12 @@ export const CatalogAnalytics = ({ products, stats }: CatalogAnalyticsProps) => 
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Target className="w-5 h-5 text-green-500" />
+              <Target className="w-5 h-5 text-success" />
               Produits Haute Marge
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-green-600">{highMarginProducts}</div>
+            <div className="text-3xl font-bold text-success">{highMarginProducts}</div>
             <p className="text-sm text-muted-foreground">
               Marge &gt; 50% ({((highMarginProducts / stats.total) * 100).toFixed(1)}%)
             </p>
@@ -188,12 +188,12 @@ export const CatalogAnalytics = ({ products, stats }: CatalogAnalyticsProps) => 
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <TrendingUp className="w-5 h-5 text-blue-500" />
+              <TrendingUp className="w-5 h-5 text-info" />
               Produits Tendance
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-blue-600">{stats.trending}</div>
+            <div className="text-3xl font-bold text-info">{stats.trending}</div>
             <p className="text-sm text-muted-foreground">
               En croissance ({((stats.trending / stats.total) * 100).toFixed(1)}%)
             </p>
@@ -203,12 +203,12 @@ export const CatalogAnalytics = ({ products, stats }: CatalogAnalyticsProps) => 
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <TrendingDown className="w-5 h-5 text-red-500" />
+              <TrendingDown className="w-5 h-5 text-destructive" />
               Stock Faible
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-red-600">{lowStockProducts}</div>
+            <div className="text-3xl font-bold text-destructive">{lowStockProducts}</div>
             <p className="text-sm text-muted-foreground">
               Moins de 50 unités ({((lowStockProducts / stats.total) * 100).toFixed(1)}%)
             </p>
@@ -220,7 +220,7 @@ export const CatalogAnalytics = ({ products, stats }: CatalogAnalyticsProps) => 
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Star className="w-5 h-5 text-yellow-500" />
+            <Star className="w-5 h-5 text-warning" />
             Meilleurs Performers
           </CardTitle>
         </CardHeader>

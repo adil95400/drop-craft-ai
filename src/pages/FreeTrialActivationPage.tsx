@@ -75,11 +75,11 @@ export default function FreeTrialActivationPage() {
                 <h3 className="text-xl font-bold mb-1">Plan Pro</h3>
                 <p className="text-sm text-muted-foreground">Pour les entrepreneurs</p>
               </div>
-              {selectedPlan === 'pro' && <Check className="w-6 h-6 text-blue-500" />}
+              {selectedPlan === 'pro' && <Check className="w-6 h-6 text-info" />}
             </div>
             <div className="space-y-2 mb-4">
               {['10 000 produits', 'Optimisation IA', 'Auto-fulfillment', '5 intégrations'].map(f => (
-                <div key={f} className="flex items-center gap-2 text-sm"><Check className="w-4 h-4 text-green-500" /><span>{f}</span></div>
+                <div key={f} className="flex items-center gap-2 text-sm"><Check className="w-4 h-4 text-success" /><span>{f}</span></div>
               ))}
             </div>
           </Card>
@@ -103,7 +103,7 @@ export default function FreeTrialActivationPage() {
             </div>
             <div className="space-y-2 mb-4">
               {['Produits illimités', 'IA avancée', 'Fulfillment multi-fournisseurs', 'Intégrations illimitées'].map(f => (
-                <div key={f} className="flex items-center gap-2 text-sm"><Check className="w-4 h-4 text-green-500" /><span>{f}</span></div>
+                <div key={f} className="flex items-center gap-2 text-sm"><Check className="w-4 h-4 text-success" /><span>{f}</span></div>
               ))}
             </div>
           </Card>

@@ -212,7 +212,7 @@ export const BulkOptimizationPanel = ({ products, onComplete }: BulkOptimization
                     </Badge>
                   </div>
                   {result.error && (
-                    <p className="text-xs text-red-600 dark:text-red-400 mt-1">
+                    <p className="text-xs text-destructive dark:text-red-400 mt-1">
                       {result.error}
                     </p>
                   )}

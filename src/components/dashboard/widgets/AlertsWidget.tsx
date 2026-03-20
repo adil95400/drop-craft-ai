@@ -29,11 +29,11 @@ export function AlertsWidget({ isCustomizing }: AlertsWidgetProps) {
   const getAlertIcon = (type: string) => {
     switch (type) {
       case 'warning':
-        return <AlertCircle className="h-5 w-5 text-red-600 flex-shrink-0 mt-0.5" />;
+        return <AlertCircle className="h-5 w-5 text-destructive flex-shrink-0 mt-0.5" />;
       case 'info':
-        return <Info className="h-5 w-5 text-blue-600 flex-shrink-0 mt-0.5" />;
+        return <Info className="h-5 w-5 text-info flex-shrink-0 mt-0.5" />;
       default:
-        return <AlertTriangle className="h-5 w-5 text-orange-600 flex-shrink-0 mt-0.5" />;
+        return <AlertTriangle className="h-5 w-5 text-warning flex-shrink-0 mt-0.5" />;
     }
   };
 

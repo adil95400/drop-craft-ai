@@ -74,7 +74,7 @@ export function FeatureGuide({
                   <CardTitle className="text-base font-semibold flex items-center gap-2">
                     Guide : {featureName}
                     {completedSteps === steps.length && steps.length > 0 && (
-                      <Badge variant="secondary" className="bg-emerald-500/10 text-emerald-600 text-xs">
+                      <Badge variant="secondary" className="bg-emerald-500/10 text-success text-xs">
                         <CheckCircle2 className="h-3 w-3 mr-1" />Complété
                       </Badge>
                     )}

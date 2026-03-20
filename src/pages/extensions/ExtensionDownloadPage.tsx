@@ -130,7 +130,7 @@ export default function ExtensionDownloadPage() {
       number: 6,
       title: "Extension installée !",
       description: "L'extension ShopOpti+ apparaît maintenant dans votre barre d'outils Chrome.",
-      icon: <CheckCircle className="h-6 w-6 text-green-500" />,
+      icon: <CheckCircle className="h-6 w-6 text-success" />,
       tip: "Épinglez l'extension pour un accès rapide en cliquant sur l'icône puzzle puis sur l'épingle."
     }
   ];

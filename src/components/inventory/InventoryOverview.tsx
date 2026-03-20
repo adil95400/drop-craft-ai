@@ -86,7 +86,7 @@ export function InventoryOverview() {
                     <p className="text-2xl font-bold flex items-center gap-2">
                       {item.current_stock}
                       {item.current_stock <= item.reorder_point && (
-                        <TrendingDown className="h-5 w-5 text-orange-500" />
+                        <TrendingDown className="h-5 w-5 text-warning" />
                       )}
                     </p>
                   </div>

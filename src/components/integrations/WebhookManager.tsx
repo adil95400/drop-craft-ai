@@ -134,8 +134,8 @@ export const WebhookManager = () => {
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card><CardContent className="p-4"><p className="text-sm text-muted-foreground">Total</p><p className="text-2xl font-bold">{webhooks.length}</p></CardContent></Card>
-        <Card><CardContent className="p-4"><p className="text-sm text-muted-foreground">Actifs</p><p className="text-2xl font-bold text-green-600">{webhooks.filter(w => w.is_active).length}</p></CardContent></Card>
-        <Card><CardContent className="p-4"><p className="text-sm text-muted-foreground">Succès</p><p className="text-2xl font-bold text-blue-600">{webhooks.reduce((s, w) => s + w.success_count, 0)}</p></CardContent></Card>
+        <Card><CardContent className="p-4"><p className="text-sm text-muted-foreground">Actifs</p><p className="text-2xl font-bold text-success">{webhooks.filter(w => w.is_active).length}</p></CardContent></Card>
+        <Card><CardContent className="p-4"><p className="text-sm text-muted-foreground">Succès</p><p className="text-2xl font-bold text-info">{webhooks.reduce((s, w) => s + w.success_count, 0)}</p></CardContent></Card>
       </div>
 
       <Card>
@@ -171,7 +171,7 @@ export const WebhookManager = () => {
                   </TableCell>
                   <TableCell>
                     {wh.is_active ? (
-                      <Badge className="bg-green-100 text-green-800 border-green-200"><CheckCircle className="w-3 h-3 mr-1" />Actif</Badge>
+                      <Badge className="bg-green-100 text-success border-green-200"><CheckCircle className="w-3 h-3 mr-1" />Actif</Badge>
                     ) : <Badge variant="outline">Inactif</Badge>}
                   </TableCell>
                   <TableCell>

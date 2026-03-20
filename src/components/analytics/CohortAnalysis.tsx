@@ -246,7 +246,7 @@ export function CohortAnalysis() {
                 <p className="text-2xl font-bold">{kpis.avgRetention1m}%</p>
               </div>
               <div className="p-2 rounded-full bg-green-100 dark:bg-green-900/30">
-                <ArrowUpRight className="h-4 w-4 text-green-600" />
+                <ArrowUpRight className="h-4 w-4 text-success" />
               </div>
             </div>
           </CardContent>
@@ -259,7 +259,7 @@ export function CohortAnalysis() {
                 <p className="text-2xl font-bold">{kpis.avgRetention3m}%</p>
               </div>
               <div className="p-2 rounded-full bg-blue-100 dark:bg-blue-900/30">
-                <Target className="h-4 w-4 text-blue-600" />
+                <Target className="h-4 w-4 text-info" />
               </div>
             </div>
           </CardContent>
@@ -298,7 +298,7 @@ export function CohortAnalysis() {
                 <p className="text-2xl font-bold">{kpis.churnRate}%</p>
               </div>
               <div className="p-2 rounded-full bg-red-100 dark:bg-red-900/30">
-                <ArrowDownRight className="h-4 w-4 text-red-600" />
+                <ArrowDownRight className="h-4 w-4 text-destructive" />
               </div>
             </div>
           </CardContent>
@@ -384,7 +384,7 @@ export function CohortAnalysis() {
                             </div>
                           </td>
                         ))}
-                        <td className="text-center py-2 px-3 font-semibold text-green-600">
+                        <td className="text-center py-2 px-3 font-semibold text-success">
                           {row.avgLTV}€
                         </td>
                       </motion.tr>

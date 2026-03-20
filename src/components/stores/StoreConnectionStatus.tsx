@@ -12,7 +12,7 @@ export function StoreConnectionStatus({ status, className }: StoreConnectionStat
       icon: CheckCircle,
       text: 'Connecté',
       variant: 'default' as const,
-      className: 'bg-green-100 text-green-800 hover:bg-green-100'
+      className: 'bg-green-100 text-success hover:bg-green-100'
     },
     connecting: {
       icon: Clock,

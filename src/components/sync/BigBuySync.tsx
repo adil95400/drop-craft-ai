@@ -122,7 +122,7 @@ export const BigBuySync = () => {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <div className="p-2 bg-orange-100 rounded-lg"><TrendingUp className="w-5 h-5 text-orange-600" /></div>
+            <div className="p-2 bg-orange-100 rounded-lg"><TrendingUp className="w-5 h-5 text-warning" /></div>
             Synchronisation BigBuy
           </CardTitle>
           <CardDescription>Synchronisez votre catalogue avec les produits BigBuy en temps réel</CardDescription>
@@ -151,7 +151,7 @@ export const BigBuySync = () => {
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <h3 className="font-semibold">Dernière synchronisation</h3>
-                <Badge className={lastSyncJob.status === 'completed' ? 'bg-green-100 text-green-800' : lastSyncJob.status === 'failed' ? 'bg-red-100 text-red-800' : 'bg-blue-100 text-blue-800'}>
+                <Badge className={lastSyncJob.status === 'completed' ? 'bg-green-100 text-success' : lastSyncJob.status === 'failed' ? 'bg-red-100 text-red-800' : 'bg-blue-100 text-blue-800'}>
                   {lastSyncJob.status === 'completed' && 'Terminée'}{lastSyncJob.status === 'running' && 'En cours'}{lastSyncJob.status === 'failed' && 'Échouée'}{lastSyncJob.status === 'pending' && 'En attente'}
                 </Badge>
               </div>
@@ -163,9 +163,9 @@ export const BigBuySync = () => {
               )}
               {lastSyncJob.status === 'completed' && (
                 <div className="grid grid-cols-3 gap-4">
-                  <div className="text-center p-4 bg-green-50 rounded-lg"><p className="text-2xl font-bold text-green-600">{lastSyncJob.imported_products}</p><p className="text-sm text-green-700">Importés</p></div>
-                  <div className="text-center p-4 bg-blue-50 rounded-lg"><p className="text-2xl font-bold text-blue-600">{lastSyncJob.processed_products}</p><p className="text-sm text-blue-700">Traités</p></div>
-                  <div className="text-center p-4 bg-red-50 rounded-lg"><p className="text-2xl font-bold text-red-600">{lastSyncJob.failed_products}</p><p className="text-sm text-red-700">Échoués</p></div>
+                  <div className="text-center p-4 bg-green-50 rounded-lg"><p className="text-2xl font-bold text-success">{lastSyncJob.imported_products}</p><p className="text-sm text-success">Importés</p></div>
+                  <div className="text-center p-4 bg-blue-50 rounded-lg"><p className="text-2xl font-bold text-info">{lastSyncJob.processed_products}</p><p className="text-sm text-blue-700">Traités</p></div>
+                  <div className="text-center p-4 bg-red-50 rounded-lg"><p className="text-2xl font-bold text-destructive">{lastSyncJob.failed_products}</p><p className="text-sm text-red-700">Échoués</p></div>
                 </div>
               )}
             </div>
@@ -186,7 +186,7 @@ export const BigBuySync = () => {
                 return (
                   <div key={index} className="flex items-center justify-between p-4 border rounded-lg">
                     <div className="flex items-center gap-3">
-                      <StatusIcon className={`w-5 h-5 ${sync.status === 'completed' ? 'text-green-600' : sync.status === 'failed' ? 'text-red-600' : 'text-blue-600'}`} />
+                      <StatusIcon className={`w-5 h-5 ${sync.status === 'completed' ? 'text-success' : sync.status === 'failed' ? 'text-destructive' : 'text-info'}`} />
                       <div>
                         <p className="font-medium">{sync.date}</p>
                         <p className="text-sm text-muted-foreground">{sync.type === 'incremental' ? 'Incrémentale' : sync.type === 'full' ? 'Complète' : 'Tendances'}</p>

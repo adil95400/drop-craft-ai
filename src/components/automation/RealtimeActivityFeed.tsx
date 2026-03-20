@@ -36,9 +36,9 @@ export const RealtimeActivityFeed = () => {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'success': return 'text-green-600 bg-green-100'
-      case 'error': return 'text-red-600 bg-red-100'
-      case 'processing': return 'text-blue-600 bg-blue-100'
+      case 'success': return 'text-success bg-green-100'
+      case 'error': return 'text-destructive bg-red-100'
+      case 'processing': return 'text-info bg-blue-100'
       case 'info': return 'text-gray-600 bg-gray-100'
       default: return 'text-gray-600 bg-gray-100'
     }

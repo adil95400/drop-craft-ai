@@ -29,9 +29,9 @@ export function StockPredictionsPanel() {
   const getTrendIcon = (trend: string) => {
     switch (trend) {
       case 'increasing':
-        return <TrendingUp className="h-4 w-4 text-green-500" />;
+        return <TrendingUp className="h-4 w-4 text-success" />;
       case 'decreasing':
-        return <TrendingDown className="h-4 w-4 text-red-500" />;
+        return <TrendingDown className="h-4 w-4 text-destructive" />;
       default:
         return <Minus className="h-4 w-4 text-muted-foreground" />;
     }
@@ -104,7 +104,7 @@ export function StockPredictionsPanel() {
             {/* Produits critiques */}
             {criticalProducts.length > 0 && (
               <div>
-                <h3 className="font-semibold flex items-center gap-2 mb-3 text-red-600">
+                <h3 className="font-semibold flex items-center gap-2 mb-3 text-destructive">
                   <AlertTriangle className="h-4 w-4" />
                   Attention requise ({criticalProducts.length})
                 </h3>
@@ -169,8 +169,8 @@ function PredictionCard({ prediction }: { prediction: StockPrediction }) {
           <p className="text-muted-foreground">Ventes/jour</p>
           <p className="font-semibold flex items-center gap-1">
             {prediction.average_daily_sales.toFixed(1)}
-            {prediction.sales_trend === 'increasing' && <TrendingUp className="h-3 w-3 text-green-500" />}
-            {prediction.sales_trend === 'decreasing' && <TrendingDown className="h-3 w-3 text-red-500" />}
+            {prediction.sales_trend === 'increasing' && <TrendingUp className="h-3 w-3 text-success" />}
+            {prediction.sales_trend === 'decreasing' && <TrendingDown className="h-3 w-3 text-destructive" />}
           </p>
         </div>
         <div>

@@ -421,13 +421,13 @@ export const ExtensionReviews = ({ extensionId }: { extensionId: string }) => {
         <CardContent>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
             <div>
-              <div className="text-2xl font-bold text-green-600">
+              <div className="text-2xl font-bold text-success">
                 {reviews.filter(r => r.verified_purchase).length}
               </div>
               <div className="text-sm text-muted-foreground">Achats vérifiés</div>
             </div>
             <div>
-              <div className="text-2xl font-bold text-blue-600">
+              <div className="text-2xl font-bold text-info">
                 {reviews.reduce((sum, r) => sum + r.helpful_count, 0)}
               </div>
               <div className="text-sm text-muted-foreground">Votes utiles</div>
@@ -439,7 +439,7 @@ export const ExtensionReviews = ({ extensionId }: { extensionId: string }) => {
               <div className="text-sm text-muted-foreground">Réponses développeur</div>
             </div>
             <div>
-              <div className="text-2xl font-bold text-orange-600">
+              <div className="text-2xl font-bold text-warning">
                 {Math.round((reviews.filter(r => r.rating >= 4).length / reviews.length) * 100)}%
               </div>
               <div className="text-sm text-muted-foreground">Satisfaction</div>

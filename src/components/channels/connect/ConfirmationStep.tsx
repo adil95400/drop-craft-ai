@@ -76,7 +76,7 @@ export function ConfirmationStep({ platform, settings, testDetails }: Confirmati
             <div className="flex-1">
               <div className="flex items-center gap-2">
                 <h3 className="text-xl font-bold">{platform.name}</h3>
-                <Badge className="bg-emerald-500/10 text-emerald-600 border-emerald-500/20">
+                <Badge className="bg-emerald-500/10 text-success border-emerald-500/20">
                   <Sparkles className="h-3 w-3 mr-1" />
                   Prêt
                 </Badge>
@@ -139,13 +139,13 @@ export function ConfirmationStep({ platform, settings, testDetails }: Confirmati
                   >
                     <div className={cn(
                       "p-1.5 rounded-md",
-                      value ? "bg-emerald-500/20 text-emerald-600" : "bg-muted text-muted-foreground"
+                      value ? "bg-emerald-500/20 text-success" : "bg-muted text-muted-foreground"
                     )}>
                       <Icon className="h-3.5 w-3.5" />
                     </div>
                     <span className="text-sm font-medium flex-1">{label}</span>
                     {value ? (
-                      <Check className="h-4 w-4 text-emerald-500" />
+                      <Check className="h-4 w-4 text-success" />
                     ) : (
                       <X className="h-4 w-4 text-muted-foreground" />
                     )}

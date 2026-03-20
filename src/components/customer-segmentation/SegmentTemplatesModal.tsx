@@ -109,10 +109,10 @@ type CategoryKey = 'all' | 'value' | 'behavior' | 'cart' | 'location' | 'email' 
 
 const categoryConfig: Record<CategoryKey, { label: string; icon: React.ElementType; color: string }> = {
   all: { label: 'Tous', icon: LayoutTemplate, color: 'text-foreground' },
-  value: { label: 'Valeur client', icon: DollarSign, color: 'text-emerald-600' },
-  behavior: { label: 'Comportement', icon: ShoppingCart, color: 'text-blue-600' },
-  cart: { label: 'Panier abandonné', icon: ShoppingBag, color: 'text-orange-600' },
-  location: { label: 'Localisation', icon: Globe, color: 'text-amber-600' },
+  value: { label: 'Valeur client', icon: DollarSign, color: 'text-success' },
+  behavior: { label: 'Comportement', icon: ShoppingCart, color: 'text-info' },
+  cart: { label: 'Panier abandonné', icon: ShoppingBag, color: 'text-warning' },
+  location: { label: 'Localisation', icon: Globe, color: 'text-warning' },
   email: { label: 'E-mail', icon: Mail, color: 'text-purple-600' },
   lifecycle: { label: 'Cycle de vie', icon: Users, color: 'text-pink-600' },
   engagement: { label: 'Engagement', icon: Bell, color: 'text-cyan-600' }
@@ -229,7 +229,7 @@ export function SegmentTemplatesModal({
             {selectedCategory === 'all' && !searchQuery && (
               <div className="space-y-3">
                 <div className="flex items-center gap-2">
-                  <Zap className="h-4 w-4 text-yellow-500" />
+                  <Zap className="h-4 w-4 text-warning" />
                   <h3 className="font-medium text-sm">Modèles populaires</h3>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
@@ -343,7 +343,7 @@ function TemplateCard({ template, onSelect, isPopular }: TemplateCardProps) {
             </h4>
           </div>
           {isPopular && (
-            <Badge className="shrink-0 bg-yellow-500/10 text-yellow-600 border-yellow-500/20 text-[10px]">
+            <Badge className="shrink-0 bg-yellow-500/10 text-warning border-yellow-500/20 text-[10px]">
               <Zap className="h-2.5 w-2.5 mr-0.5" />
               Populaire
             </Badge>

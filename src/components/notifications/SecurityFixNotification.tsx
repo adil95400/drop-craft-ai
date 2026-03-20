@@ -22,29 +22,29 @@ export function SecurityFixNotification() {
   if (!isVisible) return null;
 
   return (
-    <Alert className="border-green-200 bg-green-50 text-green-800 mb-6">
-      <Shield className="h-4 w-4 text-green-600" />
+    <Alert className="border-green-200 bg-green-50 text-success mb-6">
+      <Shield className="h-4 w-4 text-success" />
       <div className="flex justify-between items-start w-full">
         <div className="flex-1">
-          <AlertTitle className="text-green-800 font-semibold">
+          <AlertTitle className="text-success font-semibold">
             Vulnérabilités de sécurité corrigées
           </AlertTitle>
-          <AlertDescription className="text-green-700 mt-2">
+          <AlertDescription className="text-success mt-2">
             <div className="space-y-2">
               <div className="flex items-center gap-2">
-                <CheckCircle className="h-4 w-4 text-green-600" />
+                <CheckCircle className="h-4 w-4 text-success" />
                 <span>Protection contre la récolte d'emails dans les newsletters</span>
               </div>
               <div className="flex items-center gap-2">
-                <CheckCircle className="h-4 w-4 text-green-600" />
+                <CheckCircle className="h-4 w-4 text-success" />
                 <span>Fonctions de base de données sécurisées</span>
               </div>
               <div className="flex items-center gap-2">
-                <CheckCircle className="h-4 w-4 text-green-600" />
+                <CheckCircle className="h-4 w-4 text-success" />
                 <span>Système de monitoring de sécurité amélioré</span>
               </div>
               <div className="flex items-center gap-2">
-                <CheckCircle className="h-4 w-4 text-green-600" />
+                <CheckCircle className="h-4 w-4 text-success" />
                 <span>Authentification avec journalisation des tentatives</span>
               </div>
             </div>
@@ -54,7 +54,7 @@ export function SecurityFixNotification() {
           variant="ghost"
           size="sm"
           onClick={handleDismiss}
-          className="text-green-600 hover:text-green-800 p-1"
+          className="text-success hover:text-success p-1"
         >
           <X className="h-4 w-4" />
         </Button>

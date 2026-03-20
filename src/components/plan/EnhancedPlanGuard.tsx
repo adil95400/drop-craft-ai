@@ -30,7 +30,7 @@ const planConfig = {
   pro: {
     name: 'Pro',
     icon: Star,
-    color: 'text-blue-600',
+    color: 'text-info',
     bgColor: 'bg-blue-50',
     borderColor: 'border-blue-200',
     description: 'Débloquez les fonctionnalités avancées',

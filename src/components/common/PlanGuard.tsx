@@ -91,7 +91,7 @@ export function PlanGuard({
           <CardHeader>
             <div className="flex items-center gap-3">
               <div className="p-3 rounded-full bg-yellow-500/10">
-                <Lock className="h-6 w-6 text-yellow-500" />
+                <Lock className="h-6 w-6 text-warning" />
               </div>
               <div className="flex-1">
                 <CardTitle>Limite atteinte</CardTitle>

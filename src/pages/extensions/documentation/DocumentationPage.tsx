@@ -186,7 +186,7 @@ export default function DocumentationPage() {
                             <span>{article.category}</span>
                             <span>{article.views.toLocaleString()} vues</span>
                             <div className="flex items-center">
-                              <Star className="w-3 h-3 mr-1 text-yellow-500 fill-yellow-500" />
+                              <Star className="w-3 h-3 mr-1 text-warning fill-yellow-500" />
                               {article.rating}
                             </div>
                             <span>Mis à jour le {article.lastUpdated}</span>

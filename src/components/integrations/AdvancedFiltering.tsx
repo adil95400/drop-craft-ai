@@ -375,7 +375,7 @@ export const AdvancedFiltering = ({ onFiltersChange }: { onFiltersChange?: (filt
           variant="ghost"
           size="sm"
           onClick={() => removeCondition(condition.id)}
-          className="text-red-600 hover:text-red-700"
+          className="text-destructive hover:text-red-700"
         >
           <X className="w-4 h-4" />
         </Button>
@@ -511,7 +511,7 @@ export const AdvancedFiltering = ({ onFiltersChange }: { onFiltersChange?: (filt
           <CardContent>
             {testResults ? (
               <div className="space-y-3">
-                <div className={`p-3 rounded-lg ${testResults.passed ? 'bg-green-50 text-green-800' : 'bg-red-50 text-red-800'}`}>
+                <div className={`p-3 rounded-lg ${testResults.passed ? 'bg-green-50 text-success' : 'bg-red-50 text-red-800'}`}>
                   <div className="font-medium">
                     {testResults.passed ? '✓ Conditions satisfaites' : '✗ Conditions non satisfaites'}
                   </div>

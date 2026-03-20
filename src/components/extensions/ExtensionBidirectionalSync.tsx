@@ -199,11 +199,11 @@ export function ExtensionBidirectionalSync() {
   const getStatusBadge = (status: SyncEvent['status']) => {
     switch (status) {
       case 'success':
-        return <Badge className="bg-green-500/10 text-green-600"><CheckCircle className="h-3 w-3 mr-1" />Succès</Badge>;
+        return <Badge className="bg-green-500/10 text-success"><CheckCircle className="h-3 w-3 mr-1" />Succès</Badge>;
       case 'syncing':
-        return <Badge className="bg-blue-500/10 text-blue-600"><Loader2 className="h-3 w-3 mr-1 animate-spin" />En cours</Badge>;
+        return <Badge className="bg-blue-500/10 text-info"><Loader2 className="h-3 w-3 mr-1 animate-spin" />En cours</Badge>;
       case 'error':
-        return <Badge className="bg-red-500/10 text-red-600"><AlertCircle className="h-3 w-3 mr-1" />Erreur</Badge>;
+        return <Badge className="bg-red-500/10 text-destructive"><AlertCircle className="h-3 w-3 mr-1" />Erreur</Badge>;
       default:
         return <Badge variant="secondary"><Clock className="h-3 w-3 mr-1" />En attente</Badge>;
     }
@@ -229,7 +229,7 @@ export function ExtensionBidirectionalSync() {
                 variant="outline"
                 size="sm"
                 onClick={() => setAutoSync(!autoSync)}
-                className={cn(autoSync && "border-green-500 text-green-600")}
+                className={cn(autoSync && "border-green-500 text-success")}
               >
                 {autoSync ? <Play className="h-4 w-4 mr-1" /> : <Pause className="h-4 w-4 mr-1" />}
                 Auto-sync {autoSync ? 'ON' : 'OFF'}
@@ -245,7 +245,7 @@ export function ExtensionBidirectionalSync() {
               onClick={() => triggerSync.mutate('push')}
               disabled={syncInProgress}
             >
-              <ArrowUp className="h-6 w-6 text-blue-500" />
+              <ArrowUp className="h-6 w-6 text-info" />
               <span className="text-sm">Push vers Extension</span>
             </Button>
             <Button
@@ -266,7 +266,7 @@ export function ExtensionBidirectionalSync() {
               onClick={() => triggerSync.mutate('pull')}
               disabled={syncInProgress}
             >
-              <ArrowDown className="h-6 w-6 text-green-500" />
+              <ArrowDown className="h-6 w-6 text-success" />
               <span className="text-sm">Pull depuis Extension</span>
             </Button>
           </div>
@@ -278,7 +278,7 @@ export function ExtensionBidirectionalSync() {
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center gap-3">
-              <ArrowUp className="h-8 w-8 text-blue-500/30" />
+              <ArrowUp className="h-8 w-8 text-info/30" />
               <div>
                 <p className="text-2xl font-bold">{syncStats?.totalPush || 0}</p>
                 <p className="text-xs text-muted-foreground">Push events</p>
@@ -289,7 +289,7 @@ export function ExtensionBidirectionalSync() {
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center gap-3">
-              <ArrowDown className="h-8 w-8 text-green-500/30" />
+              <ArrowDown className="h-8 w-8 text-success/30" />
               <div>
                 <p className="text-2xl font-bold">{syncStats?.totalPull || 0}</p>
                 <p className="text-xs text-muted-foreground">Pull events</p>
@@ -300,7 +300,7 @@ export function ExtensionBidirectionalSync() {
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center gap-3">
-              <Clock className="h-8 w-8 text-yellow-500/30" />
+              <Clock className="h-8 w-8 text-warning/30" />
               <div>
                 <p className="text-2xl font-bold">{syncStats?.pendingEvents || 0}</p>
                 <p className="text-xs text-muted-foreground">En attente</p>
@@ -375,9 +375,9 @@ export function ExtensionBidirectionalSync() {
                       event.type === 'push' ? "bg-blue-500/10" : "bg-green-500/10"
                     )}>
                       {event.type === 'push' ? (
-                        <ArrowUp className="h-5 w-5 text-blue-500" />
+                        <ArrowUp className="h-5 w-5 text-info" />
                       ) : (
-                        <ArrowDown className="h-5 w-5 text-green-500" />
+                        <ArrowDown className="h-5 w-5 text-success" />
                       )}
                     </div>
                     <div className="flex-1">

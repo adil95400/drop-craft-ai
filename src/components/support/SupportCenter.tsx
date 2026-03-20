@@ -101,8 +101,8 @@ export function SupportCenter() {
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'open': return <AlertCircle className="h-4 w-4 text-destructive" />
-      case 'pending': case 'in_progress': return <Clock className="h-4 w-4 text-yellow-500" />
-      case 'resolved': case 'closed': return <CheckCircle className="h-4 w-4 text-green-500" />
+      case 'pending': case 'in_progress': return <Clock className="h-4 w-4 text-warning" />
+      case 'resolved': case 'closed': return <CheckCircle className="h-4 w-4 text-success" />
       default: return <HelpCircle className="h-4 w-4" />
     }
   }
@@ -111,7 +111,7 @@ export function SupportCenter() {
     switch (status) {
       case 'open': return 'bg-destructive/10 text-destructive'
       case 'pending': case 'in_progress': return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400'
-      case 'resolved': case 'closed': return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
+      case 'resolved': case 'closed': return 'bg-green-100 text-success dark:bg-green-900/30 dark:text-green-400'
       default: return 'bg-muted text-muted-foreground'
     }
   }
@@ -295,7 +295,7 @@ export function SupportCenter() {
                 <p className="text-muted-foreground mb-4">Discutez avec notre équipe support en temps réel</p>
                 <div className="space-y-2 mb-4">
                   <div className="flex items-center justify-between text-sm"><span>Temps d'attente moyen:</span><Badge variant="secondary">2 min</Badge></div>
-                  <div className="flex items-center justify-between text-sm"><span>Disponibilité:</span><Badge className="bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">En ligne</Badge></div>
+                  <div className="flex items-center justify-between text-sm"><span>Disponibilité:</span><Badge className="bg-green-100 text-success dark:bg-green-900/30 dark:text-green-400">En ligne</Badge></div>
                 </div>
                 <Button className="w-full">Démarrer le chat</Button>
               </CardContent>

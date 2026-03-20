@@ -96,10 +96,10 @@ export function APISandbox() {
   }
 
   const methodColors: Record<HttpMethod, string> = {
-    GET: 'text-green-600',
-    POST: 'text-blue-600',
-    PUT: 'text-amber-600',
-    DELETE: 'text-red-500',
+    GET: 'text-success',
+    POST: 'text-info',
+    PUT: 'text-warning',
+    DELETE: 'text-destructive',
   }
 
   return (
@@ -151,11 +151,11 @@ export function APISandbox() {
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-2">
             <div className="flex items-center gap-2">
               {responseStatus && responseStatus >= 200 && responseStatus < 300 ? (
-                <CheckCircle2 className="h-4 w-4 text-green-500" />
+                <CheckCircle2 className="h-4 w-4 text-success" />
               ) : (
-                <XCircle className="h-4 w-4 text-red-500" />
+                <XCircle className="h-4 w-4 text-destructive" />
               )}
-              <Badge variant="outline" className={cn('text-xs', responseStatus && responseStatus < 300 ? 'border-green-500/30 text-green-600' : 'border-red-500/30 text-red-600')}>
+              <Badge variant="outline" className={cn('text-xs', responseStatus && responseStatus < 300 ? 'border-green-500/30 text-success' : 'border-red-500/30 text-destructive')}>
                 {responseStatus}
               </Badge>
               <span className="text-[10px] text-muted-foreground flex items-center gap-0.5">
@@ -183,7 +183,7 @@ export function APISandbox() {
               >
                 <span className={cn('font-mono font-bold', methodColors[log.method])}>{log.method}</span>
                 <code className="font-mono flex-1 truncate">{log.path}</code>
-                <Badge variant="outline" className={cn('text-[9px]', log.status < 300 ? 'text-green-600' : 'text-red-500')}>{log.status}</Badge>
+                <Badge variant="outline" className={cn('text-[9px]', log.status < 300 ? 'text-success' : 'text-destructive')}>{log.status}</Badge>
                 <span className="text-muted-foreground">{log.duration}ms</span>
               </div>
             ))}

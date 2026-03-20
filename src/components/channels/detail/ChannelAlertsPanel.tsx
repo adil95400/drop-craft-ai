@@ -123,7 +123,7 @@ export function ChannelAlertsPanel({
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2.5">
             <div className="relative">
-              <BellRing className="h-4 w-4 text-amber-500" />
+              <BellRing className="h-4 w-4 text-warning" />
               {unreadCount > 0 && (
                 <span className="absolute -top-1.5 -right-1.5 w-4 h-4 bg-destructive text-destructive-foreground text-[9px] rounded-full flex items-center justify-center font-bold">
                   {unreadCount}
@@ -230,7 +230,7 @@ export function ChannelAlertsPanel({
             </div>
           ) : (
             <div className="text-center py-6">
-              <CheckCircle2 className="h-5 w-5 text-emerald-500 mx-auto mb-2" />
+              <CheckCircle2 className="h-5 w-5 text-success mx-auto mb-2" />
               <p className="text-xs font-medium">Tout est en ordre</p>
               <p className="text-[11px] text-muted-foreground">Aucune alerte</p>
             </div>

@@ -218,9 +218,9 @@ export const ExtensionDeployment = () => {
 
   const getStepIcon = (status: string) => {
     switch (status) {
-      case 'completed': return <CheckCircle className="w-4 h-4 text-green-600" />
-      case 'failed': return <XCircle className="w-4 h-4 text-red-600" />
-      case 'running': return <Clock className="w-4 h-4 text-blue-600 animate-pulse" />
+      case 'completed': return <CheckCircle className="w-4 h-4 text-success" />
+      case 'failed': return <XCircle className="w-4 h-4 text-destructive" />
+      case 'running': return <Clock className="w-4 h-4 text-info animate-pulse" />
       default: return <Clock className="w-4 h-4 text-muted-foreground" />
     }
   }
@@ -464,7 +464,7 @@ export const ExtensionDeployment = () => {
                             {step.message}
                           </div>
                           {step.details && (
-                            <div className="text-xs text-red-600 mt-1 font-mono">
+                            <div className="text-xs text-destructive mt-1 font-mono">
                               {step.details}
                             </div>
                           )}
@@ -522,7 +522,7 @@ export const ExtensionDeployment = () => {
                 ].map((deployment, index) => (
                   <div key={index} className="flex items-center justify-between p-3 border rounded-lg">
                     <div className="flex items-center gap-3">
-                      <CheckCircle className="w-4 h-4 text-green-600" />
+                      <CheckCircle className="w-4 h-4 text-success" />
                       <div>
                         <div className="font-medium text-sm">
                           {deployment.version} → {deployment.environment}
@@ -532,7 +532,7 @@ export const ExtensionDeployment = () => {
                         </div>
                       </div>
                     </div>
-                    <Badge variant="outline" className="text-green-600 border-green-600">
+                    <Badge variant="outline" className="text-success border-green-600">
                       Succès
                     </Badge>
                   </div>

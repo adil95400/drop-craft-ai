@@ -87,7 +87,7 @@ export function BusinessMetrics() {
   }
 
   const getStatusColor = (status: string) => {
-    if (status === 'healthy') return 'bg-green-100 text-green-800'
+    if (status === 'healthy') return 'bg-green-100 text-success'
     if (status === 'warning') return 'bg-yellow-100 text-yellow-800'
     return 'bg-red-100 text-red-800'
   }
@@ -122,9 +122,9 @@ export function BusinessMetrics() {
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div className="text-center"><div className="text-2xl font-bold text-green-600">{systemHealth.uptime}%</div><p className="text-sm text-muted-foreground">Uptime</p></div>
+              <div className="text-center"><div className="text-2xl font-bold text-success">{systemHealth.uptime}%</div><p className="text-sm text-muted-foreground">Uptime</p></div>
               <div className="text-center"><div className="text-2xl font-bold">{systemHealth.responseTime}ms</div><p className="text-sm text-muted-foreground">Temps de réponse</p></div>
-              <div className="text-center"><div className="text-2xl font-bold text-red-600">{systemHealth.errorRate}%</div><p className="text-sm text-muted-foreground">Taux d'erreur</p></div>
+              <div className="text-center"><div className="text-2xl font-bold text-destructive">{systemHealth.errorRate}%</div><p className="text-sm text-muted-foreground">Taux d'erreur</p></div>
               <div className="text-center"><div className="text-2xl font-bold">{systemHealth.throughput}/s</div><p className="text-sm text-muted-foreground">Requêtes/sec</p></div>
             </div>
           </CardContent>
@@ -163,8 +163,8 @@ export function BusinessMetrics() {
                 <div className="flex items-center justify-between">
                   <div className="text-2xl font-bold">{formatValue(metric.value, metric.format, metric.unit)}</div>
                   <div className="flex items-center">
-                    {changePercent >= 0 ? <TrendingUp className="h-4 w-4 text-green-500" /> : <TrendingDown className="h-4 w-4 text-red-500" />}
-                    <span className={`text-sm ml-1 ${changePercent >= 0 ? 'text-green-600' : 'text-red-600'}`}>{changePercent >= 0 ? '+' : ''}{changePercent.toFixed(1)}%</span>
+                    {changePercent >= 0 ? <TrendingUp className="h-4 w-4 text-success" /> : <TrendingDown className="h-4 w-4 text-destructive" />}
+                    <span className={`text-sm ml-1 ${changePercent >= 0 ? 'text-success' : 'text-destructive'}`}>{changePercent >= 0 ? '+' : ''}{changePercent.toFixed(1)}%</span>
                   </div>
                 </div>
                 {metric.target && <Progress value={Math.min(targetProgress, 100)} className="h-1 mt-2" />}

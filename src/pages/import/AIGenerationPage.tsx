@@ -145,7 +145,7 @@ const AIGenerationPage: React.FC = () => {
                 <div className="space-y-2">
                   {presetPrompts.map((preset, index) => (
                     <Button key={index} variant="outline" size="sm" className="w-full text-left justify-start h-auto p-3" onClick={() => setPrompt(preset)}>
-                      <Sparkles className="h-4 w-4 mr-2 text-yellow-500" />
+                      <Sparkles className="h-4 w-4 mr-2 text-warning" />
                       <span className="text-xs">{preset}</span>
                     </Button>
                   ))}
@@ -189,7 +189,7 @@ const AIGenerationPage: React.FC = () => {
                             <p className="text-sm text-muted-foreground mb-2">{product.description}</p>
                             <div className="flex items-center gap-2">
                               <Badge>{product.category}</Badge>
-                              <span className="font-semibold text-green-600">{product.price}€</span>
+                              <span className="font-semibold text-success">{product.price}€</span>
                             </div>
                           </div>
                           <div className="flex items-center">

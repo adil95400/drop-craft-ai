@@ -250,17 +250,17 @@ export const VariantsManager = ({ productId, variants, onVariantsUpdate }: Varia
           {/* Statistiques rapides */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
             <div className="text-center p-3 bg-blue-50 rounded-lg">
-              <Package className="w-5 h-5 mx-auto mb-1 text-blue-600" />
+              <Package className="w-5 h-5 mx-auto mb-1 text-info" />
               <p className="text-sm font-medium">{variants.length}</p>
               <p className="text-xs text-muted-foreground">Variantes</p>
             </div>
             <div className="text-center p-3 bg-green-50 rounded-lg">
-              <DollarSign className="w-5 h-5 mx-auto mb-1 text-green-600" />
+              <DollarSign className="w-5 h-5 mx-auto mb-1 text-success" />
               <p className="text-sm font-medium">€{calculateTotalValue().toFixed(2)}</p>
               <p className="text-xs text-muted-foreground">Valeur Stock</p>
             </div>
             <div className="text-center p-3 bg-orange-50 rounded-lg">
-              <Palette className="w-5 h-5 mx-auto mb-1 text-orange-600" />
+              <Palette className="w-5 h-5 mx-auto mb-1 text-warning" />
               <p className="text-sm font-medium">{new Set(variants.map(v => v.color).filter(Boolean)).size}</p>
               <p className="text-xs text-muted-foreground">Couleurs</p>
             </div>

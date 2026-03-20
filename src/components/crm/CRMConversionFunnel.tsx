@@ -63,10 +63,10 @@ export function CRMConversionFunnel() {
       {/* KPIs */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {[
-          { label: 'Taux de conversion', value: `${winRate}%`, icon: Percent, color: 'text-green-600' },
-          { label: 'Vélocité pipeline', value: formatCurrency(velocity), icon: Clock, color: 'text-blue-600' },
+          { label: 'Taux de conversion', value: `${winRate}%`, icon: Percent, color: 'text-success' },
+          { label: 'Vélocité pipeline', value: formatCurrency(velocity), icon: Clock, color: 'text-info' },
           { label: 'Valeur pondérée', value: formatCurrency(dealStats.weightedValue), icon: Target, color: 'text-purple-600' },
-          { label: 'Panier moyen deal', value: formatCurrency(dealStats.avgDealSize), icon: DollarSign, color: 'text-amber-600' },
+          { label: 'Panier moyen deal', value: formatCurrency(dealStats.avgDealSize), icon: DollarSign, color: 'text-warning' },
         ].map((kpi, i) => (
           <Card key={i}>
             <CardContent className="pt-4 pb-3">

@@ -43,11 +43,11 @@ export function ReviewDetailsModal({ reviewId, open, onOpenChange }: ReviewDetai
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'published':
-        return <CheckCircle className="w-4 h-4 text-green-500" />
+        return <CheckCircle className="w-4 h-4 text-success" />
       case 'pending':
-        return <Clock className="w-4 h-4 text-yellow-500" />
+        return <Clock className="w-4 h-4 text-warning" />
       case 'rejected':
-        return <AlertTriangle className="w-4 h-4 text-red-500" />
+        return <AlertTriangle className="w-4 h-4 text-destructive" />
       default:
         return <AlertTriangle className="w-4 h-4 text-gray-500" />
     }
@@ -99,7 +99,7 @@ export function ReviewDetailsModal({ reviewId, open, onOpenChange }: ReviewDetai
                   <span className="ml-1 capitalize">{review.status}</span>
                 </Badge>
                 {review.verified_purchase && (
-                  <Badge variant="outline" className="text-green-600 border-green-600">
+                  <Badge variant="outline" className="text-success border-green-600">
                     <CheckCircle className="w-3 h-3 mr-1" />
                     Vérifié
                   </Badge>

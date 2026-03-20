@@ -111,7 +111,7 @@ export const AdvancedImportResults = () => {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'published':
-        return <Badge className="bg-green-100 text-green-800">Publié</Badge>;
+        return <Badge className="bg-green-100 text-success">Publié</Badge>;
       case 'draft':
         return <Badge variant="secondary">Brouillon</Badge>;
       default:
@@ -122,7 +122,7 @@ export const AdvancedImportResults = () => {
   const getReviewStatusBadge = (reviewStatus: string) => {
     switch (reviewStatus) {
       case 'approved':
-        return <Badge className="bg-green-100 text-green-800">Approuvé</Badge>;
+        return <Badge className="bg-green-100 text-success">Approuvé</Badge>;
       case 'rejected':
         return <Badge className="bg-red-100 text-red-800">Rejeté</Badge>;
       default:
@@ -173,25 +173,25 @@ export const AdvancedImportResults = () => {
         </Card>
         <Card>
           <CardContent className="p-4">
-            <div className="text-2xl font-bold text-green-600">{stats.published}</div>
+            <div className="text-2xl font-bold text-success">{stats.published}</div>
             <p className="text-sm text-muted-foreground">Publié</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-4">
-            <div className="text-2xl font-bold text-yellow-600">{stats.draft}</div>
+            <div className="text-2xl font-bold text-warning">{stats.draft}</div>
             <p className="text-sm text-muted-foreground">Brouillon</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-4">
-            <div className="text-2xl font-bold text-blue-600">{stats.pending}</div>
+            <div className="text-2xl font-bold text-info">{stats.pending}</div>
             <p className="text-sm text-muted-foreground">En attente</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-4">
-            <div className="text-2xl font-bold text-red-600">{stats.rejected}</div>
+            <div className="text-2xl font-bold text-destructive">{stats.rejected}</div>
             <p className="text-sm text-muted-foreground">Rejeté</p>
           </CardContent>
         </Card>

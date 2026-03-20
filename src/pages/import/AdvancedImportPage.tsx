@@ -157,10 +157,10 @@ export default function AdvancedImportPage() {
 
   const getStatusConfig = (status: string) => {
     const configs: Record<string, { icon: any; color: string; bgColor: string; label: string }> = {
-      completed: { icon: CheckCircle2, color: 'text-green-500', bgColor: 'bg-green-500/10', label: 'Terminé' },
-      processing: { icon: Clock, color: 'text-blue-500', bgColor: 'bg-blue-500/10', label: 'En cours' },
-      failed: { icon: AlertCircle, color: 'text-red-500', bgColor: 'bg-red-500/10', label: 'Échoué' },
-      pending: { icon: Clock, color: 'text-amber-500', bgColor: 'bg-amber-500/10', label: 'En attente' },
+      completed: { icon: CheckCircle2, color: 'text-success', bgColor: 'bg-green-500/10', label: 'Terminé' },
+      processing: { icon: Clock, color: 'text-info', bgColor: 'bg-blue-500/10', label: 'En cours' },
+      failed: { icon: AlertCircle, color: 'text-destructive', bgColor: 'bg-red-500/10', label: 'Échoué' },
+      pending: { icon: Clock, color: 'text-warning', bgColor: 'bg-amber-500/10', label: 'En attente' },
     }
     return configs[status] || configs.pending
   }
@@ -192,9 +192,9 @@ export default function AdvancedImportPage() {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {[
           { label: 'Imports totaux', value: stats.total, icon: Upload, color: 'text-primary' },
-          { label: 'En cours', value: stats.processing, icon: Clock, color: 'text-blue-500' },
-          { label: 'Réussis', value: stats.completed, icon: CheckCircle2, color: 'text-green-500' },
-          { label: 'Échoués', value: stats.failed, icon: AlertCircle, color: 'text-red-500' },
+          { label: 'En cours', value: stats.processing, icon: Clock, color: 'text-info' },
+          { label: 'Réussis', value: stats.completed, icon: CheckCircle2, color: 'text-success' },
+          { label: 'Échoués', value: stats.failed, icon: AlertCircle, color: 'text-destructive' },
         ].map((stat, idx) => (
           <Card key={idx} className="border-border/50 bg-card/50 backdrop-blur">
             <CardContent className="p-4">

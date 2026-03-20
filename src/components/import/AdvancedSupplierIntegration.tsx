@@ -114,11 +114,11 @@ export const AdvancedSupplierIntegration = () => {
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'connected':
-        return <CheckCircle className="h-4 w-4 text-green-600" />
+        return <CheckCircle className="h-4 w-4 text-success" />
       case 'configuring':
-        return <Loader2 className="h-4 w-4 text-blue-600 animate-spin" />
+        return <Loader2 className="h-4 w-4 text-info animate-spin" />
       case 'error':
-        return <AlertCircle className="h-4 w-4 text-red-600" />
+        return <AlertCircle className="h-4 w-4 text-destructive" />
       default:
         return <Settings className="h-4 w-4 text-gray-400" />
     }
@@ -127,7 +127,7 @@ export const AdvancedSupplierIntegration = () => {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'connected':
-        return 'bg-green-100 text-green-800'
+        return 'bg-green-100 text-success'
       case 'configuring':
         return 'bg-blue-100 text-blue-800'
       case 'error':
@@ -303,7 +303,7 @@ export const AdvancedSupplierIntegration = () => {
                   <div className="space-y-2">
                     {supplier.features.map((feature, index) => (
                       <div key={index} className="flex items-center gap-2 text-sm">
-                        <CheckCircle className="h-3 w-3 text-green-600 flex-shrink-0" />
+                        <CheckCircle className="h-3 w-3 text-success flex-shrink-0" />
                         <span>{feature}</span>
                       </div>
                     ))}
@@ -312,12 +312,12 @@ export const AdvancedSupplierIntegration = () => {
                   {supplier.status === 'connected' && (
                     <div className="flex items-center justify-between py-3 px-4 bg-green-50 rounded-lg">
                       <div>
-                        <span className="text-sm font-medium text-green-800">
+                        <span className="text-sm font-medium text-success">
                           {supplier.products.toLocaleString()} produits
                         </span>
-                        <div className="text-xs text-green-600">Synchronisé</div>
+                        <div className="text-xs text-success">Synchronisé</div>
                       </div>
-                      <Button variant="ghost" size="sm" className="text-green-600 hover:bg-green-100">
+                      <Button variant="ghost" size="sm" className="text-success hover:bg-green-100">
                         <ExternalLink className="h-4 w-4" />
                       </Button>
                     </div>

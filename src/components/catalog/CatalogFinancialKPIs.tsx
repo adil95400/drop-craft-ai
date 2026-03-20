@@ -78,7 +78,7 @@ export function CatalogFinancialKPIs({ products }: CatalogFinancialKPIsProps) {
             <p className="text-lg font-bold leading-none">{kpis.profitMargin.toFixed(1)}%</p>
             <p className="text-[11px] text-muted-foreground mt-0.5">
               Marge nette
-              {kpis.missingCost > 0 && <span className="text-amber-500"> · {kpis.missingCost} sans coût</span>}
+              {kpis.missingCost > 0 && <span className="text-warning"> · {kpis.missingCost} sans coût</span>}
             </p>
           </div>
         </CardContent>

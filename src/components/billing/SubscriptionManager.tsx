@@ -220,7 +220,7 @@ export const SubscriptionManager: React.FC = () => {
           <CardHeader>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <Crown className={`h-5 w-5 ${subscription.subscribed ? 'text-green-600' : 'text-muted-foreground'}`} />
+                <Crown className={`h-5 w-5 ${subscription.subscribed ? 'text-success' : 'text-muted-foreground'}`} />
                 <CardTitle>Mon Abonnement</CardTitle>
               </div>
               

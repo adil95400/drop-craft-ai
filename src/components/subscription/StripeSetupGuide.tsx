@@ -132,11 +132,11 @@ export const StripeSetupGuide = () => {
 
             <div className="space-y-2">
               <div className="flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4 text-green-600" />
+                <CheckCircle2 className="w-4 h-4 text-success" />
                 <span className="text-sm">Succès : <code className="text-xs">/payment/success</code></span>
               </div>
               <div className="flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4 text-green-600" />
+                <CheckCircle2 className="w-4 h-4 text-success" />
                 <span className="text-sm">Annulation : <code className="text-xs">/payment/cancelled</code></span>
               </div>
             </div>

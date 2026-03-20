@@ -193,9 +193,9 @@ export const ExtensionInstaller: React.FC<ExtensionInstallerProps> = ({
     const highRiskPerms = ['System access', 'Network monitoring', 'Full store access']
     const hasHighRisk = permissions.some(p => highRiskPerms.includes(p))
     
-    if (hasHighRisk) return { level: 'Élevé', color: 'text-red-600', icon: AlertTriangle }
-    if (permissions.length > 3) return { level: 'Moyen', color: 'text-yellow-600', icon: Shield }
-    return { level: 'Faible', color: 'text-green-600', icon: CheckCircle }
+    if (hasHighRisk) return { level: 'Élevé', color: 'text-destructive', icon: AlertTriangle }
+    if (permissions.length > 3) return { level: 'Moyen', color: 'text-warning', icon: Shield }
+    return { level: 'Faible', color: 'text-success', icon: CheckCircle }
   }
 
   const risk = getRiskLevel(extension.permissions)
@@ -224,7 +224,7 @@ export const ExtensionInstaller: React.FC<ExtensionInstallerProps> = ({
                     <span className="text-muted-foreground">{extension.downloads_count.toLocaleString()} téléchargements</span>
                   </div>
                   {extension.developer_verified && (
-                    <Badge variant="secondary" className="bg-green-100 text-green-800">
+                    <Badge variant="secondary" className="bg-green-100 text-success">
                       <CheckCircle className="w-3 h-3 mr-1" />
                       Vérifié
                     </Badge>
@@ -284,7 +284,7 @@ export const ExtensionInstaller: React.FC<ExtensionInstallerProps> = ({
                     <div className="space-y-2">
                       {extension.features.map((feature, index) => (
                         <div key={index} className="flex items-center space-x-2">
-                          <CheckCircle className="w-4 h-4 text-green-500" />
+                          <CheckCircle className="w-4 h-4 text-success" />
                           <span className="text-sm">{feature}</span>
                         </div>
                       ))}

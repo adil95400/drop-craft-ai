@@ -562,7 +562,7 @@ export function AdvancedReviewsImportModal({
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Star className="h-5 w-5 text-yellow-500" />
+            <Star className="h-5 w-5 text-warning" />
             Import avancé des avis
             {productName && (
               <Badge variant="secondary" className="ml-2">{productName}</Badge>
@@ -952,7 +952,7 @@ export function AdvancedReviewsImportModal({
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <h4 className="font-medium text-sm flex items-center gap-2">
-                    <CheckCircle className="h-4 w-4 text-green-500" />
+                    <CheckCircle className="h-4 w-4 text-success" />
                     {parsedReviews.length} avis
                   </h4>
                   <Badge variant="outline" className="text-xs">
@@ -992,7 +992,7 @@ export function AdvancedReviewsImportModal({
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-0.5">
                           <span className="font-medium truncate">{review.customer_name}</span>
-                          <span className="text-yellow-500 flex-shrink-0">
+                          <span className="text-warning flex-shrink-0">
                             {'★'.repeat(Math.round(review.rating))}
                           </span>
                           {review.verified_purchase && (
@@ -1002,8 +1002,8 @@ export function AdvancedReviewsImportModal({
                             <Badge 
                               variant="outline" 
                               className={`text-[10px] py-0 ${
-                                review.sentiment === 'positive' ? 'text-green-600' :
-                                review.sentiment === 'negative' ? 'text-red-600' : ''
+                                review.sentiment === 'positive' ? 'text-success' :
+                                review.sentiment === 'negative' ? 'text-destructive' : ''
                               }`}
                             >
                               {review.sentiment === 'positive' ? '😊' : review.sentiment === 'negative' ? '😞' : '😐'}

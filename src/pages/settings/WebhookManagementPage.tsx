@@ -116,9 +116,9 @@ export default function WebhookManagementPage() {
       {/* Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <Card><CardContent className="pt-4 text-center"><p className="text-2xl font-bold">{webhooks.length}</p><p className="text-xs text-muted-foreground">Webhooks</p></CardContent></Card>
-        <Card><CardContent className="pt-4 text-center"><p className="text-2xl font-bold text-green-600">{webhooks.filter((w: any) => w.is_active).length}</p><p className="text-xs text-muted-foreground">Actifs</p></CardContent></Card>
+        <Card><CardContent className="pt-4 text-center"><p className="text-2xl font-bold text-success">{webhooks.filter((w: any) => w.is_active).length}</p><p className="text-xs text-muted-foreground">Actifs</p></CardContent></Card>
         <Card><CardContent className="pt-4 text-center"><p className="text-2xl font-bold">{eventOptions.length}</p><p className="text-xs text-muted-foreground">Événements dispo</p></CardContent></Card>
-        <Card><CardContent className="pt-4 text-center"><p className="text-2xl font-bold text-red-600">{totalFailCount}</p><p className="text-xs text-muted-foreground">Échecs récents</p></CardContent></Card>
+        <Card><CardContent className="pt-4 text-center"><p className="text-2xl font-bold text-destructive">{totalFailCount}</p><p className="text-xs text-muted-foreground">Échecs récents</p></CardContent></Card>
       </div>
 
       {/* Webhook list */}
@@ -150,7 +150,7 @@ export default function WebhookManagementPage() {
               </div>
               <div className="flex items-center gap-4 text-xs text-muted-foreground">
                 <span className="flex items-center gap-1">
-                  {wh.is_active ? <CheckCircle2 className="h-3 w-3 text-green-500" /> : <XCircle className="h-3 w-3 text-red-500" />}
+                  {wh.is_active ? <CheckCircle2 className="h-3 w-3 text-success" /> : <XCircle className="h-3 w-3 text-destructive" />}
                   {wh.is_active ? 'Actif' : 'Inactif'}
                 </span>
                 {wh.last_triggered_at && <span>Dernier appel : {new Date(wh.last_triggered_at).toLocaleString('fr-FR')}</span>}

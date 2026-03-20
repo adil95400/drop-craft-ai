@@ -28,7 +28,7 @@ export function RestockSuggestions() {
     <div className="space-y-6">
       <div>
         <h2 className="text-2xl font-bold flex items-center gap-2">
-          <Lightbulb className="h-6 w-6 text-yellow-500" />
+          <Lightbulb className="h-6 w-6 text-warning" />
           Suggestions de Réapprovisionnement IA
         </h2>
         <p className="text-muted-foreground mt-1">
@@ -113,7 +113,7 @@ export function RestockSuggestions() {
                 {suggestion.reasoning && (
                   <div className="border-t pt-4">
                     <p className="text-sm font-medium mb-2 flex items-center gap-2">
-                      <Lightbulb className="h-4 w-4 text-yellow-500" />
+                      <Lightbulb className="h-4 w-4 text-warning" />
                       Analyse IA
                     </p>
                     <p className="text-sm text-muted-foreground">

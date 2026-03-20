@@ -49,7 +49,7 @@ function MarginBar({ percent }: { percent: number }) {
       <div className="flex-1 h-2 rounded-full bg-muted overflow-hidden">
         <div className={cn("h-full rounded-full transition-all", color)} style={{ width: `${Math.min(percent, 100)}%` }} />
       </div>
-      <span className={cn("text-xs font-bold", percent >= 30 ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400')}>
+      <span className={cn("text-xs font-bold", percent >= 30 ? 'text-success dark:text-emerald-400' : 'text-warning dark:text-amber-400')}>
         {percent}%
       </span>
     </div>
@@ -97,11 +97,11 @@ function ProfitCalculator({ product }: { product: DiscoveryProduct }) {
         </div>
         <div className="p-2 bg-background rounded">
           <p className="text-xs text-muted-foreground">Marge nette</p>
-          <p className={cn("font-bold text-sm", margin >= 30 ? 'text-emerald-600' : 'text-amber-600')}>{margin.toFixed(1)}%</p>
+          <p className={cn("font-bold text-sm", margin >= 30 ? 'text-success' : 'text-warning')}>{margin.toFixed(1)}%</p>
         </div>
         <div className="p-2 bg-background rounded">
           <p className="text-xs text-muted-foreground">Profit total</p>
-          <p className={cn("font-bold text-sm", profit > 0 ? 'text-emerald-600' : 'text-destructive')}>{profit.toFixed(2)}€</p>
+          <p className={cn("font-bold text-sm", profit > 0 ? 'text-success' : 'text-destructive')}>{profit.toFixed(2)}€</p>
         </div>
       </div>
     </div>
@@ -156,7 +156,7 @@ function ProductCard({ product, onImport, isImporting }: {
           </div>
           <div>
             <p className="text-muted-foreground">Profit</p>
-            <p className="font-bold text-emerald-600 dark:text-emerald-400">
+            <p className="font-bold text-success dark:text-emerald-400">
               {(product.selling_price - product.cost_price).toFixed(2)}€
             </p>
           </div>
@@ -354,7 +354,7 @@ export default function ProductSourcingHub() {
           <Card>
             <CardContent className="p-4 flex items-center gap-3">
               <div className="h-10 w-10 rounded-lg bg-emerald-500/10 flex items-center justify-center">
-                <DollarSign className="h-5 w-5 text-emerald-600" />
+                <DollarSign className="h-5 w-5 text-success" />
               </div>
               <div>
                 <p className="text-xs text-muted-foreground">Marge moy.</p>
@@ -365,7 +365,7 @@ export default function ProductSourcingHub() {
           <Card>
             <CardContent className="p-4 flex items-center gap-3">
               <div className="h-10 w-10 rounded-lg bg-amber-500/10 flex items-center justify-center">
-                <Flame className="h-5 w-5 text-amber-600" />
+                <Flame className="h-5 w-5 text-warning" />
               </div>
               <div>
                 <p className="text-xs text-muted-foreground">Winners</p>

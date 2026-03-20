@@ -24,7 +24,7 @@ const PRICING_MODULES = [
     description: 'Définissez vos règles de markup, marge minimale et arrondis psychologiques',
     icon: Calculator,
     route: '/pricing-manager/rules',
-    color: 'text-blue-500',
+    color: 'text-info',
     badge: null,
   },
   {
@@ -33,7 +33,7 @@ const PRICING_MODULES = [
     description: 'Ajustez vos prix en temps réel selon la concurrence et vos objectifs',
     icon: RefreshCw,
     route: '/pricing-manager/repricing',
-    color: 'text-green-500',
+    color: 'text-success',
     badge: 'Live',
   },
   {
@@ -51,7 +51,7 @@ const PRICING_MODULES = [
     description: 'Simulez la rentabilité par produit avec shipping, frais plateforme et publicité',
     icon: DollarSign,
     route: '/pricing-manager/calculator',
-    color: 'text-emerald-500',
+    color: 'text-success',
     badge: 'Nouveau',
   },
   {
@@ -69,7 +69,7 @@ const PRICING_MODULES = [
     description: 'Simulez et appliquez des stratégies de pricing complexes avec protection de marge',
     icon: Shield,
     route: '/pricing-manager/engine',
-    color: 'text-orange-500',
+    color: 'text-warning',
     badge: 'Pro',
   },
   {
@@ -126,9 +126,9 @@ export default function PricingManagerHub() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
           {[
             { label: 'Produits', value: stats?.products ?? '—', icon: BarChart3, color: 'text-primary' },
-            { label: 'Règles actives', value: stats?.rules ?? '—', icon: Zap, color: 'text-green-500' },
-            { label: 'Marge moy.', value: '—', icon: TrendingUp, color: 'text-blue-500' },
-            { label: 'Alertes prix', value: stats?.alerts ?? '—', icon: Target, color: 'text-orange-500' },
+            { label: 'Règles actives', value: stats?.rules ?? '—', icon: Zap, color: 'text-success' },
+            { label: 'Marge moy.', value: '—', icon: TrendingUp, color: 'text-info' },
+            { label: 'Alertes prix', value: stats?.alerts ?? '—', icon: Target, color: 'text-warning' },
           ].map((kpi) => (
             <Card key={kpi.label} className="p-4">
               <div className="flex items-center gap-3">

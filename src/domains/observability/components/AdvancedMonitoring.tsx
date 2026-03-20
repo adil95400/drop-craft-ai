@@ -86,9 +86,9 @@ export const AdvancedMonitoring = () => {
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'healthy':
-        return <CheckCircle2 className="h-5 w-5 text-green-500" />
+        return <CheckCircle2 className="h-5 w-5 text-success" />
       case 'warning':
-        return <AlertTriangle className="h-5 w-5 text-yellow-500" />
+        return <AlertTriangle className="h-5 w-5 text-warning" />
       case 'critical':
         return <AlertTriangle className="h-5 w-5 text-destructive" />
       default:
@@ -101,9 +101,9 @@ export const AdvancedMonitoring = () => {
       case 'critical':
         return 'text-destructive'
       case 'warning':
-        return 'text-yellow-500'
+        return 'text-warning'
       default:
-        return 'text-blue-500'
+        return 'text-info'
     }
   }
 
@@ -171,11 +171,11 @@ export const AdvancedMonitoring = () => {
           <Progress value={systemHealth} className="h-3" />
           <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-4">
             <div className="text-center">
-              <div className="text-2xl font-bold text-green-500">{metrics.filter(m => m.status === 'healthy').length}</div>
+              <div className="text-2xl font-bold text-success">{metrics.filter(m => m.status === 'healthy').length}</div>
               <div className="text-sm text-muted-foreground">Services OK</div>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold text-yellow-500">{metrics.filter(m => m.status === 'warning').length}</div>
+              <div className="text-2xl font-bold text-warning">{metrics.filter(m => m.status === 'warning').length}</div>
               <div className="text-sm text-muted-foreground">Avertissements</div>
             </div>
             <div className="text-center">
@@ -276,7 +276,7 @@ export const AdvancedMonitoring = () => {
             <Card>
               <CardContent className="pt-6">
                 <div className="text-center">
-                  <CheckCircle2 className="h-12 w-12 text-green-500 mx-auto mb-3" />
+                  <CheckCircle2 className="h-12 w-12 text-success mx-auto mb-3" />
                   <p className="text-muted-foreground">Aucune alerte active</p>
                 </div>
               </CardContent>
@@ -420,7 +420,7 @@ export const AdvancedMonitoring = () => {
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <Zap className="h-4 w-4 text-yellow-500" />
+                      <Zap className="h-4 w-4 text-warning" />
                       <span className="text-sm">Throughput</span>
                     </div>
                     <span className="font-bold">2.4K req/s</span>
@@ -429,7 +429,7 @@ export const AdvancedMonitoring = () => {
                   
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <Clock className="h-4 w-4 text-blue-500" />
+                      <Clock className="h-4 w-4 text-info" />
                       <span className="text-sm">P95 Latency</span>
                     </div>
                     <span className="font-bold">145ms</span>
@@ -438,19 +438,19 @@ export const AdvancedMonitoring = () => {
                   
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <Shield className="h-4 w-4 text-green-500" />
+                      <Shield className="h-4 w-4 text-success" />
                       <span className="text-sm">Taux d'erreur</span>
                     </div>
-                    <span className="font-bold text-green-600">0.2%</span>
+                    <span className="font-bold text-success">0.2%</span>
                   </div>
                   <Progress value={0.2} />
                   
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <CheckCircle2 className="h-4 w-4 text-green-500" />
+                      <CheckCircle2 className="h-4 w-4 text-success" />
                       <span className="text-sm">Uptime global</span>
                     </div>
-                    <span className="font-bold text-green-600">99.9%</span>
+                    <span className="font-bold text-success">99.9%</span>
                   </div>
                   <Progress value={99.9} />
                 </div>

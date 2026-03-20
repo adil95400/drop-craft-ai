@@ -77,7 +77,7 @@ const AffiliateMarketingPage: React.FC = () => {
           <CardContent>
             <div className="text-2xl font-bold">€12,456</div>
             <p className="text-xs text-muted-foreground flex items-center gap-1">
-              <TrendingUp className="h-3 w-3 text-green-500" />
+              <TrendingUp className="h-3 w-3 text-success" />
               +18% ce mois
             </p>
           </CardContent>

@@ -45,7 +45,7 @@ export function ImportHistoryCard({ job }: ImportHistoryCardProps) {
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <CheckCircle2 className="h-4 w-4 text-green-600" />
+            <CheckCircle2 className="h-4 w-4 text-success" />
             <div>
               <div className="text-sm font-medium">{job.successful_imports}</div>
               <div className="text-xs text-muted-foreground">Réussis</div>

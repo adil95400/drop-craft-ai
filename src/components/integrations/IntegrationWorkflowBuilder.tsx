@@ -136,11 +136,11 @@ export function IntegrationWorkflowBuilder() {
   });
 
   const integrationOptions = [
-    { value: 'shopify', label: 'Shopify', icon: ShoppingCart, color: 'text-green-600' },
-    { value: 'hubspot', label: 'HubSpot', icon: Users, color: 'text-orange-600' },
-    { value: 'mailchimp', label: 'MailChimp', icon: Mail, color: 'text-yellow-600' },
+    { value: 'shopify', label: 'Shopify', icon: ShoppingCart, color: 'text-success' },
+    { value: 'hubspot', label: 'HubSpot', icon: Users, color: 'text-warning' },
+    { value: 'mailchimp', label: 'MailChimp', icon: Mail, color: 'text-warning' },
     { value: 'stripe', label: 'Stripe', icon: BarChart3, color: 'text-purple-600' },
-    { value: 'internal', label: 'Interne', icon: Database, color: 'text-blue-600' }
+    { value: 'internal', label: 'Interne', icon: Database, color: 'text-info' }
   ];
 
   const triggerOperations = {
@@ -161,9 +161,9 @@ export function IntegrationWorkflowBuilder() {
 
   const getStepIcon = (type: string) => {
     switch (type) {
-      case 'trigger': return <Zap className="w-4 h-4 text-green-500" />;
-      case 'condition': return <Filter className="w-4 h-4 text-yellow-500" />;
-      case 'action': return <Settings className="w-4 h-4 text-blue-500" />;
+      case 'trigger': return <Zap className="w-4 h-4 text-success" />;
+      case 'condition': return <Filter className="w-4 h-4 text-warning" />;
+      case 'action': return <Settings className="w-4 h-4 text-info" />;
       default: return <Database className="w-4 h-4" />;
     }
   };
@@ -274,7 +274,7 @@ export function IntegrationWorkflowBuilder() {
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-green-100 rounded-lg">
-                <Play className="w-5 h-5 text-green-600" />
+                <Play className="w-5 h-5 text-success" />
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Exécutions 24h</p>
@@ -290,7 +290,7 @@ export function IntegrationWorkflowBuilder() {
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-blue-100 rounded-lg">
-                <CheckCircle className="w-5 h-5 text-blue-600" />
+                <CheckCircle className="w-5 h-5 text-info" />
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Taux de Succès</p>
@@ -306,7 +306,7 @@ export function IntegrationWorkflowBuilder() {
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-orange-100 rounded-lg">
-                <Clock className="w-5 h-5 text-orange-600" />
+                <Clock className="w-5 h-5 text-warning" />
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Temps Moyen</p>
@@ -355,7 +355,7 @@ export function IntegrationWorkflowBuilder() {
                     <span className="text-muted-foreground">
                       {workflow.steps.length} étapes
                     </span>
-                    <span className="text-green-600 font-medium">
+                    <span className="text-success font-medium">
                       {workflow.success_rate}% succès
                     </span>
                   </div>
@@ -496,15 +496,15 @@ export function IntegrationWorkflowBuilder() {
                   {/* Workflow Stats */}
                   <div className="grid grid-cols-3 gap-4">
                     <div className="text-center p-3 bg-muted/30 rounded-lg">
-                      <div className="text-2xl font-bold text-green-600">{selectedWorkflow.trigger_count}</div>
+                      <div className="text-2xl font-bold text-success">{selectedWorkflow.trigger_count}</div>
                       <div className="text-xs text-muted-foreground">Exécutions</div>
                     </div>
                     <div className="text-center p-3 bg-muted/30 rounded-lg">
-                      <div className="text-2xl font-bold text-blue-600">{selectedWorkflow.success_rate}%</div>
+                      <div className="text-2xl font-bold text-info">{selectedWorkflow.success_rate}%</div>
                       <div className="text-xs text-muted-foreground">Succès</div>
                     </div>
                     <div className="text-center p-3 bg-muted/30 rounded-lg">
-                      <div className="text-2xl font-bold text-orange-600">1.2s</div>
+                      <div className="text-2xl font-bold text-warning">1.2s</div>
                       <div className="text-xs text-muted-foreground">Temps moyen</div>
                     </div>
                   </div>
@@ -548,7 +548,7 @@ export function IntegrationWorkflowBuilder() {
                       {[1, 2, 3].map((i) => (
                         <div key={i} className="flex items-center justify-between p-2 text-sm border rounded">
                           <div className="flex items-center gap-2">
-                            <CheckCircle className="w-4 h-4 text-green-500" />
+                            <CheckCircle className="w-4 h-4 text-success" />
                             <span>Exécution #{247 - i + 1}</span>
                           </div>
                           <div className="text-muted-foreground">

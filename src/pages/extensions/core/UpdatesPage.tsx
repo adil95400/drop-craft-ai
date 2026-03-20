@@ -134,7 +134,7 @@ export default function UpdatesPage() {
           {availableUpdates.length === 0 ? (
             <Card>
               <CardContent className="p-6 text-center">
-                <CheckCircle className="w-12 h-12 mx-auto text-green-500 mb-4" />
+                <CheckCircle className="w-12 h-12 mx-auto text-success mb-4" />
                 <h3 className="text-lg font-semibold mb-2">Tout est à jour !</h3>
                 <p className="text-muted-foreground">Toutes vos extensions sont à la dernière version.</p>
               </CardContent>
@@ -190,7 +190,7 @@ export default function UpdatesPage() {
                       </div>
                       <Progress value={updateProgress[update.id]} />
                       {updateProgress[update.id] === 100 && (
-                        <p className="text-green-600 text-sm flex items-center">
+                        <p className="text-success text-sm flex items-center">
                           <CheckCircle className="w-4 h-4 mr-1" />
                           Mise à jour terminée avec succès !
                         </p>
@@ -216,9 +216,9 @@ export default function UpdatesPage() {
                 <div key={index} className="flex items-center justify-between p-3 border rounded-lg">
                   <div className="flex items-center space-x-3">
                     {item.status === 'success' ? (
-                      <CheckCircle className="w-5 h-5 text-green-500" />
+                      <CheckCircle className="w-5 h-5 text-success" />
                     ) : (
-                      <AlertCircle className="w-5 h-5 text-red-500" />
+                      <AlertCircle className="w-5 h-5 text-destructive" />
                     )}
                     <div>
                       <div className="font-medium">{item.name} v{item.version}</div>

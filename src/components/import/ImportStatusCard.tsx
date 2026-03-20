@@ -40,7 +40,7 @@ export const ImportStatusCard = ({
           borderColor: 'border-blue-200',
           textColor: 'text-blue-900',
           subTextColor: 'text-blue-700',
-          iconColor: 'text-blue-600',
+          iconColor: 'text-info',
           title: 'Import en cours...',
           animate: true
         }
@@ -51,8 +51,8 @@ export const ImportStatusCard = ({
           bgColor: 'bg-green-50',
           borderColor: 'border-green-200',
           textColor: 'text-green-900',
-          subTextColor: 'text-green-700',
-          iconColor: 'text-green-600',
+          subTextColor: 'text-success',
+          iconColor: 'text-success',
           title: 'Import réussi !',
           animate: false
         }
@@ -64,7 +64,7 @@ export const ImportStatusCard = ({
           borderColor: 'border-red-200',
           textColor: 'text-red-900',
           subTextColor: 'text-red-700',
-          iconColor: 'text-red-600',
+          iconColor: 'text-destructive',
           title: 'Import échoué',
           animate: false
         }
@@ -127,18 +127,18 @@ export const ImportStatusCard = ({
                 )}
                 {details.success !== undefined && (
                   <div className="text-center">
-                    <div className="text-lg font-bold text-green-600">
+                    <div className="text-lg font-bold text-success">
                       {details.success}
                     </div>
-                    <div className="text-xs text-green-600">Réussis</div>
+                    <div className="text-xs text-success">Réussis</div>
                   </div>
                 )}
                 {details.errors !== undefined && details.errors > 0 && (
                   <div className="text-center">
-                    <div className="text-lg font-bold text-red-600">
+                    <div className="text-lg font-bold text-destructive">
                       {details.errors}
                     </div>
-                    <div className="text-xs text-red-600">Erreurs</div>
+                    <div className="text-xs text-destructive">Erreurs</div>
                   </div>
                 )}
                 {details.processing_time && (

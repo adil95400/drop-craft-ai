@@ -111,7 +111,7 @@ export const SmartImportInterface = () => {
             <Brain className="w-3 h-3 mr-1" />
             IA GPT-4
           </Badge>
-          <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 py-1 px-3">
+          <Badge variant="outline" className="bg-green-50 text-success border-green-200 py-1 px-3">
             <Shield className="w-3 h-3 mr-1" />
             Analyse Sécurisée
           </Badge>
@@ -162,7 +162,7 @@ export const SmartImportInterface = () => {
                   />
                 </div>
                 <div className="text-sm text-gray-500 flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-green-500" />
+                  <CheckCircle2 className="w-4 h-4 text-success" />
                   Compatible avec Amazon, AliExpress, Shopify, eBay et plus
                 </div>
               </div>
@@ -303,7 +303,7 @@ export const SmartImportInterface = () => {
               <TrendingUp className="w-6 h-6 text-white" />
             </div>
             <h3 className="font-semibold text-green-900 mb-2">Analyse Marché</h3>
-            <p className="text-sm text-green-700">
+            <p className="text-sm text-success">
               Évaluation des tendances, concurrence et potentiel de vente
             </p>
           </CardContent>

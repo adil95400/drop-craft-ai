@@ -103,8 +103,8 @@ export default function CanvaOAuthCallback() {
 
         {status === 'success' && (
           <>
-            <CheckCircle className="h-12 w-12 mx-auto text-green-500" />
-            <h2 className="text-xl font-semibold text-green-600">Connexion réussie !</h2>
+            <CheckCircle className="h-12 w-12 mx-auto text-success" />
+            <h2 className="text-xl font-semibold text-success">Connexion réussie !</h2>
             <p className="text-muted-foreground">{message}</p>
             <p className="text-sm text-muted-foreground">Cette fenêtre va se fermer automatiquement...</p>
           </>

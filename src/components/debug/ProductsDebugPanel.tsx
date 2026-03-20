@@ -179,7 +179,7 @@ export function ProductsDebugPanel() {
                     {source.error ? (
                       <AlertTriangle className="h-3 w-3 text-destructive" />
                     ) : source.userSpecific > 0 ? (
-                      <CheckCircle className="h-3 w-3 text-green-600" />
+                      <CheckCircle className="h-3 w-3 text-success" />
                     ) : (
                       <Database className="h-3 w-3 text-muted-foreground" />
                     )}

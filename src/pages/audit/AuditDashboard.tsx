@@ -51,13 +51,13 @@ export default function AuditDashboard() {
   const productsOptimized = audits?.filter(a => a.overall_score >= 80).length || 0
 
   const getScoreColor = (score: number) => {
-    if (score >= 80) return 'text-green-600'
-    if (score >= 60) return 'text-yellow-600'
-    return 'text-red-600'
+    if (score >= 80) return 'text-success'
+    if (score >= 60) return 'text-warning'
+    return 'text-destructive'
   }
 
   const getScoreBadge = (score: number) => {
-    if (score >= 80) return <Badge className="bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">{t('dashboard.excellent')}</Badge>
+    if (score >= 80) return <Badge className="bg-green-100 text-success dark:bg-green-900/30 dark:text-green-400">{t('dashboard.excellent')}</Badge>
     if (score >= 60) return <Badge className="bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400">{t('dashboard.average')}</Badge>
     return <Badge className="bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400">{t('scoring.toImproveLabel')}</Badge>
   }

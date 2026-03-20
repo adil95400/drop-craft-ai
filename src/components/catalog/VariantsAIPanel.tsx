@@ -40,9 +40,9 @@ export function VariantsAIPanel() {
 
   const getPriorityStyles = (priority: string) => {
     switch (priority) {
-      case 'critical': return { bg: 'bg-red-500/10', text: 'text-red-500', border: 'border-red-500/20' }
-      case 'high': return { bg: 'bg-amber-500/10', text: 'text-amber-500', border: 'border-amber-500/20' }
-      case 'medium': return { bg: 'bg-blue-500/10', text: 'text-blue-500', border: 'border-blue-500/20' }
+      case 'critical': return { bg: 'bg-red-500/10', text: 'text-destructive', border: 'border-red-500/20' }
+      case 'high': return { bg: 'bg-amber-500/10', text: 'text-warning', border: 'border-amber-500/20' }
+      case 'medium': return { bg: 'bg-blue-500/10', text: 'text-info', border: 'border-blue-500/20' }
       default: return { bg: 'bg-muted', text: 'text-muted-foreground', border: 'border-muted' }
     }
   }
@@ -92,14 +92,14 @@ export function VariantsAIPanel() {
                 </div>
                 <div className="h-12 w-px bg-border" />
                 <div>
-                  <p className="text-2xl font-semibold text-red-500">
+                  <p className="text-2xl font-semibold text-destructive">
                     -{stats.potentialRevenueLoss.toLocaleString()}€
                   </p>
                   <p className="text-xs text-muted-foreground">Perte potentielle</p>
                 </div>
                 <div className="h-12 w-px bg-border" />
                 <div>
-                  <p className="text-2xl font-semibold text-amber-500">
+                  <p className="text-2xl font-semibold text-warning">
                     {stats.automationPotential}%
                   </p>
                   <p className="text-xs text-muted-foreground">Potentiel automation</p>
@@ -119,10 +119,10 @@ export function VariantsAIPanel() {
       {/* Métriques de santé */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {[
-          { label: 'Stock', value: stats.healthMetrics.stockHealth, icon: Package, color: 'text-emerald-500' },
-          { label: 'Prix', value: stats.healthMetrics.priceHealth, icon: DollarSign, color: 'text-blue-500' },
+          { label: 'Stock', value: stats.healthMetrics.stockHealth, icon: Package, color: 'text-success' },
+          { label: 'Prix', value: stats.healthMetrics.priceHealth, icon: DollarSign, color: 'text-info' },
           { label: 'Synchronisation', value: stats.healthMetrics.syncHealth, icon: RefreshCw, color: 'text-violet-500' },
-          { label: 'Cohérence', value: stats.healthMetrics.consistencyHealth, icon: Shield, color: 'text-amber-500' }
+          { label: 'Cohérence', value: stats.healthMetrics.consistencyHealth, icon: Shield, color: 'text-warning' }
         ].map((metric) => (
           <Card key={metric.label}>
             <CardContent className="p-4">
@@ -133,8 +133,8 @@ export function VariantsAIPanel() {
               <div className="flex items-end justify-between mb-2">
                 <span className={cn(
                   "text-2xl font-bold",
-                  metric.value >= 90 ? "text-emerald-500" : 
-                  metric.value >= 70 ? "text-amber-500" : "text-red-500"
+                  metric.value >= 90 ? "text-success" : 
+                  metric.value >= 70 ? "text-warning" : "text-destructive"
                 )}>
                   {metric.value}%
                 </span>
@@ -163,7 +163,7 @@ export function VariantsAIPanel() {
         <CardContent>
           {recommendations.length === 0 ? (
             <div className="text-center py-8">
-              <CheckCircle className="h-12 w-12 text-emerald-500 mx-auto mb-4" />
+              <CheckCircle className="h-12 w-12 text-success mx-auto mb-4" />
               <h3 className="font-semibold">Variantes optimisées !</h3>
               <p className="text-sm text-muted-foreground">
                 Aucune recommandation urgente pour le moment
@@ -204,11 +204,11 @@ export function VariantsAIPanel() {
                           {rec.description}
                         </p>
                         <div className="flex items-center gap-4 text-sm">
-                          <span className="flex items-center gap-1 text-amber-500">
+                          <span className="flex items-center gap-1 text-warning">
                             <AlertTriangle className="h-3 w-3" />
                             {rec.impact}
                           </span>
-                          <span className="flex items-center gap-1 text-red-500">
+                          <span className="flex items-center gap-1 text-destructive">
                             <Euro className="h-3 w-3" />
                             -{rec.estimatedLoss.toLocaleString()}€ perte
                           </span>

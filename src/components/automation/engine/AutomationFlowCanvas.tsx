@@ -89,9 +89,9 @@ export function AutomationFlowCanvas({ nodes: externalNodes, onNodesChange, read
 
   const getStatusIndicator = (status?: string) => {
     switch (status) {
-      case 'success': return <CheckCircle2 className="h-4 w-4 text-green-500" />;
-      case 'failed': return <XCircle className="h-4 w-4 text-red-500" />;
-      case 'running': return <RefreshCw className="h-4 w-4 text-blue-500 animate-spin" />;
+      case 'success': return <CheckCircle2 className="h-4 w-4 text-success" />;
+      case 'failed': return <XCircle className="h-4 w-4 text-destructive" />;
+      case 'running': return <RefreshCw className="h-4 w-4 text-info animate-spin" />;
       default: return <div className="h-4 w-4 rounded-full border-2 border-muted-foreground/30" />;
     }
   };

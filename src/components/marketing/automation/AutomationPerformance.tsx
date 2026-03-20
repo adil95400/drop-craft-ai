@@ -76,11 +76,11 @@ export function AutomationPerformance() {
   const clickRate = openedCount > 0 ? ((clickedCount / openedCount) * 100) : 0;
 
   const kpis = [
-    { label: 'Emails envoyés', value: totalSent, icon: Send, color: 'text-blue-500' },
-    { label: 'Taux livraison', value: `${deliveryRate.toFixed(1)}%`, icon: Mail, color: 'text-green-500' },
+    { label: 'Emails envoyés', value: totalSent, icon: Send, color: 'text-info' },
+    { label: 'Taux livraison', value: `${deliveryRate.toFixed(1)}%`, icon: Mail, color: 'text-success' },
     { label: 'Taux ouverture', value: `${openRate.toFixed(1)}%`, icon: Eye, color: 'text-purple-500' },
-    { label: 'Taux clic', value: `${clickRate.toFixed(1)}%`, icon: MousePointer, color: 'text-orange-500' },
-    { label: 'Désabonnements', value: unsubCount, icon: UserX, color: 'text-red-500' },
+    { label: 'Taux clic', value: `${clickRate.toFixed(1)}%`, icon: MousePointer, color: 'text-warning' },
+    { label: 'Désabonnements', value: unsubCount, icon: UserX, color: 'text-destructive' },
     { label: 'Campagnes', value: campaigns.length, icon: TrendingUp, color: 'text-primary' },
   ];
 

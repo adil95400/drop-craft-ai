@@ -45,21 +45,21 @@ export function BulkPriceUpdateDialog({ open, onOpenChange, count, onConfirm }: 
               <div className="flex items-center space-x-2">
                 <RadioGroupItem value="increase" id="increase" />
                 <Label htmlFor="increase" className="flex items-center gap-2 cursor-pointer">
-                  <TrendingUp className="h-4 w-4 text-green-600" />
+                  <TrendingUp className="h-4 w-4 text-success" />
                   Augmenter les prix
                 </Label>
               </div>
               <div className="flex items-center space-x-2">
                 <RadioGroupItem value="decrease" id="decrease" />
                 <Label htmlFor="decrease" className="flex items-center gap-2 cursor-pointer">
-                  <TrendingDown className="h-4 w-4 text-red-600" />
+                  <TrendingDown className="h-4 w-4 text-destructive" />
                   Diminuer les prix
                 </Label>
               </div>
               <div className="flex items-center space-x-2">
                 <RadioGroupItem value="set" id="set" />
                 <Label htmlFor="set" className="flex items-center gap-2 cursor-pointer">
-                  <DollarSign className="h-4 w-4 text-blue-600" />
+                  <DollarSign className="h-4 w-4 text-info" />
                   Définir un prix fixe
                 </Label>
               </div>

@@ -220,9 +220,9 @@ export const OperationalAI = () => {
 
   const getInsightColor = (type: string) => {
     switch (type) {
-      case 'opportunity': return 'text-green-600';
-      case 'warning': return 'text-red-600';
-      case 'optimization': return 'text-blue-600';
+      case 'opportunity': return 'text-success';
+      case 'warning': return 'text-destructive';
+      case 'optimization': return 'text-info';
       case 'trend': return 'text-purple-600';
       default: return 'text-gray-600';
     }
@@ -232,7 +232,7 @@ export const OperationalAI = () => {
     switch (impact) {
       case 'high': return 'bg-red-100 text-red-800';
       case 'medium': return 'bg-yellow-100 text-yellow-800';
-      case 'low': return 'bg-green-100 text-green-800';
+      case 'low': return 'bg-green-100 text-success';
       default: return 'bg-gray-100 text-gray-800';
     }
   };
@@ -333,7 +333,7 @@ export const OperationalAI = () => {
                               <span>Confiance: {insight.confidence}%</span>
                             </div>
                             {insight.estimatedRevenue && (
-                              <div className="flex items-center gap-1 text-green-600">
+                              <div className="flex items-center gap-1 text-success">
                                 <Target className="h-4 w-4" />
                                 <span>+€{insight.estimatedRevenue}</span>
                               </div>
@@ -402,7 +402,7 @@ export const OperationalAI = () => {
                       <ul className="space-y-1">
                         {decision.reasoning.map((reason, index) => (
                           <li key={index} className="flex items-start gap-2 text-sm">
-                            <CheckCircle2 className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
+                            <CheckCircle2 className="h-4 w-4 text-success mt-0.5 flex-shrink-0" />
                             <span>{reason}</span>
                           </li>
                         ))}
@@ -410,7 +410,7 @@ export const OperationalAI = () => {
                     </div>
 
                     <div className="flex items-center justify-between pt-2">
-                      <span className="text-sm font-medium text-green-600">
+                      <span className="text-sm font-medium text-success">
                         {decision.impact}
                       </span>
                       
@@ -448,7 +448,7 @@ export const OperationalAI = () => {
                     <p className="text-sm text-muted-foreground">Précision IA</p>
                     <p className="text-2xl font-bold">87.3%</p>
                   </div>
-                  <Target className="h-8 w-8 text-green-600" />
+                  <Target className="h-8 w-8 text-success" />
                 </div>
                 <p className="text-sm text-muted-foreground mt-2">
                   Sur les 30 derniers jours
@@ -463,7 +463,7 @@ export const OperationalAI = () => {
                     <p className="text-sm text-muted-foreground">Revenus générés</p>
                     <p className="text-2xl font-bold">€12,450</p>
                   </div>
-                  <TrendingUp className="h-8 w-8 text-blue-600" />
+                  <TrendingUp className="h-8 w-8 text-info" />
                 </div>
                 <p className="text-sm text-muted-foreground mt-2">
                   Grâce aux optimisations IA

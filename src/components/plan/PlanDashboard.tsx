@@ -66,14 +66,14 @@ export const PlanDashboard = () => {
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg">
-              <TrendingUp className="h-5 w-5 text-blue-600" />
+              <TrendingUp className="h-5 w-5 text-info" />
               <div>
                 <p className="font-medium">Performances</p>
                 <p className="text-sm text-muted-foreground">Excellent</p>
               </div>
             </div>
             <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg">
-              <Database className="h-5 w-5 text-green-600" />
+              <Database className="h-5 w-5 text-success" />
               <div>
                 <p className="font-medium">Stockage</p>
                 <p className="text-sm text-muted-foreground">Illimité</p>

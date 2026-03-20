@@ -69,7 +69,7 @@ const sourceOptions: SourceOption[] = [
     label: 'Fournisseur', 
     description: 'Importer depuis un flux fournisseur',
     icon: Truck,
-    color: 'bg-blue-500/10 border-blue-500/30 text-blue-600 hover:bg-blue-500/20'
+    color: 'bg-blue-500/10 border-blue-500/30 text-info hover:bg-blue-500/20'
   },
   { 
     value: 'import', 
@@ -83,7 +83,7 @@ const sourceOptions: SourceOption[] = [
     label: 'Manuel', 
     description: 'Créer les règles manuellement',
     icon: Edit3,
-    color: 'bg-green-500/10 border-green-500/30 text-green-600 hover:bg-green-500/20'
+    color: 'bg-green-500/10 border-green-500/30 text-success hover:bg-green-500/20'
   },
 ];
 
@@ -93,7 +93,7 @@ const destinationOptions: DestinationOption[] = [
     label: 'Google Shopping', 
     description: 'Taxonomie Google Product Category',
     icon: Chrome,
-    color: 'bg-red-500/10 border-red-500/30 text-red-600 hover:bg-red-500/20',
+    color: 'bg-red-500/10 border-red-500/30 text-destructive hover:bg-red-500/20',
     badge: 'Populaire'
   },
   { 
@@ -108,7 +108,7 @@ const destinationOptions: DestinationOption[] = [
     label: 'Shopify', 
     description: 'Collections et catégories Shopify',
     icon: ShoppingBag,
-    color: 'bg-emerald-500/10 border-emerald-500/30 text-emerald-600 hover:bg-emerald-500/20'
+    color: 'bg-emerald-500/10 border-emerald-500/30 text-success hover:bg-emerald-500/20'
   },
   { 
     value: 'custom', 

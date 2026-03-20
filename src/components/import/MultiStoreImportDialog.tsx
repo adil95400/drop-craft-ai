@@ -117,7 +117,7 @@ export function MultiStoreImportDialog({
               </div>
 
               <div className="flex items-center gap-4 text-sm">
-                <div className="flex items-center gap-1.5 text-green-600">
+                <div className="flex items-center gap-1.5 text-success">
                   <CheckCircle2 className="h-4 w-4" />
                   <span>{progress.successful} réussi(s)</span>
                 </div>
@@ -147,7 +147,7 @@ export function MultiStoreImportDialog({
                     >
                       <span className="font-medium text-sm">{result.storeName}</span>
                       {result.success ? (
-                        <Badge variant="outline" className="bg-green-500/20 text-green-700 border-green-500/30">
+                        <Badge variant="outline" className="bg-green-500/20 text-success border-green-500/30">
                           <CheckCircle2 className="h-3 w-3 mr-1" />
                           Importé
                         </Badge>

@@ -162,7 +162,7 @@ export default function PriceHistoryPage() {
             <div className="flex items-center gap-2 text-muted-foreground text-sm mb-1">
               <TrendingUp className="h-4 w-4" /> Hausses
             </div>
-            <p className="text-2xl font-bold text-green-500">{stats.upCount}</p>
+            <p className="text-2xl font-bold text-success">{stats.upCount}</p>
           </Card>
           <Card className="p-4">
             <div className="flex items-center gap-2 text-muted-foreground text-sm mb-1">
@@ -316,12 +316,12 @@ export default function PriceHistoryPage() {
                         <td className="py-2 text-right font-mono">{cp.our_price?.toFixed(2)}€</td>
                         <td className="py-2 text-right font-mono">{cp.competitor_price?.toFixed(2)}€</td>
                         <td className="py-2 text-right">
-                          <span className={cp.price_diff > 0 ? 'text-destructive' : 'text-green-500'}>
+                          <span className={cp.price_diff > 0 ? 'text-destructive' : 'text-success'}>
                             {cp.price_diff > 0 ? '+' : ''}{cp.price_diff?.toFixed(2)}€
                           </span>
                         </td>
                         <td className="py-2 text-center">
-                          {cp.trend === 'up' && <ArrowUp className="h-4 w-4 text-green-500 inline" />}
+                          {cp.trend === 'up' && <ArrowUp className="h-4 w-4 text-success inline" />}
                           {cp.trend === 'down' && <ArrowDown className="h-4 w-4 text-destructive inline" />}
                           {(!cp.trend || cp.trend === 'stable') && <Minus className="h-4 w-4 text-muted-foreground inline" />}
                         </td>

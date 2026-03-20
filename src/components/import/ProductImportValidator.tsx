@@ -183,9 +183,9 @@ export const ProductImportValidator: React.FC<ProductImportValidatorProps> = ({
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
         <Card className="p-4">
           <div className="flex items-center gap-2">
-            <CheckCircle className="w-5 h-5 text-green-600" />
+            <CheckCircle className="w-5 h-5 text-success" />
             <div>
-              <div className="text-2xl font-bold text-green-600">{valid}</div>
+              <div className="text-2xl font-bold text-success">{valid}</div>
               <div className="text-sm text-muted-foreground">Valides</div>
             </div>
           </div>
@@ -193,9 +193,9 @@ export const ProductImportValidator: React.FC<ProductImportValidatorProps> = ({
         
         <Card className="p-4">
           <div className="flex items-center gap-2">
-            <XCircle className="w-5 h-5 text-red-600" />
+            <XCircle className="w-5 h-5 text-destructive" />
             <div>
-              <div className="text-2xl font-bold text-red-600">{errors}</div>
+              <div className="text-2xl font-bold text-destructive">{errors}</div>
               <div className="text-sm text-muted-foreground">Erreurs</div>
             </div>
           </div>
@@ -203,9 +203,9 @@ export const ProductImportValidator: React.FC<ProductImportValidatorProps> = ({
         
         <Card className="p-4">
           <div className="flex items-center gap-2">
-            <AlertTriangle className="w-5 h-5 text-yellow-600" />
+            <AlertTriangle className="w-5 h-5 text-warning" />
             <div>
-              <div className="text-2xl font-bold text-yellow-600">{warnings}</div>
+              <div className="text-2xl font-bold text-warning">{warnings}</div>
               <div className="text-sm text-muted-foreground">Avertissements</div>
             </div>
           </div>
@@ -213,9 +213,9 @@ export const ProductImportValidator: React.FC<ProductImportValidatorProps> = ({
         
         <Card className="p-4">
           <div className="flex items-center gap-2">
-            <TrendingUp className="w-5 h-5 text-blue-600" />
+            <TrendingUp className="w-5 h-5 text-info" />
             <div>
-              <div className="text-2xl font-bold text-blue-600">{successRate.toFixed(0)}%</div>
+              <div className="text-2xl font-bold text-info">{successRate.toFixed(0)}%</div>
               <div className="text-sm text-muted-foreground">Taux de succès</div>
             </div>
           </div>
@@ -226,9 +226,9 @@ export const ProductImportValidator: React.FC<ProductImportValidatorProps> = ({
 
   const getSeverityColor = (severity: string) => {
     switch (severity) {
-      case 'error': return 'text-red-600 bg-red-50 border-red-200';
-      case 'warning': return 'text-yellow-600 bg-yellow-50 border-yellow-200';
-      case 'info': return 'text-blue-600 bg-blue-50 border-blue-200';
+      case 'error': return 'text-destructive bg-red-50 border-red-200';
+      case 'warning': return 'text-warning bg-yellow-50 border-yellow-200';
+      case 'info': return 'text-info bg-blue-50 border-blue-200';
       default: return 'text-gray-600 bg-gray-50 border-gray-200';
     }
   };
@@ -342,7 +342,7 @@ export const ProductImportValidator: React.FC<ProductImportValidatorProps> = ({
                   <Card key={index} className={`p-4 ${product.validation.isValid ? 'border-green-200 bg-green-50/30' : 'border-red-200 bg-red-50/30'}`}>
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
-                        <div className={`p-2 rounded ${product.validation.isValid ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'}`}>
+                        <div className={`p-2 rounded ${product.validation.isValid ? 'bg-green-100 text-success' : 'bg-red-100 text-destructive'}`}>
                           {product.validation.isValid ? <CheckCircle className="w-4 h-4" /> : <XCircle className="w-4 h-4" />}
                         </div>
                         <div>

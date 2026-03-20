@@ -242,8 +242,8 @@ export function MultiChannelDashboard() {
                       <TableCell className="capitalize">{log.sync_type}</TableCell>
                       <TableCell>{getSyncStatusBadge(log.status)}</TableCell>
                       <TableCell>{log.items_processed}</TableCell>
-                      <TableCell className="text-green-600">{log.items_succeeded}</TableCell>
-                      <TableCell className="text-red-600">{log.items_failed}</TableCell>
+                      <TableCell className="text-success">{log.items_succeeded}</TableCell>
+                      <TableCell className="text-destructive">{log.items_failed}</TableCell>
                       <TableCell>
                         {log.duration_ms ? `${(log.duration_ms / 1000).toFixed(1)}s` : '-'}
                       </TableCell>

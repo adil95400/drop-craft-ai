@@ -153,7 +153,7 @@ export function AdvancedProductCatalog() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'in_stock':
-        return <Badge className="bg-green-100 text-green-800">En stock</Badge>
+        return <Badge className="bg-green-100 text-success">En stock</Badge>
       case 'out_of_stock':
         return <Badge variant="destructive">Rupture</Badge>
       case 'low_stock':
@@ -226,21 +226,21 @@ export function AdvancedProductCatalog() {
       title: 'Produits totaux',
       value: products.length.toLocaleString(),
       icon: Package,
-      color: 'text-blue-600',
+      color: 'text-info',
       bg: 'bg-blue-100'
     },
     {
       title: 'En stock',
       value: products.filter((p: any) => p.availability_status === 'in_stock').length.toLocaleString(),
       icon: ShoppingCart,
-      color: 'text-green-600',
+      color: 'text-success',
       bg: 'bg-green-100'
     },
     {
       title: 'Prix moyen',
       value: formatCurrency(products.reduce((sum: number, p: any) => sum + (p.price || 0), 0) / products.length || 0),
       icon: DollarSign,
-      color: 'text-yellow-600',
+      color: 'text-warning',
       bg: 'bg-yellow-100'
     },
     {
@@ -460,10 +460,10 @@ export function AdvancedProductCatalog() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm font-medium text-muted-foreground">Revenus totaux</p>
-                    <p className="text-2xl font-bold text-green-600">€{((products.reduce((sum: number, p: any) => sum + (p.price || 0) * (p.sales_count || 1), 0))).toLocaleString()}</p>
+                    <p className="text-2xl font-bold text-success">€{((products.reduce((sum: number, p: any) => sum + (p.price || 0) * (p.sales_count || 1), 0))).toLocaleString()}</p>
                     <p className="text-xs text-muted-foreground">+12% ce mois</p>
                   </div>
-                  <DollarSign className="h-8 w-8 text-green-600" />
+                  <DollarSign className="h-8 w-8 text-success" />
                 </div>
               </CardContent>
             </Card>
@@ -473,10 +473,10 @@ export function AdvancedProductCatalog() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm font-medium text-muted-foreground">Produits performants</p>
-                    <p className="text-2xl font-bold text-blue-600">{products.filter((p: any) => (p.sales_count || 0) > 10).length}</p>
+                    <p className="text-2xl font-bold text-info">{products.filter((p: any) => (p.sales_count || 0) > 10).length}</p>
                     <p className="text-xs text-muted-foreground">+5% ce mois</p>
                   </div>
-                  <TrendingUp className="h-8 w-8 text-blue-600" />
+                  <TrendingUp className="h-8 w-8 text-info" />
                 </div>
               </CardContent>
             </Card>
@@ -577,9 +577,9 @@ export function AdvancedProductCatalog() {
                   <div>
                     <p className="text-sm font-medium text-muted-foreground">Produits optimisés</p>
                     <p className="text-2xl font-bold">{Math.round(products.length * 0.73)}</p>
-                    <p className="text-xs text-green-600">+15 cette semaine</p>
+                    <p className="text-xs text-success">+15 cette semaine</p>
                   </div>
-                  <Bot className="h-8 w-8 text-blue-600" />
+                  <Bot className="h-8 w-8 text-info" />
                 </div>
               </CardContent>
             </Card>
@@ -590,9 +590,9 @@ export function AdvancedProductCatalog() {
                   <div>
                     <p className="text-sm font-medium text-muted-foreground">Score SEO moyen</p>
                     <p className="text-2xl font-bold">87%</p>
-                    <p className="text-xs text-green-600">+5% ce mois</p>
+                    <p className="text-xs text-success">+5% ce mois</p>
                   </div>
-                  <Target className="h-8 w-8 text-green-600" />
+                  <Target className="h-8 w-8 text-success" />
                 </div>
               </CardContent>
             </Card>
@@ -603,7 +603,7 @@ export function AdvancedProductCatalog() {
                   <div>
                     <p className="text-sm font-medium text-muted-foreground">Descriptions générées</p>
                     <p className="text-2xl font-bold">{Math.round(products.length * 0.45)}</p>
-                    <p className="text-xs text-blue-600">IA Quality: 94%</p>
+                    <p className="text-xs text-info">IA Quality: 94%</p>
                   </div>
                   <Edit className="h-8 w-8 text-purple-600" />
                 </div>
@@ -616,9 +616,9 @@ export function AdvancedProductCatalog() {
                   <div>
                     <p className="text-sm font-medium text-muted-foreground">Prix optimisés</p>
                     <p className="text-2xl font-bold">{Math.round(products.length * 0.62)}</p>
-                    <p className="text-xs text-orange-600">Profit +8%</p>
+                    <p className="text-xs text-warning">Profit +8%</p>
                   </div>
-                  <DollarSign className="h-8 w-8 text-orange-600" />
+                  <DollarSign className="h-8 w-8 text-warning" />
                 </div>
               </CardContent>
             </Card>
@@ -697,8 +697,8 @@ export function AdvancedProductCatalog() {
                   </div>
                   
                   <div className="p-3 border-l-4 border-green-500 bg-green-50">
-                    <p className="font-medium text-green-800">Opportunités SEO</p>
-                    <p className="text-sm text-green-700">31 produits peuvent améliorer leur référencement</p>
+                    <p className="font-medium text-success">Opportunités SEO</p>
+                    <p className="text-sm text-success">31 produits peuvent améliorer leur référencement</p>
                     <Button size="sm" className="mt-2" variant="outline">
                       Optimiser SEO
                     </Button>
@@ -716,11 +716,11 @@ export function AdvancedProductCatalog() {
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="text-center">
-                  <p className="text-2xl font-bold text-green-600">+24%</p>
+                  <p className="text-2xl font-bold text-success">+24%</p>
                   <p className="text-sm text-muted-foreground">Amélioration conversions</p>
                 </div>
                 <div className="text-center">
-                  <p className="text-2xl font-bold text-blue-600">+18%</p>
+                  <p className="text-2xl font-bold text-info">+18%</p>
                   <p className="text-sm text-muted-foreground">Trafic organique</p>
                 </div>
                 <div className="text-center">
@@ -909,7 +909,7 @@ export function AdvancedProductCatalog() {
                     <p className="font-medium">Optimisation SEO IA</p>
                     <p className="text-sm text-muted-foreground">45 produits • Il y a 2 heures</p>
                   </div>
-                  <Badge className="bg-green-100 text-green-800">Terminé</Badge>
+                  <Badge className="bg-green-100 text-success">Terminé</Badge>
                 </div>
                 
                 <div className="flex items-center justify-between p-3 border rounded-lg">
@@ -917,7 +917,7 @@ export function AdvancedProductCatalog() {
                     <p className="font-medium">Ajustement prix automatique</p>
                     <p className="text-sm text-muted-foreground">23 produits • Il y a 1 jour</p>
                   </div>
-                  <Badge className="bg-green-100 text-green-800">Terminé</Badge>
+                  <Badge className="bg-green-100 text-success">Terminé</Badge>
                 </div>
                 
                 <div className="flex items-center justify-between p-3 border rounded-lg">
@@ -925,7 +925,7 @@ export function AdvancedProductCatalog() {
                     <p className="font-medium">Génération descriptions IA</p>
                     <p className="text-sm text-muted-foreground">67 produits • Il y a 3 jours</p>
                   </div>
-                  <Badge className="bg-green-100 text-green-800">Terminé</Badge>
+                  <Badge className="bg-green-100 text-success">Terminé</Badge>
                 </div>
               </div>
             </CardContent>

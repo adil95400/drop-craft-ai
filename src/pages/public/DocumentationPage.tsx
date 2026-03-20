@@ -21,15 +21,15 @@ const DocumentationPage = () => {
   const [searchQuery, setSearchQuery] = useState("");
 
   const quickStartGuides = [
-    { icon: Rocket, title: "Démarrage rapide", description: "Créez votre première boutique en 5 minutes", link: "/guides/getting-started", time: "5 min", color: "text-blue-500" },
-    { icon: Package, title: "Importer des produits", description: "Connectez vos fournisseurs et importez automatiquement", link: "/import", time: "10 min", color: "text-green-500" },
+    { icon: Rocket, title: "Démarrage rapide", description: "Créez votre première boutique en 5 minutes", link: "/guides/getting-started", time: "5 min", color: "text-info" },
+    { icon: Package, title: "Importer des produits", description: "Connectez vos fournisseurs et importez automatiquement", link: "/import", time: "10 min", color: "text-success" },
     { icon: ShoppingCart, title: "Configurer votre boutique", description: "Personnalisez et publiez votre catalogue", link: "/products", time: "15 min", color: "text-purple-500" },
-    { icon: BarChart3, title: "Analyser vos performances", description: "Maîtrisez les tableaux de bord analytics", link: "/analytics", time: "8 min", color: "text-orange-500" },
+    { icon: BarChart3, title: "Analyser vos performances", description: "Maîtrisez les tableaux de bord analytics", link: "/analytics", time: "8 min", color: "text-warning" },
   ];
 
   const categories = [
     {
-      title: "Catalogue Produits", icon: Package, color: "bg-blue-500/10 text-blue-600",
+      title: "Catalogue Produits", icon: Package, color: "bg-blue-500/10 text-info",
       articles: [
         { title: "Importer depuis AliExpress", link: "/documentation/importer-depuis-aliexpress" },
         { title: "Optimisation IA des fiches produits", link: "/documentation/optimisation-ia-des-fiches-produits" },
@@ -40,7 +40,7 @@ const DocumentationPage = () => {
       ]
     },
     {
-      title: "Fournisseurs & Sourcing", icon: Users, color: "bg-green-500/10 text-green-600",
+      title: "Fournisseurs & Sourcing", icon: Users, color: "bg-green-500/10 text-success",
       articles: [
         { title: "Connecter un fournisseur", link: "/documentation/connecter-un-fournisseur" },
         { title: "Synchronisation automatique", link: "/documentation/synchronisation-automatique" },
@@ -62,7 +62,7 @@ const DocumentationPage = () => {
       ]
     },
     {
-      title: "Commandes & Expéditions", icon: Truck, color: "bg-orange-500/10 text-orange-600",
+      title: "Commandes & Expéditions", icon: Truck, color: "bg-orange-500/10 text-warning",
       articles: [
         { title: "Traitement automatique (fulfillment)", link: "/documentation/traitement-automatique-fulfillment" },
         { title: "Suivi des expéditions", link: "/documentation/suivi-des-expeditions" },
@@ -73,7 +73,7 @@ const DocumentationPage = () => {
       ]
     },
     {
-      title: "Marketing & Ventes", icon: Target, color: "bg-red-500/10 text-red-600",
+      title: "Marketing & Ventes", icon: Target, color: "bg-red-500/10 text-destructive",
       articles: [
         { title: "Campagnes email automatisées", link: "/documentation/campagnes-email-automatisees" },
         { title: "Publicité Facebook & Instagram", link: "/documentation/publicite-facebook-instagram" },
@@ -106,7 +106,7 @@ const DocumentationPage = () => {
       ]
     },
     {
-      title: "Facturation & Plans", icon: CreditCard, color: "bg-yellow-500/10 text-yellow-600",
+      title: "Facturation & Plans", icon: CreditCard, color: "bg-yellow-500/10 text-warning",
       articles: [
         { title: "Plans et tarifs", link: "/documentation/plans-et-tarifs" },
         { title: "Gérer son abonnement", link: "/documentation/gerer-son-abonnement" },

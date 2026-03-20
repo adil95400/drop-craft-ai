@@ -165,7 +165,7 @@ export function CustomerEditModal({ customer, open, onOpenChange }: CustomerEdit
                     {formData.tags.map((tag) => (
                       <Badge key={tag} variant="secondary" className="gap-1">
                         {tag}
-                        <button onClick={() => removeTag(tag)} className="ml-1 hover:text-red-500">
+                        <button onClick={() => removeTag(tag)} className="ml-1 hover:text-destructive">
                           <X className="w-3 h-3" />
                         </button>
                       </Badge>

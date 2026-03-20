@@ -111,17 +111,17 @@ function StatCard({ label, value, icon: Icon, color, delay = 0, onClick }: StatC
     success: {
       bg: 'bg-gradient-to-br from-emerald-500/10 via-emerald-500/5 to-transparent',
       border: 'border-emerald-500/20 hover:border-emerald-500/40',
-      icon: 'bg-emerald-500/10 text-emerald-500',
+      icon: 'bg-emerald-500/10 text-success',
     },
     warning: {
       bg: 'bg-gradient-to-br from-amber-500/10 via-amber-500/5 to-transparent',
       border: 'border-amber-500/20 hover:border-amber-500/40',
-      icon: 'bg-amber-500/10 text-amber-500',
+      icon: 'bg-amber-500/10 text-warning',
     },
     info: {
       bg: 'bg-gradient-to-br from-blue-500/10 via-blue-500/5 to-transparent',
       border: 'border-blue-500/20 hover:border-blue-500/40',
-      icon: 'bg-blue-500/10 text-blue-500',
+      icon: 'bg-blue-500/10 text-info',
     }
   };
 
@@ -168,8 +168,8 @@ interface SupportChannelProps {
 
 function SupportChannelCard({ icon: Icon, title, description, action, badge, badgeColor = 'default', onClick, delay = 0 }: SupportChannelProps) {
   const badgeColors = {
-    success: 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20',
-    warning: 'bg-amber-500/10 text-amber-600 border-amber-500/20',
+    success: 'bg-emerald-500/10 text-success border-emerald-500/20',
+    warning: 'bg-amber-500/10 text-warning border-amber-500/20',
     default: 'bg-primary/10 text-primary border-primary/20'
   };
 
@@ -267,18 +267,18 @@ export default function SupportMainPage() {
 
   const getStatusConfig = (status: string) => {
     const configs = {
-      open: { icon: AlertCircle, color: 'text-red-500', bg: 'bg-red-500/10', label: 'Ouvert' },
-      pending: { icon: Clock, color: 'text-amber-500', bg: 'bg-amber-500/10', label: 'En attente' },
-      resolved: { icon: CheckCircle, color: 'text-emerald-500', bg: 'bg-emerald-500/10', label: 'Résolu' }
+      open: { icon: AlertCircle, color: 'text-destructive', bg: 'bg-red-500/10', label: 'Ouvert' },
+      pending: { icon: Clock, color: 'text-warning', bg: 'bg-amber-500/10', label: 'En attente' },
+      resolved: { icon: CheckCircle, color: 'text-success', bg: 'bg-emerald-500/10', label: 'Résolu' }
     };
     return configs[status as keyof typeof configs] || configs.pending;
   };
 
   const getPriorityConfig = (priority: string) => {
     const configs = {
-      high: { color: 'text-red-600', bg: 'bg-red-500/10 border-red-500/20', label: 'Haute' },
-      medium: { color: 'text-amber-600', bg: 'bg-amber-500/10 border-amber-500/20', label: 'Moyenne' },
-      low: { color: 'text-blue-600', bg: 'bg-blue-500/10 border-blue-500/20', label: 'Basse' }
+      high: { color: 'text-destructive', bg: 'bg-red-500/10 border-red-500/20', label: 'Haute' },
+      medium: { color: 'text-warning', bg: 'bg-amber-500/10 border-amber-500/20', label: 'Moyenne' },
+      low: { color: 'text-info', bg: 'bg-blue-500/10 border-blue-500/20', label: 'Basse' }
     };
     return configs[priority as keyof typeof configs] || configs.medium;
   };
@@ -419,11 +419,11 @@ export default function SupportMainPage() {
                               <div className="flex items-center gap-4 pt-2 border-t">
                                 <span className="text-sm text-muted-foreground">Cette réponse vous a-t-elle aidé ?</span>
                                 <div className="flex gap-2">
-                                  <Button variant="outline" size="sm" className="h-8 gap-1.5 hover:bg-emerald-500/10 hover:text-emerald-600 hover:border-emerald-500/30">
+                                  <Button variant="outline" size="sm" className="h-8 gap-1.5 hover:bg-emerald-500/10 hover:text-success hover:border-emerald-500/30">
                                     <ThumbsUp className="h-3.5 w-3.5" />
                                     Oui
                                   </Button>
-                                  <Button variant="outline" size="sm" className="h-8 gap-1.5 hover:bg-red-500/10 hover:text-red-600 hover:border-red-500/30">
+                                  <Button variant="outline" size="sm" className="h-8 gap-1.5 hover:bg-red-500/10 hover:text-destructive hover:border-red-500/30">
                                     <ThumbsDown className="h-3.5 w-3.5" />
                                     Non
                                   </Button>

@@ -157,7 +157,7 @@ export const RealTimeMarketingHub: React.FC = () => {
       value: 347,
       change: 12,
       icon: Users,
-      color: 'text-blue-600',
+      color: 'text-info',
       target: 500,
       unit: ''
     },
@@ -167,7 +167,7 @@ export const RealTimeMarketingHub: React.FC = () => {
       value: 1247,
       change: -8,
       icon: Mail,
-      color: 'text-green-600',
+      color: 'text-success',
       target: 1500,
       unit: '/h'
     },
@@ -187,7 +187,7 @@ export const RealTimeMarketingHub: React.FC = () => {
       value: 2847,
       change: 34,
       icon: DollarSign,
-      color: 'text-orange-600',
+      color: 'text-warning',
       target: 3000,
       unit: '€'
     }
@@ -218,12 +218,12 @@ export const RealTimeMarketingHub: React.FC = () => {
 
   const getActivityColor = (type: LiveActivity['type']) => {
     switch (type) {
-      case 'email_open': return 'text-blue-600';
+      case 'email_open': return 'text-info';
       case 'click': return 'text-purple-600';
-      case 'conversion': return 'text-green-600';
-      case 'visit': return 'text-orange-600';
+      case 'conversion': return 'text-success';
+      case 'visit': return 'text-warning';
       case 'signup': return 'text-indigo-600';
-      case 'purchase': return 'text-emerald-600';
+      case 'purchase': return 'text-success';
       default: return 'text-gray-600';
     }
   };
@@ -292,7 +292,7 @@ export const RealTimeMarketingHub: React.FC = () => {
               <CardContent className="p-4">
                 <div className="flex items-center justify-between mb-2">
                   <MetricIcon className={`h-5 w-5 ${metric.color}`} />
-                  <div className={`flex items-center text-sm ${metric.change > 0 ? 'text-green-600' : 'text-red-600'}`}>
+                  <div className={`flex items-center text-sm ${metric.change > 0 ? 'text-success' : 'text-destructive'}`}>
                     {metric.change > 0 ? <ArrowUp className="h-3 w-3" /> : <ArrowDown className="h-3 w-3" />}
                     <span>{Math.abs(metric.change)}%</span>
                   </div>
@@ -354,7 +354,7 @@ export const RealTimeMarketingHub: React.FC = () => {
                         </Badge>
                         <span className="text-xs text-muted-foreground">{activity.location}</span>
                         {activity.value && (
-                          <Badge variant="secondary" className="text-xs text-green-600">
+                          <Badge variant="secondary" className="text-xs text-success">
                             +{activity.value}€
                           </Badge>
                         )}
@@ -396,7 +396,7 @@ export const RealTimeMarketingHub: React.FC = () => {
                   <p className="text-sm text-muted-foreground mb-2">{alert.condition}</p>
                   
                   {alert.lastTriggered && (
-                    <p className="text-xs text-orange-600 mb-2">
+                    <p className="text-xs text-warning mb-2">
                       Dernière activation: {formatTimeAgo(alert.lastTriggered)} ago
                     </p>
                   )}

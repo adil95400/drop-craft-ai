@@ -99,7 +99,7 @@ export function ABTestingPanel() {
             {/* Tests en cours */}
             {runningTests.length > 0 && (
               <div>
-                <h3 className="font-semibold flex items-center gap-2 mb-3 text-green-600">
+                <h3 className="font-semibold flex items-center gap-2 mb-3 text-success">
                   <Play className="h-4 w-4" />
                   En cours ({runningTests.length})
                 </h3>
@@ -139,7 +139,7 @@ export function ABTestingPanel() {
             {completedTests.length > 0 && (
               <div>
                 <h3 className="font-semibold flex items-center gap-2 mb-3">
-                  <Trophy className="h-4 w-4 text-yellow-500" />
+                  <Trophy className="h-4 w-4 text-warning" />
                   Terminés ({completedTests.length})
                 </h3>
                 <div className="space-y-3">
@@ -208,7 +208,7 @@ function TestCard({
         <div className={`p-3 rounded-lg border-2 ${test.winner === 'A' ? 'border-green-500 bg-green-50/50 dark:bg-green-950/20' : 'border-muted'}`}>
           <div className="flex items-center justify-between mb-2">
             <span className="font-semibold">Variante A</span>
-            {test.winner === 'A' && <Trophy className="h-4 w-4 text-yellow-500" />}
+            {test.winner === 'A' && <Trophy className="h-4 w-4 text-warning" />}
           </div>
           <p className="text-2xl font-bold">{test.variant_a_price.toFixed(2)} €</p>
           <div className="grid grid-cols-2 gap-2 mt-3 text-sm">
@@ -235,7 +235,7 @@ function TestCard({
         <div className={`p-3 rounded-lg border-2 ${test.winner === 'B' ? 'border-green-500 bg-green-50/50 dark:bg-green-950/20' : 'border-muted'}`}>
           <div className="flex items-center justify-between mb-2">
             <span className="font-semibold">Variante B</span>
-            {test.winner === 'B' && <Trophy className="h-4 w-4 text-yellow-500" />}
+            {test.winner === 'B' && <Trophy className="h-4 w-4 text-warning" />}
           </div>
           <p className="text-2xl font-bold">{test.variant_b_price.toFixed(2)} €</p>
           <div className="grid grid-cols-2 gap-2 mt-3 text-sm">

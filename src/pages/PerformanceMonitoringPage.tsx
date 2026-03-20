@@ -40,7 +40,7 @@ export default function PerformanceMonitoringPage() {
             <Zap className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-green-600">95</div>
+            <div className="text-2xl font-bold text-success">95</div>
             <p className="text-xs text-muted-foreground">Excellent</p>
           </CardContent>
         </Card>
@@ -60,7 +60,7 @@ export default function PerformanceMonitoringPage() {
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-green-600">98%</div>
+            <div className="text-2xl font-bold text-success">98%</div>
             <p className="text-xs text-muted-foreground">LCP, FID, CLS</p>
           </CardContent>
         </Card>
@@ -135,8 +135,8 @@ export default function PerformanceMonitoringPage() {
                       <CardDescription className="text-xs">{v.desc}</CardDescription>
                     </CardHeader>
                     <CardContent>
-                      <div className="text-2xl font-bold text-green-600">{v.value}</div>
-                      <Badge variant="outline" className="mt-2 text-green-600">Excellent</Badge>
+                      <div className="text-2xl font-bold text-success">{v.value}</div>
+                      <Badge variant="outline" className="mt-2 text-success">Excellent</Badge>
                     </CardContent>
                   </Card>
                 ))}
@@ -190,7 +190,7 @@ export default function PerformanceMonitoringPage() {
                   { title: 'Images Optimisées', desc: 'Lazy loading des images actif' },
                 ].map((r) => (
                   <div key={r.title} className="flex items-start gap-3 p-3 border rounded-lg">
-                    <Badge variant="outline" className="mt-0.5 text-green-600">✓</Badge>
+                    <Badge variant="outline" className="mt-0.5 text-success">✓</Badge>
                     <div className="flex-1">
                       <p className="font-medium">{r.title}</p>
                       <p className="text-sm text-muted-foreground">{r.desc}</p>

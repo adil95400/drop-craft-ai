@@ -57,7 +57,7 @@ const AdsMarketingPage = () => {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'connected':
-      case 'active': return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
+      case 'active': return 'bg-green-100 text-success dark:bg-green-900/30 dark:text-green-400'
       case 'disconnected':
       case 'paused': return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400'
       case 'error':
@@ -458,7 +458,7 @@ const AdsMarketingPage = () => {
                       </div>
                       <div>
                         <p className="text-sm text-muted-foreground">ROAS</p>
-                        <p className="text-lg font-bold text-green-600">{Number(campaign.roas).toFixed(1)}x</p>
+                        <p className="text-lg font-bold text-success">{Number(campaign.roas).toFixed(1)}x</p>
                       </div>
                     </div>
                     <div className="flex gap-2">

@@ -177,7 +177,7 @@ export function AutoValidationQueue({ integrationId }: AutoValidationQueueProps)
               Traitement en cours
             </Badge>
           ) : isAutoMode ? (
-            <Badge className="bg-green-500/20 text-green-700 gap-1">
+            <Badge className="bg-green-500/20 text-success gap-1">
               <PlayCircle className="h-3 w-3" />
               Mode automatique actif
             </Badge>
@@ -210,18 +210,18 @@ export function AutoValidationQueue({ integrationId }: AutoValidationQueueProps)
             <p className="text-xs text-muted-foreground">En attente</p>
           </div>
           <div className="p-3 rounded-lg bg-blue-50 dark:bg-blue-950/20 text-center">
-            <Zap className="h-4 w-4 mx-auto text-blue-600 mb-1" />
-            <p className="text-lg font-bold text-blue-600">{stats.processing}</p>
+            <Zap className="h-4 w-4 mx-auto text-info mb-1" />
+            <p className="text-lg font-bold text-info">{stats.processing}</p>
             <p className="text-xs text-muted-foreground">En cours</p>
           </div>
           <div className="p-3 rounded-lg bg-green-50 dark:bg-green-950/20 text-center">
-            <CheckCircle2 className="h-4 w-4 mx-auto text-green-600 mb-1" />
-            <p className="text-lg font-bold text-green-600">{stats.completed}</p>
+            <CheckCircle2 className="h-4 w-4 mx-auto text-success mb-1" />
+            <p className="text-lg font-bold text-success">{stats.completed}</p>
             <p className="text-xs text-muted-foreground">Validés</p>
           </div>
           <div className="p-3 rounded-lg bg-red-50 dark:bg-red-950/20 text-center">
-            <AlertCircle className="h-4 w-4 mx-auto text-red-600 mb-1" />
-            <p className="text-lg font-bold text-red-600">{stats.failed}</p>
+            <AlertCircle className="h-4 w-4 mx-auto text-destructive mb-1" />
+            <p className="text-lg font-bold text-destructive">{stats.failed}</p>
             <p className="text-xs text-muted-foreground">Échoués</p>
           </div>
         </div>

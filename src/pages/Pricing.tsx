@@ -129,7 +129,7 @@ const Pricing = () => {
                     <ul className="space-y-3">
                       {plan.features.map((feature, idx) => (
                         <li key={idx} className="flex items-start gap-3">
-                          <CheckCircle className="h-5 w-5 text-green-500 shrink-0 mt-0.5" />
+                          <CheckCircle className="h-5 w-5 text-success shrink-0 mt-0.5" />
                           <span className="text-sm">{feature}</span>
                         </li>
                       ))}
@@ -175,7 +175,7 @@ const Pricing = () => {
                       <td className="text-center py-3 px-4">
                         {typeof feature.standard === 'boolean' ? (
                           feature.standard ? (
-                            <CheckCircle className="h-5 w-5 text-green-500 mx-auto" />
+                            <CheckCircle className="h-5 w-5 text-success mx-auto" />
                           ) : (
                             <X className="h-5 w-5 text-muted-foreground/40 mx-auto" />
                           )
@@ -186,7 +186,7 @@ const Pricing = () => {
                       <td className="text-center py-3 px-4 bg-primary/5 border-x border-primary/10">
                         {typeof feature.pro === 'boolean' ? (
                           feature.pro ? (
-                            <CheckCircle className="h-5 w-5 text-green-500 mx-auto" />
+                            <CheckCircle className="h-5 w-5 text-success mx-auto" />
                           ) : (
                             <X className="h-5 w-5 text-muted-foreground/40 mx-auto" />
                           )
@@ -197,7 +197,7 @@ const Pricing = () => {
                       <td className="text-center py-3 px-4">
                         {typeof feature.ultra === 'boolean' ? (
                           feature.ultra ? (
-                            <CheckCircle className="h-5 w-5 text-green-500 mx-auto" />
+                            <CheckCircle className="h-5 w-5 text-success mx-auto" />
                           ) : (
                             <X className="h-5 w-5 text-muted-foreground/40 mx-auto" />
                           )

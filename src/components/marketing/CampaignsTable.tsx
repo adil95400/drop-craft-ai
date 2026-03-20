@@ -82,7 +82,7 @@ export function CampaignsTable({ onEdit, onView }: CampaignsTableProps) {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'active': return 'bg-green-100 text-green-800 border-green-200'
+      case 'active': return 'bg-green-100 text-success border-green-200'
       case 'paused': return 'bg-yellow-100 text-yellow-800 border-yellow-200'
       case 'completed': return 'bg-blue-100 text-blue-800 border-blue-200'
       case 'draft': return 'bg-gray-100 text-gray-800 border-gray-200'
@@ -235,16 +235,16 @@ export function CampaignsTable({ onEdit, onView }: CampaignsTableProps) {
           <div className="text-muted-foreground">Campagnes</div>
         </div>
         <div className="bg-green-50 rounded-lg p-3 text-center">
-          <div className="font-semibold text-green-700">
+          <div className="font-semibold text-success">
             {filteredCampaigns.filter(c => c.status === 'active').length}
           </div>
-          <div className="text-green-600">Actives</div>
+          <div className="text-success">Actives</div>
         </div>
         <div className="bg-blue-50 rounded-lg p-3 text-center">
           <div className="font-semibold text-blue-700">
             {formatCurrency(filteredCampaigns.reduce((sum, c) => sum + (c.budget_total || 0), 0))}
           </div>
-          <div className="text-blue-600">Budget total</div>
+          <div className="text-info">Budget total</div>
         </div>
         <div className="bg-purple-50 rounded-lg p-3 text-center">
           <div className="font-semibold text-purple-700">
@@ -375,7 +375,7 @@ export function CampaignsTable({ onEdit, onView }: CampaignsTableProps) {
                         
                         <DropdownMenuItem 
                           onClick={() => handleDelete(campaign.id)}
-                          className="text-red-600"
+                          className="text-destructive"
                         >
                           <Trash2 className="h-4 w-4 mr-2" />
                           Supprimer

@@ -176,7 +176,7 @@ export default function ImageDeduplicationPage() {
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <AlertTriangle className="h-5 w-5 text-yellow-500" />
+                  <AlertTriangle className="h-5 w-5 text-warning" />
                   <CardTitle className="text-base">{group.images.length} images similaires détectées</CardTitle>
                   <Badge variant="outline" className="text-xs">Groupe #{group.groupId}</Badge>
                 </div>
@@ -220,7 +220,7 @@ export default function ImageDeduplicationPage() {
         {groups.length === 0 && !isScanning && (
           <Card>
             <CardContent className="py-12 text-center">
-              <CheckCircle className="h-12 w-12 text-green-500 mx-auto mb-4" />
+              <CheckCircle className="h-12 w-12 text-success mx-auto mb-4" />
               <h3 className="text-lg font-semibold">Aucun doublon détecté</h3>
               <p className="text-muted-foreground mt-1">Lancez un scan pour analyser votre catalogue d'images.</p>
             </CardContent>

@@ -344,7 +344,7 @@ export default function MarketplaceConnectorsPage() {
           <h3 className="font-medium text-sm">{connector.name}</h3>
           {getStatusBadge(connector)}
           {connector.status === 'connected' && (
-            <CheckCircle2 className="h-3.5 w-3.5 text-green-500" />
+            <CheckCircle2 className="h-3.5 w-3.5 text-success" />
           )}
         </div>
         <p className="text-xs text-muted-foreground truncate">{connector.description}</p>

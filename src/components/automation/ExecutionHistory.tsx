@@ -19,10 +19,10 @@ export function ExecutionHistory({ executions, workflows }: ExecutionHistoryProp
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'completed': return <CheckCircle className="h-4 w-4 text-green-500" />;
-      case 'failed': return <XCircle className="h-4 w-4 text-red-500" />;
-      case 'running': return <Clock className="h-4 w-4 text-blue-500" />;
-      case 'cancelled': return <AlertCircle className="h-4 w-4 text-yellow-500" />;
+      case 'completed': return <CheckCircle className="h-4 w-4 text-success" />;
+      case 'failed': return <XCircle className="h-4 w-4 text-destructive" />;
+      case 'running': return <Clock className="h-4 w-4 text-info" />;
+      case 'cancelled': return <AlertCircle className="h-4 w-4 text-warning" />;
       default: return <AlertCircle className="h-4 w-4 text-gray-500" />;
     }
   };
@@ -51,9 +51,9 @@ export function ExecutionHistory({ executions, workflows }: ExecutionHistoryProp
 
   const getStepStatusIcon = (status: string) => {
     switch (status) {
-      case 'success': return <CheckCircle className="h-3 w-3 text-green-500" />;
-      case 'failed': return <XCircle className="h-3 w-3 text-red-500" />;
-      case 'skipped': return <AlertCircle className="h-3 w-3 text-yellow-500" />;
+      case 'success': return <CheckCircle className="h-3 w-3 text-success" />;
+      case 'failed': return <XCircle className="h-3 w-3 text-destructive" />;
+      case 'skipped': return <AlertCircle className="h-3 w-3 text-warning" />;
       default: return <AlertCircle className="h-3 w-3 text-gray-500" />;
     }
   };
@@ -171,9 +171,9 @@ interface ExecutionDetailsProps {
 function ExecutionDetails({ execution }: ExecutionDetailsProps) {
   const getStepStatusIcon = (status: string) => {
     switch (status) {
-      case 'success': return <CheckCircle className="h-4 w-4 text-green-500" />;
-      case 'failed': return <XCircle className="h-4 w-4 text-red-500" />;
-      case 'skipped': return <AlertCircle className="h-4 w-4 text-yellow-500" />;
+      case 'success': return <CheckCircle className="h-4 w-4 text-success" />;
+      case 'failed': return <XCircle className="h-4 w-4 text-destructive" />;
+      case 'skipped': return <AlertCircle className="h-4 w-4 text-warning" />;
       default: return <AlertCircle className="h-4 w-4 text-gray-500" />;
     }
   };

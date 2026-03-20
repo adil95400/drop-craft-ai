@@ -169,7 +169,7 @@ export const WinnersProductCard = ({
                   className="h-9 w-9 rounded-full bg-white/95 hover:bg-white backdrop-blur-sm shadow-lg flex items-center justify-center"
                   onClick={() => setIsFavorite(!isFavorite)}
                 >
-                  <Heart className={cn("h-4 w-4 transition-all", isFavorite && "fill-red-500 text-red-500")} />
+                  <Heart className={cn("h-4 w-4 transition-all", isFavorite && "fill-red-500 text-destructive")} />
                 </motion.button>
               </div>
 
@@ -181,9 +181,9 @@ export const WinnersProductCard = ({
                 >
                   <AlertTriangle className={cn(
                     "h-3 w-3 mr-1",
-                    product.competition_level === 'low' && "text-green-500",
-                    product.competition_level === 'medium' && "text-yellow-500",
-                    product.competition_level === 'high' && "text-red-500"
+                    product.competition_level === 'low' && "text-success",
+                    product.competition_level === 'medium' && "text-warning",
+                    product.competition_level === 'high' && "text-destructive"
                   )} />
                   {product.competition_level === 'low' && 'Faible'}
                   {product.competition_level === 'medium' && 'Moyenne'}
@@ -221,13 +221,13 @@ export const WinnersProductCard = ({
                   </div>
                   <div className="flex items-center justify-between text-sm">
                     <span className="text-muted-foreground font-medium">Profit estimé:</span>
-                    <span className="font-bold text-green-600 dark:text-green-400">
+                    <span className="font-bold text-success dark:text-green-400">
                       {formatPrice(profit, product.currency)}
                     </span>
                   </div>
                   <div className="flex items-center justify-center gap-1 pt-1 border-t border-green-200/50 dark:border-green-800/50">
-                    <Target className="h-3 w-3 text-green-600 dark:text-green-400" />
-                    <span className="text-xs font-bold text-green-600 dark:text-green-400">
+                    <Target className="h-3 w-3 text-success dark:text-green-400" />
+                    <span className="text-xs font-bold text-success dark:text-green-400">
                       Marge {margin}%
                     </span>
                   </div>
@@ -386,7 +386,7 @@ export const WinnersProductCard = ({
               <Card className="p-4 bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950/30 dark:to-emerald-950/20 border-green-200 dark:border-green-800">
                 <div className="flex items-center gap-2 mb-4">
                   <div className="p-2 rounded-lg bg-green-500/10">
-                    <Calculator className="h-5 w-5 text-green-600 dark:text-green-400" />
+                    <Calculator className="h-5 w-5 text-success dark:text-green-400" />
                   </div>
                   <h3 className="font-bold text-lg">Calculateur de Profit</h3>
                 </div>
@@ -402,7 +402,7 @@ export const WinnersProductCard = ({
                   <div className="h-px bg-green-200 dark:bg-green-800" />
                   <div className="flex justify-between items-center pt-1">
                     <span className="font-semibold">Profit net:</span>
-                    <span className="font-bold text-xl text-green-600 dark:text-green-400">
+                    <span className="font-bold text-xl text-success dark:text-green-400">
                       {formatPrice(profit, product.currency)}
                     </span>
                   </div>

@@ -197,12 +197,12 @@ export function CustomerSegmentationModal({ open, onOpenChange }: CustomerSegmen
                 <CardContent className="p-6">
                   <div className="flex items-center gap-4">
                     <div className="p-3 rounded-lg bg-blue-500/10">
-                      <DollarSign className="w-6 h-6 text-blue-500" />
+                      <DollarSign className="w-6 h-6 text-info" />
                     </div>
                     <div>
                       <p className="text-sm font-medium text-muted-foreground">Revenus VIP</p>
                       <p className="text-2xl font-bold">287K€</p>
-                      <p className="text-xs text-green-600">+15% vs mois dernier</p>
+                      <p className="text-xs text-success">+15% vs mois dernier</p>
                     </div>
                   </div>
                 </CardContent>
@@ -212,12 +212,12 @@ export function CustomerSegmentationModal({ open, onOpenChange }: CustomerSegmen
                 <CardContent className="p-6">
                   <div className="flex items-center gap-4">
                     <div className="p-3 rounded-lg bg-green-500/10">
-                      <TrendingUp className="w-6 h-6 text-green-500" />
+                      <TrendingUp className="w-6 h-6 text-success" />
                     </div>
                     <div>
                       <p className="text-sm font-medium text-muted-foreground">Taux de Rétention</p>
                       <p className="text-2xl font-bold">78%</p>
-                      <p className="text-xs text-green-600">+3% vs mois dernier</p>
+                      <p className="text-xs text-success">+3% vs mois dernier</p>
                     </div>
                   </div>
                 </CardContent>
@@ -232,7 +232,7 @@ export function CustomerSegmentationModal({ open, onOpenChange }: CustomerSegmen
                     <div>
                       <p className="text-sm font-medium text-muted-foreground">Nouveaux Clients</p>
                       <p className="text-2xl font-bold">186</p>
-                      <p className="text-xs text-red-600">-5% vs mois dernier</p>
+                      <p className="text-xs text-destructive">-5% vs mois dernier</p>
                     </div>
                   </div>
                 </CardContent>

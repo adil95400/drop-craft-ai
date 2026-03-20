@@ -19,7 +19,7 @@ const planConfig = {
   pro: {
     name: 'Pro',
     icon: Star,
-    color: 'text-blue-600',
+    color: 'text-info',
     description: 'Fonctionnalités avancées pour les professionnels'
   },
   ultra_pro: {

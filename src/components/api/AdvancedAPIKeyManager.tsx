@@ -238,10 +238,10 @@ export function AdvancedAPIKeyManager() {
             <Card className="mb-4 bg-green-50 border-green-200">
               <CardContent className="p-4">
                 <div className="flex items-start gap-3">
-                  <Check className="h-5 w-5 text-green-600 flex-shrink-0 mt-0.5" />
+                  <Check className="h-5 w-5 text-success flex-shrink-0 mt-0.5" />
                   <div className="flex-1">
                     <p className="font-medium text-green-900 mb-2">Clé créée avec succès !</p>
-                    <p className="text-sm text-green-800 mb-3">
+                    <p className="text-sm text-success mb-3">
                       Copiez cette clé maintenant, elle ne sera plus affichée.
                     </p>
                     <div className="flex items-center gap-2">

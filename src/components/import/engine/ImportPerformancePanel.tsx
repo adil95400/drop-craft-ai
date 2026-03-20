@@ -55,16 +55,16 @@ export function ImportPerformancePanel({ stats, activeImports, className }: Impo
   }, [stats, activeImports])
 
   const healthColors = {
-    excellent: { bg: 'bg-emerald-500/10', text: 'text-emerald-600', border: 'border-emerald-500/30', label: 'Excellent' },
-    good: { bg: 'bg-blue-500/10', text: 'text-blue-600', border: 'border-blue-500/30', label: 'Bon' },
-    fair: { bg: 'bg-amber-500/10', text: 'text-amber-600', border: 'border-amber-500/30', label: 'Moyen' },
-    poor: { bg: 'bg-red-500/10', text: 'text-red-600', border: 'border-red-500/30', label: 'Faible' },
+    excellent: { bg: 'bg-emerald-500/10', text: 'text-success', border: 'border-emerald-500/30', label: 'Excellent' },
+    good: { bg: 'bg-blue-500/10', text: 'text-info', border: 'border-blue-500/30', label: 'Bon' },
+    fair: { bg: 'bg-amber-500/10', text: 'text-warning', border: 'border-amber-500/30', label: 'Moyen' },
+    poor: { bg: 'bg-red-500/10', text: 'text-destructive', border: 'border-red-500/30', label: 'Faible' },
   }
 
   const health = healthColors[metrics.healthScore]
-  const qualityColor = metrics.qualityScore >= 90 ? 'text-emerald-600' :
-    metrics.qualityScore >= 70 ? 'text-blue-600' :
-    metrics.qualityScore >= 50 ? 'text-amber-600' : 'text-red-600'
+  const qualityColor = metrics.qualityScore >= 90 ? 'text-success' :
+    metrics.qualityScore >= 70 ? 'text-info' :
+    metrics.qualityScore >= 50 ? 'text-warning' : 'text-destructive'
   const qualityBg = metrics.qualityScore >= 90 ? 'bg-emerald-500/10 border-emerald-500/30' :
     metrics.qualityScore >= 70 ? 'bg-blue-500/10 border-blue-500/30' :
     metrics.qualityScore >= 50 ? 'bg-amber-500/10 border-amber-500/30' : 'bg-red-500/10 border-red-500/30'
@@ -122,8 +122,8 @@ export function ImportPerformancePanel({ stats, activeImports, className }: Impo
       <Card>
         <CardContent className="p-4">
           <div className="flex items-center justify-between mb-2">
-            <Zap className="w-5 h-5 text-amber-500" />
-            <ArrowUpRight className="w-4 h-4 text-emerald-500" />
+            <Zap className="w-5 h-5 text-warning" />
+            <ArrowUpRight className="w-4 h-4 text-success" />
           </div>
           <p className="text-2xl font-bold">{metrics.throughput.toLocaleString()}</p>
           <p className="text-xs text-muted-foreground mt-0.5">Produits importés</p>
@@ -134,7 +134,7 @@ export function ImportPerformancePanel({ stats, activeImports, className }: Impo
       <Card>
         <CardContent className="p-4">
           <div className="flex items-center justify-between mb-2">
-            <Clock className="w-5 h-5 text-blue-500" />
+            <Clock className="w-5 h-5 text-info" />
           </div>
           <p className="text-2xl font-bold">{metrics.activeCount}</p>
           <p className="text-xs text-muted-foreground mt-0.5">Imports actifs</p>

@@ -242,9 +242,9 @@ export const QuickActionsPanel: React.FC = () => {
                   {lastResult && (
                     <div className="absolute top-2 right-2">
                       {lastResult.success ? (
-                        <CheckCircle className="h-4 w-4 text-green-500" />
+                        <CheckCircle className="h-4 w-4 text-success" />
                       ) : (
-                        <AlertCircle className="h-4 w-4 text-red-500" />
+                        <AlertCircle className="h-4 w-4 text-destructive" />
                       )}
                     </div>
                   )}
@@ -269,7 +269,7 @@ export const QuickActionsPanel: React.FC = () => {
                     key={idx}
                     className={`text-xs p-2 rounded-lg flex items-center gap-2 ${
                       result.success 
-                        ? 'bg-green-50 text-green-800 dark:bg-green-900/20 dark:text-green-400' 
+                        ? 'bg-green-50 text-success dark:bg-green-900/20 dark:text-green-400' 
                         : 'bg-red-50 text-red-800 dark:bg-red-900/20 dark:text-red-400'
                     }`}
                   >

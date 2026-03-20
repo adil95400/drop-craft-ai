@@ -137,9 +137,9 @@ export function ProductAuditBlock({ product, onOptimize }: ProductAuditBlockProp
   }
 
   const getScoreColor = (score: number) => {
-    if (score >= 70) return 'text-green-600'
-    if (score >= 40) return 'text-orange-600'
-    return 'text-red-600'
+    if (score >= 70) return 'text-success'
+    if (score >= 40) return 'text-warning'
+    return 'text-destructive'
   }
 
   return (
@@ -227,21 +227,21 @@ export function ProductAuditBlock({ product, onOptimize }: ProductAuditBlockProp
               <h4 className="font-semibold">Résumé</h4>
               <div className="grid grid-cols-3 gap-2">
                 <div className="flex items-center gap-2 p-2 rounded bg-red-50">
-                  <XCircle className="h-4 w-4 text-red-600" />
+                  <XCircle className="h-4 w-4 text-destructive" />
                   <div>
                     <div className="text-xs text-muted-foreground">Critique</div>
                     <div className="font-bold">{errors.filter(e => e.severity === 'critical').length}</div>
                   </div>
                 </div>
                 <div className="flex items-center gap-2 p-2 rounded bg-orange-50">
-                  <AlertTriangle className="h-4 w-4 text-orange-600" />
+                  <AlertTriangle className="h-4 w-4 text-warning" />
                   <div>
                     <div className="text-xs text-muted-foreground">Avertissements</div>
                     <div className="font-bold">{errors.filter(e => e.severity === 'warning').length}</div>
                   </div>
                 </div>
                 <div className="flex items-center gap-2 p-2 rounded bg-blue-50">
-                  <CheckCircle2 className="h-4 w-4 text-blue-600" />
+                  <CheckCircle2 className="h-4 w-4 text-info" />
                   <div>
                     <div className="text-xs text-muted-foreground">Suggestions</div>
                     <div className="font-bold">{errors.filter(e => e.severity === 'info').length}</div>
@@ -254,15 +254,15 @@ export function ProductAuditBlock({ product, onOptimize }: ProductAuditBlockProp
           <TabsContent value="errors" className="space-y-3">
             {errors.length === 0 ? (
               <div className="text-center py-8 text-muted-foreground">
-                <CheckCircle2 className="h-12 w-12 mx-auto mb-2 text-green-600" />
+                <CheckCircle2 className="h-12 w-12 mx-auto mb-2 text-success" />
                 <p>Aucun problème détecté !</p>
               </div>
             ) : (
               errors.map((error, idx) => (
                 <div key={idx} className="flex items-start gap-3 p-3 rounded-lg bg-muted">
-                  {error.severity === 'critical' && <XCircle className="h-5 w-5 text-red-600 mt-0.5" />}
-                  {error.severity === 'warning' && <AlertTriangle className="h-5 w-5 text-orange-600 mt-0.5" />}
-                  {error.severity === 'info' && <CheckCircle2 className="h-5 w-5 text-blue-600 mt-0.5" />}
+                  {error.severity === 'critical' && <XCircle className="h-5 w-5 text-destructive mt-0.5" />}
+                  {error.severity === 'warning' && <AlertTriangle className="h-5 w-5 text-warning mt-0.5" />}
+                  {error.severity === 'info' && <CheckCircle2 className="h-5 w-5 text-info mt-0.5" />}
                   <div className="flex-1">
                     <p className="font-medium">{error.message}</p>
                     <p className="text-xs text-muted-foreground">Champ: {error.field}</p>

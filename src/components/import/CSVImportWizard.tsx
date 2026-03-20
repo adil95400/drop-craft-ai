@@ -708,12 +708,12 @@ export function CSVImportWizard() {
                 <p className="text-xs text-muted-foreground">Détection automatique des colonnes</p>
               </div>
               <div className="p-4 rounded-lg bg-green-500/5 border border-green-500/10">
-                <Check className="w-5 h-5 text-green-600 mb-2" />
+                <Check className="w-5 h-5 text-success mb-2" />
                 <h4 className="font-medium text-sm mb-1">Validation avancée</h4>
                 <p className="text-xs text-muted-foreground">Vérification des données en temps réel</p>
               </div>
               <div className="p-4 rounded-lg bg-blue-500/5 border border-blue-500/10">
-                <FileText className="w-5 h-5 text-blue-600 mb-2" />
+                <FileText className="w-5 h-5 text-info mb-2" />
                 <h4 className="font-medium text-sm mb-1">Format Shopify</h4>
                 <p className="text-xs text-muted-foreground">Compatible template Shopify FR/EN</p>
               </div>
@@ -774,7 +774,7 @@ export function CSVImportWizard() {
                         .slice(0, 5)
                         .map(([key, config]) => (
                           <Badge key={key} variant="outline" className="text-xs bg-background">
-                            <CheckCircle2 className="w-3 h-3 mr-1 text-green-500" />
+                            <CheckCircle2 className="w-3 h-3 mr-1 text-success" />
                             {config.label}
                           </Badge>
                         ))}
@@ -839,7 +839,7 @@ export function CSVImportWizard() {
                                   variant="secondary" 
                                   className={cn(
                                     "text-[10px] px-1.5 py-0 shrink-0",
-                                    confidence >= 90 ? "bg-green-500/20 text-green-700 dark:text-green-400" :
+                                    confidence >= 90 ? "bg-green-500/20 text-success dark:text-green-400" :
                                     confidence >= 70 ? "bg-primary/20 text-primary" :
                                     "bg-yellow-500/20 text-yellow-700 dark:text-yellow-400"
                                   )}
@@ -861,7 +861,7 @@ export function CSVImportWizard() {
                           )}>
                             <ArrowRight className={cn(
                               "w-4 h-4 transition-colors",
-                              isMapped ? "text-green-500" : "text-muted-foreground"
+                              isMapped ? "text-success" : "text-muted-foreground"
                             )} />
                           </div>
                           
@@ -959,7 +959,7 @@ export function CSVImportWizard() {
                 <CardHeader className="pb-3">
                   <CardTitle className="text-base flex items-center justify-between">
                     <span className="flex items-center gap-2">
-                      <AlertTriangle className="w-4 h-4 text-yellow-500" />
+                      <AlertTriangle className="w-4 h-4 text-warning" />
                       Erreurs de validation ({validationErrors.length})
                     </span>
                     <div className="flex items-center gap-2">
@@ -969,7 +969,7 @@ export function CSVImportWizard() {
                         </Badge>
                       )}
                       {errorsByCategory.format.length > 0 && (
-                        <Badge variant="outline" className="text-xs border-yellow-500 text-yellow-600">
+                        <Badge variant="outline" className="text-xs border-yellow-500 text-warning">
                           {errorsByCategory.format.length} format invalide
                         </Badge>
                       )}
@@ -993,9 +993,9 @@ export function CSVImportWizard() {
                           )}
                         >
                           {error.severity === 'error' ? (
-                            <X className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
+                            <X className="w-4 h-4 text-destructive shrink-0 mt-0.5" />
                           ) : (
-                            <AlertTriangle className="w-4 h-4 text-yellow-500 shrink-0 mt-0.5" />
+                            <AlertTriangle className="w-4 h-4 text-warning shrink-0 mt-0.5" />
                           )}
                           <div className="flex-1 min-w-0">
                             <span className="font-semibold">Ligne {error.row}</span>
@@ -1019,7 +1019,7 @@ export function CSVImportWizard() {
             <Card>
               <CardHeader>
                 <CardTitle className="text-base flex items-center gap-2">
-                  <Eye className="w-4 h-4 text-green-500" />
+                  <Eye className="w-4 h-4 text-success" />
                   Aperçu des produits valides ({validProducts.length})
                 </CardTitle>
               </CardHeader>
@@ -1103,7 +1103,7 @@ export function CSVImportWizard() {
                      <Card>
                        <CardHeader>
                          <CardTitle className="text-base flex items-center gap-2">
-                           <AlertTriangle className="w-4 h-4 text-yellow-500" />
+                           <AlertTriangle className="w-4 h-4 text-warning" />
                            Détails des erreurs (extrait)
                          </CardTitle>
                        </CardHeader>
@@ -1112,7 +1112,7 @@ export function CSVImportWizard() {
                            <div className="space-y-2 text-sm">
                              {importOutcome.errors.slice(0, 20).map((e, idx) => (
                                <div key={idx} className="flex items-start gap-2">
-                                 <AlertTriangle className="w-4 h-4 text-yellow-500 mt-0.5" />
+                                 <AlertTriangle className="w-4 h-4 text-warning mt-0.5" />
                                  <span>{e}</span>
                                </div>
                              ))}

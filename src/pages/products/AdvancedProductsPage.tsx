@@ -33,10 +33,10 @@ const StatCard = ({
 }) => {
   const colorClasses = {
     primary: 'from-primary/20 to-primary/5 text-primary',
-    success: 'from-emerald-500/20 to-emerald-500/5 text-emerald-600',
-    warning: 'from-amber-500/20 to-amber-500/5 text-amber-600',
-    destructive: 'from-red-500/20 to-red-500/5 text-red-600',
-    info: 'from-blue-500/20 to-blue-500/5 text-blue-600',
+    success: 'from-emerald-500/20 to-emerald-500/5 text-success',
+    warning: 'from-amber-500/20 to-amber-500/5 text-warning',
+    destructive: 'from-red-500/20 to-red-500/5 text-destructive',
+    info: 'from-blue-500/20 to-blue-500/5 text-info',
     purple: 'from-purple-500/20 to-purple-500/5 text-purple-600'
   };
 
@@ -58,7 +58,7 @@ const StatCard = ({
                 <p className="text-xs text-muted-foreground">{subtext}</p>
               )}
               {trend && (
-                <div className={`flex items-center gap-1 text-xs ${trend.up ? 'text-emerald-600' : 'text-red-600'}`}>
+                <div className={`flex items-center gap-1 text-xs ${trend.up ? 'text-success' : 'text-destructive'}`}>
                   <TrendingUp className={`h-3 w-3 ${!trend.up && 'rotate-180'}`} />
                   <span>{trend.value}%</span>
                 </div>
@@ -358,7 +358,7 @@ export default function AdvancedProductsPage() {
                   <p className="text-sm text-muted-foreground">Taux de complétion</p>
                 </div>
                 <div className="text-center p-6 rounded-xl bg-muted/50">
-                  <div className="text-4xl font-bold text-emerald-600 mb-2">+23%</div>
+                  <div className="text-4xl font-bold text-success mb-2">+23%</div>
                   <p className="text-sm text-muted-foreground">Amélioration SEO</p>
                 </div>
                 <div className="text-center p-6 rounded-xl bg-muted/50">

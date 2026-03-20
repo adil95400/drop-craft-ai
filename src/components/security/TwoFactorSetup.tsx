@@ -95,9 +95,9 @@ export function TwoFactorSetup() {
           <div className="flex items-center gap-3">
             <div className={`p-3 rounded-lg ${is2FAEnabled ? 'bg-green-500/10' : 'bg-yellow-500/10'}`}>
               {is2FAEnabled ? (
-                <CheckCircle2 className="h-6 w-6 text-green-500" />
+                <CheckCircle2 className="h-6 w-6 text-success" />
               ) : (
-                <AlertTriangle className="h-6 w-6 text-yellow-500" />
+                <AlertTriangle className="h-6 w-6 text-warning" />
               )}
             </div>
             <div>
@@ -205,7 +205,7 @@ export function TwoFactorSetup() {
       {(step === 'done' || is2FAEnabled) && (
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-base text-green-600">
+            <CardTitle className="flex items-center gap-2 text-base text-success">
               <CheckCircle2 className="h-5 w-5" />
               2FA activée avec succès
             </CardTitle>

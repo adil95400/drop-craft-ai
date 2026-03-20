@@ -281,7 +281,7 @@ export const ProductActionButtons = ({
               Dupliquer
             </DropdownMenuItem>
             <DropdownMenuItem onClick={handleToggleFavorite}>
-              <Heart className={`h-4 w-4 mr-2 ${isFavorite ? 'fill-red-500 text-red-500' : ''}`} />
+              <Heart className={`h-4 w-4 mr-2 ${isFavorite ? 'fill-red-500 text-destructive' : ''}`} />
               {isFavorite ? 'Retirer des favoris' : 'Ajouter aux favoris'}
             </DropdownMenuItem>
             <DropdownMenuSeparator />
@@ -298,7 +298,7 @@ export const ProductActionButtons = ({
               Partager
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={handleDeleteProduct} className="text-red-600">
+            <DropdownMenuItem onClick={handleDeleteProduct} className="text-destructive">
               <Trash2 className="h-4 w-4 mr-2" />
               Supprimer
             </DropdownMenuItem>
@@ -356,7 +356,7 @@ export const ProductActionButtons = ({
           onClick={handleToggleFavorite}
           title={isFavorite ? "Retirer des favoris" : "Ajouter aux favoris"}
         >
-          <Heart className={`h-4 w-4 ${isFavorite ? 'fill-red-500 text-red-500' : ''}`} />
+          <Heart className={`h-4 w-4 ${isFavorite ? 'fill-red-500 text-destructive' : ''}`} />
         </Button>
         
         <Button

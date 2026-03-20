@@ -167,7 +167,7 @@ const LegalCompliancePage = () => {
               {vatValidation && (
                 <div className="flex items-center gap-2">
                   {vatValidation.valid_format ? (
-                    <Badge className="bg-green-500/10 text-green-600"><CheckCircle className="h-3 w-3 mr-1" />Format valide</Badge>
+                    <Badge className="bg-green-500/10 text-success"><CheckCircle className="h-3 w-3 mr-1" />Format valide</Badge>
                   ) : (
                     <Badge variant="destructive"><AlertTriangle className="h-3 w-3 mr-1" />Format invalide</Badge>
                   )}
@@ -197,7 +197,7 @@ const LegalCompliancePage = () => {
                       {ossResult.exceeds_threshold ? (
                         <AlertTriangle className="h-5 w-5 text-destructive" />
                       ) : (
-                        <CheckCircle className="h-5 w-5 text-green-600" />
+                        <CheckCircle className="h-5 w-5 text-success" />
                       )}
                       <span className="font-semibold">
                         {ossResult.exceeds_threshold ? 'Seuil dépassé — OSS obligatoire' : 'Sous le seuil — OSS optionnel'}
@@ -235,25 +235,25 @@ const LegalCompliancePage = () => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <Card>
               <CardContent className="pt-6 text-center space-y-2">
-                <CheckCircle className="h-8 w-8 text-green-600 mx-auto" />
+                <CheckCircle className="h-8 w-8 text-success mx-auto" />
                 <h3 className="font-semibold">Bandeau cookies</h3>
-                <Badge className="bg-green-500/10 text-green-600">Actif</Badge>
+                <Badge className="bg-green-500/10 text-success">Actif</Badge>
                 <p className="text-xs text-muted-foreground">Consentement granulaire (nécessaire, analytique, performance)</p>
               </CardContent>
             </Card>
             <Card>
               <CardContent className="pt-6 text-center space-y-2">
-                <CheckCircle className="h-8 w-8 text-green-600 mx-auto" />
+                <CheckCircle className="h-8 w-8 text-success mx-auto" />
                 <h3 className="font-semibold">Export des données</h3>
-                <Badge className="bg-green-500/10 text-green-600">Actif</Badge>
+                <Badge className="bg-green-500/10 text-success">Actif</Badge>
                 <p className="text-xs text-muted-foreground">Droit d'accès — export JSON complet</p>
               </CardContent>
             </Card>
             <Card>
               <CardContent className="pt-6 text-center space-y-2">
-                <CheckCircle className="h-8 w-8 text-green-600 mx-auto" />
+                <CheckCircle className="h-8 w-8 text-success mx-auto" />
                 <h3 className="font-semibold">Anonymisation</h3>
-                <Badge className="bg-green-500/10 text-green-600">Actif</Badge>
+                <Badge className="bg-green-500/10 text-success">Actif</Badge>
                 <p className="text-xs text-muted-foreground">Droit à l'oubli — anonymisation client</p>
               </CardContent>
             </Card>
@@ -304,7 +304,7 @@ const LegalCompliancePage = () => {
                       <p className="text-xs text-muted-foreground">{doc.path}</p>
                     </div>
                   </div>
-                  <Badge className="bg-green-500/10 text-green-600">Publié</Badge>
+                  <Badge className="bg-green-500/10 text-success">Publié</Badge>
                 </CardContent>
               </Card>
             ))}

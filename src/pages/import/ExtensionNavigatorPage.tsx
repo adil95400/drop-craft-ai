@@ -31,7 +31,7 @@ const ExtensionNavigatorPage: React.FC = () => {
       premium: true,
       features: ['Prix en temps réel', 'Images HD', 'Reviews automatiques', 'Stock tracking'],
       icon: ShoppingBag,
-      color: 'text-orange-600',
+      color: 'text-warning',
       bgColor: 'bg-orange-100'
     },
     {
@@ -45,7 +45,7 @@ const ExtensionNavigatorPage: React.FC = () => {
       premium: false,
       features: ['Import en masse', 'SEO automatique', 'Prix dynamiques', 'Variants'],
       icon: Package,
-      color: 'text-red-600',
+      color: 'text-destructive',
       bgColor: 'bg-red-100'
     },
     {
@@ -59,7 +59,7 @@ const ExtensionNavigatorPage: React.FC = () => {
       premium: true,
       features: ['Sync temps réel', 'Inventaire', 'Commandes', 'Clients'],
       icon: Globe,
-      color: 'text-green-600',
+      color: 'text-success',
       bgColor: 'bg-green-100'
     },
     {
@@ -73,7 +73,7 @@ const ExtensionNavigatorPage: React.FC = () => {
       premium: true,
       features: ['IA detection', 'Anti-bot', 'Proxy rotation', 'JS rendering'],
       icon: Chrome,
-      color: 'text-blue-600',
+      color: 'text-info',
       bgColor: 'bg-blue-100'
     }
   ];

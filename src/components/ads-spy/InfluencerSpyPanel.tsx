@@ -143,9 +143,9 @@ export function InfluencerSpyPanel() {
   };
 
   const performanceColors = {
-    high: 'bg-green-500/20 text-green-600 border-green-500/30',
-    medium: 'bg-yellow-500/20 text-yellow-600 border-yellow-500/30',
-    low: 'bg-red-500/20 text-red-600 border-red-500/30',
+    high: 'bg-green-500/20 text-success border-green-500/30',
+    medium: 'bg-yellow-500/20 text-warning border-yellow-500/30',
+    low: 'bg-red-500/20 text-destructive border-red-500/30',
   };
 
   return (
@@ -227,7 +227,7 @@ export function InfluencerSpyPanel() {
       {/* Influencers Grid */}
       <div className="space-y-4">
         <h3 className="text-lg font-semibold flex items-center gap-2">
-          <Sparkles className="w-5 h-5 text-yellow-500" />
+          <Sparkles className="w-5 h-5 text-warning" />
           Influenceurs avec placements récents
         </h3>
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -262,12 +262,12 @@ export function InfluencerSpyPanel() {
                 {/* Stats */}
                 <div className="grid grid-cols-3 gap-2 text-xs">
                   <div className="text-center p-2 bg-muted rounded-lg">
-                    <Users className="w-4 h-4 mx-auto text-blue-600" />
+                    <Users className="w-4 h-4 mx-auto text-info" />
                     <p className="font-medium mt-1">{influencer.followers}</p>
                     <p className="text-muted-foreground">Abonnés</p>
                   </div>
                   <div className="text-center p-2 bg-muted rounded-lg">
-                    <Heart className="w-4 h-4 mx-auto text-red-500" />
+                    <Heart className="w-4 h-4 mx-auto text-destructive" />
                     <p className="font-medium mt-1">{influencer.engagementRate}%</p>
                     <p className="text-muted-foreground">Engagement</p>
                   </div>
@@ -303,7 +303,7 @@ export function InfluencerSpyPanel() {
                 {/* Cost */}
                 <div className="flex items-center justify-between text-sm">
                   <span className="text-muted-foreground">Coût estimé:</span>
-                  <span className="font-medium text-green-600">{influencer.estimatedCost}</span>
+                  <span className="font-medium text-success">{influencer.estimatedCost}</span>
                 </div>
 
                 {/* Actions */}

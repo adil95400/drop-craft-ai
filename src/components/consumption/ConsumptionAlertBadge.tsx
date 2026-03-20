@@ -39,7 +39,7 @@ const ALERT_STYLES = {
   reset: {
     icon: CheckCircle,
     bgColor: 'bg-green-50 dark:bg-green-950/30',
-    textColor: 'text-green-700 dark:text-green-400',
+    textColor: 'text-success dark:text-green-400',
     borderColor: 'border-green-200 dark:border-green-800'
   }
 };
@@ -141,7 +141,7 @@ export function ConsumptionAlertBadge() {
         <ScrollArea className="h-[300px]">
           {alerts.length === 0 ?
           <div className="p-6 text-center text-muted-foreground">
-              <CheckCircle className="h-8 w-8 mx-auto mb-2 text-green-500" />
+              <CheckCircle className="h-8 w-8 mx-auto mb-2 text-success" />
               <p className="text-sm">Aucune alerte</p>
               <p className="text-xs">Vos quotas sont en bonne santé</p>
             </div> :

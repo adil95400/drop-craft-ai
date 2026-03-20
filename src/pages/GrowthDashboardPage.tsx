@@ -32,13 +32,13 @@ function MetricCard({ label, value, change, prefix = '', suffix = '', icon: Icon
         <div className="flex items-center justify-between mb-3">
           <span className="text-xs text-muted-foreground font-medium">{label}</span>
           <div className={cn('p-1.5 rounded-lg', isPositive ? 'bg-emerald-500/10' : 'bg-red-500/10')}>
-            <Icon className={cn('h-4 w-4', isPositive ? 'text-emerald-500' : 'text-red-500')} />
+            <Icon className={cn('h-4 w-4', isPositive ? 'text-success' : 'text-destructive')} />
           </div>
         </div>
         <p className="text-2xl font-bold">{prefix}{typeof value === 'number' ? value.toLocaleString('fr-FR', { maximumFractionDigits: 1 }) : value}{suffix}</p>
         <div className="flex items-center gap-1 mt-1 text-xs">
-          {isPositive ? <ArrowUpRight className="h-3 w-3 text-emerald-500" /> : <ArrowDownRight className="h-3 w-3 text-red-500" />}
-          <span className={isPositive ? 'text-emerald-600' : 'text-red-600'}>{isPositive ? '+' : ''}{change}%</span>
+          {isPositive ? <ArrowUpRight className="h-3 w-3 text-success" /> : <ArrowDownRight className="h-3 w-3 text-destructive" />}
+          <span className={isPositive ? 'text-success' : 'text-destructive'}>{isPositive ? '+' : ''}{change}%</span>
           <span className="text-muted-foreground">vs mois précédent</span>
         </div>
       </CardContent>

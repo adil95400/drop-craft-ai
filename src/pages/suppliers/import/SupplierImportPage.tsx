@@ -148,20 +148,20 @@ export default function SupplierImportPage() {
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'completed':
-        return <CheckCircle className="h-4 w-4 text-green-600" />
+        return <CheckCircle className="h-4 w-4 text-success" />
       case 'failed':
-        return <AlertCircle className="h-4 w-4 text-red-600" />
+        return <AlertCircle className="h-4 w-4 text-destructive" />
       case 'running':
-        return <RefreshCw className="h-4 w-4 text-blue-600 animate-spin" />
+        return <RefreshCw className="h-4 w-4 text-info animate-spin" />
       default:
-        return <Clock className="h-4 w-4 text-yellow-600" />
+        return <Clock className="h-4 w-4 text-warning" />
     }
   }
 
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'completed':
-        return 'bg-green-100 text-green-800'
+        return 'bg-green-100 text-success'
       case 'failed':
         return 'bg-red-100 text-red-800'
       case 'running':
@@ -381,7 +381,7 @@ export default function SupplierImportPage() {
             <CardContent className="p-6">
               <div className="flex items-center gap-3">
                 <div className="p-3 rounded-lg bg-green-500/10">
-                  <Zap className="h-6 w-6 text-green-600" />
+                  <Zap className="h-6 w-6 text-success" />
                 </div>
                 <div>
                   <h3 className="font-semibold">Gérer les feeds</h3>
@@ -397,7 +397,7 @@ export default function SupplierImportPage() {
             <CardContent className="p-6">
               <div className="flex items-center gap-3">
                 <div className="p-3 rounded-lg bg-blue-500/10">
-                  <Clock className="h-6 w-6 text-blue-600" />
+                  <Clock className="h-6 w-6 text-info" />
                 </div>
                 <div>
                   <h3 className="font-semibold">Historique complet</h3>

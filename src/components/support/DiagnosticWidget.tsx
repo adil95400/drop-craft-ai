@@ -374,8 +374,8 @@ const DIAGNOSTIC_TREE: DiagnosticStep[] = [
 // ─── Severity Helpers ────────────────────────────────────────────
 const severityConfig: Record<Severity, { label: string; icon: typeof CheckCircle2; className: string }> = {
   critical: { label: 'Critique', icon: XCircle, className: 'bg-destructive/10 text-destructive border-destructive/20' },
-  important: { label: 'Important', icon: AlertTriangle, className: 'bg-orange-500/10 text-orange-600 border-orange-500/20' },
-  minor: { label: 'Mineur', icon: CheckCircle2, className: 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20' },
+  important: { label: 'Important', icon: AlertTriangle, className: 'bg-orange-500/10 text-warning border-orange-500/20' },
+  minor: { label: 'Mineur', icon: CheckCircle2, className: 'bg-emerald-500/10 text-success border-emerald-500/20' },
 }
 
 // ─── Component ───────────────────────────────────────────────────
@@ -499,7 +499,7 @@ export function DiagnosticWidget() {
 
                       <div className="space-y-3">
                         <h3 className="font-semibold text-base flex items-center gap-2">
-                          <CheckCircle2 className="h-5 w-5 text-emerald-500" />
+                          <CheckCircle2 className="h-5 w-5 text-success" />
                           {solution.title}
                         </h3>
 

@@ -107,7 +107,7 @@ export default function ImportMarketplacePage() {
                       </div>
                     </div>
                     {isConnected ? (
-                      <Badge className="bg-green-500/10 text-green-700 border-green-500/20">
+                      <Badge className="bg-green-500/10 text-success border-green-500/20">
                         <CheckCircle className="w-3 h-3 mr-1" />
                         Connecté
                       </Badge>
@@ -122,15 +122,15 @@ export default function ImportMarketplacePage() {
                 <CardContent className="space-y-4">
                   <div className="grid grid-cols-3 gap-4 p-4 bg-muted/50 rounded-lg">
                     <div className="text-center">
-                      <p className="text-2xl font-bold text-green-600">{stats.published}</p>
+                      <p className="text-2xl font-bold text-success">{stats.published}</p>
                       <p className="text-xs text-muted-foreground">Publiés</p>
                     </div>
                     <div className="text-center">
-                      <p className="text-2xl font-bold text-yellow-600">{stats.pending}</p>
+                      <p className="text-2xl font-bold text-warning">{stats.pending}</p>
                       <p className="text-xs text-muted-foreground">En attente</p>
                     </div>
                     <div className="text-center">
-                      <p className="text-2xl font-bold text-red-600">{stats.rejected}</p>
+                      <p className="text-2xl font-bold text-destructive">{stats.rejected}</p>
                       <p className="text-xs text-muted-foreground">Rejetés</p>
                     </div>
                   </div>

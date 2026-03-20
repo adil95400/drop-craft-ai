@@ -123,15 +123,15 @@ export default function ExtensionAPIPage() {
               <div className="space-y-4">
                 <div className="p-4 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200">
                   <div className="flex items-center gap-2 mb-2">
-                    <CheckCircle2 className="h-5 w-5 text-green-600" />
-                    <span className="font-medium text-green-800 dark:text-green-200">Clé générée avec succès</span>
+                    <CheckCircle2 className="h-5 w-5 text-success" />
+                    <span className="font-medium text-success dark:text-green-200">Clé générée avec succès</span>
                   </div>
                   <code className="block p-3 bg-white dark:bg-gray-900 rounded border text-sm font-mono break-all">
                     {generatedKey}
                   </code>
                 </div>
                 <div className="flex items-center gap-2 p-3 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg border border-yellow-200">
-                  <AlertCircle className="h-4 w-4 text-yellow-600" />
+                  <AlertCircle className="h-4 w-4 text-warning" />
                   <span className="text-sm text-yellow-800 dark:text-yellow-200">
                     Cette clé ne sera plus visible après fermeture de cette fenêtre
                   </span>
@@ -212,8 +212,8 @@ export default function ExtensionAPIPage() {
         </Card>
         <Card className="border-green-200 bg-green-50/50 dark:bg-green-900/10">
           <CardContent className="pt-6">
-            <p className="text-sm text-green-700">Clés Actives</p>
-            <div className="text-3xl font-bold text-green-700">{stats.activeKeys}</div>
+            <p className="text-sm text-success">Clés Actives</p>
+            <div className="text-3xl font-bold text-success">{stats.activeKeys}</div>
           </CardContent>
         </Card>
         <Card>
@@ -263,13 +263,13 @@ export default function ExtensionAPIPage() {
                             'p-2 rounded-lg',
                             key.is_active ? 'bg-green-100 dark:bg-green-900/30' : 'bg-gray-100 dark:bg-gray-800'
                           )}>
-                            <Key className={cn('h-5 w-5', key.is_active ? 'text-green-600' : 'text-gray-400')} />
+                            <Key className={cn('h-5 w-5', key.is_active ? 'text-success' : 'text-gray-400')} />
                           </div>
                           <div>
                             <div className="flex items-center gap-2">
                               <h4 className="font-medium">{key.name}</h4>
                               {key.is_active ? (
-                                <Badge variant="outline" className="text-green-600 border-green-200">Actif</Badge>
+                                <Badge variant="outline" className="text-success border-green-200">Actif</Badge>
                               ) : (
                                 <Badge variant="outline" className="text-gray-500">Inactif</Badge>
                               )}

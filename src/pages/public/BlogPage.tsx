@@ -170,7 +170,7 @@ const BlogPage = () => {
                 Blog & Ressources
               </Badge>
               <Badge variant="outline" className="px-3 py-2 text-sm">
-                <Flame className="h-3 w-3 mr-1 text-orange-500" />
+                <Flame className="h-3 w-3 mr-1 text-warning" />
                 {allPosts.length} articles
               </Badge>
             </div>

@@ -78,7 +78,7 @@ export function MappingTable({
       return <Palette className="h-4 w-4 text-pink-500" />;
     }
     if (name.includes('size') || name.includes('taille')) {
-      return <Ruler className="h-4 w-4 text-blue-500" />;
+      return <Ruler className="h-4 w-4 text-info" />;
     }
     return <Package className="h-4 w-4 text-gray-500" />;
   };
@@ -173,7 +173,7 @@ export function MappingTable({
                 <TableCell>
                   <div className="flex items-center gap-2">
                     {mapping.is_active ? (
-                      <Badge className="bg-green-500/10 text-green-600 hover:bg-green-500/20">
+                      <Badge className="bg-green-500/10 text-success hover:bg-green-500/20">
                         <CheckCircle className="h-3 w-3 mr-1" />
                         Actif
                       </Badge>

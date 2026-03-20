@@ -160,7 +160,7 @@ export function MarketingPerformanceTracker() {
             <div className="text-2xl font-bold">{formatCurrency(totals.totalRevenue)}</div>
             <div className="flex items-center text-xs text-muted-foreground">
               {totals.totalRevenue > 0 ? (
-                <><TrendingUp className="h-3 w-3 text-green-500 mr-1" />Données réelles</>
+                <><TrendingUp className="h-3 w-3 text-success mr-1" />Données réelles</>
               ) : (
                 <>Aucune donnée pour cette période</>
               )}

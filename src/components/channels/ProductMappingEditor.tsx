@@ -415,7 +415,7 @@ export function ProductMappingEditor({
                   {/* Arrow */}
                   <div className="flex justify-center">
                     {mapping.source && mapping.enabled ? (
-                      <Link2 className="h-4 w-4 text-green-500" />
+                      <Link2 className="h-4 w-4 text-success" />
                     ) : (
                       <Unlink className="h-4 w-4 text-muted-foreground" />
                     )}
@@ -481,7 +481,7 @@ export function ProductMappingEditor({
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             {mappedRequiredCount >= requiredCount ? (
               <>
-                <CheckCircle2 className="h-4 w-4 text-green-500" />
+                <CheckCircle2 className="h-4 w-4 text-success" />
                 Tous les champs requis sont mappés
               </>
             ) : (

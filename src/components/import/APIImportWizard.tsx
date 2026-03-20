@@ -496,9 +496,9 @@ export function APIImportWizard() {
                 <CardHeader>
                   <CardTitle className="text-base flex items-center gap-2">
                     {testResult.success ? (
-                      <Check className="w-5 h-5 text-green-600" />
+                      <Check className="w-5 h-5 text-success" />
                     ) : (
-                      <AlertTriangle className="w-5 h-5 text-red-600" />
+                      <AlertTriangle className="w-5 h-5 text-destructive" />
                     )}
                     Résultat du test
                   </CardTitle>
@@ -520,7 +520,7 @@ export function APIImportWizard() {
                   {testResult.error && (
                     <div>
                       <Label>Erreur</Label>
-                      <p className="text-sm text-red-600">{testResult.error}</p>
+                      <p className="text-sm text-destructive">{testResult.error}</p>
                     </div>
                   )}
 
@@ -613,7 +613,7 @@ export function APIImportWizard() {
               <CardContent className="pt-6">
                 <div className="text-center space-y-4">
                   <div className="flex items-center justify-center w-16 h-16 mx-auto bg-green-100 rounded-full">
-                    <Check className="w-8 h-8 text-green-600" />
+                    <Check className="w-8 h-8 text-success" />
                   </div>
                   <h3 className="text-lg font-medium">Import en cours...</h3>
                   <Progress value={importProgress} className="w-full" />
@@ -623,7 +623,7 @@ export function APIImportWizard() {
 
                   {importProgress === 100 && (
                     <div className="space-y-4">
-                      <p className="text-green-600 font-medium">Import terminé avec succès !</p>
+                      <p className="text-success font-medium">Import terminé avec succès !</p>
                       <div className="flex gap-2 justify-center">
                         <Button onClick={() => setStep('config')} variant="outline">
                           Nouvel import

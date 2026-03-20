@@ -179,7 +179,7 @@ export const SupplierSelector = () => {
   const popularSuppliers = getPopularSuppliers().filter(s => s.status === 'active')
 
   const getStatusBadge = (supplier: Supplier) => {
-    if (supplier.isNew) return <Badge className="bg-green-100 text-green-800">Nouveau</Badge>
+    if (supplier.isNew) return <Badge className="bg-green-100 text-success">Nouveau</Badge>
     if (supplier.isPopular) return <Badge className="bg-blue-100 text-blue-800">Populaire</Badge>
     if (supplier.status === 'beta') return <Badge className="bg-orange-100 text-orange-800">Beta</Badge>
     return null
@@ -190,7 +190,7 @@ export const SupplierSelector = () => {
       {/* Popular Suppliers */}
       <div className="space-y-4">
         <div className="flex items-center gap-2">
-          <Star className="h-5 w-5 text-yellow-500" />
+          <Star className="h-5 w-5 text-warning" />
           <h3 className="text-lg font-semibold">Fournisseurs Populaires</h3>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">

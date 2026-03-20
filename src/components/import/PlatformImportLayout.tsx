@@ -193,9 +193,9 @@ export default function PlatformImportLayout({ config }: { config: PlatformConfi
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {[
           { label: `Produits ${config.name}`, value: stats?.total?.toLocaleString() || '0', icon: Package, color: 'text-primary' },
-          { label: 'Avis importés', value: stats?.reviews?.toLocaleString() || '0', icon: Star, color: 'text-amber-500' },
+          { label: 'Avis importés', value: stats?.reviews?.toLocaleString() || '0', icon: Star, color: 'text-warning' },
           { label: 'Dernier import', value: stats?.lastImport ? new Date(stats.lastImport).toLocaleDateString('fr-FR') : 'Jamais', icon: Clock, color: 'text-muted-foreground' },
-          { label: 'Import rapide', value: '<3s', icon: Zap, color: 'text-green-500' },
+          { label: 'Import rapide', value: '<3s', icon: Zap, color: 'text-success' },
         ].map((stat, i) => (
           <motion.div key={stat.label} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}>
             <Card className="hover:shadow-md transition-shadow">
@@ -341,7 +341,7 @@ export default function PlatformImportLayout({ config }: { config: PlatformConfi
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                   {config.extractedData.map(item => (
                     <div key={item} className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <CheckCircle2 className="w-3.5 h-3.5 text-green-500 shrink-0" />
+                      <CheckCircle2 className="w-3.5 h-3.5 text-success shrink-0" />
                       <span>{item}</span>
                     </div>
                   ))}

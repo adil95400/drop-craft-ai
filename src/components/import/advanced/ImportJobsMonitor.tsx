@@ -14,13 +14,13 @@ export const ImportJobsMonitor = ({ jobs }: ImportJobsMonitorProps) => {
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'completed':
-        return <CheckCircle2 className="h-4 w-4 text-green-600" />
+        return <CheckCircle2 className="h-4 w-4 text-success" />
       case 'failed':
-        return <XCircle className="h-4 w-4 text-red-600" />
+        return <XCircle className="h-4 w-4 text-destructive" />
       case 'processing':
-        return <Activity className="h-4 w-4 text-blue-600 animate-pulse" />
+        return <Activity className="h-4 w-4 text-info animate-pulse" />
       default:
-        return <Clock className="h-4 w-4 text-yellow-600" />
+        return <Clock className="h-4 w-4 text-warning" />
     }
   }
 
@@ -82,13 +82,13 @@ export const ImportJobsMonitor = ({ jobs }: ImportJobsMonitorProps) => {
               )}
 
               {job.status === 'completed' && (
-                <div className="text-sm text-green-600">
+                <div className="text-sm text-success">
                   ✓ {job.success_rows || 0} produits importés avec succès
                 </div>
               )}
 
               {job.status === 'failed' && job.errors && job.errors.length > 0 && (
-                <div className="text-sm text-red-600">
+                <div className="text-sm text-destructive">
                   ✗ Échec : {job.errors[0]}
                 </div>
               )}

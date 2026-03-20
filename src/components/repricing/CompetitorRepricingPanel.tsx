@@ -83,7 +83,7 @@ function CompetitorCard({ competitor, onToggle }: {
           <div>
             <p className="text-muted-foreground">Écart moyen</p>
             <p className={`font-semibold flex items-center gap-1 ${
-              competitor.avgPriceDiff < 0 ? 'text-red-500' : competitor.avgPriceDiff > 0 ? 'text-green-500' : ''
+              competitor.avgPriceDiff < 0 ? 'text-destructive' : competitor.avgPriceDiff > 0 ? 'text-success' : ''
             }`}>
               {competitor.avgPriceDiff > 0 ? <ArrowUpRight className="h-3 w-3" /> : competitor.avgPriceDiff < 0 ? <ArrowDownRight className="h-3 w-3" /> : null}
               {competitor.avgPriceDiff > 0 ? '+' : ''}{competitor.avgPriceDiff.toFixed(1)}%
@@ -105,8 +105,8 @@ function PriceComparisonRow({ price }: {
 }) {
   const getTrendIcon = () => {
     switch (price.trend) {
-      case 'up': return <TrendingUp className="h-4 w-4 text-green-500" />;
-      case 'down': return <TrendingDown className="h-4 w-4 text-red-500" />;
+      case 'up': return <TrendingUp className="h-4 w-4 text-success" />;
+      case 'down': return <TrendingDown className="h-4 w-4 text-destructive" />;
       default: return <Minus className="h-4 w-4 text-muted-foreground" />;
     }
   };
@@ -129,7 +129,7 @@ function PriceComparisonRow({ price }: {
         <div className="flex items-center gap-2 min-w-[80px] justify-end">
           {getTrendIcon()}
           <span className={`font-semibold ${
-            price.priceDiffPercent < 0 ? 'text-red-500' : price.priceDiffPercent > 0 ? 'text-green-500' : ''
+            price.priceDiffPercent < 0 ? 'text-destructive' : price.priceDiffPercent > 0 ? 'text-success' : ''
           }`}>
             {price.priceDiffPercent > 0 ? '+' : ''}{price.priceDiffPercent.toFixed(1)}%
           </span>
@@ -344,9 +344,9 @@ export function CompetitorRepricingPanel() {
 
   const getPositionColor = (position?: string) => {
     switch (position) {
-      case 'leader': return 'text-green-500';
-      case 'competitive': return 'text-blue-500';
-      case 'behind': return 'text-red-500';
+      case 'leader': return 'text-success';
+      case 'competitive': return 'text-info';
+      case 'behind': return 'text-destructive';
       default: return 'text-muted-foreground';
     }
   };

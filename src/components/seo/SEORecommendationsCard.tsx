@@ -85,14 +85,14 @@ export const SEORecommendationsCard = ({
     switch (impact) {
       case 'high': return 'bg-red-100 text-red-800';
       case 'medium': return 'bg-orange-100 text-orange-800';
-      case 'low': return 'bg-green-100 text-green-800';
+      case 'low': return 'bg-green-100 text-success';
       default: return 'bg-gray-100 text-gray-800';
     }
   };
 
   const getEffortColor = (effort: string) => {
     switch (effort) {
-      case 'easy': return 'bg-green-100 text-green-800';
+      case 'easy': return 'bg-green-100 text-success';
       case 'medium': return 'bg-orange-100 text-orange-800';
       case 'hard': return 'bg-red-100 text-red-800';
       default: return 'bg-gray-100 text-gray-800';
@@ -233,7 +233,7 @@ export const SEORecommendationsCard = ({
                     Effort: {recommendation.effort}
                   </Badge>
                 </div>
-                <div className="text-sm font-medium text-green-600">
+                <div className="text-sm font-medium text-success">
                   {recommendation.estimatedImpact}
                 </div>
               </div>

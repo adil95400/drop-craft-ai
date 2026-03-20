@@ -342,14 +342,14 @@ export const CampaignCreator: React.FC<CampaignCreatorProps> = ({
                     <div className="space-y-3">
                       <div className="flex items-center justify-between p-3 border rounded">
                         <div className="flex items-center gap-2">
-                          <Clock className="h-4 w-4 text-blue-500" />
+                          <Clock className="h-4 w-4 text-info" />
                           <span className="text-sm">Relance automatique après 24h</span>
                         </div>
                         <Switch defaultChecked />
                       </div>
                       <div className="flex items-center justify-between p-3 border rounded">
                         <div className="flex items-center gap-2">
-                          <TrendingUp className="h-4 w-4 text-green-500" />
+                          <TrendingUp className="h-4 w-4 text-success" />
                           <span className="text-sm">A/B test automatique</span>
                         </div>
                         <Switch />

@@ -233,7 +233,7 @@ export function ImportCSVPreview({ className, onImport }: ImportCSVPreviewProps)
                     </SelectContent>
                   </Select>
                   {mapping.auto && mapping.targetField !== 'ignore' && (
-                    <span className="text-[9px] text-emerald-600 px-1 flex items-center gap-0.5">
+                    <span className="text-[9px] text-success px-1 flex items-center gap-0.5">
                       <Sparkles className="w-2.5 h-2.5" /> Auto
                     </span>
                   )}

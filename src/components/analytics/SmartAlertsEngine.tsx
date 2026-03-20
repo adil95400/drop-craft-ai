@@ -23,11 +23,11 @@ import { toast } from '@/hooks/use-toast';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const ALERT_TYPES = [
-  { id: 'stock_low', label: 'Stock bas', icon: Package, color: 'text-orange-500', description: 'Alerte quand le stock passe sous un seuil' },
-  { id: 'revenue_drop', label: 'Baisse revenus', icon: TrendingDown, color: 'text-red-500', description: 'Alerte si les revenus chutent de X%' },
-  { id: 'margin_alert', label: 'Marge faible', icon: DollarSign, color: 'text-amber-500', description: 'Alerte quand la marge passe sous un seuil' },
-  { id: 'order_spike', label: 'Pic de commandes', icon: Zap, color: 'text-emerald-500', description: 'Alerte lors d\'un volume inhabituel' },
-  { id: 'security_event', label: 'Événement sécurité', icon: ShieldAlert, color: 'text-red-600', description: 'Activité suspecte détectée' },
+  { id: 'stock_low', label: 'Stock bas', icon: Package, color: 'text-warning', description: 'Alerte quand le stock passe sous un seuil' },
+  { id: 'revenue_drop', label: 'Baisse revenus', icon: TrendingDown, color: 'text-destructive', description: 'Alerte si les revenus chutent de X%' },
+  { id: 'margin_alert', label: 'Marge faible', icon: DollarSign, color: 'text-warning', description: 'Alerte quand la marge passe sous un seuil' },
+  { id: 'order_spike', label: 'Pic de commandes', icon: Zap, color: 'text-success', description: 'Alerte lors d\'un volume inhabituel' },
+  { id: 'security_event', label: 'Événement sécurité', icon: ShieldAlert, color: 'text-destructive', description: 'Activité suspecte détectée' },
 ];
 
 export function SmartAlertsEngine() {
@@ -115,10 +115,10 @@ export function SmartAlertsEngine() {
 
   const getSeverityColor = (severity: string | null) => {
     switch (severity) {
-      case 'critical': return 'bg-red-500/10 text-red-600 border-red-500/20';
-      case 'high': return 'bg-orange-500/10 text-orange-600 border-orange-500/20';
-      case 'medium': return 'bg-amber-500/10 text-amber-600 border-amber-500/20';
-      default: return 'bg-blue-500/10 text-blue-600 border-blue-500/20';
+      case 'critical': return 'bg-red-500/10 text-destructive border-red-500/20';
+      case 'high': return 'bg-orange-500/10 text-warning border-orange-500/20';
+      case 'medium': return 'bg-amber-500/10 text-warning border-amber-500/20';
+      default: return 'bg-blue-500/10 text-info border-blue-500/20';
     }
   };
 
@@ -140,7 +140,7 @@ export function SmartAlertsEngine() {
         <CardContent>
           {!activeAlerts?.length ? (
             <div className="text-center py-6 text-muted-foreground">
-              <Check className="h-10 w-10 mx-auto mb-2 text-emerald-500 opacity-50" />
+              <Check className="h-10 w-10 mx-auto mb-2 text-success opacity-50" />
               <p className="font-medium">Aucune alerte active</p>
               <p className="text-sm">Tout fonctionne normalement</p>
             </div>

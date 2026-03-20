@@ -52,10 +52,10 @@ export function ChannelOverviewTab({
   const { t } = useTranslation('channels')
   
   const dataTypes = [
-    { key: 'products', label: t('overview.products'), desc: t('overview.productsDesc'), icon: BoxIcon, color: 'text-blue-600 dark:text-blue-400 bg-blue-500/10' },
-    { key: 'orders', label: t('overview.orders'), desc: t('overview.ordersDesc'), icon: ShoppingCart, color: 'text-emerald-600 dark:text-emerald-400 bg-emerald-500/10' },
+    { key: 'products', label: t('overview.products'), desc: t('overview.productsDesc'), icon: BoxIcon, color: 'text-info dark:text-blue-400 bg-blue-500/10' },
+    { key: 'orders', label: t('overview.orders'), desc: t('overview.ordersDesc'), icon: ShoppingCart, color: 'text-success dark:text-emerald-400 bg-emerald-500/10' },
     { key: 'inventory', label: t('overview.inventory'), desc: t('overview.inventoryDesc'), icon: Package, color: 'text-purple-600 dark:text-purple-400 bg-purple-500/10' },
-    { key: 'prices', label: t('overview.prices'), desc: t('overview.pricesDesc'), icon: DollarSign, color: 'text-amber-600 dark:text-amber-400 bg-amber-500/10' },
+    { key: 'prices', label: t('overview.prices'), desc: t('overview.pricesDesc'), icon: DollarSign, color: 'text-warning dark:text-amber-400 bg-amber-500/10' },
   ]
 
   const updateSetting = (key: keyof SyncSettings, value: boolean) => {
@@ -124,7 +124,7 @@ export function ChannelOverviewTab({
         <Card className="shadow-none border-border">
           <CardHeader className="pb-3">
             <div className="flex items-center gap-2.5">
-              <Bell className="h-4 w-4 text-amber-500" />
+              <Bell className="h-4 w-4 text-warning" />
               <CardTitle className="text-sm font-semibold">{t('overview.notifications')}</CardTitle>
             </div>
           </CardHeader>
@@ -195,7 +195,7 @@ export function ChannelOverviewTab({
         <Card className="shadow-none border-border">
           <CardHeader className="pb-3">
             <div className="flex items-center gap-2.5">
-              <CheckCircle2 className="h-4 w-4 text-emerald-500" />
+              <CheckCircle2 className="h-4 w-4 text-success" />
               <CardTitle className="text-sm font-semibold">{t('overview.recentActivity')}</CardTitle>
             </div>
           </CardHeader>
@@ -204,7 +204,7 @@ export function ChannelOverviewTab({
               {lastEvent && (
                 <div className="flex items-center justify-between py-2.5 px-3 rounded-lg bg-amber-500/10 border border-amber-500/20">
                   <div className="flex items-center gap-2">
-                    <Zap className="h-3.5 w-3.5 text-amber-600" />
+                    <Zap className="h-3.5 w-3.5 text-warning" />
                     <span className="text-xs font-medium">{lastEvent.type}</span>
                   </div>
                   <Badge className="bg-amber-500/20 text-amber-700 border-amber-500/30 text-[10px] h-5">Live</Badge>
@@ -220,7 +220,7 @@ export function ChannelOverviewTab({
                   className="flex items-center justify-between py-2.5 px-3 rounded-lg hover:bg-muted/40 transition-colors"
                 >
                   <div className="flex items-center gap-2">
-                    <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />
+                    <CheckCircle2 className="h-3.5 w-3.5 text-success" />
                     <span className="text-xs">{item.action}</span>
                   </div>
                   <span className="text-[11px] text-muted-foreground tabular-nums">{item.time}</span>

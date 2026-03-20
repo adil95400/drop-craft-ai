@@ -68,7 +68,7 @@ export function BulkOrderCard({ order, onView }: BulkOrderCardProps) {
               <p className="text-xs text-muted-foreground">Produits</p>
             </div>
             <div className="text-center">
-              <p className="text-lg font-bold text-green-600">
+              <p className="text-lg font-bold text-success">
                 {parseFloat(order.total_amount as any).toLocaleString('fr-FR', { minimumFractionDigits: 2 })}€
               </p>
               <p className="text-xs text-muted-foreground">Total</p>

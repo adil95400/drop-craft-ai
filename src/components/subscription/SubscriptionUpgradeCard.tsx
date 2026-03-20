@@ -19,7 +19,7 @@ export const SubscriptionUpgradeCard = () => {
       title: 'Passez au plan Pro',
       description: 'Débloquez l\'IA Analytics et plus d\'automatisations',
       icon: Crown,
-      color: 'text-blue-600',
+      color: 'text-info',
       features: [
         'Import 500 produits/jour',
         'IA Analytics avancée',
@@ -68,7 +68,7 @@ export const SubscriptionUpgradeCard = () => {
         <div className="space-y-2">
           {config.features.map((feature, index) => (
             <div key={index} className="flex items-center gap-2 text-sm">
-              <Check className="w-4 h-4 text-green-600 flex-shrink-0" />
+              <Check className="w-4 h-4 text-success flex-shrink-0" />
               <span>{feature}</span>
             </div>
           ))}

@@ -364,7 +364,7 @@ export function VariantMatrix() {
                 <div className="flex items-center gap-2">
                   <Badge variant="outline">{variants.length} variantes</Badge>
                   {missingCount > 0 && (
-                    <Badge variant="secondary" className="text-yellow-600">
+                    <Badge variant="secondary" className="text-warning">
                       <AlertTriangle className="h-3 w-3 mr-1" />
                       {missingCount} manquantes
                     </Badge>

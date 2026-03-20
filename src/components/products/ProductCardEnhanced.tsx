@@ -218,7 +218,7 @@ export function ProductCardEnhanced({
               <DollarSign className="h-3 w-3" />
               {product.supplier_count} fournisseur{product.supplier_count > 1 ? 's' : ''}
               {product.best_supplier_price && product.best_supplier_price < product.cost_price && (
-                <span className="text-green-600 font-medium">
+                <span className="text-success font-medium">
                   (Meilleur: {product.best_supplier_price.toFixed(2)}€)
                 </span>
               )}

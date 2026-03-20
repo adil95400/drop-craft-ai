@@ -39,7 +39,7 @@ export function AdminUserDropdown() {
           <div className="hidden md:block text-left">
             <div className="text-sm font-medium flex items-center gap-2">
               {userInfo.name}
-              <Crown className="h-3 w-3 text-yellow-500" />
+              <Crown className="h-3 w-3 text-warning" />
             </div>
             <div className="text-xs text-muted-foreground">{userInfo.plan}</div>
           </div>
@@ -114,7 +114,7 @@ export function AdminUserDropdown() {
         
         <DropdownMenuSeparator />
         
-        <DropdownMenuItem onClick={handleLogout} className="cursor-pointer text-red-600">
+        <DropdownMenuItem onClick={handleLogout} className="cursor-pointer text-destructive">
           <LogOut className="mr-2 h-4 w-4" />
           <span>Déconnexion</span>
         </DropdownMenuItem>

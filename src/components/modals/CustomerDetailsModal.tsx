@@ -120,15 +120,15 @@ export function CustomerDetailsModal({ customer, open, onOpenChange }: CustomerD
           <div className="grid grid-cols-4 gap-4">
             <Card>
               <CardContent className="p-4 text-center">
-                <DollarSign className="w-8 h-8 mx-auto mb-2 text-green-500" />
-                <p className="text-2xl font-bold text-green-600">{customer.totalSpent.toFixed(2)}€</p>
+                <DollarSign className="w-8 h-8 mx-auto mb-2 text-success" />
+                <p className="text-2xl font-bold text-success">{customer.totalSpent.toFixed(2)}€</p>
                 <p className="text-sm text-muted-foreground">Total Dépensé</p>
               </CardContent>
             </Card>
 
             <Card>
               <CardContent className="p-4 text-center">
-                <ShoppingCart className="w-8 h-8 mx-auto mb-2 text-blue-500" />
+                <ShoppingCart className="w-8 h-8 mx-auto mb-2 text-info" />
                 <p className="text-2xl font-bold">{customer.totalOrders}</p>
                 <p className="text-sm text-muted-foreground">Commandes</p>
               </CardContent>
@@ -144,7 +144,7 @@ export function CustomerDetailsModal({ customer, open, onOpenChange }: CustomerD
 
             <Card>
               <CardContent className="p-4 text-center">
-                <Star className="w-8 h-8 mx-auto mb-2 text-yellow-500" />
+                <Star className="w-8 h-8 mx-auto mb-2 text-warning" />
                 <p className="text-2xl font-bold">{customer.lifetime_value}€</p>
                 <p className="text-sm text-muted-foreground">Valeur Vie</p>
               </CardContent>
@@ -181,7 +181,7 @@ export function CustomerDetailsModal({ customer, open, onOpenChange }: CustomerD
                       <div key={order.id} className="flex items-center justify-between p-3 border rounded-lg">
                         <div className="flex items-center gap-3">
                           <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                            <Package className="w-5 h-5 text-blue-600" />
+                            <Package className="w-5 h-5 text-info" />
                           </div>
                           <div>
                             <p className="font-medium">{order.id}</p>
@@ -217,7 +217,7 @@ export function CustomerDetailsModal({ customer, open, onOpenChange }: CustomerD
                   <div className="space-y-3">
                     <div className="flex items-center gap-3 p-3 border rounded-lg">
                       <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
-                        <ShoppingCart className="w-4 h-4 text-green-600" />
+                        <ShoppingCart className="w-4 h-4 text-success" />
                       </div>
                       <div>
                         <p className="font-medium">Commande passée</p>
@@ -227,7 +227,7 @@ export function CustomerDetailsModal({ customer, open, onOpenChange }: CustomerD
                     
                     <div className="flex items-center gap-3 p-3 border rounded-lg">
                       <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                        <Mail className="w-4 h-4 text-blue-600" />
+                        <Mail className="w-4 h-4 text-info" />
                       </div>
                       <div>
                         <p className="font-medium">Email ouvert</p>

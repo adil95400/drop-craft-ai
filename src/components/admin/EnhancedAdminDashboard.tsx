@@ -130,9 +130,9 @@ export const EnhancedAdminDashboard = () => {
   useEffect(() => { loadMetrics() }, [])
 
   const getStatusColor = (value: number, thresholds: { good: number; warning: number }) => {
-    if (value <= thresholds.good) return 'text-green-600'
-    if (value <= thresholds.warning) return 'text-yellow-600'
-    return 'text-red-600'
+    if (value <= thresholds.good) return 'text-success'
+    if (value <= thresholds.warning) return 'text-warning'
+    return 'text-destructive'
   }
 
   return (
@@ -168,7 +168,7 @@ export const EnhancedAdminDashboard = () => {
           <CardContent>
             <div className="text-2xl font-bold">{metrics.totalUsers.toLocaleString()}</div>
             <div className="flex items-center gap-2 text-xs text-muted-foreground">
-              <TrendingUp className="h-3 w-3 text-green-600" />
+              <TrendingUp className="h-3 w-3 text-success" />
               <span>{metrics.activeUsers.toLocaleString()} actifs</span>
             </div>
           </CardContent>
@@ -205,7 +205,7 @@ export const EnhancedAdminDashboard = () => {
           <CardContent>
             <div className="text-2xl font-bold">{metrics.totalProducts.toLocaleString()}</div>
             <div className="flex items-center gap-2 text-xs text-muted-foreground">
-              <Upload className="h-3 w-3 text-blue-600" />
+              <Upload className="h-3 w-3 text-info" />
               <span>{metrics.totalSuppliers} fournisseurs</span>
             </div>
           </CardContent>

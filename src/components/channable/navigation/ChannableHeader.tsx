@@ -274,7 +274,7 @@ const GlobalSearch = memo(() => {
           <CommandGroup heading={t('header.quickActions')}>
             <CommandItem onSelect={() => handleSelect('/products/new')} className="cursor-pointer py-3">
               <div className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center mr-3">
-                <Plus className="h-4 w-4 text-emerald-500" aria-hidden="true" />
+                <Plus className="h-4 w-4 text-success" aria-hidden="true" />
               </div>
               <div className="flex-1">
                 <span className="font-medium">{t('header.newProduct')}</span>
@@ -284,7 +284,7 @@ const GlobalSearch = memo(() => {
             </CommandItem>
             <CommandItem onSelect={() => handleSelect('/import')} className="cursor-pointer py-3">
               <div className="w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center mr-3">
-                <Upload className="h-4 w-4 text-blue-500" aria-hidden="true" />
+                <Upload className="h-4 w-4 text-info" aria-hidden="true" />
               </div>
               <div className="flex-1">
                 <span className="font-medium">{t('header.importData')}</span>
@@ -372,7 +372,7 @@ const QuickActionsButton = memo(() => {
         <DropdownMenuGroup className="space-y-1">
           <DropdownMenuItem onClick={() => navigate('/products/new')} className="cursor-pointer rounded-lg py-2.5">
             <div className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center mr-3">
-              <Package className="h-4 w-4 text-emerald-500" aria-hidden="true" />
+              <Package className="h-4 w-4 text-success" aria-hidden="true" />
             </div>
             <div>
               <span className="font-medium">{t('header.newProduct')}</span>
@@ -381,7 +381,7 @@ const QuickActionsButton = memo(() => {
           </DropdownMenuItem>
           <DropdownMenuItem onClick={() => navigate('/orders/new')} className="cursor-pointer rounded-lg py-2.5">
             <div className="w-8 h-8 rounded-lg bg-amber-500/10 flex items-center justify-center mr-3">
-              <ShoppingCart className="h-4 w-4 text-amber-500" aria-hidden="true" />
+              <ShoppingCart className="h-4 w-4 text-warning" aria-hidden="true" />
             </div>
             <div>
               <span className="font-medium">{t('header.newOrder')}</span>
@@ -390,7 +390,7 @@ const QuickActionsButton = memo(() => {
           </DropdownMenuItem>
           <DropdownMenuItem onClick={() => navigate('/import')} className="cursor-pointer rounded-lg py-2.5">
             <div className="w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center mr-3">
-              <Upload className="h-4 w-4 text-blue-500" aria-hidden="true" />
+              <Upload className="h-4 w-4 text-info" aria-hidden="true" />
             </div>
             <div>
               <span className="font-medium">{t('import')}</span>
@@ -406,7 +406,7 @@ QuickActionsButton.displayName = 'QuickActionsButton'
 
 // Memoized Badge Content for notifications
 const NotificationBadge = memo(({ count, t }: { count: number; t: (key: string) => string }) => (
-  <Badge className="bg-rose-500/10 text-rose-600 border-rose-500/20 text-[10px] font-semibold">
+  <Badge className="bg-rose-500/10 text-destructive border-rose-500/20 text-[10px] font-semibold">
     {count} {t('new')}
   </Badge>
 ))
@@ -414,10 +414,10 @@ NotificationBadge.displayName = 'NotificationBadge'
 
 // Notification type styles
 const NOTIF_TYPE_STYLES = {
-  success: { bg: 'bg-emerald-500/10', text: 'text-emerald-500', dot: 'bg-emerald-500' },
-  warning: { bg: 'bg-amber-500/10', text: 'text-amber-500', dot: 'bg-amber-500' },
-  info: { bg: 'bg-blue-500/10', text: 'text-blue-500', dot: 'bg-blue-500' },
-  error: { bg: 'bg-rose-500/10', text: 'text-rose-500', dot: 'bg-rose-500' },
+  success: { bg: 'bg-emerald-500/10', text: 'text-success', dot: 'bg-emerald-500' },
+  warning: { bg: 'bg-amber-500/10', text: 'text-warning', dot: 'bg-amber-500' },
+  info: { bg: 'bg-blue-500/10', text: 'text-info', dot: 'bg-blue-500' },
+  error: { bg: 'bg-rose-500/10', text: 'text-destructive', dot: 'bg-rose-500' },
 }
 
 // Notifications Dropdown Premium - Connected to real data
@@ -640,14 +640,14 @@ const UserMenuDropdown = memo(() => {
         <DropdownMenuItem onClick={() => navigate('/pricing')} className="cursor-pointer rounded-lg py-2.5 bg-gradient-to-r from-primary/5 to-violet-500/5 hover:from-primary/10 hover:to-violet-500/10">
           <Sparkles className="mr-3 h-4 w-4 text-primary" aria-hidden="true" />
           <span className="font-medium text-primary">{t('header.upgradeToPro')}</span>
-          <Star className="ml-auto h-4 w-4 text-amber-500" aria-hidden="true" />
+          <Star className="ml-auto h-4 w-4 text-warning" aria-hidden="true" />
         </DropdownMenuItem>
         
         <DropdownMenuSeparator className="my-2" />
         
         <DropdownMenuItem 
           onClick={() => signOut?.()}
-          className="cursor-pointer rounded-lg py-2.5 text-rose-600 hover:text-rose-700 hover:bg-rose-500/10"
+          className="cursor-pointer rounded-lg py-2.5 text-destructive hover:text-rose-700 hover:bg-rose-500/10"
         >
           <LogOut className="mr-3 h-4 w-4" aria-hidden="true" />
           <span className="font-medium">{t('logout')}</span>

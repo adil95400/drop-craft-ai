@@ -290,7 +290,7 @@ export function VideoTutorialForm({ video, platform, onClose, onSuccess }: Video
                 <input {...getInputProps()} />
                 {videoFile || uploadedVideoUrl ? (
                   <div className="space-y-2">
-                    <Upload className="h-8 w-8 mx-auto text-green-500" />
+                    <Upload className="h-8 w-8 mx-auto text-success" />
                     <p className="text-sm font-medium">
                       {videoFile?.name || 'Vidéo uploadée'}
                     </p>

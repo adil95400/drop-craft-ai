@@ -77,7 +77,7 @@ export function ImportJobProcessor() {
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'completed': return <CheckCircle className="h-4 w-4 text-green-500" />
+      case 'completed': return <CheckCircle className="h-4 w-4 text-success" />
       case 'failed': return <AlertCircle className="h-4 w-4 text-destructive" />
       case 'processing': return <RefreshCw className="h-4 w-4 text-primary animate-spin" />
       default: return <Pause className="h-4 w-4 text-muted-foreground" />
@@ -163,7 +163,7 @@ export function ImportJobProcessor() {
                 )}
 
                 {job.status === 'completed' && (
-                  <div className="text-sm text-green-600">
+                  <div className="text-sm text-success">
                     ✓ {job.successful_imports} succès, {job.failed_imports} erreurs
                   </div>
                 )}

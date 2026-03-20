@@ -346,7 +346,7 @@ export function RuleTesterDialog({ rule, open, onOpenChange }: RuleTesterDialogP
               {/* Stats */}
               <div className="flex items-center justify-center gap-6 py-3 bg-muted/30 rounded-lg">
                 <div className="flex items-center gap-2">
-                  <CheckCircle2 className="h-5 w-5 text-green-500" />
+                  <CheckCircle2 className="h-5 w-5 text-success" />
                   <span className="font-medium">{matchCount} match{matchCount > 1 ? 's' : ''}</span>
                 </div>
                 <div className="flex items-center gap-2">
@@ -368,7 +368,7 @@ export function RuleTesterDialog({ rule, open, onOpenChange }: RuleTesterDialogP
                             <div className="flex-1">
                               <div className="flex items-center gap-2">
                                 {result.matches ? (
-                                  <CheckCircle2 className="h-5 w-5 text-green-500 shrink-0" />
+                                  <CheckCircle2 className="h-5 w-5 text-success shrink-0" />
                                 ) : (
                                   <XCircle className="h-5 w-5 text-muted-foreground shrink-0" />
                                 )}

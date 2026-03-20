@@ -182,7 +182,7 @@ export function DashboardEmptyState() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card className="border-dashed">
           <CardContent className="py-6 text-center">
-            <Zap className="h-8 w-8 text-amber-500 mx-auto mb-3" />
+            <Zap className="h-8 w-8 text-warning mx-auto mb-3" />
             <h4 className="font-medium mb-1">Optimisation IA</h4>
             <p className="text-xs text-muted-foreground">
               Descriptions, titres et SEO générés automatiquement
@@ -192,7 +192,7 @@ export function DashboardEmptyState() {
         
         <Card className="border-dashed">
           <CardContent className="py-6 text-center">
-            <TrendingUp className="h-8 w-8 text-emerald-500 mx-auto mb-3" />
+            <TrendingUp className="h-8 w-8 text-success mx-auto mb-3" />
             <h4 className="font-medium mb-1">Analytics Temps Réel</h4>
             <p className="text-xs text-muted-foreground">
               Suivez vos performances et marges en direct
@@ -202,7 +202,7 @@ export function DashboardEmptyState() {
         
         <Card className="border-dashed">
           <CardContent className="py-6 text-center">
-            <Package className="h-8 w-8 text-blue-500 mx-auto mb-3" />
+            <Package className="h-8 w-8 text-info mx-auto mb-3" />
             <h4 className="font-medium mb-1">Multi-Boutiques</h4>
             <p className="text-xs text-muted-foreground">
               Gérez tous vos canaux depuis un seul endroit

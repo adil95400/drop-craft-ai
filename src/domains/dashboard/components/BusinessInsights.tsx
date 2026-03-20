@@ -100,8 +100,8 @@ export const BusinessInsights: React.FC = () => {
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-xl font-bold">{typeof kpi.value === 'number' && kpi.value > 100 ? kpi.value.toLocaleString('fr-FR', { maximumFractionDigits: 0 }) : kpi.value.toLocaleString('fr-FR', { maximumFractionDigits: 1 })}</span>
                   <div className="flex items-center text-sm">
-                    {kpi.trend === 'up' ? <ArrowUpRight className="h-3 w-3 text-green-500 mr-1" /> : kpi.trend === 'down' ? <ArrowDownRight className="h-3 w-3 text-red-500 mr-1" /> : null}
-                    <span className={kpi.change >= 0 ? 'text-green-500' : 'text-red-500'}>{Math.abs(kpi.change)}%</span>
+                    {kpi.trend === 'up' ? <ArrowUpRight className="h-3 w-3 text-success mr-1" /> : kpi.trend === 'down' ? <ArrowDownRight className="h-3 w-3 text-destructive mr-1" /> : null}
+                    <span className={kpi.change >= 0 ? 'text-success' : 'text-destructive'}>{Math.abs(kpi.change)}%</span>
                   </div>
                 </div>
                 <Progress value={Math.min(pct, 100)} className="h-2" />

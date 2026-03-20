@@ -35,14 +35,14 @@ export function RepricingPreviewDialog({
   if (!preview) return null;
 
   const getPriceChangeIcon = (change: number) => {
-    if (change > 0) return <TrendingUp className="h-4 w-4 text-green-600" />;
-    if (change < 0) return <TrendingDown className="h-4 w-4 text-red-600" />;
+    if (change > 0) return <TrendingUp className="h-4 w-4 text-success" />;
+    if (change < 0) return <TrendingDown className="h-4 w-4 text-destructive" />;
     return <Minus className="h-4 w-4 text-muted-foreground" />;
   };
 
   const getPriceChangeColor = (change: number) => {
-    if (change > 0) return 'text-green-600';
-    if (change < 0) return 'text-red-600';
+    if (change > 0) return 'text-success';
+    if (change < 0) return 'text-destructive';
     return 'text-muted-foreground';
   };
 

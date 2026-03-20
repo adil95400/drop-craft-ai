@@ -80,7 +80,7 @@ export function ProductsStandardView({
                 {isAISorted ? (
                   <Brain className="h-5 w-5 text-primary" />
                 ) : isBusinessMode ? (
-                  <BarChart3 className="h-5 w-5 text-emerald-600" />
+                  <BarChart3 className="h-5 w-5 text-success" />
                 ) : (
                   <Package className="h-5 w-5 text-primary" />
                 )}

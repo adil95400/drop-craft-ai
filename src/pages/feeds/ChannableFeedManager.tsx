@@ -115,9 +115,9 @@ const MarketplaceLogo = ({ id, emoji, size = 24 }: { id: string; emoji: string; 
 
 const QualityScore = ({ score, size = 'sm' }: { score: number; size?: 'sm' | 'lg' }) => {
   const getColor = () => {
-    if (score >= 80) return 'text-green-600 bg-green-500/10 border-green-500/20'
-    if (score >= 50) return 'text-amber-600 bg-amber-500/10 border-amber-500/20'
-    return 'text-red-600 bg-red-500/10 border-red-500/20'
+    if (score >= 80) return 'text-success bg-green-500/10 border-green-500/20'
+    if (score >= 50) return 'text-warning bg-amber-500/10 border-amber-500/20'
+    return 'text-destructive bg-red-500/10 border-red-500/20'
   }
   const getIcon = () => {
     if (score >= 80) return <CheckCircle className={cn(size === 'lg' ? 'h-4 w-4' : 'h-3.5 w-3.5')} />
@@ -150,7 +150,7 @@ const QualityScore = ({ score, size = 'sm' }: { score: number; size?: 'sm' | 'lg
 
 const FeedStatusChip = ({ status }: { status: string | null }) => {
   const configs: Record<string, { color: string; icon: any; label: string }> = {
-    completed: { color: 'bg-green-500/10 text-green-700 border-green-500/20', icon: CheckCircle, label: 'Actif' },
+    completed: { color: 'bg-green-500/10 text-success border-green-500/20', icon: CheckCircle, label: 'Actif' },
     pending: { color: 'bg-amber-500/10 text-amber-700 border-amber-500/20', icon: Clock, label: 'En attente' },
     error: { color: 'bg-red-500/10 text-red-700 border-red-500/20', icon: XCircle, label: 'Erreur' },
     generating: { color: 'bg-blue-500/10 text-blue-700 border-blue-500/20', icon: RefreshCw, label: 'Génération...' },
@@ -400,23 +400,23 @@ function FeedSettingsModal({ feed, open, onOpenChange, onSave }: {
                 )}>
                   <div className={cn(
                     "p-1.5 rounded-lg mt-0.5",
-                    passed ? "bg-green-500/10 text-green-600" : "bg-muted text-muted-foreground"
+                    passed ? "bg-green-500/10 text-success" : "bg-muted text-muted-foreground"
                   )}>
                     <ItemIcon className="h-3.5 w-3.5" />
                   </div>
                   <div className="flex-1">
                     <div className="flex items-center justify-between">
                       <p className="text-sm font-medium">{item.label}</p>
-                      <Badge variant="outline" className={cn("text-[10px]", passed ? "text-green-600 border-green-500/30" : "text-muted-foreground")}>
+                      <Badge variant="outline" className={cn("text-[10px]", passed ? "text-success border-green-500/30" : "text-muted-foreground")}>
                         {passed ? 'OK' : `+${item.weight}%`}
                       </Badge>
                     </div>
                     <p className="text-xs text-muted-foreground">{item.description}</p>
                   </div>
                   {passed ? (
-                    <CheckCircle className="h-4 w-4 text-green-600 shrink-0 mt-1" />
+                    <CheckCircle className="h-4 w-4 text-success shrink-0 mt-1" />
                   ) : (
-                    <AlertCircle className="h-4 w-4 text-amber-500 shrink-0 mt-1" />
+                    <AlertCircle className="h-4 w-4 text-warning shrink-0 mt-1" />
                   )}
                 </div>
               )
@@ -591,9 +591,9 @@ function FeedExpandedRow({ feed, onOpenSettings, onGenerate, isGenerating }: {
                   return (
                     <div key={item.label} className="flex items-center gap-2 text-xs">
                       {passed ? (
-                        <CheckCircle className="h-3.5 w-3.5 text-green-600 shrink-0" />
+                        <CheckCircle className="h-3.5 w-3.5 text-success shrink-0" />
                       ) : (
-                        <AlertCircle className="h-3.5 w-3.5 text-amber-500 shrink-0" />
+                        <AlertCircle className="h-3.5 w-3.5 text-warning shrink-0" />
                       )}
                       <span className={cn("flex-1", !passed && 'text-muted-foreground')}>{item.label}</span>
                       <span className="text-muted-foreground font-mono">{item.weight}%</span>
@@ -723,10 +723,10 @@ export default function ChannableFeedManager() {
       <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
         {[
           { label: 'Feeds actifs', value: stats.activeFeeds, total: stats.totalFeeds, icon: Rss, color: 'text-primary' },
-          { label: 'Produits exportés', value: stats.totalProducts.toLocaleString(), icon: Package, color: 'text-blue-600' },
-          { label: 'Canaux connectés', value: new Set(feeds.map(f => f.feed_type)).size, icon: Globe, color: 'text-green-600' },
-          { label: 'Erreurs', value: stats.errorFeeds, icon: AlertTriangle, color: stats.errorFeeds > 0 ? 'text-red-600' : 'text-muted-foreground' },
-          { label: 'Qualité moy.', value: feeds.length > 0 ? `${Math.round(feeds.reduce((s, f) => s + getQualityScore(f), 0) / feeds.length)}%` : '--', icon: Shield, color: 'text-amber-600' },
+          { label: 'Produits exportés', value: stats.totalProducts.toLocaleString(), icon: Package, color: 'text-info' },
+          { label: 'Canaux connectés', value: new Set(feeds.map(f => f.feed_type)).size, icon: Globe, color: 'text-success' },
+          { label: 'Erreurs', value: stats.errorFeeds, icon: AlertTriangle, color: stats.errorFeeds > 0 ? 'text-destructive' : 'text-muted-foreground' },
+          { label: 'Qualité moy.', value: feeds.length > 0 ? `${Math.round(feeds.reduce((s, f) => s + getQualityScore(f), 0) / feeds.length)}%` : '--', icon: Shield, color: 'text-warning' },
         ].map(kpi => (
           <Card key={kpi.label} className="p-4 hover:shadow-md transition-shadow">
             <div className="flex items-center gap-3">

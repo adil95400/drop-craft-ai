@@ -152,23 +152,23 @@ export const RealTimeStats: React.FC = () => {
   const getStatusColor = (value: number, threshold: number, inverse = false) => {
     const ratio = value / threshold;
     if (inverse) {
-      if (ratio < 0.3) return 'text-green-600';
-      if (ratio < 0.6) return 'text-yellow-600';
-      return 'text-red-600';
+      if (ratio < 0.3) return 'text-success';
+      if (ratio < 0.6) return 'text-warning';
+      return 'text-destructive';
     }
-    if (ratio < 0.6) return 'text-green-600';
-    if (ratio < 0.8) return 'text-yellow-600';
-    return 'text-red-600';
+    if (ratio < 0.6) return 'text-success';
+    if (ratio < 0.8) return 'text-warning';
+    return 'text-destructive';
   };
 
   const getStatusBadge = (value: number, threshold: number, inverse = false) => {
     const ratio = value / threshold;
     if (inverse) {
-      if (ratio < 0.3) return <Badge variant="secondary" className="bg-green-100 text-green-800">Optimal</Badge>;
+      if (ratio < 0.3) return <Badge variant="secondary" className="bg-green-100 text-success">Optimal</Badge>;
       if (ratio < 0.6) return <Badge variant="outline" className="border-yellow-500 text-yellow-700">Attention</Badge>;
       return <Badge variant="destructive">Critique</Badge>;
     }
-    if (ratio < 0.6) return <Badge variant="secondary" className="bg-green-100 text-green-800">Optimal</Badge>;
+    if (ratio < 0.6) return <Badge variant="secondary" className="bg-green-100 text-success">Optimal</Badge>;
     if (ratio < 0.8) return <Badge variant="outline" className="border-yellow-500 text-yellow-700">Attention</Badge>;
     return <Badge variant="destructive">Critique</Badge>;
   };
@@ -176,8 +176,8 @@ export const RealTimeStats: React.FC = () => {
   const TrendIcon = ({ trend }: { trend?: 'up' | 'down' | 'stable' }) => {
     if (!trend || trend === 'stable') return null;
     return trend === 'up' 
-      ? <TrendingUp className="h-3 w-3 text-green-500" />
-      : <TrendingDown className="h-3 w-3 text-red-500" />;
+      ? <TrendingUp className="h-3 w-3 text-success" />
+      : <TrendingDown className="h-3 w-3 text-destructive" />;
   };
 
   return (

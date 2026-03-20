@@ -268,10 +268,10 @@ export function ShopifyDiagnostic({
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'success': return <CheckCircle2 className="w-5 h-5 text-green-500" />;
-      case 'warning': return <AlertTriangle className="w-5 h-5 text-yellow-500" />;
-      case 'error': return <XCircle className="w-5 h-5 text-red-500" />;
-      case 'running': return <RefreshCw className="w-5 h-5 text-blue-500 animate-spin" />;
+      case 'success': return <CheckCircle2 className="w-5 h-5 text-success" />;
+      case 'warning': return <AlertTriangle className="w-5 h-5 text-warning" />;
+      case 'error': return <XCircle className="w-5 h-5 text-destructive" />;
+      case 'running': return <RefreshCw className="w-5 h-5 text-info animate-spin" />;
       default: return <div className="w-5 h-5 rounded-full bg-muted" />;
     }
   };

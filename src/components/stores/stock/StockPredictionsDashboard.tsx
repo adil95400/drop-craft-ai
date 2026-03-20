@@ -29,8 +29,8 @@ export function StockPredictionsDashboard() {
   };
 
   const getTrendIcon = (trend: string) => {
-    if (trend === 'increasing') return <TrendingUp className="h-4 w-4 text-green-500" />;
-    if (trend === 'decreasing') return <TrendingDown className="h-4 w-4 text-red-500" />;
+    if (trend === 'increasing') return <TrendingUp className="h-4 w-4 text-success" />;
+    if (trend === 'decreasing') return <TrendingDown className="h-4 w-4 text-destructive" />;
     return <Minus className="h-4 w-4 text-muted-foreground" />;
   };
 
