@@ -1,6 +1,6 @@
 /**
  * Advanced Media Editor - Éditeur de médias avancé
- * Crop, watermark, suppression arrière-plan, filtres, redimensionnement
+ * Crop, watermark, suppression arrière-plan, filtres, redimensionnement, vidéo IA
  */
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
@@ -15,9 +15,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import {
   Image as ImageIcon, Upload, Crop, RotateCw, FlipHorizontal, FlipVertical,
   Sun, Contrast, Palette, Download, Type, Layers, Scissors, Maximize2,
-  ZoomIn, ZoomOut, Undo2, Redo2, Wand2, Sparkles, Grid3X3
+  ZoomIn, ZoomOut, Undo2, Redo2, Wand2, Sparkles, Grid3X3, Video
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { ImageCropTool } from '@/components/media/ImageCropTool';
+import { BackgroundRemovalTool } from '@/components/media/BackgroundRemovalTool';
+import { VideoGeneratorTool } from '@/components/media/VideoGeneratorTool';
 
 interface ImageState {
   brightness: number;
