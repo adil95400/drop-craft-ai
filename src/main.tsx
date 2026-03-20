@@ -7,8 +7,9 @@ import { HelmetProvider } from 'react-helmet-async'
 import App from './App'
 import './index.css'
 
-// Lazy-load non-critical components
-const CookieBanner = lazy(() => import('./components/CookieBanner').then(m => ({ default: m.CookieBanner })));
+const CookieBanner = lazy(() =>
+  import('./components/CookieBanner').then(m => ({ default: m.CookieBanner }))
+);
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -29,7 +30,6 @@ const queryClient = new QueryClient({
   },
 })
 
-// Remove initial loader using RAF to avoid forced reflow
 requestAnimationFrame(() => {
   const loaderEl = document.getElementById('initial-loader');
   if (loaderEl) {
@@ -40,7 +40,9 @@ requestAnimationFrame(() => {
   }
 });
 
-createRoot(document.getElementById('root')!).render(
+const root = document.getElementById('root')!;
+
+createRoot(root).render(
   <StrictMode>
     <HelmetProvider>
       <QueryClientProvider client={queryClient}>
@@ -56,7 +58,6 @@ createRoot(document.getElementById('root')!).render(
   </StrictMode>,
 )
 
-// Defer non-critical initialization after first render
 const initDeferred = () => {
   import('@/utils/consoleInterceptor').then(m => m.installConsoleInterceptor());
   import('@/utils/sentry').then(m => m.initSentry());
