@@ -47,16 +47,16 @@ class AppLogger {
   /** Set the current user for Sentry context */
   setUser(userId: string, email?: string) {
     this.userId = userId;
-    if (this.isProd && import.meta.env.VITE_SENTRY_DSN) {
-      Sentry.setUser({ id: userId, email });
+    if (this.isProd && import.meta.env.VITE_SENTRY_DSN && SentryRef) {
+      SentryRef.setUser({ id: userId, email });
     }
   }
 
   /** Clear user context */
   clearUser() {
     this.userId = undefined;
-    if (this.isProd && import.meta.env.VITE_SENTRY_DSN) {
-      Sentry.setUser(null);
+    if (this.isProd && import.meta.env.VITE_SENTRY_DSN && SentryRef) {
+      SentryRef.setUser(null);
     }
   }
 
