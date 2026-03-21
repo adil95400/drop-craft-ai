@@ -851,6 +851,8 @@ export class ConnectorFactory {
         return new EproloConnector(credentials);
       case 'printful':
         return new PrintfulConnector(credentials);
+      case 'printify':
+        return new PrintifyConnector(credentials);
       case 'syncee':
         return new SynceeConnector(credentials);
       case 'vidaxl':
