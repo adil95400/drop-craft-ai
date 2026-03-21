@@ -77,7 +77,7 @@ export default function MediaPage() {
   const queryClient = useQueryClient()
 
   // State
-  const [viewMode, setViewMode] = useState<'library' | 'pipeline' | 'ai' | 'issues'>('library')
+  const [viewMode, setViewMode] = useState<'library' | 'cloudinary' | 'pipeline' | 'ai' | 'issues'>('library')
   const [gridMode, setGridMode] = useState<'grid' | 'list'>('grid')
   const [searchQuery, setSearchQuery] = useState('')
   const [typeFilter, setTypeFilter] = useState('all')
