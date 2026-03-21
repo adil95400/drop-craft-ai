@@ -100,7 +100,7 @@ export default function ContentGenerationPage() {
               <div className="flex items-center gap-8">
                 <ResponsiveContainer width="50%" height={200}>
                   <PieChart>
-                    <Pie data={stats.byType} cx="50%" cy="50%" outerRadius={80} dataKey="value" label={({ name, percent }) => `${name} (${(percent * 100).toFixed(0)}%)`}>
+                    <Pie data={stats.byType} cx="50%" cy="50%" outerRadius={80} dataKey="value" label={({ name, percent }: any) => `${name} (${((percent as number) * 100).toFixed(0)}%)`}>
                       {stats.byType.map((_: any, i: number) => (
                         <Cell key={i} fill={COLORS[i % COLORS.length]} />
                       ))}
