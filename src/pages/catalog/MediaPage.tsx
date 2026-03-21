@@ -35,6 +35,7 @@ import { MediaAIPanel } from '@/components/catalog/MediaAIPanel'
 import { MediaPipelineDashboard } from '@/components/media/MediaPipelineDashboard'
 import { MediaAssetDetailPanel } from '@/components/media/MediaAssetDetailPanel'
 import { MediaStatsBar } from '@/components/media/MediaStatsBar'
+import { ProductMediaManager } from '@/components/media/ProductMediaManager'
 import { cn } from '@/lib/utils'
 import { toast } from 'sonner'
 import { useDropzone } from 'react-dropzone'
@@ -76,7 +77,7 @@ export default function MediaPage() {
   const queryClient = useQueryClient()
 
   // State
-  const [viewMode, setViewMode] = useState<'library' | 'pipeline' | 'ai' | 'issues'>('library')
+  const [viewMode, setViewMode] = useState<'library' | 'cloudinary' | 'pipeline' | 'ai' | 'issues'>('library')
   const [gridMode, setGridMode] = useState<'grid' | 'list'>('grid')
   const [searchQuery, setSearchQuery] = useState('')
   const [typeFilter, setTypeFilter] = useState('all')
@@ -288,6 +289,9 @@ export default function MediaPage() {
           </TabsTrigger>
           <TabsTrigger value="pipeline" className="gap-2 data-[state=active]:shadow-md">
             <Zap className="h-4 w-4" />Pipeline CDN
+          </TabsTrigger>
+          <TabsTrigger value="cloudinary" className="gap-2 data-[state=active]:shadow-md">
+            <Cloud className="h-4 w-4" />Cloudinary Produits
           </TabsTrigger>
           <TabsTrigger value="ai" className="gap-2 data-[state=active]:shadow-md">
             <Sparkles className="h-4 w-4" />Intelligence IA
@@ -528,6 +532,13 @@ export default function MediaPage() {
         <TabsContent value="pipeline" className="mt-4">
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
             <MediaPipelineDashboard />
+          </motion.div>
+        </TabsContent>
+
+        {/* === CLOUDINARY PRODUCTS TAB === */}
+        <TabsContent value="cloudinary" className="mt-4">
+          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
+            <ProductMediaManager />
           </motion.div>
         </TabsContent>
 
