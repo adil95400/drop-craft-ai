@@ -1,4 +1,4 @@
-import { memo, useState, useEffect, useMemo, useCallback, useRef } from "react";
+import { memo, useState, useEffect, useRef } from "react";
 import { Users, Clock, Globe, Star } from "lucide-react";
 import { SOCIAL_PROOF } from "@/config/landingPageConfig";
 
