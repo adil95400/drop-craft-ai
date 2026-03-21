@@ -327,8 +327,10 @@ export default function AdsManagerPage() {
 
       <CreateCampaignDialog
         open={showCreateDialog}
-        onOpenChange={setShowCreateDialog}
-        onSuccess={() => refetch()}
+        onOpenChange={(open) => {
+          setShowCreateDialog(open);
+          if (!open) refetch();
+        }}
       />
     </>
   );
