@@ -41,6 +41,7 @@ export function SupplierComparisonTable({
   platformsSearched,
   onSort
 }: SupplierComparisonTableProps) {
+  const navigate = useNavigate()
   const [selectedItems, setSelectedItems] = useState<string[]>([])
   const [sortField, setSortField] = useState<string>('score')
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc')
