@@ -85,6 +85,7 @@ import { ActiveJobsBanner } from '@/components/jobs';
 import { GuidedTour } from '@/components/onboarding/GuidedTour';
 import { CrossModuleSuggestions } from '@/components/cross-module/CrossModuleSuggestions';
 import { useCrossModuleEvents } from '@/services/cross-module/CrossModuleEventBus';
+import { PersonalizedInsights } from './PersonalizedInsights';
 
 // Widget loading skeleton
 const WidgetSkeleton = () => (
