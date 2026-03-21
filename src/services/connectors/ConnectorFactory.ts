@@ -379,6 +379,16 @@ export class ConnectorFactory {
       features: { products: true, inventory: true, orders: true, webhooks: true },
       rateLimits: { requestsPerMinute: 120, requestsPerHour: 7200 },
     }],
+    ['printify', {
+      id: 'printify',
+      name: 'printify',
+      displayName: 'Printify',
+      description: 'Connectez votre compte Printify (Print on Demand)',
+      category: 'supplier',
+      authType: 'oauth',
+      features: { products: true, inventory: true, orders: true, webhooks: true },
+      rateLimits: { requestsPerMinute: 60, requestsPerHour: 3600 },
+    }],
     ['syncee', {
       id: 'syncee',
       name: 'syncee',
