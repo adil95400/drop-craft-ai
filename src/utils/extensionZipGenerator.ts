@@ -9,6 +9,7 @@ const REQUIRED_FILES = [
   'manifest.json',
   'background.js',
   'content-script.js',
+  'import-overlay-v3.js',
   'bulk-import-v5-secure.js',
   'lib/base-extractor.js',
   'lib/platform-detector.js',
@@ -35,6 +36,7 @@ const EXTENSION_FILES = [
   'auth.js',
   
   // Import system (bulk-import-v5-secure.js is REQUIRED)
+  'import-overlay-v3.js',
   'import-overlay-v2.js',
   'bulk-import-v5.js',
   'bulk-import-v5-secure.js',
