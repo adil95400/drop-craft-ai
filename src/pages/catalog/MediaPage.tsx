@@ -74,14 +74,17 @@ export default function MediaPage() {
         </div>
       }
     >
-      <Tabs value={viewMode} onValueChange={(v) => setViewMode(v as 'issues' | 'ai')} className="mb-6">
+      <Tabs value={viewMode} onValueChange={(v) => setViewMode(v as 'pipeline' | 'ai' | 'issues')} className="mb-6">
         <TabsList className="bg-muted/50 backdrop-blur-sm">
+          <TabsTrigger value="pipeline" className="gap-2 data-[state=active]:shadow-md"><Zap className="h-4 w-4" />Pipeline CDN</TabsTrigger>
           <TabsTrigger value="ai" className="gap-2 data-[state=active]:shadow-md"><Sparkles className="h-4 w-4" />Intelligence IA</TabsTrigger>
           <TabsTrigger value="issues" className="gap-2 data-[state=active]:shadow-md"><AlertTriangle className="h-4 w-4" />Problèmes ({issues.length})</TabsTrigger>
         </TabsList>
       </Tabs>
 
-      {viewMode === 'ai' ? (
+      {viewMode === 'pipeline' ? (
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}><MediaPipelineDashboard /></motion.div>
+      ) : viewMode === 'ai' ? (
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}><MediaAIPanel /></motion.div>
       ) : (
         <motion.div variants={stagger} initial="hidden" animate="show" className="space-y-6">
