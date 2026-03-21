@@ -1004,6 +1004,7 @@ export class ConnectorFactory {
       case 'btswholesaler':
         return !!credentials.apiKey;
       case 'printful':
+      case 'printify':
         return !!credentials.access_token;
         
       default:
