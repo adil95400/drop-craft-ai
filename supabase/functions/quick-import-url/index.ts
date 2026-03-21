@@ -2256,12 +2256,14 @@ async function scrapeProductData(url: string, platform: string, externalProductI
     productData.specifications = extractSpecifications(html, platform)
     console.log(`📋 Found ${Object.keys(productData.specifications).length} specifications`)
     
-    // Extract tags, category, subcategory
+    // Extract tags, category, subcategory, breadcrumbs, SEO
     productData.tags = extractTags(html, markdown, platform)
     productData.category = extractCategory(html, markdown, platform)
     productData.subcategory = extractSubcategory(html, markdown, platform)
+    productData.breadcrumbs = extractBreadcrumbs(html, markdown, platform)
     productData.product_type = productData.category || ''
-    console.log(`🏷️ Tags: ${productData.tags?.length || 0}, Category: ${productData.category}, Subcategory: ${productData.subcategory}`)
+    productData.seo = extractSeoData(html)
+    console.log(`🏷️ Tags: ${productData.tags?.length || 0}, Category: ${productData.category}, Breadcrumbs: ${productData.breadcrumbs?.length || 0}`)
     
     // Extract real stock/inventory
     productData.inventory_quantity = extractStock(html, markdown, platform)
@@ -2286,6 +2288,10 @@ async function scrapeProductData(url: string, platform: string, externalProductI
     // Extract individual reviews
     productData.extracted_reviews = extractReviews(html, platform, markdown)
     console.log(`⭐ Extracted ${productData.extracted_reviews.length} reviews`)
+    
+    // Calculate review distribution and quality score
+    productData.review_distribution = calculateReviewDistribution(productData.extracted_reviews)
+    productData.quality_score = calculateQualityScore(productData)
     
     console.log(`✅ Scraped: "${productData.title}" - ${productData.price} ${productData.currency}`)
     
