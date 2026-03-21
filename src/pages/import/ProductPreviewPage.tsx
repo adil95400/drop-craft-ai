@@ -52,6 +52,12 @@ interface ProductPreviewData {
   original_price?: number | null
   handle?: string
   stock_quantity?: number
+  breadcrumbs?: string[]
+  seo?: { metaTitle?: string; metaDescription?: string; h1?: string; h2s?: string[]; canonicalUrl?: string; keywords?: string[] }
+  quality_score?: { score: number; breakdown: Record<string, { score: number; max: number; label: string }> }
+  review_distribution?: { distribution: Record<number, number>; averageRating: number; totalReviews: number }
+  shipping?: { free_shipping?: boolean; estimated_delivery?: string; methods?: string[] }
+  seller?: { name?: string; rating?: number; reviews_count?: number; url?: string }
 }
 
 // --- Image utilities ---
