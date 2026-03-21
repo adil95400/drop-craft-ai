@@ -9,7 +9,9 @@
  */
 
 import React, { Component, ReactNode } from 'react';
-import * as Sentry from '@sentry/react';
+// Lazy Sentry to prevent blank page if @sentry/react fails to load
+let SentryRef: any = null;
+import('@sentry/react').then(m => { SentryRef = m; }).catch(() => {});
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { AlertTriangle, RefreshCw, Home } from 'lucide-react';
