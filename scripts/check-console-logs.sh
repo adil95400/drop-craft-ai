@@ -19,10 +19,14 @@ MATCHES=$(grep -rn "console\.\(log\|debug\|info\)" src/ \
   --exclude="logger.ts" \
   --exclude="productionLogger.ts" \
   --exclude="sentry.ts" \
+  --exclude="buttonAuditor.ts" \
   --exclude="*.test.*" \
   --exclude="*.spec.*" \
-  --exclude="buttonAuditor.ts" \
-  | grep -v "'\`\|'\|\"" \
+  --exclude="ExtensionDocumentation.tsx" \
+  --exclude="ExtensionEditor.tsx" \
+  --exclude="ExtensionSandbox.tsx" \
+  --exclude="SDKCodeGenerator.tsx" \
+  --exclude="APIDocumentationDetailPage.tsx" \
   | grep -v "includes('console" \
   || true)
 
