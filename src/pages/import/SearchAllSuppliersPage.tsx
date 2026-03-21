@@ -9,6 +9,7 @@ import { useSearchAllSuppliers } from '@/hooks/useSearchAllSuppliers'
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper'
 
 export default function SearchAllSuppliersPage() {
+  const navigate = useNavigate()
   const {
     results,
     isSearching,
