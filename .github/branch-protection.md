@@ -1,71 +1,53 @@
 # Branch Protection Configuration
 
-Pour configurer la protection de la branche `main`, suivez ces étapes dans GitHub :
+## Branches protégées : `main` et `develop`
 
-## Configuration via GitHub Web UI
+### Configuration via GitHub Web UI
 
-1. **Accéder aux paramètres du repository**
-   - Aller dans Settings > Branches
-
-2. **Ajouter une règle de protection pour `main`**
-   - Cliquer sur "Add rule"
-   - Branch name pattern: `main`
-
-3. **Activer les options suivantes :**
+1. **Settings → Branches → Add rule**
+2. Branch name pattern: `main` (puis répéter pour `develop`)
 
 ### Protection de Base
-- ✅ **Restrict pushes that create files larger than 100 MB**
 - ✅ **Require a pull request before merging**
-  - ✅ Require approvals: 1
-  - ✅ Dismiss stale PR approvals when new commits are pushed
-  - ✅ Require review from code owners
-  - ✅ Restrict pushes that create files larger than 100 MB
-
-### Vérifications de Status
-- ✅ **Require status checks to pass before merging**
-- ✅ **Require branches to be up to date before merging**
-
-#### Status checks requis :
-- `quality` (Code Quality & Build)
-- `security` (Security Audit) 
-- `codeql` (CodeQL Analysis)
-
-### Restrictions Administrateur
+  - Require approvals: **1**
+  - Dismiss stale PR approvals when new commits are pushed
+  - Require review from code owners
 - ✅ **Restrict pushes that create files larger than 100 MB**
-- ✅ **Include administrators** (même les admins doivent suivre les règles)
-- ✅ **Allow force pushes** → ❌ DÉSACTIVER
-- ✅ **Allow deletions** → ❌ DÉSACTIVER
 
-## Configuration via GitHub CLI (Alternatif)
+### Status Checks Requis
+
+#### Pour `main` :
+- `✅ Merge Gate` (ci.yml)
+- `✅ Security Gate` (security.yml)
+- `🎭 E2E Summary` (playwright.yml)
+
+#### Pour `develop` :
+- `✅ Merge Gate` (ci.yml)
+
+### Restrictions
+- ✅ **Include administrators**
+- ❌ **Allow force pushes** → DÉSACTIVER
+- ❌ **Allow deletions** → DÉSACTIVER
+
+### Environnements GitHub
+
+| Environnement | Branche         | Reviewers | Usage              |
+|---------------|-----------------|-----------|---------------------|
+| `preview`     | PR branches     | Aucun     | Deploy preview auto |
+| `staging`     | `develop`       | 1 reviewer| Tests d'intégration |
+| `production`  | `main`          | 1 reviewer| Déploiement prod    |
+
+Configurer dans **Settings → Environments**.
+
+## Configuration via GitHub CLI
 
 ```bash
-# Installer GitHub CLI si pas déjà fait
-# https://cli.github.com/
-
-# Créer la règle de protection
 gh api repos/:owner/:repo/branches/main/protection \
   --method PUT \
-  --field required_status_checks='{"strict":true,"contexts":["quality","security","codeql"]}' \
+  --field required_status_checks='{"strict":true,"contexts":["✅ Merge Gate","✅ Security Gate","🎭 E2E Summary"]}' \
   --field enforce_admins=true \
   --field required_pull_request_reviews='{"required_approving_review_count":1,"dismiss_stale_reviews":true,"require_code_owner_reviews":true}' \
   --field restrictions=null \
   --field allow_force_pushes=false \
   --field allow_deletions=false
 ```
-
-## Vérification de la Configuration
-
-Pour vérifier que la protection est active :
-
-```bash
-gh api repos/:owner/:repo/branches/main/protection
-```
-
-## Avantages de cette Configuration
-
-- **🔒 Sécurité** : Aucun push direct sur main
-- **👥 Review** : Code review obligatoire par les pairs
-- **🧪 Qualité** : Tests et linting automatiques
-- **🔍 Sécurité** : Analyse de sécurité systématique
-- **📋 Traçabilité** : Historique complet des changements
-- **🚫 Accidents** : Protection contre les force push destructeurs

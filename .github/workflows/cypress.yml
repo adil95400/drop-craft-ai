@@ -1,4 +1,4 @@
-name: Tests Cypress E2E
+name: Cypress E2E
 
 on:
   push:
@@ -7,34 +7,38 @@ on:
     branches: [main]
 
 concurrency:
-  group: cypress-${{ github.workflow }}-${{ github.ref }}
+  group: cypress-${{ github.ref }}
   cancel-in-progress: true
 
+env:
+  NODE_VERSION: "20"
+  CI: true
+
 jobs:
-  cypress-run:
-    name: 🧪 Cypress E2E
+  cypress:
+    name: 🧪 Cypress
     runs-on: ubuntu-latest
-    timeout-minutes: 12
+    timeout-minutes: 15
     if: ${{ github.ref_name != 'auto/import-ui' }}
 
-    env:
-      NODE_VERSION: "20"
-      CI: true
-
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Setup Node
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: npm
 
-      - name: Install dependencies
-        run: npm ci --prefer-offline --no-audit --progress=false
+      - name: Cache Cypress binary
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/Cypress
+          key: cypress-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+          restore-keys: cypress-${{ runner.os }}-
 
-      - name: Run Cypress tests
+      - run: npm ci --prefer-offline --no-audit --progress=false
+
+      - name: Run Cypress
         uses: cypress-io/github-action@v6
         with:
           start: npm run dev
@@ -44,24 +48,16 @@ jobs:
           config-file: cypress.config.ts
           record: false
           install: false
-
         env:
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
           NODE_OPTIONS: --max-old-space-size=4096
 
-      - name: Upload screenshots on fail
+      - uses: actions/upload-artifact@v4
         if: failure()
-        uses: actions/upload-artifact@v4
         with:
-          name: cypress-screenshots
-          path: cypress/screenshots
-          retention-days: 14
-
-      - name: Upload videos on fail
-        if: failure()
-        uses: actions/upload-artifact@v4
-        with:
-          name: cypress-videos
-          path: cypress/videos
+          name: cypress-artifacts
+          path: |
+            cypress/screenshots
+            cypress/videos
           retention-days: 14
