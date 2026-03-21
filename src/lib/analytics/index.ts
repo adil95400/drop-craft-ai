@@ -8,11 +8,12 @@ import { getAnalyticsConfig } from './config'
 import { initGA4, trackGA4PageView, trackGA4Event } from './ga4'
 import { initMixpanel, trackMixpanelPageView, trackMixpanelEvent, identifyMixpanelUser, resetMixpanel } from './mixpanel'
 import { initHotjar, trackHotjarPageView, trackHotjarEvent, identifyHotjarUser } from './hotjar'
+import { logger } from '@/lib/logger'
 
 let debug = false
 
 function log(...args: unknown[]) {
-  if (debug) console.debug('[analytics]', ...args)
+  if (debug) logger.debug('[analytics]', { args })
 }
 
 /** Call once at app boot */
