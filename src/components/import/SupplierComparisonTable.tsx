@@ -332,7 +332,10 @@ export function SupplierComparisonTable({
                     >
                       <ExternalLink className="h-4 w-4" />
                     </Button>
-                    <Button size="sm">
+                    <Button size="sm" onClick={() => {
+                      navigate('/import/autods', { state: { url: result.productUrl } })
+                      toast({ title: 'Import lancé', description: `Redirection vers l'import pour: ${result.platform}` })
+                    }}>
                       <ShoppingCart className="h-4 w-4 mr-1" />
                       Import
                     </Button>
