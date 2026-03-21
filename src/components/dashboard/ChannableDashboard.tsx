@@ -653,6 +653,8 @@ export function ChannableDashboard() {
 
         {/* Sidebar - 1 colonne */}
         <div className="space-y-4">
+          {/* Personalized Insights */}
+          <PersonalizedInsights />
           {/* Channel Health Panel */}
           <Collapsible open={showHealthPanel} onOpenChange={setShowHealthPanel}>
             <CollapsibleTrigger asChild>
