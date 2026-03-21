@@ -535,6 +535,13 @@ export default function MediaPage() {
           </motion.div>
         </TabsContent>
 
+        {/* === CLOUDINARY PRODUCTS TAB === */}
+        <TabsContent value="cloudinary" className="mt-4">
+          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
+            <ProductMediaManager />
+          </motion.div>
+        </TabsContent>
+
         {/* === AI TAB === */}
         <TabsContent value="ai" className="mt-4">
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
