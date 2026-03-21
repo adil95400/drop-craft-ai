@@ -22,8 +22,8 @@ export default function SearchAllSuppliersPage() {
 
   return (
     <ChannablePageWrapper
-      title="Search All Suppliers"
-      description="Trouvez le meilleur fournisseur en comparant prix, livraison et disponibilité"
+      title="Recherche Multi-Fournisseurs"
+      description="Trouvez le meilleur fournisseur en comparant prix, livraison et disponibilité sur 15+ plateformes"
       heroImage="suppliers"
       badge={{ label: 'Multi-Plateforme', icon: Globe }}
     >
