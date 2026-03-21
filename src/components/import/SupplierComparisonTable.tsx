@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { 
   ArrowUpDown, ExternalLink, ShoppingCart, Star, 
   Truck, Package, TrendingUp, ChevronDown, ChevronUp,
