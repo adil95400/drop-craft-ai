@@ -20,7 +20,8 @@ import {
   ZoomIn, Loader2, Tag, DollarSign, FileText, Film, Star,
   MessageSquare, Play, Sparkles, ClipboardList, AlertCircle,
   ArrowLeft, Globe, Search, BarChart3, Layers, Settings,
-  ChevronDown, ChevronUp, ExternalLink, Copy, Save
+  ChevronDown, ChevronUp, ExternalLink, Copy, Save, Truck,
+  Shield, TrendingUp, Award
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { toast } from '@/hooks/use-toast'
