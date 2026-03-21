@@ -653,6 +653,9 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
       { id: 'analytics-bi', name: 'Intelligence Commerciale', route: '/analytics/bi', icon: 'Brain', description: 'BI avancée', features: ['bi'], order: 4 },
       { id: 'analytics-predictive', name: 'Prédictif', route: '/analytics/predictive', icon: 'TrendingUp', description: 'Statistiques prédictives', features: ['predictive'], order: 5 },
       { id: 'analytics-real-data', name: 'Temps Réel', route: '/analytics/real-data', icon: 'Activity', description: 'Données temps réel', features: ['real-data'], order: 6 },
+      { id: 'analytics-forecasting', name: 'Prévisions', route: '/analytics/forecasting', icon: 'LineChart', description: 'Prévisions de revenus', features: ['forecasting'], order: 7 },
+      { id: 'analytics-funnel', name: 'Entonnoir Conversion', route: '/analytics/conversion-funnel', icon: 'Filter', description: 'Analyse du tunnel de vente', features: ['funnel'], order: 8 },
+      { id: 'analytics-competitive', name: 'Concurrence', route: '/analytics/competitive', icon: 'Eye', description: 'Analyse concurrentielle', features: ['competitive'], order: 9 },
     ]
   },
 
