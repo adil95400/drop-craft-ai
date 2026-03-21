@@ -2,7 +2,7 @@ import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
 import { toast } from 'sonner';
 
-const EXTENSION_VERSION = '6.0.0';
+const EXTENSION_VERSION = '7.0.0';
 
 // Required files that MUST be present for the extension to load in Chrome
 const REQUIRED_FILES = [

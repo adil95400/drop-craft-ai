@@ -16,7 +16,7 @@ function getManifestVersion() {
   } catch (e) {
     console.warn('Could not read manifest version:', e);
   }
-  return '6.0.0'; // Fallback
+  return '7.0.0'; // Fallback
 }
 
 class ShopOptiPopup {
