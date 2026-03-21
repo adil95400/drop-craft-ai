@@ -39,6 +39,9 @@ export function PricingRoutes() {
       {/* Veille Prix */}
       <Route path="monitoring" element={<PriceMonitoringPage />} />
       
+      {/* Concurrence & Benchmarks */}
+      <Route path="competition" element={<PriceCompetitionPage />} />
+      
       {/* Moteur de règles */}
       <Route path="engine" element={<PricingEnginePage />} />
       
