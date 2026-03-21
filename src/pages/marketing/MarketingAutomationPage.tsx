@@ -34,6 +34,8 @@ import {
 import { WorkflowStepEditor, type WorkflowStep } from '@/components/marketing/automation/WorkflowStepEditor';
 import { AutomationPerformance } from '@/components/marketing/automation/AutomationPerformance';
 import { AudienceSegmentPicker } from '@/components/marketing/automation/AudienceSegmentPicker';
+import { ConversionFunnel } from '@/components/marketing/automation/ConversionFunnel';
+import { AICampaignSuggestions } from '@/components/marketing/automation/AICampaignSuggestions';
 
 // ─── Templates ─────────────────────────────────────────────
 const TEMPLATES = [
@@ -328,11 +330,15 @@ export default function MarketingAutomationPage() {
           ))}
         </div>
 
+        {/* AI Suggestions */}
+        <AICampaignSuggestions />
+
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList>
             <TabsTrigger value="campaigns">Mes Automatisations</TabsTrigger>
             <TabsTrigger value="templates">Templates</TabsTrigger>
             <TabsTrigger value="performance">Performance</TabsTrigger>
+            <TabsTrigger value="funnel">Entonnoir</TabsTrigger>
           </TabsList>
 
           {/* ─── Automatisations ─────────────────────────────── */}
@@ -506,6 +512,11 @@ export default function MarketingAutomationPage() {
           {/* ─── Performance ─────────────────────────────────── */}
           <TabsContent value="performance" className="mt-6">
             <AutomationPerformance />
+          </TabsContent>
+
+          {/* ─── Conversion Funnel ─────────────────────────────── */}
+          <TabsContent value="funnel" className="mt-6">
+            <ConversionFunnel />
           </TabsContent>
         </Tabs>
       </ChannablePageWrapper>

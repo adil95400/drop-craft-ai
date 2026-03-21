@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { ModuleInterconnectionBanner } from '@/components/cross-module/ModuleInterconnectionBanner';
 import { useApplyPricingRules, useAutoRepriceFromCompetitors } from '@/hooks/useCrossModuleSync';
+import { AIPricingEngine } from '@/components/pricing/AIPricingEngine';
 
 const PRICING_MODULES = [
   {
@@ -159,6 +160,11 @@ export default function PricingManagerHub() {
             {autoReprice.isPending ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Target className="h-4 w-4 mr-2" />}
             Repricing concurrentiel auto
           </Button>
+        </div>
+
+        {/* AI Pricing Engine */}
+        <div className="mb-8">
+          <AIPricingEngine />
         </div>
 
         {/* Modules grid */}
