@@ -1,6 +1,7 @@
 /**
  * Modal d'onboarding pour guider les nouveaux utilisateurs
  * sur les fonctionnalités du Hub Import
+ * Fix: DialogTitle placé comme premier enfant de DialogContent via VisuallyHidden
  */
 import React, { useState, useEffect } from 'react';
 import {
@@ -143,6 +144,9 @@ export function ImportOnboardingModal({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-lg">
+        {/* DialogTitle MUST be first child for Radix accessibility */}
+        <DialogTitle className="text-xl text-center">{step.title}</DialogTitle>
+
         <DialogHeader>
           <div className="flex items-center justify-between mb-2">
             <Badge variant="outline" className="text-xs">
@@ -171,7 +175,6 @@ export function ImportOnboardingModal({
             <step.icon className="w-10 h-10 text-white" />
           </div>
 
-          <DialogTitle className="text-xl mb-3">{step.title}</DialogTitle>
           <DialogDescription className="text-base mb-6">
             {step.description}
           </DialogDescription>
@@ -239,7 +242,6 @@ export function useImportOnboarding() {
   useEffect(() => {
     const completed = localStorage.getItem('shopopti_import_onboarding_completed');
     if (!completed) {
-      // Délai court pour laisser la page se charger
       const timer = setTimeout(() => setShowOnboarding(true), 1000);
       return () => clearTimeout(timer);
     }
