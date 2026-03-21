@@ -1,5 +1,5 @@
 /**
- * MediaPage - Correction des médias avec données réelles et actions IA
+ * MediaPage - Correction des médias avec données réelles, actions IA et pipeline Cloudinary
  */
 import { useState, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
@@ -8,13 +8,14 @@ import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrappe
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Image, ImageOff, VideoOff, Sparkles, CheckCircle, Upload, Wand2, AlertTriangle, Euro, Loader2, ArrowRight, TrendingUp } from 'lucide-react'
+import { Image, ImageOff, VideoOff, Sparkles, CheckCircle, Upload, Wand2, AlertTriangle, Euro, Loader2, ArrowRight, TrendingUp, Zap } from 'lucide-react'
 import { useMediaAudit, MediaIssue } from '@/hooks/catalog'
 import { Skeleton } from '@/components/ui/skeleton'
 import { cn } from '@/lib/utils'
 import { Progress } from '@/components/ui/progress'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { MediaAIPanel } from '@/components/catalog/MediaAIPanel'
+import { MediaPipelineDashboard } from '@/components/media/MediaPipelineDashboard'
 
 const stagger = { hidden: { opacity: 0 }, show: { opacity: 1, transition: { staggerChildren: 0.04 } } }
 const fadeUp = { hidden: { opacity: 0, y: 12 }, show: { opacity: 1, y: 0, transition: { type: 'spring' as const, stiffness: 300, damping: 24 } } }
@@ -22,7 +23,7 @@ const fadeUp = { hidden: { opacity: 0, y: 12 }, show: { opacity: 1, y: 0, transi
 export default function MediaPage() {
   const navigate = useNavigate()
   const [activeTab, setActiveTab] = useState<string>('critical')
-  const [viewMode, setViewMode] = useState<'issues' | 'ai'>('ai')
+  const [viewMode, setViewMode] = useState<'pipeline' | 'ai' | 'issues'>('pipeline')
   const { stats, issues, productsWithoutImage, isLoading, bulkEnrichImages, isEnriching, enrichProgress } = useMediaAudit()
 
   const filteredIssues = useMemo(() => {
@@ -73,14 +74,17 @@ export default function MediaPage() {
         </div>
       }
     >
-      <Tabs value={viewMode} onValueChange={(v) => setViewMode(v as 'issues' | 'ai')} className="mb-6">
+      <Tabs value={viewMode} onValueChange={(v) => setViewMode(v as 'pipeline' | 'ai' | 'issues')} className="mb-6">
         <TabsList className="bg-muted/50 backdrop-blur-sm">
+          <TabsTrigger value="pipeline" className="gap-2 data-[state=active]:shadow-md"><Zap className="h-4 w-4" />Pipeline CDN</TabsTrigger>
           <TabsTrigger value="ai" className="gap-2 data-[state=active]:shadow-md"><Sparkles className="h-4 w-4" />Intelligence IA</TabsTrigger>
           <TabsTrigger value="issues" className="gap-2 data-[state=active]:shadow-md"><AlertTriangle className="h-4 w-4" />Problèmes ({issues.length})</TabsTrigger>
         </TabsList>
       </Tabs>
 
-      {viewMode === 'ai' ? (
+      {viewMode === 'pipeline' ? (
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}><MediaPipelineDashboard /></motion.div>
+      ) : viewMode === 'ai' ? (
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}><MediaAIPanel /></motion.div>
       ) : (
         <motion.div variants={stagger} initial="hidden" animate="show" className="space-y-6">
