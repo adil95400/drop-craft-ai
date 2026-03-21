@@ -61,11 +61,12 @@ export function AdsMarketingSync() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
-      // Fetch connected stores
-      const { data: stores } = await supabase
+      // Fetch connected stores - use type assertion to avoid deep type instantiation
+      const storesQuery = supabase
         .from('store_connections')
-        .select('*')
+        .select('id, store_name, platform, status, last_sync_at')
         .eq('user_id', user.id);
+      const { data: stores } = await storesQuery;
 
       const allChannels: ConnectedChannel[] = [];
 
