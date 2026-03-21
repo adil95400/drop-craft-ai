@@ -1,5 +1,4 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.53.0'
 import { getSecureCorsHeaders, handleCorsPreflightSecure } from '../_shared/secure-cors.ts'
 
 const SYSTEM_PROMPT = `Tu es l'assistant support de ShopOpti+, une plateforme SaaS de dropshipping intelligent.
@@ -18,13 +17,37 @@ Règles :
 - Si tu ne sais pas, suggère de créer un ticket de support
 - Ne invente jamais de fonctionnalités qui n'existent pas`
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   const corsHeaders = getSecureCorsHeaders(req)
   if (req.method === 'OPTIONS') {
     return handleCorsPreflightSecure(req)
   }
 
   try {
+    // JWT Authentication
+    const authHeader = req.headers.get('Authorization')
+    if (!authHeader?.startsWith('Bearer ')) {
+      return new Response(JSON.stringify({ error: 'Authorization required' }), {
+        status: 401,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
+
+    const supabase = createClient(
+      Deno.env.get('SUPABASE_URL')!,
+      Deno.env.get('SUPABASE_ANON_KEY')!,
+      { global: { headers: { Authorization: authHeader } } }
+    )
+
+    const token = authHeader.replace('Bearer ', '')
+    const { data: claimsData, error: claimsError } = await supabase.auth.getClaims(token)
+    if (claimsError || !claimsData?.claims) {
+      return new Response(JSON.stringify({ error: 'Invalid or expired token' }), {
+        status: 401,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
+
     const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY_CHAT') || Deno.env.get('OPENAI_API_KEY')
     if (!OPENAI_API_KEY) {
       throw new Error('OPENAI_API_KEY not configured')
@@ -58,38 +81,28 @@ serve(async (req) => {
         })
       }
       if (response.status === 402) {
-        return new Response(JSON.stringify({ response: 'Crédits IA épuisés. Veuillez recharger.' }), {
-          status: 402, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        return new Response(JSON.stringify({ response: 'Service temporairement indisponible. Réessayez plus tard.' }), {
+          status: 503, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
         })
       }
-
-      // Fallback to simple responses
-      const fallbackResponses: Record<string, string> = {
-        'import': 'Pour importer des produits, allez dans Catalogue > Importer. Vous pouvez coller des URLs AliExpress ou uploader un CSV.',
-        'seo': 'Pour optimiser le SEO, rendez-vous dans Performance > SEO. L\'IA analysera et optimisera vos métadonnées automatiquement.',
-        'commande': 'Gérez vos commandes dans Ventes > Commandes. Le fulfillment automatique est configurable dans Ventes > Auto-Fulfillment.',
-        'prix': 'Configurez vos règles de repricing dans Catalogue > Repricing. L\'IA ajuste les prix automatiquement.',
-      }
-
-      const key = Object.keys(fallbackResponses).find(k => message.toLowerCase().includes(k))
-      const fallback = key ? fallbackResponses[key] : 'Je suis là pour vous aider ! Précisez votre question et je ferai de mon mieux. Pour un support détaillé, créez un ticket dans le Centre d\'aide.'
-
-      return new Response(JSON.stringify({ response: fallback }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-      })
+      const errorText = await response.text()
+      console.error('OpenAI error:', response.status, errorText)
+      throw new Error(`AI service error: ${response.status}`)
     }
 
     const data = await response.json()
-    const aiResponse = data.choices?.[0]?.message?.content || 'Je suis disponible pour vous aider !'
+    const reply = data.choices?.[0]?.message?.content || 'Désolé, je n\'ai pas pu générer de réponse.'
 
-    return new Response(JSON.stringify({ response: aiResponse }), {
+    return new Response(JSON.stringify({ response: reply }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' }
     })
-
   } catch (error) {
+    console.error('[ai-support-chat] Error:', error)
     return new Response(JSON.stringify({ 
-      response: 'Je suis là pour vous aider ! Posez-moi une question sur l\'importation, le SEO, les commandes ou toute autre fonctionnalité.' 
+      response: 'Une erreur est survenue. Essayez à nouveau ou contactez le support.',
+      error: error.message 
     }), {
+      status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' }
     })
   }
