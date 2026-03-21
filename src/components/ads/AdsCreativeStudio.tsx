@@ -164,7 +164,7 @@ export function AdsCreativeStudio() {
             </div>
             <div>
               <p className="font-medium text-sm">Clips vidéo courts</p>
-              <p className="text-xs text-muted-foreground">Montage auto < 30s</p>
+              <p className="text-xs text-muted-foreground">{"Montage auto < 30s"}</p>
             </div>
           </div>
           <Badge variant="secondary" className="text-xs">Bientôt disponible</Badge>
