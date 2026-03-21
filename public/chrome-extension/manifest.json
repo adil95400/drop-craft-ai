@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "ShopOpti+ - Dropshipping Pro",
-  "version": "6.0.0",
+  "version": "7.0.0",
   "description": "Extension Dropshipping Pro - Import 1-clic, IA optimisation, monitoring prix. 45+ plateformes supportées.",
   
   "permissions": [
@@ -140,6 +140,7 @@
         "extractors/homedepot-extractor.js",
         "extractors/shopify-extractor.js",
         "extractors/extractor-registry.js",
+        "import-overlay-v3.js",
         "content-script.js"
       ],
       "css": ["content.css"],
@@ -171,6 +172,7 @@
         "extractors/core-extractor.js",
         "extractors/tiktok-extractor.js",
         "extractors/extractor-registry.js",
+        "import-overlay-v3.js",
         "content-script.js"
       ],
       "css": ["content.css"],
