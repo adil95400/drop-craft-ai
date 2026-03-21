@@ -62,11 +62,10 @@ export function AdsMarketingSync() {
       if (!user) return;
 
       // Fetch connected stores - use type assertion to avoid deep type instantiation
-      const storesQuery = supabase
+      const { data: stores } = await (supabase
         .from('store_connections')
-        .select('id, store_name, platform, status, last_sync_at')
+        .select('id, store_name, platform, status, last_sync_at') as any)
         .eq('user_id', user.id);
-      const { data: stores } = await storesQuery;
 
       const allChannels: ConnectedChannel[] = [];
 
