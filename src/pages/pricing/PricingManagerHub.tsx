@@ -162,6 +162,11 @@ export default function PricingManagerHub() {
           </Button>
         </div>
 
+        {/* AI Pricing Engine */}
+        <div className="mb-8">
+          <AIPricingEngine />
+        </div>
+
         {/* Modules grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {PRICING_MODULES.map((mod) => (
