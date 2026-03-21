@@ -116,7 +116,7 @@ export function ProductMediaManager({ productId }: Props) {
       return (data || []) as ProductMedia[]
     },
     enabled: true,
-    refetchInterval: mediaItems.some(m => m.status === 'processing') ? 3000 : false,
+    refetchInterval: 5000,
   })
 
   // Upload mutation
