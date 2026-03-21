@@ -147,18 +147,18 @@ class AppLogger {
   }
 
   private sendToSentry(level: LogLevel, message: string, error?: Error, meta?: LogMeta) {
-    if (!import.meta.env.VITE_SENTRY_DSN) return;
+    if (!import.meta.env.VITE_SENTRY_DSN || !SentryRef) return;
 
     const sentryLevel = level === 'critical' ? 'fatal' : level;
     const context = {
-      level: sentryLevel as Sentry.SeverityLevel,
+      level: sentryLevel,
       extra: { ...meta, userId: this.userId },
     };
 
     if (error) {
-      Sentry.captureException(error, context);
+      SentryRef.captureException(error, context);
     } else {
-      Sentry.captureMessage(message, context);
+      SentryRef.captureMessage(message, context);
     }
   }
 }
