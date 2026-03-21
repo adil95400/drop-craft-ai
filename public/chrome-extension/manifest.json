@@ -140,6 +140,7 @@
         "extractors/homedepot-extractor.js",
         "extractors/shopify-extractor.js",
         "extractors/extractor-registry.js",
+        "import-overlay-v3.js",
         "content-script.js"
       ],
       "css": ["content.css"],
