@@ -61,12 +61,6 @@ export function AdsMarketingSync() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
-      // Fetch social integrations
-      const { data: integrations } = await supabase
-        .from('integrations' as any)
-        .select('*')
-        .eq('user_id', user.id);
-
       // Fetch connected stores
       const { data: stores } = await supabase
         .from('store_connections')
@@ -75,18 +69,16 @@ export function AdsMarketingSync() {
 
       const allChannels: ConnectedChannel[] = [];
 
-      // Social networks
+      // Social networks (show all, mark disconnected)
       const socialPlatforms = ['facebook', 'instagram', 'tiktok', 'pinterest', 'twitter', 'linkedin'];
       socialPlatforms.forEach(platform => {
-        const integration = (integrations || []).find((i: any) => i.platform === platform);
         allChannels.push({
-          id: integration?.id || `social_${platform}`,
+          id: `social_${platform}`,
           name: platform.charAt(0).toUpperCase() + platform.slice(1),
           platform,
           type: 'social',
-          status: integration?.connection_status === 'connected' ? 'connected' : 'disconnected',
+          status: 'disconnected', // Will be connected when user configures credentials
           icon: CHANNEL_ICONS[platform] || '🔗',
-          lastSync: integration?.last_sync_at,
         });
       });
 

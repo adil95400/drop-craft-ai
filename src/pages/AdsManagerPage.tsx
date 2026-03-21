@@ -348,6 +348,16 @@ export default function AdsManagerPage() {
             <AdsCreativeStudio />
           </TabsContent>
 
+          {/* CANVA TAB */}
+          <TabsContent value="canva" className="mt-6">
+            <AdsCanvaStudio />
+          </TabsContent>
+
+          {/* SYNC TAB */}
+          <TabsContent value="sync" className="mt-6">
+            <AdsMarketingSync />
+          </TabsContent>
+
           {/* A/B TESTING TAB */}
           <TabsContent value="abtesting" className="mt-6">
             <AdsABTesting />
