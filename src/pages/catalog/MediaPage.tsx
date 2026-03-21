@@ -290,6 +290,9 @@ export default function MediaPage() {
           <TabsTrigger value="pipeline" className="gap-2 data-[state=active]:shadow-md">
             <Zap className="h-4 w-4" />Pipeline CDN
           </TabsTrigger>
+          <TabsTrigger value="cloudinary" className="gap-2 data-[state=active]:shadow-md">
+            <Cloud className="h-4 w-4" />Cloudinary Produits
+          </TabsTrigger>
           <TabsTrigger value="ai" className="gap-2 data-[state=active]:shadow-md">
             <Sparkles className="h-4 w-4" />Intelligence IA
           </TabsTrigger>
