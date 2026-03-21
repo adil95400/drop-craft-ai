@@ -22,6 +22,7 @@ const PricingEnginePage = lazy(() => import('@/pages/products/PricingEnginePage'
 const PricingOptimizationPage = lazy(() => import('@/pages/pricing/PricingOptimizationPage'));
 const MarginCalculatorPage = lazy(() => import('@/pages/pricing/MarginCalculatorPage'));
 const PriceHistoryPage = lazy(() => import('@/pages/pricing/PriceHistoryPage'));
+const PriceCompetitionPage = lazy(() => import('@/pages/pricing/PriceCompetitionPage'));
 
 export function PricingRoutes() {
   return (
