@@ -513,6 +513,11 @@ export default function MarketingAutomationPage() {
           <TabsContent value="performance" className="mt-6">
             <AutomationPerformance />
           </TabsContent>
+
+          {/* ─── Conversion Funnel ─────────────────────────────── */}
+          <TabsContent value="funnel" className="mt-6">
+            <ConversionFunnel />
+          </TabsContent>
         </Tabs>
       </ChannablePageWrapper>
 
