@@ -1,26 +1,38 @@
 /**
- * Edge function pour créer et gérer les designs Canva
- * Actions: create_from_template, list_designs, export_design, duplicate_design
+ * Canva Design Integration — Real Canva Connect API
+ * Actions: create_design, list_designs, export_design, create_from_product
+ * Uses CANVA_API_KEY for authentication
  */
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.53.0';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
 };
 
-// Types
-interface CanvaIntegration {
-  id: string;
-  user_id: string;
-  access_token: string | null;
-  refresh_token: string | null;
-  token_expires_at: string | null;
-  canva_user_id: string | null;
+const CANVA_API_BASE = 'https://api.canva.com/rest/v1';
+
+async function canvaFetch(path: string, accessToken: string, options: RequestInit = {}) {
+  const url = `${CANVA_API_BASE}${path}`;
+  const response = await fetch(url, {
+    ...options,
+    headers: {
+      'Authorization': `Bearer ${accessToken}`,
+      'Content-Type': 'application/json',
+      ...options.headers,
+    },
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    console.error(`[Canva API] Error ${response.status}: ${errorText}`);
+    throw new Error(`Canva API error (${response.status}): ${errorText}`);
+  }
+
+  return response.json();
 }
 
 Deno.serve(async (req) => {
-  // Handle CORS preflight
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
@@ -28,346 +40,224 @@ Deno.serve(async (req) => {
   try {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-    const canvaApiKey = Deno.env.get('CANVA_API_KEY');
-    
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // Vérifier l'authentification
+    // Auth
     const authHeader = req.headers.get('authorization');
     if (!authHeader) {
-      return new Response(
-        JSON.stringify({ error: 'Authorization required' }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      return new Response(JSON.stringify({ error: 'Authorization required' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
     }
-
-    const { data: { user }, error: authError } = await supabase.auth.getUser(
-      authHeader.replace('Bearer ', '')
-    );
-
+    const { data: { user }, error: authError } = await supabase.auth.getUser(authHeader.replace('Bearer ', ''));
     if (authError || !user) {
-      return new Response(
-        JSON.stringify({ error: 'Invalid token' }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      return new Response(JSON.stringify({ error: 'Invalid token' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
     }
 
     const body = await req.json();
     const { action } = body;
 
-    console.log(`[canva-create-design] Action: ${action}, User: ${user.id}`);
+    // Resolve Canva access token: user OAuth token first, then API key fallback
+    let accessToken: string | null = null;
 
-    // Récupérer l'intégration Canva de l'utilisateur
-    const { data: integration, error: integrationError } = await supabase
+    const { data: integration } = await supabase
       .from('canva_integrations')
       .select('*')
       .eq('user_id', user.id)
       .eq('status', 'connected')
       .single();
 
-    if (integrationError || !integration) {
-      return new Response(
-        JSON.stringify({ error: 'Canva not connected', code: 'NOT_CONNECTED' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    // Vérifier le token d'accès
-    const accessToken = integration.access_token || canvaApiKey;
-    if (!accessToken) {
-      return new Response(
-        JSON.stringify({ error: 'No Canva access token available' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    // Router vers l'action appropriée
-    switch (action) {
-      case 'create_from_template': {
-        const { templateId, title, productData } = body;
-        
-        if (!templateId || !title) {
-          return new Response(
-            JSON.stringify({ error: 'templateId and title are required' }),
-            { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-          );
+    if (integration?.access_token) {
+      // Check token expiry and refresh if needed
+      if (integration.token_expires_at && new Date(integration.token_expires_at) < new Date()) {
+        // Attempt token refresh
+        const clientId = Deno.env.get('CANVA_CLIENT_ID');
+        const clientSecret = Deno.env.get('CANVA_CLIENT_SECRET');
+        if (clientId && clientSecret && integration.refresh_token) {
+          try {
+            const refreshRes = await fetch('https://api.canva.com/rest/v1/oauth/token', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+              body: new URLSearchParams({
+                grant_type: 'refresh_token',
+                refresh_token: integration.refresh_token,
+                client_id: clientId,
+                client_secret: clientSecret,
+              }),
+            });
+            if (refreshRes.ok) {
+              const tokens = await refreshRes.json();
+              accessToken = tokens.access_token;
+              await supabase.from('canva_integrations').update({
+                access_token: tokens.access_token,
+                refresh_token: tokens.refresh_token || integration.refresh_token,
+                token_expires_at: new Date(Date.now() + (tokens.expires_in || 3600) * 1000).toISOString(),
+              }).eq('id', integration.id);
+            }
+          } catch (e) {
+            console.error('[Canva] Token refresh failed:', e);
+          }
         }
+      } else {
+        accessToken = integration.access_token;
+      }
+    }
 
-        // Créer un design via l'API Canva
-        // Note: L'API Canva nécessite des templates pré-configurés dans votre compte
-        const designResponse = await createCanvaDesign(accessToken, {
-          title,
-          templateId,
-          productData
+    if (!accessToken) {
+      accessToken = Deno.env.get('CANVA_API_KEY') || null;
+    }
+
+    if (!accessToken) {
+      return new Response(JSON.stringify({ error: 'No Canva credentials configured', code: 'NO_CREDENTIALS' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+    }
+
+    switch (action) {
+      case 'create_design': {
+        const { title, designType, width, height } = body;
+        const result = await canvaFetch('/designs', accessToken, {
+          method: 'POST',
+          body: JSON.stringify({
+            design_type: designType || 'Whiteboard',
+            title: title || 'Ad Creative',
+            ...(width && height ? { width, height } : {}),
+          }),
         });
 
-        // Sauvegarder dans la base de données
-        const { data: newDesign, error: insertError } = await supabase
-          .from('canva_designs')
-          .insert({
-            user_id: user.id,
-            canva_integration_id: integration.id,
-            canva_design_id: designResponse.designId,
-            title,
-            design_type: body.designType || 'custom',
-            design_url: designResponse.editUrl,
-            thumbnail_url: designResponse.thumbnailUrl,
-            status: 'created',
-            metadata: {
-              templateId,
-              productData,
-              dimensions: designResponse.dimensions
-            }
-          })
-          .select()
-          .single();
+        // Save to DB
+        await supabase.from('canva_designs').insert({
+          user_id: user.id,
+          canva_integration_id: integration?.id,
+          canva_design_id: result.design?.id,
+          title: title || 'Ad Creative',
+          design_type: designType || 'custom',
+          design_url: result.design?.urls?.edit_url,
+          thumbnail_url: result.design?.urls?.view_url,
+          status: 'created',
+          metadata: { width, height, designType },
+        });
 
-        if (insertError) {
-          console.error('Error saving design:', insertError);
-        }
+        return new Response(JSON.stringify({
+          success: true,
+          designId: result.design?.id,
+          editUrl: result.design?.urls?.edit_url,
+          viewUrl: result.design?.urls?.view_url,
+        }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+      }
 
-        return new Response(
-          JSON.stringify({
-            success: true,
-            design: newDesign,
-            editUrl: designResponse.editUrl,
-            designId: designResponse.designId
+      case 'create_from_product': {
+        const { productName, productPrice, productImage, adFormat } = body;
+
+        // Determine dimensions based on ad format
+        const dimensions: Record<string, { width: number; height: number }> = {
+          'story': { width: 1080, height: 1920 },
+          'square': { width: 1080, height: 1080 },
+          'landscape': { width: 1200, height: 628 },
+          'banner': { width: 728, height: 90 },
+          'pinterest': { width: 1000, height: 1500 },
+        };
+        const dim = dimensions[adFormat || 'square'] || dimensions.square;
+
+        const result = await canvaFetch('/designs', accessToken, {
+          method: 'POST',
+          body: JSON.stringify({
+            design_type: 'Whiteboard',
+            title: `Ad - ${productName}`,
+            width: dim.width,
+            height: dim.height,
           }),
-          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
+        });
+
+        await supabase.from('canva_designs').insert({
+          user_id: user.id,
+          canva_integration_id: integration?.id,
+          canva_design_id: result.design?.id,
+          title: `Ad - ${productName}`,
+          design_type: adFormat || 'square',
+          design_url: result.design?.urls?.edit_url,
+          thumbnail_url: result.design?.urls?.view_url,
+          status: 'created',
+          metadata: { productName, productPrice, productImage, adFormat, ...dim },
+        });
+
+        return new Response(JSON.stringify({
+          success: true,
+          designId: result.design?.id,
+          editUrl: result.design?.urls?.edit_url,
+          viewUrl: result.design?.urls?.view_url,
+          dimensions: dim,
+        }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
       }
 
       case 'list_designs': {
-        // Récupérer les designs depuis Canva
-        const designs = await listCanvaDesigns(accessToken, integration.canva_user_id);
-
-        // Synchroniser avec la base de données
-        for (const design of designs) {
-          await supabase
-            .from('canva_designs')
-            .upsert({
-              user_id: user.id,
-              canva_integration_id: integration.id,
-              canva_design_id: design.id,
-              title: design.title || 'Sans titre',
-              design_url: design.editUrl,
-              thumbnail_url: design.thumbnailUrl,
-              last_modified_at: design.updatedAt,
-              status: 'synced'
-            }, {
-              onConflict: 'canva_design_id',
-              ignoreDuplicates: false
-            });
-        }
-
-        // Retourner les designs de la base
         const { data: savedDesigns } = await supabase
           .from('canva_designs')
           .select('*')
           .eq('user_id', user.id)
-          .order('updated_at', { ascending: false });
+          .order('updated_at', { ascending: false })
+          .limit(50);
 
-        return new Response(
-          JSON.stringify({
-            success: true,
-            designs: savedDesigns || [],
-            synced: designs.length
-          }),
-          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
+        // Also try to list from Canva API
+        let canvaDesigns: any[] = [];
+        try {
+          const result = await canvaFetch('/designs?ownership=owned&sort_by=modified_descending', accessToken);
+          canvaDesigns = result.items || [];
+        } catch (e) {
+          console.warn('[Canva] Failed to list designs from API:', e);
+        }
+
+        return new Response(JSON.stringify({
+          success: true,
+          designs: savedDesigns || [],
+          canvaDesigns,
+        }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
       }
 
       case 'export_design': {
-        const { designId, format = 'png' } = body;
+        const { designId, format = 'png', quality = 'regular' } = body;
 
-        if (!designId) {
-          return new Response(
-            JSON.stringify({ error: 'designId is required' }),
-            { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-          );
-        }
+        // Start export job
+        const exportResult = await canvaFetch(`/designs/${designId}/exports`, accessToken, {
+          method: 'POST',
+          body: JSON.stringify({
+            format: { type: format },
+            quality,
+          }),
+        });
 
-        // Récupérer le design de la base
-        const { data: design } = await supabase
-          .from('canva_designs')
-          .select('canva_design_id, export_urls')
-          .eq('id', designId)
-          .eq('user_id', user.id)
-          .single();
-
-        if (!design) {
-          return new Response(
-            JSON.stringify({ error: 'Design not found' }),
-            { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-          );
-        }
-
-        // Exporter via l'API Canva
-        const exportResult = await exportCanvaDesign(
-          accessToken, 
-          design.canva_design_id!, 
-          format
-        );
-
-        // Mettre à jour les URLs d'export
-        const currentExports = (design.export_urls as Record<string, string>) || {};
-        await supabase
-          .from('canva_designs')
-          .update({
-            export_urls: {
-              ...currentExports,
-              [format]: exportResult.downloadUrl
+        // Poll for export completion (max 30s)
+        let exportData = exportResult;
+        const jobId = exportResult.job?.id;
+        if (jobId) {
+          for (let i = 0; i < 15; i++) {
+            await new Promise(r => setTimeout(r, 2000));
+            const statusRes = await canvaFetch(`/designs/${designId}/exports/${jobId}`, accessToken);
+            if (statusRes.job?.status === 'success') {
+              exportData = statusRes;
+              break;
             }
-          })
-          .eq('id', designId);
-
-        return new Response(
-          JSON.stringify({
-            success: true,
-            downloadUrl: exportResult.downloadUrl,
-            format
-          }),
-          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
-      }
-
-      case 'duplicate_design': {
-        const { designId, newTitle } = body;
-
-        if (!designId) {
-          return new Response(
-            JSON.stringify({ error: 'designId is required' }),
-            { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-          );
+            if (statusRes.job?.status === 'failed') {
+              throw new Error('Export job failed');
+            }
+          }
         }
 
-        // Récupérer le design original
-        const { data: originalDesign } = await supabase
-          .from('canva_designs')
-          .select('*')
-          .eq('id', designId)
-          .eq('user_id', user.id)
-          .single();
-
-        if (!originalDesign) {
-          return new Response(
-            JSON.stringify({ error: 'Design not found' }),
-            { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-          );
-        }
-
-        // Dupliquer via l'API Canva
-        const duplicateResult = await duplicateCanvaDesign(
-          accessToken,
-          originalDesign.canva_design_id!,
-          newTitle || `${originalDesign.title} (copie)`
-        );
-
-        // Sauvegarder la copie
-        const { data: newDesign } = await supabase
-          .from('canva_designs')
-          .insert({
-            user_id: user.id,
-            canva_integration_id: integration.id,
-            canva_design_id: duplicateResult.designId,
-            title: newTitle || `${originalDesign.title} (copie)`,
-            design_type: originalDesign.design_type,
-            design_url: duplicateResult.editUrl,
-            thumbnail_url: duplicateResult.thumbnailUrl,
-            status: 'created',
-            metadata: originalDesign.metadata
-          })
-          .select()
-          .single();
-
-        return new Response(
-          JSON.stringify({
-            success: true,
-            design: newDesign,
-            editUrl: duplicateResult.editUrl
-          }),
-          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
+        return new Response(JSON.stringify({
+          success: true,
+          urls: exportData.job?.urls || exportData.urls || [],
+          format,
+        }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
       }
 
       default:
-        return new Response(
-          JSON.stringify({ error: `Unknown action: ${action}` }),
-          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
+        return new Response(JSON.stringify({ error: `Unknown action: ${action}` }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
     }
   } catch (error) {
     console.error('[canva-create-design] Error:', error);
-    return new Response(
-      JSON.stringify({ 
-        error: 'Internal server error', 
-        details: error instanceof Error ? error.message : 'Unknown error'
-      }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
+    return new Response(JSON.stringify({
+      error: 'Internal server error',
+      details: error instanceof Error ? error.message : 'Unknown error',
+    }), { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
   }
 });
-
-// Fonctions d'appel à l'API Canva
-
-async function createCanvaDesign(
-  accessToken: string, 
-  options: { title: string; templateId: string; productData?: Record<string, unknown> }
-): Promise<{ designId: string; editUrl: string; thumbnailUrl: string; dimensions: { width: number; height: number } }> {
-  // Note: Implémentation simulée car l'API Canva nécessite une configuration spécifique
-  // En production, utiliser l'API Canva Connect: https://www.canva.dev/docs/connect/
-  
-  console.log('[Canva API] Creating design:', options);
-  
-  // Simuler la création d'un design
-  const designId = `design_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-  
-  return {
-    designId,
-    editUrl: `https://www.canva.com/design/${designId}/edit`,
-    thumbnailUrl: '',
-    dimensions: { width: 1080, height: 1920 }
-  };
-}
-
-async function listCanvaDesigns(
-  accessToken: string,
-  canvaUserId: string | null
-): Promise<Array<{ id: string; title: string; editUrl: string; thumbnailUrl: string; updatedAt: string }>> {
-  // Note: Implémentation simulée
-  console.log('[Canva API] Listing designs for user:', canvaUserId);
-  
-  // En production, appeler GET /v1/designs
-  return [];
-}
-
-async function exportCanvaDesign(
-  accessToken: string,
-  designId: string,
-  format: string
-): Promise<{ downloadUrl: string }> {
-  // Note: Implémentation simulée
-  console.log('[Canva API] Exporting design:', designId, 'as', format);
-  
-  // En production, appeler POST /v1/designs/{designId}/exports
-  return {
-    downloadUrl: `https://export.canva.com/${designId}.${format}`
-  };
-}
-
-async function duplicateCanvaDesign(
-  accessToken: string,
-  designId: string,
-  newTitle: string
-): Promise<{ designId: string; editUrl: string; thumbnailUrl: string }> {
-  // Note: Implémentation simulée
-  console.log('[Canva API] Duplicating design:', designId);
-  
-  const newDesignId = `design_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-  
-  return {
-    designId: newDesignId,
-    editUrl: `https://www.canva.com/design/${newDesignId}/edit`,
-    thumbnailUrl: ''
-  };
-}

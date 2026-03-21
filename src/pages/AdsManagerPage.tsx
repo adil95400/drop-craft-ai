@@ -9,7 +9,8 @@ import { Progress } from '@/components/ui/progress';
 import { 
   Megaphone, Sparkles, FlaskConical, TrendingUp, Plus, Play, Pause, 
   DollarSign, Eye, MousePointer, RefreshCw, BarChart3,
-  ShoppingCart, Target, Settings2, MoreHorizontal, ExternalLink, Calendar
+  ShoppingCart, Target, Settings2, MoreHorizontal, ExternalLink, Calendar,
+  Share2, Palette
 } from 'lucide-react';
 import { useRealAdsManager } from '@/hooks/useRealAdsManager';
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
@@ -18,6 +19,8 @@ import { AdsPerformanceCharts } from '@/components/ads/AdsPerformanceCharts';
 import { AdsCreativeStudio } from '@/components/ads/AdsCreativeStudio';
 import { AdsABTesting } from '@/components/ads/AdsABTesting';
 import { AdsAudienceBuilder } from '@/components/ads/AdsAudienceBuilder';
+import { AdsMarketingSync } from '@/components/ads/AdsMarketingSync';
+import { AdsCanvaStudio } from '@/components/ads/AdsCanvaStudio';
 import { cn } from '@/lib/utils';
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger
@@ -160,7 +163,7 @@ export default function AdsManagerPage() {
 
         {/* Main Tabs */}
         <Tabs defaultValue="campaigns" className="w-full">
-          <TabsList className="grid grid-cols-5 w-full max-w-3xl">
+          <TabsList className="grid grid-cols-7 w-full max-w-4xl">
             <TabsTrigger value="campaigns" className="flex items-center gap-1.5">
               <Megaphone className="h-4 w-4" />
               <span className="hidden sm:inline">Campagnes</span>
@@ -172,6 +175,14 @@ export default function AdsManagerPage() {
             <TabsTrigger value="creatives" className="flex items-center gap-1.5">
               <Sparkles className="h-4 w-4" />
               <span className="hidden sm:inline">Studio IA</span>
+            </TabsTrigger>
+            <TabsTrigger value="canva" className="flex items-center gap-1.5">
+              <Palette className="h-4 w-4" />
+              <span className="hidden sm:inline">Canva</span>
+            </TabsTrigger>
+            <TabsTrigger value="sync" className="flex items-center gap-1.5">
+              <Share2 className="h-4 w-4" />
+              <span className="hidden sm:inline">Sync</span>
             </TabsTrigger>
             <TabsTrigger value="abtesting" className="flex items-center gap-1.5">
               <FlaskConical className="h-4 w-4" />
@@ -335,6 +346,16 @@ export default function AdsManagerPage() {
           {/* CREATIVES TAB */}
           <TabsContent value="creatives" className="mt-6">
             <AdsCreativeStudio />
+          </TabsContent>
+
+          {/* CANVA TAB */}
+          <TabsContent value="canva" className="mt-6">
+            <AdsCanvaStudio />
+          </TabsContent>
+
+          {/* SYNC TAB */}
+          <TabsContent value="sync" className="mt-6">
+            <AdsMarketingSync />
           </TabsContent>
 
           {/* A/B TESTING TAB */}
