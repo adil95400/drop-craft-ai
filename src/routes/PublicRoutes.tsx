@@ -3,9 +3,9 @@
  */
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { lazy } from 'react';
+import Index from '@/pages/Index';
 
-// Pages critiques lazy loaded pour réduire le bundle initial
-const Index = lazy(() => import('@/pages/Index'));
+// Keep auth lazy, but load landing route eagerly to prevent root suspense lock
 const AuthPage = lazy(() => import('@/pages/AuthPage'));
 const ExtensionAuthPage = lazy(() => import('@/pages/auth/ExtensionAuthPage'));
 
