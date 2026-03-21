@@ -163,7 +163,7 @@ export default function AdsManagerPage() {
 
         {/* Main Tabs */}
         <Tabs defaultValue="campaigns" className="w-full">
-          <TabsList className="grid grid-cols-5 w-full max-w-3xl">
+          <TabsList className="grid grid-cols-7 w-full max-w-4xl">
             <TabsTrigger value="campaigns" className="flex items-center gap-1.5">
               <Megaphone className="h-4 w-4" />
               <span className="hidden sm:inline">Campagnes</span>
@@ -175,6 +175,14 @@ export default function AdsManagerPage() {
             <TabsTrigger value="creatives" className="flex items-center gap-1.5">
               <Sparkles className="h-4 w-4" />
               <span className="hidden sm:inline">Studio IA</span>
+            </TabsTrigger>
+            <TabsTrigger value="canva" className="flex items-center gap-1.5">
+              <Palette className="h-4 w-4" />
+              <span className="hidden sm:inline">Canva</span>
+            </TabsTrigger>
+            <TabsTrigger value="sync" className="flex items-center gap-1.5">
+              <Share2 className="h-4 w-4" />
+              <span className="hidden sm:inline">Sync</span>
             </TabsTrigger>
             <TabsTrigger value="abtesting" className="flex items-center gap-1.5">
               <FlaskConical className="h-4 w-4" />
