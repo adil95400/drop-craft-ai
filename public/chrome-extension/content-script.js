@@ -681,10 +681,16 @@
   
   async function handleAdvancedImport(url) {
     try {
-      await sendMessage({
-        type: 'OPEN_IMPORT_OVERLAY',
-        productData: { url }
-      });
+      // Use the new ImportOverlayV3 with full Product Data Engine
+      if (window.ImportOverlayV3) {
+        window.ImportOverlayV3.open(url);
+      } else {
+        // Fallback to legacy overlay via background
+        await sendMessage({
+          type: 'OPEN_IMPORT_OVERLAY',
+          productData: { url }
+        });
+      }
     } catch (error) {
       showToast('Erreur: ' + error.message, 'error');
     }
