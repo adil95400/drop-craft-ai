@@ -158,7 +158,11 @@ export function SupplierComparisonTable({
           <Button size="sm" variant="outline" onClick={clearSelection}>
             Désélectionner
           </Button>
-          <Button size="sm">
+          <Button size="sm" onClick={() => {
+            const urls = selectedItems.join('\n')
+            navigate('/import/bulk', { state: { urls } })
+            toast({ title: 'Import en masse', description: `${selectedItems.length} produit(s) envoyé(s) vers l'import en masse` })
+          }}>
             <ShoppingCart className="h-4 w-4 mr-2" />
             Importer la sélection
           </Button>
