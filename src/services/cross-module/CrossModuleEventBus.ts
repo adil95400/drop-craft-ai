@@ -18,6 +18,8 @@ export type CrossModuleEventType =
   | 'orders.fulfilled'
   | 'orders.returned'
   | 'marketing.campaign_created'
+  | 'marketing.campaign_ended'
+  | 'marketing.budget_alert'
   | 'sync.completed'
   | 'sync.failed'
   | 'ai.content_generated'
@@ -25,7 +27,9 @@ export type CrossModuleEventType =
   | 'webhook.order_received'
   | 'webhook.product_updated'
   | 'webhook.inventory_changed'
-  | 'webhook.refund_received';
+  | 'webhook.refund_received'
+  | 'fulfillment.order_shipped'
+  | 'fulfillment.delivery_delayed';
 
 export interface CrossModuleEvent {
   id: string;
