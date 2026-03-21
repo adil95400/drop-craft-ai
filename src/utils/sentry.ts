@@ -52,7 +52,7 @@ export const initSentry = () => {
   }
 };
 
-export const SentryErrorBoundary = Sentry.withErrorBoundary;
+export const SentryErrorBoundary = Sentry?.withErrorBoundary;
 
 export const logError = (error: Error, context?: Record<string, unknown>) => {
   logger.error(error.message, error, context);
