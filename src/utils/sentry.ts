@@ -2,7 +2,8 @@
  * Sentry initialization & helpers.
  * Error/event logging delegates to the canonical logger in src/lib/logger.ts
  */
-import * as Sentry from "@sentry/react";
+let Sentry: any = null;
+import('@sentry/react').then(m => { Sentry = m; }).catch(() => {});
 import { logger } from '@/lib/logger';
 
 export const initSentry = () => {
@@ -57,7 +58,7 @@ export const logError = (error: Error, context?: Record<string, unknown>) => {
   logger.error(error.message, error, context);
 };
 
-export const logEvent = (message: string, level: Sentry.SeverityLevel = 'info', extra?: Record<string, unknown>) => {
+export const logEvent = (message: string, level: string = 'info', extra?: Record<string, unknown>) => {
   if (level === 'error' || level === 'fatal') {
     logger.error(message, undefined, extra);
   } else if (level === 'warning') {

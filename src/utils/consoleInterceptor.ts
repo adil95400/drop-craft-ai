@@ -10,7 +10,9 @@
  * This eliminates the need to manually replace 6000+ console.* calls.
  */
 
-import * as Sentry from '@sentry/react';
+// Lazy Sentry to prevent blank page if @sentry/react fails to load
+let SentryRef: any = null;
+import('@sentry/react').then(m => { SentryRef = m; }).catch(() => {});
 
 // Store original console methods before overriding
 const originalConsole = {
@@ -52,17 +54,17 @@ function extractMessage(args: unknown[]): string {
 }
 
 function sendToSentry(level: 'warning' | 'error', message: string, args: unknown[]) {
-  if (!hasSentry) return;
+  if (!hasSentry || !SentryRef) return;
 
   const error = args.find(a => a instanceof Error) as Error | undefined;
 
   if (error) {
-    Sentry.captureException(error, {
+    SentryRef.captureException(error, {
       level,
       extra: { originalMessage: message },
     });
   } else {
-    Sentry.captureMessage(message, level);
+    SentryRef.captureMessage(message, level);
   }
 }
 

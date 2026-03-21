@@ -1,6 +1,7 @@
 import { useCallback, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
-import * as Sentry from '@sentry/react';
+let SentryRef: any = null;
+import('@sentry/react').then(m => { SentryRef = m; }).catch(() => {});
 import { 
   authAlerts, 
   paymentAlerts, 
@@ -31,7 +32,7 @@ export function useSentryAlerts() {
 
   // Track route changes
   useEffect(() => {
-    Sentry.addBreadcrumb({
+    SentryRef.addBreadcrumb({
       category: 'navigation',
       message: `Navigated to ${location.pathname}`,
       level: 'info',
@@ -41,7 +42,7 @@ export function useSentryAlerts() {
 
   // Auth event handlers
   const onLoginSuccess = useCallback((userId: string, email: string) => {
-    Sentry.setUser({ id: userId, email });
+    SentryRef.setUser({ id: userId, email });
     trackMetric('login_success', 1, 'none', { method: 'email' });
   }, []);
 
@@ -51,13 +52,13 @@ export function useSentryAlerts() {
   }, []);
 
   const onLogout = useCallback(() => {
-    Sentry.setUser(null);
+    SentryRef.setUser(null);
     trackMetric('logout', 1, 'none');
   }, []);
 
   const onSignupSuccess = useCallback((userId: string) => {
     trackMetric('signup_success', 1, 'none');
-    Sentry.addBreadcrumb({
+    SentryRef.addBreadcrumb({
       category: 'auth',
       message: 'User signed up successfully',
       level: 'info'
@@ -71,7 +72,7 @@ export function useSentryAlerts() {
 
   // Payment event handlers
   const onCheckoutStarted = useCallback((plan: string, amount: number) => {
-    Sentry.addBreadcrumb({
+    SentryRef.addBreadcrumb({
       category: 'payment',
       message: `Checkout started for ${plan}`,
       level: 'info',
@@ -97,7 +98,7 @@ export function useSentryAlerts() {
 
   // API event handlers
   const onApiError = useCallback((endpoint: string, error: string, statusCode?: number) => {
-    Sentry.addBreadcrumb({
+    SentryRef.addBreadcrumb({
       category: 'api',
       message: `API error: ${endpoint}`,
       level: 'error',
@@ -113,7 +114,7 @@ export function useSentryAlerts() {
 
   // Business event handlers
   const onOrderPlaced = useCallback((orderId: string, total: number) => {
-    Sentry.addBreadcrumb({
+    SentryRef.addBreadcrumb({
       category: 'business',
       message: `Order placed: ${orderId}`,
       level: 'info',
@@ -123,7 +124,7 @@ export function useSentryAlerts() {
   }, []);
 
   const onProductImported = useCallback((count: number, source: string) => {
-    Sentry.addBreadcrumb({
+    SentryRef.addBreadcrumb({
       category: 'business',
       message: `Products imported: ${count} from ${source}`,
       level: 'info',
@@ -162,7 +163,7 @@ export function withSentryErrorTracking(
   Component: React.ComponentType<Record<string, unknown>>,
   componentName: string
 ) {
-  return Sentry.withErrorBoundary(Component, {
+  if (!SentryRef) return; return SentryRef.withErrorBoundary(Component, {
     beforeCapture: (scope) => {
       scope.setTag('component', componentName);
     }

@@ -12,7 +12,9 @@
  * In development:
  *   - All levels are printed to console with structured formatting
  */
-import * as Sentry from '@sentry/react';
+// Lazy Sentry reference — loaded async to prevent blank pages if @sentry/react fails
+let SentryRef: any = null;
+import('@sentry/react').then(m => { SentryRef = m; }).catch(() => { /* Sentry unavailable */ });
 
 export type LogLevel = 'debug' | 'info' | 'warn' | 'error' | 'critical';
 
@@ -45,16 +47,16 @@ class AppLogger {
   /** Set the current user for Sentry context */
   setUser(userId: string, email?: string) {
     this.userId = userId;
-    if (this.isProd && import.meta.env.VITE_SENTRY_DSN) {
-      Sentry.setUser({ id: userId, email });
+    if (this.isProd && import.meta.env.VITE_SENTRY_DSN && SentryRef) {
+      SentryRef.setUser({ id: userId, email });
     }
   }
 
   /** Clear user context */
   clearUser() {
     this.userId = undefined;
-    if (this.isProd && import.meta.env.VITE_SENTRY_DSN) {
-      Sentry.setUser(null);
+    if (this.isProd && import.meta.env.VITE_SENTRY_DSN && SentryRef) {
+      SentryRef.setUser(null);
     }
   }
 
@@ -145,18 +147,18 @@ class AppLogger {
   }
 
   private sendToSentry(level: LogLevel, message: string, error?: Error, meta?: LogMeta) {
-    if (!import.meta.env.VITE_SENTRY_DSN) return;
+    if (!import.meta.env.VITE_SENTRY_DSN || !SentryRef) return;
 
     const sentryLevel = level === 'critical' ? 'fatal' : level;
     const context = {
-      level: sentryLevel as Sentry.SeverityLevel,
+      level: sentryLevel,
       extra: { ...meta, userId: this.userId },
     };
 
     if (error) {
-      Sentry.captureException(error, context);
+      SentryRef.captureException(error, context);
     } else {
-      Sentry.captureMessage(message, context);
+      SentryRef.captureMessage(message, context);
     }
   }
 }

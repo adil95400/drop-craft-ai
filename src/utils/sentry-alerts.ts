@@ -1,4 +1,5 @@
-import * as Sentry from "@sentry/react";
+let Sentry: any = null;
+import('@sentry/react').then(m => { Sentry = m; }).catch(() => {});
 
 // Alert severity levels
 export type AlertLevel = 'info' | 'warning' | 'error' | 'critical';
@@ -25,7 +26,7 @@ interface AlertConfig {
 }
 
 // Map alert levels to Sentry severity
-const levelToSeverity: Record<AlertLevel, Sentry.SeverityLevel> = {
+const levelToSeverity: Record<AlertLevel, string> = {
   info: 'info',
   warning: 'warning',
   error: 'error',
