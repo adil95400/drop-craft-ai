@@ -987,7 +987,13 @@ export class ConnectorFactory {
       case 'mirakl':
         return !!credentials.api_key && !!credentials.api_url;
       case 'alibaba':
+      case 'temu':
+      case 'tiktok_shop':
         return !!credentials.access_token;
+      case '1688':
+        return !!credentials.access_token && !!credentials.app_key;
+      case 'amazon_fba':
+        return !!credentials.access_token && !!credentials.seller_id;
         
       // Dropshipping suppliers
       case 'bigbuy':
