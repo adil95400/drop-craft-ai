@@ -26,7 +26,7 @@ interface AlertConfig {
 }
 
 // Map alert levels to Sentry severity
-const levelToSeverity: Record<AlertLevel, Sentry.SeverityLevel> = {
+const levelToSeverity: Record<AlertLevel, string> = {
   info: 'info',
   warning: 'warning',
   error: 'error',

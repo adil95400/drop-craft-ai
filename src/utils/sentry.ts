@@ -58,7 +58,7 @@ export const logError = (error: Error, context?: Record<string, unknown>) => {
   logger.error(error.message, error, context);
 };
 
-export const logEvent = (message: string, level: Sentry.SeverityLevel = 'info', extra?: Record<string, unknown>) => {
+export const logEvent = (message: string, level: string = 'info', extra?: Record<string, unknown>) => {
   if (level === 'error' || level === 'fatal') {
     logger.error(message, undefined, extra);
   } else if (level === 'warning') {
