@@ -1,4 +1,5 @@
 import React from 'react'
+import { useNavigate } from 'react-router-dom'
 import { Search, Globe, TrendingUp, Zap } from 'lucide-react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -8,6 +9,7 @@ import { useSearchAllSuppliers } from '@/hooks/useSearchAllSuppliers'
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper'
 
 export default function SearchAllSuppliersPage() {
+  const navigate = useNavigate()
   const {
     results,
     isSearching,
@@ -20,8 +22,8 @@ export default function SearchAllSuppliersPage() {
 
   return (
     <ChannablePageWrapper
-      title="Search All Suppliers"
-      description="Trouvez le meilleur fournisseur en comparant prix, livraison et disponibilité"
+      title="Recherche Multi-Fournisseurs"
+      description="Trouvez le meilleur fournisseur en comparant prix, livraison et disponibilité sur 15+ plateformes"
       heroImage="suppliers"
       badge={{ label: 'Multi-Plateforme', icon: Globe }}
     >

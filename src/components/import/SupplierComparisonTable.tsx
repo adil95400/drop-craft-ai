@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { 
   ArrowUpDown, ExternalLink, ShoppingCart, Star, 
   Truck, Package, TrendingUp, ChevronDown, ChevronUp,
@@ -40,6 +41,7 @@ export function SupplierComparisonTable({
   platformsSearched,
   onSort
 }: SupplierComparisonTableProps) {
+  const navigate = useNavigate()
   const [selectedItems, setSelectedItems] = useState<string[]>([])
   const [sortField, setSortField] = useState<string>('score')
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc')
@@ -156,7 +158,11 @@ export function SupplierComparisonTable({
           <Button size="sm" variant="outline" onClick={clearSelection}>
             Désélectionner
           </Button>
-          <Button size="sm">
+          <Button size="sm" onClick={() => {
+            const urls = selectedItems.join('\n')
+            navigate('/import/bulk', { state: { urls } })
+            toast({ title: 'Import en masse', description: `${selectedItems.length} produit(s) envoyé(s) vers l'import en masse` })
+          }}>
             <ShoppingCart className="h-4 w-4 mr-2" />
             Importer la sélection
           </Button>
@@ -326,7 +332,10 @@ export function SupplierComparisonTable({
                     >
                       <ExternalLink className="h-4 w-4" />
                     </Button>
-                    <Button size="sm">
+                    <Button size="sm" onClick={() => {
+                      navigate('/import/autods', { state: { url: result.productUrl } })
+                      toast({ title: 'Import lancé', description: `Redirection vers l'import pour: ${result.platform}` })
+                    }}>
                       <ShoppingCart className="h-4 w-4 mr-1" />
                       Import
                     </Button>
