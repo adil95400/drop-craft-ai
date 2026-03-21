@@ -108,7 +108,7 @@ export default function PriceCompetitionPage() {
         heroImage="analytics"
         badge={{ label: 'Concurrence', icon: Target }}
       >
-        <ModuleInterconnectionBanner module="pricing" />
+        <ModuleInterconnectionBanner currentModule="pricing" />
 
         {/* KPIs */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
