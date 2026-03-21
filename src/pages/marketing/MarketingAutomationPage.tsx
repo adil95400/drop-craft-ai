@@ -34,6 +34,8 @@ import {
 import { WorkflowStepEditor, type WorkflowStep } from '@/components/marketing/automation/WorkflowStepEditor';
 import { AutomationPerformance } from '@/components/marketing/automation/AutomationPerformance';
 import { AudienceSegmentPicker } from '@/components/marketing/automation/AudienceSegmentPicker';
+import { ConversionFunnel } from '@/components/marketing/automation/ConversionFunnel';
+import { AICampaignSuggestions } from '@/components/marketing/automation/AICampaignSuggestions';
 
 // ─── Templates ─────────────────────────────────────────────
 const TEMPLATES = [
