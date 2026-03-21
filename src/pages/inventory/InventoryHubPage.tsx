@@ -737,10 +737,11 @@ export default function InventoryHubPage() {
       </div>
 
       <Tabs defaultValue="levels" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-5">
+        <TabsList className="grid w-full grid-cols-6">
           <TabsTrigger value="levels" className="gap-2"><Package className="h-4 w-4" />Niveaux</TabsTrigger>
           <TabsTrigger value="sync" className="gap-2"><Activity className="h-4 w-4" />Sync Temps Réel</TabsTrigger>
           <TabsTrigger value="forecast" className="gap-2"><Brain className="h-4 w-4" />Prévisions IA</TabsTrigger>
+          <TabsTrigger value="reorder" className="gap-2"><ShoppingCartIcon className="h-4 w-4" />Auto-Réappro</TabsTrigger>
           <TabsTrigger value="alerts" className="gap-2"><Bell className="h-4 w-4" />Alertes ({stats.activeAlerts})</TabsTrigger>
           <TabsTrigger value="warehouses" className="gap-2"><Warehouse className="h-4 w-4" />Entrepôts</TabsTrigger>
         </TabsList>
@@ -748,6 +749,7 @@ export default function InventoryHubPage() {
         <TabsContent value="levels"><StockLevelsTab /></TabsContent>
         <TabsContent value="sync"><RealTimeSyncTab /></TabsContent>
         <TabsContent value="forecast"><AIForecastingTab /></TabsContent>
+        <TabsContent value="reorder"><AutoReorderPanel /></TabsContent>
         <TabsContent value="alerts"><AlertsRulesTab /></TabsContent>
         <TabsContent value="warehouses"><WarehousesTab /></TabsContent>
       </Tabs>
