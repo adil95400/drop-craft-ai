@@ -2,7 +2,7 @@ import { memo, useState, useCallback, useEffect, useRef } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Star, ChevronLeft, ChevronRight } from "lucide-react";
+import { Star, ChevronLeft, ChevronRight, Quote } from "lucide-react";
 import { SOCIAL_PROOF, TESTIMONIALS } from "@/config/landingPageConfig";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -44,10 +44,18 @@ export const ProofSection = memo(() => {
           </p>
         </div>
 
-        {/* Desktop grid */}
+        {/* Desktop: enhanced grid with featured card */}
         <div className="hidden md:grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
           {TESTIMONIALS.map((t, i) => (
-            <TestimonialCard key={i} testimonial={t} />
+            <motion.div
+              key={i}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ delay: i * 0.15 }}
+              viewport={{ once: true }}
+            >
+              <TestimonialCard testimonial={t} featured={i === 0} />
+            </motion.div>
           ))}
         </div>
 
@@ -61,7 +69,7 @@ export const ProofSection = memo(() => {
               exit={{ opacity: 0, x: -40 }}
               transition={{ duration: 0.3 }}
             >
-              <TestimonialCard testimonial={TESTIMONIALS[current]} />
+              <TestimonialCard testimonial={TESTIMONIALS[current]} featured />
             </motion.div>
           </AnimatePresence>
 
@@ -119,10 +127,11 @@ export const ProofSection = memo(() => {
 });
 ProofSection.displayName = "ProofSection";
 
-function TestimonialCard({ testimonial: t }: { testimonial: (typeof TESTIMONIALS)[0] }) {
+function TestimonialCard({ testimonial: t, featured = false }: { testimonial: (typeof TESTIMONIALS)[0]; featured?: boolean }) {
   return (
-    <Card className="hover:shadow-lg transition-shadow h-full">
-      <CardContent className="pt-6 space-y-4">
+    <Card className={`hover:shadow-lg transition-shadow h-full ${featured ? "border-primary/30 bg-primary/[0.02]" : ""}`}>
+      <CardContent className="pt-6 space-y-4 relative">
+        <Quote className="h-8 w-8 text-primary/10 absolute top-4 right-4" aria-hidden="true" />
         <Badge variant="outline" className="bg-success/10 text-success border-success/30 text-xs">
           {t.metric}
         </Badge>

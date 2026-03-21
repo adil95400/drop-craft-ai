@@ -1,6 +1,6 @@
 import { memo, useState, useEffect, useRef } from "react";
-import { Users, Clock, Globe, Star } from "lucide-react";
-import { SOCIAL_PROOF } from "@/config/landingPageConfig";
+import { Users, Clock, Globe, Star, TrendingUp } from "lucide-react";
+import { useLandingContent } from "@/hooks/useLandingContent";
 
 /** Animated counter that counts up from 0 */
 function useCountUp(target: number, duration = 2000) {
@@ -20,7 +20,6 @@ function useCountUp(target: number, duration = 2000) {
           const tick = (now: number) => {
             const elapsed = now - start;
             const progress = Math.min(elapsed / duration, 1);
-            // ease out cubic
             const eased = 1 - Math.pow(1 - progress, 3);
             setValue(Math.round(eased * target));
             if (progress < 1) requestAnimationFrame(tick);
@@ -37,27 +36,42 @@ function useCountUp(target: number, duration = 2000) {
   return { value, ref };
 }
 
-const METRICS = [
-  { rawValue: 2000, display: (v: number) => `${v.toLocaleString()}+`, label: "Active merchants", icon: Users },
-  { rawValue: 20, display: (v: number) => `${v}h+`, label: "Saved per week", icon: Clock },
-  { rawValue: 99, display: (v: number) => `${v}+`, label: "Suppliers connected", icon: Globe },
-  { rawValue: 48, display: (v: number) => `${(v / 10).toFixed(1)}/5`, label: "Average rating", icon: Star },
-] as const;
+export const SocialProofBar = memo(() => {
+  const { socialProof, metricsLoading } = useLandingContent();
 
-export const SocialProofBar = memo(() => (
-  <section className="py-12 bg-secondary/30 border-y border-border/40" aria-label="Key metrics">
-    <div className="container mx-auto px-4 sm:px-6">
-      <p className="text-center text-sm text-muted-foreground mb-8 font-medium uppercase tracking-wider">
-        Trusted by {SOCIAL_PROOF.merchantCount} Shopify &amp; e-commerce merchants worldwide
-      </p>
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-8 max-w-4xl mx-auto">
-        {METRICS.map((m, i) => (
-          <AnimatedMetric key={i} {...m} />
-        ))}
+  // Parse numeric value from string like "2,000+"
+  const merchantNum = parseInt(socialProof.merchantCount.replace(/[^0-9]/g, ''), 10) || 2000;
+
+  const METRICS = [
+    { rawValue: merchantNum, display: (v: number) => `${v.toLocaleString()}+`, label: "Active merchants", icon: Users },
+    { rawValue: 20, display: (v: number) => `${v}h+`, label: "Saved per week", icon: Clock },
+    { rawValue: 99, display: (v: number) => `${v}+`, label: "Suppliers connected", icon: Globe },
+    { rawValue: 48, display: (v: number) => `${(v / 10).toFixed(1)}/5`, label: "Average rating", icon: Star },
+  ] as const;
+
+  return (
+    <section className="py-12 bg-secondary/30 border-y border-border/40" aria-label="Key metrics">
+      <div className="container mx-auto px-4 sm:px-6">
+        <p className="text-center text-sm text-muted-foreground mb-8 font-medium uppercase tracking-wider">
+          Trusted by {socialProof.merchantCount} Shopify &amp; e-commerce merchants worldwide
+        </p>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-8 max-w-4xl mx-auto">
+          {METRICS.map((m, i) => (
+            <AnimatedMetric key={i} {...m} />
+          ))}
+        </div>
+        {/* Live indicator */}
+        <div className="flex items-center justify-center gap-2 mt-6">
+          <span className="relative flex h-2 w-2">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-success opacity-75" />
+            <span className="relative inline-flex rounded-full h-2 w-2 bg-success" />
+          </span>
+          <span className="text-xs text-muted-foreground">Updated in real-time</span>
+        </div>
       </div>
-    </div>
-  </section>
-));
+    </section>
+  );
+});
 SocialProofBar.displayName = "SocialProofBar";
 
 function AnimatedMetric({
@@ -65,7 +79,7 @@ function AnimatedMetric({
   display,
   label,
   icon: Icon,
-}: (typeof METRICS)[number]) {
+}: { rawValue: number; display: (v: number) => string; label: string; icon: React.ElementType }) {
   const { value, ref } = useCountUp(rawValue);
   return (
     <div ref={ref} className="text-center space-y-2">
