@@ -1159,7 +1159,7 @@ export default function ChromeExtensionPage() {
                     <h4 className="font-medium mb-2">Informations techniques</h4>
                     <div className="grid grid-cols-2 gap-2 text-sm">
                       <div className="text-muted-foreground">Version:</div>
-                      <div className="font-mono">6.0.0</div>
+                      <div className="font-mono">{EXTENSION_VERSION}</div>
                       <div className="text-muted-foreground">API Endpoint:</div>
                       <div className="font-mono text-xs truncate">jsmwckzrmqecwwrswwrz.supabase.co</div>
                       <div className="text-muted-foreground">Token Storage:</div>
