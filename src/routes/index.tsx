@@ -18,9 +18,9 @@ import { AdminRoute } from '@/components/auth/AdminRoute';
 
 // Centralized Legacy Redirect Handler
 import { LegacyRedirectHandler } from './LegacyRedirectsHandler';
+import { PublicRoutes } from './PublicRoutes';
 
 // Route modules (lazy loaded for code splitting)
-const PublicRoutes = lazy(() => import('./PublicRoutes').then(m => ({ default: m.PublicRoutes })));
 const CoreRoutes = lazy(() => import('./CoreRoutes').then(m => ({ default: m.CoreRoutes })));
 const ProductRoutes = lazy(() => import('./ProductRoutes').then(m => ({ default: m.ProductRoutes })));
 const CatalogRoutes = lazy(() => import('./CatalogRoutes').then(m => ({ default: m.CatalogRoutes })));
