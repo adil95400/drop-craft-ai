@@ -36,7 +36,7 @@ import { cn } from '@/lib/utils';
 
 // Chrome Web Store URL - Replace [EXTENSION_ID] with actual ID after publication
 const CHROME_STORE_URL = 'https://chrome.google.com/webstore/detail/shopopti-dropshipping-pro/pending-publication';
-const EXTENSION_VERSION = '6.0.0';
+const EXTENSION_VERSION = '7.0.0';
 const IS_PUBLISHED = false; // Set to true after Chrome Web Store approval
 
 interface ExtensionSettings {
