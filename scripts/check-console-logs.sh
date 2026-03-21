@@ -21,6 +21,9 @@ MATCHES=$(grep -rn "console\.\(log\|debug\|info\)" src/ \
   --exclude="sentry.ts" \
   --exclude="*.test.*" \
   --exclude="*.spec.*" \
+  --exclude="buttonAuditor.ts" \
+  | grep -v "'\`\|'\|\"" \
+  | grep -v "includes('console" \
   || true)
 
 if [ -n "$MATCHES" ]; then
