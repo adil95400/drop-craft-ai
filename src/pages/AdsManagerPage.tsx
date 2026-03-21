@@ -9,7 +9,8 @@ import { Progress } from '@/components/ui/progress';
 import { 
   Megaphone, Sparkles, FlaskConical, TrendingUp, Plus, Play, Pause, 
   DollarSign, Eye, MousePointer, RefreshCw, BarChart3,
-  ShoppingCart, Target, Settings2, MoreHorizontal, ExternalLink, Calendar
+  ShoppingCart, Target, Settings2, MoreHorizontal, ExternalLink, Calendar,
+  Share2, Palette
 } from 'lucide-react';
 import { useRealAdsManager } from '@/hooks/useRealAdsManager';
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
@@ -18,6 +19,8 @@ import { AdsPerformanceCharts } from '@/components/ads/AdsPerformanceCharts';
 import { AdsCreativeStudio } from '@/components/ads/AdsCreativeStudio';
 import { AdsABTesting } from '@/components/ads/AdsABTesting';
 import { AdsAudienceBuilder } from '@/components/ads/AdsAudienceBuilder';
+import { AdsMarketingSync } from '@/components/ads/AdsMarketingSync';
+import { AdsCanvaStudio } from '@/components/ads/AdsCanvaStudio';
 import { cn } from '@/lib/utils';
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger
