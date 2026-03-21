@@ -434,6 +434,22 @@ export function OnboardingWidget() {
               )
             })}
           </div>
+
+          {/* Contextual recommendations based on business type */}
+          {state.businessType && progress.completed > 0 && !progress.isComplete && (
+            <div className="mt-3 p-3 rounded-lg bg-accent/50 border border-accent/20">
+              <div className="flex items-start gap-2">
+                <Sparkles className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
+                <div>
+                  <p className="text-xs font-medium text-foreground">
+                    {state.businessType === 'dropshipping' && '💡 Astuce : Utilisez la recherche IA pour trouver des produits gagnants avec de fortes marges'}
+                    {state.businessType === 'ecommerce' && '💡 Astuce : Optimisez vos fiches produits avec l\'IA pour améliorer votre SEO de +40%'}
+                    {state.businessType === 'marketplace' && '💡 Astuce : Configurez la synchronisation multi-canal pour publier sur toutes vos plateformes en 1 clic'}
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
           
           <div className="mt-3 text-center">
             <button 
