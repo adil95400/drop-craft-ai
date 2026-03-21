@@ -31,6 +31,11 @@ import { AlibabaConnector } from './AlibabaConnector';
 import { MatterhornConnector } from './MatterhornConnector';
 import { BTSWholesalerConnector } from './BTSWholesalerConnector';
 import { CJDropshippingConnector } from './CJDropshippingConnector';
+import { TemuConnector } from './TemuConnector';
+import { Connector1688 } from './Connector1688';
+import { PrintifyConnector } from './PrintifyConnector';
+import { TikTokShopConnector } from './TikTokShopConnector';
+import { AmazonFBAConnector } from './AmazonFBAConnector';
 import {
   AtixoConnector,
   B2BUhrenConnector,
