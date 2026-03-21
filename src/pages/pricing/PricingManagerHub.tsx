@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { ModuleInterconnectionBanner } from '@/components/cross-module/ModuleInterconnectionBanner';
 import { useApplyPricingRules, useAutoRepriceFromCompetitors } from '@/hooks/useCrossModuleSync';
+import { AIPricingEngine } from '@/components/pricing/AIPricingEngine';
 
 const PRICING_MODULES = [
   {
