@@ -19,8 +19,9 @@ import { useUnifiedAuth } from '@/contexts/UnifiedAuthContext';
 import {
   Boxes, Warehouse, AlertTriangle, ArrowDownUp, Package, Plus, TrendingDown, TrendingUp,
   MapPin, Search, CheckCircle2, RefreshCw, Activity, Zap, Clock, BarChart3, Brain,
-  ShieldAlert, Bell, Timer, Globe, Eye
+  ShieldAlert, Bell, Timer, Globe, Eye, ShoppingCart as ShoppingCartIcon
 } from 'lucide-react';
+import { AutoReorderPanel } from '@/components/inventory/AutoReorderPanel';
 import { format, formatDistanceToNow, subDays } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line } from 'recharts';
