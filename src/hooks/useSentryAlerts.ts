@@ -159,8 +159,9 @@ export function withSentryErrorTracking(
   Component: React.ComponentType<Record<string, unknown>>,
   componentName: string
 ) {
-  if (!SentryRef) return; return SentryRef.withErrorBoundary(Component, {
-    beforeCapture: (scope) => {
+  if (!SentryRef?.withErrorBoundary) return Component;
+  return SentryRef.withErrorBoundary(Component, {
+    beforeCapture: (scope: any) => {
       scope.setTag('component', componentName);
     }
   });
