@@ -835,6 +835,14 @@ export class ConnectorFactory {
         return new MiraklConnector(credentials);
       case 'alibaba':
         return new AlibabaConnector(credentials);
+      case 'temu':
+        return new TemuConnector(credentials);
+      case '1688':
+        return new Connector1688(credentials);
+      case 'tiktok_shop':
+        return new TikTokShopConnector(credentials);
+      case 'amazon_fba':
+        return new AmazonFBAConnector(credentials);
         
       // Dropshipping suppliers
       case 'bigbuy':
