@@ -63,7 +63,7 @@ export function AdsMarketingSync() {
 
       // Fetch social integrations
       const { data: integrations } = await supabase
-        .from('integrations')
+        .from('integrations' as any)
         .select('*')
         .eq('user_id', user.id);
 
