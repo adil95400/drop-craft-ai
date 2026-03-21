@@ -172,6 +172,7 @@
         "extractors/core-extractor.js",
         "extractors/tiktok-extractor.js",
         "extractors/extractor-registry.js",
+        "import-overlay-v3.js",
         "content-script.js"
       ],
       "css": ["content.css"],
