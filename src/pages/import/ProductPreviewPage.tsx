@@ -20,7 +20,8 @@ import {
   ZoomIn, Loader2, Tag, DollarSign, FileText, Film, Star,
   MessageSquare, Play, Sparkles, ClipboardList, AlertCircle,
   ArrowLeft, Globe, Search, BarChart3, Layers, Settings,
-  ChevronDown, ChevronUp, ExternalLink, Copy, Save
+  ChevronDown, ChevronUp, ExternalLink, Copy, Save, Truck,
+  Shield, TrendingUp, Award
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { toast } from '@/hooks/use-toast'
@@ -52,6 +53,12 @@ interface ProductPreviewData {
   original_price?: number | null
   handle?: string
   stock_quantity?: number
+  breadcrumbs?: string[]
+  seo?: { metaTitle?: string; metaDescription?: string; h1?: string; h2s?: string[]; canonicalUrl?: string; keywords?: string[] }
+  quality_score?: { score: number; breakdown: Record<string, { score: number; max: number; label: string }> }
+  review_distribution?: { distribution: Record<number, number>; averageRating: number; totalReviews: number }
+  shipping?: { free_shipping?: boolean; estimated_delivery?: string; methods?: string[] }
+  seller?: { name?: string; rating?: number; reviews_count?: number; url?: string }
 }
 
 // --- Image utilities ---
@@ -1332,6 +1339,125 @@ export default function ProductPreviewPage() {
                 )}
               </CollapsibleCard>
 
+              {/* ── Quality Score ── */}
+              {editedProduct.quality_score && (
+                <Card className="border-border/60 shadow-sm">
+                  <CardHeader className="py-3 px-4">
+                    <CardTitle className="text-sm font-semibold flex items-center gap-2">
+                      <Award className="h-4 w-4 text-muted-foreground" />
+                      Score de qualité
+                      <Badge variant={editedProduct.quality_score.score >= 70 ? 'default' : editedProduct.quality_score.score >= 40 ? 'secondary' : 'destructive'} className="ml-auto text-xs">
+                        {editedProduct.quality_score.score}%
+                      </Badge>
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="px-4 pb-4 pt-0 space-y-2">
+                    {Object.entries(editedProduct.quality_score.breakdown).map(([key, item]) => (
+                      <div key={key} className="space-y-0.5">
+                        <div className="flex justify-between text-[11px]">
+                          <span className="text-muted-foreground">{item.label}</span>
+                          <span className="font-medium">{item.score}/{item.max}</span>
+                        </div>
+                        <div className="h-1.5 rounded-full bg-muted overflow-hidden">
+                          <div
+                            className={cn("h-full rounded-full transition-all", item.score >= item.max * 0.7 ? "bg-primary" : item.score >= item.max * 0.4 ? "bg-amber-500" : "bg-destructive")}
+                            style={{ width: `${Math.round((item.score / Math.max(item.max, 1)) * 100)}%` }}
+                          />
+                        </div>
+                      </div>
+                    ))}
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* ── Review Distribution ── */}
+              {editedProduct.review_distribution && editedProduct.review_distribution.totalReviews > 0 && (
+                <Card className="border-border/60 shadow-sm">
+                  <CardHeader className="py-3 px-4">
+                    <CardTitle className="text-sm font-semibold flex items-center gap-2">
+                      <TrendingUp className="h-4 w-4 text-muted-foreground" />
+                      Distribution des avis
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="px-4 pb-4 pt-0 space-y-3">
+                    <div className="flex items-center gap-2">
+                      <span className="text-2xl font-bold">{editedProduct.review_distribution.averageRating}</span>
+                      <div className="flex items-center gap-0.5">
+                        {Array.from({ length: 5 }).map((_, i) => (
+                          <Star key={i} className={cn("h-3.5 w-3.5", i < Math.round(editedProduct.review_distribution!.averageRating) ? "fill-amber-500 text-amber-500" : "text-muted-foreground/30")} />
+                        ))}
+                      </div>
+                      <span className="text-xs text-muted-foreground">({editedProduct.review_distribution.totalReviews} avis)</span>
+                    </div>
+                    <div className="space-y-1">
+                      {[5, 4, 3, 2, 1].map(stars => {
+                        const count = editedProduct.review_distribution!.distribution[stars] || 0
+                        const pct = editedProduct.review_distribution!.totalReviews > 0
+                          ? Math.round((count / editedProduct.review_distribution!.totalReviews) * 100)
+                          : 0
+                        return (
+                          <div key={stars} className="flex items-center gap-2 text-[11px]">
+                            <span className="w-4 text-right text-muted-foreground">{stars}★</span>
+                            <div className="flex-1 h-1.5 rounded-full bg-muted overflow-hidden">
+                              <div className="h-full rounded-full bg-amber-500 transition-all" style={{ width: `${pct}%` }} />
+                            </div>
+                            <span className="w-8 text-right text-muted-foreground">{count}</span>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* ── Shipping ── */}
+              {editedProduct.shipping && (editedProduct.shipping.free_shipping || editedProduct.shipping.estimated_delivery || (editedProduct.shipping.methods?.length ?? 0) > 0) && (
+                <Card className="border-border/60 shadow-sm">
+                  <CardHeader className="py-3 px-4">
+                    <CardTitle className="text-sm font-semibold flex items-center gap-2">
+                      <Truck className="h-4 w-4 text-muted-foreground" />
+                      Livraison
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="px-4 pb-4 pt-0 space-y-2">
+                    {editedProduct.shipping.free_shipping && (
+                      <Badge variant="secondary" className="bg-success/10 text-success border-success/20 text-xs">Livraison gratuite</Badge>
+                    )}
+                    {editedProduct.shipping.estimated_delivery && (
+                      <p className="text-xs text-muted-foreground">Livraison estimée : <span className="font-medium text-foreground">{editedProduct.shipping.estimated_delivery}</span></p>
+                    )}
+                    {editedProduct.shipping.methods && editedProduct.shipping.methods.length > 0 && (
+                      <div className="flex flex-wrap gap-1">
+                        {editedProduct.shipping.methods.map((m, i) => (
+                          <Badge key={i} variant="outline" className="text-[10px] capitalize">{m}</Badge>
+                        ))}
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* ── Seller ── */}
+              {editedProduct.seller?.name && (
+                <Card className="border-border/60 shadow-sm">
+                  <CardHeader className="py-3 px-4">
+                    <CardTitle className="text-sm font-semibold flex items-center gap-2">
+                      <Shield className="h-4 w-4 text-muted-foreground" />
+                      Vendeur
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="px-4 pb-4 pt-0 space-y-1.5 text-xs">
+                    <p className="font-medium">{editedProduct.seller.name}</p>
+                    {editedProduct.seller.rating != null && (
+                      <p className="text-muted-foreground">Note : <span className="font-medium text-foreground">{editedProduct.seller.rating}%</span></p>
+                    )}
+                    {editedProduct.seller.reviews_count != null && (
+                      <p className="text-muted-foreground">{editedProduct.seller.reviews_count.toLocaleString()} évaluations</p>
+                    )}
+                  </CardContent>
+                </Card>
+              )}
+
               {/* ── Import Summary ── */}
               <Card className="border-primary/30 shadow-sm bg-primary/5">
                 <CardContent className="p-4 space-y-2">
@@ -1360,6 +1486,12 @@ export default function ProductPreviewPage() {
                       <span className="text-muted-foreground">Caractéristiques</span>
                       <span className="font-medium">{Object.keys(editedProduct.specifications || {}).length}</span>
                     </div>
+                    {editedProduct.quality_score && (
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Score qualité</span>
+                        <span className="font-medium">{editedProduct.quality_score.score}%</span>
+                      </div>
+                    )}
                   </div>
                   <Separator className="my-2" />
                   <Button
