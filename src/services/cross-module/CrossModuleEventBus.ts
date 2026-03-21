@@ -18,6 +18,8 @@ export type CrossModuleEventType =
   | 'orders.fulfilled'
   | 'orders.returned'
   | 'marketing.campaign_created'
+  | 'marketing.campaign_ended'
+  | 'marketing.budget_alert'
   | 'sync.completed'
   | 'sync.failed'
   | 'ai.content_generated'
@@ -25,7 +27,9 @@ export type CrossModuleEventType =
   | 'webhook.order_received'
   | 'webhook.product_updated'
   | 'webhook.inventory_changed'
-  | 'webhook.refund_received';
+  | 'webhook.refund_received'
+  | 'fulfillment.order_shipped'
+  | 'fulfillment.delivery_delayed';
 
 export interface CrossModuleEvent {
   id: string;
@@ -151,6 +155,76 @@ function generateSuggestions(type: CrossModuleEventType, data: Record<string, an
           description: `${data.count || 1} nouvelle(s) commande(s) à traiter`,
           priority: 'high',
           actionLabel: 'Exécuter',
+        },
+        {
+          id: `${Date.now()}-stock-check`,
+          targetModule: 'stock',
+          targetRoute: '/stock',
+          icon: 'AlertTriangle',
+          title: 'Vérifier le stock',
+          description: 'Les commandes impactent votre inventaire — vérifiez les niveaux',
+          priority: 'medium',
+          actionLabel: 'Voir le stock',
+        }
+      );
+      break;
+
+    case 'marketing.campaign_ended':
+      suggestions.push(
+        {
+          id: `${Date.now()}-campaign-analytics`,
+          targetModule: 'analytics',
+          targetRoute: '/analytics/bi',
+          icon: 'BarChart3',
+          title: 'Analyser les résultats',
+          description: `Campagne terminée — consultez les performances et le ROAS`,
+          priority: 'medium',
+          actionLabel: 'Voir les stats',
+        }
+      );
+      break;
+
+    case 'marketing.budget_alert':
+      suggestions.push(
+        {
+          id: `${Date.now()}-budget-adjust`,
+          targetModule: 'marketing',
+          targetRoute: '/marketing/ads',
+          icon: 'DollarSign',
+          title: 'Budget publicitaire atteint',
+          description: `${data.campaignName || 'Une campagne'} approche la limite de budget`,
+          priority: 'high',
+          actionLabel: 'Ajuster le budget',
+        }
+      );
+      break;
+
+    case 'fulfillment.order_shipped':
+      suggestions.push(
+        {
+          id: `${Date.now()}-notify-customer`,
+          targetModule: 'marketing',
+          targetRoute: '/marketing/email',
+          icon: 'Mail',
+          title: 'Notifier le client',
+          description: `${data.count || 1} commande(s) expédiée(s) — envoyez un email de suivi`,
+          priority: 'low',
+          actionLabel: 'Envoyer',
+        }
+      );
+      break;
+
+    case 'fulfillment.delivery_delayed':
+      suggestions.push(
+        {
+          id: `${Date.now()}-delay-action`,
+          targetModule: 'support',
+          targetRoute: '/support',
+          icon: 'AlertTriangle',
+          title: 'Retard de livraison détecté',
+          description: `${data.count || 1} livraison(s) en retard — préparez une communication proactive`,
+          priority: 'high',
+          actionLabel: 'Gérer',
         }
       );
       break;

@@ -1,6 +1,7 @@
 /**
  * useAutoEmitCrossModuleEvents - Auto-emits cross-module events based on DB state changes
- * Watches: low stock, new orders, AI recommendations, products without pricing, price sync queue
+ * Watches: low stock, new orders, AI recommendations, products without pricing, 
+ * price sync queue, campaign budgets, fulfillment delays
  */
 import { useEffect, useRef } from 'react';
 import { useQuery } from '@tanstack/react-query';
@@ -14,6 +15,8 @@ export function useAutoEmitCrossModuleEvents() {
   const prevRecommendationCount = useRef<number>(0);
   const prevUnpricedCount = useRef<number>(0);
   const prevSyncQueueCount = useRef<number>(0);
+  const prevCampaignAlertCount = useRef<number>(0);
+  const prevFulfillmentDelayCount = useRef<number>(0);
 
   // Watch low stock products
   const { data: lowStockCount = 0 } = useQuery({
@@ -62,7 +65,6 @@ export function useAutoEmitCrossModuleEvents() {
     queryFn: async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return 0;
-      // Products with cost but price = cost (no markup applied)
       const { data } = await supabase
         .from('products')
         .select('id, price, cost_price')
@@ -88,6 +90,41 @@ export function useAutoEmitCrossModuleEvents() {
       return count || 0;
     },
     refetchInterval: 60_000,
+  });
+
+  // Watch campaigns nearing budget limits (spend > 90% of budget)
+  const { data: campaignAlertCount = 0 } = useQuery({
+    queryKey: ['cross-module-campaign-alerts'],
+    queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return 0;
+      const { data } = await supabase
+        .from('ad_campaigns')
+        .select('id, spend, budget, name')
+        .eq('user_id', user.id)
+        .eq('status', 'active')
+        .not('budget', 'is', null)
+        .gt('budget', 0);
+      return (data || []).filter(c => 
+        c.spend && c.budget && (c.spend / c.budget) >= 0.9
+      ).length;
+    },
+    refetchInterval: 300_000,
+  });
+
+  // Watch fulfillment delays (auto_order_queue items stuck > 24h)
+  const { data: fulfillmentDelayCount = 0 } = useQuery({
+    queryKey: ['cross-module-fulfillment-delays'],
+    queryFn: async () => {
+      const cutoff = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+      const { count } = await supabase
+        .from('auto_order_queue')
+        .select('id', { count: 'exact', head: true })
+        .eq('status', 'processing')
+        .lt('created_at', cutoff);
+      return count || 0;
+    },
+    refetchInterval: 300_000,
   });
 
   // Emit events on changes
@@ -133,4 +170,26 @@ export function useAutoEmitCrossModuleEvents() {
     }
     prevSyncQueueCount.current = syncQueueCount;
   }, [syncQueueCount, emit]);
+
+  // Campaign budget alerts
+  useEffect(() => {
+    if (campaignAlertCount > 0 && campaignAlertCount > prevCampaignAlertCount.current) {
+      emit('marketing.budget_alert', 'campaign-monitor', {
+        count: campaignAlertCount,
+        message: `${campaignAlertCount} campagne(s) proche(s) de la limite de budget`
+      });
+    }
+    prevCampaignAlertCount.current = campaignAlertCount;
+  }, [campaignAlertCount, emit]);
+
+  // Fulfillment delays
+  useEffect(() => {
+    if (fulfillmentDelayCount > 0 && fulfillmentDelayCount > prevFulfillmentDelayCount.current) {
+      emit('fulfillment.delivery_delayed', 'fulfillment-monitor', {
+        count: fulfillmentDelayCount,
+        message: `${fulfillmentDelayCount} commande(s) en retard de traitement`
+      });
+    }
+    prevFulfillmentDelayCount.current = fulfillmentDelayCount;
+  }, [fulfillmentDelayCount, emit]);
 }
