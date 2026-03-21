@@ -54,17 +54,17 @@ function extractMessage(args: unknown[]): string {
 }
 
 function sendToSentry(level: 'warning' | 'error', message: string, args: unknown[]) {
-  if (!hasSentry) return;
+  if (!hasSentry || !SentryRef) return;
 
   const error = args.find(a => a instanceof Error) as Error | undefined;
 
   if (error) {
-    Sentry.captureException(error, {
+    SentryRef.captureException(error, {
       level,
       extra: { originalMessage: message },
     });
   } else {
-    Sentry.captureMessage(message, level);
+    SentryRef.captureMessage(message, level);
   }
 }
 
