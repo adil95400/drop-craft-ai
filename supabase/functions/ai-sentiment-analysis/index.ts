@@ -1,25 +1,47 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import "https://deno.land/x/xhr@0.1.0/mod.ts";
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.53.0'
+import { getSecureCorsHeaders, handleCorsPreflightSecure } from '../_shared/secure-cors.ts'
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
-
-serve(async (req) => {
+Deno.serve(async (req) => {
+  const corsHeaders = getSecureCorsHeaders(req)
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+    return handleCorsPreflightSecure(req)
   }
 
   try {
-    const { reviews, productId, analysisType = 'detailed' } = await req.json();
-    const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY_AUTOMATION') || Deno.env.get('OPENAI_API_KEY');
-
-    if (!OPENAI_API_KEY) {
-      throw new Error('OPENAI_API_KEY is not configured');
+    // JWT Authentication
+    const authHeader = req.headers.get('Authorization')
+    if (!authHeader?.startsWith('Bearer ')) {
+      return new Response(JSON.stringify({ error: 'Authorization required' }), {
+        status: 401,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
     }
 
-    const reviewTexts = reviews.map((r: any) => `Rating: ${r.rating}/5\nReview: ${r.text}`).join('\n\n---\n\n');
+    const supabase = createClient(
+      Deno.env.get('SUPABASE_URL')!,
+      Deno.env.get('SUPABASE_ANON_KEY')!,
+      { global: { headers: { Authorization: authHeader } } }
+    )
+
+    const token = authHeader.replace('Bearer ', '')
+    const { data: claimsData, error: claimsError } = await supabase.auth.getClaims(token)
+    if (claimsError || !claimsData?.claims) {
+      return new Response(JSON.stringify({ error: 'Invalid or expired token' }), {
+        status: 401,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
+
+    const userId = claimsData.claims.sub as string
+
+    const { reviews, productId, analysisType = 'detailed' } = await req.json()
+
+    const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY_AUTOMATION') || Deno.env.get('OPENAI_API_KEY')
+    if (!OPENAI_API_KEY) {
+      throw new Error('OPENAI_API_KEY is not configured')
+    }
+
+    const reviewTexts = reviews.map((r: any) => `Rating: ${r.rating}/5\nReview: ${r.text}`).join('\n\n---\n\n')
 
     const prompt = `Analyze customer reviews and provide actionable insights:
 
@@ -50,9 +72,8 @@ Return as JSON:
   "competitorMentions": [{"competitor": string, "context": string}],
   "responseStrategy": string,
   "summary": string
-}`;
+}`
 
-    const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY_AUTOMATION') || Deno.env.get('OPENAI_API_KEY');
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -67,40 +88,41 @@ Return as JSON:
         ],
         temperature: 0.2,
       }),
-    });
+    })
 
     if (!response.ok) {
-      const errorText = await response.text();
-      console.error('OpenAI API error:', response.status, errorText);
-      throw new Error(`OpenAI API error: ${response.status}`);
+      const errorText = await response.text()
+      console.error('OpenAI API error:', response.status, errorText)
+      throw new Error(`OpenAI API error: ${response.status}`)
     }
 
-    const data = await response.json();
-    const content = data.choices[0].message.content;
-    
-    let parsedContent;
+    const data = await response.json()
+    const content = data.choices[0].message.content
+
+    let parsedContent
     try {
-      const jsonMatch = content.match(/\{[\s\S]*\}/);
-      parsedContent = jsonMatch ? JSON.parse(jsonMatch[0]) : JSON.parse(content);
+      const jsonMatch = content.match(/\{[\s\S]*\}/)
+      parsedContent = jsonMatch ? JSON.parse(jsonMatch[0]) : JSON.parse(content)
     } catch (e) {
-      console.error('JSON parsing error:', e);
-      throw new Error('Failed to parse sentiment analysis');
+      console.error('JSON parsing error:', e)
+      throw new Error('Failed to parse sentiment analysis')
     }
 
     return new Response(JSON.stringify({
       success: true,
       productId,
+      userId,
       reviewCount: reviews.length,
       analysis: parsedContent,
       analyzedAt: new Date().toISOString()
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
+    })
   } catch (error) {
-    console.error('Error:', error);
+    console.error('Error:', error)
     return new Response(JSON.stringify({ error: error.message }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
+    })
   }
-});
+})

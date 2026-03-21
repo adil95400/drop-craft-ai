@@ -1,38 +1,43 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.53.0'
+import { getSecureCorsHeaders, handleCorsPreflightSecure } from '../_shared/secure-cors.ts'
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-}
-
-serve(async (req) => {
+Deno.serve(async (req) => {
+  const corsHeaders = getSecureCorsHeaders(req)
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+    return handleCorsPreflightSecure(req)
   }
 
   try {
+    // JWT Authentication
+    const authHeader = req.headers.get('Authorization')
+    if (!authHeader?.startsWith('Bearer ')) {
+      return new Response(JSON.stringify({ error: 'Authorization required' }), {
+        status: 401,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      })
+    }
+
     const supabase = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+      Deno.env.get('SUPABASE_URL')!,
+      Deno.env.get('SUPABASE_ANON_KEY')!,
+      { global: { headers: { Authorization: authHeader } } }
     )
 
-    const authHeader = req.headers.get('Authorization')!
     const token = authHeader.replace('Bearer ', '')
-    const { data: { user } } = await supabase.auth.getUser(token)
-    
-    if (!user) {
+    const { data: claimsData, error: claimsError } = await supabase.auth.getClaims(token)
+    if (claimsError || !claimsData?.claims) {
       return new Response(JSON.stringify({ error: 'Unauthorized' }), {
         status: 401,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       })
     }
 
+    const userId = claimsData.claims.sub as string
     const { code, amount } = await req.json()
 
-    console.log(`[coupon-validate] Validating coupon ${code} for user ${user.id}`)
+    console.log(`[coupon-validate] Validating coupon ${code} for user ${userId}`)
 
-    // Récupérer le coupon
+    // Récupérer le coupon (RLS-scoped)
     const { data: coupon, error: couponError } = await supabase
       .from('promotional_coupons')
       .select('*')
@@ -98,7 +103,7 @@ serve(async (req) => {
       .from('coupon_redemptions')
       .select('*', { count: 'exact', head: true })
       .eq('coupon_id', coupon.id)
-      .eq('user_id', user.id)
+      .eq('user_id', userId)
 
     if (userUsageCount && coupon.per_user_limit && userUsageCount >= coupon.per_user_limit) {
       return new Response(JSON.stringify({ 
@@ -133,8 +138,6 @@ serve(async (req) => {
     }
 
     const finalAmount = Math.max(0, amount - discountAmount)
-
-    console.log(`[coupon-validate] Coupon valid: ${discountAmount} discount`)
 
     return new Response(JSON.stringify({
       valid: true,

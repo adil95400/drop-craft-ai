@@ -1,10 +1,5 @@
-import { createClient } from "npm:@supabase/supabase-js@2";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
-};
+import { createClient } from "npm:@supabase/supabase-js@2"
+import { getSecureCorsHeaders, handleCorsPreflightSecure } from '../_shared/secure-cors.ts'
 
 interface PriceChange {
   productId: string;
@@ -17,109 +12,104 @@ interface PriceChange {
 }
 
 Deno.serve(async (req) => {
+  const corsHeaders = getSecureCorsHeaders(req)
   if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+    return handleCorsPreflightSecure(req)
   }
 
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const supabase = createClient(supabaseUrl, supabaseKey);
+    const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
 
     const authHeader = req.headers.get("Authorization");
-    if (!authHeader) {
-      return new Response(JSON.stringify({ error: "Missing authorization" }), {
+    if (!authHeader?.startsWith('Bearer ')) {
+      return new Response(JSON.stringify({ error: "Authorization required" }), {
         status: 401,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    const anonClient = createClient(supabaseUrl, Deno.env.get("SUPABASE_ANON_KEY")!);
+    // RLS-scoped client
+    const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+      global: { headers: { Authorization: authHeader } },
+    });
+
     const token = authHeader.replace("Bearer ", "");
-    const { data: { user }, error: authError } = await anonClient.auth.getUser(token);
-    if (authError || !user) {
+    const { data: claimsData, error: claimsError } = await supabase.auth.getClaims(token);
+    if (claimsError || !claimsData?.claims) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
         status: 401,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
+    const userId = claimsData.claims.sub as string;
     const { supplierId, thresholdPercent = 5 } = await req.json();
 
-    // Get current products with prices
+    // Get current products with prices (RLS-scoped to user)
     const { data: currentProducts, error: productsError } = await supabase
-      .from("supplier_products")
-      .select("id, external_product_id, name, sku, price, supplier_id")
-      .eq("user_id", user.id)
-      .eq("supplier_id", supplierId);
+      .from("products")
+      .select("id, title, sku, price, cost_price, supplier_id")
+      .eq("user_id", userId);
 
     if (productsError) throw productsError;
 
-    const priceChanges: PriceChange[] = [];
-    const significantChanges: PriceChange[] = [];
+    // Get price history for comparison
+    const { data: priceHistory } = await supabase
+      .from("price_history")
+      .select("product_id, old_price, new_price, changed_at")
+      .order("changed_at", { ascending: false })
+      .limit(500);
+
+    const changes: PriceChange[] = [];
 
     for (const product of currentProducts || []) {
-      const { data: priceHistory } = await supabase
-        .from("price_history")
-        .select("price, created_at")
-        .eq("product_id", product.id)
-        .order("created_at", { ascending: false })
-        .limit(2);
-
-      if (priceHistory && priceHistory.length >= 2) {
-        const currentPrice = priceHistory[0].price;
-        const previousPrice = priceHistory[1].price;
-
-        if (currentPrice !== previousPrice) {
-          const changePercent = ((currentPrice - previousPrice) / previousPrice) * 100;
-          const changeType = currentPrice > previousPrice ? "increase" : "decrease";
-
-          const change: PriceChange = {
+      const history = (priceHistory || []).find(
+        (h: any) => h.product_id === product.id
+      );
+      if (history && product.price !== history.new_price) {
+        const changePercent =
+          ((product.price - history.new_price) / history.new_price) * 100;
+        if (Math.abs(changePercent) >= thresholdPercent) {
+          changes.push({
             productId: product.id,
             sku: product.sku || "",
-            name: product.name,
-            oldPrice: previousPrice,
-            newPrice: currentPrice,
-            changePercent: Math.abs(changePercent),
-            changeType,
-          };
-
-          priceChanges.push(change);
-
-          if (Math.abs(changePercent) >= thresholdPercent) {
-            significantChanges.push(change);
-
-            await supabase.from("notifications").insert({
-              user_id: user.id,
-              type: "price_change",
-              title: `Changement de prix: ${product.name}`,
-              message: `Prix ${changeType === "increase" ? "augmenté" : "diminué"} de ${Math.abs(changePercent).toFixed(1)}% (${previousPrice}€ → ${currentPrice}€)`,
-              severity: Math.abs(changePercent) >= 10 ? "high" : "medium",
-              metadata: { change },
-            });
-          }
+            name: product.title || "",
+            oldPrice: history.new_price,
+            newPrice: product.price,
+            changePercent: Math.round(changePercent * 100) / 100,
+            changeType: changePercent > 0 ? "increase" : "decrease",
+          });
         }
       }
     }
 
-    const summary = {
-      totalProducts: currentProducts?.length || 0,
-      priceChanges: priceChanges.length,
-      significantChanges: significantChanges.length,
-      averageChange: priceChanges.length > 0
-        ? priceChanges.reduce((sum, c) => sum + c.changePercent, 0) / priceChanges.length
-        : 0,
-    };
+    // Sort by absolute change
+    changes.sort(
+      (a, b) => Math.abs(b.changePercent) - Math.abs(a.changePercent)
+    );
 
     return new Response(
-      JSON.stringify({ success: true, summary, priceChanges, significantChanges }),
-      { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      JSON.stringify({
+        success: true,
+        totalProducts: currentProducts?.length || 0,
+        changesDetected: changes.length,
+        threshold: thresholdPercent,
+        changes: changes.slice(0, 50),
+        analyzedAt: new Date().toISOString(),
+      }),
+      {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      }
     );
   } catch (error) {
-    console.error("Price monitoring error:", error);
+    console.error("[price-change-monitor] Error:", error);
     return new Response(
-      JSON.stringify({ success: false, error: error instanceof Error ? error.message : "Unknown error" }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      JSON.stringify({ error: error.message }),
+      {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      }
     );
   }
 });
