@@ -12,7 +12,14 @@
  * In development:
  *   - All levels are printed to console with structured formatting
  */
-import * as Sentry from '@sentry/react';
+// Lazy Sentry import to prevent cascading blank pages if @sentry/react fails to load
+let Sentry: typeof import('@sentry/react') | null = null;
+try {
+  // Dynamic import wrapped in a self-executing async to avoid blocking module load
+  import('@sentry/react').then(m => { Sentry = m; }).catch(() => { /* Sentry unavailable */ });
+} catch {
+  // Sentry unavailable — app continues without it
+}
 
 export type LogLevel = 'debug' | 'info' | 'warn' | 'error' | 'critical';
 
