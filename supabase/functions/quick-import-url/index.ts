@@ -1995,6 +1995,76 @@ function extractSubcategory(html: string, markdown: string, platform: string): s
   return ''
 }
 
+// Extract breadcrumbs as an array
+function extractBreadcrumbs(html: string, markdown: string, platform: string): string[] {
+  const crumbs: string[] = []
+  if (platform === 'amazon') {
+    const breadcrumbMatch = html.match(/id="wayfinding-breadcrumbs[^"]*"([\s\S]{0,3000}?)<\/div>\s*<\/div>/i)
+    if (breadcrumbMatch) {
+      const links = breadcrumbMatch[1].matchAll(/<a[^>]*>\s*([^<]+)/gi)
+      for (const m of links) { const c = m[1].trim(); if (c && c.length > 1 && c.length < 80) crumbs.push(c) }
+    }
+  }
+  if (crumbs.length === 0) {
+    const bcMatch = html.match(/class="[^"]*breadcrumb[^"]*"([\s\S]{0,3000}?)<\/(?:nav|div|ol|ul)>/i)
+    if (bcMatch) {
+      const links = bcMatch[1].matchAll(/<a[^>]*>\s*([^<]+)/gi)
+      for (const m of links) { const c = m[1].trim(); if (c && c.length > 1 && c.length < 80 && !/home|accueil/i.test(c)) crumbs.push(c) }
+    }
+  }
+  if (crumbs.length === 0) {
+    const jsonLdMatch = html.match(/"@type"\s*:\s*"BreadcrumbList"[\s\S]*?"itemListElement"\s*:\s*\[([\s\S]*?)\]/i)
+    if (jsonLdMatch) { const nameMatches = jsonLdMatch[1].matchAll(/"name"\s*:\s*"([^"]+)"/gi); for (const m of nameMatches) { if (m[1].length > 1 && m[1].length < 80) crumbs.push(m[1]) } }
+  }
+  return crumbs.slice(0, 10)
+}
+
+// Extract SEO data
+function extractSeoData(html: string): { metaTitle: string; metaDescription: string; h1: string; h2s: string[]; canonicalUrl: string; keywords: string[] } {
+  const seo = { metaTitle: '', metaDescription: '', h1: '', h2s: [] as string[], canonicalUrl: '', keywords: [] as string[] }
+  const titleMatch = html.match(/<title[^>]*>([^<]+)<\/title>/i); seo.metaTitle = titleMatch?.[1]?.trim() || ''
+  const descMatch = html.match(/name="description"[^>]*content="([^"]+)"/i) || html.match(/property="og:description"[^>]*content="([^"]+)"/i); seo.metaDescription = descMatch?.[1]?.trim() || ''
+  const h1Match = html.match(/<h1[^>]*>([^<]+)</i); seo.h1 = h1Match?.[1]?.trim() || ''
+  const h2Matches = html.matchAll(/<h2[^>]*>([^<]+)</gi); for (const m of h2Matches) { const h2 = m[1].trim(); if (h2.length > 2 && h2.length < 200 && seo.h2s.length < 10) seo.h2s.push(h2) }
+  const canonMatch = html.match(/rel="canonical"[^>]*href="([^"]+)"/i) || html.match(/href="([^"]+)"[^>]*rel="canonical"/i); seo.canonicalUrl = canonMatch?.[1] || ''
+  const kwMatch = html.match(/name="keywords"[^>]*content="([^"]+)"/i); if (kwMatch) seo.keywords = kwMatch[1].split(',').map(k => k.trim()).filter(k => k.length > 1 && k.length < 50).slice(0, 20)
+  return seo
+}
+
+// Calculate review star distribution
+function calculateReviewDistribution(reviews: any[]): { distribution: Record<number, number>; averageRating: number; totalReviews: number } {
+  const distribution: Record<number, number> = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 }
+  if (!reviews || reviews.length === 0) return { distribution, averageRating: 0, totalReviews: 0 }
+  let totalRating = 0
+  for (const review of reviews) { const rating = Math.min(5, Math.max(1, Math.round(review.rating || 5))); distribution[rating] = (distribution[rating] || 0) + 1; totalRating += rating }
+  return { distribution, averageRating: Math.round((totalRating / reviews.length) * 10) / 10, totalReviews: reviews.length }
+}
+
+// Calculate product quality/completeness score
+function calculateQualityScore(productData: any): { score: number; breakdown: Record<string, { score: number; max: number; label: string }> } {
+  const breakdown: Record<string, { score: number; max: number; label: string }> = {
+    title: { score: 0, max: 15, label: 'Titre' }, description: { score: 0, max: 15, label: 'Description' },
+    images: { score: 0, max: 20, label: 'Images' }, price: { score: 0, max: 10, label: 'Prix' },
+    variants: { score: 0, max: 10, label: 'Variantes' }, reviews: { score: 0, max: 10, label: 'Avis' },
+    specifications: { score: 0, max: 5, label: 'Caractéristiques' }, category: { score: 0, max: 5, label: 'Catégorie' },
+    brand: { score: 0, max: 5, label: 'Marque' }, seo: { score: 0, max: 5, label: 'SEO' },
+  }
+  if (productData.title?.length > 10) breakdown.title.score = 10; if (productData.title?.length > 30) breakdown.title.score = 15
+  if (productData.description?.length > 20) breakdown.description.score = 8; if (productData.description?.length > 100) breakdown.description.score = 15
+  const imgCount = productData.images?.length || 0
+  if (imgCount >= 1) breakdown.images.score = 5; if (imgCount >= 3) breakdown.images.score = 10; if (imgCount >= 5) breakdown.images.score = 15; if (imgCount >= 8) breakdown.images.score = 20
+  if (productData.price > 0) breakdown.price.score = 10
+  const varCount = productData.variants?.length || 0; if (varCount >= 1) breakdown.variants.score = 5; if (varCount >= 3) breakdown.variants.score = 10
+  const revCount = productData.extracted_reviews?.length || 0; if (revCount >= 1) breakdown.reviews.score = 3; if (revCount >= 3) breakdown.reviews.score = 6; if (revCount >= 5) breakdown.reviews.score = 10
+  if (Object.keys(productData.specifications || {}).length >= 1) breakdown.specifications.score = 2; if (Object.keys(productData.specifications || {}).length >= 3) breakdown.specifications.score = 5
+  if (productData.category) breakdown.category.score = 3; if (productData.subcategory) breakdown.category.score = 5
+  if (productData.brand && productData.brand !== productData.platform) breakdown.brand.score = 5
+  if (productData.seo?.metaTitle) breakdown.seo.score += 2; if (productData.seo?.metaDescription) breakdown.seo.score += 3
+  const totalScore = Object.values(breakdown).reduce((sum, b) => sum + b.score, 0)
+  const maxScore = Object.values(breakdown).reduce((sum, b) => sum + b.max, 0)
+  return { score: Math.round((totalScore / maxScore) * 100), breakdown }
+}
+
 // Extract real stock/inventory from product page
 function extractStock(html: string, markdown: string, platform: string): number {
   if (platform === 'amazon') {
@@ -2186,12 +2256,14 @@ async function scrapeProductData(url: string, platform: string, externalProductI
     productData.specifications = extractSpecifications(html, platform)
     console.log(`📋 Found ${Object.keys(productData.specifications).length} specifications`)
     
-    // Extract tags, category, subcategory
+    // Extract tags, category, subcategory, breadcrumbs, SEO
     productData.tags = extractTags(html, markdown, platform)
     productData.category = extractCategory(html, markdown, platform)
     productData.subcategory = extractSubcategory(html, markdown, platform)
+    productData.breadcrumbs = extractBreadcrumbs(html, markdown, platform)
     productData.product_type = productData.category || ''
-    console.log(`🏷️ Tags: ${productData.tags?.length || 0}, Category: ${productData.category}, Subcategory: ${productData.subcategory}`)
+    productData.seo = extractSeoData(html)
+    console.log(`🏷️ Tags: ${productData.tags?.length || 0}, Category: ${productData.category}, Breadcrumbs: ${productData.breadcrumbs?.length || 0}`)
     
     // Extract real stock/inventory
     productData.inventory_quantity = extractStock(html, markdown, platform)
@@ -2216,6 +2288,10 @@ async function scrapeProductData(url: string, platform: string, externalProductI
     // Extract individual reviews
     productData.extracted_reviews = extractReviews(html, platform, markdown)
     console.log(`⭐ Extracted ${productData.extracted_reviews.length} reviews`)
+    
+    // Calculate review distribution and quality score
+    productData.review_distribution = calculateReviewDistribution(productData.extracted_reviews)
+    productData.quality_score = calculateQualityScore(productData)
     
     console.log(`✅ Scraped: "${productData.title}" - ${productData.price} ${productData.currency}`)
     
