@@ -330,11 +330,15 @@ export default function MarketingAutomationPage() {
           ))}
         </div>
 
+        {/* AI Suggestions */}
+        <AICampaignSuggestions />
+
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList>
             <TabsTrigger value="campaigns">Mes Automatisations</TabsTrigger>
             <TabsTrigger value="templates">Templates</TabsTrigger>
             <TabsTrigger value="performance">Performance</TabsTrigger>
+            <TabsTrigger value="funnel">Entonnoir</TabsTrigger>
           </TabsList>
 
           {/* ─── Automatisations ─────────────────────────────── */}
