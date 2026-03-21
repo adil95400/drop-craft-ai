@@ -68,14 +68,14 @@ export class OptimizedErrorBoundary extends Component<Props, State> {
     });
 
     // Send to Sentry in production
-    if (import.meta.env.PROD) {
-      Sentry.withScope((scope) => {
+    if (import.meta.env.PROD && SentryRef) {
+      SentryRef.withScope((scope: any) => {
         scope.setTag('error_boundary', module || 'unknown');
         scope.setContext('errorInfo', {
           componentStack: errorInfo.componentStack,
           errorCount: errorCount + 1,
         });
-        Sentry.captureException(error);
+        SentryRef.captureException(error);
       });
     }
 
