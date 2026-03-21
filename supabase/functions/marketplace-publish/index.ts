@@ -9,36 +9,115 @@ const corsHeaders = {
 // Platform-specific API adapters
 async function publishToShopify(product: any, integration: any, supabase: any, token: string): Promise<{ externalId: string | null; externalUrl: string | null }> {
   try {
-    // Use our shopify edge function for actual API call
-    const { data, error } = await supabase.functions.invoke('import-to-shopify', {
-      body: {
-        products: [{
-          title: product.name,
-          body_html: product.description || '',
-          vendor: product.brand || '',
-          product_type: product.category || '',
-          tags: (product.tags || []).join(', '),
-          variants: [{
-            price: product.price?.toString() || '0',
-            sku: product.sku || '',
-            inventory_quantity: product.stock_quantity || 0,
-            compare_at_price: product.compare_at_price?.toString() || null,
-          }],
-          images: (product.image_urls || (product.image_url ? [product.image_url] : [])).map((url: string) => ({ src: url })),
-        }],
-        integrationId: integration.id,
+    // 1. Resolve Shopify credentials (store_integrations → env vars fallback)
+    let shopDomain: string | null = null
+    let accessToken: string | null = null
+
+    // Try from store_integrations credentials
+    if (integration?.credentials) {
+      const creds = typeof integration.credentials === 'string' 
+        ? JSON.parse(integration.credentials) 
+        : integration.credentials
+      shopDomain = creds.shop_domain || creds.domain || creds.store_domain || null
+      accessToken = creds.access_token || creds.admin_access_token || null
+    }
+    // Try from integration config
+    if (!accessToken && integration?.config) {
+      const config = typeof integration.config === 'string'
+        ? JSON.parse(integration.config)
+        : integration.config
+      accessToken = config.access_token || config.admin_access_token || null
+      shopDomain = shopDomain || config.shop_domain || config.domain || null
+    }
+    // Try from store_url
+    if (!shopDomain && integration?.store_url) {
+      shopDomain = integration.store_url.replace('https://', '').replace('http://', '').replace(/\/$/, '')
+    }
+    // Fallback to env vars
+    if (!shopDomain) shopDomain = Deno.env.get('SHOPIFY_STORE_PERMANENT_DOMAIN') || null
+    if (!accessToken) accessToken = Deno.env.get('SHOPIFY_ADMIN_ACCESS_TOKEN') || null
+
+    if (!shopDomain || !accessToken) {
+      throw new Error('Missing Shopify credentials (domain or access_token)')
+    }
+
+    // Ensure domain format
+    if (!shopDomain.includes('.myshopify.com') && !shopDomain.includes('.')) {
+      shopDomain = `${shopDomain}.myshopify.com`
+    }
+
+    console.log(`[Shopify] Publishing "${product.title}" to ${shopDomain}`)
+
+    // 2. Build Shopify product payload with correct field mapping
+    const images: Array<{ src: string }> = []
+    if (product.image_url) images.push({ src: product.image_url })
+    if (product.images && Array.isArray(product.images)) {
+      for (const img of product.images) {
+        const src = typeof img === 'string' ? img : img.url || img.src
+        if (src && !images.find(i => i.src === src)) images.push({ src })
+      }
+    }
+    if (product.image_urls && Array.isArray(product.image_urls)) {
+      for (const url of product.image_urls) {
+        if (url && !images.find(i => i.src === url)) images.push({ src: url })
+      }
+    }
+
+    const shopifyProduct: any = {
+      title: product.title || product.name || 'Untitled',
+      body_html: product.description || '',
+      vendor: product.brand || product.supplier_name || '',
+      product_type: product.category || '',
+      tags: Array.isArray(product.tags) ? product.tags.join(', ') : (product.tags || ''),
+      status: 'active',
+      variants: [{
+        price: (product.price || 0).toString(),
+        compare_at_price: product.compare_at_price ? product.compare_at_price.toString() : null,
+        sku: product.sku || '',
+        inventory_quantity: product.stock_quantity || 0,
+        inventory_management: 'shopify',
+        requires_shipping: true,
+      }],
+      images: images.length > 0 ? images : undefined,
+    }
+
+    // Add weight if available
+    if (product.weight) {
+      shopifyProduct.variants[0].weight = product.weight
+      shopifyProduct.variants[0].weight_unit = product.weight_unit || 'kg'
+    }
+
+    // 3. Call Shopify Admin API directly
+    const apiVersion = '2025-07'
+    const shopifyUrl = `https://${shopDomain}/admin/api/${apiVersion}/products.json`
+
+    const response = await fetch(shopifyUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Shopify-Access-Token': accessToken,
       },
-      headers: { Authorization: `Bearer ${token}` }
+      body: JSON.stringify({ product: shopifyProduct }),
     })
-    if (error) throw error
-    const shopifyProductId = data?.results?.[0]?.shopify_id || data?.productId || null
-    return { 
-      externalId: shopifyProductId?.toString() || null,
-      externalUrl: shopifyProductId ? `https://${integration.store_url}/admin/products/${shopifyProductId}` : null
+
+    if (!response.ok) {
+      const errorBody = await response.text()
+      console.error(`[Shopify] API error ${response.status}:`, errorBody)
+      throw new Error(`Shopify API error ${response.status}: ${errorBody.substring(0, 200)}`)
+    }
+
+    const result = await response.json()
+    const shopifyId = result.product?.id?.toString() || null
+
+    console.log(`[Shopify] ✅ Product created with ID: ${shopifyId}`)
+
+    return {
+      externalId: shopifyId,
+      externalUrl: shopifyId ? `https://${shopDomain}/admin/products/${shopifyId}` : null,
     }
   } catch (e) {
-    console.warn(`Shopify API call failed:`, e.message)
-    return { externalId: null, externalUrl: null }
+    console.error(`[Shopify] Publication failed:`, e.message)
+    throw e // Re-throw so the caller logs the error properly
   }
 }
 
