@@ -31,6 +31,11 @@ import { AlibabaConnector } from './AlibabaConnector';
 import { MatterhornConnector } from './MatterhornConnector';
 import { BTSWholesalerConnector } from './BTSWholesalerConnector';
 import { CJDropshippingConnector } from './CJDropshippingConnector';
+import { TemuConnector } from './TemuConnector';
+import { Connector1688 } from './Connector1688';
+import { PrintifyConnector } from './PrintifyConnector';
+import { TikTokShopConnector } from './TikTokShopConnector';
+import { AmazonFBAConnector } from './AmazonFBAConnector';
 import {
   AtixoConnector,
   B2BUhrenConnector,
@@ -292,6 +297,46 @@ export class ConnectorFactory {
       features: { products: true, inventory: true, orders: true, webhooks: true },
       rateLimits: { requestsPerMinute: 30, requestsPerHour: 1000 },
     }],
+    ['temu', {
+      id: 'temu',
+      name: 'temu',
+      displayName: 'Temu',
+      description: 'Connectez votre compte vendeur Temu',
+      category: 'marketplace',
+      authType: 'oauth',
+      features: { products: true, inventory: true, orders: true, webhooks: false },
+      rateLimits: { requestsPerMinute: 30, requestsPerHour: 1000 },
+    }],
+    ['1688', {
+      id: '1688',
+      name: '1688',
+      displayName: '1688.com',
+      description: 'Connectez votre compte 1688 (Alibaba China)',
+      category: 'marketplace',
+      authType: 'oauth',
+      features: { products: true, inventory: true, orders: true, webhooks: false },
+      rateLimits: { requestsPerMinute: 20, requestsPerHour: 500 },
+    }],
+    ['tiktok_shop', {
+      id: 'tiktok_shop',
+      name: 'tiktok_shop',
+      displayName: 'TikTok Shop',
+      description: 'Connectez votre boutique TikTok Shop',
+      category: 'marketplace',
+      authType: 'oauth',
+      features: { products: true, inventory: true, orders: true, webhooks: true },
+      rateLimits: { requestsPerMinute: 30, requestsPerHour: 1000 },
+    }],
+    ['amazon_fba', {
+      id: 'amazon_fba',
+      name: 'amazon_fba',
+      displayName: 'Amazon FBA',
+      description: 'Connectez votre compte Amazon FBA (Fulfillment by Amazon)',
+      category: 'marketplace',
+      authType: 'oauth',
+      features: { products: true, inventory: true, orders: true, webhooks: false },
+      rateLimits: { requestsPerMinute: 20, requestsPerHour: 500 },
+    }],
     ['alibaba', {
       id: 'alibaba',
       name: 'alibaba',
@@ -333,6 +378,16 @@ export class ConnectorFactory {
       authType: 'oauth',
       features: { products: true, inventory: true, orders: true, webhooks: true },
       rateLimits: { requestsPerMinute: 120, requestsPerHour: 7200 },
+    }],
+    ['printify', {
+      id: 'printify',
+      name: 'printify',
+      displayName: 'Printify',
+      description: 'Connectez votre compte Printify (Print on Demand)',
+      category: 'supplier',
+      authType: 'oauth',
+      features: { products: true, inventory: true, orders: true, webhooks: true },
+      rateLimits: { requestsPerMinute: 60, requestsPerHour: 3600 },
     }],
     ['syncee', {
       id: 'syncee',
@@ -780,6 +835,14 @@ export class ConnectorFactory {
         return new MiraklConnector(credentials);
       case 'alibaba':
         return new AlibabaConnector(credentials);
+      case 'temu':
+        return new TemuConnector(credentials);
+      case '1688':
+        return new Connector1688(credentials);
+      case 'tiktok_shop':
+        return new TikTokShopConnector(credentials);
+      case 'amazon_fba':
+        return new AmazonFBAConnector(credentials);
         
       // Dropshipping suppliers
       case 'bigbuy':
@@ -788,6 +851,8 @@ export class ConnectorFactory {
         return new EproloConnector(credentials);
       case 'printful':
         return new PrintfulConnector(credentials);
+      case 'printify':
+        return new PrintifyConnector(credentials);
       case 'syncee':
         return new SynceeConnector(credentials);
       case 'vidaxl':
@@ -922,7 +987,13 @@ export class ConnectorFactory {
       case 'mirakl':
         return !!credentials.api_key && !!credentials.api_url;
       case 'alibaba':
+      case 'temu':
+      case 'tiktok_shop':
         return !!credentials.access_token;
+      case '1688':
+        return !!credentials.access_token && !!credentials.app_key;
+      case 'amazon_fba':
+        return !!credentials.access_token && !!credentials.seller_id;
         
       // Dropshipping suppliers
       case 'bigbuy':
@@ -933,6 +1004,7 @@ export class ConnectorFactory {
       case 'btswholesaler':
         return !!credentials.apiKey;
       case 'printful':
+      case 'printify':
         return !!credentials.access_token;
         
       default:
