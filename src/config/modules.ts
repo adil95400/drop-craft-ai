@@ -506,7 +506,10 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
       { id: 'pricing-rules', name: 'Règles de Prix', route: '/pricing-manager/rules', icon: 'GitBranch', description: 'Règles statiques (markup, marge, arrondi)', features: ['rules'], order: 2 },
       { id: 'pricing-automation', name: 'Repricing Auto', route: '/pricing-manager/repricing', icon: 'Zap', description: 'Repricing temps réel vers boutiques', features: ['repricing', 'sync'], order: 3 },
       { id: 'pricing-monitoring', name: 'Veille Prix', route: '/pricing-manager/monitoring', icon: 'Eye', description: 'Surveillance concurrence et auto-pricing', features: ['monitoring', 'competitors'], order: 4 },
-      { id: 'pricing-optimization', name: 'Optimisation IA', route: '/pricing-manager/optimization', icon: 'Brain', description: 'Recommandations IA et élasticité', features: ['ai', 'elasticity'], order: 5 },
+      { id: 'pricing-competition', name: 'Concurrence', route: '/pricing-manager/competition', icon: 'Target', description: 'Comparaison directe des prix concurrents', features: ['competition', 'benchmarks'], order: 5 },
+      { id: 'pricing-optimization', name: 'Optimisation IA', route: '/pricing-manager/optimization', icon: 'Brain', description: 'Recommandations IA et élasticité', features: ['ai', 'elasticity'], order: 6 },
+      { id: 'pricing-calculator', name: 'Calculateur de Marge', route: '/pricing-manager/calculator', icon: 'Calculator', description: 'Simulateur interactif de marges', features: ['calculator'], order: 7 },
+      { id: 'pricing-history', name: 'Historique Prix', route: '/pricing-manager/history', icon: 'Clock', description: 'Historique des variations de prix', features: ['history'], order: 8 },
     ]
   },
 
