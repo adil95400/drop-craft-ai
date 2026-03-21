@@ -2,7 +2,8 @@
  * Sentry initialization & helpers.
  * Error/event logging delegates to the canonical logger in src/lib/logger.ts
  */
-import * as Sentry from "@sentry/react";
+let Sentry: any = null;
+import('@sentry/react').then(m => { Sentry = m; }).catch(() => {});
 import { logger } from '@/lib/logger';
 
 export const initSentry = () => {

@@ -1,6 +1,7 @@
 import { useCallback, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
-import * as Sentry from '@sentry/react';
+let SentryRef: any = null;
+import('@sentry/react').then(m => { SentryRef = m; }).catch(() => {});
 import { 
   authAlerts, 
   paymentAlerts, 
