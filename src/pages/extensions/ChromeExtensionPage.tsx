@@ -91,7 +91,7 @@ export default function ChromeExtensionPage() {
   
   // Handle extension install callback
   const isInstalled = searchParams.get('installed') === 'true';
-  const extensionVersion = searchParams.get('v') || '6.0.0';
+  const extensionVersion = searchParams.get('v') || EXTENSION_VERSION;
   const [showWelcomeModal, setShowWelcomeModal] = useState(isInstalled);
 
   // Clear URL params after showing modal
