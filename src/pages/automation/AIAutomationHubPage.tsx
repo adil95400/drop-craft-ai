@@ -21,7 +21,8 @@ import {
   Brain, Sparkles, Zap, TrendingUp, Bot, RefreshCw,
   CheckCircle2, XCircle, Clock, Activity, BarChart3,
   FileText, DollarSign, Package, Target, Plus, Trash2,
-  Play, Pause, AlertTriangle, Rocket
+  Play, Pause, AlertTriangle, Rocket, Settings, Bell,
+  ChevronRight, ChevronLeft, Shield, Eye
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -37,13 +38,22 @@ import {
 } from 'recharts';
 
 const ACTION_TYPES = [
-  { value: 'content-optimizer', icon: FileText, label: 'Optimiseur de Contenu', color: 'text-info', bg: 'bg-info/10' },
-  { value: 'price-optimizer', icon: DollarSign, label: 'Optimiseur de Prix', color: 'text-success', bg: 'bg-success/10' },
-  { value: 'stock-predictor', icon: Package, label: 'Prédicteur de Stock', color: 'text-warning', bg: 'bg-warning/10' },
-  { value: 'ad-optimizer', icon: Target, label: 'Optimiseur Publicitaire', color: 'text-purple-500', bg: 'bg-purple-500/10' },
-  { value: 'quality-auditor', icon: CheckCircle2, label: 'Auditeur Qualité', color: 'text-primary', bg: 'bg-primary/10' },
-  { value: 'seo-optimizer', icon: TrendingUp, label: 'Optimiseur SEO', color: 'text-orange-500', bg: 'bg-orange-500/10' },
+  { value: 'content-optimizer', icon: FileText, label: 'Optimiseur de Contenu', color: 'text-info', bg: 'bg-info/10', desc: 'Génère et optimise automatiquement les titres, descriptions et contenus produits grâce à l\'IA.' },
+  { value: 'price-optimizer', icon: DollarSign, label: 'Optimiseur de Prix', color: 'text-success', bg: 'bg-success/10', desc: 'Ajuste dynamiquement les prix en fonction de la concurrence, des marges et de la demande.' },
+  { value: 'stock-predictor', icon: Package, label: 'Prédicteur de Stock', color: 'text-warning', bg: 'bg-warning/10', desc: 'Prévoit les ruptures de stock et déclenche des réapprovisionnements automatiques.' },
+  { value: 'ad-optimizer', icon: Target, label: 'Optimiseur Publicitaire', color: 'text-purple-500', bg: 'bg-purple-500/10', desc: 'Optimise les enchères, budgets et ciblage de vos campagnes publicitaires.' },
+  { value: 'quality-auditor', icon: CheckCircle2, label: 'Auditeur Qualité', color: 'text-primary', bg: 'bg-primary/10', desc: 'Détecte les fiches produits incomplètes, erreurs et incohérences qualité.' },
+  { value: 'seo-optimizer', icon: TrendingUp, label: 'Optimiseur SEO', color: 'text-orange-500', bg: 'bg-orange-500/10', desc: 'Analyse et améliore le référencement de vos produits automatiquement.' },
 ] as const;
+
+const SCHEDULE_OPTIONS = [
+  { value: 'realtime', label: 'Temps réel', desc: 'Exécution immédiate à chaque événement' },
+  { value: 'hourly', label: 'Toutes les heures', desc: 'Analyse et actions horaires' },
+  { value: 'daily', label: 'Quotidien', desc: 'Un cycle d\'optimisation par jour' },
+  { value: 'weekly', label: 'Hebdomadaire', desc: 'Rapport et actions chaque semaine' },
+] as const;
+
+type CreateStep = 'type' | 'config' | 'review';
 
 const ACTION_TYPE_META = Object.fromEntries(
   ACTION_TYPES.map(t => [t.value, { icon: t.icon, label: t.label, color: t.color, bg: t.bg }])
@@ -55,12 +65,30 @@ export default function AIAutomationHubPage() {
   const { user } = useUnifiedAuth();
   const queryClient = useQueryClient();
   const [createOpen, setCreateOpen] = useState(false);
+  const [createStep, setCreateStep] = useState<CreateStep>('type');
   const [newAgent, setNewAgent] = useState({
     action_type: 'content-optimizer',
+    name: '',
     scope: 'global',
     threshold_score: 0.7,
     max_daily_actions: 50,
+    schedule: 'daily',
+    notify_on_action: true,
+    notify_on_error: true,
+    auto_revert: false,
+    description: '',
   });
+
+  const resetCreateForm = () => {
+    setCreateStep('type');
+    setNewAgent({
+      action_type: 'content-optimizer', name: '', scope: 'global',
+      threshold_score: 0.7, max_daily_actions: 50, schedule: 'daily',
+      notify_on_action: true, notify_on_error: true, auto_revert: false, description: '',
+    });
+  };
+
+  const selectedTypeMeta = ACTION_TYPES.find(t => t.value === newAgent.action_type) || ACTION_TYPES[0];
 
   // Fetch AI agent configs filtered by user
   const { data: configs = [], isLoading } = useQuery({
@@ -183,6 +211,7 @@ export default function AIAutomationHubPage() {
   const createMutation = useMutation({
     mutationFn: async () => {
       if (!user?.id) throw new Error('Non authentifié');
+      const agentName = newAgent.name || selectedTypeMeta.label;
       const { error } = await supabase
         .from('ai_auto_action_configs')
         .insert({
@@ -193,7 +222,14 @@ export default function AIAutomationHubPage() {
           max_daily_actions: newAgent.max_daily_actions,
           is_enabled: true,
           actions_today: 0,
-          config: {},
+          config: {
+            name: agentName,
+            description: newAgent.description,
+            schedule: newAgent.schedule,
+            notify_on_action: newAgent.notify_on_action,
+            notify_on_error: newAgent.notify_on_error,
+            auto_revert: newAgent.auto_revert,
+          },
         });
       if (error) throw error;
     },
@@ -201,7 +237,7 @@ export default function AIAutomationHubPage() {
       queryClient.invalidateQueries({ queryKey: ['ai-automation-configs'] });
       toast.success('Agent IA créé avec succès');
       setCreateOpen(false);
-      setNewAgent({ action_type: 'content-optimizer', scope: 'global', threshold_score: 0.7, max_daily_actions: 50 });
+      resetCreateForm();
     },
     onError: () => toast.error('Erreur lors de la création'),
   });
@@ -365,68 +401,322 @@ export default function AIAutomationHubPage() {
               <Rocket className="h-4 w-4" />
               {triggerOrchestrator.isPending ? 'Analyse...' : 'Suggestions IA'}
             </Button>
-            <Dialog open={createOpen} onOpenChange={setCreateOpen}>
+            <Dialog open={createOpen} onOpenChange={(open) => { setCreateOpen(open); if (!open) resetCreateForm(); }}>
               <DialogTrigger asChild>
                 <Button size="sm" className="gap-1.5">
                   <Plus className="h-4 w-4" /> Nouvel Agent
                 </Button>
               </DialogTrigger>
-              <DialogContent>
+              <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
-                  <DialogTitle>Créer un Agent IA</DialogTitle>
-                  <DialogDescription>Configurez un nouvel agent d'automatisation intelligent</DialogDescription>
+                  <DialogTitle className="flex items-center gap-2">
+                    <Bot className="h-5 w-5 text-primary" />
+                    Créer un Agent IA
+                  </DialogTitle>
+                  <DialogDescription>
+                    {createStep === 'type' && 'Étape 1/3 — Choisissez le type d\'agent'}
+                    {createStep === 'config' && 'Étape 2/3 — Configurez les paramètres'}
+                    {createStep === 'review' && 'Étape 3/3 — Vérifiez et lancez'}
+                  </DialogDescription>
                 </DialogHeader>
-                <div className="space-y-4 py-2">
-                  <div className="space-y-2">
-                    <Label>Type d'agent</Label>
-                    <Select value={newAgent.action_type} onValueChange={v => setNewAgent(p => ({ ...p, action_type: v }))}>
-                      <SelectTrigger><SelectValue /></SelectTrigger>
-                      <SelectContent>
-                        {ACTION_TYPES.map(t => (
-                          <SelectItem key={t.value} value={t.value}>
-                            <span className="flex items-center gap-2">
-                              <t.icon className="h-4 w-4" /> {t.label}
-                            </span>
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Scope</Label>
-                    <Select value={newAgent.scope} onValueChange={v => setNewAgent(p => ({ ...p, scope: v }))}>
-                      <SelectTrigger><SelectValue /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="global">Global (tous les produits)</SelectItem>
-                        <SelectItem value="category">Par catégorie</SelectItem>
-                        <SelectItem value="selected">Sélection manuelle</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Seuil de confiance: {Math.round(newAgent.threshold_score * 100)}%</Label>
-                    <Slider
-                      value={[newAgent.threshold_score * 100]}
-                      onValueChange={([v]) => setNewAgent(p => ({ ...p, threshold_score: v / 100 }))}
-                      min={30} max={100} step={5}
-                    />
-                    <p className="text-xs text-muted-foreground">L'agent n'agira que si sa confiance dépasse ce seuil</p>
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Limite d'actions par jour</Label>
-                    <Input
-                      type="number"
-                      value={newAgent.max_daily_actions}
-                      onChange={e => setNewAgent(p => ({ ...p, max_daily_actions: parseInt(e.target.value) || 10 }))}
-                      min={1} max={1000}
-                    />
-                  </div>
+
+                {/* Progress indicator */}
+                <div className="flex items-center gap-1 py-2">
+                  {(['type', 'config', 'review'] as CreateStep[]).map((step, i) => (
+                    <div key={step} className="flex items-center flex-1">
+                      <div className={cn(
+                        'h-2 rounded-full flex-1 transition-colors',
+                        (['type', 'config', 'review'] as CreateStep[]).indexOf(createStep) >= i
+                          ? 'bg-primary' : 'bg-muted'
+                      )} />
+                    </div>
+                  ))}
                 </div>
-                <DialogFooter>
-                  <Button variant="outline" onClick={() => setCreateOpen(false)}>Annuler</Button>
-                  <Button onClick={() => createMutation.mutate()} disabled={createMutation.isPending}>
-                    {createMutation.isPending ? 'Création...' : 'Créer l\'agent'}
-                  </Button>
+
+                {/* STEP 1: Type selection */}
+                {createStep === 'type' && (
+                  <div className="space-y-3 py-2">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      {ACTION_TYPES.map(t => {
+                        const isSelected = newAgent.action_type === t.value;
+                        return (
+                          <button
+                            key={t.value}
+                            onClick={() => setNewAgent(p => ({ ...p, action_type: t.value, name: p.name || '' }))}
+                            className={cn(
+                              'flex items-start gap-3 p-4 rounded-xl border-2 text-left transition-all hover:shadow-md',
+                              isSelected
+                                ? 'border-primary bg-primary/5 shadow-sm'
+                                : 'border-border hover:border-primary/40 bg-card'
+                            )}
+                          >
+                            <div className={cn('p-2 rounded-lg shrink-0', t.bg)}>
+                              <t.icon className={cn('h-5 w-5', t.color)} />
+                            </div>
+                            <div className="min-w-0">
+                              <div className="font-semibold text-sm text-foreground">{t.label}</div>
+                              <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">{t.desc}</p>
+                            </div>
+                            {isSelected && (
+                              <CheckCircle2 className="h-5 w-5 text-primary shrink-0 mt-0.5" />
+                            )}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {/* STEP 2: Configuration */}
+                {createStep === 'config' && (
+                  <div className="space-y-5 py-2">
+                    {/* Agent name */}
+                    <div className="space-y-2">
+                      <Label className="flex items-center gap-1.5">
+                        <Bot className="h-3.5 w-3.5" /> Nom de l'agent <span className="text-muted-foreground text-xs">(optionnel)</span>
+                      </Label>
+                      <Input
+                        placeholder={selectedTypeMeta.label}
+                        value={newAgent.name}
+                        onChange={e => setNewAgent(p => ({ ...p, name: e.target.value }))}
+                      />
+                    </div>
+
+                    {/* Description */}
+                    <div className="space-y-2">
+                      <Label className="flex items-center gap-1.5">
+                        <FileText className="h-3.5 w-3.5" /> Description <span className="text-muted-foreground text-xs">(optionnel)</span>
+                      </Label>
+                      <Input
+                        placeholder="Ex: Optimise les prix des produits tech..."
+                        value={newAgent.description}
+                        onChange={e => setNewAgent(p => ({ ...p, description: e.target.value }))}
+                      />
+                    </div>
+
+                    {/* Scope */}
+                    <div className="space-y-2">
+                      <Label className="flex items-center gap-1.5">
+                        <Target className="h-3.5 w-3.5" /> Scope d'application
+                      </Label>
+                      <Select value={newAgent.scope} onValueChange={v => setNewAgent(p => ({ ...p, scope: v }))}>
+                        <SelectTrigger><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="global">🌐 Global — Tous les produits</SelectItem>
+                          <SelectItem value="category">📂 Par catégorie</SelectItem>
+                          <SelectItem value="selected">✅ Sélection manuelle</SelectItem>
+                          <SelectItem value="new_products">🆕 Nouveaux produits uniquement</SelectItem>
+                          <SelectItem value="low_performers">📉 Produits sous-performants</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    {/* Schedule */}
+                    <div className="space-y-2">
+                      <Label className="flex items-center gap-1.5">
+                        <Clock className="h-3.5 w-3.5" /> Fréquence d'exécution
+                      </Label>
+                      <div className="grid grid-cols-2 gap-2">
+                        {SCHEDULE_OPTIONS.map(opt => (
+                          <button
+                            key={opt.value}
+                            onClick={() => setNewAgent(p => ({ ...p, schedule: opt.value }))}
+                            className={cn(
+                              'p-3 rounded-lg border text-left transition-all text-sm',
+                              newAgent.schedule === opt.value
+                                ? 'border-primary bg-primary/5 ring-1 ring-primary/20'
+                                : 'border-border hover:border-primary/30'
+                            )}
+                          >
+                            <div className="font-medium text-foreground">{opt.label}</div>
+                            <div className="text-xs text-muted-foreground mt-0.5">{opt.desc}</div>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Threshold */}
+                    <div className="space-y-2">
+                      <Label className="flex items-center justify-between">
+                        <span className="flex items-center gap-1.5"><Shield className="h-3.5 w-3.5" /> Seuil de confiance</span>
+                        <Badge variant="outline" className={cn('text-xs',
+                          newAgent.threshold_score >= 0.8 ? 'text-success border-success/30' :
+                          newAgent.threshold_score >= 0.5 ? 'text-warning border-warning/30' : 'text-destructive border-destructive/30'
+                        )}>
+                          {Math.round(newAgent.threshold_score * 100)}%
+                        </Badge>
+                      </Label>
+                      <Slider
+                        value={[newAgent.threshold_score * 100]}
+                        onValueChange={([v]) => setNewAgent(p => ({ ...p, threshold_score: v / 100 }))}
+                        min={30} max={100} step={5}
+                      />
+                      <p className="text-xs text-muted-foreground">
+                        {newAgent.threshold_score >= 0.8 ? '🛡️ Prudent — Actions uniquement sur les cas très sûrs' :
+                         newAgent.threshold_score >= 0.5 ? '⚖️ Équilibré — Bon compromis entre prudence et efficacité' :
+                         '⚡ Agressif — Plus d\'actions mais risque d\'erreur accru'}
+                      </p>
+                    </div>
+
+                    {/* Max actions */}
+                    <div className="space-y-2">
+                      <Label className="flex items-center gap-1.5">
+                        <Zap className="h-3.5 w-3.5" /> Limite d'actions par jour
+                      </Label>
+                      <div className="flex gap-2">
+                        {[10, 25, 50, 100, 500].map(n => (
+                          <Button
+                            key={n}
+                            size="sm"
+                            variant={newAgent.max_daily_actions === n ? 'default' : 'outline'}
+                            className="flex-1 text-xs"
+                            onClick={() => setNewAgent(p => ({ ...p, max_daily_actions: n }))}
+                          >
+                            {n}
+                          </Button>
+                        ))}
+                      </div>
+                      <Input
+                        type="number"
+                        value={newAgent.max_daily_actions}
+                        onChange={e => setNewAgent(p => ({ ...p, max_daily_actions: parseInt(e.target.value) || 10 }))}
+                        min={1} max={1000}
+                        className="mt-1"
+                      />
+                    </div>
+
+                    {/* Notifications & safety */}
+                    <div className="space-y-3 rounded-lg border border-border p-4 bg-muted/30">
+                      <h4 className="text-sm font-medium text-foreground flex items-center gap-1.5">
+                        <Settings className="h-3.5 w-3.5" /> Options avancées
+                      </h4>
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <Label className="text-sm flex items-center gap-1.5"><Bell className="h-3.5 w-3.5" /> Notifier après chaque action</Label>
+                          <p className="text-xs text-muted-foreground">Recevez une notification à chaque action de l'agent</p>
+                        </div>
+                        <Switch checked={newAgent.notify_on_action} onCheckedChange={v => setNewAgent(p => ({ ...p, notify_on_action: v }))} />
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <Label className="text-sm flex items-center gap-1.5"><AlertTriangle className="h-3.5 w-3.5" /> Alerter en cas d'erreur</Label>
+                          <p className="text-xs text-muted-foreground">Notification immédiate en cas d'échec</p>
+                        </div>
+                        <Switch checked={newAgent.notify_on_error} onCheckedChange={v => setNewAgent(p => ({ ...p, notify_on_error: v }))} />
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <Label className="text-sm flex items-center gap-1.5"><RefreshCw className="h-3.5 w-3.5" /> Auto-revert si problème</Label>
+                          <p className="text-xs text-muted-foreground">Annuler automatiquement les actions si détection d'anomalie</p>
+                        </div>
+                        <Switch checked={newAgent.auto_revert} onCheckedChange={v => setNewAgent(p => ({ ...p, auto_revert: v }))} />
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* STEP 3: Review */}
+                {createStep === 'review' && (
+                  <div className="space-y-4 py-2">
+                    {/* Agent preview card */}
+                    <div className="rounded-xl border-2 border-primary/20 bg-primary/5 p-5">
+                      <div className="flex items-center gap-3 mb-4">
+                        <div className={cn('p-3 rounded-xl', selectedTypeMeta.bg)}>
+                          <selectedTypeMeta.icon className={cn('h-6 w-6', selectedTypeMeta.color)} />
+                        </div>
+                        <div>
+                          <h3 className="font-bold text-foreground text-lg">
+                            {newAgent.name || selectedTypeMeta.label}
+                          </h3>
+                          {newAgent.description && (
+                            <p className="text-sm text-muted-foreground">{newAgent.description}</p>
+                          )}
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-2 gap-3 text-sm">
+                        <div className="flex items-center gap-2 p-2 rounded-lg bg-background">
+                          <Target className="h-4 w-4 text-muted-foreground" />
+                          <div>
+                            <div className="text-xs text-muted-foreground">Scope</div>
+                            <div className="font-medium text-foreground capitalize">{newAgent.scope.replace('_', ' ')}</div>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2 p-2 rounded-lg bg-background">
+                          <Clock className="h-4 w-4 text-muted-foreground" />
+                          <div>
+                            <div className="text-xs text-muted-foreground">Fréquence</div>
+                            <div className="font-medium text-foreground">{SCHEDULE_OPTIONS.find(s => s.value === newAgent.schedule)?.label}</div>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2 p-2 rounded-lg bg-background">
+                          <Shield className="h-4 w-4 text-muted-foreground" />
+                          <div>
+                            <div className="text-xs text-muted-foreground">Confiance min.</div>
+                            <div className="font-medium text-foreground">{Math.round(newAgent.threshold_score * 100)}%</div>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2 p-2 rounded-lg bg-background">
+                          <Zap className="h-4 w-4 text-muted-foreground" />
+                          <div>
+                            <div className="text-xs text-muted-foreground">Limite/jour</div>
+                            <div className="font-medium text-foreground">{newAgent.max_daily_actions} actions</div>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex gap-4 mt-3 pt-3 border-t border-primary/10 text-xs text-muted-foreground">
+                        <span className="flex items-center gap-1">
+                          <Bell className={cn('h-3 w-3', newAgent.notify_on_action ? 'text-primary' : '')} />
+                          Notifications: {newAgent.notify_on_action ? 'Oui' : 'Non'}
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <AlertTriangle className={cn('h-3 w-3', newAgent.notify_on_error ? 'text-warning' : '')} />
+                          Alertes erreur: {newAgent.notify_on_error ? 'Oui' : 'Non'}
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <RefreshCw className={cn('h-3 w-3', newAgent.auto_revert ? 'text-success' : '')} />
+                          Auto-revert: {newAgent.auto_revert ? 'Oui' : 'Non'}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2 p-3 rounded-lg bg-info/10 text-info text-sm">
+                      <Eye className="h-4 w-4 shrink-0" />
+                      <span>L'agent sera activé immédiatement après création. Vous pourrez le mettre en pause à tout moment.</span>
+                    </div>
+                  </div>
+                )}
+
+                <DialogFooter className="flex-col sm:flex-row gap-2">
+                  {createStep !== 'type' && (
+                    <Button
+                      variant="outline"
+                      onClick={() => setCreateStep(createStep === 'review' ? 'config' : 'type')}
+                      className="gap-1.5"
+                    >
+                      <ChevronLeft className="h-4 w-4" /> Retour
+                    </Button>
+                  )}
+                  <div className="flex-1" />
+                  {createStep === 'type' && (
+                    <Button onClick={() => setCreateStep('config')} className="gap-1.5">
+                      Configurer <ChevronRight className="h-4 w-4" />
+                    </Button>
+                  )}
+                  {createStep === 'config' && (
+                    <Button onClick={() => setCreateStep('review')} className="gap-1.5">
+                      Vérifier <ChevronRight className="h-4 w-4" />
+                    </Button>
+                  )}
+                  {createStep === 'review' && (
+                    <Button
+                      onClick={() => createMutation.mutate()}
+                      disabled={createMutation.isPending}
+                      className="gap-1.5"
+                    >
+                      <Rocket className="h-4 w-4" />
+                      {createMutation.isPending ? 'Création...' : 'Lancer l\'agent'}
+                    </Button>
+                  )}
                 </DialogFooter>
               </DialogContent>
             </Dialog>
@@ -520,7 +810,7 @@ export default function AIAutomationHubPage() {
                             </div>
                             <div className="flex-1 min-w-0">
                               <div className="flex items-center gap-2 flex-wrap">
-                                <h3 className="font-semibold text-foreground truncate">{meta.label}</h3>
+                                <h3 className="font-semibold text-foreground truncate">{(config.config as any)?.name || meta.label}</h3>
                                 <Badge variant={isActive ? 'default' : 'secondary'} className="text-xs shrink-0">
                                   {isActive ? 'Actif' : 'En pause'}
                                 </Badge>
@@ -530,8 +820,12 @@ export default function AIAutomationHubPage() {
                                   </Badge>
                                 )}
                               </div>
+                              {(config.config as any)?.description && (
+                                <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1">{(config.config as any).description}</p>
+                              )}
                               <p className="text-sm text-muted-foreground mt-0.5">
-                                Scope: {config.scope || 'global'} · Seuil: {Math.round((config.threshold_score || 0) * 100)}%
+                                {meta.label} · Scope: {config.scope || 'global'} · Seuil: {Math.round((config.threshold_score || 0) * 100)}%
+                                {(config.config as any)?.schedule && ` · ${SCHEDULE_OPTIONS.find(s => s.value === (config.config as any).schedule)?.label || (config.config as any).schedule}`}
                               </p>
                               <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground flex-wrap">
                                 <span className="flex items-center gap-1">
