@@ -95,13 +95,24 @@ export function AdvancedLiveChat({ isOpen: externalIsOpen, onClose: externalOnCl
     try {
       abortControllerRef.current = new AbortController();
       
+      const { supabase } = await import('@/integrations/supabase/client');
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.access_token) {
+        setMessages(prev => prev.map(m => m.id === assistantMessage.id
+          ? { ...m, content: 'Veuillez vous connecter.', isStreaming: false }
+          : m
+        ));
+        setIsLoading(false);
+        return;
+      }
+
       const response = await fetch(
         (await import('@/lib/supabase-env')).edgeFunctionUrl('ai-chatbot-support'),
         {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+            'Authorization': `Bearer ${session.access_token}`,
           },
           body: JSON.stringify({
             messages: [
