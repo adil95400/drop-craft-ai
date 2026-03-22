@@ -1,7 +1,8 @@
 /**
  * PPC Automation Engine - Advanced bid management, budget optimization, campaign rules
+ * Uses real data from automation_workflows + ad_campaigns tables
  */
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -15,11 +16,13 @@ import { Slider } from '@/components/ui/slider';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
 import {
   Zap, Plus, Play, Pause, Settings, TrendingUp, TrendingDown,
   DollarSign, Target, BarChart3, ArrowUpRight, ArrowDownRight,
   AlertTriangle, CheckCircle2, Clock, RefreshCw, Shield, Brain,
-  Sparkles, Activity, Eye, MousePointerClick, ShoppingCart
+  Sparkles, Activity, Eye, MousePointerClick, ShoppingCart, Loader2
 } from 'lucide-react';
 
 interface AutoRule {
@@ -52,41 +55,86 @@ const BID_STRATEGIES: BidStrategy[] = [
   { id: 'dayparting', name: 'Dayparting intelligent', description: 'Ajuste les enchères selon l\'heure', icon: Clock, targetMetric: 'Time', isAI: true },
 ];
 
-const MOCK_RULES: AutoRule[] = [
-  {
-    id: '1', name: 'Pause mots-clés non rentables', platform: 'google', type: 'status',
-    condition: { metric: 'cost', operator: '>', value: 50 },
-    action: { type: 'pause', value: 'keyword' },
-    isActive: true, executionCount: 23, lastTriggered: '2h ago',
-  },
-  {
-    id: '2', name: 'Augmenter budget si ROAS > 3', platform: 'meta', type: 'budget',
-    condition: { metric: 'roas', operator: '>', value: 3 },
-    action: { type: 'increase_budget', value: 20 },
-    isActive: true, executionCount: 8, lastTriggered: '1d ago',
-  },
-  {
-    id: '3', name: 'Réduire enchères CPC élevé', platform: 'google', type: 'bid',
-    condition: { metric: 'cpc', operator: '>', value: 2.5 },
-    action: { type: 'decrease_bid', value: 15 },
-    isActive: false, executionCount: 45, lastTriggered: '3d ago',
-  },
-];
-
-const METRICS = [
-  { key: 'spend', label: 'Dépenses', value: '€12,450', change: '+8%', positive: false, icon: DollarSign },
-  { key: 'roas', label: 'ROAS moyen', value: '3.2x', change: '+12%', positive: true, icon: TrendingUp },
-  { key: 'cpa', label: 'CPA moyen', value: '€18.40', change: '-5%', positive: true, icon: Target },
-  { key: 'conversions', label: 'Conversions', value: '678', change: '+15%', positive: true, icon: ShoppingCart },
-  { key: 'ctr', label: 'CTR moyen', value: '3.8%', change: '+0.5%', positive: true, icon: MousePointerClick },
-  { key: 'impressions', label: 'Impressions', value: '1.2M', change: '+22%', positive: true, icon: Eye },
-];
-
 export function PPCAutomationEngine() {
-  const [rules, setRules] = useState(MOCK_RULES);
+  const queryClient = useQueryClient();
   const [showCreateRule, setShowCreateRule] = useState(false);
   const [selectedStrategy, setSelectedStrategy] = useState<string>('');
   const [targetValue, setTargetValue] = useState(300);
+
+  // Fetch real rules from automation_workflows
+  const { data: rulesData, isLoading: rulesLoading } = useQuery({
+    queryKey: ['ppc-automation-rules'],
+    queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return [];
+      const { data, error } = await supabase
+        .from('automation_workflows')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
+      if (error) throw error;
+      return (data || []).map((w: any): AutoRule => ({
+        id: w.id,
+        name: w.name,
+        platform: w.trigger_config?.platform || 'google',
+        type: (w.action_type as any) || 'bid',
+        condition: w.conditions?.[0] || { metric: 'cost', operator: '>', value: 0 },
+        action: { type: w.action_type || 'decrease_bid', value: w.action_config?.value || 10 },
+        isActive: w.is_active ?? false,
+        executionCount: w.execution_count || 0,
+        lastTriggered: w.last_triggered_at ? new Date(w.last_triggered_at).toLocaleDateString() : undefined,
+      }));
+    },
+    staleTime: 30_000,
+  });
+
+  // Fetch real campaign metrics from ad_campaigns
+  const { data: campaignMetrics } = useQuery({
+    queryKey: ['ppc-campaign-metrics'],
+    queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return null;
+      const { data, error } = await supabase
+        .from('ad_campaigns')
+        .select('spend, clicks, conversions, impressions, ctr, roas, cpc')
+        .eq('user_id', user.id);
+      if (error) throw error;
+      const campaigns = data || [];
+      const totals = campaigns.reduce((acc, c) => ({
+        spend: acc.spend + (c.spend || 0),
+        clicks: acc.clicks + (c.clicks || 0),
+        conversions: acc.conversions + (c.conversions || 0),
+        impressions: acc.impressions + (c.impressions || 0),
+      }), { spend: 0, clicks: 0, conversions: 0, impressions: 0 });
+      const avgRoas = campaigns.length > 0 ? campaigns.reduce((s, c) => s + (c.roas || 0), 0) / campaigns.length : 0;
+      const avgCpa = totals.conversions > 0 ? totals.spend / totals.conversions : 0;
+      const avgCtr = campaigns.length > 0 ? campaigns.reduce((s, c) => s + (c.ctr || 0), 0) / campaigns.length : 0;
+      return { ...totals, avgRoas, avgCpa, avgCtr };
+    },
+    staleTime: 60_000,
+  });
+
+  const rules = rulesData || [];
+
+  const METRICS = useMemo(() => {
+    const m = campaignMetrics;
+    return [
+      { key: 'spend', label: 'Dépenses', value: m ? `€${m.spend.toLocaleString()}` : '—', icon: DollarSign },
+      { key: 'roas', label: 'ROAS moyen', value: m ? `${m.avgRoas.toFixed(1)}x` : '—', icon: TrendingUp },
+      { key: 'cpa', label: 'CPA moyen', value: m ? `€${m.avgCpa.toFixed(2)}` : '—', icon: Target },
+      { key: 'conversions', label: 'Conversions', value: m ? m.conversions.toLocaleString() : '—', icon: ShoppingCart },
+      { key: 'ctr', label: 'CTR moyen', value: m ? `${m.avgCtr.toFixed(1)}%` : '—', icon: MousePointerClick },
+      { key: 'impressions', label: 'Impressions', value: m ? m.impressions > 1_000_000 ? `${(m.impressions / 1_000_000).toFixed(1)}M` : m.impressions.toLocaleString() : '—', icon: Eye },
+    ];
+  }, [campaignMetrics]);
+
+  const toggleRule = async (id: string) => {
+    const rule = rules.find(r => r.id === id);
+    if (!rule) return;
+    await supabase.from('automation_workflows').update({ is_active: !rule.isActive }).eq('id', id);
+    queryClient.invalidateQueries({ queryKey: ['ppc-automation-rules'] });
+    toast.success('Règle mise à jour');
+  };
 
   const [newRule, setNewRule] = useState({
     name: '', platform: 'google', type: 'bid' as const,
