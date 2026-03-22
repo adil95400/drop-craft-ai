@@ -104,6 +104,7 @@ export function AdvancedProductCatalog() {
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedCategory, setSelectedCategory] = useState<string>('all')
   const [showBulkActions, setShowBulkActions] = useState(false)
+  const queryClient = useQueryClient()
 
   const { products, isLoading, stats } = useProductsUnified()
 
