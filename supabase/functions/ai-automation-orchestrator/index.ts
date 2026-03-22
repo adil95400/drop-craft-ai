@@ -1,10 +1,10 @@
 /**
  * AI Automation Orchestrator — Phase 5.2
- * Complex workflow management, AI-driven optimization, cross-platform automation
+ * Migrated to shared ai-client.ts with retry + cache
  */
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { requireAuth, handlePreflight, errorResponse, successResponse } from '../_shared/jwt-auth.ts'
-import { AI_MODEL, AI_GATEWAY_URL } from '../_shared/ai-config.ts'
+import { generateJSON } from '../_shared/ai-client.ts'
 
 serve(async (req) => {
   const preflight = handlePreflight(req)
@@ -23,9 +23,17 @@ serve(async (req) => {
       default:
         return errorResponse(`Unknown action: ${action}`, ctx.corsHeaders)
     }
-  } catch (e) {
+  } catch (e: any) {
     if (e instanceof Response) return e
     console.error('Automation Orchestrator error:', e)
+
+    // Surface 429/402 to client
+    if (e.status === 429 || e.status === 402) {
+      return new Response(JSON.stringify({ success: false, error: e.message }), {
+        status: e.status, headers: { 'Content-Type': 'application/json' },
+      })
+    }
+
     return new Response(JSON.stringify({ success: false, error: 'Internal error' }), {
       status: 500, headers: { 'Content-Type': 'application/json' },
     })
@@ -33,35 +41,11 @@ serve(async (req) => {
 })
 
 async function callAI(systemPrompt: string, userPrompt: string) {
-  const apiKey = Deno.env.get('OPENAI_API_KEY_AUTOMATION') || Deno.env.get('OPENAI_API_KEY')
-  if (!apiKey) throw new Error('OpenAI API key not configured')
-
-  const res = await fetch(AI_GATEWAY_URL, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${apiKey}`,
-    },
-    body: JSON.stringify({
-      model: AI_MODEL,
-      messages: [
-        { role: 'system', content: systemPrompt },
-        { role: 'user', content: userPrompt },
-      ],
-      temperature: 0.3,
-      response_format: { type: 'json_object' },
-    }),
+  return generateJSON(systemPrompt, userPrompt, {
+    module: 'automation',
+    temperature: 0.3,
+    enableCache: true,
   })
-  if (!res.ok) {
-    const status = res.status
-    if (status === 429) throw Object.assign(new Error('Rate limited'), { status: 429 })
-    if (status === 402) throw Object.assign(new Error('Credits exhausted'), { status: 402 })
-    const errorText = await res.text()
-    console.error(`AI API error ${status}:`, errorText)
-    throw new Error(`AI API error: ${status}`)
-  }
-  const data = await res.json()
-  return JSON.parse(data.choices[0].message.content)
 }
 
 async function handleDesignWorkflow(ctx: any, params: any) {

@@ -1,7 +1,9 @@
+/**
+ * AI Pricing Intelligence — Migrated to shared ai-client.ts
+ */
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
-import { AI_MODEL, AI_GATEWAY_URL } from '../_shared/ai-config.ts';
-
+import { generateJSON } from '../_shared/ai-client.ts';
 import { getSecureCorsHeaders, handleCorsPreflightSecure } from '../_shared/secure-cors.ts'
 
 interface PricingRequest {
@@ -38,23 +40,11 @@ async function requireAuth(req: Request) {
 }
 
 async function callAI(systemPrompt: string, userPrompt: string) {
-  const response = await fetch(AI_GATEWAY_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      model: AI_MODEL,
-      messages: [
-        { role: 'system', content: systemPrompt },
-        { role: 'user', content: userPrompt },
-      ],
-      temperature: 0.3,
-      response_format: { type: 'json_object' },
-    }),
+  return generateJSON(systemPrompt, userPrompt, {
+    module: 'automation',
+    temperature: 0.3,
+    enableCache: true,
   });
-  
-  if (!response.ok) throw new Error(`AI error: ${response.status}`);
-  const data = await response.json();
-  return JSON.parse(data.choices[0].message.content);
 }
 
 serve(async (req) => {
@@ -69,7 +59,6 @@ serve(async (req) => {
 
     switch (body.action) {
       case 'competitor_monitor': {
-        // Fetch user's products for comparison
         const { data: products } = await supabase
           .from('products')
           .select('id, title, price, cost_price, sku, category')
@@ -96,7 +85,6 @@ serve(async (req) => {
         const breakEvenPrice = p.cost_price + (p.shipping_cost || 0) + platformFees + (p.ad_spend_per_unit || 0);
         const roi = netMargin > 0 ? ((netMargin / (p.cost_price + (p.shipping_cost || 0))) * 100) : 0;
 
-        // AI-powered pricing suggestions
         const aiResult = await callAI(
           `You are a pricing strategist. Given margin data, suggest optimal price points.
            Return JSON: { "suggestions": [{ "strategy", "recommended_price", "expected_margin_percent", "rationale" }], "psychological_prices": number[], "volume_tiers": [{ "min_qty", "price", "margin_percent" }] }`,
@@ -125,7 +113,6 @@ serve(async (req) => {
       case 'price_history': {
         const days = body.period_days || 90;
         
-        // Get price change logs from products
         const { data: products } = await supabase
           .from('products')
           .select('id, title, price, cost_price, updated_at, created_at')
@@ -133,7 +120,6 @@ serve(async (req) => {
           .in('id', body.product_ids || [])
           .limit(50);
 
-        // Get analytics snapshots for price trends
         const { data: snapshots } = await supabase
           .from('analytics_snapshots')
           .select('metrics, snapshot_date')
@@ -178,8 +164,8 @@ serve(async (req) => {
     return new Response(JSON.stringify(result), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
-  } catch (error) {
-    const status = error.message === 'Unauthorized' ? 401 : 500;
+  } catch (error: any) {
+    const status = error.message === 'Unauthorized' ? 401 : (error.status || 500);
     return new Response(JSON.stringify({ error: error.message }), {
       status,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },

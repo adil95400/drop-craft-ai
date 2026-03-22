@@ -1,11 +1,9 @@
 /**
- * AI Content Generator - Secure Implementation
- * P1.1: Uses unified wrapper with auth + validation + rate limit + secure CORS
+ * AI Content Generator — Migrated to shared ai-client.ts
  */
-
 import { createEdgeFunction, z } from '../_shared/create-edge-function.ts'
+import { callOpenAI } from '../_shared/ai-client.ts'
 
-// Input schema for AI content generation
 const aiContentSchema = z.object({
   type: z.enum(['product_description', 'blog_article', 'ad_copy', 'seo_content', 'email_marketing']).optional(),
   prompt: z.string().max(2000).optional(),
@@ -29,17 +27,9 @@ const handler = createEdgeFunction<AIContentInput>({
   
   console.log(`[${correlationId}] AI Content request from user: ${user.id}`)
 
-  const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY_PRODUCT') || Deno.env.get('OPENAI_API_KEY')
-
-  if (!OPENAI_API_KEY) {
-    console.error('OPENAI_API_KEY not configured')
-    throw new Error('AI service not configured')
-  }
-
   let systemPrompt = ""
   let userPrompt = ""
 
-  // Handle new format (from AIContentAssistant)
   if (action) {
     const langName = language === 'fr' ? 'français' : 
                      language === 'en' ? 'anglais' : 
@@ -98,7 +88,6 @@ const handler = createEdgeFunction<AIContentInput>({
         userPrompt = prompt || 'Génère du contenu marketing engageant.'
     }
   } else {
-    // Handle legacy format
     const keywordsStr = keywords?.join(", ") || ''
     
     switch (type) {
@@ -133,41 +122,18 @@ const handler = createEdgeFunction<AIContentInput>({
     }
   }
 
-  const response = await fetch('https://api.openai.com/v1/chat/completions', {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${OPENAI_API_KEY}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      model: 'gpt-4o-mini',
-      messages: [
-        { role: 'system', content: systemPrompt },
-        { role: 'user', content: userPrompt }
-      ],
+  const data = await callOpenAI(
+    [
+      { role: 'system', content: systemPrompt },
+      { role: 'user', content: userPrompt }
+    ],
+    {
+      module: 'product',
       temperature: 0.7,
-      max_tokens: 2000,
-    }),
-  })
-
-  if (!response.ok) {
-    if (response.status === 429) {
-      return new Response(JSON.stringify({ error: 'Rate limit reached. Please try again later.' }), {
-        status: 429,
-        headers: { 'Content-Type': 'application/json' },
-      })
+      maxTokens: 2000,
     }
-    if (response.status === 402) {
-      return new Response(JSON.stringify({ error: 'Insufficient credits.' }), {
-        status: 402,
-        headers: { 'Content-Type': 'application/json' },
-      })
-    }
-    console.error('AI service error:', response.status)
-    throw new Error('AI service unavailable')
-  }
+  )
 
-  const data = await response.json()
   const generatedContent = data.choices[0].message.content
 
   return new Response(JSON.stringify({ 

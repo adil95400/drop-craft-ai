@@ -1,8 +1,8 @@
 /**
- * SEO Optimizer - Analyse et optimise le SEO des produits via Lovable AI
- * Accepte: { product_ids: string[], target_keywords?: string[], language?: string }
+ * SEO Optimizer — Migrated to shared ai-client.ts with retry + cache
  */
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0'
+import { generateJSON } from '../_shared/ai-client.ts'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -39,11 +39,9 @@ Deno.serve(async (req) => {
 
     console.log(`[SEO-OPTIMIZER] User ${user.id} optimizing ${product_ids.length} products`)
 
-    // Fetch products from both tables
     const results = []
 
     for (const productId of product_ids.slice(0, 10)) {
-      // Try products table first, then imported_products
       let product = null
       let sourceTable = 'products'
 
@@ -74,14 +72,8 @@ Deno.serve(async (req) => {
         continue
       }
 
-      // Use Lovable AI for SEO analysis
-      const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY_SEO') || Deno.env.get('OPENAI_API_KEY')
-      if (!OPENAI_API_KEY) {
-        results.push({ productId, status: 'error', message: 'AI non configurée' })
-        continue
-      }
-
-      const prompt = `Analyse SEO pour ce produit e-commerce et génère des optimisations.
+      try {
+        const prompt = `Analyse SEO pour ce produit e-commerce et génère des optimisations.
 Langue: ${language}
 ${target_keywords?.length ? `Mots-clés cibles: ${target_keywords.join(', ')}` : ''}
 
@@ -91,7 +83,7 @@ Produit:
 - Catégorie: ${product.category || 'Non défini'}
 - Prix: ${product.price || 0}€
 
-Génère un JSON avec:
+Retourne un JSON avec:
 {
   "seo_title": "titre SEO optimisé (50-60 car.)",
   "seo_description": "meta description optimisée (140-160 car.)",
@@ -100,39 +92,16 @@ Génère un JSON avec:
   "recommendations": ["conseil 1", "conseil 2"]
 }`
 
-      try {
-        const aiResponse = await fetch('https://api.openai.com/v1/chat/completions', {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${OPENAI_API_KEY}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            model: 'gpt-4o-mini',
-            messages: [
-              { role: 'system', content: 'Tu es un expert SEO e-commerce. Réponds uniquement en JSON valide.' },
-              { role: 'user', content: prompt }
-            ],
+        const seoData = await generateJSON(
+          'Tu es un expert SEO e-commerce. Réponds uniquement en JSON valide.',
+          prompt,
+          {
+            module: 'seo',
             temperature: 0.2,
-          }),
-        })
-
-        if (!aiResponse.ok) {
-          console.error(`AI error: ${aiResponse.status}`)
-          results.push({ productId, status: 'error', message: 'Erreur IA' })
-          continue
-        }
-
-        const aiData = await aiResponse.json()
-        const content = aiData.choices?.[0]?.message?.content || ''
-        const jsonMatch = content.match(/\{[\s\S]*\}/)
-        
-        if (!jsonMatch) {
-          results.push({ productId, status: 'error', message: 'Réponse IA invalide' })
-          continue
-        }
-
-        const seoData = JSON.parse(jsonMatch[0])
+            maxTokens: 1000,
+            enableCache: true,
+          }
+        )
 
         // Update product with SEO data
         const updatePayload: Record<string, any> = {}
@@ -156,9 +125,9 @@ Génère un JSON avec:
           issues: seoData.issues || [],
           recommendations: seoData.recommendations || [],
         })
-      } catch (aiErr) {
+      } catch (aiErr: any) {
         console.error('AI processing error:', aiErr)
-        results.push({ productId, status: 'error', message: 'Erreur de traitement' })
+        results.push({ productId, status: 'error', message: aiErr.message || 'Erreur de traitement' })
       }
     }
 
@@ -166,11 +135,11 @@ Génère un JSON avec:
       JSON.stringify({ success: true, results }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
-  } catch (error) {
+  } catch (error: any) {
     console.error('[SEO-OPTIMIZER] Error:', error)
     return new Response(
       JSON.stringify({ error: error.message || 'Erreur interne' }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      { status: error.status || 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
   }
 })
