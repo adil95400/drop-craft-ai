@@ -167,7 +167,6 @@ const AdminPanelContent = () => {
 
     const { t: tPages } = useTranslation('pages');
 
-
   return (
     <ChannablePageWrapper
       title={tPages('administration.title')}

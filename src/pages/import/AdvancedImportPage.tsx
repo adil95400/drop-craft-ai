@@ -19,6 +19,7 @@ import { useUnifiedAuth } from '@/contexts/UnifiedAuthContext'
 import { useUnifiedPlan } from '@/lib/unified-plan-system'
 import { supabase } from '@/integrations/supabase/client'
 import { useToast } from '@/hooks/use-toast'
+import { useTranslation } from 'react-i18next';
 
 // Hook pour préférences réduites
 const useReducedMotion = () => {
@@ -174,7 +175,6 @@ export default function AdvancedImportPage() {
   }
 
     const { t: tPages } = useTranslation('pages');
-
 
   return (
     <ChannablePageWrapper

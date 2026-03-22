@@ -14,6 +14,7 @@ import { AutoConfigWizard } from '@/components/integrations/AutoConfigWizard'
 import { SyncStatusInline } from './components/SyncStatusInline'
 import type { UnifiedIntegration as Integration } from '@/hooks/unified'
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper'
+import { useTranslation } from 'react-i18next';
 
 export default function IntegrationsPage() {
   const navigate = useNavigate()

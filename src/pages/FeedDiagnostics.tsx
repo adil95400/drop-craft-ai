@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { useFeedReports, useFeedReportDetails, useRunFeedDiagnostic, FeedReport } from '@/hooks/useFeedDiagnostics'
 import { Activity, AlertTriangle, CheckCircle2, XCircle, RefreshCw, ShoppingBag, Store, Facebook, Package, Loader2, Wrench } from 'lucide-react'
+import { useTranslation } from 'react-i18next';
 
 const CHANNEL_META: Record<string, { label: string; icon: any; color: string }> = {
   google_shopping: { label: 'Google Shopping', icon: ShoppingBag, color: 'text-info' },
@@ -35,7 +36,6 @@ export default function FeedDiagnostics() {
   }
 
     const { t: tPages } = useTranslation('pages');
-
 
   return (
     <ChannablePageWrapper

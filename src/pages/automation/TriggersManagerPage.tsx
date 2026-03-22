@@ -89,6 +89,7 @@ const CATEGORIES = [
 ];
 
 export default function TriggersManagerPage() {
+  const { t: tPages } = useTranslation('pages');
   const [triggers, setTriggers] = useState(MOCK_TRIGGERS);
   const [search, setSearch] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');

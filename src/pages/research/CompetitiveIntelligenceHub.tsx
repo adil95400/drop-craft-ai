@@ -21,7 +21,6 @@ export default function CompetitiveIntelligenceHub() {
 
     const { t: tPages } = useTranslation('pages');
 
-
   return (
     <ChannablePageWrapper
       title={tPages('intelligenceConcurrentielle.title')}

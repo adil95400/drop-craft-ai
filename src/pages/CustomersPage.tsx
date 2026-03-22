@@ -59,6 +59,7 @@ import { CustomerStatsCard } from '@/components/customers/CustomerStatsCard'
 import { CustomerImportMenu } from '@/components/customers/CustomerImportMenu'
 import { AddCustomerModal } from '@/components/customers/AddCustomerModal'
 import { useIntegrationsUnified } from '@/hooks/unified/useIntegrationsUnified'
+import { useTranslation } from 'react-i18next';
 
 // Segment config
 const segmentConfig = {
@@ -186,7 +187,6 @@ export default function CustomersPage() {
   const hasConnectedStores = connectedIntegrations.length > 0
 
     const { t: tPages } = useTranslation('pages');
-
 
   return (
     <ChannablePageWrapper

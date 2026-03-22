@@ -47,6 +47,7 @@ interface ReturnItem {
 }
 
 export default function AdvancedReturnsPage() {
+  const { t: tPages } = useTranslation('pages');
   const { user } = useAuthOptimized();
   const queryClient = useQueryClient();
   const [newReturnDialog, setNewReturnDialog] = useState(false);

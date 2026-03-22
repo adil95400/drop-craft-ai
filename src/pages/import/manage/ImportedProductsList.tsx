@@ -8,6 +8,7 @@ import { supabase } from '@/integrations/supabase/client'
 import { useToast } from '@/hooks/use-toast'
 import { useState } from 'react'
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper'
+import { useTranslation } from 'react-i18next';
 
 export default function ImportedProductsList() {
   const navigate = useNavigate()
@@ -56,7 +57,6 @@ export default function ImportedProductsList() {
   }
 
     const { t: tPages } = useTranslation('pages');
-
 
   return (
     <ChannablePageWrapper

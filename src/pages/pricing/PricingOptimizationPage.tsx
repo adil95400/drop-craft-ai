@@ -36,6 +36,7 @@ interface PricingRecommendation {
 }
 
 export default function PricingOptimizationPage() {
+  const { t: tPages } = useTranslation('pages');
   const [analyzing, setAnalyzing] = useState(false);
   const [recommendations, setRecommendations] = useState<PricingRecommendation[]>([]);
   const queryClient = useQueryClient();

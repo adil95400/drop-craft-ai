@@ -18,6 +18,7 @@ import {
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useToast } from '@/hooks/use-toast'
+import { useTranslation } from 'react-i18next';
 
 const FREELANCERS = [
   { id: '1', name: 'Marie D.', specialty: 'SEO e-commerce', rating: 4.9, reviews: 127, price: '15€/fiche', avatar: '👩‍💼', languages: ['FR', 'EN'], availability: 'Disponible', deliveryTime: '24h', skills: ['SEO', 'Copywriting', 'A/B Testing'] },
@@ -37,6 +38,7 @@ const FAQ_ITEMS = [
 ]
 
 export default function FreelanceMarketplacePage() {
+  const { t: tPages } = useTranslation('pages');
   const [search, setSearch] = useState('')
   const [chatMessages, setChatMessages] = useState<{ role: string; content: string }[]>([])
   const [chatInput, setChatInput] = useState('')

@@ -12,6 +12,7 @@ import { AutomatedReportGenerator } from '@/components/analytics/AutomatedReport
 import { BarChart3, Users, Bell, FileText } from 'lucide-react';
 
 export default function BIAdvancedDashboardPage() {
+  const { t: tPages } = useTranslation('pages');
   return (
     <>
       <Helmet>

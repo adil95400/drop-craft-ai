@@ -16,6 +16,7 @@ import { cn } from '@/lib/utils'
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper'
 import { useImportConfig } from '@/hooks/useImportConfig'
 import { useReducedMotion } from '@/hooks/useReducedMotion'
+import { useTranslation } from 'react-i18next';
 
 const importMethods = [
   {
@@ -171,7 +172,6 @@ export default function ImportConfigPage() {
   }
 
     const { t: tPages } = useTranslation('pages');
-
 
   return (
     <ChannablePageWrapper

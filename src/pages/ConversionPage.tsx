@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
 
 const ConversionPage = () => {
+  const { t: tPages } = useTranslation('pages');
   return (
     <ErrorBoundary>
       <ChannablePageWrapper

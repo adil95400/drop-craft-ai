@@ -57,6 +57,7 @@ const SOCIAL_CHANNELS = [
 ];
 
 export default function SocialCommercePage() {
+  const { t: tPages } = useTranslation('pages');
   const { user } = useAuth();
   const [connecting, setConnecting] = useState<string | null>(null);
 

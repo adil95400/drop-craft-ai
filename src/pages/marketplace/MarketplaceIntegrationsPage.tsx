@@ -138,6 +138,7 @@ const LANGUAGES = [
 
 // ─── Hero Stats Component ─────────────────────────────────────
 function HeroStats() {
+  const { t: tPages } = useTranslation('pages');
   const installed = SERVICES.filter(s => s.status === 'installed').length;
   const connectedCount = CONNECTORS.filter(c => c.status === 'connected' || c.status === 'syncing').length;
   const errors = CONNECTORS.filter(c => c.status === 'error').length;

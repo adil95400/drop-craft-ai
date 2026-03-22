@@ -15,6 +15,7 @@ import { Badge } from '@/components/ui/badge'
 import { useVariantAnalysis, VariantIssue } from '@/hooks/catalog'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { VariantsAIPanel } from '@/components/catalog/VariantsAIPanel'
+import { useTranslation } from 'react-i18next';
 
 const stagger = { hidden: { opacity: 0 }, show: { opacity: 1, transition: { staggerChildren: 0.05 } } }
 const fadeUp = { hidden: { opacity: 0, y: 12 }, show: { opacity: 1, y: 0, transition: { type: 'spring' as const, stiffness: 300, damping: 24 } } }
@@ -55,7 +56,6 @@ export default function VariantsPage() {
   }
 
     const { t: tPages } = useTranslation('pages');
-
 
   return (
     <ChannablePageWrapper

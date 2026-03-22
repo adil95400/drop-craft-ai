@@ -93,7 +93,6 @@ export default function ExtensionTutorialsPage() {
 
     const { t: tPages } = useTranslation('pages');
 
-
   return (
     <ChannablePageWrapper
       title={tPages('tutorielsExtension.title')}

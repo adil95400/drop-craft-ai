@@ -13,6 +13,7 @@ import { Separator } from '@/components/ui/separator'
 import { ArrowLeft, Save, Trash2, RefreshCw, Settings, Shield, Zap } from 'lucide-react'
 import { useStores } from '@/hooks/useStores'
 import { useToast } from '@/hooks/use-toast'
+import { useTranslation } from 'react-i18next';
 
 export function StoreSettingsPage() {
   const { storeId } = useParams<{ storeId: string }>()

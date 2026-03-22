@@ -108,7 +108,6 @@ export default function WebhooksOutgoingPage() {
 
     const { t: tPages } = useTranslation('pages');
 
-
   return (
     <ChannablePageWrapper
       title={tPages('webhooksSortants.title')}

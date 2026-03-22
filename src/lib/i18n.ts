@@ -203,13 +203,35 @@ const resources = {
   },
 };
 
+// Track missing keys in development
+const missingKeys = new Set<string>();
+
+const saveMissing = (lngs: readonly string[], ns: string, key: string, fallbackValue: string) => {
+  const entry = `[${lngs.join(',')}] ${ns}:${key}`;
+  if (!missingKeys.has(entry)) {
+    missingKeys.add(entry);
+    console.warn(`🌐 i18n MISSING KEY: ${entry} (fallback: "${fallbackValue}")`);
+  }
+};
+
 i18n
   .use(LanguageDetector)
   .use(initReactI18next)
   .init({
     resources,
-    fallbackLng: 'fr',
+    fallbackLng: ['en', 'fr'],
     defaultNS: 'common',
+    
+    // Missing key handling
+    saveMissing: import.meta.env.DEV,
+    missingKeyHandler: import.meta.env.DEV ? saveMissing : undefined,
+    // Show the key itself as last resort so untranslated text is obvious
+    parseMissingKeyHandler: (key: string) => {
+      if (import.meta.env.DEV) {
+        return `⚠️ ${key}`;
+      }
+      return key;
+    },
     
     // Language detection
     detection: {
@@ -228,4 +250,10 @@ i18n
     },
   });
 
+// Expose missing keys for tooling (dev only)
+if (import.meta.env.DEV) {
+  (window as any).__i18nMissingKeys = missingKeys;
+}
+
+export { missingKeys };
 export default i18n;

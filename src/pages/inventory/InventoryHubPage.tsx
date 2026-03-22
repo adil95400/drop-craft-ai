@@ -710,7 +710,6 @@ export default function InventoryHubPage() {
 
     const { t: tPages } = useTranslation('pages');
 
-
   return (
     <ChannablePageWrapper
       title={tPages('gestionDesStocksTempsReel.title')}

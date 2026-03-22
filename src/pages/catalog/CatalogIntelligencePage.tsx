@@ -25,6 +25,7 @@ import { auditProduct } from '@/lib/audit/auditProduct'
 import { FeedService } from '@/services/feeds/FeedService'
 import { BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts'
 import { toast } from 'sonner'
+import { useTranslation } from 'react-i18next';
 
 export default function CatalogIntelligencePage() {
   const { products, isLoading } = useProductsUnified()
@@ -119,7 +120,6 @@ export default function CatalogIntelligencePage() {
   }
 
     const { t: tPages } = useTranslation('pages');
-
 
   return (
     <ChannablePageWrapper

@@ -17,7 +17,6 @@ export default function ProductResearchPage() {
 
     const { t: tPages } = useTranslation('pages');
 
-
   return (
     <ChannablePageWrapper
       title={tPages('rechercheProduitsGagnants.title')}

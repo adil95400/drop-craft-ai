@@ -8,6 +8,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { motion } from 'framer-motion'
 import { Button } from '@/components/ui/button'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next';
 
 export default function QuickImportPage() {
   const prefersReducedMotion = useReducedMotion()
@@ -21,7 +22,6 @@ export default function QuickImportPage() {
   ]
 
     const { t: tPages } = useTranslation('pages');
-
 
   return (
     <ChannablePageWrapper

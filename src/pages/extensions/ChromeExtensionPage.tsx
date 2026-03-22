@@ -366,7 +366,6 @@ export default function ChromeExtensionPage() {
 
     const { t: tPages } = useTranslation('pages');
 
-
   return (
     <ChannablePageWrapper
       title={tPages('extensionNavigateur.title')}

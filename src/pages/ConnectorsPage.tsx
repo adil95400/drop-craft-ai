@@ -19,6 +19,7 @@ import {
 } from 'lucide-react'
 import { SupplierCredentials } from '@/types/suppliers'
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper'
+import { useTranslation } from 'react-i18next';
 
 export default function ConnectorsPage() {
   const { toast } = useToast()
@@ -92,7 +93,6 @@ export default function ConnectorsPage() {
   ))
 
     const { t: tPages } = useTranslation('pages');
-
 
   return (
     <ChannablePageWrapper

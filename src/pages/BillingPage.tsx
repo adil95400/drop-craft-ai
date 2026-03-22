@@ -8,6 +8,7 @@ import { useBillingDetails } from '@/hooks/useBillingDetails'
 import { useStripeSubscription, STRIPE_PRODUCTS } from '@/hooks/useStripeSubscription'
 import { useNavigate } from 'react-router-dom'
 import {
+import { useTranslation } from 'react-i18next';
   CreditCard,
   Download,
   Receipt,

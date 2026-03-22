@@ -17,8 +17,10 @@ import { Key, Plus, Copy, Trash2, Eye, EyeOff, Activity, Code } from 'lucide-rea
 import { formatDistanceToNow } from 'date-fns'
 import { useToast } from '@/hooks/use-toast'
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper'
+import { useTranslation } from 'react-i18next';
 
 export default function APIManagementPage() {
+  const { t: tPages } = useTranslation('pages');
   const { toast } = useToast()
   const [visibleKeys, setVisibleKeys] = useState<Set<string>>(new Set())
 

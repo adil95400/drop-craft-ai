@@ -18,6 +18,7 @@ import {
   ShoppingCart, Truck, Activity, PieChart
 } from 'lucide-react'
 import {
+import { useTranslation } from 'react-i18next';
   BarChart, Bar, PieChart as RechartsPie, Pie, Cell,
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, Area, AreaChart
 } from 'recharts'
@@ -162,7 +163,6 @@ export default function SupplierAnalyticsDashboard() {
   ]
 
     const { t: tPages } = useTranslation('pages');
-
 
   return (
     <ChannablePageWrapper

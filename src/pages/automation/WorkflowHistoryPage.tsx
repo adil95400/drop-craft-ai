@@ -11,6 +11,7 @@ import { supabase } from '@/integrations/supabase/client'
 import { useState, useMemo } from 'react'
 import { format, formatDistanceToNow } from 'date-fns'
 import { useDateFnsLocale } from '@/hooks/useDateFnsLocale'
+import { useTranslation } from 'react-i18next';
 
 interface WorkflowRun {
   id: string
@@ -27,6 +28,7 @@ interface WorkflowRun {
 }
 
 export default function WorkflowHistoryPage() {
+  const { t: tPages } = useTranslation('pages');
   const locale = useDateFnsLocale()
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState('all')

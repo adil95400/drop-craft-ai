@@ -28,6 +28,7 @@ import {
 import { motion } from 'framer-motion'
 import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
+import { useTranslation } from 'react-i18next';
 
 export default function ChannelDetailPage() {
   const { channelId } = useParams<{ channelId: string }>()

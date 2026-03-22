@@ -24,6 +24,7 @@ import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrappe
 import { useTranslation } from 'react-i18next';
 
 const KeywordResearch = () => {
+  const { t: tPages } = useTranslation('pages');
   const navigate = useNavigate();
   const [keyword, setKeyword] = useState("");
   const { results, isSearching, searchKeywords } = useKeywordResearch();

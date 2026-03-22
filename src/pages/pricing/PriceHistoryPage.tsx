@@ -22,6 +22,7 @@ import {
 } from 'recharts';
 
 export default function PriceHistoryPage() {
+  const { t: tPages } = useTranslation('pages');
   const [selectedProduct, setSelectedProduct] = useState<string>('all');
   const [period, setPeriod] = useState<string>('30');
 

@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 
 export default function AdminSecurityPage() {
+  const { t: tPages } = useTranslation('pages');
   const { data: auditStats } = useQuery({
     queryKey: ['admin-security-stats'],
     queryFn: async () => {

@@ -7,6 +7,7 @@ import { useTranslation } from 'react-i18next';
 import { BarChart3 } from 'lucide-react';
 
 export default function AdvancedAnalyticsPage() {
+  const { t: tPages } = useTranslation('pages');
   return (
     <>
       <Helmet>

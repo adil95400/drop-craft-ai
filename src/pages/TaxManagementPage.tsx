@@ -57,7 +57,6 @@ const TaxManagementPage: React.FC = () => {
 
     const { t: tPages } = useTranslation('pages');
 
-
   return (
     <ChannablePageWrapper
       title={tPages('gestionFiscale.title')}

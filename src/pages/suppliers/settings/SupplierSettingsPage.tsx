@@ -19,6 +19,7 @@ import { supabase } from '@/integrations/supabase/client'
 import { useToast } from '@/hooks/use-toast'
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper'
 import { 
+import { useTranslation } from 'react-i18next';
   Settings, Key, RefreshCw, CheckCircle, XCircle,
   Plus, Trash2, Eye, EyeOff, Clock, Loader2, Shield,
   TestTube, Copy, Bell, Webhook
@@ -187,7 +188,6 @@ export default function SupplierSettingsPage() {
   const activeCredentials = credentials.filter((c: any) => c.connection_status === 'active' || c.connection_status === 'connected').length
 
     const { t: tPages } = useTranslation('pages');
-
 
   return (
     <ChannablePageWrapper

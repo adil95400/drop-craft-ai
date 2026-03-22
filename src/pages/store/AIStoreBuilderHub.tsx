@@ -28,7 +28,6 @@ export default function AIStoreBuilderHub() {
 
     const { t: tPages } = useTranslation('pages');
 
-
   return (
     <ChannablePageWrapper
       title={tPages('aiStoreBuilder.title')}

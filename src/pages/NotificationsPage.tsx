@@ -332,7 +332,6 @@ export default function NotificationsPage() {
 
     const { t: tPages } = useTranslation('pages');
 
-
   return (
     <ChannablePageWrapper
       title={tPages('centreDeNotifications.title')}

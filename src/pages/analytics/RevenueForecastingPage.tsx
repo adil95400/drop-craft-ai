@@ -17,6 +17,7 @@ import {
 } from 'lucide-react'
 import { useFinanceData } from '@/hooks/useFinanceData'
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Legend } from 'recharts'
+import { useTranslation } from 'react-i18next';
 
 interface Scenario {
   name: string
@@ -84,7 +85,6 @@ export default function RevenueForecastingPage() {
   const formatCurrency = (v: number) => new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(v)
 
     const { t: tPages } = useTranslation('pages');
-
 
   return (
     <ChannablePageWrapper

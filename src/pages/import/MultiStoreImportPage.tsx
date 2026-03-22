@@ -8,6 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper'
 import { MultiStoreUrlImport } from '@/components/import/MultiStoreUrlImport'
 import { useUnifiedStores } from '@/hooks/useUnifiedStores'
+import { useTranslation } from 'react-i18next';
 
 const features = [
   {
@@ -38,7 +39,6 @@ export default function MultiStoreImportPage() {
   const activeStores = stores.filter(s => s.is_active)
 
     const { t: tPages } = useTranslation('pages');
-
 
   return (
     <ChannablePageWrapper

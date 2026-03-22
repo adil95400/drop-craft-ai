@@ -15,6 +15,7 @@ import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrappe
 import { useQuery } from '@tanstack/react-query'
 import { supabase } from '@/integrations/supabase/client'
 import { useAuth } from '@/contexts/AuthContext'
+import { useTranslation } from 'react-i18next';
 
 const AffiliationPage = () => {
   const { toast } = useToast()
@@ -102,7 +103,6 @@ const AffiliationPage = () => {
   const isLoading = loadingAffiliates || loadingCommissions
 
     const { t: tPages } = useTranslation('pages');
-
 
   return (
     <ChannablePageWrapper

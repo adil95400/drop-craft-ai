@@ -25,6 +25,7 @@ import { useAuth } from '@/contexts/AuthContext'
 import { supabase } from '@/integrations/supabase/client'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper'
+import { useTranslation } from 'react-i18next';
 
 interface ComplianceFramework {
   id: string
@@ -262,7 +263,6 @@ export default function ComplianceCenter() {
   }
 
     const { t: tPages } = useTranslation('pages');
-
 
   return (
     <ChannablePageWrapper

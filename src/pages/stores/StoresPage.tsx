@@ -13,6 +13,7 @@ import { StoreConnectionStatus } from '@/components/stores/StoreConnectionStatus
 import { ActiveJobsBanner } from '@/components/jobs/ActiveJobsBanner'
 import { Store, Plus, RefreshCw, Unplug, ExternalLink, Loader2, CheckCircle, AlertTriangle } from 'lucide-react'
 import { Link } from 'react-router-dom'
+import { useTranslation } from 'react-i18next';
 
 export default function StoresPage() {
   const { integrations, isLoading: loading, refetch } = useIntegrationsUnified()

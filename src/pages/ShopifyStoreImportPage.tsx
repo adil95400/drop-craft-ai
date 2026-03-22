@@ -62,7 +62,6 @@ export default function ShopifyStoreImportPage() {
 
     const { t: tPages } = useTranslation('pages');
 
-
   return (
     <ChannablePageWrapper
       title={tPages('importShopify.title')}

@@ -20,6 +20,7 @@ import { useToast } from '@/hooks/use-toast'
 import { supabase } from '@/integrations/supabase/client'
 import { pricingApi } from '@/services/api/client'
 import { CreateRepricingRuleDialog } from '@/components/pricing/CreateRepricingRuleDialog'
+import { useTranslation } from 'react-i18next';
 
 function CreateRepricingRuleButton() {
   const [open, setOpen] = useState(false)
@@ -93,7 +94,6 @@ export default function LiveRepricingPage() {
   const totalAdjustments = rules.reduce((a: number, r: any) => a + (r.execution_count || 0), 0)
 
     const { t: tPages } = useTranslation('pages');
-
 
   return (
     <ChannablePageWrapper

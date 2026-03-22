@@ -20,6 +20,7 @@ import { useUnifiedAuth } from '@/contexts/UnifiedAuthContext'
 import { cn } from '@/lib/utils'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { importJobsApi } from '@/services/api/client'
+import { useTranslation } from 'react-i18next';
 
 // Hook pour préférences réduites
 const useReducedMotion = () => {
@@ -97,7 +98,6 @@ export default function BulkImportPage() {
   ]
 
     const { t: tPages } = useTranslation('pages');
-
 
   return (
     <ChannablePageWrapper

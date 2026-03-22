@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
 
 export default function ExtensionHealthPage() {
+  const { t: tPages } = useTranslation('pages');
   return (
     <>
       <Helmet>

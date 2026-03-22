@@ -9,12 +9,12 @@ import { PriceTracker } from '@/components/competitive/PriceTracker'
 import { Target, DollarSign, TrendingUp, BarChart3, Eye } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper'
+import { useTranslation } from 'react-i18next';
 
 export default function CompetitorAnalysisPage() {
   const navigate = useNavigate()
 
     const { t: tPages } = useTranslation('pages');
-
 
   return (
     <ChannablePageWrapper

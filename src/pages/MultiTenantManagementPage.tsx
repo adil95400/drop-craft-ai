@@ -15,7 +15,6 @@ export default function MultiTenantManagementPage() {
 
     const { t: tPages } = useTranslation('pages');
 
-
   return (
     <ChannablePageWrapper
       title={tPages('gestionMultiTenant.title')}

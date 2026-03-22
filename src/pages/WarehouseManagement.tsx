@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/badge'
 import { Warehouse, Package, TrendingUp, AlertTriangle, MapPin, Users, Truck } from 'lucide-react'
 import { AdvancedFeatureGuide, ADVANCED_GUIDES } from '@/components/guide'
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper'
+import { useTranslation } from 'react-i18next';
 
 export default function WarehouseManagement() {
   const warehouses = [
@@ -73,7 +74,6 @@ export default function WarehouseManagement() {
   ]
 
     const { t: tPages } = useTranslation('pages');
-
 
   return (
     <ChannablePageWrapper

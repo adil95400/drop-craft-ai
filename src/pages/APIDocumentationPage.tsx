@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { Code } from 'lucide-react';
 
 export default function APIDocumentationPage() {
+  const { t: tPages } = useTranslation('pages');
   return (
     <>
       <Helmet>

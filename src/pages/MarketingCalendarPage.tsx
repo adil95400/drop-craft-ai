@@ -2,8 +2,10 @@ import { Helmet } from 'react-helmet-async'
 import { Calendar } from 'lucide-react'
 import { MarketingCalendar } from '@/components/marketing/MarketingCalendar'
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper'
+import { useTranslation } from 'react-i18next';
 
 export default function MarketingCalendarPage() {
+  const { t: tPages } = useTranslation('pages');
   return (
     <>
       <Helmet>

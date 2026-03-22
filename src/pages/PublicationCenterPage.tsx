@@ -12,6 +12,7 @@ import { useProductsUnified } from '@/hooks/unified'
 import { seedSampleProducts } from '@/lib/seedProducts'
 import { Search, Upload, Package, Loader2 } from 'lucide-react'
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper'
+import { useTranslation } from 'react-i18next';
 
 const MARKETPLACE_ICONS: Record<string, string> = {
   amazon: '🛒',
@@ -26,6 +27,7 @@ const MARKETPLACE_ICONS: Record<string, string> = {
 }
 
 export default function PublicationCenterPage() {
+  const { t: tPages } = useTranslation('pages');
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedProducts, setSelectedProducts] = useState<string[]>([])
   const [selectedProductForPublish, setSelectedProductForPublish] = useState<string | null>(null)

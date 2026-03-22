@@ -135,6 +135,7 @@ const TRIGGER_LABELS: Record<string, string> = {
 
 // ─── Page ──────────────────────────────────────────────────
 export default function MarketingAutomationPage() {
+  const { t: tPages } = useTranslation('pages');
   const queryClient = useQueryClient();
   const [search, setSearch] = useState('');
   const [activeTab, setActiveTab] = useState('campaigns');

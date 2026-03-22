@@ -34,6 +34,7 @@ import {
   ListChecks, Workflow, Info, Edit, RotateCcw, Upload
 } from 'lucide-react'
 import {
+import { useTranslation } from 'react-i18next';
   DropdownMenu, DropdownMenuContent, DropdownMenuItem,
   DropdownMenuSeparator, DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu'
@@ -698,7 +699,6 @@ export default function ChannableFeedManager() {
   const selectedMp = MARKETPLACES.find(mp => mp.id === newFeed.marketplace)
 
     const { t: tPages } = useTranslation('pages');
-
 
   return (
     <ChannablePageWrapper

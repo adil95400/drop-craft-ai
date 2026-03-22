@@ -14,6 +14,7 @@ import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 export default function FeedURLImportPage() {
+  const { t: tPages } = useTranslation('pages');
   const navigate = useNavigate();
 
   const handleImportComplete = (result: { success: boolean; count: number; jobId?: string }) => {

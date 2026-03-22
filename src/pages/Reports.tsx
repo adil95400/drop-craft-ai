@@ -359,7 +359,6 @@ export default function Reports() {
 
     const { t: tPages } = useTranslation('pages');
 
-
   return (
     <ChannablePageWrapper
       title={tPages('centreDeRapports.title')}

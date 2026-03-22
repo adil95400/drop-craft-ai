@@ -11,8 +11,10 @@ import { CourseCard } from '@/components/academy/CourseCard'
 import { ProgressDashboard } from '@/components/academy/ProgressDashboard'
 import { useAcademyProgress } from '@/hooks/useAcademyProgress'
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper'
+import { useTranslation } from 'react-i18next';
 
 export default function AcademyPage() {
+  const { t: tPages } = useTranslation('pages');
   const [activeTab, setActiveTab] = useState('courses')
   const { stats } = useAcademyProgress()
 

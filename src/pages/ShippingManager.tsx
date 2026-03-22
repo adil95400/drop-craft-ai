@@ -10,8 +10,10 @@ import { useShippingManager } from '@/hooks/useShippingManager'
 import { format } from 'date-fns'
 import { getDateFnsLocale } from '@/utils/dateFnsLocale'
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper'
+import { useTranslation } from 'react-i18next';
 
 export default function ShippingManager() {
+  const { t: tPages } = useTranslation('pages');
   const { carriers, isLoadingCarriers, shipments, isLoadingShipments, rules, isLoadingRules, stats, toggleCarrier } = useShippingManager()
 
   const getStatusBadge = (status: string | null) => {

@@ -13,6 +13,7 @@ import { getDateFnsLocale } from '@/utils/dateFnsLocale'
 import { CouponCreationDialog } from '@/components/promotions/CouponCreationDialog'
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper'
 import { toast } from 'sonner'
+import { useTranslation } from 'react-i18next';
 
 export default function CouponsManagementPage() {
   const { coupons, isLoading, toggleCoupon, deleteCoupon } = useStripeCoupons()
@@ -54,7 +55,6 @@ export default function CouponsManagementPage() {
   }
 
     const { t: tPages } = useTranslation('pages');
-
 
   return (
     <ChannablePageWrapper

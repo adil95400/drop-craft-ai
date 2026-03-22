@@ -37,7 +37,6 @@ const ConversionFunnelPage = () => {
 
     const { t: tPages } = useTranslation('pages');
 
-
   return (
     <ChannablePageWrapper
       title={tPages('tunnelDeConversion.title')}

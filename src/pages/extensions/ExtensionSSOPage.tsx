@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/badge'
 import { useNavigate } from 'react-router-dom'
 import { Shield, Check, Users, Key, Lock, Globe, Building2, ArrowLeft } from 'lucide-react'
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper'
+import { useTranslation } from 'react-i18next';
 
 const features = [
   {
@@ -42,7 +43,6 @@ export default function ExtensionSSOPage() {
   const navigate = useNavigate()
 
     const { t: tPages } = useTranslation('pages');
-
 
   return (
     <ChannablePageWrapper

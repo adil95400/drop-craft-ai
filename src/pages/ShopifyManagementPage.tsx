@@ -9,6 +9,7 @@ import { useShopifySync } from '@/hooks/useShopifySync'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Separator } from '@/components/ui/separator'
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper'
+import { useTranslation } from 'react-i18next';
 
 const ShopifyManagementPage = () => {
   const navigate = useNavigate()
@@ -70,7 +71,6 @@ const ShopifyManagementPage = () => {
   const recentLogs = logs?.slice(0, 5) || []
 
     const { t: tPages } = useTranslation('pages');
-
 
   return (
     <ChannablePageWrapper

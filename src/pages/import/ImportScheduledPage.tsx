@@ -36,6 +36,7 @@ import {
 import { useToast } from '@/hooks/use-toast'
 import { ScheduleFormDialog, ScheduleFormData } from '@/components/import/ScheduleFormDialog'
 import { useScheduledImports, ScheduledImport, CreateScheduledImportData } from '@/hooks/useScheduledImports'
+import { useTranslation } from 'react-i18next';
 
 export default function ImportScheduledPage() {
   const prefersReducedMotion = useReducedMotion()
@@ -196,7 +197,6 @@ export default function ImportScheduledPage() {
   }
 
     const { t: tPages } = useTranslation('pages');
-
 
   return (
     <ChannablePageWrapper

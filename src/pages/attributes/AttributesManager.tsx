@@ -22,6 +22,7 @@ import { toast } from 'sonner'
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper'
 import { AttributesAIPanel } from '@/components/attributes'
 import { motion } from 'framer-motion'
+import { useTranslation } from 'react-i18next';
 
 const StatCard = ({ 
   title, 
@@ -124,7 +125,6 @@ export default function AttributesManager() {
     : 0
 
     const { t: tPages } = useTranslation('pages');
-
 
   return (
     <ChannablePageWrapper

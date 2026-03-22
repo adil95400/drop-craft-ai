@@ -21,7 +21,6 @@ export default function FeedRulesPage() {
 
     const { t: tPages } = useTranslation('pages');
 
-
   return (
     <ChannablePageWrapper
       title={tPages('reglesDAutomatisation.title')}

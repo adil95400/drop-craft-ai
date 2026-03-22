@@ -815,7 +815,6 @@ export default function CatalogProductsPage() {
             sortDirection={sortDirection}
             onSort={handleSort} /> :
 
-
           <ProductsGridView
             products={paginatedProducts}
             onEdit={handleEdit}
@@ -903,7 +902,6 @@ export default function CatalogProductsPage() {
         productIds={selectedProducts}
         productNames={products.filter((p) => selectedProducts.includes(p.id)).map((p) => p.name)}
         onSuccess={() => {setShowPlatformExport(false);toast({ title: 'Export réussi' });}} />
-
 
       <ConfirmDialog
         open={!!deleteConfirmId}

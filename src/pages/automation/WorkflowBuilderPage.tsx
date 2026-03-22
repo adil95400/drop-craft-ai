@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { WorkflowBuilder } from '@/domains/automation/components/WorkflowBuilder';
 
 export default function WorkflowBuilderPage() {
+  const { t: tPages } = useTranslation('pages');
   return (
     <>
       <Helmet>

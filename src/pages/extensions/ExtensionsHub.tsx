@@ -16,13 +16,13 @@ import {
   ExtensionCTA
 } from './components'
 import { ExtensionConnectionHub } from '@/components/extensions/ExtensionConnectionHub'
+import { useTranslation } from 'react-i18next';
 
 export default function ExtensionsHub() {
   const navigate = useNavigate()
   const [activeTab, setActiveTab] = useState<'dashboard' | 'overview'>('dashboard')
 
     const { t: tPages } = useTranslation('pages');
-
 
   return (
     <ChannablePageWrapper

@@ -21,6 +21,7 @@ import { CatalogHealthAIPanel } from '@/components/catalog'
 import { cn } from '@/lib/utils'
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip as RTooltip, ResponsiveContainer, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar } from 'recharts'
 import { useCatalogHealth } from '@/hooks/catalog'
+import { useTranslation } from 'react-i18next';
 
 const GRADE_STYLES: Record<string, { bg: string; text: string; glow: string }> = {
   A: { bg: 'bg-success/10', text: 'text-success', glow: 'shadow-emerald-500/20' },
@@ -41,7 +42,6 @@ export default function CatalogHealthPage() {
   const gradeStyle = summary ? (GRADE_STYLES[summary.grade] || GRADE_STYLES.F) : GRADE_STYLES.F
 
     const { t: tPages } = useTranslation('pages');
-
 
   return (
     <ChannablePageWrapper

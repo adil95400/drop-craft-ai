@@ -17,6 +17,7 @@ import {
 import { useToast } from '@/hooks/use-toast'
 import { supabase } from '@/integrations/supabase/client'
 import { useAuth } from '@/contexts/AuthContext'
+import { useTranslation } from 'react-i18next';
 
 interface ImageDuplicate {
   id: string
@@ -119,7 +120,6 @@ export default function ImageDeduplicationPage() {
   }
 
     const { t: tPages } = useTranslation('pages');
-
 
   return (
     <ChannablePageWrapper

@@ -14,6 +14,7 @@ import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrappe
 const COLORS = ['hsl(var(--primary))', 'hsl(var(--chart-2))', 'hsl(var(--chart-3))', 'hsl(var(--chart-4))', 'hsl(var(--chart-5))'];
 
 export default function AnalyticsPredictivePage() {
+  const { t: tPages } = useTranslation('pages');
   // Revenue trend data
   const { data: orders = [] } = useQuery({
     queryKey: ['predictive-orders'],

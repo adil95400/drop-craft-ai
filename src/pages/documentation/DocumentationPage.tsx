@@ -11,6 +11,7 @@ import { Book, HelpCircle } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
 import { AdvancedFeatureGuide, ADVANCED_GUIDES } from '@/components/guide'
 import { Button } from '@/components/ui/button'
+import { useTranslation } from 'react-i18next';
 
 export default function DocumentationPage() {
   const { moduleSlug } = useParams<{ moduleSlug?: string }>()

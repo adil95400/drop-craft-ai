@@ -79,7 +79,6 @@ const ShopifyAppIntegration = () => {
 
     const { t: tPages } = useTranslation('pages');
 
-
   return (
     <ChannablePageWrapper
       title={tPages('integrationShopifyApp.title')}

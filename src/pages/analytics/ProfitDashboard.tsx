@@ -9,6 +9,7 @@ import { ROICalculator } from '@/components/profit/ROICalculator'
 import { ExpenseTracker } from '@/components/profit/ExpenseTracker'
 import { TrendingUp, DollarSign, Percent, AlertTriangle } from 'lucide-react'
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper'
+import { useTranslation } from 'react-i18next';
 
 export default function ProfitDashboard() {
   const [timeRange, setTimeRange] = useState<'7d' | '30d' | '90d'>('30d')
@@ -102,7 +103,6 @@ export default function ProfitDashboard() {
   }
 
     const { t: tPages } = useTranslation('pages');
-
 
   return (
     <ChannablePageWrapper

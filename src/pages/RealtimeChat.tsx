@@ -16,6 +16,7 @@ import {
 import { RealtimeChatInterface } from '@/components/realtime/RealtimeChatInterface'
 import { RealtimePresence } from '@/components/realtime/RealtimePresence'
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper'
+import { useTranslation } from 'react-i18next';
 
 const RealtimeChat: React.FC = () => {
     const { t: tPages } = useTranslation('pages');

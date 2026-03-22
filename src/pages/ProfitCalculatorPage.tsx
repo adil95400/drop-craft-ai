@@ -9,6 +9,7 @@ import { useTranslation } from 'react-i18next';
 import { Calculator, History, Settings, Sparkles } from 'lucide-react';
 
 export default function ProfitCalculatorPage() {
+  const { t: tPages } = useTranslation('pages');
   return (
     <>
       <Helmet>

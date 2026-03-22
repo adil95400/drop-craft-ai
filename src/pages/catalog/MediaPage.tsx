@@ -39,6 +39,7 @@ import { ProductMediaManager } from '@/components/media/ProductMediaManager'
 import { cn } from '@/lib/utils'
 import { toast } from 'sonner'
 import { useDropzone } from 'react-dropzone'
+import { useTranslation } from 'react-i18next';
 
 // Types
 interface MediaAsset {
@@ -260,7 +261,6 @@ export default function MediaPage() {
   };
 
     const { t: tPages } = useTranslation('pages');
-
 
   return (
     <ChannablePageWrapper

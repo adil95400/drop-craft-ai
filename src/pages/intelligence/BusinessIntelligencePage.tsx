@@ -20,6 +20,7 @@ import {
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
 
 export default function BusinessIntelligencePage() {
+  const { t: tPages } = useTranslation('pages');
   // Fetch analytics insights
   const { data: insights = [], isLoading: insightsLoading } = useQuery({
     queryKey: ['bi-insights'],

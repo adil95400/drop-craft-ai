@@ -13,6 +13,7 @@ import { WebhookManager } from '@/components/webhooks/WebhookManager'
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper'
 import { formatDistanceToNow } from 'date-fns'
 import { getDateFnsLocale } from '@/utils/dateFnsLocale'
+import { useTranslation } from 'react-i18next';
 
 export default function ManageIntegrationPage() {
   const { id } = useParams<{ id: string }>()

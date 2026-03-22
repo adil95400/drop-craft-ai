@@ -97,7 +97,6 @@ export default function ExtensionsCLI() {
 
     const { t: tPages } = useTranslation('pages');
 
-
   return (
     <ChannablePageWrapper
       title={tPages('outilsCliShopopti.title')}

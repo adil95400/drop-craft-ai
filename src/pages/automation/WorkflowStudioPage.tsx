@@ -62,7 +62,6 @@ export default function WorkflowStudioPage() {
 
     const { t: tPages } = useTranslation('pages');
 
-
   return (
     <ChannablePageWrapper
       title={tPages('workflowStudio.title')}

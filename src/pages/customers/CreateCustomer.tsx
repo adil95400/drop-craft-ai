@@ -30,6 +30,7 @@ interface Address {
 }
 
 export default function CreateCustomer() {
+  const { t: tPages } = useTranslation('pages');
   const navigate = useNavigate();
   const [avatarUrl, setAvatarUrl] = useState('');
   const [addresses, setAddresses] = useState<Address[]>([

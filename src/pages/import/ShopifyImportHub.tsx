@@ -14,6 +14,7 @@ import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrappe
 import { useTranslation } from 'react-i18next';
 
 export default function ShopifyImportHub() {
+  const { t: tPages } = useTranslation('pages');
   const [selectedProducts, setSelectedProducts] = useState<string[]>([]);
   const {
     mappings, isLoadingMappings, importJobs, isLoadingJobs, importHistory,

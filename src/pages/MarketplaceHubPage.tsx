@@ -3,6 +3,7 @@ import { MarketplaceHub } from '@/domains/marketplace'
 import { ChannablePageWrapper } from '@/components/channable'
 import { Store } from 'lucide-react'
 import { AdvancedFeatureGuide, ADVANCED_GUIDES } from '@/components/guide'
+import { useTranslation } from 'react-i18next';
 
 const MarketplaceHubPage: React.FC = () => {
     const { t: tPages } = useTranslation('pages');

@@ -97,7 +97,6 @@ export default function ExtensionAPIPage() {
 
     const { t: tPages } = useTranslation('pages');
 
-
   return (
     <ChannablePageWrapper
       title={tPages('apiTokens.title')}

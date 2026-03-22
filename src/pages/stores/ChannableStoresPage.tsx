@@ -20,6 +20,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { StoreConnectionStatus } from '@/components/stores/StoreConnectionStatus'
 import { 
+import { useTranslation } from 'react-i18next';
   Store, 
   Plus, 
   RefreshCw, 

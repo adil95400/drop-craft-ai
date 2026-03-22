@@ -9,12 +9,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next';
 
 export default function ExtensionDeveloperPage() {
   const navigate = useNavigate()
 
     const { t: tPages } = useTranslation('pages');
-
 
   return (
     <ChannablePageWrapper

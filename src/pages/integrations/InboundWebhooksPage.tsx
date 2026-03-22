@@ -41,6 +41,7 @@ const STATUS_CONFIG: Record<string, { icon: React.ReactNode; color: string }> = 
 };
 
 function getWebhookUrl(endpointId: string) {
+  const { t: tPages } = useTranslation('pages');
   const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID || 'jsmwckzrmqecwwrswwrz';
   return `https://${projectId}.supabase.co/functions/v1/inbound-webhook?endpoint_id=${endpointId}`;
 }

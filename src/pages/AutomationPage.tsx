@@ -99,7 +99,6 @@ export default function AutomationPage() {
 
     const { t: tPages } = useTranslation('pages');
 
-
   return (
     <ChannablePageWrapper
       title={tPages('automationEngine.title')}

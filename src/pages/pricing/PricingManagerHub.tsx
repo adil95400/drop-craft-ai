@@ -86,6 +86,7 @@ const PRICING_MODULES = [
 ];
 
 export default function PricingManagerHub() {
+  const { t: tPages } = useTranslation('pages');
   const navigate = useNavigate();
   const applyRules = useApplyPricingRules();
   const autoReprice = useAutoRepriceFromCompetitors();

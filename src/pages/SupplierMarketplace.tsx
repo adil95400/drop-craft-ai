@@ -19,10 +19,12 @@ import { useQuery } from '@tanstack/react-query'
 import { supabase } from '@/integrations/supabase/client'
 import { useAuth } from '@/contexts/AuthContext'
 import { toast } from 'sonner'
+import { useTranslation } from 'react-i18next';
 
 const CATEGORIES = ['Tous', 'Électronique', 'Mode', 'Maison', 'Beauté', 'Sport', 'Print-on-Demand', 'Gadgets']
 
 export default function SupplierMarketplace() {
+  const { t: tPages } = useTranslation('pages');
   const [search, setSearch] = useState('')
   const [category, setCategory] = useState('Tous')
   const [sortBy, setSortBy] = useState('rating')

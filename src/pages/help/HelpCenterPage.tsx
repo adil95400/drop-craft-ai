@@ -17,6 +17,7 @@ import {
   Globe, CreditCard, Bot, BarChart3, HelpCircle, FileText
 } from 'lucide-react'
 import { DocumentationHub } from '@/components/documentation'
+import { useTranslation } from 'react-i18next';
 
 // ─── FAQ Data ──────────────────────────────────────────────────────
 const FAQ_CATEGORIES = [
@@ -214,7 +215,6 @@ export default function HelpCenterPage() {
   }
 
     const { t: tPages } = useTranslation('pages');
-
 
   return (
     <ChannablePageWrapper

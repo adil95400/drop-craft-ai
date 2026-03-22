@@ -19,6 +19,7 @@ import {
   AlertTriangle, Clock, Edit, Copy, ToggleLeft
 } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
+import { useTranslation } from 'react-i18next';
 
 interface PreImportRule {
   id: string
@@ -131,7 +132,6 @@ export default function PreImportRulesPage() {
   const totalMatches = rules.reduce((s, r) => s + r.matchCount, 0)
 
     const { t: tPages } = useTranslation('pages');
-
 
   return (
     <ChannablePageWrapper

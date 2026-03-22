@@ -16,6 +16,7 @@ import { useFlashSales } from '@/hooks/useFlashSales';
 import { AreaChart, Area, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
 
 function CountdownTimer({ endDate }: { endDate: string }) {
+  const { t: tPages } = useTranslation('pages');
   const [timeLeft, setTimeLeft] = useState('');
 
   useEffect(() => {

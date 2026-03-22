@@ -72,6 +72,7 @@ const stats = [
 ];
 
 function QuickContentGenerator() {
+  const { t: tPages } = useTranslation('pages');
   const { generatedContent, isGenerating, generateContent, clearContent } = useSEOContentGenerator();
   const [keyword, setKeyword] = useState('');
   const [copied, setCopied] = useState<string | null>(null);

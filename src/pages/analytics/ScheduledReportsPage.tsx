@@ -20,10 +20,12 @@ import {
 } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
 import {
+import { useTranslation } from 'react-i18next';
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu'
 
 export default function ScheduledReportsPage() {
+  const { t: tPages } = useTranslation('pages');
   const locale = useDateFnsLocale()
   const queryClient = useQueryClient()
   const [isCreateOpen, setIsCreateOpen] = useState(false)

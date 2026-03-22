@@ -21,6 +21,7 @@ import { StoreAnalytics } from './StoreAnalytics'
 import { ShopifyImportExportManager } from '@/components/stores/ShopifyImportExportManager'
 import { QuickActions } from './components/QuickActions'
 import { toast } from 'sonner'
+import { useTranslation } from 'react-i18next';
 
 export function StoreDashboardPage() {
   const { storeId } = useParams()

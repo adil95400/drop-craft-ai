@@ -123,7 +123,6 @@ export default function ChromeExtensionConfigPage() {
 
     const { t: tPages } = useTranslation('pages');
 
-
   return (
     <ChannablePageWrapper
       title={tPages('extensionChromeImportEn1Clic.title')}

@@ -11,6 +11,7 @@ import { ShippingRulesTab } from '@/components/shipping/ShippingRulesTab';
 import { ShippingCalculatorTab } from '@/components/shipping/ShippingCalculatorTab';
 
 export default function ShippingHubPage() {
+  const { t: tPages } = useTranslation('pages');
   const [searchParams, setSearchParams] = useSearchParams();
   const [activeTab, setActiveTab] = useState(searchParams.get('tab') || 'zones');
 

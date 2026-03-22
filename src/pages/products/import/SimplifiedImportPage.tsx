@@ -203,7 +203,6 @@ export default function SimplifiedImportPage() {
 
     const { t: tPages } = useTranslation('pages');
 
-
   return (
     <ChannablePageWrapper
       title={tPages('importDeProduits.title')}

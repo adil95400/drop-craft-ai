@@ -126,7 +126,6 @@ export default function ImportPublishingPage() {
 
     const { t: tPages } = useTranslation('pages');
 
-
   return (
     <ChannablePageWrapper
       title={tPages('publicationDeProduits.title')}
