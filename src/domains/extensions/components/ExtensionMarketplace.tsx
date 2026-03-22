@@ -139,6 +139,7 @@ export const ExtensionMarketplace: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedCategory, setSelectedCategory] = useState('all')
   const [favorites, setFavorites] = useState<string[]>([])
+  const [installedExtensions, setInstalledExtensions] = useState<string[]>([])
 
   // Filtrage des extensions
   useEffect(() => {
