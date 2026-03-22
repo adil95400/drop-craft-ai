@@ -810,7 +810,7 @@ export default function AIAutomationHubPage() {
                             </div>
                             <div className="flex-1 min-w-0">
                               <div className="flex items-center gap-2 flex-wrap">
-                                <h3 className="font-semibold text-foreground truncate">{meta.label}</h3>
+                                <h3 className="font-semibold text-foreground truncate">{(config.config as any)?.name || meta.label}</h3>
                                 <Badge variant={isActive ? 'default' : 'secondary'} className="text-xs shrink-0">
                                   {isActive ? 'Actif' : 'En pause'}
                                 </Badge>
