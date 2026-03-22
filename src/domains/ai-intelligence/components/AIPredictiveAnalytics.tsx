@@ -116,16 +116,11 @@ export const AIPredictiveAnalytics = () => {
     }
   }
 
-  // Données réelles de prévision de revenus
-  const [revenueForecastData, setRevenueForecastData] = useState([
-    { month: 'Jan', actual: 95000, predicted: 98000, lower_bound: 92000, upper_bound: 104000 },
-    { month: 'Fev', actual: 102000, predicted: 105000, lower_bound: 98000, upper_bound: 112000 },
-    { month: 'Mar', actual: 118000, predicted: 120000, lower_bound: 112000, upper_bound: 128000 },
-    { month: 'Avr', actual: 125000, predicted: 128000, lower_bound: 118000, upper_bound: 138000 },
-    { month: 'Mai', actual: null, predicted: 142000, lower_bound: 132000, upper_bound: 152000 },
-    { month: 'Jun', actual: null, predicted: 156000, lower_bound: 144000, upper_bound: 168000 },
-    { month: 'Jul', actual: null, predicted: 168000, lower_bound: 154000, upper_bound: 182000 }
-  ])
+  // Revenue forecast loaded from real data
+  const [revenueForecastData, setRevenueForecastData] = useState<Array<{
+    month: string; actual: number | null; predicted: number; lower_bound: number; upper_bound: number
+  }>>([])
+
 
   // Charger les prévisions réelles
   useEffect(() => {
