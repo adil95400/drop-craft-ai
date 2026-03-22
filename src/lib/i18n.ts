@@ -157,6 +157,7 @@ const resources = {
     crm: crmEn,
     extensions: extensionsEn,
     billing: billingEn,
+    pages: pagesEn,
   },
   es: {
     common: commonEs,
