@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
+import { toast } from 'sonner'
 import { Store, ArrowLeft, Zap, CheckCircle2, Globe, Package } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -82,8 +83,8 @@ export default function MultiStoreImportPage() {
           transition={{ delay: 0.1 }}
         >
           <MultiStoreUrlImport 
-            onImportComplete={(_results) => {
-              // TODO: handle import complete
+            onImportComplete={(results) => {
+              toast.success(`Import terminé : ${results?.imported ?? 0} produit(s) importés`)
             }}
           />
         </motion.div>

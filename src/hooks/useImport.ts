@@ -308,7 +308,11 @@ export const useImport = () => {
     startImport: startImport.mutate,
     importFromCsv: importFromCsv.mutate,
     addImportRecord: (data: any) => ({ id: 'temp-' + Date.now(), ...data }),
-    updateImportRecord: (_id: string, _updates: any) => { /* TODO: implement */ },
+    updateImportRecord: async (id: string, updates: any) => {
+      const { error } = await supabase.from('imported_products').update(updates).eq('id', id)
+      if (error) console.error('Update import record error:', error)
+      else queryClient.invalidateQueries({ queryKey: ['import-jobs'] })
+    },
     urlImport: urlImport.mutate,
     generateMapping,
     isImporting: startImport.isPending || importFromCsv.isPending,

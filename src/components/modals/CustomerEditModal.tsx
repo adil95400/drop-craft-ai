@@ -10,7 +10,10 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Switch } from '@/components/ui/switch'
-import { X, Plus, Save, Upload } from 'lucide-react'
+import { X, Plus, Save, Upload, Loader2 } from 'lucide-react'
+import { supabase } from '@/integrations/supabase/client'
+import { toast } from 'sonner'
+import { useQueryClient } from '@tanstack/react-query'
 
 interface Customer {
   id: string
@@ -37,6 +40,8 @@ interface CustomerEditModalProps {
 }
 
 export function CustomerEditModal({ customer, open, onOpenChange }: CustomerEditModalProps) {
+  const queryClient = useQueryClient()
+  const [isSaving, setIsSaving] = useState(false)
   const [formData, setFormData] = useState({
     name: customer.name,
     email: customer.email,
@@ -55,9 +60,34 @@ export function CustomerEditModal({ customer, open, onOpenChange }: CustomerEdit
 
   const [newTag, setNewTag] = useState('')
 
-  const handleSave = () => {
-    // TODO: Implement save logic here
-    onOpenChange(false)
+  const handleSave = async () => {
+    setIsSaving(true)
+    try {
+      const { error } = await supabase
+        .from('customers')
+        .update({
+          name: formData.name,
+          email: formData.email,
+          phone: formData.phone,
+          location: formData.location,
+          status: formData.status,
+          segment: formData.segment,
+          tags: formData.tags,
+          notes: formData.notes,
+        })
+        .eq('id', customer.id)
+
+      if (error) throw error
+
+      toast.success('Client mis à jour avec succès')
+      queryClient.invalidateQueries({ queryKey: ['customers'] })
+      onOpenChange(false)
+    } catch (error) {
+      console.error('Error saving customer:', error)
+      toast.error('Erreur lors de la sauvegarde du client')
+    } finally {
+      setIsSaving(false)
+    }
   }
 
   const addTag = () => {
@@ -311,9 +341,9 @@ export function CustomerEditModal({ customer, open, onOpenChange }: CustomerEdit
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             Annuler
           </Button>
-          <Button onClick={handleSave} className="gap-2">
-            <Save className="w-4 h-4" />
-            Enregistrer
+          <Button onClick={handleSave} disabled={isSaving} className="gap-2">
+            {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+            {isSaving ? 'Enregistrement...' : 'Enregistrer'}
           </Button>
         </DialogFooter>
       </DialogContent>

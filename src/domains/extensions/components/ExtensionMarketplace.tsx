@@ -139,6 +139,7 @@ export const ExtensionMarketplace: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedCategory, setSelectedCategory] = useState('all')
   const [favorites, setFavorites] = useState<string[]>([])
+  const [installedExtensions, setInstalledExtensions] = useState<string[]>([])
 
   // Filtrage des extensions
   useEffect(() => {
@@ -167,7 +168,8 @@ export const ExtensionMarketplace: React.FC = () => {
       return
     }
 
-    // TODO: Logique d'installation
+    setInstalledExtensions(prev => [...prev, extensionId])
+    toast.success(`Extension "${extension.name}" installée avec succès`)
   }
 
   const handleToggleFavorite = (extensionId: string) => {

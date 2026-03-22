@@ -1,4 +1,5 @@
 import { useState, useMemo, useCallback } from 'react';
+import { toast } from 'sonner';
 import { ProductsGridView } from './ProductsGridView';
 import { ProductsTableView } from './ProductsTableView';
 import { UnifiedProduct } from '@/hooks/useUnifiedProducts';
@@ -139,7 +140,7 @@ export function ProductsPageWrapper({
             handleClearSelection();
             onRefresh?.();
           }}
-          onBulkEdit={() => { /* TODO: bulk edit modal */ }}
+          onBulkEdit={() => { toast.info('Édition groupée — bientôt disponible') }}
           onProductUpdate={onRefresh}
         />
       )}
