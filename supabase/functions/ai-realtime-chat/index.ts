@@ -307,7 +307,7 @@ async function handleFunctionCall(data: any, openAISocket: WebSocket, supabase: 
       case 'get_platform_help':
         const helpContent = {
           import: "L'import de produits dans Shopopti Pro supporte plusieurs sources : CSV/Excel, URL de produits, AliExpress, BigBuy, Shopify, etc. Utilisez l'IA pour optimiser automatiquement les descriptions et le SEO.",
-import { callOpenAI, generateJSON, generateText } from '../_shared/ai-client.ts'
+
           catalogue: "Le catalogue vous permet de gérer tous vos produits avec des fonctionnalités avancées : filtres, recherche, optimisation SEO, gestion des stocks et analytics détaillés.",
           commandes: "Gérez vos commandes avec un workflow complet : traitement, facturation, suivi des expéditions et intégrations avec les transporteurs.",
           crm: "Le CRM intégré vous aide à gérer vos clients, prospects, pipeline de ventes, activités et communications.",
