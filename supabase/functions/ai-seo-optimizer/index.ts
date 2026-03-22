@@ -158,7 +158,7 @@ Use the content_audit tool to return structured audit results.`
 
   const aiData = await callOpenAI(
     [{ role: 'system', content: prompt.system }, { role: 'user', content: prompt.user }],
-    { module: 'seo', maxTokens: 3000, enableCache: true, tool_choice: { type: 'function', function: { name: toolName } }
+    { module: 'seo', maxTokens: 3000, enableCache: true, tool_choice: { type: 'function', function: { name: toolName } } }
   )
 
   const toolCall = aiData.choices?.[0]?.message?.tool_calls?.[0]
