@@ -100,10 +100,6 @@ export const ImportAnalytics = () => {
             <div>
               <div className="text-2xl font-bold">{totalImports}</div>
               <p className="text-sm text-muted-foreground">Total Imports</p>
-              <div className="flex items-center gap-1 mt-1">
-                <TrendingUp className="w-3 h-3 text-success" />
-                <span className="text-xs text-success">+12% cette semaine</span>
-              </div>
             </div>
             <Package className="h-8 w-8 text-info" />
           </div>
