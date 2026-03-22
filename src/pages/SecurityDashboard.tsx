@@ -284,6 +284,11 @@ export default function SecurityDashboard() {
         <TabsContent value="2fa">
           <TwoFactorSetup />
         </TabsContent>
+
+        {/* IP Allowlist */}
+        <TabsContent value="ip">
+          <IpAllowlistManager />
+        </TabsContent>
       </Tabs>
     </ChannablePageWrapper>
   );
