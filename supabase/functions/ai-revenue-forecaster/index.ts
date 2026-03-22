@@ -104,6 +104,7 @@ Historical data (last ${lookbackDays} days):
           }
         }
       }], tool_choice: { type: 'function', function: { name: 'revenue_forecast' } }
+    }
   )
 
   const toolCall = aiData.choices?.[0]?.message?.tool_calls?.[0]
