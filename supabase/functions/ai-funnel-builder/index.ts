@@ -3,7 +3,7 @@
  * Generates complete sales funnel strategies with page sequences, copy, and conversion optimization.
  */
 import { createEdgeFunction, z } from '../_shared/create-edge-function.ts'
-import { AI_MODEL, AI_GATEWAY_URL } from '../_shared/ai-config.ts'
+import { callOpenAI } from '../_shared/ai-client.ts'
 
 const funnelSchema = z.object({
   funnel_type: z.enum(['lead_magnet', 'product_launch', 'webinar', 'tripwire', 'evergreen', 'flash_sale']),
