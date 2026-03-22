@@ -170,7 +170,7 @@ function CreateInvoiceDialog() {
   const taxAmount = subtotal * (taxRate / 100);
   const total = subtotal + taxAmount;
 
-  const handlePreview = () => {
+  const handlePreview = async () => {
     const invoiceNum = `${branding.invoice_prefix || 'INV'}-${String(branding.next_invoice_number || 1).padStart(5, '0')}`;
     const today = new Date();
     const dueDate = new Date(today);
