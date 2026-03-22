@@ -65,6 +65,7 @@ interface ProfileFormData {
 }
 
 export default function ProfilePage() {
+  const { t: tPages } = useTranslation('pages');
   const locale = useDateFnsLocale()
   const { user } = useAuth()
   const { profile, isLoading: profileLoading, refetch } = useProfile()
@@ -176,7 +177,6 @@ export default function ProfilePage() {
   const planBadge = getPlanBadge()
 
   if (profileLoading) {
-      const { t: tPages } = useTranslation('pages');
 
     return (
       <ChannablePageWrapper

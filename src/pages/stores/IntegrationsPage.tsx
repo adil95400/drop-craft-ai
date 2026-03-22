@@ -17,6 +17,7 @@ import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrappe
 import { useTranslation } from 'react-i18next';
 
 export default function IntegrationsPage() {
+  const { t: tPages } = useTranslation('pages');
   const navigate = useNavigate()
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState<string>('all')
@@ -61,7 +62,6 @@ export default function IntegrationsPage() {
   const handleWizardComplete = (integration: Integration) => { refetch(); navigate(`/stores-channels/integrations/${integration.id}`) }
 
   if (isLoading) {
-      const { t: tPages } = useTranslation('pages');
 
     return (
       <ChannablePageWrapper title={tPages('integrations.title')} description={tPages('loading.description')} heroImage="integrations" badge={{ label: 'Intégrations', icon: Activity }}>

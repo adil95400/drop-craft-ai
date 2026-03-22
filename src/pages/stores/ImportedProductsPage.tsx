@@ -56,6 +56,7 @@ interface ImportedProduct {
 }
 
 export default function ImportedProductsPage() {
+  const { t: tPages } = useTranslation('pages');
   const navigate = useNavigate()
   const { user } = useAuth()
   const { toast } = useToast()
@@ -295,7 +296,6 @@ export default function ImportedProductsPage() {
   }
 
   if (isLoading) {
-      const { t: tPages } = useTranslation('pages');
 
     return (
       <ChannablePageWrapper

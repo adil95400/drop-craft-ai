@@ -16,6 +16,7 @@ import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next';
 
 export default function StoresPage() {
+  const { t: tPages } = useTranslation('pages');
   const { integrations, isLoading: loading, refetch } = useIntegrationsUnified()
   const { syncStores, deleteStores, isSyncing, isDeleting } = useApiStores()
 
@@ -38,7 +39,6 @@ export default function StoresPage() {
   }
 
   if (loading) {
-      const { t: tPages } = useTranslation('pages');
 
     return (
       <ChannablePageWrapper title={tPages('boutiquesConnectees.title')} description={tPages('loading.description')} heroImage="integrations" badge={{ label: 'Boutiques', icon: Store }}>

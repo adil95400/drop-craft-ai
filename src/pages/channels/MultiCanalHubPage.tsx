@@ -59,6 +59,7 @@ const SYNC_MODULES = [
 ] as const;
 
 export default function MultiCanalHubPage() {
+  const { t: tPages } = useTranslation('pages');
   const locale = useDateFnsLocale();
   const { integrations, connected, isLoading, connectPlatform, disconnectPlatform, syncPlatform, isConnecting } = useMarketplaceIntegrations();
   const { data: syncConfigs = [] } = useSyncConfigurations();
@@ -88,7 +89,6 @@ export default function MultiCanalHubPage() {
   };
 
   if (isLoading) {
-      const { t: tPages } = useTranslation('pages');
 
     return (
       <ChannablePageWrapper title={tPages('multiCanalHub.title')} description={tPages('loading.description')} heroImage="integrations" badge={{ label: 'Hub', icon: Globe }}>

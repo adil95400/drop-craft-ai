@@ -63,6 +63,7 @@ const ACTION_TYPE_META = Object.fromEntries(
 const PIE_COLORS = ['hsl(var(--primary))', 'hsl(var(--success))', 'hsl(var(--warning))', 'hsl(var(--destructive))', 'hsl(var(--info))'];
 
 export default function AIAutomationHubPage() {
+  const { t: tPages } = useTranslation('pages');
   const { user } = useUnifiedAuth();
   const queryClient = useQueryClient();
   const [createOpen, setCreateOpen] = useState(false);
@@ -368,7 +369,6 @@ export default function AIAutomationHubPage() {
   })();
 
   if (isLoading) {
-      const { t: tPages } = useTranslation('pages');
 
     return (
       <ChannablePageWrapper title={tPages('hubIa.title')} description={tPages('loading.description')} heroImage="ai" badge={{ label: 'IA Pro', icon: Brain }}>

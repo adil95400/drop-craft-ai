@@ -35,6 +35,7 @@ interface PublishProduct {
 }
 
 export default function ProductPublishing() {
+  const { t: tPages } = useTranslation('pages');
   const { user } = useAuth();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedProducts, setSelectedProducts] = useState<string[]>([]);
@@ -151,7 +152,6 @@ export default function ProductPublishing() {
   };
 
   if (isLoading) {
-      const { t: tPages } = useTranslation('pages');
 
     return (
       <ChannablePageWrapper

@@ -29,6 +29,7 @@ const PLAN_NAMES: Record<string, string> = {
 }
 
 export default function BillingPage() {
+  const { t: tPages } = useTranslation('pages');
   const { subscription, invoices, payment_methods, upcoming_invoice, loading, error, refresh } = useBillingDetails()
   const { openCustomerPortal } = useStripeSubscription()
   const navigate = useNavigate()
@@ -45,7 +46,6 @@ export default function BillingPage() {
   }
 
   if (loading) {
-      const { t: tPages } = useTranslation('pages');
 
     return (
       <ChannablePageWrapper

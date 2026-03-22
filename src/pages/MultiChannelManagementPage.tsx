@@ -33,6 +33,7 @@ const AVAILABLE_PLATFORMS = [
 ];
 
 const MultiChannelManagementPage: React.FC = () => {
+  const { t: tPages } = useTranslation('pages');
   const { integrations, connected, isLoading, connectPlatform, disconnectPlatform, syncPlatform, isConnecting } = useMarketplaceIntegrations();
   const [connectDialogOpen, setConnectDialogOpen] = useState(false);
   const [selectedPlatform, setSelectedPlatform] = useState('');
@@ -50,7 +51,6 @@ const MultiChannelManagementPage: React.FC = () => {
   };
 
   if (isLoading) {
-      const { t: tPages } = useTranslation('pages');
 
     return (
       <ChannablePageWrapper title={tPages('gestionMultiCanal.title')} description={tPages('loading.description')} heroImage="integrations" badge={{ label: 'Multi-Canal', icon: Globe }}>

@@ -27,6 +27,7 @@ const KPI_ICONS = [Package, DollarSign, TrendingUp, AlertTriangle, ShieldAlert, 
 const KPI_COLORS = ['primary', 'info', 'success', 'warning', 'destructive', 'destructive'] as const
 
 export default function ProductCockpitPage() {
+  const { t: tPages } = useTranslation('pages');
   const navigate = useNavigate()
   const {
     mainKPIs,
@@ -48,7 +49,6 @@ export default function ProductCockpitPage() {
     : 0
 
   if (isLoading) {
-      const { t: tPages } = useTranslation('pages');
 
     return (
       <ChannablePageWrapper title={tPages('cockpitBusiness.title')} description={tPages('loading.description')} heroImage="analytics" badge={{ label: 'Cockpit BI', icon: TrendingUp }}>

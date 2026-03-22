@@ -16,6 +16,7 @@ import { getDateFnsLocale } from '@/utils/dateFnsLocale'
 import { useTranslation } from 'react-i18next';
 
 export default function ManageIntegrationPage() {
+  const { t: tPages } = useTranslation('pages');
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   
@@ -72,7 +73,6 @@ export default function ManageIntegrationPage() {
   }
 
   if (isLoading) {
-      const { t: tPages } = useTranslation('pages');
 
     return (
       <ChannablePageWrapper title={tPages('integration.title')} description={tPages('loading.description')} heroImage="integrations" badge={{ label: 'Intégration', icon: Settings }}>

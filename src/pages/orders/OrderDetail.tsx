@@ -26,6 +26,7 @@ import { TrackingTimeline } from '@/components/tracking';
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
 
 export default function OrderDetail() {
+  const { t: tPages } = useTranslation('pages');
   const { id } = useParams();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -100,7 +101,6 @@ export default function OrderDetail() {
   };
 
   if (isLoading) {
-      const { t: tPages } = useTranslation('pages');
 
     return (
       <ChannablePageWrapper title={tPages('commande.title')} description={tPages('loading.description')} heroImage="orders" badge={{ label: 'Commandes', icon: Package }}>

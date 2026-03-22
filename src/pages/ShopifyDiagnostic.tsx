@@ -11,6 +11,7 @@ import { ShopifyCredentialsDialog } from '@/components/stores/ShopifyCredentials
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
 
 export default function ShopifyDiagnostic() {
+  const { t: tPages } = useTranslation('pages');
   const [isTesting, setIsTesting] = useState(false);
   const [showCredentialsDialog, setShowCredentialsDialog] = useState(false);
   const queryClient = useQueryClient();
@@ -165,7 +166,6 @@ export default function ShopifyDiagnostic() {
   }
 
   if (!integration) {
-      const { t: tPages } = useTranslation('pages');
 
     return (
       <ChannablePageWrapper title={tPages('diagnosticShopify.title')} heroImage="integrations" badge={{ label: 'Shopify', icon: Store }}>

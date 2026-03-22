@@ -26,6 +26,7 @@ const eventOptions = [
 ];
 
 export default function WebhookManagementPage() {
+  const { t: tPages } = useTranslation('pages');
   const [showSecrets, setShowSecrets] = useState<Record<string, boolean>>({});
   const queryClient = useQueryClient();
 
@@ -97,7 +98,6 @@ export default function WebhookManagementPage() {
   const totalFailCount = Object.values(failCounts).reduce((a: number, b: number) => a + b, 0);
 
   if (isLoading) {
-      const { t: tPages } = useTranslation('pages');
 
     return (
       <ChannablePageWrapper title={tPages('webhooks.title')} description={tPages('loading.description')}>

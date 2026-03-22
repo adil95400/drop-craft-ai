@@ -31,6 +31,7 @@ import { cn } from '@/lib/utils'
 import { useTranslation } from 'react-i18next';
 
 export default function ChannelDetailPage() {
+  const { t: tPages } = useTranslation('pages');
   const { channelId } = useParams<{ channelId: string }>()
   const navigate = useNavigate()
   const { toast } = useToast()
@@ -256,7 +257,6 @@ export default function ChannelDetailPage() {
   }
 
   if (isLoading) {
-      const { t: tPages } = useTranslation('pages');
 
     return (
       <ChannablePageWrapper title={tPages('loading.title')} heroImage="integrations">

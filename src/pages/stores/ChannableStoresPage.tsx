@@ -54,6 +54,7 @@ const platformLogos: Record<string, string> = {
 }
 
 export default function ChannableStoresPage() {
+  const { t: tPages } = useTranslation('pages');
   const navigate = useNavigate()
   const { integrations, isLoading: loading, refetch, sync: syncIntegration, disconnect: disconnectIntegration } = useIntegrationsUnified()
   const [searchQuery, setSearchQuery] = useState('')
@@ -146,7 +147,6 @@ export default function ChannableStoresPage() {
   })
 
   if (loading) {
-      const { t: tPages } = useTranslation('pages');
 
     return (
       <ChannablePageWrapper title={tPages('loading.title')} heroImage="integrations">
