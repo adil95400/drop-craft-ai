@@ -19,61 +19,38 @@ import { secureUpdate } from '../_shared/db-helpers.ts'
 
 const supabaseUrl = Deno.env.get('SUPABASE_URL')!
 const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
-const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY_AUTOMATION') || Deno.env.get('OPENAI_API_KEY')!
-const AI_GATEWAY_URL = 'https://api.openai.com/v1/chat/completions'
+import { callOpenAI } from '../_shared/ai-client.ts'
 
 async function callAI(systemPrompt: string, userPrompt: string, options: { temperature?: number; maxTokens?: number; useToolCalling?: boolean; tools?: any[] } = {}) {
-  if (!OPENAI_API_KEY) throw new Error('AI service not configured')
-
-  const body: any = {
-    model: 'gpt-4o-mini',
-    messages: [
-      { role: 'system', content: systemPrompt },
-      { role: 'user', content: userPrompt }
-    ],
+  const reqOptions: any = {
+    module: 'automation' as const,
     temperature: options.temperature ?? 0.7,
-    max_tokens: options.maxTokens ?? 1500,
-  }
-
+    maxTokens: options.maxTokens ?? 1500,
+    enableCache: true,
+  };
   if (options.tools) {
-    body.tools = options.tools
-    body.tool_choice = { type: 'function', function: { name: options.tools[0].function.name } }
+    reqOptions.tools = options.tools;
+    reqOptions.tool_choice = { type: 'function', function: { name: options.tools[0].function.name } };
   }
 
-  const response = await fetch(AI_GATEWAY_URL, {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${OPENAI_API_KEY}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(body),
-  })
+  const data = await callOpenAI(
+    [{ role: 'system', content: systemPrompt }, { role: 'user', content: userPrompt }],
+    reqOptions
+  );
 
-  if (!response.ok) {
-    if (response.status === 429) throw new Error('RATE_LIMITED')
-    if (response.status === 402) throw new Error('CREDITS_EXHAUSTED')
-    const errorText = await response.text()
-    console.error('AI Gateway error:', response.status, errorText)
-    throw new Error(`AI API error: ${response.status}`)
-  }
-
-  const data = await response.json()
-  
-  // Handle tool calling response
   if (options.tools && data.choices?.[0]?.message?.tool_calls?.[0]) {
-    const toolCall = data.choices[0].message.tool_calls[0]
-    return JSON.parse(toolCall.function.arguments)
+    const toolCall = data.choices[0].message.tool_calls[0];
+    return JSON.parse(toolCall.function.arguments);
   }
 
-  const content = data.choices?.[0]?.message?.content
-  if (!content) throw new Error('Empty AI response')
-  
-  // Try to parse as JSON
+  const content = data.choices?.[0]?.message?.content;
+  if (!content) throw new Error('Empty AI response');
+
   try {
-    const jsonMatch = content.match(/\{[\s\S]*\}|\[[\s\S]*\]/)
-    return jsonMatch ? JSON.parse(jsonMatch[0]) : { content }
+    const jsonMatch = content.match(/\{[\s\S]*\}|\[[\s\S]*\]/);
+    return jsonMatch ? JSON.parse(jsonMatch[0]) : { content };
   } catch {
-    return { content }
+    return { content };
   }
 }
 
