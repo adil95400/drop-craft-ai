@@ -38,30 +38,59 @@ export const ImportAnalytics = () => {
   const successRate = totalImports > 0 ? ((successfulImports / totalImports) * 100).toFixed(1) : '0'
   const optimizationRate = totalImports > 0 ? ((aiOptimizedProducts / totalImports) * 100).toFixed(1) : '0'
 
-  // Mock time series data
-  const importTrends = [
-    { date: '2024-01-08', imports: 15, success: 12, failed: 3 },
-    { date: '2024-01-09', imports: 23, success: 20, failed: 3 },
-    { date: '2024-01-10', imports: 18, success: 16, failed: 2 },
-    { date: '2024-01-11', imports: 31, success: 28, failed: 3 },
-    { date: '2024-01-12', imports: 27, success: 24, failed: 3 },
-    { date: '2024-01-13', imports: 35, success: 32, failed: 3 },
-    { date: '2024-01-14', imports: 29, success: 26, failed: 3 }
-  ]
+  // Compute time series from real imported products data
+  const importTrends = React.useMemo(() => {
+    const dayMap: Record<string, { imports: number; success: number; failed: number }> = {};
+    importedProducts.forEach(p => {
+      const day = new Date(p.created_at).toISOString().split('T')[0];
+      if (!dayMap[day]) dayMap[day] = { imports: 0, success: 0, failed: 0 };
+      dayMap[day].imports++;
+      if (p.status === 'published') dayMap[day].success++;
+      if (p.review_status === 'rejected') dayMap[day].failed++;
+    });
+    return Object.entries(dayMap)
+      .sort(([a], [b]) => a.localeCompare(b))
+      .slice(-7)
+      .map(([date, data]) => ({ date, ...data }));
+  }, [importedProducts]);
 
-  const categoryBreakdown = [
-    { category: 'Électronique', count: 45, percentage: 35 },
-    { category: 'Mode', count: 32, percentage: 25 },
-    { category: 'Maison', count: 28, percentage: 22 },
-    { category: 'Sport', count: 23, percentage: 18 }
-  ]
+  // Compute category breakdown from real data
+  const categoryBreakdown = React.useMemo(() => {
+    const catMap: Record<string, number> = {};
+    importedProducts.forEach(p => {
+      const cat = (p as any).category || 'Non catégorisé';
+      catMap[cat] = (catMap[cat] || 0) + 1;
+    });
+    const total = importedProducts.length || 1;
+    return Object.entries(catMap)
+      .sort(([, a], [, b]) => b - a)
+      .slice(0, 6)
+      .map(([category, count]) => ({
+        category,
+        count,
+        percentage: Math.round((count / total) * 100)
+      }));
+  }, [importedProducts]);
 
-  const supplierPerformance = [
-    { supplier: 'AliExpress', imports: 78, success_rate: 92, avg_time: '2.3m' },
-    { supplier: 'BigBuy', imports: 45, success_rate: 89, avg_time: '1.8m' },
-    { supplier: 'Shopify Store', imports: 23, success_rate: 96, avg_time: '1.2m' },
-    { supplier: 'CSV Import', imports: 15, success_rate: 87, avg_time: '0.8m' }
-  ]
+  // Compute supplier performance from real data
+  const supplierPerformance = React.useMemo(() => {
+    const supplierMap: Record<string, { imports: number; successes: number }> = {};
+    importedProducts.forEach(p => {
+      const supplier = (p as any).source_platform || (p as any).supplier_name || 'Import direct';
+      if (!supplierMap[supplier]) supplierMap[supplier] = { imports: 0, successes: 0 };
+      supplierMap[supplier].imports++;
+      if (p.status === 'published') supplierMap[supplier].successes++;
+    });
+    return Object.entries(supplierMap)
+      .sort(([, a], [, b]) => b.imports - a.imports)
+      .slice(0, 5)
+      .map(([supplier, data]) => ({
+        supplier,
+        imports: data.imports,
+        success_rate: data.imports > 0 ? Math.round((data.successes / data.imports) * 100) : 0,
+        avg_time: '-'
+      }));
+  }, [importedProducts]);
 
   const OverviewMetrics = () => (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
