@@ -26,7 +26,6 @@ const TIER_CONFIG: Record<string, { label: string; color: string; icon: React.Re
 };
 
 function getMarginColor(margin: number) {
-  const { t: tPages } = useTranslation('pages');
   if (margin >= 50) return 'text-success dark:text-green-400';
   if (margin >= 30) return 'text-success dark:text-emerald-400';
   if (margin >= 15) return 'text-warning dark:text-yellow-400';
@@ -41,6 +40,7 @@ function getMarginBadge(margin: number) {
 }
 
 export default function PremiumSuppliersPage() {
+  const { t: tPages } = useTranslation('pages');
   const { user } = useAuth();
   const [search, setSearch] = useState('');
   const [tierFilter, setTierFilter] = useState('all');

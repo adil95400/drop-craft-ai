@@ -41,7 +41,6 @@ const STATUS_CONFIG: Record<string, { icon: React.ReactNode; color: string }> = 
 };
 
 function getWebhookUrl(endpointId: string) {
-  const { t: tPages } = useTranslation('pages');
   const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID || 'jsmwckzrmqecwwrswwrz';
   return `https://${projectId}.supabase.co/functions/v1/inbound-webhook?endpoint_id=${endpointId}`;
 }
@@ -222,6 +221,7 @@ function EventRow({ event }: { event: WebhookEvent }) {
 }
 
 export default function InboundWebhooksPage() {
+  const { t: tPages } = useTranslation('pages');
   const { endpoints, isLoading, createEndpoint, toggleEndpoint, deleteEndpoint } = useWebhookEndpoints();
   const { data: events = [], isLoading: eventsLoading } = useWebhookEvents();
 
