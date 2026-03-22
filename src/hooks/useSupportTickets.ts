@@ -75,6 +75,20 @@ export function useSupportTickets() {
         .single();
 
       if (error) throw error;
+
+      // Send notification to merchant via notification hub
+      supabase.functions.invoke('notification-hub', {
+        body: {
+          action: 'send',
+          userId: user.id,
+          title: `🎫 Nouveau ticket: ${ticketData.subject}`,
+          body: `Priorité: ${ticketData.priority || 'medium'} — ${ticketData.message.slice(0, 100)}...`,
+          type: 'transactional',
+          channel: 'auto',
+          url: '/customer-service/tickets',
+        },
+      }).catch(console.error);
+
       return data as SupportTicket;
     },
     onSuccess: () => {
