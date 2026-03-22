@@ -4,6 +4,7 @@
  */
 
 import { requireAuth, handlePreflight, successResponse } from '../_shared/jwt-auth.ts'
+import { callOpenAI, generateJSON, generateText } from '../_shared/ai-client.ts'
 
 Deno.serve(async (req) => {
   const preflight = handlePreflight(req)

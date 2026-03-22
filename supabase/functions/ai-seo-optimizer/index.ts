@@ -3,7 +3,7 @@
  * Analyses SEO score, generates meta tags, keyword suggestions, and content improvements.
  */
 import { createEdgeFunction, z } from '../_shared/create-edge-function.ts'
-import { AI_MODEL, AI_GATEWAY_URL } from '../_shared/ai-config.ts'
+import { callOpenAI } from '../_shared/ai-client.ts'
 
 const seoSchema = z.object({
   action: z.enum(['analyze', 'optimize_meta', 'keyword_research', 'content_audit']),
@@ -25,9 +25,6 @@ const handler = createEdgeFunction<SEOInput>({
   rateLimit: { maxRequests: 30, windowMinutes: 60, action: 'ai_seo_optimizer' }
 }, async (ctx) => {
   const { user, input, correlationId } = ctx
-  const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY_SEO') || Deno.env.get('OPENAI_API_KEY')
-  if (!OPENAI_API_KEY) throw new Error('OPENAI_API_KEY not configured')
-
   console.log(`[${correlationId}] SEO ${input.action} for user ${user.id}`)
 
   const prompts: Record<string, { system: string; user: string }> = {
@@ -159,27 +156,11 @@ Use the content_audit tool to return structured audit results.`
   const toolDef = tools[input.action]
   const toolName = toolDef[0].function.name
 
-  const aiResponse = await fetch(AI_GATEWAY_URL, {
-    method: 'POST',
-    headers: { 'Authorization': `Bearer ${OPENAI_API_KEY}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      model: AI_MODEL,
-      messages: [{ role: 'system', content: prompt.system }, { role: 'user', content: prompt.user }],
-      tools: toolDef,
-      tool_choice: { type: 'function', function: { name: toolName } },
-      max_tokens: 3000,
-    }),
-  })
+  const aiData = await callOpenAI(
+    [{ role: 'system', content: prompt.system }, { role: 'user', content: prompt.user }],
+    { module: 'seo', maxTokens: 3000, enableCache: true, tool_choice: { type: 'function', function: { name: toolName } }
+  )
 
-  if (!aiResponse.ok) {
-    const status = aiResponse.status
-    if (status === 429 || status === 402) {
-      return new Response(JSON.stringify({ error: status === 429 ? 'Rate limit atteint' : 'Crédits IA épuisés' }), { status, headers: { 'Content-Type': 'application/json' } })
-    }
-    throw new Error(`AI error: ${status}`)
-  }
-
-  const aiData = await aiResponse.json()
   const toolCall = aiData.choices?.[0]?.message?.tool_calls?.[0]
   let result: any
   

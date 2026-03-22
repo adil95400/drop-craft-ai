@@ -2,6 +2,7 @@
  * CRM Automation - Secured with requireAuth() JWT-first
  */
 import { handlePreflight, requireAuth, errorResponse, successResponse } from '../_shared/jwt-auth.ts'
+import { callOpenAI, generateJSON, generateText } from '../_shared/ai-client.ts'
 
 Deno.serve(async (req) => {
   const preflight = handlePreflight(req)

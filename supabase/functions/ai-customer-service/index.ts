@@ -1,6 +1,6 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
-import { AI_MODEL, AI_GATEWAY_URL } from '../_shared/ai-config.ts';
+import { generateJSON } from '../_shared/ai-client.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -52,23 +52,7 @@ async function requireAuth(req: Request) {
 }
 
 async function callAI(systemPrompt: string, userPrompt: string) {
-  const response = await fetch(AI_GATEWAY_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      model: AI_MODEL,
-      messages: [
-        { role: 'system', content: systemPrompt },
-        { role: 'user', content: userPrompt },
-      ],
-      temperature: 0.4,
-      response_format: { type: 'json_object' },
-    }),
-  });
-  
-  if (!response.ok) throw new Error(`AI error: ${response.status}`);
-  const data = await response.json();
-  return JSON.parse(data.choices[0].message.content);
+  return generateJSON(systemPrompt, userPrompt, { module: 'chat', temperature: 0.4, enableCache: true });
 }
 
 serve(async (req) => {
