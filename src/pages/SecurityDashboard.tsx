@@ -63,11 +63,12 @@ export default function SecurityDashboard() {
       badge={{ label: 'Ultra Pro', icon: Shield }}
     >
       <Tabs defaultValue="overview" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="overview">Vue d'ensemble</TabsTrigger>
           <TabsTrigger value="audit">Audit Logs</TabsTrigger>
           <TabsTrigger value="gdpr">RGPD</TabsTrigger>
           <TabsTrigger value="2fa">2FA</TabsTrigger>
+          <TabsTrigger value="ip">IP Allowlist</TabsTrigger>
         </TabsList>
 
         {/* OVERVIEW */}
