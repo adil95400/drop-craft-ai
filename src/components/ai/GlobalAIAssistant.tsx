@@ -113,6 +113,17 @@ export function GlobalAIAssistant() {
         content: m.content
       }))
 
+      const { supabase } = await import('@/integrations/supabase/client')
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session?.access_token) {
+        setMessages(prev => prev.map(m => m.id === assistantMessageId
+          ? { ...m, content: 'Veuillez vous connecter pour utiliser l\'assistant IA.', isStreaming: false }
+          : m
+        ))
+        setIsLoading(false)
+        return
+      }
+
       const { edgeFunctionUrl } = await import('@/lib/supabase-env')
       const response = await fetch(
         edgeFunctionUrl('ai-chatbot-support'),
@@ -120,7 +131,7 @@ export function GlobalAIAssistant() {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+            'Authorization': `Bearer ${session.access_token}`,
           },
           body: JSON.stringify({
             messages: [
