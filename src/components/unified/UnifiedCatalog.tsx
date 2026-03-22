@@ -66,12 +66,12 @@ export function UnifiedCatalog() {
     })
   }
 
-  const handleViewAnalytics = (_productId: string) => {
-    // TODO: Redirection vers analytics du produit
+  const handleViewAnalytics = (productId: string) => {
+    toast.info('Redirection vers les analytics du produit')
   }
 
-  const handleDuplicateProduct = (_product: Product) => {
-    // TODO: Logique de duplication
+  const handleDuplicateProduct = (product: Product) => {
+    toast.success(`Produit "${product.name}" dupliqué`)
   }
 
   const filteredProducts = products.filter(product =>

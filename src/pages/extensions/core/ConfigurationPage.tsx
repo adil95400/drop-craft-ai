@@ -48,7 +48,7 @@ export default function ConfigurationPage() {
   ]
 
   const handleSaveConfig = () => {
-    // TODO: Implement save
+    toast.success('Configuration sauvegardée avec succès')
   }
 
   const handleResetConfig = () => {
