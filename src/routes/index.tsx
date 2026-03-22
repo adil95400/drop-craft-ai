@@ -92,6 +92,7 @@ const ReviewsPage = lazy(() => import('@/pages/reviews/ReviewsPage'));
 const CRMDashboardPage = lazy(() => import('@/pages/crm/CRMHubPage'));
 const Sitemap = lazy(() => import('@/pages/Sitemap'));
 const DocumentationPage = lazy(() => import('@/pages/documentation/DocumentationPage'));
+const HelpCenterPage = lazy(() => import('@/pages/help/HelpCenterPage'));
 const SEOContentHubPage = lazy(() => import('@/pages/seo/SEOContentHubPage'));
 const CustomerReturnsPortal = lazy(() => import('@/pages/returns/CustomerReturnsPortal'));
 const AdvancedMediaEditorPage = lazy(() => import('@/pages/media/AdvancedMediaEditorPage'));
