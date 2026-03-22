@@ -33,6 +33,7 @@ import {
   Tags
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { PlatformLogo } from '@/components/ui/platform-logo';
 import { cn } from '@/lib/utils';
@@ -368,7 +369,7 @@ export default function MarketplaceConnectorsPage() {
       </Helmet>
 
       <ChannablePageWrapper
-        title="Connecteurs Marketplace"
+        title={tPages('connecteursMarketplace.title')}
         description={`${allConnectors.length} intégrations disponibles • ${connectedCount} connectés`}
         heroImage="integrations"
         badge={{ label: 'Intégrations', icon: Boxes }}

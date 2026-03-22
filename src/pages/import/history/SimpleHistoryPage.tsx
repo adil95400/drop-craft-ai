@@ -131,8 +131,10 @@ export default function SimpleHistoryPage() {
   const toggleSortOrder = () => setSortOrder(prev => prev === 'desc' ? 'asc' : 'desc')
 
   if (isLoadingHistory) {
+      const { t: tPages } = useTranslation('pages');
+
     return (
-      <ChannablePageWrapper title="Historique des imports" heroImage="import" badge={{ label: 'Historique', icon: Clock }}>
+      <ChannablePageWrapper title={tPages('historiqueDesImports.title')} heroImage="import" badge={{ label: 'Historique', icon: Clock }}>
         <div className="flex items-center justify-center py-12">
           <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
         </div>
@@ -142,7 +144,7 @@ export default function SimpleHistoryPage() {
 
   return (
     <ChannablePageWrapper
-      title="Historique des imports"
+      title={tPages('historiqueDesImports.title')}
       description={`${stats.total} imports — ${stats.totalProducts} produits importés au total`}
       heroImage="import"
       badge={{ label: 'Historique', icon: Clock }}

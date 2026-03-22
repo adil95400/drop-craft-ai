@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -96,8 +97,10 @@ export default function WebhookManagementPage() {
   const totalFailCount = Object.values(failCounts).reduce((a: number, b: number) => a + b, 0);
 
   if (isLoading) {
+      const { t: tPages } = useTranslation('pages');
+
     return (
-      <ChannablePageWrapper title="Webhooks" description="Chargement...">
+      <ChannablePageWrapper title={tPages('webhooks.title')} description="Chargement...">
         <div className="flex items-center justify-center py-12"><Loader2 className="h-8 w-8 animate-spin text-muted-foreground" /></div>
       </ChannablePageWrapper>
     );
@@ -105,7 +108,7 @@ export default function WebhookManagementPage() {
 
   return (
     <ChannablePageWrapper
-      title="Webhooks"
+      title={tPages('webhooks.title')}
       description="Recevez des notifications en temps réel pour chaque événement de votre boutique"
       actions={
         <Button size="sm" onClick={() => toast.info('Formulaire de création à venir')}>

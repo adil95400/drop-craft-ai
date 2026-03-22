@@ -4,6 +4,7 @@
  */
 import { Helmet } from 'react-helmet-async';
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
+import { useTranslation } from 'react-i18next';
 import { BulkOrdersDashboard } from '@/components/bulk-orders';
 import { ShoppingCart, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -44,7 +45,7 @@ export default function BulkOrdersPage() {
       </Helmet>
       
       <ChannablePageWrapper
-        title="Commandes Groupées"
+        title={tPages('commandesGroupees.title')}
         subtitle="Gestion en masse"
         description={`${stats?.total || 0} commandes groupées • ${stats?.pending || 0} en cours • Optimisez vos coûts d'expédition`}
         heroImage="orders"

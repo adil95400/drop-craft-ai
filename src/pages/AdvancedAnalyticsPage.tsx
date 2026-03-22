@@ -48,9 +48,12 @@ export default function AdvancedAnalyticsPage() {
     }
   }
 
+    const { t: tPages } = useTranslation('pages');
+
+
   return (
     <ChannablePageWrapper
-      title="Analytics Avancés"
+      title={tPages('analyticsAvances.title')}
       description="Rapports personnalisés, KPIs temps réel et gestion d'équipe"
       heroImage="analytics"
       badge={{ label: 'Business Intelligence', icon: Sparkles }}

@@ -5,6 +5,7 @@
 import { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
+import { useTranslation } from 'react-i18next';
 import { CRMKanbanPipeline } from '@/components/crm/CRMKanbanPipeline';
 import { LeadsManager } from '@/components/crm/LeadsManager';
 import { LeadScoring } from '@/components/crm/LeadScoring';
@@ -17,9 +18,12 @@ import {
 export default function CRMHubPage() {
   const [activeTab, setActiveTab] = useState('pipeline');
 
+    const { t: tPages } = useTranslation('pages');
+
+
   return (
     <ChannablePageWrapper
-      title="CRM Avancé"
+      title={tPages('crmAvance.title')}
       subtitle="Relation Client"
       description="Pipeline de ventes, scoring leads, historique interactions et analytics de conversion."
       heroImage="marketing"

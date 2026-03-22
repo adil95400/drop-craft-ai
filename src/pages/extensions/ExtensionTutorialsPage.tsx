@@ -19,6 +19,7 @@ import {
   GraduationCap
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
 
 export default function ExtensionTutorialsPage() {
@@ -90,9 +91,12 @@ export default function ExtensionTutorialsPage() {
     }
   };
 
+    const { t: tPages } = useTranslation('pages');
+
+
   return (
     <ChannablePageWrapper
-      title="Tutoriels Extension"
+      title={tPages('tutorielsExtension.title')}
       subtitle="Guides Vidéo"
       description="Apprenez à utiliser toutes les fonctionnalités de l'extension ShopOpti+ avec nos tutoriels"
       heroImage="extensions"

@@ -12,6 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Progress } from '@/components/ui/progress';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
+import { useTranslation } from 'react-i18next';
 import { useMarketplaceIntegrations } from '@/hooks/useMarketplaceIntegrations';
 import {
   useSyncConfigurations,
@@ -87,8 +88,10 @@ export default function MultiCanalHubPage() {
   };
 
   if (isLoading) {
+      const { t: tPages } = useTranslation('pages');
+
     return (
-      <ChannablePageWrapper title="Multi-Canal Hub" description="Chargement..." heroImage="integrations" badge={{ label: 'Hub', icon: Globe }}>
+      <ChannablePageWrapper title={tPages('multiCanalHub.title')} description="Chargement..." heroImage="integrations" badge={{ label: 'Hub', icon: Globe }}>
         <div className="flex justify-center py-24"><Loader2 className="h-10 w-10 animate-spin text-primary" /></div>
       </ChannablePageWrapper>
     );
@@ -96,7 +99,7 @@ export default function MultiCanalHubPage() {
 
   return (
     <ChannablePageWrapper
-      title="Multi-Canal Hub"
+      title={tPages('multiCanalHub.title')}
       subtitle="Gestion Canaux"
       description="Gérez tous vos canaux de vente, synchronisez vos produits, prix, stock et commandes en temps réel."
       heroImage="integrations"

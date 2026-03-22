@@ -1,5 +1,6 @@
 import { Helmet } from 'react-helmet-async';
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
+import { useTranslation } from 'react-i18next';
 import { WorkflowBuilder } from '@/domains/automation/components/WorkflowBuilder';
 
 export default function WorkflowBuilderPage() {
@@ -10,7 +11,7 @@ export default function WorkflowBuilderPage() {
         <meta name="description" content="Créez des workflows d'automatisation visuels avec le constructeur drag & drop." />
       </Helmet>
       <ChannablePageWrapper
-        title="Workflow Builder"
+        title={tPages('workflowBuilder.title')}
         description="Construisez des automatisations visuelles par glisser-déposer"
       >
         <WorkflowBuilder />

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -140,7 +141,7 @@ export default function APIEnterprisePage() {
         <meta name="description" content="Gérez vos clés API, rate limits et intégrations Enterprise" />
       </Helmet>
       <ChannablePageWrapper
-        title="API Enterprise"
+        title={tPages('apiEnterprise.title')}
         description="Console développeur avec clés API, rate limits augmentés et documentation complète"
         heroImage="schema"
         badge={{ label: 'Enterprise', icon: Shield }}

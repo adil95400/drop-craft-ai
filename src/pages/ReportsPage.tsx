@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { BarChart3, Download, FileText, TrendingUp, DollarSign, Package, Users, Trash2, Loader2, RefreshCw } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
@@ -130,9 +131,12 @@ export default function ReportsPage() {
     }
   ];
 
+    const { t: tPages } = useTranslation('pages');
+
+
   return (
     <ChannablePageWrapper
-      title="Rapports"
+      title={tPages('rapports.title')}
       subtitle="Business Intelligence"
       description="Consultez vos rapports de performance, générez des analyses personnalisées et suivez vos KPIs."
       heroImage="analytics"

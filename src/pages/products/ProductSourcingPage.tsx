@@ -7,12 +7,15 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Package, Search, TrendingUp, Zap, Globe, ShoppingCart } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
 
 export default function ProductSourcingPage() {
+    const { t: tPages } = useTranslation('pages');
+
   return (
     <ChannablePageWrapper
-      title="Sourcing Produits"
+      title={tPages('sourcingProduits.title')}
       description="Trouvez et importez les meilleurs produits depuis nos fournisseurs"
       heroImage="suppliers"
       badge={{ label: "Sourcing", icon: Package }}

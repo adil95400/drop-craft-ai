@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Sparkles, Package, Image as ImageIcon, Palette, Plus, TrendingUp } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { usePOD } from '@/hooks/usePOD';
 import { AdvancedFeatureGuide, ADVANCED_GUIDES } from '@/components/guide';
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
@@ -26,9 +27,12 @@ export default function PrintOnDemandHub() {
     });
   };
 
+    const { t: tPages } = useTranslation('pages');
+
+
   return (
     <ChannablePageWrapper
-      title="Print On Demand"
+      title={tPages('printOnDemand.title')}
       description="Créez des produits personnalisés avec génération IA"
       heroImage="products"
       badge={{ label: 'POD', icon: Palette }}

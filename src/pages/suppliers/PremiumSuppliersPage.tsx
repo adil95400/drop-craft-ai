@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
+import { useTranslation } from 'react-i18next';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -127,8 +128,10 @@ export default function PremiumSuppliersPage() {
   const highMarginCount = catalogProducts.filter((p: any) => p.margin >= 30).length;
 
   if (isLoading) {
+      const { t: tPages } = useTranslation('pages');
+
     return (
-      <ChannablePageWrapper title="Fournisseurs Premium" description="Chargement..." heroImage="suppliers" badge={{ label: 'Premium', icon: Crown }}>
+      <ChannablePageWrapper title={tPages('fournisseursPremium.title')} description="Chargement..." heroImage="suppliers" badge={{ label: 'Premium', icon: Crown }}>
         <div className="grid gap-4 md:grid-cols-4">{[1,2,3,4].map(i => <Skeleton key={i} className="h-28" />)}</div>
       </ChannablePageWrapper>
     );
@@ -136,7 +139,7 @@ export default function PremiumSuppliersPage() {
 
   return (
     <ChannablePageWrapper
-      title="Fournisseurs Premium"
+      title={tPages('fournisseursPremium.title')}
       description="Fournisseurs vérifiés et catalogue haute marge"
       heroImage="suppliers"
       badge={{ label: 'Premium', icon: Crown }}

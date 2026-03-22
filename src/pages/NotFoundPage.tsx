@@ -4,6 +4,7 @@ import { Home, ArrowLeft, Search } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
+import { useTranslation } from 'react-i18next';
 
 export default function NotFoundPage() {
   const navigate = useNavigate();
@@ -16,7 +17,7 @@ export default function NotFoundPage() {
       </Helmet>
       
       <ChannablePageWrapper
-        title="Page non trouvée"
+        title={tPages('pageNonTrouvee.title')}
         description="La page que vous recherchez n'existe pas ou a été déplacée."
         heroImage="settings"
       >

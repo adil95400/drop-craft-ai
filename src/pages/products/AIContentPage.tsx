@@ -3,15 +3,18 @@
  */
 
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
+import { useTranslation } from 'react-i18next';
 import { AIContentDashboard } from '@/components/ai-content';
 import { Button } from '@/components/ui/button';
 import { Sparkles, Download, Settings } from 'lucide-react';
 import { AdvancedFeatureGuide, ADVANCED_GUIDES } from '@/components/guide';
 
 export default function AIContentPage() {
+    const { t: tPages } = useTranslation('pages');
+
   return (
     <ChannablePageWrapper
-      title="Génération de contenu IA"
+      title={tPages('generationDeContenuIa.title')}
       subtitle="Automatisation créative"
       description="Créez des descriptions, titres et contenus SEO automatiquement avec l'intelligence artificielle"
       heroImage="products"

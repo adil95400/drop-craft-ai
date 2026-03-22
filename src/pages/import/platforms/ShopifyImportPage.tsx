@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -143,9 +144,12 @@ export default function ShopifyImportPage() {
     toast.success('URL copiée dans le champ');
   };
 
+    const { t: tPages } = useTranslation('pages');
+
+
   return (
     <ChannablePageWrapper
-      title="Import Shopify"
+      title={tPages('importShopify.title')}
       description="Importez produits, variantes, avis et métadonnées depuis n'importe quelle boutique Shopify"
       heroImage="import"
       badge={{ label: 'Shopify Pro', icon: Store }}

@@ -53,7 +53,7 @@ export default function AIRecommendationsPage() {
       </Helmet>
 
       <ChannablePageWrapper
-        title="Moteur de Recommandation IA"
+        title={tPages('moteurDeRecommandationIa.title')}
         description="Recommandations intelligentes basées sur vos données réelles"
         heroImage="ai"
         badge={{ label: 'AI Engine', icon: Sparkles }}

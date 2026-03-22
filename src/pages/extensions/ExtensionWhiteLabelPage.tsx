@@ -41,9 +41,12 @@ const features = [
 export default function ExtensionWhiteLabelPage() {
   const navigate = useNavigate()
 
+    const { t: tPages } = useTranslation('pages');
+
+
   return (
     <ChannablePageWrapper
-      title="White-Label"
+      title={tPages('whiteLabel.title')}
       subtitle="Ultra Pro"
       description="Personnalisez entièrement l'interface à vos couleurs et votre branding."
       heroImage="extensions"

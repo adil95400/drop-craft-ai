@@ -1,6 +1,7 @@
 import { Helmet } from 'react-helmet-async';
 import { PageBuilderDashboard } from '@/components/page-builder';
 import { Layout } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
 
 export default function PageBuilderPage() {
@@ -11,7 +12,7 @@ export default function PageBuilderPage() {
         <meta name="description" content="Créez des landing pages personnalisées avec notre éditeur drag-and-drop. Templates optimisés pour la conversion." />
       </Helmet>
       <ChannablePageWrapper
-        title="Page Builder"
+        title={tPages('pageBuilder.title')}
         description="Créez des landing pages avec le drag-and-drop"
         heroImage="extensions"
         badge={{ label: 'Builder', icon: Layout }}

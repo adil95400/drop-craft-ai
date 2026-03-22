@@ -2,6 +2,7 @@ import { useState, useCallback, lazy, Suspense } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Plus, Play, Search, Target, Sparkles, Lightbulb, FileText, RefreshCw, BarChart3, Swords } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { Helmet } from 'react-helmet-async';
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
 import { useSEOAudits, useSEOAuditDetail, useSEOAuditPages, useSEOIssues, useSEOAIGenerate, useSEOFixApply, useSEOExport } from '@/hooks/useSEOAudits';
@@ -59,7 +60,7 @@ export default function SEOManagerPage() {
       </Helmet>
 
       <ChannablePageWrapper
-        title="SEO Manager"
+        title={tPages('seoManager.title')}
         description="Audit structuré, scoring produit, historique versionné et impact business"
         heroImage="marketing"
         badge={{ label: 'SEO Pro', icon: Search }}

@@ -60,8 +60,10 @@ export default function IntegrationsPage() {
   const handleWizardComplete = (integration: Integration) => { refetch(); navigate(`/stores-channels/integrations/${integration.id}`) }
 
   if (isLoading) {
+      const { t: tPages } = useTranslation('pages');
+
     return (
-      <ChannablePageWrapper title="Intégrations" description="Chargement..." heroImage="integrations" badge={{ label: 'Intégrations', icon: Activity }}>
+      <ChannablePageWrapper title={tPages('integrations.title')} description="Chargement..." heroImage="integrations" badge={{ label: 'Intégrations', icon: Activity }}>
         <div className="flex items-center justify-center min-h-64"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>
       </ChannablePageWrapper>
     )
@@ -69,7 +71,7 @@ export default function IntegrationsPage() {
 
   return (
     <ChannablePageWrapper
-      title="Intégrations"
+      title={tPages('integrations.title')}
       description="Gérez vos intégrations e-commerce et leur synchronisation"
       heroImage="integrations"
       badge={{ label: 'Intégrations', icon: Activity }}

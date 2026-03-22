@@ -8,6 +8,7 @@ import {
   BarChart, Bar, PieChart, Pie, Cell, Legend
 } from 'recharts';
 import { TrendingUp, Target, DollarSign, ShoppingCart, Calendar } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
 
 const COLORS = ['hsl(var(--primary))', 'hsl(var(--chart-2))', 'hsl(var(--chart-3))', 'hsl(var(--chart-4))', 'hsl(var(--chart-5))'];
@@ -112,7 +113,7 @@ export default function AnalyticsPredictivePage() {
       </Helmet>
 
       <ChannablePageWrapper
-        title="Analytics Prédictifs"
+        title={tPages('analyticsPredictifs.title')}
         description="Tendances, prévisions de revenus et santé du catalogue"
         heroImage="analytics"
         badge={{ label: 'Prédictif', icon: TrendingUp }}

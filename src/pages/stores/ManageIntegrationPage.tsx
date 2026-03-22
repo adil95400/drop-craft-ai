@@ -71,8 +71,10 @@ export default function ManageIntegrationPage() {
   }
 
   if (isLoading) {
+      const { t: tPages } = useTranslation('pages');
+
     return (
-      <ChannablePageWrapper title="Intégration" description="Chargement…" heroImage="integrations" badge={{ label: 'Intégration', icon: Settings }}>
+      <ChannablePageWrapper title={tPages('integration.title')} description="Chargement…" heroImage="integrations" badge={{ label: 'Intégration', icon: Settings }}>
         <div className="flex items-center justify-center min-h-64">
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
         </div>

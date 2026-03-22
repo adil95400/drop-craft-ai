@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
+import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -159,7 +160,7 @@ export default function CreateNotification() {
       </Helmet>
 
       <ChannablePageWrapper
-        title="Créer une Notification"
+        title={tPages('creerUneNotification.title')}
         description="Créez et programmez une notification multicanale"
         heroImage="notifications"
         badge={{ label: 'Notification', icon: Bell }}

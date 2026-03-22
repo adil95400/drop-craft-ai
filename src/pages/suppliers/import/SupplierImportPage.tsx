@@ -172,9 +172,11 @@ export default function SupplierImportPage() {
   }
 
   if (!supplier) {
+      const { t: tPages } = useTranslation('pages');
+
     return (
       <ChannablePageWrapper
-        title="Fournisseur introuvable"
+        title={tPages('fournisseurIntrouvable.title')}
         description="Le fournisseur demandé n'existe pas"
         heroImage="suppliers"
         badge={{ label: 'Import', icon: Upload }}

@@ -69,9 +69,12 @@ const ShopifyManagementPage = () => {
 
   const recentLogs = logs?.slice(0, 5) || []
 
+    const { t: tPages } = useTranslation('pages');
+
+
   return (
     <ChannablePageWrapper
-      title="Gestion Shopify"
+      title={tPages('gestionShopify.title')}
       description="Gérez votre connexion et synchronisation Shopify"
       heroImage="integrations"
       badge={{ label: 'Shopify', icon: ShoppingBag }}

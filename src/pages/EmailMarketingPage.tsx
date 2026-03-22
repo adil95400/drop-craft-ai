@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Mail, Send, Users, TrendingUp, Clock, Plus, Eye, Loader2, MoreHorizontal, Edit, Trash2, Play, Pause } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { useMarketingCampaigns } from '@/hooks/useMarketingCampaigns';
 import { useCustomersUnified } from '@/hooks/unified';
 import { useEmailTemplates } from '@/hooks/useEmailTemplates';
@@ -77,9 +78,12 @@ const EmailMarketingPage: React.FC = () => {
     }
   };
 
+    const { t: tPages } = useTranslation('pages');
+
+
   return (
     <ChannablePageWrapper
-      title="Email Marketing"
+      title={tPages('emailMarketing.title')}
       subtitle="Marketing"
       description="Créez et gérez vos campagnes email avec suivi des performances"
       heroImage="marketing"

@@ -3,6 +3,7 @@
  * Migré vers ChannablePageWrapper pour conformité Design System
  */
 import { useParams, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useAutoFulfillment } from '@/hooks/useAutoFulfillment';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Helmet } from 'react-helmet-async';
@@ -99,8 +100,10 @@ export default function OrderDetail() {
   };
 
   if (isLoading) {
+      const { t: tPages } = useTranslation('pages');
+
     return (
-      <ChannablePageWrapper title="Commande" description="Chargement en cours…" heroImage="orders" badge={{ label: 'Commandes', icon: Package }}>
+      <ChannablePageWrapper title={tPages('commande.title')} description="Chargement en cours…" heroImage="orders" badge={{ label: 'Commandes', icon: Package }}>
         <div className="flex items-center justify-center min-h-[300px]">
           <Loader2 className="h-10 w-10 animate-spin text-primary" />
         </div>

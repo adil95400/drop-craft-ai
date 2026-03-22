@@ -21,6 +21,7 @@ import { SEO } from "@/components/SEO";
 import { useKeywordResearch, useSEOKeywords } from "@/hooks/useSEOKeywords";
 import { useNavigate } from "react-router-dom";
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
+import { useTranslation } from 'react-i18next';
 
 const KeywordResearch = () => {
   const navigate = useNavigate();
@@ -98,7 +99,7 @@ const KeywordResearch = () => {
       />
 
       <ChannablePageWrapper
-        title="Recherche de Mots-clés"
+        title={tPages('rechercheDeMotsCles.title')}
         description="Découvrez les mots-clés les plus performants pour votre secteur"
         heroImage="research"
         badge={{ label: 'SEO', icon: Search }}

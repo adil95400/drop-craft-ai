@@ -25,6 +25,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
+import { useTranslation } from 'react-i18next';
 import { exportSalesExcel, exportInventoryExcel, exportCustomersExcel, exportOrdersExcel } from '@/utils/excelExport';
 import { 
   downloadPDFReport, 
@@ -356,9 +357,12 @@ export default function Reports() {
     return names[dateRange] || '30 derniers jours';
   };
 
+    const { t: tPages } = useTranslation('pages');
+
+
   return (
     <ChannablePageWrapper
-      title="Centre de Rapports"
+      title={tPages('centreDeRapports.title')}
       subtitle="Analytics"
       description="Générez et gérez vos rapports d'activité avec exports PDF et tableaux détaillés"
       heroImage="analytics"

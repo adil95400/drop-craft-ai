@@ -101,9 +101,12 @@ const AffiliationPage = () => {
   const totalSales = affiliates.reduce((sum: number, a: any) => sum + a.totalSales, 0)
   const isLoading = loadingAffiliates || loadingCommissions
 
+    const { t: tPages } = useTranslation('pages');
+
+
   return (
     <ChannablePageWrapper
-      title="Affiliation & Influenceurs"
+      title={tPages('affiliationInfluenceurs.title')}
       description="Programme d'affiliation et marketplace d'influenceurs"
       heroImage="marketing"
       badge={{ label: 'Affiliation', icon: Users }}

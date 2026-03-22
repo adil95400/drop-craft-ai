@@ -5,6 +5,7 @@
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
+import { useTranslation } from 'react-i18next';
 import {
   Star, Download, Upload, Plus, Filter, MessageSquare,
   ThumbsUp, ThumbsDown, AlertTriangle, Trash2, CheckCircle,
@@ -135,9 +136,12 @@ export default function ReviewsPage() {
   const positiveReviews = reviews.filter(r => r.rating >= 4);
   const negativeReviews = reviews.filter(r => r.rating <= 2);
 
+    const { t: tPages } = useTranslation('pages');
+
+
   return (
     <ChannablePageWrapper
-      title="Avis Clients"
+      title={tPages('avisClients.title')}
       description={`${stats?.total || 0} avis • Note moyenne ${stats?.average || 0}/5 • Gestion centralisée multi-plateformes`}
       heroImage="products"
       badge={{ label: 'Avis', icon: Star }}

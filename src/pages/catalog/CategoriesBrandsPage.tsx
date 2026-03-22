@@ -30,9 +30,12 @@ export default function CategoriesBrandsPage() {
 
   const totalIssues = metrics.missingCategory + metrics.missingBrand
 
+    const { t: tPages } = useTranslation('pages');
+
+
   return (
     <ChannablePageWrapper
-      title="Catégories & Marques"
+      title={tPages('categoriesMarques.title')}
       subtitle="Classification produits"
       description="Organisez et classifiez vos produits avec l'aide de l'IA"
       heroImage="products"

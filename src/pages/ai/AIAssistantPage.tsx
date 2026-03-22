@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Bot, Send, Sparkles, Package, TrendingUp, DollarSign, Search, Trash2, Loader2 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { useToast } from '@/hooks/use-toast';
 import ReactMarkdown from 'react-markdown';
 import { cn } from '@/lib/utils';
@@ -121,9 +122,12 @@ export default function AIAssistantPage() {
     setInput('');
   };
 
+    const { t: tPages } = useTranslation('pages');
+
+
   return (
     <ChannablePageWrapper
-      title="Assistant IA"
+      title={tPages('assistantIa.title')}
       subtitle="Votre expert e-commerce"
       description="Posez vos questions sur vos produits, votre stratégie et vos performances"
       heroImage="ai"

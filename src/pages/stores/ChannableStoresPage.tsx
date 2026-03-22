@@ -145,8 +145,10 @@ export default function ChannableStoresPage() {
   })
 
   if (loading) {
+      const { t: tPages } = useTranslation('pages');
+
     return (
-      <ChannablePageWrapper title="Chargement..." heroImage="integrations">
+      <ChannablePageWrapper title={tPages('loading.title')} heroImage="integrations">
         <div className="flex items-center justify-center py-24">
           <Loader2 className="w-8 h-8 animate-spin text-primary" />
         </div>

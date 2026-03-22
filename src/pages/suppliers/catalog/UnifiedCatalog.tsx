@@ -574,9 +574,12 @@ export function UnifiedCatalog({ supplierId }: UnifiedCatalogProps) {
     { id: 'delete', label: 'Supprimer', icon: Trash2, onClick: handleBulkDelete, variant: 'destructive' as const },
   ];
 
+    const { t: tPages } = useTranslation('pages');
+
+
   return (
     <ChannablePageWrapper
-      title="Catalogue Optimisé"
+      title={tPages('catalogueOptimise.title')}
       description="Gestion intelligente avec scores IA et optimisation automatique"
       heroImage="products"
       badge={{ label: 'IA' }}

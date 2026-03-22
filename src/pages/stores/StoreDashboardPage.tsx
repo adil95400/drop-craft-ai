@@ -52,9 +52,11 @@ export function StoreDashboardPage() {
   }
 
   if (!store) {
+      const { t: tPages } = useTranslation('pages');
+
     return (
       <ChannablePageWrapper
-        title="Boutique non trouvée"
+        title={tPages('boutiqueNonTrouvee.title')}
         description="La boutique demandée n'existe pas"
         heroImage="integrations"
         badge={{ label: 'Boutique', icon: Package }}

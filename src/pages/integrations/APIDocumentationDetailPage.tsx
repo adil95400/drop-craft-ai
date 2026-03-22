@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Book, Code, Zap, Shield, ArrowRight, Copy } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
@@ -86,7 +87,7 @@ curl -X GET "https://api.shopopti.io/v1/products?limit=10&offset=0" \\
       </Helmet>
 
       <ChannablePageWrapper
-        title="Documentation API"
+        title={tPages('documentationApi.title')}
         subtitle="Référence REST"
         description="Référence complète de l'API REST ShopOpti pour intégrer notre plateforme"
         heroImage="schema"

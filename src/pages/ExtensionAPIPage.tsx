@@ -13,6 +13,7 @@ import { Switch } from '@/components/ui/switch';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
+import { useTranslation } from 'react-i18next';
 import { useApiKeys } from '@/hooks/useApiKeys';
 import { 
   Key, Plus, Copy, Eye, EyeOff, Trash2, RefreshCw, Shield, Clock, 
@@ -94,9 +95,12 @@ export default function ExtensionAPIPage() {
     recentlyUsed: apiKeys.filter(k => k.last_used_at && new Date(k.last_used_at) > new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)).length,
   };
 
+    const { t: tPages } = useTranslation('pages');
+
+
   return (
     <ChannablePageWrapper
-      title="API & Tokens"
+      title={tPages('apiTokens.title')}
       description="Gérez vos clés API et intégrez ShopOpti à vos applications"
       heroImage="extensions"
       badge={{ label: "API", icon: Key }}

@@ -3,6 +3,7 @@
  */
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
@@ -59,9 +60,12 @@ export default function WorkflowStudioPage() {
   const statusColor = (s: string) =>
     s === 'active' ? 'default' : s === 'paused' ? 'secondary' : 'outline';
 
+    const { t: tPages } = useTranslation('pages');
+
+
   return (
     <ChannablePageWrapper
-      title="Workflow Studio"
+      title={tPages('workflowStudio.title')}
       subtitle="Automatisation visuelle"
       description="Créez des workflows d'automatisation avec un builder visuel drag & drop"
       heroImage="automation"

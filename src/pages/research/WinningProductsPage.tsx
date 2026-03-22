@@ -26,7 +26,7 @@ export default function WinningProductsPage() {
       </Helmet>
 
       <ChannablePageWrapper
-        title="Produits Gagnants"
+        title={tPages('produitsGagnants.title')}
         description="Intelligence IA pour la recherche de produits gagnants, Ads Spy et analyse de marché en temps réel."
         heroImage="research"
         badge={{ label: 'Intelligence IA Pro', icon: Sparkles }}

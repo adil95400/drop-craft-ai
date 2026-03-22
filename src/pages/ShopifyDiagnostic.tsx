@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Loader2, CheckCircle2, XCircle, AlertCircle, RefreshCw, Store, Link2, RotateCcw, Settings } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { toast } from '@/hooks/use-toast';
 import { ShopifyCredentialsDialog } from '@/components/stores/ShopifyCredentialsDialog';
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
@@ -164,8 +165,10 @@ export default function ShopifyDiagnostic() {
   }
 
   if (!integration) {
+      const { t: tPages } = useTranslation('pages');
+
     return (
-      <ChannablePageWrapper title="Diagnostic Shopify" heroImage="integrations" badge={{ label: 'Shopify', icon: Store }}>
+      <ChannablePageWrapper title={tPages('diagnosticShopify.title')} heroImage="integrations" badge={{ label: 'Shopify', icon: Store }}>
         <Card className="border-dashed">
           <CardHeader className="text-center">
             <Store className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
@@ -199,7 +202,7 @@ export default function ShopifyDiagnostic() {
 
   return (
     <ChannablePageWrapper
-      title="Diagnostic Shopify"
+      title={tPages('diagnosticShopify.title')}
       description="État de votre intégration Shopify"
       heroImage="integrations"
       badge={{ label: 'Shopify', icon: Store }}

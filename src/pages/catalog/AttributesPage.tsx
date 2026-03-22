@@ -40,9 +40,12 @@ export default function AttributesPage() {
     setIsEnriching(false)
   }
 
+    const { t: tPages } = useTranslation('pages');
+
+
   return (
     <ChannablePageWrapper
-      title="Attributs"
+      title={tPages('attributs.title')}
       subtitle="Enrichissement catalogue"
       description="Normalisez et enrichissez les attributs pour optimiser vos performances marketplaces"
       heroImage="products"

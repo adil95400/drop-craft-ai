@@ -45,8 +45,10 @@ export default function SupplierDetails() {
   const supplier = suppliers.find(s => s.id === supplierId)
 
   if (isLoading) {
+      const { t: tPages } = useTranslation('pages');
+
     return (
-      <ChannablePageWrapper title="Chargement..." heroImage="suppliers">
+      <ChannablePageWrapper title={tPages('loading.title')} heroImage="suppliers">
         <div className="animate-pulse space-y-6">
           <div className="h-32 bg-muted rounded-lg"></div>
           <div className="grid grid-cols-4 gap-4">

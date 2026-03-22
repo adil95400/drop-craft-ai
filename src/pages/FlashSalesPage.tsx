@@ -10,6 +10,7 @@ import {
   Loader2, BarChart3, Timer, Package, Percent, ArrowUpRight
 } from 'lucide-react';
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
+import { useTranslation } from 'react-i18next';
 import { AdvancedFeatureGuide, ADVANCED_GUIDES } from '@/components/guide';
 import { useFlashSales } from '@/hooks/useFlashSales';
 import { AreaChart, Area, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
@@ -75,7 +76,7 @@ const FlashSalesPage: React.FC = () => {
       </Helmet>
 
       <ChannablePageWrapper
-        title="Ventes Flash"
+        title={tPages('ventesFlash.title')}
         subtitle="Marketing"
         description="Créez des promotions limitées dans le temps pour booster vos conversions"
         heroImage="marketing"

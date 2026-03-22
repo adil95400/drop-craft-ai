@@ -16,6 +16,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
+import { useTranslation } from 'react-i18next';
 import { useLiveChat, type ChatSession, type ChatMessage } from '@/hooks/useLiveChat';
 import { formatDistanceToNow } from 'date-fns';
 import { fr } from 'date-fns/locale';
@@ -111,7 +112,7 @@ export default function LiveChatPage() {
     <>
       <Helmet><title>Chat en direct — Drop-Craft AI</title></Helmet>
       <ChannablePageWrapper
-        title="Chat en direct"
+        title={tPages('chatEnDirect.title')}
         description="Messagerie temps réel avec vos clients"
         badge={{ label: 'Live', icon: MessageSquare }}
       >

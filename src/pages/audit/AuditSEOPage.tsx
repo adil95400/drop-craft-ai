@@ -181,9 +181,11 @@ export default function AuditSEOPage() {
   };
 
   if (isLoading) {
+      const { t: tPages } = useTranslation('pages');
+
     return (
       <ChannablePageWrapper
-        title="Audit SEO"
+        title={tPages('auditSeo.title')}
         description={t('seo.loading')}
         heroImage="analytics"
         badge={{ label: "SEO", icon: Search }}

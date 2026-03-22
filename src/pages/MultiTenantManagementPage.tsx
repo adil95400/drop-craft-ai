@@ -1,4 +1,5 @@
 import { Building2, Plus, Users, Settings as SettingsIcon, TrendingUp } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -12,9 +13,12 @@ export default function MultiTenantManagementPage() {
   const navigate = useNavigate();
   const { tenants, loading } = useMultiTenant();
 
+    const { t: tPages } = useTranslation('pages');
+
+
   return (
     <ChannablePageWrapper
-      title="Gestion Multi-Tenant"
+      title={tPages('gestionMultiTenant.title')}
       description={`${tenants.length} tenants • ${tenants.filter(t => t.status === 'active').length} actifs`}
       heroImage="settings"
       badge={{ label: 'Multi-Tenant', icon: Building2 }}

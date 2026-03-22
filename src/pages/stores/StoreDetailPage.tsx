@@ -92,8 +92,10 @@ export default function StoreDetailPage() {
   }
 
   if (!loading && !store) {
+      const { t: tPages } = useTranslation('pages');
+
     return (
-      <ChannablePageWrapper title="Boutique non trouvée" heroImage="integrations" badge={{ label: 'Erreur', icon: AlertTriangle }}>
+      <ChannablePageWrapper title={tPages('boutiqueNonTrouvee.title')} heroImage="integrations" badge={{ label: 'Erreur', icon: AlertTriangle }}>
         <div className="flex flex-col items-center justify-center min-h-[400px] text-center">
           <AlertTriangle className="w-16 h-16 text-destructive mb-4" />
           <h2 className="text-2xl font-bold mb-2">Boutique non trouvée</h2>

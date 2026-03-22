@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -59,9 +60,12 @@ export default function CRMDashboardPage() {
     setCommSubject(''); setCommContent(''); setShowCommDialog(false);
   };
 
+    const { t: tPages } = useTranslation('pages');
+
+
   return (
     <ChannablePageWrapper
-      title="CRM & Clients"
+      title={tPages('crmClients.title')}
       description="Gestion avancée de la relation client : segments, scoring RFM et communications."
     >
       {/* KPI Cards */}

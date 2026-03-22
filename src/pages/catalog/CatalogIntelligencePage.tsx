@@ -118,9 +118,12 @@ export default function CatalogIntelligencePage() {
     }
   }
 
+    const { t: tPages } = useTranslation('pages');
+
+
   return (
     <ChannablePageWrapper
-      title="Catalog Intelligence"
+      title={tPages('catalogIntelligence.title')}
       subtitle="Vue d'ensemble qualité"
       description="Vue d'ensemble de la qualité catalogue et performance multi-canaux"
       heroImage="analytics"

@@ -66,7 +66,7 @@ export default function PublicationCenterPage() {
       </Helmet>
 
       <ChannablePageWrapper
-        title="Centre de Publication"
+        title={tPages('centreDePublication.title')}
         description={`${products.length} produits • ${connections.length} marketplaces connectées`}
         heroImage="marketing"
         badge={{ label: 'Publication', icon: Upload }}

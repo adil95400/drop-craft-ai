@@ -37,8 +37,10 @@ export default function StoresPage() {
   }
 
   if (loading) {
+      const { t: tPages } = useTranslation('pages');
+
     return (
-      <ChannablePageWrapper title="Boutiques connectées" description="Chargement…" heroImage="integrations" badge={{ label: 'Boutiques', icon: Store }}>
+      <ChannablePageWrapper title={tPages('boutiquesConnectees.title')} description="Chargement…" heroImage="integrations" badge={{ label: 'Boutiques', icon: Store }}>
         <div className="grid gap-4 md:grid-cols-3">
           {Array.from({ length: 3 }).map((_, i) => (
             <Card key={i} className="animate-pulse">
@@ -53,7 +55,7 @@ export default function StoresPage() {
 
   return (
     <ChannablePageWrapper
-      title="Boutiques connectées"
+      title={tPages('boutiquesConnectees.title')}
       description={`${stats.stores} boutique(s) — ${stats.connected} active(s)`}
       heroImage="integrations"
       badge={{ label: 'Boutiques', icon: Store }}

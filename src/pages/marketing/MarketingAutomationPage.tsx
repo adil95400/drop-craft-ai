@@ -10,6 +10,7 @@
  */
 import { Helmet } from 'react-helmet-async';
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
+import { useTranslation } from 'react-i18next';
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -305,7 +306,7 @@ export default function MarketingAutomationPage() {
       </Helmet>
 
       <ChannablePageWrapper
-        title="Marketing Automation"
+        title={tPages('marketingAutomation.title')}
         description="Créez des séquences automatisées multi-canal pour engager vos clients au bon moment"
         heroImage="marketing"
         badge={{ label: 'Automation', icon: Zap }}

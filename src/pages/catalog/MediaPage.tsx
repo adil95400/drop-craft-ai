@@ -259,9 +259,12 @@ export default function MediaPage() {
     return FileText;
   };
 
+    const { t: tPages } = useTranslation('pages');
+
+
   return (
     <ChannablePageWrapper
-      title="Centre Médias"
+      title={tPages('centreMedias.title')}
       subtitle="Bibliothèque & Pipeline"
       description="Gérez, optimisez et distribuez tous vos assets médias depuis un seul hub"
       heroImage="products"

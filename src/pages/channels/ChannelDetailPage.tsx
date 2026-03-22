@@ -255,8 +255,10 @@ export default function ChannelDetailPage() {
   }
 
   if (isLoading) {
+      const { t: tPages } = useTranslation('pages');
+
     return (
-      <ChannablePageWrapper title="Chargement..." heroImage="integrations">
+      <ChannablePageWrapper title={tPages('loading.title')} heroImage="integrations">
         <div className="flex items-center justify-center min-h-[400px]">
           <div className="text-center space-y-3">
             <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto" />

@@ -7,6 +7,7 @@ import { Helmet } from 'react-helmet-async';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -125,7 +126,7 @@ export default function AIBusinessInsightsPage() {
       </Helmet>
 
       <ChannablePageWrapper
-        title="Insights IA Business"
+        title={tPages('insightsIaBusiness.title')}
         description="Analyse intelligente de vos données avec recommandations et prédictions"
         heroImage="analytics"
         badge={{ label: 'IA Avancée', icon: Brain }}

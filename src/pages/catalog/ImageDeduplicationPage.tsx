@@ -118,9 +118,12 @@ export default function ImageDeduplicationPage() {
     toast({ title: `${totalDuplicates} doublons supprimés` })
   }
 
+    const { t: tPages } = useTranslation('pages');
+
+
   return (
     <ChannablePageWrapper
-      title="Déduplication d'Images"
+      title={tPages('deduplicationDImages.title')}
       description="Détection et suppression des images dupliquées dans votre catalogue."
       heroImage="products"
       badge={{ label: 'Image AI', icon: ScanLine }}

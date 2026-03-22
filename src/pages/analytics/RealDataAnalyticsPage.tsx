@@ -4,13 +4,16 @@
 import React from 'react';
 import { RealDataAnalyticsDashboard } from '@/components/analytics';
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { TrendingUp, Download, RefreshCw, Sparkles, Calendar } from 'lucide-react';
 
 export default function RealDataAnalyticsPage() {
+    const { t: tPages } = useTranslation('pages');
+
   return (
     <ChannablePageWrapper
-      title="Analytics en Temps Réel"
+      title={tPages('analyticsEnTempsReel.title')}
       subtitle="Données Live"
       description="Tableau de bord analytique avec données réelles de votre boutique, mise à jour en temps réel"
       heroImage="analytics"

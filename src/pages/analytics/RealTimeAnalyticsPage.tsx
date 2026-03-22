@@ -123,7 +123,7 @@ export default function RealTimeAnalyticsPage() {
       </Helmet>
 
       <ChannablePageWrapper
-        title="Analytics Temps Réel"
+        title={tPages('analyticsTempsReel.title')}
         description="Métriques en direct — mise à jour automatique toutes les 3 secondes"
         heroImage="analytics"
         badge={{ label: 'LIVE', icon: Zap }}

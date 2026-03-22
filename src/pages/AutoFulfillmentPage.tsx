@@ -20,7 +20,7 @@ export default function AutoFulfillmentPage() {
       </Helmet>
 
       <ChannablePageWrapper
-        title="Auto-Fulfillment"
+        title={tPages('autoFulfillment.title')}
         description="Automatisez vos commandes fournisseurs et le suivi des colis en temps réel"
         heroImage="automation"
         badge={{ label: 'Fulfillment', icon: Zap }}

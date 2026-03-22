@@ -173,9 +173,12 @@ export default function AdvancedImportPage() {
     totalProducts: jobs.reduce((sum, j) => sum + (j.processed_rows || 0), 0),
   }
 
+    const { t: tPages } = useTranslation('pages');
+
+
   return (
     <ChannablePageWrapper
-      title="Import Avancé"
+      title={tPages('importAvance.title')}
       subtitle="Pro"
       description="Importez depuis CSV, API REST, webhooks ou bases de données avec mapping intelligent"
       heroImage="import"

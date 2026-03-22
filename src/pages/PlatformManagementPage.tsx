@@ -6,9 +6,11 @@ import { BarChart3, RefreshCw, Sparkles, Globe } from 'lucide-react'
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper'
 
 export default function PlatformManagementPage() {
+    const { t: tPages } = useTranslation('pages');
+
   return (
     <ChannablePageWrapper
-      title="Gestion des Plateformes"
+      title={tPages('gestionDesPlateformes.title')}
       description="Synchronisation automatique, analytics et optimisation IA de vos marketplaces"
       heroImage="integrations"
       badge={{ label: 'Plateformes', icon: Globe }}

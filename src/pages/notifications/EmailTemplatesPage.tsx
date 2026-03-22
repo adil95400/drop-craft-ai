@@ -3,6 +3,7 @@
  */
 import { useState } from 'react';
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -83,9 +84,12 @@ export default function EmailTemplatesPage() {
 
   const enabledCount = templates.filter(t => t.enabled).length;
 
+    const { t: tPages } = useTranslation('pages');
+
+
   return (
     <ChannablePageWrapper
-      title="Templates Email"
+      title={tPages('templatesEmail.title')}
       subtitle="Communication"
       description="Gérez vos emails transactionnels, marketing et de rétention"
       heroImage="marketing"

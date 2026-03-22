@@ -15,9 +15,12 @@ import { ADVANCED_GUIDES } from '@/components/guide';
 export default function CrmPage() {
   const [activeTab, setActiveTab] = useState("pipeline");
 
+    const { t: tPages } = useTranslation('pages');
+
+
   return (
     <ChannablePageWrapper
-      title="CRM"
+      title={tPages('crm.title')}
       subtitle="Relation Client"
       description="Gérez vos leads, deals et pipeline de ventes avec une vue enterprise complète"
       heroImage="marketing"

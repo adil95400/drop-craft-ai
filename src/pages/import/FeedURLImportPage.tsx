@@ -4,6 +4,7 @@
  */
 import { Helmet } from 'react-helmet-async';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Link2, HelpCircle } from 'lucide-react';
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
@@ -32,7 +33,7 @@ export default function FeedURLImportPage() {
       </Helmet>
 
       <ChannablePageWrapper
-        title="Import Feed URL"
+        title={tPages('importFeedUrl.title')}
         subtitle="Import Universel"
         description="Importez vos produits depuis n'importe quelle URL de flux : CSV Shopify, XML, JSON, etc."
         heroImage="import"

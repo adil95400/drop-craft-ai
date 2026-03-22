@@ -106,7 +106,7 @@ export default function SupplierMarketplace() {
       </Helmet>
 
       <ChannablePageWrapper
-        title="Marketplace Fournisseurs"
+        title={tPages('marketplaceFournisseurs.title')}
         description="Trouvez, comparez et connectez-vous aux meilleurs fournisseurs vérifiés"
         heroImage="import"
         badge={{ label: 'Marketplace', icon: Store }}

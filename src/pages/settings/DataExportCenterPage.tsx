@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -41,9 +42,12 @@ export default function DataExportCenterPage() {
     });
   };
 
+    const { t: tPages } = useTranslation('pages');
+
+
   return (
     <ChannablePageWrapper
-      title="Centre d'export de données"
+      title={tPages('centreDExportDeDonnees.title')}
       description="Exportez vos données en masse dans le format de votre choix"
       actions={
         <Button onClick={handleExport} disabled={selectedModules.length === 0}>

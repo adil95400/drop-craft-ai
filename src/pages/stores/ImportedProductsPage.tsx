@@ -294,9 +294,11 @@ export default function ImportedProductsPage() {
   }
 
   if (isLoading) {
+      const { t: tPages } = useTranslation('pages');
+
     return (
       <ChannablePageWrapper
-        title="Produits Importés"
+        title={tPages('produitsImportes.title')}
         description="Chargement…"
         heroImage="products"
         badge={{ label: 'Imports', icon: Package }}
@@ -310,7 +312,7 @@ export default function ImportedProductsPage() {
 
   return (
     <ChannablePageWrapper
-      title="Produits Importés"
+      title={tPages('produitsImportes.title')}
       description={`${filteredProducts.length} produits synchronisés depuis vos intégrations`}
       heroImage="products"
       badge={{ label: 'Imports', icon: Package }}
