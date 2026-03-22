@@ -14,8 +14,7 @@ const corsHeaders = {
 
 const supabaseUrl = Deno.env.get('SUPABASE_URL')!
 const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
-const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY_SEO') || Deno.env.get('OPENAI_API_KEY')
-const AI_GATEWAY_URL = 'https://api.openai.com/v1/chat/completions'
+import { generateText } from '../_shared/ai-client.ts'
 
 async function callAI(system: string, prompt: string) {
   if (!OPENAI_API_KEY) return null

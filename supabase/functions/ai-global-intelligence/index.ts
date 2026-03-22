@@ -4,7 +4,7 @@
  */
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { requireAuth, handlePreflight, errorResponse, successResponse } from '../_shared/jwt-auth.ts'
-import { AI_MODEL, AI_GATEWAY_URL } from '../_shared/ai-config.ts'
+import { generateJSON } from '../_shared/ai-client.ts'
 
 serve(async (req) => {
   const preflight = handlePreflight(req)
@@ -34,27 +34,7 @@ serve(async (req) => {
 })
 
 async function callAI(systemPrompt: string, userPrompt: string) {
-  const res = await fetch(AI_GATEWAY_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      model: AI_MODEL,
-      messages: [
-        { role: 'system', content: systemPrompt },
-        { role: 'user', content: userPrompt },
-      ],
-      temperature: 0.4,
-      response_format: { type: 'json_object' },
-    }),
-  })
-  if (!res.ok) {
-    const status = res.status
-    if (status === 429) throw Object.assign(new Error('Rate limited'), { status: 429 })
-    if (status === 402) throw Object.assign(new Error('Credits exhausted'), { status: 402 })
-    throw new Error(`AI gateway error: ${status}`)
-  }
-  const data = await res.json()
-  return JSON.parse(data.choices[0].message.content)
+  return generateJSON(systemPrompt, userPrompt, { module: 'automation', temperature: 0.3, enableCache: true })
 }
 
 async function handleMarketAnalysis(ctx: any, params: any) {
