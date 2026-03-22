@@ -173,11 +173,6 @@ export function PPCAutomationEngine() {
               <CardContent className="p-3">
                 <div className="flex items-center justify-between mb-1">
                   <Icon className="h-4 w-4 text-muted-foreground" />
-                  {m.positive ? (
-                    <Badge variant="secondary" className="text-[10px] text-success bg-success/5 dark:bg-green-950 dark:text-green-400">{m.change}</Badge>
-                  ) : (
-                    <Badge variant="secondary" className="text-[10px] text-destructive bg-destructive/5 dark:bg-red-950 dark:text-red-400">{m.change}</Badge>
-                  )}
                 </div>
                 <p className="text-lg font-bold">{m.value}</p>
                 <p className="text-[10px] text-muted-foreground">{m.label}</p>
