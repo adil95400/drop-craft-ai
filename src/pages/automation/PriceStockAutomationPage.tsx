@@ -518,7 +518,7 @@ function ActionIcon({ action }: { action: string }) {
     case 'product_auto_deactivated':
       return <XCircle className="h-5 w-5 text-destructive shrink-0" />;
     case 'product_auto_reactivated':
-      return <CheckCircle2 className="h-5 w-5 text-green-500 shrink-0" />;
+      return <CheckCircle2 className="h-5 w-5 text-primary shrink-0" />;
     case 'product_auto_repriced':
       return <DollarSign className="h-5 w-5 text-primary shrink-0" />;
     case 'supplier_auto_sync':
