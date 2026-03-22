@@ -216,34 +216,43 @@ export const AIPredictiveAnalytics = () => {
       </div>
 
       {/* AI Predictions Overview */}
-      <div className="grid grid-cols-1 md:grid-cols-5 gap-4 animate-fade-in">
-        {predictions.map((pred) => (
-          <Card key={pred.metric} className="hover-scale relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-primary/5 to-transparent rounded-full -mr-16 -mt-16" />
-            <CardHeader className="pb-3">
-              <CardDescription className="flex items-center gap-2">
-                {pred.trend === 'up' ? (
-                  <ArrowUpRight className="h-4 w-4 text-success" />
-                ) : (
-                  <ArrowDownRight className="h-4 w-4 text-destructive" />
-                )}
-                {pred.metric}
-              </CardDescription>
-              <CardTitle className="text-2xl">
-                {pred.metric.includes('Revenus') ? `${(pred.predicted / 1000).toFixed(0)}K€` : `${pred.predicted.toFixed(1)}${pred.metric.includes('%') ? '%' : ''}`}
-              </CardTitle>
-              <div className="flex items-center justify-between mt-2">
-                <Badge variant={pred.impact === 'high' ? 'default' : 'secondary'} className="text-xs">
-                  {pred.confidence}% confiance
-                </Badge>
-                <Badge variant="outline" className="text-xs">
-                  {pred.impact === 'high' ? 'Impact élevé' : pred.impact === 'medium' ? 'Impact moyen' : 'Impact faible'}
-                </Badge>
-              </div>
-            </CardHeader>
-          </Card>
-        ))}
-      </div>
+      {predictions.length > 0 ? (
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-4 animate-fade-in">
+          {predictions.map((pred) => (
+            <Card key={pred.metric} className="hover-scale relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-primary/5 to-transparent rounded-full -mr-16 -mt-16" />
+              <CardHeader className="pb-3">
+                <CardDescription className="flex items-center gap-2">
+                  {pred.trend === 'up' ? (
+                    <ArrowUpRight className="h-4 w-4 text-success" />
+                  ) : (
+                    <ArrowDownRight className="h-4 w-4 text-destructive" />
+                  )}
+                  {pred.metric}
+                </CardDescription>
+                <CardTitle className="text-2xl">
+                  {pred.metric.includes('Revenus') ? `${(pred.predicted / 1000).toFixed(0)}K€` : `${pred.predicted.toFixed(1)}${pred.metric.includes('%') ? '%' : ''}`}
+                </CardTitle>
+                <div className="flex items-center justify-between mt-2">
+                  <Badge variant={pred.impact === 'high' ? 'default' : 'secondary'} className="text-xs">
+                    {pred.confidence}% confiance
+                  </Badge>
+                  <Badge variant="outline" className="text-xs">
+                    {pred.impact === 'high' ? 'Impact élevé' : pred.impact === 'medium' ? 'Impact moyen' : 'Impact faible'}
+                  </Badge>
+                </div>
+              </CardHeader>
+            </Card>
+          ))}
+        </div>
+      ) : (
+        <Card>
+          <CardContent className="py-8 text-center">
+            <Brain className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
+            <p className="text-muted-foreground">Aucune prédiction disponible. Ajoutez des commandes et des clients pour activer l'IA prédictive.</p>
+          </CardContent>
+        </Card>
+      )}
 
       <Tabs defaultValue="business-ai" className="w-full">
         <TabsList className="grid grid-cols-6 w-full">
