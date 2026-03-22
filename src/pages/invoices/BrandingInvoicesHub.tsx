@@ -191,7 +191,7 @@ function CreateInvoiceDialog() {
       notes,
     };
 
-    const doc = generateInvoicePDF(invoiceData, branding);
+    const doc = await generateInvoicePDF(invoiceData, branding);
     doc.save(`${invoiceNum}.pdf`);
   };
 
