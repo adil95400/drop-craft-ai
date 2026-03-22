@@ -21,7 +21,8 @@ import {
   Brain, Sparkles, Zap, TrendingUp, Bot, RefreshCw,
   CheckCircle2, XCircle, Clock, Activity, BarChart3,
   FileText, DollarSign, Package, Target, Plus, Trash2,
-  Play, Pause, AlertTriangle, Rocket
+  Play, Pause, AlertTriangle, Rocket, Settings, Bell,
+  ChevronRight, ChevronLeft, Shield, Eye
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
