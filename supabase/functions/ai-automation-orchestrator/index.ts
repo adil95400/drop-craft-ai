@@ -33,9 +33,15 @@ serve(async (req) => {
 })
 
 async function callAI(systemPrompt: string, userPrompt: string) {
+  const apiKey = Deno.env.get('OPENAI_API_KEY_AUTOMATION') || Deno.env.get('OPENAI_API_KEY')
+  if (!apiKey) throw new Error('OpenAI API key not configured')
+
   const res = await fetch(AI_GATEWAY_URL, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${apiKey}`,
+    },
     body: JSON.stringify({
       model: AI_MODEL,
       messages: [
@@ -50,7 +56,9 @@ async function callAI(systemPrompt: string, userPrompt: string) {
     const status = res.status
     if (status === 429) throw Object.assign(new Error('Rate limited'), { status: 429 })
     if (status === 402) throw Object.assign(new Error('Credits exhausted'), { status: 402 })
-    throw new Error(`AI gateway error: ${status}`)
+    const errorText = await res.text()
+    console.error(`AI API error ${status}:`, errorText)
+    throw new Error(`AI API error: ${status}`)
   }
   const data = await res.json()
   return JSON.parse(data.choices[0].message.content)
