@@ -112,10 +112,6 @@ export const ImportAnalytics = () => {
             <div>
               <div className="text-2xl font-bold text-success">{successRate}%</div>
               <p className="text-sm text-muted-foreground">Taux de Succès</p>
-              <div className="flex items-center gap-1 mt-1">
-                <TrendingUp className="w-3 h-3 text-success" />
-                <span className="text-xs text-success">+3.2% vs hier</span>
-              </div>
             </div>
             <CheckCircle className="h-8 w-8 text-success" />
           </div>
