@@ -91,9 +91,12 @@ export default function ConnectorsPage() {
     </div>
   ))
 
+    const { t: tPages } = useTranslation('pages');
+
+
   return (
     <ChannablePageWrapper
-      title="Gestionnaire de Connecteurs"
+      title={tPages('gestionnaireDeConnecteurs.title')}
       description="Gérez toutes vos intégrations marketplace et fournisseurs"
       heroImage="integrations"
       badge={{ label: `${activeConnectors.length} Active${activeConnectors.length > 1 ? 's' : ''}`, icon: Plug }}

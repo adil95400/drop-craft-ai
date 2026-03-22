@@ -213,10 +213,13 @@ export default function HelpCenterPage() {
     }
   }
 
+    const { t: tPages } = useTranslation('pages');
+
+
   return (
     <ChannablePageWrapper
-      title="Centre d'aide"
-      subtitle="Support & Documentation"
+      title={tPages('centreDAide.title')}
+      subtitle={tPages('supportDocumentation.title')}
       description="FAQ, documentation, playbook de dépannage et guides — tout ce dont vous avez besoin."
       heroImage="support"
       badge={{ label: 'Help Center', icon: HelpCircle }}

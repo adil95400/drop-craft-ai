@@ -7,6 +7,7 @@ import { BulkTextGenerator } from '@/components/bulk-content/BulkTextGenerator';
 import { BulkJobsMonitor } from '@/components/bulk-content/BulkJobsMonitor';
 import { CanvaDesignStudio } from '@/components/bulk-content/CanvaDesignStudio';
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
+import { useTranslation } from 'react-i18next';
 import { Video, Images, Activity, Palette, Sparkles, FileText } from 'lucide-react';
 
 export default function BulkContentCreationPage() {
@@ -18,7 +19,7 @@ export default function BulkContentCreationPage() {
       </Helmet>
 
       <ChannablePageWrapper
-        title="AI Content Creation Suite"
+        title={tPages('aiContentCreationSuite.title')}
         subtitle="Génération en Masse"
         description="Descriptions, titres SEO, vidéos et images — générés par l'IA pour tout votre catalogue"
         heroImage="ai"

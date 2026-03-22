@@ -4,6 +4,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
+import { useTranslation } from 'react-i18next';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -367,8 +368,10 @@ export default function AIAutomationHubPage() {
   })();
 
   if (isLoading) {
+      const { t: tPages } = useTranslation('pages');
+
     return (
-      <ChannablePageWrapper title="Hub IA" description="Chargement..." heroImage="ai" badge={{ label: 'IA Pro', icon: Brain }}>
+      <ChannablePageWrapper title={tPages('hubIa.title')} description={tPages('loading.description')} heroImage="ai" badge={{ label: 'IA Pro', icon: Brain }}>
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
           {[1, 2, 3, 4].map(i => <Skeleton key={i} className="h-24" />)}
         </div>
@@ -385,7 +388,7 @@ export default function AIAutomationHubPage() {
       </Helmet>
 
       <ChannablePageWrapper
-        title="Hub Intelligence Artificielle"
+        title={tPages('hubIntelligenceArtificielle.title')}
         description="Agents IA autonomes pour optimiser votre boutique en continu"
         heroImage="ai"
         badge={{ label: 'IA Pro', icon: Brain }}

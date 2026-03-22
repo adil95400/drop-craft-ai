@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -123,9 +124,12 @@ export default function ImportPublishingPage() {
     }
   };
 
+    const { t: tPages } = useTranslation('pages');
+
+
   return (
     <ChannablePageWrapper
-      title="Publication de Produits"
+      title={tPages('publicationDeProduits.title')}
       description="Publiez vos produits importés vers votre boutique et les marketplaces"
       heroImage="import"
       badge={{ label: 'Publication', icon: Upload }}

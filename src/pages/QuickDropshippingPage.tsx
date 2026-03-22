@@ -51,9 +51,12 @@ export default function QuickDropshippingPage() {
     updateAutomationRules({ autoImport, autoFulfill, priceOptimization, targetMargin, syncFrequency, filters: { minPrice, maxPrice, minRating: parseFloat(minRating), maxShippingDays: parseInt(maxShippingDays) } })
   }
 
+    const { t: tPages } = useTranslation('pages');
+
+
   return (
     <ChannablePageWrapper
-      title="Mode Dropshipping Rapide"
+      title={tPages('modeDropshippingRapide.title')}
       description="Lancez votre boutique en 5 minutes — Style AutoDS"
       heroImage="products"
       badge={{ label: 'Quick Start', icon: Zap }}

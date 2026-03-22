@@ -26,9 +26,12 @@ export default function PriceMonitorPage() {
   const totalMonitors = monitors?.length || 0
   const unresolvedAlerts = alerts?.filter((a: any) => a.status !== 'resolved')?.length || 0
 
+    const { t: tPages } = useTranslation('pages');
+
+
   return (
     <ChannablePageWrapper
-      title="Moniteur Prix & Stock"
+      title={tPages('moniteurPrixStock.title')}
       subtitle="Surveillance"
       description="Surveillez les prix et stocks de vos fournisseurs en temps réel"
       heroImage="stock"

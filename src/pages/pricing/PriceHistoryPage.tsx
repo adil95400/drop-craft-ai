@@ -5,6 +5,7 @@
 import { useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -117,7 +118,7 @@ export default function PriceHistoryPage() {
       </Helmet>
 
       <ChannablePageWrapper
-        title="Historique des Prix"
+        title={tPages('historiqueDesPrix.title')}
         description="Évolution des prix, comparaison concurrents et tendances"
         heroImage="analytics"
         badge={{ label: 'History', icon: History }}

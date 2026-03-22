@@ -32,7 +32,7 @@ export default function ShippingManager() {
       </Helmet>
 
       <ChannablePageWrapper
-        title="Gestion des Expéditions"
+        title={tPages('gestionDesExpeditions.title')}
         description="Multi-transporteurs et tracking en temps réel"
         heroImage="orders"
         badge={{ label: 'Shipping', icon: Truck }}

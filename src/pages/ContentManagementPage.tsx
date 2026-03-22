@@ -1,6 +1,7 @@
 import { Helmet } from 'react-helmet-async';
 import { ContentManagementHub } from '@/components/content-management/ContentManagementHub';
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
+import { useTranslation } from 'react-i18next';
 import { FileText } from 'lucide-react';
 
 const ContentManagementPage = () => {
@@ -11,7 +12,7 @@ const ContentManagementPage = () => {
         <meta name="description" content="Gérez votre contenu, articles de blog, calendrier éditorial et templates de contenu" />
       </Helmet>
       <ChannablePageWrapper
-        title="Gestion de Contenu"
+        title={tPages('gestionDeContenu.title')}
         description="Gérez votre contenu, articles de blog, calendrier éditorial et templates"
         heroImage="marketing"
         badge={{ label: 'Contenu', icon: FileText }}

@@ -3,6 +3,7 @@
  */
 import { useState } from 'react';
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -75,9 +76,12 @@ export default function SourcingAgentPage() {
     }
   };
 
+    const { t: tPages } = useTranslation('pages');
+
+
   return (
     <ChannablePageWrapper
-      title="Agent de Sourcing IA"
+      title={tPages('agentDeSourcingIa.title')}
       description="Trouvez automatiquement les meilleurs fournisseurs et prix grâce à notre agent IA"
       actions={<Badge variant="outline" className="gap-1"><Bot className="h-3 w-3" /> Agent automatisé</Badge>}
     >

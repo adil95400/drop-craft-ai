@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
+import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { 
   Puzzle, Download, Star, Search, 
@@ -98,9 +99,12 @@ const ExtensionNavigatorPage: React.FC = () => {
     toast.success(`${selectedExtensions.length} extensions installées avec succès!`);
   };
 
+    const { t: tPages } = useTranslation('pages');
+
+
   return (
     <ChannablePageWrapper
-      title="Extension Navigator"
+      title={tPages('extensionNavigator.title')}
       description="Découvrez et installez des extensions pour étendre vos capacités d'import"
       heroImage="extensions"
       badge={{ label: "Extensions" }}

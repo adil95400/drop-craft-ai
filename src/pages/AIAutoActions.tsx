@@ -35,9 +35,12 @@ export default function AIAutoActions() {
     })
   }
 
+    const { t: tPages } = useTranslation('pages');
+
+
   return (
     <ChannablePageWrapper
-      title="IA Actionnable"
+      title={tPages('iaActionnable.title')}
       description="Appliquez automatiquement les optimisations IA sur votre catalogue"
       heroImage="ai"
       badge={{ label: 'IA', icon: Bot }}

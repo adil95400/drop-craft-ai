@@ -10,6 +10,7 @@ import {
   Copy, Search, ArrowUpRight, Loader2, MousePointerClick, Percent
 } from 'lucide-react';
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
+import { useTranslation } from 'react-i18next';
 import { AdvancedFeatureGuide, ADVANCED_GUIDES } from '@/components/guide';
 import { useAffiliateProgram } from '@/hooks/useAffiliateProgram';
 import { toast } from 'sonner';
@@ -45,8 +46,8 @@ const AffiliateMarketingPage: React.FC = () => {
       </Helmet>
 
       <ChannablePageWrapper
-        title="Marketing d'Affiliation"
-        subtitle="Marketing"
+        title={tPages('marketingDAffiliation.title')}
+        subtitle={tPages('marketing.title')}
         description="Gérez votre programme d'affiliés et suivez les performances en temps réel"
         heroImage="marketing"
         badge={{ label: "Affiliates", icon: Users }}

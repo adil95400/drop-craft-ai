@@ -165,9 +165,12 @@ const AdminPanelContent = () => {
     }
   }
 
+    const { t: tPages } = useTranslation('pages');
+
+
   return (
     <ChannablePageWrapper
-      title="Administration"
+      title={tPages('administration.title')}
       description="Gérez votre plateforme et surveillez les activités"
       heroImage="settings"
       badge={{ label: 'Admin', icon: Shield }}

@@ -12,7 +12,7 @@ export default function ABTestingPage() {
         <meta name="description" content="Optimisez vos campagnes marketing avec des tests A/B statistiquement significatifs et des insights avancés." />
       </Helmet>
       <ChannablePageWrapper
-        title="Tests A/B Marketing"
+        title={tPages('testsABMarketing.title')}
         description="Optimisez vos campagnes avec des tests statistiquement significatifs"
         heroImage="marketing"
         badge={{ label: 'A/B Testing', icon: FlaskConical }}

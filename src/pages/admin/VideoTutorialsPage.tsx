@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
+import { useTranslation } from 'react-i18next';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -154,9 +155,12 @@ export default function VideoTutorialsPage() {
     );
   }
 
+    const { t: tPages } = useTranslation('pages');
+
+
   return (
     <ChannablePageWrapper
-      title="Vidéos Tutoriels"
+      title={tPages('videosTutoriels.title')}
       description="Gérez les vidéos tutoriels de la marketplace ShopOpti"
       heroImage="support"
       badge={{ label: 'Tutoriels', icon: Video }}

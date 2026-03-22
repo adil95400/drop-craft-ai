@@ -469,7 +469,7 @@ export function EnhancedUnifiedCatalog() {
       </Helmet>
 
       <ChannablePageWrapper 
-        title="Catalogue Fournisseurs" 
+        title={tPages('catalogueFournisseurs.title')} 
         description="Explorez et importez des produits de tous vos fournisseurs connectés"
         heroImage="suppliers"
         badge={{ label: `${stats.total} produits` }}

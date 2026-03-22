@@ -10,6 +10,7 @@ import {
   Target, CheckCircle, XCircle, Send, Filter, BarChart3
 } from 'lucide-react';
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
+import { useTranslation } from 'react-i18next';
 import { useAbandonedCarts } from '@/hooks/useAbandonedCarts';
 import { formatDistanceToNow } from 'date-fns';
 import { fr } from 'date-fns/locale';
@@ -44,8 +45,8 @@ const AbandonedCartPage: React.FC = () => {
       </Helmet>
 
       <ChannablePageWrapper
-        title="Paniers Abandonnés"
-        subtitle="Marketing"
+        title={tPages('paniersAbandonnes.title')}
+        subtitle={tPages('marketing.title')}
         description="Récupérez les ventes perdues avec des campagnes automatiques"
         heroImage="marketing"
         badge={{ label: "Recovery", icon: ShoppingCart }}

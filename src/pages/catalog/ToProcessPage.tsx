@@ -75,10 +75,13 @@ export default function ToProcessPage() {
     { id: 'optimization', label: 'Optimisations', value: counts.optimization, icon: Sparkles, color: 'text-violet-600', bg: 'bg-violet-500/10', ring: 'ring-violet-500' },
   ]
 
+    const { t: tPages } = useTranslation('pages');
+
+
   return (
     <ChannablePageWrapper
-      title="À traiter"
-      subtitle="Backlog intelligent"
+      title={tPages('aTraiter.title')}
+      subtitle={tPages('backlogIntelligent.title')}
       description="Actions requises et opportunités triées par priorité IA"
       heroImage="products"
       badge={{ label: `${totalToProcess} produits`, variant: counts.critical > 0 || draftStats.total > 0 ? 'destructive' : 'secondary' }}

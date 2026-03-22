@@ -3,6 +3,7 @@
  */
 import { Helmet } from 'react-helmet-async';
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
+import { useTranslation } from 'react-i18next';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -148,8 +149,10 @@ export default function StoreChannelAnalyticsPage() {
   const pieColors = pieData.map(d => getPlatformColor(d.name));
 
   if (intLoading) {
+      const { t: tPages } = useTranslation('pages');
+
     return (
-      <ChannablePageWrapper title="Statistiques des Canaux" description="Chargement..." heroImage="analytics" badge={{ label: 'Multi-canal', icon: Store }}>
+      <ChannablePageWrapper title={tPages('statistiquesDesCanaux.title')} description={tPages('loading.description')} heroImage="analytics" badge={{ label: 'Multi-canal', icon: Store }}>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
           {[1, 2, 3, 4].map(i => <Skeleton key={i} className="h-20" />)}
         </div>
@@ -162,7 +165,7 @@ export default function StoreChannelAnalyticsPage() {
     return (
       <>
         <Helmet><title>Statistiques Canaux | Drop Craft AI</title></Helmet>
-        <ChannablePageWrapper title="Statistiques des Canaux" description="Connectez vos boutiques pour voir les statistiques" heroImage="analytics" badge={{ label: 'Multi-canal', icon: Store }}>
+        <ChannablePageWrapper title={tPages('statistiquesDesCanaux.title')} description={tPages('connectezVosBoutiques.description')} heroImage="analytics" badge={{ label: 'Multi-canal', icon: Store }}>
           <Card>
             <CardContent className="py-12 text-center">
               <Store className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
@@ -186,7 +189,7 @@ export default function StoreChannelAnalyticsPage() {
       </Helmet>
 
       <ChannablePageWrapper
-        title="Statistiques des Canaux"
+        title={tPages('statistiquesDesCanaux.title')}
         description="Performances consolidées de toutes vos boutiques et canaux de vente"
         heroImage="analytics"
         badge={{ label: 'Multi-canal', icon: Store }}

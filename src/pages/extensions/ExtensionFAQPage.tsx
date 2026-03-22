@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
 
 export default function ExtensionFAQPage() {
@@ -156,9 +157,12 @@ export default function ExtensionFAQPage() {
     )
   })).filter(category => category.questions.length > 0);
 
+    const { t: tPages } = useTranslation('pages');
+
+
   return (
     <ChannablePageWrapper
-      title="FAQ Extension"
+      title={tPages('faqExtension.title')}
       subtitle="Questions Fréquentes"
       description="Trouvez rapidement des réponses à vos questions sur l'extension Chrome ShopOpti+"
       heroImage="extensions"

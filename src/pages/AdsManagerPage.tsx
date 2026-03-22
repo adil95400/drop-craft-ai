@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { useRealAdsManager } from '@/hooks/useRealAdsManager';
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
+import { useTranslation } from 'react-i18next';
 import { CreateCampaignDialog } from '@/components/ads/CreateCampaignDialog';
 import { AdsPerformanceCharts } from '@/components/ads/AdsPerformanceCharts';
 import { AdsCreativeStudio } from '@/components/ads/AdsCreativeStudio';
@@ -75,8 +76,8 @@ export default function AdsManagerPage() {
       </Helmet>
 
       <ChannablePageWrapper
-        title="AI Ads Manager"
-        subtitle="Marketing"
+        title={tPages('aiAdsManager.title')}
+        subtitle={tPages('marketing.title')}
         description="Gérez et optimisez vos campagnes publicitaires multi-plateformes avec l'IA"
         heroImage="marketing"
         badge={{ label: "AI Powered", icon: Sparkles }}

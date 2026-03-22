@@ -146,7 +146,7 @@ export default function CreateSupplier() {
       </Helmet>
 
       <ChannablePageWrapper
-        title="Nouveau Fournisseur"
+        title={tPages('nouveauFournisseur.title')}
         description="Ajoutez un nouveau partenaire à votre réseau de fournisseurs"
         heroImage="suppliers"
         badge={{ label: 'Fournisseurs', icon: Building2 }}

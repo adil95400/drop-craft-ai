@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Skeleton } from '@/components/ui/skeleton';
 import { Progress } from '@/components/ui/progress';
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
+import { useTranslation } from 'react-i18next';
 import { useBusinessMetrics, useProductAnalytics, useCustomerAnalytics } from '@/hooks/useBIMetrics';
 import { useFinancialManagement } from '@/hooks/useFinancialManagement';
 import { useRealPredictiveAI } from '@/hooks/useRealPredictiveAI';
@@ -486,9 +487,12 @@ function AIPredictionsTab() {
 export default function BusinessIntelligenceCenterPage() {
   const [period, setPeriod] = useState<'7d' | '30d' | '90d'>('30d');
 
+    const { t: tPages } = useTranslation('pages');
+
+
   return (
     <ChannablePageWrapper
-      title="Business Intelligence"
+      title={tPages('businessIntelligence.title')}
       description="Vue 360° : P&L, KPIs, intelligence client et prédictions IA"
       heroImage="analytics"
       badge={{ label: 'BI Command Center', icon: BarChart3 }}

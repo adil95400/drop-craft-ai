@@ -103,7 +103,7 @@ export default function SyncManagementPage() {
       </Helmet>
 
       <ChannablePageWrapper
-        title="Gestion des Synchronisations"
+        title={tPages('gestionDesSynchronisations.title')}
         description="Configurez la synchronisation automatique de vos données"
         heroImage="integrations"
         badge={{ label: 'Sync', icon: RefreshCw }}

@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Store, ShoppingBag, TrendingUp, RefreshCw, Globe, BarChart3, Plug, Unplug } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
 import { PublicationDashboard } from '@/components/publication/PublicationDashboard';
 import { useMarketplaceIntegrations } from '@/hooks/useMarketplaceIntegrations';
@@ -49,8 +50,10 @@ const MultiChannelManagementPage: React.FC = () => {
   };
 
   if (isLoading) {
+      const { t: tPages } = useTranslation('pages');
+
     return (
-      <ChannablePageWrapper title="Gestion Multi-Canal" description="Chargement..." heroImage="integrations" badge={{ label: 'Multi-Canal', icon: Globe }}>
+      <ChannablePageWrapper title={tPages('gestionMultiCanal.title')} description={tPages('loading.description')} heroImage="integrations" badge={{ label: 'Multi-Canal', icon: Globe }}>
         <div className="grid gap-4 md:grid-cols-4">{[1,2,3,4].map(i => <Skeleton key={i} className="h-28" />)}</div>
       </ChannablePageWrapper>
     );
@@ -58,7 +61,7 @@ const MultiChannelManagementPage: React.FC = () => {
 
   return (
     <ChannablePageWrapper
-      title="Gestion Multi-Canal"
+      title={tPages('gestionMultiCanal.title')}
       description="Gérez tous vos canaux de vente depuis un seul endroit"
       heroImage="integrations"
       badge={{ label: 'Multi-Canal', icon: Globe }}

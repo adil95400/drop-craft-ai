@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card } from '@/components/ui/card';
 import { SupplierPricingRules } from '@/components/suppliers/SupplierPricingRules';
@@ -13,9 +14,11 @@ export default function SupplierAdvancedPage() {
   const [activeTab, setActiveTab] = useState('pricing');
 
   if (!supplierId) {
+      const { t: tPages } = useTranslation('pages');
+
     return (
       <ChannablePageWrapper
-        title="Gestion avancée"
+        title={tPages('gestionAvancee.title')}
         description="Identifiant fournisseur manquant"
         heroImage="suppliers"
         badge={{ label: 'Fournisseur', icon: Settings }}

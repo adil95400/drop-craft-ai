@@ -140,9 +140,12 @@ export default function SavedViews() {
   const presetCount = PRESET_VIEWS.length
   const customCount = savedViews?.length || 0
 
+    const { t: tPages } = useTranslation('pages');
+
+
   return (
     <ChannablePageWrapper
-      title="Vues Produits"
+      title={tPages('vuesProduits.title')}
       description={`${presetCount} filtres rapides · ${customCount} vue${customCount > 1 ? 's' : ''} personnalisée${customCount > 1 ? 's' : ''}`}
       heroImage="products"
       badge={{ label: 'Vues', icon: Eye }}

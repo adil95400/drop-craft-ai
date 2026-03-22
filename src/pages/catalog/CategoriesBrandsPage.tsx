@@ -30,10 +30,13 @@ export default function CategoriesBrandsPage() {
 
   const totalIssues = metrics.missingCategory + metrics.missingBrand
 
+    const { t: tPages } = useTranslation('pages');
+
+
   return (
     <ChannablePageWrapper
-      title="Catégories & Marques"
-      subtitle="Classification produits"
+      title={tPages('categoriesMarques.title')}
+      subtitle={tPages('classificationProduits.title')}
       description="Organisez et classifiez vos produits avec l'aide de l'IA"
       heroImage="products"
       badge={{ label: `${totalIssues} à corriger`, variant: totalIssues > 0 ? 'destructive' : 'secondary' }}

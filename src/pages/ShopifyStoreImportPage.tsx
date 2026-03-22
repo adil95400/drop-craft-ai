@@ -9,6 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { ShoppingBag, Download, CheckCircle2, AlertCircle, Loader2 } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
+import { useTranslation } from 'react-i18next';
 
 export default function ShopifyStoreImportPage() {
   const [storeUrl, setStoreUrl] = useState("");
@@ -59,9 +60,12 @@ export default function ShopifyStoreImportPage() {
     }
   };
 
+    const { t: tPages } = useTranslation('pages');
+
+
   return (
     <ChannablePageWrapper
-      title="Import Shopify"
+      title={tPages('importShopify.title')}
       description="Importez des produits depuis n'importe quelle boutique Shopify publique"
       heroImage="import"
       badge={{ label: 'Shopify', icon: ShoppingBag }}

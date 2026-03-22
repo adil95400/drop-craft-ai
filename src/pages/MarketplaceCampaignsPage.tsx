@@ -3,6 +3,7 @@ import { MarketplaceSyncDashboard } from '@/components/marketplace/MarketplaceSy
 import { DynamicCampaignsDashboard } from '@/components/campaigns/DynamicCampaignsDashboard';
 import { SEO } from '@/components/SEO';
 import { Store, Megaphone, ArrowRightLeft } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
 
 export default function MarketplaceCampaignsPage() {
@@ -15,7 +16,7 @@ export default function MarketplaceCampaignsPage() {
         keywords="marketplace, synchronisation, campagnes, publicité, Shopify, Amazon, eBay"
       />
       <ChannablePageWrapper
-        title="Marketplace & Campagnes"
+        title={tPages('marketplaceCampagnes.title')}
         description="Synchronisez vos produits et gérez vos campagnes publicitaires dynamiques"
         heroImage="integrations"
         badge={{ label: 'Marketplace', icon: Store }}

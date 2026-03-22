@@ -5,6 +5,7 @@
 import { useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -116,7 +117,7 @@ export default function TriggersManagerPage() {
       </Helmet>
 
       <ChannablePageWrapper
-        title="Déclencheurs"
+        title={tPages('declencheurs.title')}
         description="Événements qui déclenchent vos scénarios d'automatisation"
         heroImage="automation"
         badge={{ label: 'Automatisation', icon: Play }}

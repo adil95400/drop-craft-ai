@@ -9,14 +9,18 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Search, TrendingUp, Target, Star, Filter, Sparkles } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
 
 export default function ProductResearchPage() {
   const [searchQuery, setSearchQuery] = useState('');
 
+    const { t: tPages } = useTranslation('pages');
+
+
   return (
     <ChannablePageWrapper
-      title="Recherche Produits Gagnants"
+      title={tPages('rechercheProduitsGagnants.title')}
       description="Trouvez les produits à fort potentiel avec notre intelligence artificielle"
       heroImage="research"
       badge={{ label: 'Research', icon: Search }}

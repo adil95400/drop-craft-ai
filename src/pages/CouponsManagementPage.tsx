@@ -53,9 +53,12 @@ export default function CouponsManagementPage() {
     toast.success('Code copié !')
   }
 
+    const { t: tPages } = useTranslation('pages');
+
+
   return (
     <ChannablePageWrapper
-      title="Coupons & Codes Promo"
+      title={tPages('couponsCodesPromo.title')}
       description={`${stats.total} coupons • ${stats.active} actifs • ${stats.synced} synchronisés Stripe • ${stats.totalUsage} utilisations`}
       heroImage="marketing"
       badge={{ label: 'Stripe', icon: Ticket }}

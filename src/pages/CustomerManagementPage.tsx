@@ -10,7 +10,7 @@ export default function CustomerManagementPage() {
   return (
     <RequirePlan minPlan="pro">
       <ChannablePageWrapper
-        title="Gestion Clients"
+        title={tPages('gestionClients.title')}
         description="Segmentez, analysez et fidélisez votre base clients"
         heroImage="orders"
         badge={{ label: 'CRM', icon: Users }}

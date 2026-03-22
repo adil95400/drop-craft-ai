@@ -5,6 +5,7 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
@@ -135,10 +136,13 @@ export default function AdvancedProductsPage() {
     aiScore: 78
   };
 
+    const { t: tPages } = useTranslation('pages');
+
+
   return (
     <ChannablePageWrapper
-      title="Catalogue Ultra Pro"
-      subtitle="Gestion avancée"
+      title={tPages('catalogueUltraPro.title')}
+      subtitle={tPages('gestionAvancee.title')}
       description="Gestion intelligente avec optimisations IA et opérations en masse sur vos produits"
       heroImage="products"
       badge={{ label: 'Pro', icon: Zap }}

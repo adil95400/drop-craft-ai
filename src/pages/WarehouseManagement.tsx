@@ -72,9 +72,12 @@ export default function WarehouseManagement() {
     { product: "Wireless Car Charger", warehouse: "Paris", stock: 3, alert: "Stock critique" }
   ]
 
+    const { t: tPages } = useTranslation('pages');
+
+
   return (
     <ChannablePageWrapper
-      title="Gestion des Entrepôts"
+      title={tPages('gestionDesEntrepots.title')}
       description="Gérez vos entrepôts et stocks multi-localisations"
       heroImage="stock"
       badge={{ label: 'Entrepôts', icon: Warehouse }}

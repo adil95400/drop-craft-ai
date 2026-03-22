@@ -5,9 +5,11 @@ import { Store } from 'lucide-react'
 import { AdvancedFeatureGuide, ADVANCED_GUIDES } from '@/components/guide'
 
 const MarketplaceHubPage: React.FC = () => {
+    const { t: tPages } = useTranslation('pages');
+
   return (
     <ChannablePageWrapper
-      title="Hub Marketplace"
+      title={tPages('hubMarketplace.title')}
       subtitle="Multi-canal"
       description="Gérez tous vos canaux de vente depuis une interface unique et maximisez votre visibilité."
       heroImage="integrations"

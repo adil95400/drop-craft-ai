@@ -194,7 +194,7 @@ export default function GrowthDashboardPage() {
       </Helmet>
 
       <ChannablePageWrapper
-        title="Growth Dashboard"
+        title={tPages('growthDashboard.title')}
         description="Métriques SaaS, valorisation et pitch deck investisseurs"
         heroImage="analytics"
         badge={{ label: 'Growth', icon: Rocket }}

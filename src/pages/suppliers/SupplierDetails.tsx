@@ -45,8 +45,10 @@ export default function SupplierDetails() {
   const supplier = suppliers.find(s => s.id === supplierId)
 
   if (isLoading) {
+      const { t: tPages } = useTranslation('pages');
+
     return (
-      <ChannablePageWrapper title="Chargement..." heroImage="suppliers">
+      <ChannablePageWrapper title={tPages('loading.title')} heroImage="suppliers">
         <div className="animate-pulse space-y-6">
           <div className="h-32 bg-muted rounded-lg"></div>
           <div className="grid grid-cols-4 gap-4">
@@ -61,7 +63,7 @@ export default function SupplierDetails() {
 
   if (!supplier) {
     return (
-      <ChannablePageWrapper title="Fournisseur introuvable" heroImage="suppliers">
+      <ChannablePageWrapper title={tPages('fournisseurIntrouvable.title')} heroImage="suppliers">
         <Card className="backdrop-blur-sm bg-white/80 dark:bg-gray-900/80">
           <CardContent className="flex flex-col items-center justify-center py-12">
             <AlertCircle className="h-12 w-12 text-muted-foreground mb-4" />

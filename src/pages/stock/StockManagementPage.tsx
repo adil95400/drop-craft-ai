@@ -130,9 +130,12 @@ export default function StockManagementPage() {
     toast({ title: 'Stock actualisé' });
   };
   
+    const { t: tPages } = useTranslation('pages');
+
+  
   return (
     <ChannablePageWrapper
-      title="Gestion des Stocks"
+      title={tPages('gestionDesStocks.title')}
       subtitle="Inventaire temps réel"
       description="Gérez votre inventaire, suivez les niveaux de stock par entrepôt et recevez des alertes automatiques pour les réapprovisionnements."
       heroImage="suppliers"

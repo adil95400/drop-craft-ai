@@ -4,6 +4,7 @@
 import { useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -228,7 +229,7 @@ export default function PricingOptimizationPage() {
       </Helmet>
 
       <ChannablePageWrapper
-        title="Optimisation IA des Prix"
+        title={tPages('optimisationIaDesPrix.title')}
         description="Recommandations intelligentes pour maximiser votre rentabilité"
         heroImage="ai"
         badge={{ label: 'IA Pricing', icon: Brain }}

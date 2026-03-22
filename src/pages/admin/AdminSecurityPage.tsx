@@ -3,6 +3,7 @@
  */
 import { Helmet } from 'react-helmet-async';
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -77,7 +78,7 @@ export default function AdminSecurityPage() {
       </Helmet>
 
       <ChannablePageWrapper
-        title="Sécurité & Administration"
+        title={tPages('securiteAdministration.title')}
         description="Surveillez la sécurité, gérez les rôles et auditez les actions"
         heroImage="settings"
         badge={{ label: 'Sécurité', icon: Shield }}

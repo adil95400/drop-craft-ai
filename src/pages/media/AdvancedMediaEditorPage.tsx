@@ -4,6 +4,7 @@
  */
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -212,9 +213,12 @@ export default function AdvancedMediaEditorPage() {
     toast.success(`Image exportée en ${format.toUpperCase()}`);
   };
 
+    const { t: tPages } = useTranslation('pages');
+
+
   return (
     <ChannablePageWrapper
-      title="Éditeur Média Avancé"
+      title={tPages('editeurMediaAvance.title')}
       description="Éditez, optimisez et préparez vos images produit pour tous vos canaux"
       heroImage="products"
       badge={{ label: 'Média', icon: ImageIcon }}

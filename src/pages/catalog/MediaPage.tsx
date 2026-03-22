@@ -259,10 +259,13 @@ export default function MediaPage() {
     return FileText;
   };
 
+    const { t: tPages } = useTranslation('pages');
+
+
   return (
     <ChannablePageWrapper
-      title="Centre Médias"
-      subtitle="Bibliothèque & Pipeline"
+      title={tPages('centreMedias.title')}
+      subtitle={tPages('bibliothequePipeline.title')}
       description="Gérez, optimisez et distribuez tous vos assets médias depuis un seul hub"
       heroImage="products"
       badge={{ label: `${assets.length} assets • ${auditStats.withoutImages} sans image`, variant: auditStats.withoutImages > 0 ? 'destructive' : 'secondary' }}

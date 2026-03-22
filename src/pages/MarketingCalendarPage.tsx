@@ -12,8 +12,8 @@ export default function MarketingCalendarPage() {
       </Helmet>
 
       <ChannablePageWrapper
-        title="Calendrier Marketing"
-        subtitle="Marketing"
+        title={tPages('calendrierMarketing.title')}
+        subtitle={tPages('marketing.title')}
         description="Planifiez et organisez vos campagnes marketing avec notre calendrier interactif"
         heroImage="marketing"
         badge={{ label: "Planning", icon: Calendar }}

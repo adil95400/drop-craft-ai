@@ -8,6 +8,7 @@ import { useState, useCallback, useMemo, useEffect, useRef } from 'react';
 import { cn } from '@/lib/utils';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useQueryClient } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import { useToast } from '@/hooks/use-toast';
@@ -417,10 +418,12 @@ export default function CatalogProductsPage() {
   }, []);
 
   // === RENDER ===
+    const { t: tPages } = useTranslation('pages');
+
   return (
     <ChannablePageWrapper
-      title="Catalogue Produits"
-      subtitle="Gestion"
+      title={tPages('catalogueProduits.title')}
+      subtitle={tPages('gestion.title')}
       description="Gérez, filtrez et organisez tous vos produits depuis une interface centralisée."
       heroImage="products"
       badge={{ label: `${stats.total} produits`, icon: Package }}>

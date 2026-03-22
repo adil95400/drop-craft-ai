@@ -3,6 +3,7 @@
  */
 import { useState, useEffect } from 'react';
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
+import { useTranslation } from 'react-i18next';
 import { ExtensionTokenGenerator } from '@/components/extensions/ExtensionTokenGenerator';
 import { 
   Chrome, Download, Play, CheckCircle, Settings, Zap, Star,
@@ -363,9 +364,12 @@ export default function ChromeExtensionPage() {
     return icons[platform.toLowerCase()] || '📦';
   };
 
+    const { t: tPages } = useTranslation('pages');
+
+
   return (
     <ChannablePageWrapper
-      title="Extension Navigateur"
+      title={tPages('extensionNavigateur.title')}
       description="Importez des produits directement depuis votre navigateur en un clic"
       heroImage="extensions"
       badge={{ label: 'Extension', icon: Chrome }}

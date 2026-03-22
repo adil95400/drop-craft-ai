@@ -20,6 +20,7 @@ import {
   FileJson
 } from 'lucide-react';
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
+import { useTranslation } from 'react-i18next';
 
 const ShopifyAppIntegration = () => {
   const integrationFeatures = [
@@ -76,9 +77,12 @@ const ShopifyAppIntegration = () => {
     }
   ];
 
+    const { t: tPages } = useTranslation('pages');
+
+
   return (
     <ChannablePageWrapper
-      title="Intégration Shopify App"
+      title={tPages('integrationShopifyApp.title')}
       description="Connectez Shopopti+ directement à votre boutique Shopify"
     >
       <Helmet>

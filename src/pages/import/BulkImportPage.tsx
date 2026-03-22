@@ -96,9 +96,12 @@ export default function BulkImportPage() {
     { label: 'Produits importés', value: stats.totalProducts.toString(), icon: Package },
   ]
 
+    const { t: tPages } = useTranslation('pages');
+
+
   return (
     <ChannablePageWrapper
-      title="Import en Masse"
+      title={tPages('importEnMasse.title')}
       description="Collez jusqu'à 500 URLs de produits et importez-les tous en une seule opération. Notre IA optimise automatiquement chaque fiche."
       heroImage="import"
       badge={{ label: 'Ultra Pro', icon: Sparkles }}

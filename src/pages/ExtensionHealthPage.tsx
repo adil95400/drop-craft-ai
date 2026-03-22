@@ -2,6 +2,7 @@ import { ExtensionHealthDashboard } from '@/components/extensions/ExtensionHealt
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Helmet } from 'react-helmet-async';
 import { Activity } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
 
 export default function ExtensionHealthPage() {
@@ -13,7 +14,7 @@ export default function ExtensionHealthPage() {
       </Helmet>
 
       <ChannablePageWrapper
-        title="Extension Health"
+        title={tPages('extensionHealth.title')}
         description="Surveillez les performances et la santé de l'extension en temps réel"
         heroImage="extensions"
         badge={{ label: 'Monitoring', icon: Activity }}

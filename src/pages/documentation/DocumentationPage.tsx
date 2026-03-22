@@ -21,9 +21,11 @@ export default function DocumentationPage() {
     const module = getDocumentationBySlug(moduleSlug)
     
     if (!module) {
+        const { t: tPages } = useTranslation('pages');
+
       return (
         <ChannablePageWrapper
-          title="Documentation non trouvée"
+          title={tPages('documentationNonTrouvee.title')}
           subtitle="Erreur 404"
           description="Le module demandé n'existe pas dans notre documentation."
           heroImage="support"

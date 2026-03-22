@@ -40,9 +40,12 @@ export default function CatalogHealthPage() {
 
   const gradeStyle = summary ? (GRADE_STYLES[summary.grade] || GRADE_STYLES.F) : GRADE_STYLES.F
 
+    const { t: tPages } = useTranslation('pages');
+
+
   return (
     <ChannablePageWrapper
-      title="Santé du Catalogue"
+      title={tPages('santeDuCatalogue.title')}
       description={`${summary?.totalProducts || 0} produits — Score global : ${summary?.averageScore || 0}%`}
       heroImage="products"
       badge={{ label: 'Santé', icon: HeartPulse }}

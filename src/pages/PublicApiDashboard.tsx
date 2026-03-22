@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { ChannablePageWrapper } from "@/components/channable/ChannablePageWrapper";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -64,8 +65,10 @@ export default function PublicApiDashboard() {
     toast({ title: "Copié !", description: "Code copié dans le presse-papiers" });
   };
 
+  const { t: tPages } = useTranslation('pages');
+
   return (
-    <ChannablePageWrapper title="API Publique">
+    <ChannablePageWrapper title={tPages('apiPublique.title')}>
       <div className="space-y-6">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">

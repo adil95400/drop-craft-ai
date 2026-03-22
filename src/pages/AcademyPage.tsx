@@ -29,7 +29,7 @@ export default function AcademyPage() {
       </Helmet>
 
       <ChannablePageWrapper
-        title="ShopOpti Academy"
+        title={tPages('shopoptiAcademy.title')}
         description="Formations, quiz interactifs et certifications"
         heroImage="support"
         badge={{ label: 'Academy', icon: GraduationCap }}

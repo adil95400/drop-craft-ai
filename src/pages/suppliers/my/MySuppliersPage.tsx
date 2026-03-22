@@ -64,9 +64,12 @@ export default function MySuppliersPage() {
     }
   }
 
+    const { t: tPages } = useTranslation('pages');
+
+
   return (
     <ChannablePageWrapper
-      title="Mes Fournisseurs"
+      title={tPages('mesFournisseurs.title')}
       subtitle="Gérez vos fournisseurs connectés"
       description="Synchronisez, importez et configurez vos fournisseurs en temps réel."
       heroImage="suppliers"

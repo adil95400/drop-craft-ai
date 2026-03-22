@@ -2,12 +2,15 @@ import { InternationalizationHub } from "@/components/internationalization/Inter
 import { AdvancedFeatureGuide, ADVANCED_GUIDES } from '@/components/guide';
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
 import { Globe } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 const InternationalizationPage = () => {
+  const { t } = useTranslation('pages');
+
   return (
     <ChannablePageWrapper
-      title="Internationalisation"
-      description="Traduisez et adaptez vos contenus pour tous vos marchés"
+      title={t('internationalisation.title')}
+      description={t('internationalisation.description')}
       heroImage="integrations"
       badge={{ label: 'i18n', icon: Globe }}
     >

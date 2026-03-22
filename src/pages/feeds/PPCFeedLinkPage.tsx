@@ -6,13 +6,16 @@ import { PPCFeedLinkDashboard } from '@/components/ppc-feed-link';
 import { PPCAutomationEngine } from '@/components/ppc/PPCAutomationEngine';
 import { FeedSubNavigation } from '@/components/feeds/FeedSubNavigation';
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
+import { useTranslation } from 'react-i18next';
 import { AdvancedFeatureGuide, ADVANCED_GUIDES } from '@/components/guide';
 import { Link2, Brain } from 'lucide-react';
 
 export default function PPCFeedLinkPage() {
+    const { t: tPages } = useTranslation('pages');
+
   return (
     <ChannablePageWrapper
-      title="PPC Automation"
+      title={tPages('ppcAutomation.title')}
       subtitle="Feeds & Publicité"
       description="Connectez vos feeds aux campagnes publicitaires avec automatisation IA avancée"
       heroImage="analytics"

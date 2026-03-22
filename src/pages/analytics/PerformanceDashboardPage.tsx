@@ -4,6 +4,7 @@
  */
 import { Helmet } from 'react-helmet-async';
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
+import { useTranslation } from 'react-i18next';
 import { PerformanceMonitorDashboard } from '@/components/performance/PerformanceMonitorDashboard';
 import { ResourceWaterfall } from '@/components/performance/ResourceWaterfall';
 import { BundleAnalyzer } from '@/components/performance/BundleAnalyzer';
@@ -21,7 +22,7 @@ export default function PerformanceDashboardPage() {
       </Helmet>
 
       <ChannablePageWrapper
-        title="Performance & Optimisation"
+        title={tPages('performanceOptimisation.title')}
         description="Web Vitals, analyse de bundle, waterfall réseau et recommandations IA en temps réel"
         heroImage="analytics"
         badge={{ label: 'Temps réel', icon: Gauge }}

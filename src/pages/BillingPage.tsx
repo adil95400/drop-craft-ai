@@ -44,9 +44,11 @@ export default function BillingPage() {
   }
 
   if (loading) {
+      const { t: tPages } = useTranslation('pages');
+
     return (
       <ChannablePageWrapper
-        title="Facturation & Paiements"
+        title={tPages('facturationPaiements.title')}
         subtitle="Abonnement"
         description="Chargement de vos informations de facturation..."
         heroImage="settings"
@@ -62,7 +64,7 @@ export default function BillingPage() {
 
   return (
     <ChannablePageWrapper
-      title="Facturation & Paiements"
+      title={tPages('facturationPaiements.title')}
       subtitle="Abonnement"
       description="Gérez votre abonnement, vos méthodes de paiement et consultez vos factures."
       heroImage="settings"

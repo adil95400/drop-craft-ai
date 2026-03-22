@@ -96,7 +96,7 @@ export default function APIManagementPage() {
       </Helmet>
 
       <ChannablePageWrapper
-        title="Gestion API"
+        title={tPages('gestionApi.title')}
         subtitle="Clés & Accès"
         description="Gérez vos clés API, surveillez l'utilisation et consultez les logs d'activité"
         heroImage="schema"

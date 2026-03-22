@@ -21,6 +21,7 @@ import { SEO } from "@/components/SEO";
 import { useSEOKeywords } from "@/hooks/useSEOKeywords";
 import { useNavigate } from "react-router-dom";
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
+import { useTranslation } from 'react-i18next';
 
 const RankTracker = () => {
   const navigate = useNavigate();
@@ -80,7 +81,7 @@ const RankTracker = () => {
       />
 
       <ChannablePageWrapper
-        title="Suivi Positions"
+        title={tPages('suiviPositions.title')}
         description="Suivez vos positions dans les moteurs de recherche"
         heroImage="research"
         badge={{ label: 'SEO', icon: BarChart3 }}

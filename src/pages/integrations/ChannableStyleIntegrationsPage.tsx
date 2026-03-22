@@ -1195,7 +1195,7 @@ export default function ChannableStyleIntegrationsPage() {
       </Helmet>
 
       <ChannablePageWrapper
-        title="Hub d'Intégrations"
+        title={tPages('hubDIntegrations.title')}
         subtitle="Connecteurs eCommerce"
         description={`Connectez tous vos canaux de vente depuis une seule plateforme. Plus de ${integrationDefinitions.length} connecteurs disponibles.`}
         heroImage="marketing"

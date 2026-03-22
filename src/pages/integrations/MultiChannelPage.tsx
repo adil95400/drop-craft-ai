@@ -3,6 +3,7 @@ import { Helmet } from 'react-helmet-async';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { MultiChannelDashboard, ChannelFeedManager } from '@/components/multi-channel';
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
+import { useTranslation } from 'react-i18next';
 import { Layers } from 'lucide-react';
 
 export default function MultiChannelPage() {
@@ -16,7 +17,7 @@ export default function MultiChannelPage() {
       </Helmet>
       
       <ChannablePageWrapper
-        title="Gestion Multi-Canal"
+        title={tPages('gestionMultiCanal.title')}
         description="Synchronisez vos produits et commandes sur tous vos canaux de vente"
         heroImage="integrations"
         badge={{ label: 'Multi-Canal', icon: Layers }}

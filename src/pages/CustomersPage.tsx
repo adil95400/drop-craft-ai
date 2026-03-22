@@ -185,9 +185,12 @@ export default function CustomersPage() {
 
   const hasConnectedStores = connectedIntegrations.length > 0
 
+    const { t: tPages } = useTranslation('pages');
+
+
   return (
     <ChannablePageWrapper
-      title="Gestion Clients"
+      title={tPages('gestionClients.title')}
       subtitle="CRM Intégré"
       description="Gérez votre base clients, analysez leur comportement d'achat et synchronisez avec vos boutiques en temps réel."
       heroImage="marketing"

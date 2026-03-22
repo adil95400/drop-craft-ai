@@ -15,6 +15,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Dialog
 import { Progress } from '@/components/ui/progress';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
+import { useTranslation } from 'react-i18next';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuthOptimized } from '@/shared/hooks/useAuthOptimized';
@@ -163,7 +164,7 @@ export default function AdvancedReturnsPage() {
     <>
       <Helmet><title>Retours & Réclamations — Drop-Craft AI</title></Helmet>
       <ChannablePageWrapper
-        title="Retours & Réclamations"
+        title={tPages('retoursReclamations.title')}
         description="Gérez les retours produits, réclamations et remboursements"
         badge={{ label: 'Retours', icon: RotateCcw }}
       >

@@ -34,9 +34,12 @@ export default function FeedDiagnostics() {
     return 'text-destructive'
   }
 
+    const { t: tPages } = useTranslation('pages');
+
+
   return (
     <ChannablePageWrapper
-      title="Diagnostics Feed"
+      title={tPages('diagnosticsFeed.title')}
       description="Analysez la qualité de votre catalogue par canal de vente"
       heroImage="analytics"
       badge={{ label: 'Analytics' }}

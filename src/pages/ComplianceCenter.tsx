@@ -261,9 +261,12 @@ export default function ComplianceCenter() {
     )
   }
 
+    const { t: tPages } = useTranslation('pages');
+
+
   return (
     <ChannablePageWrapper
-      title="Centre de Conformité"
+      title={tPages('centreDeConformite.title')}
       description="Gestion et surveillance de la conformité réglementaire"
       heroImage="settings"
       badge={{ label: 'Compliance', icon: Shield }}

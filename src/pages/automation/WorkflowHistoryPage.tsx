@@ -106,7 +106,7 @@ export default function WorkflowHistoryPage() {
         <meta name="description" content="Consultez l'historique d'exécution de vos workflows automatisés." />
       </Helmet>
       <ChannablePageWrapper
-        title="Historique d'Exécution"
+        title={tPages('historiqueDExecution.title')}
         subtitle="Automation"
         description="Suivez l'exécution de vos workflows automatisés en temps réel"
         heroImage="automation"

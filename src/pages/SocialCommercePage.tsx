@@ -12,6 +12,7 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { TikTokShopConnector } from '@/components/marketplace/TikTokShopConnector';
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
+import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -108,7 +109,7 @@ export default function SocialCommercePage() {
       </Helmet>
 
       <ChannablePageWrapper
-        title="Social Commerce"
+        title={tPages('socialCommerce.title')}
         subtitle="Marketing"
         description="Vendez directement sur les réseaux sociaux avec synchronisation automatique"
         heroImage="marketing"

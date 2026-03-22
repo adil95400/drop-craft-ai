@@ -7,7 +7,8 @@ import commonDe from '@/locales/de/common.json';
 const namespaces = [
   'common', 'settings', 'navigation', 'dashboard', 'products', 'orders',
   'suppliers', 'marketing', 'monitoring', 'fulfillment', 'channels',
-  'audit', 'auth', 'analytics', 'automation', 'crm', 'extensions', 'billing'
+  'audit', 'auth', 'analytics', 'automation', 'crm', 'extensions', 'billing',
+  'pages'
 ];
 
 const languages = ['fr', 'en', 'es', 'de'];

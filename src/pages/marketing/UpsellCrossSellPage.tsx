@@ -14,6 +14,7 @@ import {
   Eye, ShoppingCart, Target, BarChart3, Percent
 } from 'lucide-react';
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
+import { useTranslation } from 'react-i18next';
 import { useUpsellRules } from '@/hooks/useUpsellRules';
 
 export default function UpsellCrossSellPage() {
@@ -52,8 +53,8 @@ export default function UpsellCrossSellPage() {
       </Helmet>
 
       <ChannablePageWrapper
-        title="Upsell & Cross-Sell"
-        subtitle="Marketing"
+        title={tPages('upsellCrossSell.title')}
+        subtitle={tPages('marketing.title')}
         description="Augmentez votre panier moyen avec des recommandations intelligentes"
         heroImage="marketing"
         badge={{ label: "Revenue", icon: ArrowUpRight }}

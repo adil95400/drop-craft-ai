@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
+import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -150,10 +151,12 @@ export default function ProductPublishing() {
   };
 
   if (isLoading) {
+      const { t: tPages } = useTranslation('pages');
+
     return (
       <ChannablePageWrapper
-        title="Publication des Produits"
-        description="Gérez la publication de vos produits vers votre catalogue principal"
+        title={tPages('publicationDesProduits.title')}
+        description={tPages('publicationDesProduits.description')}
         heroImage="products"
         badge={{ label: 'Publication', icon: Upload }}
       >
@@ -171,8 +174,8 @@ export default function ProductPublishing() {
 
   return (
     <ChannablePageWrapper
-      title="Publication des Produits"
-      description="Gérez la publication de vos produits vers votre catalogue principal"
+      title={tPages('publicationDesProduits.title')}
+      description={tPages('publicationDesProduits.description')}
       heroImage="products"
       badge={{ label: 'Publication', icon: Upload }}
       actions={

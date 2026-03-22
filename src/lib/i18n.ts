@@ -110,6 +110,12 @@ import billingEn from '@/locales/en/billing.json';
 import billingEs from '@/locales/es/billing.json';
 import billingDe from '@/locales/de/billing.json';
 
+// Pages (page titles & descriptions)
+import pagesFr from '@/locales/fr/pages.json';
+import pagesEn from '@/locales/en/pages.json';
+import pagesEs from '@/locales/es/pages.json';
+import pagesDe from '@/locales/de/pages.json';
+
 const resources = {
   fr: {
     common: commonFr,
@@ -130,6 +136,7 @@ const resources = {
     crm: crmFr,
     extensions: extensionsFr,
     billing: billingFr,
+    pages: pagesFr,
   },
   en: {
     common: commonEn,
@@ -150,6 +157,7 @@ const resources = {
     crm: crmEn,
     extensions: extensionsEn,
     billing: billingEn,
+    pages: pagesEn,
   },
   es: {
     common: commonEs,
@@ -170,6 +178,7 @@ const resources = {
     crm: crmEs,
     extensions: extensionsEs,
     billing: billingEs,
+    pages: pagesEs,
   },
   de: {
     common: commonDe,
@@ -190,6 +199,7 @@ const resources = {
     crm: crmDe,
     extensions: extensionsDe,
     billing: billingDe,
+    pages: pagesDe,
   },
 };
 

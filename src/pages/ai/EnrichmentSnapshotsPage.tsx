@@ -94,9 +94,12 @@ export default function EnrichmentSnapshotsPage() {
     }
   }
 
+    const { t: tPages } = useTranslation('pages');
+
+
   return (
     <ChannablePageWrapper
-      title="Snapshots d'Enrichissement"
+      title={tPages('snapshotsDEnrichissement.title')}
       description="Historique diff complet des contenus générés par l'IA avec comparaison avant/après."
       heroImage="ai"
       badge={{ label: 'Historique IA', icon: History }}

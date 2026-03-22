@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { useStockSync } from '@/hooks/useStockSync';
 import { usePricingRules } from '@/hooks/usePricingRules';
 import { RefreshCw, AlertTriangle, DollarSign, TrendingUp, History, Zap } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { StockSyncConfigurator } from '@/components/stock/StockSyncConfigurator';
 import { PricingRulesManager } from '@/components/stock/PricingRulesManager';
 import { PriceHistoryView } from '@/components/stock/PriceHistoryView';
@@ -25,7 +26,7 @@ export default function StockRepricingHub() {
       </Helmet>
 
       <ChannablePageWrapper
-        title="Stock Live & Repricing"
+        title={tPages('stockLiveRepricing.title')}
         description={`${stockSync.stats.totalConfigs} configs • ${pricingRules.stats.totalRules} règles pricing • ${stockSync.stats.activeAlerts} alertes`}
         heroImage="stock"
         badge={{ label: 'Temps Réel', icon: TrendingUp }}

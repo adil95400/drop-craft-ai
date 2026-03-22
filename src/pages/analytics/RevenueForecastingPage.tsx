@@ -83,9 +83,12 @@ export default function RevenueForecastingPage() {
 
   const formatCurrency = (v: number) => new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(v)
 
+    const { t: tPages } = useTranslation('pages');
+
+
   return (
     <ChannablePageWrapper
-      title="Prévisions de Revenus"
+      title={tPages('previsionsDeRevenus.title')}
       description="Projections financières basées sur les tendances historiques et l'analyse IA de votre catalogue."
       heroImage="analytics"
       badge={{ label: 'Forecasting', icon: Brain }}

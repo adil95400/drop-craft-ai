@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Calculator, FileText, Globe, DollarSign, AlertCircle } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
 
 const TaxManagementPage: React.FC = () => {
@@ -54,9 +55,12 @@ const TaxManagementPage: React.FC = () => {
     },
   });
 
+    const { t: tPages } = useTranslation('pages');
+
+
   return (
     <ChannablePageWrapper
-      title="Gestion Fiscale"
+      title={tPages('gestionFiscale.title')}
       description="Gérez vos taxes et obligations fiscales"
       heroImage="settings"
       badge={{ label: 'Taxes', icon: Calculator }}

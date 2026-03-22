@@ -13,9 +13,12 @@ import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrappe
 export default function CompetitorAnalysisPage() {
   const navigate = useNavigate()
 
+    const { t: tPages } = useTranslation('pages');
+
+
   return (
     <ChannablePageWrapper
-      title="Analyse Concurrentielle"
+      title={tPages('analyseConcurrentielle.title')}
       description="Surveillez vos concurrents et restez compétitif"
       heroImage="research"
       badge={{ label: 'Veille', icon: Eye }}

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -64,7 +65,7 @@ export default function CustomerServiceHubPage() {
       </Helmet>
 
       <ChannablePageWrapper
-        title="Service Client"
+        title={tPages('serviceClient.title')}
         description="Gérez vos tickets, enquêtes de satisfaction, remboursements et rappels d'avis"
         heroImage="customers"
         badge={{ label: "Support", icon: Headphones }}

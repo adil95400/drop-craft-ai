@@ -55,9 +55,12 @@ export default function ImportedProductsList() {
     }
   }
 
+    const { t: tPages } = useTranslation('pages');
+
+
   return (
     <ChannablePageWrapper
-      title="Produits Importés"
+      title={tPages('produitsImportes.title')}
       description="Liste complète de tous vos produits importés"
       heroImage="import"
       badge={{ label: 'Catalogue', icon: Package }}

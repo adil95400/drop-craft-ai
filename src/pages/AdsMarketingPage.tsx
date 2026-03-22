@@ -85,9 +85,12 @@ const AdsMarketingPage = () => {
     setCampaignDialogOpen(false);
   };
 
+    const { t: tPages } = useTranslation('pages');
+
+
   return (
     <ChannablePageWrapper
-      title="Ads & Marketing"
+      title={tPages('adsMarketing.title')}
       description="Gestion des campagnes publicitaires et analyse ROI"
       heroImage="marketing"
       badge={{ label: 'Ads', icon: Target }}

@@ -4,6 +4,7 @@
  */
 import { Helmet } from 'react-helmet-async';
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -115,7 +116,7 @@ export default function PricingManagerHub() {
       </Helmet>
 
       <ChannablePageWrapper
-        title="Gestionnaire de Prix"
+        title={tPages('gestionnaireDePrix.title')}
         description="Centralisez et automatisez votre stratégie tarifaire"
         heroImage="products"
         badge={{ label: 'Pricing', icon: DollarSign }}

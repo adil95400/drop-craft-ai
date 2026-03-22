@@ -54,10 +54,13 @@ export default function VariantsPage() {
     }
   }
 
+    const { t: tPages } = useTranslation('pages');
+
+
   return (
     <ChannablePageWrapper
-      title="Variantes"
-      subtitle="Gestion des anomalies"
+      title={tPages('variantes.title')}
+      subtitle={tPages('gestionDesAnomalies.title')}
       description="Identifiez et corrigez les problèmes de variantes produits"
       heroImage="products"
       badge={{ label: `${totalIssues} problèmes`, variant: totalIssues > 0 ? 'destructive' : 'secondary' }}

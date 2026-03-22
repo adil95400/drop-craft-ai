@@ -16,7 +16,7 @@ export default function AutoTrackingPage() {
       </Helmet>
 
       <ChannablePageWrapper
-        title="Tracking Automatique"
+        title={tPages('trackingAutomatique.title')}
         description="Suivez vos colis en temps réel et injectez automatiquement les numéros de suivi"
         heroImage="automation"
         badge={{ label: 'Tracking', icon: Truck }}

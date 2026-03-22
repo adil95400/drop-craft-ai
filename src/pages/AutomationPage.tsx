@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Zap, List, Activity, Plus, Play, Pause, Trash2, RefreshCw, CheckCircle2, XCircle, Clock, FlaskConical, LayoutTemplate, GitBranch, BarChart3, Terminal, Calendar } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { useAutomationWorkflows, useAutomationStats } from '@/hooks/useAutomationRealData';
 import { formatDistanceToNow } from 'date-fns';
 import { getDateFnsLocale } from '@/utils/dateFnsLocale';
@@ -96,9 +97,12 @@ export default function AutomationPage() {
 
   const LazyFallback = <Skeleton className="h-[400px] w-full rounded-xl" />;
 
+    const { t: tPages } = useTranslation('pages');
+
+
   return (
     <ChannablePageWrapper
-      title="Automation Engine"
+      title={tPages('automationEngine.title')}
       subtitle="Workflows & Rules"
       description="Automatisez vos tâches avec un moteur de règles intelligent"
       heroImage="ai"

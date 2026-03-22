@@ -3,6 +3,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { usePredictiveAnalytics } from '@/hooks/useMarketplacePhase2';
 import { TrendingUp, TrendingDown, AlertTriangle, DollarSign } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { useAuthOptimized } from '@/shared';
 import { AdvancedFeatureGuide, ADVANCED_GUIDES } from '@/components/guide';
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
@@ -19,7 +20,7 @@ export default function PredictiveAnalyticsPage() {
       </Helmet>
 
       <ChannablePageWrapper
-        title="Analytics Prédictive"
+        title={tPages('analyticsPredictive.title')}
         description="Anticipez vos ventes et optimisez votre stratégie avec l'intelligence artificielle"
         heroImage="analytics"
         badge={{ label: 'Prédictif', icon: TrendingUp }}

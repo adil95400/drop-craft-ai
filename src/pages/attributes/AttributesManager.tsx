@@ -123,9 +123,12 @@ export default function AttributesManager() {
     ? Math.round((attributes.reduce((sum, a) => sum + (a.confidence_score || 0), 0) / attributes.length) * 100)
     : 0
 
+    const { t: tPages } = useTranslation('pages');
+
+
   return (
     <ChannablePageWrapper
-      title="Gestionnaire d'Attributs IA"
+      title={tPages('gestionnaireDAttributsIa.title')}
       subtitle="Catégorisation et optimisation pour Google AI / ChatGPT Shopping"
       heroImage="schema"
       actions={

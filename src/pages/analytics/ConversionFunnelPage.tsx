@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, FunnelChart, Funnel, LabelList, Cell } from 'recharts';
 import { TrendingDown, TrendingUp, Eye, ShoppingCart, CreditCard, CheckCircle, MousePointerClick, BarChart3 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
 
 const FUNNEL_DATA = [
@@ -34,9 +35,12 @@ const ConversionFunnelPage = () => {
   const [period, setPeriod] = useState('7d');
   const overallRate = ((756 / 12450) * 100).toFixed(1);
 
+    const { t: tPages } = useTranslation('pages');
+
+
   return (
     <ChannablePageWrapper
-      title="Tunnel de conversion"
+      title={tPages('tunnelDeConversion.title')}
       description="Analysez chaque étape du parcours d'achat et identifiez les points d'abandon"
     >
       <div className="space-y-6">

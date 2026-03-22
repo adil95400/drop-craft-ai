@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
+import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { useSEOContentGenerator } from '@/hooks/useSEOKeywords';
 import {
@@ -181,7 +182,7 @@ export default function SEOHubPage() {
       </Helmet>
 
       <ChannablePageWrapper
-        title="Hub SEO & Contenu"
+        title={tPages('hubSeoContenu.title')}
         description="Centre de commande pour l'optimisation SEO et la génération de contenu multilingue"
         heroImage="seo"
         badge={{ label: 'SEO Pro', icon: Search }}

@@ -11,6 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
+import { useTranslation } from 'react-i18next';
 import { useInventoryManagement } from '@/hooks/useInventoryManagement';
 import { useStockSync } from '@/hooks/useStockSync';
 import { useQuery } from '@tanstack/react-query';
@@ -707,9 +708,12 @@ function WarehousesTab() {
 export default function InventoryHubPage() {
   const { stats } = useInventoryManagement();
 
+    const { t: tPages } = useTranslation('pages');
+
+
   return (
     <ChannablePageWrapper
-      title="Gestion des Stocks Temps Réel"
+      title={tPages('gestionDesStocksTempsReel.title')}
       description="Synchronisation temps réel, prévisions IA, alertes automatiques et multi-entrepôts"
       heroImage="stock"
       badge={{ label: 'Stock Intelligence', icon: Boxes }}

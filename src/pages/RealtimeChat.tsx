@@ -18,9 +18,11 @@ import { RealtimePresence } from '@/components/realtime/RealtimePresence'
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper'
 
 const RealtimeChat: React.FC = () => {
+    const { t: tPages } = useTranslation('pages');
+
   return (
     <ChannablePageWrapper
-      title="Chat IA Temps Réel"
+      title={tPages('chatIaTempsReel.title')}
       description="Communiquez avec l'assistant IA par voix ou texte en temps réel"
       heroImage="ai"
       badge={{ label: 'Ultra Pro', icon: Zap }}

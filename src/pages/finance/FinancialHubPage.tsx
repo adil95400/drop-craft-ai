@@ -8,6 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
+import { useTranslation } from 'react-i18next';
 import { useFinancialManagement } from '@/hooks/useFinancialManagement';
 import { DollarSign, TrendingUp, TrendingDown, Receipt, Plus, Trash2, ArrowUpRight, ArrowDownRight, PieChart, Calculator } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
@@ -62,9 +63,12 @@ export default function FinancialHubPage() {
 
   const fmt = (n: number) => new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(n);
 
+    const { t: tPages } = useTranslation('pages');
+
+
   return (
     <ChannablePageWrapper
-      title="Gestion Financière"
+      title={tPages('gestionFinanciere.title')}
       description="P&L, dépenses, taxes et prévisions de trésorerie"
       heroImage="analytics"
       badge={{ label: 'Finance', icon: DollarSign }}

@@ -32,6 +32,7 @@ import { cn } from '@/lib/utils';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
 import { useNotificationPreferences, NOTIFICATION_CATEGORIES, type NotificationPreferences } from '@/hooks/useNotificationPreferences';
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
+import { useTranslation } from 'react-i18next';
 import { ChannableStatsGrid } from '@/components/channable';
 import { AdvancedFeatureGuide, ADVANCED_GUIDES } from '@/components/guide';
 import { ChannableStat } from '@/components/channable/types';
@@ -329,10 +330,13 @@ export default function NotificationsPage() {
     toast.success('Notifications actualisées');
   };
 
+    const { t: tPages } = useTranslation('pages');
+
+
   return (
     <ChannablePageWrapper
-      title="Centre de Notifications"
-      subtitle="Alertes & Messages"
+      title={tPages('centreDeNotifications.title')}
+      subtitle={tPages('alertesMessages.title')}
       description="Consultez vos notifications, gérez vos préférences d'alertes et restez informé de l'activité de votre boutique."
       heroImage="notifications"
       badge={{

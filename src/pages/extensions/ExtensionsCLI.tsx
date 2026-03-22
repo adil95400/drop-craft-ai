@@ -2,6 +2,7 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Terminal, Copy, Check, Code, ArrowRight, ExternalLink, Zap, Settings, Upload, Download, RefreshCw } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
@@ -94,9 +95,12 @@ export default function ExtensionsCLI() {
     }
   ];
 
+    const { t: tPages } = useTranslation('pages');
+
+
   return (
     <ChannablePageWrapper
-      title="Outils CLI ShopOpti"
+      title={tPages('outilsCliShopopti.title')}
       subtitle="Ligne de Commande"
       description="Développez et déployez vos extensions en ligne de commande avec notre CLI puissant et flexible."
       heroImage="extensions"

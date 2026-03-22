@@ -4,6 +4,7 @@
 
 import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Helmet } from 'react-helmet-async';
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
@@ -291,7 +292,7 @@ export default function SupportMainPage() {
       </Helmet>
 
       <ChannablePageWrapper
-        title="Centre de Support"
+        title={tPages('centreDeSupport.title')}
         subtitle="Aide & Assistance"
         description="Support 24/7, documentation complète et réponses à toutes vos questions. Notre équipe est là pour vous aider."
         heroImage="support"

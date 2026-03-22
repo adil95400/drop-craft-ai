@@ -40,9 +40,12 @@ export default function OnboardingHubPage() {
     return tutorialVideoIds.every(id => progress[id]?.completed)
   }).length
 
+    const { t: tPages } = useTranslation('pages');
+
+
   return (
     <ChannablePageWrapper
-      title="Guide de démarrage"
+      title={tPages('guideDeDemarrage.title')}
       description="Maîtrisez toutes les fonctionnalités avec nos tutoriels interactifs et vidéos guidées."
       heroImage="support"
       badge={{ label: 'Formation', icon: GraduationCap }}

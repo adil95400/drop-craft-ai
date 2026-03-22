@@ -164,9 +164,12 @@ export default function VideoTutorialsAdmin() {
     }
   }
 
+    const { t: tPages } = useTranslation('pages');
+
+
   return (
     <ChannablePageWrapper
-      title="Gestion des Vidéos Tutoriels"
+      title={tPages('gestionDesVideosTutoriels.title')}
       description="Ajoutez et gérez les vidéos tutoriels pour les guides d'intégration"
       heroImage="support"
       badge={{ label: 'Admin', icon: Video }}

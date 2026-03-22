@@ -5,6 +5,7 @@
 import { useState, useMemo } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -139,7 +140,7 @@ export default function MarginCalculatorPage() {
       </Helmet>
 
       <ChannablePageWrapper
-        title="Calculateur de Marge"
+        title={tPages('calculateurDeMarge.title')}
         description="Simulez votre rentabilité par produit avec tous les coûts inclus"
         heroImage="products"
         badge={{ label: 'Calculator', icon: Calculator }}

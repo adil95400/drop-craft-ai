@@ -6,6 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Shield, Lock, AlertTriangle, CheckCircle2, Eye, Key, Search, Download, RefreshCw, Clock, User, Globe, Smartphone } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
 import { useAuditLogs, useAuditStatistics } from '@/hooks/useAuditLog';
 import { formatDistanceToNow } from 'date-fns';
@@ -55,9 +56,12 @@ export default function SecurityDashboard() {
 
   const securityScore = stats ? Math.min(100, 70 + (stats as any).totalEvents > 0 ? 25 : 0) : 95;
 
+    const { t: tPages } = useTranslation('pages');
+
+
   return (
     <ChannablePageWrapper
-      title="Sécurité & Compliance"
+      title={tPages('securiteCompliance.title')}
       description="2FA, audit logs, RGPD et conformité enterprise"
       heroImage="settings"
       badge={{ label: 'Ultra Pro', icon: Shield }}

@@ -130,9 +130,12 @@ export default function PreImportRulesPage() {
   const activeRules = rules.filter(r => r.isActive).length
   const totalMatches = rules.reduce((s, r) => s + r.matchCount, 0)
 
+    const { t: tPages } = useTranslation('pages');
+
+
   return (
     <ChannablePageWrapper
-      title="Règles Pré-Import"
+      title={tPages('reglesPreImport.title')}
       description="Définissez des règles automatiques appliquées avant l'entrée des produits dans votre catalogue."
       heroImage="import"
       badge={{ label: 'Automation', icon: Shield }}

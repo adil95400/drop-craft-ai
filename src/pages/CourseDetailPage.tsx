@@ -1,4 +1,5 @@
 import { useParams, Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
 import { Helmet } from 'react-helmet-async';
 import { useQuery } from '@tanstack/react-query';
@@ -94,9 +95,11 @@ export default function CourseDetailPage() {
   }, [currentLesson]);
 
   if (courseLoading || lessonsLoading) {
+      const { t: tPages } = useTranslation('pages');
+
     return (
       <ChannablePageWrapper
-        title="Chargement…"
+        title={tPages('chargement.title')}
         description="Chargement du cours"
         heroImage="support"
         badge={{ label: 'Academy', icon: BookOpen }}
@@ -122,7 +125,7 @@ export default function CourseDetailPage() {
   if (!course) {
     return (
       <ChannablePageWrapper
-        title="Cours non trouvé"
+        title={tPages('coursNonTrouve.title')}
         description="Le cours demandé n'existe pas"
         heroImage="support"
         badge={{ label: 'Academy', icon: BookOpen }}

@@ -6,6 +6,7 @@ import { Download, Chrome, Globe, CheckCircle, AlertCircle } from "lucide-react"
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
+import { useTranslation } from 'react-i18next';
 
 export const ExtensionDownloadPage = () => {
   const [isDownloading, setIsDownloading] = useState(false);
@@ -49,9 +50,12 @@ export const ExtensionDownloadPage = () => {
     { title: "Charger l'extension", description: "Cliquez sur 'Charger l'extension non empaquetée' et sélectionnez le dossier extrait", completed: false }
   ];
 
+    const { t: tPages } = useTranslation('pages');
+
+
   return (
     <ChannablePageWrapper
-      title="Extension Drop Craft AI"
+      title={tPages('extensionDropCraftAi.title')}
       description="Scrapez automatiquement les produits e-commerce depuis n'importe quel site web"
       heroImage="extensions"
       badge={{ label: 'Extension', icon: Chrome }}

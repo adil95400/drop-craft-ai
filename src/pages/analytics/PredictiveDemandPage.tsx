@@ -7,6 +7,7 @@ import { Helmet } from 'react-helmet-async';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
@@ -168,8 +169,10 @@ export default function PredictiveDemandPage() {
   }));
 
   if (isLoading) {
+      const { t: tPages } = useTranslation('pages');
+
     return (
-      <ChannablePageWrapper title="Prédictions de Demande" description="" heroImage="analytics" badge={{ label: 'Prédictif', icon: Brain }}>
+      <ChannablePageWrapper title={tPages('predictionsDeDemande.title')} description="" heroImage="analytics" badge={{ label: 'Prédictif', icon: Brain }}>
         <div className="flex items-center justify-center py-20">
           <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
         </div>
@@ -185,7 +188,7 @@ export default function PredictiveDemandPage() {
       </Helmet>
 
       <ChannablePageWrapper
-        title="Prédictions de Demande"
+        title={tPages('predictionsDeDemande.title')}
         description="Analyse prédictive par produit avec alertes de stock et recommandations de réapprovisionnement"
         heroImage="analytics"
         badge={{ label: 'IA Prédictive', icon: Brain }}

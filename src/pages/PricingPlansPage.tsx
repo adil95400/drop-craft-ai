@@ -3,6 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Check, Crown, Zap, Sparkles, ArrowRight } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { usePlan } from '@/hooks/usePlan';
 import { toast } from 'sonner';
@@ -92,9 +93,12 @@ export default function PricingPlansPage() {
     }
   };
 
+    const { t: tPages } = useTranslation('pages');
+
+
   return (
     <ChannablePageWrapper
-      title="Choisissez votre plan idéal"
+      title={tPages('choisissezVotrePlanIdeal.title')}
       description="Évoluez à votre rythme avec des plans flexibles adaptés à vos besoins"
       heroImage="settings"
       badge={{ label: 'Plans & Tarifs', icon: Crown }}

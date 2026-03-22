@@ -43,6 +43,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
+import { useTranslation } from 'react-i18next';
 import { Switch } from '@/components/ui/switch';
 import { Progress } from '@/components/ui/progress';
 import { toast } from 'sonner';
@@ -489,7 +490,7 @@ export default function MarketplaceIntegrationsPage() {
       </Helmet>
 
       <ChannablePageWrapper
-        title="Marketplace"
+        title={tPages('marketplace.title')}
         subtitle="Services & Intégrations"
         description={`Explorez ${SERVICES.length + CONNECTORS.length}+ services, connecteurs et SDK pour étendre votre plateforme`}
         heroImage="marketing"

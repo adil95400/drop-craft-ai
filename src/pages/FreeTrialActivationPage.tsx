@@ -33,9 +33,11 @@ export default function FreeTrialActivationPage() {
   }
 
   if (hasUsedTrial) {
+      const { t: tPages } = useTranslation('pages');
+
     return (
       <ChannablePageWrapper
-        title="Essai déjà utilisé"
+        title={tPages('essaiDejaUtilise.title')}
         description="Vous avez déjà utilisé votre période d'essai gratuite"
         heroImage="settings"
         badge={{ label: 'Essai', icon: Clock }}

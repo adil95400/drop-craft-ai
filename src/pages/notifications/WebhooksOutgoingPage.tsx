@@ -3,6 +3,7 @@
  */
 import { useState } from 'react';
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -105,10 +106,13 @@ export default function WebhooksOutgoingPage() {
     toast.success(`Test envoyé à ${endpoint.url}`);
   };
 
+    const { t: tPages } = useTranslation('pages');
+
+
   return (
     <ChannablePageWrapper
-      title="Webhooks Sortants"
-      subtitle="Communication"
+      title={tPages('webhooksSortants.title')}
+      subtitle={tPages('communication.title')}
       description="Configurez des webhooks pour envoyer des événements en temps réel à vos systèmes externes"
       heroImage="notifications"
       badge={{ label: `${endpoints.filter(e => e.enabled).length} actifs`, icon: Webhook }}

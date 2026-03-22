@@ -4,6 +4,7 @@
 import { useState } from 'react';
 import { SEO } from '@/components/SEO';
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -238,7 +239,7 @@ export default function InboundWebhooksPage() {
         path="/integrations/webhooks"
       />
       <ChannablePageWrapper
-        title="Webhooks Entrants"
+        title={tPages('webhooksEntrants.title')}
         description="Recevez les notifications de vos marketplaces en temps réel (commandes, stock, prix)"
         heroImage="integrations"
         badge={{ label: 'Temps réel', icon: Zap }}

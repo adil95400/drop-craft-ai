@@ -4,6 +4,7 @@
  */
 import { Helmet } from 'react-helmet-async';
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
+import { useTranslation } from 'react-i18next';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { CohortAnalysis } from '@/components/analytics/CohortAnalysis';
 import { SmartAlertsEngine } from '@/components/analytics/SmartAlertsEngine';
@@ -19,7 +20,7 @@ export default function BIAdvancedDashboardPage() {
       </Helmet>
 
       <ChannablePageWrapper
-        title="Business Intelligence Avancé"
+        title={tPages('businessIntelligenceAvance.title')}
         description="Cohortes, alertes intelligentes et rapports automatisés"
         heroImage="analytics"
         badge={{ label: 'BI Pro', icon: BarChart3 }}

@@ -47,8 +47,10 @@ export default function ProductCockpitPage() {
     : 0
 
   if (isLoading) {
+      const { t: tPages } = useTranslation('pages');
+
     return (
-      <ChannablePageWrapper title="Cockpit Business" description="Chargement…" heroImage="analytics" badge={{ label: 'Cockpit BI', icon: TrendingUp }}>
+      <ChannablePageWrapper title={tPages('cockpitBusiness.title')} description={tPages('loading.description')} heroImage="analytics" badge={{ label: 'Cockpit BI', icon: TrendingUp }}>
         <div className="space-y-4">
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
             {Array.from({ length: 6 }).map((_, i) => <Skeleton key={i} className="h-[90px] rounded-lg" />)}
@@ -64,7 +66,7 @@ export default function ProductCockpitPage() {
 
   return (
     <ChannablePageWrapper
-      title="Cockpit Business"
+      title={tPages('cockpitBusiness.title')}
       description={`${products.length} produits — Pilotage stratégique et intelligence prédictive`}
       heroImage="analytics"
       badge={{ label: 'Cockpit BI', icon: TrendingUp }}
