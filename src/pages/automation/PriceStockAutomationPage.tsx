@@ -522,7 +522,7 @@ function ActionIcon({ action }: { action: string }) {
     case 'product_auto_repriced':
       return <DollarSign className="h-5 w-5 text-primary shrink-0" />;
     case 'supplier_auto_sync':
-      return <RefreshCw className="h-5 w-5 text-blue-500 shrink-0" />;
+      return <RefreshCw className="h-5 w-5 text-primary shrink-0" />;
     default:
       return <Activity className="h-5 w-5 text-muted-foreground shrink-0" />;
   }

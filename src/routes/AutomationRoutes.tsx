@@ -70,6 +70,7 @@ export function AutomationRoutes() {
       <Route path="optimization" element={<OptimizationHub />} />
       <Route path="feed-optimization" element={<Navigate to="/feeds/optimization" replace />} />
       <Route path="stock-sync" element={<Navigate to="/stock" replace />} />
+      <Route path="price-stock" element={<PriceStockAutomationPage />} />
       <Route path="unified-sync" element={<UnifiedSyncDashboard />} />
       <Route path="sourcing-assistant" element={<ProductSourcingAssistant />} />
       
