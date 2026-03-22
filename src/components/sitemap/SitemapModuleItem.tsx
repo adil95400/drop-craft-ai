@@ -11,7 +11,7 @@ import { SitemapPlanBadge } from './SitemapPlanBadge'
 import { SitemapSubModuleList } from './SitemapSubModuleList'
 import type { ModuleConfig } from '@/config/modules'
 import type { PlanType } from '@/lib/unified-plan-system'
-import * as Icons from 'lucide-react'
+import { getIcon } from '@/lib/icon-map'
 
 interface SitemapModuleItemProps {
   module: ModuleConfig
@@ -19,11 +19,6 @@ interface SitemapModuleItemProps {
   currentPlan: PlanType
   searchQuery?: string
   defaultExpanded?: boolean
-}
-
-const getIcon = (iconName: string) => {
-  const IconComponent = (Icons as any)[iconName]
-  return IconComponent || Icons.Package
 }
 
 export const SitemapModuleItem = memo<SitemapModuleItemProps>(({
@@ -55,7 +50,6 @@ export const SitemapModuleItem = memo<SitemapModuleItemProps>(({
           isLocked && "opacity-60"
         )}
       >
-        {/* Expand button */}
         {hasSubModules ? (
           <Button
             variant="ghost"
@@ -73,7 +67,6 @@ export const SitemapModuleItem = memo<SitemapModuleItemProps>(({
           <div className="w-6" />
         )}
 
-        {/* Icon */}
         <div className={cn(
           "p-2 rounded-lg flex-shrink-0",
           isLocked ? "bg-muted" : "bg-primary/10"
@@ -84,7 +77,6 @@ export const SitemapModuleItem = memo<SitemapModuleItemProps>(({
           )} />
         </div>
 
-        {/* Content */}
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
             <Link
@@ -115,14 +107,12 @@ export const SitemapModuleItem = memo<SitemapModuleItemProps>(({
           </p>
         </div>
 
-        {/* Sub-module count */}
         {hasSubModules && (
           <Badge variant="secondary" className="text-[10px] px-1.5 py-0 h-4 flex-shrink-0">
             {module.subModules!.length} sous-modules
           </Badge>
         )}
 
-        {/* Link */}
         <Link
           to={module.route}
           className={cn(
@@ -134,7 +124,6 @@ export const SitemapModuleItem = memo<SitemapModuleItemProps>(({
         </Link>
       </div>
 
-      {/* Sub-modules */}
       {hasSubModules && isExpanded && (
         <SitemapSubModuleList 
           subModules={module.subModules!} 

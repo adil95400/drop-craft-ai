@@ -1,4 +1,7 @@
 // Shared icon map for navigation components
+// IMPORTANT: Only import icons that are actually used in dynamic lookups.
+// Do NOT use `import * as Icons from 'lucide-react'` — it defeats tree-shaking
+// and adds ~780KB to the bundle.
 import {
   Home,
   LayoutDashboard,
@@ -54,6 +57,16 @@ import {
   Share2,
   Play,
   Palette,
+  // Additional icons used by ModuleCard, Sitemap, AdminSidebar
+  Trophy,
+  Building,
+  Building2,
+  GraduationCap,
+  Crown,
+  Folder,
+  Circle,
+  Gift,
+  Megaphone,
   type LucideIcon
 } from 'lucide-react'
 
@@ -111,7 +124,16 @@ export const iconMap: Record<string, LucideIcon> = {
   Award,
   Share2,
   Play,
-  Palette
+  Palette,
+  Trophy,
+  Building,
+  Building2,
+  GraduationCap,
+  Crown,
+  Folder,
+  Circle,
+  Gift,
+  Megaphone,
 }
 
 export function getIcon(iconName: string): LucideIcon {

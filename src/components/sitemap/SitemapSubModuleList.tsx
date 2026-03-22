@@ -6,16 +6,11 @@ import { Link } from 'react-router-dom'
 import { ChevronRight } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { SubModule } from '@/config/modules'
-import * as Icons from 'lucide-react'
+import { getIcon } from '@/lib/icon-map'
 
 interface SitemapSubModuleListProps {
   subModules: SubModule[]
   searchQuery?: string
-}
-
-const getIcon = (iconName: string) => {
-  const IconComponent = (Icons as any)[iconName]
-  return IconComponent || Icons.Circle
 }
 
 export const SitemapSubModuleList = memo<SitemapSubModuleListProps>(({ 
