@@ -22,10 +22,11 @@ serve(async (req) => {
     const supabase = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_ANON_KEY')!, {
       global: { headers: { Authorization: authHeader } }
     });
-    const { data: { user }, error } = await supabase.auth.getUser(token);
-    if (error || !user) throw new Error('Invalid or expired token');
+    const { data, error } = await supabase.auth.getClaims(token);
+    if (error || !data?.claims) throw new Error('Invalid or expired token');
+    const userId = data.claims.sub;
 
-    const rateLimitResult = await checkRateLimit(user.id, 'ai_chatbot', 30, 1);
+    const rateLimitResult = await checkRateLimit(userId, 'ai_chatbot', 30, 1);
     if (!rateLimitResult.allowed) {
       return new Response(JSON.stringify({ error: 'Limite de requêtes atteinte.' }), {
         status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
