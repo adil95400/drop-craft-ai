@@ -35,6 +35,7 @@ import { LessonSkeleton } from '@/components/academy/LessonSkeleton';
 import { useState, useMemo } from 'react';
 
 export default function CourseDetailPage() {
+  const { t: tPages } = useTranslation('pages');
   const { slug } = useParams<{ slug: string }>();
   const { user } = useAuth();
   const [currentLessonId, setCurrentLessonId] = useState<string | null>(null);
@@ -95,7 +96,6 @@ export default function CourseDetailPage() {
   }, [currentLesson]);
 
   if (courseLoading || lessonsLoading) {
-      const { t: tPages } = useTranslation('pages');
 
     return (
       <ChannablePageWrapper

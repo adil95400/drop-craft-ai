@@ -33,6 +33,7 @@ type SortOrder = 'asc' | 'desc'
 type StatusFilter = 'all' | 'completed' | 'failed' | 'processing' | 'pending'
 
 export default function SimpleHistoryPage() {
+  const { t: tPages } = useTranslation('pages');
   const navigate = useNavigate()
   const { importHistory, isLoadingHistory } = useUnifiedImport()
 
@@ -132,7 +133,6 @@ export default function SimpleHistoryPage() {
   const toggleSortOrder = () => setSortOrder(prev => prev === 'desc' ? 'asc' : 'desc')
 
   if (isLoadingHistory) {
-      const { t: tPages } = useTranslation('pages');
 
     return (
       <ChannablePageWrapper title={tPages('historiqueDesImports.title')} heroImage="import" badge={{ label: 'Historique', icon: Clock }}>

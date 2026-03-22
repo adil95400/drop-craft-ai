@@ -37,6 +37,7 @@ import {
 import { useTranslation } from 'react-i18next';
 
 export default function SupplierDetails() {
+  const { t: tPages } = useTranslation('pages');
   const { supplierId } = useParams()
   const navigate = useNavigate()
   const { suppliers, isLoading } = useSuppliersUnified()
@@ -46,7 +47,6 @@ export default function SupplierDetails() {
   const supplier = suppliers.find(s => s.id === supplierId)
 
   if (isLoading) {
-      const { t: tPages } = useTranslation('pages');
 
     return (
       <ChannablePageWrapper title={tPages('loading.title')} heroImage="suppliers">

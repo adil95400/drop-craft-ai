@@ -34,6 +34,7 @@ const PLATFORM_COLORS: Record<string, string> = {
 };
 
 function getPlatformColor(platform: string) {
+  const { t: tPages } = useTranslation('pages');
   return PLATFORM_COLORS[platform.toLowerCase()] || PLATFORM_COLORS.default;
 }
 
@@ -149,7 +150,6 @@ export default function StoreChannelAnalyticsPage() {
   const pieColors = pieData.map(d => getPlatformColor(d.name));
 
   if (intLoading) {
-      const { t: tPages } = useTranslation('pages');
 
     return (
       <ChannablePageWrapper title={tPages('statistiquesDesCanaux.title')} description={tPages('loading.description')} heroImage="analytics" badge={{ label: 'Multi-canal', icon: Store }}>

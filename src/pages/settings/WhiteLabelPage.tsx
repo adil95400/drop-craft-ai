@@ -24,6 +24,7 @@ const FONT_OPTIONS = [
 ]
 
 export default function WhiteLabelPage() {
+  const { t: tPages } = useTranslation('pages');
   const { settings, setSettings, loading, saving, save, uploadAsset } = useWhiteLabelSettings()
   const logoRef = useRef<HTMLInputElement>(null)
   const faviconRef = useRef<HTMLInputElement>(null)
@@ -39,7 +40,6 @@ export default function WhiteLabelPage() {
   const handleSave = () => save(settings)
 
   if (loading) {
-      const { t: tPages } = useTranslation('pages');
 
     return (
       <ChannablePageWrapper title={tPages('whiteLabel.title')} subtitle={tPages('personnalisation.title')} description={tPages('loading.description')}>

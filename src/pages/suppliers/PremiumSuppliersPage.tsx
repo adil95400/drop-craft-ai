@@ -26,6 +26,7 @@ const TIER_CONFIG: Record<string, { label: string; color: string; icon: React.Re
 };
 
 function getMarginColor(margin: number) {
+  const { t: tPages } = useTranslation('pages');
   if (margin >= 50) return 'text-success dark:text-green-400';
   if (margin >= 30) return 'text-success dark:text-emerald-400';
   if (margin >= 15) return 'text-warning dark:text-yellow-400';
@@ -128,7 +129,6 @@ export default function PremiumSuppliersPage() {
   const highMarginCount = catalogProducts.filter((p: any) => p.margin >= 30).length;
 
   if (isLoading) {
-      const { t: tPages } = useTranslation('pages');
 
     return (
       <ChannablePageWrapper title={tPages('fournisseursPremium.title')} description={tPages('loading.description')} heroImage="suppliers" badge={{ label: 'Premium', icon: Crown }}>

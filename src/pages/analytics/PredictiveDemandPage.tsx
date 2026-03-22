@@ -44,6 +44,7 @@ const URGENCY_CONFIG = {
 };
 
 export default function PredictiveDemandPage() {
+  const { t: tPages } = useTranslation('pages');
   // Fetch products with stock + orders for demand calculation
   const { data, isLoading } = useQuery({
     queryKey: ['predictive-demand'],
@@ -169,7 +170,6 @@ export default function PredictiveDemandPage() {
   }));
 
   if (isLoading) {
-      const { t: tPages } = useTranslation('pages');
 
     return (
       <ChannablePageWrapper title={tPages('predictionsDeDemande.title')} description="" heroImage="analytics" badge={{ label: 'Prédictif', icon: Brain }}>
