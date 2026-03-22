@@ -791,5 +791,446 @@
   "loading": {
     "title": "Chargement...",
     "description": "Chargement en cours..."
+  },
+  "aiContentCreationSuite": {
+    "title": "AI Content Creation Suite"
+  },
+  "aiStoreBuilder": {
+    "title": "AI Store Builder"
+  },
+  "alertesMessages": {
+    "title": "Alertes & Messages"
+  },
+  "analytics": {
+    "title": "Analytics"
+  },
+  "analyticsPerformance": {
+    "title": "Analytics & Performance"
+  },
+  "analyticsFournisseurs": {
+    "title": "Analytics Fournisseurs"
+  },
+  "automationEngine": {
+    "title": "Automation Engine"
+  },
+  "automatisationCreative": {
+    "title": "Automatisation créative"
+  },
+  "automatisationVisuelle": {
+    "title": "Automatisation visuelle"
+  },
+  "backlogIntelligent": {
+    "title": "Backlog intelligent"
+  },
+  "bibliothequePipeline": {
+    "title": "Bibliothèque & Pipeline"
+  },
+  "catalogueFournisseurs": {
+    "title": "Catalogue Fournisseurs"
+  },
+  "centreDeSupport": {
+    "title": "Centre de Support"
+  },
+  "centreDeSynchronisation": {
+    "title": "Centre de Synchronisation"
+  },
+  "choisissezVotrePlanIdeal": {
+    "title": "Choisissez votre plan idéal"
+  },
+  "classificationProduits": {
+    "title": "Classification produits"
+  },
+  "communication": {
+    "title": "Communication"
+  },
+  "concurrenceBenchmarks": {
+    "title": "Concurrence & Benchmarks"
+  },
+  "configurationDeSynchronisation": {
+    "title": "Configuration de Synchronisation"
+  },
+  "configurationsDImport": {
+    "title": "Configurations d'Import"
+  },
+  "connecterUneBoutique": {
+    "title": "Connecter une boutique"
+  },
+  "connecterVotreBoutique": {
+    "title": "Connecter votre Boutique"
+  },
+  "consommationAbonnement": {
+    "title": "Consommation & Abonnement"
+  },
+  "contenuSeoMultilingue": {
+    "title": "Contenu SEO Multilingue"
+  },
+  "conversionAnalytics": {
+    "title": "Conversion Analytics"
+  },
+  "couponsCodesPromo": {
+    "title": "Coupons & Codes Promo"
+  },
+  "coursNonTrouve": {
+    "title": "Cours non trouvé"
+  },
+  "creerUnClient": {
+    "title": "Créer un Client"
+  },
+  "creerUnProduit": {
+    "title": "Créer un produit"
+  },
+  "dashboardProfit": {
+    "title": "Dashboard Profit"
+  },
+  "developerPortal": {
+    "title": "Developer Portal"
+  },
+  "documentationExtension": {
+    "title": "Documentation Extension"
+  },
+  "documentationNonTrouvee": {
+    "title": "Documentation non trouvée"
+  },
+  "donneesLive": {
+    "title": "Données Live"
+  },
+  "dropCraftAiMobile": {
+    "title": "Drop Craft AI Mobile"
+  },
+  "declencheurs": {
+    "title": "Déclencheurs"
+  },
+  "enrichissementCatalogue": {
+    "title": "Enrichissement catalogue"
+  },
+  "enterpriseSso": {
+    "title": "Enterprise SSO"
+  },
+  "espaceCollaboratifEnterprise": {
+    "title": "Espace Collaboratif & Enterprise"
+  },
+  "essaiDejaUtilise": {
+    "title": "Essai déjà utilisé"
+  },
+  "exportFeeds": {
+    "title": "Export Feeds"
+  },
+  "expeditionTarifs": {
+    "title": "Expédition & Tarifs"
+  },
+  "extensionChromeImportEn1Clic": {
+    "title": "Extension Chrome - Import en 1 Clic"
+  },
+  "extensionChromeShopopti": {
+    "title": "Extension Chrome ShopOpti+"
+  },
+  "extensionDropCraftAi": {
+    "title": "Extension Drop Craft AI"
+  },
+  "extensionHealth": {
+    "title": "Extension Health"
+  },
+  "extensionNavigateur": {
+    "title": "Extension Navigateur"
+  },
+  "extensionNavigator": {
+    "title": "Extension Navigator"
+  },
+  "faqExtension": {
+    "title": "FAQ Extension"
+  },
+  "facturationPaiements": {
+    "title": "Facturation & Paiements"
+  },
+  "facturesPersonnalisees": {
+    "title": "Factures Personnalisées"
+  },
+  "fallbackFournisseur": {
+    "title": "Fallback Fournisseur"
+  },
+  "gestion": {
+    "title": "Gestion"
+  },
+  "gestionApi": {
+    "title": "Gestion API"
+  },
+  "gestionCanaux": {
+    "title": "Gestion Canaux"
+  },
+  "gestionClients": {
+    "title": "Gestion Clients"
+  },
+  "gestionFinanciere": {
+    "title": "Gestion Financière"
+  },
+  "gestionFiscale": {
+    "title": "Gestion Fiscale"
+  },
+  "gestionAvancee": {
+    "title": "Gestion avancée"
+  },
+  "gestionAvanceeDesTickets": {
+    "title": "Gestion avancée des tickets"
+  },
+  "gestionDeContenu": {
+    "title": "Gestion de Contenu"
+  },
+  "gestionDeFeeds": {
+    "title": "Gestion de Feeds"
+  },
+  "gestionDesBoutiques": {
+    "title": "Gestion des Boutiques"
+  },
+  "gestionDesEntrepots": {
+    "title": "Gestion des Entrepôts"
+  },
+  "gestionDesStocks": {
+    "title": "Gestion des Stocks"
+  },
+  "gestionDesStocksTempsReel": {
+    "title": "Gestion des Stocks Temps Réel"
+  },
+  "gestionDesSynchronisations": {
+    "title": "Gestion des Synchronisations"
+  },
+  "gestionDesAnomalies": {
+    "title": "Gestion des anomalies"
+  },
+  "gestionEnMasse": {
+    "title": "Gestion en masse"
+  },
+  "gestionnaireDAttributsIa": {
+    "title": "Gestionnaire d'Attributs IA"
+  },
+  "gestionnaireDeConnecteurs": {
+    "title": "Gestionnaire de Connecteurs"
+  },
+  "gestionnaireDePrix": {
+    "title": "Gestionnaire de Prix"
+  },
+  "gestionnaireDeSynchronisation": {
+    "title": "Gestionnaire de Synchronisation"
+  },
+  "guideDeDemarrage": {
+    "title": "Guide de démarrage"
+  },
+  "guidesVideo": {
+    "title": "Guides Vidéo"
+  },
+  "generateurSchemaOrg": {
+    "title": "Générateur Schema.org"
+  },
+  "historiqueDExecution": {
+    "title": "Historique d'Exécution"
+  },
+  "hubIntelligenceArtificielle": {
+    "title": "Hub Intelligence Artificielle"
+  },
+  "hubMarketplace": {
+    "title": "Hub Marketplace"
+  },
+  "hubSeoContenu": {
+    "title": "Hub SEO & Contenu"
+  },
+  "hubDIntegrations": {
+    "title": "Hub d'Intégrations"
+  },
+  "hubDOptimisationGlobale": {
+    "title": "Hub d'Optimisation Globale"
+  },
+  "importCsvExcel": {
+    "title": "Import CSV / Excel"
+  },
+  "importMultiBoutiques": {
+    "title": "Import Multi-Boutiques"
+  },
+  "importUniversel": {
+    "title": "Import Universel"
+  },
+  "importDeProduits": {
+    "title": "Import de Produits"
+  },
+  "importDesAvis": {
+    "title": "Import des Avis"
+  },
+  "importEnMasseUltraRapide": {
+    "title": "Import en masse ultra-rapide"
+  },
+  "importVersShopify": {
+    "title": "Import vers Shopify"
+  },
+  "importezVosProduits": {
+    "title": "Importez vos produits"
+  },
+  "importsPlanifies": {
+    "title": "Imports Planifiés"
+  },
+  "intelligenceConcurrentielle": {
+    "title": "Intelligence Concurrentielle"
+  },
+  "intelligenceHub": {
+    "title": "Intelligence Hub"
+  },
+  "liveRepricing": {
+    "title": "Live Repricing"
+  },
+  "logistiqueExpeditions": {
+    "title": "Logistique & Expéditions"
+  },
+  "marketing": {
+    "title": "Marketing"
+  },
+  "marketplace": {
+    "title": "Marketplace"
+  },
+  "marketplaceCampagnes": {
+    "title": "Marketplace & Campagnes"
+  },
+  "marketplaceExtensions": {
+    "title": "Marketplace Extensions"
+  },
+  "marketplaces": {
+    "title": "Marketplaces"
+  },
+  "mesFournisseurs": {
+    "title": "Mes Fournisseurs"
+  },
+  "modeDropshippingRapide": {
+    "title": "Mode Dropshipping Rapide"
+  },
+  "monAbonnement": {
+    "title": "Mon Abonnement"
+  },
+  "monProfil": {
+    "title": "Mon Profil"
+  },
+  "moniteurPrixStock": {
+    "title": "Moniteur Prix & Stock"
+  },
+  "monitoringPerformance": {
+    "title": "Monitoring Performance"
+  },
+  "moteurFournisseurAvance": {
+    "title": "Moteur Fournisseur Avancé"
+  },
+  "multiStoreSync": {
+    "title": "Multi-Store Sync"
+  },
+  "nouveauFournisseur": {
+    "title": "Nouveau Fournisseur"
+  },
+  "optimisationIaDesFeeds": {
+    "title": "Optimisation IA des Feeds"
+  },
+  "optimisationIaDesPrix": {
+    "title": "Optimisation IA des Prix"
+  },
+  "outilsCliShopopti": {
+    "title": "Outils CLI ShopOpti"
+  },
+  "ppcAutomation": {
+    "title": "PPC Automation"
+  },
+  "parametresFournisseurs": {
+    "title": "Paramètres Fournisseurs"
+  },
+  "performance": {
+    "title": "Performance"
+  },
+  "performanceOptimisation": {
+    "title": "Performance & Optimisation"
+  },
+  "personnalisation": {
+    "title": "Personnalisation"
+  },
+  "pro": {
+    "title": "Pro"
+  },
+  "productSourcingAssistant": {
+    "title": "Product Sourcing Assistant"
+  },
+  "publicationDeProduits": {
+    "title": "Publication de Produits"
+  },
+  "rapportsPlanifies": {
+    "title": "Rapports Planifiés"
+  },
+  "rechercheMultiFournisseurs": {
+    "title": "Recherche Multi-Fournisseurs"
+  },
+  "rechercheProduitsGagnants": {
+    "title": "Recherche Produits Gagnants"
+  },
+  "relationClient": {
+    "title": "Relation Client"
+  },
+  "retoursReclamations": {
+    "title": "Retours & Réclamations"
+  },
+  "retryGranulaire": {
+    "title": "Retry Granulaire"
+  },
+  "reglesDAutomatisation": {
+    "title": "Règles d'Automatisation"
+  },
+  "referenceRest": {
+    "title": "Référence REST"
+  },
+  "servicesSupport": {
+    "title": "Services & Support"
+  },
+  "shopoptiChromeExtension": {
+    "title": "ShopOpti+ Chrome Extension"
+  },
+  "smartInventoryPredictor": {
+    "title": "Smart Inventory Predictor"
+  },
+  "smartProfitCalculator": {
+    "title": "Smart Profit Calculator"
+  },
+  "socialCommerce": {
+    "title": "Social Commerce"
+  },
+  "stockLiveRepricing": {
+    "title": "Stock Live & Repricing"
+  },
+  "suiviPositions": {
+    "title": "Suivi Positions"
+  },
+  "supportDocumentation": {
+    "title": "Support & Documentation"
+  },
+  "securiteCompliance": {
+    "title": "Sécurité & Compliance"
+  },
+  "securiteDuCompte": {
+    "title": "Sécurité du compte"
+  },
+  "trackingAutomatique": {
+    "title": "Tracking Automatique"
+  },
+  "tunnelDeConversion": {
+    "title": "Tunnel de conversion"
+  },
+  "ultraPro": {
+    "title": "Ultra Pro"
+  },
+  "variantMapping": {
+    "title": "Variant Mapping"
+  },
+  "veilleRecherche": {
+    "title": "Veille & Recherche"
+  },
+  "votreExpertECommerce": {
+    "title": "Votre expert e-commerce"
+  },
+  "vueDEnsembleQualite": {
+    "title": "Vue d'ensemble qualité"
+  },
+  "vuesProduits": {
+    "title": "Vues Produits"
+  },
+  "promotionsAutomatisees": {
+    "title": "🎯 Promotions Automatisées"
   }
 }
