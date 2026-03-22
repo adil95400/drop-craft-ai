@@ -1,13 +1,8 @@
 import { ImportJob, ImportedProductData } from '../services/importService'
-// Dynamic import for bundle optimization
-const getXLSX = () => import('xlsx')
 import { format } from 'date-fns'
 import { getDateFnsLocale } from '@/utils/dateFnsLocale'
 
 export const exportUtils = {
-  /**
-   * Export import history to CSV
-   */
   exportHistoryToCSV(jobs: ImportJob[]) {
     const headers = ['Date', 'Type', 'Source', 'Statut', 'Total Lignes', 'Succès', 'Erreurs']
     const locale = getDateFnsLocale()
@@ -30,10 +25,8 @@ export const exportUtils = {
     this.downloadFile(csvContent, `import-history-${format(new Date(), 'yyyy-MM-dd')}.csv`, 'text/csv')
   },
 
-  /**
-   * Export import history to Excel
-   */
-  exportHistoryToExcel(jobs: ImportJob[]) {
+  async exportHistoryToExcel(jobs: ImportJob[]) {
+    const XLSX = await import('xlsx')
     const locale = getDateFnsLocale()
     const data = jobs.map(job => ({
       'Date': format(new Date(job.created_at), 'dd/MM/yyyy HH:mm', { locale }),
@@ -47,19 +40,16 @@ export const exportUtils = {
       'Terminé': job.completed_at ? format(new Date(job.completed_at), 'dd/MM/yyyy HH:mm') : '-',
     }))
 
-    const worksheet = utils.json_to_sheet(data)
-    const workbook = utils.book_new()
-    utils.book_append_sheet(workbook, worksheet, 'Historique Imports')
+    const worksheet = XLSX.utils.json_to_sheet(data)
+    const workbook = XLSX.utils.book_new()
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Historique Imports')
 
     const maxWidth = data.reduce((w, r) => Math.max(w, ...Object.values(r).map(v => String(v).length)), 10)
     worksheet['!cols'] = Object.keys(data[0] || {}).map(() => ({ wch: maxWidth }))
 
-    writeFile(workbook, `import-history-${format(new Date(), 'yyyy-MM-dd')}.xlsx`)
+    XLSX.writeFile(workbook, `import-history-${format(new Date(), 'yyyy-MM-dd')}.xlsx`)
   },
 
-  /**
-   * Export products to CSV
-   */
   exportProductsToCSV(products: ImportedProductData[]) {
     const headers = ['Nom', 'SKU', 'Prix', 'Prix Coût', 'Stock', 'Catégorie', 'Statut', 'Date Import']
     const locale = getDateFnsLocale()
@@ -83,10 +73,8 @@ export const exportUtils = {
     this.downloadFile(csvContent, `products-${format(new Date(), 'yyyy-MM-dd')}.csv`, 'text/csv')
   },
 
-  /**
-   * Export products to Excel
-   */
-  exportProductsToExcel(products: ImportedProductData[]) {
+  async exportProductsToExcel(products: ImportedProductData[]) {
+    const XLSX = await import('xlsx')
     const locale = getDateFnsLocale()
     const data = products.map(product => ({
       'Nom': product.name,
@@ -103,9 +91,9 @@ export const exportUtils = {
       'Date Import': format(new Date(product.created_at), 'dd/MM/yyyy HH:mm', { locale })
     }))
 
-    const worksheet = utils.json_to_sheet(data)
-    const workbook = utils.book_new()
-    utils.book_append_sheet(workbook, worksheet, 'Produits')
+    const worksheet = XLSX.utils.json_to_sheet(data)
+    const workbook = XLSX.utils.book_new()
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Produits')
 
     worksheet['!cols'] = [
       { wch: 30 }, { wch: 50 }, { wch: 15 }, { wch: 10 }, { wch: 10 },
@@ -113,12 +101,9 @@ export const exportUtils = {
       { wch: 12 }, { wch: 18 },
     ]
 
-    writeFile(workbook, `products-${format(new Date(), 'yyyy-MM-dd')}.xlsx`)
+    XLSX.writeFile(workbook, `products-${format(new Date(), 'yyyy-MM-dd')}.xlsx`)
   },
 
-  /**
-   * Download file helper
-   */
   downloadFile(content: string, filename: string, mimeType: string) {
     const blob = new Blob([content], { type: mimeType })
     const url = URL.createObjectURL(blob)
@@ -131,9 +116,6 @@ export const exportUtils = {
     URL.revokeObjectURL(url)
   },
 
-  /**
-   * Get source type label
-   */
   getSourceTypeLabel(type: string): string {
     const labels: Record<string, string> = {
       'file_upload': 'Fichier', 'url_import': 'URL', 'xml_import': 'XML/RSS',
@@ -142,9 +124,6 @@ export const exportUtils = {
     return labels[type] || type
   },
 
-  /**
-   * Get status label
-   */
   getStatusLabel(status: string): string {
     const labels: Record<string, string> = {
       'pending': 'En attente', 'processing': 'En cours',
