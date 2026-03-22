@@ -1,5 +1,7 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3'
 
+import { callOpenAI } from '../_shared/ai-client.ts';
+
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
@@ -26,7 +28,7 @@ async function rewriteContent(
   rewriteType: string, 
   tone: string
 ): Promise<{ title?: string; description?: string }> {
-  const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY_PRODUCT') || Deno.env.get('OPENAI_API_KEY')
+  // API key resolved by ai-client.ts (module: seo)
   if (!OPENAI_API_KEY) {
     throw new Error('OPENAI_API_KEY not configured')
   }
@@ -72,7 +74,7 @@ Format de réponse (JSON strict):
 }`
 
   try {
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    const response = await callOpenAI_fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${OPENAI_API_KEY}`,

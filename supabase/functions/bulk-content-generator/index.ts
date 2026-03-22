@@ -2,6 +2,8 @@ import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
 
+import { callOpenAI } from '../_shared/ai-client.ts';
+
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
@@ -20,7 +22,7 @@ serve(async (req) => {
 
     const { jobId, jobType, inputData } = await req.json();
     
-    const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY_PRODUCT') || Deno.env.get('OPENAI_API_KEY');
+    // API key resolved by ai-client.ts (module: seo)
     if (!OPENAI_API_KEY) throw new Error('OPENAI_API_KEY is not configured');
 
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
@@ -97,7 +99,7 @@ serve(async (req) => {
             toolParams.alt_text_variants = { type: "array", items: { type: "string" }, description: "3 variantes de texte alternatif pour les images secondaires du produit" };
           }
 
-          const response = await fetch('https://api.openai.com/v1/chat/completions', {
+          const response = await callOpenAI_fetch('https://api.openai.com/v1/chat/completions', {
             method: 'POST',
             headers: {
               'Authorization': `Bearer ${OPENAI_API_KEY}`,
@@ -180,7 +182,7 @@ serve(async (req) => {
         } else if (jobType === 'videos') {
           const videoPrompt = `Create a ${inputData.duration}-second ${inputData.videoStyle} video script for:\nProduct: ${product.name}\nDescription: ${product.description}\nPrice: ${product.price}\n\nReturn a JSON with: hook, problem, solution, cta`;
 
-          const videoResponse = await fetch('https://api.openai.com/v1/chat/completions', {
+          const videoResponse = await callOpenAI_fetch('https://api.openai.com/v1/chat/completions', {
             method: 'POST',
             headers: {
               'Authorization': `Bearer ${OPENAI_API_KEY}`,
@@ -213,7 +215,7 @@ serve(async (req) => {
         } else if (jobType === 'images') {
           const imagePrompt = `Create a professional ${inputData.imageStyle} product image:\nProduct: ${product.name}\nDescription: ${product.description}\nVisual prompt: ${inputData.visualPrompt}\nAspect ratio: ${inputData.aspectRatio}\n\nGenerate a clean, professional product photo suitable for e-commerce.`;
 
-          const imageResponse = await fetch('https://api.openai.com/v1/chat/completions', {
+          const imageResponse = await callOpenAI_fetch('https://api.openai.com/v1/chat/completions', {
             method: 'POST',
             headers: {
               'Authorization': `Bearer ${OPENAI_API_KEY}`,

@@ -4,6 +4,8 @@
 
 import { requireAuth, handlePreflight, successResponse } from '../_shared/jwt-auth.ts'
 
+import { callOpenAI } from '../_shared/ai-client.ts';
+
 Deno.serve(async (req) => {
   const preflight = handlePreflight(req)
   if (preflight) return preflight
@@ -70,7 +72,7 @@ Deno.serve(async (req) => {
 })
 
 async function aiCall(apiKey: string, system: string, prompt: string) {
-  const response = await fetch('https://api.openai.com/v1/chat/completions', {
+  const response = await callOpenAI_fetch('https://api.openai.com/v1/chat/completions', {
     method: 'POST',
     headers: { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
     body: JSON.stringify({

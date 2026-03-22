@@ -3,6 +3,8 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
 
 import { getSecureCorsHeaders, handleCorsPreflightSecure } from '../_shared/secure-cors.ts'
 
+import { callOpenAI } from '../_shared/ai-client.ts';
+
 serve(async (req) => {
   const corsHeaders = getSecureCorsHeaders(req)
   if (req.method === 'OPTIONS') {
@@ -64,7 +66,7 @@ Return ONLY valid JSON in this exact format:
 }`;
 
     // Call Lovable AI
-    const aiResponse = await fetch('https://api.openai.com/v1/chat/completions', {
+    const aiResponse = await callOpenAI_fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${lovableApiKey}`,

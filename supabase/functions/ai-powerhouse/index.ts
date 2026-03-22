@@ -2,12 +2,14 @@ import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1';
 
+import { callOpenAI } from '../_shared/ai-client.ts';
+
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY_AUTOMATION') || Deno.env.get('OPENAI_API_KEY');
+// API key resolved by ai-client.ts (module: automation)
 const supabaseUrl = Deno.env.get('SUPABASE_URL');
 const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
 
@@ -106,7 +108,7 @@ async function handleSmartAssistant(body: any, user: any) {
     { role: 'user', content: message }
   ];
 
-  const response = await fetch('https://api.openai.com/v1/chat/completions', {
+  const response = await callOpenAI_fetch('https://api.openai.com/v1/chat/completions', {
     method: 'POST',
     headers: {
       'Authorization': `Bearer ${OPENAI_API_KEY}`,
@@ -218,7 +220,7 @@ async function handleContentGenerator(body: any, user: any) {
       throw new Error(`Content type ${contentType} not supported`);
   }
 
-  const response = await fetch('https://api.openai.com/v1/chat/completions', {
+  const response = await callOpenAI_fetch('https://api.openai.com/v1/chat/completions', {
     method: 'POST',
     headers: {
       'Authorization': `Bearer ${OPENAI_API_KEY}`,
@@ -354,7 +356,7 @@ async function handlePredictiveAnalyzer(body: any, user: any) {
       throw new Error(`Analysis type ${analysisType} not supported`);
   }
 
-  const response = await fetch('https://api.openai.com/v1/chat/completions', {
+  const response = await callOpenAI_fetch('https://api.openai.com/v1/chat/completions', {
     method: 'POST',
     headers: {
       'Authorization': `Bearer ${OPENAI_API_KEY}`,
@@ -491,7 +493,7 @@ async function handleAutoOptimizer(body: any, user: any) {
       throw new Error(`Optimization type ${optimizationType} not supported`);
   }
 
-  const response = await fetch('https://api.openai.com/v1/chat/completions', {
+  const response = await callOpenAI_fetch('https://api.openai.com/v1/chat/completions', {
     method: 'POST',
     headers: {
       'Authorization': `Bearer ${OPENAI_API_KEY}`,
@@ -628,7 +630,7 @@ async function handleBusinessIntelligence(body: any, user: any) {
       throw new Error(`Report type ${reportType} not supported`);
   }
 
-  const response = await fetch('https://api.openai.com/v1/chat/completions', {
+  const response = await callOpenAI_fetch('https://api.openai.com/v1/chat/completions', {
     method: 'POST',
     headers: {
       'Authorization': `Bearer ${OPENAI_API_KEY}`,

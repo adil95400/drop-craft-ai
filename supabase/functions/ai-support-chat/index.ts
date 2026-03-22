@@ -1,6 +1,8 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.53.0'
 import { getSecureCorsHeaders, handleCorsPreflightSecure } from '../_shared/secure-cors.ts'
 
+import { callOpenAI } from '../_shared/ai-client.ts';
+
 const SYSTEM_PROMPT = `Tu es l'assistant support de ShopOpti+, une plateforme SaaS de dropshipping intelligent.
 Tu aides les utilisateurs avec :
 - L'importation de produits (AliExpress, CJ, BigBuy, CSV, URL)
@@ -48,7 +50,7 @@ Deno.serve(async (req) => {
       })
     }
 
-    const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY_CHAT') || Deno.env.get('OPENAI_API_KEY')
+    // API key resolved by ai-client.ts (module: chat)
     if (!OPENAI_API_KEY) {
       throw new Error('OPENAI_API_KEY not configured')
     }
@@ -61,7 +63,7 @@ Deno.serve(async (req) => {
       { role: 'user', content: message }
     ]
 
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    const response = await callOpenAI_fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${OPENAI_API_KEY}`,

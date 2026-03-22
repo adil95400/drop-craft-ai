@@ -5,6 +5,8 @@
 import { createEdgeFunction, z } from '../_shared/create-edge-function.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3'
 
+import { callOpenAI } from '../_shared/ai-client.ts';
+
 const marketingSchema = z.object({
   campaign_type: z.string().min(1).max(100),
   target_audience: z.string().min(1).max(500),
@@ -23,7 +25,7 @@ const handler = createEdgeFunction<MarketingInput>({
   
   console.log(`[${correlationId}] Marketing AI request from user: ${user.id}`)
 
-  const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY_MARKETING') || Deno.env.get('OPENAI_API_KEY')
+  // API key resolved by ai-client.ts (module: marketing)
   if (!OPENAI_API_KEY) {
     throw new Error('OPENAI_API_KEY is not configured')
   }
@@ -46,7 +48,7 @@ Format de réponse (JSON uniquement):
 
   console.log('Calling Lovable AI for marketing content generation...')
   
-  const aiResponse = await fetch('https://api.openai.com/v1/chat/completions', {
+  const aiResponse = await callOpenAI_fetch('https://api.openai.com/v1/chat/completions', {
     method: 'POST',
     headers: {
       'Authorization': `Bearer ${OPENAI_API_KEY}`,

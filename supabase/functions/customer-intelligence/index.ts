@@ -12,6 +12,8 @@
 import { requireAuth, handlePreflight, errorResponse, successResponse } from '../_shared/jwt-auth.ts'
 import { checkRateLimit, rateLimitResponse } from '../_shared/rate-limiter.ts'
 
+import { callOpenAI } from '../_shared/ai-client.ts';
+
 interface CustomerData {
   customer_id: string
   customer_email: string
@@ -51,7 +53,7 @@ Deno.serve(async (req) => {
     console.log(`[customer-intelligence] User ${auth.userId} analyzing: ${customerData.customer_email}`)
 
     // 4. AI analysis via Lovable AI
-    const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY_AUTOMATION') || Deno.env.get('OPENAI_API_KEY')
+    // API key resolved by ai-client.ts (module: automation)
     if (!OPENAI_API_KEY) {
       return errorResponse('AI service not configured', auth.corsHeaders, 500)
     }
@@ -81,7 +83,7 @@ Respond in JSON format with these exact fields:
   "preferences": [string]
 }`
 
-    const aiResponse = await fetch('https://api.openai.com/v1/chat/completions', {
+    const aiResponse = await callOpenAI_fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${OPENAI_API_KEY}`,

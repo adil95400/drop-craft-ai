@@ -1,5 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
+import { callOpenAI } from '../_shared/ai-client.ts';
+
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
@@ -12,8 +14,7 @@ serve(async (req) => {
 
   try {
     const { type, context } = await req.json();
-    const OPENAI_API_KEY = Deno.env.get("OPENAI_API_KEY_AUTOMATION") || Deno.env.get("OPENAI_API_KEY");
-
+    // API key resolved by ai-client.ts (module: automation)
     if (!OPENAI_API_KEY) {
       throw new Error("OPENAI_API_KEY is not configured");
     }
@@ -72,7 +73,7 @@ Format JSON:
 }`;
     }
 
-    const response = await fetch("https://api.openai.com/v1/chat/completions", {
+    const response = await callOpenAI_fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
       headers: {
         Authorization: `Bearer ${OPENAI_API_KEY}`,

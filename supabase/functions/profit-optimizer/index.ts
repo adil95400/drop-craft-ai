@@ -3,6 +3,8 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
 import { getSecureCorsHeaders, handleCorsPreflightSecure } from '../_shared/secure-cors.ts'
 
+import { callOpenAI } from '../_shared/ai-client.ts';
+
 serve(async (req) => {
   const corsHeaders = getSecureCorsHeaders(req)
   if (req.method === 'OPTIONS') {
@@ -12,7 +14,7 @@ serve(async (req) => {
   try {
     const { productName, sellingPrice, productCost, netProfit, profitMargin } = await req.json();
     
-    const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY_AUTOMATION') || Deno.env.get('OPENAI_API_KEY');
+    // API key resolved by ai-client.ts (module: automation)
     if (!OPENAI_API_KEY) {
       throw new Error('OPENAI_API_KEY is not configured');
     }
@@ -37,7 +39,7 @@ Return ONLY a JSON array of strings (no markdown, no code blocks):
 
     console.log('Calling AI for profit optimization...');
     
-    const aiResponse = await fetch('https://api.openai.com/v1/chat/completions', {
+    const aiResponse = await callOpenAI_fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${OPENAI_API_KEY}`,

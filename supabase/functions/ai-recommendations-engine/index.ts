@@ -9,8 +9,9 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { requireAuth, handlePreflight, errorResponse, successResponse } from "../_shared/jwt-auth.ts";
 
-const OPENAI_API_KEY = Deno.env.get("OPENAI_API_KEY_AUTOMATION") || Deno.env.get("OPENAI_API_KEY");
+import { callOpenAI } from '../_shared/ai-client.ts';
 
+// API key resolved by ai-client.ts (module: automation)
 serve(async (req) => {
   const preflight = handlePreflight(req);
   if (preflight) return preflight;
@@ -130,7 +131,7 @@ Types de recommandations attendus:
 - trending: produits avec potentiel de croissance
 - bundle: combinaisons de produits à promouvoir`;
 
-  const aiResponse = await fetch("https://api.openai.com/v1/chat/completions", {
+  const aiResponse = await callOpenAI_fetch("https://api.openai.com/v1/chat/completions", {
     method: "POST",
     headers: {
       Authorization: `Bearer ${OPENAI_API_KEY}`,

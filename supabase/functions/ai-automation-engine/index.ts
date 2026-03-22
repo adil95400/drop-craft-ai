@@ -11,6 +11,8 @@ import { getSecureCorsHeaders, handleCorsPreflightSecure, isAllowedOrigin } from
 import { checkRateLimit } from '../_shared/rate-limiter.ts';
 import { z } from 'https://esm.sh/zod@3.22.4';
 
+import { callOpenAI } from '../_shared/ai-client.ts';
+
 const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
 const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')!;
 const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
@@ -167,7 +169,7 @@ Répondez en JSON avec: shouldTrigger, confidence, riskLevel, recommendations, r
 `;
 
   try {
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    const response = await callOpenAI_fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${lovableApiKey}`,
