@@ -1,5 +1,3 @@
-import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable';
 import type { InvoiceBranding } from '@/hooks/useInvoiceBranding';
 
 export interface InvoiceItem {
@@ -24,7 +22,11 @@ export interface InvoiceData {
   notes: string;
 }
 
-export function generateInvoicePDF(invoice: InvoiceData, branding: InvoiceBranding): jsPDF {
+export async function generateInvoicePDF(invoice: InvoiceData, branding: InvoiceBranding) {
+  const [{ default: jsPDF }, { default: autoTable }] = await Promise.all([
+    import('jspdf'),
+    import('jspdf-autotable'),
+  ])
   const doc = new jsPDF();
   const accent = branding.accent_color || '#6366f1';
 

@@ -4,8 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Progress } from '@/components/ui/progress';
 import { Download, Check, AlertCircle, Chrome, FolderOpen, RefreshCw } from 'lucide-react';
 import { toast } from 'sonner';
-import JSZip from 'jszip';
-import { saveAs } from 'file-saver';
+// JSZip and file-saver loaded dynamically for bundle optimization
 
 const EXTENSION_FILES = [
   // Root files
@@ -107,6 +106,10 @@ export function ExtensionDownloader() {
     setErrorMessage('');
 
     try {
+      const [JSZip, { saveAs }] = await Promise.all([
+        import('jszip').then(m => m.default),
+        import('file-saver'),
+      ])
       const zip = new JSZip();
       const baseUrl = '/chrome-extension/';
       let successCount = 0;

@@ -2,8 +2,6 @@ import { supabase } from '@/integrations/supabase/client'
 import { ExportConfig } from '@/lib/validation/orderSchema'
 import { logger } from '@/utils/logger'
 import Papa from 'papaparse'
-import * as XLSX from 'xlsx'
-import { saveAs } from 'file-saver'
 
 const LOG_CTX = { component: 'ExportService' }
 
@@ -136,24 +134,22 @@ export class ExportService {
    * Export CSV
    */
   private static async exportToCSV(data: any[], filename: string): Promise<void> {
+    const { saveAs } = await import('file-saver')
     const csv = Papa.unparse(data, {
       header: true,
-      delimiter: ';', // Standard français
+      delimiter: ';',
     })
     
-    const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8' }) // BOM pour Excel
+    const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8' })
     saveAs(blob, filename)
   }
 
-  /**
-   * Export Excel
-   */
   private static async exportToExcel(data: any[], filename: string, sheetName: string): Promise<void> {
+    const [XLSX, { saveAs }] = await Promise.all([import('xlsx'), import('file-saver')])
     const worksheet = XLSX.utils.json_to_sheet(data)
     const workbook = XLSX.utils.book_new()
     XLSX.utils.book_append_sheet(workbook, worksheet, sheetName)
     
-    // Style des colonnes
     const maxWidth: Record<number, number> = {}
     data.forEach(row => {
       Object.keys(row).forEach((key, i) => {
@@ -169,10 +165,8 @@ export class ExportService {
     saveAs(blob, filename)
   }
 
-  /**
-   * Export JSON
-   */
   private static async exportToJSON(data: any[], filename: string): Promise<void> {
+    const { saveAs } = await import('file-saver')
     const json = JSON.stringify(data, null, 2)
     const blob = new Blob([json], { type: 'application/json' })
     saveAs(blob, filename)
