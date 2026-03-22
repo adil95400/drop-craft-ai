@@ -57,10 +57,10 @@ export class ImportService {
    * Parse Excel
    */
   private static async parseExcel(file: File): Promise<ParsedData> {
+    const XLSX = await import('xlsx')
     const buffer = await file.arrayBuffer()
     const workbook = XLSX.read(buffer, { type: 'array' })
     
-    // Prendre la première feuille
     const sheetName = workbook.SheetNames[0]
     const worksheet = workbook.Sheets[sheetName]
     

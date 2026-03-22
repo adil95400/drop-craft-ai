@@ -106,6 +106,10 @@ export function ExtensionDownloader() {
     setErrorMessage('');
 
     try {
+      const [JSZip, { saveAs }] = await Promise.all([
+        import('jszip').then(m => m.default),
+        import('file-saver'),
+      ])
       const zip = new JSZip();
       const baseUrl = '/chrome-extension/';
       let successCount = 0;

@@ -196,6 +196,10 @@ const EXTENSION_FILES = [
 ];
 
 export async function generateExtensionZip(): Promise<void> {
+  const [JSZip, { saveAs }] = await Promise.all([
+    import('jszip').then(m => m.default),
+    import('file-saver'),
+  ])
   const zip = new JSZip();
   
   // Try multiple base paths for different environments
