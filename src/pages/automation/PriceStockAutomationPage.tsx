@@ -466,7 +466,7 @@ export default function PriceStockAutomationPage() {
                   ))}
                   {(!stockAlerts || stockAlerts.length === 0) && (
                     <div className="text-center py-8 text-muted-foreground">
-                      <CheckCircle2 className="h-12 w-12 mx-auto mb-3 opacity-30 text-green-500" />
+                      <CheckCircle2 className="h-12 w-12 mx-auto mb-3 opacity-30 text-primary" />
                       <p>Aucune alerte active — Tous les stocks sont OK</p>
                     </div>
                   )}
