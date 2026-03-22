@@ -40,97 +40,40 @@ Language: ${input.language}
 
 Use the build_funnel tool to return the complete funnel structure.`
 
-  const aiResponse = await fetch(AI_GATEWAY_URL, {
-    method: 'POST',
-    headers: { 'Authorization': `Bearer ${OPENAI_API_KEY}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      model: AI_MODEL,
-      messages: [{ role: 'system', content: systemPrompt }, { role: 'user', content: userPrompt }],
-      tools: [{
-        type: 'function',
-        function: {
-          name: 'build_funnel',
-          description: 'Build a complete sales funnel',
-          parameters: {
-            type: 'object',
-            properties: {
-              funnel_name: { type: 'string' },
-              summary: { type: 'string', description: 'Brief strategy overview' },
-              estimated_conversion_rate: { type: 'string' },
-              stages: {
-                type: 'array',
-                items: {
-                  type: 'object',
-                  properties: {
-                    stage_name: { type: 'string' },
-                    stage_type: { type: 'string', enum: ['awareness', 'interest', 'consideration', 'conversion', 'retention'] },
-                    channel: { type: 'string' },
-                    page_type: { type: 'string', enum: ['landing_page', 'opt_in', 'sales_page', 'checkout', 'upsell', 'thank_you', 'email'] },
-                    headline: { type: 'string' },
-                    copy_brief: { type: 'string' },
-                    cta: { type: 'string' },
-                    kpi: { type: 'string' },
-                    tips: { type: 'array', items: { type: 'string' } }
-                  },
-                  required: ['stage_name', 'stage_type', 'page_type', 'headline', 'cta']
-                }
-              },
-              email_sequence: {
-                type: 'array',
-                items: {
-                  type: 'object',
-                  properties: {
-                    day: { type: 'number' },
-                    subject: { type: 'string' },
-                    purpose: { type: 'string' },
-                    key_message: { type: 'string' },
-                    cta: { type: 'string' }
-                  },
-                  required: ['day', 'subject', 'purpose']
-                }
-              },
-              traffic_sources: {
-                type: 'array',
-                items: {
-                  type: 'object',
-                  properties: {
-                    source: { type: 'string' },
-                    strategy: { type: 'string' },
-                    budget_allocation: { type: 'string' },
-                    expected_cpa: { type: 'string' }
-                  },
-                  required: ['source', 'strategy']
-                }
-              },
-              optimization_tips: { type: 'array', items: { type: 'string' } },
-              estimated_timeline_days: { type: 'number' }
-            },
-            required: ['funnel_name', 'summary', 'stages', 'email_sequence', 'traffic_sources']
-          }
-        }
-      }],
-      tool_choice: { type: 'function', function: { name: 'build_funnel' } },
-      max_tokens: 5000,
-    }),
-  })
-
-  if (!aiResponse.ok) {
-    const status = aiResponse.status
-    if (status === 429 || status === 402) {
-      return new Response(JSON.stringify({ error: status === 429 ? 'Rate limit' : 'Crédits épuisés' }), { status, headers: { 'Content-Type': 'application/json' } })
+  const funnelTools = [{
+    type: 'function',
+    function: {
+      name: 'build_funnel',
+      description: 'Build a complete sales funnel',
+      parameters: {
+        type: 'object',
+        properties: {
+          funnel_name: { type: 'string' },
+          summary: { type: 'string' },
+          estimated_conversion_rate: { type: 'string' },
+          stages: { type: 'array', items: { type: 'object', properties: { stage_name: { type: 'string' }, stage_type: { type: 'string' }, channel: { type: 'string' }, page_type: { type: 'string' }, headline: { type: 'string' }, copy_brief: { type: 'string' }, cta: { type: 'string' }, kpi: { type: 'string' }, tips: { type: 'array', items: { type: 'string' } } }, required: ['stage_name', 'stage_type', 'page_type', 'headline', 'cta'] } },
+          email_sequence: { type: 'array', items: { type: 'object', properties: { day: { type: 'number' }, subject: { type: 'string' }, purpose: { type: 'string' }, key_message: { type: 'string' }, cta: { type: 'string' } }, required: ['day', 'subject', 'purpose'] } },
+          traffic_sources: { type: 'array', items: { type: 'object', properties: { source: { type: 'string' }, strategy: { type: 'string' }, budget_allocation: { type: 'string' }, expected_cpa: { type: 'string' } }, required: ['source', 'strategy'] } },
+          optimization_tips: { type: 'array', items: { type: 'string' } },
+          estimated_timeline_days: { type: 'number' }
+        },
+        required: ['funnel_name', 'summary', 'stages', 'email_sequence', 'traffic_sources']
+      }
     }
-    throw new Error(`AI error: ${status}`)
-  }
+  }]
 
-  const aiData = await aiResponse.json()
+  const aiData = await callOpenAI(
+    [{ role: 'system', content: systemPrompt }, { role: 'user', content: userPrompt }],
+    { module: 'marketing', tools: funnelTools, tool_choice: { type: 'function', function: { name: 'build_funnel' } }, maxTokens: 5000, enableCache: true }
+  )
+
   const toolCall = aiData.choices?.[0]?.message?.tool_calls?.[0]
   let result: any
-
   if (toolCall) {
     result = JSON.parse(toolCall.function.arguments)
   } else {
     const text = aiData.choices?.[0]?.message?.content || '{}'
-    const match = text.match(/```json\n([\s\S]*?)\n```/) || text.match(/\{[\s\S]*\}/)
+    const match = text.match(/\`\`\`json\n([\s\S]*?)\n\`\`\`/) || text.match(/\{[\s\S]*\}/)
     result = JSON.parse(match?.[1] || match?.[0] || '{}')
   }
 
