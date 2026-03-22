@@ -198,7 +198,8 @@
     "title": "Commande"
   },
   "commandeIntrouvable": {
-    "title": "Commande introuvable"
+    "title": "Commande introuvable",
+    "description": "La commande que vous recherchez n'existe pas ou a été supprimée."
   },
   "commandesGroupees": {
     "title": "Commandes Groupées"
@@ -470,7 +471,8 @@
     "title": "Intégration Shopify App"
   },
   "integrationIntrouvable": {
-    "title": "Intégration introuvable"
+    "title": "Intégration introuvable",
+    "description": "L'intégration demandée n'existe pas"
   },
   "integrations": {
     "title": "Intégrations"
@@ -1232,5 +1234,9 @@
   },
   "promotionsAutomatisees": {
     "title": "🎯 Promotions Automatisées"
+  },
+  "connectezVosBoutiques": {
+    "title": "Connectez vos boutiques",
+    "description": "Connectez vos boutiques pour voir les statistiques"
   }
 }

@@ -198,7 +198,8 @@
     "title": "Bestellung"
   },
   "commandeIntrouvable": {
-    "title": "Bestellung nicht gefunden"
+    "title": "Bestellung nicht gefunden",
+    "description": "Die gesuchte Bestellung existiert nicht oder wurde gelöscht."
   },
   "commandesGroupees": {
     "title": "Bulk Orders"
@@ -470,7 +471,8 @@
     "title": "Shopify App Integration"
   },
   "integrationIntrouvable": {
-    "title": "Integration nicht gefunden"
+    "title": "Integration nicht gefunden",
+    "description": "Die angeforderte Integration existiert nicht"
   },
   "integrations": {
     "title": "Integrationen"
@@ -1232,5 +1234,9 @@
   },
   "promotionsAutomatisees": {
     "title": "🎯 Automated Promotions"
+  },
+  "connectezVosBoutiques": {
+    "title": "Verbinden Sie Ihre Shops",
+    "description": "Verbinden Sie Ihre Shops, um Statistiken zu sehen"
   }
 }

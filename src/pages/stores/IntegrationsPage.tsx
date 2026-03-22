@@ -63,7 +63,7 @@ export default function IntegrationsPage() {
       const { t: tPages } = useTranslation('pages');
 
     return (
-      <ChannablePageWrapper title={tPages('integrations.title')} description="Chargement..." heroImage="integrations" badge={{ label: 'Intégrations', icon: Activity }}>
+      <ChannablePageWrapper title={tPages('integrations.title')} description={tPages('loading.description')} heroImage="integrations" badge={{ label: 'Intégrations', icon: Activity }}>
         <div className="flex items-center justify-center min-h-64"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>
       </ChannablePageWrapper>
     )

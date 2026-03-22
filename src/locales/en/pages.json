@@ -198,7 +198,8 @@
     "title": "Order"
   },
   "commandeIntrouvable": {
-    "title": "Order Not Found"
+    "title": "Order Not Found",
+    "description": "The order you are looking for does not exist or has been deleted."
   },
   "commandesGroupees": {
     "title": "Bulk Orders"
@@ -470,7 +471,8 @@
     "title": "Shopify App Integration"
   },
   "integrationIntrouvable": {
-    "title": "Integration Not Found"
+    "title": "Integration Not Found",
+    "description": "The requested integration does not exist"
   },
   "integrations": {
     "title": "Integrations"
@@ -1232,5 +1234,9 @@
   },
   "promotionsAutomatisees": {
     "title": "🎯 Automated Promotions"
+  },
+  "connectezVosBoutiques": {
+    "title": "Connect your stores",
+    "description": "Connect your stores to see statistics"
   }
 }

@@ -41,7 +41,7 @@ export default function WhiteLabelPage() {
       const { t: tPages } = useTranslation('pages');
 
     return (
-      <ChannablePageWrapper title={tPages('whiteLabel.title')} subtitle={tPages('personnalisation.title')} description="Chargement...">
+      <ChannablePageWrapper title={tPages('whiteLabel.title')} subtitle={tPages('personnalisation.title')} description={tPages('loading.description')}>
         <div className="space-y-4">
           <Skeleton className="h-48 w-full" />
           <Skeleton className="h-48 w-full" />

@@ -103,7 +103,7 @@ export default function OrderDetail() {
       const { t: tPages } = useTranslation('pages');
 
     return (
-      <ChannablePageWrapper title={tPages('commande.title')} description="Chargement en cours…" heroImage="orders" badge={{ label: 'Commandes', icon: Package }}>
+      <ChannablePageWrapper title={tPages('commande.title')} description={tPages('loading.description')} heroImage="orders" badge={{ label: 'Commandes', icon: Package }}>
         <div className="flex items-center justify-center min-h-[300px]">
           <Loader2 className="h-10 w-10 animate-spin text-primary" />
         </div>
@@ -113,7 +113,7 @@ export default function OrderDetail() {
 
   if (!order) {
     return (
-      <ChannablePageWrapper title={tPages('commandeIntrouvable.title')} description="La commande que vous recherchez n'existe pas ou a été supprimée." heroImage="orders" badge={{ label: 'Commandes', icon: Package }}>
+      <ChannablePageWrapper title={tPages('commandeIntrouvable.title')} description={tPages('commandeIntrouvable.description')} heroImage="orders" badge={{ label: 'Commandes', icon: Package }}>
         <Card>
           <CardContent className="text-center py-12">
             <Package className="h-16 w-16 mx-auto text-muted-foreground mb-4" />

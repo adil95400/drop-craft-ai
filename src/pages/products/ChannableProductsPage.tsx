@@ -448,7 +448,7 @@ export default function ChannableProductsPage() {
       const { t: tPages } = useTranslation('pages');
 
     return (
-      <ChannablePageWrapper title={tPages('catalogueProduits.title')} description="Chargement en cours…" heroImage="products" badge={{ label: 'Catalogue', icon: Package }}>
+      <ChannablePageWrapper title={tPages('catalogueProduits.title')} description={tPages('loading.description')} heroImage="products" badge={{ label: 'Catalogue', icon: Package }}>
         <div className="flex items-center justify-center min-h-[300px]">
           <Loader2 className="h-10 w-10 animate-spin text-primary" />
         </div>

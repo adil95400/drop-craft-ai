@@ -299,7 +299,7 @@ export default function ImportedProductsPage() {
     return (
       <ChannablePageWrapper
         title={tPages('produitsImportes.title')}
-        description="Chargement…"
+        description={tPages('loading.description')}
         heroImage="products"
         badge={{ label: 'Imports', icon: Package }}
       >

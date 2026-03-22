@@ -53,7 +53,7 @@ const MultiChannelManagementPage: React.FC = () => {
       const { t: tPages } = useTranslation('pages');
 
     return (
-      <ChannablePageWrapper title={tPages('gestionMultiCanal.title')} description="Chargement..." heroImage="integrations" badge={{ label: 'Multi-Canal', icon: Globe }}>
+      <ChannablePageWrapper title={tPages('gestionMultiCanal.title')} description={tPages('loading.description')} heroImage="integrations" badge={{ label: 'Multi-Canal', icon: Globe }}>
         <div className="grid gap-4 md:grid-cols-4">{[1,2,3,4].map(i => <Skeleton key={i} className="h-28" />)}</div>
       </ChannablePageWrapper>
     );

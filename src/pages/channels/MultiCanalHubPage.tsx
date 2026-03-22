@@ -91,7 +91,7 @@ export default function MultiCanalHubPage() {
       const { t: tPages } = useTranslation('pages');
 
     return (
-      <ChannablePageWrapper title={tPages('multiCanalHub.title')} description="Chargement..." heroImage="integrations" badge={{ label: 'Hub', icon: Globe }}>
+      <ChannablePageWrapper title={tPages('multiCanalHub.title')} description={tPages('loading.description')} heroImage="integrations" badge={{ label: 'Hub', icon: Globe }}>
         <div className="flex justify-center py-24"><Loader2 className="h-10 w-10 animate-spin text-primary" /></div>
       </ChannablePageWrapper>
     );

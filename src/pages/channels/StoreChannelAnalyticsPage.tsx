@@ -152,7 +152,7 @@ export default function StoreChannelAnalyticsPage() {
       const { t: tPages } = useTranslation('pages');
 
     return (
-      <ChannablePageWrapper title={tPages('statistiquesDesCanaux.title')} description="Chargement..." heroImage="analytics" badge={{ label: 'Multi-canal', icon: Store }}>
+      <ChannablePageWrapper title={tPages('statistiquesDesCanaux.title')} description={tPages('loading.description')} heroImage="analytics" badge={{ label: 'Multi-canal', icon: Store }}>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
           {[1, 2, 3, 4].map(i => <Skeleton key={i} className="h-20" />)}
         </div>
@@ -165,7 +165,7 @@ export default function StoreChannelAnalyticsPage() {
     return (
       <>
         <Helmet><title>Statistiques Canaux | Drop Craft AI</title></Helmet>
-        <ChannablePageWrapper title={tPages('statistiquesDesCanaux.title')} description="Connectez vos boutiques pour voir les statistiques" heroImage="analytics" badge={{ label: 'Multi-canal', icon: Store }}>
+        <ChannablePageWrapper title={tPages('statistiquesDesCanaux.title')} description={tPages('connectezVosBoutiques.description')} heroImage="analytics" badge={{ label: 'Multi-canal', icon: Store }}>
           <Card>
             <CardContent className="py-12 text-center">
               <Store className="h-12 w-12 text-muted-foreground mx-auto mb-4" />

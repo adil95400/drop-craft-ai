@@ -100,7 +100,7 @@ export default function WebhookManagementPage() {
       const { t: tPages } = useTranslation('pages');
 
     return (
-      <ChannablePageWrapper title={tPages('webhooks.title')} description="Chargement...">
+      <ChannablePageWrapper title={tPages('webhooks.title')} description={tPages('loading.description')}>
         <div className="flex items-center justify-center py-12"><Loader2 className="h-8 w-8 animate-spin text-muted-foreground" /></div>
       </ChannablePageWrapper>
     );

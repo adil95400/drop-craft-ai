@@ -371,7 +371,7 @@ export default function AIAutomationHubPage() {
       const { t: tPages } = useTranslation('pages');
 
     return (
-      <ChannablePageWrapper title={tPages('hubIa.title')} description="Chargement..." heroImage="ai" badge={{ label: 'IA Pro', icon: Brain }}>
+      <ChannablePageWrapper title={tPages('hubIa.title')} description={tPages('loading.description')} heroImage="ai" badge={{ label: 'IA Pro', icon: Brain }}>
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
           {[1, 2, 3, 4].map(i => <Skeleton key={i} className="h-24" />)}
         </div>

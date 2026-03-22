@@ -74,7 +74,7 @@ export default function ManageIntegrationPage() {
       const { t: tPages } = useTranslation('pages');
 
     return (
-      <ChannablePageWrapper title={tPages('integration.title')} description="Chargement…" heroImage="integrations" badge={{ label: 'Intégration', icon: Settings }}>
+      <ChannablePageWrapper title={tPages('integration.title')} description={tPages('loading.description')} heroImage="integrations" badge={{ label: 'Intégration', icon: Settings }}>
         <div className="flex items-center justify-center min-h-64">
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
         </div>
@@ -84,7 +84,7 @@ export default function ManageIntegrationPage() {
 
   if (!integration) {
     return (
-      <ChannablePageWrapper title={tPages('integrationIntrouvable.title')} description="L'intégration demandée n'existe pas" heroImage="integrations" badge={{ label: 'Erreur', icon: AlertTriangle }}>
+      <ChannablePageWrapper title={tPages('integrationIntrouvable.title')} description={tPages('integrationIntrouvable.description')} heroImage="integrations" badge={{ label: 'Erreur', icon: AlertTriangle }}>
         <Card>
           <CardContent className="py-12 text-center">
             <AlertTriangle className="h-12 w-12 text-destructive mx-auto mb-4" />

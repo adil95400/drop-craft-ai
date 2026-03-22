@@ -131,7 +131,7 @@ export default function PremiumSuppliersPage() {
       const { t: tPages } = useTranslation('pages');
 
     return (
-      <ChannablePageWrapper title={tPages('fournisseursPremium.title')} description="Chargement..." heroImage="suppliers" badge={{ label: 'Premium', icon: Crown }}>
+      <ChannablePageWrapper title={tPages('fournisseursPremium.title')} description={tPages('loading.description')} heroImage="suppliers" badge={{ label: 'Premium', icon: Crown }}>
         <div className="grid gap-4 md:grid-cols-4">{[1,2,3,4].map(i => <Skeleton key={i} className="h-28" />)}</div>
       </ChannablePageWrapper>
     );
