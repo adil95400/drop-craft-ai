@@ -3,7 +3,7 @@
  * Generates marketing copy: emails, ad copy, landing pages, product descriptions.
  */
 import { createEdgeFunction, z } from '../_shared/create-edge-function.ts'
-import { AI_MODEL, AI_GATEWAY_URL } from '../_shared/ai-config.ts'
+import { callOpenAI } from '../_shared/ai-client.ts'
 
 const copySchema = z.object({
   content_type: z.enum(['email', 'ad_copy', 'landing_page', 'product_description', 'social_post', 'blog_outline']),
