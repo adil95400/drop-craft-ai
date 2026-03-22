@@ -199,6 +199,7 @@ const resources = {
     crm: crmDe,
     extensions: extensionsDe,
     billing: billingDe,
+    pages: pagesDe,
   },
 };
 
