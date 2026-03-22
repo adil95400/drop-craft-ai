@@ -1,6 +1,3 @@
-// Dynamic imports for bundle optimization
-const getJsPDF = () => import('jspdf').then(m => m.default)
-const getAutoTable = () => import('jspdf-autotable').then(m => m.default)
 import type { InvoiceBranding } from '@/hooks/useInvoiceBranding';
 
 export interface InvoiceItem {
