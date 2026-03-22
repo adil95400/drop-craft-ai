@@ -167,7 +167,8 @@ export const ExtensionMarketplace: React.FC = () => {
       return
     }
 
-    // TODO: Logique d'installation
+    setInstalledExtensions(prev => [...prev, extensionId])
+    toast.success(`Extension "${extension.name}" installée avec succès`)
   }
 
   const handleToggleFavorite = (extensionId: string) => {

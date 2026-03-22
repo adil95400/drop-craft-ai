@@ -123,8 +123,18 @@ export function AdvancedProductCatalog() {
     }
   }
 
-  const executeBulkAction = (_actionId: string) => {
-    // TODO: Implement bulk actions
+  const executeBulkAction = async (actionId: string) => {
+    if (selectedProducts.length === 0) return
+    try {
+      const { error } = await supabase.functions.invoke('bulk-operations', {
+        body: { operation: actionId, entityType: 'imported_products', entityIds: selectedProducts }
+      })
+      if (error) throw error
+      toast.success(`Action "${actionId}" appliquée à ${selectedProducts.length} produit(s)`)
+      queryClient.invalidateQueries({ queryKey: ['products-unified'] })
+    } catch (err: any) {
+      toast.error(`Erreur: ${err.message}`)
+    }
     setSelectedProducts([])
     setShowBulkActions(false)
   }

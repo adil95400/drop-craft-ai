@@ -139,7 +139,7 @@ export function ProductsPageWrapper({
             handleClearSelection();
             onRefresh?.();
           }}
-          onBulkEdit={() => { /* TODO: bulk edit modal */ }}
+          onBulkEdit={() => { toast.info('Édition groupée — bientôt disponible') }}
           onProductUpdate={onRefresh}
         />
       )}
