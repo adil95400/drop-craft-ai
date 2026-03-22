@@ -130,32 +130,14 @@ export const MultiTenantDashboard = () => {
     )
   }
 
-  // Mock data for analytics
-  const revenueData = [
-    { month: 'Jan', revenue: 12000 },
-    { month: 'Fev', revenue: 15000 },
-    { month: 'Mar', revenue: 18000 },
-    { month: 'Avr', revenue: 22000 },
-    { month: 'Mai', revenue: 26000 },
-    { month: 'Juin', revenue: 31000 }
-  ]
-
-  const userGrowthData = [
-    { month: 'Jan', users: 120 },
-    { month: 'Fev', users: 180 },
-    { month: 'Mar', users: 245 },
-    { month: 'Avr', users: 310 },
-    { month: 'Mai', users: 385 },
-    { month: 'Juin', users: 470 }
-  ]
-
+  // Plan distribution from real tenant data (no mock)
   const planDistribution = [
-    { name: 'Standard', value: tenants.filter(t => t.plan_type === 'standard').length },
-    { name: 'Pro', value: tenants.filter(t => t.plan_type === 'pro').length },
-    { name: 'Enterprise', value: tenants.filter(t => t.plan_type === 'enterprise').length }
+    { name: 'Standard', value: tenants.filter(t => t.plan_type === 'standard').length || 0 },
+    { name: 'Pro', value: tenants.filter(t => t.plan_type === 'pro').length || 0 },
+    { name: 'Enterprise', value: tenants.filter(t => t.plan_type === 'enterprise').length || 0 }
   ]
 
-  const COLORS = ['#0088FE', '#00C49F', '#FFBB28']
+  const COLORS = ['hsl(var(--primary))', 'hsl(var(--accent))', 'hsl(142 76% 36%)']
 
   return (
     <div className="container mx-auto p-6 space-y-6">
@@ -233,57 +215,15 @@ export const MultiTenantDashboard = () => {
 
       {/* Analytics Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 animate-fade-in">
-        <Card>
+        <Card className="col-span-1 lg:col-span-2">
           <CardHeader>
-            <CardTitle className="text-base">Croissance des revenus (MRR)</CardTitle>
-            <CardDescription>6 derniers mois</CardDescription>
+            <CardTitle className="text-base">Analytiques SaaS</CardTitle>
+            <CardDescription>Les graphiques MRR et croissance utilisateurs seront alimentés par vos données réelles.</CardDescription>
           </CardHeader>
           <CardContent>
-            <ResponsiveContainer width="100%" height={250}>
-              <AreaChart data={revenueData}>
-                <defs>
-                  <linearGradient id="colorMRR" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.8}/>
-                    <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0}/>
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                <XAxis dataKey="month" stroke="hsl(var(--muted-foreground))" fontSize={12} />
-                <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} />
-                <Tooltip 
-                  contentStyle={{ 
-                    backgroundColor: 'hsl(var(--background))',
-                    border: '1px solid hsl(var(--border))',
-                    borderRadius: '8px'
-                  }}
-                />
-                <Area type="monotone" dataKey="revenue" stroke="hsl(var(--primary))" fillOpacity={1} fill="url(#colorMRR)" />
-              </AreaChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">Croissance utilisateurs</CardTitle>
-            <CardDescription>6 derniers mois</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={250}>
-              <LineChart data={userGrowthData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                <XAxis dataKey="month" stroke="hsl(var(--muted-foreground))" fontSize={12} />
-                <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} />
-                <Tooltip 
-                  contentStyle={{ 
-                    backgroundColor: 'hsl(var(--background))',
-                    border: '1px solid hsl(var(--border))',
-                    borderRadius: '8px'
-                  }}
-                />
-                <Line type="monotone" dataKey="users" stroke="hsl(var(--primary))" strokeWidth={2} />
-              </LineChart>
-            </ResponsiveContainer>
+            <div className="flex items-center justify-center h-[200px] text-muted-foreground text-sm">
+              Aucune donnée de revenu ou croissance à afficher pour le moment.
+            </div>
           </CardContent>
         </Card>
 

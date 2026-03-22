@@ -14,11 +14,14 @@ export function PerformanceMonitor({ children }: PerformanceMonitorProps) {
   const { data: appHealth } = useOptimizedQuery(
     ['app', 'health'],
     createSupabaseQuery(async () => {
-      // Simple health check - return mock data for now
-      return { data: { status: 'healthy', uptime: '99.9%' }, error: null };
+      // Real health check via navigation timing
+      const nav = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming | undefined;
+      const loadTime = nav ? Math.round(nav.loadEventEnd - nav.startTime) : 0;
+      const status = loadTime > 5000 ? 'degraded' : 'healthy';
+      return { data: { status, loadTimeMs: loadTime }, error: null };
     }),
     {
-      staleTime: 30 * 1000, // 30 seconds
+      staleTime: 30 * 1000,
       refetchOnWindowFocus: false,
     }
   );
