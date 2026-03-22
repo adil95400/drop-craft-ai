@@ -116,30 +116,20 @@ Variants: ${input.variants}`
 
   const toolName = `generate_${input.content_type}`
 
-  const aiResponse = await fetch(AI_GATEWAY_URL, {
-    method: 'POST',
-    headers: { 'Authorization': `Bearer ${OPENAI_API_KEY}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      model: AI_MODEL,
-      messages: [
-        { role: 'system', content: `You are an elite marketing copywriter. Write compelling, conversion-optimized copy. Always match the requested tone and language.` },
-        { role: 'user', content: `${typePrompts[input.content_type]}\n\nContext:\n${context}` }
-      ],
+  const aiData = await callOpenAI(
+    [
+      { role: 'system', content: `You are an elite marketing copywriter. Write compelling, conversion-optimized copy. Always match the requested tone and language.` },
+      { role: 'user', content: `${typePrompts[input.content_type]}\n\nContext:\n${context}` }
+    ],
+    {
+      module: 'marketing',
       tools: [{ type: 'function', function: { name: toolName, description: `Generate ${input.content_type} copy`, parameters: toolParams[input.content_type] } }],
       tool_choice: { type: 'function', function: { name: toolName } },
-      max_tokens: 4000,
-    }),
-  })
-
-  if (!aiResponse.ok) {
-    const status = aiResponse.status
-    if (status === 429 || status === 402) {
-      return new Response(JSON.stringify({ error: status === 429 ? 'Rate limit' : 'Crédits épuisés' }), { status, headers: { 'Content-Type': 'application/json' } })
+      maxTokens: 4000,
+      enableCache: true,
     }
-    throw new Error(`AI error: ${status}`)
-  }
+  )
 
-  const aiData = await aiResponse.json()
   const toolCall = aiData.choices?.[0]?.message?.tool_calls?.[0]
   let result: any
 
