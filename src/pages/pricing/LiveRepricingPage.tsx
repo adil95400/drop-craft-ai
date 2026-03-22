@@ -92,9 +92,12 @@ export default function LiveRepricingPage() {
   const activeRules = rules.filter((r: any) => r.is_active)
   const totalAdjustments = rules.reduce((a: number, r: any) => a + (r.execution_count || 0), 0)
 
+    const { t: tPages } = useTranslation('pages');
+
+
   return (
     <ChannablePageWrapper
-      title="Live Repricing"
+      title={tPages('liveRepricing.title')}
       description="Monitoring des prix concurrents en temps réel et ajustement automatique de vos tarifs."
       heroImage="analytics"
       badge={{ label: 'Repricing', icon: TrendingUp }}

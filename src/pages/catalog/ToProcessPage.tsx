@@ -81,7 +81,7 @@ export default function ToProcessPage() {
   return (
     <ChannablePageWrapper
       title={tPages('aTraiter.title')}
-      subtitle="Backlog intelligent"
+      subtitle={tPages('backlogIntelligent.title')}
       description="Actions requises et opportunités triées par priorité IA"
       heroImage="products"
       badge={{ label: `${totalToProcess} produits`, variant: counts.critical > 0 || draftStats.total > 0 ? 'destructive' : 'secondary' }}

@@ -4,6 +4,7 @@
  */
 import { useState } from 'react';
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Plus, GitBranch } from 'lucide-react';
 import { useFeedRulesStats } from '@/hooks/useFeedRules';
@@ -18,9 +19,12 @@ export default function FeedRulesPage() {
   const activeRules = stats?.activeRules || 0;
   const totalRules = stats?.totalRules || 0;
 
+    const { t: tPages } = useTranslation('pages');
+
+
   return (
     <ChannablePageWrapper
-      title="Règles d'Automatisation"
+      title={tPages('reglesDAutomatisation.title')}
       subtitle="Fulfillment"
       description={`${activeRules} règles actives sur ${totalRules} • Transformez vos flux avec des règles IF/THEN intelligentes`}
       heroImage="automation"

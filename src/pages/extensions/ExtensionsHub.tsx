@@ -21,9 +21,12 @@ export default function ExtensionsHub() {
   const navigate = useNavigate()
   const [activeTab, setActiveTab] = useState<'dashboard' | 'overview'>('dashboard')
 
+    const { t: tPages } = useTranslation('pages');
+
+
   return (
     <ChannablePageWrapper
-      title="ShopOpti+ Chrome Extension"
+      title={tPages('shopoptiChromeExtension.title')}
       subtitle="#1 Extension Dropshipping"
       description="L'extension Chrome la plus puissante pour le dropshipping. Importez, surveillez, automatisez - tout depuis votre navigateur."
       heroImage="extensions"

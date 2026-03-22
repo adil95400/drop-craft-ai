@@ -16,6 +16,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { Label } from '@/components/ui/label';
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
+import { useTranslation } from 'react-i18next';
 import { useSupportTickets, useTicketMessages } from '@/hooks/useSupportTickets';
 import { formatDistanceToNow, differenceInMinutes, format } from 'date-fns';
 import { fr } from 'date-fns/locale';
@@ -121,7 +122,7 @@ export default function AdvancedTicketsPage() {
     <>
       <Helmet><title>Tickets avancés — Drop-Craft AI</title></Helmet>
       <ChannablePageWrapper
-        title="Gestion avancée des tickets"
+        title={tPages('gestionAvanceeDesTickets.title')}
         description="Suivi SLA, file de priorité et conversations centralisées"
         badge={{ label: 'Tickets', icon: Ticket }}
       >

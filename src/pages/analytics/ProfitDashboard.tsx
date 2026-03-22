@@ -101,9 +101,12 @@ export default function ProfitDashboard() {
     )
   }
 
+    const { t: tPages } = useTranslation('pages');
+
+
   return (
     <ChannablePageWrapper
-      title="Dashboard Profit"
+      title={tPages('dashboardProfit.title')}
       description={`Profit net: ${(profitData?.netProfit || 0).toFixed(2)} € • Marge: ${(profitData?.avgMargin || 0).toFixed(1)}%`}
       heroImage="analytics"
       badge={{ label: 'Rentabilité', icon: DollarSign }}

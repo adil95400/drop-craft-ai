@@ -20,9 +20,12 @@ export default function SearchAllSuppliersPage() {
     supportedPlatforms
   } = useSearchAllSuppliers()
 
+    const { t: tPages } = useTranslation('pages');
+
+
   return (
     <ChannablePageWrapper
-      title="Recherche Multi-Fournisseurs"
+      title={tPages('rechercheMultiFournisseurs.title')}
       description="Trouvez le meilleur fournisseur en comparant prix, livraison et disponibilité sur 15+ plateformes"
       heroImage="suppliers"
       badge={{ label: 'Multi-Plateforme', icon: Globe }}

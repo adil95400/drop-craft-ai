@@ -87,7 +87,7 @@ export default function ResearchHub() {
       </Helmet>
 
       <ChannablePageWrapper
-        title="Veille & Recherche"
+        title={tPages('veilleRecherche.title')}
         description="Produits gagnants, concurrence, tendances"
         heroImage="research"
         badge={{ label: 'Intelligence IA', icon: Sparkles }}

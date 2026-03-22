@@ -8,6 +8,7 @@ import {
   CheckCircle2, AlertCircle, Database, Zap, Activity
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useUnifiedAuth } from '@/contexts/UnifiedAuthContext';
 import { useUnifiedPlan } from '@/lib/unified-plan-system';
 import { supabase } from '@/integrations/supabase/client';
@@ -152,9 +153,12 @@ export default function SyncManagerPage() {
     return <Database className="h-5 w-5" />;
   };
 
+    const { t: tPages } = useTranslation('pages');
+
+
   return (
     <ChannablePageWrapper
-      title="Gestionnaire de Synchronisation"
+      title={tPages('gestionnaireDeSynchronisation.title')}
       description="Gérez la synchronisation de vos produits entre plateformes"
       heroImage="integrations"
       badge={{ label: 'Sync', icon: RefreshCw }}

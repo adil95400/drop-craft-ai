@@ -423,7 +423,7 @@ export default function CatalogProductsPage() {
   return (
     <ChannablePageWrapper
       title={tPages('catalogueProduits.title')}
-      subtitle="Gestion"
+      subtitle={tPages('gestion.title')}
       description="Gérez, filtrez et organisez tous vos produits depuis une interface centralisée."
       heroImage="products"
       badge={{ label: `${stats.total} produits`, icon: Package }}>

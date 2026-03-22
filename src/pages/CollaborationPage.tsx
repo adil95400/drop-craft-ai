@@ -5,12 +5,15 @@ import { NativeFeatures } from '@/components/capacitor/NativeFeatures';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Users, MessageSquare, Calendar, Bell, Paintbrush, Accessibility, Smartphone } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
 
 export default function CollaborationPage() {
+    const { t: tPages } = useTranslation('pages');
+
   return (
     <ChannablePageWrapper
-      title="Espace Collaboratif & Enterprise"
+      title={tPages('espaceCollaboratifEnterprise.title')}
       description="Équipe, White-Label, Accessibilité et Fonctionnalités Natives"
       heroImage="settings"
       badge={{ label: 'Enterprise', icon: Users }}

@@ -2,6 +2,7 @@ import { Helmet } from 'react-helmet-async';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tag, Zap, Calendar, TrendingUp, Plus } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { useAuthOptimized } from '@/shared';
 import { usePromotions } from '@/hooks/usePromotions';
@@ -24,7 +25,7 @@ export default function PromotionsAutomationPage() {
       </Helmet>
 
       <ChannablePageWrapper
-        title="🎯 Promotions Automatisées"
+        title={tPages('promotionsAutomatisees.title')}
         subtitle="Marketing"
         description="Créez et déployez vos campagnes promotionnelles sur tous vos canaux de vente"
         heroImage="marketing"

@@ -158,7 +158,7 @@ export default function ChannableStoresPage() {
 
   return (
     <ChannablePageWrapper
-      title="Gestion des Boutiques"
+      title={tPages('gestionDesBoutiques.title')}
       description="Connectez et gérez toutes vos boutiques e-commerce depuis un seul endroit"
       heroImage="integrations"
       badge={{ label: 'Boutiques', icon: Store }}

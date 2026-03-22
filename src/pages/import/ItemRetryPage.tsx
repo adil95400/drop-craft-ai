@@ -124,9 +124,12 @@ export default function ItemRetryPage() {
     }
   }
 
+    const { t: tPages } = useTranslation('pages');
+
+
   return (
     <ChannablePageWrapper
-      title="Retry Granulaire"
+      title={tPages('retryGranulaire.title')}
       description="Relancez individuellement les items échoués d'un import."
       heroImage="import"
       badge={{ label: job ? `Job #${(job as any).id?.slice(0,8)}` : 'Import', icon: Package }}

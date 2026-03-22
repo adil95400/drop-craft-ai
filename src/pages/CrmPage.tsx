@@ -21,7 +21,7 @@ export default function CrmPage() {
   return (
     <ChannablePageWrapper
       title={tPages('crm.title')}
-      subtitle="Relation Client"
+      subtitle={tPages('relationClient.title')}
       description="Gérez vos leads, deals et pipeline de ventes avec une vue enterprise complète"
       heroImage="marketing"
       badge={{ label: 'Pro', icon: Star }}

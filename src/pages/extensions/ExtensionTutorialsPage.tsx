@@ -97,7 +97,7 @@ export default function ExtensionTutorialsPage() {
   return (
     <ChannablePageWrapper
       title={tPages('tutorielsExtension.title')}
-      subtitle="Guides Vidéo"
+      subtitle={tPages('guidesVideo.title')}
       description="Apprenez à utiliser toutes les fonctionnalités de l'extension ShopOpti+ avec nos tutoriels"
       heroImage="extensions"
       badge={{ label: 'Formation', icon: GraduationCap }}

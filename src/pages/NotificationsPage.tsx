@@ -336,7 +336,7 @@ export default function NotificationsPage() {
   return (
     <ChannablePageWrapper
       title={tPages('centreDeNotifications.title')}
-      subtitle="Alertes & Messages"
+      subtitle={tPages('alertesMessages.title')}
       description="Consultez vos notifications, gérez vos préférences d'alertes et restez informé de l'activité de votre boutique."
       heroImage="notifications"
       badge={{

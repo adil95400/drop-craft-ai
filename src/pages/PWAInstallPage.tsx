@@ -3,6 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Smartphone, Download, Bell, Wifi, Zap, Shield } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { pwaService } from '@/services/pwa/PWAService';
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
 
@@ -43,9 +44,12 @@ const PWAInstallPage: React.FC = () => {
     { icon: Shield, title: 'Sécurisé', description: 'Données chiffrées et synchronisation sécurisée' },
   ];
 
+    const { t: tPages } = useTranslation('pages');
+
+
   return (
     <ChannablePageWrapper
-      title="Drop Craft AI Mobile"
+      title={tPages('dropCraftAiMobile.title')}
       description="Transformez votre expérience e-commerce avec notre application mobile progressive"
       heroImage="extensions"
       badge={{ label: 'PWA', icon: Smartphone }}

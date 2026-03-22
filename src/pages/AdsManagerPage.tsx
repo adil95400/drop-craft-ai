@@ -77,7 +77,7 @@ export default function AdsManagerPage() {
 
       <ChannablePageWrapper
         title={tPages('aiAdsManager.title')}
-        subtitle="Marketing"
+        subtitle={tPages('marketing.title')}
         description="Gérez et optimisez vos campagnes publicitaires multi-plateformes avec l'IA"
         heroImage="marketing"
         badge={{ label: "AI Powered", icon: Sparkles }}

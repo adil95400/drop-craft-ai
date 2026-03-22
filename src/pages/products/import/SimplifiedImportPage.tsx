@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { ArrowLeft, Upload, Link2, Loader2, FileUp } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { useDropzone } from 'react-dropzone';
 import { useOptimizedImport } from '@/hooks/useOptimizedImport';
 import { toast } from '@/hooks/use-toast';
@@ -200,9 +201,12 @@ export default function SimplifiedImportPage() {
     setProductUrl('');
   };
 
+    const { t: tPages } = useTranslation('pages');
+
+
   return (
     <ChannablePageWrapper
-      title="Import de Produits"
+      title={tPages('importDeProduits.title')}
       subtitle="Importez vos produits"
       description="Importez des produits depuis plusieurs sources : fichiers CSV, URLs ou fournisseurs"
       heroImage="import"

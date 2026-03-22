@@ -77,7 +77,7 @@ export default function FreelanceMarketplacePage() {
       </Helmet>
 
       <ChannablePageWrapper
-        title="Services & Support"
+        title={tPages('servicesSupport.title')}
         description="Marketplace de freelances, chat en direct et FAQ"
         heroImage="support"
         badge={{ label: 'Services', icon: Users }}

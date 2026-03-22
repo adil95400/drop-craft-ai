@@ -697,9 +697,12 @@ export default function ChannableFeedManager() {
 
   const selectedMp = MARKETPLACES.find(mp => mp.id === newFeed.marketplace)
 
+    const { t: tPages } = useTranslation('pages');
+
+
   return (
     <ChannablePageWrapper
-      title="Export Feeds"
+      title={tPages('exportFeeds.title')}
       subtitle="Canaux de vente"
       description={`${stats.totalFeeds} feeds configurés • ${stats.activeFeeds} actifs • ${stats.totalProducts.toLocaleString()} produits synchronisés sur ${MARKETPLACES.length}+ marketplaces`}
       heroImage="integrations"

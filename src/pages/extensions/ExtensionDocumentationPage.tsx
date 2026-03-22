@@ -24,6 +24,7 @@ import {
   Target
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
 
 export default function ExtensionDocumentationPage() {
@@ -295,9 +296,12 @@ Content-Type: application/json
     }
   ];
 
+    const { t: tPages } = useTranslation('pages');
+
+
   return (
     <ChannablePageWrapper
-      title="Documentation Extension"
+      title={tPages('documentationExtension.title')}
       subtitle="Guide Complet"
       description="Tout ce que vous devez savoir sur l'utilisation de l'extension Chrome ShopOpti+"
       heroImage="extensions"

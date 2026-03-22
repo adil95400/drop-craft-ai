@@ -66,7 +66,7 @@ export default function WorkflowStudioPage() {
   return (
     <ChannablePageWrapper
       title={tPages('workflowStudio.title')}
-      subtitle="Automatisation visuelle"
+      subtitle={tPages('automatisationVisuelle.title')}
       description="Créez des workflows d'automatisation avec un builder visuel drag & drop"
       heroImage="automation"
       badge={{ label: 'Studio', icon: Workflow }}

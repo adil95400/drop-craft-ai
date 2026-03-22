@@ -41,7 +41,7 @@ export default function WhiteLabelPage() {
       const { t: tPages } = useTranslation('pages');
 
     return (
-      <ChannablePageWrapper title={tPages('whiteLabel.title')} subtitle="Personnalisation" description="Chargement...">
+      <ChannablePageWrapper title={tPages('whiteLabel.title')} subtitle={tPages('personnalisation.title')} description="Chargement...">
         <div className="space-y-4">
           <Skeleton className="h-48 w-full" />
           <Skeleton className="h-48 w-full" />
@@ -53,7 +53,7 @@ export default function WhiteLabelPage() {
   return (
     <ChannablePageWrapper
       title="White-Label Enterprise"
-      subtitle="Personnalisation"
+      subtitle={tPages('personnalisation.title')}
       description="Transformez ShopOpti en votre propre plateforme avec votre marque"
       heroImage="settings"
       badge={{ label: 'Enterprise', variant: 'default' }}

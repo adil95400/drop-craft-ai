@@ -37,9 +37,12 @@ export default function MultiStoreImportPage() {
   const { stores } = useUnifiedStores()
   const activeStores = stores.filter(s => s.is_active)
 
+    const { t: tPages } = useTranslation('pages');
+
+
   return (
     <ChannablePageWrapper
-      title="Import Multi-Boutiques"
+      title={tPages('importMultiBoutiques.title')}
       description="Importez un produit vers plusieurs boutiques simultanément"
       heroImage="import"
     >

@@ -47,7 +47,7 @@ export default function ExtensionWhiteLabelPage() {
   return (
     <ChannablePageWrapper
       title={tPages('whiteLabel.title')}
-      subtitle="Ultra Pro"
+      subtitle={tPages('ultraPro.title')}
       description="Personnalisez entièrement l'interface à vos couleurs et votre branding."
       heroImage="extensions"
       badge={{ label: 'Ultra Pro', icon: Palette }}

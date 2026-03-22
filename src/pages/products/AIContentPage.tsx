@@ -15,7 +15,7 @@ export default function AIContentPage() {
   return (
     <ChannablePageWrapper
       title={tPages('generationDeContenuIa.title')}
-      subtitle="Automatisation créative"
+      subtitle={tPages('automatisationCreative.title')}
       description="Créez des descriptions, titres et contenus SEO automatiquement avec l'intelligence artificielle"
       heroImage="products"
       badge={{ label: 'IA Pro', icon: Sparkles }}

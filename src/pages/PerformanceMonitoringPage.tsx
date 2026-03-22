@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Activity, Zap, Clock, TrendingUp, AlertCircle } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
@@ -26,9 +27,12 @@ export default function PerformanceMonitoringPage() {
     }
   }, []);
 
+    const { t: tPages } = useTranslation('pages');
+
+
   return (
     <ChannablePageWrapper
-      title="Monitoring Performance"
+      title={tPages('monitoringPerformance.title')}
       description="Surveillez et optimisez les performances de votre application"
       heroImage="analytics"
       badge={{ label: 'Performance', icon: Activity }}

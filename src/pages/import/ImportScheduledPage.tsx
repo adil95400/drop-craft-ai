@@ -195,9 +195,12 @@ export default function ImportScheduledPage() {
     }
   }
 
+    const { t: tPages } = useTranslation('pages');
+
+
   return (
     <ChannablePageWrapper
-      title="Imports Planifiés"
+      title={tPages('importsPlanifies.title')}
       description="Planifiez vos imports pour qu'ils s'exécutent automatiquement. Gagnez du temps avec l'automatisation."
       heroImage="automation"
       badge={{ label: 'Automatisation', icon: Calendar }}

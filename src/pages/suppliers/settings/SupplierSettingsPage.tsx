@@ -186,9 +186,12 @@ export default function SupplierSettingsPage() {
 
   const activeCredentials = credentials.filter((c: any) => c.connection_status === 'active' || c.connection_status === 'connected').length
 
+    const { t: tPages } = useTranslation('pages');
+
+
   return (
     <ChannablePageWrapper
-      title="Paramètres Fournisseurs"
+      title={tPages('parametresFournisseurs.title')}
       subtitle="Configuration"
       description="Gérez vos credentials, webhooks et paramètres de synchronisation fournisseurs."
       heroImage="settings"

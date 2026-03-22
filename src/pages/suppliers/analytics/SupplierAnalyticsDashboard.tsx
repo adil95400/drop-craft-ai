@@ -161,9 +161,12 @@ export default function SupplierAnalyticsDashboard() {
     },
   ]
 
+    const { t: tPages } = useTranslation('pages');
+
+
   return (
     <ChannablePageWrapper
-      title="Analytics Fournisseurs"
+      title={tPages('analyticsFournisseurs.title')}
       subtitle="KPIs et métriques en temps réel"
       description="Analysez les performances de vos fournisseurs, marges et tendances de vente."
       heroImage="analytics"

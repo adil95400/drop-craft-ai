@@ -47,7 +47,7 @@ const AffiliateMarketingPage: React.FC = () => {
 
       <ChannablePageWrapper
         title={tPages('marketingDAffiliation.title')}
-        subtitle="Marketing"
+        subtitle={tPages('marketing.title')}
         description="Gérez votre programme d'affiliés et suivez les performances en temps réel"
         heroImage="marketing"
         badge={{ label: "Affiliates", icon: Users }}

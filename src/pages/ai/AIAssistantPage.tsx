@@ -128,7 +128,7 @@ export default function AIAssistantPage() {
   return (
     <ChannablePageWrapper
       title={tPages('assistantIa.title')}
-      subtitle="Votre expert e-commerce"
+      subtitle={tPages('votreExpertECommerce.title')}
       description="Posez vos questions sur vos produits, votre stratégie et vos performances"
       heroImage="ai"
       badge={{ label: 'GPT-5', icon: Sparkles }}

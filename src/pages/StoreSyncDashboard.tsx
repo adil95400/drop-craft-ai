@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -355,9 +356,12 @@ export default function StoreSyncDashboard() {
     );
   };
 
+    const { t: tPages } = useTranslation('pages');
+
+
   return (
     <ChannablePageWrapper
-      title="Centre de Synchronisation"
+      title={tPages('centreDeSynchronisation.title')}
       subtitle="SYNC HUB"
       description="Orchestrez la synchronisation de vos données en temps réel avec toutes vos boutiques connectées"
       heroImage="automation"

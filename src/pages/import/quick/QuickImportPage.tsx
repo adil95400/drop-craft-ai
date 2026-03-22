@@ -20,9 +20,12 @@ export default function QuickImportPage() {
     { icon: CheckCircle, title: 'Validation', description: 'Vérification des données en temps réel' }
   ]
 
+    const { t: tPages } = useTranslation('pages');
+
+
   return (
     <ChannablePageWrapper
-      title="Import CSV / Excel"
+      title={tPages('importCsvExcel.title')}
       subtitle="Mapping intelligent"
       description="Importez vos catalogues produits depuis des fichiers CSV ou Excel. Notre IA détecte automatiquement les colonnes et valide vos données."
       heroImage="suppliers"

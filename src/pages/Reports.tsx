@@ -363,7 +363,7 @@ export default function Reports() {
   return (
     <ChannablePageWrapper
       title={tPages('centreDeRapports.title')}
-      subtitle="Analytics"
+      subtitle={tPages('analytics.title')}
       description="Générez et gérez vos rapports d'activité avec exports PDF et tableaux détaillés"
       heroImage="analytics"
       badge={{ label: "Export PDF", icon: FileText }}

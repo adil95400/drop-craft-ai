@@ -90,7 +90,7 @@ export default function EmailTemplatesPage() {
   return (
     <ChannablePageWrapper
       title={tPages('templatesEmail.title')}
-      subtitle="Communication"
+      subtitle={tPages('communication.title')}
       description="Gérez vos emails transactionnels, marketing et de rétention"
       heroImage="marketing"
       badge={{ label: `${enabledCount} actifs`, icon: Mail }}

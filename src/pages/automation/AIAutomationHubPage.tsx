@@ -388,7 +388,7 @@ export default function AIAutomationHubPage() {
       </Helmet>
 
       <ChannablePageWrapper
-        title="Hub Intelligence Artificielle"
+        title={tPages('hubIntelligenceArtificielle.title')}
         description="Agents IA autonomes pour optimiser votre boutique en continu"
         heroImage="ai"
         badge={{ label: 'IA Pro', icon: Brain }}

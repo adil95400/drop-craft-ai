@@ -1,5 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -67,9 +68,12 @@ export default function ImportMarketplacePage() {
   const connectedCount = connections.filter(c => c.status === 'connected').length;
   const totalSynced = connections.reduce((sum, c) => sum + (c.total_products_synced || 0), 0);
 
+    const { t: tPages } = useTranslation('pages');
+
+
   return (
     <ChannablePageWrapper
-      title="Marketplaces"
+      title={tPages('marketplaces.title')}
       description={`${publishedProducts.length} produits disponibles • ${connectedCount} connectées • ${totalSynced} synchronisés`}
       heroImage="integrations"
       badge={{ label: 'Multi-Canal', icon: Globe }}

@@ -84,7 +84,7 @@ const EmailMarketingPage: React.FC = () => {
   return (
     <ChannablePageWrapper
       title={tPages('emailMarketing.title')}
-      subtitle="Marketing"
+      subtitle={tPages('marketing.title')}
       description="Créez et gérez vos campagnes email avec suivi des performances"
       heroImage="marketing"
       badge={{ label: "Automation", icon: Mail }}

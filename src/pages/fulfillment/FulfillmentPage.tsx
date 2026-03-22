@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -184,9 +185,11 @@ export default function FulfillmentPage() {
       setIsSavingSettings(false);
     }
   };
+    const { t: tPages } = useTranslation('pages');
+
   return (
     <ChannablePageWrapper
-      title="Logistique & Expéditions"
+      title={tPages('logistiqueExpeditions.title')}
       subtitle="Fulfillment"
       description={`${stats?.total_shipments || 0} expéditions • ${stats?.in_transit || 0} en transit • Taux de livraison: ${stats?.delivery_rate || 0}%`}
       heroImage="orders"

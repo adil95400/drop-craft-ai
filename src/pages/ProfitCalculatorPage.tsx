@@ -5,6 +5,7 @@ import { ProfitCalculator } from '@/components/profit/ProfitCalculator';
 import { ProfitHistory } from '@/components/profit/ProfitHistory';
 import { ProfitConfiguration } from '@/components/profit/ProfitConfiguration';
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
+import { useTranslation } from 'react-i18next';
 import { Calculator, History, Settings, Sparkles } from 'lucide-react';
 
 export default function ProfitCalculatorPage() {
@@ -16,7 +17,7 @@ export default function ProfitCalculatorPage() {
       </Helmet>
 
       <ChannablePageWrapper
-        title="Smart Profit Calculator"
+        title={tPages('smartProfitCalculator.title')}
         subtitle="Analyse & Optimisation"
         description="Calculez vos marges en temps réel et optimisez vos prix avec l'IA"
         heroImage="analytics"

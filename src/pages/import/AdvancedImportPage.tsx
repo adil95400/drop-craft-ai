@@ -179,7 +179,7 @@ export default function AdvancedImportPage() {
   return (
     <ChannablePageWrapper
       title={tPages('importAvance.title')}
-      subtitle="Pro"
+      subtitle={tPages('pro.title')}
       description="Importez depuis CSV, API REST, webhooks ou bases de données avec mapping intelligent"
       heroImage="import"
       badge={{ icon: Code, label: 'Pro' }}

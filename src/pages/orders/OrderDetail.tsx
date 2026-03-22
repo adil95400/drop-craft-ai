@@ -113,7 +113,7 @@ export default function OrderDetail() {
 
   if (!order) {
     return (
-      <ChannablePageWrapper title="Commande introuvable" description="La commande que vous recherchez n'existe pas ou a été supprimée." heroImage="orders" badge={{ label: 'Commandes', icon: Package }}>
+      <ChannablePageWrapper title={tPages('commandeIntrouvable.title')} description="La commande que vous recherchez n'existe pas ou a été supprimée." heroImage="orders" badge={{ label: 'Commandes', icon: Package }}>
         <Card>
           <CardContent className="text-center py-12">
             <Package className="h-16 w-16 mx-auto text-muted-foreground mb-4" />

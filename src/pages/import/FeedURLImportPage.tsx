@@ -34,7 +34,7 @@ export default function FeedURLImportPage() {
 
       <ChannablePageWrapper
         title={tPages('importFeedUrl.title')}
-        subtitle="Import Universel"
+        subtitle={tPages('importUniversel.title')}
         description="Importez vos produits depuis n'importe quelle URL de flux : CSV Shopify, XML, JSON, etc."
         heroImage="import"
         badge={{ label: "Universel", icon: Link2 }}

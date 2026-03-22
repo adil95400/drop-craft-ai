@@ -219,7 +219,7 @@ export default function HelpCenterPage() {
   return (
     <ChannablePageWrapper
       title={tPages('centreDAide.title')}
-      subtitle="Support & Documentation"
+      subtitle={tPages('supportDocumentation.title')}
       description="FAQ, documentation, playbook de dépannage et guides — tout ce dont vous avez besoin."
       heroImage="support"
       badge={{ label: 'Help Center', icon: HelpCircle }}

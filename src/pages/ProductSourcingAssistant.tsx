@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -151,7 +152,7 @@ export default function ProductSourcingAssistant() {
       </Helmet>
 
       <ChannablePageWrapper
-        title="Product Sourcing Assistant"
+        title={tPages('productSourcingAssistant.title')}
         description="Trouvez et comparez les meilleurs fournisseurs pour vos produits"
         heroImage="suppliers"
         badge={{ label: 'Sourcing', icon: Search }}

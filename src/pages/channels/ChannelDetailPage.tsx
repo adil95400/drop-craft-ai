@@ -271,10 +271,10 @@ export default function ChannelDetailPage() {
 
   if (!channel) {
     return (
-      <ChannablePageWrapper title="Canal introuvable" heroImage="integrations">
+      <ChannablePageWrapper title={tPages('canalIntrouvable.title')} heroImage="integrations">
         <ChannableEmptyState
           icon={AlertCircle}
-          title="Canal introuvable"
+          title={tPages('canalIntrouvable.title')}
           description="Ce canal n'existe pas ou a été supprimé"
           action={{
             label: "Retour aux canaux",

@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
+import { useTranslation } from 'react-i18next';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { InventoryOverview } from '@/components/inventory/InventoryOverview';
 import { PredictionsDashboard } from '@/components/inventory/PredictionsDashboard';
@@ -158,7 +159,7 @@ export default function InventoryPredictorPage() {
         <meta name="description" content="Prédisez vos besoins en stock avec l'IA : alertes, suggestions et calendrier prévisionnel" />
       </Helmet>
       <ChannablePageWrapper
-        title="Smart Inventory Predictor"
+        title={tPages('smartInventoryPredictor.title')}
         description="Gérez votre stock intelligemment avec des prédictions IA et des alertes automatiques"
         heroImage="stock"
         badge={{ label: 'Prédictions IA', icon: TrendingUp }}

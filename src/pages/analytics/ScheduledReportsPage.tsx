@@ -110,7 +110,7 @@ export default function ScheduledReportsPage() {
         <meta name="description" content="Planifiez et exportez vos rapports d'analyse en PDF et Excel." />
       </Helmet>
       <ChannablePageWrapper
-        title="Rapports Planifiés"
+        title={tPages('rapportsPlanifies.title')}
         subtitle="Analytics"
         description="Planifiez des rapports automatiques avec export PDF/Excel"
         heroImage="analytics"

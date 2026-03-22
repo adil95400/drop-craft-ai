@@ -24,7 +24,7 @@ export default function CRMHubPage() {
   return (
     <ChannablePageWrapper
       title={tPages('crmAvance.title')}
-      subtitle="Relation Client"
+      subtitle={tPages('relationClient.title')}
       description="Pipeline de ventes, scoring leads, historique interactions et analytics de conversion."
       heroImage="marketing"
       badge={{ label: 'Pro', icon: Star }}

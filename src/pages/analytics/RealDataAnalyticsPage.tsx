@@ -14,7 +14,7 @@ export default function RealDataAnalyticsPage() {
   return (
     <ChannablePageWrapper
       title={tPages('analyticsEnTempsReel.title')}
-      subtitle="Données Live"
+      subtitle={tPages('donneesLive.title')}
       description="Tableau de bord analytique avec données réelles de votre boutique, mise à jour en temps réel"
       heroImage="analytics"
       badge={{

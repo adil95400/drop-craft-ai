@@ -278,9 +278,12 @@ export default function AutoDSImportPage() {
   const pendingUrls = queuedUrls.filter(q => q.status === 'pending')
   const errorUrls = queuedUrls.filter(q => q.status === 'error')
 
+    const { t: tPages } = useTranslation('pages');
+
+
   return (
     <ChannablePageWrapper
-      title="Import en masse ultra-rapide"
+      title={tPages('importEnMasseUltraRapide.title')}
       subtitle="Import Rapide"
       description="Importez depuis URLs ou images, analysez et ajoutez à votre catalogue en quelques secondes"
       heroImage="import"

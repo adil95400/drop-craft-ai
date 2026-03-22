@@ -9,6 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -169,7 +170,7 @@ export default function MultilingualSEOPage() {
       </Helmet>
 
       <ChannablePageWrapper
-        title="Contenu SEO Multilingue"
+        title={tPages('contenuSeoMultilingue.title')}
         description="Générez des descriptions produit optimisées SEO dans 50+ langues avec l'IA"
         heroImage="seo"
         badge={{ label: 'SEO Multilingue', icon: Globe }}

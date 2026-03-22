@@ -36,7 +36,7 @@ export default function CategoriesBrandsPage() {
   return (
     <ChannablePageWrapper
       title={tPages('categoriesMarques.title')}
-      subtitle="Classification produits"
+      subtitle={tPages('classificationProduits.title')}
       description="Organisez et classifiez vos produits avec l'aide de l'IA"
       heroImage="products"
       badge={{ label: `${totalIssues} à corriger`, variant: totalIssues > 0 ? 'destructive' : 'secondary' }}

@@ -13,7 +13,7 @@ export default function MarketingCalendarPage() {
 
       <ChannablePageWrapper
         title={tPages('calendrierMarketing.title')}
-        subtitle="Marketing"
+        subtitle={tPages('marketing.title')}
         description="Planifiez et organisez vos campagnes marketing avec notre calendrier interactif"
         heroImage="marketing"
         badge={{ label: "Planning", icon: Calendar }}

@@ -142,7 +142,7 @@ export default function AdvancedProductsPage() {
   return (
     <ChannablePageWrapper
       title={tPages('catalogueUltraPro.title')}
-      subtitle="Gestion avancée"
+      subtitle={tPages('gestionAvancee.title')}
       description="Gestion intelligente avec optimisations IA et opérations en masse sur vos produits"
       heroImage="products"
       badge={{ label: 'Pro', icon: Zap }}

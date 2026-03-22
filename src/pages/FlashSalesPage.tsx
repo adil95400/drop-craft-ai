@@ -77,7 +77,7 @@ const FlashSalesPage: React.FC = () => {
 
       <ChannablePageWrapper
         title={tPages('ventesFlash.title')}
-        subtitle="Marketing"
+        subtitle={tPages('marketing.title')}
         description="Créez des promotions limitées dans le temps pour booster vos conversions"
         heroImage="marketing"
         badge={{ label: "Flash Sales", icon: Zap }}

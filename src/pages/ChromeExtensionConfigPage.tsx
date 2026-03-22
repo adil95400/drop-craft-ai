@@ -23,6 +23,7 @@ import {
   Zap
 } from 'lucide-react';
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
+import { useTranslation } from 'react-i18next';
 
 export default function ChromeExtensionConfigPage() {
   const { user } = useAuth();
@@ -120,9 +121,12 @@ export default function ChromeExtensionConfigPage() {
     }
   };
 
+    const { t: tPages } = useTranslation('pages');
+
+
   return (
     <ChannablePageWrapper
-      title="Extension Chrome - Import en 1 Clic"
+      title={tPages('extensionChromeImportEn1Clic.title')}
       description="Des boutons d'importation automatiques sur chaque page produit"
       heroImage="extensions"
       badge={{ label: 'Extension', icon: Chrome }}

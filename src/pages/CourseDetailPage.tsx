@@ -125,7 +125,7 @@ export default function CourseDetailPage() {
   if (!course) {
     return (
       <ChannablePageWrapper
-        title="Cours non trouvé"
+        title={tPages('coursNonTrouve.title')}
         description="Le cours demandé n'existe pas"
         heroImage="support"
         badge={{ label: 'Academy', icon: BookOpen }}

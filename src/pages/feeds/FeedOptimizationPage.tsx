@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { FeedSubNavigation } from '@/components/feeds/FeedSubNavigation';
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
+import { useTranslation } from 'react-i18next';
 import { AdvancedFeatureGuide, ADVANCED_GUIDES } from '@/components/guide';
 import { 
   useOptimizableProducts, useAnalyzeProducts, useOptimizeProducts,
@@ -79,9 +80,12 @@ export default function FeedOptimizationPage() {
     return 'bg-destructive';
   };
 
+    const { t: tPages } = useTranslation('pages');
+
+
   return (
     <ChannablePageWrapper
-      title="Optimisation IA des Feeds"
+      title={tPages('optimisationIaDesFeeds.title')}
       subtitle="Performance"
       description={`${stats.totalProducts} produits • Score global ${stats.avgScore}/100 • ${stats.highIssues} problèmes critiques`}
       heroImage="ai"

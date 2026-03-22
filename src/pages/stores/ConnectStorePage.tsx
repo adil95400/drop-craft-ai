@@ -60,9 +60,12 @@ const ConnectStorePage = () => {
     }
   }
 
+    const { t: tPages } = useTranslation('pages');
+
+
   return (
     <ChannablePageWrapper
-      title="Connecter une boutique"
+      title={tPages('connecterUneBoutique.title')}
       description="Sélectionnez une plateforme pour connecter votre boutique"
       heroImage="integrations"
       badge={{ label: 'Connexion', icon: Store }}

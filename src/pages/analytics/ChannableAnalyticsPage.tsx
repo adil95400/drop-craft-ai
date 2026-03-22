@@ -141,7 +141,7 @@ export default function ChannableAnalyticsPage() {
       </Helmet>
 
       <ChannablePageWrapper
-        title="Analytics & Performance"
+        title={tPages('analyticsPerformance.title')}
         subtitle="Business Intelligence"
         description="Analysez vos données en temps réel et prenez des décisions éclairées"
         heroImage="analytics"

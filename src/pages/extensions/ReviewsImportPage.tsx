@@ -4,6 +4,7 @@
  */
 import { useState, useMemo } from 'react';
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
+import { useTranslation } from 'react-i18next';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { 
   Star, Upload, FileSpreadsheet, Link as LinkIcon, Download, Filter,
@@ -177,9 +178,12 @@ export default function ReviewsImportPage() {
     );
   };
 
+    const { t: tPages } = useTranslation('pages');
+
+
   return (
     <ChannablePageWrapper
-      title="Import des Avis"
+      title={tPages('importDesAvis.title')}
       description="Importez et gérez les avis clients de vos produits"
       heroImage="extensions"
       badge={{ label: 'Avis', icon: Star }}

@@ -5,6 +5,7 @@ import { GlobalImageOptimizer } from '@/components/optimization/GlobalImageOptim
 import { GlobalTranslationOptimizer } from '@/components/optimization/GlobalTranslationOptimizer';
 import { GlobalBlogOptimizer } from '@/components/optimization/GlobalBlogOptimizer';
 import { Sparkles, TrendingUp, Search, ImageIcon, Languages } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
 
@@ -17,7 +18,7 @@ export default function OptimizationHub() {
       </Helmet>
 
       <ChannablePageWrapper
-        title="Hub d'Optimisation Globale"
+        title={tPages('hubDOptimisationGlobale.title')}
         description="Optimisez votre site complet en un seul clic avec l'IA"
         heroImage="ai"
         badge={{ label: 'Optimisation', icon: Sparkles }}

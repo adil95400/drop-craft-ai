@@ -41,9 +41,12 @@ const features = [
 export default function ExtensionSSOPage() {
   const navigate = useNavigate()
 
+    const { t: tPages } = useTranslation('pages');
+
+
   return (
     <ChannablePageWrapper
-      title="Enterprise SSO"
+      title={tPages('enterpriseSso.title')}
       subtitle="Ultra Pro"
       description="Authentification unique pour votre équipe avec les protocoles d'entreprise."
       heroImage="extensions"

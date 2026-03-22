@@ -112,7 +112,7 @@ export default function WebhooksOutgoingPage() {
   return (
     <ChannablePageWrapper
       title={tPages('webhooksSortants.title')}
-      subtitle="Communication"
+      subtitle={tPages('communication.title')}
       description="Configurez des webhooks pour envoyer des événements en temps réel à vos systèmes externes"
       heroImage="notifications"
       badge={{ label: `${endpoints.filter(e => e.enabled).length} actifs`, icon: Webhook }}

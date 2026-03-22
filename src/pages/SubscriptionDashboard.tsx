@@ -14,6 +14,7 @@ import {
   Sparkles
 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { SubscriptionManager } from '@/components/subscription/SubscriptionManager';
 import { StripeSetupGuide } from '@/components/subscription/StripeSetupGuide';
 import { useUnifiedPlan } from '@/lib/unified-plan-system';
@@ -56,7 +57,7 @@ export default function SubscriptionDashboard() {
       </Helmet>
 
       <ChannablePageWrapper
-        title="Mon Abonnement"
+        title={tPages('monAbonnement.title')}
         subtitle="Gestion du Plan"
         description="Gérez votre plan, facturation et accédez aux fonctionnalités premium"
         heroImage="analytics"

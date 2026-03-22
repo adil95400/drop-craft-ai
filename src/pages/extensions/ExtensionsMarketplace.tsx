@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Search, Star, Download, Store, Sparkles, TrendingUp, Shield, Zap, BarChart3, Globe, Bell, Package } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { useExtensionActions } from '@/hooks/useExtensionActions';
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
 import { useState } from 'react';
@@ -143,9 +144,12 @@ export default function ExtensionsMarketplace() {
     }
   };
 
+    const { t: tPages } = useTranslation('pages');
+
+
   return (
     <ChannablePageWrapper
-      title="Marketplace Extensions"
+      title={tPages('marketplaceExtensions.title')}
       subtitle="Découvrez & Installez"
       description="Étendez les fonctionnalités de votre plateforme avec nos extensions certifiées."
       heroImage="extensions"

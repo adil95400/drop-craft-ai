@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -112,7 +113,7 @@ export default function SyncConfigPage() {
       </Helmet>
 
       <ChannablePageWrapper
-        title="Configuration de Synchronisation"
+        title={tPages('configurationDeSynchronisation.title')}
         description="Personnalisez les paramètres de synchronisation automatique"
         heroImage="settings"
         badge={{ label: 'Sync', icon: Settings }}

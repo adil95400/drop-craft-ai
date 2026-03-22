@@ -124,7 +124,7 @@ export default function CatalogIntelligencePage() {
   return (
     <ChannablePageWrapper
       title={tPages('catalogIntelligence.title')}
-      subtitle="Vue d'ensemble qualité"
+      subtitle={tPages('vueDEnsembleQualite.title')}
       description="Vue d'ensemble de la qualité catalogue et performance multi-canaux"
       heroImage="analytics"
       badge={{ label: 'Intelligence IA', icon: Brain }}

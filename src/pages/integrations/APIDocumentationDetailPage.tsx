@@ -88,7 +88,7 @@ curl -X GET "https://api.shopopti.io/v1/products?limit=10&offset=0" \\
 
       <ChannablePageWrapper
         title={tPages('documentationApi.title')}
-        subtitle="Référence REST"
+        subtitle={tPages('referenceRest.title')}
         description="Référence complète de l'API REST ShopOpti pour intégrer notre plateforme"
         heroImage="schema"
         badge={{ label: 'v1.0', icon: Code }}

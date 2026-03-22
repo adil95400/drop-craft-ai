@@ -32,6 +32,7 @@ import {
 import { generateExtensionZip } from '@/utils/extensionZipGenerator';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
 
 export default function ExtensionDownloadPage() {
@@ -165,9 +166,12 @@ export default function ExtensionDownloadPage() {
     }
   ];
 
+    const { t: tPages } = useTranslation('pages');
+
+
   return (
     <ChannablePageWrapper
-      title="Extension Chrome ShopOpti+"
+      title={tPages('extensionChromeShopopti.title')}
       subtitle="Téléchargement"
       description="Téléchargez et installez l'extension Chrome pour importer des produits en un clic."
       heroImage="extensions"

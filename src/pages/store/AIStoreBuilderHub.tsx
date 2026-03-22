@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Sparkles, Store, Layout, Palette, FileText, TrendingUp, Settings } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { useStoreBuilder } from '@/hooks/useStoreBuilder';
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
 
@@ -25,9 +26,12 @@ export default function AIStoreBuilderHub() {
     });
   };
 
+    const { t: tPages } = useTranslation('pages');
+
+
   return (
     <ChannablePageWrapper
-      title="AI Store Builder"
+      title={tPages('aiStoreBuilder.title')}
       description="Générez une boutique complète en quelques clics avec IA"
       heroImage="ai"
       badge={{ label: 'IA', icon: Sparkles }}

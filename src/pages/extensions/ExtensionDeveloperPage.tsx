@@ -13,9 +13,12 @@ import { useNavigate } from 'react-router-dom'
 export default function ExtensionDeveloperPage() {
   const navigate = useNavigate()
 
+    const { t: tPages } = useTranslation('pages');
+
+
   return (
     <ChannablePageWrapper
-      title="Developer Portal"
+      title={tPages('developerPortal.title')}
       description="API publique, documentation interactive, webhooks et sandbox de test"
       heroImage="extensions"
       badge={{ label: 'Développeurs', icon: Code }}

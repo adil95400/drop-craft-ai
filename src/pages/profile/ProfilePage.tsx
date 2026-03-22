@@ -175,9 +175,11 @@ export default function ProfilePage() {
   const planBadge = getPlanBadge()
 
   if (profileLoading) {
+      const { t: tPages } = useTranslation('pages');
+
     return (
       <ChannablePageWrapper
-        title="Mon Profil"
+        title={tPages('monProfil.title')}
         subtitle="Chargement..."
         description=""
         heroImage="analytics"
@@ -198,7 +200,7 @@ export default function ProfilePage() {
       </Helmet>
 
       <ChannablePageWrapper
-        title="Mon Profil"
+        title={tPages('monProfil.title')}
         subtitle="Compte"
         description="Gérez votre profil et vos informations personnelles"
         heroImage="analytics"

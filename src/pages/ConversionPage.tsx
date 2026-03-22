@@ -2,13 +2,14 @@ import { ConversionHub } from '@/components/conversion/ConversionHub';
 import { ErrorBoundary } from '@/components/ui/error-boundary';
 import { Button } from '@/components/ui/button';
 import { Download, RefreshCw, TrendingUp } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
 
 const ConversionPage = () => {
   return (
     <ErrorBoundary>
       <ChannablePageWrapper
-        title="Conversion Analytics"
+        title={tPages('conversionAnalytics.title')}
         description="Suivez et optimisez vos taux de conversion sur tous les canaux"
         heroImage="analytics"
         badge={{ label: 'Conversion', icon: TrendingUp }}

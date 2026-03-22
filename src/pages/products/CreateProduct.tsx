@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Helmet } from 'react-helmet-async';
 import { motion } from 'framer-motion';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -252,7 +253,7 @@ export default function CreateProduct() {
       </Helmet>
 
       <ChannablePageWrapper
-        title="Créer un produit"
+        title={tPages('creerUnProduit.title')}
         subtitle="Catalogue"
         description="Ajoutez un nouveau produit à votre catalogue avec toutes les informations nécessaires"
         heroImage="products"

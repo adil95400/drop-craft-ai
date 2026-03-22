@@ -11,6 +11,7 @@ import {
 import { Progress } from '@/components/ui/progress';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
+import { useTranslation } from 'react-i18next';
 
 export default function ShopifyImportHub() {
   const [selectedProducts, setSelectedProducts] = useState<string[]>([]);
@@ -45,7 +46,7 @@ export default function ShopifyImportHub() {
       </Helmet>
 
       <ChannablePageWrapper
-        title="Import vers Shopify"
+        title={tPages('importVersShopify.title')}
         description={`${stats.totalMapped} produits mappés • ${stats.activeJobs} jobs actifs • ${stats.successToday} imports aujourd'hui`}
         heroImage="import"
         badge={{ label: 'Shopify', icon: ShoppingCart }}

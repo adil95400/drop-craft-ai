@@ -54,7 +54,7 @@ export default function UpsellCrossSellPage() {
 
       <ChannablePageWrapper
         title={tPages('upsellCrossSell.title')}
-        subtitle="Marketing"
+        subtitle={tPages('marketing.title')}
         description="Augmentez votre panier moyen avec des recommandations intelligentes"
         heroImage="marketing"
         badge={{ label: "Revenue", icon: ArrowUpRight }}

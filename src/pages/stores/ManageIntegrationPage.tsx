@@ -84,7 +84,7 @@ export default function ManageIntegrationPage() {
 
   if (!integration) {
     return (
-      <ChannablePageWrapper title="Intégration introuvable" description="L'intégration demandée n'existe pas" heroImage="integrations" badge={{ label: 'Erreur', icon: AlertTriangle }}>
+      <ChannablePageWrapper title={tPages('integrationIntrouvable.title')} description="L'intégration demandée n'existe pas" heroImage="integrations" badge={{ label: 'Erreur', icon: AlertTriangle }}>
         <Card>
           <CardContent className="py-12 text-center">
             <AlertTriangle className="h-12 w-12 text-destructive mx-auto mb-4" />

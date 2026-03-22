@@ -137,7 +137,7 @@ export default function ReportsPage() {
   return (
     <ChannablePageWrapper
       title={tPages('rapports.title')}
-      subtitle="Business Intelligence"
+      subtitle={tPages('businessIntelligence.title')}
       description="Consultez vos rapports de performance, générez des analyses personnalisées et suivez vos KPIs."
       heroImage="analytics"
       badge={{

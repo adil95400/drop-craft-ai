@@ -63,7 +63,7 @@ export default function SupplierDetails() {
 
   if (!supplier) {
     return (
-      <ChannablePageWrapper title="Fournisseur introuvable" heroImage="suppliers">
+      <ChannablePageWrapper title={tPages('fournisseurIntrouvable.title')} heroImage="suppliers">
         <Card className="backdrop-blur-sm bg-white/80 dark:bg-gray-900/80">
           <CardContent className="flex flex-col items-center justify-center py-12">
             <AlertCircle className="h-12 w-12 text-muted-foreground mb-4" />

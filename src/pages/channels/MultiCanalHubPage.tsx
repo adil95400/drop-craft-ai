@@ -100,7 +100,7 @@ export default function MultiCanalHubPage() {
   return (
     <ChannablePageWrapper
       title={tPages('multiCanalHub.title')}
-      subtitle="Gestion Canaux"
+      subtitle={tPages('gestionCanaux.title')}
       description="Gérez tous vos canaux de vente, synchronisez vos produits, prix, stock et commandes en temps réel."
       heroImage="integrations"
       badge={{ label: 'Hub', icon: Globe }}

@@ -22,6 +22,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
+import { useTranslation } from 'react-i18next';
 import { useToast } from '@/hooks/use-toast';
 import {
   AreaChart, Area, BarChart, Bar, LineChart, Line,
@@ -472,7 +473,7 @@ export default function PerformanceMonitoringPage() {
       </Helmet>
 
       <ChannablePageWrapper
-        title="Performance"
+        title={tPages('performance.title')}
         subtitle="Monitoring"
         description="Surveillez la santé de votre plateforme, les Core Web Vitals et les métriques système en temps réel"
         heroImage="analytics"

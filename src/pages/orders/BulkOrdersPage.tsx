@@ -46,7 +46,7 @@ export default function BulkOrdersPage() {
       
       <ChannablePageWrapper
         title={tPages('commandesGroupees.title')}
-        subtitle="Gestion en masse"
+        subtitle={tPages('gestionEnMasse.title')}
         description={`${stats?.total || 0} commandes groupées • ${stats?.pending || 0} en cours • Optimisez vos coûts d'expédition`}
         heroImage="orders"
         badge={{ label: "Bulk Orders", icon: ShoppingCart }}

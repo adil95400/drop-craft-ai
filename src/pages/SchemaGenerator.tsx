@@ -17,6 +17,7 @@ import {
 import { Helmet } from "react-helmet-async";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
+import { useTranslation } from 'react-i18next';
 import { ChannableCard } from '@/components/channable';
 
 const SchemaGenerator = () => {
@@ -280,7 +281,7 @@ const SchemaGenerator = () => {
       </Helmet>
 
       <ChannablePageWrapper
-        title="Générateur Schema.org"
+        title={tPages('generateurSchemaOrg.title')}
         subtitle="SEO Tools"
         description="Créez des données structurées pour améliorer votre référencement et apparaître dans les rich snippets Google."
         heroImage="schema"

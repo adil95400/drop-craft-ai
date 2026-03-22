@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
+import { useTranslation } from 'react-i18next';
 import { DemandForecastDashboard } from '@/components/intelligence/DemandForecastDashboard';
 import { OpportunityDashboard } from '@/components/intelligence/OpportunityDashboard';
 import { SupplierScoringDashboard } from '@/components/intelligence/SupplierScoringDashboard';
@@ -8,9 +9,11 @@ import { SmartAlertsDashboard } from '@/components/intelligence/SmartAlertsDashb
 import { Brain, Sparkles, Shield, Bell } from 'lucide-react';
 
 export default function IntelligenceHubPage() {
+    const { t: tPages } = useTranslation('pages');
+
   return (
     <ChannablePageWrapper
-      title="Intelligence Hub"
+      title={tPages('intelligenceHub.title')}
       description="Analyses prédictives, scoring fournisseur et détection d'opportunités"
       heroImage="ai"
       badge={{ label: 'P2 Intelligence', icon: Brain }}

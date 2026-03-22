@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { useSearchParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Ship, Globe, Calculator, GitBranch } from 'lucide-react';
@@ -25,7 +26,7 @@ export default function ShippingHubPage() {
         <meta name="description" content="Gérez vos zones d'expédition, tarifs transporteurs et règles de routage." />
       </Helmet>
       <ChannablePageWrapper
-        title="Expédition & Tarifs"
+        title={tPages('expeditionTarifs.title')}
         subtitle="Shipping"
         description="Zones, tarifs, règles d'acheminement et calculateur de frais de port"
         heroImage="orders"

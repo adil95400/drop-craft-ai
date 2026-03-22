@@ -4,6 +4,7 @@
 import { useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -103,7 +104,7 @@ export default function PriceCompetitionPage() {
       </Helmet>
 
       <ChannablePageWrapper
-        title="Concurrence & Benchmarks"
+        title={tPages('concurrenceBenchmarks.title')}
         description="Analysez votre positionnement prix par rapport au marché"
         heroImage="analytics"
         badge={{ label: 'Concurrence', icon: Target }}

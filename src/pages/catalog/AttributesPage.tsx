@@ -46,7 +46,7 @@ export default function AttributesPage() {
   return (
     <ChannablePageWrapper
       title={tPages('attributs.title')}
-      subtitle="Enrichissement catalogue"
+      subtitle={tPages('enrichissementCatalogue.title')}
       description="Normalisez et enrichissez les attributs pour optimiser vos performances marketplaces"
       heroImage="products"
       badge={{ label: 'PRO', variant: 'default' }}

@@ -67,7 +67,7 @@ export default function PlatformOnboardingPage() {
       </Helmet>
 
       <ChannablePageWrapper
-        title="Connecter votre Boutique"
+        title={tPages('connecterVotreBoutique.title')}
         description="Wizard de configuration multi-plateformes"
         heroImage="integrations"
         badge={{ label: 'Onboarding', icon: Store }}

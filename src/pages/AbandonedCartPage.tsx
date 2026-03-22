@@ -46,7 +46,7 @@ const AbandonedCartPage: React.FC = () => {
 
       <ChannablePageWrapper
         title={tPages('paniersAbandonnes.title')}
-        subtitle="Marketing"
+        subtitle={tPages('marketing.title')}
         description="Récupérez les ventes perdues avec des campagnes automatiques"
         heroImage="marketing"
         badge={{ label: "Recovery", icon: ShoppingCart }}

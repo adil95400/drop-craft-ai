@@ -170,9 +170,12 @@ export default function ImportConfigPage() {
     )
   }
 
+    const { t: tPages } = useTranslation('pages');
+
+
   return (
     <ChannablePageWrapper
-      title="Configurations d'Import"
+      title={tPages('configurationsDImport.title')}
       description="Personnalisez vos sources et automatisez vos flux de produits avec des règles intelligentes."
       heroImage="settings"
       badge={{ icon: Settings, label: 'Configuration' }}

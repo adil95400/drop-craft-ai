@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Helmet } from 'react-helmet-async';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -175,7 +176,7 @@ export default function CreateCustomer() {
       </Helmet>
 
       <ChannablePageWrapper
-        title="Créer un Client"
+        title={tPages('creerUnClient.title')}
         description="Ajoutez un nouveau client avec profil complet"
         heroImage="orders"
         badge={{ label: 'CRM', icon: UserCircle2 }}

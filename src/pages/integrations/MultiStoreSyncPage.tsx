@@ -111,9 +111,12 @@ export default function MultiStoreSyncPage() {
   const totalSynced = stores.reduce((a: number, s: any) => a + s.syncedProducts, 0)
   const totalOrders = stores.reduce((a: number, s: any) => a + s.ordersToday, 0)
 
+    const { t: tPages } = useTranslation('pages');
+
+
   return (
     <ChannablePageWrapper
-      title="Multi-Store Sync"
+      title={tPages('multiStoreSync.title')}
       description="Synchronisation bidirectionnelle de vos boutiques : produits, prix, stock et commandes en temps réel."
       heroImage="integrations"
       badge={{ label: 'Multi-Store', icon: Globe }}

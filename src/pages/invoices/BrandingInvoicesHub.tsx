@@ -9,6 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Separator } from '@/components/ui/separator';
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
+import { useTranslation } from 'react-i18next';
 import { useInvoiceBranding, InvoiceBranding } from '@/hooks/useInvoiceBranding';
 import { useInvoices } from '@/hooks/useInvoices';
 import { generateInvoicePDF, InvoiceItem, InvoiceData } from '@/lib/invoicePdfGenerator';
@@ -290,9 +291,12 @@ export default function BrandingInvoicesHub() {
   const { sendInvoice, markPaid } = useInvoices();
   const invoices = getInvoices.data || [];
 
+    const { t: tPages } = useTranslation('pages');
+
+
   return (
     <ChannablePageWrapper
-      title="Factures Personnalisées"
+      title={tPages('facturesPersonnalisees.title')}
       description="Créez des factures brandées avec votre logo, couleurs et infos entreprise"
       heroImage="orders"
       badge={{ label: 'Branded Invoicing', icon: FileText }}

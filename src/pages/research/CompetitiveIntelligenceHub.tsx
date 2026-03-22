@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Search, TrendingUp, DollarSign, AlertCircle, BarChart3, Target, Sparkles } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { useCompetitiveIntelligence } from '@/hooks/useCompetitiveIntelligence';
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
 
@@ -18,9 +19,12 @@ export default function CompetitiveIntelligenceHub() {
     setAnalysisResult(result);
   };
 
+    const { t: tPages } = useTranslation('pages');
+
+
   return (
     <ChannablePageWrapper
-      title="Intelligence Concurrentielle"
+      title={tPages('intelligenceConcurrentielle.title')}
       subtitle="Analyse de Marché"
       description="Analysez vos concurrents, estimez les volumes de ventes et identifiez les opportunités de marché."
       heroImage="research"

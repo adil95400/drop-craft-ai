@@ -4,6 +4,7 @@
  */
 import { useState, useMemo, useCallback, lazy, Suspense } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -238,7 +239,7 @@ function ImportHubContent() {
       <ImportOnboardingModal open={showOnboarding} onOpenChange={setShowOnboarding} onComplete={() => setShowOnboarding(false)} />
 
       <ChannablePageWrapper
-        title="Importez vos produits"
+        title={tPages('importezVosProduits.title')}
         description="Depuis AliExpress, Amazon, Shopify et plus — Notre IA optimise automatiquement vos fiches"
         heroImage="import"
         badge={{ label: 'Import', icon: Package }}
