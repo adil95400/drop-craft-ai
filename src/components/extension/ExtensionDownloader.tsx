@@ -4,9 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Progress } from '@/components/ui/progress';
 import { Download, Check, AlertCircle, Chrome, FolderOpen, RefreshCw } from 'lucide-react';
 import { toast } from 'sonner';
-// Dynamic imports for bundle optimization
-const getJSZip = () => import('jszip').then(m => m.default)
-const getFileSaver = () => import('file-saver')
+// JSZip and file-saver loaded dynamically for bundle optimization
 
 const EXTENSION_FILES = [
   // Root files
