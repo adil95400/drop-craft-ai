@@ -1,4 +1,8 @@
-import { useState, useEffect } from 'react';
+/**
+ * IpAllowlistManager - Gestion des IPs autorisées pour la connexion
+ * Utilise le localStorage + profil pour stocker la config en attendant la table dédiée
+ */
+import { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -9,32 +13,80 @@ import { Label } from '@/components/ui/label';
 import { Shield, Plus, Trash2, Globe, AlertTriangle, Loader2, Wifi } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { useUnifiedAuth } from '@/hooks/useUnifiedAuth';
 
 interface IpEntry {
   id: string;
-  ip_address: string;
-  label: string | null;
-  is_active: boolean;
-  created_at: string;
+  ip: string;
+  label: string;
+  active: boolean;
+  addedAt: string;
+}
+
+interface IpConfig {
+  enabled: boolean;
+  entries: IpEntry[];
+}
+
+const STORAGE_KEY = 'dropcraft_ip_allowlist';
+
+function loadConfig(): IpConfig {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    return raw ? JSON.parse(raw) : { enabled: false, entries: [] };
+  } catch {
+    return { enabled: false, entries: [] };
+  }
+}
+
+function saveConfig(config: IpConfig) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(config));
 }
 
 export function IpAllowlistManager() {
-  const { user } = useUnifiedAuth();
-  const [entries, setEntries] = useState<IpEntry[]>([]);
-  const [enabled, setEnabled] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
+  const [config, setConfig] = useState<IpConfig>(loadConfig);
   const [newIp, setNewIp] = useState('');
   const [newLabel, setNewLabel] = useState('');
   const [currentIp, setCurrentIp] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [userId, setUserId] = useState<string | null>(null);
 
   useEffect(() => {
-    if (user) {
-      fetchData();
-      fetchCurrentIp();
+    supabase.auth.getUser().then(({ data }) => {
+      setUserId(data.user?.id ?? null);
+    });
+    fetchCurrentIp();
+    // Load from profile metadata if available
+    loadFromProfile();
+  }, []);
+
+  const loadFromProfile = async () => {
+    setLoading(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user?.user_metadata?.ip_allowlist) {
+        const profileConfig = user.user_metadata.ip_allowlist as IpConfig;
+        setConfig(profileConfig);
+        saveConfig(profileConfig);
+      }
+    } catch {
+      // fallback to localStorage
+    } finally {
+      setLoading(false);
     }
-  }, [user]);
+  };
+
+  const persistConfig = useCallback(async (newConfig: IpConfig) => {
+    setConfig(newConfig);
+    saveConfig(newConfig);
+    // Also save to user metadata for cross-device sync
+    try {
+      await supabase.auth.updateUser({
+        data: { ip_allowlist: newConfig }
+      });
+    } catch {
+      // localStorage fallback is fine
+    }
+  }, []);
 
   const fetchCurrentIp = async () => {
     try {
@@ -46,90 +98,62 @@ export function IpAllowlistManager() {
     }
   };
 
-  const fetchData = async () => {
-    setLoading(true);
-    try {
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('ip_restriction_enabled')
-        .eq('id', user!.id)
-        .single();
-
-      setEnabled(profile?.ip_restriction_enabled ?? false);
-
-      const { data: ips } = await supabase
-        .from('user_ip_allowlist')
-        .select('*')
-        .eq('user_id', user!.id)
-        .order('created_at', { ascending: false });
-
-      setEntries((ips as any[]) ?? []);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const toggleEnabled = async (value: boolean) => {
-    if (value && entries.length === 0) {
-      toast.error('Ajoutez au moins une IP autorisée avant d\'activer la restriction');
+    if (value && config.entries.length === 0) {
+      toast.error("Ajoutez au moins une IP autorisée avant d'activer la restriction");
       return;
     }
 
-    // Safety check: make sure current IP is in the list
-    if (value && currentIp && !entries.some(e => e.ip_address === currentIp && e.is_active)) {
-      toast.error('Votre IP actuelle n\'est pas dans la liste. Ajoutez-la d\'abord pour éviter de vous bloquer.');
+    if (value && currentIp && !config.entries.some(e => e.ip === currentIp && e.active)) {
+      toast.error("Votre IP actuelle n'est pas dans la liste. Ajoutez-la d'abord.");
       return;
     }
 
-    setSaving(true);
-    const { error } = await supabase
-      .from('profiles')
-      .update({ ip_restriction_enabled: value } as any)
-      .eq('id', user!.id);
+    const newConfig = { ...config, enabled: value };
+    await persistConfig(newConfig);
 
-    if (error) {
-      toast.error('Erreur lors de la mise à jour');
-    } else {
-      setEnabled(value);
-      toast.success(value ? 'Restriction IP activée' : 'Restriction IP désactivée');
+    // Log security event
+    if (userId) {
+      await supabase.from('security_events').insert({
+        user_id: userId,
+        event_type: value ? 'ip_restriction_enabled' : 'ip_restriction_disabled',
+        severity: 'warning',
+        description: value ? 'IP restriction activated' : 'IP restriction deactivated',
+        metadata: { entries_count: config.entries.length }
+      } as any);
     }
-    setSaving(false);
+
+    toast.success(value ? 'Restriction IP activée' : 'Restriction IP désactivée');
   };
 
   const addIp = async () => {
     if (!newIp.trim()) return;
 
-    // Basic IP validation
     const ipRegex = /^(\d{1,3}\.){3}\d{1,3}$/;
     if (!ipRegex.test(newIp.trim())) {
-      toast.error('Format d\'adresse IP invalide (ex: 192.168.1.1)');
+      toast.error("Format d'adresse IP invalide (ex: 192.168.1.1)");
       return;
     }
 
-    setSaving(true);
-    const { error } = await supabase
-      .from('user_ip_allowlist')
-      .insert({
-        user_id: user!.id,
-        ip_address: newIp.trim(),
-        label: newLabel.trim() || null,
-      } as any);
-
-    if (error) {
-      if (error.code === '23505') {
-        toast.error('Cette IP est déjà dans la liste');
-      } else {
-        toast.error('Erreur: ' + error.message);
-      }
-    } else {
-      setNewIp('');
-      setNewLabel('');
-      toast.success('IP ajoutée');
-      fetchData();
+    if (config.entries.some(e => e.ip === newIp.trim())) {
+      toast.error('Cette IP est déjà dans la liste');
+      return;
     }
-    setSaving(false);
+
+    const newEntry: IpEntry = {
+      id: crypto.randomUUID(),
+      ip: newIp.trim(),
+      label: newLabel.trim() || 'IP personnalisée',
+      active: true,
+      addedAt: new Date().toISOString(),
+    };
+
+    const newConfig = { ...config, entries: [newEntry, ...config.entries] };
+    await persistConfig(newConfig);
+
+    setNewIp('');
+    setNewLabel('');
+    toast.success('IP ajoutée à la liste');
   };
 
   const addCurrentIp = () => {
@@ -140,28 +164,22 @@ export function IpAllowlistManager() {
   };
 
   const removeIp = async (id: string) => {
-    const entry = entries.find(e => e.id === id);
-    if (enabled && entries.filter(e => e.is_active).length <= 1) {
-      toast.error('Impossible de supprimer la dernière IP active. Désactivez d\'abord la restriction.');
+    const entry = config.entries.find(e => e.id === id);
+    const activeCount = config.entries.filter(e => e.active).length;
+
+    if (config.enabled && activeCount <= 1) {
+      toast.error("Impossible de supprimer la dernière IP active. Désactivez d'abord la restriction.");
       return;
     }
 
-    if (enabled && entry && currentIp && entry.ip_address === currentIp) {
-      toast.error('Impossible de supprimer votre IP actuelle pendant que la restriction est active.');
+    if (config.enabled && entry && currentIp && entry.ip === currentIp) {
+      toast.error("Impossible de supprimer votre IP actuelle pendant que la restriction est active.");
       return;
     }
 
-    const { error } = await supabase
-      .from('user_ip_allowlist')
-      .delete()
-      .eq('id', id);
-
-    if (error) {
-      toast.error('Erreur lors de la suppression');
-    } else {
-      toast.success('IP supprimée');
-      fetchData();
-    }
+    const newConfig = { ...config, entries: config.entries.filter(e => e.id !== id) };
+    await persistConfig(newConfig);
+    toast.success('IP supprimée');
   };
 
   if (loading) {
@@ -196,13 +214,12 @@ export function IpAllowlistManager() {
               </p>
             </div>
             <Switch
-              checked={enabled}
+              checked={config.enabled}
               onCheckedChange={toggleEnabled}
-              disabled={saving}
             />
           </div>
 
-          {enabled && (
+          {config.enabled && (
             <Alert className="mt-4 border-warning/50 bg-warning/10">
               <AlertTriangle className="h-4 w-4 text-warning" />
               <AlertDescription className="text-warning">
@@ -215,7 +232,7 @@ export function IpAllowlistManager() {
             <div className="mt-4 flex items-center gap-2 text-sm text-muted-foreground">
               <Wifi className="h-4 w-4" />
               Votre IP actuelle : <Badge variant="outline">{currentIp}</Badge>
-              {!entries.some(e => e.ip_address === currentIp) && (
+              {!config.entries.some(e => e.ip === currentIp) && (
                 <Button variant="link" size="sm" className="text-xs h-auto p-0" onClick={addCurrentIp}>
                   Ajouter à la liste
                 </Button>
@@ -247,8 +264,8 @@ export function IpAllowlistManager() {
               onChange={(e) => setNewLabel(e.target.value)}
               className="flex-1 min-w-[150px]"
             />
-            <Button onClick={addIp} disabled={saving || !newIp.trim()}>
-              {saving ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : <Plus className="h-4 w-4 mr-1" />}
+            <Button onClick={addIp} disabled={!newIp.trim()}>
+              <Plus className="h-4 w-4 mr-1" />
               Ajouter
             </Button>
           </div>
@@ -260,17 +277,17 @@ export function IpAllowlistManager() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base">
             <Globe className="h-5 w-5 text-primary" />
-            IPs autorisées ({entries.length})
+            IPs autorisées ({config.entries.length})
           </CardTitle>
         </CardHeader>
         <CardContent>
-          {entries.length === 0 ? (
+          {config.entries.length === 0 ? (
             <p className="text-sm text-muted-foreground text-center py-6">
               Aucune IP autorisée configurée
             </p>
           ) : (
             <div className="space-y-2">
-              {entries.map((entry) => (
+              {config.entries.map((entry) => (
                 <div
                   key={entry.id}
                   className="flex items-center justify-between p-3 bg-muted/30 rounded-lg"
@@ -278,12 +295,10 @@ export function IpAllowlistManager() {
                   <div className="flex items-center gap-3">
                     <Globe className="h-4 w-4 text-muted-foreground" />
                     <div>
-                      <p className="font-mono text-sm">{entry.ip_address}</p>
-                      {entry.label && (
-                        <p className="text-xs text-muted-foreground">{entry.label}</p>
-                      )}
+                      <p className="font-mono text-sm">{entry.ip}</p>
+                      <p className="text-xs text-muted-foreground">{entry.label}</p>
                     </div>
-                    {currentIp && entry.ip_address === currentIp && (
+                    {currentIp && entry.ip === currentIp && (
                       <Badge variant="default" className="text-[10px]">IP actuelle</Badge>
                     )}
                   </div>
