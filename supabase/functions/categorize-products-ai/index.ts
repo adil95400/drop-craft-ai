@@ -1,4 +1,6 @@
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3'
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.53.0'
+import { generateJSON } from '../_shared/ai-client.ts'
+import { checkAndIncrementQuota, quotaExceededResponse } from '../_shared/ai-quota.ts'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -12,11 +14,6 @@ interface CategorizeRequest {
 }
 
 async function categorizeProduct(product: any): Promise<any> {
-  const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY_PRODUCT') || Deno.env.get('OPENAI_API_KEY')
-  if (!OPENAI_API_KEY) {
-    throw new Error('OPENAI_API_KEY not configured')
-  }
-  
   const prompt = `Catégorise ce produit e-commerce avec précision (97% de confiance minimum).
 
 Produit:
@@ -26,53 +23,18 @@ Produit:
 - Catégorie actuelle: ${product.category || 'Non catégorisé'}
 
 Analyse et retourne:
-1. **category** - Catégorie principale (ex: "Vêtements", "Électronique", "Maison & Jardin", "Sports", "Beauté")
-2. **subcategory** - Sous-catégorie précise (ex: "T-Shirts", "Smartphones", "Décoration murale")
-3. **confidence** - Score de confiance (0-1, minimum 0.97 requis)
-4. **reasoning** - Explication courte de la catégorisation
+1. **category** - Catégorie principale
+2. **subcategory** - Sous-catégorie précise
+3. **confidence** - Score de confiance (0-1, minimum 0.97)
+4. **reasoning** - Explication courte
 
-Format JSON strict:
-{
-  "category": "...",
-  "subcategory": "...",
-  "confidence": 0.98,
-  "reasoning": "..."
-}`
+Format JSON: {"category":"...","subcategory":"...","confidence":0.98,"reasoning":"..."}`
 
-  try {
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${OPENAI_API_KEY}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'gpt-4o-mini',
-        messages: [
-          { role: 'system', content: 'Tu es un expert en catégorisation e-commerce. Réponds uniquement en JSON valide.' },
-          { role: 'user', content: prompt }
-        ],
-        temperature: 0.1, // Basse température pour cohérence
-      }),
-    })
-    
-    if (!response.ok) {
-      throw new Error(`AI API error: ${response.status}`)
-    }
-    
-    const data = await response.json()
-    const content = data.choices[0].message.content
-    
-    const jsonMatch = content.match(/\{[\s\S]*\}/)
-    if (!jsonMatch) {
-      throw new Error('Invalid AI response format')
-    }
-    
-    return JSON.parse(jsonMatch[0])
-  } catch (error) {
-    console.error('Error categorizing product:', error)
-    throw error
-  }
+  return await generateJSON(
+    'Tu es un expert en catégorisation e-commerce. Réponds uniquement en JSON valide.',
+    prompt,
+    { module: 'product', temperature: 0.1, enableCache: true }
+  )
 }
 
 Deno.serve(async (req) => {
@@ -84,11 +46,7 @@ Deno.serve(async (req) => {
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_ANON_KEY') ?? '',
-      {
-        global: {
-          headers: { Authorization: req.headers.get('Authorization')! },
-        },
-      }
+      { global: { headers: { Authorization: req.headers.get('Authorization')! } } }
     )
 
     const { productIds, productSource, userId }: CategorizeRequest = await req.json()
@@ -96,6 +54,10 @@ Deno.serve(async (req) => {
     if (!productIds || productIds.length === 0 || !productSource || !userId) {
       throw new Error('Missing required fields')
     }
+
+    // Quota check (1 per product)
+    const quota = await checkAndIncrementQuota(userId, 'product', productIds.length)
+    if (!quota.allowed) return quotaExceededResponse(corsHeaders, quota)
 
     console.log(`Categorizing ${productIds.length} products from ${productSource}`)
 
@@ -105,7 +67,6 @@ Deno.serve(async (req) => {
 
     for (const productId of productIds) {
       try {
-        // Récupérer le produit
         const { data: product, error: productError } = await supabaseClient
           .from(productSource)
           .select('*')
@@ -113,19 +74,16 @@ Deno.serve(async (req) => {
           .single()
 
         if (productError || !product) {
-          console.error(`Product ${productId} not found`)
           failed++
           continue
         }
 
-        // Catégoriser avec l'IA
         const categorization = await categorizeProduct(product)
-        
+
         if (categorization.confidence < 0.97) {
           console.warn(`Low confidence (${categorization.confidence}) for product ${productId}`)
         }
 
-        // Sauvegarder dans product_ai_attributes
         const { error: upsertError } = await supabaseClient
           .from('product_ai_attributes')
           .upsert({
@@ -135,12 +93,9 @@ Deno.serve(async (req) => {
             ai_category: categorization.category,
             ai_subcategory: categorization.subcategory,
             category_confidence: categorization.confidence,
-          }, {
-            onConflict: 'user_id,product_id,product_source'
-          })
+          }, { onConflict: 'user_id,product_id,product_source' })
 
         if (upsertError) {
-          console.error(`Error saving categorization for ${productId}:`, upsertError)
           failed++
         } else {
           processed++
@@ -152,7 +107,7 @@ Deno.serve(async (req) => {
           })
         }
 
-        // Petit délai pour éviter rate limiting
+        // Small delay to avoid rate limiting
         await new Promise(resolve => setTimeout(resolve, 200))
       } catch (error) {
         console.error(`Error processing product ${productId}:`, error)
@@ -160,15 +115,8 @@ Deno.serve(async (req) => {
       }
     }
 
-    console.log(`Categorization complete: ${processed} succeeded, ${failed} failed`)
-
     return new Response(
-      JSON.stringify({ 
-        success: true, 
-        processed,
-        failed,
-        results
-      }),
+      JSON.stringify({ success: true, processed, failed, results }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
   } catch (error) {
