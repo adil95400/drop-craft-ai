@@ -103,7 +103,7 @@ export default function ProfitDashboard() {
     )
   }
 
-    const { t: tPages } = useTranslation('pages');
+
 
   return (
     <ChannablePageWrapper
