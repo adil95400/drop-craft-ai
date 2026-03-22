@@ -396,7 +396,8 @@
     "title": "Hub IA"
   },
   "hubImport": {
-    "title": "Import Hub"
+    "title": "Import Hub",
+    "description": "Importa tus productos desde múltiples fuentes en unos clics"
   },
   "hubIntelligence": {
     "title": "Intelligence Hub"
@@ -459,7 +460,8 @@
     "title": "Competitive Intelligence"
   },
   "internationalisation": {
-    "title": "Internacionalización"
+    "title": "Internacionalización",
+    "description": "Traduce y adapta tus contenidos para todos tus mercados"
   },
   "integration": {
     "title": "Integration"
@@ -495,7 +497,8 @@
     "title": "Hub de Marketplace"
   },
   "monitoringPrixStock": {
-    "title": "Monitoreo de Precios y Stock"
+    "title": "Monitoreo de Precios y Stock",
+    "description": "Seguimiento en tiempo real de variaciones de precios y alertas de stock"
   },
   "monitoringDePerformance": {
     "title": "Monitoreo de Rendimiento"
@@ -504,7 +507,8 @@
     "title": "Motor de Recomendación IA"
   },
   "moteurDeReglesPricing": {
-    "title": "Motor de Reglas de Precios"
+    "title": "Motor de Reglas de Precios",
+    "description": "Reglas automáticas de precios con simulador y protección de margen"
   },
   "multiCanalHub": {
     "title": "Multi-Channel Hub"
@@ -612,7 +616,8 @@
     "title": "Import Publishing"
   },
   "publicationDesProduits": {
-    "title": "Publicación de Productos"
+    "title": "Publicación de Productos",
+    "description": "Gestiona la publicación de tus productos en tu catálogo principal"
   },
   "quickDropshipping": {
     "title": "Dropshipping Rápido"
@@ -657,7 +662,8 @@
     "title": "Retry Items"
   },
   "seoScoringProduits": {
-    "title": "SEO y Scoring de Productos"
+    "title": "SEO y Scoring de Productos",
+    "description": "Motor de scoring estructurado con impacto empresarial, historial y optimización IA"
   },
   "seoContentHub": {
     "title": "SEO Content Hub"
