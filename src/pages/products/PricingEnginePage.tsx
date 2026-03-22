@@ -4,6 +4,7 @@ import { Calculator } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 export default function PricingEnginePage() {
+  const { t: tPages } = useTranslation('pages');
   const { t } = useTranslation('pages');
 
   return (

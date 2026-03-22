@@ -5,6 +5,7 @@ import { Globe } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 const InternationalizationPage = () => {
+  const { t: tPages } = useTranslation('pages');
   const { t } = useTranslation('pages');
 
   return (
