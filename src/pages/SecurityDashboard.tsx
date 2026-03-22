@@ -13,6 +13,7 @@ import { getDateFnsLocale } from '@/utils/dateFnsLocale';
 import { Skeleton } from '@/components/ui/skeleton';
 import { GDPRComplianceCenter } from '@/components/security/GDPRComplianceCenter';
 import { TwoFactorSetup } from '@/components/security/TwoFactorSetup';
+import { IpAllowlistManager } from '@/components/security/IpAllowlistManager';
 
 const severityColors: Record<string, string> = {
   info: 'bg-info/10 text-info',
