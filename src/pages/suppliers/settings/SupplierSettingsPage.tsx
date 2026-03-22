@@ -19,11 +19,11 @@ import { supabase } from '@/integrations/supabase/client'
 import { useToast } from '@/hooks/use-toast'
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper'
 import { 
-import { useTranslation } from 'react-i18next';
   Settings, Key, RefreshCw, CheckCircle, XCircle,
   Plus, Trash2, Eye, EyeOff, Clock, Loader2, Shield,
   TestTube, Copy, Bell, Webhook
 } from 'lucide-react'
+import { useTranslation } from 'react-i18next';
 
 const SUPPLIER_TYPES = [
   { id: 'cj', name: 'CJ Dropshipping', logo: '🚀' },

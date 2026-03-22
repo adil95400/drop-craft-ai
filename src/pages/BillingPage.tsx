@@ -8,7 +8,6 @@ import { useBillingDetails } from '@/hooks/useBillingDetails'
 import { useStripeSubscription, STRIPE_PRODUCTS } from '@/hooks/useStripeSubscription'
 import { useNavigate } from 'react-router-dom'
 import {
-import { useTranslation } from 'react-i18next';
   CreditCard,
   Download,
   Receipt,
@@ -20,6 +19,7 @@ import { useTranslation } from 'react-i18next';
   Crown,
   Settings,
 } from 'lucide-react'
+import { useTranslation } from 'react-i18next';
 
 // Reverse map product IDs to display names
 const PLAN_NAMES: Record<string, string> = {

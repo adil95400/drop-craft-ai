@@ -20,9 +20,9 @@ import {
 } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
 import {
-import { useTranslation } from 'react-i18next';
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu'
+import { useTranslation } from 'react-i18next';
 
 export default function ScheduledReportsPage() {
   const { t: tPages } = useTranslation('pages');

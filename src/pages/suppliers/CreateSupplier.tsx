@@ -17,7 +17,6 @@ import { useToast } from '@/hooks/use-toast'
 import { useSuppliersUnified } from '@/hooks/unified'
 import { supplierSchema, type SupplierFormData } from '@/lib/validation/supplierSchema'
 import {
-import { useTranslation } from 'react-i18next';
   ArrowLeft,
   Building2,
   Globe,
@@ -35,6 +34,7 @@ import { useTranslation } from 'react-i18next';
   CheckCircle,
   DollarSign
 } from 'lucide-react'
+import { useTranslation } from 'react-i18next';
 
 export default function CreateSupplier() {
   const { t: tPages } = useTranslation('pages');
