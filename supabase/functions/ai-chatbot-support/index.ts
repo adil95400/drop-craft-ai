@@ -26,7 +26,7 @@ serve(async (req) => {
     if (error || !data?.claims) throw new Error('Invalid or expired token');
     const userId = data.claims.sub;
 
-    const rateLimitResult = await checkRateLimit(user.id, 'ai_chatbot', 30, 1);
+    const rateLimitResult = await checkRateLimit(userId, 'ai_chatbot', 30, 1);
     if (!rateLimitResult.allowed) {
       return new Response(JSON.stringify({ error: 'Limite de requêtes atteinte.' }), {
         status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
