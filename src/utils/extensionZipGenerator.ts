@@ -1,6 +1,3 @@
-// Dynamic imports for bundle optimization
-const getJSZip = () => import('jszip').then(m => m.default)
-const getFileSaver = () => import('file-saver')
 import { toast } from 'sonner';
 
 const EXTENSION_VERSION = '7.0.0';
