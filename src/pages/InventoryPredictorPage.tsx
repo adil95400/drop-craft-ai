@@ -153,8 +153,9 @@ function StockForecastCalendar() {
 }
 
 export default function InventoryPredictorPage() {
-  return (
   const { t: tPages } = useTranslation('pages');
+
+  return (
     <>
       <Helmet>
         <title>Smart Inventory Predictor — Prédictions IA</title>
