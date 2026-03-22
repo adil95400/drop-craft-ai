@@ -23,6 +23,7 @@ interface ImportHubProps {
 }
 
 export const ImportHub = ({ onViewChange, onCategorySelect }: ImportHubProps) => {
+  const { t: tPages } = useTranslation('pages');
   const navigate = useNavigate();
   const { t } = useTranslation('pages');
   const { t: tCommon } = useTranslation('common');

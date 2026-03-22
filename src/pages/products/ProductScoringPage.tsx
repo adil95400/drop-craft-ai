@@ -4,6 +4,7 @@ import { Search } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 export default function ProductScoringPage() {
+  const { t: tPages } = useTranslation('pages');
   const { t } = useTranslation('pages');
 
   return (

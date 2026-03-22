@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { 
+import { useTranslation } from 'react-i18next';
   ShoppingBag, 
   Smartphone, 
   Home, 
@@ -32,6 +33,7 @@ interface ImportTemplatesProps {
 }
 
 export const ImportTemplates = ({ onSelectTemplate }: ImportTemplatesProps) => {
+  const { t: tPages } = useTranslation('pages');
   const templates: ImportTemplate[] = [
     {
       id: 'fashion',
