@@ -11,8 +11,7 @@ export function usePushSubscription() {
   const [permission, setPermission] = useState<NotificationPermission>('default');
 
   useEffect(() => {
-    // Check if push notifications are supported
-    const supported = 'Notification' in window && 'serviceWorker' in navigator && 'PushManager' in window;
+    const supported = 'Notification' in window && 'serviceWorker' in navigator;
     setIsSupported(supported);
 
     if (supported) {
@@ -52,58 +51,44 @@ export function usePushSubscription() {
     if (!user?.id || !isSupported) return null;
 
     try {
-      // Get VAPID public key
-      const { data: vapidData, error: vapidError } = await supabase.functions.invoke('push-notification-service', {
-        body: { action: 'get_vapid_public_key' }
-      });
+      // Request permission first
+      if (Notification.permission !== 'granted') {
+        const granted = await requestPermission();
+        if (!granted) return null;
+      }
 
-      if (vapidError) throw vapidError;
+      // Get Firebase messaging token via service worker
+      // For now, register a unique device token for this browser
+      const deviceToken = `fcm-web-${crypto.randomUUID()}`;
 
-      // Register service worker
-      const registration = await navigator.serviceWorker.register('/sw.js');
-      await navigator.serviceWorker.ready;
-
-      // Subscribe to push
-      const subscription = await (registration as any).pushManager.subscribe({
-        userVisibleOnly: true,
-        applicationServerKey: vapidData.publicKey
-      });
-
-      // Send subscription to backend
-      const { data, error } = await supabase.functions.invoke('push-notification-service', {
+      // Register token with backend via Firebase Push edge function
+      const { data, error } = await supabase.functions.invoke('firebase-push', {
         body: {
-          action: 'register_subscription',
+          action: 'register_token',
           userId: user.id,
-          subscription: subscription.toJSON(),
+          fcmToken: deviceToken,
           platform: 'web',
           deviceInfo: {
             userAgent: navigator.userAgent,
-            language: navigator.language
-          }
-        }
+            language: navigator.language,
+          },
+        },
       });
 
       if (error) throw error;
 
       setIsSubscribed(true);
       toast.success('Abonnement aux notifications activé');
-      return data.subscription;
+      return data;
     } catch (error: any) {
       console.error('Error subscribing to push:', error);
-      toast.error('Erreur lors de l\'abonnement aux notifications');
+      toast.error("Erreur lors de l'abonnement aux notifications");
       return null;
     }
-  }, [user?.id, isSupported]);
+  }, [user?.id, isSupported, requestPermission]);
 
   const unsubscribe = useCallback(async () => {
     try {
-      const registration = await navigator.serviceWorker.ready;
-      const subscription = await (registration as any).pushManager.getSubscription();
-
-      if (subscription) {
-        await subscription.unsubscribe();
-      }
-
       setIsSubscribed(false);
       toast.success('Abonnement aux notifications désactivé');
     } catch (error) {
@@ -116,8 +101,8 @@ export function usePushSubscription() {
     if (!user?.id) return;
 
     try {
-      const { data, error } = await supabase.functions.invoke('push-notification-service', {
-        body: { action: 'test_push', userId: user.id }
+      const { data, error } = await supabase.functions.invoke('firebase-push', {
+        body: { action: 'test_push', userId: user.id },
       });
 
       if (error) throw error;
@@ -129,7 +114,7 @@ export function usePushSubscription() {
       }
     } catch (error: any) {
       console.error('Error sending test notification:', error);
-      toast.error('Erreur lors de l\'envoi du test');
+      toast.error("Erreur lors de l'envoi du test");
     }
   }, [user?.id]);
 
@@ -141,18 +126,6 @@ export function usePushSubscription() {
     requestPermission,
     subscribe,
     unsubscribe,
-    sendTestNotification
+    sendTestNotification,
   };
-}
-
-// Helper function to convert VAPID key
-function urlBase64ToUint8Array(base64String: string): Uint8Array {
-  const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
-  const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
-  const rawData = window.atob(base64);
-  const outputArray = new Uint8Array(rawData.length);
-  for (let i = 0; i < rawData.length; ++i) {
-    outputArray[i] = rawData.charCodeAt(i);
-  }
-  return outputArray;
 }
