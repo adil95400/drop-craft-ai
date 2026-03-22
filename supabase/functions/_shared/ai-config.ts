@@ -6,8 +6,13 @@
 /** Default text model for all AI tasks */
 export const AI_MODEL = 'gpt-4o-mini';
 
-/** Image generation model (kept on Gemini as GPT doesn't support image gen) */
-export const AI_IMAGE_MODEL = 'google/gemini-2.5-flash-image-preview';
+/** Higher-quality model for complex reasoning */
+export const AI_MODEL_PRO = 'gpt-4o';
 
-/** Lovable AI Gateway URL */
-export const AI_GATEWAY_URL = 'https://api.openai.com/v1/chat/completions';
+/** OpenAI API URL — all AI calls go through this */
+export const AI_API_URL = 'https://api.openai.com/v1/chat/completions';
+
+/**
+ * @deprecated Use AI_API_URL instead. Kept for backward compatibility.
+ */
+export const AI_GATEWAY_URL = AI_API_URL;
