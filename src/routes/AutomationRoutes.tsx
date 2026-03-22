@@ -37,6 +37,9 @@ const WorkflowBuilderPage = lazy(() => import('@/pages/automation/WorkflowBuilde
 // Price Rules - centralized pricing
 const PriceRulesPage = lazy(() => import('@/pages/products/PriceRulesPage'));
 
+// Price & Stock Automation Command Center
+const PriceStockAutomationPage = lazy(() => import('@/pages/automation/PriceStockAutomationPage'));
+
 export function AutomationRoutes() {
   return (
     <Routes>
@@ -67,6 +70,7 @@ export function AutomationRoutes() {
       <Route path="optimization" element={<OptimizationHub />} />
       <Route path="feed-optimization" element={<Navigate to="/feeds/optimization" replace />} />
       <Route path="stock-sync" element={<Navigate to="/stock" replace />} />
+      <Route path="price-stock" element={<PriceStockAutomationPage />} />
       <Route path="unified-sync" element={<UnifiedSyncDashboard />} />
       <Route path="sourcing-assistant" element={<ProductSourcingAssistant />} />
       
