@@ -50,23 +50,13 @@ export default defineConfig(({ mode }) => ({
           if (id.includes('date-fns')) return 'vendor-dates';
           // Content rendering
           if (id.includes('react-markdown') || id.includes('dompurify')) return 'vendor-content';
-          // Monitoring
-          if (id.includes('@sentry/')) return 'vendor-monitoring';
           // DnD
           if (id.includes('@dnd-kit/')) return 'vendor-dnd';
           // Embla carousel
           if (id.includes('embla-carousel')) return 'vendor-carousel';
-          
-          // App domain chunks — split large feature areas
-          if (id.includes('/domains/ai') || id.includes('/components/ai/')) return 'app-ai';
-          if (id.includes('/domains/marketplace') || id.includes('/components/marketplace/')) return 'app-marketplace';
-          if (id.includes('/components/import/') || id.includes('/pages/import/')) return 'app-import';
-          if (id.includes('/components/extensions/') || id.includes('/pages/extensions/')) return 'app-extensions';
-          if (id.includes('/components/admin/') || id.includes('/pages/admin/')) return 'app-admin';
-          if (id.includes('/components/analytics/') || id.includes('/pages/analytics/')) return 'app-analytics';
-          if (id.includes('/components/suppliers/') || id.includes('/pages/suppliers/')) return 'app-suppliers';
-          if (id.includes('/components/orders/') || id.includes('/components/fulfillment/')) return 'app-orders';
-          if (id.includes('/components/marketing/') || id.includes('/pages/marketing/')) return 'app-marketing';
+
+          // NOTE: keep app code in Rollup defaults to avoid cross-chunk circular init errors
+          // that can cause blank pages in production (TDZ "Cannot access X before initialization").
         },
       },
     },
