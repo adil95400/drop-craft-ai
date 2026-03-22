@@ -10,7 +10,7 @@ import { cn } from '@/lib/utils'
 import { SitemapModuleItem } from './SitemapModuleItem'
 import type { NavGroupConfig, ModuleConfig } from '@/config/modules'
 import type { PlanType } from '@/lib/unified-plan-system'
-import * as Icons from 'lucide-react'
+import { getIcon } from '@/lib/icon-map'
 
 interface SitemapGroupCardProps {
   group: NavGroupConfig
@@ -18,11 +18,6 @@ interface SitemapGroupCardProps {
   currentPlan: PlanType
   searchQuery?: string
   defaultExpanded?: boolean
-}
-
-const getIcon = (iconName: string) => {
-  const IconComponent = (Icons as any)[iconName]
-  return IconComponent || Icons.Folder
 }
 
 const groupColors: Record<string, string> = {

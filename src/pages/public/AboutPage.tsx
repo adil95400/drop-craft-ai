@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Target, Users, TrendingUp, Sparkles, Shield, Globe, Heart, Zap, Award, Rocket, Clock, ArrowRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { VideoPlayer } from '@/components/public/VideoPlayer';
-import featureAI from '@/assets/feature-ai.jpg';
+import featureAI from '@/assets/feature-ai.webp';
 import { preloadAnimationStyles } from '@/hooks/useAnimationStyles';
 
 const AboutPage = () => {

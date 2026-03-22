@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge'
 import { BarChart3, TrendingUp, Eye, Target, Zap, Brain, CheckCircle2, ArrowRight, PieChart, Activity, DollarSign } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
-import featureAnalytics from '@/assets/feature-analytics.jpg'
+import featureAnalytics from '@/assets/feature-analytics.webp'
 
 export default function AnalyticsPage() {
   const navigate = useNavigate()

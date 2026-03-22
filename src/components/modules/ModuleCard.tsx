@@ -4,10 +4,10 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { ChevronDown, ChevronRight, Lock, Check } from 'lucide-react';
+import { ChevronDown, ChevronRight, Lock, Check, Settings } from 'lucide-react';
 import type { ModuleConfig } from '@/config/modules';
 import type { PlanType } from '@/hooks/usePlan';
-import * as LucideIcons from 'lucide-react';
+import { iconMap as sharedIconMap, getIcon } from '@/lib/icon-map';
 import { cn } from '@/lib/utils';
 
 interface ModuleCardProps {
@@ -17,28 +17,6 @@ interface ModuleCardProps {
   isEnabled?: boolean;
   className?: string;
 }
-
-const iconMap: Record<string, any> = {
-  BarChart3: LucideIcons.BarChart3,
-  Package: LucideIcons.Package,
-  Truck: LucideIcons.Truck,
-  Upload: LucideIcons.Upload,
-  Trophy: LucideIcons.Trophy,
-  TrendingUp: LucideIcons.TrendingUp,
-  Zap: LucideIcons.Zap,
-  Users: LucideIcons.Users,
-  Search: LucideIcons.Search,
-  Brain: LucideIcons.Brain,
-  Shield: LucideIcons.Shield,
-  Plug: LucideIcons.Plug,
-  Settings: LucideIcons.Settings,
-  Building: LucideIcons.Building,
-  Building2: LucideIcons.Building2,
-  GraduationCap: LucideIcons.GraduationCap,
-  Crown: LucideIcons.Crown,
-  Sparkles: LucideIcons.Sparkles,
-  ShoppingCart: LucideIcons.ShoppingCart,
-};
 
 export const ModuleCard: React.FC<ModuleCardProps> = ({
   module,
@@ -50,7 +28,7 @@ export const ModuleCard: React.FC<ModuleCardProps> = ({
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = React.useState(false);
   
-  const Icon = iconMap[module.icon] || LucideIcons.Settings;
+  const Icon = getIcon(module.icon);
   const hasSubModules = module.subModules && module.subModules.length > 0;
 
   const planBadgeVariant = (plan: PlanType) => {
@@ -61,115 +39,98 @@ export const ModuleCard: React.FC<ModuleCardProps> = ({
     }
   };
 
-  const planLabel = (plan: PlanType) => {
-    switch (plan) {
-      case 'standard': return 'Standard';
-      case 'pro': return 'Pro';
-      case 'ultra_pro': return 'Ultra Pro';
-      default: return '';
-    }
-  };
-
-  const handleModuleClick = () => {
-    if (isAccessible && isEnabled) {
-      navigate(module.route);
-    }
-  };
-
-  const handleSubModuleClick = (route: string, e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (isAccessible && isEnabled) {
-      navigate(route);
-    }
+  const planColors: Record<string, string> = {
+    free: 'bg-muted text-muted-foreground',
+    standard: 'bg-info/10 text-info',
+    pro: 'bg-primary/10 text-primary',
+    ultra_pro: 'bg-warning/10 text-warning',
   };
 
   return (
-    <Card 
-      className={cn(
-        "transition-all hover:shadow-md",
-        !isAccessible && "opacity-60",
-        !isEnabled && "opacity-50",
-        className
-      )}
-    >
+    <Card className={cn(
+      "group relative overflow-hidden transition-all duration-300",
+      isAccessible && isEnabled
+        ? "hover:shadow-lg hover:border-primary/30 cursor-pointer"
+        : "opacity-60",
+      className
+    )}>
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between">
-          <div className="flex items-center gap-3">
-            <div className={cn(
-              "p-2 rounded-lg",
-              isAccessible ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"
-            )}>
-              <Icon className="h-5 w-5" />
-            </div>
-            <div>
-              <CardTitle className="text-lg flex items-center gap-2">
-                {module.name}
-                {!isAccessible && <Lock className="h-4 w-4 text-muted-foreground" />}
-              </CardTitle>
-              <CardDescription className="text-sm mt-1">
-                {module.description}
-              </CardDescription>
-            </div>
+          <div className={cn(
+            "p-2.5 rounded-xl transition-colors",
+            isAccessible ? planColors[module.minPlan] || planColors.free : 'bg-muted'
+          )}>
+            <Icon className="h-5 w-5" />
           </div>
-          <div className="flex flex-col gap-1 items-end">
-            <Badge variant={planBadgeVariant(module.minPlan)}>
-              {planLabel(module.minPlan)}
-            </Badge>
-            {isEnabled && isAccessible && (
-              <Badge variant="outline" className="text-xs">
-                <Check className="h-3 w-3 mr-1" />
-                Activé
+          <div className="flex gap-1.5">
+            {module.badge && (
+              <Badge variant="secondary" className={cn(
+                "text-[10px] px-1.5",
+                module.badge === 'new' && "bg-success/15 text-success",
+                module.badge === 'beta' && "bg-warning/15 text-warning"
+              )}>
+                {module.badge.toUpperCase()}
               </Badge>
             )}
+            <Badge variant={planBadgeVariant(module.minPlan)} className="text-[10px] px-1.5">
+              {module.minPlan === 'free' ? 'Free' : module.minPlan.replace('_', ' ').toUpperCase()}
+            </Badge>
           </div>
         </div>
+        <CardTitle className="text-base mt-3">{module.name}</CardTitle>
+        <CardDescription className="text-xs line-clamp-2">{module.description}</CardDescription>
       </CardHeader>
 
       {hasSubModules && (
-        <CardContent className="pt-0">
-          <Collapsible open={isOpen} onOpenChange={setIsOpen}>
-            <CollapsibleTrigger className="flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors w-full">
-              {isOpen ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+        <Collapsible open={isOpen} onOpenChange={setIsOpen}>
+          <CollapsibleTrigger asChild>
+            <Button variant="ghost" size="sm" className="mx-4 mb-2 text-xs gap-1">
+              {isOpen ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
               {module.subModules!.length} sous-modules
-            </CollapsibleTrigger>
-            <CollapsibleContent className="mt-3 space-y-2">
-              {module.subModules!.map((subModule) => (
-                <button
-                  key={subModule.id}
-                  onClick={(e) => handleSubModuleClick(subModule.route, e)}
-                  disabled={!isAccessible || !isEnabled}
-                  className={cn(
-                    "w-full text-left p-3 rounded-md border bg-card hover:bg-accent transition-colors",
-                    "disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-card"
-                  )}
-                >
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <div className="text-sm font-medium">{subModule.name}</div>
-                      <div className="text-xs text-muted-foreground">{subModule.description}</div>
-                    </div>
-                    <ChevronRight className="h-4 w-4 text-muted-foreground" />
-                  </div>
-                </button>
-              ))}
-            </CollapsibleContent>
-          </Collapsible>
-        </CardContent>
+            </Button>
+          </CollapsibleTrigger>
+          <CollapsibleContent>
+            <CardContent className="pt-0 pb-3">
+              <div className="space-y-1.5 pl-2 border-l-2 border-border/50">
+                {module.subModules!.map((sub) => {
+                  const SubIcon = getIcon(sub.icon);
+                  return (
+                    <button
+                      key={sub.id}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        navigate(sub.route);
+                      }}
+                      className="flex items-center gap-2 w-full text-left text-xs p-1.5 rounded hover:bg-accent/50 transition-colors"
+                    >
+                      <SubIcon className="h-3.5 w-3.5 text-muted-foreground" />
+                      <span className="truncate">{sub.name}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </CardContent>
+          </CollapsibleContent>
+        </Collapsible>
       )}
 
-      <CardFooter className="pt-3">
+      <CardFooter className="pt-0">
         <Button
-          onClick={handleModuleClick}
-          disabled={!isAccessible || !isEnabled}
           variant={isAccessible ? "default" : "outline"}
+          size="sm"
           className="w-full"
+          onClick={() => navigate(module.route)}
+          disabled={!isAccessible || !isEnabled}
         >
           {isAccessible ? (
-            "Accéder au module"
+            <>
+              <Check className="h-3.5 w-3.5 mr-1.5" />
+              Accéder
+            </>
           ) : (
             <>
-              <Lock className="h-4 w-4 mr-2" />
-              Upgrade requis
+              <Lock className="h-3.5 w-3.5 mr-1.5" />
+              Débloquer
             </>
           )}
         </Button>
