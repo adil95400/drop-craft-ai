@@ -12,9 +12,9 @@ import { TrendScanner } from '@/components/product-research/TrendScanner'
 import { ViralProductFinder } from '@/components/product-research/ViralProductFinder'
 import { MarketSaturationAnalyzer } from '@/components/product-research/MarketSaturationAnalyzer'
 import {
-import { useTranslation } from 'react-i18next';
   Flame, Megaphone, TrendingUp, Zap, Activity, Sparkles
 } from 'lucide-react'
+import { useTranslation } from 'react-i18next';
 
 export default function WinningProductsPage() {
   const { t: tPages } = useTranslation('pages');

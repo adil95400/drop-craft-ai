@@ -20,7 +20,6 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { StoreConnectionStatus } from '@/components/stores/StoreConnectionStatus'
 import { 
-import { useTranslation } from 'react-i18next';
   Store, 
   Plus, 
   RefreshCw, 
@@ -36,6 +35,7 @@ import { useTranslation } from 'react-i18next';
   Zap,
   Package
 } from 'lucide-react'
+import { useTranslation } from 'react-i18next';
 
 const storeCategories = [
   { id: 'all', label: 'Toutes', icon: Store, count: 0 },

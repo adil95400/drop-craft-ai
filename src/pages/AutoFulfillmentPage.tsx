@@ -8,9 +8,9 @@ import { FulfillmentOrdersMonitor } from '@/components/auto-fulfillment/Fulfillm
 import { RoutingRulesManager } from '@/components/auto-fulfillment/RoutingRulesManager'
 import { SupplierConnectionsManager } from '@/components/auto-fulfillment/SupplierConnectionsManager'
 import { 
-import { useTranslation } from 'react-i18next';
   Zap, Package, Settings, Truck, BarChart3
 } from 'lucide-react'
+import { useTranslation } from 'react-i18next';
 
 export default function AutoFulfillmentPage() {
   const { t: tPages } = useTranslation('pages');

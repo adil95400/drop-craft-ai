@@ -62,13 +62,13 @@ import { PlatformLogo } from '@/components/ui/platform-logo'
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper'
 import { BackButton } from '@/components/navigation/BackButton'
 import {
-import { useTranslation } from 'react-i18next';
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { useTranslation } from 'react-i18next';
 
 // Types
 interface IntegrationDefinition {

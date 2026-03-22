@@ -29,13 +29,13 @@ import { ChannablePageWrapper } from "@/components/channable/ChannablePageWrappe
 import type { ChannableStat } from "@/components/channable/types";
 import { ProductDetailModal } from "@/components/suppliers/ProductDetailModal";
 import { 
-import { useTranslation } from 'react-i18next';
   CatalogProductCard, 
   CatalogFilters, 
   CatalogPagination,
   type CatalogProduct,
   type CatalogFiltersState 
 } from "@/components/suppliers/catalog";
+import { useTranslation } from 'react-i18next';
 
 // Connecteurs disponibles
 const CONNECTORS = [

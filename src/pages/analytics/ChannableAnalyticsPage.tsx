@@ -22,10 +22,10 @@ import {
   ArrowUpRight, ArrowDownRight, Target, Zap, PieChart
 } from 'lucide-react'
 import {
-import { useTranslation } from 'react-i18next';
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   PieChart as RechartsPieChart, Pie, Cell
 } from 'recharts'
+import { useTranslation } from 'react-i18next';
 
 const timeCategories = [
   { id: '7d', label: '7 jours', icon: Calendar },
