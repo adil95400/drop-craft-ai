@@ -820,8 +820,12 @@ export default function AIAutomationHubPage() {
                                   </Badge>
                                 )}
                               </div>
+                              {(config.config as any)?.description && (
+                                <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1">{(config.config as any).description}</p>
+                              )}
                               <p className="text-sm text-muted-foreground mt-0.5">
-                                Scope: {config.scope || 'global'} · Seuil: {Math.round((config.threshold_score || 0) * 100)}%
+                                {meta.label} · Scope: {config.scope || 'global'} · Seuil: {Math.round((config.threshold_score || 0) * 100)}%
+                                {(config.config as any)?.schedule && ` · ${SCHEDULE_OPTIONS.find(s => s.value === (config.config as any).schedule)?.label || (config.config as any).schedule}`}
                               </p>
                               <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground flex-wrap">
                                 <span className="flex items-center gap-1">
