@@ -1,9 +1,11 @@
+/**
+ * AI Enrich Import — Migrated to shared ai-client.ts with retry + module keys
+ */
 import { handlePreflight, requireAuth, errorResponse, successResponse } from '../_shared/jwt-auth.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.53.0'
+import { callOpenAI } from '../_shared/ai-client.ts'
 
-// ── Versioned prompts ──────────────────────────────────────────────────
-const PROMPT_VERSION = '1.3.0'
-const MODEL = 'gpt-4o-mini'
+const PROMPT_VERSION = '1.4.0'
 
 const SYSTEM_PROMPT = `Tu es un expert en e-commerce et SEO. Tu enrichis les fiches produits pour maximiser les conversions et le référencement naturel. Tu retournes uniquement du JSON valide structuré.`
 
@@ -44,12 +46,6 @@ Deno.serve(async (req) => {
       return errorResponse('product_ids required', corsHeaders, 400)
     }
 
-    const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY_PRODUCT') || Deno.env.get('OPENAI_API_KEY')
-    if (!OPENAI_API_KEY) {
-      return errorResponse('OPENAI_API_KEY not configured', corsHeaders, 500)
-    }
-
-    // Create job (use service-scoped client for background work)
     const bgSupabase = createClient(
       Deno.env.get('SUPABASE_URL')!,
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
@@ -67,14 +63,13 @@ Deno.serve(async (req) => {
         progress_percent: 0,
         name: `Enrichissement IA (${product_ids.length} produits)`,
         started_at: new Date().toISOString(),
-        metadata: { prompt_version: PROMPT_VERSION, model: MODEL, language, tone, items_succeeded: 0 },
+        metadata: { prompt_version: PROMPT_VERSION, model: 'gpt-4o-mini', language, tone, items_succeeded: 0 },
       })
       .select('id')
       .single()
 
     if (jobError) throw jobError
 
-    // ── Background processing ──────────────────────────────────────────
     const processProducts = async () => {
       let succeeded = 0
       let failed = 0
@@ -84,7 +79,6 @@ Deno.serve(async (req) => {
         const startTime = Date.now()
 
         try {
-          // Use RLS-scoped client to verify ownership
           const { data: product } = await supabase
             .from('products')
             .select('title, description, category, price, images')
@@ -95,7 +89,7 @@ Deno.serve(async (req) => {
             await bgSupabase.from('product_ai_enrichments').insert({
               product_id: productId, job_id: job.id, user_id: userId,
               status: 'failed', error_message: 'Product not found',
-              model: MODEL, prompt_version: PROMPT_VERSION, language, tone,
+              model: 'gpt-4o-mini', prompt_version: PROMPT_VERSION, language, tone,
             })
             failed++
             continue
@@ -103,36 +97,21 @@ Deno.serve(async (req) => {
 
           const userPrompt = buildUserPrompt(product, language, tone)
 
-          const aiResponse = await fetch('https://api.openai.com/v1/chat/completions', {
-            method: 'POST',
-            headers: { Authorization: `Bearer ${OPENAI_API_KEY}`, 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              model: MODEL,
-              messages: [
-                { role: 'system', content: SYSTEM_PROMPT },
-                { role: 'user', content: userPrompt },
-              ],
+          // Use shared client with retry + module key
+          const aiData = await callOpenAI(
+            [
+              { role: 'system', content: SYSTEM_PROMPT },
+              { role: 'user', content: userPrompt },
+            ],
+            {
+              module: 'product',
               temperature: 0.7,
-            }),
-          })
+              maxTokens: 1500,
+              retries: 2,
+            }
+          )
 
           const durationMs = Date.now() - startTime
-
-          if (!aiResponse.ok) {
-            const errBody = await aiResponse.text()
-            console.error(`AI error for ${productId}: ${aiResponse.status}`)
-            await bgSupabase.from('product_ai_enrichments').insert({
-              product_id: productId, job_id: job.id, user_id: userId,
-              original_title: product.title, original_description: product.description,
-              original_category: product.category, status: 'failed',
-              error_message: `AI ${aiResponse.status}: ${errBody.substring(0, 500)}`,
-              model: MODEL, prompt_version: PROMPT_VERSION, language, tone, generation_time_ms: durationMs,
-            })
-            failed++
-            continue
-          }
-
-          const aiData = await aiResponse.json()
           const content = aiData.choices?.[0]?.message?.content || ''
           let enriched: any = {}
 
@@ -145,7 +124,6 @@ Deno.serve(async (req) => {
             continue
           }
 
-          // Persist enrichment
           await bgSupabase.from('product_ai_enrichments').insert({
             product_id: productId, job_id: job.id, user_id: userId,
             original_title: product.title, original_description: product.description,
@@ -153,11 +131,10 @@ Deno.serve(async (req) => {
             enriched_title: enriched.title || null, enriched_description: enriched.description || null,
             enriched_category: enriched.category || null, enriched_seo_title: enriched.seo_title || null,
             enriched_seo_description: enriched.seo_description || null, enriched_tags: enriched.tags || null,
-            model: MODEL, prompt_version: PROMPT_VERSION, language, tone,
+            model: 'gpt-4o-mini', prompt_version: PROMPT_VERSION, language, tone,
             generation_time_ms: durationMs, status: 'generated',
           })
 
-          // Apply to product via RLS-scoped client
           const updateData: any = {}
           if (enriched.title) updateData.title = enriched.title
           if (enriched.description) updateData.description = enriched.description
@@ -185,18 +162,24 @@ Deno.serve(async (req) => {
           } else {
             failed++
           }
-        } catch (err) {
+        } catch (err: any) {
           console.error(`Error enriching ${productId}:`, err)
+          const durationMs = Date.now() - startTime
+          await bgSupabase.from('product_ai_enrichments').insert({
+            product_id: productId, job_id: job.id, user_id: userId,
+            status: 'failed', error_message: (err.message || 'Unknown error').substring(0, 500),
+            model: 'gpt-4o-mini', prompt_version: PROMPT_VERSION, language, tone,
+            generation_time_ms: durationMs,
+          }).catch(() => {})
           failed++
         }
 
-        // Update job progress
         const processed = i + 1
         const progress = Math.round((processed / product_ids.length) * 100)
         await bgSupabase.from('jobs').update({
           processed_items: processed, failed_items: failed, progress_percent: progress,
           progress_message: `${processed}/${product_ids.length} produits traités`,
-          metadata: { prompt_version: PROMPT_VERSION, model: MODEL, language, tone, items_succeeded: succeeded },
+          metadata: { prompt_version: PROMPT_VERSION, model: 'gpt-4o-mini', language, tone, items_succeeded: succeeded },
         }).eq('id', job.id)
       }
 

@@ -1,11 +1,9 @@
 /**
- * AI Product Description - Secure Implementation
- * P1.1: Uses unified wrapper with auth + validation + rate limit + secure CORS
+ * AI Product Description — Migrated to shared ai-client.ts
  */
-
 import { createEdgeFunction, z } from '../_shared/create-edge-function.ts'
+import { callOpenAI } from '../_shared/ai-client.ts'
 
-// Input schema for product description generation
 const productDescSchema = z.object({
   productName: z.string().min(1).max(500),
   category: z.string().max(200).optional(),
@@ -26,29 +24,15 @@ const handler = createEdgeFunction<ProductDescInput>({
   
   console.log(`[${correlationId}] AI Product Description request from user: ${user.id}`)
 
-  const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY_PRODUCT') || Deno.env.get('OPENAI_API_KEY')
-
-  if (!OPENAI_API_KEY) {
-    console.error('OPENAI_API_KEY not configured')
-    throw new Error('AI service not configured')
-  }
-
-  const response = await fetch('https://api.openai.com/v1/chat/completions', {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${OPENAI_API_KEY}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      model: 'gpt-4o-mini',
-      messages: [
-        { 
-          role: 'system', 
-          content: 'Tu es un expert en rédaction de descriptions produits e-commerce. Fournis des descriptions persuasives et optimisées SEO.' 
-        },
-        { 
-          role: 'user', 
-          content: `Génère une description produit complète pour un produit e-commerce.
+  const result = await callOpenAI(
+    [
+      { 
+        role: 'system', 
+        content: 'Tu es un expert en rédaction de descriptions produits e-commerce. Fournis des descriptions persuasives et optimisées SEO.' 
+      },
+      { 
+        role: 'user', 
+        content: `Génère une description produit complète pour un produit e-commerce.
 
 Nom du produit: ${productName}
 Catégorie: ${category || 'N/A'}
@@ -62,10 +46,12 @@ Fournis une réponse structurée avec:
 - Une description complète (150-200 mots) persuasive
 - 3-5 points clés/bénéfices du produit
 - 3-5 mots-clés SEO pertinents` 
-        }
-      ],
+      }
+    ],
+    {
+      module: 'product',
       temperature: 0.8,
-      max_tokens: 1000,
+      maxTokens: 1000,
       tools: [
         {
           type: "function",
@@ -75,28 +61,11 @@ Fournis une réponse structurée avec:
             parameters: {
               type: "object",
               properties: {
-                title: {
-                  type: "string",
-                  description: "Titre optimisé du produit"
-                },
-                shortDescription: {
-                  type: "string",
-                  description: "Description courte accrocheuse"
-                },
-                fullDescription: {
-                  type: "string",
-                  description: "Description complète persuasive"
-                },
-                bulletPoints: {
-                  type: "array",
-                  items: { type: "string" },
-                  description: "Points clés et bénéfices"
-                },
-                seoKeywords: {
-                  type: "array",
-                  items: { type: "string" },
-                  description: "Mots-clés SEO"
-                }
+                title: { type: "string", description: "Titre optimisé du produit" },
+                shortDescription: { type: "string", description: "Description courte accrocheuse" },
+                fullDescription: { type: "string", description: "Description complète persuasive" },
+                bulletPoints: { type: "array", items: { type: "string" }, description: "Points clés et bénéfices" },
+                seoKeywords: { type: "array", items: { type: "string" }, description: "Mots-clés SEO" }
               },
               required: ["title", "shortDescription", "fullDescription", "bulletPoints", "seoKeywords"],
               additionalProperties: false
@@ -105,40 +74,20 @@ Fournis une réponse structurée avec:
         }
       ],
       tool_choice: { type: "function", function: { name: "generate_product_description" } }
-    }),
-  })
-
-  if (!response.ok) {
-    if (response.status === 429) {
-      return new Response(JSON.stringify({ error: 'Rate limit atteint. Veuillez réessayer plus tard.' }), {
-        status: 429,
-        headers: { 'Content-Type': 'application/json' },
-      })
     }
-    if (response.status === 402) {
-      return new Response(JSON.stringify({ error: 'Crédits insuffisants. Veuillez recharger votre compte.' }), {
-        status: 402,
-        headers: { 'Content-Type': 'application/json' },
-      })
-    }
-    const errorText = await response.text()
-    console.error('Lovable AI error:', response.status, errorText)
-    throw new Error('Erreur Lovable AI')
-  }
+  )
 
-  const data = await response.json()
-  const toolCall = data.choices[0].message.tool_calls?.[0]
+  const toolCall = result.choices[0].message.tool_calls?.[0]
   
   let parsedContent
   if (toolCall?.function?.arguments) {
     parsedContent = JSON.parse(toolCall.function.arguments)
   } else {
-    // Fallback si pas de tool call
-    const content = data.choices[0].message.content
+    const content = result.choices[0].message.content
     parsedContent = {
       title: productName,
-      shortDescription: content.substring(0, 100),
-      fullDescription: content,
+      shortDescription: content?.substring(0, 100) || '',
+      fullDescription: content || '',
       bulletPoints: features || [],
       seoKeywords: [category, productName].filter(Boolean)
     }
