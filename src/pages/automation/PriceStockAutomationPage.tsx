@@ -222,7 +222,7 @@ export default function PriceStockAutomationPage() {
             icon={<AlertTriangle className="h-5 w-5" />}
             label="Alertes"
             value={stats?.alerts24h || 0}
-            color="text-amber-500"
+            color="text-destructive"
           />
         </div>
 
