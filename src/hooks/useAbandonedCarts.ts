@@ -55,13 +55,31 @@ export function useAbandonedCarts() {
 
   const sendRecoveryEmail = useMutation({
     mutationFn: async (cartId: string) => {
+      const cart = carts.find(c => c.id === cartId);
+      if (!cart) throw new Error('Cart not found');
+
+      // Send real recovery email via Brevo
+      const { error: brevoError } = await supabase.functions.invoke('brevo-hub', {
+        body: {
+          action: 'abandoned_cart_email',
+          customerEmail: cart.customer_email,
+          customerName: cart.customer_name,
+          cartItems: cart.cart_items,
+          cartValue: cart.cart_value,
+          currency: cart.currency || 'EUR',
+        },
+      });
+
+      if (brevoError) {
+        console.error('Brevo email error:', brevoError);
+      }
+
+      // Update cart status
       const { error } = await (supabase
         .from('abandoned_carts') as any)
         .update({
           recovery_status: 'contacted',
-          recovery_attempts: carts.find(c => c.id === cartId)?.recovery_attempts
-            ? carts.find(c => c.id === cartId)!.recovery_attempts + 1
-            : 1,
+          recovery_attempts: (cart.recovery_attempts || 0) + 1,
           last_contacted_at: new Date().toISOString(),
         })
         .eq('id', cartId);
@@ -69,7 +87,7 @@ export function useAbandonedCarts() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['abandoned-carts'] });
-      toast.success('Email de relance envoyé');
+      toast.success('Email de relance envoyé via Brevo');
     },
     onError: () => toast.error('Erreur lors de l\'envoi'),
   });
