@@ -1,6 +1,6 @@
 import { corsHeaders } from '../_shared/cors.ts'
-
-const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY_AUTOMATION') || Deno.env.get('OPENAI_API_KEY')!
+import { callOpenAI } from '../_shared/ai-client.ts'
+import { checkAndIncrementQuota, quotaExceededResponse } from '../_shared/ai-quota.ts'
 
 interface PredictionRequest {
   userId: string
@@ -15,7 +15,6 @@ Deno.serve(async (req) => {
   }
 
   try {
-    // Auth check
     const authHeader = req.headers.get('Authorization')
     if (!authHeader?.startsWith('Bearer ')) {
       return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
@@ -28,82 +27,41 @@ Deno.serve(async (req) => {
       global: { headers: { Authorization: authHeader } }
     })
 
-    const { data: claimsData, error: claimsError } = await supabase.auth.getClaims(authHeader.replace('Bearer ', ''))
-    if (claimsError || !claimsData?.claims) {
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    if (authError || !user) {
       return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
     }
-    const authenticatedUserId = claimsData.claims.sub
+
+    // Quota check
+    const quota = await checkAndIncrementQuota(user.id, 'automation')
+    if (!quota.allowed) return quotaExceededResponse(corsHeaders, quota)
 
     const { analysisType, timeRange = '30days', historicalData } = await req.json() as PredictionRequest
+    console.log(`AI ML Prediction for user ${user.id}, type: ${analysisType}`)
 
-    console.log(`AI ML Prediction for user ${authenticatedUserId}, type: ${analysisType}`)
-
-    if (!OPENAI_API_KEY) {
-      throw new Error('OPENAI_API_KEY is not configured')
-    }
-
-    // Build prompt based on analysis type
     const prompts = buildPrompts(analysisType, historicalData)
 
-    // Call Lovable AI Gateway
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${OPENAI_API_KEY}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'gpt-4o-mini',
-        messages: [
-          { role: 'system', content: prompts.system },
-          { role: 'user', content: prompts.user }
-        ],
-        temperature: 0.7,
-      }),
-    })
+    const result = await callOpenAI(
+      [
+        { role: 'system', content: prompts.system },
+        { role: 'user', content: prompts.user }
+      ],
+      { module: 'automation', temperature: 0.7, enableCache: true }
+    )
 
-    if (!response.ok) {
-      if (response.status === 429) {
-        return new Response(JSON.stringify({ error: 'Rate limit exceeded, please try again later.' }), {
-          status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-        })
-      }
-      if (response.status === 402) {
-        return new Response(JSON.stringify({ error: 'Payment required, please add credits.' }), {
-          status: 402, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-        })
-      }
-      const errorText = await response.text()
-      console.error('AI Gateway error:', response.status, errorText)
-      throw new Error(`AI Gateway error: ${response.status}`)
-    }
-
-    const data = await response.json()
-    const content = data.choices?.[0]?.message?.content || '{}'
-
-    // Parse JSON from response (handle markdown code blocks)
+    const content = result.choices?.[0]?.message?.content || '{}'
     let mlPredictions: any
     try {
       const cleaned = content.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim()
       mlPredictions = JSON.parse(cleaned)
     } catch {
-      console.error('Failed to parse AI response as JSON, using raw content')
       mlPredictions = { raw: content, predictions: [], insights: [] }
     }
 
-    console.log(`ML predictions generated for ${analysisType}`)
-
     return new Response(
-      JSON.stringify({
-        success: true,
-        analysis_type: analysisType,
-        predictions: mlPredictions,
-        model: 'gpt-4o-mini',
-        confidence: 0.85
-      }),
+      JSON.stringify({ success: true, analysis_type: analysisType, predictions: mlPredictions, model: 'gpt-4o-mini', confidence: 0.85 }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
-
   } catch (error) {
     console.error('AI ML prediction error:', error)
     return new Response(
@@ -122,53 +80,28 @@ function buildPrompts(analysisType: string, historicalData: any) {
   switch (analysisType) {
     case 'revenue':
       return {
-        system: `You are an ML revenue forecasting expert. Analyze historical data and predict future revenue. Always respond with valid JSON only, no markdown.`,
-        user: `Historical Data:
-Orders: ${ordersPreview}
-Revenue Summary: ${revenueSummary}
-
-Generate revenue predictions for next 6 months. Return JSON:
-{"predictions":[{"month":"string","value":0,"confidence":0.9,"confidence_lower":0,"confidence_upper":0}],"trends":{"growth_rate":0,"seasonality":"string"},"insights":[{"type":"string","message":"string","priority":"high","actions":["string"]}],"recommendations":[{"action":"string","priority":"high"}]}`
+        system: 'You are an ML revenue forecasting expert. Analyze historical data and predict future revenue. Always respond with valid JSON only, no markdown.',
+        user: `Historical Data:\nOrders: ${ordersPreview}\nRevenue Summary: ${revenueSummary}\n\nGenerate revenue predictions for next 6 months. Return JSON:\n{"predictions":[{"month":"string","value":0,"confidence":0.9,"confidence_lower":0,"confidence_upper":0}],"trends":{"growth_rate":0,"seasonality":"string"},"insights":[{"type":"string","message":"string","priority":"high","actions":["string"]}],"recommendations":[{"action":"string","priority":"high"}]}`
       }
-
     case 'optimization':
       return {
-        system: `You are an ML business optimization expert. Analyze data and provide actionable optimization recommendations. Always respond with valid JSON only, no markdown.`,
-        user: `Data:
-Products: ${productsPreview}
-Orders: ${ordersPreview}
-Customers: ${customersPreview}
-
-Generate optimization recommendations. Return JSON:
-{"optimizations":[{"type":"pricing","recommendation":"string","predicted_impact":0,"confidence":0.8}],"insights":[{"type":"optimization","message":"string","priority":"high","actions":["string"]}],"quick_wins":[{"action":"string","effort":"low","impact":"high"}]}`
+        system: 'You are an ML business optimization expert. Analyze data and provide actionable optimization recommendations. Always respond with valid JSON only, no markdown.',
+        user: `Data:\nProducts: ${productsPreview}\nOrders: ${ordersPreview}\nCustomers: ${customersPreview}\n\nGenerate optimization recommendations. Return JSON:\n{"optimizations":[{"type":"pricing","recommendation":"string","predicted_impact":0,"confidence":0.8}],"insights":[{"type":"optimization","message":"string","priority":"high","actions":["string"]}],"quick_wins":[{"action":"string","effort":"low","impact":"high"}]}`
       }
-
     case 'churn':
       return {
-        system: `You are a customer churn prediction expert. Analyze behavior and predict risk. Always respond with valid JSON only, no markdown.`,
-        user: `Customer Data: ${customersPreview}
-Orders: ${ordersPreview}
-
-Predict churn risk. Return JSON:
-{"segments":{"high_risk":0,"medium_risk":0,"low_risk":0},"insights":[{"type":"churn","message":"string","priority":"high","actions":["string"]}],"retention_actions":[{"action":"string","target_segment":"high_risk","expected_impact":"string"}]}`
+        system: 'You are a customer churn prediction expert. Analyze behavior and predict risk. Always respond with valid JSON only, no markdown.',
+        user: `Customer Data: ${customersPreview}\nOrders: ${ordersPreview}\n\nPredict churn risk. Return JSON:\n{"segments":{"high_risk":0,"medium_risk":0,"low_risk":0},"insights":[{"type":"churn","message":"string","priority":"high","actions":["string"]}],"retention_actions":[{"action":"string","target_segment":"high_risk","expected_impact":"string"}]}`
       }
-
     case 'trends':
       return {
-        system: `You are a market trend analysis expert. Identify category trends and growth opportunities. Always respond with valid JSON only, no markdown.`,
-        user: `Market Data:
-Products: ${productsPreview}
-Orders: ${ordersPreview}
-
-Analyze trends. Return JSON:
-{"category_trends":[{"category":"string","trend":"growing","growth_rate":0,"opportunity_score":0}],"opportunities":[{"type":"string","description":"string","potential_revenue":0,"confidence":0.8}],"insights":[{"category":"string","message":"string","priority":"high","actions":["string"]}]}`
+        system: 'You are a market trend analysis expert. Identify category trends and growth opportunities. Always respond with valid JSON only, no markdown.',
+        user: `Market Data:\nProducts: ${productsPreview}\nOrders: ${ordersPreview}\n\nAnalyze trends. Return JSON:\n{"category_trends":[{"category":"string","trend":"growing","growth_rate":0,"opportunity_score":0}],"opportunities":[{"type":"string","description":"string","potential_revenue":0,"confidence":0.8}],"insights":[{"category":"string","message":"string","priority":"high","actions":["string"]}]}`
       }
-
     default:
       return {
-        system: `You are a business analytics AI expert. Always respond with valid JSON only, no markdown.`,
-        user: `Analyze this data and provide business insights: ${ordersPreview}
-Return JSON: {"predictions":[],"insights":[],"recommendations":[]}`
+        system: 'You are a business analytics AI expert. Always respond with valid JSON only, no markdown.',
+        user: `Analyze this data and provide business insights: ${ordersPreview}\nReturn JSON: {"predictions":[],"insights":[],"recommendations":[]}`
       }
   }
 }

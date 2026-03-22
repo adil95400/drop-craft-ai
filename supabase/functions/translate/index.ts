@@ -1,6 +1,6 @@
 /**
  * Translation Service - Secure Edge Function
- * SECURITY: JWT authentication + rate limiting + input validation
+ * Migrated to shared AI client + quota checking
  */
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
@@ -8,6 +8,8 @@ import { corsHeaders } from '../_shared/cors.ts';
 import { withErrorHandler, ValidationError } from '../_shared/error-handler.ts';
 import { parseJsonValidated, z } from '../_shared/validators.ts';
 import { checkRateLimit } from '../_shared/rate-limiter.ts';
+import { generateText } from '../_shared/ai-client.ts';
+import { checkAndIncrementQuota, quotaExceededResponse } from '../_shared/ai-quota.ts';
 
 const TranslationSchema = z.object({
   text: z.string().min(1, 'Text is required').max(50000, 'Text too long (max 50000 chars)'),
@@ -27,60 +29,39 @@ serve(
       Deno.env.get("SUPABASE_ANON_KEY") ?? ""
     );
 
-    // SECURITY: Authenticate user or extension token
     const authHeader = req.headers.get("Authorization");
     const extensionToken = req.headers.get("x-extension-token");
-    
     let userId: string;
 
     if (extensionToken) {
-      // Validate extension token
       const { data: tokenResult, error: tokenError } = await supabase
         .rpc('validate_extension_token', { p_token: extensionToken });
-      
-      if (tokenError || !tokenResult?.success) {
-        throw new ValidationError("Invalid extension token");
-      }
+      if (tokenError || !tokenResult?.success) throw new ValidationError("Invalid extension token");
       userId = tokenResult.user?.id;
     } else if (authHeader?.startsWith('Bearer ')) {
       const token = authHeader.replace("Bearer ", "");
       const { data: userData, error: userError } = await supabase.auth.getUser(token);
-      
-      if (userError || !userData.user) {
-        throw new ValidationError("Invalid authentication");
-      }
+      if (userError || !userData.user) throw new ValidationError("Invalid authentication");
       userId = userData.user.id;
     } else {
       throw new ValidationError("Authentication required");
     }
 
-    // SECURITY: Rate limiting - 100 translations per hour
-    const rateLimitOk = await checkRateLimit(
-      supabase,
-      `translate:${userId}`,
-      100,
-      3600000 // 1 hour
-    );
-    if (!rateLimitOk) {
-      throw new ValidationError("Rate limit exceeded. Please try again later.");
-    }
+    // Rate limiting
+    const rateLimitOk = await checkRateLimit(supabase, `translate:${userId}`, 100, 3600000);
+    if (!rateLimitOk) throw new ValidationError("Rate limit exceeded. Please try again later.");
 
-    // Validate input
-    const { text, source_lang, target_lang, preserve_formatting } = 
+    // Quota check
+    const quota = await checkAndIncrementQuota(userId, 'translation');
+    if (!quota.allowed) return quotaExceededResponse(corsHeaders, quota);
+
+    const { text, source_lang, target_lang, preserve_formatting } =
       await parseJsonValidated(req, TranslationSchema);
 
     console.log(`[Translate] User ${userId}, to ${target_lang}, length: ${text.length}`);
 
-    // Use Lovable AI for translation
-    const OPENAI_API_KEY = Deno.env.get("OPENAI_API_KEY_SEO") || Deno.env.get("OPENAI_API_KEY");
-    
-    if (!OPENAI_API_KEY) {
-      throw new Error("Translation service not configured");
-    }
-
-    // Build translation prompt
     const sourceInfo = source_lang ? `from ${source_lang}` : '';
-    const formattingNote = preserve_formatting 
+    const formattingNote = preserve_formatting
       ? 'Preserve all HTML tags, line breaks, and formatting exactly as in the original.'
       : 'Clean up the text but preserve essential formatting.';
 
@@ -97,44 +78,18 @@ Guidelines:
 
 Return ONLY the translated text, no explanations or additional text.`;
 
-    const response = await fetch("https://api.openai.com/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${OPENAI_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "gpt-4o-mini",
-        messages: [
-          { role: "system", content: systemPrompt },
-          { role: "user", content: text }
-        ],
-        max_tokens: Math.max(text.length * 2, 1000),
-        temperature: 0.3
-      }),
+    const translatedText = await generateText(systemPrompt, text, {
+      module: 'seo',
+      temperature: 0.3,
+      maxTokens: Math.max(text.length * 2, 1000),
+      enableCache: true,
     });
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error("[Translate] AI gateway error:", response.status, errorText);
-      
-      if (response.status === 429) {
-        throw new ValidationError("Rate limit exceeded, please try again later");
-      }
-      
-      throw new Error("Translation failed");
-    }
-
-    const aiResponse = await response.json();
-    const translatedText = aiResponse.choices?.[0]?.message?.content?.trim();
-
-    if (!translatedText) {
-      throw new Error("No translation generated");
-    }
+    if (!translatedText) throw new Error("No translation generated");
 
     console.log(`[Translate] Success for user ${userId}, output length: ${translatedText.length}`);
 
-    // Log usage for billing
+    // Log usage
     await supabase.from('translation_usage').insert({
       user_id: userId,
       source_lang: source_lang || 'auto',
