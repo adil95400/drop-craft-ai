@@ -156,9 +156,8 @@ export const ImportHistoryInterface: React.FC = () => {
   };
 
   const viewJobDetails = (job: ImportJob) => {
-    // Mock job details view
     toast({
-      title: `Détails de l'import ${job.id}`,
+      title: `Détails de l'import`,
       description: `Source: ${getSourceTypeLabel(job.source_type)} • ${job.success_rows} réussites • ${job.error_rows} erreurs`,
     });
   };
