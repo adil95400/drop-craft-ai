@@ -124,10 +124,6 @@ export const ImportAnalytics = () => {
             <div>
               <div className="text-2xl font-bold text-purple-600">{optimizationRate}%</div>
               <p className="text-sm text-muted-foreground">IA Optimisé</p>
-              <div className="flex items-center gap-1 mt-1">
-                <TrendingUp className="w-3 h-3 text-purple-500" />
-                <span className="text-xs text-purple-600">+8% cette semaine</span>
-              </div>
             </div>
             <Zap className="h-8 w-8 text-purple-500" />
           </div>
