@@ -59,14 +59,19 @@ export default defineConfig(({ mode }) => ({
           
           // App domain chunks — split large feature areas
           if (id.includes('/domains/ai') || id.includes('/components/ai/')) return 'app-ai';
-          if (id.includes('/domains/marketplace') || id.includes('/components/marketplace/')) return 'app-marketplace';
+          // Keep marketplace + marketing together to avoid cross-chunk circular init (TDZ)
+          if (
+            id.includes('/domains/marketplace') ||
+            id.includes('/components/marketplace/') ||
+            id.includes('/components/marketing/') ||
+            id.includes('/pages/marketing/')
+          ) return 'app-commerce';
           if (id.includes('/components/import/') || id.includes('/pages/import/')) return 'app-import';
           if (id.includes('/components/extensions/') || id.includes('/pages/extensions/')) return 'app-extensions';
           if (id.includes('/components/admin/') || id.includes('/pages/admin/')) return 'app-admin';
           if (id.includes('/components/analytics/') || id.includes('/pages/analytics/')) return 'app-analytics';
           if (id.includes('/components/suppliers/') || id.includes('/pages/suppliers/')) return 'app-suppliers';
           if (id.includes('/components/orders/') || id.includes('/components/fulfillment/')) return 'app-orders';
-          if (id.includes('/components/marketing/') || id.includes('/pages/marketing/')) return 'app-marketing';
         },
       },
     },
