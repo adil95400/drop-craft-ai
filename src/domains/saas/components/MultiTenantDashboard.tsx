@@ -130,32 +130,14 @@ export const MultiTenantDashboard = () => {
     )
   }
 
-  // Mock data for analytics
-  const revenueData = [
-    { month: 'Jan', revenue: 12000 },
-    { month: 'Fev', revenue: 15000 },
-    { month: 'Mar', revenue: 18000 },
-    { month: 'Avr', revenue: 22000 },
-    { month: 'Mai', revenue: 26000 },
-    { month: 'Juin', revenue: 31000 }
-  ]
-
-  const userGrowthData = [
-    { month: 'Jan', users: 120 },
-    { month: 'Fev', users: 180 },
-    { month: 'Mar', users: 245 },
-    { month: 'Avr', users: 310 },
-    { month: 'Mai', users: 385 },
-    { month: 'Juin', users: 470 }
-  ]
-
+  // Plan distribution from real tenant data (no mock)
   const planDistribution = [
-    { name: 'Standard', value: tenants.filter(t => t.plan_type === 'standard').length },
-    { name: 'Pro', value: tenants.filter(t => t.plan_type === 'pro').length },
-    { name: 'Enterprise', value: tenants.filter(t => t.plan_type === 'enterprise').length }
+    { name: 'Standard', value: tenants.filter(t => t.plan_type === 'standard').length || 0 },
+    { name: 'Pro', value: tenants.filter(t => t.plan_type === 'pro').length || 0 },
+    { name: 'Enterprise', value: tenants.filter(t => t.plan_type === 'enterprise').length || 0 }
   ]
 
-  const COLORS = ['#0088FE', '#00C49F', '#FFBB28']
+  const COLORS = ['hsl(var(--primary))', 'hsl(var(--accent))', 'hsl(142 76% 36%)']
 
   return (
     <div className="container mx-auto p-6 space-y-6">

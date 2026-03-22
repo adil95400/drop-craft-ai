@@ -147,18 +147,21 @@ export function PPCAutomationEngine() {
     toast.success('Règle mise à jour');
   };
 
-  const createRule = () => {
-    const rule: AutoRule = {
-      id: crypto.randomUUID(),
+  const createRule = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+    const { error } = await supabase.from('automation_workflows').insert({
+      user_id: user.id,
       name: newRule.name,
-      platform: newRule.platform,
-      type: newRule.type,
-      condition: { metric: newRule.metric, operator: newRule.operator, value: newRule.value },
-      action: { type: newRule.actionType, value: newRule.actionValue },
-      isActive: true,
-      executionCount: 0,
-    };
-    setRules(prev => [rule, ...prev]);
+      trigger_type: 'metric_threshold',
+      trigger_config: { platform: newRule.platform },
+      action_type: newRule.type,
+      action_config: { type: newRule.actionType, value: newRule.actionValue },
+      conditions: [{ metric: newRule.metric, operator: newRule.operator, value: newRule.value }],
+      is_active: true,
+    });
+    if (error) { toast.error('Erreur: ' + error.message); return; }
+    queryClient.invalidateQueries({ queryKey: ['ppc-automation-rules'] });
     setShowCreateRule(false);
     toast.success('Règle d\'automatisation créée');
   };

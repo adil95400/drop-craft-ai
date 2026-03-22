@@ -47,12 +47,16 @@ export const useRealTimeMetrics = () => {
         { data: todayOrders },
         { data: yesterdayOrders },
         { data: todayCustomers },
-        { data: yesterdayCustomers }
+        { data: yesterdayCustomers },
+        { data: todayCarts },
+        { data: yesterdayCarts }
       ] = await Promise.all([
         supabase.from('orders').select('*').eq('user_id', user.id).gte('created_at', todayStr),
         supabase.from('orders').select('*').eq('user_id', user.id).gte('created_at', yesterdayStr).lt('created_at', todayStr),
         supabase.from('customers').select('*').eq('user_id', user.id).gte('created_at', todayStr),
-        supabase.from('customers').select('*').eq('user_id', user.id).gte('created_at', yesterdayStr).lt('created_at', todayStr)
+        supabase.from('customers').select('*').eq('user_id', user.id).gte('created_at', yesterdayStr).lt('created_at', todayStr),
+        supabase.from('abandoned_carts').select('id, recovery_status').eq('user_id', user.id).gte('created_at', todayStr),
+        supabase.from('abandoned_carts').select('id, recovery_status').eq('user_id', user.id).gte('created_at', yesterdayStr).lt('created_at', todayStr),
       ])
 
       // Calculate metrics
@@ -70,9 +74,13 @@ export const useRealTimeMetrics = () => {
       const yesterdayConversionRate = yesterdayVisitors > 0 ? (yesterdayOrdersCount / yesterdayVisitors) * 100 : 0
       const conversionChange = yesterdayConversionRate > 0 ? ((conversionRate - yesterdayConversionRate) / yesterdayConversionRate) * 100 : 0
 
-      // Mock cart abandonment (would need cart_sessions table)
-      const cartAbandonmentRate = 68.2
-      const prevCartAbandonmentRate = 72.1
+      // Real cart abandonment from abandoned_carts table
+      const todayCartTotal = todayCarts?.length || 0
+      const todayCartAbandoned = todayCarts?.filter(c => c.recovery_status !== 'recovered').length || 0
+      const cartAbandonmentRate = todayCartTotal > 0 ? (todayCartAbandoned / todayCartTotal) * 100 : 0
+      const yesterdayCartTotal = yesterdayCarts?.length || 0
+      const yesterdayCartAbandoned = yesterdayCarts?.filter(c => c.recovery_status !== 'recovered').length || 0
+      const prevCartAbandonmentRate = yesterdayCartTotal > 0 ? (yesterdayCartAbandoned / yesterdayCartTotal) * 100 : 0
 
       const realTimeMetrics: RealTimeMetric[] = [
         {

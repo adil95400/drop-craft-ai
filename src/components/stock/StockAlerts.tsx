@@ -50,8 +50,8 @@ export function StockAlerts() {
 
         if (error) throw error;
 
-        // Create mock alerts from low stock products
-        const mockAlerts: StockAlert[] = (products || []).map(product => ({
+        // Build alerts from real low-stock products
+        const stockAlerts: StockAlert[] = (products || []).map(product => ({
           id: product.id,
           severity: product.stock_quantity === 0 ? 'critical' : product.stock_quantity < 5 ? 'high' : 'medium',
           alert_type: product.stock_quantity === 0 ? 'stockout' : 'low_stock',
@@ -64,7 +64,7 @@ export function StockAlerts() {
           created_at: new Date().toISOString()
         }));
 
-        setAlerts(mockAlerts);
+        setAlerts(stockAlerts);
       } catch (error) {
         console.error('Error loading stock alerts:', error);
       } finally {
