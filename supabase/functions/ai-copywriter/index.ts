@@ -27,9 +27,6 @@ const handler = createEdgeFunction<CopyInput>({
   rateLimit: { maxRequests: 40, windowMinutes: 60, action: 'ai_copywriter' }
 }, async (ctx) => {
   const { user, input, correlationId } = ctx
-  const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY_MARKETING') || Deno.env.get('OPENAI_API_KEY')
-  if (!OPENAI_API_KEY) throw new Error('OPENAI_API_KEY not configured')
-
   console.log(`[${correlationId}] Copywriter ${input.content_type} for user ${user.id}`)
 
   const context = `
