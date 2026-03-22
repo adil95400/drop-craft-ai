@@ -92,6 +92,7 @@ const ReviewsPage = lazy(() => import('@/pages/reviews/ReviewsPage'));
 const CRMDashboardPage = lazy(() => import('@/pages/crm/CRMHubPage'));
 const Sitemap = lazy(() => import('@/pages/Sitemap'));
 const DocumentationPage = lazy(() => import('@/pages/documentation/DocumentationPage'));
+const HelpCenterPage = lazy(() => import('@/pages/help/HelpCenterPage'));
 const SEOContentHubPage = lazy(() => import('@/pages/seo/SEOContentHubPage'));
 const CustomerReturnsPortal = lazy(() => import('@/pages/returns/CustomerReturnsPortal'));
 const AdvancedMediaEditorPage = lazy(() => import('@/pages/media/AdvancedMediaEditorPage'));
@@ -272,7 +273,7 @@ export function AppRoutes() {
           {/* Help & Support */}
           <Route path="/help-center/documentation/:moduleSlug" element={<Protected><DocumentationPage /></Protected>} />
           <Route path="/help-center/documentation" element={<Protected><DocumentationPage /></Protected>} />
-          <Route path="/help-center" element={<Protected><DocumentationPage /></Protected>} />
+          <Route path="/help-center" element={<Protected><HelpCenterPage /></Protected>} />
           <Route path="/knowledge-base" element={<Protected><KnowledgeBasePage /></Protected>} />
           <Route path="/support" element={<Protected><SupportMainPage /></Protected>} />
           <Route path="/support/chat" element={<Protected><SupportMainPage /></Protected>} />
