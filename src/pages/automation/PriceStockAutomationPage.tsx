@@ -216,7 +216,7 @@ export default function PriceStockAutomationPage() {
             icon={<CheckCircle2 className="h-5 w-5" />}
             label="Réactivés (stock ok)"
             value={stats?.reactivated24h || 0}
-            color="text-green-600"
+            color="text-primary"
           />
           <KPICard
             icon={<AlertTriangle className="h-5 w-5" />}
