@@ -2,6 +2,8 @@ import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
 
+import { callOpenAI } from '../_shared/ai-client.ts';
+
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
@@ -20,7 +22,7 @@ serve(async (req) => {
 
     const { jobId, jobType, inputData } = await req.json();
     
-    const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY_PRODUCT') || Deno.env.get('OPENAI_API_KEY');
+    // API key resolved by ai-client.ts (module: seo)
     if (!OPENAI_API_KEY) throw new Error('OPENAI_API_KEY is not configured');
 
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;

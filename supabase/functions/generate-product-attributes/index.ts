@@ -1,5 +1,7 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3'
 
+import { callOpenAI } from '../_shared/ai-client.ts';
+
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
@@ -12,7 +14,7 @@ interface AttributesRequest {
 }
 
 async function generateAttributes(product: any): Promise<any> {
-  const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY_PRODUCT') || Deno.env.get('OPENAI_API_KEY')
+  // API key resolved by ai-client.ts (module: product)
   if (!OPENAI_API_KEY) {
     throw new Error('OPENAI_API_KEY not configured')
   }

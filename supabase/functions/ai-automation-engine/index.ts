@@ -11,6 +11,8 @@ import { getSecureCorsHeaders, handleCorsPreflightSecure, isAllowedOrigin } from
 import { checkRateLimit } from '../_shared/rate-limiter.ts';
 import { z } from 'https://esm.sh/zod@3.22.4';
 
+import { callOpenAI } from '../_shared/ai-client.ts';
+
 const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
 const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')!;
 const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;

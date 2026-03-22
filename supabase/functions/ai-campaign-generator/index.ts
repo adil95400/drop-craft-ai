@@ -1,10 +1,8 @@
 /**
- * AI Campaign Generator — SECURED (JWT-first)
- * Generates complete marketing campaigns (email, social, ads) using Lovable AI
+ * AI Campaign Generator — Unified AI Client
  */
 import { requireAuth, handlePreflight, successResponse, errorResponse } from '../_shared/jwt-auth.ts'
-
-const AI_GATEWAY_URL = 'https://api.openai.com/v1/chat/completions'
+import { callOpenAI } from '../_shared/ai-client.ts'
 
 Deno.serve(async (req) => {
   const preflight = handlePreflight(req)
@@ -14,39 +12,31 @@ Deno.serve(async (req) => {
     const { userId, supabase, corsHeaders } = await requireAuth(req)
     const { campaign_type, product_ids, goal, tone, platform, language } = await req.json()
 
-    if (!campaign_type) throw new Error('campaign_type requis (email, social, ads, full)')
+    if (!campaign_type) throw new Error('campaign_type requis')
 
-    const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY_MARKETING') || Deno.env.get('OPENAI_API_KEY')
-    if (!OPENAI_API_KEY) throw new Error('AI service not configured')
-
-    // Get products context
     let products: any[] = []
     if (product_ids?.length) {
-      const { data } = await supabase
-        .from('products')
-        .select('id, name, description, price, category, image_urls, tags')
-        .in('id', product_ids.slice(0, 5))
+      const { data } = await supabase.from('products').select('id, name, description, price, category, image_urls, tags').in('id', product_ids.slice(0, 5))
       products = data || []
     } else {
-      const { data } = await supabase
-        .from('products')
-        .select('id, name, description, price, category, image_urls, tags')
-        .order('created_at', { ascending: false })
-        .limit(3)
+      const { data } = await supabase.from('products').select('id, name, description, price, category, image_urls, tags').order('created_at', { ascending: false }).limit(3)
       products = data || []
     }
-
-    if (!products.length) throw new Error('Aucun produit trouvé pour la campagne')
+    if (!products.length) throw new Error('Aucun produit trouvé')
 
     const productContext = products.map((p: any) =>
-      `- ${p.name} (${p.price}€) — ${p.category || 'Sans catégorie'} — ${p.description?.slice(0, 100) || 'Pas de description'}`
+      `- ${p.name} (${p.price}€) — ${p.category || 'Sans catégorie'} — ${p.description?.slice(0, 100) || ''}`
     ).join('\n')
 
-    const aiResponse = await fetch(AI_GATEWAY_URL, {
-      method: 'POST',
-      headers: { 'Authorization': `Bearer ${OPENAI_API_KEY}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: 'gpt-4o-mini',
+    const result = await callOpenAI(
+      [
+        { role: 'system', content: `Tu es un expert en marketing digital e-commerce. Langue: ${language || 'français'}. Ton: ${tone || 'professionnel et engageant'}.` },
+        { role: 'user', content: `Crée une campagne marketing ${campaign_type === 'full' ? 'complète (email + social + ads)' : campaign_type}.\n\nObjectif: ${goal || 'Augmenter les ventes'}\nPlateforme: ${platform || 'Multi-plateforme'}\n\nProduits:\n${productContext}` }
+      ],
+      {
+        module: 'marketing',
+        temperature: 0.7,
+        maxTokens: 3000,
         tools: [{
           type: 'function',
           function: {
@@ -57,44 +47,9 @@ Deno.serve(async (req) => {
               properties: {
                 campaign_name: { type: 'string' },
                 campaign_summary: { type: 'string' },
-                email: {
-                  type: 'object',
-                  properties: {
-                    subject_lines: { type: 'array', items: { type: 'string' } },
-                    preview_text: { type: 'string' },
-                    body_text: { type: 'string' },
-                    cta_text: { type: 'string' },
-                    send_timing: { type: 'string' }
-                  }
-                },
-                social_posts: {
-                  type: 'array',
-                  items: {
-                    type: 'object',
-                    properties: {
-                      platform: { type: 'string' },
-                      text: { type: 'string' },
-                      hashtags: { type: 'array', items: { type: 'string' } },
-                      best_time: { type: 'string' },
-                      content_type: { type: 'string' }
-                    }
-                  }
-                },
-                ad_creatives: {
-                  type: 'array',
-                  items: {
-                    type: 'object',
-                    properties: {
-                      platform: { type: 'string' },
-                      headline: { type: 'string' },
-                      primary_text: { type: 'string' },
-                      description: { type: 'string' },
-                      cta: { type: 'string' },
-                      target_audience: { type: 'string' },
-                      estimated_budget: { type: 'string' }
-                    }
-                  }
-                },
+                email: { type: 'object', properties: { subject_lines: { type: 'array', items: { type: 'string' } }, preview_text: { type: 'string' }, body_text: { type: 'string' }, cta_text: { type: 'string' }, send_timing: { type: 'string' } } },
+                social_posts: { type: 'array', items: { type: 'object', properties: { platform: { type: 'string' }, text: { type: 'string' }, hashtags: { type: 'array', items: { type: 'string' } }, best_time: { type: 'string' }, content_type: { type: 'string' } } } },
+                ad_creatives: { type: 'array', items: { type: 'object', properties: { platform: { type: 'string' }, headline: { type: 'string' }, primary_text: { type: 'string' }, description: { type: 'string' }, cta: { type: 'string' }, target_audience: { type: 'string' }, estimated_budget: { type: 'string' } } } },
                 seo_keywords: { type: 'array', items: { type: 'string' } },
                 timeline: { type: 'string' },
                 estimated_reach: { type: 'string' },
@@ -105,61 +60,32 @@ Deno.serve(async (req) => {
           }
         }],
         tool_choice: { type: 'function', function: { name: 'generate_campaign' } },
-        messages: [
-          { role: 'system', content: `Tu es un expert en marketing digital e-commerce. Tu crées des campagnes marketing complètes, persuasives et optimisées pour la conversion. Langue: ${language || 'français'}. Ton: ${tone || 'professionnel et engageant'}.` },
-          { role: 'user', content: `Crée une campagne marketing ${campaign_type === 'full' ? 'complète (email + social + ads)' : campaign_type}.
+        enableCache: false,
+      }
+    )
 
-Objectif: ${goal || 'Augmenter les ventes'}
-Plateforme prioritaire: ${platform || 'Multi-plateforme'}
-
-Produits à promouvoir:
-${productContext}
-
-Génère du contenu prêt à utiliser avec des sujets accrocheurs, des CTA efficaces et des recommandations de ciblage.` }
-        ],
-        temperature: 0.7,
-        max_tokens: 3000,
-      }),
-    })
-
-    if (!aiResponse.ok) {
-      if (aiResponse.status === 429) return errorResponse('Trop de requêtes IA', corsHeaders, 429)
-      if (aiResponse.status === 402) return errorResponse('Crédits IA épuisés', corsHeaders, 402)
-      throw new Error(`AI error: ${aiResponse.status}`)
-    }
-
-    const aiData = await aiResponse.json()
-    
     let campaign: any
-    const toolCall = aiData.choices?.[0]?.message?.tool_calls?.[0]
+    const toolCall = result.choices?.[0]?.message?.tool_calls?.[0]
     if (toolCall) {
       campaign = JSON.parse(toolCall.function.arguments)
     } else {
-      const content = aiData.choices?.[0]?.message?.content || ''
+      const content = result.choices?.[0]?.message?.content || ''
       const jsonMatch = content.match(/\{[\s\S]*\}/)
       campaign = jsonMatch ? JSON.parse(jsonMatch[0]) : { campaign_name: 'Campagne', campaign_summary: content }
     }
 
-    // Log
     await supabase.from('ai_generations').insert({
-      user_id: userId,
-      target_type: 'campaign',
-      target_id: userId,
-      task: `generate_campaign_${campaign_type}`,
-      provider: 'openai',
-      model: 'gpt-5-nano',
+      user_id: userId, target_type: 'campaign', target_id: userId,
+      task: `generate_campaign_${campaign_type}`, provider: 'openai', model: 'gpt-4o-mini',
       input_json: { campaign_type, goal, tone, product_ids },
-      output_json: campaign,
-      language: language || 'fr'
+      output_json: campaign, language: language || 'fr'
     }).catch(() => {})
 
     return successResponse({ campaign }, corsHeaders)
-
   } catch (err) {
     if (err instanceof Response) return err
     console.error('[ai-campaign-generator] Error:', err)
-    const origin = req.headers.get('origin')
     const { getSecureCorsHeaders } = await import('../_shared/cors.ts')
-    return errorResponse((err as Error).message || 'Erreur interne', getSecureCorsHeaders(origin), 500)
+    return errorResponse((err as Error).message || 'Erreur interne', getSecureCorsHeaders(req.headers.get('origin')), (err as any).status || 500)
   }
 })

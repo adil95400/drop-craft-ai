@@ -1,6 +1,8 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
+import { callOpenAI } from '../_shared/ai-client.ts';
+
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
@@ -48,7 +50,7 @@ serve(async (req) => {
       reason: m.reason
     })) || [];
 
-    const OPENAI_API_KEY = Deno.env.get("OPENAI_API_KEY_AUTOMATION") || Deno.env.get("OPENAI_API_KEY");
+    // API key resolved by ai-client.ts (module: automation)
     if (!OPENAI_API_KEY) {
       throw new Error("OPENAI_API_KEY is not configured");
     }
