@@ -13,6 +13,7 @@ import { getDateFnsLocale } from '@/utils/dateFnsLocale';
 import { Skeleton } from '@/components/ui/skeleton';
 import { GDPRComplianceCenter } from '@/components/security/GDPRComplianceCenter';
 import { TwoFactorSetup } from '@/components/security/TwoFactorSetup';
+import { IpAllowlistManager } from '@/components/security/IpAllowlistManager';
 
 const severityColors: Record<string, string> = {
   info: 'bg-info/10 text-info',
@@ -62,11 +63,12 @@ export default function SecurityDashboard() {
       badge={{ label: 'Ultra Pro', icon: Shield }}
     >
       <Tabs defaultValue="overview" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="overview">Vue d'ensemble</TabsTrigger>
           <TabsTrigger value="audit">Audit Logs</TabsTrigger>
           <TabsTrigger value="gdpr">RGPD</TabsTrigger>
           <TabsTrigger value="2fa">2FA</TabsTrigger>
+          <TabsTrigger value="ip">IP Allowlist</TabsTrigger>
         </TabsList>
 
         {/* OVERVIEW */}
@@ -281,6 +283,11 @@ export default function SecurityDashboard() {
         {/* 2FA */}
         <TabsContent value="2fa">
           <TwoFactorSetup />
+        </TabsContent>
+
+        {/* IP Allowlist */}
+        <TabsContent value="ip">
+          <IpAllowlistManager />
         </TabsContent>
       </Tabs>
     </ChannablePageWrapper>
