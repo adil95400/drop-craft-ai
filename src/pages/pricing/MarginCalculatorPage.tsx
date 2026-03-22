@@ -48,7 +48,6 @@ const DEFAULT_COSTS: CostBreakdown = {
 };
 
 function calculateMargins(costs: CostBreakdown) {
-  const { t: tPages } = useTranslation('pages');
   const platformFees = costs.sellingPrice * (costs.platformFeesPercent / 100);
   const vatAmount = costs.sellingPrice * (costs.vatPercent / 100) / (1 + costs.vatPercent / 100);
   const returnCost = costs.sellingPrice * (costs.returnRatePercent / 100);
@@ -83,6 +82,7 @@ function calculateMargins(costs: CostBreakdown) {
 }
 
 export default function MarginCalculatorPage() {
+  const { t: tPages } = useTranslation('pages');
   const [costs, setCosts] = useState<CostBreakdown>(DEFAULT_COSTS);
   const [selectedProduct, setSelectedProduct] = useState<string>('');
 

@@ -72,7 +72,6 @@ interface WebVital {
 
 // ─── Data generation for charts — uses real api_logs when available, else static baseline ──────
 const generateTimeSeriesData = (hours: number, baseValue: number, _variance: number) => {
-  const { t: tPages } = useTranslation('pages');
   return Array.from({ length: hours }, (_, i) => {
     const time = new Date();
     time.setHours(time.getHours() - (hours - i));
@@ -426,6 +425,7 @@ function SystemMetricCard({ metric }: { metric: SystemMetric }) {
 
 // ─── Main Page ────────────────────────────────────────────────
 export default function PerformanceMonitoringPage() {
+  const { t: tPages } = useTranslation('pages');
   const [activeTab, setActiveTab] = useState('health');
   const [autoRefresh, setAutoRefresh] = useState(true);
   const { toast } = useToast();

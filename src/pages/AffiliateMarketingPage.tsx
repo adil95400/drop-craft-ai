@@ -20,6 +20,7 @@ const COLORS = ['hsl(var(--primary))', 'hsl(var(--chart-2))', 'hsl(var(--chart-3
 
 const AffiliateMarketingPage: React.FC = () => {
   const { affiliates, stats, isLoading } = useAffiliateProgram();
+  const { t: tPages } = useTranslation('pages');
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
 
@@ -34,7 +35,6 @@ const AffiliateMarketingPage: React.FC = () => {
   const barData = topPerformers.map(a => ({ name: a.name.split(' ')[0], revenue: a.total_revenue, commission: a.total_commission, sales: a.total_sales }));
 
   const copyCode = (code: string) => {
-  const { t: tPages } = useTranslation('pages');
     navigator.clipboard.writeText(code);
     toast.success('Code copié !');
   };

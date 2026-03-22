@@ -34,11 +34,11 @@ const PLATFORM_COLORS: Record<string, string> = {
 };
 
 function getPlatformColor(platform: string) {
-  const { t: tPages } = useTranslation('pages');
   return PLATFORM_COLORS[platform.toLowerCase()] || PLATFORM_COLORS.default;
 }
 
 export default function StoreChannelAnalyticsPage() {
+  const { t: tPages } = useTranslation('pages');
   // Fetch active integrations
   const { data: integrations = [], isLoading: intLoading } = useQuery({
     queryKey: ['channel-analytics-integrations'],

@@ -17,6 +17,7 @@ import { fr } from 'date-fns/locale';
 
 const AbandonedCartPage: React.FC = () => {
   const { carts, isLoading, stats, sendRecoveryEmail, isSending, markRecovered, dismissCart } = useAbandonedCarts();
+  const { t: tPages } = useTranslation('pages');
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
 
@@ -28,7 +29,6 @@ const AbandonedCartPage: React.FC = () => {
   });
 
   const getStatusBadge = (status: string) => {
-  const { t: tPages } = useTranslation('pages');
     switch (status) {
       case 'pending': return <Badge variant="outline" className="text-warning border-orange-300">En attente</Badge>;
       case 'contacted': return <Badge variant="outline" className="text-info border-blue-300">Contacté</Badge>;
