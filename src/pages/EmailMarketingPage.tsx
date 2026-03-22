@@ -80,7 +80,6 @@ const EmailMarketingPage: React.FC = () => {
 
     const { t: tPages } = useTranslation('pages');
 
-
   return (
     <ChannablePageWrapper
       title={tPages('emailMarketing.title')}

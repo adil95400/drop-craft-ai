@@ -15,6 +15,7 @@ import { useSupplierProducts, useSupplierProductCount } from '@/hooks/useSupplie
 import { motion } from 'framer-motion'
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper'
 import {
+import { useTranslation } from 'react-i18next';
   Edit,
   MoreVertical,
   Star,

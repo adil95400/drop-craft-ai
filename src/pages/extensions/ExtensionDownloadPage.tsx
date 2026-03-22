@@ -168,7 +168,6 @@ export default function ExtensionDownloadPage() {
 
     const { t: tPages } = useTranslation('pages');
 
-
   return (
     <ChannablePageWrapper
       title={tPages('extensionChromeShopopti.title')}

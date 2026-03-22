@@ -10,6 +10,7 @@ import { useToast } from '@/hooks/use-toast'
 import { useQuickDropshipping } from '@/hooks/useQuickDropshipping'
 import { Zap, ShoppingCart, TrendingUp, Package, Settings, PlayCircle, ChevronRight, Loader2 } from 'lucide-react'
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper'
+import { useTranslation } from 'react-i18next';
 
 export default function QuickDropshippingPage() {
   const { toast } = useToast()
@@ -52,7 +53,6 @@ export default function QuickDropshippingPage() {
   }
 
     const { t: tPages } = useTranslation('pages');
-
 
   return (
     <ChannablePageWrapper

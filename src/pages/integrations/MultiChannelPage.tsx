@@ -7,6 +7,7 @@ import { useTranslation } from 'react-i18next';
 import { Layers } from 'lucide-react';
 
 export default function MultiChannelPage() {
+  const { t: tPages } = useTranslation('pages');
   const [activeView, setActiveView] = useState('dashboard');
 
   return (

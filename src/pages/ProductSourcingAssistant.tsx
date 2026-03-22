@@ -26,6 +26,7 @@ interface SourcingResult {
 }
 
 export default function ProductSourcingAssistant() {
+  const { t: tPages } = useTranslation('pages');
   const { toast } = useToast();
   const [searchQuery, setSearchQuery] = useState('');
   const [additionalDetails, setAdditionalDetails] = useState('');

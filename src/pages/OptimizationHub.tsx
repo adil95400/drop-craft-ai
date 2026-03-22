@@ -10,6 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
 
 export default function OptimizationHub() {
+  const { t: tPages } = useTranslation('pages');
   return (
     <>
       <Helmet>

@@ -132,7 +132,6 @@ export default function StockManagementPage() {
   
     const { t: tPages } = useTranslation('pages');
 
-  
   return (
     <ChannablePageWrapper
       title={tPages('gestionDesStocks.title')}

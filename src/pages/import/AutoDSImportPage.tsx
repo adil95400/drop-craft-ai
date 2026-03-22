@@ -29,6 +29,7 @@ import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrappe
 import { ProfitCalculator } from '@/components/import/ProfitCalculator'
 import { ImportSuccessAnimation } from '@/components/ui/import-success-animation'
 import { useImportSuccessAnimation } from '@/hooks/useImportSuccessAnimation'
+import { useTranslation } from 'react-i18next';
 
 const useReducedMotion = () => {
   if (typeof window === 'undefined') return false
@@ -279,7 +280,6 @@ export default function AutoDSImportPage() {
   const errorUrls = queuedUrls.filter(q => q.status === 'error')
 
     const { t: tPages } = useTranslation('pages');
-
 
   return (
     <ChannablePageWrapper

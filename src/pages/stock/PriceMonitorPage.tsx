@@ -15,6 +15,7 @@ import {
   Bell, Activity, BarChart3, Package, DollarSign, CheckCircle
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { useTranslation } from 'react-i18next';
 
 export default function PriceMonitorPage() {
   const {
@@ -27,7 +28,6 @@ export default function PriceMonitorPage() {
   const unresolvedAlerts = alerts?.filter((a: any) => a.status !== 'resolved')?.length || 0
 
     const { t: tPages } = useTranslation('pages');
-
 
   return (
     <ChannablePageWrapper

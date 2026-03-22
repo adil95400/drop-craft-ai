@@ -159,7 +159,6 @@ export default function ExtensionFAQPage() {
 
     const { t: tPages } = useTranslation('pages');
 
-
   return (
     <ChannablePageWrapper
       title={tPages('faqExtension.title')}

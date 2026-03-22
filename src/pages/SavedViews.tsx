@@ -14,6 +14,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { useSavedViews, useCreateSavedView, useDeleteSavedView, PRESET_VIEWS } from '@/hooks/useSavedProductViews'
 import { Eye, Plus, Trash2, TrendingDown, AlertTriangle, PackageX, ImageOff, FileEdit, Trophy, Clock, Search, Bookmark, Star, Filter, ArrowRight, ExternalLink, Pencil, Copy, LayoutGrid } from 'lucide-react'
 import { toast } from 'sonner'
+import { useTranslation } from 'react-i18next';
 
 const ICON_MAP: Record<string, any> = {
   TrendingDown, AlertTriangle, PackageX, ImageOff, FileEdit, Trophy, Clock, Search, Bookmark, Filter, LayoutGrid,
@@ -141,7 +142,6 @@ export default function SavedViews() {
   const customCount = savedViews?.length || 0
 
     const { t: tPages } = useTranslation('pages');
-
 
   return (
     <ChannablePageWrapper

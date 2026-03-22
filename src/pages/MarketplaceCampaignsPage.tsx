@@ -7,6 +7,7 @@ import { useTranslation } from 'react-i18next';
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
 
 export default function MarketplaceCampaignsPage() {
+  const { t: tPages } = useTranslation('pages');
   return (
     <>
       <SEO

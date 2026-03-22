@@ -4,10 +4,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { AutoTrackingManager } from '@/components/tracking/AutoTrackingManager'
 import { UnifiedTrackingTimeline } from '@/components/tracking/UnifiedTrackingTimeline'
 import { 
+import { useTranslation } from 'react-i18next';
   Truck, Package, MapPin
 } from 'lucide-react'
 
 export default function AutoTrackingPage() {
+  const { t: tPages } = useTranslation('pages');
   return (
     <>
       <Helmet>

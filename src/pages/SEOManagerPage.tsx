@@ -23,6 +23,7 @@ const SEORecommendationsCard = lazy(() => import('@/components/seo/SEORecommenda
 const CompetitiveAnalysisPanel = lazy(() => import('@/components/seo/CompetitiveAnalysisPanel').then(m => ({ default: m.CompetitiveAnalysisPanel })));
 
 export default function SEOManagerPage() {
+  const { t: tPages } = useTranslation('pages');
   const [searchTerm, setSearchTerm] = useState('');
   const [showAddKeywordModal, setShowAddKeywordModal] = useState(false);
   const [showNewAuditModal, setShowNewAuditModal] = useState(false);

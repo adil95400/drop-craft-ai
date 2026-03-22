@@ -9,6 +9,7 @@ import { useToast } from '@/hooks/use-toast'
 import { supabase } from '@/integrations/supabase/client'
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper'
 import { 
+import { useTranslation } from 'react-i18next';
   RefreshCw, Package, ShoppingCart, TrendingUp, Calendar,
   AlertTriangle, CheckCircle, TestTube, Zap, Eye, Globe, Wifi, WifiOff
 } from 'lucide-react'

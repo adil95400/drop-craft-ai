@@ -180,7 +180,6 @@ export default function ReviewsImportPage() {
 
     const { t: tPages } = useTranslation('pages');
 
-
   return (
     <ChannablePageWrapper
       title={tPages('importDesAvis.title')}

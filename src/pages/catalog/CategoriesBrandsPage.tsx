@@ -13,6 +13,7 @@ import { useCategoryClassification, CategoryStats } from '@/hooks/catalog'
 import { Skeleton } from '@/components/ui/skeleton'
 import { cn } from '@/lib/utils'
 import { Progress } from '@/components/ui/progress'
+import { useTranslation } from 'react-i18next';
 
 const stagger = { hidden: { opacity: 0 }, show: { opacity: 1, transition: { staggerChildren: 0.06 } } }
 const fadeUp = { hidden: { opacity: 0, y: 12 }, show: { opacity: 1, y: 0, transition: { type: 'spring' as const, stiffness: 300, damping: 24 } } }
@@ -31,7 +32,6 @@ export default function CategoriesBrandsPage() {
   const totalIssues = metrics.missingCategory + metrics.missingBrand
 
     const { t: tPages } = useTranslation('pages');
-
 
   return (
     <ChannablePageWrapper

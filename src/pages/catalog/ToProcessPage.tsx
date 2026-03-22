@@ -18,6 +18,7 @@ import { BacklogAIPanel, DraftProductsPanel } from '@/components/catalog'
 import { Skeleton } from '@/components/ui/skeleton'
 import { cn } from '@/lib/utils'
 import { Progress } from '@/components/ui/progress'
+import { useTranslation } from 'react-i18next';
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -76,7 +77,6 @@ export default function ToProcessPage() {
   ]
 
     const { t: tPages } = useTranslation('pages');
-
 
   return (
     <ChannablePageWrapper

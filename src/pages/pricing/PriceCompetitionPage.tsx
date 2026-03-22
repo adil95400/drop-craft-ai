@@ -27,6 +27,7 @@ import { ModuleInterconnectionBanner } from '@/components/cross-module/ModuleInt
 const COLORS = ['hsl(var(--primary))', 'hsl(var(--chart-2))', 'hsl(var(--chart-3))', 'hsl(var(--chart-4))', 'hsl(var(--chart-5))'];
 
 export default function PriceCompetitionPage() {
+  const { t: tPages } = useTranslation('pages');
   const { data: products = [], isLoading } = useQuery({
     queryKey: ['competition-products'],
     queryFn: async () => {

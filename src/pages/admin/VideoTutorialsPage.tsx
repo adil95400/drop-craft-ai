@@ -157,7 +157,6 @@ export default function VideoTutorialsPage() {
 
     const { t: tPages } = useTranslation('pages');
 
-
   return (
     <ChannablePageWrapper
       title={tPages('videosTutoriels.title')}

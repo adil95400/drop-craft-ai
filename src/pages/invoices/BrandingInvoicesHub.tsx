@@ -293,7 +293,6 @@ export default function BrandingInvoicesHub() {
 
     const { t: tPages } = useTranslation('pages');
 
-
   return (
     <ChannablePageWrapper
       title={tPages('facturesPersonnalisees.title')}

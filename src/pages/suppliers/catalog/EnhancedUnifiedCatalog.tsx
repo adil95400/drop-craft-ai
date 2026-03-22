@@ -29,6 +29,7 @@ import { ChannablePageWrapper } from "@/components/channable/ChannablePageWrappe
 import type { ChannableStat } from "@/components/channable/types";
 import { ProductDetailModal } from "@/components/suppliers/ProductDetailModal";
 import { 
+import { useTranslation } from 'react-i18next';
   CatalogProductCard, 
   CatalogFilters, 
   CatalogPagination,
@@ -64,6 +65,7 @@ const DEFAULT_FILTERS: CatalogFiltersState = {
 };
 
 export function EnhancedUnifiedCatalog() {
+  const { t: tPages } = useTranslation('pages');
   const [searchParams, setSearchParams] = useSearchParams();
   
   // Filters state

@@ -21,6 +21,7 @@ import { useTranslation } from 'react-i18next';
 import { ChannableCard } from '@/components/channable';
 
 const SchemaGenerator = () => {
+  const { t: tPages } = useTranslation('pages');
   const [schemaType, setSchemaType] = useState("");
   const [generatedSchema, setGeneratedSchema] = useState("");
   const [formData, setFormData] = useState<any>({});

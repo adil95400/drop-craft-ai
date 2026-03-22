@@ -11,6 +11,7 @@ import { useTranslation } from 'react-i18next';
 import { Video, Images, Activity, Palette, Sparkles, FileText } from 'lucide-react';
 
 export default function BulkContentCreationPage() {
+  const { t: tPages } = useTranslation('pages');
   return (
     <>
       <Helmet>

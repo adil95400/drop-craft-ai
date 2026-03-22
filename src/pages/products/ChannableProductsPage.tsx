@@ -83,6 +83,7 @@ import { RuleTesterDialog } from '@/components/rules/RuleTesterDialog'
 import { useProductRules } from '@/hooks/useProductRules'
 import { ProductRule } from '@/lib/rules/ruleTypes'
 import {
+import { useTranslation } from 'react-i18next';
   AlertDialog,
   AlertDialogAction,
   AlertDialogCancel,

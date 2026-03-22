@@ -19,6 +19,7 @@ import {
 } from 'recharts';
 
 function StockForecastCalendar() {
+  const { t: tPages } = useTranslation('pages');
   const { data: predictions = [] } = useQuery({
     queryKey: ['stock-forecast-calendar'],
     queryFn: async () => {

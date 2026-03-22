@@ -35,6 +35,7 @@ const PLATFORM_LABELS: Record<string, string> = {
 };
 
 export default function AdsManagerPage() {
+  const { t: tPages } = useTranslation('pages');
   const { campaigns, metrics, platformPerformance, isLoading, refetch } = useRealAdsManager();
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [platformFilter, setPlatformFilter] = useState<string | null>(null);

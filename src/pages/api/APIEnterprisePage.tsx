@@ -50,6 +50,7 @@ const METHOD_COLORS: Record<string, string> = {
 };
 
 export default function APIEnterprisePage() {
+  const { t: tPages } = useTranslation('pages');
   const { user, profile } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();

@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { FileText } from 'lucide-react';
 
 const ContentManagementPage = () => {
+  const { t: tPages } = useTranslation('pages');
   return (
     <>
       <Helmet>

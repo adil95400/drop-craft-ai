@@ -78,7 +78,6 @@ export default function SourcingAgentPage() {
 
     const { t: tPages } = useTranslation('pages');
 
-
   return (
     <ChannablePageWrapper
       title={tPages('agentDeSourcingIa.title')}

@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { Megaphone } from 'lucide-react';
 
 export default function AdsAutomationPage() {
+  const { t: tPages } = useTranslation('pages');
   return (
     <>
       <Helmet>

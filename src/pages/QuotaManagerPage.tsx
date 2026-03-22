@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { Gauge } from 'lucide-react';
 
 export default function QuotaManagerPage() {
+  const { t: tPages } = useTranslation('pages');
   return (
     <RequirePlan minPlan="standard">
       <ChannablePageWrapper

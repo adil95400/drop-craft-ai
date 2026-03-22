@@ -191,6 +191,7 @@ const regions = [
 ];
 
 export default function MarketplaceConnectorsPage() {
+  const { t: tPages } = useTranslation('pages');
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');

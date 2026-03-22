@@ -8,6 +8,7 @@ import { useFreeTrial } from '@/hooks/useFreeTrial'
 import { useNavigate } from 'react-router-dom'
 import { Sparkles, Check, Clock, Crown } from 'lucide-react'
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper'
+import { useTranslation } from 'react-i18next';
 
 export default function FreeTrialActivationPage() {
   const navigate = useNavigate()

@@ -10,6 +10,7 @@ import { toast } from 'sonner';
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
 
 const APIDocumentationDetailPage = () => {
+  const { t: tPages } = useTranslation('pages');
   const navigate = useNavigate();
 
   const copyToClipboard = (code: string) => {

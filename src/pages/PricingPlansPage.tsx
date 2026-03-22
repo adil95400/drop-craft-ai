@@ -95,7 +95,6 @@ export default function PricingPlansPage() {
 
     const { t: tPages } = useTranslation('pages');
 
-
   return (
     <ChannablePageWrapper
       title={tPages('choisissezVotrePlanIdeal.title')}

@@ -14,6 +14,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Gauge, Activity, Network, Package, BrainCircuit, Settings } from 'lucide-react';
 
 export default function PerformanceDashboardPage() {
+  const { t: tPages } = useTranslation('pages');
   return (
     <>
       <Helmet>

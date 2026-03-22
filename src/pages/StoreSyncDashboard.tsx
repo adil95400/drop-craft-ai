@@ -358,7 +358,6 @@ export default function StoreSyncDashboard() {
 
     const { t: tPages } = useTranslation('pages');
 
-
   return (
     <ChannablePageWrapper
       title={tPages('centreDeSynchronisation.title')}

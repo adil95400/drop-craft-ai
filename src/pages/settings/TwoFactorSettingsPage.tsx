@@ -8,6 +8,7 @@ import { Shield } from 'lucide-react';
 import TwoFactorSettings from '@/components/settings/TwoFactorSettings';
 
 export default function TwoFactorSettingsPage() {
+  const { t: tPages } = useTranslation('pages');
   return (
     <>
       <Helmet>

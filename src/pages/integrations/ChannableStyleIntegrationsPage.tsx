@@ -62,6 +62,7 @@ import { PlatformLogo } from '@/components/ui/platform-logo'
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper'
 import { BackButton } from '@/components/navigation/BackButton'
 import {
+import { useTranslation } from 'react-i18next';
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
@@ -525,6 +526,7 @@ const integrationDefinitions: IntegrationDefinition[] = [
 
 // Composant Hexagones animés pour le hero
 function HeroHexagons() {
+  const { t: tPages } = useTranslation('pages');
   const hexColors = [
     'from-pink-500 to-rose-500',
     'from-orange-400 to-amber-500',

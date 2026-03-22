@@ -103,6 +103,7 @@ interface StatCardProps {
 }
 
 function StatCard({ label, value, icon: Icon, color, delay = 0, onClick }: StatCardProps) {
+  const { t: tPages } = useTranslation('pages');
   const colorMap = {
     primary: {
       bg: 'bg-gradient-to-br from-primary/10 via-primary/5 to-transparent',

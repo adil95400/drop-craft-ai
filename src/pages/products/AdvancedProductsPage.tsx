@@ -138,7 +138,6 @@ export default function AdvancedProductsPage() {
 
     const { t: tPages } = useTranslation('pages');
 
-
   return (
     <ChannablePageWrapper
       title={tPages('catalogueUltraPro.title')}

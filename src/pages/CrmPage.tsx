@@ -11,12 +11,12 @@ import { LeadScoring } from "@/components/crm/LeadScoring";
 import { SalesPipeline } from "@/components/crm/SalesPipeline";
 import { AdvancedFeatureGuide } from '@/components/guide';
 import { ADVANCED_GUIDES } from '@/components/guide';
+import { useTranslation } from 'react-i18next';
 
 export default function CrmPage() {
   const [activeTab, setActiveTab] = useState("pipeline");
 
     const { t: tPages } = useTranslation('pages');
-
 
   return (
     <ChannablePageWrapper

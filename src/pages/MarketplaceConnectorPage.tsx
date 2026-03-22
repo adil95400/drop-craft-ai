@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { ShoppingBag } from 'lucide-react';
 
 export default function MarketplaceConnectorPage() {
+  const { t: tPages } = useTranslation('pages');
   return (
     <RequirePlan minPlan="pro">
       <ChannablePageWrapper

@@ -16,6 +16,7 @@ import {
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useWinnersRealData } from '@/hooks/useWinnersRealData'
+import { useTranslation } from 'react-i18next';
 
 // Définition du type pour les modules de recherche
 interface ResearchModule {
@@ -60,6 +61,7 @@ const ModuleCard = memo(({ module, onClick }: { module: ResearchModule; onClick:
 ModuleCard.displayName = 'ModuleCard'
 
 export default function ResearchHub() {
+  const { t: tPages } = useTranslation('pages');
   const navigate = useNavigate()
   const [searchQuery, setSearchQuery] = useState('')
   const { data: winnersData, isLoading } = useWinnersRealData(undefined, 5)

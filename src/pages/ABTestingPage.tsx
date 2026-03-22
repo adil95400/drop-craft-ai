@@ -3,8 +3,10 @@ import { ABTestManager } from '@/components/marketing/ABTestManager'
 import { AdvancedFeatureGuide, ADVANCED_GUIDES } from '@/components/guide'
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper'
 import { FlaskConical } from 'lucide-react'
+import { useTranslation } from 'react-i18next';
 
 export default function ABTestingPage() {
+  const { t: tPages } = useTranslation('pages');
   return (
     <>
       <Helmet>

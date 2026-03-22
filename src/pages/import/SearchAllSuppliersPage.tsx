@@ -7,6 +7,7 @@ import { SupplierSearchForm } from '@/components/import/SupplierSearchForm'
 import { SupplierComparisonTable } from '@/components/import/SupplierComparisonTable'
 import { useSearchAllSuppliers } from '@/hooks/useSearchAllSuppliers'
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper'
+import { useTranslation } from 'react-i18next';
 
 export default function SearchAllSuppliersPage() {
   const navigate = useNavigate()
@@ -21,7 +22,6 @@ export default function SearchAllSuppliersPage() {
   } = useSearchAllSuppliers()
 
     const { t: tPages } = useTranslation('pages');
-
 
   return (
     <ChannablePageWrapper

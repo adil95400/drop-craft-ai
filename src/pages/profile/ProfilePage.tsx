@@ -49,6 +49,7 @@ import { Helmet } from 'react-helmet-async'
 import { supabase } from '@/integrations/supabase/client'
 import { formatDistanceToNow } from 'date-fns'
 import { useDateFnsLocale } from '@/hooks/useDateFnsLocale'
+import { useTranslation } from 'react-i18next';
 
 interface ProfileFormData {
   full_name: string

@@ -52,7 +52,6 @@ export const ExtensionDownloadPage = () => {
 
     const { t: tPages } = useTranslation('pages');
 
-
   return (
     <ChannablePageWrapper
       title={tPages('extensionDropCraftAi.title')}

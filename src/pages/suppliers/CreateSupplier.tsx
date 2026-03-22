@@ -17,6 +17,7 @@ import { useToast } from '@/hooks/use-toast'
 import { useSuppliersUnified } from '@/hooks/unified'
 import { supplierSchema, type SupplierFormData } from '@/lib/validation/supplierSchema'
 import {
+import { useTranslation } from 'react-i18next';
   ArrowLeft,
   Building2,
   Globe,
@@ -36,6 +37,7 @@ import {
 } from 'lucide-react'
 
 export default function CreateSupplier() {
+  const { t: tPages } = useTranslation('pages');
   const navigate = useNavigate()
   const { toast } = useToast()
   const { refetch, isLoading: isAdding } = useSuppliersUnified()

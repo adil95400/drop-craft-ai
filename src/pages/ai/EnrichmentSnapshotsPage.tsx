@@ -18,6 +18,7 @@ import {
 import { useToast } from '@/hooks/use-toast'
 import { formatDistanceToNow } from 'date-fns'
 import { getDateFnsLocale } from '@/utils/dateFnsLocale'
+import { useTranslation } from 'react-i18next';
 
 export default function EnrichmentSnapshotsPage() {
   const { toast } = useToast()
@@ -95,7 +96,6 @@ export default function EnrichmentSnapshotsPage() {
   }
 
     const { t: tPages } = useTranslation('pages');
-
 
   return (
     <ChannablePageWrapper

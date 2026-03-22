@@ -82,7 +82,6 @@ export default function FeedOptimizationPage() {
 
     const { t: tPages } = useTranslation('pages');
 
-
   return (
     <ChannablePageWrapper
       title={tPages('optimisationIaDesFeeds.title')}

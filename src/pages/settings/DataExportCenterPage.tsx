@@ -44,7 +44,6 @@ export default function DataExportCenterPage() {
 
     const { t: tPages } = useTranslation('pages');
 
-
   return (
     <ChannablePageWrapper
       title={tPages('centreDExportDeDonnees.title')}

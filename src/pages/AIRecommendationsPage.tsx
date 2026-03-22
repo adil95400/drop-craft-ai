@@ -19,6 +19,7 @@ import {
 import { useAIRecommendations } from '@/hooks/useAIRecommendations'
 import { cn } from '@/lib/utils'
 import { motion, AnimatePresence } from 'framer-motion'
+import { useTranslation } from 'react-i18next';
 
 const TYPE_CONFIG: Record<string, { icon: any; color: string; label: string }> = {
   trending: { icon: Flame, color: 'bg-warning', label: 'Tendance' },
@@ -30,6 +31,7 @@ const TYPE_CONFIG: Record<string, { icon: any; color: string; label: string }> =
 }
 
 export default function AIRecommendationsPage() {
+  const { t: tPages } = useTranslation('pages');
   const {
     recommendations, isLoading, affinities, affinitiesLoading,
     metrics, generate, computeCrossSell, updateStatus,

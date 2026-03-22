@@ -22,6 +22,7 @@ import {
   ArrowUpRight, ArrowDownRight, Target, Zap, PieChart
 } from 'lucide-react'
 import {
+import { useTranslation } from 'react-i18next';
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   PieChart as RechartsPieChart, Pie, Cell
 } from 'recharts'
@@ -39,6 +40,7 @@ const CHANNEL_COLORS: Record<string, string> = {
 }
 
 export default function ChannableAnalyticsPage() {
+  const { t: tPages } = useTranslation('pages');
   const navigate = useNavigate()
   const { user } = useAuth()
   const [selectedPeriod, setSelectedPeriod] = useState('30d')

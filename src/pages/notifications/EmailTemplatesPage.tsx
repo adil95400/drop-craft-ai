@@ -86,7 +86,6 @@ export default function EmailTemplatesPage() {
 
     const { t: tPages } = useTranslation('pages');
 
-
   return (
     <ChannablePageWrapper
       title={tPages('templatesEmail.title')}

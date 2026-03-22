@@ -7,6 +7,7 @@ import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrappe
 import { useTranslation } from 'react-i18next';
 
 export default function NotFoundPage() {
+  const { t: tPages } = useTranslation('pages');
   const navigate = useNavigate();
 
   return (

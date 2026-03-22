@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { Users } from 'lucide-react';
 
 export default function CustomerSegmentationPage() {
+  const { t: tPages } = useTranslation('pages');
   return (
     <>
       <Helmet>

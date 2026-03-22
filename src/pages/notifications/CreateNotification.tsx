@@ -34,6 +34,7 @@ const notificationTemplates = [
 ];
 
 export default function CreateNotification() {
+  const { t: tPages } = useTranslation('pages');
   const navigate = useNavigate();
   const locale = useDateFnsLocale();
   const [selectedTemplate, setSelectedTemplate] = useState('');

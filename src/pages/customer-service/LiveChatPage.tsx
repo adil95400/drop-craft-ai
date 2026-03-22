@@ -28,6 +28,7 @@ import {
 } from 'lucide-react';
 
 export default function LiveChatPage() {
+  const { t: tPages } = useTranslation('pages');
   const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
   const [messageInput, setMessageInput] = useState('');
   const [newChatDialog, setNewChatDialog] = useState(false);

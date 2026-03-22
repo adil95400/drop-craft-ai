@@ -19,6 +19,7 @@ import { useToast } from '@/hooks/use-toast'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '@/integrations/supabase/client'
 import { useAuth } from '@/contexts/AuthContext'
+import { useTranslation } from 'react-i18next';
 
 const platformIcons: Record<string, string> = {
   shopify: '🟢', woocommerce: '🟣', ebay: '🔵', amazon: '🟠', etsy: '🟤',
@@ -112,7 +113,6 @@ export default function MultiStoreSyncPage() {
   const totalOrders = stores.reduce((a: number, s: any) => a + s.ordersToday, 0)
 
     const { t: tPages } = useTranslation('pages');
-
 
   return (
     <ChannablePageWrapper

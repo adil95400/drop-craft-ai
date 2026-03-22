@@ -15,6 +15,7 @@ import {
 } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 import { cn } from '@/lib/utils'
+import { useTranslation } from 'react-i18next';
 
 const PLATFORMS = [
   { id: 'shopify', name: 'Shopify', icon: '🟢', color: 'border-emerald-500', desc: 'La plateforme e-commerce leader', fields: ['shop_domain', 'api_key'] },
@@ -38,6 +39,7 @@ const FIELD_LABELS: Record<string, string> = {
 }
 
 export default function PlatformOnboardingPage() {
+  const { t: tPages } = useTranslation('pages');
   const [step, setStep] = useState(0)
   const [selectedPlatform, setSelectedPlatform] = useState<string | null>(null)
   const [formData, setFormData] = useState<Record<string, string>>({})

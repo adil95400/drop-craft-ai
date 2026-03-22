@@ -135,6 +135,7 @@ function safeProgress(processed: number, total: number): number {
 }
 
 function ImportHubContent() {
+  const { t: tPages } = useTranslation('pages');
   const navigate = useNavigate();
   const { toast } = useToast();
   const prefersReducedMotion = useReducedMotion();

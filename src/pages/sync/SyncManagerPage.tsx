@@ -155,7 +155,6 @@ export default function SyncManagerPage() {
 
     const { t: tPages } = useTranslation('pages');
 
-
   return (
     <ChannablePageWrapper
       title={tPages('gestionnaireDeSynchronisation.title')}

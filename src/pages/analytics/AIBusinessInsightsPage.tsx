@@ -81,6 +81,7 @@ const IMPACT_STYLES: Record<string, string> = {
 };
 
 export default function AIBusinessInsightsPage() {
+  const { t: tPages } = useTranslation('pages');
   const { toast } = useToast();
   const [analysisType, setAnalysisType] = useState('general');
 

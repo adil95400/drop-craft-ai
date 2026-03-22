@@ -29,7 +29,6 @@ export default function PerformanceMonitoringPage() {
 
     const { t: tPages } = useTranslation('pages');
 
-
   return (
     <ChannablePageWrapper
       title={tPages('monitoringPerformance.title')}

@@ -58,7 +58,6 @@ export default function SecurityDashboard() {
 
     const { t: tPages } = useTranslation('pages');
 
-
   return (
     <ChannablePageWrapper
       title={tPages('securiteCompliance.title')}

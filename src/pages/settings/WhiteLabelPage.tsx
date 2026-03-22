@@ -16,6 +16,7 @@ import { AdvancedFeatureGuide, ADVANCED_GUIDES } from '@/components/guide'
 import { Palette, Upload, Globe, Mail, Eye, Crown, Image, Type, Save, Loader2, Monitor } from 'lucide-react'
 import { useWhiteLabelSettings } from '@/hooks/useWhiteLabelSettings'
 import { Skeleton } from '@/components/ui/skeleton'
+import { useTranslation } from 'react-i18next';
 
 const FONT_OPTIONS = [
   'Inter', 'Poppins', 'Roboto', 'Montserrat', 'Lato', 'Open Sans',

@@ -26,6 +26,7 @@ import { VideoTutorialSection } from '@/components/onboarding/VideoTutorialSecti
 import { TUTORIALS, getAllVideos, type Tutorial } from '@/data/tutorialVideos'
 import { useVideoProgress } from '@/hooks/useVideoProgress'
 import { cn } from '@/lib/utils'
+import { useTranslation } from 'react-i18next';
 
 export default function OnboardingHubPage() {
   const navigate = useNavigate()
@@ -41,7 +42,6 @@ export default function OnboardingHubPage() {
   }).length
 
     const { t: tPages } = useTranslation('pages');
-
 
   return (
     <ChannablePageWrapper

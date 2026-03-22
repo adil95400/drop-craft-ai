@@ -23,6 +23,7 @@ import {
 } from 'lucide-react'
 import { useAdsMarketing } from '@/hooks/useAdsMarketing'
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper'
+import { useTranslation } from 'react-i18next';
 
 const AdsMarketingPage = () => {
   const { 
@@ -86,7 +87,6 @@ const AdsMarketingPage = () => {
   };
 
     const { t: tPages } = useTranslation('pages');
-
 
   return (
     <ChannablePageWrapper

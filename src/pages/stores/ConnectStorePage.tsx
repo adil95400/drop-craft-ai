@@ -7,6 +7,7 @@ import { useStoreConnection } from '@/hooks/useStoreConnection'
 import { PlatformGridSelector } from './components/PlatformGridSelector'
 import { StoreConnectionDialog } from '@/components/stores/connection/StoreConnectionDialog'
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper'
+import { useTranslation } from 'react-i18next';
 
 const ConnectStorePage = () => {
   const navigate = useNavigate()
@@ -61,7 +62,6 @@ const ConnectStorePage = () => {
   }
 
     const { t: tPages } = useTranslation('pages');
-
 
   return (
     <ChannablePageWrapper

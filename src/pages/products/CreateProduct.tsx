@@ -44,6 +44,7 @@ const CATEGORIES = [
 ];
 
 export default function CreateProduct() {
+  const { t: tPages } = useTranslation('pages');
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('general');
   const [images, setImages] = useState<string[]>([]);

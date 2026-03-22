@@ -70,7 +70,6 @@ export default function ImportMarketplacePage() {
 
     const { t: tPages } = useTranslation('pages');
 
-
   return (
     <ChannablePageWrapper
       title={tPages('marketplaces.title')}

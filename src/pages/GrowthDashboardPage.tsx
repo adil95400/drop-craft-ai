@@ -19,12 +19,14 @@ import { useQuery } from '@tanstack/react-query'
 import { supabase } from '@/integrations/supabase/client'
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, PieChart as RechartsPie, Pie, Cell } from 'recharts'
 import { cn } from '@/lib/utils'
+import { useTranslation } from 'react-i18next';
 
 const COLORS = ['hsl(var(--chart-1))', 'hsl(var(--chart-2))', 'hsl(var(--chart-3))', 'hsl(var(--chart-4))', 'hsl(var(--chart-5))']
 
 function MetricCard({ label, value, change, prefix = '', suffix = '', icon: Icon, trend }: {
   label: string; value: number; change: number; prefix?: string; suffix?: string; icon: any; trend?: 'up' | 'down'
 }) {
+  const { t: tPages } = useTranslation('pages');
   const isPositive = change >= 0
   return (
     <Card>

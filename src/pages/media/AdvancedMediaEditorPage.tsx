@@ -215,7 +215,6 @@ export default function AdvancedMediaEditorPage() {
 
     const { t: tPages } = useTranslation('pages');
 
-
   return (
     <ChannablePageWrapper
       title={tPages('editeurMediaAvance.title')}

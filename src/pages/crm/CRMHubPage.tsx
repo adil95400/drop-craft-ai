@@ -20,7 +20,6 @@ export default function CRMHubPage() {
 
     const { t: tPages } = useTranslation('pages');
 
-
   return (
     <ChannablePageWrapper
       title={tPages('crmAvance.title')}

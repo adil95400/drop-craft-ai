@@ -63,6 +63,7 @@ type ContentFields = {
 };
 
 export default function MultilingualSEOPage() {
+  const { t: tPages } = useTranslation('pages');
   const { user } = useAuth();
   const { toast } = useToast();
   const [sourceLang, setSourceLang] = useState('fr');

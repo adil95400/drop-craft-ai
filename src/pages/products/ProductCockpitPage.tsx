@@ -21,6 +21,7 @@ import { SWOTAnalysisCard } from '@/components/cockpit/SWOTAnalysisCard'
 import { SmartAlertsPanel } from '@/components/cockpit/SmartAlertsPanel'
 import { PeriodComparisonWidget } from '@/components/cockpit/PeriodComparisonWidget'
 import { Package, DollarSign, TrendingUp, AlertTriangle, ShieldAlert, ArrowLeft } from 'lucide-react'
+import { useTranslation } from 'react-i18next';
 
 const KPI_ICONS = [Package, DollarSign, TrendingUp, AlertTriangle, ShieldAlert, ShieldAlert] as const
 const KPI_COLORS = ['primary', 'info', 'success', 'warning', 'destructive', 'destructive'] as const

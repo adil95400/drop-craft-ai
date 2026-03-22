@@ -15,6 +15,7 @@ import { AdvancedFeatureGuide, ADVANCED_GUIDES } from '@/components/guide';
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
 
 export default function StockRepricingHub() {
+  const { t: tPages } = useTranslation('pages');
   const stockSync = useStockSync();
   const pricingRules = usePricingRules();
 

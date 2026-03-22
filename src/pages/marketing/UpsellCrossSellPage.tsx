@@ -18,6 +18,7 @@ import { useTranslation } from 'react-i18next';
 import { useUpsellRules } from '@/hooks/useUpsellRules';
 
 export default function UpsellCrossSellPage() {
+  const { t: tPages } = useTranslation('pages');
   const { rules, isLoading, stats, createRule, isCreating, toggleRule, deleteRule } = useUpsellRules();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [form, setForm] = useState({

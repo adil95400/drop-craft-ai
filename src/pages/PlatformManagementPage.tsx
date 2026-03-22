@@ -4,6 +4,7 @@ import { SyncConfigManager } from '@/components/platform/SyncConfigManager'
 import { ContentOptimizer } from '@/components/platform/ContentOptimizer'
 import { BarChart3, RefreshCw, Sparkles, Globe } from 'lucide-react'
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper'
+import { useTranslation } from 'react-i18next';
 
 export default function PlatformManagementPage() {
     const { t: tPages } = useTranslation('pages');

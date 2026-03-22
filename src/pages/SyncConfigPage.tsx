@@ -31,6 +31,7 @@ import { toast } from 'sonner';
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
 
 export default function SyncConfigPage() {
+  const { t: tPages } = useTranslation('pages');
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const connectorId = searchParams.get('connector');

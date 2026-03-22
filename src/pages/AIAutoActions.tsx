@@ -10,6 +10,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useAIAutoConfigs, useSaveAIAutoConfigs, useRunAIAutoActions, useAIAutoLogs, useRevertAIAction, AIAutoActionConfig } from '@/hooks/useAIAutoActions'
 import { Bot, Play, Save, Undo2, Loader2, Zap, FileText, Tag, Search, Type } from 'lucide-react'
+import { useTranslation } from 'react-i18next';
 
 const ACTION_META: Record<string, { label: string; icon: any; description: string }> = {
   optimize_title: { label: 'Optimiser les titres', icon: Type, description: 'Enrichit les titres courts avec marque et catégorie' },
@@ -36,7 +37,6 @@ export default function AIAutoActions() {
   }
 
     const { t: tPages } = useTranslation('pages');
-
 
   return (
     <ChannablePageWrapper

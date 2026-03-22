@@ -29,7 +29,6 @@ export default function PrintOnDemandHub() {
 
     const { t: tPages } = useTranslation('pages');
 
-
   return (
     <ChannablePageWrapper
       title={tPages('printOnDemand.title')}

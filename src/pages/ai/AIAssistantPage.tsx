@@ -124,7 +124,6 @@ export default function AIAssistantPage() {
 
     const { t: tPages } = useTranslation('pages');
 
-
   return (
     <ChannablePageWrapper
       title={tPages('assistantIa.title')}

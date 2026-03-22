@@ -11,6 +11,7 @@ import { supabase } from '@/integrations/supabase/client'
 import { useToast } from '@/hooks/use-toast'
 import { RefreshCw, CheckCircle, XCircle, Clock, Play, Settings, Store } from 'lucide-react'
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper'
+import { useTranslation } from 'react-i18next';
 
 interface StoreIntegration {
   id: string
@@ -26,6 +27,7 @@ interface StoreIntegration {
 }
 
 export default function SyncManagementPage() {
+  const { t: tPages } = useTranslation('pages');
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const { toast } = useToast()

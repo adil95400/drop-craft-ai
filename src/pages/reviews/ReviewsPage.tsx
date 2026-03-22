@@ -138,7 +138,6 @@ export default function ReviewsPage() {
 
     const { t: tPages } = useTranslation('pages');
 
-
   return (
     <ChannablePageWrapper
       title={tPages('avisClients.title')}

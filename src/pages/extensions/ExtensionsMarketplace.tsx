@@ -146,7 +146,6 @@ export default function ExtensionsMarketplace() {
 
     const { t: tPages } = useTranslation('pages');
 
-
   return (
     <ChannablePageWrapper
       title={tPages('marketplaceExtensions.title')}

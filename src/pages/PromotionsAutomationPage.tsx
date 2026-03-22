@@ -13,6 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
 
 export default function PromotionsAutomationPage() {
+  const { t: tPages } = useTranslation('pages');
   const { user } = useAuthOptimized()
   const { stats, campaigns, rules, createCampaign, createRule } = usePromotions(user?.id || '')
   const [showCreateCampaign, setShowCreateCampaign] = useState(false)

@@ -21,6 +21,7 @@ import { useUnifiedPlan } from '@/lib/unified-plan-system';
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
 
 export default function SubscriptionDashboard() {
+  const { t: tPages } = useTranslation('pages');
   const navigate = useNavigate();
   const { currentPlan } = useUnifiedPlan();
 
@@ -157,7 +158,6 @@ export default function SubscriptionDashboard() {
                 </div>
               </CardContent>
             </Card>
-
 
             {/* Help & Support */}
             <Card>

@@ -13,6 +13,7 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 
 export default function BulkOrdersPage() {
+  const { t: tPages } = useTranslation('pages');
   const { data: stats } = useQuery({
     queryKey: ['bulk-orders-stats'],
     queryFn: async () => {

@@ -46,7 +46,6 @@ const PWAInstallPage: React.FC = () => {
 
     const { t: tPages } = useTranslation('pages');
 
-
   return (
     <ChannablePageWrapper
       title={tPages('dropCraftAiMobile.title')}

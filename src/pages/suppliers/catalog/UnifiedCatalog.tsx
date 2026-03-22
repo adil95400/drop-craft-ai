@@ -57,6 +57,7 @@ import {
 } from "@/components/channable";
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper'
 import type { ChannableStat } from "@/components/channable/types";
+import { useTranslation } from 'react-i18next';
 
 interface CatalogProduct {
   id: string;
@@ -575,7 +576,6 @@ export function UnifiedCatalog({ supplierId }: UnifiedCatalogProps) {
   ];
 
     const { t: tPages } = useTranslation('pages');
-
 
   return (
     <ChannablePageWrapper

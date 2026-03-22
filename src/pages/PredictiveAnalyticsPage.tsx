@@ -9,6 +9,7 @@ import { AdvancedFeatureGuide, ADVANCED_GUIDES } from '@/components/guide';
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
 
 export default function PredictiveAnalyticsPage() {
+  const { t: tPages } = useTranslation('pages');
   const { user } = useAuthOptimized()
   const { dashboard, isLoadingDashboard } = usePredictiveAnalytics(user?.id || '');
 

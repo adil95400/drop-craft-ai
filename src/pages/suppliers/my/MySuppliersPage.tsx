@@ -26,6 +26,7 @@ import {
   Star, Zap
 } from 'lucide-react'
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper'
+import { useTranslation } from 'react-i18next';
 
 export default function MySuppliersPage() {
   const navigate = useNavigate()
@@ -65,7 +66,6 @@ export default function MySuppliersPage() {
   }
 
     const { t: tPages } = useTranslation('pages');
-
 
   return (
     <ChannablePageWrapper

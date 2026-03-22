@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/badge'
 import { useNavigate } from 'react-router-dom'
 import { Palette, Check, Sparkles, Image, Type, Layout, Globe, ArrowLeft } from 'lucide-react'
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper'
+import { useTranslation } from 'react-i18next';
 
 const features = [
   {
@@ -42,7 +43,6 @@ export default function ExtensionWhiteLabelPage() {
   const navigate = useNavigate()
 
     const { t: tPages } = useTranslation('pages');
-
 
   return (
     <ChannablePageWrapper

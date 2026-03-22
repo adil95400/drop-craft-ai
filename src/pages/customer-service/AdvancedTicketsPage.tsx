@@ -34,6 +34,7 @@ const SLA_DEFAULTS = {
 };
 
 export default function AdvancedTicketsPage() {
+  const { t: tPages } = useTranslation('pages');
   const { tickets, isLoadingTickets: isLoading, updateTicket, createTicket, isCreatingTicket } = useSupportTickets();
   const updateTicketStatus = ({ id, status }: { id: string; status: string }) => updateTicket({ ticketId: id, status: status as any });
   const [searchTerm, setSearchTerm] = useState('');

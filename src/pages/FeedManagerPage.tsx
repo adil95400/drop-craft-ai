@@ -7,6 +7,7 @@ import { useTranslation } from 'react-i18next';
 import { Rss } from 'lucide-react';
 
 export default function FeedManagerPage() {
+  const { t: tPages } = useTranslation('pages');
   return (
     <>
       <Helmet>
