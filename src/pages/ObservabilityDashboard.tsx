@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from 'react-i18next';
 import { ChannablePageWrapper } from "@/components/channable/ChannablePageWrapper";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -31,8 +32,10 @@ export default function ObservabilityDashboard() {
   const { data: uptime } = useUptimeReportV2(30);
   const { data: logs } = useLogAggregationV2("activity");
 
+  const { t: tPages } = useTranslation('pages');
+
   return (
-    <ChannablePageWrapper title="Observabilité & Monitoring">
+    <ChannablePageWrapper title={tPages('observabiliteMonitoring.title')}>
       <div className="space-y-6">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">

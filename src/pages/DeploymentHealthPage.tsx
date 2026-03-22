@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { ChannablePageWrapper } from "@/components/channable/ChannablePageWrapper";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -21,8 +22,10 @@ export default function DeploymentHealthPage() {
   const { data: envAudit } = useEnvironmentAudit();
   const { data: rollback } = useRollbackCheck();
 
+  const { t: tPages } = useTranslation('pages');
+
   return (
-    <ChannablePageWrapper title="Déploiement & Infrastructure">
+    <ChannablePageWrapper title={tPages('deploiementInfrastructure.title')}>
       <div className="space-y-6">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
