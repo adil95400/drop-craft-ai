@@ -37,13 +37,22 @@ import {
 } from 'recharts';
 
 const ACTION_TYPES = [
-  { value: 'content-optimizer', icon: FileText, label: 'Optimiseur de Contenu', color: 'text-info', bg: 'bg-info/10' },
-  { value: 'price-optimizer', icon: DollarSign, label: 'Optimiseur de Prix', color: 'text-success', bg: 'bg-success/10' },
-  { value: 'stock-predictor', icon: Package, label: 'Prédicteur de Stock', color: 'text-warning', bg: 'bg-warning/10' },
-  { value: 'ad-optimizer', icon: Target, label: 'Optimiseur Publicitaire', color: 'text-purple-500', bg: 'bg-purple-500/10' },
-  { value: 'quality-auditor', icon: CheckCircle2, label: 'Auditeur Qualité', color: 'text-primary', bg: 'bg-primary/10' },
-  { value: 'seo-optimizer', icon: TrendingUp, label: 'Optimiseur SEO', color: 'text-orange-500', bg: 'bg-orange-500/10' },
+  { value: 'content-optimizer', icon: FileText, label: 'Optimiseur de Contenu', color: 'text-info', bg: 'bg-info/10', desc: 'Génère et optimise automatiquement les titres, descriptions et contenus produits grâce à l\'IA.' },
+  { value: 'price-optimizer', icon: DollarSign, label: 'Optimiseur de Prix', color: 'text-success', bg: 'bg-success/10', desc: 'Ajuste dynamiquement les prix en fonction de la concurrence, des marges et de la demande.' },
+  { value: 'stock-predictor', icon: Package, label: 'Prédicteur de Stock', color: 'text-warning', bg: 'bg-warning/10', desc: 'Prévoit les ruptures de stock et déclenche des réapprovisionnements automatiques.' },
+  { value: 'ad-optimizer', icon: Target, label: 'Optimiseur Publicitaire', color: 'text-purple-500', bg: 'bg-purple-500/10', desc: 'Optimise les enchères, budgets et ciblage de vos campagnes publicitaires.' },
+  { value: 'quality-auditor', icon: CheckCircle2, label: 'Auditeur Qualité', color: 'text-primary', bg: 'bg-primary/10', desc: 'Détecte les fiches produits incomplètes, erreurs et incohérences qualité.' },
+  { value: 'seo-optimizer', icon: TrendingUp, label: 'Optimiseur SEO', color: 'text-orange-500', bg: 'bg-orange-500/10', desc: 'Analyse et améliore le référencement de vos produits automatiquement.' },
 ] as const;
+
+const SCHEDULE_OPTIONS = [
+  { value: 'realtime', label: 'Temps réel', desc: 'Exécution immédiate à chaque événement' },
+  { value: 'hourly', label: 'Toutes les heures', desc: 'Analyse et actions horaires' },
+  { value: 'daily', label: 'Quotidien', desc: 'Un cycle d\'optimisation par jour' },
+  { value: 'weekly', label: 'Hebdomadaire', desc: 'Rapport et actions chaque semaine' },
+] as const;
+
+type CreateStep = 'type' | 'config' | 'review';
 
 const ACTION_TYPE_META = Object.fromEntries(
   ACTION_TYPES.map(t => [t.value, { icon: t.icon, label: t.label, color: t.color, bg: t.bg }])
