@@ -107,7 +107,7 @@ Pour chaque produit, fournis des données RÉALISTES basées sur les tendances a
 Réponds UNIQUEMENT avec un JSON valide contenant un tableau "products".`
 
     try {
-      const aiResponse = await callOpenAI_fetch('https://api.openai.com/v1/chat/completions', {
+      const aiResponse = await fetch('https://api.openai.com/v1/chat/completions', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${OPENAI_API_KEY}`,

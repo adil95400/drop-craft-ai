@@ -131,7 +131,7 @@ Types de recommandations attendus:
 - trending: produits avec potentiel de croissance
 - bundle: combinaisons de produits à promouvoir`;
 
-  const aiResponse = await callOpenAI_fetch("https://api.openai.com/v1/chat/completions", {
+  const aiResponse = await fetch("https://api.openai.com/v1/chat/completions", {
     method: "POST",
     headers: {
       Authorization: `Bearer ${OPENAI_API_KEY}`,

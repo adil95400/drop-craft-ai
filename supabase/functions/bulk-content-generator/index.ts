@@ -99,7 +99,7 @@ serve(async (req) => {
             toolParams.alt_text_variants = { type: "array", items: { type: "string" }, description: "3 variantes de texte alternatif pour les images secondaires du produit" };
           }
 
-          const response = await callOpenAI_fetch('https://api.openai.com/v1/chat/completions', {
+          const response = await fetch('https://api.openai.com/v1/chat/completions', {
             method: 'POST',
             headers: {
               'Authorization': `Bearer ${OPENAI_API_KEY}`,
@@ -182,7 +182,7 @@ serve(async (req) => {
         } else if (jobType === 'videos') {
           const videoPrompt = `Create a ${inputData.duration}-second ${inputData.videoStyle} video script for:\nProduct: ${product.name}\nDescription: ${product.description}\nPrice: ${product.price}\n\nReturn a JSON with: hook, problem, solution, cta`;
 
-          const videoResponse = await callOpenAI_fetch('https://api.openai.com/v1/chat/completions', {
+          const videoResponse = await fetch('https://api.openai.com/v1/chat/completions', {
             method: 'POST',
             headers: {
               'Authorization': `Bearer ${OPENAI_API_KEY}`,
@@ -215,7 +215,7 @@ serve(async (req) => {
         } else if (jobType === 'images') {
           const imagePrompt = `Create a professional ${inputData.imageStyle} product image:\nProduct: ${product.name}\nDescription: ${product.description}\nVisual prompt: ${inputData.visualPrompt}\nAspect ratio: ${inputData.aspectRatio}\n\nGenerate a clean, professional product photo suitable for e-commerce.`;
 
-          const imageResponse = await callOpenAI_fetch('https://api.openai.com/v1/chat/completions', {
+          const imageResponse = await fetch('https://api.openai.com/v1/chat/completions', {
             method: 'POST',
             headers: {
               'Authorization': `Bearer ${OPENAI_API_KEY}`,

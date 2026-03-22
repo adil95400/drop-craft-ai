@@ -66,7 +66,7 @@ Return ONLY valid JSON in this exact format:
 }`;
 
     // Call Lovable AI
-    const aiResponse = await callOpenAI_fetch('https://api.openai.com/v1/chat/completions', {
+    const aiResponse = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${lovableApiKey}`,

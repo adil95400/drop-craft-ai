@@ -46,7 +46,7 @@ serve(async (req) => {
       console.log('🔍 Analyzing review with AI...');
 
       // Call Lovable AI for sentiment analysis and content moderation
-      const aiResponse = await callOpenAI_fetch('https://api.openai.com/v1/chat/completions', {
+      const aiResponse = await fetch('https://api.openai.com/v1/chat/completions', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${lovableApiKey}`,

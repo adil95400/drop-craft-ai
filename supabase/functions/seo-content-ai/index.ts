@@ -78,7 +78,7 @@ serve(async (req) => {
       `Tone: ${tone}`,
     ].filter(Boolean).join('\n');
 
-    const aiResponse = await callOpenAI_fetch('https://api.openai.com/v1/chat/completions', {
+    const aiResponse = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${OPENAI_API_KEY}`,
