@@ -16,21 +16,28 @@ export function usePushNotifications() {
 
   const sendPushNotification = useMutation({
     mutationFn: async (params: SendPushNotificationParams) => {
-      const { data, error } = await supabase.functions.invoke('push-notification', {
-        body: params
+      // Use notification hub for cascading delivery (Push → Email)
+      const { data, error } = await supabase.functions.invoke('notification-hub', {
+        body: {
+          action: 'send',
+          userId: params.userId,
+          title: params.title,
+          body: params.body,
+          url: params.url,
+          data: params.data,
+          type: 'transactional',
+          channel: 'auto',
+        }
       });
 
       if (error) throw error;
       return data;
     },
-    onSuccess: (data) => {
-      // Push notification sent successfully
-    },
     onError: (error: Error) => {
       console.error('Error sending push notification:', error);
       toast({
         title: "Erreur d'envoi",
-        description: "Impossible d'envoyer la notification push",
+        description: "Impossible d'envoyer la notification",
         variant: "destructive"
       });
     }
@@ -52,12 +59,6 @@ export function usePushNotifications() {
       return null;
     }
 
-    // Générer un token unique pour ce device
-    const deviceToken = `web-${crypto.randomUUID()}`;
-    const platform = /iPhone|iPad|iPod/.test(navigator.userAgent) ? 'ios' : 
-                     /Android/.test(navigator.userAgent) ? 'android' : 'web';
-
-    // Récupérer l'utilisateur actuel
     const { data: { user } } = await supabase.auth.getUser();
     
     if (!user) {
@@ -65,18 +66,21 @@ export function usePushNotifications() {
       return null;
     }
 
-    // Store device token in notifications table as a registration record
-    const { data, error } = await (supabase
-      .from('notifications') as any)
-      .insert({
-        user_id: user.id,
-        title: 'Device Registration',
-        type: 'device_token',
-        message: deviceToken,
-        metadata: { platform, active: true, last_used_at: new Date().toISOString() }
-      })
-      .select()
-      .single();
+    const deviceToken = `fcm-web-${crypto.randomUUID()}`;
+
+    // Register via Firebase Push edge function
+    const { data, error } = await supabase.functions.invoke('firebase-push', {
+      body: {
+        action: 'register_token',
+        userId: user.id,
+        fcmToken: deviceToken,
+        platform: 'web',
+        deviceInfo: {
+          userAgent: navigator.userAgent,
+          language: navigator.language,
+        },
+      }
+    });
 
     if (error) {
       console.error('Error registering device:', error);

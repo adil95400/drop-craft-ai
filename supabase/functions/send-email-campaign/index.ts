@@ -110,13 +110,39 @@ serve(async (req) => {
 
     console.log(`Sending to ${recipients.length} recipients`)
 
-    // Send emails using Resend API (or fallback to logging)
+    // Send emails using Brevo API (primary) or Resend (fallback)
+    const brevoApiKey = Deno.env.get('BREVO_API_KEY')
     const resendApiKey = Deno.env.get('RESEND_API_KEY')
     const results: { email: string; success: boolean; error?: string }[] = []
 
     for (const email of recipients) {
       try {
-        if (resendApiKey) {
+        if (brevoApiKey) {
+          // Primary: Brevo
+          const response = await fetch('https://api.brevo.com/v3/smtp/email', {
+            method: 'POST',
+            headers: {
+              'api-key': brevoApiKey,
+              'Content-Type': 'application/json',
+              'Accept': 'application/json'
+            },
+            body: JSON.stringify({
+              sender: { name: 'ShopOpti', email: 'noreply@shopopti.io' },
+              to: [{ email }],
+              subject: subject,
+              htmlContent: formatEmailHtml(emailBody),
+              tags: ['campaign']
+            })
+          })
+
+          if (!response.ok) {
+            const errorText = await response.text()
+            throw new Error(errorText)
+          }
+
+          results.push({ email, success: true })
+        } else if (resendApiKey) {
+          // Fallback: Resend
           const response = await fetch('https://api.resend.com/emails', {
             method: 'POST',
             headers: {
@@ -138,7 +164,6 @@ serve(async (req) => {
 
           results.push({ email, success: true })
         } else {
-          // Fallback: Log email (development mode)
           console.log(`[DEV] Email would be sent to: ${email}`)
           results.push({ email, success: true })
         }
