@@ -116,16 +116,11 @@ export const AIPredictiveAnalytics = () => {
     }
   }
 
-  // Données réelles de prévision de revenus
-  const [revenueForecastData, setRevenueForecastData] = useState([
-    { month: 'Jan', actual: 95000, predicted: 98000, lower_bound: 92000, upper_bound: 104000 },
-    { month: 'Fev', actual: 102000, predicted: 105000, lower_bound: 98000, upper_bound: 112000 },
-    { month: 'Mar', actual: 118000, predicted: 120000, lower_bound: 112000, upper_bound: 128000 },
-    { month: 'Avr', actual: 125000, predicted: 128000, lower_bound: 118000, upper_bound: 138000 },
-    { month: 'Mai', actual: null, predicted: 142000, lower_bound: 132000, upper_bound: 152000 },
-    { month: 'Jun', actual: null, predicted: 156000, lower_bound: 144000, upper_bound: 168000 },
-    { month: 'Jul', actual: null, predicted: 168000, lower_bound: 154000, upper_bound: 182000 }
-  ])
+  // Revenue forecast loaded from real data
+  const [revenueForecastData, setRevenueForecastData] = useState<Array<{
+    month: string; actual: number | null; predicted: number; lower_bound: number; upper_bound: number
+  }>>([])
+
 
   // Charger les prévisions réelles
   useEffect(() => {
@@ -221,34 +216,43 @@ export const AIPredictiveAnalytics = () => {
       </div>
 
       {/* AI Predictions Overview */}
-      <div className="grid grid-cols-1 md:grid-cols-5 gap-4 animate-fade-in">
-        {predictions.map((pred) => (
-          <Card key={pred.metric} className="hover-scale relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-primary/5 to-transparent rounded-full -mr-16 -mt-16" />
-            <CardHeader className="pb-3">
-              <CardDescription className="flex items-center gap-2">
-                {pred.trend === 'up' ? (
-                  <ArrowUpRight className="h-4 w-4 text-success" />
-                ) : (
-                  <ArrowDownRight className="h-4 w-4 text-destructive" />
-                )}
-                {pred.metric}
-              </CardDescription>
-              <CardTitle className="text-2xl">
-                {pred.metric.includes('Revenus') ? `${(pred.predicted / 1000).toFixed(0)}K€` : `${pred.predicted.toFixed(1)}${pred.metric.includes('%') ? '%' : ''}`}
-              </CardTitle>
-              <div className="flex items-center justify-between mt-2">
-                <Badge variant={pred.impact === 'high' ? 'default' : 'secondary'} className="text-xs">
-                  {pred.confidence}% confiance
-                </Badge>
-                <Badge variant="outline" className="text-xs">
-                  {pred.impact === 'high' ? 'Impact élevé' : pred.impact === 'medium' ? 'Impact moyen' : 'Impact faible'}
-                </Badge>
-              </div>
-            </CardHeader>
-          </Card>
-        ))}
-      </div>
+      {predictions.length > 0 ? (
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-4 animate-fade-in">
+          {predictions.map((pred) => (
+            <Card key={pred.metric} className="hover-scale relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-primary/5 to-transparent rounded-full -mr-16 -mt-16" />
+              <CardHeader className="pb-3">
+                <CardDescription className="flex items-center gap-2">
+                  {pred.trend === 'up' ? (
+                    <ArrowUpRight className="h-4 w-4 text-success" />
+                  ) : (
+                    <ArrowDownRight className="h-4 w-4 text-destructive" />
+                  )}
+                  {pred.metric}
+                </CardDescription>
+                <CardTitle className="text-2xl">
+                  {pred.metric.includes('Revenus') ? `${(pred.predicted / 1000).toFixed(0)}K€` : `${pred.predicted.toFixed(1)}${pred.metric.includes('%') ? '%' : ''}`}
+                </CardTitle>
+                <div className="flex items-center justify-between mt-2">
+                  <Badge variant={pred.impact === 'high' ? 'default' : 'secondary'} className="text-xs">
+                    {pred.confidence}% confiance
+                  </Badge>
+                  <Badge variant="outline" className="text-xs">
+                    {pred.impact === 'high' ? 'Impact élevé' : pred.impact === 'medium' ? 'Impact moyen' : 'Impact faible'}
+                  </Badge>
+                </div>
+              </CardHeader>
+            </Card>
+          ))}
+        </div>
+      ) : (
+        <Card>
+          <CardContent className="py-8 text-center">
+            <Brain className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
+            <p className="text-muted-foreground">Aucune prédiction disponible. Ajoutez des commandes et des clients pour activer l'IA prédictive.</p>
+          </CardContent>
+        </Card>
+      )}
 
       <Tabs defaultValue="business-ai" className="w-full">
         <TabsList className="grid grid-cols-6 w-full">
@@ -494,101 +498,80 @@ export const AIPredictiveAnalytics = () => {
         </TabsContent>
 
         <TabsContent value="optimization" className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <Card className="hover-scale animate-fade-in">
-              <CardHeader>
-                <CardTitle className="text-base flex items-center gap-2">
-                  <TrendingUp className="h-5 w-5 text-success" />
-                  ROI Optimisé
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-3xl font-bold text-success">+34.2%</div>
-                <p className="text-sm text-muted-foreground mt-2">
-                  Amélioration prédite avec recommandations IA
-                </p>
-                <Progress value={68} className="mt-4" />
-              </CardContent>
-            </Card>
-
-            <Card className="hover-scale animate-fade-in">
-              <CardHeader>
-                <CardTitle className="text-base flex items-center gap-2">
-                  <Target className="h-5 w-5 text-info" />
-                  Conversion Rate
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-3xl font-bold text-info">+50%</div>
-                <p className="text-sm text-muted-foreground mt-2">
-                  Potentiel avec optimisation ML
-                </p>
-                <Progress value={75} className="mt-4" />
-              </CardContent>
-            </Card>
-
-            <Card className="hover-scale animate-fade-in">
-              <CardHeader>
-                <CardTitle className="text-base flex items-center gap-2">
-                  <Sparkles className="h-5 w-5 text-purple-500" />
-                  Churn Reduction
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-3xl font-bold text-purple-600">-27%</div>
-                <p className="text-sm text-muted-foreground mt-2">
-                  Réduction prédite avec actions préventives
-                </p>
-                <Progress value={54} className="mt-4" />
-              </CardContent>
-            </Card>
-          </div>
-
-          <Card className="animate-fade-in">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Brain className="h-5 w-5" />
-                Recommandations d'Optimisation Automatiques
-              </CardTitle>
-              <CardDescription>Générées par notre moteur d'IA avancé</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                <div className="flex items-start gap-3 p-4 border rounded-lg hover:bg-accent/50 transition-colors">
-                  <CheckCircle2 className="h-5 w-5 text-success mt-1" />
-                  <div className="flex-1">
-                    <h4 className="font-semibold">Optimisation pricing dynamique</h4>
-                    <p className="text-sm text-muted-foreground mt-1">
-                      L'IA recommande d'ajuster les prix de 15 produits pour maximiser la marge (+€42K/mois estimé)
-                    </p>
-                  </div>
-                  <Badge variant="secondary">Impact: +12%</Badge>
-                </div>
-
-                <div className="flex items-start gap-3 p-4 border rounded-lg hover:bg-accent/50 transition-colors">
-                  <CheckCircle2 className="h-5 w-5 text-success mt-1" />
-                  <div className="flex-1">
-                    <h4 className="font-semibold">Campagne de réactivation ciblée</h4>
-                    <p className="text-sm text-muted-foreground mt-1">
-                      45 clients inactifs identifiés avec forte probabilité de retour (78% confiance ML)
-                    </p>
-                  </div>
-                  <Badge variant="secondary">Impact: +8%</Badge>
-                </div>
-
-                <div className="flex items-start gap-3 p-4 border rounded-lg hover:bg-accent/50 transition-colors">
-                  <CheckCircle2 className="h-5 w-5 text-success mt-1" />
-                  <div className="flex-1">
-                    <h4 className="font-semibold">Expansion catégorie "Tech"</h4>
-                    <p className="text-sm text-muted-foreground mt-1">
-                      Opportunité de marché détectée: demande croissante +31%, faible compétition
-                    </p>
-                  </div>
-                  <Badge variant="secondary">Impact: +23%</Badge>
-                </div>
+          {predictions.length > 0 ? (
+            <>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {predictions.filter(p => p.impact === 'high').slice(0, 3).map((pred) => {
+                  const change = pred.current > 0 
+                    ? (((pred.predicted - pred.current) / pred.current) * 100).toFixed(1)
+                    : '0';
+                  const isPositive = pred.trend === 'up' ? parseFloat(change) > 0 : parseFloat(change) < 0;
+                  return (
+                    <Card key={pred.metric} className="hover-scale animate-fade-in">
+                      <CardHeader>
+                        <CardTitle className="text-base flex items-center gap-2">
+                          {pred.trend === 'up' ? (
+                            <TrendingUp className="h-5 w-5 text-success" />
+                          ) : (
+                            <Target className="h-5 w-5 text-info" />
+                          )}
+                          {pred.metric}
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className={`text-3xl font-bold ${isPositive ? 'text-success' : 'text-destructive'}`}>
+                          {parseFloat(change) > 0 ? '+' : ''}{change}%
+                        </div>
+                        <p className="text-sm text-muted-foreground mt-2">
+                          Prédiction IA avec {pred.confidence}% de confiance
+                        </p>
+                        <Progress value={pred.confidence} className="mt-4" />
+                      </CardContent>
+                    </Card>
+                  );
+                })}
               </div>
-            </CardContent>
-          </Card>
+
+              <Card className="animate-fade-in">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Brain className="h-5 w-5" />
+                    Recommandations d'Optimisation
+                  </CardTitle>
+                  <CardDescription>Générées à partir de l'analyse de vos données réelles</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    {insights.filter(i => i.type === 'recommendation' || i.type === 'opportunity').slice(0, 3).map((insight) => (
+                      <div key={insight.id} className="flex items-start gap-3 p-4 border rounded-lg hover:bg-accent/50 transition-colors">
+                        <CheckCircle2 className="h-5 w-5 text-success mt-1" />
+                        <div className="flex-1">
+                          <h4 className="font-semibold">{insight.title}</h4>
+                          <p className="text-sm text-muted-foreground mt-1">{insight.description}</p>
+                        </div>
+                        <Badge variant="secondary">Score: {insight.impact_score}</Badge>
+                      </div>
+                    ))}
+                    {insights.filter(i => i.type === 'recommendation' || i.type === 'opportunity').length === 0 && (
+                      <p className="text-center text-muted-foreground py-8">
+                        Aucune recommandation disponible. Ajoutez plus de données pour obtenir des insights.
+                      </p>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            </>
+          ) : (
+            <Card>
+              <CardContent className="py-12 text-center">
+                <Brain className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                <h3 className="font-semibold text-lg">Aucune donnée d'optimisation</h3>
+                <p className="text-muted-foreground mt-2">
+                  Importez des produits et recevez des commandes pour activer les recommandations IA.
+                </p>
+              </CardContent>
+            </Card>
+          )}
         </TabsContent>
       </Tabs>
     </div>

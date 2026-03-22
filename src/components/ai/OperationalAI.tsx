@@ -57,126 +57,109 @@ export const OperationalAI = () => {
   const [decisions, setDecisions] = useState<AIDecision[]>([]);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysisProgress, setAnalysisProgress] = useState(0);
-
-  // Mock AI insights
-  const mockInsights: AIInsight[] = [
-    {
-      id: '1',
-      type: 'opportunity',
-      title: 'Optimisation des prix détectée',
-      description: 'Augmenter le prix de 3 produits pourrait générer +15% de revenus sans impact sur les ventes',
-      confidence: 87,
-      impact: 'high',
-      actionable: true,
-      category: 'Pricing',
-      estimatedRevenue: 2400,
-      timeframe: '7 jours'
-    },
-    {
-      id: '2',
-      type: 'warning',
-      title: 'Stock critique sur produit bestseller',
-      description: 'Le produit "T-Shirt Premium" va être en rupture dans 3 jours',
-      confidence: 95,
-      impact: 'high',
-      actionable: true,
-      category: 'Inventory',
-      timeframe: '3 jours'
-    },
-    {
-      id: '3',
-      type: 'trend',
-      title: 'Tendance saisonnière détectée',
-      description: 'Les ventes de produits d\'été augmentent de 45% plus tôt que prévu',
-      confidence: 78,
-      impact: 'medium',
-      actionable: true,
-      category: 'Trends',
-      estimatedRevenue: 1800
-    },
-    {
-      id: '4',
-      type: 'optimization',
-      title: 'Opportunité de cross-selling',
-      description: 'Recommander des accessoires avec les commandes actuelles pourrait augmenter le panier moyen',
-      confidence: 82,
-      impact: 'medium',
-      actionable: true,
-      category: 'Marketing',
-      estimatedRevenue: 950
-    }
-  ];
-
-  const mockDecisions: AIDecision[] = [
-    {
-      id: '1',
-      title: 'Ajustement automatique des prix',
-      description: 'Augmenter le prix de 3 produits de 8-12% en fonction de la demande',
-      recommendedAction: 'Appliquer les nouveaux prix pendant 7 jours puis évaluer',
-      confidence: 87,
-      status: 'pending',
-      impact: '+€2,400 revenus estimés',
-      reasoning: [
-        'Analyse de 30 jours de données de vente',
-        'Comparaison avec la concurrence',
-        'Élasticité prix historique favorable',
-        'Inventaire disponible suffisant'
-      ]
-    },
-    {
-      id: '2',
-      title: 'Commande automatique de stock',
-      description: 'Passer commande de 200 unités de T-Shirt Premium',
-      recommendedAction: 'Commander maintenant pour éviter la rupture',
-      confidence: 95,
-      status: 'approved',
-      impact: 'Évite la perte de €3,200 en ventes',
-      reasoning: [
-        'Rythme de vente actuel: 15 unités/jour',
-        'Délai de réapprovisionnement: 5 jours',
-        'Marge bénéficiaire élevée sur ce produit',
-        'Saison de forte demande'
-      ]
-    }
-  ];
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (isUltraPro) {
-      setInsights(mockInsights);
-      setDecisions(mockDecisions);
+    if (isUltraPro && user?.id) {
+      loadRealData();
+    } else {
+      setLoading(false);
     }
-  }, [isUltraPro]);
+  }, [isUltraPro, user?.id]);
+
+  const loadRealData = async () => {
+    try {
+      const { supabase } = await import('@/integrations/supabase/client');
+      
+      // Load AI recommendations as insights
+      const { data: recommendations } = await supabase
+        .from('ai_recommendations')
+        .select('*')
+        .eq('user_id', user!.id)
+        .eq('status', 'pending')
+        .order('created_at', { ascending: false })
+        .limit(10);
+
+      if (recommendations && recommendations.length > 0) {
+        const mappedInsights: AIInsight[] = recommendations.map((r, i) => ({
+          id: r.id,
+          type: r.recommendation_type === 'pricing' ? 'opportunity'
+              : r.recommendation_type === 'inventory' ? 'warning'
+              : r.recommendation_type === 'marketing' ? 'optimization'
+              : 'trend',
+          title: r.title,
+          description: r.description || '',
+          confidence: Math.round(r.confidence_score * 100),
+          impact: r.impact_estimate === 'high' ? 'high' : r.impact_estimate === 'medium' ? 'medium' : 'low',
+          actionable: true,
+          category: r.recommendation_type || 'general',
+          estimatedRevenue: r.impact_value || undefined,
+        }));
+        setInsights(mappedInsights);
+
+        // Map top recommendations as decisions
+        const mappedDecisions: AIDecision[] = recommendations.slice(0, 3).map(r => ({
+          id: r.id,
+          title: r.title,
+          description: r.description || '',
+          recommendedAction: r.reasoning || 'Analyser et appliquer la recommandation',
+          confidence: Math.round(r.confidence_score * 100),
+          status: r.status === 'applied' ? 'executed' : r.status === 'dismissed' ? 'rejected' : 'pending',
+          impact: r.impact_estimate ? `Impact ${r.impact_estimate}` : 'Impact à évaluer',
+          reasoning: r.metadata && typeof r.metadata === 'object' && 'reasons' in (r.metadata as any)
+            ? (r.metadata as any).reasons
+            : ['Basé sur l\'analyse de vos données réelles']
+        }));
+        setDecisions(mappedDecisions);
+      }
+    } catch (error) {
+      console.error('Error loading AI data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const runAIAnalysis = async () => {
+    if (!user?.id) return;
     setIsAnalyzing(true);
     setAnalysisProgress(0);
 
-    // Simulate AI analysis progress
-    const progressSteps = [
-      { step: 20, message: 'Analyse des données de vente...' },
-      { step: 40, message: 'Détection des tendances...' },
-      { step: 60, message: 'Calcul des opportunités...' },
-      { step: 80, message: 'Génération des recommandations...' },
-      { step: 100, message: 'Analyse terminée !' }
-    ];
-
-    for (const { step, message } of progressSteps) {
-      await new Promise(resolve => setTimeout(resolve, 800));
-      setAnalysisProgress(step);
+    try {
+      const { supabase } = await import('@/integrations/supabase/client');
       
-      if (step < 100) {
-        toast({
-          description: message,
-          duration: 1000
-        });
+      // Progress UI
+      const steps = [20, 40, 60, 80, 100];
+      for (const step of steps) {
+        await new Promise(resolve => setTimeout(resolve, 600));
+        setAnalysisProgress(step);
       }
-    }
 
-    setIsAnalyzing(false);
-    toast({
-      title: "Analyse IA terminée",
-      description: `${mockInsights.length} insights générés avec succès`,
-    });
+      // Call real AI analysis
+      const { data, error } = await supabase.functions.invoke('ai-predictive-ml', {
+        body: { userId: user.id, analysisType: 'optimization', timeRange: '30days' }
+      });
+
+      if (!error && data?.predictions?.insights) {
+        const newInsights: AIInsight[] = data.predictions.insights.map((insight: any, i: number) => ({
+          id: `ai-${Date.now()}-${i}`,
+          type: insight.priority === 'high' ? 'warning' : 'opportunity',
+          title: insight.message?.split('.')[0] || 'Insight IA',
+          description: insight.message || '',
+          confidence: insight.confidence || 75,
+          impact: insight.priority || 'medium',
+          actionable: true,
+          category: 'AI Analysis',
+        }));
+        setInsights(prev => [...newInsights, ...prev]);
+      }
+
+      toast({ title: "Analyse IA terminée", description: `${insights.length} insights disponibles` });
+    } catch (error) {
+      console.error('AI analysis error:', error);
+      toast({ title: "Erreur", description: "L'analyse IA a échoué", variant: "destructive" });
+    } finally {
+      setIsAnalyzing(false);
+    }
   };
 
   const handleApproveDecision = (decisionId: string) => {

@@ -55,70 +55,6 @@ export const ImportHistoryInterface: React.FC = () => {
   const [sourceFilter, setSourceFilter] = useState<string>('all');
   const { toast } = useToast();
 
-  // Mock data for demonstration
-  const mockImportJobs: ImportJob[] = [
-    {
-      id: '1',
-      source_type: 'url_scraper',
-      source_url: 'https://example-shop.com/products',
-      status: 'completed',
-      total_rows: 150,
-      success_rows: 145,
-      error_rows: 5,
-      processed_rows: 150,
-      created_at: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
-      completed_at: new Date(Date.now() - 1.5 * 60 * 60 * 1000).toISOString(),
-      errors: ['Produit invalide ligne 23', 'Prix manquant ligne 87'],
-      result_data: { products_scraped: 145, source_url: 'https://example-shop.com/products' }
-    },
-    {
-      id: '2',
-      source_type: 'bulk_zip',
-      status: 'processing',
-      total_rows: 2500,
-      success_rows: 1800,
-      error_rows: 50,
-      processed_rows: 1850,
-      created_at: new Date(Date.now() - 30 * 60 * 1000).toISOString(),
-    },
-    {
-      id: '3',
-      source_type: 'xml',
-      source_url: 'https://api.supplier.com/products.xml',
-      status: 'completed',
-      total_rows: 800,
-      success_rows: 800,
-      error_rows: 0,
-      processed_rows: 800,
-      created_at: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
-      completed_at: new Date(Date.now() - 23.5 * 60 * 60 * 1000).toISOString(),
-      result_data: { products_imported: 800, xml_source: 'Google Shopping' }
-    },
-    {
-      id: '4',
-      source_type: 'ftp',
-      source_url: 'ftp://supplier.com/products.csv',
-      status: 'failed',
-      total_rows: 0,
-      success_rows: 0,
-      error_rows: 0,
-      processed_rows: 0,
-      created_at: new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString(),
-      errors: ['Connexion FTP impossible', 'Fichier non trouvé']
-    },
-    {
-      id: '5',
-      source_type: 'csv',
-      status: 'completed',
-      total_rows: 500,
-      success_rows: 495,
-      error_rows: 5,
-      processed_rows: 500,
-      created_at: new Date(Date.now() - 72 * 60 * 60 * 1000).toISOString(),
-      completed_at: new Date(Date.now() - 71.5 * 60 * 60 * 1000).toISOString(),
-    }
-  ];
-
   useEffect(() => {
     loadImportHistory();
   }, []);
@@ -126,13 +62,35 @@ export const ImportHistoryInterface: React.FC = () => {
   const loadImportHistory = async () => {
     setLoading(true);
     try {
-      // In production, use real API call
-      // const history = await importAdvancedService.getImportHistory();
-      
-      // For demo, use mock data
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      setImportJobs(mockImportJobs);
+      const { data, error } = await (await import('@/integrations/supabase/client')).supabase
+        .from('jobs')
+        .select('*')
+        .in('job_type', ['import', 'bulk_import'])
+        .order('created_at', { ascending: false })
+        .limit(50);
+
+      if (error) throw error;
+
+      const mapped: ImportJob[] = (data || []).map((job: any) => ({
+        id: job.id,
+        source_type: job.job_subtype || job.metadata?.source_platform || 'csv',
+        source_url: job.metadata?.source_url || undefined,
+        status: job.status === 'completed' ? 'completed'
+              : job.status === 'processing' ? 'processing'
+              : job.status === 'failed' ? 'failed'
+              : 'pending',
+        total_rows: job.total_items || 0,
+        success_rows: (job.processed_items || 0) - (job.failed_items || 0),
+        error_rows: job.failed_items || 0,
+        processed_rows: job.processed_items || 0,
+        created_at: job.created_at,
+        completed_at: job.completed_at || undefined,
+        errors: job.metadata?.error_log ? (Array.isArray(job.metadata.error_log) ? job.metadata.error_log.map((e: any) => typeof e === 'string' ? e : e.error || JSON.stringify(e)) : []) : undefined,
+      }));
+
+      setImportJobs(mapped);
     } catch (error) {
+      console.error('Error loading import history:', error);
       toast({
         title: "Erreur de chargement",
         description: "Impossible de charger l'historique des imports",
@@ -198,9 +156,8 @@ export const ImportHistoryInterface: React.FC = () => {
   };
 
   const viewJobDetails = (job: ImportJob) => {
-    // Mock job details view
     toast({
-      title: `Détails de l'import ${job.id}`,
+      title: `Détails de l'import`,
       description: `Source: ${getSourceTypeLabel(job.source_type)} • ${job.success_rows} réussites • ${job.error_rows} erreurs`,
     });
   };
