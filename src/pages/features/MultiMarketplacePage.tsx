@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge'
 import { Globe, ShoppingBag, Zap, RefreshCw, Link2, CheckCircle2, ArrowRight, Shield, Clock } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
-import featureIntegration from '@/assets/feature-integration.jpg'
+import featureIntegration from '@/assets/feature-integration.webp'
 
 export default function MultiMarketplacePage() {
   const navigate = useNavigate()

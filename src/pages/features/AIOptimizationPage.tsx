@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge'
 import { Sparkles, Brain, Wand2, TrendingUp, Target, Zap, CheckCircle2, ArrowRight, BarChart3, DollarSign } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
-import featureAI from '@/assets/feature-ai.jpg'
+import featureAI from '@/assets/feature-ai.webp'
 
 export default function AIOptimizationPage() {
   const navigate = useNavigate()
