@@ -142,10 +142,6 @@ export function PPCAutomationEngine() {
     actionType: 'decrease_bid', actionValue: 10,
   });
 
-  const toggleRule = (id: string) => {
-    setRules(prev => prev.map(r => r.id === id ? { ...r, isActive: !r.isActive } : r));
-    toast.success('Règle mise à jour');
-  };
 
   const createRule = async () => {
     const { data: { user } } = await supabase.auth.getUser();
