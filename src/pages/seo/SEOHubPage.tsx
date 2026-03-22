@@ -174,6 +174,7 @@ function QuickContentGenerator() {
 
 export default function SEOHubPage() {
   const navigate = useNavigate();
+  const { t: tPages } = useTranslation('pages');
 
   return (
     <>

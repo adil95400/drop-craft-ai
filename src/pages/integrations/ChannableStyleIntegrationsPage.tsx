@@ -1083,6 +1083,7 @@ function IntegrationCard({
 // Page principale
 export default function ChannableStyleIntegrationsPage() {
   const navigate = useNavigate()
+  const { t: tPages } = useTranslation('pages');
   const { 
     integrations, 
     connectedIntegrations, 

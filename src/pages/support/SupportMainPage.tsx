@@ -248,6 +248,7 @@ function GuideCard({ icon: Icon, title, description, badge, onClick, delay = 0 }
 
 export default function SupportMainPage() {
   const navigate = useNavigate();
+  const { t: tPages } = useTranslation('pages');
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [activeTab, setActiveTab] = useState('faq');
