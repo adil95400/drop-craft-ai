@@ -337,14 +337,21 @@ serve(async (req) => {
 
     const allStores: any[] = [
       ...(stores || []).map((s: any) => ({ ...s, _source: 'stores' })),
-      ...(integrationStores || []).map((i: any) => ({
-        id: i.id,
-        name: i.platform_name || i.platform,
-        platform: i.platform,
-        store_url: i.store_url,
-        user_id: i.user_id,
-        _source: 'integrations',
-      })),
+      ...(integrationStores || []).map((i: any) => {
+        // Extract credentials from config JSON if present
+        const config = typeof i.config === 'string' ? JSON.parse(i.config) : (i.config || {})
+        const credentials = config.credentials || null
+        return {
+          id: i.id,
+          name: i.platform_name || i.platform,
+          platform: i.platform,
+          store_url: i.store_url,
+          user_id: i.user_id,
+          config: i.config,
+          credentials: credentials,
+          _source: 'integrations',
+        }
+      }),
     ]
 
     if (!allStores.length) {
