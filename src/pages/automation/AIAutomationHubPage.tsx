@@ -65,12 +65,30 @@ export default function AIAutomationHubPage() {
   const { user } = useUnifiedAuth();
   const queryClient = useQueryClient();
   const [createOpen, setCreateOpen] = useState(false);
+  const [createStep, setCreateStep] = useState<CreateStep>('type');
   const [newAgent, setNewAgent] = useState({
     action_type: 'content-optimizer',
+    name: '',
     scope: 'global',
     threshold_score: 0.7,
     max_daily_actions: 50,
+    schedule: 'daily',
+    notify_on_action: true,
+    notify_on_error: true,
+    auto_revert: false,
+    description: '',
   });
+
+  const resetCreateForm = () => {
+    setCreateStep('type');
+    setNewAgent({
+      action_type: 'content-optimizer', name: '', scope: 'global',
+      threshold_score: 0.7, max_daily_actions: 50, schedule: 'daily',
+      notify_on_action: true, notify_on_error: true, auto_revert: false, description: '',
+    });
+  };
+
+  const selectedTypeMeta = ACTION_TYPES.find(t => t.value === newAgent.action_type) || ACTION_TYPES[0];
 
   // Fetch AI agent configs filtered by user
   const { data: configs = [], isLoading } = useQuery({
