@@ -71,6 +71,7 @@ const LEGACY_REDIRECTS: Record<string, string> = {
 
   // ── Automation ──
   '/ai-automation': '/automation/ai-hub',
+  '/ai-hub': '/automation/ai-hub',
 
   // ── CRM ──
   '/crm-prospects': '/crm/leads',
