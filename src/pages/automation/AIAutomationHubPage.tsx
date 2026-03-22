@@ -211,6 +211,7 @@ export default function AIAutomationHubPage() {
   const createMutation = useMutation({
     mutationFn: async () => {
       if (!user?.id) throw new Error('Non authentifié');
+      const agentName = newAgent.name || selectedTypeMeta.label;
       const { error } = await supabase
         .from('ai_auto_action_configs')
         .insert({
@@ -221,7 +222,14 @@ export default function AIAutomationHubPage() {
           max_daily_actions: newAgent.max_daily_actions,
           is_enabled: true,
           actions_today: 0,
-          config: {},
+          config: {
+            name: agentName,
+            description: newAgent.description,
+            schedule: newAgent.schedule,
+            notify_on_action: newAgent.notify_on_action,
+            notify_on_error: newAgent.notify_on_error,
+            auto_revert: newAgent.auto_revert,
+          },
         });
       if (error) throw error;
     },
@@ -229,7 +237,7 @@ export default function AIAutomationHubPage() {
       queryClient.invalidateQueries({ queryKey: ['ai-automation-configs'] });
       toast.success('Agent IA créé avec succès');
       setCreateOpen(false);
-      setNewAgent({ action_type: 'content-optimizer', scope: 'global', threshold_score: 0.7, max_daily_actions: 50 });
+      resetCreateForm();
     },
     onError: () => toast.error('Erreur lors de la création'),
   });
