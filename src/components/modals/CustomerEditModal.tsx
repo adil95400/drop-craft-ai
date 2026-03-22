@@ -40,6 +40,8 @@ interface CustomerEditModalProps {
 }
 
 export function CustomerEditModal({ customer, open, onOpenChange }: CustomerEditModalProps) {
+  const queryClient = useQueryClient()
+  const [isSaving, setIsSaving] = useState(false)
   const [formData, setFormData] = useState({
     name: customer.name,
     email: customer.email,
@@ -58,9 +60,34 @@ export function CustomerEditModal({ customer, open, onOpenChange }: CustomerEdit
 
   const [newTag, setNewTag] = useState('')
 
-  const handleSave = () => {
-    // TODO: Implement save logic here
-    onOpenChange(false)
+  const handleSave = async () => {
+    setIsSaving(true)
+    try {
+      const { error } = await supabase
+        .from('customers')
+        .update({
+          name: formData.name,
+          email: formData.email,
+          phone: formData.phone,
+          location: formData.location,
+          status: formData.status,
+          segment: formData.segment,
+          tags: formData.tags,
+          notes: formData.notes,
+        })
+        .eq('id', customer.id)
+
+      if (error) throw error
+
+      toast.success('Client mis à jour avec succès')
+      queryClient.invalidateQueries({ queryKey: ['customers'] })
+      onOpenChange(false)
+    } catch (error) {
+      console.error('Error saving customer:', error)
+      toast.error('Erreur lors de la sauvegarde du client')
+    } finally {
+      setIsSaving(false)
+    }
   }
 
   const addTag = () => {
