@@ -2,8 +2,9 @@ import { supabase } from '@/integrations/supabase/client'
 import { ExportConfig } from '@/lib/validation/orderSchema'
 import { logger } from '@/utils/logger'
 import Papa from 'papaparse'
-import * as XLSX from 'xlsx'
-import { saveAs } from 'file-saver'
+// Dynamic imports for bundle optimization
+const getXLSX = () => import('xlsx')
+const getFileSaver = () => import('file-saver')
 
 const LOG_CTX = { component: 'ExportService' }
 

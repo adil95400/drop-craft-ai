@@ -2,7 +2,8 @@ import { supabase } from '@/integrations/supabase/client'
 import { productsApi } from '@/services/api/client'
 import { ImportConfig } from '@/lib/validation/orderSchema'
 import Papa from 'papaparse'
-import * as XLSX from 'xlsx'
+// Dynamic import for bundle optimization
+const getXLSX = () => import('xlsx')
 
 export interface ImportResult {
   success: boolean

@@ -1,5 +1,6 @@
 import { ImportJob, ImportedProductData } from '../services/importService'
-import { utils, writeFile } from 'xlsx'
+// Dynamic import for bundle optimization
+const getXLSX = () => import('xlsx')
 import { format } from 'date-fns'
 import { getDateFnsLocale } from '@/utils/dateFnsLocale'
 

@@ -1,8 +1,9 @@
 /**
  * Excel Export utility using xlsx library
  */
-import * as XLSX from 'xlsx'
-import { saveAs } from 'file-saver'
+// Dynamic imports for bundle optimization
+const getXLSX = () => import('xlsx')
+const getFileSaver = () => import('file-saver')
 
 export interface ExcelSheet {
   name: string
