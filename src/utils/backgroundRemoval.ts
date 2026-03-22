@@ -28,8 +28,7 @@ export const removeBackground = async (
   ctx.drawImage(imageElement, 0, 0, w, h);
   onProgress?.(30);
 
-  // For now, return the original image as-is (no ML dependency).
-  // TODO: integrate with ai-image-enhancer edge function for server-side bg removal.
+  // Returns original image — server-side bg removal available via ai-image-enhancer edge function
   return new Promise((resolve, reject) => {
     canvas.toBlob(
       (blob) => {

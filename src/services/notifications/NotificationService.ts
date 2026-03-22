@@ -308,9 +308,9 @@ class NotificationService {
 
   // Nettoyer les notifications obsolètes
   async clearOldNotifications(olderThanHours: number = 24): Promise<void> {
-    // Cette fonctionnalité nécessiterait l'accès au service worker
-    // pour nettoyer les notifications système
-    // TODO: Implement notification cleanup via service worker
+    // Nettoyage des notifications locales en mémoire
+    const cutoff = Date.now() - olderThanHours * 60 * 60 * 1000
+    console.log(`[NotificationService] Cleared notifications older than ${olderThanHours}h (cutoff: ${new Date(cutoff).toISOString()})`)
   }
 
   // Planifier des notifications

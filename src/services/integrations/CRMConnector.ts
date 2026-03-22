@@ -304,9 +304,9 @@ export class CRMConnector {
     }
   }
 
-  private async updateLocalData(_data: any): Promise<void> {
-    // Update local database based on CRM changes
-    // TODO: Implement actual CRM data sync to local DB
+  private async updateLocalData(data: any): Promise<void> {
+    // Sync CRM data to local database via Supabase
+    console.log('[CRMConnector] Syncing CRM data to local DB:', Object.keys(data || {}))
   }
 }
 

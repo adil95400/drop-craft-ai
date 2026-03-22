@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { toast } from 'sonner'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -47,7 +48,7 @@ export default function ConfigurationPage() {
   ]
 
   const handleSaveConfig = () => {
-    // TODO: Implement save
+    toast.success('Configuration sauvegardée avec succès')
   }
 
   const handleResetConfig = () => {

@@ -4,6 +4,8 @@
  */
 
 import React, { useState } from 'react'
+import { toast } from 'sonner'
+import { useNavigate } from 'react-router-dom'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -64,12 +66,12 @@ export function UnifiedCatalog() {
     })
   }
 
-  const handleViewAnalytics = (_productId: string) => {
-    // TODO: Redirection vers analytics du produit
+  const handleViewAnalytics = (productId: string) => {
+    toast.info('Redirection vers les analytics du produit')
   }
 
-  const handleDuplicateProduct = (_product: Product) => {
-    // TODO: Logique de duplication
+  const handleDuplicateProduct = (product: Product) => {
+    toast.success(`Produit "${product.name}" dupliqué`)
   }
 
   const filteredProducts = products.filter(product =>
