@@ -17,20 +17,9 @@ const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
 import { generateText } from '../_shared/ai-client.ts'
 
 async function callAI(system: string, prompt: string) {
-  if (!OPENAI_API_KEY) return null
-  const res = await fetch(AI_GATEWAY_URL, {
-    method: 'POST',
-    headers: { 'Authorization': `Bearer ${OPENAI_API_KEY}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      model: 'gpt-4o-mini',
-      messages: [{ role: 'system', content: system }, { role: 'user', content: prompt }],
-      temperature: 0.5,
-      max_tokens: 1200,
-    }),
-  })
-  if (!res.ok) return null
-  const data = await res.json()
-  return data.choices?.[0]?.message?.content || null
+  try {
+    return await generateText(system, prompt, { module: 'seo', maxTokens: 1200, temperature: 0.5, enableCache: true });
+  } catch { return null; }
 }
 
 serve(async (req) => {
