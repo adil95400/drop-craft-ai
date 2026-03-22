@@ -1,16 +1,15 @@
-/**
- * Page Scoring & SEO Produits — Hub unifié
- * 100% connecté API V1, scores structurés, impact business, quotas, historique
- */
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
 import { ProductSeoHub } from '@/components/seo/ProductSeoHub';
 import { Search } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 export default function ProductScoringPage() {
+  const { t } = useTranslation('pages');
+
   return (
     <ChannablePageWrapper
-      title="SEO & Scoring Produits"
-      description="Moteur de scoring structuré avec impact business, historique et optimisation IA"
+      title={t('seoScoringProduits.title')}
+      description={t('seoScoringProduits.description')}
       heroImage="analytics"
       badge={{ label: 'SEO Engine', icon: Search }}
     >

@@ -1,12 +1,15 @@
 import { PricingEngineDashboard } from '@/components/pricing-engine';
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
 import { Calculator } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 export default function PricingEnginePage() {
+  const { t } = useTranslation('pages');
+
   return (
     <ChannablePageWrapper
-      title="Moteur de Règles Pricing"
-      description="Règles automatiques de tarification avec simulateur et protection de marge"
+      title={t('moteurDeReglesPricing.title')}
+      description={t('moteurDeReglesPricing.description')}
       heroImage="products"
       badge={{ label: 'Pricing Engine', icon: Calculator }}
     >
