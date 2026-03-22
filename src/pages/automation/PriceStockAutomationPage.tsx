@@ -451,7 +451,7 @@ export default function PriceStockAutomationPage() {
                       {alert.alert_type === 'out_of_stock' ? (
                         <XCircle className="h-5 w-5 text-destructive shrink-0" />
                       ) : (
-                        <AlertTriangle className="h-5 w-5 text-amber-500 shrink-0" />
+                        <AlertTriangle className="h-5 w-5 text-destructive shrink-0" />
                       )}
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium truncate">{alert.product_name || alert.message}</p>
