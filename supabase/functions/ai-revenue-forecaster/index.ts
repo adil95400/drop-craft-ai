@@ -3,7 +3,7 @@
  * Predicts revenue trajectories at 30/60/90 days using historical data and AI reasoning.
  */
 import { createEdgeFunction, z } from '../_shared/create-edge-function.ts'
-import { AI_MODEL, AI_GATEWAY_URL } from '../_shared/ai-config.ts'
+import { callOpenAI } from '../_shared/ai-client.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3'
 
 const forecastSchema = z.object({
@@ -21,9 +21,6 @@ const handler = createEdgeFunction<ForecastInput>({
   rateLimit: { maxRequests: 15, windowMinutes: 60, action: 'ai_revenue_forecast' }
 }, async (ctx) => {
   const { user, input, correlationId } = ctx
-  const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY_AUTOMATION') || Deno.env.get('OPENAI_API_KEY')
-  if (!OPENAI_API_KEY) throw new Error('OPENAI_API_KEY not configured')
-
   console.log(`[${correlationId}] Revenue forecast ${input.period}d for user ${user.id}`)
 
   // Fetch real historical data
@@ -79,16 +76,12 @@ Historical data (last ${lookbackDays} days):
 - Scenario: ${input.scenario}
 - Include seasonality: ${input.include_seasonality}`
 
-  const aiResponse = await fetch(AI_GATEWAY_URL, {
-    method: 'POST',
-    headers: { 'Authorization': `Bearer ${OPENAI_API_KEY}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      model: AI_MODEL,
-      messages: [
+  const aiData = await callOpenAI(
+    [
         { role: 'system', content: `You are a financial forecasting AI. Analyze e-commerce revenue data and produce accurate forecasts with confidence intervals. Be data-driven and realistic.` },
         { role: 'user', content: `Forecast revenue for the next ${input.period} days (${input.granularity} granularity, ${input.scenario} scenario).\n\n${dataContext}\n\nUse the revenue_forecast tool.` }
       ],
-      tools: [{
+    { module: 'automation', maxTokens: 4000, enableCache: true, tools: [{
         type: 'function',
         function: {
           name: 'revenue_forecast',
@@ -110,21 +103,9 @@ Historical data (last ${lookbackDays} days):
             required: ['summary', 'total_predicted_revenue', 'confidence_interval', 'timeline', 'risk_factors']
           }
         }
-      }],
-      tool_choice: { type: 'function', function: { name: 'revenue_forecast' } },
-      max_tokens: 4000,
-    }),
-  })
+      }], tool_choice: { type: 'function', function: { name: 'revenue_forecast' } }
+  )
 
-  if (!aiResponse.ok) {
-    const status = aiResponse.status
-    if (status === 429 || status === 402) {
-      return new Response(JSON.stringify({ error: status === 429 ? 'Rate limit' : 'Crédits épuisés' }), { status, headers: { 'Content-Type': 'application/json' } })
-    }
-    throw new Error(`AI error: ${status}`)
-  }
-
-  const aiData = await aiResponse.json()
   const toolCall = aiData.choices?.[0]?.message?.tool_calls?.[0]
   let result: any
 
