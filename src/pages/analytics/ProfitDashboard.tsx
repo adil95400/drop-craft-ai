@@ -12,6 +12,7 @@ import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrappe
 import { useTranslation } from 'react-i18next';
 
 export default function ProfitDashboard() {
+  const { t: tPages } = useTranslation('pages');
   const [timeRange, setTimeRange] = useState<'7d' | '30d' | '90d'>('30d')
 
   const { data: profitData, isLoading } = useQuery({
@@ -102,7 +103,7 @@ export default function ProfitDashboard() {
     )
   }
 
-    const { t: tPages } = useTranslation('pages');
+
 
   return (
     <ChannablePageWrapper
