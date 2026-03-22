@@ -3,6 +3,7 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 import { validateInput, competitiveAnalysisInputSchema } from "../_shared/validation.ts";
 import { checkRateLimit, createRateLimitResponse, addRateLimitHeaders, RATE_LIMITS } from "../_shared/rate-limit.ts";
+import { callOpenAI, generateJSON, generateText } from '../_shared/ai-client.ts'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',

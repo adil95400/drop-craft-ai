@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
+import { callOpenAI, generateJSON, generateText } from '../_shared/ai-client.ts'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -348,31 +349,8 @@ Retourne un JSON:
 }
 
 // ─── HELPERS ─────────────────────────────────────────────────────
-async function callAI(apiKey: string, systemPrompt: string, userPrompt: string) {
-  const response = await fetch('https://api.openai.com/v1/chat/completions', {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${apiKey}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      model: 'gpt-4o-mini',
-      messages: [
-        { role: 'system', content: systemPrompt },
-        { role: 'user', content: userPrompt },
-      ],
-    }),
-  });
-
-  if (!response.ok) {
-    const errorText = await response.text();
-    console.error('AI API error:', response.status, errorText);
-    if (response.status === 429) throw new Error('Limite de requêtes atteinte, réessayez dans quelques instants');
-    if (response.status === 402) throw new Error('Crédits IA épuisés, veuillez recharger');
-    throw new Error('Erreur lors de l\'analyse AI');
-  }
-
-  return response;
+async function callAI(systemPrompt: string, userPrompt: string) {
+  return generateJSON(systemPrompt, userPrompt, { module: 'product', enableCache: true });
 }
 
 async function parseAIResponse(response: Response): Promise<any> {
