@@ -41,58 +41,6 @@ interface ProductCatalogManagerProps {
   onImport?: (products: CatalogProduct[]) => void;
 }
 
-// Mock catalog products data
-const mockCatalogProducts: CatalogProduct[] = [
-  {
-    id: '1',
-    name: 'Casque Audio Bluetooth Premium',
-    price: 79.99,
-    category: 'Électronique',
-    supplier_name: 'TechSupply Co',
-    image_url: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=300',
-    rating: 4.5,
-    reviews_count: 128,
-    is_trending: true,
-    is_bestseller: false,
-    availability_status: 'in_stock',
-    delivery_time: '3-5j',
-    profit_margin: 35,
-    competition_score: 72
-  },
-  {
-    id: '2',
-    name: 'Montre Connectée Sport',
-    price: 129.99,
-    category: 'Électronique',
-    supplier_name: 'GadgetWorld',
-    image_url: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=300',
-    rating: 4.8,
-    reviews_count: 256,
-    is_trending: true,
-    is_bestseller: true,
-    availability_status: 'in_stock',
-    delivery_time: '2-4j',
-    profit_margin: 42,
-    competition_score: 85
-  },
-  {
-    id: '3',
-    name: 'Sac à Dos Voyage',
-    price: 49.99,
-    category: 'Mode & Accessoires',
-    supplier_name: 'FashionDirect',
-    image_url: 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=300',
-    rating: 4.2,
-    reviews_count: 89,
-    is_trending: false,
-    is_bestseller: false,
-    availability_status: 'in_stock',
-    delivery_time: '5-7j',
-    profit_margin: 28,
-    competition_score: 60
-  }
-];
-
 export function ProductCatalogManager({ onImport }: ProductCatalogManagerProps) {
   const [products, setProducts] = useState<CatalogProduct[]>([]);
   const [loading, setLoading] = useState(true);
@@ -115,29 +63,47 @@ export function ProductCatalogManager({ onImport }: ProductCatalogManagerProps) 
 
   useEffect(() => {
     fetchCatalogProducts();
-  }, [searchTerm, selectedCategory]);
+  }, [searchTerm, selectedCategory, user?.id]);
 
   const fetchCatalogProducts = async () => {
+    if (!user?.id) { setLoading(false); return; }
     try {
       setLoading(true);
       
-      // Use mock data filtered by search and category
-      let filteredProducts = [...mockCatalogProducts];
-      
+      let query = supabase
+        .from('products')
+        .select('id, title, price, category, supplier, image_url, stock_quantity, status, cost_price')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+        .limit(50);
+
       if (selectedCategory) {
-        filteredProducts = filteredProducts.filter(p => p.category === selectedCategory);
+        query = query.eq('category', selectedCategory);
       }
-      
       if (searchTerm) {
-        const term = searchTerm.toLowerCase();
-        filteredProducts = filteredProducts.filter(p => 
-          p.name.toLowerCase().includes(term) ||
-          p.category.toLowerCase().includes(term) ||
-          p.supplier_name.toLowerCase().includes(term)
-        );
+        query = query.ilike('title', `%${searchTerm}%`);
       }
-      
-      setProducts(filteredProducts);
+
+      const { data, error } = await query;
+      if (error) throw error;
+
+      const mapped: CatalogProduct[] = (data || []).map(p => ({
+        id: p.id,
+        name: p.title || 'Sans titre',
+        price: p.price || 0,
+        category: p.category || 'Non catégorisé',
+        supplier_name: p.supplier || 'Direct',
+        image_url: p.image_url || '',
+        rating: 0,
+        reviews_count: 0,
+        is_trending: false,
+        is_bestseller: false,
+        availability_status: (p.stock_quantity || 0) > 0 ? 'in_stock' : 'out_of_stock',
+        delivery_time: '-',
+        profit_margin: p.cost_price && p.price ? Math.round(((p.price - p.cost_price) / p.price) * 100) : undefined,
+      }));
+
+      setProducts(mapped);
     } catch (error) {
       console.error('Error fetching catalog products:', error);
       toast({
