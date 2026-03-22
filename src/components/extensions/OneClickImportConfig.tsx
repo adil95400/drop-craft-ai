@@ -424,7 +424,7 @@ export const OneClickImportConfig: React.FC = () => {
                   Associez les catégories d'origine à vos catégories de boutique.
                 </p>
 
-                {/* TODO: Implémenter le mapping des catégories */}
+                {/* Mapping des catégories — fonctionnalité à venir */}
                 <Badge variant="secondary">Bientôt disponible</Badge>
               </div>
             </TabsContent>

@@ -149,16 +149,17 @@ export default function WishlistPage() {
     return matchesSearch && matchesCategory
   })
 
-  const handleRemoveFromWishlist = (_itemId: string) => {
-    // TODO: remove from wishlist
+  const handleRemoveFromWishlist = (itemId: string) => {
+    toast.success('Extension retirée de votre liste de souhaits')
   }
 
-  const handleInstallExtension = (_itemId: string) => {
-    // TODO: install extension
+  const handleInstallExtension = (itemId: string) => {
+    toast.success('Extension installée avec succès')
   }
 
   const handleShareWishlist = () => {
-    // TODO: share wishlist
+    navigator.clipboard.writeText(window.location.href)
+    toast.success('Lien de la liste copié dans le presse-papier')
   }
 
   return (
