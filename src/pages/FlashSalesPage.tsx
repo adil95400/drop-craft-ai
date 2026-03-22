@@ -38,6 +38,7 @@ function CountdownTimer({ endDate }: { endDate: string }) {
 
 const FlashSalesPage: React.FC = () => {
   const { stats, isLoading, products, orders } = useFlashSales();
+  const { t: tPages } = useTranslation('pages');
 
   // Generate chart data from real orders
   const last7Days = Array.from({ length: 7 }, (_, i) => {

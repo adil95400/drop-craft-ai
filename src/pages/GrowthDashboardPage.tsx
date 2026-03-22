@@ -50,6 +50,7 @@ function MetricCard({ label, value, change, prefix = '', suffix = '', icon: Icon
 
 export default function GrowthDashboardPage() {
   const [period, setPeriod] = useState('12m')
+  const { t: tPages } = useTranslation('pages');
 
   // Fetch real metrics from subscriptions & orders
   const { data: metrics } = useQuery({

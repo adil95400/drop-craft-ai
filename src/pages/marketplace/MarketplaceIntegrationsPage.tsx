@@ -463,6 +463,7 @@ function SDKSection() {
 // ─── Main Page ────────────────────────────────────────────────
 export default function MarketplaceIntegrationsPage() {
   const [activeTab, setActiveTab] = useState('marketplace');
+  const { t: tPages } = useTranslation('pages');
   const [searchTerm, setSearchTerm] = useState('');
   const [activeCategory, setActiveCategory] = useState('all');
 
