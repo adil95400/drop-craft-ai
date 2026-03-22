@@ -489,101 +489,80 @@ export const AIPredictiveAnalytics = () => {
         </TabsContent>
 
         <TabsContent value="optimization" className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <Card className="hover-scale animate-fade-in">
-              <CardHeader>
-                <CardTitle className="text-base flex items-center gap-2">
-                  <TrendingUp className="h-5 w-5 text-success" />
-                  ROI Optimisé
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-3xl font-bold text-success">+34.2%</div>
-                <p className="text-sm text-muted-foreground mt-2">
-                  Amélioration prédite avec recommandations IA
-                </p>
-                <Progress value={68} className="mt-4" />
-              </CardContent>
-            </Card>
-
-            <Card className="hover-scale animate-fade-in">
-              <CardHeader>
-                <CardTitle className="text-base flex items-center gap-2">
-                  <Target className="h-5 w-5 text-info" />
-                  Conversion Rate
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-3xl font-bold text-info">+50%</div>
-                <p className="text-sm text-muted-foreground mt-2">
-                  Potentiel avec optimisation ML
-                </p>
-                <Progress value={75} className="mt-4" />
-              </CardContent>
-            </Card>
-
-            <Card className="hover-scale animate-fade-in">
-              <CardHeader>
-                <CardTitle className="text-base flex items-center gap-2">
-                  <Sparkles className="h-5 w-5 text-purple-500" />
-                  Churn Reduction
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-3xl font-bold text-purple-600">-27%</div>
-                <p className="text-sm text-muted-foreground mt-2">
-                  Réduction prédite avec actions préventives
-                </p>
-                <Progress value={54} className="mt-4" />
-              </CardContent>
-            </Card>
-          </div>
-
-          <Card className="animate-fade-in">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Brain className="h-5 w-5" />
-                Recommandations d'Optimisation Automatiques
-              </CardTitle>
-              <CardDescription>Générées par notre moteur d'IA avancé</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                <div className="flex items-start gap-3 p-4 border rounded-lg hover:bg-accent/50 transition-colors">
-                  <CheckCircle2 className="h-5 w-5 text-success mt-1" />
-                  <div className="flex-1">
-                    <h4 className="font-semibold">Optimisation pricing dynamique</h4>
-                    <p className="text-sm text-muted-foreground mt-1">
-                      L'IA recommande d'ajuster les prix de 15 produits pour maximiser la marge (+€42K/mois estimé)
-                    </p>
-                  </div>
-                  <Badge variant="secondary">Impact: +12%</Badge>
-                </div>
-
-                <div className="flex items-start gap-3 p-4 border rounded-lg hover:bg-accent/50 transition-colors">
-                  <CheckCircle2 className="h-5 w-5 text-success mt-1" />
-                  <div className="flex-1">
-                    <h4 className="font-semibold">Campagne de réactivation ciblée</h4>
-                    <p className="text-sm text-muted-foreground mt-1">
-                      45 clients inactifs identifiés avec forte probabilité de retour (78% confiance ML)
-                    </p>
-                  </div>
-                  <Badge variant="secondary">Impact: +8%</Badge>
-                </div>
-
-                <div className="flex items-start gap-3 p-4 border rounded-lg hover:bg-accent/50 transition-colors">
-                  <CheckCircle2 className="h-5 w-5 text-success mt-1" />
-                  <div className="flex-1">
-                    <h4 className="font-semibold">Expansion catégorie "Tech"</h4>
-                    <p className="text-sm text-muted-foreground mt-1">
-                      Opportunité de marché détectée: demande croissante +31%, faible compétition
-                    </p>
-                  </div>
-                  <Badge variant="secondary">Impact: +23%</Badge>
-                </div>
+          {predictions.length > 0 ? (
+            <>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {predictions.filter(p => p.impact === 'high').slice(0, 3).map((pred) => {
+                  const change = pred.current > 0 
+                    ? (((pred.predicted - pred.current) / pred.current) * 100).toFixed(1)
+                    : '0';
+                  const isPositive = pred.trend === 'up' ? parseFloat(change) > 0 : parseFloat(change) < 0;
+                  return (
+                    <Card key={pred.metric} className="hover-scale animate-fade-in">
+                      <CardHeader>
+                        <CardTitle className="text-base flex items-center gap-2">
+                          {pred.trend === 'up' ? (
+                            <TrendingUp className="h-5 w-5 text-success" />
+                          ) : (
+                            <Target className="h-5 w-5 text-info" />
+                          )}
+                          {pred.metric}
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className={`text-3xl font-bold ${isPositive ? 'text-success' : 'text-destructive'}`}>
+                          {parseFloat(change) > 0 ? '+' : ''}{change}%
+                        </div>
+                        <p className="text-sm text-muted-foreground mt-2">
+                          Prédiction IA avec {pred.confidence}% de confiance
+                        </p>
+                        <Progress value={pred.confidence} className="mt-4" />
+                      </CardContent>
+                    </Card>
+                  );
+                })}
               </div>
-            </CardContent>
-          </Card>
+
+              <Card className="animate-fade-in">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Brain className="h-5 w-5" />
+                    Recommandations d'Optimisation
+                  </CardTitle>
+                  <CardDescription>Générées à partir de l'analyse de vos données réelles</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    {insights.filter(i => i.type === 'recommendation' || i.type === 'opportunity').slice(0, 3).map((insight) => (
+                      <div key={insight.id} className="flex items-start gap-3 p-4 border rounded-lg hover:bg-accent/50 transition-colors">
+                        <CheckCircle2 className="h-5 w-5 text-success mt-1" />
+                        <div className="flex-1">
+                          <h4 className="font-semibold">{insight.title}</h4>
+                          <p className="text-sm text-muted-foreground mt-1">{insight.description}</p>
+                        </div>
+                        <Badge variant="secondary">Score: {insight.impact_score}</Badge>
+                      </div>
+                    ))}
+                    {insights.filter(i => i.type === 'recommendation' || i.type === 'opportunity').length === 0 && (
+                      <p className="text-center text-muted-foreground py-8">
+                        Aucune recommandation disponible. Ajoutez plus de données pour obtenir des insights.
+                      </p>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            </>
+          ) : (
+            <Card>
+              <CardContent className="py-12 text-center">
+                <Brain className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                <h3 className="font-semibold text-lg">Aucune donnée d'optimisation</h3>
+                <p className="text-muted-foreground mt-2">
+                  Importez des produits et recevez des commandes pour activer les recommandations IA.
+                </p>
+              </CardContent>
+            </Card>
+          )}
         </TabsContent>
       </Tabs>
     </div>
