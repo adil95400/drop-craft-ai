@@ -105,6 +105,22 @@ export default function AutomationControlCenter() {
     onError: (e: Error) => toast.error(e.message),
   });
 
+  // Run full orchestration cycle
+  const runOrchestrator = useMutation({
+    mutationFn: async () => {
+      const { data, error } = await supabase.functions.invoke('automation-orchestrator', {
+        body: { action: 'run_all' },
+      });
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: (data) => {
+      toast.success(`Cycle complet terminé en ${data?.duration_ms || 0}ms`);
+      queryClient.invalidateQueries({ queryKey: ['automation-control-kpis'] });
+    },
+    onError: (e: Error) => toast.error(`Erreur orchestration: ${e.message}`),
+  });
+
   const kpiCards = [
     { label: 'Workflows actifs', value: kpis?.activeWorkflows ?? '—', icon: Zap, color: 'text-primary', sub: `${kpis?.failedWorkflows || 0} en erreur` },
     { label: 'MAJ prix', value: kpis?.priceUpdates ?? '—', icon: DollarSign, color: 'text-success' },
@@ -142,14 +158,25 @@ export default function AutomationControlCenter() {
               <SelectItem value="30d">30 jours</SelectItem>
             </SelectContent>
           </Select>
-          <Button
-            onClick={() => scanAlerts.mutate()}
-            disabled={scanAlerts.isPending}
-            className="gap-2"
-          >
-            {scanAlerts.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <ShieldAlert className="h-4 w-4" />}
-            Scanner les anomalies
-          </Button>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              onClick={() => runOrchestrator.mutate()}
+              disabled={runOrchestrator.isPending}
+              className="gap-2"
+            >
+              {runOrchestrator.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
+              Lancer le cycle complet
+            </Button>
+            <Button
+              onClick={() => scanAlerts.mutate()}
+              disabled={scanAlerts.isPending}
+              className="gap-2"
+            >
+              {scanAlerts.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <ShieldAlert className="h-4 w-4" />}
+              Scanner les anomalies
+            </Button>
+          </div>
         </div>
 
         {/* KPI Grid */}
