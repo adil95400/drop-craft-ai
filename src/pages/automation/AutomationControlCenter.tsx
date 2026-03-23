@@ -142,14 +142,25 @@ export default function AutomationControlCenter() {
               <SelectItem value="30d">30 jours</SelectItem>
             </SelectContent>
           </Select>
-          <Button
-            onClick={() => scanAlerts.mutate()}
-            disabled={scanAlerts.isPending}
-            className="gap-2"
-          >
-            {scanAlerts.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <ShieldAlert className="h-4 w-4" />}
-            Scanner les anomalies
-          </Button>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              onClick={() => runOrchestrator.mutate()}
+              disabled={runOrchestrator.isPending}
+              className="gap-2"
+            >
+              {runOrchestrator.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
+              Lancer le cycle complet
+            </Button>
+            <Button
+              onClick={() => scanAlerts.mutate()}
+              disabled={scanAlerts.isPending}
+              className="gap-2"
+            >
+              {scanAlerts.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <ShieldAlert className="h-4 w-4" />}
+              Scanner les anomalies
+            </Button>
+          </div>
         </div>
 
         {/* KPI Grid */}
