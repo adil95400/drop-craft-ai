@@ -490,6 +490,7 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
       { id: 'automation-smart-inventory', name: 'Inventaire Intelligent', route: '/automation/smart-inventory', icon: 'Brain', description: 'Prévisions IA, auto-reorder prédictif, scoring fournisseurs', features: ['forecasting', 'smart-reorder', 'supplier-analysis'], order: 8 },
       { id: 'automation-control-center', name: 'Centre de Contrôle', route: '/automation/control-center', icon: 'Activity', description: 'Pilotage centralisé, métriques, alertes temps réel', features: ['kpis', 'alerts', 'activity-feed'], order: 9 },
       { id: 'automation-security', name: 'Sécurité & Audit', route: '/automation/security', icon: 'ShieldCheck', description: 'Audit logs, retry, RBAC et traçabilité', features: ['audit', 'retry', 'rbac'], order: 10 },
+      { id: 'automation-marketing-support', name: 'Marketing & Support', route: '/automation/marketing-support', icon: 'Headphones', description: 'Paniers abandonnés, upsell, support IA', features: ['cart-recovery', 'upsell', 'ai-support'], order: 11 },
     ]
   },
 
