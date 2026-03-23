@@ -18,9 +18,12 @@ import { Switch } from '@/components/ui/switch';
 import { Progress } from '@/components/ui/progress';
 import {
   Activity, AlertTriangle, ArrowUpRight, ArrowDownRight, BarChart3,
-  Bot, CheckCircle2, Clock, DollarSign, Package, RefreshCw, Shield,
+  Bot, CheckCircle2, Clock, DollarSign, Link2, Package, RefreshCw, Shield,
   TrendingDown, TrendingUp, Zap, XCircle, History, Settings2
 } from 'lucide-react';
+import { SyncFrequencyConfig } from '@/components/automation/SyncFrequencyConfig';
+import { AlertNotificationSettings } from '@/components/automation/AlertNotificationSettings';
+import { ProductSupplierMapping } from '@/components/automation/ProductSupplierMapping';
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, BarChart, Bar, Legend
@@ -227,11 +230,13 @@ export default function PriceStockAutomationPage() {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="mb-4">
+          <TabsList className="mb-4 flex-wrap">
             <TabsTrigger value="overview">Vue d'ensemble</TabsTrigger>
+            <TabsTrigger value="mapping">Mapping</TabsTrigger>
             <TabsTrigger value="pricing">Règles de prix</TabsTrigger>
             <TabsTrigger value="history">Historique</TabsTrigger>
             <TabsTrigger value="alerts">Alertes stock</TabsTrigger>
+            <TabsTrigger value="settings">Paramètres</TabsTrigger>
           </TabsList>
 
           {/* === OVERVIEW TAB === */}
@@ -336,6 +341,11 @@ export default function PriceStockAutomationPage() {
                 </div>
               </CardContent>
             </Card>
+          </TabsContent>
+
+          {/* === MAPPING TAB === */}
+          <TabsContent value="mapping">
+            <ProductSupplierMapping />
           </TabsContent>
 
           {/* === PRICING RULES TAB === */}
@@ -473,6 +483,12 @@ export default function PriceStockAutomationPage() {
                 </div>
               </CardContent>
             </Card>
+          </TabsContent>
+
+          {/* === SETTINGS TAB === */}
+          <TabsContent value="settings" className="space-y-6">
+            <SyncFrequencyConfig />
+            <AlertNotificationSettings />
           </TabsContent>
         </Tabs>
       </ChannablePageWrapper>
