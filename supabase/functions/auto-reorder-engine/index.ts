@@ -78,7 +78,7 @@ async function selectBestSupplier(
       return {
         id: ruleSupplier.id,
         name: ruleSupplier.name,
-        type: ruleSupplier.type,
+        type: ruleSupplier.type || 'generic',
         price: 0,
         stock: quantity,
         reliability: 50,
