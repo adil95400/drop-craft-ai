@@ -85,6 +85,9 @@ export function AutomationRoutes() {
       <Route path="recommendations" element={<ProductRecommendationsPage />} />
       <Route path="workflows" element={<AutomationPage />} />
       
+      {/* Supply Chain */}
+      <Route path="supply-chain" element={<SupplyChainCommandCenter />} />
+      
       {/* Legacy redirects */}
       <Route path="ultra-pro" element={<Navigate to="/automation" replace />} />
     </Routes>
