@@ -105,6 +105,22 @@ export default function AutomationControlCenter() {
     onError: (e: Error) => toast.error(e.message),
   });
 
+  // Run full orchestration cycle
+  const runOrchestrator = useMutation({
+    mutationFn: async () => {
+      const { data, error } = await supabase.functions.invoke('automation-orchestrator', {
+        body: { action: 'run_all' },
+      });
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: (data) => {
+      toast.success(`Cycle complet terminé en ${data?.duration_ms || 0}ms`);
+      queryClient.invalidateQueries({ queryKey: ['automation-control-kpis'] });
+    },
+    onError: (e: Error) => toast.error(`Erreur orchestration: ${e.message}`),
+  });
+
   const kpiCards = [
     { label: 'Workflows actifs', value: kpis?.activeWorkflows ?? '—', icon: Zap, color: 'text-primary', sub: `${kpis?.failedWorkflows || 0} en erreur` },
     { label: 'MAJ prix', value: kpis?.priceUpdates ?? '—', icon: DollarSign, color: 'text-success' },
