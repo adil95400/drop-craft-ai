@@ -484,6 +484,12 @@ export default function PriceStockAutomationPage() {
               </CardContent>
             </Card>
           </TabsContent>
+
+          {/* === SETTINGS TAB === */}
+          <TabsContent value="settings" className="space-y-6">
+            <SyncFrequencyConfig />
+            <AlertNotificationSettings />
+          </TabsContent>
         </Tabs>
       </ChannablePageWrapper>
     </>
