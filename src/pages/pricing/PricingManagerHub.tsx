@@ -75,6 +75,15 @@ const PRICING_MODULES = [
     badge: 'Pro',
   },
   {
+    id: 'advanced',
+    title: 'Moteur Avancé',
+    description: 'P&L par produit, optimisation en masse avec planification et auto-apply IA',
+    icon: Brain,
+    route: '/pricing-manager/advanced',
+    color: 'text-violet-500',
+    badge: 'Nouveau',
+  },
+  {
     id: 'optimization',
     title: 'Optimisation IA',
     description: 'Recommandations de prix intelligentes basées sur l\'élasticité et la demande',
