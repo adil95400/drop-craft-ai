@@ -44,7 +44,7 @@ export default function AutomationControlCenter() {
         supabase.from('automation_workflows').select('id', { count: 'exact', head: true })
           .eq('user_id', uid).eq('status', 'error'),
         supabase.from('price_change_history').select('id', { count: 'exact', head: true })
-          .eq('user_id', uid).gte('changed_at', since),
+          .eq('user_id', uid).gte('created_at', since),
         supabase.from('supplier_products').select('id', { count: 'exact', head: true })
           .eq('user_id', uid).gte('last_synced_at', since),
         supabase.from('auto_order_queue').select('id', { count: 'exact', head: true })
@@ -52,7 +52,7 @@ export default function AutomationControlCenter() {
         supabase.from('auto_order_queue').select('id', { count: 'exact', head: true })
           .eq('user_id', uid).eq('status', 'failed').gte('created_at', since),
         supabase.from('supplier_sync_logs').select('id', { count: 'exact', head: true })
-          .eq('user_id', uid).eq('status', 'error').gte('started_at', since),
+          .eq('user_id', uid).eq('log_level', 'error').gte('created_at', since),
         supabase.from('products').select('id', { count: 'exact', head: true })
           .eq('user_id', uid).lt('stock_quantity', 5).eq('status', 'active'),
         supabase.from('user_notifications').select('id', { count: 'exact', head: true })
