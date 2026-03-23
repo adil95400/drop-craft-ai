@@ -1,8 +1,9 @@
 /**
  * Demand Forecast Dashboard — Prévisions de demande par produit
+ * Affiche les noms de produits, saisonnalité mensuelle, impact promotionnel
  */
 import { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
@@ -13,7 +14,7 @@ import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   TrendingUp, TrendingDown, Minus, AlertTriangle, Package,
-  Loader2, RefreshCw, BarChart3, ShieldAlert, ArrowRight
+  Loader2, BarChart3, ShieldAlert, ArrowRight, Brain, Sparkles
 } from 'lucide-react';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
@@ -32,6 +33,7 @@ interface Prediction {
   reorder_quantity: number | null;
   reorder_urgency: string;
   last_calculated_at: string;
+  products?: { title: string; sku: string | null; image_url: string | null };
 }
 
 const urgencyColors: Record<string, string> = {
@@ -55,9 +57,9 @@ export function DemandForecastDashboard() {
   const { data: predictions = [], isLoading } = useQuery({
     queryKey: ['stock-predictions-forecast', user?.id],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('stock_predictions')
-        .select('*')
+        .select('*, products(title, sku, image_url)')
         .eq('user_id', user!.id)
         .order('predicted_days_until_stockout', { ascending: true, nullsFirst: false });
       if (error) throw error;
@@ -77,21 +79,39 @@ export function DemandForecastDashboard() {
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['stock-predictions-forecast'] });
       const s = data?.summary;
-      toast.success(`Prévisions: ${data?.count} produits analysés — ${s?.critical || 0} critiques, ${s?.high || 0} élevés`);
+      toast.success(`Prévisions: ${data?.count} produits — ${s?.critical || 0} critiques, ${s?.high || 0} élevés`);
     },
     onError: (e: Error) => toast.error(`Erreur: ${e.message}`),
+  });
+
+  const runAIForecast = useMutation({
+    mutationFn: async () => {
+      const { data, error } = await supabase.functions.invoke('smart-inventory-engine', {
+        body: { action: 'forecast_ai', userId: user!.id },
+      });
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['stock-predictions-forecast'] });
+      toast.success(`Prévisions IA: ${data?.count} produits analysés avec intelligence artificielle`);
+    },
+    onError: (e: Error) => toast.error(`Erreur IA: ${e.message}`),
   });
 
   const criticals = predictions.filter(p => p.reorder_urgency === 'critical' || p.reorder_urgency === 'high');
   const displayed = showAll ? predictions : predictions.slice(0, 12);
 
-  // Chart data: distribution by urgency
   const chartData = [
     { name: 'Critique', count: predictions.filter(p => p.reorder_urgency === 'critical').length, fill: 'hsl(var(--destructive))' },
     { name: 'Élevé', count: predictions.filter(p => p.reorder_urgency === 'high').length, fill: 'hsl(25 95% 53%)' },
     { name: 'Moyen', count: predictions.filter(p => p.reorder_urgency === 'medium').length, fill: 'hsl(48 96% 53%)' },
     { name: 'Faible', count: predictions.filter(p => p.reorder_urgency === 'low').length, fill: 'hsl(142 76% 36%)' },
   ];
+
+  const getProductName = (pred: Prediction) => {
+    return pred.products?.title || `Produit ${pred.product_id.slice(0, 8)}`;
+  };
 
   return (
     <div className="space-y-6">
@@ -103,14 +123,25 @@ export function DemandForecastDashboard() {
             {predictions.length} produits analysés • {criticals.length} alertes
           </p>
         </div>
-        <Button
-          onClick={() => runForecast.mutate()}
-          disabled={runForecast.isPending}
-          className="gap-2"
-        >
-          {runForecast.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <BarChart3 className="h-4 w-4" />}
-          Recalculer les prévisions
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            onClick={() => runForecast.mutate()}
+            disabled={runForecast.isPending || runAIForecast.isPending}
+            variant="outline"
+            className="gap-2"
+          >
+            {runForecast.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <BarChart3 className="h-4 w-4" />}
+            Statistique
+          </Button>
+          <Button
+            onClick={() => runAIForecast.mutate()}
+            disabled={runForecast.isPending || runAIForecast.isPending}
+            className="gap-2"
+          >
+            {runAIForecast.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Brain className="h-4 w-4" />}
+            Prévision IA
+          </Button>
+        </div>
       </div>
 
       {/* Summary cards */}
@@ -204,6 +235,7 @@ export function DemandForecastDashboard() {
             <AnimatePresence>
               {displayed.map((pred, i) => {
                 const TrendIcon = trendIcons[pred.trend_direction] || Minus;
+                const isAI = pred.recommendation?.includes('IA');
                 return (
                   <motion.div
                     key={pred.id}
@@ -219,8 +251,12 @@ export function DemandForecastDashboard() {
                               {pred.reorder_urgency}
                             </Badge>
                             <div className="min-w-0">
-                              <p className="text-sm font-medium truncate">{pred.product_id.slice(0, 8)}…</p>
+                              <div className="flex items-center gap-1.5">
+                                <p className="text-sm font-medium truncate">{getProductName(pred)}</p>
+                                {isAI && <Sparkles className="h-3 w-3 text-primary shrink-0" />}
+                              </div>
                               <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                                {pred.products?.sku && <span className="font-mono">{pred.products.sku}</span>}
                                 <span>Stock: {pred.current_stock}</span>
                                 <span>•</span>
                                 <span className="flex items-center gap-0.5">

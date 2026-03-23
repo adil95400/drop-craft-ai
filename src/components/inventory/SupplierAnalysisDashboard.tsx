@@ -1,5 +1,6 @@
 /**
  * Supplier Analysis Dashboard — Scoring et recommandations fournisseurs
+ * Affiche les vrais noms de fournisseurs depuis la table suppliers
  */
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -11,8 +12,8 @@ import { useUnifiedAuth } from '@/contexts/UnifiedAuthContext';
 import { toast } from 'sonner';
 import { motion } from 'framer-motion';
 import {
-  Award, AlertTriangle, Loader2, RefreshCw, Star,
-  Truck, ShieldCheck, Package, DollarSign, BarChart3
+  Award, AlertTriangle, Loader2, Star,
+  Truck, ShieldCheck, Package, BarChart3
 } from 'lucide-react';
 import {
   RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis,
@@ -30,7 +31,6 @@ interface SupplierScore {
   avg_delivery_days: number;
   total_products: number;
   active_products: number;
-  avg_cost: number;
   total_orders: number;
   completed_orders: number;
   failed_orders: number;
@@ -72,37 +72,51 @@ export function SupplierAnalysisDashboard() {
     onError: (e: Error) => toast.error(`Erreur: ${e.message}`),
   });
 
+  // Get supplier scores + join with suppliers table for names
   const { data: suppliers = [], isLoading } = useQuery({
     queryKey: ['supplier-analysis', user?.id],
     queryFn: async () => {
-      const { data, error } = await (supabase as any)
+      // Get scores
+      const { data: scores, error: scoresError } = await (supabase as any)
         .from('supplier_scores')
         .select('*')
         .eq('user_id', user!.id)
         .order('overall_score', { ascending: false });
-      if (error) throw error;
-      return (data || []).map((s: any) => ({
-        supplier_id: s.supplier_id,
-        supplier_name: s.supplier_id.slice(0, 8), // will be enriched
-        tier: 'standard',
-        overall_score: s.overall_score || 0,
-        reliability_score: s.reliability_score || 0,
-        delivery_score: s.delivery_score || 0,
-        stock_availability: s.quality_score || 0,
-        avg_delivery_days: s.avg_delivery_days || 14,
-        total_products: 0,
-        active_products: 0,
-        avg_cost: 0,
-        total_orders: s.total_orders || 0,
-        completed_orders: s.total_orders - (s.total_issues || 0),
-        failed_orders: s.total_issues || 0,
-        recommendation: s.recommendation || 'neutral',
-      })) as SupplierScore[];
+      if (scoresError) throw scoresError;
+      if (!scores || scores.length === 0) return [];
+
+      // Get supplier names
+      const supplierIds = scores.map((s: any) => s.supplier_id);
+      const { data: supplierData } = await supabase
+        .from('suppliers')
+        .select('id, name, tier')
+        .in('id', supplierIds);
+
+      const nameMap = new Map((supplierData || []).map(s => [s.id, s]));
+
+      return scores.map((s: any) => {
+        const supplier = nameMap.get(s.supplier_id);
+        return {
+          supplier_id: s.supplier_id,
+          supplier_name: supplier?.name || s.supplier_id.slice(0, 12),
+          tier: supplier?.tier || 'standard',
+          overall_score: s.overall_score || 0,
+          reliability_score: s.reliability_score || 0,
+          delivery_score: s.delivery_score || 0,
+          stock_availability: s.quality_score || 0,
+          avg_delivery_days: s.avg_delivery_days || 14,
+          total_products: 0,
+          active_products: 0,
+          total_orders: s.total_orders || 0,
+          completed_orders: s.total_orders - (s.total_issues || 0),
+          failed_orders: s.total_issues || 0,
+          recommendation: s.recommendation || 'neutral',
+        } as SupplierScore;
+      });
     },
     enabled: !!user?.id,
   });
 
-  // Radar chart for top supplier
   const topSupplier = suppliers[0];
   const radarData = topSupplier ? [
     { metric: 'Fiabilité', value: topSupplier.reliability_score },
@@ -113,13 +127,10 @@ export function SupplierAnalysisDashboard() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
           <h3 className="text-lg font-semibold">Analyse Fournisseurs</h3>
-          <p className="text-sm text-muted-foreground">
-            Scoring automatique et recommandations
-          </p>
+          <p className="text-sm text-muted-foreground">Scoring automatique et recommandations</p>
         </div>
         <Button
           onClick={() => analyzeSuppliers.mutate()}
@@ -131,13 +142,11 @@ export function SupplierAnalysisDashboard() {
         </Button>
       </div>
 
-      {/* Summary */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-2 text-xs text-muted-foreground mb-1">
-              <Package className="h-3.5 w-3.5" />
-              Total
+              <Package className="h-3.5 w-3.5" /> Total
             </div>
             <p className="text-2xl font-bold">{suppliers.length}</p>
           </CardContent>
@@ -145,8 +154,7 @@ export function SupplierAnalysisDashboard() {
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-2 text-xs text-muted-foreground mb-1">
-              <Star className="h-3.5 w-3.5 text-green-500" />
-              Préférés
+              <Star className="h-3.5 w-3.5 text-green-500" /> Préférés
             </div>
             <p className="text-2xl font-bold">{suppliers.filter(s => s.recommendation === 'preferred').length}</p>
           </CardContent>
@@ -154,8 +162,7 @@ export function SupplierAnalysisDashboard() {
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-2 text-xs text-muted-foreground mb-1">
-              <AlertTriangle className="h-3.5 w-3.5 text-orange-500" />
-              Prudence
+              <AlertTriangle className="h-3.5 w-3.5 text-orange-500" /> Prudence
             </div>
             <p className="text-2xl font-bold">{suppliers.filter(s => s.recommendation === 'caution' || s.recommendation === 'avoid').length}</p>
           </CardContent>
@@ -163,23 +170,19 @@ export function SupplierAnalysisDashboard() {
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-2 text-xs text-muted-foreground mb-1">
-              <BarChart3 className="h-3.5 w-3.5 text-primary" />
-              Score moy.
+              <BarChart3 className="h-3.5 w-3.5 text-primary" /> Score moy.
             </div>
             <p className="text-2xl font-bold">
-              {suppliers.length > 0
-                ? Math.round(suppliers.reduce((s, sup) => s + sup.overall_score, 0) / suppliers.length)
-                : '—'}
+              {suppliers.length > 0 ? Math.round(suppliers.reduce((s, sup) => s + sup.overall_score, 0) / suppliers.length) : '—'}
             </p>
           </CardContent>
         </Card>
       </div>
 
-      {/* Radar chart for top supplier */}
       {topSupplier && (
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm">Meilleur fournisseur — Score {topSupplier.overall_score}/100</CardTitle>
+            <CardTitle className="text-sm">Meilleur fournisseur: {topSupplier.supplier_name} — Score {topSupplier.overall_score}/100</CardTitle>
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={250}>
@@ -195,7 +198,6 @@ export function SupplierAnalysisDashboard() {
         </Card>
       )}
 
-      {/* Supplier list */}
       {isLoading ? (
         <div className="flex items-center justify-center py-12">
           <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
@@ -225,11 +227,14 @@ export function SupplierAnalysisDashboard() {
                         <span className="text-sm font-bold text-primary">{supplier.overall_score}</span>
                       </div>
                       <div>
-                        <p className="text-sm font-medium">{supplier.supplier_id.slice(0, 12)}…</p>
+                        <p className="text-sm font-medium">{supplier.supplier_name}</p>
                         <div className="flex items-center gap-2 mt-0.5">
                           <Badge className={recColors[supplier.recommendation] || recColors.neutral} variant="secondary">
                             {recLabels[supplier.recommendation] || supplier.recommendation}
                           </Badge>
+                          {supplier.tier !== 'standard' && (
+                            <Badge variant="outline" className="text-xs">{supplier.tier}</Badge>
+                          )}
                         </div>
                       </div>
                     </div>
