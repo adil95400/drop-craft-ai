@@ -59,6 +59,16 @@ export default function AutomationControlCenter() {
           .eq('user_id', uid).eq('is_read', false),
       ]);
 
+      const activeWorkflows = results[0].count || 0;
+      const failedWorkflows = results[1].count || 0;
+      const priceUpdates = results[2].count || 0;
+      const stockUpdates = results[3].count || 0;
+      const autoOrders = results[4].count || 0;
+      const failedOrders = results[5].count || 0;
+      const syncErrors = results[6].count || 0;
+      const lowStockCount = results[7].count || 0;
+      const activeAlerts = results[8].count || 0;
+
       return {
         activeWorkflows: activeWorkflows || 0,
         failedWorkflows: failedWorkflows || 0,

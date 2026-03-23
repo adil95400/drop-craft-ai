@@ -1,11 +1,10 @@
 /**
  * Automation Metrics Dashboard - Overview tab
- * Charts: price changes over time, sync success rate, workflow execution
  */
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line, CartesianGrid, Legend } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, CartesianGrid } from 'recharts';
 
 interface Props {
   period: string;
@@ -21,33 +20,33 @@ export function AutomationMetricsDashboard({ period }: Props) {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return null;
 
-      const [
-        { data: priceChanges },
-        { data: syncLogs },
-        { data: autoOrders },
-      ] = await Promise.all([
+      const [priceRes, syncRes, orderRes] = await Promise.all([
         supabase.from('price_change_history')
-          .select('changed_at, change_type, old_value, new_value')
-          .eq('user_id', user.id).gte('changed_at', since)
-          .order('changed_at', { ascending: true }).limit(500),
+          .select('created_at, change_type, old_price, new_price')
+          .eq('user_id', user.id).gte('created_at', since)
+          .order('created_at', { ascending: true }).limit(500),
         supabase.from('supplier_sync_logs')
-          .select('started_at, status, products_synced, duration_ms')
-          .eq('user_id', user.id).gte('started_at', since)
-          .order('started_at', { ascending: true }).limit(200),
+          .select('created_at, log_level, message')
+          .eq('user_id', user.id).gte('created_at', since)
+          .order('created_at', { ascending: true }).limit(200),
         supabase.from('auto_order_queue')
           .select('created_at, status')
           .eq('user_id', user.id).gte('created_at', since)
           .limit(200),
       ]);
 
+      const priceChanges = priceRes.data || [];
+      const syncLogs = syncRes.data || [];
+      const autoOrders = orderRes.data || [];
+
       // Aggregate price changes by day
       const priceByDay = new Map<string, { day: string; count: number; avgChange: number }>();
-      for (const pc of priceChanges || []) {
-        const day = pc.changed_at?.split('T')[0] || 'unknown';
+      for (const pc of priceChanges) {
+        const day = pc.created_at?.split('T')[0] || 'unknown';
         const entry = priceByDay.get(day) || { day, count: 0, avgChange: 0 };
         entry.count++;
-        if (pc.old_value && pc.new_value) {
-          entry.avgChange += ((pc.new_value - pc.old_value) / pc.old_value) * 100;
+        if (pc.old_price && pc.new_price && pc.old_price > 0) {
+          entry.avgChange += ((pc.new_price - pc.old_price) / pc.old_price) * 100;
         }
         priceByDay.set(day, entry);
       }
@@ -55,27 +54,25 @@ export function AutomationMetricsDashboard({ period }: Props) {
         ...e, avgChange: e.count > 0 ? Math.round(e.avgChange / e.count * 10) / 10 : 0,
       }));
 
-      // Sync success/failure
-      const syncSuccess = (syncLogs || []).filter(s => s.status === 'completed').length;
-      const syncFailed = (syncLogs || []).filter(s => s.status === 'error').length;
-      const avgDuration = (syncLogs || []).filter(s => s.duration_ms).reduce((a, b) => a + (b.duration_ms || 0), 0) / Math.max((syncLogs || []).length, 1);
+      // Sync by log_level
+      const syncInfo = syncLogs.filter(s => s.log_level === 'info').length;
+      const syncError = syncLogs.filter(s => s.log_level === 'error').length;
 
       // Order statuses
       const orderStatuses = new Map<string, number>();
-      for (const o of autoOrders || []) {
+      for (const o of autoOrders) {
         orderStatuses.set(o.status, (orderStatuses.get(o.status) || 0) + 1);
       }
 
       return {
         priceData,
         syncPie: [
-          { name: 'Réussi', value: syncSuccess },
-          { name: 'Échoué', value: syncFailed },
+          { name: 'Réussi', value: syncInfo },
+          { name: 'Échoué', value: syncError },
         ],
-        avgSyncDuration: Math.round(avgDuration),
-        totalSyncs: (syncLogs || []).length,
+        totalSyncs: syncLogs.length,
         orderPie: Array.from(orderStatuses.entries()).map(([name, value]) => ({ name, value })),
-        totalPriceChanges: (priceChanges || []).length,
+        totalPriceChanges: priceChanges.length,
       };
     },
     staleTime: 60_000,
@@ -91,7 +88,6 @@ export function AutomationMetricsDashboard({ period }: Props) {
 
   return (
     <div className="grid md:grid-cols-2 gap-6">
-      {/* Price changes over time */}
       <Card className="md:col-span-2">
         <CardHeader className="pb-2">
           <CardTitle className="text-sm font-medium">Modifications de prix ({data?.totalPriceChanges || 0} total)</CardTitle>
@@ -109,7 +105,6 @@ export function AutomationMetricsDashboard({ period }: Props) {
         </CardContent>
       </Card>
 
-      {/* Sync success rate */}
       <Card>
         <CardHeader className="pb-2">
           <CardTitle className="text-sm font-medium">Synchronisations ({data?.totalSyncs || 0})</CardTitle>
@@ -124,12 +119,8 @@ export function AutomationMetricsDashboard({ period }: Props) {
             </PieChart>
           </ResponsiveContainer>
         </CardContent>
-        <div className="px-6 pb-4 text-xs text-muted-foreground text-center">
-          Durée moyenne: {data?.avgSyncDuration || 0}ms
-        </div>
       </Card>
 
-      {/* Auto-order breakdown */}
       <Card>
         <CardHeader className="pb-2">
           <CardTitle className="text-sm font-medium">Commandes automatiques</CardTitle>

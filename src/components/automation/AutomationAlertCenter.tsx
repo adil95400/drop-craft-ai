@@ -42,7 +42,7 @@ export function AutomationAlertCenter() {
           {unreadCount > 0 && <Badge variant="destructive">{unreadCount} non lues</Badge>}
           {criticalCount > 0 && <Badge variant="outline" className="text-destructive border-destructive">{criticalCount} critiques</Badge>}
         </div>
-        <Button variant="outline" size="sm" onClick={markAllAsRead} disabled={unreadCount === 0}>
+        <Button variant="outline" size="sm" onClick={() => markAllAsRead()} disabled={unreadCount === 0}>
           <BellOff className="h-3.5 w-3.5 mr-1.5" />
           Tout marquer lu
         </Button>

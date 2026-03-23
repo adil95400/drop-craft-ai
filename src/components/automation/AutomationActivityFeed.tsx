@@ -1,5 +1,5 @@
 /**
- * AutomationActivityFeed - Recent automation events: syncs, price changes, orders
+ * AutomationActivityFeed - Recent automation events
  */
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -7,7 +7,7 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { formatDistanceToNow } from 'date-fns';
 import { fr } from 'date-fns/locale';
-import { Activity, DollarSign, Package, RefreshCw, Truck } from 'lucide-react';
+import { Activity, DollarSign, RefreshCw, Truck } from 'lucide-react';
 
 interface Props {
   period: string;
@@ -21,50 +21,50 @@ export function AutomationActivityFeed({ period, since }: Props) {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return [];
 
-      const [
-        { data: syncs },
-        { data: priceChanges },
-        { data: orders },
-      ] = await Promise.all([
+      const [syncRes, priceRes, orderRes] = await Promise.all([
         supabase.from('supplier_sync_logs')
-          .select('id, started_at, status, sync_type, products_synced, duration_ms')
-          .eq('user_id', user.id).gte('started_at', since)
-          .order('started_at', { ascending: false }).limit(20),
+          .select('id, created_at, log_level, message')
+          .eq('user_id', user.id).gte('created_at', since)
+          .order('created_at', { ascending: false }).limit(20),
         supabase.from('price_change_history')
-          .select('id, changed_at, change_type, old_value, new_value, reason')
-          .eq('user_id', user.id).gte('changed_at', since)
-          .order('changed_at', { ascending: false }).limit(20),
+          .select('id, created_at, change_type, old_price, new_price')
+          .eq('user_id', user.id).gte('created_at', since)
+          .order('created_at', { ascending: false }).limit(20),
         supabase.from('auto_order_queue')
           .select('id, created_at, status, order_id')
           .eq('user_id', user.id).gte('created_at', since)
           .order('created_at', { ascending: false }).limit(20),
       ]);
 
-      // Merge into unified timeline
+      const syncs = syncRes.data || [];
+      const priceChanges = priceRes.data || [];
+      const orders = orderRes.data || [];
+
       const timeline: any[] = [];
 
-      for (const s of syncs || []) {
+      for (const s of syncs) {
         timeline.push({
           id: `sync-${s.id}`,
           type: 'sync',
-          time: s.started_at,
-          title: `Sync ${s.sync_type || 'complète'} — ${s.products_synced || 0} produits`,
-          status: s.status,
+          time: s.created_at,
+          title: `Sync [${s.log_level}] — ${s.message?.slice(0, 60) || ''}`,
+          status: s.log_level === 'error' ? 'error' : 'completed',
           icon: RefreshCw,
         });
       }
-      for (const p of priceChanges || []) {
-        const delta = p.old_value && p.new_value ? ((p.new_value - p.old_value) / p.old_value * 100).toFixed(1) : null;
+      for (const p of priceChanges) {
+        const delta = p.old_price && p.new_price && p.old_price > 0
+          ? ((p.new_price - p.old_price) / p.old_price * 100).toFixed(1) : null;
         timeline.push({
           id: `price-${p.id}`,
           type: 'price',
-          time: p.changed_at,
-          title: `Prix ${p.change_type}: ${p.old_value}€ → ${p.new_value}€ ${delta ? `(${delta}%)` : ''}`,
+          time: p.created_at,
+          title: `Prix ${p.change_type}: ${p.old_price}€ → ${p.new_price}€ ${delta ? `(${delta}%)` : ''}`,
           status: 'info',
           icon: DollarSign,
         });
       }
-      for (const o of orders || []) {
+      for (const o of orders) {
         timeline.push({
           id: `order-${o.id}`,
           type: 'order',
@@ -80,7 +80,7 @@ export function AutomationActivityFeed({ period, since }: Props) {
     staleTime: 30_000,
   });
 
-  const statusVariant = (s: string) => {
+  const statusVariant = (s: string): 'default' | 'destructive' | 'secondary' | 'outline' => {
     if (s === 'completed' || s === 'info') return 'default';
     if (s === 'error' || s === 'failed') return 'destructive';
     if (s === 'pending' || s === 'processing') return 'secondary';
@@ -100,7 +100,7 @@ export function AutomationActivityFeed({ period, since }: Props) {
           <p className="text-sm text-muted-foreground text-center py-8">Aucune activité sur cette période</p>
         ) : (
           <div className="space-y-2 max-h-[500px] overflow-y-auto">
-            {events.map((event) => {
+            {events.map((event: any) => {
               const Icon = event.icon;
               return (
                 <div key={event.id} className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted/50 transition-colors">
@@ -108,7 +108,7 @@ export function AutomationActivityFeed({ period, since }: Props) {
                   <div className="flex-1 min-w-0">
                     <p className="text-sm truncate">{event.title}</p>
                     <p className="text-[10px] text-muted-foreground">
-                      {formatDistanceToNow(new Date(event.time), { addSuffix: true, locale: fr })}
+                      {event.time && formatDistanceToNow(new Date(event.time), { addSuffix: true, locale: fr })}
                     </p>
                   </div>
                   <Badge variant={statusVariant(event.status)} className="text-[10px] shrink-0">
