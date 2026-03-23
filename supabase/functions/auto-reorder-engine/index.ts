@@ -186,7 +186,7 @@ async function calculateOptimalQuantity(
 async function handleCheckAndReorder(supabase: any) {
   const { data: rules, error: rulesError } = await supabase
     .from('auto_order_rules')
-    .select('*, products(id, title, price, cost_price, stock_quantity, status, user_id), suppliers(id, name, supplier_type, contact_email, reliability_score)')
+    .select('*, products(id, title, price, cost_price, stock_quantity, status, user_id), suppliers(id, name, tier, contact_email, rating, avg_delivery_days)')
     .eq('is_active', true);
 
   if (rulesError) throw rulesError;
