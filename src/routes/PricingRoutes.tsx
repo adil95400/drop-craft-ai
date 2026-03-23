@@ -23,6 +23,7 @@ const PricingOptimizationPage = lazy(() => import('@/pages/pricing/PricingOptimi
 const MarginCalculatorPage = lazy(() => import('@/pages/pricing/MarginCalculatorPage'));
 const PriceHistoryPage = lazy(() => import('@/pages/pricing/PriceHistoryPage'));
 const PriceCompetitionPage = lazy(() => import('@/pages/pricing/PriceCompetitionPage'));
+const PricingAdvancedPage = lazy(() => import('@/pages/pricing/PricingAdvancedPage'));
 
 export function PricingRoutes() {
   return (
@@ -53,6 +54,9 @@ export function PricingRoutes() {
       
       {/* Historique des prix */}
       <Route path="history" element={<PriceHistoryPage />} />
+      
+      {/* Moteur avancé (P&L, Bulk, Auto-Apply) */}
+      <Route path="advanced" element={<PricingAdvancedPage />} />
       
       {/* Legacy redirects */}
       <Route path="automation" element={<Navigate to="/pricing-manager" replace />} />
