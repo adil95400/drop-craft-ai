@@ -38,17 +38,7 @@ export default function AutomationControlCenter() {
       if (!user) return null;
       const uid = user.id;
 
-      const [
-        { count: activeWorkflows },
-        { count: failedWorkflows },
-        { count: priceUpdates },
-        { count: stockUpdates },
-        { count: autoOrders },
-        { count: failedOrders },
-        { count: syncErrors },
-        { count: lowStockCount },
-        { count: activeAlerts },
-      ] = await Promise.all([
+      const results = await Promise.all([
         supabase.from('automation_workflows').select('id', { count: 'exact', head: true })
           .eq('user_id', uid).eq('is_active', true),
         supabase.from('automation_workflows').select('id', { count: 'exact', head: true })
