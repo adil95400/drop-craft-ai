@@ -486,7 +486,7 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
       { id: 'automation-studio', name: 'Studio', route: '/automation/studio', icon: 'Palette', description: 'Studio d\'automatisation', features: ['studio'], order: 4 },
       { id: 'automation-ai-hub', name: 'Hub IA', route: '/automation/ai-hub', icon: 'Brain', description: 'Hub Intelligence Artificielle', features: ['ai'], order: 5 },
       { id: 'automation-fulfillment-hub', name: 'Fulfillment Hub', route: '/automation/fulfillment-hub', icon: 'PackageCheck', description: 'Commandes par lots, split orders, bordereaux', features: ['fulfillment', 'split-orders', 'packing-slips'], order: 6 },
-      { id: 'automation-price-stock', name: 'Prix & Stock Auto', route: '/automation/price-stock', icon: 'RefreshCw', description: 'Automatisation prix et stocks fournisseurs', features: ['pricing-auto', 'stock-sync'], order: 7 },
+      
     ]
   },
 
@@ -511,6 +511,7 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
       { id: 'pricing-optimization', name: 'Optimisation IA', route: '/pricing-manager/optimization', icon: 'Brain', description: 'Recommandations IA et élasticité', features: ['ai', 'elasticity'], order: 6 },
       { id: 'pricing-calculator', name: 'Calculateur de Marge', route: '/pricing-manager/calculator', icon: 'Calculator', description: 'Simulateur interactif de marges', features: ['calculator'], order: 7 },
       { id: 'pricing-history', name: 'Historique Prix', route: '/pricing-manager/history', icon: 'Clock', description: 'Historique des variations de prix', features: ['history'], order: 8 },
+      { id: 'pricing-price-stock', name: 'Prix & Stock Auto', route: '/automation/price-stock', icon: 'RefreshCw', description: 'Automatisation prix et stocks fournisseurs', features: ['pricing-auto', 'stock-sync'], order: 9 },
     ]
   },
 
