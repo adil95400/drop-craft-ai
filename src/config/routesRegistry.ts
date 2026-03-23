@@ -76,6 +76,7 @@ export const ROUTES_REGISTRY: RouteConfig[] = [
   { path: '/automation/fulfillment-hub', protected: true, category: 'automation', description: 'Fulfillment Hub: split orders, bordereaux, batch', implemented: true },
   { path: '/automation/tracking', protected: true, category: 'automation', description: 'Suivi automatique', implemented: true },
   { path: '/automation/promotions', protected: true, category: 'automation', description: 'Promotions auto', implemented: true },
+  { path: '/automation/price-stock', protected: true, category: 'automation', description: 'Automatisation prix & stocks fournisseurs', implemented: true },
 
   // ===== AI =====
   { path: '/ai', protected: true, category: 'ai', description: 'Hub IA', implemented: true },
