@@ -89,6 +89,7 @@ export function AutomationRoutes() {
       
       {/* Supply Chain */}
       <Route path="supply-chain" element={<SupplyChainCommandCenter />} />
+      <Route path="control-center" element={<AutomationControlCenter />} />
       <Route path="smart-inventory" element={<SmartInventoryCommandCenter />} />
       
       {/* Legacy redirects */}
