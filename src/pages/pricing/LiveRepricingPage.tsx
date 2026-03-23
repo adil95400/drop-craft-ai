@@ -39,12 +39,19 @@ export default function LiveRepricingPage() {
   const [scanning, setScanning] = useState(false)
   const queryClient = useQueryClient()
 
-  // Fetch pricing rules from DB
+  // Fetch pricing rules from DB directly
   const { data: rules = [], isLoading: rulesLoading } = useQuery({
     queryKey: ['pricing-rules'],
     queryFn: async () => {
-      const resp = await pricingApi.listRules()
-      return resp.items ?? []
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session) return []
+      const { data, error } = await supabase
+        .from('pricing_rules')
+        .select('*')
+        .eq('user_id', session.user.id)
+        .order('created_at', { ascending: false })
+      if (error) throw error
+      return data ?? []
     },
   })
 
