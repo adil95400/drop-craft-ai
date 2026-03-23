@@ -67,7 +67,7 @@ async function selectBestSupplier(
   // Get all supplier_products mappings for this product
   const { data: mappings } = await supabase
     .from('supplier_products')
-    .select('*, suppliers(id, name, supplier_type, config, reliability_score)')
+    .select('*, suppliers(id, name, tier, config, rating, avg_delivery_days)')
     .eq('product_id', productId)
     .eq('user_id', userId)
     .eq('is_active', true);
