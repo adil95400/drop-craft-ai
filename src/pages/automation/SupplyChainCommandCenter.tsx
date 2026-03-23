@@ -13,15 +13,15 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { motion } from 'framer-motion';
 import {
-  Package, Truck, RotateCcw, Zap, BarChart3, AlertTriangle,
-  CheckCircle2, Clock, Loader2, RefreshCw, Target
+  Package, Truck, RotateCcw, Zap, AlertTriangle,
+  Loader2, RefreshCw, Target, MapPin
 } from 'lucide-react';
 import { AutoOrderQueueDashboard } from '@/components/automation/AutoOrderQueueDashboard';
 import { AutomatedReturnsWorkflow } from '@/components/automation/AutomatedReturnsWorkflow';
+import { OrderTrackingPipeline } from '@/components/automation/OrderTrackingPipeline';
 
 export default function SupplyChainCommandCenter() {
-  // Unified stats
-  const { data: stats, isLoading: statsLoading } = useQuery({
+  const { data: stats } = useQuery({
     queryKey: ['supply-chain-stats'],
     queryFn: async () => {
       const { data: { user } } = await supabase.auth.getUser();
@@ -32,6 +32,7 @@ export default function SupplyChainCommandCenter() {
         { count: activeRules },
         { count: pendingReturns },
         { count: lowStockProducts },
+        { count: inTransit },
       ] = await Promise.all([
         supabase.from('auto_order_queue').select('id', { count: 'exact', head: true })
           .eq('user_id', user.id).in('status', ['pending', 'processing']),
@@ -41,6 +42,8 @@ export default function SupplyChainCommandCenter() {
           .eq('user_id', user.id).in('status', ['requested', 'approved']),
         supabase.from('products').select('id', { count: 'exact', head: true })
           .eq('user_id', user.id).lt('stock_quantity', 5).eq('status', 'active'),
+        supabase.from('auto_order_queue').select('id', { count: 'exact', head: true })
+          .eq('user_id', user.id).eq('status', 'completed'),
       ]);
 
       return {
@@ -48,12 +51,12 @@ export default function SupplyChainCommandCenter() {
         activeRules: activeRules || 0,
         pendingReturns: pendingReturns || 0,
         lowStockProducts: lowStockProducts || 0,
+        inTransit: inTransit || 0,
       };
     },
     staleTime: 30_000,
   });
 
-  // Trigger auto-reorder check
   const triggerReorder = useMutation({
     mutationFn: async () => {
       const { data, error } = await supabase.functions.invoke('auto-reorder-engine', {
@@ -69,7 +72,6 @@ export default function SupplyChainCommandCenter() {
     onError: (e: Error) => toast.error(`Erreur: ${e.message}`),
   });
 
-  // Process pending queue
   const processQueue = useMutation({
     mutationFn: async () => {
       const { data, error } = await supabase.functions.invoke('auto-reorder-engine', {
@@ -89,7 +91,8 @@ export default function SupplyChainCommandCenter() {
     { label: 'Stock bas', value: stats?.lowStockProducts ?? '—', icon: AlertTriangle, color: 'text-destructive' },
     { label: 'Règles actives', value: stats?.activeRules ?? '—', icon: Target, color: 'text-success' },
     { label: 'Commandes en cours', value: stats?.pendingOrders ?? '—', icon: Package, color: 'text-primary' },
-    { label: 'Retours en attente', value: stats?.pendingReturns ?? '—', icon: RotateCcw, color: 'text-warning' },
+    { label: 'En transit', value: stats?.inTransit ?? '—', icon: Truck, color: 'text-warning' },
+    { label: 'Retours', value: stats?.pendingReturns ?? '—', icon: RotateCcw, color: 'text-chart-2' },
   ];
 
   return (
@@ -106,7 +109,7 @@ export default function SupplyChainCommandCenter() {
         badge={{ label: 'Supply Chain', icon: Truck }}
       >
         {/* KPIs */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
           {kpis.map((kpi, i) => (
             <motion.div key={kpi.label} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}>
               <Card>
@@ -154,6 +157,13 @@ export default function SupplyChainCommandCenter() {
                 <Badge className="ml-1 text-xs h-5 px-1.5">{stats?.pendingOrders}</Badge>
               )}
             </TabsTrigger>
+            <TabsTrigger value="tracking" className="gap-1.5">
+              <MapPin className="h-3.5 w-3.5" />
+              Suivi logistique
+              {(stats?.inTransit || 0) > 0 && (
+                <Badge variant="outline" className="ml-1 text-xs h-5 px-1.5">{stats?.inTransit}</Badge>
+              )}
+            </TabsTrigger>
             <TabsTrigger value="returns" className="gap-1.5">
               <RotateCcw className="h-3.5 w-3.5" />
               Retours
@@ -165,6 +175,10 @@ export default function SupplyChainCommandCenter() {
 
           <TabsContent value="orders">
             <AutoOrderQueueDashboard />
+          </TabsContent>
+
+          <TabsContent value="tracking">
+            <OrderTrackingPipeline />
           </TabsContent>
 
           <TabsContent value="returns">
