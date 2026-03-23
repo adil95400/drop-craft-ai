@@ -487,6 +487,7 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
       { id: 'automation-ai-hub', name: 'Hub IA', route: '/automation/ai-hub', icon: 'Brain', description: 'Hub Intelligence Artificielle', features: ['ai'], order: 5 },
       { id: 'automation-fulfillment-hub', name: 'Fulfillment Hub', route: '/automation/fulfillment-hub', icon: 'PackageCheck', description: 'Commandes par lots, split orders, bordereaux', features: ['fulfillment', 'split-orders', 'packing-slips'], order: 6 },
       { id: 'automation-supply-chain', name: 'Supply Chain', route: '/automation/supply-chain', icon: 'Truck', description: 'Réapprovisionnement auto, suivi, retours', features: ['auto-reorder', 'returns', 'tracking'], order: 7 },
+      { id: 'automation-smart-inventory', name: 'Inventaire Intelligent', route: '/automation/smart-inventory', icon: 'Brain', description: 'Prévisions IA, auto-reorder prédictif, scoring fournisseurs', features: ['forecasting', 'smart-reorder', 'supplier-analysis'], order: 8 },
       
     ]
   },
