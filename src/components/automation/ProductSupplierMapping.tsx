@@ -109,12 +109,12 @@ export function ProductSupplierMapping() {
   const togglePrimaryMutation = useMutation({
     mutationFn: async ({ productId, supplierProductId }: { productId: string; supplierProductId: string }) => {
       // Demote all others
-      await supabase.from('supplier_products')
+      await (supabase.from('supplier_products') as any)
         .update({ is_primary: false })
         .eq('product_id', productId)
         .eq('user_id', user!.id);
       // Promote selected
-      await supabase.from('supplier_products')
+      await (supabase.from('supplier_products') as any)
         .update({ is_primary: true })
         .eq('id', supplierProductId);
     },
@@ -127,15 +127,14 @@ export function ProductSupplierMapping() {
   // Lock supplier
   const toggleLockMutation = useMutation({
     mutationFn: async ({ id, locked }: { id: string; locked: boolean }) => {
-      await supabase.from('supplier_products')
+      await (supabase.from('supplier_products') as any)
         .update({ is_locked: locked })
         .eq('id', id);
     },
-    onSuccess: () => {
+    onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: ['supplier-mappings'] });
-      toast({ title: locked ? 'Fournisseur verrouillé' : 'Verrouillage retiré' });
+      toast({ title: variables.locked ? 'Fournisseur verrouillé' : 'Verrouillage retiré' });
     },
-    variables: { id: '', locked: false },
   });
 
   const filtered = Object.entries(productGroups).filter(([key, suppliers]: [string, any[]]) => {

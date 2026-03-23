@@ -66,8 +66,8 @@ export class SupplierSelectionService {
     };
 
     // Get all supplier products for this catalog product
-    const { data: candidates } = await supabase
-      .from('supplier_products')
+    const { data: candidates } = await (supabase
+      .from('supplier_products') as any)
       .select('id, supplier_id, price, cost_price, stock_quantity, is_primary, is_locked, priority, last_synced_at, name')
       .eq('product_id', productId)
       .eq('user_id', userId)
