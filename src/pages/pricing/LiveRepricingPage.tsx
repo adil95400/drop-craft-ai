@@ -18,7 +18,7 @@ import {
 } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 import { supabase } from '@/integrations/supabase/client'
-import { pricingApi } from '@/services/api/client'
+// pricingApi removed - using direct Supabase queries
 import { CreateRepricingRuleDialog } from '@/components/pricing/CreateRepricingRuleDialog'
 import { useTranslation } from 'react-i18next';
 
@@ -39,12 +39,19 @@ export default function LiveRepricingPage() {
   const [scanning, setScanning] = useState(false)
   const queryClient = useQueryClient()
 
-  // Fetch pricing rules from DB
+  // Fetch pricing rules from DB directly
   const { data: rules = [], isLoading: rulesLoading } = useQuery({
     queryKey: ['pricing-rules'],
     queryFn: async () => {
-      const resp = await pricingApi.listRules()
-      return resp.items ?? []
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session) return []
+      const { data, error } = await supabase
+        .from('pricing_rules')
+        .select('*')
+        .eq('user_id', session.user.id)
+        .order('created_at', { ascending: false })
+      if (error) throw error
+      return data ?? []
     },
   })
 
@@ -67,7 +74,11 @@ export default function LiveRepricingPage() {
 
   const toggleRuleMutation = useMutation({
     mutationFn: async ({ id, isActive }: { id: string; isActive: boolean }) => {
-      await pricingApi.updateRule(id, { is_active: isActive })
+      const { error } = await supabase
+        .from('pricing_rules')
+        .update({ is_active: isActive })
+        .eq('id', id)
+      if (error) throw error
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['pricing-rules'] })
