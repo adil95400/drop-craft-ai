@@ -94,10 +94,11 @@ async function selectBestSupplier(
     .filter((m: any) => (m.stock_quantity || 0) >= quantity)
     .map((m: any) => {
       const supplier = m.suppliers || {};
-      const price = m.supplier_price || m.cost_price || 0;
-      const reliability = supplier.reliability_score || 70;
-      const deliveryDays = m.shipping_days || 14;
+      const price = m.cost_price || m.price || 0;
+      const reliability = supplier.rating || 70;
+      const deliveryDays = supplier.avg_delivery_days || 14;
       const stock = m.stock_quantity || 0;
+      const supplierType = supplier.tier || 'generic';
 
       // Weighted scoring: price (40%), reliability (30%), delivery speed (20%), stock depth (10%)
       const maxPrice = Math.max(...mappings.map((x: any) => x.supplier_price || x.cost_price || 1));
