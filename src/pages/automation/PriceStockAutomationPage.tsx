@@ -230,11 +230,13 @@ export default function PriceStockAutomationPage() {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="mb-4">
+          <TabsList className="mb-4 flex-wrap">
             <TabsTrigger value="overview">Vue d'ensemble</TabsTrigger>
+            <TabsTrigger value="mapping">Mapping</TabsTrigger>
             <TabsTrigger value="pricing">Règles de prix</TabsTrigger>
             <TabsTrigger value="history">Historique</TabsTrigger>
             <TabsTrigger value="alerts">Alertes stock</TabsTrigger>
+            <TabsTrigger value="settings">Paramètres</TabsTrigger>
           </TabsList>
 
           {/* === OVERVIEW TAB === */}
