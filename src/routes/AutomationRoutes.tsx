@@ -40,6 +40,9 @@ const PriceRulesPage = lazy(() => import('@/pages/products/PriceRulesPage'));
 // Price & Stock Automation Command Center
 const PriceStockAutomationPage = lazy(() => import('@/pages/automation/PriceStockAutomationPage'));
 
+// Supply Chain Command Center
+const SupplyChainCommandCenter = lazy(() => import('@/pages/automation/SupplyChainCommandCenter'));
+
 export function AutomationRoutes() {
   return (
     <Routes>
@@ -81,6 +84,9 @@ export function AutomationRoutes() {
       <Route path="pricing-automation" element={<Navigate to="/pricing-manager" replace />} />
       <Route path="recommendations" element={<ProductRecommendationsPage />} />
       <Route path="workflows" element={<AutomationPage />} />
+      
+      {/* Supply Chain */}
+      <Route path="supply-chain" element={<SupplyChainCommandCenter />} />
       
       {/* Legacy redirects */}
       <Route path="ultra-pro" element={<Navigate to="/automation" replace />} />
