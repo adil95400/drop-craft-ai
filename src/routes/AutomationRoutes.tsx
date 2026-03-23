@@ -88,6 +88,7 @@ export function AutomationRoutes() {
       
       {/* Supply Chain */}
       <Route path="supply-chain" element={<SupplyChainCommandCenter />} />
+      <Route path="smart-inventory" element={<SmartInventoryCommandCenter />} />
       
       {/* Legacy redirects */}
       <Route path="ultra-pro" element={<Navigate to="/automation" replace />} />
