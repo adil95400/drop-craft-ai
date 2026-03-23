@@ -43,6 +43,7 @@ const PriceStockAutomationPage = lazy(() => import('@/pages/automation/PriceStoc
 // Supply Chain Command Center
 const SupplyChainCommandCenter = lazy(() => import('@/pages/automation/SupplyChainCommandCenter'));
 const SmartInventoryCommandCenter = lazy(() => import('@/pages/inventory/SmartInventoryCommandCenter'));
+const AutomationControlCenter = lazy(() => import('@/pages/automation/AutomationControlCenter'));
 
 export function AutomationRoutes() {
   return (
@@ -88,6 +89,7 @@ export function AutomationRoutes() {
       
       {/* Supply Chain */}
       <Route path="supply-chain" element={<SupplyChainCommandCenter />} />
+      <Route path="control-center" element={<AutomationControlCenter />} />
       <Route path="smart-inventory" element={<SmartInventoryCommandCenter />} />
       
       {/* Legacy redirects */}
