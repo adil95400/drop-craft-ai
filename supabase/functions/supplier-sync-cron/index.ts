@@ -7,11 +7,12 @@ const corsHeaders = {
 };
 
 /**
- * Enhanced Cron-triggered edge function that monitors all active suppliers
- * for stock and price changes. Runs every 15 minutes via pg_cron.
- *
- * NEW: Auto-deactivation on stockout, auto-repricing on price change,
- * re-activation when stock returns.
+ * Enhanced supplier-sync-cron v2
+ * - Multi-supplier fallback
+ * - Optimal supplier selection algorithm
+ * - Auto-deactivation / reactivation
+ * - Auto-repricing with margin protection
+ * - Runs every 5-15 min via pg_cron
  */
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -23,451 +24,463 @@ Deno.serve(async (req) => {
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    console.log("[supplier-sync-cron] Starting scheduled supplier sync...");
+    console.log("[supplier-sync-cron] Starting enhanced sync v2...");
 
+    // 1. Get all active supplier connections
     const { data: connections, error: connError } = await supabase
       .from("premium_supplier_connections")
       .select("id, user_id, premium_supplier_id, auto_sync_enabled, sync_interval_minutes, last_sync_at")
       .eq("connection_status", "connected")
       .eq("auto_sync_enabled", true);
 
-    if (connError) {
-      console.error("[supplier-sync-cron] Error fetching connections:", connError);
-      throw connError;
+    if (connError) throw connError;
+
+    if (!connections?.length) {
+      return json({ success: true, message: "No active connections", processed: 0 });
     }
 
-    if (!connections || connections.length === 0) {
-      console.log("[supplier-sync-cron] No active supplier connections found");
-      return new Response(
-        JSON.stringify({ success: true, message: "No active connections", processed: 0 }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
-    console.log(`[supplier-sync-cron] Found ${connections.length} active connections`);
+    console.log(`[supplier-sync-cron] ${connections.length} active connections`);
 
     const results: any[] = [];
     const now = new Date();
 
     for (const conn of connections) {
+      // Check interval
       if (conn.last_sync_at) {
-        const lastSync = new Date(conn.last_sync_at);
-        const intervalMs = (conn.sync_interval_minutes || 15) * 60 * 1000;
-        if (now.getTime() - lastSync.getTime() < intervalMs) {
-          continue;
-        }
+        const elapsed = now.getTime() - new Date(conn.last_sync_at).getTime();
+        if (elapsed < (conn.sync_interval_minutes || 15) * 60_000) continue;
       }
 
       try {
-        // Create job in unified `jobs` table
-        const { data: job } = await supabase
-          .from("jobs")
-          .insert({
-            user_id: conn.user_id,
-            job_type: "sync",
-            job_subtype: "stock",
-            status: "running",
-            name: `Sync auto fournisseur`,
-            started_at: now.toISOString(),
-            metadata: { supplier_connection_id: conn.id, supplier_id: conn.premium_supplier_id },
-          })
-          .select("id")
-          .single();
-
-        // Check stock levels
-        const { data: products } = await supabase
-          .from("supplier_products")
-          .select("id, name, sku, stock_quantity, price, selling_price, product_id, last_synced_at")
-          .eq("user_id", conn.user_id)
-          .eq("supplier_id", conn.premium_supplier_id);
-
-        let outOfStockCount = 0;
-        let lowStockCount = 0;
-        let priceChanges = 0;
-        let deactivatedCount = 0;
-        let reactivatedCount = 0;
-        let repricedCount = 0;
-        const checkedCount = products?.length || 0;
-
-        // Load user's pricing rules for auto-repricing
-        const { data: pricingRules } = await supabase
-          .from("pricing_rules")
-          .select("*")
-          .eq("user_id", conn.user_id)
-          .eq("is_active", true)
-          .order("priority", { ascending: false });
-
-        for (const product of products || []) {
-          // === STOCK MONITORING ===
-          if (product.stock_quantity === 0) {
-            outOfStockCount++;
-
-            // AUTO-DEACTIVATION: Deactivate linked catalog product
-            if (product.product_id) {
-              const { data: catalogProduct } = await supabase
-                .from("products")
-                .select("id, status")
-                .eq("id", product.product_id)
-                .single();
-
-              if (catalogProduct && catalogProduct.status !== 'inactive' && catalogProduct.status !== 'out_of_stock') {
-                await supabase
-                  .from("products")
-                  .update({ status: 'out_of_stock' })
-                  .eq("id", product.product_id);
-
-                deactivatedCount++;
-
-                // Log the auto-action
-                await supabase.from("activity_logs").insert({
-                  user_id: conn.user_id,
-                  action: "product_auto_deactivated",
-                  entity_type: "product",
-                  entity_id: product.product_id,
-                  description: `Produit désactivé automatiquement: rupture fournisseur (${product.name})`,
-                  details: { supplier_product_id: product.id, sku: product.sku },
-                  source: "automation",
-                  severity: "warn",
-                });
-
-                // Record in price_change_history for tracking
-                await supabase.from("price_change_history").insert({
-                  user_id: conn.user_id,
-                  product_id: product.product_id,
-                  supplier_product_id: product.id,
-                  old_price: product.selling_price || product.price || 0,
-                  new_price: product.selling_price || product.price || 0,
-                  change_percent: 0,
-                  change_type: "stockout_deactivation",
-                  change_reason: "Auto-désactivation: rupture stock fournisseur",
-                  source: "supplier_sync_cron",
-                });
-              }
-            }
-
-            await supabase.from("supplier_notifications").insert({
-              user_id: conn.user_id,
-              supplier_id: conn.premium_supplier_id,
-              notification_type: "out_of_stock",
-              severity: "high",
-              title: `Rupture: ${product.name}`,
-              message: `${product.name} (${product.sku}) est en rupture de stock`,
-              data: { product_id: product.id, sku: product.sku, auto_deactivated: !!product.product_id },
-            });
-          } else if (product.stock_quantity <= 10) {
-            lowStockCount++;
-
-            // RE-ACTIVATION: If product was deactivated due to stockout, re-enable it
-            if (product.product_id) {
-              const { data: catalogProduct } = await supabase
-                .from("products")
-                .select("id, status")
-                .eq("id", product.product_id)
-                .single();
-
-              if (catalogProduct && catalogProduct.status === 'out_of_stock') {
-                await supabase
-                  .from("products")
-                  .update({ status: 'active' })
-                  .eq("id", product.product_id);
-
-                reactivatedCount++;
-
-                await supabase.from("activity_logs").insert({
-                  user_id: conn.user_id,
-                  action: "product_auto_reactivated",
-                  entity_type: "product",
-                  entity_id: product.product_id,
-                  description: `Produit réactivé automatiquement: stock revenu (${product.stock_quantity} unités)`,
-                  details: { supplier_product_id: product.id, new_stock: product.stock_quantity },
-                  source: "automation",
-                  severity: "info",
-                });
-              }
-            }
-
-            await supabase.from("supplier_notifications").insert({
-              user_id: conn.user_id,
-              supplier_id: conn.premium_supplier_id,
-              notification_type: "low_stock",
-              severity: "medium",
-              title: `Stock bas: ${product.name}`,
-              message: `${product.name} (${product.sku}): ${product.stock_quantity} unités restantes`,
-              data: { product_id: product.id, sku: product.sku, stock: product.stock_quantity },
-            });
-          } else {
-            // Stock is healthy — re-activate if needed
-            if (product.product_id) {
-              const { data: catalogProduct } = await supabase
-                .from("products")
-                .select("id, status")
-                .eq("id", product.product_id)
-                .single();
-
-              if (catalogProduct && catalogProduct.status === 'out_of_stock') {
-                await supabase
-                  .from("products")
-                  .update({ status: 'active' })
-                  .eq("id", product.product_id);
-                reactivatedCount++;
-              }
-            }
-          }
-
-          // === PRICE CHANGE DETECTION + AUTO-REPRICING ===
-          const { data: priceHistory } = await supabase
-            .from("price_history")
-            .select("price")
-            .eq("product_id", product.id)
-            .order("created_at", { ascending: false })
-            .limit(2);
-
-          if (priceHistory && priceHistory.length >= 2) {
-            const currentPrice = priceHistory[0].price;
-            const previousPrice = priceHistory[1].price;
-            const diff = Math.abs(currentPrice - previousPrice);
-            const pct = (diff / previousPrice) * 100;
-
-            if (pct >= 3) {
-              priceChanges++;
-              const changeType = currentPrice > previousPrice ? "augmenté" : "diminué";
-
-              // AUTO-REPRICING: Apply pricing rules to linked catalog product
-              if (product.product_id && pricingRules && pricingRules.length > 0) {
-                const repricingResult = await applyAutoRepricing(
-                  supabase, conn.user_id, product, currentPrice, pricingRules
-                );
-                if (repricingResult.repriced) {
-                  repricedCount++;
-                }
-              }
-
-              // Notification for significant price changes
-              if (pct >= 5) {
-                await supabase.from("notifications").insert({
-                  user_id: conn.user_id,
-                  type: "price_change",
-                  title: `Prix ${changeType}: ${product.name}`,
-                  message: `${pct.toFixed(1)}% (${previousPrice}€ → ${currentPrice}€)`,
-                  severity: pct >= 10 ? "high" : "medium",
-                  metadata: {
-                    product_id: product.id,
-                    old_price: previousPrice,
-                    new_price: currentPrice,
-                    auto_repriced: product.product_id ? true : false,
-                  },
-                });
-              }
-            }
-          }
-        }
-
-        // Update connection last_sync_at
-        await supabase
-          .from("premium_supplier_connections")
-          .update({ last_sync_at: now.toISOString() })
-          .eq("id", conn.id);
-
-        // Complete the job
-        if (job) {
-          await supabase
-            .from("jobs")
-            .update({
-              status: "completed",
-              completed_at: now.toISOString(),
-              total_items: checkedCount,
-              processed_items: checkedCount,
-              failed_items: 0,
-              progress_percent: 100,
-              progress_message: `${checkedCount} produits — ${outOfStockCount} ruptures, ${deactivatedCount} désactivés, ${reactivatedCount} réactivés, ${repricedCount} repricés, ${priceChanges} variations prix`,
-            })
-            .eq("id", job.id);
-        }
-
-        results.push({
-          connectionId: conn.id,
-          supplierId: conn.premium_supplier_id,
-          checked: checkedCount,
-          outOfStock: outOfStockCount,
-          lowStock: lowStockCount,
-          priceChanges,
-          deactivated: deactivatedCount,
-          reactivated: reactivatedCount,
-          repriced: repricedCount,
-          status: "success",
-        });
-
-        // Log activity
-        await supabase.from("activity_logs").insert({
-          user_id: conn.user_id,
-          action: "supplier_auto_sync",
-          entity_type: "supplier",
-          entity_id: conn.premium_supplier_id,
-          description: `Sync auto: ${checkedCount} produits, ${outOfStockCount} ruptures, ${deactivatedCount} désactivés, ${repricedCount} repricés`,
-          details: {
-            checked: checkedCount,
-            out_of_stock: outOfStockCount,
-            low_stock: lowStockCount,
-            price_changes: priceChanges,
-            deactivated: deactivatedCount,
-            reactivated: reactivatedCount,
-            repriced: repricedCount,
-          },
-          source: "automation",
-        });
+        const result = await syncConnection(supabase, conn, now);
+        results.push(result);
       } catch (err) {
-        console.error(`[supplier-sync-cron] Error for connection ${conn.id}:`, err);
-        results.push({
-          connectionId: conn.id,
-          supplierId: conn.premium_supplier_id,
-          status: "error",
-          error: err instanceof Error ? err.message : "Unknown error",
-        });
+        console.error(`[supplier-sync-cron] Error connection ${conn.id}:`, err);
+        results.push({ connectionId: conn.id, status: "error", error: String(err) });
       }
     }
 
     const successCount = results.filter((r) => r.status === "success").length;
-    console.log(`[supplier-sync-cron] Completed: ${successCount}/${results.length} suppliers synced`);
+    console.log(`[supplier-sync-cron] Done: ${successCount}/${results.length}`);
 
-    return new Response(
-      JSON.stringify({
-        success: true,
-        processed: results.length,
-        succeeded: successCount,
-        failed: results.length - successCount,
-        results,
-      }),
-      { headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    );
+    return json({ success: true, processed: results.length, succeeded: successCount, results });
   } catch (error) {
-    console.error("[supplier-sync-cron] Fatal error:", error);
-    return new Response(
-      JSON.stringify({ success: false, error: error instanceof Error ? error.message : "Unknown error" }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    );
+    console.error("[supplier-sync-cron] Fatal:", error);
+    return json({ success: false, error: String(error) }, 500);
   }
 });
 
-/**
- * Auto-repricing engine: applies user's pricing rules when supplier cost changes.
- * Calculates new selling price based on margin rules and updates catalog product.
- */
-async function applyAutoRepricing(
-  supabase: any,
-  userId: string,
-  supplierProduct: any,
-  newSupplierPrice: number,
-  pricingRules: any[]
-): Promise<{ repriced: boolean; oldPrice?: number; newPrice?: number; rule?: string }> {
-  try {
-    if (!supplierProduct.product_id) {
-      return { repriced: false };
-    }
+async function syncConnection(supabase: any, conn: any, now: Date) {
+  const userId = conn.user_id;
+  const supplierId = conn.premium_supplier_id;
 
-    // Get current catalog product
-    const { data: catalogProduct } = await supabase
-      .from("products")
-      .select("id, price, cost_price, status")
-      .eq("id", supplierProduct.product_id)
-      .single();
+  // Create job
+  const { data: job } = await supabase
+    .from("jobs")
+    .insert({
+      user_id: userId, job_type: "sync", job_subtype: "stock",
+      status: "running", name: "Sync auto fournisseur",
+      started_at: now.toISOString(),
+      metadata: { supplier_connection_id: conn.id, supplier_id: supplierId },
+    })
+    .select("id").single();
 
-    if (!catalogProduct) return { repriced: false };
+  // Get all supplier products for this user+supplier
+  const { data: products } = await supabase
+    .from("supplier_products")
+    .select("id, name, sku, stock_quantity, price, cost_price, selling_price, product_id, supplier_id, is_primary, priority, last_synced_at")
+    .eq("user_id", userId)
+    .eq("supplier_id", supplierId);
 
-    const oldSellingPrice = catalogProduct.price || 0;
-    let newSellingPrice = oldSellingPrice;
-    let appliedRule = "none";
+  // Load pricing rules
+  const { data: pricingRules } = await supabase
+    .from("pricing_rules")
+    .select("*")
+    .eq("user_id", userId).eq("is_active", true)
+    .order("priority", { ascending: false });
 
-    // Find the best matching pricing rule
-    for (const rule of pricingRules) {
-      const calc = rule.calculation || {};
-      const ruleType = rule.rule_type || calc.type;
+  // Load fallback rules
+  const { data: fallbackRules } = await supabase
+    .from("supplier_fallback_rules")
+    .select("*")
+    .eq("user_id", userId).eq("is_active", true);
 
-      if (ruleType === "margin_percent" || ruleType === "markup") {
-        // Margin-based pricing: cost * (1 + margin%)
-        const marginPercent = calc.value || calc.margin_percent || 30;
-        newSellingPrice = newSupplierPrice * (1 + marginPercent / 100);
-        appliedRule = `${rule.name} (marge ${marginPercent}%)`;
-        break;
-      } else if (ruleType === "fixed_markup") {
-        // Fixed markup: cost + fixed amount
-        const fixedAmount = calc.value || calc.fixed_amount || 5;
-        newSellingPrice = newSupplierPrice + fixedAmount;
-        appliedRule = `${rule.name} (markup fixe ${fixedAmount}€)`;
-        break;
-      } else if (ruleType === "multiplier") {
-        // Multiplier: cost * X
-        const multiplier = calc.value || calc.multiplier || 2;
-        newSellingPrice = newSupplierPrice * multiplier;
-        appliedRule = `${rule.name} (x${multiplier})`;
-        break;
+  let stats = {
+    checked: products?.length || 0,
+    outOfStock: 0, lowStock: 0, priceChanges: 0,
+    deactivated: 0, reactivated: 0, repriced: 0, fallbacks: 0,
+  };
+
+  for (const product of products || []) {
+    // ═══ STOCK MONITORING ═══
+    if (product.stock_quantity === 0) {
+      stats.outOfStock++;
+
+      // Try fallback first
+      const fallbackResult = await tryFallback(supabase, userId, product, fallbackRules || [], pricingRules || []);
+      if (fallbackResult.switched) {
+        stats.fallbacks++;
+        continue; // Fallback handled it
+      }
+
+      // No fallback → deactivate
+      if (product.product_id) {
+        const deactivated = await deactivateProduct(supabase, userId, product);
+        if (deactivated) stats.deactivated++;
+      }
+
+      await createNotification(supabase, userId, supplierId, "out_of_stock", "high",
+        `Rupture: ${product.name}`,
+        `${product.name} (${product.sku}) en rupture de stock`,
+        { product_id: product.id, sku: product.sku, fallback_attempted: true, fallback_found: false }
+      );
+
+    } else if (product.stock_quantity <= 10) {
+      stats.lowStock++;
+      // Reactivate if needed
+      if (product.product_id) {
+        const reactivated = await reactivateIfNeeded(supabase, userId, product);
+        if (reactivated) stats.reactivated++;
+      }
+
+      await createNotification(supabase, userId, supplierId, "low_stock", "medium",
+        `Stock bas: ${product.name}`,
+        `${product.name}: ${product.stock_quantity} unités`,
+        { product_id: product.id, stock: product.stock_quantity }
+      );
+    } else {
+      // Healthy stock — reactivate if was deactivated
+      if (product.product_id) {
+        const reactivated = await reactivateIfNeeded(supabase, userId, product);
+        if (reactivated) stats.reactivated++;
       }
     }
 
-    // Apply minimum margin protection (never go below 10% margin)
-    const minMarginPercent = 10;
-    const minPrice = newSupplierPrice * (1 + minMarginPercent / 100);
-    if (newSellingPrice < minPrice) {
-      newSellingPrice = minPrice;
-      appliedRule += " + protection marge min";
+    // ═══ PRICE CHANGE DETECTION + AUTO-REPRICING ═══
+    const priceChanged = await detectPriceChange(supabase, product);
+    if (priceChanged) {
+      stats.priceChanges++;
+
+      // If this is the primary supplier, update catalog price
+      if (product.product_id && product.is_primary !== false) {
+        const repriced = await applyAutoRepricing(supabase, userId, product, product.price, pricingRules || []);
+        if (repriced) stats.repriced++;
+      }
+
+      // Check if another supplier is now better
+      await evaluateOptimalSupplier(supabase, userId, product);
     }
 
-    // Round to 2 decimals
-    newSellingPrice = Math.round(newSellingPrice * 100) / 100;
-
-    // Only update if price actually changed
-    if (Math.abs(newSellingPrice - oldSellingPrice) < 0.01) {
-      return { repriced: false };
-    }
-
-    // Update catalog product price and cost
-    await supabase
-      .from("products")
-      .update({
-        price: newSellingPrice,
-        cost_price: newSupplierPrice,
-      })
-      .eq("id", catalogProduct.id);
-
-    // Record in price_change_history
-    await supabase.from("price_change_history").insert({
-      user_id: userId,
-      product_id: catalogProduct.id,
-      supplier_product_id: supplierProduct.id,
-      old_price: oldSellingPrice,
-      new_price: newSellingPrice,
-      change_percent: oldSellingPrice > 0
-        ? ((newSellingPrice - oldSellingPrice) / oldSellingPrice) * 100
-        : 0,
-      change_type: "auto_repricing",
-      change_reason: `Auto-repricing: coût fournisseur modifié → ${appliedRule}`,
-      source: "supplier_sync_cron",
-      metadata: {
-        supplier_old_price: supplierProduct.price,
-        supplier_new_price: newSupplierPrice,
-        rule_applied: appliedRule,
-      },
-    });
-
-    // Log the action
-    await supabase.from("activity_logs").insert({
-      user_id: userId,
-      action: "product_auto_repriced",
-      entity_type: "product",
-      entity_id: catalogProduct.id,
-      description: `Prix ajusté: ${oldSellingPrice}€ → ${newSellingPrice}€ (${appliedRule})`,
-      details: {
-        old_price: oldSellingPrice,
-        new_price: newSellingPrice,
-        supplier_price: newSupplierPrice,
-        rule: appliedRule,
-      },
-      source: "automation",
-      severity: "info",
-    });
-
-    return { repriced: true, oldPrice: oldSellingPrice, newPrice: newSellingPrice, rule: appliedRule };
-  } catch (error) {
-    console.error("[AUTO-REPRICING] Error:", error);
-    return { repriced: false };
+    // Update last_synced_at
+    await supabase.from("supplier_products")
+      .update({ last_synced_at: now.toISOString() })
+      .eq("id", product.id);
   }
+
+  // Update connection
+  await supabase.from("premium_supplier_connections")
+    .update({ last_sync_at: now.toISOString() })
+    .eq("id", conn.id);
+
+  // Complete job
+  if (job) {
+    await supabase.from("jobs").update({
+      status: "completed", completed_at: now.toISOString(),
+      total_items: stats.checked, processed_items: stats.checked,
+      progress_percent: 100,
+      progress_message: `${stats.checked} produits — ${stats.outOfStock} ruptures, ${stats.deactivated} désactivés, ${stats.reactivated} réactivés, ${stats.repriced} repricés, ${stats.fallbacks} fallbacks`,
+    }).eq("id", job.id);
+  }
+
+  // Log
+  await supabase.from("activity_logs").insert({
+    user_id: userId, action: "supplier_auto_sync",
+    entity_type: "supplier", entity_id: supplierId,
+    description: `Sync: ${stats.checked} produits, ${stats.outOfStock} ruptures, ${stats.fallbacks} fallbacks, ${stats.repriced} repricés`,
+    details: stats, source: "automation",
+  });
+
+  return { connectionId: conn.id, supplierId, status: "success", ...stats };
+}
+
+/**
+ * Multi-supplier fallback: when primary is out of stock,
+ * find the best alternative supplier and switch
+ */
+async function tryFallback(
+  supabase: any, userId: string, product: any,
+  fallbackRules: any[], pricingRules: any[]
+): Promise<{ switched: boolean }> {
+  if (!product.product_id) return { switched: false };
+
+  // Find rule for this product
+  const rule = fallbackRules.find((r: any) => r.product_id === product.product_id);
+  if (!rule?.auto_switch) return { switched: false };
+
+  const fallbackSuppliers = (rule.fallback_suppliers || []) as Array<{
+    supplier_id: string; priority: number; max_price?: number;
+  }>;
+
+  // Get all supplier_products linked to this catalog product
+  const { data: alternatives } = await supabase
+    .from("supplier_products")
+    .select("id, supplier_id, price, stock_quantity, name, is_primary")
+    .eq("product_id", product.product_id)
+    .eq("user_id", userId)
+    .gt("stock_quantity", 0)
+    .neq("id", product.id);
+
+  if (!alternatives?.length) return { switched: false };
+
+  // Sort by fallback priority, then by optimal score
+  const scored = alternatives.map((alt: any) => {
+    const fbEntry = fallbackSuppliers.find((f: any) => f.supplier_id === alt.supplier_id);
+    const priority = fbEntry?.priority ?? 999;
+    const maxPriceOk = !fbEntry?.max_price || alt.price <= fbEntry.max_price;
+    return { ...alt, priority, maxPriceOk };
+  })
+  .filter((a: any) => a.maxPriceOk)
+  .sort((a: any, b: any) => a.priority - b.priority || a.price - b.price);
+
+  if (!scored.length) return { switched: false };
+
+  const best = scored[0];
+
+  // Switch primary: demote old, promote new
+  await supabase.from("supplier_products")
+    .update({ is_primary: false }).eq("id", product.id);
+  await supabase.from("supplier_products")
+    .update({ is_primary: true }).eq("id", best.id);
+
+  // Update catalog product cost_price
+  await supabase.from("products")
+    .update({ cost_price: best.price, status: "active" })
+    .eq("id", product.product_id);
+
+  // Reprice with new cost
+  await applyAutoRepricing(supabase, userId, { ...best, product_id: product.product_id }, best.price, pricingRules);
+
+  // Record
+  await supabase.from("price_change_history").insert({
+    user_id: userId, product_id: product.product_id,
+    supplier_product_id: best.id,
+    old_price: product.price || 0, new_price: best.price,
+    change_percent: product.price > 0 ? ((best.price - product.price) / product.price) * 100 : 0,
+    change_type: "fallback",
+    change_reason: `Basculement auto vers fournisseur alternatif (priorité ${best.priority})`,
+    source: "supplier_sync_cron",
+    metadata: { old_supplier_id: product.supplier_id, new_supplier_id: best.supplier_id, rule_id: rule.id },
+  });
+
+  // Update fallback rule stats
+  await supabase.from("supplier_fallback_rules")
+    .update({ last_switch_at: new Date().toISOString(), switch_count: (rule.switch_count || 0) + 1 })
+    .eq("id", rule.id);
+
+  // Log & notify
+  await supabase.from("activity_logs").insert({
+    user_id: userId, action: "supplier_fallback_switch",
+    entity_type: "product", entity_id: product.product_id,
+    description: `Fallback: ${product.name} → nouveau fournisseur (prix: ${best.price}€)`,
+    details: { old_supplier: product.supplier_id, new_supplier: best.supplier_id, new_price: best.price },
+    source: "automation", severity: "warn",
+  });
+
+  if (rule.notify_on_switch) {
+    await createNotification(supabase, userId, product.supplier_id, "fallback_switch", "high",
+      `Fournisseur alternatif activé: ${product.name}`,
+      `Basculement automatique vers un fournisseur avec stock`,
+      { product_id: product.product_id, new_supplier: best.supplier_id }
+    );
+  }
+
+  return { switched: true };
+}
+
+/**
+ * Evaluate if another supplier offers a better deal for this product
+ */
+async function evaluateOptimalSupplier(supabase: any, userId: string, product: any) {
+  if (!product.product_id || product.is_primary === false) return;
+
+  const { data: alternatives } = await supabase
+    .from("supplier_products")
+    .select("id, supplier_id, price, stock_quantity, name")
+    .eq("product_id", product.product_id)
+    .eq("user_id", userId)
+    .gt("stock_quantity", 0)
+    .neq("id", product.id);
+
+  if (!alternatives?.length) return;
+
+  // Find if any alternative is significantly cheaper (>5%)
+  const currentPrice = product.price || 0;
+  const better = alternatives.find((a: any) =>
+    a.price < currentPrice * 0.95 && (a.stock_quantity || 0) >= 5
+  );
+
+  if (better) {
+    // Create a recommendation (don't auto-switch for price-based, only for stockout)
+    await supabase.from("ai_recommendations").insert({
+      user_id: userId,
+      recommendation_type: "supplier_switch",
+      title: `Fournisseur moins cher pour ${product.name}`,
+      description: `${better.name} propose ce produit à ${better.price}€ vs ${currentPrice}€ actuel (-${(((currentPrice - better.price) / currentPrice) * 100).toFixed(1)}%)`,
+      confidence_score: 0.85,
+      impact_estimate: `${(currentPrice - better.price).toFixed(2)}€/unité`,
+      source_product_id: product.product_id,
+      status: "pending",
+      metadata: {
+        current_supplier_product_id: product.id,
+        better_supplier_product_id: better.id,
+        price_diff: currentPrice - better.price,
+      },
+    });
+  }
+}
+
+async function detectPriceChange(supabase: any, product: any): Promise<boolean> {
+  const { data: history } = await supabase
+    .from("price_history")
+    .select("price")
+    .eq("product_id", product.id)
+    .order("created_at", { ascending: false })
+    .limit(2);
+
+  if (!history || history.length < 2) return false;
+  const pct = Math.abs(history[0].price - history[1].price) / history[1].price * 100;
+  return pct >= 3;
+}
+
+async function deactivateProduct(supabase: any, userId: string, product: any): Promise<boolean> {
+  const { data: cat } = await supabase.from("products")
+    .select("id, status").eq("id", product.product_id).single();
+  if (!cat || cat.status === "inactive" || cat.status === "out_of_stock") return false;
+
+  await supabase.from("products").update({ status: "out_of_stock" }).eq("id", product.product_id);
+
+  await supabase.from("activity_logs").insert({
+    user_id: userId, action: "product_auto_deactivated",
+    entity_type: "product", entity_id: product.product_id,
+    description: `Désactivé: rupture fournisseur (${product.name})`,
+    details: { supplier_product_id: product.id }, source: "automation", severity: "warn",
+  });
+
+  await supabase.from("price_change_history").insert({
+    user_id: userId, product_id: product.product_id,
+    supplier_product_id: product.id,
+    old_price: product.selling_price || product.price || 0,
+    new_price: product.selling_price || product.price || 0,
+    change_percent: 0, change_type: "stockout_deactivation",
+    change_reason: "Auto-désactivation: rupture stock", source: "supplier_sync_cron",
+  });
+
+  return true;
+}
+
+async function reactivateIfNeeded(supabase: any, userId: string, product: any): Promise<boolean> {
+  const { data: cat } = await supabase.from("products")
+    .select("id, status").eq("id", product.product_id).single();
+  if (!cat || cat.status !== "out_of_stock") return false;
+
+  await supabase.from("products").update({ status: "active" }).eq("id", product.product_id);
+
+  await supabase.from("activity_logs").insert({
+    user_id: userId, action: "product_auto_reactivated",
+    entity_type: "product", entity_id: product.product_id,
+    description: `Réactivé: stock revenu (${product.stock_quantity} unités)`,
+    details: { supplier_product_id: product.id, new_stock: product.stock_quantity },
+    source: "automation", severity: "info",
+  });
+
+  return true;
+}
+
+async function applyAutoRepricing(
+  supabase: any, userId: string, product: any,
+  newCost: number, pricingRules: any[]
+): Promise<boolean> {
+  if (!product.product_id) return false;
+
+  const { data: cat } = await supabase.from("products")
+    .select("id, price, cost_price").eq("id", product.product_id).single();
+  if (!cat) return false;
+
+  const oldPrice = cat.price || 0;
+  let newPrice = oldPrice;
+  let appliedRule = "none";
+
+  for (const rule of pricingRules) {
+    const calc = rule.calculation || {};
+    const type = rule.rule_type || calc.type;
+
+    if (type === "margin_percent" || type === "markup") {
+      const pct = calc.value || calc.margin_percent || 30;
+      newPrice = newCost * (1 + pct / 100);
+      appliedRule = `${rule.name} (marge ${pct}%)`;
+      break;
+    } else if (type === "fixed_markup") {
+      const amt = calc.value || calc.fixed_amount || 5;
+      newPrice = newCost + amt;
+      appliedRule = `${rule.name} (+${amt}€)`;
+      break;
+    } else if (type === "multiplier") {
+      const mult = calc.value || calc.multiplier || 2;
+      newPrice = newCost * mult;
+      appliedRule = `${rule.name} (x${mult})`;
+      break;
+    }
+  }
+
+  // Min margin 10%
+  const minPrice = newCost * 1.1;
+  if (newPrice < minPrice) {
+    newPrice = minPrice;
+    appliedRule += " + marge min";
+  }
+
+  newPrice = Math.round(newPrice * 100) / 100;
+  if (Math.abs(newPrice - oldPrice) < 0.01) return false;
+
+  await supabase.from("products")
+    .update({ price: newPrice, cost_price: newCost })
+    .eq("id", cat.id);
+
+  await supabase.from("price_change_history").insert({
+    user_id: userId, product_id: cat.id,
+    supplier_product_id: product.id,
+    old_price: oldPrice, new_price: newPrice,
+    change_percent: oldPrice > 0 ? ((newPrice - oldPrice) / oldPrice) * 100 : 0,
+    change_type: "auto_repricing",
+    change_reason: `Auto-repricing: ${appliedRule}`,
+    source: "supplier_sync_cron",
+    metadata: { supplier_price: newCost, rule: appliedRule },
+  });
+
+  await supabase.from("activity_logs").insert({
+    user_id: userId, action: "product_auto_repriced",
+    entity_type: "product", entity_id: cat.id,
+    description: `Prix: ${oldPrice}€ → ${newPrice}€ (${appliedRule})`,
+    details: { old_price: oldPrice, new_price: newPrice, cost: newCost, rule: appliedRule },
+    source: "automation", severity: "info",
+  });
+
+  return true;
+}
+
+async function createNotification(
+  supabase: any, userId: string, supplierId: string,
+  type: string, severity: string, title: string, message: string, data: any
+) {
+  await supabase.from("supplier_notifications").insert({
+    user_id: userId, supplier_id: supplierId,
+    notification_type: type, severity, title, message, data,
+  });
+}
+
+function json(data: any, status = 200) {
+  return new Response(JSON.stringify(data), {
+    status,
+    headers: { ...corsHeaders, "Content-Type": "application/json" },
+  });
 }
