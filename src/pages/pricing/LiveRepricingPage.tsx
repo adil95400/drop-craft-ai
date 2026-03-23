@@ -74,7 +74,11 @@ export default function LiveRepricingPage() {
 
   const toggleRuleMutation = useMutation({
     mutationFn: async ({ id, isActive }: { id: string; isActive: boolean }) => {
-      await pricingApi.updateRule(id, { is_active: isActive })
+      const { error } = await supabase
+        .from('pricing_rules')
+        .update({ is_active: isActive })
+        .eq('id', id)
+      if (error) throw error
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['pricing-rules'] })
