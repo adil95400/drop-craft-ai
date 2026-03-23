@@ -121,26 +121,17 @@ export function AutomatedReturnsWorkflow() {
         updateData.resolved_at = new Date().toISOString();
       }
 
-      // If approved, update product stock if needed
+      // If received, log for manual stock reconciliation
       if (status === 'received') {
-        // Get return details to update stock
-        const { data: returnData } = await supabase.from('returns')
-          .select('product_id, quantity')
-          .eq('id', id)
-          .single();
-
-        if (returnData?.product_id) {
-          const { data: product } = await supabase.from('products')
-            .select('stock_quantity')
-            .eq('id', returnData.product_id)
-            .single();
-
-          if (product) {
-            await supabase.from('products')
-              .update({ stock_quantity: (product.stock_quantity || 0) + (returnData.quantity || 1) })
-              .eq('id', returnData.product_id);
-          }
-        }
+        await supabase.from('activity_logs').insert({
+          user_id: user.id,
+          action: 'return_action',
+          entity_type: 'return',
+          entity_id: id,
+          description: `Return received — stock reconciliation may be needed`,
+          source: 'returns_workflow',
+          severity: 'warn',
+        });
       }
 
       const { error } = await supabase.from('returns')
