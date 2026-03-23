@@ -40,6 +40,9 @@ const PriceRulesPage = lazy(() => import('@/pages/products/PriceRulesPage'));
 // Price & Stock Automation Command Center
 const PriceStockAutomationPage = lazy(() => import('@/pages/automation/PriceStockAutomationPage'));
 
+// Supply Chain Command Center
+const SupplyChainCommandCenter = lazy(() => import('@/pages/automation/SupplyChainCommandCenter'));
+
 export function AutomationRoutes() {
   return (
     <Routes>
