@@ -18,9 +18,12 @@ import { Switch } from '@/components/ui/switch';
 import { Progress } from '@/components/ui/progress';
 import {
   Activity, AlertTriangle, ArrowUpRight, ArrowDownRight, BarChart3,
-  Bot, CheckCircle2, Clock, DollarSign, Package, RefreshCw, Shield,
+  Bot, CheckCircle2, Clock, DollarSign, Link2, Package, RefreshCw, Shield,
   TrendingDown, TrendingUp, Zap, XCircle, History, Settings2
 } from 'lucide-react';
+import { SyncFrequencyConfig } from '@/components/automation/SyncFrequencyConfig';
+import { AlertNotificationSettings } from '@/components/automation/AlertNotificationSettings';
+import { ProductSupplierMapping } from '@/components/automation/ProductSupplierMapping';
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, BarChart, Bar, Legend
