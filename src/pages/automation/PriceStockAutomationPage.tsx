@@ -343,6 +343,11 @@ export default function PriceStockAutomationPage() {
             </Card>
           </TabsContent>
 
+          {/* === MAPPING TAB === */}
+          <TabsContent value="mapping">
+            <ProductSupplierMapping />
+          </TabsContent>
+
           {/* === PRICING RULES TAB === */}
           <TabsContent value="pricing" className="space-y-4">
             <Card>
