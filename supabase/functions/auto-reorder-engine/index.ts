@@ -223,7 +223,7 @@ async function handleCheckAndReorder(supabase: any) {
       product.id,
       rule.user_id,
       rule.reorder_quantity || 10,
-      rule.suppliers ? { id: rule.supplier_id, name: rule.suppliers.name, type: rule.supplier_type || 'generic' } : undefined
+      rule.suppliers ? { id: rule.supplier_id, name: rule.suppliers.name, type: rule.suppliers.tier || rule.supplier_type || 'generic' } : undefined
     );
 
     if (!bestSupplier) {
