@@ -101,7 +101,8 @@ async function selectBestSupplier(
       const supplierType = supplier.tier || 'generic';
 
       // Weighted scoring: price (40%), reliability (30%), delivery speed (20%), stock depth (10%)
-      const maxPrice = Math.max(...mappings.map((x: any) => x.supplier_price || x.cost_price || 1));
+      const prices = mappings.map((x: any) => x.cost_price || x.price || 1);
+      const maxPrice = Math.max(...prices);
       const priceScore = maxPrice > 0 ? (1 - price / maxPrice) * 100 : 50;
       const speedScore = Math.max(0, 100 - deliveryDays * 5);
       const stockScore = Math.min(100, (stock / Math.max(quantity, 1)) * 50);
@@ -111,7 +112,7 @@ async function selectBestSupplier(
       return {
         id: supplier.id || m.supplier_id,
         name: supplier.name || 'Unknown',
-        type: supplier.supplier_type || 'generic',
+        type: supplierType,
         price,
         stock,
         reliability,
