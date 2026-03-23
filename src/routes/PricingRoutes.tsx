@@ -55,6 +55,9 @@ export function PricingRoutes() {
       {/* Historique des prix */}
       <Route path="history" element={<PriceHistoryPage />} />
       
+      {/* Moteur avancé (P&L, Bulk, Auto-Apply) */}
+      <Route path="advanced" element={<PricingAdvancedPage />} />
+      
       {/* Legacy redirects */}
       <Route path="automation" element={<Navigate to="/pricing-manager" replace />} />
       <Route path="dynamic" element={<Navigate to="/pricing-manager/repricing" replace />} />
