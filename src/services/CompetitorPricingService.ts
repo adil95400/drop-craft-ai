@@ -210,7 +210,7 @@ export const CompetitorPricingService = {
 
   async getRepricingRules(): Promise<RepricingRule[]> {
     const { data, error } = await supabase
-      .from('repricing_rules')
+      .from('pricing_rules')
       .select('*')
       .order('created_at', { ascending: false });
 
