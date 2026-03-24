@@ -239,31 +239,11 @@ async function extractFromShopify(url: string): Promise<any> {
 // NOTE: simulateProductData has been removed. All extractors now throw errors
 // when API keys are missing, forcing proper configuration before use.
 
-// Extraction des reviews
+// Extraction des reviews - returns empty array when no API is available
 async function extractReviewsFromUrl(url: string, platform: Platform): Promise<any[]> {
-  // Pour l'instant, génération simulée
-  // En production, utiliser les APIs spécifiques de chaque plateforme
-  
-  const productId = url.split('/').pop()?.split('?')[0] || 'unknown';
-  const reviewCount = Math.floor(Math.random() * 5) + 3;
-  
-  const reviews = [];
-  for (let i = 0; i < reviewCount; i++) {
-    reviews.push({
-      product_name: `Produit ${productId.substring(0, 8)}`,
-      product_sku: `${platform.toUpperCase()}-${productId.substring(0, 8)}`,
-      customer_name: `Client ${i + 1}`,
-      rating: Math.floor(Math.random() * 2) + 4, // 4-5 étoiles
-      title: `Excellent produit`,
-      comment: `Très satisfait de cet achat. Produit conforme à la description. Livraison rapide depuis ${platform}.`,
-      verified_purchase: true,
-      review_date: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000).toISOString(),
-      source: `one_click_import_${platform}`,
-      platform: platform,
-    });
-  }
-  
-  return reviews;
+  // Reviews require platform-specific APIs. Return empty when not configured.
+  console.log(`[one-click-import] Review extraction for ${platform} requires dedicated API integration.`);
+  return [];
 }
 
 // Normalisation des données produit
