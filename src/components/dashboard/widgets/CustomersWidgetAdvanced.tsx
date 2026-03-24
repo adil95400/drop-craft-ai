@@ -4,6 +4,8 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import { useDashboardStats } from '@/hooks/useDashboardStats';
 import { TimeRange } from '@/hooks/useDashboardConfig';
 import { Badge } from '@/components/ui/badge';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
 
 interface CustomersWidgetAdvancedProps {
   timeRange: TimeRange;
@@ -15,21 +17,57 @@ interface CustomersWidgetAdvancedProps {
 }
 
 export function CustomersWidgetAdvanced({ timeRange, settings, lastRefresh }: CustomersWidgetAdvancedProps) {
-  const { data: stats, isLoading } = useDashboardStats();
+  const { data: stats, isLoading: statsLoading } = useDashboardStats();
 
+  // Fetch real customer trend data from DB
+  const { data: trendData, isLoading: trendLoading } = useQuery({
+    queryKey: ['customers-trend', lastRefresh.getTime()],
+    queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return [];
+
+      const dayNames = ['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam'];
+      const result: { name: string; value: number }[] = [];
+      
+      for (let i = 6; i >= 0; i--) {
+        const d = new Date();
+        d.setDate(d.getDate() - i);
+        const start = new Date(d); start.setHours(0, 0, 0, 0);
+        const end = new Date(d); end.setHours(23, 59, 59, 999);
+
+        const { count } = await supabase
+          .from('customers')
+          .select('id', { count: 'exact', head: true })
+          .eq('user_id', user.id)
+          .gte('created_at', start.toISOString())
+          .lte('created_at', end.toISOString());
+
+        result.push({ name: dayNames[d.getDay()], value: count || 0 });
+      }
+      return result;
+    }
+  });
+
+  // Real new customers (last 7 days)
+  const { data: newCustomersCount } = useQuery({
+    queryKey: ['new-customers-7d', lastRefresh.getTime()],
+    queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return 0;
+      const since = new Date();
+      since.setDate(since.getDate() - 7);
+      const { count } = await supabase
+        .from('customers')
+        .select('id', { count: 'exact', head: true })
+        .eq('user_id', user.id)
+        .gte('created_at', since.toISOString());
+      return count || 0;
+    }
+  });
+
+  const isLoading = statsLoading || trendLoading;
   const customersChange = stats?.customersChange || 0;
   const isPositive = customersChange >= 0;
-
-  // Mock trend data
-  const trendData = [
-    { name: 'Lun', value: 5 },
-    { name: 'Mar', value: 8 },
-    { name: 'Mer', value: 12 },
-    { name: 'Jeu', value: 7 },
-    { name: 'Ven', value: 15 },
-    { name: 'Sam', value: 18 },
-    { name: 'Dim', value: 10 },
-  ];
 
   if (isLoading) {
     return (
@@ -65,7 +103,7 @@ export function CustomersWidgetAdvanced({ timeRange, settings, lastRefresh }: Cu
 
         {settings.showChart && (
           <ResponsiveContainer width="100%" height={100}>
-            <LineChart data={trendData}>
+            <LineChart data={trendData || []}>
               <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
               <XAxis dataKey="name" stroke="hsl(var(--muted-foreground))" fontSize={10} />
               <YAxis stroke="hsl(var(--muted-foreground))" fontSize={10} />
@@ -91,15 +129,15 @@ export function CustomersWidgetAdvanced({ timeRange, settings, lastRefresh }: Cu
           <div className="flex items-center gap-2">
             <UserPlus className="h-4 w-4 text-success" />
             <div>
-              <p className="font-semibold">+24</p>
-              <p className="text-xs text-muted-foreground">Nouveaux</p>
+              <p className="font-semibold">+{newCustomersCount || 0}</p>
+              <p className="text-xs text-muted-foreground">Nouveaux (7j)</p>
             </div>
           </div>
           <div className="flex items-center gap-2">
             <UserCheck className="h-4 w-4 text-info" />
             <div>
-              <p className="font-semibold">68%</p>
-              <p className="text-xs text-muted-foreground">Fidèles</p>
+              <p className="font-semibold">{stats?.customersCount || 0}</p>
+              <p className="text-xs text-muted-foreground">Total</p>
             </div>
           </div>
         </div>

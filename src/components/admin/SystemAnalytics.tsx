@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -11,97 +11,156 @@ import {
   Package,
   DollarSign,
   Globe,
-  Smartphone,
-  Monitor,
   RefreshCw,
   Download,
-  Calendar,
   Clock,
-  Target
+  Target,
+  Loader2
 } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
+import { useQuery } from '@tanstack/react-query'
+import { supabase } from '@/integrations/supabase/client'
 
-const userGrowthData = [
-  { month: 'Jan', users: 1200, active: 800, premium: 120 },
-  { month: 'Fév', users: 1350, active: 920, premium: 145 },
-  { month: 'Mar', users: 1580, active: 1100, premium: 180 },
-  { month: 'Avr', users: 1420, active: 980, premium: 165 },
-  { month: 'Mai', users: 1680, active: 1250, premium: 220 },
-  { month: 'Jun', users: 1890, active: 1420, premium: 280 },
-]
-
-const salesData = [
-  { day: 'Lun', sales: 2400, orders: 45, avg: 53 },
-  { day: 'Mar', sales: 1398, orders: 32, avg: 44 },
-  { day: 'Mer', sales: 9800, orders: 78, avg: 126 },
-  { day: 'Jeu', sales: 3908, orders: 56, avg: 70 },
-  { day: 'Ven', sales: 4800, orders: 65, avg: 74 },
-  { day: 'Sam', sales: 3800, orders: 58, avg: 66 },
-  { day: 'Dim', sales: 4300, orders: 62, avg: 69 },
-]
-
-const deviceData = [
-  { name: 'Desktop', value: 45, color: '#8884d8' },
-  { name: 'Mobile', value: 40, color: '#82ca9d' },
-  { name: 'Tablet', value: 15, color: '#ffc658' },
-]
-
-const trafficSources = [
-  { source: 'Organique', sessions: 12500, bounce: 32, duration: '2:45' },
-  { source: 'Payant', sessions: 8200, bounce: 28, duration: '3:12' },
-  { source: 'Social', sessions: 5600, bounce: 45, duration: '1:58' },
-  { source: 'Email', sessions: 3200, bounce: 22, duration: '4:05' },
-  { source: 'Direct', sessions: 9800, bounce: 35, duration: '2:28' },
-]
-
-const topProducts = [
-  { name: 'Produit A', sales: 1250, revenue: 45600, growth: 12.5 },
-  { name: 'Produit B', sales: 980, revenue: 38200, growth: 8.2 },
-  { name: 'Produit C', sales: 875, revenue: 29800, growth: -2.1 },
-  { name: 'Produit D', sales: 720, revenue: 25400, growth: 15.8 },
-  { name: 'Produit E', sales: 650, revenue: 22100, growth: 6.3 },
-]
+const COLORS = ['hsl(var(--chart-1))', 'hsl(var(--chart-2))', 'hsl(var(--chart-3))']
 
 export const SystemAnalytics = () => {
-  const [loading, setLoading] = useState(false)
   const [dateRange, setDateRange] = useState('7d')
   const { toast } = useToast()
 
+  const { data, isLoading, refetch, isFetching } = useQuery({
+    queryKey: ['system-analytics', dateRange],
+    queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return null
+
+      const daysBack = dateRange === '7d' ? 7 : dateRange === '30d' ? 30 : 90
+
+      // Fetch orders for sales data
+      const since = new Date()
+      since.setDate(since.getDate() - daysBack)
+      
+      const [ordersRes, productsRes, customersRes, profilesRes] = await Promise.all([
+        supabase.from('orders').select('id, total_amount, created_at, status')
+          .eq('user_id', user.id).gte('created_at', since.toISOString()),
+        supabase.from('products').select('id, title, price, stock_quantity, status')
+          .eq('user_id', user.id),
+        supabase.from('customers').select('id, created_at')
+          .eq('user_id', user.id),
+        supabase.from('profiles').select('id, subscription_plan')
+      ])
+
+      const orders = ordersRes.data || []
+      const products = productsRes.data || []
+      const customers = customersRes.data || []
+      const profiles = profilesRes.data || []
+
+      // Build daily sales data
+      const dailySales: Record<string, { sales: number; orders: number }> = {}
+      const dayNames = ['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam']
+      for (let i = 0; i < Math.min(daysBack, 7); i++) {
+        const d = new Date()
+        d.setDate(d.getDate() - (6 - i))
+        const key = dayNames[d.getDay()]
+        dailySales[key] = { sales: 0, orders: 0 }
+      }
+      for (const o of orders) {
+        const d = new Date(o.created_at)
+        const key = dayNames[d.getDay()]
+        if (dailySales[key]) {
+          dailySales[key].sales += o.total_amount || 0
+          dailySales[key].orders += 1
+        }
+      }
+      const salesData = Object.entries(dailySales).map(([day, v]) => ({
+        day, sales: Math.round(v.sales), orders: v.orders, avg: v.orders > 0 ? Math.round(v.sales / v.orders) : 0
+      }))
+
+      // Top products by stock value
+      const topProducts = [...products]
+        .sort((a, b) => ((b.price || 0) * (b.stock_quantity || 0)) - ((a.price || 0) * (a.stock_quantity || 0)))
+        .slice(0, 5)
+        .map(p => ({
+          name: p.title || 'Sans nom',
+          stock: p.stock_quantity || 0,
+          value: Math.round((p.price || 0) * (p.stock_quantity || 0)),
+          status: p.status || 'draft'
+        }))
+
+      // Plan distribution from profiles
+      const planCounts: Record<string, number> = {}
+      for (const p of profiles) {
+        const plan = (p as any).subscription_plan || 'free'
+        planCounts[plan] = (planCounts[plan] || 0) + 1
+      }
+      const planData = Object.entries(planCounts).map(([name, value], i) => ({
+        name: name.charAt(0).toUpperCase() + name.slice(1),
+        value,
+        color: COLORS[i % COLORS.length]
+      }))
+
+      // Customer growth by month
+      const monthNames = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Jun', 'Jul', 'Aoû', 'Sep', 'Oct', 'Nov', 'Déc']
+      const growthMap: Record<string, number> = {}
+      for (const c of customers) {
+        const d = new Date(c.created_at)
+        const key = monthNames[d.getMonth()]
+        growthMap[key] = (growthMap[key] || 0) + 1
+      }
+      // Last 6 months
+      const now = new Date()
+      const userGrowthData = []
+      for (let i = 5; i >= 0; i--) {
+        const m = new Date(now.getFullYear(), now.getMonth() - i, 1)
+        const key = monthNames[m.getMonth()]
+        userGrowthData.push({ month: key, customers: growthMap[key] || 0 })
+      }
+
+      // KPIs
+      const totalRevenue = orders.reduce((s, o) => s + (o.total_amount || 0), 0)
+      const totalOrders = orders.length
+      const totalCustomers = customers.length
+      const activeProducts = products.filter(p => p.status === 'active').length
+
+      return {
+        salesData,
+        topProducts,
+        planData,
+        userGrowthData,
+        totalRevenue,
+        totalOrders,
+        totalCustomers,
+        activeProducts,
+        totalProducts: products.length
+      }
+    }
+  })
+
   const handleExport = () => {
-    toast({
-      title: "Export en cours",
-      description: "Le rapport d'analytics sera téléchargé dans quelques instants",
-    })
+    toast({ title: "Export en cours", description: "Le rapport d'analytics sera téléchargé dans quelques instants" })
   }
 
-  const refreshData = () => {
-    setLoading(true)
-    setTimeout(() => {
-      setLoading(false)
-      toast({
-        title: "Données actualisées",
-        description: "Les analytics ont été mises à jour",
-      })
-    }, 2000)
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    )
   }
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-3xl font-bold">Analytics Avancées</h2>
-          <p className="text-muted-foreground">
-            Analysez les performances détaillées de votre plateforme
-          </p>
+          <p className="text-muted-foreground">Données réelles de votre plateforme</p>
         </div>
         <div className="flex gap-2">
           <Button variant="outline" onClick={handleExport}>
             <Download className="h-4 w-4 mr-2" />
             Exporter
           </Button>
-          <Button onClick={refreshData} disabled={loading}>
-            <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+          <Button onClick={() => refetch()} disabled={isFetching}>
+            <RefreshCw className={`h-4 w-4 mr-2 ${isFetching ? 'animate-spin' : ''}`} />
             Actualiser
           </Button>
         </div>
@@ -110,83 +169,67 @@ export const SystemAnalytics = () => {
       <Tabs defaultValue="overview" className="space-y-6">
         <TabsList>
           <TabsTrigger value="overview">Vue d'ensemble</TabsTrigger>
-          <TabsTrigger value="users">Utilisateurs</TabsTrigger>
           <TabsTrigger value="sales">Ventes</TabsTrigger>
           <TabsTrigger value="products">Produits</TabsTrigger>
-          <TabsTrigger value="traffic">Trafic</TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="space-y-6">
-          {/* KPIs */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Sessions Totales</CardTitle>
-                <Globe className="h-4 w-4 text-muted-foreground" />
+                <CardTitle className="text-sm font-medium">Revenu Total</CardTitle>
+                <DollarSign className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">42,547</div>
-                <p className="text-xs text-muted-foreground">
-                  <span className="text-success">+12.5%</span> vs période précédente
-                </p>
+                <div className="text-2xl font-bold">{(data?.totalRevenue || 0).toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' })}</div>
+                <p className="text-xs text-muted-foreground">{data?.totalOrders || 0} commandes</p>
               </CardContent>
             </Card>
-
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Taux de Conversion</CardTitle>
-                <Target className="h-4 w-4 text-muted-foreground" />
+                <CardTitle className="text-sm font-medium">Commandes</CardTitle>
+                <ShoppingCart className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">3.24%</div>
-                <p className="text-xs text-muted-foreground">
-                  <span className="text-success">+0.3%</span> vs période précédente
-                </p>
+                <div className="text-2xl font-bold">{data?.totalOrders || 0}</div>
+                <p className="text-xs text-muted-foreground">sur la période</p>
               </CardContent>
             </Card>
-
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Durée Moyenne</CardTitle>
-                <Clock className="h-4 w-4 text-muted-foreground" />
+                <CardTitle className="text-sm font-medium">Clients</CardTitle>
+                <Users className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">2:43</div>
-                <p className="text-xs text-muted-foreground">
-                  <span className="text-destructive">-0:12</span> vs période précédente
-                </p>
+                <div className="text-2xl font-bold">{data?.totalCustomers || 0}</div>
+                <p className="text-xs text-muted-foreground">clients enregistrés</p>
               </CardContent>
             </Card>
-
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Taux de Rebond</CardTitle>
-                <TrendingUp className="h-4 w-4 text-muted-foreground" />
+                <CardTitle className="text-sm font-medium">Produits Actifs</CardTitle>
+                <Package className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">34.2%</div>
-                <p className="text-xs text-muted-foreground">
-                  <span className="text-success">-2.1%</span> vs période précédente
-                </p>
+                <div className="text-2xl font-bold">{data?.activeProducts || 0}</div>
+                <p className="text-xs text-muted-foreground">/ {data?.totalProducts || 0} total</p>
               </CardContent>
             </Card>
           </div>
 
-          {/* Charts */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <Card>
               <CardHeader>
-                <CardTitle>Croissance Utilisateurs (6 mois)</CardTitle>
+                <CardTitle>Croissance Clients (6 mois)</CardTitle>
               </CardHeader>
               <CardContent>
                 <ResponsiveContainer width="100%" height={300}>
-                  <AreaChart data={userGrowthData}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="month" />
-                    <YAxis />
-                    <Tooltip />
-                    <Area type="monotone" dataKey="users" stackId="1" stroke="#8884d8" fill="#8884d8" fillOpacity={0.6} />
-                    <Area type="monotone" dataKey="active" stackId="2" stroke="#82ca9d" fill="#82ca9d" fillOpacity={0.6} />
+                  <AreaChart data={data?.userGrowthData || []}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                    <XAxis dataKey="month" stroke="hsl(var(--muted-foreground))" />
+                    <YAxis stroke="hsl(var(--muted-foreground))" />
+                    <Tooltip contentStyle={{ backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))' }} />
+                    <Area type="monotone" dataKey="customers" stroke="hsl(var(--primary))" fill="hsl(var(--primary))" fillOpacity={0.2} />
                   </AreaChart>
                 </ResponsiveContainer>
               </CardContent>
@@ -194,28 +237,34 @@ export const SystemAnalytics = () => {
 
             <Card>
               <CardHeader>
-                <CardTitle>Répartition par Appareil</CardTitle>
+                <CardTitle>Répartition par Plan</CardTitle>
               </CardHeader>
               <CardContent>
-                <ResponsiveContainer width="100%" height={300}>
-                  <PieChart>
-                    <Pie
-                      data={deviceData}
-                      cx="50%"
-                      cy="50%"
-                      labelLine={false}
-                      label={({ name, percent }: any) => `${name} ${(percent * 100).toFixed(0)}%`}
-                      outerRadius={80}
-                      fill="#8884d8"
-                      dataKey="value"
-                    >
-                      {deviceData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={entry.color} />
-                      ))}
-                    </Pie>
-                    <Tooltip />
-                  </PieChart>
-                </ResponsiveContainer>
+                {(data?.planData?.length || 0) > 0 ? (
+                  <ResponsiveContainer width="100%" height={300}>
+                    <PieChart>
+                      <Pie
+                        data={data?.planData}
+                        cx="50%"
+                        cy="50%"
+                        labelLine={false}
+                        label={({ name, percent }: any) => `${name} ${(percent * 100).toFixed(0)}%`}
+                        outerRadius={80}
+                        fill="hsl(var(--primary))"
+                        dataKey="value"
+                      >
+                        {(data?.planData || []).map((entry: any, index: number) => (
+                          <Cell key={`cell-${index}`} fill={entry.color} />
+                        ))}
+                      </Pie>
+                      <Tooltip />
+                    </PieChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <div className="flex items-center justify-center h-[300px] text-muted-foreground">
+                    Aucune donnée de plan disponible
+                  </div>
+                )}
               </CardContent>
             </Card>
           </div>
@@ -228,13 +277,13 @@ export const SystemAnalytics = () => {
             </CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={400}>
-                <BarChart data={salesData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="day" />
-                  <YAxis />
-                  <Tooltip />
-                  <Bar dataKey="sales" fill="#8884d8" />
-                  <Bar dataKey="orders" fill="#82ca9d" />
+                <BarChart data={data?.salesData || []}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                  <XAxis dataKey="day" stroke="hsl(var(--muted-foreground))" />
+                  <YAxis stroke="hsl(var(--muted-foreground))" />
+                  <Tooltip contentStyle={{ backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))' }} />
+                  <Bar dataKey="sales" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="orders" fill="hsl(var(--chart-2))" radius={[4, 4, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </CardContent>
@@ -244,48 +293,28 @@ export const SystemAnalytics = () => {
         <TabsContent value="products" className="space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle>Top 5 Produits</CardTitle>
+              <CardTitle>Top 5 Produits (par valeur stock)</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {topProducts.map((product, index) => (
-                  <div key={index} className="flex items-center justify-between p-4 border rounded-lg">
-                    <div>
-                      <h4 className="font-medium">{product.name}</h4>
-                      <p className="text-sm text-muted-foreground">{product.sales} ventes</p>
-                    </div>
-                    <div className="text-right">
-                      <div className="font-medium">€{product.revenue.toLocaleString()}</div>
-                      <div className={`text-sm ${product.growth > 0 ? 'text-success' : 'text-destructive'}`}>
-                        {product.growth > 0 ? '+' : ''}{product.growth}%
+                {(data?.topProducts || []).length === 0 ? (
+                  <div className="text-center text-muted-foreground py-8">Aucun produit trouvé</div>
+                ) : (
+                  (data?.topProducts || []).map((product: any, index: number) => (
+                    <div key={index} className="flex items-center justify-between p-4 border rounded-lg">
+                      <div>
+                        <h4 className="font-medium">{product.name}</h4>
+                        <p className="text-sm text-muted-foreground">{product.stock} en stock</p>
+                      </div>
+                      <div className="text-right">
+                        <div className="font-medium">{product.value.toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' })}</div>
+                        <Badge variant={product.status === 'active' ? 'default' : 'secondary'} className="text-xs">
+                          {product.status}
+                        </Badge>
                       </div>
                     </div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="traffic" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Sources de Trafic</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {trafficSources.map((source, index) => (
-                  <div key={index} className="flex items-center justify-between p-4 border rounded-lg">
-                    <div>
-                      <h4 className="font-medium">{source.source}</h4>
-                      <p className="text-sm text-muted-foreground">{source.sessions.toLocaleString()} sessions</p>
-                    </div>
-                    <div className="text-right">
-                      <div className="text-sm">Rebond: {source.bounce}%</div>
-                      <div className="text-sm">Durée: {source.duration}</div>
-                    </div>
-                  </div>
-                ))}
+                  ))
+                )}
               </div>
             </CardContent>
           </Card>
