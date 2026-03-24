@@ -105,7 +105,7 @@
 ### Pipeline
 - [x] GitHub Actions CI/CD (ci.yml + deploy.yml + security-scan.yml)
 - [x] Security scan pipeline (CodeQL, secret detection, RLS audit)
-- [ ] Blue-green deployment — Sprint 7+
+- [x] Blue-green deployment (blue-green-deploy.yml with health checks + promotion)
 
 ## Remaining for Sprint 6+
 - [x] Real-time system monitoring (replaces Prometheus)
@@ -113,6 +113,6 @@
 - [x] Load testing k6 suite
 - [x] GitHub Actions CI/CD + Security pipeline
 - [x] P&L dashboard connected to real data
-- [ ] Blue-green deployment
-- [ ] Database backup verification
-- [ ] API versioning strategy
+- [x] Blue-green deployment (manual trigger, slot-based with smoke tests)
+- [x] Database backup verification (Edge Function + data inventory + integrity score)
+- [x] API versioning strategy (X-Api-Version header, v1/v2 routing, deprecation headers)
