@@ -47,8 +47,7 @@ async function extractFromAliExpress(url: string): Promise<any> {
   const apiKey = Deno.env.get('ALIEXPRESS_API_KEY');
   
   if (!apiKey) {
-    console.warn('AliExpress API key not configured, using simulated data');
-    return simulateProductData(url, 'aliexpress');
+    throw new Error('AliExpress API key not configured. Please add ALIEXPRESS_API_KEY in your environment secrets.');
   }
 
   try {
