@@ -147,14 +147,26 @@ export default function CatalogProductsPage() {
   const [showAutoOrderPanel, setShowAutoOrderPanel] = useState(false);
   const [showPricingPanel, setShowPricingPanel] = useState(false);
 
-  // === DATA (reads via Supabase, mutations via FastAPI) ===
-  const { products, stats, isLoading, refetch } = useProductsUnified();
+  // === SERVER-SIDE FILTERS — passed to useProductsUnified ===
+  const serverFilters = useMemo<import('@/hooks/unified/useProductsUnified').ProductFilters>(() => ({
+    page: currentPage,
+    pageSize: itemsPerPage,
+    search: debouncedSearch || undefined,
+    status: statusFilter !== 'all' ? statusFilter as any : undefined,
+    category: categoryFilter !== 'all' ? categoryFilter : undefined,
+  }), [currentPage, itemsPerPage, debouncedSearch, statusFilter, categoryFilter]);
+
+  // === DATA (reads via API V1 with server-side pagination, mutations via FastAPI) ===
+  const { products: serverProducts, stats, isLoading, refetch } = useProductsUnified({ filters: serverFilters });
   const { deleteProduct, createProduct } = useApiProducts();
   const { triggerSync, isSyncing } = useApiSync();
   const { bulkEnrich, isBulkEnriching } = useApiAI();
   const { bulkPublish, isBulkPublishing } = usePublishProducts();
   const { activeJobs } = useApiJobs({ limit: 5 });
   const { syncStores, isSyncingStores } = useSyncConnectedStores();
+
+  // Alias: products from server (already filtered/sorted/paginated server-side)
+  const products = serverProducts;
 
   const categories = useMemo(() => {
     const cats = new Set(products.map((p) => p.category).filter(Boolean));
@@ -166,21 +178,13 @@ export default function CatalogProductsPage() {
     return Array.from(srcs).sort() as string[];
   }, [products]);
 
-  // === KPI CALCULATIONS ===
-  const kpis = useMemo(() => {
-    const totalStock = products.reduce((sum, p) => sum + (p.stock_quantity || 0), 0);
-    const totalValue = products.reduce((sum, p) => sum + p.price * (p.stock_quantity || 0), 0);
-    const productsWithMargin = products.filter((p) => p.cost_price && p.price > 0);
-    const avgMargin = productsWithMargin.length > 0 ?
-    productsWithMargin.reduce((sum, p) => {
-      const margin = (p.price - (p.cost_price || 0)) / p.price * 100;
-      return sum + margin;
-    }, 0) / productsWithMargin.length :
-    0;
-    const lowStockCount = products.filter((p) => (p.stock_quantity || 0) < 10 && (p.stock_quantity || 0) > 0).length;
-
-    return { totalStock, totalValue, avgMargin, lowStockCount };
-  }, [products]);
+  // === KPI from stats (server-side) ===
+  const kpis = useMemo(() => ({
+    totalStock: stats.totalValue > 0 && stats.avgPrice > 0 ? Math.round(stats.totalValue / stats.avgPrice) : 0,
+    totalValue: stats.totalValue,
+    avgMargin: stats.totalMargin > 0 && stats.totalValue > 0 ? (stats.totalMargin / stats.totalValue) * 100 : 0,
+    lowStockCount: stats.lowStock,
+  }), [stats]);
 
   // Helper: compute margin for a product
   const getMargin = (p: UnifiedProduct) => {
@@ -188,68 +192,16 @@ export default function CatalogProductsPage() {
     return (p.price - p.cost_price) / p.price * 100;
   };
 
+  // Client-side source filter only (source not sent to API)
   const filteredProducts = useMemo(() => {
-    let result = [...products];
-    if (debouncedSearch) {
-      const q = debouncedSearch.toLowerCase();
-      result = result.filter((p) =>
-      p.name.toLowerCase().includes(q) ||
-      p.sku?.toLowerCase().includes(q) ||
-      p.category?.toLowerCase().includes(q) ||
-      p.brand?.toLowerCase().includes(q)
-      );
-    }
-    if (statusFilter !== 'all') {
-      result = result.filter((p) => p.status === statusFilter);
-    }
-    if (categoryFilter !== 'all') {
-      result = result.filter((p) => p.category === categoryFilter);
-    }
-    if (sourceFilter !== 'all') {
-      result = result.filter((p) => p.source === sourceFilter);
-    }
+    if (sourceFilter === 'all') return products;
+    return products.filter((p) => p.source === sourceFilter);
+  }, [products, sourceFilter]);
 
-    // Sort
-    result.sort((a, b) => {
-      let valA: number | string = 0;
-      let valB: number | string = 0;
-
-      switch (sortField) {
-        case 'name':
-          valA = a.name.toLowerCase();
-          valB = b.name.toLowerCase();
-          break;
-        case 'price':
-          valA = a.price || 0;
-          valB = b.price || 0;
-          break;
-        case 'stock_quantity':
-          valA = a.stock_quantity || 0;
-          valB = b.stock_quantity || 0;
-          break;
-        case 'margin':
-          valA = getMargin(a) ?? -999;
-          valB = getMargin(b) ?? -999;
-          break;
-        case 'created_at':
-          valA = a.created_at || '';
-          valB = b.created_at || '';
-          break;
-      }
-
-      if (valA < valB) return sortDirection === 'asc' ? -1 : 1;
-      if (valA > valB) return sortDirection === 'asc' ? 1 : -1;
-      return 0;
-    });
-
-    return result;
-  }, [products, debouncedSearch, statusFilter, categoryFilter, sourceFilter, sortField, sortDirection]);
-
-  const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
-  const paginatedProducts = useMemo(() => {
-    const start = (currentPage - 1) * itemsPerPage;
-    return filteredProducts.slice(start, start + itemsPerPage);
-  }, [filteredProducts, currentPage, itemsPerPage]);
+  // Server handles pagination — compute total pages from stats
+  const totalPages = Math.ceil(stats.total / itemsPerPage);
+  // Products already paginated server-side
+  const paginatedProducts = filteredProducts;
 
   const hasActiveFilters = search !== '' || statusFilter !== 'all' || categoryFilter !== 'all' || sourceFilter !== 'all';
 
@@ -273,36 +225,11 @@ export default function CatalogProductsPage() {
   }, [refetch, queryClient, toast]);
 
   const handleEdit = useCallback((product: any) => {
-    navigate('/import/preview', {
-      state: {
-        product: {
-          title: product.name || product.title,
-          description: product.description || '',
-          price: product.price || 0,
-          images: product.image_urls || (product.image_url ? [product.image_url] : []),
-          category: product.category || '',
-          sku: product.sku || '',
-        },
-        returnTo: '/products',
-        openEdit: true,
-      }
-    });
+    navigate(`/products/${product.id}/edit`);
   }, [navigate]);
 
   const handleView = useCallback((product: any) => {
-    navigate('/import/preview', {
-      state: {
-        product: {
-          title: product.name || product.title,
-          description: product.description || '',
-          price: product.price || 0,
-          images: product.image_urls || (product.image_url ? [product.image_url] : []),
-          category: product.category || '',
-          sku: product.sku || '',
-        },
-        returnTo: '/products',
-      }
-    });
+    navigate(`/products/${product.id}`);
   }, [navigate]);
 
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
@@ -681,9 +608,9 @@ export default function CatalogProductsPage() {
           {/* Résultats count + Sort indicator */}
           <div className="flex items-center justify-between text-sm text-muted-foreground">
             <span>
-              {filteredProducts.length === stats.total ?
-              `${stats.total} produit(s)` :
-              `${filteredProducts.length} sur ${stats.total} produit(s)`
+              {hasActiveFilters ?
+              `Page ${currentPage}/${totalPages || 1} · ${stats.total} produit(s) au total` :
+              `${stats.total} produit(s)`
               }
             </span>
             <div className="flex items-center gap-2">
@@ -832,7 +759,7 @@ export default function CatalogProductsPage() {
         <ProductsPagination
           currentPage={currentPage}
           totalPages={totalPages}
-          totalItems={filteredProducts.length}
+          totalItems={stats.total}
           itemsPerPage={itemsPerPage}
           onPageChange={(page) => {setCurrentPage(page);window.scrollTo({ top: 0, behavior: 'smooth' });}}
           onItemsPerPageChange={(items) => {setItemsPerPage(items);setCurrentPage(1);}} />

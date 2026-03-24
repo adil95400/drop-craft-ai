@@ -313,8 +313,7 @@ export default function ProductDetailsPage() {
         .from('products')
         .insert({
           user_id: user.id,
-          title: `${product.name} (copie)`,
-          name: `${product.name} (copie)`,
+          title: `${(product as any).title || product.name} (copie)`,
           description: product.description,
           sku: product.sku ? `${product.sku}-COPY` : null,
           price: product.price,
@@ -331,7 +330,7 @@ export default function ProductDetailsPage() {
 
       if (error) throw error
       toast.success('Produit dupliqué avec succès')
-      if (data?.id) navigate('/import/preview', { state: { productId: data.id, returnTo: '/products' } })
+      if (data?.id) navigate(`/products/${data.id}/edit`)
     } catch (err) {
       toast.error('Erreur lors de la duplication')
     }

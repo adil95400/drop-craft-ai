@@ -34,6 +34,7 @@ import { cn } from '@/lib/utils';
 interface Product {
   id: string;
   name: string;
+  title?: string;
   sku?: string;
   price?: number;
   cost_price?: number;
@@ -48,6 +49,11 @@ interface Product {
   images?: string[];
   brand?: string;
   variants?: any[];
+}
+
+/** Get the display name from a product, preferring title over name */
+function getDisplayName(product: Product): string {
+  return product.title || product.name || 'Produit sans nom';
 }
 
 type SortField = 'name' | 'price' | 'stock_quantity' | 'margin' | 'created_at';
@@ -78,7 +84,8 @@ function getMargin(product: Product): number | null {
 function getHealthScore(product: Product): number {
   let score = 0;
   const total = 6;
-  if (product.name && product.name.length >= 10) score++;
+  const displayName = getDisplayName(product);
+  if (displayName.length >= 10) score++;
   if (product.description && product.description.length >= 50) score++;
   if (product.image_url || (product.images && product.images.length > 0)) score++;
   if (product.sku) score++;
@@ -297,9 +304,9 @@ function MobileCardView({
                     onCheckedChange={() => handleToggleSelect(product.id)}
                     className="mt-1"
                   />
-                  <LazyProductImage
+                   <LazyProductImage
                     src={product.image_url}
-                    alt={product.name}
+                    alt={getDisplayName(product)}
                     className="h-16 w-16 flex-shrink-0"
                   />
                 </div>
@@ -308,7 +315,7 @@ function MobileCardView({
                 <div className="flex-1 min-w-0">
                   <div className="flex items-start justify-between gap-2">
                     <div className="min-w-0">
-                      <h4 className="font-medium text-sm truncate">{product.name}</h4>
+                      <h4 className="font-medium text-sm truncate">{getDisplayName(product)}</h4>
                       {product.sku && (
                         <p className="text-xs text-muted-foreground truncate">SKU: {product.sku}</p>
                       )}
@@ -439,11 +446,11 @@ function DesktopTableView({
                 <div className="flex items-center gap-3">
                   <LazyProductImage
                     src={product.image_url}
-                    alt={product.name}
+                    alt={getDisplayName(product)}
                     className="h-10 w-10"
                   />
                   <div className="min-w-0">
-                    <p className="font-medium truncate max-w-[200px]">{product.name}</p>
+                    <p className="font-medium truncate max-w-[200px]">{getDisplayName(product)}</p>
                     {product.sku && (
                       <p className="text-sm text-muted-foreground truncate">{product.sku}</p>
                     )}
