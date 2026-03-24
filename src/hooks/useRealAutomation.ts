@@ -180,6 +180,7 @@ export const useRealAutomation = () => {
     automations: workflows,
     stats,
     isLoading: isLoadingWorkflows || isLoadingExecutions,
+    refetch: workflowsQuery.refetch,
     createWorkflow: createWorkflow.mutate,
     updateWorkflow: updateWorkflow.mutate,
     toggleWorkflow: toggleWorkflow.mutate,
@@ -191,4 +192,12 @@ export const useRealAutomation = () => {
     isToggling: toggleWorkflow.isPending,
     isDeleting: deleteWorkflow.isPending,
   }
+}
+
+/**
+ * Standalone stats hook — used by AutomationPage
+ */
+export const useAutomationStats = () => {
+  const { stats, isLoading } = useRealAutomation()
+  return { data: stats, isLoading }
 }

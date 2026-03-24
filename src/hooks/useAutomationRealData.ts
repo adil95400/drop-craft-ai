@@ -1,10 +1,18 @@
 /**
- * useAutomationRealData — Compatibility re-export
- * Canonical hook: useRealAutomation.ts
- * All consumers should migrate to useRealAutomation directly.
+ * useAutomationRealData — Compatibility layer
+ * Canonical: useRealAutomation.ts → automation_workflows table
  */
-export { useRealAutomation as useAutomationWorkflows } from './useRealAutomation'
+import { useRealAutomation, useAutomationStats } from './useRealAutomation'
 export type { AutomationWorkflow } from './useRealAutomation'
 
-// Re-export stats from the canonical Supabase-direct hook for AutomationPage
-export { useAutomationStats } from './useRealAutomation'
+/** Query-shaped wrapper for AutomationPage compatibility */
+export function useAutomationWorkflows() {
+  const result = useRealAutomation()
+  return {
+    data: result.workflows,
+    isLoading: result.isLoading,
+    refetch: result.refetch,
+  }
+}
+
+export { useAutomationStats }
