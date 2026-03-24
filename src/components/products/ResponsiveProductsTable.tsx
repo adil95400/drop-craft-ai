@@ -84,7 +84,8 @@ function getMargin(product: Product): number | null {
 function getHealthScore(product: Product): number {
   let score = 0;
   const total = 6;
-  if (product.name && product.name.length >= 10) score++;
+  const displayName = getDisplayName(product);
+  if (displayName.length >= 10) score++;
   if (product.description && product.description.length >= 50) score++;
   if (product.image_url || (product.images && product.images.length > 0)) score++;
   if (product.sku) score++;
