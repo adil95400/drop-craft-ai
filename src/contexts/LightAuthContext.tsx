@@ -25,27 +25,37 @@ export const LightAuthProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   useEffect(() => {
     const checkLocalSession = () => {
       try {
-        // Check for Supabase session in localStorage without importing supabase
-        const storageKey = Object.keys(localStorage).find(key => 
-          key.startsWith('sb-') && key.endsWith('-auth-token')
+        const storageKeys = Object.keys(localStorage).filter(
+          key => key.startsWith('sb-') && key.endsWith('-auth-token')
         );
-        
-        if (storageKey) {
+
+        for (const storageKey of storageKeys) {
           const sessionData = localStorage.getItem(storageKey);
-          if (sessionData) {
-            const parsed = JSON.parse(sessionData);
-            if (parsed?.access_token && parsed?.expires_at) {
-              // Check if token is not expired
-              const expiresAt = parsed.expires_at * 1000;
-              if (Date.now() < expiresAt) {
-                setIsAuthenticated(true);
-              }
-            }
+          if (!sessionData) continue;
+
+          const parsed = JSON.parse(sessionData);
+          const session = parsed?.currentSession ?? parsed?.session ?? parsed;
+          const accessToken = session?.access_token;
+          const expiresAtRaw = session?.expires_at;
+
+          if (!accessToken || typeof accessToken !== 'string') continue;
+
+          // Ignore clearly invalid tokens and cleanup stale entries
+          if (accessToken.split('.').length !== 3) {
+            localStorage.removeItem(storageKey);
+            continue;
+          }
+
+          const expiresAtMs = Number(expiresAtRaw) * 1000;
+          if (Number.isFinite(expiresAtMs) && Date.now() < expiresAtMs) {
+            setIsAuthenticated(true);
+            break;
           }
         }
       } catch {
         // Ignore errors, just mark as not authenticated
       }
+
       setIsLoading(false);
     };
 

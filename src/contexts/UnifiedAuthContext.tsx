@@ -85,6 +85,36 @@ export const UnifiedAuthProvider = ({ children }: { children: React.ReactNode })
   const fetchingRef = useRef(false);
   const initializedRef = useRef(false);
 
+  const clearLocalAuthState = useCallback(() => {
+    try {
+      const localKeys = Object.keys(localStorage);
+      for (const key of localKeys) {
+        if (key.startsWith('supabase.auth.') || (key.startsWith('sb-') && key.endsWith('-auth-token'))) {
+          localStorage.removeItem(key);
+        }
+      }
+      const sessionKeys = Object.keys(sessionStorage);
+      for (const key of sessionKeys) {
+        if (key.startsWith('supabase.auth.') || (key.startsWith('sb-') && key.endsWith('-auth-token'))) {
+          sessionStorage.removeItem(key);
+        }
+      }
+    } catch (error) {
+      logger.warn('Unable to clear auth storage', { error });
+    }
+  }, []);
+
+  const isRecoverableAuthError = useCallback((message?: string) => {
+    const value = (message || '').toLowerCase();
+    return (
+      value.includes('invalid refresh token') ||
+      value.includes('refresh token not found') ||
+      value.includes('bad_jwt') ||
+      value.includes('invalid claim') ||
+      value.includes('jwt')
+    );
+  }, []);
+
   // ── Log auth activity ────────────────────────────────────────────
   const logLoginActivity = useCallback(async (userId: string, event: string, success: boolean) => {
     try {
@@ -150,7 +180,7 @@ export const UnifiedAuthProvider = ({ children }: { children: React.ReactNode })
         setSessionInfo(prev => ({
           ...prev,
           isExpired: false,
-          expiresAt: new Date(data.session!.expires_at! * 1000),
+          expiresAt: new Date(data.session.expires_at! * 1000),
         }));
         toast({ title: 'Session prolongée', description: 'Votre session a été renouvelée.' });
       }
@@ -213,56 +243,38 @@ export const UnifiedAuthProvider = ({ children }: { children: React.ReactNode })
 
   // ── Initialize auth state ────────────────────────────────────────
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        setSession(session);
-        setUser(session?.user ?? null);
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, nextSession) => {
+      setSession(nextSession);
+      setUser(nextSession?.user ?? null);
 
-        if (session?.user) {
-          if (event === 'SIGNED_IN') {
-            logLoginActivity(session.user.id, event, true);
+      if (nextSession?.user) {
+        if (event === 'SIGNED_IN') {
+          void logLoginActivity(nextSession.user.id, event, true);
 
-            supabase.functions.invoke('check-subscription').then(({ error }) => {
-              if (error) logger.debug('check-subscription skipped', { error });
-            }).catch(() => {});
+          supabase.functions.invoke('check-subscription').then(({ error }) => {
+            if (error) logger.debug('check-subscription skipped', { error });
+          }).catch(() => {});
 
-            try {
-              const pendingTrial = localStorage.getItem('pending_trial');
-              if (pendingTrial === 'true') {
-                localStorage.removeItem('pending_trial');
-                supabase.functions.invoke('trial-activate', {
-                  body: { trialDays: 14, plan: 'pro' },
-                }).then(({ error }) => {
-                  if (error) logger.warn('trial-auto-activate failed', { error });
-                });
-              }
-            } catch {
-              // Ignore localStorage errors
+          try {
+            const pendingTrial = localStorage.getItem('pending_trial');
+            if (pendingTrial === 'true') {
+              localStorage.removeItem('pending_trial');
+              supabase.functions.invoke('trial-activate', {
+                body: { trialDays: 14, plan: 'pro' },
+              }).then(({ error }) => {
+                if (error) logger.warn('trial-auto-activate failed', { error });
+              });
             }
+          } catch {
+            // Ignore localStorage errors
           }
-
-          setTimeout(() => fetchProfile(session.user.id), 0);
-          logger.setUser(session.user.id, session.user.email);
-        } else {
-          setProfile(null);
-          logger.clearUser();
         }
 
-        if (!initializedRef.current) {
-          initializedRef.current = true;
-          setLoading(false);
-        }
-      }
-    );
-
-    // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-
-      if (session?.user) {
-        fetchProfile(session.user.id);
-        logger.setUser(session.user.id, session.user.email);
+        void fetchProfile(nextSession.user.id);
+        logger.setUser(nextSession.user.id, nextSession.user.email);
+      } else {
+        setProfile(null);
+        logger.clearUser();
       }
 
       if (!initializedRef.current) {
@@ -271,6 +283,44 @@ export const UnifiedAuthProvider = ({ children }: { children: React.ReactNode })
       }
     });
 
+    // Get initial session
+    supabase.auth.getSession()
+      .then(async ({ data: { session: initialSession }, error }) => {
+        if (error || (initialSession?.access_token && !initialSession?.user?.id)) {
+          logger.warn('Invalid auth session detected during init, resetting local auth state', { error });
+          clearLocalAuthState();
+          try {
+            await supabase.auth.signOut({ scope: 'local' });
+          } catch {
+            // Ignore local signout failures
+          }
+          setSession(null);
+          setUser(null);
+          setProfile(null);
+        } else {
+          setSession(initialSession);
+          setUser(initialSession?.user ?? null);
+
+          if (initialSession?.user) {
+            void fetchProfile(initialSession.user.id);
+            logger.setUser(initialSession.user.id, initialSession.user.email);
+          }
+        }
+
+        if (!initializedRef.current) {
+          initializedRef.current = true;
+          setLoading(false);
+        }
+      })
+      .catch((error) => {
+        logger.error('Initial session restore failed', error);
+        clearLocalAuthState();
+        if (!initializedRef.current) {
+          initializedRef.current = true;
+          setLoading(false);
+        }
+      });
+
     // Periodic session check
     const interval = setInterval(checkSessionExpiry, SESSION_CHECK_INTERVAL);
 
@@ -278,22 +328,40 @@ export const UnifiedAuthProvider = ({ children }: { children: React.ReactNode })
       subscription.unsubscribe();
       clearInterval(interval);
     };
-  }, [checkSessionExpiry, fetchProfile, logLoginActivity]);
+  }, [checkSessionExpiry, clearLocalAuthState, fetchProfile, logLoginActivity]);
 
   // ── Auth actions ─────────────────────────────────────────────────
   const signIn = useCallback(async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    let { error } = await supabase.auth.signInWithPassword({ email, password });
+
+    if (error && isRecoverableAuthError(error.message)) {
+      logger.warn('Recoverable auth error on sign-in, retrying after local reset', { message: error.message });
+      clearLocalAuthState();
+      try {
+        await supabase.auth.signOut({ scope: 'local' });
+      } catch {
+        // Ignore local signout failures
+      }
+
+      const retry = await supabase.auth.signInWithPassword({ email, password });
+      error = retry.error;
+    }
+
     if (!error) {
       try { const { trackLogin } = await import('@/lib/analytics/conversions'); trackLogin('email'); } catch {}
     }
+
     return { error };
-  }, []);
+  }, [clearLocalAuthState, isRecoverableAuthError]);
 
   const signUp = useCallback(async (email: string, password: string, metadata?: Record<string, any>) => {
     const { error } = await supabase.auth.signUp({
       email,
       password,
-      options: { data: metadata },
+      options: {
+        data: metadata,
+        emailRedirectTo: window.location.origin,
+      },
     });
     if (!error) {
       try { const { trackSignUp } = await import('@/lib/analytics/conversions'); trackSignUp('email'); } catch {}
