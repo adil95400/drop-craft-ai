@@ -17,6 +17,7 @@ export interface AutomationWorkflow {
   success_count: number
   failure_count: number
   last_executed_at?: string
+  last_run_at?: string
   user_id: string
   created_at: string
   updated_at: string
