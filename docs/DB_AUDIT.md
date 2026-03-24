@@ -1,6 +1,6 @@
 # Audit du Schéma Base de Données — Shopopti
 
-> Généré le 2026-02-15. Toutes les phases terminées.
+> Généré le 2026-02-15. Mis à jour le 2026-03-24.
 
 ## Résumé des actions réalisées
 
@@ -78,6 +78,27 @@ Tables Import conservées : `imported_products` (160+ refs), `catalog_products` 
 
 Tables conservées : `translation_cache`, `translation_usage` (edge functions translate/libretranslate-proxy)
 
+### ✅ Phase 6 — Consolidation Workflows (terminée — 2026-03-24)
+
+**Objectif** : Éliminer les 3 systèmes parallèles de workflows au profit d'un modèle canonique unique.
+
+| Ancien système | Table | Migration |
+|---|---|---|
+| WorkflowService | `workflow_templates` | Code migré → `automation_workflows` |
+| SavedWorkflows (Visual Canvas) | `saved_workflows` | Code migré → `automation_workflows` |
+| AutomationWorkflows (canonical) | `automation_workflows` | **Conservé — source de vérité** |
+
+**Fichiers refactorisés** :
+- `src/services/WorkflowService.ts` → pointe vers `automation_workflows` (mapping category/is_template via `workflow_data` JSONB)
+- `src/hooks/useSavedWorkflows.ts` → pointe vers `automation_workflows` (mapping nodes → `steps`)
+- `src/hooks/useWorkflows.ts` → inchangé (délègue à WorkflowService)
+- `src/hooks/useRealAutomation.ts` → inchangé (API V1 → `automation_workflows`)
+- `src/hooks/useAutomationRealData.ts` → inchangé (Supabase direct → `automation_workflows`)
+
+**Tables DB maintenues temporairement** : `workflow_templates`, `saved_workflows` existent encore en DB mais ne sont plus utilisées par le code. À supprimer lors du prochain nettoyage DB.
+
+**Table associée conservée** : `workflow_executions` (FK vers `workflow_templates` — à migrer vers `automation_workflows` via migration DB)
+
 ---
 
 ## Tables canoniques (Source de Vérité — état final)
@@ -93,7 +114,9 @@ Tables conservées : `translation_cache`, `translation_usage` (edge functions tr
 | `imported_products` | 0+ | Produits importés (pré-catalogue) |
 | `catalog_products` | 0+ | Catalogue fournisseurs |
 | `pricing_rules` | 0+ | Règles de prix unifiées |
-| `automation_workflows` | 0+ | Workflows d'automatisation unifiés |
+| `automation_workflows` | 0+ | **Workflows & automatisations unifiés** |
+| `workflow_executions` | 0+ | Historique d'exécution workflows |
+| `workflow_step_definitions` | 0+ | Définitions des types d'étapes |
 | `activity_logs` | 7 216 | Journal d'activité principal |
 | `profiles` | ≥1 | Profils utilisateurs |
 | `user_roles` | ≥1 | Rôles utilisateurs |
@@ -118,6 +141,14 @@ Tables conservées : `translation_cache`, `translation_usage` (edge functions tr
 | `extension_jobs` | `jobs` | INSERT, UPDATE, DELETE |
 | `price_rules` | `pricing_rules` | INSERT, UPDATE, DELETE |
 | `automation_rules` | `automation_workflows` | INSERT, UPDATE, DELETE |
+
+## Tables à supprimer (prochaine migration)
+
+| Table | Raison |
+|---|---|
+| `workflow_templates` | Code migré vers `automation_workflows` — 0 données |
+| `saved_workflows` | Code migré vers `automation_workflows` — 0 données |
+| `repricing_rules` | À fusionner avec `pricing_rules` (Phase 7 — pricing) |
 
 ## Tables supprimées au total : ~28
 
