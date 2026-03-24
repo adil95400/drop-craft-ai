@@ -210,7 +210,7 @@ export const CompetitorPricingService = {
 
   async getRepricingRules(): Promise<RepricingRule[]> {
     const { data, error } = await supabase
-      .from('repricing_rules')
+      .from('pricing_rules')
       .select('*')
       .order('created_at', { ascending: false });
 
@@ -223,7 +223,7 @@ export const CompetitorPricingService = {
     if (!user) throw new Error('Non authentifié');
 
     const { data, error } = await supabase
-      .from('repricing_rules')
+      .from('pricing_rules')
       .insert({
         user_id: user.id,
         name: rule.name,
@@ -260,7 +260,7 @@ export const CompetitorPricingService = {
     if (updates.schedule !== undefined) dbUpdates.schedule = updates.schedule;
 
     const { data, error } = await supabase
-      .from('repricing_rules')
+      .from('pricing_rules')
       .update(dbUpdates)
       .eq('id', id)
       .select()
@@ -272,7 +272,7 @@ export const CompetitorPricingService = {
 
   async deleteRepricingRule(id: string): Promise<void> {
     const { error } = await supabase
-      .from('repricing_rules')
+      .from('pricing_rules')
       .delete()
       .eq('id', id);
 
@@ -281,7 +281,7 @@ export const CompetitorPricingService = {
 
   async toggleRepricingRule(id: string): Promise<RepricingRule> {
     const { data: current, error: fetchError } = await supabase
-      .from('repricing_rules')
+      .from('pricing_rules')
       .select('is_active')
       .eq('id', id)
       .single();
@@ -300,8 +300,8 @@ export const CompetitorPricingService = {
 
     // Update last_executed_at
     await supabase
-      .from('repricing_rules')
-      .update({ last_executed_at: new Date().toISOString() })
+      .from('pricing_rules')
+      .update({ updated_at: new Date().toISOString() } as any)
       .eq('id', id);
 
     return {
@@ -314,7 +314,7 @@ export const CompetitorPricingService = {
   async getStats(): Promise<RepricingStats> {
     const [competitorsRes, rulesRes, pricesRes, changesRes] = await Promise.all([
       supabase.from('competitor_profiles').select('id, is_active'),
-      supabase.from('repricing_rules').select('id, is_active'),
+      supabase.from('pricing_rules').select('id, is_active'),
       supabase.from('competitor_prices').select('id, price_diff_percent'),
       supabase.from('price_change_history').select('id').gte('changed_at', new Date(Date.now() - 86400000).toISOString()),
     ]);

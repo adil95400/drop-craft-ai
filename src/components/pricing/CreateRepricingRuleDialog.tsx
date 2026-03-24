@@ -1,5 +1,5 @@
 /**
- * Create Repricing Rule Dialog — Full CRUD for repricing_rules table
+ * Create Repricing Rule Dialog — routes to pricing_rules canonical table
  */
 import { useState } from 'react';
 import {
@@ -48,19 +48,21 @@ export function CreateRepricingRuleDialog({ open, onOpenChange }: Props) {
       if (!user) throw new Error('Non authentifié');
 
       const { error } = await supabase
-        .from('repricing_rules')
+        .from('pricing_rules')
         .insert({
           user_id: user.id,
           name: form.name,
           description: form.description,
-          strategy: form.strategy,
-          price_offset: form.price_offset,
-          offset_type: form.offset_type,
-          min_margin: form.min_margin,
-          max_discount: form.max_discount,
-          schedule: form.schedule,
+          rule_type: form.strategy,
+          calculation: {
+            offset: form.price_offset,
+            offset_type: form.offset_type,
+            min_margin: form.min_margin,
+            max_discount: form.max_discount,
+          },
+          conditions: { schedule: form.schedule },
           is_active: true,
-        });
+        } as any);
 
       if (error) throw error;
     },

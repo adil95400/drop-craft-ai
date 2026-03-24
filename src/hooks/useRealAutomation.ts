@@ -17,6 +17,7 @@ export interface AutomationWorkflow {
   success_count: number
   failure_count: number
   last_executed_at?: string
+  last_run_at?: string
   user_id: string
   created_at: string
   updated_at: string
@@ -43,7 +44,7 @@ export const useRealAutomation = () => {
   const { toast } = useToast()
   const queryClient = useQueryClient()
 
-  const { data: workflows = [], isLoading: isLoadingWorkflows } = useQuery({
+  const workflowsQuery = useQuery({
     queryKey: ['automation-workflows'],
     queryFn: async () => {
       const res = await automationApi.listWorkflows()
@@ -59,6 +60,7 @@ export const useRealAutomation = () => {
         success_count: row.run_count || 0,
         failure_count: 0,
         last_executed_at: row.last_run_at,
+        last_run_at: row.last_run_at,
         user_id: row.user_id,
         created_at: row.created_at,
         updated_at: row.updated_at,
@@ -67,6 +69,9 @@ export const useRealAutomation = () => {
       })) as AutomationWorkflow[]
     },
   })
+
+  const workflows = workflowsQuery.data || []
+  const isLoadingWorkflows = workflowsQuery.isLoading
 
   const { data: executions = [], isLoading: isLoadingExecutions } = useQuery({
     queryKey: ['automation-executions'],
@@ -177,6 +182,7 @@ export const useRealAutomation = () => {
     automations: workflows,
     stats,
     isLoading: isLoadingWorkflows || isLoadingExecutions,
+    refetch: workflowsQuery.refetch,
     createWorkflow: createWorkflow.mutate,
     updateWorkflow: updateWorkflow.mutate,
     toggleWorkflow: toggleWorkflow.mutate,
@@ -188,4 +194,12 @@ export const useRealAutomation = () => {
     isToggling: toggleWorkflow.isPending,
     isDeleting: deleteWorkflow.isPending,
   }
+}
+
+/**
+ * Standalone stats hook — used by AutomationPage
+ */
+export const useAutomationStats = () => {
+  const { stats, isLoading } = useRealAutomation()
+  return { data: stats, isLoading }
 }

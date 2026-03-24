@@ -9,7 +9,7 @@ const corsHeaders = {
 /**
  * cross-module-sync — Applies pricing rules to products and triggers marketing notifications.
  * Actions:
- *   - apply_pricing_rules: Apply user's repricing_rules to products missing price markup
+ *   - apply_pricing_rules: Apply user's pricing_rules to products missing price markup
  *   - sync_stock_alerts: Check low stock and create active_alerts
  *   - auto_reprice_from_competitors: Adjust prices based on competitive_intelligence
  */
@@ -36,9 +36,9 @@ serve(async (req) => {
 
     switch (action) {
       case 'apply_pricing_rules': {
-        // Get user's active repricing rules
+        // Get user's active pricing rules
         const { data: rules } = await supabase
-          .from('repricing_rules')
+          .from('pricing_rules')
           .select('*')
           .eq('user_id', user.id)
           .eq('is_active', true);

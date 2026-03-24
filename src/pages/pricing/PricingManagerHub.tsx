@@ -106,7 +106,7 @@ export default function PricingManagerHub() {
       if (!user) return { rules: 0, products: 0, alerts: 0 };
 
       const [rulesRes, productsRes] = await Promise.all([
-        supabase.from('repricing_rules').select('id', { count: 'exact', head: true }).eq('user_id', user.id),
+        supabase.from('pricing_rules').select('id', { count: 'exact', head: true }).eq('user_id', user.id),
         supabase.from('products').select('id', { count: 'exact', head: true }).eq('user_id', user.id),
       ]);
 
