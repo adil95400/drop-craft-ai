@@ -809,9 +809,68 @@ function OverviewTab() {
   )
 }
 
-// ─── Tab: System Monitoring ──────────────────────────────────────
+// ─── Tab: System Monitoring (Ultra-Pro) ──────────────────────────
+function useApiAnalyticsChart() {
+  return useQuery({
+    queryKey: ['admin-api-analytics-30d'],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from('api_analytics')
+        .select('date, total_requests, failed_requests, avg_response_time_ms, endpoint')
+        .gte('date', new Date(Date.now() - 30 * 86400000).toISOString().split('T')[0])
+        .order('date', { ascending: true })
+
+      const byDay: Record<string, { day: string; requests: number; errors: number; latency: number; count: number }> = {}
+      for (const r of data || []) {
+        const day = new Date(r.date).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' })
+        if (!byDay[day]) byDay[day] = { day, requests: 0, errors: 0, latency: 0, count: 0 }
+        byDay[day].requests += r.total_requests || 0
+        byDay[day].errors += r.failed_requests || 0
+        byDay[day].latency += r.avg_response_time_ms || 0
+        byDay[day].count += 1
+      }
+      return Object.values(byDay).map(d => ({
+        ...d,
+        latency: d.count > 0 ? Math.round(d.latency / d.count) : 0,
+        errorRate: d.requests > 0 ? Math.round((d.errors / d.requests) * 1000) / 10 : 0,
+      }))
+    },
+    staleTime: 5 * 60_000,
+  })
+}
+
+function useResponseTimePercentiles() {
+  return useQuery({
+    queryKey: ['admin-response-percentiles'],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from('api_logs')
+        .select('response_time_ms')
+        .not('response_time_ms', 'is', null)
+        .gte('created_at', new Date(Date.now() - 86400000).toISOString())
+        .order('response_time_ms', { ascending: true })
+        .limit(500)
+
+      if (!data || data.length === 0) return { p50: 0, p95: 0, p99: 0, avg: 0, total: 0 }
+      const times = data.map(d => d.response_time_ms!).filter(Boolean).sort((a, b) => a - b)
+      const n = times.length
+      return {
+        p50: times[Math.floor(n * 0.5)] || 0,
+        p95: times[Math.floor(n * 0.95)] || 0,
+        p99: times[Math.floor(n * 0.99)] || 0,
+        avg: Math.round(times.reduce((a, b) => a + b, 0) / n),
+        total: n,
+      }
+    },
+    staleTime: 60_000,
+  })
+}
+
 function SystemTab() {
   const { data: health, isLoading, refetch } = useSystemHealth()
+  const { data: apiChart = [] } = useApiAnalyticsChart()
+  const { data: percentiles } = useResponseTimePercentiles()
+  const [sysView, setSysView] = useState<'overview' | 'latency' | 'services'>('overview')
 
   const services = [
     { name: 'Base de données', icon: Database, status: 'healthy' as const, detail: `${health?.dbLatency || 0}ms` },
@@ -822,21 +881,17 @@ function SystemTab() {
     { name: 'Moteur de prix', icon: DollarSign, status: 'healthy' as const, detail: 'Actif' },
   ]
 
-  const metrics = [
-    { label: 'Latence API', value: health?.apiLatency || 0, unit: 'ms', max: 1000, icon: Cpu },
-    { label: 'Latence DB', value: health?.dbLatency || 0, unit: 'ms', max: 500, icon: Database },
-    { label: 'Taux d\'erreur', value: health?.errorRate || 0, unit: '%', max: 10, icon: AlertTriangle },
-    { label: 'Jobs actifs', value: health?.activeJobs || 0, unit: '', max: 50, icon: Zap },
-    { label: 'Jobs échoués', value: health?.failedJobs || 0, unit: '', max: 10, icon: XCircle },
-    { label: 'Uptime', value: health?.uptime || 99.9, unit: '%', max: 100, icon: CheckCircle },
-  ]
+  // SLA calculation
+  const slaTarget = 99.9
+  const currentUptime = health?.uptime || 99.9
+  const slaCompliant = currentUptime >= slaTarget
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-lg font-bold text-foreground">Monitoring Système</h2>
-          <p className="text-xs text-muted-foreground">État temps réel de l'infrastructure</p>
+          <p className="text-xs text-muted-foreground">Infrastructure, latence, SLA et services</p>
         </div>
         <Button variant="outline" size="sm" onClick={() => refetch()} disabled={isLoading} className="h-8 text-xs">
           <RefreshCw className={`h-3.5 w-3.5 mr-1.5 ${isLoading ? 'animate-spin' : ''}`} />
@@ -844,85 +899,202 @@ function SystemTab() {
         </Button>
       </div>
 
-      {/* Global status card */}
+      {/* KPIs Row */}
+      <div className="grid gap-3 grid-cols-2 lg:grid-cols-6">
+        <KPICard title="Latence API" value={`${health?.apiLatency || 0}ms`} subtitle="Temps réel" icon={Cpu} loading={isLoading} accent={health?.apiLatency && health.apiLatency > 500 ? 'warning' : 'primary'} />
+        <KPICard title="Latence DB" value={`${health?.dbLatency || 0}ms`} subtitle="Base de données" icon={Database} loading={isLoading} />
+        <KPICard title="Taux erreur" value={`${(health?.errorRate || 0).toFixed(1)}%`} subtitle="Dernière heure" icon={AlertTriangle} loading={isLoading} accent={(health?.errorRate || 0) > 3 ? 'destructive' : 'success'} />
+        <KPICard title="Uptime" value={`${currentUptime}%`} subtitle={slaCompliant ? 'SLA respecté' : 'SLA violé ⚠️'} icon={CheckCircle} loading={isLoading} accent={slaCompliant ? 'success' : 'destructive'} />
+        <KPICard title="Jobs actifs" value={(health?.activeJobs || 0).toString()} subtitle={`${health?.pendingJobs || 0} en attente`} icon={Zap} loading={isLoading} />
+        <KPICard title="P95 Latence" value={percentiles ? `${percentiles.p95}ms` : '—'} subtitle={`P50: ${percentiles?.p50 || 0}ms`} icon={Activity} loading={isLoading} accent={percentiles && percentiles.p95 > 1000 ? 'warning' : 'primary'} />
+      </div>
+
+      {/* SLA Bar */}
       <Card className="shadow-sm">
-        <CardContent className="pt-5">
-          <div className="flex items-center gap-3 mb-5">
-            <span className="relative flex h-3 w-3">
-              <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${
-                (health?.failedJobs || 0) > 5 ? 'bg-red-500' : (health?.errorRate || 0) > 3 ? 'bg-amber-500' : 'bg-emerald-500'
-              }`} />
-              <span className={`relative inline-flex rounded-full h-3 w-3 ${
-                (health?.failedJobs || 0) > 5 ? 'bg-red-500' : (health?.errorRate || 0) > 3 ? 'bg-amber-500' : 'bg-emerald-500'
-              }`} />
-            </span>
-            <div>
-              <h3 className="text-sm font-bold text-foreground">
-                {(health?.failedJobs || 0) > 5 ? 'Dégradation détectée' :
-                 (health?.errorRate || 0) > 3 ? 'Performance réduite' : 'Tous les systèmes opérationnels'}
-              </h3>
-              <p className="text-[10px] text-muted-foreground">
-                Dernière vérification: {new Date().toLocaleTimeString('fr-FR')}
-              </p>
+        <CardContent className="py-3 px-5">
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-3">
+              <span className="relative flex h-2.5 w-2.5">
+                <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${slaCompliant ? 'bg-emerald-500' : 'bg-destructive'}`} />
+                <span className={`relative inline-flex rounded-full h-2.5 w-2.5 ${slaCompliant ? 'bg-emerald-500' : 'bg-destructive'}`} />
+              </span>
+              <span className="text-sm font-semibold">SLA Tracking</span>
+              <span className={`text-lg font-bold font-mono ${slaCompliant ? 'text-emerald-600 dark:text-emerald-400' : 'text-destructive'}`}>{currentUptime}%</span>
+              <span className="text-xs text-muted-foreground">/ {slaTarget}% cible</span>
+            </div>
+            <div className="flex items-center gap-4 text-xs text-muted-foreground">
+              <span>P50: <b className="font-mono text-foreground">{percentiles?.p50 || 0}ms</b></span>
+              <span>P95: <b className="font-mono text-foreground">{percentiles?.p95 || 0}ms</b></span>
+              <span>P99: <b className="font-mono text-foreground">{percentiles?.p99 || 0}ms</b></span>
             </div>
           </div>
-
-          <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
-            {metrics.map((m) => {
-              const ratio = m.value / m.max
-              const isUptime = m.label.includes('Uptime')
-              const color = isUptime
-                ? (ratio > 0.99 ? 'bg-emerald-500' : ratio > 0.95 ? 'bg-amber-500' : 'bg-destructive')
-                : (ratio < 0.5 ? 'bg-emerald-500' : ratio < 0.8 ? 'bg-amber-500' : 'bg-destructive')
-              return (
-                <div key={m.label} className="p-4 rounded-xl border bg-card hover:shadow-sm transition-shadow">
-                  <div className="flex items-center justify-between mb-2.5">
-                    <div className="flex items-center gap-2">
-                      <m.icon className="h-3.5 w-3.5 text-muted-foreground" />
-                      <span className="text-xs font-medium text-muted-foreground">{m.label}</span>
-                    </div>
-                    <span className="text-base font-bold font-mono text-foreground">{m.value}{m.unit}</span>
-                  </div>
-                  <div className="h-1.5 bg-muted rounded-full overflow-hidden">
-                    <div
-                      className={`h-full rounded-full transition-all duration-500 ${color}`}
-                      style={{ width: `${Math.min(ratio * 100, 100)}%` }}
-                    />
-                  </div>
-                </div>
-              )
-            })}
+          <div className="h-1.5 bg-muted rounded-full overflow-hidden">
+            <div className={`h-full rounded-full transition-all duration-700 ${slaCompliant ? 'bg-emerald-500' : 'bg-destructive'}`} style={{ width: `${Math.min(currentUptime, 100)}%` }} />
           </div>
         </CardContent>
       </Card>
 
-      {/* Services grid */}
-      <Card className="shadow-sm">
-        <CardHeader className="pb-2">
-          <CardTitle className="text-sm font-semibold">Services</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid gap-2 md:grid-cols-2">
-            {services.map((svc) => (
-              <div key={svc.name} className="flex items-center justify-between p-3 rounded-xl border hover:border-primary/20 hover:shadow-sm transition-all">
-                <div className="flex items-center gap-2.5">
-                  <span className="relative flex h-2 w-2">
-                    <span className={`absolute inline-flex h-full w-full rounded-full opacity-75 ${
-                      svc.status === 'healthy' ? 'bg-emerald-500' : svc.status === 'warning' ? 'bg-amber-500' : 'bg-red-500'
-                    }`} />
-                    <span className={`relative inline-flex rounded-full h-2 w-2 ${
-                      svc.status === 'healthy' ? 'bg-emerald-500' : svc.status === 'warning' ? 'bg-amber-500' : 'bg-red-500'
-                    }`} />
-                  </span>
-                  <svc.icon className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm font-medium text-foreground">{svc.name}</span>
-                </div>
-                <span className="text-xs text-muted-foreground font-mono">{svc.detail}</span>
+      {/* Sub-nav */}
+      <div className="flex gap-1 bg-muted/50 p-0.5 rounded-lg w-fit">
+        {([
+          { key: 'overview', label: 'Vue globale', icon: BarChart3 },
+          { key: 'latency', label: 'Latence & Trafic', icon: Activity },
+          { key: 'services', label: 'Services', icon: Server },
+        ] as const).map(s => (
+          <button key={s.key} onClick={() => setSysView(s.key)}
+            className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md transition-all ${
+              sysView === s.key ? 'bg-background shadow-sm text-foreground' : 'text-muted-foreground hover:text-foreground'
+            }`}
+          >
+            <s.icon className="h-3.5 w-3.5" />{s.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Overview: Metrics grid */}
+      {sysView === 'overview' && (
+        <Card className="shadow-sm">
+          <CardContent className="pt-5">
+            <div className="flex items-center gap-3 mb-5">
+              <span className="relative flex h-3 w-3">
+                <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${
+                  (health?.failedJobs || 0) > 5 ? 'bg-red-500' : (health?.errorRate || 0) > 3 ? 'bg-amber-500' : 'bg-emerald-500'
+                }`} />
+                <span className={`relative inline-flex rounded-full h-3 w-3 ${
+                  (health?.failedJobs || 0) > 5 ? 'bg-red-500' : (health?.errorRate || 0) > 3 ? 'bg-amber-500' : 'bg-emerald-500'
+                }`} />
+              </span>
+              <div>
+                <h3 className="text-sm font-bold text-foreground">
+                  {(health?.failedJobs || 0) > 5 ? 'Dégradation détectée' :
+                   (health?.errorRate || 0) > 3 ? 'Performance réduite' : 'Tous les systèmes opérationnels'}
+                </h3>
+                <p className="text-[10px] text-muted-foreground">
+                  Dernière vérification: {new Date().toLocaleTimeString('fr-FR')}
+                </p>
               </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+            </div>
+            <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
+              {[
+                { label: 'Latence API', value: health?.apiLatency || 0, unit: 'ms', max: 1000, icon: Cpu },
+                { label: 'Latence DB', value: health?.dbLatency || 0, unit: 'ms', max: 500, icon: Database },
+                { label: "Taux d'erreur", value: health?.errorRate || 0, unit: '%', max: 10, icon: AlertTriangle },
+                { label: 'Jobs actifs', value: health?.activeJobs || 0, unit: '', max: 50, icon: Zap },
+                { label: 'Jobs échoués', value: health?.failedJobs || 0, unit: '', max: 10, icon: XCircle },
+                { label: 'Uptime', value: health?.uptime || 99.9, unit: '%', max: 100, icon: CheckCircle },
+              ].map(m => {
+                const ratio = m.value / m.max
+                const isUptime = m.label.includes('Uptime')
+                const color = isUptime
+                  ? (ratio > 0.99 ? 'bg-emerald-500' : ratio > 0.95 ? 'bg-amber-500' : 'bg-destructive')
+                  : (ratio < 0.5 ? 'bg-emerald-500' : ratio < 0.8 ? 'bg-amber-500' : 'bg-destructive')
+                return (
+                  <div key={m.label} className="p-4 rounded-xl border bg-card hover:shadow-sm transition-shadow">
+                    <div className="flex items-center justify-between mb-2.5">
+                      <div className="flex items-center gap-2">
+                        <m.icon className="h-3.5 w-3.5 text-muted-foreground" />
+                        <span className="text-xs font-medium text-muted-foreground">{m.label}</span>
+                      </div>
+                      <span className="text-base font-bold font-mono text-foreground">{m.value}{m.unit}</span>
+                    </div>
+                    <div className="h-1.5 bg-muted rounded-full overflow-hidden">
+                      <div className={`h-full rounded-full transition-all duration-500 ${color}`} style={{ width: `${Math.min(ratio * 100, 100)}%` }} />
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Latency & Traffic charts */}
+      {sysView === 'latency' && (
+        <div className="grid gap-5 lg:grid-cols-2">
+          <Card className="shadow-sm">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-semibold flex items-center gap-2">
+                <Activity className="h-4 w-4 text-primary" />Latence moyenne (30j)
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {apiChart.length > 0 ? (
+                <ResponsiveContainer width="100%" height={220}>
+                  <AreaChart data={apiChart} margin={{ top: 5, right: 5, left: -20, bottom: 0 }}>
+                    <defs>
+                      <linearGradient id="latGrad" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor={CHART_COLORS.primary} stopOpacity={0.3} />
+                        <stop offset="100%" stopColor={CHART_COLORS.primary} stopOpacity={0} />
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
+                    <XAxis dataKey="day" tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} axisLine={false} tickLine={false} />
+                    <YAxis tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} axisLine={false} tickLine={false} />
+                    <RechartsTooltip contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: 8, fontSize: 12 }} />
+                    <Area type="monotone" dataKey="latency" name="Latence (ms)" stroke={CHART_COLORS.primary} fill="url(#latGrad)" strokeWidth={2} />
+                  </AreaChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="flex items-center justify-center h-[220px] text-sm text-muted-foreground">Aucune donnée</div>
+              )}
+            </CardContent>
+          </Card>
+
+          <Card className="shadow-sm">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-semibold flex items-center gap-2">
+                <BarChart3 className="h-4 w-4 text-primary" />Requêtes & Erreurs (30j)
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {apiChart.length > 0 ? (
+                <ResponsiveContainer width="100%" height={220}>
+                  <BarChart data={apiChart} margin={{ top: 5, right: 5, left: -20, bottom: 0 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
+                    <XAxis dataKey="day" tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} axisLine={false} tickLine={false} />
+                    <YAxis tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} axisLine={false} tickLine={false} />
+                    <RechartsTooltip contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: 8, fontSize: 12 }} />
+                    <Bar dataKey="requests" name="Requêtes" fill={CHART_COLORS.primary} radius={[3, 3, 0, 0]} />
+                    <Bar dataKey="errors" name="Erreurs" fill={CHART_COLORS.destructive} radius={[3, 3, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="flex items-center justify-center h-[220px] text-sm text-muted-foreground">Aucune donnée</div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {/* Services */}
+      {sysView === 'services' && (
+        <Card className="shadow-sm">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-semibold">Services ({services.length})</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid gap-2 md:grid-cols-2">
+              {services.map(svc => (
+                <div key={svc.name} className="flex items-center justify-between p-3 rounded-xl border hover:border-primary/20 hover:shadow-sm transition-all">
+                  <div className="flex items-center gap-2.5">
+                    <span className="relative flex h-2 w-2">
+                      <span className={`absolute inline-flex h-full w-full rounded-full opacity-75 ${
+                        svc.status === 'healthy' ? 'bg-emerald-500' : svc.status === 'warning' ? 'bg-amber-500' : 'bg-red-500'
+                      }`} />
+                      <span className={`relative inline-flex rounded-full h-2 w-2 ${
+                        svc.status === 'healthy' ? 'bg-emerald-500' : svc.status === 'warning' ? 'bg-amber-500' : 'bg-red-500'
+                      }`} />
+                    </span>
+                    <svc.icon className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-sm font-medium text-foreground">{svc.name}</span>
+                  </div>
+                  <span className="text-xs text-muted-foreground font-mono">{svc.detail}</span>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   )
 }
