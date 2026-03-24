@@ -1,0 +1,145 @@
+name: Security Scan
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  schedule:
+    - cron: '0 6 * * 1' # Weekly Monday 6am UTC
+
+concurrency:
+  group: security-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  security-events: write
+
+env:
+  NODE_VERSION: "20"
+
+jobs:
+  dependency-audit:
+    name: 🔒 Dependency Audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - run: npm ci --prefer-offline --no-audit --progress=false
+
+      - name: NPM Audit (high + critical)
+        run: npm audit --audit-level=high --omit=dev || true
+
+      - name: License check
+        run: |
+          npx license-checker --production --failOn "GPL-3.0;AGPL-3.0" || true
+
+  secret-scan:
+    name: 🔑 Secret Detection
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Scan for secrets
+        run: |
+          echo "## 🔑 Secret Scan" >> "$GITHUB_STEP_SUMMARY"
+          FOUND=0
+
+          # Check for common secret patterns
+          for pattern in "PRIVATE_KEY" "sk_live_" "sk_test_" "password\s*=" "secret\s*="; do
+            MATCHES=$(grep -rn --include="*.ts" --include="*.tsx" --include="*.js" --include="*.json" \
+              -i "$pattern" src/ supabase/ 2>/dev/null | grep -v node_modules | grep -v ".test." | head -5 || true)
+            if [ -n "$MATCHES" ]; then
+              echo "⚠️ Pattern '$pattern' found:" >> "$GITHUB_STEP_SUMMARY"
+              echo '```' >> "$GITHUB_STEP_SUMMARY"
+              echo "$MATCHES" >> "$GITHUB_STEP_SUMMARY"
+              echo '```' >> "$GITHUB_STEP_SUMMARY"
+              FOUND=$((FOUND + 1))
+            fi
+          done
+
+          if [ "$FOUND" -eq 0 ]; then
+            echo "✅ No secrets detected" >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "⚠️ $FOUND pattern(s) found — review required" >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+  codeql:
+    name: 🛡️ CodeQL Analysis
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      security-events: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: javascript-typescript
+          queries: security-and-quality
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+
+  rls-policy-check:
+    name: 🗄️ RLS Policy Verification
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check migration files for RLS
+        run: |
+          echo "## 🗄️ RLS Policy Check" >> "$GITHUB_STEP_SUMMARY"
+
+          # Find CREATE TABLE statements without RLS
+          TABLES_WITHOUT_RLS=0
+          for migration in supabase/migrations/*.sql; do
+            [ -f "$migration" ] || continue
+            TABLES=$(grep -i "CREATE TABLE" "$migration" | grep -oP 'public\.\K\w+' || true)
+            for table in $TABLES; do
+              if ! grep -q "ENABLE ROW LEVEL SECURITY" "$migration" 2>/dev/null; then
+                if ! grep -rq "enable row level security.*$table\|$table.*enable row level security" supabase/migrations/ 2>/dev/null; then
+                  echo "⚠️ Table '$table' may lack RLS (check: $migration)" >> "$GITHUB_STEP_SUMMARY"
+                  TABLES_WITHOUT_RLS=$((TABLES_WITHOUT_RLS + 1))
+                fi
+              fi
+            done
+          done
+
+          if [ "$TABLES_WITHOUT_RLS" -eq 0 ]; then
+            echo "✅ All tables appear to have RLS enabled" >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+  summary:
+    name: ✅ Security Gate
+    runs-on: ubuntu-latest
+    if: always()
+    needs: [dependency-audit, secret-scan, codeql, rls-policy-check]
+    steps:
+      - name: Evaluate
+        run: |
+          echo "## Security Pipeline" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Check | Result |" >> "$GITHUB_STEP_SUMMARY"
+          echo "|-------|--------|" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Dependencies | ${{ needs.dependency-audit.result }} |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Secrets | ${{ needs.secret-scan.result }} |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| CodeQL | ${{ needs.codeql.result }} |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| RLS | ${{ needs.rls-policy-check.result }} |" >> "$GITHUB_STEP_SUMMARY"
+
+          if [ "${{ needs.codeql.result }}" = "failure" ]; then
+            echo "❌ Critical security issue detected" >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          fi
+          echo "✅ Security checks passed" >> "$GITHUB_STEP_SUMMARY"

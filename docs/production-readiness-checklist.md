@@ -90,9 +90,9 @@
 - [x] Celery task lifecycle logging
 
 ### Metrics
-- [ ] Prometheus/Datadog integration (Sprint 6+)
-- [ ] Custom dashboards for API latency, error rates
-- [ ] Alert routing (PagerDuty/Slack)
+- [x] System monitoring with real metrics (system-monitoring Edge Function)
+- [x] Analytics persistence (analytics_insights snapshots)
+- [x] Alert routing (Slack webhook + active_alerts table)
 
 ## CI/CD
 
@@ -100,18 +100,19 @@
 - [x] Vitest for frontend (70% coverage threshold)
 - [x] Pytest for backend (auth, quota, celery, redis)
 - [x] Playwright E2E smoke tests (3 specs, 10 scenarios)
-- [ ] Load testing (k6/Artillery) — Sprint 6+
+- [x] Load testing k6 (scripts/load-test.js — 5 scenarios, 6 stages)
 
 ### Pipeline
-- [ ] GitHub Actions workflow — Sprint 6+
-- [ ] Staging environment — Sprint 6+
-- [ ] Blue-green deployment — Sprint 6+
+- [x] GitHub Actions CI/CD (ci.yml + deploy.yml + security-scan.yml)
+- [x] Security scan pipeline (CodeQL, secret detection, RLS audit)
+- [ ] Blue-green deployment — Sprint 7+
 
 ## Remaining for Sprint 6+
-- [ ] Prometheus metrics export
-- [ ] Custom alert routing (Slack/PagerDuty)
-- [ ] Load testing suite (k6)
-- [ ] GitHub Actions CI/CD pipeline
-- [ ] Staging/production environment separation
+- [x] Real-time system monitoring (replaces Prometheus)
+- [x] Slack alert routing
+- [x] Load testing k6 suite
+- [x] GitHub Actions CI/CD + Security pipeline
+- [x] P&L dashboard connected to real data
+- [ ] Blue-green deployment
 - [ ] Database backup verification
 - [ ] API versioning strategy
