@@ -165,6 +165,9 @@ export default function CatalogProductsPage() {
   const { activeJobs } = useApiJobs({ limit: 5 });
   const { syncStores, isSyncingStores } = useSyncConnectedStores();
 
+  // Alias: products from server (already filtered/sorted/paginated server-side)
+  const products = serverProducts;
+
   const categories = useMemo(() => {
     const cats = new Set(products.map((p) => p.category).filter(Boolean));
     return Array.from(cats).sort() as string[];
@@ -175,21 +178,13 @@ export default function CatalogProductsPage() {
     return Array.from(srcs).sort() as string[];
   }, [products]);
 
-  // === KPI CALCULATIONS ===
-  const kpis = useMemo(() => {
-    const totalStock = products.reduce((sum, p) => sum + (p.stock_quantity || 0), 0);
-    const totalValue = products.reduce((sum, p) => sum + p.price * (p.stock_quantity || 0), 0);
-    const productsWithMargin = products.filter((p) => p.cost_price && p.price > 0);
-    const avgMargin = productsWithMargin.length > 0 ?
-    productsWithMargin.reduce((sum, p) => {
-      const margin = (p.price - (p.cost_price || 0)) / p.price * 100;
-      return sum + margin;
-    }, 0) / productsWithMargin.length :
-    0;
-    const lowStockCount = products.filter((p) => (p.stock_quantity || 0) < 10 && (p.stock_quantity || 0) > 0).length;
-
-    return { totalStock, totalValue, avgMargin, lowStockCount };
-  }, [products]);
+  // === KPI from stats (server-side) ===
+  const kpis = useMemo(() => ({
+    totalStock: stats.totalValue > 0 && stats.avgPrice > 0 ? Math.round(stats.totalValue / stats.avgPrice) : 0,
+    totalValue: stats.totalValue,
+    avgMargin: stats.totalMargin > 0 && stats.totalValue > 0 ? (stats.totalMargin / stats.totalValue) * 100 : 0,
+    lowStockCount: stats.lowStock,
+  }), [stats]);
 
   // Helper: compute margin for a product
   const getMargin = (p: UnifiedProduct) => {
