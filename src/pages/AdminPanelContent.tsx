@@ -927,66 +927,487 @@ function SystemTab() {
   )
 }
 
-// ─── Tab: Automation ─────────────────────────────────────────────
-function AutomationTab() {
-  const { data: summary, isLoading } = useWorkflowSummary()
-  const { data: workflows } = useQuery({
-    queryKey: ['admin-workflows-list'],
+// ─── Tab: Automation (Ultra-Pro) ─────────────────────────────────
+function useWorkflowsList() {
+  return useQuery({
+    queryKey: ['admin-workflows-full'],
     queryFn: async () => {
       const { data } = await supabase
         .from('automation_workflows')
-        .select('id, name, is_active, trigger_type, execution_count, trigger_count, last_run_at, status')
+        .select('id, name, description, is_active, trigger_type, action_type, execution_count, trigger_count, last_run_at, last_triggered_at, status, created_at, updated_at')
         .order('last_run_at', { ascending: false, nullsFirst: false })
-        .limit(20)
       return data || []
     },
+    refetchInterval: 30_000,
   })
+}
+
+function useJobsHistory() {
+  return useQuery({
+    queryKey: ['admin-jobs-history'],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from('jobs')
+        .select('id, job_type, status, error_message, started_at, completed_at, total_items, processed_items, failed_items, created_at, updated_at')
+        .order('created_at', { ascending: false })
+        .limit(50)
+      return data || []
+    },
+    refetchInterval: 15_000,
+  })
+}
+
+function useJobsChartData() {
+  return useQuery({
+    queryKey: ['admin-jobs-chart-30d'],
+    queryFn: async () => {
+      const thirtyDaysAgo = new Date(Date.now() - 30 * 86400000).toISOString()
+      const { data } = await supabase
+        .from('jobs')
+        .select('status, created_at, job_type')
+        .gte('created_at', thirtyDaysAgo)
+
+      const byDay: Record<string, { day: string; success: number; failed: number; total: number }> = {}
+      for (const j of data || []) {
+        const day = new Date(j.created_at).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' })
+        if (!byDay[day]) byDay[day] = { day, success: 0, failed: 0, total: 0 }
+        byDay[day].total++
+        if (j.status === 'completed') byDay[day].success++
+        if (j.status === 'failed') byDay[day].failed++
+      }
+
+      // Type breakdown
+      const byType: Record<string, { type: string; count: number; success: number; failed: number; avgDuration: number }> = {}
+      for (const j of data || []) {
+        const t = j.job_type || 'unknown'
+        if (!byType[t]) byType[t] = { type: t, count: 0, success: 0, failed: 0, avgDuration: 0 }
+        byType[t].count++
+        if (j.status === 'completed') byType[t].success++
+        if (j.status === 'failed') byType[t].failed++
+      }
+
+      return {
+        daily: Object.values(byDay),
+        byType: Object.values(byType).sort((a, b) => b.count - a.count),
+      }
+    },
+    staleTime: 5 * 60_000,
+  })
+}
+
+function AutomationTab() {
+  const { data: summary, isLoading } = useWorkflowSummary()
+  const { data: workflows = [], refetch: refetchWorkflows } = useWorkflowsList()
+  const { data: jobs = [], refetch: refetchJobs } = useJobsHistory()
+  const { data: chartData } = useJobsChartData()
+  const [activeSection, setActiveSection] = useState<'overview' | 'workflows' | 'timeline' | 'errors'>('overview')
+
+  const failedJobs = jobs.filter(j => j.status === 'failed')
+  const runningJobs = jobs.filter(j => j.status === 'running')
+  const completedJobs = jobs.filter(j => j.status === 'completed')
+
+  // Health score
+  const totalRecent = jobs.length
+  const successRecent = completedJobs.length
+  const healthScore = totalRecent > 0 ? Math.round((successRecent / totalRecent) * 100) : 100
+  const healthColor = healthScore >= 95 ? 'text-emerald-600 dark:text-emerald-400' : healthScore >= 80 ? 'text-amber-600 dark:text-amber-400' : 'text-destructive'
+  const healthBg = healthScore >= 95 ? 'bg-emerald-500' : healthScore >= 80 ? 'bg-amber-500' : 'bg-destructive'
+
+  // Average execution time
+  const jobsWithDuration = jobs.filter(j => j.started_at && j.completed_at)
+  const avgDuration = jobsWithDuration.length > 0
+    ? Math.round(jobsWithDuration.reduce((s, j) => s + (new Date(j.completed_at!).getTime() - new Date(j.started_at!).getTime()), 0) / jobsWithDuration.length / 1000)
+    : 0
+
+  const handleRefreshAll = () => {
+    refetchWorkflows()
+    refetchJobs()
+  }
+
+  const getJobStatusBadge = (status: string) => {
+    switch (status) {
+      case 'completed': return <Badge className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20 text-[10px] h-5">Succès</Badge>
+      case 'failed': return <Badge variant="destructive" className="text-[10px] h-5">Échec</Badge>
+      case 'running': return <Badge className="bg-primary/10 text-primary border-primary/20 text-[10px] h-5 animate-pulse">En cours</Badge>
+      case 'pending': return <Badge variant="outline" className="text-[10px] h-5">En attente</Badge>
+      default: return <Badge variant="secondary" className="text-[10px] h-5">{status}</Badge>
+    }
+  }
+
+  const getJobTypeLabel = (type: string) => {
+    const labels: Record<string, string> = {
+      sync: 'Synchronisation', import: 'Import', export: 'Export', pricing: 'Prix',
+      ai_enrich: 'IA Enrichissement', bulk_edit: 'Édition en masse', publish: 'Publication',
+      fulfillment: 'Expédition', webhook: 'Webhook', seo_audit: 'Audit SEO',
+      ai_generation: 'Génération IA', scraping: 'Scraping', email: 'Email',
+    }
+    return labels[type] || type
+  }
+
+  const getJobTypeIcon = (type: string) => {
+    switch (type) {
+      case 'sync': return Globe
+      case 'pricing': return DollarSign
+      case 'import': case 'export': return Download
+      case 'ai_enrich': case 'ai_generation': return Zap
+      default: return CircleDot
+    }
+  }
+
+  const formatDuration = (startedAt: string | null, completedAt: string | null) => {
+    if (!startedAt || !completedAt) return '—'
+    const ms = new Date(completedAt).getTime() - new Date(startedAt).getTime()
+    if (ms < 1000) return `${ms}ms`
+    if (ms < 60000) return `${(ms / 1000).toFixed(1)}s`
+    return `${Math.floor(ms / 60000)}m ${Math.round((ms % 60000) / 1000)}s`
+  }
+
+  const sectionButtons = [
+    { key: 'overview' as const, label: 'Vue globale', icon: BarChart3 },
+    { key: 'workflows' as const, label: 'Workflows', icon: Workflow },
+    { key: 'timeline' as const, label: 'Timeline', icon: Clock },
+    { key: 'errors' as const, label: `Erreurs (${failedJobs.length})`, icon: AlertTriangle },
+  ]
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h2 className="text-lg font-bold text-foreground">Suivi des Automatisations</h2>
-        <p className="text-xs text-muted-foreground">Workflows, exécutions et taux de succès</p>
+    <div className="space-y-5">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-lg font-bold text-foreground">Suivi des Automatisations</h2>
+          <p className="text-xs text-muted-foreground">Workflows, exécutions, performance et fiabilité</p>
+        </div>
+        <Button variant="outline" size="sm" onClick={handleRefreshAll} className="h-8 text-xs">
+          <RefreshCw className="h-3.5 w-3.5 mr-1.5" />Actualiser
+        </Button>
       </div>
 
-      <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
+      {/* KPI Row */}
+      <div className="grid gap-3 grid-cols-2 lg:grid-cols-6">
         <KPICard title="Workflows" value={summary?.total.toString() || '0'} subtitle={`${summary?.active || 0} actifs`} icon={Workflow} loading={isLoading} />
         <KPICard title="Exécutions" value={summary?.totalExecutions.toLocaleString() || '0'} subtitle="Total cumulé" icon={Zap} loading={isLoading} accent="success" />
-        <KPICard title="Taux de succès" value={`${(summary?.successRate || 0).toFixed(1)}%`} subtitle="Fiabilité" icon={CheckCircle} loading={isLoading} accent="success" />
-        <KPICard title="Échecs récents" value={summary?.recentFailures.toString() || '0'} subtitle="En erreur" icon={XCircle} loading={isLoading} accent="destructive" />
+        <KPICard title="Taux succès" value={`${(summary?.successRate || 0).toFixed(1)}%`} subtitle="Fiabilité" icon={CheckCircle} loading={isLoading} accent="success" />
+        <KPICard title="Échecs" value={failedJobs.length.toString()} subtitle="Récents" icon={XCircle} loading={isLoading} accent="destructive" />
+        <KPICard title="En cours" value={runningJobs.length.toString()} subtitle="Jobs actifs" icon={Activity} loading={isLoading} accent="warning" />
+        <KPICard title="Temps moyen" value={avgDuration > 0 ? `${avgDuration}s` : '—'} subtitle="Durée d'exécution" icon={Clock} loading={isLoading} />
       </div>
 
+      {/* Health Score Bar */}
       <Card className="shadow-sm">
-        <CardHeader className="pb-2">
-          <CardTitle className="text-sm font-semibold">Workflows récents</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-0.5">
-            {(workflows || []).map((wf) => (
-              <div key={wf.id} className="flex items-center justify-between py-3 px-2 -mx-2 border-b border-border/40 last:border-0 hover:bg-muted/30 rounded-md transition-colors">
-                <div className="flex items-center gap-3 min-w-0 flex-1">
-                  <div className={`h-2.5 w-2.5 rounded-full shrink-0 ${wf.is_active ? 'bg-emerald-500' : 'bg-muted-foreground/20'}`} />
-                  <div className="min-w-0">
-                    <p className="text-sm font-medium truncate text-foreground">{wf.name}</p>
-                    <p className="text-[10px] text-muted-foreground">{wf.trigger_type || 'manual'}</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-3 text-xs shrink-0">
-                  <span className="text-muted-foreground font-mono">{wf.execution_count || 0} exéc.</span>
-                  {wf.status === 'error' && <Badge variant="destructive" className="text-[10px] h-5">Erreur</Badge>}
-                  {wf.is_active && <Badge className="text-[10px] h-5 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20">Actif</Badge>}
-                  {wf.last_run_at && (
-                    <span className="text-muted-foreground font-mono">{new Date(wf.last_run_at).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' })}</span>
-                  )}
-                </div>
-              </div>
-            ))}
-            {(!workflows || workflows.length === 0) && (
-              <p className="text-sm text-muted-foreground text-center py-8">Aucun workflow configuré</p>
-            )}
+        <CardContent className="py-3 px-5">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <span className="relative flex h-2.5 w-2.5">
+                <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${healthBg}`} />
+                <span className={`relative inline-flex rounded-full h-2.5 w-2.5 ${healthBg}`} />
+              </span>
+              <span className="text-sm font-semibold text-foreground">Santé globale</span>
+              <span className={`text-lg font-bold font-mono ${healthColor}`}>{healthScore}%</span>
+            </div>
+            <div className="flex items-center gap-4 text-xs text-muted-foreground">
+              <span className="flex items-center gap-1.5">
+                <CheckCircle className="h-3 w-3 text-emerald-500" />
+                {completedJobs.length} réussis
+              </span>
+              <span className="flex items-center gap-1.5">
+                <XCircle className="h-3 w-3 text-destructive" />
+                {failedJobs.length} échoués
+              </span>
+              <span className="flex items-center gap-1.5">
+                <Activity className="h-3 w-3 text-primary" />
+                {runningJobs.length} en cours
+              </span>
+            </div>
+          </div>
+          <div className="mt-2 h-1.5 bg-muted rounded-full overflow-hidden">
+            <div className={`h-full rounded-full transition-all duration-700 ${healthBg}`} style={{ width: `${healthScore}%` }} />
           </div>
         </CardContent>
       </Card>
+
+      {/* Sub-navigation */}
+      <div className="flex gap-1 bg-muted/50 p-0.5 rounded-lg w-fit">
+        {sectionButtons.map(s => (
+          <button
+            key={s.key}
+            onClick={() => setActiveSection(s.key)}
+            className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md transition-all ${
+              activeSection === s.key ? 'bg-background shadow-sm text-foreground' : 'text-muted-foreground hover:text-foreground'
+            }`}
+          >
+            <s.icon className="h-3.5 w-3.5" />
+            {s.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Section: Overview */}
+      {activeSection === 'overview' && (
+        <div className="grid gap-5 lg:grid-cols-5">
+          {/* Chart: Success vs Failed over 30 days */}
+          <Card className="lg:col-span-3 shadow-sm">
+            <CardHeader className="pb-2">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-sm font-semibold flex items-center gap-2">
+                  <BarChart3 className="h-4 w-4 text-primary" />
+                  Exécutions (30 jours)
+                </CardTitle>
+                <Badge variant="outline" className="text-[10px]">{(chartData?.daily || []).reduce((s, d) => s + d.total, 0)} total</Badge>
+              </div>
+            </CardHeader>
+            <CardContent className="pt-0">
+              {(chartData?.daily || []).length > 0 ? (
+                <ResponsiveContainer width="100%" height={220}>
+                  <BarChart data={chartData!.daily} margin={{ top: 5, right: 5, left: -20, bottom: 0 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
+                    <XAxis dataKey="day" tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} axisLine={false} tickLine={false} />
+                    <YAxis tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} axisLine={false} tickLine={false} />
+                    <RechartsTooltip
+                      contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: 8, fontSize: 12, boxShadow: '0 4px 12px -2px rgba(0,0,0,0.1)' }}
+                    />
+                    <Bar dataKey="success" name="Succès" fill={CHART_COLORS.success} radius={[3, 3, 0, 0]} />
+                    <Bar dataKey="failed" name="Échecs" fill={CHART_COLORS.destructive} radius={[3, 3, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="flex items-center justify-center h-[220px] text-sm text-muted-foreground">
+                  Aucune donnée pour cette période
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Metrics by Type */}
+          <Card className="lg:col-span-2 shadow-sm">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-semibold flex items-center gap-2">
+                <Target className="h-4 w-4 text-primary" />
+                Par type de tâche
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2.5">
+                {(chartData?.byType || []).slice(0, 8).map(t => {
+                  const rate = t.count > 0 ? Math.round((t.success / t.count) * 100) : 0
+                  const TypeIcon = getJobTypeIcon(t.type)
+                  return (
+                    <div key={t.type} className="space-y-1">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <TypeIcon className="h-3.5 w-3.5 text-muted-foreground" />
+                          <span className="text-xs font-medium">{getJobTypeLabel(t.type)}</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-[10px]">
+                          <span className="text-muted-foreground font-mono">{t.count} exéc.</span>
+                          <span className={`font-semibold ${rate >= 90 ? 'text-emerald-600 dark:text-emerald-400' : rate >= 70 ? 'text-amber-600' : 'text-destructive'}`}>{rate}%</span>
+                        </div>
+                      </div>
+                      <div className="h-1 bg-muted rounded-full overflow-hidden">
+                        <div
+                          className={`h-full rounded-full transition-all ${rate >= 90 ? 'bg-emerald-500' : rate >= 70 ? 'bg-amber-500' : 'bg-destructive'}`}
+                          style={{ width: `${rate}%` }}
+                        />
+                      </div>
+                    </div>
+                  )
+                })}
+                {(!chartData?.byType || chartData.byType.length === 0) && (
+                  <p className="text-xs text-muted-foreground text-center py-4">Aucune donnée</p>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {/* Section: Workflows */}
+      {activeSection === 'workflows' && (
+        <Card className="shadow-sm">
+          <CardHeader className="pb-2">
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-sm font-semibold">Tous les workflows ({workflows.length})</CardTitle>
+              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-emerald-500" />{workflows.filter(w => w.is_active).length} actifs</span>
+                <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-muted-foreground/30" />{workflows.filter(w => !w.is_active).length} inactifs</span>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-1">
+              {workflows.map(wf => {
+                const successRate = wf.trigger_count > 0 ? Math.round((wf.execution_count / wf.trigger_count) * 100) : 100
+                return (
+                  <div key={wf.id} className="flex items-center justify-between py-3 px-3 -mx-3 border-b border-border/40 last:border-0 hover:bg-muted/30 rounded-lg transition-colors group">
+                    <div className="flex items-center gap-3 min-w-0 flex-1">
+                      <div className={`h-3 w-3 rounded-full shrink-0 ${wf.is_active ? 'bg-emerald-500' : 'bg-muted-foreground/20'}`} />
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-2">
+                          <p className="text-sm font-medium truncate text-foreground">{wf.name}</p>
+                          {wf.status === 'error' && <Badge variant="destructive" className="text-[10px] h-5">Erreur</Badge>}
+                        </div>
+                        <div className="flex items-center gap-3 text-[10px] text-muted-foreground mt-0.5">
+                          <span>{wf.trigger_type || 'manual'}</span>
+                          {wf.action_type && <span>→ {wf.action_type}</span>}
+                          {wf.description && <span className="truncate max-w-[200px]">• {wf.description}</span>}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-4 text-xs shrink-0">
+                      <div className="text-right">
+                        <div className="font-mono font-medium">{wf.execution_count || 0} <span className="text-muted-foreground font-normal">exéc.</span></div>
+                        <div className={`text-[10px] ${successRate >= 90 ? 'text-emerald-600 dark:text-emerald-400' : successRate >= 70 ? 'text-amber-600' : 'text-destructive'}`}>
+                          {successRate}% succès
+                        </div>
+                      </div>
+                      <div className="text-right text-muted-foreground w-20">
+                        {wf.last_run_at ? (
+                          <>
+                            <div className="text-[10px]">{new Date(wf.last_run_at).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' })}</div>
+                            <div className="text-[10px]">{new Date(wf.last_run_at).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}</div>
+                          </>
+                        ) : <span className="text-[10px]">Jamais exécuté</span>}
+                      </div>
+                      <Badge className={`text-[10px] h-5 ${wf.is_active ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20' : 'bg-muted text-muted-foreground'}`}>
+                        {wf.is_active ? 'Actif' : 'Inactif'}
+                      </Badge>
+                    </div>
+                  </div>
+                )
+              })}
+              {workflows.length === 0 && (
+                <div className="text-center py-12">
+                  <Workflow className="h-10 w-10 text-muted-foreground/40 mx-auto mb-2" />
+                  <p className="text-sm text-muted-foreground">Aucun workflow configuré</p>
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Section: Timeline */}
+      {activeSection === 'timeline' && (
+        <Card className="shadow-sm">
+          <CardHeader className="pb-2">
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-sm font-semibold flex items-center gap-2">
+                <Clock className="h-4 w-4 text-primary" />
+                Timeline d'exécution
+              </CardTitle>
+              <Badge variant="outline" className="text-[10px]">{jobs.length} derniers jobs</Badge>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="relative">
+              {/* Vertical line */}
+              <div className="absolute left-[18px] top-0 bottom-0 w-px bg-border" />
+
+              <div className="space-y-0">
+                {jobs.slice(0, 30).map((job, i) => {
+                  const JobIcon = getJobTypeIcon(job.job_type)
+                  return (
+                    <div key={job.id} className="flex gap-4 py-3 relative group">
+                      {/* Dot */}
+                      <div className={`h-[14px] w-[14px] rounded-full border-2 shrink-0 z-10 mt-1 ${
+                        job.status === 'completed' ? 'bg-emerald-500 border-emerald-500' :
+                        job.status === 'failed' ? 'bg-destructive border-destructive' :
+                        job.status === 'running' ? 'bg-primary border-primary animate-pulse' :
+                        'bg-muted border-muted-foreground/30'
+                      }`} style={{ marginLeft: '12px' }} />
+
+                      {/* Content */}
+                      <div className="flex-1 min-w-0 flex items-start justify-between gap-4 hover:bg-muted/30 -mx-2 px-2 py-1 rounded-lg transition-colors">
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-2">
+                            <JobIcon className="h-3.5 w-3.5 text-muted-foreground" />
+                            <span className="text-sm font-medium text-foreground">{getJobTypeLabel(job.job_type)}</span>
+                            {getJobStatusBadge(job.status)}
+                          </div>
+                          {job.error_message && (
+                            <p className="text-[10px] text-destructive mt-0.5 truncate max-w-[400px]">{job.error_message}</p>
+                          )}
+                          <div className="flex items-center gap-3 mt-0.5 text-[10px] text-muted-foreground">
+                            {job.total_items != null && <span>{job.processed_items || 0}/{job.total_items} items</span>}
+                            {job.failed_items != null && job.failed_items > 0 && <span className="text-destructive">{job.failed_items} échoués</span>}
+                            <span>Durée: {formatDuration(job.started_at, job.completed_at)}</span>
+                          </div>
+                        </div>
+                        <div className="text-[10px] text-muted-foreground font-mono shrink-0 text-right">
+                          <div>{new Date(job.created_at).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' })}</div>
+                          <div>{new Date(job.created_at).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}</div>
+                        </div>
+                      </div>
+                    </div>
+                  )
+                })}
+                {jobs.length === 0 && (
+                  <div className="text-center py-12 ml-10">
+                    <Clock className="h-10 w-10 text-muted-foreground/40 mx-auto mb-2" />
+                    <p className="text-sm text-muted-foreground">Aucune exécution récente</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Section: Errors */}
+      {activeSection === 'errors' && (
+        <Card className="shadow-sm">
+          <CardHeader className="pb-2">
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-sm font-semibold flex items-center gap-2">
+                <AlertTriangle className="h-4 w-4 text-destructive" />
+                Jobs en erreur ({failedJobs.length})
+              </CardTitle>
+            </div>
+          </CardHeader>
+          <CardContent>
+            {failedJobs.length === 0 ? (
+              <div className="text-center py-12">
+                <CheckCircle className="h-12 w-12 text-emerald-500 mx-auto mb-3 opacity-80" />
+                <h3 className="font-semibold text-foreground">Aucune erreur</h3>
+                <p className="text-sm text-muted-foreground mt-1">Tous les jobs récents ont réussi</p>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                {failedJobs.map(job => {
+                  const JobIcon = getJobTypeIcon(job.job_type)
+                  return (
+                    <div key={job.id} className="p-4 rounded-xl border border-destructive/20 bg-destructive/5 hover:bg-destructive/10 transition-colors">
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="flex items-start gap-3 min-w-0 flex-1">
+                          <div className="h-8 w-8 rounded-lg bg-destructive/10 flex items-center justify-center shrink-0 mt-0.5">
+                            <JobIcon className="h-4 w-4 text-destructive" />
+                          </div>
+                          <div className="min-w-0">
+                            <div className="flex items-center gap-2">
+                              <p className="text-sm font-semibold text-foreground">{getJobTypeLabel(job.job_type)}</p>
+                              <Badge variant="destructive" className="text-[10px] h-5">Échec</Badge>
+                            </div>
+                            <p className="text-xs text-destructive mt-1 break-words">{job.error_message || 'Erreur inconnue'}</p>
+                            <div className="flex items-center gap-3 mt-2 text-[10px] text-muted-foreground">
+                              <span>ID: {job.id.slice(0, 8)}...</span>
+                              <span>Durée: {formatDuration(job.started_at, job.completed_at)}</span>
+                              {job.total_items != null && <span>{job.processed_items || 0}/{job.total_items} traités</span>}
+                              {job.failed_items != null && job.failed_items > 0 && <span className="text-destructive">{job.failed_items} échoués</span>}
+                            </div>
+                          </div>
+                        </div>
+                        <div className="text-[10px] text-muted-foreground font-mono shrink-0 text-right">
+                          <div>{new Date(job.created_at).toLocaleDateString('fr-FR')}</div>
+                          <div>{new Date(job.created_at).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}</div>
+                        </div>
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
     </div>
   )
 }
