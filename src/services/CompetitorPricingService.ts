@@ -281,7 +281,7 @@ export const CompetitorPricingService = {
 
   async toggleRepricingRule(id: string): Promise<RepricingRule> {
     const { data: current, error: fetchError } = await supabase
-      .from('repricing_rules')
+      .from('pricing_rules')
       .select('is_active')
       .eq('id', id)
       .single();
