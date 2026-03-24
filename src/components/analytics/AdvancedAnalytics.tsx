@@ -105,55 +105,18 @@ export const AdvancedAnalytics: React.FC = () => {
   const [selectedMetric, setSelectedMetric] = useState('revenue');
   const { toast } = useToast();
 
-  // Data simulées pour les démonstrations
-  const revenueAnalyticsData = [
-    { date: '2024-01-01', actual: 12500, predicted: 12800, confidence: 0.85, trend: 'up' },
-    { date: '2024-01-02', actual: 13200, predicted: 13100, confidence: 0.88, trend: 'up' },
-    { date: '2024-01-03', actual: 11800, predicted: 12200, confidence: 0.82, trend: 'down' },
-    { date: '2024-01-04', actual: 14500, predicted: 14200, confidence: 0.91, trend: 'up' },
-    { date: '2024-01-05', actual: 13800, predicted: 13900, confidence: 0.87, trend: 'stable' },
-    { date: '2024-01-06', actual: 15200, predicted: 15000, confidence: 0.93, trend: 'up' },
-    { date: '2024-01-07', actual: 14100, predicted: 14500, confidence: 0.86, trend: 'down' }
-  ];
-
-  const customerBehaviorData = [
-    { hour: '00h', purchases: 23, browsing: 145, cart_additions: 67 },
-    { hour: '02h', purchases: 12, browsing: 89, cart_additions: 34 },
-    { hour: '04h', purchases: 8, browsing: 56, cart_additions: 21 },
-    { hour: '06h', purchases: 15, browsing: 112, cart_additions: 45 },
-    { hour: '08h', purchases: 67, browsing: 234, cart_additions: 123 },
-    { hour: '10h', purchases: 89, browsing: 345, cart_additions: 189 },
-    { hour: '12h', purchases: 156, browsing: 567, cart_additions: 234 },
-    { hour: '14h', purchases: 178, browsing: 623, cart_additions: 267 },
-    { hour: '16h', purchases: 134, browsing: 489, cart_additions: 201 },
-    { hour: '18h', purchases: 198, browsing: 678, cart_additions: 298 },
-    { hour: '20h', purchases: 234, browsing: 789, cart_additions: 345 },
-    { hour: '22h', purchases: 167, browsing: 456, cart_additions: 234 }
-  ];
-
-  const cohortAnalysisData = [
-    { cohort: 'Jan 2024', month_0: 100, month_1: 85, month_2: 72, month_3: 64, month_4: 58 },
-    { cohort: 'Feb 2024', month_0: 100, month_1: 88, month_2: 76, month_3: 68, month_4: 0 },
-    { cohort: 'Mar 2024', month_0: 100, month_1: 91, month_2: 79, month_3: 0, month_4: 0 },
-    { cohort: 'Apr 2024', month_0: 100, month_1: 89, month_2: 0, month_3: 0, month_4: 0 }
-  ];
-
-  const competitiveAnalysisData = [
-    { metric: 'Prix Moyen', our_value: 45.2, competitor_avg: 48.7, market_position: 'favorable' },
-    { metric: 'Temps de Livraison', our_value: 2.1, competitor_avg: 3.2, market_position: 'leader' },
-    { metric: 'Note Satisfaction', our_value: 4.6, competitor_avg: 4.3, market_position: 'leader' },
-    { metric: 'Variété Produits', our_value: 1247, competitor_avg: 1856, market_position: 'challenger' }
-  ];
-
-  useEffect(() => {
-    fetchAnalyticsData();
-  }, []);
+  // Revenue data from real orders
+  const [revenueAnalyticsData, setRevenueAnalyticsData] = useState<any[]>([]);
+  const [customerBehaviorData, setCustomerBehaviorData] = useState<any[]>([]);
 
   const fetchAnalyticsData = async () => {
     try {
       setLoading(true);
 
-      // Fetch AI insights
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      // Fetch real insights
       const { data: insightsData } = await supabase
         .from('business_intelligence_insights')
         .select('*')
@@ -171,38 +134,87 @@ export const AdvancedAnalytics: React.FC = () => {
         setInsights(transformedInsights);
       }
 
-      // Simulate analytics metrics
+      // Build revenue chart from real orders (last 7 days)
+      const since = new Date();
+      since.setDate(since.getDate() - 7);
+      const { data: orders } = await supabase
+        .from('orders')
+        .select('total_amount, created_at')
+        .eq('user_id', user.id)
+        .gte('created_at', since.toISOString());
+
+      const revenueByDay: Record<string, number> = {};
+      for (let i = 6; i >= 0; i--) {
+        const d = new Date();
+        d.setDate(d.getDate() - i);
+        revenueByDay[d.toISOString().split('T')[0]] = 0;
+      }
+      for (const o of (orders || [])) {
+        const key = new Date(o.created_at).toISOString().split('T')[0];
+        if (revenueByDay[key] !== undefined) {
+          revenueByDay[key] += o.total_amount || 0;
+        }
+      }
+      setRevenueAnalyticsData(Object.entries(revenueByDay).map(([date, actual]) => ({
+        date,
+        actual: Math.round(actual),
+        predicted: 0,
+        confidence: 0,
+        trend: 'stable'
+      })));
+
+      // Customer stats from real products/orders
+      const { data: products } = await supabase
+        .from('products')
+        .select('id, category, price, cost_price, stock_quantity')
+        .eq('user_id', user.id);
+
+      const { data: customers } = await supabase
+        .from('customers')
+        .select('id, total_spent, orders_count')
+        .eq('user_id', user.id);
+
+      // Build real metrics
+      const totalRevenue = (orders || []).reduce((s, o) => s + (o.total_amount || 0), 0);
+      const totalProducts = products?.length || 0;
+      const totalCustomers = customers?.length || 0;
+      const avgLTV = totalCustomers > 0
+        ? (customers || []).reduce((s, c) => s + ((c as any).total_spent || 0), 0) / totalCustomers
+        : 0;
+
       setMetrics({
-        revenue_growth: 24.5,
-        customer_growth: 18.2,
-        product_performance: 87.3,
-        conversion_optimization: 15.7,
-        churn_prediction: 12.4,
-        lifetime_value: 456.78,
-        market_trends: 92.1,
-        competitive_position: 78.9
+        revenue_growth: totalRevenue > 0 ? 100 : 0,
+        customer_growth: totalCustomers,
+        product_performance: totalProducts,
+        conversion_optimization: 0,
+        churn_prediction: 0,
+        lifetime_value: Math.round(avgLTV * 100) / 100,
+        market_trends: 0,
+        competitive_position: 0
       });
 
-      // Simulate business intelligence data
+      // Real product intelligence by category
+      const catMap: Record<string, { count: number; revenue: number; cost: number }> = {};
+      for (const p of (products || [])) {
+        const cat = (p as any).category || 'Non classé';
+        if (!catMap[cat]) catMap[cat] = { count: 0, revenue: 0, cost: 0 };
+        catMap[cat].count += 1;
+        catMap[cat].revenue += ((p as any).price || 0) * ((p as any).stock_quantity || 0);
+        catMap[cat].cost += ((p as any).cost_price || 0) * ((p as any).stock_quantity || 0);
+      }
+
       setBusinessIntel({
         customer_segments: [
-          { segment: 'VIP Clients', count: 234, revenue: 125000, growth: 15.2, churn_risk: 5.1 },
-          { segment: 'Clients Réguliers', count: 1456, revenue: 89000, growth: 8.7, churn_risk: 12.3 },
-          { segment: 'Nouveaux Clients', count: 892, revenue: 34000, growth: 45.6, churn_risk: 28.9 },
-          { segment: 'Clients Inactifs', count: 567, revenue: 5600, growth: -23.4, churn_risk: 78.2 }
+          { segment: 'Tous les clients', count: totalCustomers, revenue: totalRevenue, growth: 0, churn_risk: 0 }
         ],
-        product_intelligence: [
-          { category: 'Electronics', sales_velocity: 89.2, profit_margin: 23.4, demand_forecast: 15.6, competition_level: 87.3 },
-          { category: 'Fashion', sales_velocity: 67.8, profit_margin: 45.2, demand_forecast: 8.9, competition_level: 92.1 },
-          { category: 'Home & Garden', sales_velocity: 45.3, profit_margin: 34.7, demand_forecast: 12.3, competition_level: 65.4 },
-          { category: 'Beauty', sales_velocity: 78.9, profit_margin: 56.1, demand_forecast: 22.1, competition_level: 78.8 }
-        ],
-        market_analysis: [
-          { metric: 'Demande Saisonnière', current_value: 134.2, predicted_value: 156.8, confidence: 0.89 },
-          { metric: 'Prix du Marché', current_value: 98.7, predicted_value: 102.3, confidence: 0.92 },
-          { metric: 'Concurrence', current_value: 78.4, predicted_value: 82.1, confidence: 0.85 },
-          { metric: 'Innovation', current_value: 67.2, predicted_value: 71.5, confidence: 0.78 }
-        ]
+        product_intelligence: Object.entries(catMap).slice(0, 4).map(([category, data]) => ({
+          category,
+          sales_velocity: data.count,
+          profit_margin: data.revenue > 0 ? ((data.revenue - data.cost) / data.revenue * 100) : 0,
+          demand_forecast: 0,
+          competition_level: 0
+        })),
+        market_analysis: []
       });
 
     } catch (error) {
@@ -587,37 +599,12 @@ export const AdvancedAnalytics: React.FC = () => {
           <Card>
             <CardHeader>
               <CardTitle>Position Concurrentielle</CardTitle>
-              <CardDescription>Analyse comparative automatisée vs marché</CardDescription>
+              <CardDescription>Données concurrentielles disponibles après activation du module concurrent tracking</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
-                {competitiveAnalysisData.map((item, index) => (
-                  <div key={index} className="flex items-center justify-between p-4 border rounded-lg">
-                    <div>
-                      <h4 className="font-medium">{item.metric}</h4>
-                      <div className="flex items-center gap-4 mt-1 text-sm text-muted-foreground">
-                        <span>Notre valeur: {typeof item.our_value === 'number' ? 
-                          item.metric.includes('Prix') || item.metric.includes('Note') ? 
-                          item.our_value.toFixed(1) : item.our_value.toLocaleString()
-                          : item.our_value}
-                        </span>
-                        <span>Moyenne marché: {typeof item.competitor_avg === 'number' ? 
-                          item.metric.includes('Prix') || item.metric.includes('Note') ? 
-                          item.competitor_avg.toFixed(1) : item.competitor_avg.toLocaleString()
-                          : item.competitor_avg}
-                        </span>
-                      </div>
-                    </div>
-                    <Badge className={
-                      item.market_position === 'leader' ? 'bg-success/10 text-success' :
-                      item.market_position === 'favorable' ? 'bg-info/10 text-blue-800' :
-                      'bg-warning/10 text-yellow-800'
-                    } variant="outline">
-                      {item.market_position === 'leader' ? 'Leader' :
-                       item.market_position === 'favorable' ? 'Favorable' : 'Challenger'}
-                    </Badge>
-                  </div>
-                ))}
+              <div className="text-center py-8 text-muted-foreground">
+                <Target className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                <p>Activez le module de veille concurrentielle pour voir les données comparatives.</p>
               </div>
             </CardContent>
           </Card>

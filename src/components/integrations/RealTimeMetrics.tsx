@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Progress } from "@/components/ui/progress"
 import { 
   Activity, 
   TrendingUp, 
@@ -13,58 +12,86 @@ import {
   Zap
 } from "lucide-react"
 import { motion } from "framer-motion"
+import { supabase } from "@/integrations/supabase/client"
 
 interface RealTimeMetricsProps {
   integration: any
 }
 
 export const RealTimeMetrics = ({ integration }: RealTimeMetricsProps) => {
-  const [liveData, setLiveData] = useState({
+  const [liveData, setLiveData] = useState<{
+    isActive: boolean
+    lastUpdate: Date
+    metrics: Record<string, any>
+  }>({
     isActive: true,
     lastUpdate: new Date(),
-    metrics: integration.realTimeData || {}
+    metrics: {}
   })
 
   useEffect(() => {
-    if (integration.status === 'connected') {
-      const interval = setInterval(() => {
-        setLiveData(prev => ({
-          ...prev,
+    if (integration.status !== 'connected') return
+
+    const loadRealMetrics = async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser()
+        if (!user) return
+
+        const today = new Date()
+        today.setHours(0, 0, 0, 0)
+
+        const [ordersRes, customersRes] = await Promise.all([
+          supabase.from('orders').select('id, total_amount')
+            .eq('user_id', user.id)
+            .gte('created_at', today.toISOString()),
+          supabase.from('customers').select('id')
+            .eq('user_id', user.id)
+        ])
+
+        const ordersToday = ordersRes.data?.length || 0
+        const revenueToday = ordersRes.data?.reduce((s, o) => s + (o.total_amount || 0), 0) || 0
+        const totalCustomers = customersRes.data?.length || 0
+
+        setLiveData({
+          isActive: true,
           lastUpdate: new Date(),
           metrics: {
-            ...prev.metrics,
-            // Simulation de données en temps réel
-            activeUsers: integration.realTimeData?.activeUsers + Math.floor(Math.random() * 10 - 5),
-            ordersToday: integration.realTimeData?.ordersToday + Math.floor(Math.random() * 3),
-            conversionRate: (parseFloat(integration.realTimeData?.conversionRate) + (Math.random() - 0.5) * 0.2).toFixed(2) + "%"
+            ordersToday,
+            revenue: Math.round(revenueToday),
+            totalCustomers
           }
-        }))
-      }, 5000)
-
-      return () => clearInterval(interval)
+        })
+      } catch (e) {
+        console.error('RealTimeMetrics error:', e)
+      }
     }
+
+    loadRealMetrics()
+    const interval = setInterval(loadRealMetrics, 30000) // Refresh every 30s from DB
+    return () => clearInterval(interval)
   }, [integration])
 
   const getMetricIcon = (key: string) => {
     switch (key) {
-      case 'activeUsers': return <Users className="w-4 h-4" />
+      case 'totalCustomers': return <Users className="w-4 h-4" />
       case 'ordersToday': return <ShoppingCart className="w-4 h-4" />
-      case 'conversionRate': return <TrendingUp className="w-4 h-4" />
       case 'revenue': return <DollarSign className="w-4 h-4" />
-      case 'scannedToday': return <Eye className="w-4 h-4" />
-      case 'newWinners': return <Zap className="w-4 h-4" />
       default: return <Activity className="w-4 h-4" />
     }
   }
 
-  const formatMetricValue = (key: string, value: any) => {
-    if (typeof value === 'number') {
-      if (key.includes('revenue') || key.includes('aov')) {
-        return `€${value.toLocaleString()}`
-      }
-      return value.toLocaleString()
+  const getMetricLabel = (key: string) => {
+    switch (key) {
+      case 'totalCustomers': return 'Clients total'
+      case 'ordersToday': return "Commandes aujourd'hui"
+      case 'revenue': return "Revenu aujourd'hui"
+      default: return key
     }
-    return value
+  }
+
+  const formatMetricValue = (key: string, value: any) => {
+    if (key === 'revenue') return `€${Number(value).toLocaleString()}`
+    return Number(value).toLocaleString()
   }
 
   if (integration.status !== 'connected') {
@@ -105,9 +132,7 @@ export const RealTimeMetrics = ({ integration }: RealTimeMetricsProps) => {
           >
             <div className="flex items-center gap-2">
               {getMetricIcon(key)}
-              <span className="text-sm capitalize">
-                {key.replace(/([A-Z])/g, ' $1').toLowerCase()}
-              </span>
+              <span className="text-sm">{getMetricLabel(key)}</span>
             </div>
             <span className="text-sm font-medium">
               {formatMetricValue(key, value)}

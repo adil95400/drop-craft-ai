@@ -33,14 +33,46 @@ export const AdvancedMonitoring = () => {
   const [metrics, setMetrics] = useState<Metric[]>([])
   const [alerts, setAlerts] = useState<Alert[]>([])
   const [systemHealth, setSystemHealth] = useState<number>(0)
+  const [performanceData, setPerformanceData] = useState<any[]>([])
+  const [uptimeData, setUptimeData] = useState<any[]>([])
 
   useEffect(() => {
     if (user) {
       loadMonitoringData()
+      loadPerfData()
       const interval = setInterval(loadMonitoringData, 30000)
       return () => clearInterval(interval)
     }
   }, [user])
+
+  const loadPerfData = async () => {
+    try {
+      const { data: apiData } = await supabase
+        .from('api_analytics')
+        .select('date, avg_response_time_ms, total_requests, failed_requests')
+        .order('date', { ascending: true })
+        .limit(7)
+
+      if (apiData && apiData.length > 0) {
+        setPerformanceData(apiData.map((d: any) => ({
+          time: new Date(d.date).toLocaleDateString('fr-FR', { weekday: 'short' }),
+          responseTime: d.avg_response_time_ms || 0,
+          requests: d.total_requests || 0,
+          errors: d.failed_requests || 0
+        })))
+        setUptimeData(apiData.map((d: any) => {
+          const total = d.total_requests || 1
+          const failed = d.failed_requests || 0
+          return {
+            day: new Date(d.date).toLocaleDateString('fr-FR', { weekday: 'short' }),
+            uptime: Math.round(((total - failed) / total) * 1000) / 10
+          }
+        }))
+      }
+    } catch (e) {
+      console.error('Failed to load performance data', e)
+    }
+  }
 
   const loadMonitoringData = async () => {
     try {
@@ -117,26 +149,6 @@ export const AdvancedMonitoring = () => {
 
   const activeAlerts = alerts.filter(a => !a.acknowledged)
   const criticalAlerts = alerts.filter(a => a.severity === 'critical' && !a.acknowledged)
-
-  // Mock real-time performance data
-  const performanceData = [
-    { time: '00:00', cpu: 45, memory: 62, network: 30, responseTime: 120 },
-    { time: '04:00', cpu: 38, memory: 58, network: 25, responseTime: 110 },
-    { time: '08:00', cpu: 62, memory: 68, network: 45, responseTime: 135 },
-    { time: '12:00', cpu: 72, memory: 74, network: 55, responseTime: 145 },
-    { time: '16:00', cpu: 58, memory: 65, network: 42, responseTime: 128 },
-    { time: '20:00', cpu: 48, memory: 60, network: 35, responseTime: 115 }
-  ]
-
-  const uptimeData = [
-    { day: 'Lun', uptime: 99.9 },
-    { day: 'Mar', uptime: 99.8 },
-    { day: 'Mer', uptime: 100 },
-    { day: 'Jeu', uptime: 99.7 },
-    { day: 'Ven', uptime: 99.9 },
-    { day: 'Sam', uptime: 100 },
-    { day: 'Dim', uptime: 99.8 }
-  ]
 
   return (
     <div className="container mx-auto p-6 space-y-6">
