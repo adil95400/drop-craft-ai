@@ -15,6 +15,7 @@ import { useToast } from '@/hooks/use-toast'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Loader2, Mail, CheckCircle2, ArrowLeft, ShieldCheck, KeyRound, AlertCircle, Send } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import forgotPasswordIllustration from '@/assets/forgot-password-illustration.png'
 
 interface ForgotPasswordModalProps {
   open: boolean
@@ -83,7 +84,39 @@ export function ForgotPasswordModal({ open, onOpenChange }: ForgotPasswordModalP
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-[440px] p-0 gap-0 overflow-hidden border-border bg-background">
+      <DialogContent className="sm:max-w-[750px] p-0 gap-0 overflow-hidden border-border bg-background">
+        <div className="flex flex-row">
+          {/* Left illustration panel - hidden on mobile */}
+          <div className="hidden sm:flex w-[280px] shrink-0 flex-col items-center justify-center bg-primary/5 p-6 relative overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-primary/5" />
+            <div className="absolute top-4 left-4 w-20 h-20 rounded-full bg-primary/10 blur-xl" />
+            <div className="absolute bottom-8 right-4 w-16 h-16 rounded-full bg-primary/10 blur-xl" />
+            <motion.img
+              src={forgotPasswordIllustration}
+              alt="Réinitialisation sécurisée"
+              className="relative z-10 w-44 h-44 object-contain drop-shadow-lg"
+              loading="lazy"
+              width={512}
+              height={512}
+              initial={{ opacity: 0, scale: 0.8, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              transition={{ duration: 0.5, ease: 'easeOut' }}
+            />
+            <motion.div
+              className="relative z-10 mt-5 text-center"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3, duration: 0.4 }}
+            >
+              <p className="text-sm font-semibold text-foreground">Récupération sécurisée</p>
+              <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
+                Votre compte est protégé par un lien de réinitialisation unique et temporaire.
+              </p>
+            </motion.div>
+          </div>
+
+          {/* Right content panel */}
+          <div className="flex-1 min-w-0">
         {/* Animated Header */}
         <div className={cn(
           "relative px-6 pt-8 pb-6 transition-colors duration-500",
@@ -324,6 +357,8 @@ export function ForgotPasswordModal({ open, onOpenChange }: ForgotPasswordModalP
             )}
           </AnimatePresence>
         </div>
+          </div>{/* end flex-1 */}
+        </div>{/* end flex row */}
       </DialogContent>
     </Dialog>
   )
