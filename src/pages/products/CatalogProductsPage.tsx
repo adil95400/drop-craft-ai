@@ -147,8 +147,17 @@ export default function CatalogProductsPage() {
   const [showAutoOrderPanel, setShowAutoOrderPanel] = useState(false);
   const [showPricingPanel, setShowPricingPanel] = useState(false);
 
-  // === DATA (reads via Supabase, mutations via FastAPI) ===
-  const { products, stats, isLoading, refetch } = useProductsUnified();
+  // === SERVER-SIDE FILTERS — passed to useProductsUnified ===
+  const serverFilters = useMemo<import('@/hooks/unified/useProductsUnified').ProductFilters>(() => ({
+    page: currentPage,
+    pageSize: itemsPerPage,
+    search: debouncedSearch || undefined,
+    status: statusFilter !== 'all' ? statusFilter as any : undefined,
+    category: categoryFilter !== 'all' ? categoryFilter : undefined,
+  }), [currentPage, itemsPerPage, debouncedSearch, statusFilter, categoryFilter]);
+
+  // === DATA (reads via API V1 with server-side pagination, mutations via FastAPI) ===
+  const { products: serverProducts, stats, isLoading, refetch } = useProductsUnified({ filters: serverFilters });
   const { deleteProduct, createProduct } = useApiProducts();
   const { triggerSync, isSyncing } = useApiSync();
   const { bulkEnrich, isBulkEnriching } = useApiAI();
