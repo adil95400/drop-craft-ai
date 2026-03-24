@@ -232,7 +232,7 @@ async function extractFromShopify(url: string): Promise<any> {
     };
   } catch (error) {
     console.error('Shopify extraction error:', error);
-    return simulateProductData(url, 'shopify');
+    throw new Error(`Shopify extraction failed: ${error.message}`);
   }
 }
 
