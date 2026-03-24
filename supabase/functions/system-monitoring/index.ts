@@ -1,14 +1,13 @@
+/**
+ * System Monitoring — Real metrics, persisted alerts, Slack notifications
+ * Actions: get_health_status, get_performance_metrics, get_business_metrics, run_full_check
+ */
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
-
-const logStep = (step: string, details?: any) => {
-  const detailsStr = details ? ` - ${JSON.stringify(details)}` : '';
-  console.log(`[SYSTEM-MONITORING] ${step}${detailsStr}`);
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-cron-secret",
 };
 
 serve(async (req) => {
@@ -16,214 +15,174 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
-  const supabaseClient = createClient(
+  const supabaseAdmin = createClient(
     Deno.env.get("SUPABASE_URL") ?? "",
     Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
     { auth: { persistSession: false } }
   );
 
-  try {
-    logStep("System monitoring function started");
+  const headers = { ...corsHeaders, "Content-Type": "application/json" };
 
-    const { action, ...params } = await req.json();
+  try {
+    const body = await req.json().catch(() => ({}));
+    const action = body.action || 'run_full_check';
 
     switch (action) {
       case 'get_health_status':
-        return await getHealthStatus(supabaseClient);
+        return new Response(JSON.stringify(await getHealthStatus(supabaseAdmin)), { headers });
       case 'get_performance_metrics':
-        return await getPerformanceMetrics(supabaseClient);
+        return new Response(JSON.stringify(await getPerformanceMetrics(supabaseAdmin)), { headers });
       case 'get_business_metrics':
-        return await getBusinessMetrics(supabaseClient);
-      case 'log_performance_metric':
-        return await logPerformanceMetric(supabaseClient, params);
-      case 'create_alert':
-        return await createAlert(supabaseClient, params);
+        return new Response(JSON.stringify(await getBusinessMetrics(supabaseAdmin)), { headers });
+      case 'run_full_check':
+        return new Response(JSON.stringify(await runFullCheck(supabaseAdmin)), { headers });
       default:
-        throw new Error(`Unknown action: ${action}`);
+        return new Response(JSON.stringify({ error: `Unknown action: ${action}` }), { status: 400, headers });
     }
-
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : String(error);
-    logStep("ERROR in system-monitoring", { message: errorMessage });
-    return new Response(JSON.stringify({ error: errorMessage }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-      status: 500,
-    });
+    const msg = error instanceof Error ? error.message : String(error);
+    return new Response(JSON.stringify({ error: msg }), { status: 500, headers });
   }
 });
 
-async function getHealthStatus(supabaseClient: any) {
-  logStep("Getting system health status");
+// ── Health Status (real latency measurements) ──
+async function getHealthStatus(db: any) {
+  const dbStart = Date.now();
+  const { error: dbError } = await db.from('profiles').select('id').limit(1);
+  const dbLatency = Date.now() - dbStart;
 
-  // Check database connectivity
-  const { error: dbError } = await supabaseClient
-    .from('integrations')
-    .select('id')
-    .limit(1);
+  const authStart = Date.now();
+  await db.auth.getSession();
+  const authLatency = Date.now() - authStart;
 
-  // Check active integrations
-  const { data: activeIntegrations } = await supabaseClient
+  const { data: integrations } = await db
     .from('integrations')
-    .select('id, provider, status, last_sync_at')
+    .select('id, provider, status, last_sync_at, is_active')
     .eq('is_active', true);
 
-  // Calculate system metrics
-  const systemHealth = {
-    database: !dbError ? 'healthy' : 'degraded',
-    integrations: {
-      total: activeIntegrations?.length || 0,
-      healthy: activeIntegrations?.filter(i => i.status === 'connected').length || 0,
-      degraded: activeIntegrations?.filter(i => i.status === 'warning').length || 0,
-      critical: activeIntegrations?.filter(i => i.status === 'error').length || 0,
-    },
-    uptime: 99.9, // This would come from actual monitoring
-    responseTime: Math.floor(Math.random() * 100) + 100, // Mock data
-    lastUpdated: new Date().toISOString()
-  };
+  const healthy = integrations?.filter((i: any) => i.status === 'connected').length || 0;
+  const degraded = integrations?.filter((i: any) => i.status === 'warning').length || 0;
+  const critical = integrations?.filter((i: any) => i.status === 'error').length || 0;
 
-  return new Response(JSON.stringify(systemHealth), {
-    headers: { ...corsHeaders, "Content-Type": "application/json" },
-    status: 200,
-  });
+  const overallStatus = dbError || dbLatency > 5000 ? 'critical'
+    : dbLatency > 2000 || critical > 0 ? 'degraded'
+    : 'healthy';
+
+  return {
+    status: overallStatus,
+    database: { status: dbError ? 'down' : dbLatency > 2000 ? 'degraded' : 'healthy', latency_ms: dbLatency },
+    auth: { status: authLatency > 2000 ? 'degraded' : 'healthy', latency_ms: authLatency },
+    integrations: { total: integrations?.length || 0, healthy, degraded, critical },
+    lastUpdated: new Date().toISOString(),
+  };
 }
 
-async function getPerformanceMetrics(supabaseClient: any) {
-  logStep("Getting performance metrics");
+// ── Performance Metrics (real data from api_logs & activity_logs) ──
+async function getPerformanceMetrics(db: any) {
+  const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
+  const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
 
-  // In production, these would come from actual monitoring data
-  const performanceMetrics = {
-    responseTime: {
-      current: Math.floor(Math.random() * 100) + 120,
-      average24h: Math.floor(Math.random() * 50) + 150,
-      p95: Math.floor(Math.random() * 100) + 200,
-      p99: Math.floor(Math.random() * 200) + 300,
-    },
-    throughput: {
-      current: Math.floor(Math.random() * 500) + 1000,
-      average24h: Math.floor(Math.random() * 300) + 800,
-      peak24h: Math.floor(Math.random() * 1000) + 1800,
-    },
+  const [logsRes, errorsRes, errors24Res] = await Promise.all([
+    db.from('api_logs').select('response_time_ms, created_at').gte('created_at', oneHourAgo).limit(500),
+    db.from('activity_logs').select('id', { count: 'exact', head: true }).eq('severity', 'error').gte('created_at', oneHourAgo),
+    db.from('activity_logs').select('id', { count: 'exact', head: true }).eq('severity', 'error').gte('created_at', twentyFourHoursAgo),
+  ]);
+
+  const logs = logsRes.data || [];
+  const responseTimes = logs.map((l: any) => l.response_time_ms || 0).filter((v: number) => v > 0);
+  responseTimes.sort((a: number, b: number) => a - b);
+
+  const avg = responseTimes.length > 0 ? Math.round(responseTimes.reduce((s: number, v: number) => s + v, 0) / responseTimes.length) : 0;
+  const p95 = responseTimes.length > 0 ? responseTimes[Math.floor(responseTimes.length * 0.95)] : 0;
+  const p99 = responseTimes.length > 0 ? responseTimes[Math.floor(responseTimes.length * 0.99)] : 0;
+
+  return {
+    responseTime: { current: avg, average24h: avg, p95, p99 },
+    throughput: { current: logs.length, average24h: logs.length * 24 },
     errorRate: {
-      current: Math.random() * 2,
-      average24h: Math.random() * 1.5,
-      peak24h: Math.random() * 5,
+      current1h: errorsRes.count ?? 0,
+      current24h: errors24Res.count ?? 0,
+      percentage: logs.length > 0 ? Math.round(((errorsRes.count ?? 0) / logs.length) * 10000) / 100 : 0,
     },
-    cpuUsage: Math.random() * 60 + 20,
-    memoryUsage: Math.random() * 70 + 15,
-    diskUsage: Math.random() * 50 + 30,
-    lastUpdated: new Date().toISOString()
+    lastUpdated: new Date().toISOString(),
   };
-
-  return new Response(JSON.stringify(performanceMetrics), {
-    headers: { ...corsHeaders, "Content-Type": "application/json" },
-    status: 200,
-  });
 }
 
-async function getBusinessMetrics(supabaseClient: any) {
-  logStep("Getting business metrics");
+// ── Business Metrics (real aggregations) ──
+async function getBusinessMetrics(db: any) {
+  const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+  const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
 
-  // Get recent orders data
-  const { data: orders } = await supabaseClient
-    .from('orders')
-    .select('total_amount, created_at, status')
-    .gte('created_at', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString())
-    .order('created_at', { ascending: false });
+  const [orders7d, orders30d, customers7d, profiles] = await Promise.all([
+    db.from('orders').select('total_amount, status').gte('created_at', sevenDaysAgo),
+    db.from('orders').select('total_amount, status').gte('created_at', thirtyDaysAgo),
+    db.from('customers').select('id').gte('created_at', sevenDaysAgo),
+    db.from('profiles').select('id', { count: 'exact', head: true }),
+  ]);
 
-  // Get customer data
-  const { data: customers } = await supabaseClient
-    .from('customers')
-    .select('id, total_spent, total_orders, created_at')
-    .gte('created_at', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString());
+  const rev7d = (orders7d.data || []).reduce((s: number, o: any) => s + (o.total_amount || 0), 0);
+  const rev30d = (orders30d.data || []).reduce((s: number, o: any) => s + (o.total_amount || 0), 0);
+  const count7d = orders7d.data?.length || 0;
+  const count30d = orders30d.data?.length || 0;
+  const aov = count7d > 0 ? rev7d / count7d : 0;
 
-  // Calculate business metrics
-  const totalRevenue = orders?.reduce((sum: number, order: any) => sum + (order.total_amount || 0), 0) || 0;
-  const totalOrders = orders?.length || 0;
-  const averageOrderValue = totalOrders > 0 ? totalRevenue / totalOrders : 0;
-  const newCustomers = customers?.length || 0;
-
-  const businessMetrics = {
-    revenue: {
-      total7d: totalRevenue,
-      total30d: totalRevenue * 4.2, // Estimated
-      growth7d: Math.random() * 20 + 5, // Mock growth rate
-      growth30d: Math.random() * 15 + 8,
-    },
-    orders: {
-      total7d: totalOrders,
-      total30d: totalOrders * 4.1, // Estimated
-      averageValue: averageOrderValue,
-      conversionRate: Math.random() * 3 + 2,
-    },
-    customers: {
-      new7d: newCustomers,
-      new30d: newCustomers * 4.3, // Estimated
-      retention7d: Math.random() * 30 + 60,
-      lifetimeValue: Math.random() * 500 + 300,
-    },
-    lastUpdated: new Date().toISOString()
+  return {
+    revenue: { total7d: Math.round(rev7d * 100) / 100, total30d: Math.round(rev30d * 100) / 100 },
+    orders: { total7d: count7d, total30d: count30d, averageValue: Math.round(aov * 100) / 100 },
+    customers: { new7d: customers7d.data?.length || 0, totalUsers: profiles.count || 0 },
+    lastUpdated: new Date().toISOString(),
   };
-
-  return new Response(JSON.stringify(businessMetrics), {
-    headers: { ...corsHeaders, "Content-Type": "application/json" },
-    status: 200,
-  });
 }
 
-async function logPerformanceMetric(supabaseClient: any, params: any) {
-  logStep("Logging performance metric", params);
+// ── Full Check (health + persist + alert) ──
+async function runFullCheck(db: any) {
+  const health = await getHealthStatus(db);
+  const perf = await getPerformanceMetrics(db);
+  const biz = await getBusinessMetrics(db);
 
-  const { metric_type, value, metadata } = params;
-
-  // In production, you'd store this in a metrics table
-  // For now, we'll just log it
-  const performanceLog = {
-    metric_type,
-    value,
-    metadata: metadata || {},
-    timestamp: new Date().toISOString()
-  };
-
-  logStep("Performance metric logged", performanceLog);
-
-  return new Response(JSON.stringify({ success: true, logged: performanceLog }), {
-    headers: { ...corsHeaders, "Content-Type": "application/json" },
-    status: 200,
+  // Persist snapshot
+  await db.from('analytics_insights').insert({
+    metric_name: 'system_health',
+    metric_type: 'infrastructure',
+    metric_value: health.status === 'healthy' ? 100 : health.status === 'degraded' ? 50 : 0,
+    category: 'monitoring',
+    metadata: { health, performance: perf },
+    recorded_at: new Date().toISOString(),
   });
-}
 
-async function createAlert(supabaseClient: any, params: any) {
-  logStep("Creating system alert", params);
+  // Create alert if not healthy
+  if (health.status !== 'healthy') {
+    const severity = health.status === 'critical' ? 'critical' : 'warning';
+    const title = severity === 'critical' ? '🔴 Système critique' : '🟡 Dégradation détectée';
 
-  const { 
-    alert_type, 
-    severity, 
-    title, 
-    description, 
-    metadata 
-  } = params;
+    await db.from('active_alerts').insert({
+      alert_type: 'system_health',
+      severity,
+      title,
+      message: `DB: ${health.database.latency_ms}ms | Auth: ${health.auth.latency_ms}ms | Errors/h: ${perf.errorRate.current1h}`,
+      metadata: { health, performance: perf },
+      status: 'active',
+    });
 
-  // In production, you'd store this in an alerts table and potentially trigger notifications
-  const alert = {
-    id: crypto.randomUUID(),
-    alert_type,
-    severity,
-    title,
-    description,
-    metadata: metadata || {},
-    status: 'active',
-    created_at: new Date().toISOString()
-  };
-
-  logStep("Alert created", alert);
-
-  // Here you could trigger notifications (email, Slack, etc.)
-  if (severity === 'critical') {
-    logStep("CRITICAL ALERT - Notifications should be sent", alert);
+    // Slack notification
+    const slackUrl = Deno.env.get('SLACK_WEBHOOK_URL');
+    if (slackUrl) {
+      await fetch(slackUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          text: `${title}\n• DB: ${health.database.latency_ms}ms\n• Errors/h: ${perf.errorRate.current1h}\n• Revenue 7d: ${biz.revenue.total7d}€`,
+        }),
+      }).catch(() => {});
+    }
   }
 
-  return new Response(JSON.stringify({ success: true, alert }), {
-    headers: { ...corsHeaders, "Content-Type": "application/json" },
-    status: 200,
-  });
+  return {
+    success: true,
+    health,
+    performance: perf,
+    business: biz,
+    alert_triggered: health.status !== 'healthy',
+    computed_at: new Date().toISOString(),
+  };
 }
