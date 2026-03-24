@@ -1584,9 +1584,50 @@ function AutomationTab() {
   )
 }
 
-// ─── Tab: Alert Center ───────────────────────────────────────────
+// ─── Tab: Alert Center (Ultra-Pro) ───────────────────────────────
+function useAlertHistory() {
+  return useQuery({
+    queryKey: ['admin-alert-history'],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from('active_alerts')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(100)
+      return data || []
+    },
+    refetchInterval: 30_000,
+  })
+}
+
+function useAlertRules() {
+  return useQuery({
+    queryKey: ['admin-alert-rules'],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from('alert_configurations')
+        .select('*')
+        .order('created_at', { ascending: false })
+      return data || []
+    },
+  })
+}
+
 function AlertCenterTab() {
   const { data: alerts = [], isLoading, refetch } = useAdminAlerts()
+  const { data: allAlerts = [], refetch: refetchHistory } = useAlertHistory()
+  const { data: rules = [] } = useAlertRules()
+  const [alertView, setAlertView] = useState<'active' | 'history' | 'rules'>('active')
+  const [severityFilter, setSeverityFilter] = useState<string>('all')
+
+  const resolvedAlerts = allAlerts.filter(a => a.status === 'resolved' || a.acknowledged)
+  const unresolvedAlerts = allAlerts.filter(a => a.status === 'active' && !a.acknowledged)
+
+  // MTTR calculation (mean time to resolve)
+  const resolvedWithTime = allAlerts.filter(a => a.acknowledged_at && a.created_at)
+  const mttr = resolvedWithTime.length > 0
+    ? Math.round(resolvedWithTime.reduce((s, a) => s + (new Date(a.acknowledged_at!).getTime() - new Date(a.created_at!).getTime()), 0) / resolvedWithTime.length / 60000)
+    : 0
 
   const grouped = {
     critical: alerts.filter(a => a.severity === 'critical'),
@@ -1594,74 +1635,217 @@ function AlertCenterTab() {
     info: alerts.filter(a => a.severity === 'info'),
   }
 
+  const filteredAlerts = severityFilter === 'all' ? alerts : alerts.filter(a => a.severity === severityFilter)
+
+  const handleAcknowledge = async (alertId: string) => {
+    await supabase.from('active_alerts').update({
+      acknowledged: true,
+      acknowledged_at: new Date().toISOString(),
+      status: 'acknowledged',
+    }).eq('id', alertId)
+    refetch()
+    refetchHistory()
+  }
+
+  const handleResolve = async (alertId: string) => {
+    await supabase.from('active_alerts').update({
+      status: 'resolved',
+      acknowledged: true,
+      acknowledged_at: new Date().toISOString(),
+    }).eq('id', alertId)
+    refetch()
+    refetchHistory()
+  }
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-lg font-bold text-foreground">Centre d'alertes</h2>
-          <p className="text-xs text-muted-foreground">Incidents système, business et sécurité</p>
+          <p className="text-xs text-muted-foreground">Incidents, escalades et règles de notification</p>
         </div>
-        <Button variant="outline" size="sm" onClick={() => refetch()} disabled={isLoading} className="h-8 text-xs">
-          <RefreshCw className={`h-3.5 w-3.5 mr-1.5 ${isLoading ? 'animate-spin' : ''}`} />
-          Actualiser
+        <Button variant="outline" size="sm" onClick={() => { refetch(); refetchHistory() }} disabled={isLoading} className="h-8 text-xs">
+          <RefreshCw className={`h-3.5 w-3.5 mr-1.5 ${isLoading ? 'animate-spin' : ''}`} />Actualiser
         </Button>
       </div>
 
-      <div className="grid gap-4 grid-cols-3">
-        {[
-          { label: 'Critique', count: grouped.critical.length, color: 'text-destructive', border: grouped.critical.length > 0 ? 'border-destructive/30 bg-destructive/5' : '' },
-          { label: 'Warning', count: grouped.warning.length, color: 'text-amber-500', border: '' },
-          { label: 'Info', count: grouped.info.length, color: 'text-muted-foreground', border: '' },
-        ].map((s) => (
-          <Card key={s.label} className={`shadow-sm ${s.border}`}>
-            <CardContent className="py-4 text-center">
-              <div className={`text-3xl font-bold ${s.color}`}>{s.count}</div>
-              <div className="text-xs text-muted-foreground mt-0.5">{s.label}</div>
-            </CardContent>
-          </Card>
+      {/* KPIs */}
+      <div className="grid gap-3 grid-cols-2 lg:grid-cols-6">
+        <KPICard title="Critiques" value={grouped.critical.length.toString()} subtitle="Actives" icon={XCircle} loading={isLoading} accent="destructive" />
+        <KPICard title="Warnings" value={grouped.warning.length.toString()} subtitle="Attention requise" icon={AlertTriangle} loading={isLoading} accent="warning" />
+        <KPICard title="Info" value={grouped.info.length.toString()} subtitle="Informatives" icon={Bell} loading={isLoading} />
+        <KPICard title="Non résolues" value={unresolvedAlerts.length.toString()} subtitle="En attente" icon={Clock} loading={isLoading} accent={unresolvedAlerts.length > 5 ? 'destructive' : 'primary'} />
+        <KPICard title="Résolues" value={resolvedAlerts.length.toString()} subtitle="Total historique" icon={CheckCircle} loading={isLoading} accent="success" />
+        <KPICard title="MTTR" value={mttr > 0 ? `${mttr}min` : '—'} subtitle="Temps moyen résolution" icon={Activity} loading={isLoading} />
+      </div>
+
+      {/* Sub-nav */}
+      <div className="flex gap-1 bg-muted/50 p-0.5 rounded-lg w-fit">
+        {([
+          { key: 'active', label: `Actives (${alerts.length})`, icon: Bell },
+          { key: 'history', label: `Historique (${allAlerts.length})`, icon: Clock },
+          { key: 'rules', label: `Règles (${rules.length})`, icon: Settings },
+        ] as const).map(s => (
+          <button key={s.key} onClick={() => setAlertView(s.key)}
+            className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md transition-all ${
+              alertView === s.key ? 'bg-background shadow-sm text-foreground' : 'text-muted-foreground hover:text-foreground'
+            }`}
+          >
+            <s.icon className="h-3.5 w-3.5" />{s.label}
+          </button>
         ))}
       </div>
 
-      <Card className="shadow-sm">
-        <CardContent className="pt-5">
-          {alerts.length === 0 ? (
-            <div className="text-center py-12">
-              <CheckCircle className="h-12 w-12 text-emerald-500 mx-auto mb-3 opacity-80" />
-              <h3 className="font-semibold text-foreground">Tout est en ordre</h3>
-              <p className="text-sm text-muted-foreground mt-1">Aucune alerte active pour le moment</p>
-            </div>
-          ) : (
-            <div className="space-y-2">
-              {alerts.map((alert) => (
-                <div key={alert.id} className={`p-4 rounded-xl border transition-colors ${
-                  alert.severity === 'critical' ? 'border-destructive/30 bg-destructive/5 hover:bg-destructive/10' :
-                  alert.severity === 'warning' ? 'border-amber-500/30 bg-amber-500/5 hover:bg-amber-500/10' : 'border-border hover:bg-muted/50'
-                }`}>
-                  <div className="flex items-start gap-3">
-                    {alert.severity === 'critical' ? (
-                      <XCircle className="h-5 w-5 text-destructive shrink-0 mt-0.5" />
-                    ) : alert.severity === 'warning' ? (
-                      <AlertTriangle className="h-5 w-5 text-amber-500 shrink-0 mt-0.5" />
-                    ) : (
-                      <Bell className="h-5 w-5 text-muted-foreground shrink-0 mt-0.5" />
-                    )}
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
-                        <h4 className="text-sm font-semibold text-foreground">{alert.title}</h4>
-                        <Badge variant="outline" className="text-[10px] h-4">{alert.source}</Badge>
+      {/* Active alerts */}
+      {alertView === 'active' && (
+        <div className="space-y-3">
+          {/* Severity filter */}
+          <div className="flex gap-1.5">
+            {['all', 'critical', 'warning', 'info'].map(sev => (
+              <button key={sev} onClick={() => setSeverityFilter(sev)}
+                className={`px-2.5 py-1 text-[11px] font-medium rounded-md border transition-colors ${
+                  severityFilter === sev ? 'bg-primary text-primary-foreground border-primary' : 'bg-background border-border text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                {sev === 'all' ? 'Toutes' : sev === 'critical' ? `Critiques (${grouped.critical.length})` :
+                 sev === 'warning' ? `Warnings (${grouped.warning.length})` : `Info (${grouped.info.length})`}
+              </button>
+            ))}
+          </div>
+
+          <Card className="shadow-sm">
+            <CardContent className="pt-5">
+              {filteredAlerts.length === 0 ? (
+                <div className="text-center py-12">
+                  <CheckCircle className="h-12 w-12 text-emerald-500 mx-auto mb-3 opacity-80" />
+                  <h3 className="font-semibold text-foreground">Tout est en ordre</h3>
+                  <p className="text-sm text-muted-foreground mt-1">Aucune alerte active</p>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {filteredAlerts.map(alert => (
+                    <div key={alert.id} className={`p-4 rounded-xl border transition-colors ${
+                      alert.severity === 'critical' ? 'border-destructive/30 bg-destructive/5 hover:bg-destructive/10' :
+                      alert.severity === 'warning' ? 'border-amber-500/30 bg-amber-500/5 hover:bg-amber-500/10' : 'border-border hover:bg-muted/50'
+                    }`}>
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="flex items-start gap-3 flex-1 min-w-0">
+                          {alert.severity === 'critical' ? <XCircle className="h-5 w-5 text-destructive shrink-0 mt-0.5" /> :
+                           alert.severity === 'warning' ? <AlertTriangle className="h-5 w-5 text-amber-500 shrink-0 mt-0.5" /> :
+                           <Bell className="h-5 w-5 text-muted-foreground shrink-0 mt-0.5" />}
+                          <div className="min-w-0">
+                            <div className="flex items-center gap-2">
+                              <h4 className="text-sm font-semibold text-foreground">{alert.title}</h4>
+                              <Badge variant="outline" className="text-[10px] h-4">{alert.source}</Badge>
+                            </div>
+                            <p className="text-xs text-muted-foreground mt-0.5">{alert.description}</p>
+                            <p className="text-[10px] text-muted-foreground mt-1 font-mono">
+                              {new Date(alert.timestamp).toLocaleString('fr-FR')}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex gap-1.5 shrink-0">
+                          <Button variant="outline" size="sm" className="h-7 text-[10px] px-2" onClick={() => handleAcknowledge(alert.id)}>
+                            <Eye className="h-3 w-3 mr-1" />Ack
+                          </Button>
+                          <Button variant="outline" size="sm" className="h-7 text-[10px] px-2 text-emerald-600 border-emerald-500/30 hover:bg-emerald-500/10" onClick={() => handleResolve(alert.id)}>
+                            <CheckCircle className="h-3 w-3 mr-1" />Résoudre
+                          </Button>
+                        </div>
                       </div>
-                      <p className="text-xs text-muted-foreground mt-0.5">{alert.description}</p>
-                      <p className="text-[10px] text-muted-foreground mt-1 font-mono">
-                        {new Date(alert.timestamp).toLocaleString('fr-FR')}
-                      </p>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {/* History */}
+      {alertView === 'history' && (
+        <Card className="shadow-sm">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-semibold flex items-center gap-2">
+              <Clock className="h-4 w-4 text-primary" />Historique complet ({allAlerts.length})
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="relative">
+              <div className="absolute left-[18px] top-0 bottom-0 w-px bg-border" />
+              <div className="space-y-0">
+                {allAlerts.slice(0, 30).map(a => (
+                  <div key={a.id} className="flex gap-4 py-2.5 relative">
+                    <div className={`h-[14px] w-[14px] rounded-full border-2 shrink-0 z-10 mt-1 ${
+                      a.status === 'resolved' ? 'bg-emerald-500 border-emerald-500' :
+                      a.severity === 'critical' ? 'bg-destructive border-destructive' :
+                      a.severity === 'warning' ? 'bg-amber-500 border-amber-500' :
+                      'bg-muted border-muted-foreground/30'
+                    }`} style={{ marginLeft: '12px' }} />
+                    <div className="flex-1 min-w-0 flex items-start justify-between gap-4">
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm font-medium text-foreground">{a.title}</span>
+                          <Badge variant={a.status === 'resolved' ? 'default' : a.severity === 'critical' ? 'destructive' : 'outline'} className="text-[10px] h-5">
+                            {a.status === 'resolved' ? 'Résolu' : a.severity}
+                          </Badge>
+                        </div>
+                        <p className="text-[10px] text-muted-foreground truncate">{a.message}</p>
+                      </div>
+                      <span className="text-[10px] text-muted-foreground font-mono shrink-0">
+                        {new Date(a.created_at || '').toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}
+                      </span>
                     </div>
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
-          )}
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Rules */}
+      {alertView === 'rules' && (
+        <Card className="shadow-sm">
+          <CardHeader className="pb-2">
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-sm font-semibold flex items-center gap-2">
+                <Settings className="h-4 w-4 text-primary" />Règles d'alerte ({rules.length})
+              </CardTitle>
+            </div>
+          </CardHeader>
+          <CardContent>
+            {rules.length === 0 ? (
+              <div className="text-center py-12">
+                <Settings className="h-10 w-10 text-muted-foreground/40 mx-auto mb-2" />
+                <p className="text-sm text-muted-foreground">Aucune règle configurée</p>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                {rules.map(rule => (
+                  <div key={rule.id} className="flex items-center justify-between p-3 rounded-xl border hover:shadow-sm transition-all">
+                    <div className="flex items-center gap-3">
+                      <div className={`h-2.5 w-2.5 rounded-full ${rule.is_enabled ? 'bg-emerald-500' : 'bg-muted-foreground/30'}`} />
+                      <div>
+                        <p className="text-sm font-medium text-foreground">{rule.alert_type}</p>
+                        <div className="flex items-center gap-2 mt-0.5 text-[10px] text-muted-foreground">
+                          {rule.threshold_value && <span>Seuil: {rule.threshold_value}</span>}
+                          {rule.threshold_percent && <span>Seuil %: {rule.threshold_percent}%</span>}
+                          <span>Priorité: {rule.priority || 0}</span>
+                          {rule.channels && <span>Canaux: {(rule.channels as string[]).join(', ')}</span>}
+                        </div>
+                      </div>
+                    </div>
+                    <Badge className={`text-[10px] h-5 ${rule.is_enabled ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20' : 'bg-muted text-muted-foreground'}`}>
+                      {rule.is_enabled ? 'Actif' : 'Inactif'}
+                    </Badge>
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
     </div>
   )
 }
