@@ -1,32 +1,55 @@
 
 
-## Plan : Activer les cron jobs d'automatisation
+# Plan : Compléter le système d'automatisation — Lacunes restantes
 
-### Contexte
-Les Edge Functions d'automatisation sont déployées mais aucun job `pg_cron` ne les appelle automatiquement. Le fichier temporaire `/tmp/setup-cron-jobs.sql` a été supprimé (stockage éphémère). Il faut recréer et exécuter le SQL.
+## Contexte
 
-### Ce qui sera fait
+L'infrastructure d'automatisation est largement en place :
+- **Orchestrateur** : `automation-orchestrator` fonctionne (séquence complète)
+- **Polling client** : `useAutomationPolling` actif dans le layout
+- **Trigger externe** : `external-cron-trigger` déployé avec authentification `CRON_SECRET`
+- **Edge Functions critiques** : `supplier-sync-cron`, `auto-reorder-engine`, `pricing-rules-engine`, `smart-inventory-engine`, `workflow-executor`, `cart-recovery-cron`, `automation-alert-engine`, `automation-security-engine` — tous déployés
 
-**Exécution SQL directe** (pas une migration, car contient des clés projet-spécifiques) pour planifier 8 cron jobs via `pg_cron` + `pg_net` :
+## Lacunes identifiées
 
-| Job | Fréquence | Edge Function |
-|-----|-----------|---------------|
-| `webhook-retry` | Toutes les 2 min | `webhook-retry` |
-| `automation-orchestrator` | Toutes les 10 min | `automation-orchestrator` (cycle complet) |
-| `cart-recovery-every-15min` | Toutes les 15 min | `cart-recovery-cron` |
-| `automation-alert-scan` | Toutes les 30 min | `automation-alert-engine` |
-| `supplier-sync-cron` | Toutes les 15 min | `supplier-sync-cron` |
-| `smart-inventory-cycle` | Toutes les 30 min | `smart-inventory-engine` |
-| `pricing-rules-apply` | Toutes les 20 min | `pricing-rules-engine` |
-| `security-engine-scan` | Toutes les 60 min | `automation-security-engine` |
+### 1. `webhook-retry` n'existe pas
+Référencé par le polling et le cron externe mais le dossier est vide. Le polling échouera silencieusement toutes les 2 minutes.
 
-Chaque job appellera sa Edge Function via `net.http_post` avec l'URL du projet et la clé anon pour l'authentification.
+### 2. Le pricing-rules-engine ne supporte pas `apply_all`
+L'orchestrateur envoie `{ action: 'apply_all' }` mais la fonction attend `{ userId, productId, currentPrice, costPrice }` — elle ne traite qu'un produit à la fois, pas un batch automatique.
 
-### Prérequis vérifiés
-- Extensions `pg_cron` et `pg_net` (déjà utilisées dans le projet)
-- Edge Functions déjà déployées
+### 3. Pas de dashboard de monitoring du polling
+Aucune visibilité sur la santé des jobs polling (dernière exécution réussie, erreurs, latence).
 
-### Fichiers modifiés
-- Aucun fichier du projet modifié
-- Exécution SQL directe dans la base de données
+---
+
+## Implémentation
+
+### Etape 1 : Créer `webhook-retry` Edge Function
+- Lit les `webhook_events` en status `failed` avec `retry_count < 5`
+- Retry avec backoff exponentiel via `webhook-delivery`
+- Met à jour le statut après réussite/échec définitif
+
+### Etape 2 : Ajouter le mode batch à `pricing-rules-engine`
+- Supporter `{ action: 'apply_all' }` : itérer sur tous les produits de tous les utilisateurs ayant des règles actives
+- Appliquer les règles par priorité, logger dans `price_change_history`
+- Garder la compatibilité avec le mode single-product existant
+
+### Etape 3 : Ajouter un panneau "Automation Health" au Control Center
+- Afficher le statut de chaque sous-système (dernière exécution, succès/erreur)
+- Basé sur les `activity_logs` existants filtrés par source
+- Bouton refresh individuel par sous-système
+
+---
+
+## Fichiers impactés
+
+| Fichier | Action |
+|---------|--------|
+| `supabase/functions/webhook-retry/index.ts` | Créer |
+| `supabase/functions/pricing-rules-engine/index.ts` | Modifier (ajouter mode batch) |
+| `src/pages/automation/AutomationControlCenter.tsx` | Modifier (ajouter panneau santé) |
+
+## Estimation
+3 fichiers, complexité modérée. Aucune migration de base de données nécessaire — les tables `webhook_events`, `pricing_rules`, `price_change_history` et `activity_logs` existent déjà.
 
