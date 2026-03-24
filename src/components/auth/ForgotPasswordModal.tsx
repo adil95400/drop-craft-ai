@@ -357,6 +357,9 @@ export function ForgotPasswordModal({ open, onOpenChange }: ForgotPasswordModalP
             )}
           </AnimatePresence>
         </div>
+        </div>
+          </div>
+          </div>
       </DialogContent>
     </Dialog>
   )
