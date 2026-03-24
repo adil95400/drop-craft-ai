@@ -201,7 +201,7 @@ export function ForgotPasswordModal({ open, onOpenChange }: ForgotPasswordModalP
 
                 {/* Security badge */}
                 <div className="flex items-center gap-2 p-3 rounded-lg bg-muted/50 border border-border">
-                  <ShieldCheck className="h-4 w-4 text-green-600 dark:text-green-400 shrink-0" />
+                  <ShieldCheck className="h-4 w-4 text-success shrink-0" />
                   <p className="text-xs text-muted-foreground leading-relaxed">
                     Le lien expirera après 1 heure. Votre compte reste sécurisé.
                   </p>

@@ -487,7 +487,7 @@ export const AuthInterface = () => {
                       <span>SSL sécurisé</span>
                     </div>
                     <div className="flex items-center gap-1.5 text-xs">
-                      <Check className="h-3.5 w-3.5 text-green-600" />
+                      <Check className="h-3.5 w-3.5 text-success" />
                       <span>RGPD conforme</span>
                     </div>
                     <div className="flex items-center gap-1.5 text-xs">
