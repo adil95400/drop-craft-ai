@@ -313,7 +313,7 @@ export default function ProductDetailsPage() {
         .from('products')
         .insert({
           user_id: user.id,
-          title: `${product.title || product.name} (copie)`,
+          title: `${(product as any).title || product.name} (copie)`,
           description: product.description,
           sku: product.sku ? `${product.sku}-COPY` : null,
           price: product.price,
