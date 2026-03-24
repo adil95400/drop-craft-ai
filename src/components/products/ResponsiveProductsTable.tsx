@@ -315,7 +315,7 @@ function MobileCardView({
                 <div className="flex-1 min-w-0">
                   <div className="flex items-start justify-between gap-2">
                     <div className="min-w-0">
-                      <h4 className="font-medium text-sm truncate">{product.name}</h4>
+                      <h4 className="font-medium text-sm truncate">{getDisplayName(product)}</h4>
                       {product.sku && (
                         <p className="text-xs text-muted-foreground truncate">SKU: {product.sku}</p>
                       )}
