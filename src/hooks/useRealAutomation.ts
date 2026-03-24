@@ -68,6 +68,9 @@ export const useRealAutomation = () => {
     },
   })
 
+  const workflows = workflowsQuery.data || []
+  const isLoadingWorkflows = workflowsQuery.isLoading
+
   const { data: executions = [], isLoading: isLoadingExecutions } = useQuery({
     queryKey: ['automation-executions'],
     queryFn: async () => {
