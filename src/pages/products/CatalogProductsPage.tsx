@@ -759,7 +759,7 @@ export default function CatalogProductsPage() {
         <ProductsPagination
           currentPage={currentPage}
           totalPages={totalPages}
-          totalItems={filteredProducts.length}
+          totalItems={stats.total}
           itemsPerPage={itemsPerPage}
           onPageChange={(page) => {setCurrentPage(page);window.scrollTo({ top: 0, behavior: 'smooth' });}}
           onItemsPerPageChange={(items) => {setItemsPerPage(items);setCurrentPage(1);}} />
