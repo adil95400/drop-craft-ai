@@ -92,6 +92,28 @@ export const corsHeaders = {
 };
 
 /**
+ * Alias: getCorsHeaders(req) — convenience wrapper
+ */
+export function getCorsHeaders(req: Request): Record<string, string> {
+  const origin = req.headers.get('origin');
+  return getSecureCorsHeaders(origin);
+}
+
+/**
+ * Alias: handleCorsPreflightRequest — convenience wrapper
+ */
+export function handleCorsPreflightRequest(req: Request, headers: Record<string, string>): Response | null {
+  if (req.method === 'OPTIONS') {
+    const origin = req.headers.get('origin');
+    if (!origin || !isAllowedOrigin(origin)) {
+      return new Response(null, { status: 403, headers: { 'Content-Type': 'text/plain' } });
+    }
+    return new Response(null, { status: 204, headers });
+  }
+  return null;
+}
+
+/**
  * Create response with secure CORS headers
  */
 export function createSecureCorsResponse(
