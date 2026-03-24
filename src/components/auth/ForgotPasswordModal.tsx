@@ -133,7 +133,7 @@ export function ForgotPasswordModal({ open, onOpenChange }: ForgotPasswordModalP
                   animate={{ scale: 1 }}
                   transition={{ type: 'spring', stiffness: 300, damping: 15, delay: 0.1 }}
                 >
-                  <CheckCircle2 className="h-7 w-7 text-green-600 dark:text-green-400" />
+                  <CheckCircle2 className="h-7 w-7 text-success" />
                 </motion.div>
                 <h2 className="text-xl font-bold text-foreground">Email envoyé ! ✉️</h2>
                 <p className="text-sm text-muted-foreground mt-1.5 leading-relaxed">
