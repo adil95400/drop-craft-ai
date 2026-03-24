@@ -8,7 +8,7 @@ import { lazy } from 'react';
 const AdminPanel = lazy(() => import('@/pages/AdminPanel'));
 const SecurityDashboard = lazy(() => import('@/pages/SecurityDashboard'));
 const VideoTutorialsPage = lazy(() => import('@/pages/admin/VideoTutorialsPage'));
-const ChannableStyleSuppliersPage = lazy(() => import('@/pages/suppliers/ChannableStyleSuppliersPage'));
+const AdminSupplierManagementPage = lazy(() => import('@/pages/admin/AdminSupplierManagementPage'));
 const AdminConsumptionPage = lazy(() => import('@/pages/admin/AdminConsumptionPage'));
 const AdminSecurityPage = lazy(() => import('@/pages/admin/AdminSecurityPage'));
 
@@ -27,8 +27,8 @@ export function AdminRoutes() {
       {/* Video Tutorials Management */}
       <Route path="video-tutorials" element={<VideoTutorialsPage />} />
       
-      {/* Suppliers Management */}
-      <Route path="suppliers" element={<ChannableStyleSuppliersPage />} />
+      {/* Suppliers Management Center */}
+      <Route path="suppliers" element={<AdminSupplierManagementPage />} />
       
       {/* Consumption Tracking */}
       <Route path="consumption" element={<AdminConsumptionPage />} />
