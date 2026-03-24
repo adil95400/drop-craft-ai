@@ -190,7 +190,7 @@ async function extractFromEBay(url: string): Promise<any> {
     };
   } catch (error) {
     console.error('eBay extraction error:', error);
-    return simulateProductData(url, 'ebay');
+    throw new Error(`eBay extraction failed: ${error.message}`);
   }
 }
 
