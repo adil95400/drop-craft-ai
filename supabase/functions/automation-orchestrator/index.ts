@@ -1,7 +1,10 @@
 /**
  * Unified Automation Orchestrator
  * Master coordinator that runs all automation subsystems in sequence.
- * Called by pg_cron every 10 minutes.
+ * 
+ * SECURITY:
+ *  - Internal (CRON): Requires X-Cron-Secret header
+ *  - User-triggered: Requires valid JWT + admin role
  * 
  * Actions:
  *  - run_all: Execute full automation cycle
@@ -13,35 +16,82 @@
  *  - health: Return system health status
  */
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
-};
+import { getSecureCorsHeaders, handleCorsPreflightSecure } from '../_shared/secure-cors.ts';
 
 Deno.serve(async (req) => {
-  if (req.method === 'OPTIONS') return new Response(null, { headers: corsHeaders });
+  const corsHeaders = getSecureCorsHeaders(req);
+
+  if (req.method === 'OPTIONS') {
+    return handleCorsPreflightSecure(req);
+  }
 
   const startTime = Date.now();
 
   try {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-    const supabase = createClient(supabaseUrl, supabaseKey);
+    const CRON_SECRET = Deno.env.get('CRON_SECRET');
 
+    // ── AUTHENTICATION ──────────────────────────────────────
+    // Two auth paths: CRON_SECRET for automated triggers, JWT for admin users
+    const cronSecret = req.headers.get('x-cron-secret');
+    const authHeader = req.headers.get('Authorization');
+    let authenticatedBy: 'cron' | 'admin' = 'cron';
+
+    if (cronSecret) {
+      // Path 1: Internal cron trigger
+      if (!CRON_SECRET) {
+        console.error('[orchestrator] CRON_SECRET not configured');
+        return json(corsHeaders, { error: 'Server misconfigured' }, 503);
+      }
+      if (cronSecret !== CRON_SECRET) {
+        // Log unauthorized attempt
+        const adminClient = createClient(supabaseUrl, supabaseKey);
+        await adminClient.from('activity_logs').insert({
+          action: 'orchestrator_auth_failed',
+          entity_type: 'security',
+          description: 'Unauthorized orchestrator trigger attempt',
+          severity: 'warn',
+          source: 'automation_orchestrator',
+        });
+        return json(corsHeaders, { error: 'Unauthorized' }, 403);
+      }
+      authenticatedBy = 'cron';
+    } else if (authHeader) {
+      // Path 2: Admin user trigger via JWT
+      const supabase = createClient(supabaseUrl, supabaseKey);
+      const token = authHeader.replace('Bearer ', '');
+      const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+
+      if (authError || !user) {
+        return json(corsHeaders, { error: 'Invalid token' }, 401);
+      }
+
+      // Verify admin role
+      const { data: isAdmin } = await supabase.rpc('has_role', { _user_id: user.id, _role: 'admin' });
+      if (!isAdmin) {
+        return json(corsHeaders, { error: 'Admin access required' }, 403);
+      }
+      authenticatedBy = 'admin';
+    } else {
+      return json(corsHeaders, { error: 'Authentication required (X-Cron-Secret or Authorization header)' }, 401);
+    }
+
+    const supabase = createClient(supabaseUrl, supabaseKey);
     const body = await req.json().catch(() => ({}));
     const action = body.action || 'run_all';
 
-    console.log(`[orchestrator] Starting action: ${action}`);
+    console.log(`[orchestrator] Starting action: ${action} (auth: ${authenticatedBy})`);
 
     const results: Record<string, any> = {};
 
     // ── HEALTH CHECK ────────────────────────────────────────
     if (action === 'health') {
-      return json({ 
+      return json(corsHeaders, { 
         success: true, 
         status: 'healthy', 
         uptime: Date.now(),
+        authenticated_by: authenticatedBy,
         subsystems: [
           'supplier-sync-cron',
           'auto-reorder-engine', 
@@ -60,11 +110,8 @@ Deno.serve(async (req) => {
 
     // ── 2. AUTO-REORDER ─────────────────────────────────────
     if (action === 'run_all' || action === 'run_reorder') {
-      // Check thresholds
       results.reorder_check = await invokeSubsystem(supabaseUrl, supabaseKey, 'auto-reorder-engine', { action: 'check_and_reorder' });
-      // Process pending orders
       results.reorder_process = await invokeSubsystem(supabaseUrl, supabaseKey, 'auto-reorder-engine', { action: 'process_queue' });
-      // Update tracking
       results.reorder_tracking = await invokeSubsystem(supabaseUrl, supabaseKey, 'auto-reorder-engine', { action: 'update_tracking' });
     }
 
@@ -94,18 +141,18 @@ Deno.serve(async (req) => {
     await supabase.from('activity_logs').insert({
       action: 'automation_orchestrator_run',
       entity_type: 'system',
-      description: `Orchestration ${action} completed in ${totalTime}ms`,
-      details: { action, results, duration_ms: totalTime },
+      description: `Orchestration ${action} completed in ${totalTime}ms (auth: ${authenticatedBy})`,
+      details: { action, results, duration_ms: totalTime, authenticated_by: authenticatedBy },
       source: 'automation_orchestrator',
       severity: 'info',
     });
 
     console.log(`[orchestrator] Completed ${action} in ${totalTime}ms`);
 
-    return json({ success: true, action, duration_ms: totalTime, results });
+    return json(corsHeaders, { success: true, action, duration_ms: totalTime, results });
   } catch (error) {
     console.error('[orchestrator] Fatal error:', error);
-    return json({ success: false, error: String(error), duration_ms: Date.now() - startTime }, 500);
+    return json(corsHeaders, { success: false, error: String(error), duration_ms: Date.now() - startTime }, 500);
   }
 });
 
@@ -143,7 +190,6 @@ async function invokeSubsystem(
 async function executeScheduledWorkflows(supabase: any, supabaseUrl: string, serviceKey: string): Promise<any> {
   const now = new Date();
   
-  // Get active workflows with schedule triggers
   const { data: workflows } = await supabase
     .from('automation_workflows')
     .select('id, user_id, name, trigger_type, trigger_config, last_executed_at')
@@ -159,19 +205,16 @@ async function executeScheduledWorkflows(supabase: any, supabaseUrl: string, ser
     const config = wf.trigger_config || {};
     const lastRun = wf.last_executed_at ? new Date(wf.last_executed_at) : null;
     
-    // Check if it's time to run
     const intervalMinutes = config.interval_minutes || config.frequency_minutes || 60;
     if (lastRun) {
       const elapsed = (now.getTime() - lastRun.getTime()) / 60000;
       if (elapsed < intervalMinutes) { skipped++; continue; }
     }
 
-    // Check cron expression if provided
     if (config.cron_expression) {
       if (!shouldRunCron(config.cron_expression, now)) { skipped++; continue; }
     }
 
-    // Execute the workflow
     try {
       await invokeSubsystem(supabaseUrl, serviceKey, 'workflow-executor', {
         workflowId: wf.id,
@@ -187,9 +230,6 @@ async function executeScheduledWorkflows(supabase: any, supabaseUrl: string, ser
   return { total: workflows.length, executed, skipped };
 }
 
-/**
- * Simple cron-like check (hour/minute matching)
- */
 function shouldRunCron(expression: string, now: Date): boolean {
   try {
     const parts = expression.split(' ');
@@ -208,11 +248,7 @@ function shouldRunCron(expression: string, now: Date): boolean {
   }
 }
 
-/**
- * Run bulk pricing optimization for products needing price review
- */
 async function runBulkPricingOptimization(supabase: any): Promise<any> {
-  // Find products with outdated pricing (cost changed but price not updated)
   const { data: products } = await supabase
     .from('products')
     .select('id, user_id, price, cost_price, buy_price')
@@ -230,7 +266,6 @@ async function runBulkPricingOptimization(supabase: any): Promise<any> {
 
     const margin = ((p.price - cost) / p.price) * 100;
 
-    // If margin dropped below 5%, flag for review
     if (margin < 5) {
       await supabase.from('ai_recommendations').insert({
         user_id: p.user_id,
@@ -248,7 +283,7 @@ async function runBulkPricingOptimization(supabase: any): Promise<any> {
   return { checked: products.length, adjusted };
 }
 
-function json(data: any, status = 200) {
+function json(corsHeaders: Record<string, string>, data: any, status = 200) {
   return new Response(JSON.stringify(data), {
     status,
     headers: { ...corsHeaders, 'Content-Type': 'application/json' },

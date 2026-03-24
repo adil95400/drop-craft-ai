@@ -110,3 +110,24 @@ export const corsHeaders = {
 export function getSensitiveCorsHeaders(req: Request): Record<string, string> {
   return getSecureCorsHeaders(req);
 }
+
+/**
+ * Alias: getCorsHeaders — used by multiple hub functions
+ */
+export function getCorsHeaders(req: Request): Record<string, string> {
+  return getSecureCorsHeaders(req);
+}
+
+/**
+ * Alias: handleCorsPreflightRequest — used by hub functions
+ */
+export function handleCorsPreflightRequest(req: Request, headers: Record<string, string>): Response | null {
+  if (req.method === 'OPTIONS') {
+    const origin = req.headers.get('Origin');
+    if (!origin || !isAllowedOrigin(origin)) {
+      return new Response(null, { status: 403, headers: { 'Content-Type': 'text/plain' } });
+    }
+    return new Response(null, { headers });
+  }
+  return null;
+}
