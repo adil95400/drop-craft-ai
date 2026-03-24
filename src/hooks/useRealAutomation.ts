@@ -60,6 +60,7 @@ export const useRealAutomation = () => {
         success_count: row.run_count || 0,
         failure_count: 0,
         last_executed_at: row.last_run_at,
+        last_run_at: row.last_run_at,
         user_id: row.user_id,
         created_at: row.created_at,
         updated_at: row.updated_at,

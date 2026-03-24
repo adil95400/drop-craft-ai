@@ -314,7 +314,7 @@ export const CompetitorPricingService = {
   async getStats(): Promise<RepricingStats> {
     const [competitorsRes, rulesRes, pricesRes, changesRes] = await Promise.all([
       supabase.from('competitor_profiles').select('id, is_active'),
-      supabase.from('repricing_rules').select('id, is_active'),
+      supabase.from('pricing_rules').select('id, is_active'),
       supabase.from('competitor_prices').select('id, price_diff_percent'),
       supabase.from('price_change_history').select('id').gte('changed_at', new Date(Date.now() - 86400000).toISOString()),
     ]);
