@@ -100,7 +100,7 @@
 - [x] Vitest for frontend (70% coverage threshold)
 - [x] Pytest for backend (auth, quota, celery, redis)
 - [x] Playwright E2E smoke tests (3 specs, 10 scenarios)
-- [ ] Load testing (k6/Artillery) — Sprint 6+
+- [x] Load testing k6 (scripts/load-test.js — 5 scenarios, 6 stages)
 
 ### Pipeline
 - [ ] GitHub Actions workflow — Sprint 6+
