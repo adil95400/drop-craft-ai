@@ -192,68 +192,16 @@ export default function CatalogProductsPage() {
     return (p.price - p.cost_price) / p.price * 100;
   };
 
+  // Client-side source filter only (source not sent to API)
   const filteredProducts = useMemo(() => {
-    let result = [...products];
-    if (debouncedSearch) {
-      const q = debouncedSearch.toLowerCase();
-      result = result.filter((p) =>
-      p.name.toLowerCase().includes(q) ||
-      p.sku?.toLowerCase().includes(q) ||
-      p.category?.toLowerCase().includes(q) ||
-      p.brand?.toLowerCase().includes(q)
-      );
-    }
-    if (statusFilter !== 'all') {
-      result = result.filter((p) => p.status === statusFilter);
-    }
-    if (categoryFilter !== 'all') {
-      result = result.filter((p) => p.category === categoryFilter);
-    }
-    if (sourceFilter !== 'all') {
-      result = result.filter((p) => p.source === sourceFilter);
-    }
+    if (sourceFilter === 'all') return products;
+    return products.filter((p) => p.source === sourceFilter);
+  }, [products, sourceFilter]);
 
-    // Sort
-    result.sort((a, b) => {
-      let valA: number | string = 0;
-      let valB: number | string = 0;
-
-      switch (sortField) {
-        case 'name':
-          valA = a.name.toLowerCase();
-          valB = b.name.toLowerCase();
-          break;
-        case 'price':
-          valA = a.price || 0;
-          valB = b.price || 0;
-          break;
-        case 'stock_quantity':
-          valA = a.stock_quantity || 0;
-          valB = b.stock_quantity || 0;
-          break;
-        case 'margin':
-          valA = getMargin(a) ?? -999;
-          valB = getMargin(b) ?? -999;
-          break;
-        case 'created_at':
-          valA = a.created_at || '';
-          valB = b.created_at || '';
-          break;
-      }
-
-      if (valA < valB) return sortDirection === 'asc' ? -1 : 1;
-      if (valA > valB) return sortDirection === 'asc' ? 1 : -1;
-      return 0;
-    });
-
-    return result;
-  }, [products, debouncedSearch, statusFilter, categoryFilter, sourceFilter, sortField, sortDirection]);
-
-  const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
-  const paginatedProducts = useMemo(() => {
-    const start = (currentPage - 1) * itemsPerPage;
-    return filteredProducts.slice(start, start + itemsPerPage);
-  }, [filteredProducts, currentPage, itemsPerPage]);
+  // Server handles pagination — compute total pages from stats
+  const totalPages = Math.ceil(stats.total / itemsPerPage);
+  // Products already paginated server-side
+  const paginatedProducts = filteredProducts;
 
   const hasActiveFilters = search !== '' || statusFilter !== 'all' || categoryFilter !== 'all' || sourceFilter !== 'all';
 
