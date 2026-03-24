@@ -223,7 +223,7 @@ export const CompetitorPricingService = {
     if (!user) throw new Error('Non authentifié');
 
     const { data, error } = await supabase
-      .from('repricing_rules')
+      .from('pricing_rules')
       .insert({
         user_id: user.id,
         name: rule.name,
