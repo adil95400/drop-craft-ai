@@ -48,6 +48,7 @@ import {
 import { EnhancedUserManagement } from '@/components/admin/EnhancedUserManagement'
 import { LogsViewer } from '@/components/admin/LogsViewer'
 import { QuickActionsPanel } from '@/components/admin/QuickActionsPanel'
+import SupplierControlTab from '@/components/admin/SupplierControlTab'
 
 // ─── Types ───────────────────────────────────────────────────────
 interface DashboardKPIs {
