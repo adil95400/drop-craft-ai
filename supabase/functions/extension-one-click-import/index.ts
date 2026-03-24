@@ -111,8 +111,7 @@ async function extractFromAmazon(url: string): Promise<any> {
   const associateTag = Deno.env.get('AMAZON_ASSOCIATE_TAG');
   
   if (!accessKey || !secretKey || !associateTag) {
-    console.warn('Amazon API credentials not configured, using simulated data');
-    return simulateProductData(url, 'amazon');
+    throw new Error('Amazon API credentials not configured. Please add AMAZON_ACCESS_KEY, AMAZON_SECRET_KEY and AMAZON_ASSOCIATE_TAG.');
   }
 
   try {
