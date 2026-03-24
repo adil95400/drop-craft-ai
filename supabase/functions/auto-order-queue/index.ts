@@ -656,12 +656,14 @@ async function processBTSOrder(supabase: any, queueItem: OrderQueueItem): Promis
     throw new Error('BTS Wholesaler credentials not configured');
   }
 
-  // BTS API placeholder (replace with actual implementation)
+  // BTS API integration - credentials available but API not yet implemented
+  // This supplier requires manual coordination until API contract is finalized
   return {
     supplierOrderId: `BTS-${Date.now()}`,
-    supplierOrderNumber: `BTS${Math.random().toString(36).substring(7).toUpperCase()}`,
+    supplierOrderNumber: `BTS-${Date.now()}`,
     supplier: 'bts_wholesaler',
-    status: 'submitted'
+    status: 'manual_required',
+    message: 'BTS order created - requires manual confirmation via supplier portal',
   };
 }
 
