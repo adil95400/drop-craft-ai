@@ -308,14 +308,14 @@ export const UnifiedAuthProvider = ({ children }: { children: React.ReactNode })
   }, []);
 
   const signInWithGoogle = useCallback(async () => {
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: { redirectTo: `${window.location.origin}/dashboard` },
+    const { lovable } = await import('@/integrations/lovable/index');
+    const result = await lovable.auth.signInWithOAuth('google', {
+      redirect_uri: window.location.origin,
     });
-    if (!error) {
+    if (!result.error) {
       try { const { trackLogin } = await import('@/lib/analytics/conversions'); trackLogin('google'); } catch {}
     }
-    return { error };
+    return { error: result.error || null };
   }, []);
 
   const resetPassword = useCallback(async (email: string) => {
